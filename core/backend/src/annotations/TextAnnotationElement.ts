@@ -15,7 +15,7 @@ import { appendTextAnnotationGeometry } from "./TextAnnotationGeometry";
 
 function getElementGeometryBuilderParams(iModel: IModelDb, _placementProps: PlacementProps, annotationProps: TextAnnotationProps, categoryId: Id64String, _subCategory?: Id64String): ElementGeometryBuilderParams {
   const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
-  const layout = layoutTextBlock({ iModel, textBlock });
+  const layout = layoutTextBlock({ iModel, source: textBlock });
   const builder = new ElementGeometry.Builder();
   appendTextAnnotationGeometry({ layout, annotationProps, builder, categoryId })
 

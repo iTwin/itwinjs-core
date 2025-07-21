@@ -24,11 +24,11 @@ function makeFractionRun(numerator?: string, denominator?: string, styleName = "
   };
 }
 
-function makeParagraph(runs?: RunProps[], styleName = "", styleOverrides?: TextStyleSettingsProps): ParagraphProps {
+function makeParagraph(children?: RunProps[], styleName = "", styleOverrides?: TextStyleSettingsProps): ParagraphProps {
   return {
     styleName,
     styleOverrides,
-    runs,
+    children,
   };
 }
 
@@ -40,22 +40,22 @@ describe("TextBlockComponent", () => {
 
     beforeEach(() => {
       block = TextBlock.create({ styleName: "block", styleOverrides: { widthFactor: 1234 }});
-      paragraph = Paragraph.create({ styleName: "paragraph", styleOverrides: { lineHeight: 42 }});
-      run = TextRun.create({ styleName: "run", styleOverrides: { fontName: "Consolas" } });
-      paragraph.runs.push(run);
-      block.paragraphs.push(paragraph);
+      paragraph = block.appendParagraph({ styleName: "paragraph", styleOverrides: { lineHeight: 42 } });
+      paragraph.appendRun(TextRun.create({ styleName: "run", styleOverrides: { fontName: "Consolas" } }));
+      run = paragraph.children![0] as TextRun;
     });
 
     it("clears overrides and propagates to sub components by default", () => {
       block.applyStyle("new");
       for (const component of [run, block, paragraph]) {
-        expect(component.styleName).to.equal("new");
+        expect(component.styleName, `Style name for ${component.constructor.name}`).to.equal("new");
         expect(component.styleOverrides).to.deep.equal({});
       }
     });
 
     it("preserves overrides if specified", () => {
       block.applyStyle("new", { preserveOverrides: true });
+
       for (const component of [run, block, paragraph]) {
         expect(component.styleName).to.equal("new");
       }
@@ -81,7 +81,7 @@ describe("TextBlockComponent", () => {
   it("stringifies", () => {
     const props: TextBlockProps = {
       styleName: "",
-      paragraphs: [
+      children: [
         makeParagraph([
           makeTextRun("abc"),
         ]),
@@ -111,7 +111,7 @@ describe("TextBlockComponent", () => {
   it("adds parents to runs and paragraphs", () => {
     const props: TextBlockProps = {
       styleName: "",
-      paragraphs: [
+      children: [
         makeParagraph([
           makeTextRun("abc"),
         ]),
@@ -134,21 +134,25 @@ describe("TextBlockComponent", () => {
 
     expect(p0.parent).to.equal(tb);
     expect(p0.root).to.equal(tb);
+    expect(p0.children).toBeDefined;
     expect(p1.parent).to.equal(tb);
     expect(p1.root).to.equal(tb);
+    expect(p1.children).toBeDefined;
 
-    expect(p0.runs.length).to.equal(1);
-    p0.runs.forEach((run, index) => {
-      expect(run.previousSibling).to.equal(p0.runs[index - 1]);
-      expect(run.nextSibling).to.equal(p0.runs[index + 1]);
+    const p0Children = p0.children!;
+    expect(p0Children.length).to.equal(1);
+    p0Children.forEach((run, index) => {
+      expect(run.previousSibling).to.equal(p0Children[index - 1]);
+      expect(run.nextSibling).to.equal(p0Children[index + 1]);
       expect(run.parent).to.equal(p0);
       expect(run.root).to.equal(tb);
     });
 
-    expect(p1.runs.length).to.equal(4);
-    p1.runs.forEach((run, index) => {
-      expect(run.previousSibling).to.equal(p1.runs[index - 1]);
-      expect(run.nextSibling).to.equal(p1.runs[index + 1]);
+    const p1Children = p1.children!;
+    expect(p1Children.length).to.equal(4);
+    p1Children.forEach((run, index) => {
+      expect(run.previousSibling).to.equal(p1Children[index - 1]);
+      expect(run.nextSibling).to.equal(p1Children[index + 1]);
       expect(run.parent).to.equal(p1);
       expect(run.root).to.equal(tb);
     });
@@ -181,15 +185,15 @@ describe("TextBlock", () => {
   describe("appendRun", () => {
     it("appends a paragraph IFF the text block is empty", () => {
       const tb = TextBlock.create({ styleName: "block" });
-      expect(tb.paragraphs.length).to.equal(0);
+      expect(tb.children?.length).to.equal(0);
 
       tb.appendRun(TextRun.create({ styleName: "run1" }));
-      expect(tb.paragraphs.length).to.equal(1);
-      expect(tb.paragraphs[0].runs.length).to.equal(1);
+      expect(tb.children?.length).to.equal(1);
+      expect(tb.children![0].children?.length).to.equal(1);
 
       tb.appendRun(TextRun.create({ styleName: "r2" }));
-      expect(tb.paragraphs.length).to.equal(1);
-      expect(tb.paragraphs[0].runs.length).to.equal(2);
+      expect(tb.children?.length).to.equal(1);
+      expect(tb.children![0].children?.length).to.equal(2);
     });
   });
 });

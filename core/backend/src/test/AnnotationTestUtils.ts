@@ -18,7 +18,7 @@ export function doLayout(textBlock: TextBlock, args?: {
   findFontId?: FindFontId;
 }): TextBlockLayout {
   const layout = layoutTextBlock({
-    textBlock,
+    source: textBlock,
     iModel: {} as any,
     findTextStyle: args?.findTextStyle ?? (() => TextStyleSettings.defaults),
     findFontId: args?.findFontId ?? (() => 0),

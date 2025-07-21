@@ -122,7 +122,9 @@ class TextEditor implements Decorator {
 
   public appendParagraph(styleOverrides?: TextStyleSettingsProps): void {
     this._textBlock.appendParagraph();
-    this._textBlock.paragraphs[this._textBlock.paragraphs.length - 1].styleOverrides = {
+    if (!this._textBlock.last) return;
+
+    this._textBlock.last.styleOverrides = {
       ...styleOverrides,
       ...this.runStyle,
       ...this.documentStyle
@@ -130,7 +132,9 @@ class TextEditor implements Decorator {
   }
 
   public setIndentation(indentation: number): void {
-    const currentParagraph = this._textBlock.paragraphs[this._textBlock.paragraphs.length - 1];
+    const currentParagraph = this._textBlock.last;
+
+    if (!currentParagraph) return;
     currentParagraph.styleOverrides = {
       ...currentParagraph.styleOverrides,
       indentation,

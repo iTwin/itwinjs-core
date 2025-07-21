@@ -33,6 +33,8 @@ export interface TextBlockComponentProps {
    * This permits you to, e.g., create a [[TextRun]] using "Arial" font and override it to use "Comic Sans" instead.
    */
   styleOverrides?: TextStyleSettingsProps;
+  /** TODO */
+  children?: TextBlockComponentProps[];
 }
 
 /** Options supplied to [[TextBlockComponent.stringify]] to control how the content is formatted.
@@ -66,6 +68,8 @@ export abstract class TextBlockComponent {
   private _styleOverrides: TextStyleSettingsProps;
   private _parent?: TextBlockComponent;
   private _children?: TextBlockComponent[];
+
+  public readonly abstract type: string;
 
   /** @internal */
   protected constructor(props: TextBlockComponentProps) {
@@ -157,6 +161,12 @@ export abstract class TextBlockComponent {
     if (!(options?.preserveOverrides)) {
       this.clearStyleOverrides();
     }
+
+    if (this.children && !(options?.preventPropagation)) {
+      for (const child of this.children) {
+        child.applyStyle(styleName, options);
+      }
+    }
   }
 
   /** Returns true if [[styleOverrides]] specifies any deviations from this component's base [[TextStyle]]. */
@@ -190,6 +200,7 @@ export abstract class TextBlockComponent {
     return {
       styleName: this.styleName,
       styleOverrides: { ...this.styleOverrides },
+      children: this.children?.map((child) => child.toJSON()) ?? [],
     };
   }
 
@@ -464,31 +475,29 @@ export class TabRun extends TextBlockComponent {
  * @beta
  */
 export interface ParagraphProps extends TextBlockComponentProps {
-  /** The collection of [[Run]]s within the paragraph.
-   * Default: an empty array.
-   */
-  runs?: RunProps[];
+  children?: TextBlockComponentProps[]; // The runs within the paragraph
 }
 
 /** A collection of [[Run]]s within a [[TextBlock]]. Each paragraph within a text block is laid out on a separate line.
  * @beta
  */
 export class Paragraph extends TextBlockComponent {
-  /** The runs within the paragraph. You can modify the contents of this array to change the content of the paragraph. */
-  public readonly runs: Run[];
+  public readonly type = "paragraph";
 
   protected constructor(props: ParagraphProps) {
     super(props);
-    this.runs = props.runs?.map((run) => Run.fromJSON(run)) ?? [];
 
-    this.runs.forEach(run => run.parent = this); // Set the parent of each run to this paragraph
-    this.children = this.runs; // Ensure the runs are also added to the children of this paragraph for consistency with TextBlockComponent
+    props.children?.forEach((run) => {
+      if (run as RunProps) {
+        this.appendRun(Run.fromJSON(run as RunProps));
+      }
+    });
   }
 
   public override toJSON(): ParagraphProps {
     return {
       ...super.toJSON(),
-      runs: this.runs.map((run) => run.toJSON()),
+      children: this.children?.map((run) => run.toJSON()),
     };
   }
 
@@ -502,34 +511,20 @@ export class Paragraph extends TextBlockComponent {
   }
 
   public override get isEmpty(): boolean {
-    return this.runs.length === 0;
-  }
-
-  /** Apply the specified style to this [[Paragraph]], and - unless [[ApplyTextStyleOptions.preventPropagation]] is `true` - to all of its [[runs]]. */
-  public override applyStyle(styleName: string, options?: ApplyTextStyleOptions): void {
-    super.applyStyle(styleName, options);
-    if (!(options?.preventPropagation)) {
-      for (const run of this.runs) {
-        run.applyStyle(styleName, options);
-      }
-    }
+    return this.children?.length === 0;
   }
 
   /** Compute a string representation of this paragraph by concatenating the string representations of all of its [[runs]]. */
   public override stringify(options?: TextBlockStringifyOptions): string {
-    return this.runs.map((x) => x.stringify(options)).join("");
+    return this.children?.map((x) => x.stringify(options)).join("") ?? "";
   }
 
   public override equals(other: TextBlockComponent): boolean {
-    if (!(other instanceof Paragraph)) {
+    if (!(other instanceof Paragraph) || !super.equals(other)) {
       return false;
     }
 
-    if (this.runs.length !== other.runs.length || !super.equals(other)) {
-      return false;
-    }
-
-    return this.runs.every((run, index) => run.equals(other.runs[index]));
+    return this.children?.every((child, index) => other.children && child.equals(other.children[index])) ?? false;
   }
 
   public appendRun(run: Run): void {
@@ -576,8 +571,6 @@ export interface TextBlockProps extends TextBlockComponentProps {
   justification?: TextBlockJustification;
   /** The margins to surround the document content. Default: 0 margins on all sides */
   margins?: Partial<TextBlockMargins>;
-  /** The paragraphs within the text block. Default: an empty array. */
-  paragraphs?: ParagraphProps[];
 }
 
 /** Represents a formatted text document consisting of a series of [[Paragraph]]s, each laid out on a separate line and containing their own content in the form of [[Run]]s.
@@ -587,6 +580,8 @@ export interface TextBlockProps extends TextBlockComponentProps {
  * @beta
  */
 export class TextBlock extends TextBlockComponent {
+  public readonly type = "textBlock";
+
   /** The width of the document in meters. Lines that would exceed this width are instead wrapped around to the next line if possible.
    * A value less than or equal to zero indicates no wrapping is to be applied.
    * Default: 0
@@ -596,8 +591,6 @@ export class TextBlock extends TextBlockComponent {
   public justification: TextBlockJustification;
   /** The margins of the document. */
   public margins: TextBlockMargins;
-  /** The ordered list of paragraphs within the document. */
-  public readonly paragraphs: Paragraph[];
 
   private constructor(props: TextBlockProps) {
     super(props);
@@ -612,8 +605,8 @@ export class TextBlock extends TextBlockComponent {
       bottom: props.margins?.bottom ?? 0,
     };
 
-    this.paragraphs = [];
-    props.paragraphs?.forEach((x) => this.appendParagraph(x));
+    this.children = [];
+    props.children?.forEach((x) => this.appendParagraph(x));
   }
 
   public override toJSON(): TextBlockProps {
@@ -622,7 +615,7 @@ export class TextBlock extends TextBlockComponent {
       width: this.width,
       justification: this.justification,
       margins: this.margins,
-      paragraphs: this.paragraphs.map((x) => x.toJSON()),
+      children: this.children?.map((x) => x.toJSON()),
     };
   }
 
@@ -638,26 +631,16 @@ export class TextBlock extends TextBlockComponent {
 
   /** Returns true if every paragraph in this text block is empty. */
   public override get isEmpty(): boolean {
-    return this.paragraphs.every((p) => p.isEmpty);
+    return !this.children || this.children.every((child) => child.isEmpty);
   }
 
   public override clone(): TextBlock {
     return new TextBlock(this.toJSON());
   }
 
-  /** Apply the specified style to this block and - unless [[ApplyTextStyleOptions.preventPropagation]] is `true` - to all of its [[paragraphs]]. */
-  public override applyStyle(styleName: string, options?: ApplyTextStyleOptions): void {
-    super.applyStyle(styleName, options);
-    if (!(options?.preventPropagation)) {
-      for (const paragraph of this.paragraphs) {
-        paragraph.applyStyle(styleName, options);
-      }
-    }
-  }
-
   /** Compute a string representation of the document's contents by concatenating the string representations of each of its [[paragraphs]], separated by [[TextBlockStringifyOptions.paragraphBreak]]. */
   public stringify(options?: TextBlockStringifyOptions): string {
-    return this.paragraphs.map((x) => x.stringify(options)).join(options?.paragraphBreak ?? " ");
+    return this.children?.map((x) => x.stringify(options)).join(options?.paragraphBreak ?? " ") || "";
   }
 
   /** Add and return a new paragraph.
@@ -665,7 +648,11 @@ export class TextBlock extends TextBlockComponent {
    * the paragraph will inherit this block's style with no overrides.
    */
   public appendParagraph(props?: ParagraphProps): Paragraph {
-    const seed = this.paragraphs[0];
+    if (!this.children) {
+      this.children = [];
+    }
+
+    const seed = this.children[0];
     const paragraphProps = props ?? {
       styleName: seed?.styleName ?? this.styleName,
       styleOverrides: seed?.styleOverrides ?? undefined,
@@ -673,10 +660,7 @@ export class TextBlock extends TextBlockComponent {
     const paragraph = Paragraph.create(paragraphProps);
 
     paragraph.parent = this; // Set the parent to this block
-    this.paragraphs.push(paragraph);
-    if (!this.children) {
-      this.children = [];
-    }
+
     this.children.push(paragraph); // Ensure the paragraph is also added to the children of this block for consistency
     return paragraph;
   }
@@ -694,7 +678,7 @@ export class TextBlock extends TextBlockComponent {
       return false;
     }
 
-    if (this.width !== other.width || this.justification !== other.justification || this.paragraphs.length !== other.paragraphs.length) {
+    if (this.width !== other.width || this.justification !== other.justification) {
       return false;
     }
 
@@ -704,6 +688,14 @@ export class TextBlock extends TextBlockComponent {
 
     if (!marginsAreEqual) return false;
 
-    return this.paragraphs.every((paragraph, index) => paragraph.equals(other.paragraphs[index]));
+    if (this.children && other.children) {
+      if (this.children.length !== other.children.length) {
+        return false;
+      }
+
+      return this.children.every((child, index) => other.children && child.equals(other.children[index]));
+    }
+
+    return true;
   }
 }
