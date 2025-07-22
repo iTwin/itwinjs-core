@@ -127,7 +127,7 @@ export class TextAnnotation2d extends AnnotationElement2d {
   }
 
   /**
-   * Populates the `elementGeometryBuilderParams` property in the [textAnnotation2dProps]($common).
+   * Populates the `elementGeometryBuilderParams` property in the [TextAnnotation2dProps]($common).
    * It only does this if the `elementGeometryBuilderParams` is not already set and if there is actually a text annotation to produce geometry for.
    */
   protected static updateGeometry(iModelDb: IModelDb, props: TextAnnotation2dProps): void {
