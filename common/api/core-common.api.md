@@ -1193,7 +1193,7 @@ export interface ChangesetFileProps extends ChangesetProps {
     pathname: LocalFileName;
 }
 
-// @public
+// @beta
 export interface ChangesetHealthStats {
     // (undocumented)
     changesetId: string;
@@ -6831,7 +6831,7 @@ export interface PersistentGraphicsRequestProps extends GraphicsRequestProps {
     readonly elementId: Id64String;
 }
 
-// @public
+// @beta
 export interface PerStatementHealthStats {
     // (undocumented)
     dbOperation: string;
