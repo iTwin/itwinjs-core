@@ -85,6 +85,7 @@ export class SampleLocateTool extends PrimitiveTool {
   public override async filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {
     // Check that element is valid for the tool operation, ex. query backend to test class, etc.
     // For this example we'll just test the element's selected status.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const isSelected = this.iModel.selectionSet.has(hit.sourceId);
     return isSelected ? LocateFilterStatus.Reject : LocateFilterStatus.Accept; // Reject element that is already selected
   }

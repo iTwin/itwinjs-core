@@ -943,6 +943,7 @@ export class ECSqlValue {
  * [IModelDb.createQueryReader]($backend) is an asynchronous API. If you encounter a use case that cannot be converted to async, please report an issue at https://github.com/iTwin/itwinjs-core/issues.
  * Mean while use [IModelDb.withPreparedStatement]($backend) for synchronous API calls where conversion to async is not possible.
 */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
   private _it: IModelJsNative.ECSqlValueIterator;
 

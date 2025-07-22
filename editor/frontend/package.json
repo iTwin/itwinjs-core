@@ -54,7 +54,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.1",
     "cpx2": "^3.0.0",
     "eslint": "^9.31.0",
     "rimraf": "^3.0.2",

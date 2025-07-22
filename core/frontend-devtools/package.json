@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.1",
     "@types/file-saver": "^2.0.1",
     "cpx2": "^3.0.0",
     "eslint": "^9.31.0",
