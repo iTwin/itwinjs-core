@@ -2772,8 +2772,8 @@ importers:
         specifier: ^9.31.0
         version: 9.31.0
       eslint-config-prettier:
-        specifier: ^9.1.0
-        version: 9.1.0(eslint@9.31.0)
+        specifier: ^9.1.2
+        version: 9.1.2(eslint@9.31.0)
       fast-sort:
         specifier: ^3.0.2
         version: 3.0.2
@@ -3174,8 +3174,8 @@ importers:
         specifier: ^9.31.0
         version: 9.31.0
       eslint-config-prettier:
-        specifier: ^9.1.0
-        version: 9.1.0(eslint@9.31.0)
+        specifier: ^9.1.2
+        version: 9.1.2(eslint@9.31.0)
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
@@ -3280,8 +3280,8 @@ importers:
         specifier: ^9.31.0
         version: 9.31.0
       eslint-config-prettier:
-        specifier: ^9.1.0
-        version: 9.1.0(eslint@9.31.0)
+        specifier: ^9.1.2
+        version: 9.1.2(eslint@9.31.0)
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
@@ -3404,8 +3404,8 @@ importers:
         specifier: ^9.31.0
         version: 9.31.0
       eslint-config-prettier:
-        specifier: ^9.1.0
-        version: 9.1.0(eslint@9.31.0)
+        specifier: ^9.1.2
+        version: 9.1.2(eslint@9.31.0)
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
@@ -7260,8 +7260,8 @@ packages:
     resolution: {integrity: sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==}
     engines: {node: '>=10'}
 
-  eslint-config-prettier@9.1.0:
-    resolution: {integrity: sha512-NSWl5BFQWEPi1j4TjVNItzYV7dZXZ+wP6I6ZhrBGpChQhZRUaElihE9uRRkcbRnNb76UMKDF3r+WTmNcGPKsqw==}
+  eslint-config-prettier@9.1.2:
+    resolution: {integrity: sha512-iI1f+D2ViGn+uvv5HuHVUamg8ll4tN+JRHGc6IJi4TP9Kl976C57fzPXgseXNs8v0iA8aSJpHsTWjDb9QJamGQ==}
     hasBin: true
     peerDependencies:
       eslint: '>=7.0.0'
@@ -13870,7 +13870,7 @@ snapshots:
 
   escape-string-regexp@4.0.0: {}
 
-  eslint-config-prettier@9.1.0(eslint@9.31.0):
+  eslint-config-prettier@9.1.2(eslint@9.31.0):
     dependencies:
       eslint: 9.31.0
 
