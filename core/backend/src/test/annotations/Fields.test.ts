@@ -185,7 +185,7 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
   iModel.saveChanges();
 }
 
-describe.only("updateFields", () => {
+describe.only("Field evaluation", () => {
   let imodel: SnapshotDb;
   let model: Id64String;
   let category: Id64String;
@@ -359,67 +359,91 @@ describe.only("updateFields", () => {
     });
   });
 
-  it("recomputes cached content", () => {
-    const textBlock = TextBlock.create({ styleName: "blockStyle" });
-    const fieldRun = FieldRun.create({
-      styleName: "fieldStyle",
-      propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-      propertyPath: { propertyName: "intProp" },
-      cachedContent: "oldValue",
+  describe("updateFields", () => {
+    it("recomputes cached content", () => {
+      const textBlock = TextBlock.create({ styleName: "blockStyle" });
+      const fieldRun = FieldRun.create({
+        styleName: "fieldStyle",
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "intProp" },
+        cachedContent: "oldValue",
+      });
+
+      textBlock.appendRun(fieldRun);
+
+      const context = createUpdateContext(sourceElementId, imodel, false);
+      const updatedCount = updateFields(textBlock, context);
+
+      expect(updatedCount).to.equal(1);
+      expect(fieldRun.cachedContent).to.equal("100"); // `intProp` value from the test element
     });
 
-    textBlock.appendRun(fieldRun);
+    it("does not update a field if recomputed content matches cached content", () => {
+      const textBlock = TextBlock.create({ styleName: "blockStyle" });
+      const fieldRun = FieldRun.create({
+        styleName: "fieldStyle",
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "intProp" },
+        cachedContent: "100",
+      });
 
-    const context = createUpdateContext(sourceElementId, imodel, false);
-    const updatedCount = updateFields(textBlock, context);
+      textBlock.appendRun(fieldRun);
 
-    expect(updatedCount).to.equal(1);
-    expect(fieldRun.cachedContent).to.equal("100"); // `intProp` value from the test element
+      const context = createUpdateContext(sourceElementId, imodel, false);
+      const updatedCount = updateFields(textBlock, context);
+
+      expect(updatedCount).to.equal(0);
+      expect(fieldRun.cachedContent).to.equal("100");
+    });
+
+    it("returns the number of fields updated", () => {
+      const textBlock = TextBlock.create({ styleName: "blockStyle" });
+      const fieldRun1 = FieldRun.create({
+        styleName: "fieldStyle",
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "intProp" },
+        cachedContent: "100",
+      });
+
+      const fieldRun2 = FieldRun.create({
+        styleName: "fieldStyle",
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "strings", accessors: [0] },
+        cachedContent: "oldValue",
+      });
+
+      textBlock.appendRun(fieldRun1);
+      textBlock.appendRun(fieldRun2);
+
+      const context = createUpdateContext(sourceElementId, imodel, false);
+      const updatedCount = updateFields(textBlock, context);
+
+      expect(updatedCount).to.equal(1);
+      expect(fieldRun1.cachedContent).to.equal("100");
+      expect(fieldRun2.cachedContent).to.equal("a");
+    });
   });
 
-  it("does not update a field if recomputed content matches cached content", () => {
-    const textBlock = TextBlock.create({ styleName: "blockStyle" });
-    const fieldRun = FieldRun.create({
-      styleName: "fieldStyle",
-      propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-      propertyPath: { propertyName: "intProp" },
-      cachedContent: "100",
+  describe("ElementDrivesTextAnnotation", () => {
+    it("can be inserted", () => {
+      
     });
 
-    textBlock.appendRun(fieldRun);
-
-    const context = createUpdateContext(sourceElementId, imodel, false);
-    const updatedCount = updateFields(textBlock, context);
-
-    expect(updatedCount).to.equal(0);
-    expect(fieldRun.cachedContent).to.equal("100");
-  });
-
-  it("returns the number of fields updated", () => {
-    const textBlock = TextBlock.create({ styleName: "blockStyle" });
-    const fieldRun1 = FieldRun.create({
-      styleName: "fieldStyle",
-      propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-      propertyPath: { propertyName: "intProp" },
-      cachedContent: "100",
+    it("updates fields when source element is modified", () => {
+      
     });
 
-    const fieldRun2 = FieldRun.create({
-      styleName: "fieldStyle",
-      propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-      propertyPath: { propertyName: "strings", accessors: [0] },
-      cachedContent: "oldValue",
+    it("updates fields when source element is deleted", () => {
+      
     });
 
-    textBlock.appendRun(fieldRun1);
-    textBlock.appendRun(fieldRun2);
+    it("updates only fields for specific modified element", () => {
+      
+    });
 
-    const context = createUpdateContext(sourceElementId, imodel, false);
-    const updatedCount = updateFields(textBlock, context);
-
-    expect(updatedCount).to.equal(1);
-    expect(fieldRun1.cachedContent).to.equal("100");
-    expect(fieldRun2.cachedContent).to.equal("a");
+    it("requires BisCore 1.22 or newer", () => {
+      
+    });
   });
 });
 
