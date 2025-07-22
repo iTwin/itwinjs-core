@@ -154,8 +154,8 @@ function scaleRange(range: Range2d, scale: number): void {
 /**
  * Applies block level settings (lineSpacingFactor, lineHeight, widthFactor, frame, and leader) to a [TextStyleSettings]($common).
  * These must be set on the block, as they are meaningless on individual paragraphs/runs.
- * Leaders are a special case. To a paragraph or run, leader settings are meaningless. However, a leader
- * can override the block's leader settings. Setting `isLeader` to `true` makes the [TextBlock]($common) settings not override the leader's settings.
+ * However, leaders are a special case and can override the block's leader settings.
+ * Setting `isLeader` to `true` makes the [TextBlock]($common) settings not override the leader's settings.
  * @internal
  */
 function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings | TextStyleSettingsProps, isLeader: boolean = false): TextStyleSettings {
