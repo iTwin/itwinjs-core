@@ -177,6 +177,40 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
     }
   }
 
+  if (field.propertyPath.jsonAccessors) {
+    if (!ecProp.isPrimitive() || ecProp.isArray() || ecProp.extendedTypeName !== "Json" || typeof curValue.primitive !== "string") {
+      return undefined;
+    }
+
+    let json = JSON.parse(curValue.primitive);
+    for (const accessor of field.propertyPath.jsonAccessors) {
+      if (typeof accessor === "number") {
+        if (!Array.isArray(json)) {
+          return undefined;
+        }
+
+        json = json[accessor < 0 ? json.length + accessor : accessor];
+      } else {
+        if (typeof json !== "object" || json === null) {
+          return undefined;
+        }
+
+        json = json[accessor];
+      }
+    }
+
+    switch (typeof json) {
+      case "string":
+      case "number":
+      case "boolean":
+        curValue = { primitive: json };
+        break;
+      default:
+        return undefined;
+    }
+  }
+
+  // The ultimate result must be a primitive value.
   if (undefined === curValue.primitive) {
     return undefined;
   }

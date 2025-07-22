@@ -259,15 +259,15 @@ describe.only("UpdateFieldsContext", () => {
     });
 
     it("returns arbitrarily-nested JSON properties", () => {
-      expectValue("abc", { propertyName: "jsonProperties", accessors: ["string"]});
+      expectValue("abc", { propertyName: "jsonProperties", jsonAccessors: ["string"]});
 
-      expectValue(10, { propertyName: "jsonProperties", accessors: ["ints", 0] });
-      expectValue(13, { propertyName: "jsonProperties", accessors: ["ints", 3] });
-      expectValue(13, { propertyName: "jsonProperties", accessors: ["ints", -1] });
-      expectValue(11, { propertyName: "jsonProperties", accessors: ["ints", -3] });
+      expectValue(10, { propertyName: "jsonProperties", jsonAccessors: ["ints", 0] });
+      expectValue(13, { propertyName: "jsonProperties", jsonAccessors: ["ints", 3] });
+      expectValue(13, { propertyName: "jsonProperties", jsonAccessors: ["ints", -1] });
+      expectValue(11, { propertyName: "jsonProperties", jsonAccessors: ["ints", -3] });
 
-      expectValue(12345, { propertyName: "jsonProperties", accessors: ["zoo", "address", "zipcode"] });
-      expectValue("scree!", { propertyName: "jsonProperties", accessors: ["zoo", "birds", 1, "sound"] });
+      expectValue(12345, { propertyName: "jsonProperties", jsonAccessors: ["zoo", "address", "zipcode"] });
+      expectValue("scree!", { propertyName: "jsonProperties", jsonAccessors: ["zoo", "birds", 1, "sound"] });
     });
   });
 });
