@@ -169,7 +169,7 @@ export class Surface {
   // create a new blank connection for testing backgroundMap and reality models.
   private async openBlankConnection(props?: Partial<BlankConnectionProps>): Promise<Viewer> {
     const iModel = BlankConnection.create({
-      location: props?.location ?? Cartographic.fromDegrees({longitude: -75.686694, latitude: 40.065757, height: 0}), // near Exton pa
+      location: props?.location ?? Cartographic.fromDegrees({longitude: 145.084505, latitude: -37.779916, height: 0}), // near Exton pa
       extents: props?.extents ?? new Range3d(-1000, -1000, -100, 1000, 1000, 100),
       name: props?.name ?? "blank connection test",
     });

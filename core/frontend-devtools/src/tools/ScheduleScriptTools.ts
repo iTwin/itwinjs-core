@@ -9,12 +9,14 @@
 
 import { assert, CompressedId64Set } from "@itwin/core-bentley";
 import {
-  ElementLoadOptions, RenderSchedule, RenderTimelineProps,
+  ElementLoadOptions, MapLayerSettings, RenderSchedule, RenderTimelineProps,
+  RgbColor,
 } from "@itwin/core-common";
 import { _scheduleScriptReference, Viewport } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 import { DisplayStyleTool } from "./DisplayStyleTools";
+import { Transform } from "@itwin/core-geometry";
 
 /** Query the schedule script JSON from an element.
  * @beta
@@ -158,19 +160,71 @@ export class ReverseScheduleScriptTool extends DisplayStyleTool {
 /** A tool that changes or removes the [RenderSchedule.Script]($common) associated with the selected [Viewport]($frontend).
  * @beta
  */
+// export class SetScheduleScriptTool extends DisplayStyleTool {
+//   public static override toolId = "SetScheduleScript";
+//   public static override get minArgs() { return 0; }
+//   public static override get maxArgs() { return 1; }
+
+//   private _script?: RenderSchedule.Script;
+
+//   public override async parse(args: string[]): Promise<boolean> {
+//     if (args.length === 0)
+//       return true; // clear schedule script.
+
+//     try {
+//       this._script = RenderSchedule.Script.fromJSON(JSON.parse(args[0]));
+//     } catch (ex) {
+//       if (ex instanceof Error)
+//         alert(ex.toString());
+//     }
+
+//     return undefined !== this._script;
+//   }
+
+//   public override async execute(vp: Viewport): Promise<boolean> {
+//     vp.displayStyle.scheduleScript = this._script;
+//     return true;
+//   }
+// }
 export class SetScheduleScriptTool extends DisplayStyleTool {
   public static override toolId = "SetScheduleScript";
   public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get maxArgs() { return 0; }
 
   private _script?: RenderSchedule.Script;
 
-  public override async parse(args: string[]): Promise<boolean> {
-    if (args.length === 0)
-      return true; // clear schedule script.
-
+  public override async parse(): Promise<boolean> {
     try {
-      this._script = RenderSchedule.Script.fromJSON(JSON.parse(args[0]));
+      /// TODO!!!! add test schedule script code here
+      const now = Date.now();
+      const builder = new RenderSchedule.ScriptBuilder();
+      const modelTimeline = builder.addModelTimeline("0x20000000010"); // model Id
+
+      const elementTimeline1 = modelTimeline.addElementTimeline(["0x2000003abfc"]);
+      elementTimeline1.addColor(now, new RgbColor(255, 255, 0));
+      elementTimeline1.addColor(now + 3000, new RgbColor(255, 255, 255));
+      elementTimeline1.addTransform(now, Transform.createIdentity());
+      // elementTimeline1.addTransform(
+      //   now + 3000,
+      //   Transform.createTranslationXYZ(0, 0, 0)
+      // );
+      // elementTimeline1.addVisibility(now, 50);
+      // elementTimeline1.addVisibility(now + 3000, 100);
+
+      // elementTimeline1.addCuttingPlane(now, {
+      //   position: { x: 0, y: 0, z: 0 },
+      //   direction: { x: 0, y: 0, z: 1 },
+      // });
+      // elementTimeline1.addCuttingPlane(now + 3000, {
+      //   position: { x: 0, y: 0, z: 5 },
+      //   direction: { x: 0, y: 0, z: 1 },
+      // });
+
+      const elementTimeline2 = modelTimeline.addElementTimeline(["0xca60"]);
+      elementTimeline2.addColor(now, new RgbColor(0, 255, 255));
+      elementTimeline2.addColor(now + 3000, new RgbColor(0, 0, 255));
+      const scriptProps = builder.finish();
+      this._script = RenderSchedule.Script.fromJSON(scriptProps);
     } catch (ex) {
       if (ex instanceof Error)
         alert(ex.toString());
@@ -181,6 +235,54 @@ export class SetScheduleScriptTool extends DisplayStyleTool {
 
   public override async execute(vp: Viewport): Promise<boolean> {
     vp.displayStyle.scheduleScript = this._script;
+    if (!this._script)
+      return false;
+    return true;
+  }
+}
+
+// Temp API
+export class TestScheduleScriptTool extends DisplayStyleTool {
+  public static override toolId = "TestScheduleScript";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
+
+  private _script?: RenderSchedule.Script;
+
+  public override async parse(): Promise<boolean> {
+    try {
+      /// TODO!!!! add test schedule script code here
+      const now = Date.now();
+      const builder = new RenderSchedule.ScriptBuilder();
+      const modelTimeline = builder.addModelTimeline("0x20000000010"); // model Id
+      const elementTimeline = modelTimeline.addElementTimeline(["0x2000003abfc"]); // element Id
+      elementTimeline.addColor(now, new RgbColor(255, 0, 0));
+      elementTimeline.addColor(now + 3000, new RgbColor(0, 255, 0));
+      elementTimeline.addTransform(now, Transform.createIdentity());
+      // elementTimeline.addTransform(
+      //   now + 3000,
+      //   Transform.createTranslationXYZ(10, 0, 0)
+      // );
+      const scriptProps = builder.finish();
+      this._script = RenderSchedule.Script.fromJSON(scriptProps);
+    } catch (ex) {
+      if (ex instanceof Error)
+        alert(ex.toString());
+    }
+
+    return undefined !== this._script;
+  }
+
+  public override async execute(vp: Viewport): Promise<boolean> {
+    // vp.displayStyle.scheduleScript = this._script;
+    const wmtsLayer = MapLayerSettings.fromJSON({
+          name: "9th May 2025 (KCR2Estelle)",
+          formatId: "WMTS",
+          url: "https://webmap.services.propelleraero.com/wmts/site/pr00f04069/905f9302-c8b1-4f18-a7e4-582fa9231c9c/1.0.0/WMTSCapabilities.xml",
+          subLayers: [{id: 0, name: "ds81431552", visible: true}],
+        });
+        vp.view.displayStyle.attachMapLayer({settings: wmtsLayer, mapLayerIndex:{isOverlay: true, index: 0}});
+
     return true;
   }
 }
