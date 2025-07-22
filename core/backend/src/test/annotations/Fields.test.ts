@@ -171,6 +171,7 @@ interface TestElementProps extends PhysicalElementProps {
 
 class TestElement extends PhysicalElement {
   public static override get className() { return "TestElement"; }
+  declare public intProp: number;
 }
 
 class FieldsSchema extends Schema {
@@ -465,8 +466,39 @@ describe("Field evaluation", () => {
       expectNumRelationships(1);
     });
 
+    function expectText(expected: string, elemId: Id64String): void {
+      const elem = imodel.elements.getElement<TextAnnotation3d>(elemId);
+      const anno = elem.getAnnotation()!;
+      const actual = anno.textBlock.stringify();
+      expect(actual).to.equal(expected);
+    }
+
     it("updates fields when source element is modified", () => {
+      const sourceId = insertTestElement();
+
+      const field = FieldRun.create({
+        styleName: "style",
+        propertyHost: { elementId: sourceId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "intProp" },
+        cachedContent: "old value",
+      });
+
+      const block = TextBlock.create({ styleName: "style" });
+      block.appendRun(field);
       
+      const targetId = insertAnnotationElement(block);
+      expectText("old value", targetId);
+
+      ElementDrivesTextAnnotation.create(imodel, sourceId, targetId).insert();
+
+      const source = imodel.elements.getElement<TestElement>(sourceId);
+      source.setJsonProperty("test", { "prop": "value" });
+      source.update();
+      expectText(targetId, "100");
+
+      source.intProp = 50;
+      source.update();
+      expectText(targetId, "50");
     });
 
     it("updates fields when source element is deleted", () => {
