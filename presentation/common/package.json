@@ -97,13 +97,8 @@
     "cpx2": "^8.0.0",
     "cross-env": "^7.0.3",
     "deep-equal": "^1",
-<<<<<<< HEAD
-    "eslint": "^9.13.0",
-    "eslint-config-prettier": "^9.1.0",
-=======
     "eslint": "^9.31.0",
     "eslint-config-prettier": "^9.1.2",
->>>>>>> f143f8d082 (bump eslint-config-prettier versions CVE-2025-54313 (#8346))
     "internal-tools": "workspace:*",
     "mocha": "^11.1.0",
     "prettier": "^3.2.5",
