@@ -79,7 +79,7 @@ importers:
         version: link:../ecsql/common
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@opentelemetry/api':
         specifier: 1.0.4
         version: 1.0.4
@@ -129,8 +129,8 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
@@ -175,7 +175,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@opentelemetry/api':
         specifier: 1.0.4
         version: 1.0.4
@@ -186,8 +186,8 @@ importers:
         specifier: ^3.0.6
         version: 3.0.6(@vitest/browser@3.0.6)(vitest@3.0.6)
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -218,7 +218,7 @@ importers:
         version: link:../geometry
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/object-storage-core':
         specifier: ^2.3.0
         version: 2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)
@@ -235,8 +235,8 @@ importers:
         specifier: ^3.0.6
         version: 3.0.6(@vitest/browser@3.0.6)(vitest@3.0.6)
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       nyc:
         specifier: ^17.1.0
         version: 17.1.0
@@ -272,7 +272,7 @@ importers:
         version: link:../ecschema-metadata
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/benchmark':
         specifier: ^2.1.0
         version: 2.1.0
@@ -307,8 +307,8 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -393,7 +393,7 @@ importers:
         version: link:../ecschema-metadata
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -425,8 +425,8 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -477,7 +477,7 @@ importers:
         version: link:../quantity
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/benchmark':
         specifier: ^2.1.0
         version: 2.1.0
@@ -512,8 +512,8 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -549,10 +549,10 @@ importers:
         version: link:../../ecschema-metadata
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -585,10 +585,10 @@ importers:
         version: link:../common
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -607,7 +607,7 @@ importers:
         version: link:../../../tools/build
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -618,8 +618,8 @@ importers:
         specifier: ^4.3.10
         version: 4.3.10
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -665,7 +665,7 @@ importers:
         version: link:../frontend
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -685,8 +685,8 @@ importers:
         specifier: ^36.2.1
         version: 36.2.1
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       glob:
         specifier: ^10.3.12
         version: 10.3.12
@@ -729,7 +729,7 @@ importers:
         version: link:../common
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/body-parser':
         specifier: ^1.17.0
         version: 1.17.0
@@ -758,8 +758,8 @@ importers:
         specifier: ^4.3.10
         version: 4.3.10
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -793,10 +793,10 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -860,7 +860,7 @@ importers:
         version: link:../ecschema-rpc/common
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai-as-promised':
         specifier: ^7
         version: 7.1.0
@@ -874,8 +874,8 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       glob:
         specifier: ^10.3.12
         version: 10.3.12
@@ -930,7 +930,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/file-saver':
         specifier: ^2.0.1
         version: 2.0.1
@@ -938,8 +938,8 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -961,7 +961,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/flatbuffers':
         specifier: ~1.10.0
         version: 1.10.0
@@ -972,8 +972,8 @@ importers:
         specifier: ^3.0.6
         version: 3.0.6(@vitest/browser@3.0.6)(vitest@3.0.6)
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -1010,7 +1010,7 @@ importers:
         version: link:../geometry
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1030,8 +1030,8 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       glob:
         specifier: ^10.3.12
         version: 10.3.12
@@ -1080,7 +1080,7 @@ importers:
         version: link:../common
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1106,8 +1106,8 @@ importers:
         specifier: ^4.3.10
         version: 4.3.10
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       glob:
         specifier: ^10.3.12
         version: 10.3.12
@@ -1153,7 +1153,7 @@ importers:
         version: link:../geometry
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1173,8 +1173,8 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       glob:
         specifier: ^10.3.12
         version: 10.3.12
@@ -1226,7 +1226,7 @@ importers:
         version: link:../frontend
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1261,8 +1261,8 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -1283,7 +1283,7 @@ importers:
         version: link:../bentley
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1303,8 +1303,8 @@ importers:
         specifier: ^2.6.9
         version: 2.6.9
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -1328,7 +1328,7 @@ importers:
         version: link:../bentley
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/glob':
         specifier: ^5.0.35
         version: 5.0.35
@@ -1336,8 +1336,8 @@ importers:
         specifier: ^3.0.6
         version: 3.0.6(@vitest/browser@3.0.6)(vitest@3.0.6)
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -1362,7 +1362,7 @@ importers:
         version: link:../../tools/certa
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1379,8 +1379,8 @@ importers:
         specifier: ^4.3.10
         version: 4.3.10
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       glob:
         specifier: ^10.3.12
         version: 10.3.12
@@ -1416,7 +1416,7 @@ importers:
         version: link:../../../core/common
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1436,8 +1436,8 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -1470,7 +1470,7 @@ importers:
         version: link:../../../core/common
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/linear-referencing-common':
         specifier: workspace:*
         version: link:../common
@@ -1490,8 +1490,8 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -1518,10 +1518,10 @@ importers:
         version: link:../../../core/common
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -1551,7 +1551,7 @@ importers:
         version: link:../../../core/common
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1565,8 +1565,8 @@ importers:
         specifier: ^4.3.10
         version: 4.3.10
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -1603,10 +1603,10 @@ importers:
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -1630,7 +1630,7 @@ importers:
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1641,8 +1641,8 @@ importers:
         specifier: ^4.3.10
         version: 4.3.10
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -1682,13 +1682,13 @@ importers:
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       cpx2:
         specifier: ^8.0.0
         version: 8.0.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -1725,7 +1725,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/oidc-signin-tool':
         specifier: ^4.4.1
         version: 4.4.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
@@ -1745,8 +1745,8 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -1831,7 +1831,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/oidc-signin-tool':
         specifier: ^4.4.1
         version: 4.4.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
@@ -1860,8 +1860,8 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       mkdirp:
         specifier: ^1.0.4
         version: 1.0.4
@@ -1900,7 +1900,7 @@ importers:
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1929,8 +1929,8 @@ importers:
         specifier: ^7.1.1
         version: 7.1.1(chai@4.3.10)
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       glob:
         specifier: ^10.3.12
         version: 10.3.12
@@ -1972,7 +1972,7 @@ importers:
         version: link:../../core/frontend
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1989,8 +1989,8 @@ importers:
         specifier: ^4.3.10
         version: 4.3.10
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       fetch-mock:
         specifier: ~11.1.3
         version: 11.1.3
@@ -2048,7 +2048,7 @@ importers:
         version: link:../../core/geometry
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -2083,8 +2083,8 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       fetch-mock:
         specifier: ~11.1.3
         version: 11.1.3
@@ -2130,13 +2130,13 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       esbuild:
         specifier: ^0.13.8
         version: 0.13.8
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -2249,8 +2249,8 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       fs-extra:
         specifier: ^8.1.0
         version: 8.1.0
@@ -2272,7 +2272,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -2408,7 +2408,7 @@ importers:
         version: link:../../tools/certa
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/itwins-client':
         specifier: ^1.6.1
         version: 1.6.1
@@ -2461,8 +2461,8 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       glob:
         specifier: ^10.3.12
         version: 10.3.12
@@ -2589,7 +2589,7 @@ importers:
         version: link:../../core/backend
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/express-server':
         specifier: workspace:*
         version: link:../../core/express-server
@@ -2618,8 +2618,8 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       glob:
         specifier: ^10.3.12
         version: 10.3.12
@@ -2691,7 +2691,7 @@ importers:
         version: link:../../core/ecschema-rpc/impl
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/presentation-backend':
         specifier: workspace:*
         version: link:../../presentation/backend
@@ -2768,11 +2768,11 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       eslint-config-prettier:
-        specifier: ^9.1.0
-        version: 9.1.0(eslint@9.13.0)
+        specifier: ^9.1.2
+        version: 9.1.2(eslint@9.31.0)
       fast-sort:
         specifier: ^3.0.2
         version: 3.0.2
@@ -2860,7 +2860,7 @@ importers:
         version: link:../../tools/certa
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -2892,8 +2892,8 @@ importers:
         specifier: ^4.3.10
         version: 4.3.10
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       glob:
         specifier: ^10.3.12
         version: 10.3.12
@@ -2944,7 +2944,7 @@ importers:
         version: link:../../core/quantity
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/imodels-access-backend':
         specifier: ^5.2.1
         version: 5.2.1(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(inversify@6.0.1)(reflect-metadata@0.1.13)
@@ -3025,8 +3025,8 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       glob:
         specifier: ^10.3.12
         version: 10.3.12
@@ -3099,7 +3099,7 @@ importers:
         version: link:../../core/ecschema-metadata
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/presentation-common':
         specifier: workspace:*
         version: link:../common
@@ -3170,11 +3170,11 @@ importers:
         specifier: ^1
         version: 1.0.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       eslint-config-prettier:
-        specifier: ^9.1.0
-        version: 9.1.0(eslint@9.13.0)
+        specifier: ^9.1.2
+        version: 9.1.2(eslint@9.31.0)
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
@@ -3223,7 +3223,7 @@ importers:
         version: link:../../core/ecschema-metadata
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -3276,11 +3276,11 @@ importers:
         specifier: ^1
         version: 1.0.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       eslint-config-prettier:
-        specifier: ^9.1.0
-        version: 9.1.0(eslint@9.13.0)
+        specifier: ^9.1.2
+        version: 9.1.2(eslint@9.31.0)
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
@@ -3347,7 +3347,7 @@ importers:
         version: link:../../core/ecschema-metadata
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/presentation-common':
         specifier: workspace:*
         version: link:../common
@@ -3400,11 +3400,11 @@ importers:
         specifier: ^1
         version: 1.0.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       eslint-config-prettier:
-        specifier: ^9.1.0
-        version: 9.1.0(eslint@9.13.0)
+        specifier: ^9.1.2
+        version: 9.1.2(eslint@9.31.0)
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
@@ -3501,7 +3501,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/perf-tools':
         specifier: workspace:*
         version: link:../../tools/perf-tools
@@ -3516,7 +3516,7 @@ importers:
         version: 20.17.0
       '@typescript-eslint/parser':
         specifier: ~8.11.0
-        version: 8.11.0(eslint@9.13.0)(typescript@5.6.2)
+        version: 8.11.0(eslint@9.31.0)(typescript@5.6.2)
       browserslist-to-esbuild:
         specifier: ^1.2.0
         version: 1.2.0
@@ -3542,8 +3542,8 @@ importers:
         specifier: ^36.2.1
         version: 36.2.1
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       express:
         specifier: ^4.21.2
         version: 4.21.2
@@ -3712,7 +3712,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/express':
         specifier: ^4.17.20
         version: 4.17.20
@@ -3727,7 +3727,7 @@ importers:
         version: 20.17.0
       '@typescript-eslint/parser':
         specifier: ~8.11.0
-        version: 8.11.0(eslint@9.13.0)(typescript@5.6.2)
+        version: 8.11.0(eslint@9.31.0)(typescript@5.6.2)
       browserslist-to-esbuild:
         specifier: ^1.2.0
         version: 1.2.0
@@ -3750,8 +3750,8 @@ importers:
         specifier: ^36.2.1
         version: 36.2.1
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       express:
         specifier: ^4.21.2
         version: 4.21.2
@@ -3830,7 +3830,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.0
@@ -3838,8 +3838,8 @@ importers:
         specifier: 17.0.19
         version: 17.0.19
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -3873,7 +3873,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -3887,8 +3887,8 @@ importers:
         specifier: 17.0.19
         version: 17.0.19
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -3925,7 +3925,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/fs-extra':
         specifier: ^4.0.7
         version: 4.0.7
@@ -3939,8 +3939,8 @@ importers:
         specifier: 17.0.19
         version: 17.0.19
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -3974,7 +3974,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/fs-extra':
         specifier: ^4.0.7
         version: 4.0.7
@@ -3985,8 +3985,8 @@ importers:
         specifier: 17.0.19
         version: 17.0.19
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -4020,7 +4020,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/fs-extra':
         specifier: ^4.0.7
         version: 4.0.7
@@ -4034,8 +4034,8 @@ importers:
         specifier: 17.0.19
         version: 17.0.19
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -4093,13 +4093,13 @@ importers:
     devDependencies:
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
 
   ../../tools/certa:
     dependencies:
@@ -4136,7 +4136,7 @@ importers:
         version: link:../build
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -4162,8 +4162,8 @@ importers:
         specifier: ^36.2.1
         version: 36.2.1
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       nyc:
         specifier: ^17.1.0
         version: 17.1.0
@@ -4215,7 +4215,7 @@ importers:
         version: link:../build
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -4238,8 +4238,8 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -4283,13 +4283,13 @@ importers:
         version: link:../build
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/fs-extra':
         specifier: ^4.0.7
         version: 4.0.7
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -4310,7 +4310,7 @@ importers:
         version: link:../../core/bentley
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -4336,8 +4336,8 @@ importers:
         specifier: ^8.0.0
         version: 8.0.0
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       glob:
         specifier: ^10.3.12
         version: 10.3.12
@@ -4389,7 +4389,7 @@ importers:
         version: link:../../tools/build
       '@itwin/eslint-plugin':
         specifier: 5.0.0-dev.1
-        version: 5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)
+        version: 5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -4403,8 +4403,8 @@ importers:
         specifier: 17.0.19
         version: 17.0.19
       eslint:
-        specifier: ^9.13.0
-        version: 9.13.0
+        specifier: ^9.31.0
+        version: 9.31.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -5063,32 +5063,32 @@ packages:
     resolution: {integrity: sha512-CCZCDJuduB9OUkFkY2IgppNZMi2lBQgD2qzwXkEia16cge2pijY/aXi96CJMquDMn3nJdlPV1A5KrJEXwfLNzQ==}
     engines: {node: ^12.0.0 || ^14.0.0 || >=16.0.0}
 
-  '@eslint/config-array@0.18.0':
-    resolution: {integrity: sha512-fTxvnS1sRMu3+JjXwJG0j/i4RT9u4qJ+lqS/yCGap4lH4zZGzQ7tu+xZqQmcMZq5OBZDL4QRxQzRjkWcGt8IVw==}
+  '@eslint/config-array@0.21.0':
+    resolution: {integrity: sha512-ENIdc4iLu0d93HeYirvKmrzshzofPw6VkZRKQGe9Nv46ZnWUzcF1xV01dcvEg/1wXUR61OmmlSfyeyO7EvjLxQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@eslint/core@0.12.0':
-    resolution: {integrity: sha512-cmrR6pytBuSMTaBweKoGMwu3EiHiEC+DoyupPmlZ0HxBJBtIxwe+j/E4XPIKNx+Q74c8lXKPwYawBf5glsTkHg==}
+  '@eslint/config-helpers@0.3.0':
+    resolution: {integrity: sha512-ViuymvFmcJi04qdZeDc2whTHryouGcDlaxPqarTD0ZE10ISpxGUVZGZDx4w01upyIynL3iu6IXH2bS1NhclQMw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@eslint/core@0.7.0':
-    resolution: {integrity: sha512-xp5Jirz5DyPYlPiKat8jaq0EmYvDXKKpzTbxXMpT9eqlRJkRKIz9AGMdlvYjih+im+QlhWrpvVjl8IPC/lHlUw==}
+  '@eslint/core@0.15.1':
+    resolution: {integrity: sha512-bkOp+iumZCCbt1K1CmWf0R9pM5yKpDv+ZXtvSyQpudrI9kuFLp+bM2WOPXImuD/ceQuaa8f5pj93Y7zyECIGNA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@eslint/eslintrc@3.3.0':
-    resolution: {integrity: sha512-yaVPAiNAalnCZedKLdR21GOGILMLKPyqSLWaAjQFvYA2i/ciDi8ArYVr69Anohb6cH2Ukhqti4aFnYyPm8wdwQ==}
+  '@eslint/eslintrc@3.3.1':
+    resolution: {integrity: sha512-gtF186CXhIl1p4pJNGZw8Yc6RlshoePRvE0X91oPGb3vZ8pM3qOS9W9NGPat9LziaBV7XrJWGylNQXkGcnM3IQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@eslint/js@9.13.0':
-    resolution: {integrity: sha512-IFLyoY4d72Z5y/6o/BazFBezupzI/taV8sGumxTAVw3lXG9A6md1Dc34T9s1FoD/an9pJH8RHbAxsaEbBed9lA==}
+  '@eslint/js@9.31.0':
+    resolution: {integrity: sha512-LOm5OVt7D4qiKCqoiPbA7LWmI+tbw1VbTUowBcUMgQSuM6poJufkFkYDcQpo5KfgD39TnNySV26QjOh7VFpSyw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@eslint/object-schema@2.1.6':
     resolution: {integrity: sha512-RBMg5FRL0I0gs51M/guSAj5/e14VQ4tpZnQNWwuDT66P14I43ItmPfIZRhO9fUVIPOAQXU47atlywZ/czoqFPA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@eslint/plugin-kit@0.2.7':
-    resolution: {integrity: sha512-JubJ5B2pJ4k4yGxaNLdbjrnk9d/iDz6/q8wOilpIowd6PJPgaxCuHBnBszq7Ce2TyMrywm5r4PnKm6V3iiZF+g==}
+  '@eslint/plugin-kit@0.3.4':
+    resolution: {integrity: sha512-Ul5l+lHEcw3L5+k8POx6r74mxEYKG5kOb6Xpy2gCRW6zweT6TEhAf8vhxGgjhqrd/VO/Dirhsb+1hNpD1ue9hw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@humanfs/core@0.19.1':
@@ -5105,6 +5105,10 @@ packages:
 
   '@humanwhocodes/retry@0.3.1':
     resolution: {integrity: sha512-JBxkERygn7Bv/GbN5Rv8Ul6LVknS+5Bp6RgDC/O8gEBU/yeH5Ui5C/OlWrTb6qct7LjjfT6Re2NxB0ln0yYybA==}
+    engines: {node: '>=18.18'}
+
+  '@humanwhocodes/retry@0.4.3':
+    resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
 
   '@inquirer/confirm@5.1.7':
@@ -6148,6 +6152,11 @@ packages:
 
   acorn@8.14.1:
     resolution: {integrity: sha512-OvQ/2pUDKmgfCg++xsTX1wGxfTaszcHVcTctW4UJB4hibJx2HXxxO5UmVgyjMa+ZDsiaf5wWLXYpRWMmBI0QHg==}
+    engines: {node: '>=0.4.0'}
+    hasBin: true
+
+  acorn@8.15.0:
+    resolution: {integrity: sha512-NZyJarBfL7nWwIq+FDL6Zp/yHEhePMNnnJ0y3qfieCrmNvYct8uvtiV41UvlSe6apAfk0fY1FbWx+NwfmpvtTg==}
     engines: {node: '>=0.4.0'}
     hasBin: true
 
@@ -7214,8 +7223,8 @@ packages:
     resolution: {integrity: sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==}
     engines: {node: '>=10'}
 
-  eslint-config-prettier@9.1.0:
-    resolution: {integrity: sha512-NSWl5BFQWEPi1j4TjVNItzYV7dZXZ+wP6I6ZhrBGpChQhZRUaElihE9uRRkcbRnNb76UMKDF3r+WTmNcGPKsqw==}
+  eslint-config-prettier@9.1.2:
+    resolution: {integrity: sha512-iI1f+D2ViGn+uvv5HuHVUamg8ll4tN+JRHGc6IJi4TP9Kl976C57fzPXgseXNs8v0iA8aSJpHsTWjDb9QJamGQ==}
     hasBin: true
     peerDependencies:
       eslint: '>=7.0.0'
@@ -7279,8 +7288,8 @@ packages:
     resolution: {integrity: sha512-2NxwbF/hZ0KpepYN0cNbo+FN6XoK7GaHlQhgx/hIZl6Va0bF45RQOOwhLIy8lQDbuCiadSLCBnH2CFYquit5bw==}
     engines: {node: '>=8.0.0'}
 
-  eslint-scope@8.3.0:
-    resolution: {integrity: sha512-pUNxi75F8MJ/GdeKtVLSbYg4ZI34J6C0C7sbL4YOp2exGwen7ZsuBqKzUhXd0qMQ362yET3z+uPwKeg/0C2XCQ==}
+  eslint-scope@8.4.0:
+    resolution: {integrity: sha512-sNXOfKCn74rt8RICKMvJS7XKV/Xk9kA7DyJr8mJik3S7Cwgy3qlkkmyS2uQB3jiJg6VNdZd/pDBJu0nvG2NlTg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   eslint-visitor-keys@3.4.3:
@@ -7291,8 +7300,12 @@ packages:
     resolution: {integrity: sha512-UyLnSehNt62FFhSwjZlHmeokpRK59rcz29j+F1/aDgbkbRTk7wIc9XzdoasMUbRNKDM0qQt/+BJ4BrpFeABemw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  eslint@9.13.0:
-    resolution: {integrity: sha512-EYZK6SX6zjFHST/HRytOdA/zE72Cq/bfw45LSyuwrdvcclb/gqV8RRQxywOBEWO2+WDpva6UZa4CcDeJKzUCFA==}
+  eslint-visitor-keys@4.2.1:
+    resolution: {integrity: sha512-Uhdk5sfqcee/9H/rCOJikYz67o0a2Tw2hGRPOG2Y1R2dg7brRe1uG0yaNQDHu+TO/uQPF/5eCapvYSmHUjt7JQ==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  eslint@9.31.0:
+    resolution: {integrity: sha512-QldCVh/ztyKJJZLr4jXNUByx3gR+TDYZCRXEktiZoUR3PGy4qCmSbkxcIle8GEwGpb5JBZazlaJ/CxLidXdEbQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     hasBin: true
     peerDependencies:
@@ -7303,6 +7316,10 @@ packages:
 
   espree@10.3.0:
     resolution: {integrity: sha512-0QYC8b24HWY8zjRnDTL6RiHfDbAWn63qb4LMj1Z4b076A4une81+z03Kg7l7mn/48PUTqoLptSXez8oknU8Clg==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  espree@10.4.0:
+    resolution: {integrity: sha512-j6PAQ2uUr79PZhBjP5C5fhl8e39FmRnOjsD5lGnWrFU8i2G776tBK7+nP8KuQUTTyAZUwfQqXAgrVH5MbH9CYQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   esprima@4.0.1:
@@ -9856,9 +9873,6 @@ packages:
   text-hex@1.0.0:
     resolution: {integrity: sha512-uuVGNWzgJ4yhRaNSiubPY7OjISw4sw4E5Uv0wbjp+OzcbmVU/rsT8ujgcXJhn9ypzsgr5vlzpPqP+MBBKcGvbg==}
 
-  text-table@0.2.0:
-    resolution: {integrity: sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==}
-
   tiny-inflate@1.0.3:
     resolution: {integrity: sha512-pkY1fj1cKHb2seWDy0B16HeWyczlJA9/WW3u3c4z/NiWDsO3DOU5D7nhTLE9CF0yXv/QZFY7sEJmj24dK+Rrqw==}
 
@@ -11183,14 +11197,14 @@ snapshots:
   '@esbuild/win32-x64@0.25.1':
     optional: true
 
-  '@eslint-community/eslint-utils@4.5.0(eslint@9.13.0)':
+  '@eslint-community/eslint-utils@4.5.0(eslint@9.31.0)':
     dependencies:
-      eslint: 9.13.0
+      eslint: 9.31.0
       eslint-visitor-keys: 3.4.3
 
   '@eslint-community/regexpp@4.12.1': {}
 
-  '@eslint/config-array@0.18.0':
+  '@eslint/config-array@0.21.0':
     dependencies:
       '@eslint/object-schema': 2.1.6
       debug: 4.4.0(supports-color@8.1.1)
@@ -11198,17 +11212,17 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@eslint/core@0.12.0':
+  '@eslint/config-helpers@0.3.0': {}
+
+  '@eslint/core@0.15.1':
     dependencies:
       '@types/json-schema': 7.0.15
 
-  '@eslint/core@0.7.0': {}
-
-  '@eslint/eslintrc@3.3.0':
+  '@eslint/eslintrc@3.3.1':
     dependencies:
       ajv: 6.12.6
       debug: 4.4.0(supports-color@8.1.1)
-      espree: 10.3.0
+      espree: 10.4.0
       globals: 14.0.0
       ignore: 5.3.2
       import-fresh: 3.3.1
@@ -11218,13 +11232,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@eslint/js@9.13.0': {}
+  '@eslint/js@9.31.0': {}
 
   '@eslint/object-schema@2.1.6': {}
 
-  '@eslint/plugin-kit@0.2.7':
+  '@eslint/plugin-kit@0.3.4':
     dependencies:
-      '@eslint/core': 0.12.0
+      '@eslint/core': 0.15.1
       levn: 0.4.1
 
   '@humanfs/core@0.19.1': {}
@@ -11237,6 +11251,8 @@ snapshots:
   '@humanwhocodes/module-importer@1.0.1': {}
 
   '@humanwhocodes/retry@0.3.1': {}
+
+  '@humanwhocodes/retry@0.4.3': {}
 
   '@inquirer/confirm@5.1.7(@types/node@20.17.0)':
     dependencies:
@@ -11339,19 +11355,19 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  '@itwin/eslint-plugin@5.0.0-dev.1(eslint@9.13.0)(typescript@5.6.2)':
+  '@itwin/eslint-plugin@5.0.0-dev.1(eslint@9.31.0)(typescript@5.6.2)':
     dependencies:
-      '@typescript-eslint/eslint-plugin': 8.11.0(@typescript-eslint/parser@8.11.0(eslint@9.13.0)(typescript@5.6.2))(eslint@9.13.0)(typescript@5.6.2)
-      '@typescript-eslint/parser': 8.11.0(eslint@9.13.0)(typescript@5.6.2)
-      eslint: 9.13.0
+      '@typescript-eslint/eslint-plugin': 8.11.0(@typescript-eslint/parser@8.11.0(eslint@9.31.0)(typescript@5.6.2))(eslint@9.31.0)(typescript@5.6.2)
+      '@typescript-eslint/parser': 8.11.0(eslint@9.31.0)(typescript@5.6.2)
+      eslint: 9.31.0
       eslint-formatter-visualstudio: 8.40.0
-      eslint-plugin-import: 2.31.0(eslint@9.13.0)
+      eslint-plugin-import: 2.31.0(eslint@9.31.0)
       eslint-plugin-jam3: 0.2.3
-      eslint-plugin-jsdoc: 50.6.6(eslint@9.13.0)
-      eslint-plugin-jsx-a11y: 6.10.2(eslint@9.13.0)
-      eslint-plugin-prefer-arrow: 1.2.3(eslint@9.13.0)
-      eslint-plugin-react: 7.37.4(eslint@9.13.0)
-      eslint-plugin-react-hooks: 5.2.0(eslint@9.13.0)
+      eslint-plugin-jsdoc: 50.6.6(eslint@9.31.0)
+      eslint-plugin-jsx-a11y: 6.10.2(eslint@9.31.0)
+      eslint-plugin-prefer-arrow: 1.2.3(eslint@9.31.0)
+      eslint-plugin-react: 7.37.4(eslint@9.31.0)
+      eslint-plugin-react-hooks: 5.2.0(eslint@9.31.0)
       typescript: 5.6.2
       workspace-tools: 0.36.4
     transitivePeerDependencies:
@@ -12218,15 +12234,15 @@ snapshots:
       '@types/node': 20.17.24
     optional: true
 
-  '@typescript-eslint/eslint-plugin@8.11.0(@typescript-eslint/parser@8.11.0(eslint@9.13.0)(typescript@5.6.2))(eslint@9.13.0)(typescript@5.6.2)':
+  '@typescript-eslint/eslint-plugin@8.11.0(@typescript-eslint/parser@8.11.0(eslint@9.31.0)(typescript@5.6.2))(eslint@9.31.0)(typescript@5.6.2)':
     dependencies:
       '@eslint-community/regexpp': 4.12.1
-      '@typescript-eslint/parser': 8.11.0(eslint@9.13.0)(typescript@5.6.2)
+      '@typescript-eslint/parser': 8.11.0(eslint@9.31.0)(typescript@5.6.2)
       '@typescript-eslint/scope-manager': 8.11.0
-      '@typescript-eslint/type-utils': 8.11.0(eslint@9.13.0)(typescript@5.6.2)
-      '@typescript-eslint/utils': 8.11.0(eslint@9.13.0)(typescript@5.6.2)
+      '@typescript-eslint/type-utils': 8.11.0(eslint@9.31.0)(typescript@5.6.2)
+      '@typescript-eslint/utils': 8.11.0(eslint@9.31.0)(typescript@5.6.2)
       '@typescript-eslint/visitor-keys': 8.11.0
-      eslint: 9.13.0
+      eslint: 9.31.0
       graphemer: 1.4.0
       ignore: 5.3.2
       natural-compare: 1.4.0
@@ -12236,14 +12252,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/parser@8.11.0(eslint@9.13.0)(typescript@5.6.2)':
+  '@typescript-eslint/parser@8.11.0(eslint@9.31.0)(typescript@5.6.2)':
     dependencies:
       '@typescript-eslint/scope-manager': 8.11.0
       '@typescript-eslint/types': 8.11.0
       '@typescript-eslint/typescript-estree': 8.11.0(typescript@5.6.2)
       '@typescript-eslint/visitor-keys': 8.11.0
       debug: 4.4.0(supports-color@8.1.1)
-      eslint: 9.13.0
+      eslint: 9.31.0
     optionalDependencies:
       typescript: 5.6.2
     transitivePeerDependencies:
@@ -12254,10 +12270,10 @@ snapshots:
       '@typescript-eslint/types': 8.11.0
       '@typescript-eslint/visitor-keys': 8.11.0
 
-  '@typescript-eslint/type-utils@8.11.0(eslint@9.13.0)(typescript@5.6.2)':
+  '@typescript-eslint/type-utils@8.11.0(eslint@9.31.0)(typescript@5.6.2)':
     dependencies:
       '@typescript-eslint/typescript-estree': 8.11.0(typescript@5.6.2)
-      '@typescript-eslint/utils': 8.11.0(eslint@9.13.0)(typescript@5.6.2)
+      '@typescript-eslint/utils': 8.11.0(eslint@9.31.0)(typescript@5.6.2)
       debug: 4.4.0(supports-color@8.1.1)
       ts-api-utils: 1.4.3(typescript@5.6.2)
     optionalDependencies:
@@ -12283,13 +12299,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/utils@8.11.0(eslint@9.13.0)(typescript@5.6.2)':
+  '@typescript-eslint/utils@8.11.0(eslint@9.31.0)(typescript@5.6.2)':
     dependencies:
-      '@eslint-community/eslint-utils': 4.5.0(eslint@9.13.0)
+      '@eslint-community/eslint-utils': 4.5.0(eslint@9.31.0)
       '@typescript-eslint/scope-manager': 8.11.0
       '@typescript-eslint/types': 8.11.0
       '@typescript-eslint/typescript-estree': 8.11.0(typescript@5.6.2)
-      eslint: 9.13.0
+      eslint: 9.31.0
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -12536,11 +12552,17 @@ snapshots:
     dependencies:
       acorn: 8.14.1
 
+  acorn-jsx@5.3.2(acorn@8.15.0):
+    dependencies:
+      acorn: 8.15.0
+
   acorn-walk@8.3.4:
     dependencies:
       acorn: 8.14.1
 
   acorn@8.14.1: {}
+
+  acorn@8.15.0: {}
 
   address@1.2.2: {}
 
@@ -13775,9 +13797,9 @@ snapshots:
 
   escape-string-regexp@4.0.0: {}
 
-  eslint-config-prettier@9.1.0(eslint@9.13.0):
+  eslint-config-prettier@9.1.2(eslint@9.31.0):
     dependencies:
-      eslint: 9.13.0
+      eslint: 9.31.0
 
   eslint-formatter-visualstudio@8.40.0: {}
 
@@ -13787,13 +13809,13 @@ snapshots:
       is-core-module: 2.16.1
       resolve: 1.22.10
 
-  eslint-module-utils@2.12.0(eslint@9.13.0):
+  eslint-module-utils@2.12.0(eslint@9.31.0):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
-      eslint: 9.13.0
+      eslint: 9.31.0
 
-  eslint-plugin-import@2.31.0(eslint@9.13.0):
+  eslint-plugin-import@2.31.0(eslint@9.31.0):
     dependencies:
       '@rtsao/scc': 1.1.0
       array-includes: 3.1.8
@@ -13802,9 +13824,9 @@ snapshots:
       array.prototype.flatmap: 1.3.3
       debug: 3.2.7
       doctrine: 2.1.0
-      eslint: 9.13.0
+      eslint: 9.31.0
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(eslint@9.13.0)
+      eslint-module-utils: 2.12.0(eslint@9.31.0)
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
@@ -13822,14 +13844,14 @@ snapshots:
       has: 1.0.4
       requireindex: 1.1.0
 
-  eslint-plugin-jsdoc@50.6.6(eslint@9.13.0):
+  eslint-plugin-jsdoc@50.6.6(eslint@9.31.0):
     dependencies:
       '@es-joy/jsdoccomment': 0.49.0
       are-docs-informative: 0.0.2
       comment-parser: 1.4.1
       debug: 4.4.0(supports-color@8.1.1)
       escape-string-regexp: 4.0.0
-      eslint: 9.13.0
+      eslint: 9.31.0
       espree: 10.3.0
       esquery: 1.6.0
       parse-imports: 2.2.1
@@ -13839,7 +13861,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-jsx-a11y@6.10.2(eslint@9.13.0):
+  eslint-plugin-jsx-a11y@6.10.2(eslint@9.31.0):
     dependencies:
       aria-query: 5.3.2
       array-includes: 3.1.8
@@ -13849,7 +13871,7 @@ snapshots:
       axobject-query: 4.1.0
       damerau-levenshtein: 1.0.8
       emoji-regex: 9.2.2
-      eslint: 9.13.0
+      eslint: 9.31.0
       hasown: 2.0.2
       jsx-ast-utils: 3.3.5
       language-tags: 1.0.9
@@ -13858,15 +13880,15 @@ snapshots:
       safe-regex-test: 1.1.0
       string.prototype.includes: 2.0.1
 
-  eslint-plugin-prefer-arrow@1.2.3(eslint@9.13.0):
+  eslint-plugin-prefer-arrow@1.2.3(eslint@9.31.0):
     dependencies:
-      eslint: 9.13.0
+      eslint: 9.31.0
 
-  eslint-plugin-react-hooks@5.2.0(eslint@9.13.0):
+  eslint-plugin-react-hooks@5.2.0(eslint@9.31.0):
     dependencies:
-      eslint: 9.13.0
+      eslint: 9.31.0
 
-  eslint-plugin-react@7.37.4(eslint@9.13.0):
+  eslint-plugin-react@7.37.4(eslint@9.31.0):
     dependencies:
       array-includes: 3.1.8
       array.prototype.findlast: 1.2.5
@@ -13874,7 +13896,7 @@ snapshots:
       array.prototype.tosorted: 1.1.4
       doctrine: 2.1.0
       es-iterator-helpers: 1.2.1
-      eslint: 9.13.0
+      eslint: 9.31.0
       estraverse: 5.3.0
       hasown: 2.0.2
       jsx-ast-utils: 3.3.5
@@ -13893,7 +13915,7 @@ snapshots:
       esrecurse: 4.3.0
       estraverse: 4.3.0
 
-  eslint-scope@8.3.0:
+  eslint-scope@8.4.0:
     dependencies:
       esrecurse: 4.3.0
       estraverse: 5.3.0
@@ -13902,18 +13924,21 @@ snapshots:
 
   eslint-visitor-keys@4.2.0: {}
 
-  eslint@9.13.0:
+  eslint-visitor-keys@4.2.1: {}
+
+  eslint@9.31.0:
     dependencies:
-      '@eslint-community/eslint-utils': 4.5.0(eslint@9.13.0)
+      '@eslint-community/eslint-utils': 4.5.0(eslint@9.31.0)
       '@eslint-community/regexpp': 4.12.1
-      '@eslint/config-array': 0.18.0
-      '@eslint/core': 0.7.0
-      '@eslint/eslintrc': 3.3.0
-      '@eslint/js': 9.13.0
-      '@eslint/plugin-kit': 0.2.7
+      '@eslint/config-array': 0.21.0
+      '@eslint/config-helpers': 0.3.0
+      '@eslint/core': 0.15.1
+      '@eslint/eslintrc': 3.3.1
+      '@eslint/js': 9.31.0
+      '@eslint/plugin-kit': 0.3.4
       '@humanfs/node': 0.16.6
       '@humanwhocodes/module-importer': 1.0.1
-      '@humanwhocodes/retry': 0.3.1
+      '@humanwhocodes/retry': 0.4.3
       '@types/estree': 1.0.6
       '@types/json-schema': 7.0.15
       ajv: 6.12.6
@@ -13921,9 +13946,9 @@ snapshots:
       cross-spawn: 7.0.6
       debug: 4.4.0(supports-color@8.1.1)
       escape-string-regexp: 4.0.0
-      eslint-scope: 8.3.0
-      eslint-visitor-keys: 4.2.0
-      espree: 10.3.0
+      eslint-scope: 8.4.0
+      eslint-visitor-keys: 4.2.1
+      espree: 10.4.0
       esquery: 1.6.0
       esutils: 2.0.3
       fast-deep-equal: 3.1.3
@@ -13938,7 +13963,6 @@ snapshots:
       minimatch: 3.1.2
       natural-compare: 1.4.0
       optionator: 0.9.4
-      text-table: 0.2.0
     transitivePeerDependencies:
       - supports-color
 
@@ -13947,6 +13971,12 @@ snapshots:
       acorn: 8.14.1
       acorn-jsx: 5.3.2(acorn@8.14.1)
       eslint-visitor-keys: 4.2.0
+
+  espree@10.4.0:
+    dependencies:
+      acorn: 8.15.0
+      acorn-jsx: 5.3.2(acorn@8.15.0)
+      eslint-visitor-keys: 4.2.1
 
   esprima@4.0.1: {}
 
@@ -16766,8 +16796,6 @@ snapshots:
       minimatch: 9.0.5
 
   text-hex@1.0.0: {}
-
-  text-table@0.2.0: {}
 
   tiny-inflate@1.0.3: {}
 
