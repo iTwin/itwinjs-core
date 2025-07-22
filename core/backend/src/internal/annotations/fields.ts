@@ -5,29 +5,36 @@
 
 import { ECSqlValueType, FieldRun, RelationshipProps, TextBlock } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
-import { DbResult, Id64String, Logger } from "@itwin/core-bentley";
+import { assert, DbResult, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
 import { ITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { Entity } from "../../Entity";
-import { EntityClass, PrimitiveArrayProperty, Property } from "@itwin/ecschema-metadata";
+import { AnyClass, EntityClass, PrimitiveArrayProperty, Property, StructArrayProperty, StructProperty } from "@itwin/ecschema-metadata";
 import { ECSqlValue } from "../../ECSqlStatement";
 
 export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
 type FieldStructValue = { [key: string]: any };
-type FieldArrayValue = FieldPrimitiveValue[] | FieldStructValue[];
 type FieldValue = {
   primitive: FieldPrimitiveValue;
   struct?: never;
-  array?: never;
+  primitiveArray?: never;
+  structArray?: never;
 } | {
   primitive?: never;
   struct: FieldStructValue;
-  array?: never;
+  primitiveArray?: never;
+  structArray?: never;
 } | {
   primitive?: never;
   struct?: never;
-  array: FieldArrayValue;
+  primitiveArray: FieldPrimitiveValue[];
+  structArray?: never;
+} | {
+  primitive?: never;
+  struct?: never;
+  primitiveArray?: never;
+  structArray: FieldStructValue[];
 }
 
 export interface FieldPropertyMetadata {
@@ -48,11 +55,12 @@ export interface UpdateFieldsContext {
 
 function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | undefined {
   const host = field.propertyHost;
-  let ecClass = iModel.schemaContext.getSchemaItemSync(host.schemaName, host.className);
-  if (!EntityClass.isEntityClass(ecClass)) {
+  const schemaItem = iModel.schemaContext.getSchemaItemSync(host.schemaName, host.className);
+  if (!EntityClass.isEntityClass(schemaItem)) {
     return undefined;
   }
 
+  let ecClass: AnyClass = schemaItem;
   const { propertyName, accessors } = field.propertyPath;
   let ecProp = ecClass.getPropertySync(propertyName);
   if (!ecProp) {
@@ -91,15 +99,15 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
       case ECSqlValueType.String:
         return { primitive: rootValue.getString() };
       case ECSqlValueType.Struct: {
-        // ###TODO look up struct ECClass
+        assert(ecProp!.isStruct());
+        ecClass = ecProp.structClass;
         return { struct: rootValue.getStruct() };
       }
       case ECSqlValueType.PrimitiveArray: {
-        return { array: rootValue.getArray() };
+        return { primitiveArray: rootValue.getArray() };
       }
       case ECSqlValueType.StructArray: {
-        // ###TODO look up struct ECClass
-        return { array: rootValue.getArray() };
+        return { structArray: rootValue.getArray() };
       }
       // Unsupported:
       // case ECSqlValueType.Geometry:
@@ -122,36 +130,49 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
       }
 
       if (typeof accessor === "number") {
-        if (undefined === curValue.array || !ecProp.isArray()) {
+        const array: FieldPrimitiveValue[] | FieldStructValue[] | undefined = curValue.primitiveArray ?? curValue.structArray;
+        if (!array) {
           return undefined;
         }
 
-        const index: number = accessor < 0 ? (curValue.array.length + accessor) : accessor;
-        const item: FieldPrimitiveValue | FieldStructValue = curValue.array[index];
+        const index: number = accessor < 0 ? (array.length + accessor) : accessor;
+        const item: FieldPrimitiveValue | FieldStructValue = array[index];
         if (undefined === item) {
           return undefined;
-        } else if (ecProp instanceof PrimitiveArrayProperty) {
-          curValue = { primitive: item as FieldPrimitiveValue };
+        } else if (curValue.primitiveArray) {
+          curValue = { primitive: curValue.primitiveArray[index] };
         } else {
-          // ###TODO look up struct ECClass
-          return undefined;
+          assert(undefined !== curValue.structArray);
+          assert(ecProp instanceof StructArrayProperty);
+
+          ecClass = ecProp.structClass;
+          curValue = { struct: curValue.structArray[index] };
         }
       } else {
-        if (undefined === curValue.struct || !ecProp.isStruct()) {
+        if (undefined === curValue.struct) {
           return undefined;
         }
 
-        const item = curValue.struct[accessor];
+        const item: any = curValue.struct[accessor];
         if (undefined === item) {
           return undefined;
         }
 
-        // ###TODO look up the property in the struct by name, determine if it's primitive.
-        // If it isn't, look up struct ECClass
-      }
-      
-      if (curValue === undefined) {
-        return undefined;
+        ecProp = ecClass.getPropertySync(accessor);
+        if (!ecProp) {
+          return undefined;
+        }
+
+        if (ecProp.isArray()) {
+          curValue = ecProp.isStruct() ? { structArray: item } : { primitiveArray: item };
+        } else if (ecProp.isStruct()) {
+          ecClass = ecProp.structClass;
+          curValue = { struct: item };
+        } else if (ecProp.isPrimitive()) {
+          curValue = { primitive: item };
+        } else {
+          return undefined;
+        }
       }
     }
   }
