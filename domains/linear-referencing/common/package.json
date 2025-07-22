@@ -40,7 +40,7 @@
   ],
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.1",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "eslint": "^9.31.0",

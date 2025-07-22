@@ -42,7 +42,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.1",
     "@itwin/ecschema-metadata": "workspace:*",
     "@types/benchmark": "^2.1.0",
     "@types/chai": "4.3.1",

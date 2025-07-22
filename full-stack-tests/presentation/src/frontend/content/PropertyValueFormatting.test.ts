@@ -100,6 +100,7 @@ describeContentTestSuite("Property value formatting", ({ getDefaultSuiteIModel }
       expect(await getAreaDisplayValue("usSurvey", defaultFormats)).to.eq("0.018 yrd² (US Survey)");
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     async function getAreaDisplayValue(unitSystem: UnitSystemKey, defaultFormats?: FormatsMap): Promise<DisplayValue> {
       const content = await getContent(await getDefaultSuiteIModel(), key, unitSystem, defaultFormats);
       return getDisplayValue(content, [getFieldByLabel(content.descriptor.fields, "area"), getFieldByLabel(content.descriptor.fields, "cm2")]);
@@ -108,7 +109,7 @@ describeContentTestSuite("Property value formatting", ({ getDefaultSuiteIModel }
 
   describe("of properties in different places of content", () => {
     it("formats direct properties", async function () {
-      let elementKey!: InstanceKey;
+      let elementKey!: InstanceKey; 
       const imodel = await buildTestIModelConnection(this.test!.title, async (db) => {
         const schema = importSchema(
           this,
@@ -294,6 +295,7 @@ describeContentTestSuite("Property value formatting", ({ getDefaultSuiteIModel }
     });
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   async function getContent(imodel: IModelConnection, key: InstanceKey, unitSystem?: UnitSystemKey, defaultFormats?: FormatsMap): Promise<Content> {
     const keys = new KeySet([key]);
     const props: PresentationManagerProps = {
