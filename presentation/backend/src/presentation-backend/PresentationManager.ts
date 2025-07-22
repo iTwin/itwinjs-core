@@ -289,6 +289,7 @@ export interface PresentationManagerProps {
    * A map of default unit formats to use for formatting properties that don't have a presentation format
    * in requested unit system.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   defaultFormats?: FormatsMap;
 
   /**
@@ -518,6 +519,7 @@ export class PresentationManager {
     });
 
     if (!requestOptions.omitFormattedValues && this.props.schemaContextProvider !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const koqPropertyFormatter = new KoqPropertyValueFormatter(this.props.schemaContextProvider(requestOptions.imodel), this.props.defaultFormats);
       const formatter = new ContentFormatter(
         new ContentPropertyValueFormatter(koqPropertyFormatter),
@@ -547,6 +549,7 @@ export class PresentationManager {
     }
 
     if (!requestOptions.omitFormattedValues && this.props.schemaContextProvider !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const koqPropertyFormatter = new KoqPropertyValueFormatter(this.props.schemaContextProvider(requestOptions.imodel), this.props.defaultFormats);
       const formatter = new ContentFormatter(
         new ContentPropertyValueFormatter(koqPropertyFormatter),

@@ -184,6 +184,7 @@ export interface PresentationManagerProps {
    *
    * @note Only has effect when frontend value formatting is enabled by supplying the `schemaContextProvider` prop.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   defaultFormats?: FormatsMap;
 }
 
@@ -207,6 +208,7 @@ export class PresentationManager implements Disposable {
   private _rulesetVars: Map<string, RulesetVariablesManager>;
   private _clearEventListener?: () => void;
   private _schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private _defaultFormats?: FormatsMap;
   private _ipcRequestsHandler?: IpcRequestsHandler;
 
@@ -544,6 +546,7 @@ export class PresentationManager implements Disposable {
 
     let contentFormatter: ContentFormatter | undefined;
     if (!requestOptions.omitFormattedValues && this._schemaContextProvider) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const koqPropertyFormatter = new KoqPropertyValueFormatter(this._schemaContextProvider(requestOptions.imodel), this._defaultFormats);
       contentFormatter = new ContentFormatter(
         new ContentPropertyValueFormatter(koqPropertyFormatter),
