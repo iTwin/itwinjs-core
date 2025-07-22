@@ -1,4 +1,5 @@
 const iTwinPlugin = require("@itwin/eslint-plugin");
+const eslintBaseConfig = require("../../common/config/eslint/eslint.config.base");
 
 const customLanguageOptions = {
   sourceType: "module",
@@ -22,5 +23,6 @@ module.exports = [
     files: ["**/*.ts"],
     ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
     languageOptions: customLanguageOptions
-  }
+  },
+  ...eslintBaseConfig
 ];
