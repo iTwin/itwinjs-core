@@ -3,15 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, FieldPropertyHost, FieldPropertyPath, FieldRun, SubCategoryAppearance } from "@itwin/core-common";
-import { SnapshotDb } from "../../IModelDb";
-import { IModelTestUtils, TestPhysicalObjectProps } from "../IModelTestUtils";
+import { Code, FieldPropertyHost, FieldPropertyPath, FieldRun, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import { IModelDb, SnapshotDb } from "../../IModelDb";
+import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, FieldProperty, updateField } from "../../internal/annotations/fields";
 import { Id64String } from "@itwin/core-bentley";
 import { SpatialCategory } from "../../Category";
-import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { KnownTestLocations } from "../KnownTestLocations";
-import * as path from "path";
+import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Schema, Schemas } from "../../Schema";
+import { ClassRegistry } from "../../ClassRegistry";
+import { PhysicalElement } from "../../Element";
 
 describe("updateField", () => {
   const mockElementId = "0x1";
@@ -120,6 +121,68 @@ describe("updateField", () => {
   });
 });
 
+const fieldsSchemaXml = `
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="Fields" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  <ECSchemaReference name="BisCore" version="01.00.04" alias="bis"/>
+
+  <ECStructClass typeName="InnerStruct" modifier="None">
+    <ECProperty propertyName="bool" typeName="boolean"/>
+    <ECArrayProperty propertyName="doubles" typeName="double" minOccurs="0" maxOccurs="unbounded"/>
+  </ECStructClass>
+
+  <ECStructClass typeName="OuterStruct" modifier="None">
+    <ECStructProperty propertyName="innerStruct" typeName="InnerStruct"/>
+    <ECStructArrayProperty propertyName="innerStructs" typeName="InnerStruct" minOccurs="0" maxOccurs="unbounded"/>
+  </ECStructClass>
+  
+  <ECEntityClass typeName="TestElement" modifier="None">
+    <BaseClass>bis:PhysicalElement</BaseClass>
+    <ECProperty propertyName="int" typeName="int"/>
+    <ECProperty propertyName="point" typeName="point3d"/>
+    <ECArrayProperty propertyName="strings" typeName="string" minOccurs="0" maxOccurs="unbounded"/>
+    <ECStructProperty propertyName="outerStruct" typeName="OuterStruct"/>
+    <ECStructArrayProperty propertyName="outerStructs" typeName="OuterStruct" minOccurs="0" maxOccurs="unbounded"/>
+  </ECEntityClass>
+</ECSchema>
+`;
+
+interface InnerStruct {
+  bool: boolean;
+  doubles: number[];
+}
+
+interface OuterStruct {
+  innerStruct: InnerStruct;
+  innerStructs: InnerStruct[];
+}
+
+interface TestElementProps extends PhysicalElementProps {
+  int: number;
+  point: XYAndZ;
+  strings: string[];
+  outerStruct: OuterStruct;
+  outerStructs: OuterStruct[];
+}
+
+class TestElement extends PhysicalElement {
+  public static override get className() { return "TestElement"; }
+}
+
+class FieldsSchema extends Schema {
+  public static override get schemaName() { return "Fields"; }
+}
+
+async function registerTestSchema(iModel: IModelDb): Promise<void> {
+  if (!Schemas.getRegisteredSchema("Fields")) {
+    Schemas.registerSchema(FieldsSchema);
+    ClassRegistry.register(TestElement, FieldsSchema);
+  }
+
+  await iModel.importSchemaStrings([fieldsSchemaXml]);
+  iModel.saveChanges();
+}
+
 describe.only("UpdateFieldsContext", () => {
   let imodel: SnapshotDb;
   let model: Id64String;
@@ -127,14 +190,10 @@ describe.only("UpdateFieldsContext", () => {
   let elementId: Id64String;
 
   before(async () => {
-    IModelTestUtils.registerTestBimSchema();
-
     const iModelPath = IModelTestUtils.prepareOutputFile("UpdateFieldsContext", "test.bim");
     imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "UpdateFieldsContext" } });
 
-    const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    await imodel.importSchemas([schemaPathname]); // will throw an exception if import fails
-    imodel.saveChanges();
+    await registerTestSchema(imodel);
 
     model = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true)[1];
     category = SpatialCategory.insert(imodel, SnapshotDb.dictionaryId, "UpdateFieldsContextCategory", new SubCategoryAppearance());
@@ -146,13 +205,22 @@ describe.only("UpdateFieldsContext", () => {
   });
   
   function insertElement(): Id64String {
-    // ###TODO gotta insert our own schema for testing complex access strings.
-    const props: TestPhysicalObjectProps = {
-      classFullName: "TestBim:TestPhysicalObject",
+    const props: TestElementProps = {
+      classFullName: "Fields:TestElement",
       model,
       category,
       code: Code.createEmpty(),
-      intProperty: 100,
+      int: 100,
+      point: { x: 1, y: 2, z: 3 },
+      strings: ["a", "b", "c"],
+      outerStruct: {
+        innerStruct: { bool: false, doubles: [1, 2, 3 ] },
+        innerStructs: [{ bool: true, doubles: [] }, { bool: false, doubles: [0] }],
+      },
+      outerStructs: [{
+        innerStruct: { bool: true, doubles: [10, 9] },
+        innerStructs: [{ bool: false, doubles: [5] }],
+      }],
       placement: {
         origin: new Point3d(1, 2, 0),
         angles: new YawPitchRollAngles(),
@@ -180,7 +248,7 @@ describe.only("UpdateFieldsContext", () => {
   describe.only("getProperty", () => {
     function expectValue(expected: any, propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String = elementId, deletedDependency = false): void {
       if (typeof propertyHost === "string") {
-        propertyHost = { schemaName: "TestBim", className: "TestPhysicalObject", elementId: propertyHost };
+        propertyHost = { schemaName: "Fields", className: "TestElement", elementId: propertyHost };
       }
 
       const field = FieldRun.create({
@@ -195,7 +263,7 @@ describe.only("UpdateFieldsContext", () => {
     }
 
     it("returns a primitive property value", () => {
-      expectValue(100, { propertyName: "intProperty" });
+      expectValue(100, { propertyName: "int" });
     });
 
     it("treats points as primitive values", () => {
@@ -211,11 +279,11 @@ describe.only("UpdateFieldsContext", () => {
     });
   
     it("returns undefined if the dependency was deleted", () => {
-      expectValue(undefined, { propertyName: "intProperty" }, elementId, true);
+      expectValue(undefined, { propertyName: "int" }, elementId, true);
     });
 
     it("returns undefined if the host element does not exist", () => {
-      expectValue(undefined, { propertyName: "intProperty" }, "0xbaadf00d");
+      expectValue(undefined, { propertyName: "int" }, "0xbaadf00d");
     });
 
     it("returns undefined if the host element is not of the specified class or a subclass thereof", () => {
@@ -223,7 +291,7 @@ describe.only("UpdateFieldsContext", () => {
     });
 
     it("returns undefined if an access string is specified for a non-object property", () => {
-      expectValue(undefined, { propertyName: "intProperty", accessors: ["property"] });
+      expectValue(undefined, { propertyName: "int", accessors: ["property"] });
     });
   
     it("returns undefined if the specified property does not exist", () => {
@@ -243,7 +311,7 @@ describe.only("UpdateFieldsContext", () => {
     });
 
     it("returns undefined if an array index is specified for a non-array property", () => {
-      expectValue(undefined, { propertyName: "intProperty", accessors: [0] });
+      expectValue(undefined, { propertyName: "int", accessors: [0] });
     });
 
     it("returns undefined if an array index is out of bounds", () => {
@@ -254,7 +322,7 @@ describe.only("UpdateFieldsContext", () => {
       
     });
   
-    it("returns arbitrarily-nested properties of structs", () => {
+    it("returns arbitrarily-nested properties of structs and struct arrays", () => {
       
     });
 
