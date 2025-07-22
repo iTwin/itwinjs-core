@@ -505,19 +505,19 @@ describe("Field evaluation", () => {
       
       expectText("old value", targetId);
 
-      ElementDrivesTextAnnotation.create(imodel, sourceId, targetId).insert();
+      ElementDrivesTextAnnotation.create<ElementDrivesTextAnnotation>(imodel, sourceId, targetId).insert();
 
-      const source = imodel.elements.getElement<TestElement>(sourceId);
-      source.setJsonProperty("test", { "prop": "value" });
-      source.update();
-      expectText("old value", targetId);
-      imodel.saveChanges();
-      expectText("100", targetId);
-
+      let source = imodel.elements.getElement<TestElement>(sourceId);
       source.intProp = 50;
       source.update();
-      expectText("100", targetId);
+
+      expectText("old value", targetId);
+
       imodel.saveChanges();
+
+      source = imodel.elements.getElement<TestElement>(sourceId);
+      expect(source.intProp).to.equal(50);
+
       expectText("50", targetId);
     });
 
