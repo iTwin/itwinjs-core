@@ -3,18 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, FieldPropertyHost, FieldPropertyPath, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextBlock } from "@itwin/core-common";
+import { Code, FieldPropertyHost, FieldPropertyPath, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, FieldProperty, updateField, updateFields } from "../../internal/annotations/fields";
-import { Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { SpatialCategory } from "../../Category";
 import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Schema, Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
 import { PhysicalElement } from "../../Element";
+import { TextAnnotation3d } from "../../core-backend";
+import { ElementDrivesTextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 
-describe.only("updateField", () => {
+describe("updateField", () => {
   const mockElementId = "0x1";
   const mockPath: FieldPropertyPath = {
     propertyName: "mockProperty",
@@ -185,7 +187,7 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
   iModel.saveChanges();
 }
 
-describe.only("Field evaluation", () => {
+describe("Field evaluation", () => {
   let imodel: SnapshotDb;
   let model: Id64String;
   let category: Id64String;
@@ -199,14 +201,14 @@ describe.only("Field evaluation", () => {
 
     model = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true)[1];
     category = SpatialCategory.insert(imodel, SnapshotDb.dictionaryId, "UpdateFieldsContextCategory", new SubCategoryAppearance());
-    sourceElementId = insertElement();
+    sourceElementId = insertTestElement();
   });
 
   after(() => {
     imodel.close();
   });
 
-  function insertElement(): Id64String {
+  function insertTestElement(): Id64String {
     const props: TestElementProps = {
       classFullName: "Fields:TestElement",
       model,
@@ -424,9 +426,43 @@ describe.only("Field evaluation", () => {
     });
   });
 
-  describe("ElementDrivesTextAnnotation", () => {
+  function insertAnnotationElement(textBlock: TextBlock | undefined): Id64String {
+    const elem = TextAnnotation3d.fromJSON({
+      model,
+      category,
+      code: Code.createEmpty(),
+      placement: {
+        origin: { x: 0, y: 0, z: 0 },
+        angles: YawPitchRollAngles.createDegrees(0, 0, 0).toJSON(),
+      },
+      classFullName: TextAnnotation3d.classFullName,
+    }, imodel);
+
+    if (textBlock) {
+      const annotation = TextAnnotation.fromJSON({ textBlock: textBlock.toJSON() });
+      elem.setAnnotation(annotation);
+    }
+    
+    return elem.insert();
+  }
+
+  describe.only("ElementDrivesTextAnnotation", () => {
     it("can be inserted", () => {
+      function expectNumRelationships(expected: number): void {
+        imodel.withPreparedStatement("SELECT COUNT(*) FROM BisCore.ElementDrivesTextAnnotation", (stmt) => {
+          expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
+          expect(stmt.getValue(0).getInteger()).to.equal(expected);
+        });
+      }
+
+      expectNumRelationships(0);
       
+      const target = insertAnnotationElement(undefined);
+      const rel = ElementDrivesTextAnnotation.create(imodel, sourceElementId, target);
+      const relId = rel.insert();
+      expect(relId).not.to.equal(Id64.invalid);
+
+      expectNumRelationships(1);
     });
 
     it("updates fields when source element is modified", () => {
