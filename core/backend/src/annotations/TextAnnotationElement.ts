@@ -42,13 +42,13 @@ export class TextAnnotation2d extends AnnotationElement2d {
   /** @internal */
   public static override get className(): string { return "TextAnnotation2d"; }
   /** Optional string containing the data associated with the text annotation. */
-  public textAnnotationData?: string;
+  private _textAnnotationData?: string;
 
   /** Extract the textual content, if present.
    * @see [[setAnnotation]] to change it.
    */
   public getAnnotation(): TextAnnotation | undefined {
-    const textAnnotationProps = parseTextAnnotationData(this.textAnnotationData);
+    const textAnnotationProps = parseTextAnnotationData(this._textAnnotationData);
     return textAnnotationProps ? TextAnnotation.fromJSON(textAnnotationProps) : undefined;
   }
 
@@ -57,12 +57,12 @@ export class TextAnnotation2d extends AnnotationElement2d {
    * @param annotation The new annotation
    */
   public setAnnotation(annotation: TextAnnotation) {
-    this.textAnnotationData = annotation ? JSON.stringify(annotation.toJSON()) : undefined;
+    this._textAnnotationData = annotation ? JSON.stringify(annotation.toJSON()) : undefined;
   }
 
   protected constructor(props: TextAnnotation2dProps, iModel: IModelDb) {
     super(props, iModel);
-    this.textAnnotationData = props.textAnnotationData;
+    this._textAnnotationData = props.textAnnotationData;
   }
 
   /** Creates a new instance of `TextAnnotation2d` from its JSON representation. */
@@ -78,9 +78,9 @@ export class TextAnnotation2d extends AnnotationElement2d {
    */
   public override toJSON(): TextAnnotation2dProps {
     const props = super.toJSON() as TextAnnotation2dProps;
-    props.textAnnotationData = this.textAnnotationData;
-    if (this.textAnnotationData) {
-      props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.model, this.placement, this.textAnnotationData, this.category);
+    props.textAnnotationData = this._textAnnotationData;
+    if (this._textAnnotationData) {
+      props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.model, this.placement, this._textAnnotationData, this.category);
     }
 
     return props;
@@ -162,13 +162,13 @@ export class TextAnnotation3d extends GraphicalElement3d {
   /** @internal */
   public static override get className(): string { return "TextAnnotation3d"; }
   /** Optional string containing the data associated with the text annotation. */
-  public textAnnotationData?: string;
+  private _textAnnotationData?: string;
 
   /** Extract the textual content, if present.
    * @see [[setAnnotation]] to change it.
    */
   public getAnnotation(): TextAnnotation | undefined {
-    const textAnnotationProps = parseTextAnnotationData(this.textAnnotationData);
+    const textAnnotationProps = parseTextAnnotationData(this._textAnnotationData);
     return textAnnotationProps ? TextAnnotation.fromJSON(textAnnotationProps) : undefined;
   }
 
@@ -177,12 +177,12 @@ export class TextAnnotation3d extends GraphicalElement3d {
    * @param annotation The new annotation
    */
   public setAnnotation(annotation: TextAnnotation) {
-    this.textAnnotationData = annotation ? JSON.stringify(annotation.toJSON()) : undefined;
+    this._textAnnotationData = annotation ? JSON.stringify(annotation.toJSON()) : undefined;
   }
 
   protected constructor(props: TextAnnotation3dProps, iModel: IModelDb) {
     super(props, iModel);
-    this.textAnnotationData = props.textAnnotationData;
+    this._textAnnotationData = props.textAnnotationData;
   }
 
   /** Creates a new instance of `TextAnnotation3d` from its JSON representation. */
@@ -197,9 +197,9 @@ export class TextAnnotation3d extends GraphicalElement3d {
    */
   public override toJSON(): TextAnnotation3dProps {
     const props = super.toJSON() as TextAnnotation3dProps;
-    props.textAnnotationData = this.textAnnotationData;
-    if (this.textAnnotationData) {
-      props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.model, this.placement, this.textAnnotationData, this.category);
+    props.textAnnotationData = this._textAnnotationData;
+    if (this._textAnnotationData) {
+      props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.model, this.placement, this._textAnnotationData, this.category);
     }
 
     return props;
