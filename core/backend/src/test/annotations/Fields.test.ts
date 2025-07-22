@@ -14,7 +14,7 @@ import { Schema, Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
 import { PhysicalElement } from "../../Element";
 
-describe("updateField", () => {
+describe.only("updateField", () => {
   const mockElementId = "0x1";
   const mockPath: FieldPropertyPath = {
     propertyName: "mockProperty",
@@ -185,11 +185,11 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
   iModel.saveChanges();
 }
 
-describe("updateFields", () => {
+describe.only("updateFields", () => {
   let imodel: SnapshotDb;
   let model: Id64String;
   let category: Id64String;
-  let elementId: Id64String;
+  let sourceElementId: Id64String;
 
   before(async () => {
     const iModelPath = IModelTestUtils.prepareOutputFile("UpdateFieldsContext", "test.bim");
@@ -199,7 +199,7 @@ describe("updateFields", () => {
 
     model = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true)[1];
     category = SpatialCategory.insert(imodel, SnapshotDb.dictionaryId, "UpdateFieldsContextCategory", new SubCategoryAppearance());
-    elementId = insertElement();
+    sourceElementId = insertElement();
   });
 
   after(() => {
@@ -248,7 +248,7 @@ describe("updateFields", () => {
   }
 
   describe("getProperty", () => {
-    function expectValue(expected: any, propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String = elementId, deletedDependency = false): void {
+    function expectValue(expected: any, propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String, deletedDependency = false): void {
       if (typeof propertyHost === "string") {
         propertyHost = { schemaName: "Fields", className: "TestElement", elementId: propertyHost };
       }
@@ -265,28 +265,28 @@ describe("updateFields", () => {
     }
 
     it("returns a primitive property value", () => {
-      expectValue(100, { propertyName: "intProp" });
+      expectValue(100, { propertyName: "intProp" }, sourceElementId);
     });
 
     it("treats points as primitive values", () => {
-      expectValue({ x: 1, y: 2, z: 3 }, { propertyName: "point" });
-      expectValue(undefined, { propertyName: "point", accessors: ["x"] });
+      expectValue({ x: 1, y: 2, z: 3 }, { propertyName: "point" }, sourceElementId);
+      expectValue(undefined, { propertyName: "point", accessors: ["x"] }, sourceElementId);
     });
 
     it("returns a primitive array value", () => {
-      expectValue("a", { propertyName: "strings", accessors: [0] });
-      expectValue("b", { propertyName: "strings", accessors: [1] });
-      expectValue(`"name": "c"`, { propertyName: "strings", accessors: [2] });
+      expectValue("a", { propertyName: "strings", accessors: [0] }, sourceElementId);
+      expectValue("b", { propertyName: "strings", accessors: [1] }, sourceElementId);
+      expectValue(`"name": "c"`, { propertyName: "strings", accessors: [2] }, sourceElementId);
     });
 
     it("supports negative array indices", () => {
-      expectValue("a", { propertyName: "strings", accessors: [-3] });
-      expectValue("b", { propertyName: "strings", accessors: [-2] });
-      expectValue(`"name": "c"`, { propertyName: "strings", accessors: [-1] });
+      expectValue("a", { propertyName: "strings", accessors: [-3] }, sourceElementId);
+      expectValue("b", { propertyName: "strings", accessors: [-2] }, sourceElementId);
+      expectValue(`"name": "c"`, { propertyName: "strings", accessors: [-1] }, sourceElementId);
     });
 
     it("returns undefined if the dependency was deleted", () => {
-      expectValue(undefined, { propertyName: "intProp" }, elementId, true);
+      expectValue(undefined, { propertyName: "intProp" }, sourceElementId, true);
     });
 
     it("returns undefined if the host element does not exist", () => {
@@ -294,68 +294,68 @@ describe("updateFields", () => {
     });
 
     it("returns undefined if the host element is not of the specified class or a subclass thereof", () => {
-      expectValue(undefined, { propertyName: "origin" }, { schemaName: "BisCore", className: "GeometricElement2d", elementId });
+      expectValue(undefined, { propertyName: "origin" }, { schemaName: "BisCore", className: "GeometricElement2d", elementId: sourceElementId });
     });
 
     it("returns undefined if an access string is specified for a non-object property", () => {
-      expectValue(undefined, { propertyName: "intProp", accessors: ["property"] });
+      expectValue(undefined, { propertyName: "intProp", accessors: ["property"] }, sourceElementId);
     });
 
     it("returns undefined if the specified property does not exist", () => {
-      expectValue(undefined, { propertyName: "nonExistentProperty" });
+      expectValue(undefined, { propertyName: "nonExistentProperty" }, sourceElementId);
     });
 
     it("returns undefined if the specified property is null", () => {
-      expectValue(undefined, { propertyName: "maybeNull" });
+      expectValue(undefined, { propertyName: "maybeNull" }, sourceElementId);
     });
 
     it("returns undefined if an array index is specified for a non-array property", () => {
-      expectValue(undefined, { propertyName: "intProp", accessors: [0] });
+      expectValue(undefined, { propertyName: "intProp", accessors: [0] }, sourceElementId);
     });
 
     it("returns undefined if an array index is out of bounds", () => {
       for (const index of [3, 4, -4, -5]) {
-        expectValue(undefined, { propertyName: "strings", accessors: [index] });
+        expectValue(undefined, { propertyName: "strings", accessors: [index] }, sourceElementId);
       }
     });
 
     it("returns undefined for a non-primitive value", () => {
-      expectValue(undefined, { propertyName: "strings" });
-      expectValue(undefined, { propertyName: "outerStruct" });
-      expectValue(undefined, { propertyName: "outerStruct", accessors: ["innerStruct"] });
-      expectValue(undefined, { propertyName: "outerStructs" });
-      expectValue(undefined, { propertyName: "outerStructs", accessors: [0] });
-      expectValue(undefined, { propertyName: "outerStructs", accessors: [0, "innerStruct"] });
+      expectValue(undefined, { propertyName: "strings" }, sourceElementId);
+      expectValue(undefined, { propertyName: "outerStruct" }, sourceElementId);
+      expectValue(undefined, { propertyName: "outerStruct", accessors: ["innerStruct"] }, sourceElementId);
+      expectValue(undefined, { propertyName: "outerStructs" }, sourceElementId);
+      expectValue(undefined, { propertyName: "outerStructs", accessors: [0] }, sourceElementId);
+      expectValue(undefined, { propertyName: "outerStructs", accessors: [0, "innerStruct"] }, sourceElementId);
     });
 
     it("returns arbitrarily-nested properties of structs and struct arrays", () => {
-      expectValue(false, { propertyName: "outerStruct", accessors: ["innerStruct", "bool"] });
+      expectValue(false, { propertyName: "outerStruct", accessors: ["innerStruct", "bool"] }, sourceElementId);
       for (const index of [0, 1, 2]) {
-        expectValue(index + 1, { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", index] });
-        expectValue(3 - index, { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", -1 - index] });
+        expectValue(index + 1, { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", index] },sourceElementId);
+        expectValue(3 - index, { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", -1 - index] },sourceElementId);
       }
 
-      expectValue(9, { propertyName: "outerStructs", accessors: [0, "innerStruct", "doubles", 1] });
-      expectValue(false, { propertyName: "outerStructs", accessors: [0, "innerStructs", -1, "bool"] });
-      expectValue(5, { propertyName: "outerStructs", accessors: [0, "innerStructs", 0, "doubles", 0] });
+      expectValue(9, { propertyName: "outerStructs", accessors: [0, "innerStruct", "doubles", 1] }, sourceElementId);
+      expectValue(false, { propertyName: "outerStructs", accessors: [0, "innerStructs", -1, "bool"] }, sourceElementId);
+      expectValue(5, { propertyName: "outerStructs", accessors: [0, "innerStructs", 0, "doubles", 0] }, sourceElementId);
     });
 
     it("returns arbitrarily-nested JSON properties", () => {
-      expectValue("abc", { propertyName: "jsonProperties", jsonAccessors: ["string"] });
+      expectValue("abc", { propertyName: "jsonProperties", jsonAccessors: ["string"] }, sourceElementId);
 
-      expectValue(10, { propertyName: "jsonProperties", jsonAccessors: ["ints", 0] });
-      expectValue(13, { propertyName: "jsonProperties", jsonAccessors: ["ints", 3] });
-      expectValue(13, { propertyName: "jsonProperties", jsonAccessors: ["ints", -1] });
-      expectValue(11, { propertyName: "jsonProperties", jsonAccessors: ["ints", -3] });
+      expectValue(10, { propertyName: "jsonProperties", jsonAccessors: ["ints", 0] }, sourceElementId);
+      expectValue(13, { propertyName: "jsonProperties", jsonAccessors: ["ints", 3] }, sourceElementId);
+      expectValue(13, { propertyName: "jsonProperties", jsonAccessors: ["ints", -1] }, sourceElementId);
+      expectValue(11, { propertyName: "jsonProperties", jsonAccessors: ["ints", -3] }, sourceElementId);
 
-      expectValue(12345, { propertyName: "jsonProperties", jsonAccessors: ["zoo", "address", "zipcode"] });
-      expectValue("scree!", { propertyName: "jsonProperties", jsonAccessors: ["zoo", "birds", 1, "sound"] });
+      expectValue(12345, { propertyName: "jsonProperties", jsonAccessors: ["zoo", "address", "zipcode"] }, sourceElementId);
+      expectValue("scree!", { propertyName: "jsonProperties", jsonAccessors: ["zoo", "birds", 1, "sound"] }, sourceElementId);
     });
 
     it("returns undefined if JSON accessors applied to non-JSON property", () => {
-      expectValue(undefined, { propertyName: "int", jsonAccessors: ["whatever"] });
-      expectValue(undefined, { propertyName: "strings", accessors: [2, "name"] });
-      expectValue(undefined, { propertyName: "outerStruct", accessors: ["innerStruct"], jsonAccessors: ["bool"] });
+      expectValue(undefined, { propertyName: "int", jsonAccessors: ["whatever"] }, sourceElementId);
+      expectValue(undefined, { propertyName: "strings", accessors: [2, "name"] }, sourceElementId);
+      expectValue(undefined, { propertyName: "outerStruct", accessors: ["innerStruct"], jsonAccessors: ["bool"] }, sourceElementId);
     });
   });
 
@@ -363,14 +363,14 @@ describe("updateFields", () => {
     const textBlock = TextBlock.create({ styleName: "blockStyle" });
     const fieldRun = FieldRun.create({
       styleName: "fieldStyle",
-      propertyHost: { elementId, schemaName: "Fields", className: "TestElement" },
+      propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
       propertyPath: { propertyName: "intProp" },
       cachedContent: "oldValue",
     });
 
     textBlock.appendRun(fieldRun);
 
-    const context = createUpdateContext(elementId, imodel, false);
+    const context = createUpdateContext(sourceElementId, imodel, false);
     const updatedCount = updateFields(textBlock, context);
 
     expect(updatedCount).to.equal(1);
@@ -381,14 +381,14 @@ describe("updateFields", () => {
     const textBlock = TextBlock.create({ styleName: "blockStyle" });
     const fieldRun = FieldRun.create({
       styleName: "fieldStyle",
-      propertyHost: { elementId, schemaName: "Fields", className: "TestElement" },
+      propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
       propertyPath: { propertyName: "intProp" },
-      cachedContent: "100", // Matches the current value of `intProp`
+      cachedContent: "100",
     });
 
     textBlock.appendRun(fieldRun);
 
-    const context = createUpdateContext(elementId, imodel, false);
+    const context = createUpdateContext(sourceElementId, imodel, false);
     const updatedCount = updateFields(textBlock, context);
 
     expect(updatedCount).to.equal(0);
@@ -399,14 +399,14 @@ describe("updateFields", () => {
     const textBlock = TextBlock.create({ styleName: "blockStyle" });
     const fieldRun1 = FieldRun.create({
       styleName: "fieldStyle",
-      propertyHost: { elementId, schemaName: "Fields", className: "TestElement" },
+      propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
       propertyPath: { propertyName: "intProp" },
       cachedContent: "100",
     });
 
     const fieldRun2 = FieldRun.create({
       styleName: "fieldStyle",
-      propertyHost: { elementId, schemaName: "Fields", className: "TestElement" },
+      propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
       propertyPath: { propertyName: "strings", accessors: [0] },
       cachedContent: "oldValue",
     });
@@ -414,12 +414,12 @@ describe("updateFields", () => {
     textBlock.appendRun(fieldRun1);
     textBlock.appendRun(fieldRun2);
 
-    const context = createUpdateContext(elementId, imodel, false);
+    const context = createUpdateContext(sourceElementId, imodel, false);
     const updatedCount = updateFields(textBlock, context);
 
     expect(updatedCount).to.equal(1);
-    expect(fieldRun1.cachedContent).to.equal("100"); // `intProp` value
-    expect(fieldRun2.cachedContent).to.equal("a"); // `point` value
+    expect(fieldRun1.cachedContent).to.equal("100");
+    expect(fieldRun2.cachedContent).to.equal("a");
   });
 });
 
