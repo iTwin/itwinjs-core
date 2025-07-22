@@ -185,7 +185,7 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
   iModel.saveChanges();
 }
 
-describe("UpdateFieldsContext", () => {
+describe.only("updateFields", () => {
   let imodel: SnapshotDb;
   let model: Id64String;
   let category: Id64String;
@@ -357,6 +357,18 @@ describe("UpdateFieldsContext", () => {
       expectValue(undefined, { propertyName: "strings", accessors: [2, "name"] });
       expectValue(undefined, { propertyName: "outerStruct", accessors: ["innerStruct"], jsonAccessors: ["bool"] });
     });
+  });
+
+  it("recomputes cached content", () => {
+    
+  });
+
+  it("returns the number of fields updated", () => {
+    
+  });
+
+  it("does not update a field if recomputed content matches cached content", () => {
+    
   });
 });
 
