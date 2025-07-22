@@ -2,19 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { ByteStream } from "@itwin/core-bentley";
-import { TileFormat } from "@itwin/core-common";
+import sinon from "sinon";
+import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { ByteStream, Id64String } from "@itwin/core-bentley";
+import { ElementAlignedBox3d, TileFormat } from "@itwin/core-common";
 import { Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { MockRender } from "../../internal/render/MockRender";
 import { RenderMemory } from "../../render/RenderMemory";
 import {
-  RealityTile, RealityTileLoader, RealityTileTree, Tile, TileDrawArgs, TileLoadPriority,
-  TileRequest, TileRequestChannel
+  B3dmReader, BatchedTileIdMap, LayerTileData, RealityTile, RealityTileLoader, RealityTileTree,
+  ShouldAbortReadGltf, Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel
 } from "../../tile/internal";
 import { createBlankConnection } from "../createBlankConnection";
+import { RenderSystem } from "../../render/RenderSystem";
 
 describe("RealityTile", () => {
   class TestRealityTile extends RealityTile {
@@ -33,15 +35,6 @@ describe("RealityTile", () => {
       if (contentSize === 0)
         this.setIsReady();
 
-      // const options = StrokeOptions.createForFacets();
-      // const polyBuilder = PolyfaceBuilder.create(options);
-      // polyBuilder.addPolygon([
-      //   Point3d.create(0, 0, 0),
-      //   Point3d.create(1, 0, 0),
-      //   Point3d.create(1, 1, 0)
-      // ]);
-
-      // this._geometry = { polyfaces: [polyBuilder.claimPolyface()] };
       this._reprojectionTransform = reprojectionTransform;
     }
 
@@ -159,6 +152,8 @@ describe("RealityTile", () => {
   let imodel: IModelConnection;
   let reader: TestRealityTileLoader;
   let transform: Transform;
+  let streamBuffer: ByteStream;
+  const sandbox = sinon.createSandbox();
 
   beforeEach(async () => {
     await MockRender.App.startup();
@@ -166,189 +161,104 @@ describe("RealityTile", () => {
     imodel = createBlankConnection("imodel");
     reader = new TestRealityTileLoader();
     transform = Transform.createTranslationXYZ(5, 5, 5);
+
+    // Create a ByteStream with B3dm format header
+    const buffer = new Uint8Array(16);
+    const view = new DataView(buffer.buffer);
+    view.setUint32(0, TileFormat.B3dm, true);
+    streamBuffer = ByteStream.fromUint8Array(buffer);
+
+    // Create mock geometry data with a simple polyface
+    const options = StrokeOptions.createForFacets();
+    const polyBuilder = PolyfaceBuilder.create(options);
+    polyBuilder.addPolygon([
+      Point3d.create(0, 0, 0),
+      Point3d.create(1, 0, 0),
+      Point3d.create(1, 1, 0)
+    ]);
+    const originalPolyface = polyBuilder.claimPolyface();
+    const mockGeometry = { polyfaces: [originalPolyface] };
+
+    // Mock B3dmReader.create to return a reader with test geometry
+    const mockReader = {
+      defaultWrapMode: undefined,
+      readGltfAndCreateGeometry(this: void) { return mockGeometry; }
+    } as any as B3dmReader;
+
+    sandbox.stub(B3dmReader, "create").callsFake((_stream: ByteStream, _iModel: IModelConnection, _modelId: Id64String, _is3d: boolean,
+      _range: ElementAlignedBox3d, _system: RenderSystem, _yAxisUp: boolean, _isLeaf: boolean, _tileCenter: Point3d, _transformToRoot?: Transform,
+      _isCanceled?: ShouldAbortReadGltf, _idMap?: BatchedTileIdMap, _deduplicateVertices=false, _tileData?: LayerTileData) => {
+      return mockReader;
+    });
   });
 
   afterEach(async () => {
     await imodel.close();
     if (IModelApp.initialized)
       await MockRender.App.shutdown();
+
+    sandbox.restore();
   });
 
-  it.only("should apply reprojection transform to geometry in loadGeometryFromStream", async () => {
-    // Create a test tree with reprojection enabled
+  it("should apply reprojection transform to geometry in loadGeometryFromStream", async () => {
+    // Create a test tree with reprojectGeometry = true
     const tree = new TestRealityTree(0, imodel, reader, true, transform);
     const tile = tree.rootTile;
+    const result = await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
 
-    // Create mock geometry data with a simple polyface
-    const options = StrokeOptions.createForFacets();
-    const polyBuilder = PolyfaceBuilder.create(options);
-    polyBuilder.addPolygon([
-      Point3d.create(0, 0, 0),
-      Point3d.create(1, 0, 0),
-      Point3d.create(1, 1, 0)
-    ]);
-    const originalPolyface = polyBuilder.claimPolyface();
-    const mockGeometry = { polyfaces: [originalPolyface] };
+    expect(result.geometry).to.not.be.undefined;
+    expect(result.geometry?.polyfaces).to.have.length(1);
 
-    // Mock B3dmReader.create to return a reader with mocked readGltfAndCreateGeometry
-    const mockReader = {
-      defaultWrapMode: undefined,
-      readGltfAndCreateGeometry: () => mockGeometry
-    };
+    // Verify that the reprojection transform was applied
+    if (result.geometry?.polyfaces) {
+      const transformedPolyface = result.geometry.polyfaces[0];
+      const transformedPoints = transformedPolyface.data.point.getPoint3dArray();
 
-    // Mock B3dmReader.create
-    const b3dmReader = await import("../../internal/tile/B3dmReader");
-    const originalB3dmCreate = b3dmReader.B3dmReader.create;
-    const mockCreate = () => mockReader;
-    Object.defineProperty(b3dmReader.B3dmReader, 'create', { value: mockCreate, writable: true, configurable: true });
-
-    try {
-      // Create a ByteStream with B3dm format header
-      const buffer = new Uint8Array(16);
-      const view = new DataView(buffer.buffer);
-      view.setUint32(0, TileFormat.B3dm, true);
-      const streamBuffer = ByteStream.fromUint8Array(buffer);
-
-      // Call the actual loadGeometryFromStream method from RealityTileLoader
-      const result = await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
-
-      // Verify that geometry was returned
-      expect(result.geometry).to.not.be.undefined;
-      expect(result.geometry?.polyfaces).to.have.length(1);
-
-      // Verify that the reprojection transform was applied
-      if (result.geometry?.polyfaces) {
-        const transformedPolyface = result.geometry.polyfaces[0];
-        const transformedPoints = transformedPolyface.data.point.getPoint3dArray();
-
-        // Check that the points have been transformed by the reprojection transform
-        expect(transformedPoints[0].isExactEqual(Point3d.create(5, 5, 5))).to.be.true;
-        expect(transformedPoints[1].isExactEqual(Point3d.create(6, 5, 5))).to.be.true;
-        expect(transformedPoints[2].isExactEqual(Point3d.create(6, 6, 5))).to.be.true;
-      }
-    } finally {
-      // Restore original B3dmReader.create
-      if (originalB3dmCreate) {
-        Object.defineProperty(b3dmReader.B3dmReader, 'create', { value: originalB3dmCreate, writable: true, configurable: true });
-      }
+      // Check that the points have been transformed by the reprojection transform
+      expect(transformedPoints[0].isExactEqual(Point3d.create(5, 5, 5))).to.be.true;
+      expect(transformedPoints[1].isExactEqual(Point3d.create(6, 5, 5))).to.be.true;
+      expect(transformedPoints[2].isExactEqual(Point3d.create(6, 6, 5))).to.be.true;
     }
   });
 
   it("should not apply reprojection transform when reprojectGeometry is false", async () => {
-    // Create a test tree with reprojection disabled
+    // Create a test tree with reprojectGeometry = false
     const tree = new TestRealityTree(0, imodel, reader, false, transform);
     const tile = tree.rootTile;
+    const result = await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
 
-    // Create mock geometry data with a simple polyface
-    const options = StrokeOptions.createForFacets();
-    const polyBuilder = PolyfaceBuilder.create(options);
-    polyBuilder.addPolygon([
-      Point3d.create(0, 0, 0),
-      Point3d.create(1, 0, 0),
-      Point3d.create(1, 1, 0)
-    ]);
-    const originalPolyface = polyBuilder.claimPolyface();
-    const mockGeometry = { polyfaces: [originalPolyface] };
+    expect(result.geometry).to.not.be.undefined;
+    expect(result.geometry?.polyfaces).to.have.length(1);
 
-    // Mock B3dmReader.create to return a reader with mocked readGltfAndCreateGeometry
-    const mockReader = {
-      defaultWrapMode: undefined,
-      readGltfAndCreateGeometry: () => mockGeometry
-    };    // Mock B3dmReader.create
-    const b3dmReader = await import("../../internal/tile/B3dmReader");
-    const originalB3dmCreate = b3dmReader.B3dmReader.create;
-    const mockCreate = () => mockReader;
-    Object.defineProperty(b3dmReader.B3dmReader, 'create', { value: mockCreate, writable: true, configurable: true });
+    if (result.geometry?.polyfaces) {
+      const untransformedPolyface = result.geometry.polyfaces[0];
+      const untransformedPoints = untransformedPolyface.data.point.getPoint3dArray();
 
-    try {
-      // Create a ByteStream with B3dm format header
-      const buffer = new Uint8Array(16);
-      const view = new DataView(buffer.buffer);
-      view.setUint32(0, TileFormat.B3dm, true);
-      const streamBuffer = ByteStream.fromUint8Array(buffer);
-
-      // Call the actual loadGeometryFromStream method from RealityTileLoader
-      const result = await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
-
-      // Verify that geometry was returned
-      expect(result.geometry).to.not.be.undefined;
-      expect(result.geometry?.polyfaces).to.have.length(1);
-
-      // Verify that the reprojection transform was NOT applied (points should be unchanged)
-      if (result.geometry?.polyfaces) {
-        const untransformedPolyface = result.geometry.polyfaces[0];
-        const untransformedPoints = untransformedPolyface.data.point.getPoint3dArray();
-
-        // Check that the points are still in their original positions
-        expect(untransformedPoints[0].isExactEqual(Point3d.create(0, 0, 0))).to.be.true;
-        expect(untransformedPoints[1].isExactEqual(Point3d.create(1, 0, 0))).to.be.true;
-        expect(untransformedPoints[2].isExactEqual(Point3d.create(1, 1, 0))).to.be.true;
-      }
-    } finally {
-      // Restore original B3dmReader.create
-      if (originalB3dmCreate) {
-        Object.defineProperty(b3dmReader.B3dmReader, 'create', { value: originalB3dmCreate, writable: true, configurable: true });
-      }
+      // Check that the points are still in their original positions
+      expect(untransformedPoints[0].isExactEqual(Point3d.create(0, 0, 0))).to.be.true;
+      expect(untransformedPoints[1].isExactEqual(Point3d.create(1, 0, 0))).to.be.true;
+      expect(untransformedPoints[2].isExactEqual(Point3d.create(1, 1, 0))).to.be.true;
     }
   });
 
   it("should not apply reprojection transform when no transform is present", async () => {
-    // Create a test tree with reprojection enabled and no reprojection transform
+    // Create a test tree with reprojectGeometry = true but no reprojection transform
     const tree = new TestRealityTree(0, imodel, reader, true, undefined);
     const tile = tree.rootTile;
+    const result = await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
 
-    // Create mock geometry data with a simple polyface
-    const options = StrokeOptions.createForFacets();
-    const polyBuilder = PolyfaceBuilder.create(options);
-    polyBuilder.addPolygon([
-      Point3d.create(0, 0, 0),
-      Point3d.create(1, 0, 0),
-      Point3d.create(1, 1, 0)
-    ]);
-    const originalPolyface = polyBuilder.claimPolyface();
-    const mockGeometry = { polyfaces: [originalPolyface] };
+    expect(result.geometry).to.not.be.undefined;
+    expect(result.geometry?.polyfaces).to.have.length(1);
 
-    // Mock B3dmReader.create to return a reader with mocked readGltfAndCreateGeometry
-    const mockReader = {
-      defaultWrapMode: undefined,
-      readGltfAndCreateGeometry: () => mockGeometry
-    };
+    // Verify that the reprojection transform was NOT applied (points should be unchanged)
+    if (result.geometry?.polyfaces) {
+      const untransformedPolyface = result.geometry.polyfaces[0];
+      const untransformedPoints = untransformedPolyface.data.point.getPoint3dArray();
 
-    // Mock B3dmReader.create
-    const b3dmReader = await import("../../internal/tile/B3dmReader");
-    const originalB3dmCreate = b3dmReader.B3dmReader.create;
-    const mockCreate = () => mockReader;
-    Object.defineProperty(b3dmReader.B3dmReader, 'create', { value: mockCreate, writable: true, configurable: true });
-
-    try {
-      // Create a ByteStream with B3dm format header
-      const buffer = new Uint8Array(16);
-      const view = new DataView(buffer.buffer);
-      view.setUint32(0, TileFormat.B3dm, true);
-      const streamBuffer = ByteStream.fromUint8Array(buffer);
-
-      // Call the actual loadGeometryFromStream method from RealityTileLoader
-      const result = await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
-
-      // Verify that geometry was returned
-      expect(result.geometry).to.not.be.undefined;
-      expect(result.geometry?.polyfaces).to.have.length(1);
-
-      // Verify that the reprojection transform was NOT applied (points should be unchanged)
-      if (result.geometry?.polyfaces) {
-        const untransformedPolyface = result.geometry.polyfaces[0];
-        const untransformedPoints = untransformedPolyface.data.point.getPoint3dArray();
-
-        // Check that the points are still in their original positions
-        expect(untransformedPoints[0].isExactEqual(Point3d.create(0, 0, 0))).to.be.true;
-        expect(untransformedPoints[1].isExactEqual(Point3d.create(1, 0, 0))).to.be.true;
-        expect(untransformedPoints[2].isExactEqual(Point3d.create(1, 1, 0))).to.be.true;
-      }
-    } finally {
-      // Restore original B3dmReader.create
-      if (originalB3dmCreate) {
-        Object.defineProperty(b3dmReader.B3dmReader, 'create', { value: originalB3dmCreate, writable: true, configurable: true });
-      }
+      // Check that the points are still in their original positions
+      expect(untransformedPoints[0].isExactEqual(Point3d.create(0, 0, 0))).to.be.true;
+      expect(untransformedPoints[1].isExactEqual(Point3d.create(1, 0, 0))).to.be.true;
+      expect(untransformedPoints[2].isExactEqual(Point3d.create(1, 1, 0))).to.be.true;
     }
   });
 });
