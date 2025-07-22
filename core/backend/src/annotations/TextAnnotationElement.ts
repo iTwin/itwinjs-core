@@ -246,7 +246,7 @@ export class TextAnnotation3d extends GraphicalElement3d {
   }
 
   /**
-   * Populates the `elementGeometryBuilderParams` property in the [textAnnotation3dProps]($common).
+   * Populates the `elementGeometryBuilderParams` property in the [TextAnnotation3dProps]($common).
    * It only does this if the `elementGeometryBuilderParams` is not already set and if there is actually a text annotation to produce geometry for.
    */
   protected static updateGeometry(iModelDb: IModelDb, props: TextAnnotation3dProps): void {
