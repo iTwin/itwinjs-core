@@ -191,6 +191,7 @@ export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
     DtaRpcInterface,
     IModelReadRpcInterface,
     IModelTileRpcInterface,
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     SnapshotIModelRpcInterface,
   ];
 

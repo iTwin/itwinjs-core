@@ -156,11 +156,13 @@ describe("PresentationRpcInterface tests", () => {
   });
 
   it("getSelectionScopes works as expected", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const scopeIds = await Presentation.selection.scopes.getSelectionScopes(imodel);
     expect(scopeIds).to.not.be.undefined;
   });
 
   it("computeSelection works as expected", async () => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const computedSelections = await Presentation.selection.scopes.computeSelection(imodel, ["0x1"], "element");
     expect(computedSelections).to.not.be.undefined;
   });

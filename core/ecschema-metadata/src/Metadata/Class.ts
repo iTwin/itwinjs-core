@@ -290,6 +290,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       correctType = structType;
 
     if (!correctType)
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
 
     return correctType;
@@ -303,6 +304,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       correctType = structType;
 
     if (!correctType)
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
 
     return correctType;

@@ -309,6 +309,7 @@ export class MarkupApp {
   /** @internal */
   protected static async readMarkup(): Promise<MarkupData> {
     const result = this.props.result;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     let canvas = this.markup!.vp.readImageToCanvas();
     let svg, image;
     try {

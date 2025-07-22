@@ -56,6 +56,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       });
 
       // expose interfaces using a direct call mechanism
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       TestRpcManager.initialize([SnapshotIModelRpcInterface, IModelReadRpcInterface, RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface]);
       const roWrite = RobotWorldWriteRpcInterface.getClient();
       const roRead = RobotWorldReadRpcInterface.getClient();

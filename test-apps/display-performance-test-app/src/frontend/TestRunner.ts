@@ -1206,6 +1206,7 @@ function getRenderOpts(opts: RenderSystem.Options): string {
 
         break;
       case "useWebGL2":
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         if (opts[key])
           optString += "+webGL2";
 

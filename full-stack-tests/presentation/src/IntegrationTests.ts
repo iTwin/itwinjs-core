@@ -122,7 +122,6 @@ const initializeCommon = async (props: {
   if (!fs.existsSync(tempCachesDir)) {
     fs.mkdirSync(tempCachesDir);
   }
-
   const backendInitProps: PresentationBackendProps = {
     id: `test-${Guid.createValue()}`,
     requestTimeout: props.backendTimeout,
