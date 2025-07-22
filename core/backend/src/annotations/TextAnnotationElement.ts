@@ -8,8 +8,8 @@
 
 import { AnnotationTextStyleProps, BisCodeSpec, Code, CodeProps, CodeScopeProps, CodeSpec, ElementGeometry, ElementGeometryBuilderParams, EntityReferenceSet, Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { IModelDb } from "../IModelDb";
-import { AnnotationElement2d, DefinitionElement, GraphicalElement3d, OnElementIdArg, OnElementPropsArg } from "../Element";
-import { DbResult, Id64String } from "@itwin/core-bentley";
+import { AnnotationElement2d, DefinitionElement, GraphicalElement3d, OnElementPropsArg } from "../Element";
+import { Id64String } from "@itwin/core-bentley";
 import { layoutTextBlock, TextStyleResolver } from "./TextBlockLayout";
 import { appendTextAnnotationGeometry } from "./TextAnnotationGeometry";
 
@@ -315,7 +315,7 @@ export class AnnotationTextStyle extends DefinitionElement {
    * @param iModelDb - The iModelDb.
    * @param definitionModelId - The ID of the [[DefinitionModel]].
    * @param name - The name to assign to the `AnnotationTextStyle`.
-   * @param settings - Optional text style settings used to create the `AnnotationTextStyle`. Essentially an empty element if not provided.
+   * @param settings - Optional text style settings used to create the `AnnotationTextStyle`. Default settings will be used if not provided.
    * @param description - Optional description for the `AnnotationTextStyle`.
    */
   public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, settings?: TextStyleSettingsProps, description?: string) {
@@ -359,34 +359,6 @@ export class AnnotationTextStyle extends DefinitionElement {
     if (errors.length > 0) {
       throw new Error(`Invalid AnnotationTextStyle settings: ${errors.join(", ")}`);
     }
-  }
-
-  /**
-   * Checks that the AnnotationTextStyle is not in use before deleting it.
-   * @note The in use check is done here instead of in `deleteDefinitionElements`.
-   * @throws an error if it is referenced by any [[TextAnnotation2d]] or [[TextAnnotation3d]] elements.
-   * @inheritdoc
-   * @beta
-   */
-  protected static override onDelete(arg: OnElementIdArg): void {
-    super.onDelete(arg);
-    const query = `
-      SELECT TextAnnotationData FROM BisCore.TextAnnotation2d
-        UNION ALL
-      SELECT TextAnnotationData FROM BisCore.TextAnnotation3d
-    `;
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    arg.iModel.withPreparedStatement(query, (statement) => {
-      while (statement.step() === DbResult.BE_SQLITE_ROW) {
-        const row = statement.getRow();
-        const textAnnotationProps = parseTextAnnotationData(row.textAnnotationData);
-        if (!textAnnotationProps) continue;
-        const annotation = TextAnnotation.fromJSON(textAnnotationProps);
-        if (annotation.textBlock.styleId && annotation.textBlock.styleId === arg.id) {
-          throw new Error("Cannot delete AnnotationTextStyle because it is referenced by a TextAnnotation element");
-        }
-      }
-    });
   }
 
   private static parseTextStyleSettings(json: string | undefined): TextStyleSettingsProps | undefined {

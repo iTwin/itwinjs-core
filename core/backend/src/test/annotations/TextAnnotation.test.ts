@@ -356,42 +356,22 @@ describe("AnnotationTextStyle", () => {
   let imodel: StandaloneDb;
   let seedSubjectId: string;
   let seedDefinitionModel: string;
-  let seedCategoryId: string;
-  let seedModelId: string;
 
   before(async () => {
     imodel = await createIModel("AnnotationTextStyle");
     const jobSubjectId = createJobSubjectElement(imodel, "Job").insert();
     const definitionModel = DefinitionModel.insert(imodel, jobSubjectId, "Definition");
-    const { category, model } = insertDrawingModel(imodel, jobSubjectId, definitionModel);
 
     expect(jobSubjectId).not.to.be.undefined;
     expect(definitionModel).not.to.be.undefined;
-    expect(category).not.to.be.undefined;
-    expect(model).not.to.be.undefined;
 
     seedSubjectId = jobSubjectId;
     seedDefinitionModel = definitionModel;
-    seedCategoryId = category;
-    seedModelId = model;
   });
 
   after(() => {
     imodel.close();
   });
-
-  function createElement2d(createArgs?: CreateTextAnnotationArgs<TextAnnotation2dProps>): TextAnnotation2d {
-    return TextAnnotation2d.create(
-      imodel,
-      seedCategoryId,
-      seedModelId,
-      {
-        origin: { x: 0, y: 0 },
-        angle: Angle.createDegrees(0).toJSON(),
-      },
-      createArgs?.textAnnotationData,
-    )
-  }
 
   it("inserts a style and round-trips through JSON", async () => {
     const textStyle = TextStyleSettings.fromJSON({
@@ -428,42 +408,6 @@ describe("AnnotationTextStyle", () => {
     // stackedFractionScale should be positive
     annotationTextStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "invalid stackedFractionScale", { fontName: "Totally Real Font", stackedFractionScale: 0 });
     expect(() => annotationTextStyle.insert()).to.throw();
-  });
-
-  it("allows delete if unused", async () => {
-    const el0 = createAnnotationTextStyle(imodel, seedDefinitionModel, "unused delete", {fontName: "Totally Real Font"});
-    const elId = el0.insert();
-    const el1 = imodel.elements.getElement<AnnotationTextStyle>(elId);
-    expect(el1).not.to.be.undefined;
-    expect(el1 instanceof AnnotationTextStyle).to.be.true;
-
-    const annotation = TextAnnotation.fromJSON({ textBlock: { styleId: "" } });
-    const annoEl = createElement2d({ textAnnotationData: annotation.toJSON() });
-    annoEl.insert();
-
-
-    expect(() => imodel.elements.deleteDefinitionElements([elId])).to.not.throw();
-    const inUseIds = imodel.elements.deleteDefinitionElements([elId]);
-    expect(inUseIds).to.be.empty;
-    const el2 = imodel.elements.tryGetElement<AnnotationTextStyle>(elId);
-    expect(el2).to.be.undefined;
-  });
-
-  it("does not allow delete if used", async () => {
-    const el0 = createAnnotationTextStyle(imodel, seedDefinitionModel, "used delete", {fontName: "Totally Real Font"});
-    const elId = el0.insert();
-    const el1 = imodel.elements.getElement<AnnotationTextStyle>(elId);
-    expect(el1).not.to.be.undefined;
-    expect(el1 instanceof AnnotationTextStyle).to.be.true;
-
-    const annotation = TextAnnotation.fromJSON({ textBlock: { styleId: elId } });
-    const annoEl = createElement2d({ textAnnotationData: annotation.toJSON() });
-    annoEl.insert();
-
-    expect(() => imodel.elements.deleteDefinitionElements([elId])).to.throw("Cannot delete AnnotationTextStyle because it is referenced by a TextAnnotation element");
-    const el2 = imodel.elements.tryGetElement<AnnotationTextStyle>(elId);
-    expect(el2).not.to.be.undefined;
-    expect(el2 instanceof AnnotationTextStyle).to.be.true;
   });
 
   it("uses default style if none specified", async () => {
