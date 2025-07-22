@@ -38,6 +38,7 @@ Desktop apps can also open cloud hosted iModels. If you do not have access to on
 ## Useful Links
 
 - [iTwin Desktop Viewer React](https://www.npmjs.com/package/@itwin/desktop-viewer-react)
+- [iTwin Desktop Viewer Vite Template](https://github.com/iTwin/viewer/tree/master/packages/templates/desktop)
 - [Vite](https://vite.dev/guide/)
 
 ## Next Steps

@@ -39,6 +39,7 @@ The application is built using [Vite](https://github.com/vitejs/vite), and scaff
 ## Useful Links
 
 - [iTwin Viewer React](https://www.npmjs.com/package/@itwin/web-viewer-react)
+- [iTwin Web Viewer Vite Template](https://github.com/iTwin/viewer/tree/master/packages/templates/web)
 - [Vite](https://vite.dev/guide/)
 
 ## Next Steps
