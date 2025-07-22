@@ -55,7 +55,14 @@
     "chai-subset": "1.6.0",
     "cpx2": "^3.0.0",
     "deep-equal": "^1",
+<<<<<<< HEAD
     "faker": "^4.1.0",
+=======
+    "dotenv-expand": "^5.1.0",
+    "dotenv": "^16.4.5",
+    "eslint-config-prettier": "^9.1.2",
+    "eslint": "^9.31.0",
+>>>>>>> f143f8d082 (bump eslint-config-prettier versions CVE-2025-54313 (#8346))
     "fast-sort": "^3.0.2",
     "fast-xml-parser": "^4.4.1",
     "mocha": "^10.2.0",

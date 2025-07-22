@@ -78,6 +78,7 @@
     "cpx2": "^3.0.0",
     "cross-env": "^7.0.3",
     "deep-equal": "^1",
+<<<<<<< HEAD
     "eslint": "^9.13.0",
     "eslint-config-prettier": "^9.1.0",
     "faker": "^4.1.0",
@@ -85,6 +86,13 @@
     "jsdom-global": "3.0.2",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
+=======
+    "eslint": "^9.31.0",
+    "eslint-config-prettier": "^9.1.2",
+    "internal-tools": "workspace:*",
+    "jsdom": "^26.0.0",
+    "mocha": "^11.1.0",
+>>>>>>> f143f8d082 (bump eslint-config-prettier versions CVE-2025-54313 (#8346))
     "prettier": "^3.2.5",
     "rimraf": "^3.0.2",
     "sinon": "^17.0.2",
