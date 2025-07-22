@@ -1,5 +1,7 @@
 const iTwinPlugin = require("@itwin/eslint-plugin");
 const prettierConfig = require("eslint-config-prettier");
+const eslintBaseConfig = require("../../common/config/eslint/eslint.config.base");
+
 
 module.exports = [
   {
@@ -13,4 +15,5 @@ module.exports = [
       curly: ["error", "all"],
     },
   },
+  ...eslintBaseConfig
 ];

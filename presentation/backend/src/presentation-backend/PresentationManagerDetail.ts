@@ -505,6 +505,7 @@ function createNativePlatform(
   workerThreadsCount: number,
   updateCallback: (updateInfo: UpdateInfo | undefined) => void,
   caching: PresentationManagerProps["caching"],
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   defaultFormats: FormatsMap | undefined,
   useMmap: boolean | number | undefined,
 ): NativePlatformDefinition {
@@ -542,6 +543,7 @@ function createNativePlatform(
     return directory ? path.resolve(directory) : "";
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   function toNativeUnitFormatsMap(map: FormatsMap | undefined): NativePresentationDefaultUnitFormats | undefined {
     if (!map) {
       return undefined;
