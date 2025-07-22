@@ -73,7 +73,7 @@
     "dotenv": "^16.4.5",
     "dotenv-expand": "^5.1.0",
     "eslint": "^9.31.0",
-    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-prettier": "^9.1.2",
     "internal-tools": "workspace:*",
     "jsdom": "^19.0.0",
     "jsdom-global": "3.0.2",

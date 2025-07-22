@@ -1937,7 +1937,7 @@ importers:
       dotenv: ^16.4.5
       dotenv-expand: ^5.1.0
       eslint: ^9.31.0
-      eslint-config-prettier: ^9.1.0
+      eslint-config-prettier: ^9.1.2
       faker: ^4.1.0
       fast-sort: ^3.0.2
       fast-xml-parser: ^4.4.1
@@ -2003,7 +2003,7 @@ importers:
       dotenv: 16.4.5
       dotenv-expand: 5.1.0
       eslint: 9.31.0
-      eslint-config-prettier: 9.1.0_eslint@9.31.0
+      eslint-config-prettier: 9.1.2_eslint@9.31.0
       i18next-http-backend: 1.4.4
       internal-tools: link:../../tools/internal
       jsdom: 19.0.0
@@ -2214,7 +2214,7 @@ importers:
       cross-env: ^7.0.3
       deep-equal: ^1
       eslint: ^9.31.0
-      eslint-config-prettier: ^9.1.0
+      eslint-config-prettier: ^9.1.2
       faker: ^4.1.0
       mocha: ^10.2.0
       nyc: ^15.1.0
@@ -2267,7 +2267,7 @@ importers:
       cross-env: 7.0.3
       deep-equal: 1.0.0
       eslint: 9.31.0
-      eslint-config-prettier: 9.1.0_eslint@9.31.0
+      eslint-config-prettier: 9.1.2_eslint@9.31.0
       faker: 4.1.0
       mocha: 10.2.0
       nyc: 15.1.0
@@ -2306,7 +2306,7 @@ importers:
       cross-env: ^7.0.3
       deep-equal: ^1
       eslint: ^9.31.0
-      eslint-config-prettier: ^9.1.0
+      eslint-config-prettier: ^9.1.2
       faker: ^4.1.0
       json-schema-faker: 0.5.0-rc16
       mocha: ^10.2.0
@@ -2347,7 +2347,7 @@ importers:
       cross-env: 7.0.3
       deep-equal: 1.0.0
       eslint: 9.31.0
-      eslint-config-prettier: 9.1.0_eslint@9.31.0
+      eslint-config-prettier: 9.1.2_eslint@9.31.0
       faker: 4.1.0
       json-schema-faker: 0.5.0-rc16
       mocha: 10.2.0
@@ -2389,7 +2389,7 @@ importers:
       cross-env: ^7.0.3
       deep-equal: ^1
       eslint: ^9.31.0
-      eslint-config-prettier: ^9.1.0
+      eslint-config-prettier: ^9.1.2
       faker: ^4.1.0
       jsdom: ^19.0.0
       jsdom-global: 3.0.2
@@ -2433,7 +2433,7 @@ importers:
       cross-env: 7.0.3
       deep-equal: 1.0.0
       eslint: 9.31.0
-      eslint-config-prettier: 9.1.0_eslint@9.31.0
+      eslint-config-prettier: 9.1.2_eslint@9.31.0
       faker: 4.1.0
       jsdom: 19.0.0
       jsdom-global: 3.0.2_jsdom@19.0.0
@@ -8427,8 +8427,8 @@ packages:
       source-map: 0.6.1
     dev: true
 
-  /eslint-config-prettier/9.1.0_eslint@9.31.0:
-    resolution: {integrity: sha512-NSWl5BFQWEPi1j4TjVNItzYV7dZXZ+wP6I6ZhrBGpChQhZRUaElihE9uRRkcbRnNb76UMKDF3r+WTmNcGPKsqw==}
+  /eslint-config-prettier/9.1.2_eslint@9.31.0:
+    resolution: {integrity: sha512-iI1f+D2ViGn+uvv5HuHVUamg8ll4tN+JRHGc6IJi4TP9Kl976C57fzPXgseXNs8v0iA8aSJpHsTWjDb9QJamGQ==}
     hasBin: true
     peerDependencies:
       eslint: '>=7.0.0'
