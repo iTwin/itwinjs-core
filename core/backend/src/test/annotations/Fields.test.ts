@@ -185,7 +185,7 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
   iModel.saveChanges();
 }
 
-describe.only("UpdateFieldsContext", () => {
+describe("UpdateFieldsContext", () => {
   let imodel: SnapshotDb;
   let model: Id64String;
   let category: Id64String;
@@ -214,7 +214,7 @@ describe.only("UpdateFieldsContext", () => {
       code: Code.createEmpty(),
       intProp: 100,
       point: { x: 1, y: 2, z: 3 },
-      strings: ["a", "b", "c"],
+      strings: ["a", "b", `"name": "c"`],
       outerStruct: {
         innerStruct: { bool: false, doubles: [1, 2, 3 ] },
         innerStructs: [{ bool: true, doubles: [] }, { bool: false, doubles: [0] }],
@@ -247,7 +247,7 @@ describe.only("UpdateFieldsContext", () => {
     return id;
   }
 
-  describe.only("getProperty", () => {
+  describe("getProperty", () => {
     function expectValue(expected: any, propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String = elementId, deletedDependency = false): void {
       if (typeof propertyHost === "string") {
         propertyHost = { schemaName: "Fields", className: "TestElement", elementId: propertyHost };
@@ -261,7 +261,7 @@ describe.only("UpdateFieldsContext", () => {
 
       const context = createUpdateContext(propertyHost.elementId, imodel, deletedDependency);
       const actual = context.getProperty(field);
-      expect(actual?.value).to.equal(expected);
+      expect(actual?.value).to.deep.equal(expected);
     }
 
     it("returns a primitive property value", () => {
@@ -269,19 +269,20 @@ describe.only("UpdateFieldsContext", () => {
     });
 
     it("treats points as primitive values", () => {
-      
+      expectValue({ x: 1, y: 2, z: 3 }, { propertyName: "point" });
+      expectValue(undefined, { propertyName: "point", accessors: ["x"] });
     });
 
     it("returns a primitive array value", () => {
       expectValue("a", { propertyName: "strings", accessors: [0] });
       expectValue("b", { propertyName: "strings", accessors: [1] });
-      expectValue("c", { propertyName: "strings", accessors: [2] });
+      expectValue(`"name": "c"`, { propertyName: "strings", accessors: [2] });
     });
 
     it("supports negative array indices", () => {
       expectValue("a", { propertyName: "strings", accessors: [-3] });
       expectValue("b", { propertyName: "strings", accessors: [-2] });
-      expectValue("c", { propertyName: "strings", accessors: [-1] });
+      expectValue(`"name": "c"`, { propertyName: "strings", accessors: [-1] });
     });
   
     it("returns undefined if the dependency was deleted", () => {
@@ -293,7 +294,7 @@ describe.only("UpdateFieldsContext", () => {
     });
 
     it("returns undefined if the host element is not of the specified class or a subclass thereof", () => {
-      
+      expectValue(undefined, { propertyName: "origin" }, { schemaName: "BisCore", className: "GeometricElement2d", elementId });
     });
 
     it("returns undefined if an access string is specified for a non-object property", () => {
@@ -304,14 +305,6 @@ describe.only("UpdateFieldsContext", () => {
       expectValue(undefined, { propertyName: "nonExistentProperty" });
     });
 
-    it("returns undefined if the specified class does not exist", () => {
-      
-    });
-
-    it("returns undefined if the specified class is not an entity class", () => {
-      
-    });
-  
     it("returns undefined if the specified property is null", () => {
       expectValue(undefined, { propertyName: "maybeNull" });
     });
@@ -341,6 +334,10 @@ describe.only("UpdateFieldsContext", () => {
         expectValue(index + 1, { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", index]} );
         expectValue(3 - index, { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", -1 - index] });
       }
+
+      expectValue(9, { propertyName: "outerStructs", accessors: [0, "innerStruct", "doubles", 1] });
+      expectValue(false, { propertyName: "outerStructs", accessors: [0, "innerStructs", -1, "bool"] });
+      expectValue(5, { propertyName: "outerStructs", accessors: [0, "innerStructs", 0, "doubles", 0] });
     });
 
     it("returns arbitrarily-nested JSON properties", () => {
@@ -353,6 +350,12 @@ describe.only("UpdateFieldsContext", () => {
 
       expectValue(12345, { propertyName: "jsonProperties", jsonAccessors: ["zoo", "address", "zipcode"] });
       expectValue("scree!", { propertyName: "jsonProperties", jsonAccessors: ["zoo", "birds", 1, "sound"] });
+    });
+
+    it("returns undefined if JSON accessors applied to non-JSON property", () => {
+      expectValue(undefined, { propertyName: "int", jsonAccessors: ["whatever"] });
+      expectValue(undefined, { propertyName: "strings", accessors: [2, "name"] });
+      expectValue(undefined, { propertyName: "outerStruct", accessors: ["innerStruct"], jsonAccessors: ["bool"] });
     });
   });
 });
