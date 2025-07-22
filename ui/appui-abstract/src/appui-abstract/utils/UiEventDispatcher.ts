@@ -10,7 +10,7 @@ import { BeUiEvent } from "@itwin/core-bentley";
 
 /** UiSync Event arguments. Contains a set of lower case event Ids.
  * @public
- * @deprecated in 4.2.x - will not be removed until after 2026-06-13. Please use [[UiSyncEventArgs]] in @itwin/appui-react
+ * @deprecated in 4.2.0 - will not be removed until after 2026-06-13. Please use [[UiSyncEventArgs]] in @itwin/appui-react
  */
 export interface UiSyncEventArgs {
   eventIds: Set<string>;
@@ -18,14 +18,15 @@ export interface UiSyncEventArgs {
 
 /** UiSync Event class.
  * @public
- * @deprecated in 4.2.x - will not be removed until after 2026-06-13. Use [[UiSyncEvent]] from @itwin/appui-react.
+ * @deprecated in 4.2.0 - will not be removed until after 2026-06-13. Use [[UiSyncEvent]] from @itwin/appui-react.
  */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export class UiSyncEvent extends BeUiEvent<UiSyncEventArgs> { }
 
 /** This class is used to send eventIds to interested UI components so the component can determine if it needs
  * to refresh its display by calling setState on itself.
  * @public
- * @deprecated in 4.2.x - will not be removed until after 2026-06-13. Use [[SyncUiEventDispatcher]] from @itwin/appui-react.
+ * @deprecated in 4.2.0 - will not be removed until after 2026-06-13. Use [[SyncUiEventDispatcher]] from @itwin/appui-react.
  */
 export class UiEventDispatcher {
   private _syncEventTimerId: number | undefined;
