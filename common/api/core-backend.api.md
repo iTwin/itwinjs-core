@@ -312,27 +312,13 @@ export class AnnotationTextStyle extends DefinitionElement {
     protected constructor(props: AnnotationTextStyleProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // (undocumented)
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, settings?: TextStyleSettingsProps, description?: string): AnnotationTextStyle;
-    // (undocumented)
     static createCode(iModel: IModelDb, definitionModelId: CodeScopeProps, name: string): Code;
-    // @beta
-    protected static readonly _customHandledProps: CustomHandledProperty[];
-    // (undocumented)
     description?: string;
-    // @beta
-    static deserialize(props: DeserializeEntityArgs): AnnotationTextStyleProps;
-    // (undocumented)
     static fromJSON(props: AnnotationTextStyleProps, iModel: IModelDb): AnnotationTextStyle;
     // @beta
-    protected static onDelete(arg: OnElementIdArg): void;
-    // @beta
     protected static onInsert(arg: OnElementPropsArg): void;
-    // @beta
-    static serialize(props: AnnotationTextStyleProps, iModel: IModelDb): ECSqlRow;
-    // (undocumented)
     settings: TextStyleSettings;
-    // (undocumented)
     toJSON(): AnnotationTextStyleProps;
 }
 
@@ -6353,29 +6339,16 @@ export class TextAnnotation2d extends AnnotationElement2d {
     protected constructor(props: TextAnnotation2dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // (undocumented)
     protected collectReferenceIds(ids: EntityReferenceSet): void;
-    // (undocumented)
     static create(iModelDb: IModelDb, category: Id64String, model: Id64String, placement: Placement2dProps, textAnnotationData?: TextAnnotationProps, code?: CodeProps): TextAnnotation2d;
-    // @beta
-    protected static readonly _customHandledProps: CustomHandledProperty[];
-    // @beta
-    static deserialize(props: DeserializeEntityArgs): TextAnnotation2dProps;
-    // (undocumented)
     static fromJSON(props: TextAnnotation2dProps, iModel: IModelDb): TextAnnotation2d;
     getAnnotation(): TextAnnotation | undefined;
     // @beta
     protected static onInsert(arg: OnElementPropsArg): void;
     // @beta
     protected static onUpdate(arg: OnElementPropsArg): void;
-    // @beta
-    static serialize(props: TextAnnotation2dProps, iModel: IModelDb): ECSqlRow;
     setAnnotation(annotation: TextAnnotation): void;
-    // (undocumented)
-    textAnnotationData?: string;
-    // (undocumented)
     toJSON(): TextAnnotation2dProps;
-    // (undocumented)
     protected static updateGeometry(iModelDb: IModelDb, props: TextAnnotation2dProps): void;
 }
 
@@ -6384,29 +6357,16 @@ export class TextAnnotation3d extends GraphicalElement3d {
     protected constructor(props: TextAnnotation3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // (undocumented)
     protected collectReferenceIds(ids: EntityReferenceSet): void;
-    // (undocumented)
     static create(iModelDb: IModelDb, category: Id64String, model: Id64String, placement: Placement3dProps, textAnnotationData?: TextAnnotationProps, code?: CodeProps): TextAnnotation3d;
-    // @beta
-    protected static readonly _customHandledProps: CustomHandledProperty[];
-    // @beta
-    static deserialize(props: DeserializeEntityArgs): TextAnnotation3dProps;
-    // (undocumented)
     static fromJSON(props: TextAnnotation3dProps, iModel: IModelDb): TextAnnotation3d;
     getAnnotation(): TextAnnotation | undefined;
     // @beta
     protected static onInsert(arg: OnElementPropsArg): void;
     // @beta
     protected static onUpdate(arg: OnElementPropsArg): void;
-    // @beta
-    static serialize(props: TextAnnotation3dProps, iModel: IModelDb): ECSqlRow;
     setAnnotation(annotation: TextAnnotation): void;
-    // (undocumented)
-    textAnnotationData?: string;
-    // (undocumented)
     toJSON(): TextAnnotation3dProps;
-    // (undocumented)
     protected static updateGeometry(iModelDb: IModelDb, props: TextAnnotation3dProps): void;
 }
 
@@ -6439,7 +6399,6 @@ export class TextStyleResolver {
     findTextStyle(id: Id64String): TextStyleSettings;
     resolveParagraphSettings(paragraph: Paragraph): TextStyleSettings;
     resolveRunSettings(paragraph: Paragraph, run: Run): TextStyleSettings;
-    // (undocumented)
     resolveTextAnnotationLeaderSettings(leader: TextAnnotationLeader): TextStyleSettings;
     readonly scaleFactor: number;
 }
