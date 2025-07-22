@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, FieldPropertyHost, FieldPropertyPath, FieldRun, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import { Code, FieldPropertyHost, FieldPropertyPath, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextBlock } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { createUpdateContext, FieldProperty, updateField } from "../../internal/annotations/fields";
+import { createUpdateContext, FieldProperty, updateField, updateFields } from "../../internal/annotations/fields";
 import { Id64String } from "@itwin/core-bentley";
 import { SpatialCategory } from "../../Category";
 import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
@@ -33,7 +33,7 @@ describe("updateField", () => {
         propertyPath.accessors?.[1] === "nestedProperty" &&
         propertyValue !== undefined
       ) {
-        return { value: propertyValue, metadata: { } as any };
+        return { value: propertyValue, metadata: {} as any };
       }
       return undefined;
     },
@@ -135,7 +135,7 @@ const fieldsSchemaXml = `
     <ECStructProperty propertyName="innerStruct" typeName="InnerStruct"/>
     <ECStructArrayProperty propertyName="innerStructs" typeName="InnerStruct" minOccurs="0" maxOccurs="unbounded"/>
   </ECStructClass>
-  
+
   <ECEntityClass typeName="TestElement" modifier="None">
     <BaseClass>bis:PhysicalElement</BaseClass>
     <ECProperty propertyName="intProp" typeName="int"/>
@@ -185,7 +185,7 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
   iModel.saveChanges();
 }
 
-describe.only("updateFields", () => {
+describe("updateFields", () => {
   let imodel: SnapshotDb;
   let model: Id64String;
   let category: Id64String;
@@ -205,7 +205,7 @@ describe.only("updateFields", () => {
   after(() => {
     imodel.close();
   });
-  
+
   function insertElement(): Id64String {
     const props: TestElementProps = {
       classFullName: "Fields:TestElement",
@@ -216,7 +216,7 @@ describe.only("updateFields", () => {
       point: { x: 1, y: 2, z: 3 },
       strings: ["a", "b", `"name": "c"`],
       outerStruct: {
-        innerStruct: { bool: false, doubles: [1, 2, 3 ] },
+        innerStruct: { bool: false, doubles: [1, 2, 3] },
         innerStructs: [{ bool: true, doubles: [] }, { bool: false, doubles: [0] }],
       },
       outerStructs: [{
@@ -284,7 +284,7 @@ describe.only("updateFields", () => {
       expectValue("b", { propertyName: "strings", accessors: [-2] });
       expectValue(`"name": "c"`, { propertyName: "strings", accessors: [-1] });
     });
-  
+
     it("returns undefined if the dependency was deleted", () => {
       expectValue(undefined, { propertyName: "intProp" }, elementId, true);
     });
@@ -300,7 +300,7 @@ describe.only("updateFields", () => {
     it("returns undefined if an access string is specified for a non-object property", () => {
       expectValue(undefined, { propertyName: "intProp", accessors: ["property"] });
     });
-  
+
     it("returns undefined if the specified property does not exist", () => {
       expectValue(undefined, { propertyName: "nonExistentProperty" });
     });
@@ -318,7 +318,7 @@ describe.only("updateFields", () => {
         expectValue(undefined, { propertyName: "strings", accessors: [index] });
       }
     });
-    
+
     it("returns undefined for a non-primitive value", () => {
       expectValue(undefined, { propertyName: "strings" });
       expectValue(undefined, { propertyName: "outerStruct" });
@@ -327,11 +327,11 @@ describe.only("updateFields", () => {
       expectValue(undefined, { propertyName: "outerStructs", accessors: [0] });
       expectValue(undefined, { propertyName: "outerStructs", accessors: [0, "innerStruct"] });
     });
-  
+
     it("returns arbitrarily-nested properties of structs and struct arrays", () => {
       expectValue(false, { propertyName: "outerStruct", accessors: ["innerStruct", "bool"] });
       for (const index of [0, 1, 2]) {
-        expectValue(index + 1, { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", index]} );
+        expectValue(index + 1, { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", index] });
         expectValue(3 - index, { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", -1 - index] });
       }
 
@@ -341,7 +341,7 @@ describe.only("updateFields", () => {
     });
 
     it("returns arbitrarily-nested JSON properties", () => {
-      expectValue("abc", { propertyName: "jsonProperties", jsonAccessors: ["string"]});
+      expectValue("abc", { propertyName: "jsonProperties", jsonAccessors: ["string"] });
 
       expectValue(10, { propertyName: "jsonProperties", jsonAccessors: ["ints", 0] });
       expectValue(13, { propertyName: "jsonProperties", jsonAccessors: ["ints", 3] });
@@ -360,15 +360,66 @@ describe.only("updateFields", () => {
   });
 
   it("recomputes cached content", () => {
-    
-  });
+    const textBlock = TextBlock.create({ styleName: "blockStyle" });
+    const fieldRun = FieldRun.create({
+      styleName: "fieldStyle",
+      propertyHost: { elementId, schemaName: "Fields", className: "TestElement" },
+      propertyPath: { propertyName: "intProp" },
+      cachedContent: "oldValue",
+    });
 
-  it("returns the number of fields updated", () => {
-    
+    textBlock.appendRun(fieldRun);
+
+    const context = createUpdateContext(elementId, imodel, false);
+    const updatedCount = updateFields(textBlock, context);
+
+    expect(updatedCount).to.equal(1);
+    expect(fieldRun.cachedContent).to.equal("100"); // `intProp` value from the test element
   });
 
   it("does not update a field if recomputed content matches cached content", () => {
-    
+    const textBlock = TextBlock.create({ styleName: "blockStyle" });
+    const fieldRun = FieldRun.create({
+      styleName: "fieldStyle",
+      propertyHost: { elementId, schemaName: "Fields", className: "TestElement" },
+      propertyPath: { propertyName: "intProp" },
+      cachedContent: "100", // Matches the current value of `intProp`
+    });
+
+    textBlock.appendRun(fieldRun);
+
+    const context = createUpdateContext(elementId, imodel, false);
+    const updatedCount = updateFields(textBlock, context);
+
+    expect(updatedCount).to.equal(0);
+    expect(fieldRun.cachedContent).to.equal("100");
+  });
+
+  it("returns the number of fields updated", () => {
+    const textBlock = TextBlock.create({ styleName: "blockStyle" });
+    const fieldRun1 = FieldRun.create({
+      styleName: "fieldStyle",
+      propertyHost: { elementId, schemaName: "Fields", className: "TestElement" },
+      propertyPath: { propertyName: "intProp" },
+      cachedContent: "100",
+    });
+
+    const fieldRun2 = FieldRun.create({
+      styleName: "fieldStyle",
+      propertyHost: { elementId, schemaName: "Fields", className: "TestElement" },
+      propertyPath: { propertyName: "strings", accessors: [0] },
+      cachedContent: "oldValue",
+    });
+
+    textBlock.appendRun(fieldRun1);
+    textBlock.appendRun(fieldRun2);
+
+    const context = createUpdateContext(elementId, imodel, false);
+    const updatedCount = updateFields(textBlock, context);
+
+    expect(updatedCount).to.equal(1);
+    expect(fieldRun1.cachedContent).to.equal("100"); // `intProp` value
+    expect(fieldRun2.cachedContent).to.equal("a"); // `point` value
   });
 });
 
