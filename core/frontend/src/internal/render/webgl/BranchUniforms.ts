@@ -8,7 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { ClipVector, Matrix3d, Matrix4d, Point3d, Transform, XYZ } from "@itwin/core-geometry";
-import { ClipStyle, HiddenLine, ViewFlags } from "@itwin/core-common";
+import { ClipStyle, ContourDisplay, HiddenLine, ViewFlags } from "@itwin/core-common";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
 import { BranchState } from "./BranchState";
 import { BranchStack } from "./BranchStack";
@@ -106,7 +106,6 @@ export class BranchUniforms {
     this._stack.pushBranch(branch);
 
     this.setClipStyle(this.top.disableClipStyle);
-
     if (this.top.clipVolume)
       this.clipStack.push(this.top.clipVolume);
 
@@ -147,8 +146,8 @@ export class BranchUniforms {
     assert((this._target.isReadPixelsInProgress ? 2 : 1) === this._stack.length);
   }
 
-  public changeRenderPlan(vf: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined): void {
-    this._stack.changeRenderPlan(vf, is3d, hline);
+  public changeRenderPlan(vf: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined, contourLine?: ContourDisplay | undefined): void {
+    this._stack.changeRenderPlan(vf, is3d, hline, contourLine);
   }
 
   public updateViewClip(clip: ClipVector | undefined, style: ClipStyle): void {
