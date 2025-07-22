@@ -91,10 +91,11 @@ export abstract class RealityTileLoader {
     const geom = reader?.readGltfAndCreateGeometry(tile.tree.iModelTransform);
     const xForm = tile.reprojectionTransform;
     if (tile.tree.reprojectGeometry && geom?.polyfaces && xForm) {
-      geom.polyfaces = geom.polyfaces.map((pf) => pf.cloneTransformed(xForm));
+      const polyfaces = geom.polyfaces.map((pf) => pf.cloneTransformed(xForm));
+      return { geometry: { polyfaces } };
+    } else {
+      return { geometry: geom };
     }
-
-    return { geometry: geom };
   }
 
   private async loadGraphicsFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {

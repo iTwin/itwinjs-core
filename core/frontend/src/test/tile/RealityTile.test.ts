@@ -267,38 +267,27 @@ describe("RealityTile", () => {
     }
   });
 
-  it.only("should not apply reprojection transform twice", async () => {
+  it("should not apply reprojection transform twice", async () => {
     // Create a test tree with reprojectGeometry = true
     const tree = new TestRealityTree(0, imodel, reader, true, transform);
     const tile = tree.rootTile;
-    const result = await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
 
-    expect(result.geometry).to.not.be.undefined;
-    expect(result.geometry?.polyfaces).to.have.length(1);
+    // Loop to call loadGeometryFromStream twice
+    for (let i = 0; i < 2; i++) {
+      const result = await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
 
-    if (result.geometry?.polyfaces) {
-      const polyface = result.geometry.polyfaces[0];
-      const points = polyface.data.point.getPoint3dArray();
+      expect(result.geometry).to.not.be.undefined;
+      expect(result.geometry?.polyfaces).to.have.length(1);
 
-      // Check that the points have been reprojected
-      expectPointToEqual(points[0], 5, 5, 5);
-      expectPointToEqual(points[1], 6, 5, 5);
-      expectPointToEqual(points[2], 6, 6, 5);
-    }
+      if (result.geometry?.polyfaces) {
+        const polyface = result.geometry.polyfaces[0];
+        const points = polyface.data.point.getPoint3dArray();
 
-    const result2 = await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
-
-    expect(result2.geometry).to.not.be.undefined;
-    expect(result2.geometry?.polyfaces).to.have.length(1);
-
-    if (result2.geometry?.polyfaces) {
-      const polyface2 = result2.geometry.polyfaces[0];
-      const points2 = polyface2.data.point.getPoint3dArray();
-
-      // Check that the points have been reprojected
-      expectPointToEqual(points2[0], 5, 5, 5);
-      expectPointToEqual(points2[1], 6, 5, 5);
-      expectPointToEqual(points2[2], 6, 6, 5);
+        // Check that the points have been reprojected only once
+        expectPointToEqual(points[0], 5, 5, 5);
+        expectPointToEqual(points[1], 6, 5, 5);
+        expectPointToEqual(points[2], 6, 6, 5);
+      }
     }
   });
 });
