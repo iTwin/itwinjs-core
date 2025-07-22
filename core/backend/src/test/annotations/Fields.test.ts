@@ -140,6 +140,7 @@ const fieldsSchemaXml = `
     <BaseClass>bis:PhysicalElement</BaseClass>
     <ECProperty propertyName="intProp" typeName="int"/>
     <ECProperty propertyName="point" typeName="point3d"/>
+    <ECProperty propertyName="maybeNull" typeName="int"/>
     <ECArrayProperty propertyName="strings" typeName="string" minOccurs="0" maxOccurs="unbounded"/>
     <ECStructProperty propertyName="outerStruct" typeName="OuterStruct"/>
     <ECStructArrayProperty propertyName="outerStructs" typeName="OuterStruct" minOccurs="0" maxOccurs="unbounded"/>
@@ -160,6 +161,7 @@ interface OuterStruct {
 interface TestElementProps extends PhysicalElementProps {
   intProp: number;
   point: XYAndZ;
+  maybeNull?: number;
   strings: string[];
   outerStruct: OuterStruct;
   outerStructs: OuterStruct[];
@@ -277,7 +279,9 @@ describe.only("UpdateFieldsContext", () => {
     });
 
     it("supports negative array indices", () => {
-      
+      expectValue("a", { propertyName: "strings", accessors: [-3] });
+      expectValue("b", { propertyName: "strings", accessors: [-2] });
+      expectValue("c", { propertyName: "strings", accessors: [-1] });
     });
   
     it("returns undefined if the dependency was deleted", () => {
@@ -309,7 +313,7 @@ describe.only("UpdateFieldsContext", () => {
     });
   
     it("returns undefined if the specified property is null", () => {
-      
+      expectValue(undefined, { propertyName: "maybeNull" });
     });
 
     it("returns undefined if an array index is specified for a non-array property", () => {
@@ -317,15 +321,26 @@ describe.only("UpdateFieldsContext", () => {
     });
 
     it("returns undefined if an array index is out of bounds", () => {
-      
+      for (const index of [3, 4, -4, -5]) {
+        expectValue(undefined, { propertyName: "strings", accessors: [index] });
+      }
     });
     
     it("returns undefined for a non-primitive value", () => {
-      
+      expectValue(undefined, { propertyName: "strings" });
+      expectValue(undefined, { propertyName: "outerStruct" });
+      expectValue(undefined, { propertyName: "outerStruct", accessors: ["innerStruct"] });
+      expectValue(undefined, { propertyName: "outerStructs" });
+      expectValue(undefined, { propertyName: "outerStructs", accessors: [0] });
+      expectValue(undefined, { propertyName: "outerStructs", accessors: [0, "innerStruct"] });
     });
   
     it("returns arbitrarily-nested properties of structs and struct arrays", () => {
-      
+      expectValue(false, { propertyName: "outerStruct", accessors: ["innerStruct", "bool"] });
+      for (const index of [0, 1, 2]) {
+        expectValue(index + 1, { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", index]} );
+        expectValue(3 - index, { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", -1 - index] });
+      }
     });
 
     it("returns arbitrarily-nested JSON properties", () => {
