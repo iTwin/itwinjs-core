@@ -293,7 +293,6 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    */
   protected _collectTileGeometry(collector: TileGeometryCollector): void {
     const tree = this.treeOwner.load();
-
     switch (this.treeOwner.loadStatus) {
       case TileTreeLoadStatus.Loaded:
         assert(undefined !== tree);

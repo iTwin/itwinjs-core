@@ -640,15 +640,8 @@ export class RealityTile extends Tile {
       case "accept":
         if (!this.isReady)
           collector.addMissingTile(this.loadableTile);
-        else if (this.geometry?.polyfaces) {
-          const polyfaces = this.geometry.polyfaces;
-          // const xForm = this._reprojectionTransform;
-          // if (this.tree.reprojectGeometry && xForm) {
-          //   // If the tile is reprojected, transform the polyfaces to the reprojection transform.
-          //   polyfaces = polyfaces.map((pf) => pf.cloneTransformed(xForm));
-          // }
-          collector.polyfaces.push(...polyfaces);
-        }
+        else if (this.geometry?.polyfaces)
+          collector.polyfaces.push(...this.geometry.polyfaces);
 
         break;
     }

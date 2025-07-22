@@ -40,6 +40,7 @@ function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
 }
 
+/** Option for whether or not to produce geometry. If value is "reproject", geometry will be reprojected when loaded in [[RealityTileLoader.loadGeometryFromStream]]. */
 export type ProduceGeometryOption = "yes" | "no" | "reproject";
 
 interface RealityTreeId {

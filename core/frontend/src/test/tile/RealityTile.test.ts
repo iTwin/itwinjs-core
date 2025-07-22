@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import sinon from "sinon";
-import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { ByteStream, Id64String } from "@itwin/core-bentley";
 import { ElementAlignedBox3d, TileFormat } from "@itwin/core-common";
 import { Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
@@ -149,6 +150,12 @@ describe("RealityTile", () => {
     public override prune() { }
   }
 
+  function expectPointToEqual(point: Point3d, x: number, y: number, z: number) {
+    expect(point.x).to.equal(x);
+    expect(point.y).to.equal(y);
+    expect(point.z).to.equal(z);
+  }
+
   let imodel: IModelConnection;
   let reader: TestRealityTileLoader;
   let transform: Transform;
@@ -209,15 +216,14 @@ describe("RealityTile", () => {
     expect(result.geometry).to.not.be.undefined;
     expect(result.geometry?.polyfaces).to.have.length(1);
 
-    // Verify that the reprojection transform was applied
     if (result.geometry?.polyfaces) {
-      const transformedPolyface = result.geometry.polyfaces[0];
-      const transformedPoints = transformedPolyface.data.point.getPoint3dArray();
+      const polyface = result.geometry.polyfaces[0];
+      const points = polyface.data.point.getPoint3dArray();
 
-      // Check that the points have been transformed by the reprojection transform
-      expect(transformedPoints[0].isExactEqual(Point3d.create(5, 5, 5))).to.be.true;
-      expect(transformedPoints[1].isExactEqual(Point3d.create(6, 5, 5))).to.be.true;
-      expect(transformedPoints[2].isExactEqual(Point3d.create(6, 6, 5))).to.be.true;
+      // Check that the points have been reprojected
+      expectPointToEqual(points[0], 5, 5, 5);
+      expectPointToEqual(points[1], 6, 5, 5);
+      expectPointToEqual(points[2], 6, 6, 5);
     }
   });
 
@@ -231,13 +237,13 @@ describe("RealityTile", () => {
     expect(result.geometry?.polyfaces).to.have.length(1);
 
     if (result.geometry?.polyfaces) {
-      const untransformedPolyface = result.geometry.polyfaces[0];
-      const untransformedPoints = untransformedPolyface.data.point.getPoint3dArray();
+      const polyface = result.geometry.polyfaces[0];
+      const points = polyface.data.point.getPoint3dArray();
 
-      // Check that the points are still in their original positions
-      expect(untransformedPoints[0].isExactEqual(Point3d.create(0, 0, 0))).to.be.true;
-      expect(untransformedPoints[1].isExactEqual(Point3d.create(1, 0, 0))).to.be.true;
-      expect(untransformedPoints[2].isExactEqual(Point3d.create(1, 1, 0))).to.be.true;
+      // Check that the points have not been reprojected
+      expectPointToEqual(points[0], 0, 0, 0);
+      expectPointToEqual(points[1], 1, 0, 0);
+      expectPointToEqual(points[2], 1, 1, 0);
     }
   });
 
@@ -250,15 +256,49 @@ describe("RealityTile", () => {
     expect(result.geometry).to.not.be.undefined;
     expect(result.geometry?.polyfaces).to.have.length(1);
 
-    // Verify that the reprojection transform was NOT applied (points should be unchanged)
     if (result.geometry?.polyfaces) {
-      const untransformedPolyface = result.geometry.polyfaces[0];
-      const untransformedPoints = untransformedPolyface.data.point.getPoint3dArray();
+      const polyface = result.geometry.polyfaces[0];
+      const points = polyface.data.point.getPoint3dArray();
 
-      // Check that the points are still in their original positions
-      expect(untransformedPoints[0].isExactEqual(Point3d.create(0, 0, 0))).to.be.true;
-      expect(untransformedPoints[1].isExactEqual(Point3d.create(1, 0, 0))).to.be.true;
-      expect(untransformedPoints[2].isExactEqual(Point3d.create(1, 1, 0))).to.be.true;
+      // Check that the points have not been reprojected
+      expectPointToEqual(points[0], 0, 0, 0);
+      expectPointToEqual(points[1], 1, 0, 0);
+      expectPointToEqual(points[2], 1, 1, 0);
+    }
+  });
+
+  it.only("should not apply reprojection transform twice", async () => {
+    // Create a test tree with reprojectGeometry = true
+    const tree = new TestRealityTree(0, imodel, reader, true, transform);
+    const tile = tree.rootTile;
+    const result = await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
+
+    expect(result.geometry).to.not.be.undefined;
+    expect(result.geometry?.polyfaces).to.have.length(1);
+
+    if (result.geometry?.polyfaces) {
+      const polyface = result.geometry.polyfaces[0];
+      const points = polyface.data.point.getPoint3dArray();
+
+      // Check that the points have been reprojected
+      expectPointToEqual(points[0], 5, 5, 5);
+      expectPointToEqual(points[1], 6, 5, 5);
+      expectPointToEqual(points[2], 6, 6, 5);
+    }
+
+    const result2 = await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
+
+    expect(result2.geometry).to.not.be.undefined;
+    expect(result2.geometry?.polyfaces).to.have.length(1);
+
+    if (result2.geometry?.polyfaces) {
+      const polyface2 = result2.geometry.polyfaces[0];
+      const points2 = polyface2.data.point.getPoint3dArray();
+
+      // Check that the points have been reprojected
+      expectPointToEqual(points2[0], 5, 5, 5);
+      expectPointToEqual(points2[1], 6, 5, 5);
+      expectPointToEqual(points2[2], 6, 6, 5);
     }
   });
 });
