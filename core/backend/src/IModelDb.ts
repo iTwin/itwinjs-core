@@ -1593,6 +1593,7 @@ export namespace IModelDb {
     public getModelJson<T extends ModelProps>(modelIdArg: ModelLoadProps): T {
       const modelJson = this.tryGetModelJson<T>(modelIdArg);
       if (undefined === modelJson) {
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
         throw new IModelError(IModelStatus.NotFound, `Model=(id: ${modelIdArg.id}, code: ${modelIdArg.code})`);
       }
       return modelJson;
@@ -1764,6 +1765,7 @@ export namespace IModelDb {
     public getElementJson<T extends ElementProps>(elementId: ElementLoadProps): T {
       const elementProps = this.tryGetElementJson<T>(elementId);
       if (undefined === elementProps)
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
         throw new IModelError(IModelStatus.NotFound, `reading element={id: ${elementId.id} federationGuid: ${elementId.federationGuid}, code: ${elementId.code}}`);
       return elementProps;
     }
@@ -1826,6 +1828,7 @@ export namespace IModelDb {
         if (typeof elementId === "string" || elementId instanceof Code)
           throw new IModelError(IModelStatus.NotFound, `Element=${elementId}`);
         else
+          // eslint-disable-next-line @typescript-eslint/no-base-to-string
           throw new IModelError(IModelStatus.NotFound, `Element={id: ${elementId.id} federationGuid: ${elementId.federationGuid}, code: ${elementId.code}}`);
       }
       return element;
