@@ -47,7 +47,7 @@
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "^7.0.0",
     "chai": "^4.3.10",
-    "eslint": "^9.13.0",
+    "eslint": "^9.31.0",
     "glob": "^10.3.12",
     "mocha": "^11.1.0",
     "rimraf": "^6.0.1",
