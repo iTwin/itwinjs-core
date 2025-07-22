@@ -138,7 +138,7 @@ const fieldsSchemaXml = `
   
   <ECEntityClass typeName="TestElement" modifier="None">
     <BaseClass>bis:PhysicalElement</BaseClass>
-    <ECProperty propertyName="int" typeName="int"/>
+    <ECProperty propertyName="intProp" typeName="int"/>
     <ECProperty propertyName="point" typeName="point3d"/>
     <ECArrayProperty propertyName="strings" typeName="string" minOccurs="0" maxOccurs="unbounded"/>
     <ECStructProperty propertyName="outerStruct" typeName="OuterStruct"/>
@@ -158,7 +158,7 @@ interface OuterStruct {
 }
 
 interface TestElementProps extends PhysicalElementProps {
-  int: number;
+  intProp: number;
   point: XYAndZ;
   strings: string[];
   outerStruct: OuterStruct;
@@ -210,7 +210,7 @@ describe.only("UpdateFieldsContext", () => {
       model,
       category,
       code: Code.createEmpty(),
-      int: 100,
+      intProp: 100,
       point: { x: 1, y: 2, z: 3 },
       strings: ["a", "b", "c"],
       outerStruct: {
@@ -263,7 +263,7 @@ describe.only("UpdateFieldsContext", () => {
     }
 
     it("returns a primitive property value", () => {
-      expectValue(100, { propertyName: "int" });
+      expectValue(100, { propertyName: "intProp" });
     });
 
     it("treats points as primitive values", () => {
@@ -271,7 +271,9 @@ describe.only("UpdateFieldsContext", () => {
     });
 
     it("returns a primitive array value", () => {
-      
+      expectValue("a", { propertyName: "strings", accessors: [0] });
+      expectValue("b", { propertyName: "strings", accessors: [1] });
+      expectValue("c", { propertyName: "strings", accessors: [2] });
     });
 
     it("supports negative array indices", () => {
@@ -279,11 +281,11 @@ describe.only("UpdateFieldsContext", () => {
     });
   
     it("returns undefined if the dependency was deleted", () => {
-      expectValue(undefined, { propertyName: "int" }, elementId, true);
+      expectValue(undefined, { propertyName: "intProp" }, elementId, true);
     });
 
     it("returns undefined if the host element does not exist", () => {
-      expectValue(undefined, { propertyName: "int" }, "0xbaadf00d");
+      expectValue(undefined, { propertyName: "intProp" }, "0xbaadf00d");
     });
 
     it("returns undefined if the host element is not of the specified class or a subclass thereof", () => {
@@ -291,7 +293,7 @@ describe.only("UpdateFieldsContext", () => {
     });
 
     it("returns undefined if an access string is specified for a non-object property", () => {
-      expectValue(undefined, { propertyName: "int", accessors: ["property"] });
+      expectValue(undefined, { propertyName: "intProp", accessors: ["property"] });
     });
   
     it("returns undefined if the specified property does not exist", () => {
@@ -311,7 +313,7 @@ describe.only("UpdateFieldsContext", () => {
     });
 
     it("returns undefined if an array index is specified for a non-array property", () => {
-      expectValue(undefined, { propertyName: "int", accessors: [0] });
+      expectValue(undefined, { propertyName: "intProp", accessors: [0] });
     });
 
     it("returns undefined if an array index is out of bounds", () => {
