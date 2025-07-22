@@ -13,7 +13,7 @@ import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Schema, Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
 import { PhysicalElement } from "../../Element";
-import { TextAnnotation3d } from "../../core-backend";
+import { FontFile, TextAnnotation3d } from "../../core-backend";
 import { ElementDrivesTextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 
 describe("updateField", () => {
@@ -203,6 +203,10 @@ describe("Field evaluation", () => {
     model = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true)[1];
     category = SpatialCategory.insert(imodel, SnapshotDb.dictionaryId, "UpdateFieldsContextCategory", new SubCategoryAppearance());
     sourceElementId = insertTestElement();
+
+    await imodel.fonts.embedFontFile({
+      file: FontFile.createFromTrueTypeFileName(IModelTestUtils.resolveFontFile("Karla-Regular.ttf"))
+    });
   });
 
   after(() => {
@@ -458,8 +462,17 @@ describe("Field evaluation", () => {
 
       expectNumRelationships(0);
       
-      const target = insertAnnotationElement(undefined);
-      const rel = ElementDrivesTextAnnotation.create(imodel, sourceElementId, target);
+      const targetId = insertAnnotationElement(undefined);
+      expect(targetId).not.to.equal(Id64.invalid);
+
+      const target = imodel.elements.getElement(targetId);
+      expect(target.classFullName).to.equal("BisCore:TextAnnotation3d");
+      expect(target).instanceof(TextAnnotation3d);
+
+      const targetAnno = imodel.elements.getElement<TextAnnotation3d>(targetId);
+      expect(targetAnno).instanceof(TextAnnotation3d);
+
+      const rel = ElementDrivesTextAnnotation.create(imodel, sourceElementId, targetId);
       const relId = rel.insert();
       expect(relId).not.to.equal(Id64.invalid);
 
@@ -478,6 +491,7 @@ describe("Field evaluation", () => {
 
       const field = FieldRun.create({
         styleName: "style",
+        styleOverrides: { fontName: "Karla" },
         propertyHost: { elementId: sourceId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "intProp" },
         cachedContent: "old value",
@@ -494,11 +508,11 @@ describe("Field evaluation", () => {
       const source = imodel.elements.getElement<TestElement>(sourceId);
       source.setJsonProperty("test", { "prop": "value" });
       source.update();
-      expectText(targetId, "100");
+      expectText("100", targetId);
 
       source.intProp = 50;
       source.update();
-      expectText(targetId, "50");
+      expectText("50", targetId);
     });
 
     it("updates fields when source element is deleted", () => {
