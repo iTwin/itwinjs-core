@@ -352,7 +352,21 @@ export class AnnotationTextStyle extends DefinitionElement {
    */
   protected static override onInsert(arg: OnElementPropsArg): void {
     super.onInsert(arg);
-    const settingProps = AnnotationTextStyle.parseTextStyleSettings((arg.props as AnnotationTextStyleProps).settings);
+    this.validateSettings(arg.props as AnnotationTextStyleProps);
+  }
+
+  /**
+   * Validates that the AnnotationTextStyle's settings are valid before update.
+   * @inheritdoc
+   * @beta
+   */
+  protected static override onUpdate(arg: OnElementPropsArg): void {
+    super.onUpdate(arg);
+    this.validateSettings(arg.props as AnnotationTextStyleProps);
+  }
+
+  private static validateSettings(props: AnnotationTextStyleProps): void {
+    const settingProps = AnnotationTextStyle.parseTextStyleSettings(props.settings);
     if (!settingProps) return;
     const settings = TextStyleSettings.fromJSON(settingProps);
     const errors = settings.getValidationErrors();

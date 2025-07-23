@@ -410,6 +410,28 @@ describe("AnnotationTextStyle", () => {
     expect(() => annotationTextStyle.insert()).to.throw();
   });
 
+  it("does not allow updating of elements to invalid styles", async () => {
+    const annotationTextStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "valid style", { fontName: "Totally Real Font" });
+
+    const elId = annotationTextStyle.insert();
+    expect(Id64.isValidId64(elId)).to.be.true;
+    const el1 = imodel.elements.getElement<AnnotationTextStyle>(elId);
+    expect(el1).not.to.be.undefined;
+    expect(el1 instanceof AnnotationTextStyle).to.be.true;
+
+    el1.settings = el1.settings.clone({ fontName: "" });
+    expect(() => el1.update()).to.throw();
+    el1.settings = el1.settings.clone({ fontName: "Totally Real Font", lineHeight: 0 });
+    expect(() => el1.update()).to.throw();
+    el1.settings = el1.settings.clone({ lineHeight: 2, stackedFractionScale: 0 });
+    expect(() => el1.update()).to.throw();
+    el1.settings = el1.settings.clone({ stackedFractionScale: 0.45 });
+
+    el1.update();
+    const updatedElement = imodel.elements.getElement<AnnotationTextStyle>(elId);
+    expect(updatedElement.settings.toJSON()).to.deep.equal(el1.settings.toJSON());
+  });
+
   it("uses default style if none specified", async () => {
     const el0 = AnnotationTextStyle.fromJSON({
       classFullName: AnnotationTextStyle.classFullName,
