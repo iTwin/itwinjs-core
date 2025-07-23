@@ -14,8 +14,7 @@ public;interface;AnalysisStyleDisplacementProps
 public;interface;AnalysisStyleProps
 public;class;AnalysisStyleThematic
 public;interface;AnalysisStyleThematicProps
-public;interface;AnnotationTextStyleProps
-preview;interface;AnnotationTextStyleProps
+beta;interface;AnnotationTextStyleProps
 public;interface;AppearanceOverrideProps
 public;interface;AreaFillProps
 public;namespace;AreaPattern

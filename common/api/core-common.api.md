@@ -240,7 +240,7 @@ export interface AnalysisStyleThematicProps {
     thematicSettings?: ThematicGradientSettingsProps;
 }
 
-// @public @preview
+// @beta
 export interface AnnotationTextStyleProps extends DefinitionElementProps {
     description?: string;
     settings?: string;

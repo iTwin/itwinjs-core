@@ -400,7 +400,6 @@ export type {
 	AnalysisStyleDisplacementProps,
 	AnalysisStyleProps,
 	AnalysisStyleThematicProps,
-	AnnotationTextStyleProps,
 	AppearanceOverrideProps,
 	AreaFillProps,
 	AuxCoordSystem2dProps,
