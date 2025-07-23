@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Add test for issue where pullChange() created pending txns",
+      "comment": "",
       "type": "none"
     }
   ],
