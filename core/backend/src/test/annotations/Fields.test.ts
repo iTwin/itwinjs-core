@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, FieldPropertyHost, FieldPropertyPath, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock } from "@itwin/core-common";
+import { Code, FieldPropertyHost, FieldPropertyPath, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextRun } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, FieldProperty, updateField, updateFields } from "../../internal/annotations/fields";
@@ -487,7 +487,7 @@ describe("Field evaluation", () => {
 
     function createField(sourceId: Id64String, cachedContent: string, propertyName = "intProp"): FieldRun {
       return FieldRun.create({
-        "styleName": "style",
+        styleName: "style",
         styleOverrides: { fontName: "Karla" },
         propertyHost: { elementId: sourceId, schemaName: "Fields", className: "TestElement" },
         cachedContent,
@@ -532,7 +532,53 @@ describe("Field evaluation", () => {
       });
 
       it("deletes stale relationships", () => {
+        const sourceA = insertTestElement();
+        const sourceB = insertTestElement();
+
+        const block = TextBlock.create({ styleName: "style" });
+        block.appendRun(createField(sourceA, "A"));
+        block.appendRun(createField(sourceB, "B"));
+        const targetId = insertAnnotationElement(block);
+        imodel.saveChanges();
+
+        expectNumRelationships(2, targetId);
+        expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).not.to.be.undefined;
+        expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).not.to.be.undefined;
+
+        const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
+        const anno = target.getAnnotation()!;
+        anno.textBlock.paragraphs[0].runs.shift();
+        target.setAnnotation(anno);
+        target.update();
+        imodel.saveChanges();
         
+        expectNumRelationships(1, targetId);
+        expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).to.be.undefined;
+        expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).not.to.be.undefined;
+
+        anno.textBlock.paragraphs.length = 0;
+        anno.textBlock.appendRun(createField(sourceA, "A2"));
+        target.setAnnotation(anno);
+        target.update();
+        imodel.saveChanges();
+
+        expectNumRelationships(1, targetId);
+        expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).not.to.be.undefined;
+        expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).to.be.undefined;
+
+        anno.textBlock.paragraphs.length = 0;
+        anno.textBlock.appendRun(TextRun.create({
+          styleName: "style",
+          styleOverrides: { fontName: "Karla" },
+          content: "not a field",
+        }));
+        target.setAnnotation(anno);
+        target.update();
+        imodel.saveChanges();
+
+        expectNumRelationships(0, targetId);
+        expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).to.be.undefined;
+        expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).to.be.undefined;
       });
 
       it("ignores invalid source element Ids", () => {
