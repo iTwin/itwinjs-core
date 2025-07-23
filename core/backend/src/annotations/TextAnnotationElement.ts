@@ -8,11 +8,11 @@
 
 import { ElementGeometry, ElementGeometryBuilderParams, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps } from "@itwin/core-common";
 import { IModelDb } from "../IModelDb";
-import { AnnotationElement2d, GraphicalElement3d } from "../Element";
+import { AnnotationElement2d, GraphicalElement3d, OnElementIdArg } from "../Element";
 import { assert, Id64String } from "@itwin/core-bentley";
 import { layoutTextBlock } from "./TextBlockLayout";
 import { appendTextAnnotationGeometry } from "./TextAnnotationGeometry";
-import { ITextAnnotation, TextBlockAndId } from "./ElementDrivesTextAnnotation";
+import { ElementDrivesTextAnnotation, ITextAnnotation, TextBlockAndId } from "./ElementDrivesTextAnnotation";
 
 function getElementGeometryBuilderParams(iModel: IModelDb, _placementProps: PlacementProps, annotationProps: TextAnnotationProps, categoryId: Id64String, _subCategory?: Id64String): ElementGeometryBuilderParams {
   const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
@@ -69,6 +69,12 @@ export class TextAnnotation2d extends AnnotationElement2d implements ITextAnnota
   public updateTextBlocks(textBlocks: TextBlockAndId[]): void {
     return updateTextBlocks(this, textBlocks);
   }
+
+  /** @internal */
+  public static override onInserted(arg: OnElementIdArg): void {
+    super.onInserted(arg);
+    ElementDrivesTextAnnotation.updateFieldDependencies(arg.id, arg.iModel);
+  }
 }
 
 /** An element that displays textual content within a 3d model.
@@ -116,6 +122,12 @@ export class TextAnnotation3d extends GraphicalElement3d implements ITextAnnotat
   /** @internal */
   public updateTextBlocks(textBlocks: TextBlockAndId[]): void {
     return updateTextBlocks(this, textBlocks);
+  }
+
+  /** @internal */
+  public static override onInserted(arg: OnElementIdArg): void {
+    super.onInserted(arg);
+    ElementDrivesTextAnnotation.updateFieldDependencies(arg.id, arg.iModel);
   }
 }
 

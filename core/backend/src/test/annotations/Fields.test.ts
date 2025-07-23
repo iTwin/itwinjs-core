@@ -524,8 +524,6 @@ describe("Field evaluation", () => {
       
       expectText("old value", targetId);
 
-      ElementDrivesTextAnnotation.create<ElementDrivesTextAnnotation>(imodel, sourceId, targetId).insert();
-
       let source = imodel.elements.getElement<TestElement>(sourceId);
       source.intProp = 50;
       source.update();
