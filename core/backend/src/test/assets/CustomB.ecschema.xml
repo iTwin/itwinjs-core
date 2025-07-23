@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="CustomB" alias="custB" version="1.0.0"
+  xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+  <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+  <ECSchemaReference name="Functional" version="1.00" alias="func"/>
+  <ECSchemaReference name="CustomA" version="01.00" alias="custA"/>
+  <ECEntityClass typeName="DummyElement">
+    <BaseClass>bis:DefinitionElement</BaseClass>
+  </ECEntityClass>
+  <ECEntityClass typeName="ErrorElement">
+    <BaseClass>custA:ElementC</BaseClass>
+  </ECEntityClass>
+</ECSchema>

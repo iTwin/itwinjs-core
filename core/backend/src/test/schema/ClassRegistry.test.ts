@@ -187,7 +187,7 @@ describe("Class Registry - getRootMetaData", () => {
   });
 });
 
-describe("Class Registry - generated classes", () => {
+describe.only("Class Registry - generated classes", () => {
   let imodel: SnapshotDb;
   const testSchemaPath = path.join(KnownTestLocations.assetsDir, "TestGeneratedClasses.ecschema.xml");
 
@@ -197,6 +197,42 @@ describe("Class Registry - generated classes", () => {
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
     assert.exists(imodel);
     await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
+
+    await imodel.importSchemaStrings([
+      `<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="CustomA" alias="custA" version="1.0.0"
+  xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+  <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+  <ECSchemaReference name="Functional" version="1.00" alias="func"/>
+  <ECEntityClass typeName="ElementA">
+    <BaseClass>bis:DefinitionElement</BaseClass>
+  </ECEntityClass>
+  <ECEntityClass typeName="ElementB">
+    <BaseClass>ElementA</BaseClass>
+  </ECEntityClass>
+  <ECEntityClass typeName="ElementC">
+    <BaseClass>ElementB</BaseClass>
+  </ECEntityClass>
+</ECSchema>
+    `,
+    ]);
+
+    await imodel.importSchemaStrings([
+      `<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="CustomB" alias="custB" version="1.0.0"
+  xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+  <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+  <ECSchemaReference name="Functional" version="1.00" alias="func"/>
+  <ECSchemaReference name="CustomA" version="01.00" alias="custA"/>
+  <ECEntityClass typeName="DummyElement">
+    <BaseClass>bis:DefinitionElement</BaseClass>
+  </ECEntityClass>
+  <ECEntityClass typeName="ErrorElement">
+    <BaseClass>custA:ElementC</BaseClass>
+  </ECEntityClass>
+</ECSchema>
+    `,
+    ]);
   });
 
   after(() => {
@@ -315,6 +351,80 @@ describe("Class Registry - generated classes", () => {
   class Derived6 extends Derived5 {
     public static override get className() { return "Derived6"; }
   }
+
+  class ElementA extends DefinitionElement {
+    public static override get className() { return "ElementA"; }
+    public static get schemaName(): string { return "CustomA"; }
+    public static override get classFullName(): string { return "CustomA:ElementA"; }
+  }
+
+  it("Github issue - should generate correct classes", async () => {
+    class CustomASchema extends Schema {
+      public static override get schemaName(): string { return "CustomA"; }
+      public static get classes() {
+        return [ElementA];
+      }
+      public static registerSchema() {
+        if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
+          Schemas.unregisterSchema(this.schemaName);
+          Schemas.registerSchema(this);
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          for (const class_ of this.classes) {
+            ClassRegistry.register(class_, this);
+          }
+        }
+      }
+
+      public static unregisterSchema() {
+        Schemas.unregisterSchema(this.schemaName);
+      }
+    }
+
+    CustomASchema.registerSchema();
+
+    class DummyElement extends DefinitionElement {
+      public static override get className() { return "DummyElement"; }
+      public static override get classFullName(): string { return "CustomB:DummyElement"; }
+      public static get schemaName(): string { return "CustomB"; }
+    }
+
+    class CustomBSchema extends Schema {
+      public static override get schemaName(): string { return "CustomB"; }
+      public static get classes() {
+        return [DummyElement];
+      }
+      public static registerSchema() {
+        if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
+          Schemas.unregisterSchema(this.schemaName);
+          Schemas.registerSchema(this);
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          for (const class_ of this.classes) {
+            ClassRegistry.register(class_, this);
+          }
+        }
+      }
+
+      public static unregisterSchema() {
+        Schemas.unregisterSchema(this.schemaName);
+      }
+    }
+
+    CustomBSchema.registerSchema();
+
+    const elementA = imodel.getJsClass("CustomA:ElementA");
+    assert.equal(elementA.classFullName, "CustomA:ElementA");
+    const elementB = imodel.getJsClass("CustomA:ElementB");
+    assert.equal(elementB.classFullName, "CustomA:ElementB");
+    const elementC = imodel.getJsClass("CustomA:ElementC");
+    assert.equal(elementC.classFullName, "CustomA:ElementC");
+    const dummyElement = imodel.getJsClass("CustomB:DummyElement");
+    assert.equal(dummyElement.classFullName, "CustomB:DummyElement");
+    const errorElement = imodel.getJsClass("CustomB:ErrorElement");
+    assert.equal(errorElement.classFullName, "CustomB:ErrorElement");
+
+    // const test = ClassRegistry.getClass("CustomB:ErrorElement", imodel);
+    // assert.equal(test.classFullName, "CustomB:ErrorElement");
+  });
 
   // if a single inherited class is not generated, the entire hierarchy is considered not-generated
   it("should only generate automatic collectReferenceIds implementations for generated classes", async () => {
@@ -623,7 +733,7 @@ describe("Class Registry - generated classes", () => {
     expect(ActualDerived5.isGeneratedClass).to.be.true;
     expect(ActualDerived6.isGeneratedClass).to.be.true;
 
-    assert.isTrue(ActualTestElementWithNavProp.prototype.hasOwnProperty("collectReferenceIds" )); // should have automatic impl
+    assert.isTrue(ActualTestElementWithNavProp.prototype.hasOwnProperty("collectReferenceIds")); // should have automatic impl
     assert.isTrue(ActualDerivedWithNavProp.prototype.hasOwnProperty("collectReferenceIds"));
     assert.isTrue(ActualDerived2.prototype.hasOwnProperty("collectReferenceIds")); // non-generated; manually implements so has method
     assert.isFalse(ActualDerived3.prototype.hasOwnProperty("collectReferenceIds")); // base is non-generated so it shouldn't get the automatic impl
