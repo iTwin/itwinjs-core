@@ -11,7 +11,7 @@ import { ElementDrivesElement } from "../Relationship";
 import { IModelDb } from "../IModelDb";
 import { Element } from "../Element";
 import { updateElementFields } from "../internal/annotations/fields";
-import { DbResult, Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 
 export interface TextBlockAndId {
   readonly textBlock: TextBlock;
@@ -47,12 +47,23 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
       return;
     }
 
+    // The native layer will allow us to insert relationships to invalid or non-existent source elements...errors will arise later. Prevent it.
+    function isValidSourceId(id: Id64String): boolean {
+      if (!Id64.isValidId64(id)) {
+        return false;
+      }
+
+      return iModel.withPreparedStatement("SELECT CodeValue FROM BisCore.Element WHERE ECInstanceId=?", (stmt) => {
+        stmt.bindId(1, id);
+        return DbResult.BE_SQLITE_ROW === stmt.step();
+      });
+    }
     const sourceToRelationship = new Map<Id64String, Id64String | null>();
     const blocks = annotationElement.getTextBlocks();
     for (const block of blocks) {
       for (const paragraph of block.textBlock.paragraphs) {
         for (const run of paragraph.runs) {
-          if (run.type === "field") {
+          if (run.type === "field" && isValidSourceId(run.propertyHost.elementId)) {
             sourceToRelationship.set(run.propertyHost.elementId, null);
           }
         }
