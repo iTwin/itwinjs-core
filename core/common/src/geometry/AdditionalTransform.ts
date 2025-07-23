@@ -86,9 +86,6 @@ export class Helmert2DWithZOffset implements Helmert2DWithZOffsetProps {
   }
 
   public convertHelmertToTransform(): Transform {
-    if (!this)
-      return Transform.createIdentity();
-
     const rotationXY = Matrix3d.createRotationAroundAxisIndex(
       AxisIndex.Z,
       Angle.createDegrees(this?.rotDeg)
