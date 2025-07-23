@@ -483,6 +483,18 @@ describe("Field evaluation", () => {
       expect(relationship.targetId).to.equal(targetId);
     });
 
+    it("is created for fields in a text annotation element", () => {
+      
+    });
+
+    it("is deleted when a text annotation is updated to remove/change the source element", () => {
+      
+    });
+    
+    it("is only created once per source+target pair regardless of how many fields", () => {
+      
+    });
+    
     function expectText(expected: string, elemId: Id64String): void {
       const elem = imodel.elements.getElement<TextAnnotation3d>(elemId);
       const anno = elem.getAnnotation()!;

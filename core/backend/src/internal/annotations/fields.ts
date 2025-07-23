@@ -8,10 +8,8 @@ import { IModelDb } from "../../IModelDb";
 import { assert, DbResult, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
-import { ITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
-import { Entity } from "../../Entity";
+import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, PrimitiveArrayProperty, Property, StructArrayProperty, StructProperty } from "@itwin/ecschema-metadata";
-import { ECSqlValue } from "../../ECSqlStatement";
 
 export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
 type FieldStructValue = { [key: string]: any };
@@ -266,10 +264,6 @@ export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext)
   }
 
   return numUpdated;
-}
-
-function isITextAnnotation(obj: any): obj is ITextAnnotation {
-  return ["getTextBlocks", "updateTextBlocks"].every((x) => x in obj && typeof obj[x] === "function");
 }
 
 export function updateElementFields(props: RelationshipProps, iModel: IModelDb, deleted: boolean): void {
