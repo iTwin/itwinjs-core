@@ -533,7 +533,39 @@ describe("Field evaluation", () => {
     });
 
     it("updates only fields for specific modified element", () => {
-      
+      const sourceA = insertTestElement();
+      const sourceB = insertTestElement();
+
+      const fieldA = FieldRun.create({
+        styleName: "style",
+        styleOverrides: { fontName: "Karla" },
+        propertyHost: { elementId: sourceA, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "intProp" },
+        cachedContent: "A",
+      });
+
+      const fieldB = FieldRun.create({
+        styleName: "style",
+        styleOverrides: { fontName: "Karla" },
+        propertyHost: { elementId: sourceB, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "intProp" },
+        cachedContent: "B",
+      });
+
+      const block = TextBlock.create({ styleName: "style" });
+      block.appendRun(fieldA);
+      block.appendRun(fieldB);
+
+      const targetId = insertAnnotationElement(block);
+      imodel.saveChanges();
+      expectText("AB", targetId);
+
+      const sourceElem = imodel.elements.getElement<TestElement>(sourceB);
+      sourceElem.intProp = 123;
+      sourceElem.update();
+      imodel.saveChanges();
+
+      expectText("A123", targetId);
     });
 
     it("requires BisCore 1.22 or newer", () => {
