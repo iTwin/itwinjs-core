@@ -8493,6 +8493,8 @@ export class RealityTileTree extends TileTree {
     // @internal (undocumented)
     protected _selectTiles(args: TileDrawArgs): Tile[];
     // @internal (undocumented)
+    readonly skipGcsConversion: boolean;
+    // @internal (undocumented)
     traversalChildrenByDepth: TraversalChildrenDetails[];
     // @internal (undocumented)
     get viewFlagOverrides(): ViewFlagOverrides;

@@ -164,6 +164,7 @@ export interface RealityTileTreeParams extends TileTreeParams {
   readonly rootTile: RealityTileParams;
   readonly rootToEcef?: Transform;
   readonly gcsConverterAvailable: boolean;
+  readonly skipGcsConversion?: boolean;
   readonly baseUrl?: string;
 }
 
@@ -192,6 +193,8 @@ export class RealityTileTree extends TileTree {
   protected _ecefToDb?: Transform;
   /** @internal */
   public readonly baseUrl?: string;
+  /** @internal */
+  public readonly skipGcsConversion: boolean;
 
   /** @internal */
   public constructor(params: RealityTileTreeParams) {
@@ -201,6 +204,7 @@ export class RealityTileTree extends TileTree {
     this._rootTile = this.createTile(params.rootTile);
     this.cartesianRange = BackgroundMapGeometry.getCartesianRange(this.iModel);
     this.cartesianTransitionDistance = this.cartesianRange.diagonal().magnitudeXY() * .25;      // Transition distance from elliptical to cartesian.
+    this.skipGcsConversion = true === params.skipGcsConversion;
     this._gcsConverter = params.gcsConverterAvailable ? params.iModel.geoServices.getConverter("WGS84") : undefined;
     if (params.rootToEcef) {
       this._rootToEcef = params.rootToEcef;
@@ -393,13 +397,16 @@ export class RealityTileTree extends TileTree {
     else {
       const requestProps = new Array<XYZProps>();
 
-      for (const reprojection of reprojectChildren) {
-        for (const dbPoint of reprojection.dbPoints) {
-          const ecefPoint = dbToEcef.multiplyPoint3d(dbPoint);
-          const carto = Cartographic.fromEcef(ecefPoint, scratchCarto);
-          if (carto)
-            requestProps.push({ x: carto.longitudeDegrees, y: carto.latitudeDegrees, z: carto.height });
-
+      // ###TODO - remove this console.log.
+      console.log(`reprojectAndResolveChildren, skipGcsConversion=${  this.skipGcsConversion}`);
+      if (!this.skipGcsConversion) {
+        for (const reprojection of reprojectChildren) {
+          for (const dbPoint of reprojection.dbPoints) {
+            const ecefPoint = dbToEcef.multiplyPoint3d(dbPoint);
+            const carto = Cartographic.fromEcef(ecefPoint, scratchCarto);
+            if (carto)
+              requestProps.push({ x: carto.longitudeDegrees, y: carto.latitudeDegrees, z: carto.height });
+          }
         }
       }
 

@@ -50,6 +50,7 @@ export class ContextRealityModelState extends ContextRealityModel {
         name: props.name,
         classifiers: this.classifiers,
         planarClipMask: this.planarClipMaskSettings,
+        skipGcsConversion: props.skipGcsConversion,
         getDisplaySettings: () => this.displaySettings,
         getBackgroundBase: () => displayStyle.settings.mapImagery.backgroundBase,
         getBackgroundLayers: () => displayStyle.settings.mapImagery.backgroundLayers,

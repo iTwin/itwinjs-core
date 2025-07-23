@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Add skip GCS conversion option to reality tiles.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

@@ -447,24 +447,25 @@ export class ViewportTileSizeModifierTool extends Tool {
 export class ViewportAddRealityModel extends Tool {
   public static override toolId = "ViewportAddRealityModel";
   public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 1; }
+  public static override get maxArgs() { return 2; }
 
   /** This method runs the tool, adding a reality model to the viewport
    * @param url the URL which points to the reality model tileset
    */
-  public override async run(url: string): Promise<boolean> {
+  public override async run(url: string, skipGcsConversion: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp)
-      vp.displayStyle.attachRealityModel({ tilesetUrl: url });
+      vp.displayStyle.attachRealityModel({ tilesetUrl: url, skipGcsConversion });
 
     return true;
   }
 
   /** Executes this tool's run method with args[0] containing the `url` argument.
+   * args[1] can contain an optional "skipGcsConversion" argument, which if set to "true" will skip the GCS conversion.
    * @see [[run]]
    */
   public override async parseAndRun(...args: string[]): Promise<boolean> {
-    return this.run(args[0]);
+    return this.run(args[0], "true" === args[1] || "1" === args[1] || "yes" === args[1]);
   }
 }
 
