@@ -190,49 +190,15 @@ describe("Class Registry - getRootMetaData", () => {
 describe.only("Class Registry - generated classes", () => {
   let imodel: SnapshotDb;
   const testSchemaPath = path.join(KnownTestLocations.assetsDir, "TestGeneratedClasses.ecschema.xml");
+  const schemaPathCustomA = path.join(KnownTestLocations.assetsDir, "CustomA.ecschema.xml");
+  const schemaPathCustomB = path.join(KnownTestLocations.assetsDir, "CustomB.ecschema.xml");
 
   before(async () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("ClassRegistry", "GeneratedClasses.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
     assert.exists(imodel);
-    await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
-
-    await imodel.importSchemaStrings([
-      `<?xml version="1.0" encoding="UTF-8"?>
-<ECSchema schemaName="CustomA" alias="custA" version="1.0.0"
-  xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
-  <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
-  <ECSchemaReference name="Functional" version="1.00" alias="func"/>
-  <ECEntityClass typeName="ElementA">
-    <BaseClass>bis:DefinitionElement</BaseClass>
-  </ECEntityClass>
-  <ECEntityClass typeName="ElementB">
-    <BaseClass>ElementA</BaseClass>
-  </ECEntityClass>
-  <ECEntityClass typeName="ElementC">
-    <BaseClass>ElementB</BaseClass>
-  </ECEntityClass>
-</ECSchema>
-    `,
-    ]);
-
-    await imodel.importSchemaStrings([
-      `<?xml version="1.0" encoding="UTF-8"?>
-<ECSchema schemaName="CustomB" alias="custB" version="1.0.0"
-  xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
-  <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
-  <ECSchemaReference name="Functional" version="1.00" alias="func"/>
-  <ECSchemaReference name="CustomA" version="01.00" alias="custA"/>
-  <ECEntityClass typeName="DummyElement">
-    <BaseClass>bis:DefinitionElement</BaseClass>
-  </ECEntityClass>
-  <ECEntityClass typeName="ErrorElement">
-    <BaseClass>custA:ElementC</BaseClass>
-  </ECEntityClass>
-</ECSchema>
-    `,
-    ]);
+    await imodel.importSchemas([testSchemaPath, schemaPathCustomA, schemaPathCustomB]); // will throw an exception if import fails
   });
 
   after(() => {
