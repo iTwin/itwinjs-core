@@ -231,22 +231,7 @@ export abstract class IModelConnection extends IModel {
     this.hilited = new HiliteSet(this);
 
     this.tiles = new Tiles(this);
-<<<<<<< HEAD
-<<<<<<< HEAD
-    this.geoServices = GeoServices.createForIModel(this);
-=======
-=======
->>>>>>> 0bee1d6187 (Changed GeoServices to use IModealRead)
     this.geoServices = GeoServices.createForIModel(this, this._iModelReadApi);
-    /* eslint-disable-next-line @typescript-eslint/no-deprecated */
-    this.displayedExtents = Range3d.fromJSON(this.projectExtents);
-
-    this.onProjectExtentsChanged.addListener(() => {
-      // Compute new displayed extents as the union of the ranges we previously expanded by with the new project extents.
-      /* eslint-disable-next-line @typescript-eslint/no-deprecated */
-      this.expandDisplayedExtents(this._extentsExpansion);
-    });
->>>>>>> a0e0f1c3ca (Changed GeoServices to use IModealRead)
 
     this.hilited.onModelSubCategoryModeChanged.addListener(() => {
       IModelApp.viewManager.onSelectionSetChanged(this);
@@ -754,20 +739,10 @@ export class BlankConnection extends IModelConnection {
     const mockIModelReadApi: IModelReadAPI = {
       getConnectionProps: async () => props,
       getTooltipMessage: async () => ({ lines: [] }),
-<<<<<<< HEAD
       getElementMeshes: () => { throw new IModelError(IModelStatus.BadRequest, "getElementMeshes not available for blank connection") },
       convertGeoCoordinatesToIModelCoordinates: () => { throw new IModelError(IModelStatus.BadRequest, "convertGeoCoordinatesToIModelCoordinates not available for blank connection") },
       convertIModelCoordinatesToGeoCoordinates: () => { throw new IModelError(IModelStatus.BadRequest, "convertIModelCoordinatesToGeoCoordinates not available for blank connection") },
       runQuery: () => new ECSqlReader({ execute: async () => ECSqlReader.createDbResponseFromRows([], DbResponseStatus.Done)}, ""),
-=======
-      async *runQuery() { },
-      async getIModelCoordinatesFromGeoCoordinates (_props: IModelCoordinatesRequest): Promise<IModelCoordinatesResponse> {
-        throw new Error("Function not implemented.");
-      },
-      async getGeoCoordinatesFromIModelCoordinates (_props: GeoCoordinatesRequest): Promise<GeoCoordinatesResponse> {
-        throw new Error("Function not implemented.");
-      }
->>>>>>> 0bee1d6187 (Changed GeoServices to use IModealRead)
     }
 
     super(props, mockIModelReadApi);
