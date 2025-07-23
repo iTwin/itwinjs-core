@@ -319,6 +319,8 @@ export class AnnotationTextStyle extends DefinitionElement {
     static fromJSON(props: AnnotationTextStyleProps, iModel: IModelDb): AnnotationTextStyle;
     // @beta
     protected static onInsert(arg: OnElementPropsArg): void;
+    // @beta
+    protected static onUpdate(arg: OnElementPropsArg): void;
     settings: TextStyleSettings;
     toJSON(): AnnotationTextStyleProps;
 }
