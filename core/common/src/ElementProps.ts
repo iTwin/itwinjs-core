@@ -170,7 +170,7 @@ export interface GeometricElement3dProps extends GeometricElementProps {
 export interface TextAnnotation3dProps extends GeometricElement3dProps {
   /** The stringified JSON representation of the text annotation.
    * @see [[TextAnnotationProps]] for the JSON representation.
-   * @note Don't set this property directly - use [TextAnnotation3d.setAnnotation]($backend) to ensure the element's geometry and placement are recalculated.
+   * @note Don't set this property directly - use [TextAnnotation3d.setAnnotation]($backend) instead.
    */
   textAnnotationData?: string;
 }
@@ -257,7 +257,7 @@ export interface GeometricElement2dProps extends GeometricElementProps {
 export interface TextAnnotation2dProps extends GeometricElement2dProps {
   /** The stringified JSON representation of the text annotation.
    * @see [[TextAnnotationProps]] for the JSON representation.
-   * @note Don't set this property directly - use [TextAnnotation2d.setAnnotation]($backend) to ensure the element's geometry and placement are recalculated.
+   * @note Don't set this property directly - use [TextAnnotation2d.setAnnotation]($backend) instead.
    */
   textAnnotationData?: string;
 }
@@ -631,8 +631,7 @@ export interface SheetReferenceProps extends SheetIndexEntryProps {
 }
 
 /** Properties that define an [AnnotationTextStyle]($backend).
- * @public @preview
- * @extensions
+ * @beta
  */
 export interface AnnotationTextStyleProps extends DefinitionElementProps {
   /** An optional human-readable description of the text style.*/
