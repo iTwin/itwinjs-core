@@ -7,6 +7,7 @@ settings:
 overrides:
   rollup-plugin-copy>globby: ^11.0.0
   elliptic: ^6.6.1
+  form-data: ^4.0.4
 
 pnpmfileChecksum: avk5jcsa6uxo2n5cahoirjiuw4
 
@@ -29,8 +30,8 @@ importers:
         specifier: ^2.3.0
         version: 2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)
       form-data:
-        specifier: ^4.0.1
-        version: 4.0.1
+        specifier: ^4.0.4
+        version: 4.0.4
       fs-extra:
         specifier: ^8.1.0
         version: 8.1.0
@@ -669,8 +670,8 @@ importers:
   ../../core/electron:
     dependencies:
       '@openid/appauth':
-        specifier: ^1.2.6
-        version: 1.2.6
+        specifier: ^1.3.2
+        version: 1.3.2
       open:
         specifier: ^7.0.0
         version: 7.0.0
@@ -2816,8 +2817,8 @@ importers:
         specifier: ^9.31.0
         version: 9.31.0
       eslint-config-prettier:
-        specifier: ^9.1.0
-        version: 9.1.0(eslint@9.31.0)
+        specifier: ^9.1.2
+        version: 9.1.2(eslint@9.31.0)
       fast-sort:
         specifier: ^3.0.2
         version: 3.0.2
@@ -3221,8 +3222,8 @@ importers:
         specifier: ^9.31.0
         version: 9.31.0
       eslint-config-prettier:
-        specifier: ^9.1.0
-        version: 9.1.0(eslint@9.31.0)
+        specifier: ^9.1.2
+        version: 9.1.2(eslint@9.31.0)
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
@@ -3327,8 +3328,8 @@ importers:
         specifier: ^9.31.0
         version: 9.31.0
       eslint-config-prettier:
-        specifier: ^9.1.0
-        version: 9.1.0(eslint@9.31.0)
+        specifier: ^9.1.2
+        version: 9.1.2(eslint@9.31.0)
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
@@ -3451,8 +3452,8 @@ importers:
         specifier: ^9.31.0
         version: 9.31.0
       eslint-config-prettier:
-        specifier: ^9.1.0
-        version: 9.1.0(eslint@9.31.0)
+        specifier: ^9.1.2
+        version: 9.1.2(eslint@9.31.0)
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
@@ -5419,9 +5420,6 @@ packages:
   '@open-draft/until@2.1.0':
     resolution: {integrity: sha512-U69T3ItWHvLwGg5eJ0n3I62nWuE6ilHlmz7zM0npLBRvPRd7e6NYmg54vvRtP5mZG7kZqZCFVdsTWo7BPtBujg==}
 
-  '@openid/appauth@1.2.6':
-    resolution: {integrity: sha512-DIK2QLmeCjj0psK82YcmjtDLIJFeBTSl4cVdfJaetXXhhmnKtWXDnlSKpJUwVRcdDE7LNDIv8TO0HbyemjVuaw==}
-
   '@openid/appauth@1.3.2':
     resolution: {integrity: sha512-NoOejniaqzOEbHg3RcBZtTriYqhqpQFgTC4lDNaRbgRCnpz6n8PlxWlCbh2N1K5qKawfxRP29/Wiho3FrXQ3Qw==}
 
@@ -7322,8 +7320,8 @@ packages:
     resolution: {integrity: sha512-TtpcNJ3XAzx3Gq8sWRzJaVajRs0uVxA2YAkdb1jm2YkPz4G6egUFAyA3n5vtEIZefPk5Wa4UXbKuS5fKkJWdgA==}
     engines: {node: '>=10'}
 
-  eslint-config-prettier@9.1.0:
-    resolution: {integrity: sha512-NSWl5BFQWEPi1j4TjVNItzYV7dZXZ+wP6I6ZhrBGpChQhZRUaElihE9uRRkcbRnNb76UMKDF3r+WTmNcGPKsqw==}
+  eslint-config-prettier@9.1.2:
+    resolution: {integrity: sha512-iI1f+D2ViGn+uvv5HuHVUamg8ll4tN+JRHGc6IJi4TP9Kl976C57fzPXgseXNs8v0iA8aSJpHsTWjDb9QJamGQ==}
     hasBin: true
     peerDependencies:
       eslint: '>=7.0.0'
@@ -7614,16 +7612,8 @@ packages:
     resolution: {integrity: sha512-yDYSgNMraqvnxiEXO4hi88+YZxaHC6QKzb5N84iRCTDeRO7ZALpir/lVmf/uXUhnwUr2O4HU8s/n6x+yNjQkHw==}
     engines: {node: '>= 14.17'}
 
-  form-data@2.5.3:
-    resolution: {integrity: sha512-XHIrMD0NpDrNM/Ckf7XJiBbLl57KEhT3+i3yY+eWm+cqYZJQTZrKo8Y8AWKnuV5GT4scfuUGt9LzNoIx3dU1nQ==}
-    engines: {node: '>= 0.12'}
-
-  form-data@4.0.1:
-    resolution: {integrity: sha512-tzN8e4TX8+kkxGPK8D5u0FNmjPUjw3lwC9lSLxxoB/+GtsJG91CO8bSWy73APlgAZzZbXEYZJuxjkHH2w+Ezhw==}
-    engines: {node: '>= 6'}
-
-  form-data@4.0.2:
-    resolution: {integrity: sha512-hGfm/slu0ZabnNt4oaRZ6uREyfCj6P4fT/n6A1rGV+Z0VdGXjfOhVUpkn6qVQONHGIFwmveGXyDs75+nr6FM8w==}
+  form-data@4.0.4:
+    resolution: {integrity: sha512-KrGhL9Q4zjj0kiUt5OO4Mr/A/jlI2jDYs5eHBpYHPcBEVSiipAvn2Ko2HnPe20rmcuuvMHNdZFp+4IlGTMF0Ow==}
     engines: {node: '>= 6'}
 
   formidable@3.5.2:
@@ -10871,7 +10861,7 @@ snapshots:
     dependencies:
       '@azure/core-auth': 1.9.0
       axios: 0.21.4
-      form-data: 2.5.3
+      form-data: 4.0.4
       tough-cookie: 2.5.0
       tslib: 1.14.1
       tunnel: 0.0.6
@@ -11755,24 +11745,13 @@ snapshots:
 
   '@open-draft/until@2.1.0': {}
 
-  '@openid/appauth@1.2.6':
-    dependencies:
-      '@types/base64-js': 1.3.2
-      '@types/jquery': 3.5.32
-      base64-js: 1.5.1
-      follow-redirects: 1.15.9
-      form-data: 2.5.3
-      opener: 1.5.2
-    transitivePeerDependencies:
-      - debug
-
   '@openid/appauth@1.3.2':
     dependencies:
       '@types/base64-js': 1.3.2
       '@types/jquery': 3.5.32
       base64-js: 1.5.1
       follow-redirects: 1.15.9
-      form-data: 4.0.2
+      form-data: 4.0.4
       opener: 1.5.2
     transitivePeerDependencies:
       - debug
@@ -12312,7 +12291,7 @@ snapshots:
       '@types/cookiejar': 2.1.5
       '@types/methods': 1.1.4
       '@types/node': 20.17.24
-      form-data: 4.0.2
+      form-data: 4.0.4
 
   '@types/supertest@6.0.2':
     dependencies:
@@ -12985,14 +12964,14 @@ snapshots:
   axios@0.27.2:
     dependencies:
       follow-redirects: 1.15.9
-      form-data: 4.0.2
+      form-data: 4.0.4
     transitivePeerDependencies:
       - debug
 
   axios@1.8.2:
     dependencies:
       follow-redirects: 1.15.9
-      form-data: 4.0.1
+      form-data: 4.0.4
       proxy-from-env: 1.1.0
     transitivePeerDependencies:
       - debug
@@ -13971,7 +13950,7 @@ snapshots:
 
   escape-string-regexp@4.0.0: {}
 
-  eslint-config-prettier@9.1.0(eslint@9.31.0):
+  eslint-config-prettier@9.1.2(eslint@9.31.0):
     dependencies:
       eslint: 9.31.0
 
@@ -14364,25 +14343,12 @@ snapshots:
 
   form-data-encoder@2.1.4: {}
 
-  form-data@2.5.3:
+  form-data@4.0.4:
     dependencies:
       asynckit: 0.4.0
       combined-stream: 1.0.8
       es-set-tostringtag: 2.1.0
-      mime-types: 2.1.35
-      safe-buffer: 5.2.1
-
-  form-data@4.0.1:
-    dependencies:
-      asynckit: 0.4.0
-      combined-stream: 1.0.8
-      mime-types: 2.1.35
-
-  form-data@4.0.2:
-    dependencies:
-      asynckit: 0.4.0
-      combined-stream: 1.0.8
-      es-set-tostringtag: 2.1.0
+      hasown: 2.0.2
       mime-types: 2.1.35
 
   formidable@3.5.2:
@@ -15106,7 +15072,7 @@ snapshots:
       cssstyle: 4.3.0
       data-urls: 5.0.0
       decimal.js: 10.5.0
-      form-data: 4.0.2
+      form-data: 4.0.4
       html-encoding-sniffer: 4.0.0
       http-proxy-agent: 7.0.2
       https-proxy-agent: 7.0.6
@@ -16867,7 +16833,7 @@ snapshots:
       cookiejar: 2.1.4
       debug: 4.4.0(supports-color@8.1.1)
       fast-safe-stringify: 2.1.1
-      form-data: 4.0.2
+      form-data: 4.0.4
       formidable: 3.5.2
       methods: 1.1.2
       mime: 2.6.0
@@ -16882,7 +16848,7 @@ snapshots:
       cookiejar: 2.1.4
       debug: 4.4.1
       fast-safe-stringify: 2.1.1
-      form-data: 4.0.2
+      form-data: 4.0.4
       formidable: 3.5.2
       methods: 1.1.2
       mime: 2.6.0

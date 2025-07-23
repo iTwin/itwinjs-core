@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "5.1.0-dev.60",
+  "version": "5.1.0-dev.61",
   "description": "Frontend of iModel.js Presentation library",
   "license": "MIT",
   "repository": {
@@ -86,7 +86,7 @@
     "cross-env": "^7.0.3",
     "deep-equal": "^1",
     "eslint": "^9.31.0",
-    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-prettier": "^9.1.2",
     "internal-tools": "workspace:*",
     "jsdom": "^26.0.0",
     "mocha": "^11.1.0",
