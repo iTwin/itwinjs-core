@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-backend",
-  "version": "5.1.0-dev.60",
+  "version": "5.1.0-dev.61",
   "description": "Backend of iTwin.js Presentation library",
   "license": "MIT",
   "repository": {
@@ -91,7 +91,7 @@
     "cross-env": "^7.0.3",
     "deep-equal": "^1",
     "eslint": "^9.31.0",
-    "eslint-config-prettier": "^9.1.0",
+    "eslint-config-prettier": "^9.1.2",
     "internal-tools": "workspace:*",
     "mocha": "^11.1.0",
     "prettier": "^3.2.5",
