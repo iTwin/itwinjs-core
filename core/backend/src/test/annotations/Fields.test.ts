@@ -477,6 +477,10 @@ describe("Field evaluation", () => {
       expect(relId).not.to.equal(Id64.invalid);
 
       expectNumRelationships(1);
+
+      const relationship = imodel.relationships.getInstance("BisCore:ElementDrivesTextAnnotation", relId);
+      expect(relationship.sourceId).to.equal(sourceElementId);
+      expect(relationship.targetId).to.equal(targetId);
     });
 
     function expectText(expected: string, elemId: Id64String): void {
