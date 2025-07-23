@@ -308,7 +308,7 @@ export class AnnotationElement2d extends GraphicalElement2d {
     static get className(): string;
 }
 
-// @public @preview
+// @beta
 export class AnnotationTextStyle extends DefinitionElement {
     protected constructor(props: AnnotationTextStyleProps, iModel: IModelDb);
     // @internal (undocumented)
@@ -317,9 +317,7 @@ export class AnnotationTextStyle extends DefinitionElement {
     static createCode(iModel: IModelDb, definitionModelId: CodeScopeProps, name: string): Code;
     description?: string;
     static fromJSON(props: AnnotationTextStyleProps, iModel: IModelDb): AnnotationTextStyle;
-    // @beta
     protected static onInsert(arg: OnElementPropsArg): void;
-    // @beta
     protected static onUpdate(arg: OnElementPropsArg): void;
     settings: TextStyleSettings;
     toJSON(): AnnotationTextStyleProps;

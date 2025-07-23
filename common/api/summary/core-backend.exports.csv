@@ -3,8 +3,7 @@ Release Tag;API Item Type;API Item Name
 public;interface;AcquireNewBriefcaseIdArg
 public;class;AnnotationElement2d
 preview;class;AnnotationElement2d
-public;class;AnnotationTextStyle
-preview;class;AnnotationTextStyle
+beta;class;AnnotationTextStyle
 beta;type;AnyDb
 beta;function;appendFrameToBuilder
 beta;function;appendLeadersToBuilder
