@@ -263,7 +263,6 @@ describe("ChangesetReaderAPI", async () => {
 
     const firstBriefcaseChangesets = await firstBriefcase.getAllChangesetHealthData();
     assert.equal(firstBriefcaseChangesets.length, 0); // No new changes to be pulled
-
     const secondBriefcaseChangesets = await secondBriefcase.getAllChangesetHealthData();
     assert.equal(secondBriefcaseChangesets.length, 2); // Schema import followed by element insert
 
