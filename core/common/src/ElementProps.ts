@@ -169,7 +169,8 @@ export interface GeometricElement3dProps extends GeometricElementProps {
  */
 export interface TextAnnotation3dProps extends GeometricElement3dProps {
   /** The stringified JSON representation of the text annotation.
-   * @see [[TextAnnotationProps]]
+   * @see [[TextAnnotationProps]] for the JSON representation.
+   * @note Don't set this property directly - use [TextAnnotation3d.setAnnotation]($backend) to ensure the element's geometry and placement are recalculated.
    */
   textAnnotationData?: string;
 }
@@ -255,7 +256,8 @@ export interface GeometricElement2dProps extends GeometricElementProps {
  */
 export interface TextAnnotation2dProps extends GeometricElement2dProps {
   /** The stringified JSON representation of the text annotation.
-   * @see [[TextAnnotationProps]]
+   * @see [[TextAnnotationProps]] for the JSON representation.
+   * @note Don't set this property directly - use [TextAnnotation2d.setAnnotation]($backend) to ensure the element's geometry and placement are recalculated.
    */
   textAnnotationData?: string;
 }
