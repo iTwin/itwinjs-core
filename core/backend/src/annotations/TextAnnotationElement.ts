@@ -52,7 +52,7 @@ export class TextAnnotation2d extends AnnotationElement2d {
     return textAnnotationProps ? TextAnnotation.fromJSON(textAnnotationProps) : undefined;
   }
 
-  /** Change the textual content, updating the element's geometry and placement accordingly.
+  /** Change the textual content of the `TextAnnotation2d`.
    * @see [[getAnnotation]] to extract the current annotation.
    * @param annotation The new annotation
    */
@@ -172,7 +172,7 @@ export class TextAnnotation3d extends GraphicalElement3d {
     return textAnnotationProps ? TextAnnotation.fromJSON(textAnnotationProps) : undefined;
   }
 
-  /** Change the textual content, updating the element's geometry and placement accordingly.
+  /** Change the textual content of the `TextAnnotation3d`.
    * @see [[getAnnotation]] to extract the current annotation.
    * @param annotation The new annotation
    */
