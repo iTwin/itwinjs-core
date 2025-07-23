@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, comparePossiblyUndefined, compareStrings,
+  assert, compareBooleans, compareNumbers, comparePossiblyUndefined, compareStrings,
   compareStringsOrUndefined, CompressedId64Set, Id64, Id64String,
 } from "@itwin/core-bentley";
 import {
@@ -28,6 +28,7 @@ import { DecorateContext, SceneContext } from "../../ViewContext";
 import { ViewState } from "../../ViewState";
 import {
   BatchedTileIdMap, CesiumIonAssetProvider, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, GeometryTileTreeReference,
+  GeometryTileTreeReferenceOptions,
   getGcsConverterAvailable, LayerTileTreeHandler, LayerTileTreeReferenceHandler, MapLayerTileTreeReference, MapLayerTreeSetting, RealityTile, RealityTileLoader, RealityTileParams, RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile,
   TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "../../tile/internal";
@@ -39,13 +40,16 @@ function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
 }
 
+/** Option for whether or not to produce geometry. If value is "reproject", geometry will be reprojected when loaded in [[RealityTileLoader.loadGeometryFromStream]]. */
+export type ProduceGeometryOption = "yes" | "no" | "reproject";
+
 interface RealityTreeId {
   rdSourceKey: RealityDataSourceKey;
   transform?: Transform;
   modelId: Id64String;
   maskModelIds?: string;
   deduplicateVertices: boolean;
-  produceGeometry?: boolean;
+  produceGeometry?: ProduceGeometryOption;
   displaySettings: RealityModelDisplaySettings;
   backgroundBase?: BaseLayerSettings;
   backgroundLayers?: MapLayerSettings[];
@@ -78,7 +82,7 @@ namespace RealityTreeId {
     return (
       compareRealityDataSourceKeys(lhs.rdSourceKey, rhs.rdSourceKey) ||
       compareBooleans(lhs.deduplicateVertices, rhs.deduplicateVertices) ||
-      compareBooleansOrUndefined(lhs.produceGeometry, rhs.produceGeometry) ||
+      compareStringsOrUndefined(lhs.produceGeometry, rhs.produceGeometry) ||
       compareStringsOrUndefined(lhs.maskModelIds, rhs.maskModelIds) ||
       comparePossiblyUndefined((ltf, rtf) => compareTransforms(ltf, rtf), lhs.transform, rhs.transform)
     );
@@ -288,12 +292,13 @@ class RealityModelTileTreeParams implements RealityTileTreeParams {
   public loader: RealityModelTileLoader;
   public rootTile: RealityTileParams;
   public baseUrl?: string;
+  public reprojectGeometry?: boolean;
 
   public get location() { return this.loader.tree.location; }
   public get yAxisUp() { return this.loader.tree.yAxisUp; }
   public get priority() { return this.loader.priority; }
 
-  public constructor(tileTreeId: string, iModel: IModelConnection, modelId: Id64String, loader: RealityModelTileLoader, public readonly gcsConverterAvailable: boolean, public readonly rootToEcef: Transform | undefined, baseUrl?: string) {
+  public constructor(tileTreeId: string, iModel: IModelConnection, modelId: Id64String, loader: RealityModelTileLoader, public readonly gcsConverterAvailable: boolean, public readonly rootToEcef: Transform | undefined, baseUrl?: string, reprojectGeometry?: boolean) {
     this.loader = loader;
     this.id = tileTreeId;
     this.modelId = modelId;
@@ -307,6 +312,7 @@ class RealityModelTileTreeParams implements RealityTileTreeParams {
       usesGeometricError: loader.tree.usesGeometricError,
     });
     this.baseUrl = baseUrl;
+    this.reprojectGeometry = reprojectGeometry;
   }
 }
 
@@ -428,8 +434,8 @@ class RealityModelTileLoader extends RealityTileLoader {
   private _viewFlagOverrides: ViewFlagOverrides;
   private readonly _deduplicateVertices: boolean;
 
-  public constructor(tree: RealityModelTileTreeProps, batchedIdMap?: BatchedTileIdMap, opts?: { deduplicateVertices?: boolean, produceGeometry?: boolean }) {
-    super(opts?.produceGeometry ?? false);
+  public constructor(tree: RealityModelTileTreeProps, batchedIdMap?: BatchedTileIdMap, opts?: { deduplicateVertices?: boolean, produceGeometry?: ProduceGeometryOption }) {
+    super(opts?.produceGeometry);
     this.tree = tree;
     this._batchedIdMap = batchedIdMap;
     this._deduplicateVertices = opts?.deduplicateVertices ?? false;
@@ -584,7 +590,7 @@ export namespace RealityModelTileTree {
   export interface ReferenceProps extends ReferenceBaseProps {
     url?: string;
     requestAuthorization?: string;
-    produceGeometry?: boolean;
+    produceGeometry?: ProduceGeometryOption;
   }
 
   export abstract class Reference extends TileTreeReference {
@@ -738,7 +744,7 @@ export namespace RealityModelTileTree {
     iModel: IModelConnection,
     modelId: Id64String,
     tilesetToDb: Transform | undefined,
-    opts?: { deduplicateVertices?: boolean, produceGeometry?: boolean },
+    opts?: { deduplicateVertices?: boolean, produceGeometry?: ProduceGeometryOption },
   ): Promise<TileTree | undefined> {
     const rdSource = await RealityDataSource.fromKey(rdSourceKey, iModel.iTwinId);
     // If we can get a valid connection from sourceKey, returns the tile tree
@@ -750,9 +756,9 @@ export namespace RealityModelTileTree {
       const props = await getTileTreeProps(rdSource, tilesetToDb, iModel);
       const loader = new RealityModelTileLoader(props, new BatchedTileIdMap(iModel), opts);
       const gcsConverterAvailable = await getGcsConverterAvailable(iModel);
-      //The full tileset url is needed so that it includes the url's search parameters if any are present
+      // The full tileset url is needed so that it includes the url's search parameters if any are present
       const baseUrl = rdSource instanceof RealityDataSourceTilesetUrlImpl ? rdSource.getTilesetUrl() : undefined;
-      const params = new RealityModelTileTreeParams(tileTreeId, iModel, modelId, loader, gcsConverterAvailable, props.tilesetToEcef, baseUrl);
+      const params = new RealityModelTileTreeParams(tileTreeId, iModel, modelId, loader, gcsConverterAvailable, props.tilesetToEcef, baseUrl, opts?.produceGeometry === "reproject");
       return new RealityModelTileTree(params);
     }
     return undefined;
@@ -815,7 +821,7 @@ export namespace RealityModelTileTree {
  */
 export class RealityTreeReference extends RealityModelTileTree.Reference {
   protected _rdSourceKey: RealityDataSourceKey;
-  private readonly _produceGeometry?: boolean;
+  private readonly _produceGeometry?: ProduceGeometryOption;
   private readonly _modelId: Id64String;
   public readonly useCachedDecorations?: true | undefined;
 
@@ -861,14 +867,14 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
     return realityTreeSupplier.getOwner(this.createTreeId(this.modelId), this.iModel);
   }
 
-  protected override _createGeometryTreeReference(): GeometryTileTreeReference {
+  protected override _createGeometryTreeReference(options?: GeometryTileTreeReferenceOptions): GeometryTileTreeReference {
     const ref = new RealityTreeReference({
       iModel: this.iModel,
       modelId: this.modelId,
       source: this._source,
       rdSourceKey: this._rdSourceKey,
       name: this._name,
-      produceGeometry: true,
+      produceGeometry: options?.reprojectGeometry ? "reproject" : "yes",
       getDisplaySettings: () => RealityModelDisplaySettings.defaults,
     });
 
