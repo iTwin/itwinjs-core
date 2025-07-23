@@ -522,13 +522,13 @@ describe("Field evaluation", () => {
       const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
       expect(target.getAnnotation()).not.to.be.undefined;
       
-      expectText("old value", targetId);
+      expectText("100", targetId);
 
       let source = imodel.elements.getElement<TestElement>(sourceId);
       source.intProp = 50;
       source.update();
 
-      expectText("old value", targetId);
+      expectText("100", targetId);
 
       imodel.saveChanges();
 
@@ -538,6 +538,8 @@ describe("Field evaluation", () => {
       expectText("50", targetId);
 
       imodel.elements.deleteElement(sourceId);
+      expectText("50", targetId);
+
       imodel.saveChanges();
       expectText(FieldRun.invalidContentIndicator, targetId);
     });
@@ -568,14 +570,14 @@ describe("Field evaluation", () => {
 
       const targetId = insertAnnotationElement(block);
       imodel.saveChanges();
-      expectText("AB", targetId);
+      expectText("100100", targetId);
 
       const sourceElem = imodel.elements.getElement<TestElement>(sourceB);
       sourceElem.intProp = 123;
       sourceElem.update();
       imodel.saveChanges();
 
-      expectText("A123", targetId);
+      expectText("100123", targetId);
     });
 
     it("requires BisCore 1.22 or newer", () => {
