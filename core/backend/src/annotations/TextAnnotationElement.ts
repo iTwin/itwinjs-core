@@ -75,6 +75,12 @@ export class TextAnnotation2d extends AnnotationElement2d implements ITextAnnota
     super.onInserted(arg);
     ElementDrivesTextAnnotation.updateFieldDependencies(arg.id, arg.iModel);
   }
+
+  /** @internal */
+  public static override onUpdated(arg: OnElementIdArg): void {
+    super.onUpdated(arg);
+    ElementDrivesTextAnnotation.updateFieldDependencies(arg.id, arg.iModel);
+  }
 }
 
 /** An element that displays textual content within a 3d model.
@@ -127,6 +133,12 @@ export class TextAnnotation3d extends GraphicalElement3d implements ITextAnnotat
   /** @internal */
   public static override onInserted(arg: OnElementIdArg): void {
     super.onInserted(arg);
+    ElementDrivesTextAnnotation.updateFieldDependencies(arg.id, arg.iModel);
+  }
+
+  /** @internal */
+  public static override onUpdated(arg: OnElementIdArg): void {
+    super.onUpdated(arg);
     ElementDrivesTextAnnotation.updateFieldDependencies(arg.id, arg.iModel);
   }
 }

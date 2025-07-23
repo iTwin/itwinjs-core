@@ -452,14 +452,16 @@ describe("Field evaluation", () => {
   }
 
   describe.only("ElementDrivesTextAnnotation", () => {
-    it("can be inserted", () => {
-      function expectNumRelationships(expected: number): void {
-        imodel.withPreparedStatement("SELECT COUNT(*) FROM BisCore.ElementDrivesTextAnnotation", (stmt) => {
-          expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
-          expect(stmt.getValue(0).getInteger()).to.equal(expected);
-        });
-      }
+    function expectNumRelationships(expected: number, targetId?: Id64String): void {
+      const where = targetId ? ` WHERE TargetECInstanceId=${targetId}` : "";
+      const ecsql = `SELECT COUNT(*) FROM BisCore.ElementDrivesTextAnnotation ${where}`;
+      imodel.withPreparedStatement(ecsql, (stmt) => {
+        expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
+        expect(stmt.getValue(0).getInteger()).to.equal(expected);
+      });
+    }
 
+    it("can be inserted", () => {
       expectNumRelationships(0);
       
       const targetId = insertAnnotationElement(undefined);
@@ -483,16 +485,59 @@ describe("Field evaluation", () => {
       expect(relationship.targetId).to.equal(targetId);
     });
 
-    it("is created for fields in a text annotation element", () => {
-      
-    });
+    function createField(sourceId: Id64String, cachedContent: string, propertyName = "intProp"): FieldRun {
+      return FieldRun.create({
+        "styleName": "style",
+        styleOverrides: { fontName: "Karla" },
+        propertyHost: { elementId: sourceId, schemaName: "Fields", className: "TestElement" },
+        cachedContent,
+        propertyPath: { propertyName },
+      });
+    }
 
-    it("is deleted when a text annotation is updated to remove/change the source element", () => {
-      
-    });
-    
-    it("is only created once per source+target pair regardless of how many fields", () => {
-      
+    describe("updateFieldDependencies", () => {
+      it("creates exactly one relationship for each unique source element", () => {
+        const source1 = insertTestElement();
+        const block = TextBlock.create({ styleName: "style" });
+        block.appendRun(createField(source1, "1"));
+        const targetId = insertAnnotationElement(block);
+        imodel.saveChanges();
+
+        expectNumRelationships(1, targetId);
+
+        const source2 = insertTestElement();
+        const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
+        const anno = target.getAnnotation()!;
+        anno.textBlock.appendRun(createField(source2, "2a"));
+        target.setAnnotation(anno);
+        target.update();
+        imodel.saveChanges();
+
+        expectNumRelationships(2, targetId);
+
+        anno.textBlock.appendRun(createField(source2, "2b"));
+        target.setAnnotation(anno);
+        target.update();
+        imodel.saveChanges();
+
+        expectNumRelationships(2, targetId);
+
+        const source3 = insertTestElement();
+        anno.textBlock.appendRun(createField(source3, "3"));
+        target.setAnnotation(anno);
+        target.update();
+        imodel.saveChanges();
+
+        expectNumRelationships(3, targetId);
+      });
+
+      it("deletes stale relationships", () => {
+        
+      });
+
+      it("ignores invalid source element Ids", () => {
+        
+      });
     });
     
     function expectText(expected: string, elemId: Id64String): void {
@@ -504,17 +549,8 @@ describe("Field evaluation", () => {
 
     it("updates fields when source element is modified or deleted", () => {
       const sourceId = insertTestElement();
-
-      const field = FieldRun.create({
-        styleName: "style",
-        styleOverrides: { fontName: "Karla" },
-        propertyHost: { elementId: sourceId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "intProp" },
-        cachedContent: "old value",
-      });
-
       const block = TextBlock.create({ styleName: "style" });
-      block.appendRun(field);
+      block.appendRun(createField(sourceId, "old value"));;
       
       const targetId = insertAnnotationElement(block);
       imodel.saveChanges();
@@ -547,26 +583,9 @@ describe("Field evaluation", () => {
     it("updates only fields for specific modified element", () => {
       const sourceA = insertTestElement();
       const sourceB = insertTestElement();
-
-      const fieldA = FieldRun.create({
-        styleName: "style",
-        styleOverrides: { fontName: "Karla" },
-        propertyHost: { elementId: sourceA, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "intProp" },
-        cachedContent: "A",
-      });
-
-      const fieldB = FieldRun.create({
-        styleName: "style",
-        styleOverrides: { fontName: "Karla" },
-        propertyHost: { elementId: sourceB, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "intProp" },
-        cachedContent: "B",
-      });
-
       const block = TextBlock.create({ styleName: "style" });
-      block.appendRun(fieldA);
-      block.appendRun(fieldB);
+      block.appendRun(createField(sourceA, "A"));
+      block.appendRun(createField(sourceB, "B"));
 
       const targetId = insertAnnotationElement(block);
       imodel.saveChanges();
