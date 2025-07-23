@@ -506,6 +506,9 @@ describe("Field evaluation", () => {
       
       const targetId = insertAnnotationElement(block);
       imodel.saveChanges();
+
+      const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
+      expect(target.getAnnotation()).not.to.be.undefined;
       
       expectText("old value", targetId);
 
