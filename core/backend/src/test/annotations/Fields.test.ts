@@ -496,7 +496,7 @@ describe("Field evaluation", () => {
     }
 
     describe("updateFieldDependencies", () => {
-      it("creates exactly one relationship for each unique source element", () => {
+      it("creates exactly one relationship for each unique source element on insert and update", () => {
         const source1 = insertTestElement();
         const block = TextBlock.create({ styleName: "style" });
         block.appendRun(createField(source1, "1"));
@@ -536,7 +536,14 @@ describe("Field evaluation", () => {
       });
 
       it("ignores invalid source element Ids", () => {
-        
+        const source = insertTestElement();
+        const block = TextBlock.create({ styleName: "style" });
+        block.appendRun(createField(Id64.invalid, "invalid"));
+        block.appendRun(createField("0xbaadf00d", "non-existent"));
+        block.appendRun(createField(source, "valid"));
+
+        const targetId = insertAnnotationElement(block);
+        expectNumRelationships(1, targetId);
       });
     });
     
