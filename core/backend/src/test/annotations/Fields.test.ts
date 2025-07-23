@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Code, FieldPropertyHost, FieldPropertyPath, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock } from "@itwin/core-common";
-import { IModelDb, SnapshotDb } from "../../IModelDb";
+import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, FieldProperty, updateField, updateFields } from "../../internal/annotations/fields";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
@@ -189,19 +189,19 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
 }
 
 describe("Field evaluation", () => {
-  let imodel: SnapshotDb;
+  let imodel: StandaloneDb;
   let model: Id64String;
   let category: Id64String;
   let sourceElementId: Id64String;
 
   before(async () => {
     const iModelPath = IModelTestUtils.prepareOutputFile("UpdateFieldsContext", "test.bim");
-    imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "UpdateFieldsContext" } });
+    imodel = StandaloneDb.createEmpty(iModelPath, { rootSubject: { name: "UpdateFieldsContext" } });
 
     await registerTestSchema(imodel);
 
     model = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true)[1];
-    category = SpatialCategory.insert(imodel, SnapshotDb.dictionaryId, "UpdateFieldsContextCategory", new SubCategoryAppearance());
+    category = SpatialCategory.insert(imodel, StandaloneDb.dictionaryId, "UpdateFieldsContextCategory", new SubCategoryAppearance());
     sourceElementId = insertTestElement();
 
     await imodel.fonts.embedFontFile({
