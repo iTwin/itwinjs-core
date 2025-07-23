@@ -196,7 +196,7 @@ describe("Field evaluation", () => {
 
   before(async () => {
     const iModelPath = IModelTestUtils.prepareOutputFile("UpdateFieldsContext", "test.bim");
-    imodel = StandaloneDb.createEmpty(iModelPath, { rootSubject: { name: "UpdateFieldsContext" } });
+    imodel = StandaloneDb.createEmpty(iModelPath, { rootSubject: { name: "UpdateFieldsContext" }, allowEdit: JSON.stringify({ txns: true } )});
 
     await registerTestSchema(imodel);
 
