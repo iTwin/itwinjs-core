@@ -490,7 +490,7 @@ describe("Field evaluation", () => {
       expect(actual).to.equal(expected);
     }
 
-    it("updates fields when source element is modified", () => {
+    it("updates fields when source element is modified or deleted", () => {
       const sourceId = insertTestElement();
 
       const field = FieldRun.create({
@@ -526,10 +526,10 @@ describe("Field evaluation", () => {
       expect(source.intProp).to.equal(50);
 
       expectText("50", targetId);
-    });
 
-    it("updates fields when source element is deleted", () => {
-      
+      imodel.elements.deleteElement(sourceId);
+      imodel.saveChanges();
+      expectText(FieldRun.invalidContentIndicator, targetId);
     });
 
     it("updates only fields for specific modified element", () => {
