@@ -109,6 +109,7 @@ internal;interface;ChangedModels
 public;enum;ChangedValueState
 public;enum;ChangeOpCode
 public;interface;ChangesetFileProps
+beta;interface;ChangesetHealthStats
 public;type;ChangesetId
 public;interface;ChangesetIdWithIndex
 public;type;ChangesetIndex
@@ -624,6 +625,7 @@ internal;function;parseTileTreeIdAndContentId
 public;interface;PartReference
 public;type;PersistentBackgroundMapProps
 public;interface;PersistentGraphicsRequestProps
+beta;interface;PerStatementHealthStats
 public;interface;PhysicalElementProps
 preview;interface;PhysicalElementProps
 public;interface;PhysicalTypeProps
