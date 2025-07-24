@@ -16,10 +16,6 @@ describe("apply changesets", function (this: Suite) {
     await IModelHost.startup();
   });
 
-  after(async () => {
-    await IModelHost.shutdown();
-  });
-
   it("Apply changeset with no local changes, should not create new local changes", async () => {
     HubMock.startup("PullMergeMethod", KnownTestLocations.outputDir);
 
