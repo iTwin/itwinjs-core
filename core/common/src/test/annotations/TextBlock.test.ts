@@ -151,6 +151,41 @@ describe("TextBlockComponent", () => {
     const fractionSeparator = "F";
     expect(tb.stringify({ paragraphBreak, lineBreak, fractionSeparator })).to.equal("abcP1Fπ def   ghiLj k lPPPLPFPmnoPLL");
   });
+
+  it("adds parents to runs and paragraphs", () => {
+    const props: TextBlockProps = {
+      styleName: "",
+      paragraphs: [
+        makeParagraph([
+          makeTextRun("abc"),
+        ]),
+        makeParagraph([
+          makeFractionRun("1", "π"),
+          makeTextRun(" def   ghi"),
+          { type: "linebreak", styleName: "" },
+          { type: "tab", styleName: "" }
+        ]),
+      ],
+    };
+
+    const tb = TextBlock.create(props);
+
+    expect(tb.paragraphs.length).to.equal(2);
+
+    const p0 = tb.paragraphs[0];
+    const p1 = tb.paragraphs[1];
+
+    expect(p0.parent).to.equal(tb);
+    expect(p1.parent).to.equal(tb);
+
+    p0.runs.forEach((run) => {
+      expect(run.parent).to.equal(p0);
+    });
+
+    p1.runs.forEach((run) => {
+      expect(run.parent).to.equal(p1);
+    });
+  });
 });
 
 describe("TextBlock", () => {
@@ -197,3 +232,5 @@ describe("TextBlock", () => {
     });
   });
 });
+
+// cspell:ignore Consolas PPPLPF Pmno

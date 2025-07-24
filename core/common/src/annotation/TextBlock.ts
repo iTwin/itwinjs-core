@@ -400,9 +400,11 @@ export class Paragraph extends TextBlockComponent {
   /** The runs within the paragraph. You can modify the contents of this array to change the content of the paragraph. */
   public readonly runs: Run[];
 
-  private constructor(props?: ParagraphProps) {
+  protected constructor(props: ParagraphProps) {
     super(props);
     this.runs = props?.runs?.map((run) => Run.fromJSON(run)) ?? [];
+
+    this.runs.forEach(run => run.parent = this); // Set the parent of each run to this paragraph
   }
 
   public override toJSON(): ParagraphProps {
@@ -419,6 +421,10 @@ export class Paragraph extends TextBlockComponent {
 
   public override clone(): Paragraph {
     return new Paragraph(this.toJSON());
+  }
+
+  public get isEmpty(): boolean {
+    return this.runs.length === 0;
   }
 
   /**
@@ -450,6 +456,11 @@ export class Paragraph extends TextBlockComponent {
     }
 
     return this.runs.every((run, index) => run.equals(other.runs[index]));
+  }
+
+  public appendRun(run: Run): void {
+    run.parent = this; // Set the parent to the paragraph
+    this.runs.push(run);
   }
 }
 
@@ -530,6 +541,8 @@ export class TextBlock extends TextBlockComponent {
     };
 
     this.paragraphs = props.paragraphs?.map((x) => Paragraph.create(x)) ?? [];
+
+    this.paragraphs.forEach(paragraph => paragraph.parent = this); // Set the parent of each paragraph to this text block
   }
 
   public override toJSON(): TextBlockProps {
@@ -555,7 +568,7 @@ export class TextBlock extends TextBlockComponent {
 
   /** Returns true if every paragraph in this text block is empty. */
   public get isEmpty(): boolean {
-    return this.paragraphs.every((p) => p.runs.length === 0);
+    return this.paragraphs.every((p) => p.isEmpty);
   }
 
   public override clone(): TextBlock {
@@ -607,9 +620,7 @@ export class TextBlock extends TextBlockComponent {
    */
   public appendRun(run: Run): void {
     const paragraph = this.paragraphs[this.paragraphs.length - 1] ?? this.appendParagraph();
-
-    run.parent = paragraph; // Set the parent to the paragraph
-    paragraph.runs.push(run);
+    paragraph.appendRun(run);
   }
 
   public override equals(other: TextBlockComponent): boolean {
