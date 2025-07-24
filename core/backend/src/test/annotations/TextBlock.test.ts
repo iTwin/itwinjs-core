@@ -399,7 +399,7 @@ describe("layoutTextBlock", () => {
 
         const p = textBlock.appendParagraph();
         for (let j = 0; j <= i; j++) {
-          p.appendRun(TextRun.create({ content: "Run" }));
+          p.appendChild(TextRun.create({ content: "Run" }));
         }
       }
     });
@@ -1029,8 +1029,9 @@ describe("layoutTextBlock", () => {
       textBlock.appendRun(fractionRun);
 
       const { textStyleResolver, result } = getLayoutResultAndStyleResolver(textBlock);
+      const source = textBlock.children![0]; // FractionRun is not a TextRun
       const args: ComputeGraphemeOffsetsArgs = {
-        source: textBlock,
+        source,
         iModel: {} as any,
         textStyleResolver,
         findFontId: () => 0,
@@ -1050,8 +1051,9 @@ describe("layoutTextBlock", () => {
       textBlock.appendRun(textRun);
 
       const { textStyleResolver, result } = getLayoutResultAndStyleResolver(textBlock);
+      const source = textBlock.children![0]; // FractionRun is not a TextRun
       const args: ComputeGraphemeOffsetsArgs = {
-        source: textBlock,
+        source,
         iModel: {} as any,
         textStyleResolver,
         findFontId: () => 0,
@@ -1071,8 +1073,9 @@ describe("layoutTextBlock", () => {
       textBlock.appendRun(textRun);
 
       const { textStyleResolver, result } = getLayoutResultAndStyleResolver(textBlock);
+      const source = textBlock.children![0].children![0];
       const args: ComputeGraphemeOffsetsArgs = {
-        source: textBlock,
+        source,
         iModel: {} as any,
         textStyleResolver,
         findFontId: () => 0,
@@ -1095,8 +1098,9 @@ describe("layoutTextBlock", () => {
       textBlock.appendRun(textRun);
 
       const { textStyleResolver, result } = getLayoutResultAndStyleResolver(textBlock);
+      const source = textBlock.children![0].children![0];
       const args: ComputeGraphemeOffsetsArgs = {
-        source: textBlock,
+        source,
         iModel: {} as any,
         textStyleResolver,
         findFontId: () => 0,
@@ -1120,8 +1124,9 @@ describe("layoutTextBlock", () => {
       textBlock.appendRun(textRun);
 
       const { textStyleResolver, result } = getLayoutResultAndStyleResolver(textBlock);
+      const source = textBlock.children![0].children![0];
       const args: ComputeGraphemeOffsetsArgs = {
-        source: textBlock,
+        source,
         iModel: {} as any,
         textStyleResolver,
         findFontId: () => 0,

@@ -45,7 +45,7 @@ describe("TextBlockComponent", () => {
     beforeEach(() => {
       block = TextBlock.create({ styleId: "0x42", styleOverrides: { widthFactor: 1234 }});
       paragraph = block.appendParagraph({ styleOverrides: { lineHeight: 42 } });
-      paragraph.appendRun(TextRun.create({ styleOverrides: { fontName: "Consolas" } }));
+      paragraph.appendChild(TextRun.create({ styleOverrides: { fontName: "Consolas" } }));
     });
 
     it("sets style but does not clear overrides by default", () => {

@@ -185,6 +185,12 @@ export abstract class TextBlockComponent {
 
     return true;
   }
+
+  public appendChild(child: TextBlockComponent): void {
+    if (!this.children) this.children = [];
+    this.children.push(child);
+    child.parent = this;
+  }
 }
 
 /**
@@ -453,7 +459,7 @@ export class Paragraph extends TextBlockComponent {
 
     props.children?.forEach((run) => {
       if (run as RunProps) {
-        this.appendRun(Run.fromJSON(run as RunProps));
+        this.appendChild(Run.fromJSON(run as RunProps));
       }
     });
   }
@@ -503,17 +509,6 @@ export class Paragraph extends TextBlockComponent {
     }
 
     return this.children?.every((child, index) => other.children && child.equals(other.children[index])) ?? false;
-  }
-
-  public appendRun(run: Run): void {
-    run.parent = this; // Set the parent to the paragraph
-
-    if (!this.children) {
-      this.children = [];
-    }
-
-    // Ensure the run is also added to the children of this paragraph for consistency with TextBlock
-    this.children.push(run);
   }
 }
 
@@ -665,9 +660,7 @@ export class TextBlock extends TextBlockComponent {
     };
     const paragraph = Paragraph.create(paragraphProps);
 
-    paragraph.parent = this; // Set the parent to this block
-
-    this.children.push(paragraph); // Ensure the paragraph is also added to the children of this block for consistency
+    this.appendChild(paragraph);
     return paragraph;
   }
 
@@ -676,7 +669,7 @@ export class TextBlock extends TextBlockComponent {
    */
   public appendRun(run: Run): void {
     const paragraph = this.last instanceof Paragraph ? this.last : this.appendParagraph();
-    paragraph.appendRun(run);
+    paragraph.appendChild(run);
   }
 
   public override equals(other: TextBlockComponent): boolean {
