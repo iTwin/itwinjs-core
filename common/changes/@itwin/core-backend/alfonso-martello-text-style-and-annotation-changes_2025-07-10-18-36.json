@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "TextAnnotation elements use new BIS property `textAnnotationData`. Introduce `AnnotationTextStyle` class to TypeScript layer. Add new `TextStyleResolver` class to resolve effective text styles from inheritance chain. Drawing scale is accounted for when creating geometry.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

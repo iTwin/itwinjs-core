@@ -3,6 +3,7 @@ Release Tag;API Item Type;API Item Name
 public;interface;AcquireNewBriefcaseIdArg
 public;class;AnnotationElement2d
 preview;class;AnnotationElement2d
+beta;class;AnnotationTextStyle
 beta;type;AnyDb
 beta;function;appendFrameToBuilder
 beta;function;appendLeadersToBuilder
@@ -569,6 +570,8 @@ public;class;TextAnnotation3d
 preview;class;TextAnnotation3d
 beta;class;TextBlockLayout
 internal;interface;TextLayoutRanges
+beta;class;TextStyleResolver
+beta;interface;TextStyleResolverArgs
 public;class;Texture
 preview;class;Texture
 beta;interface;TextureCreateProps
