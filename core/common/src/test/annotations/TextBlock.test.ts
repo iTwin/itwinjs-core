@@ -202,13 +202,11 @@ describe("FieldRun", () => {
   describe("create", () => {
     it("initializes fields", () => {
       const fieldRun = FieldRun.create({
-        styleName: "fieldStyle",
         propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
         propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
         cachedContent: "cachedValue",
       });
 
-      expect(fieldRun.styleName).to.equal("fieldStyle");
       expect(fieldRun.propertyHost.elementId).to.equal("0x123");
       expect(fieldRun.propertyHost.schemaName).to.equal("TestSchema");
       expect(fieldRun.propertyHost.className).to.equal("TestClass");
@@ -218,7 +216,6 @@ describe("FieldRun", () => {
 
     it("initializes cachedContent to invalid content indicator if undefined", () => {
       expect(FieldRun.create({
-        styleName: "fieldStyle",
         propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
         propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
       }).cachedContent).toEqual(FieldRun.invalidContentIndicator);
@@ -228,7 +225,6 @@ describe("FieldRun", () => {
       const propertyPath = { propertyName: "array1", accessors: [0, "nestedProperty"] };
 
       const fieldRun = FieldRun.create({
-        styleName: "fieldStyle",
         propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
         propertyPath,
       });
@@ -243,7 +239,6 @@ describe("FieldRun", () => {
       const formatter = { formatType: "currency", precision: 2, options: { locale: "en-US", style: "decimal" } };
 
       const fieldRun = FieldRun.create({
-        styleName: "fieldStyle",
         propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
         propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
         formatter,
@@ -262,7 +257,6 @@ describe("FieldRun", () => {
       const propertyHost = { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" };
 
       const fieldRun = FieldRun.create({
-        styleName: "fieldStyle",
         propertyHost,
         propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
       });
@@ -279,7 +273,6 @@ describe("FieldRun", () => {
   describe("toJSON", () => {
     it("serializes and deserializes FieldRun correctly", () => {
       const fieldRun = FieldRun.create({
-        styleName: "fieldStyle",
         propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
         propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
         cachedContent: "cachedValue",
@@ -293,7 +286,6 @@ describe("FieldRun", () => {
 
     it("omits cachedContent if it is equal to invalid content indicator", () => {
       const fieldRun = FieldRun.create({
-        styleName: "fieldStyle",
         propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
         propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
         cachedContent: FieldRun.invalidContentIndicator,
@@ -306,7 +298,6 @@ describe("FieldRun", () => {
   describe("stringify", () => {
     it("produces cached content", () => {
       const fieldRun = FieldRun.create({
-        styleName: "fieldStyle",
         propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
         propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
         cachedContent: "cachedValue",
@@ -364,14 +355,12 @@ describe("FieldRun", () => {
 
     it("ignores cached content", () => {
       const field1 = FieldRun.create({
-        styleName: "fieldStyle",
         propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
         propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
         cachedContent: "1",
       });
 
       const field2 = FieldRun.create({
-        styleName: "fieldStyle",
         propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
         propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
         cachedContent: "2",

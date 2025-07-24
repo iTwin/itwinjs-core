@@ -8,9 +8,9 @@
 
 import { AnnotationTextStyleProps, BisCodeSpec, Code, CodeProps, CodeScopeProps, CodeSpec, ElementGeometry, ElementGeometryBuilderParams, EntityReferenceSet, Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { IModelDb } from "../IModelDb";
-import { AnnotationElement2d, DefinitionElement, GraphicalElement3d, OnElementIdArg } from "../Element";
+import { AnnotationElement2d, DefinitionElement, GraphicalElement3d, OnElementIdArg, OnElementPropsArg } from "../Element";
 import { assert, Id64String } from "@itwin/core-bentley";
-import { layoutTextBlock } from "./TextBlockLayout";
+import { layoutTextBlock, TextStyleResolver } from "./TextBlockLayout";
 import { appendTextAnnotationGeometry } from "./TextAnnotationGeometry";
 import { ElementDrivesTextAnnotation, ITextAnnotation, TextBlockAndId } from "./ElementDrivesTextAnnotation";
 

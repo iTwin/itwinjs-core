@@ -16,7 +16,7 @@ import { PhysicalElement } from "../../Element";
 import { FontFile, TextAnnotation3d } from "../../core-backend";
 import { ElementDrivesTextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 
-describe("updateField", () => {
+describe.only("updateField", () => {
   const mockElementId = "0x1";
   const mockPath: FieldPropertyPath = {
     propertyName: "mockProperty",
@@ -43,7 +43,6 @@ describe("updateField", () => {
 
   it("does nothing if hostElementId does not match", () => {
     const fieldRun = FieldRun.create({
-      styleName: "fieldStyle",
       propertyHost: { elementId: mockElementId, schemaName: "TestSchema", className: "TestClass" },
       propertyPath: mockPath,
       cachedContent: mockCachedContent,
@@ -58,7 +57,6 @@ describe("updateField", () => {
 
   it("produces invalid content indicator if property value is undefined", () => {
     const fieldRun = FieldRun.create({
-      styleName: "fieldStyle",
       propertyHost: { elementId: mockElementId, schemaName: "TestSchema", className: "TestClass" },
       propertyPath: mockPath,
       cachedContent: mockCachedContent,
@@ -73,7 +71,6 @@ describe("updateField", () => {
 
   it("returns false if cached content matches new content", () => {
     const fieldRun = FieldRun.create({
-      styleName: "fieldStyle",
       propertyHost: { elementId: mockElementId, schemaName: "TestSchema", className: "TestClass" },
       propertyPath: mockPath,
       cachedContent: mockCachedContent,
@@ -88,7 +85,6 @@ describe("updateField", () => {
 
   it("returns true and updates cached content if new content is different", () => {
     const fieldRun = FieldRun.create({
-      styleName: "fieldStyle",
       propertyHost: { elementId: mockElementId, schemaName: "TestSchema", className: "TestClass" },
       propertyPath: mockPath,
       cachedContent: mockCachedContent,
@@ -103,7 +99,6 @@ describe("updateField", () => {
 
   it("resolves to invalid content indicator if an exception occurs", () => {
     const fieldRun = FieldRun.create({
-      styleName: "fieldStyle",
       propertyHost: { elementId: mockElementId, schemaName: "TestSchema", className: "TestClass" },
       propertyPath: mockPath,
       cachedContent: mockCachedContent,
@@ -188,7 +183,7 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
   iModel.saveChanges();
 }
 
-describe("Field evaluation", () => {
+describe.only("Field evaluation", () => {
   let imodel: StandaloneDb;
   let model: Id64String;
   let category: Id64String;
@@ -263,7 +258,6 @@ describe("Field evaluation", () => {
       const field = FieldRun.create({
         propertyPath,
         propertyHost,
-        styleName: "style",
       });
 
       const context = createUpdateContext(propertyHost.elementId, imodel, deletedDependency);
@@ -368,9 +362,8 @@ describe("Field evaluation", () => {
 
   describe("updateFields", () => {
     it("recomputes cached content", () => {
-      const textBlock = TextBlock.create({ styleName: "blockStyle" });
+      const textBlock = TextBlock.create({ styleId: "0x123" });
       const fieldRun = FieldRun.create({
-        styleName: "fieldStyle",
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "intProp" },
         cachedContent: "oldValue",
@@ -386,9 +379,8 @@ describe("Field evaluation", () => {
     });
 
     it("does not update a field if recomputed content matches cached content", () => {
-      const textBlock = TextBlock.create({ styleName: "blockStyle" });
+      const textBlock = TextBlock.create({ styleId: "0x123" });
       const fieldRun = FieldRun.create({
-        styleName: "fieldStyle",
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "intProp" },
         cachedContent: "100",
@@ -404,16 +396,14 @@ describe("Field evaluation", () => {
     });
 
     it("returns the number of fields updated", () => {
-      const textBlock = TextBlock.create({ styleName: "blockStyle" });
+      const textBlock = TextBlock.create({ styleId: "0x123" });
       const fieldRun1 = FieldRun.create({
-        styleName: "fieldStyle",
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "intProp" },
         cachedContent: "100",
       });
 
       const fieldRun2 = FieldRun.create({
-        styleName: "fieldStyle",
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "strings", accessors: [0] },
         cachedContent: "oldValue",
@@ -451,7 +441,7 @@ describe("Field evaluation", () => {
     return elem.insert();
   }
 
-  describe.only("ElementDrivesTextAnnotation", () => {
+  describe("ElementDrivesTextAnnotation", () => {
     function expectNumRelationships(expected: number, targetId?: Id64String): void {
       const where = targetId ? ` WHERE TargetECInstanceId=${targetId}` : "";
       const ecsql = `SELECT COUNT(*) FROM BisCore.ElementDrivesTextAnnotation ${where}`;
@@ -487,7 +477,6 @@ describe("Field evaluation", () => {
 
     function createField(sourceId: Id64String, cachedContent: string, propertyName = "intProp"): FieldRun {
       return FieldRun.create({
-        styleName: "style",
         styleOverrides: { fontName: "Karla" },
         propertyHost: { elementId: sourceId, schemaName: "Fields", className: "TestElement" },
         cachedContent,
@@ -498,7 +487,7 @@ describe("Field evaluation", () => {
     describe("updateFieldDependencies", () => {
       it("creates exactly one relationship for each unique source element on insert and update", () => {
         const source1 = insertTestElement();
-        const block = TextBlock.create({ styleName: "style" });
+        const block = TextBlock.create({ styleId: "0x123" });
         block.appendRun(createField(source1, "1"));
         const targetId = insertAnnotationElement(block);
         imodel.saveChanges();
@@ -535,7 +524,7 @@ describe("Field evaluation", () => {
         const sourceA = insertTestElement();
         const sourceB = insertTestElement();
 
-        const block = TextBlock.create({ styleName: "style" });
+        const block = TextBlock.create({ styleId: "0x123" });
         block.appendRun(createField(sourceA, "A"));
         block.appendRun(createField(sourceB, "B"));
         const targetId = insertAnnotationElement(block);
@@ -568,7 +557,6 @@ describe("Field evaluation", () => {
 
         anno.textBlock.paragraphs.length = 0;
         anno.textBlock.appendRun(TextRun.create({
-          styleName: "style",
           styleOverrides: { fontName: "Karla" },
           content: "not a field",
         }));
@@ -583,7 +571,7 @@ describe("Field evaluation", () => {
 
       it("ignores invalid source element Ids", () => {
         const source = insertTestElement();
-        const block = TextBlock.create({ styleName: "style" });
+        const block = TextBlock.create({ styleId: "0x123" });
         block.appendRun(createField(Id64.invalid, "invalid"));
         block.appendRun(createField("0xbaadf00d", "non-existent"));
         block.appendRun(createField(source, "valid"));
@@ -603,7 +591,7 @@ describe("Field evaluation", () => {
 
     it("updates fields when source element is modified or deleted", () => {
       const sourceId = insertTestElement();
-      const block = TextBlock.create({ styleName: "style" });
+      const block = TextBlock.create({ styleId: "0x123" });
       block.appendRun(createField(sourceId, "old value"));;
       
       const targetId = insertAnnotationElement(block);
@@ -637,7 +625,7 @@ describe("Field evaluation", () => {
     it("updates only fields for specific modified element", () => {
       const sourceA = insertTestElement();
       const sourceB = insertTestElement();
-      const block = TextBlock.create({ styleName: "style" });
+      const block = TextBlock.create({ styleId: "0x123" });
       block.appendRun(createField(sourceA, "A"));
       block.appendRun(createField(sourceB, "B"));
 

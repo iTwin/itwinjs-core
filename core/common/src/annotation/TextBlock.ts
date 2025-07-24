@@ -7,7 +7,6 @@
  */
 
 import { assert, Id64String } from "@itwin/core-bentley";
-import { Id64String } from "@itwin/core-bentley";
 import { TextStyleSettings, TextStyleSettingsProps } from "./TextStyle";
 
 /** Options supplied to [[TextBlockComponent.clearStyleOverrides]] to control how the style overrides are cleared on the component and its child components.
