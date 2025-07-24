@@ -1,6 +1,6 @@
 {
   "name": "@itwin/linear-referencing-backend",
-  "version": "5.1.0-dev.57",
+  "version": "5.1.0-dev.62",
   "main": "lib/cjs/linear-referencing-backend.js",
   "module": "lib/esm/linear-referencing-backend.js",
   "typings": "lib/cjs/linear-referencing-backend",
@@ -25,6 +25,7 @@
     "docs": "betools docs --json=../../../generated-docs/domains/linear-referencing-backend/file.json --tsIndexFile=./linear-referencing-backend.ts --onlyJson",
     "extract-api": "betools extract-api --entry=linear-referencing-backend",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": "mocha"
   },
   "repository": {
@@ -56,14 +57,14 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@itwin/linear-referencing-common": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
     "@types/node": "~20.17.0",
     "chai": "^4.3.10",
     "cpx2": "^8.0.0",
-    "eslint": "^9.13.0",
+    "eslint": "^9.31.0",
     "internal-tools": "workspace:*",
     "mocha": "^11.1.0",
     "nyc": "^17.1.0",

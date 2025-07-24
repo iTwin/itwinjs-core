@@ -6,6 +6,7 @@
 
 import { AccessToken } from '@itwin/core-bentley';
 import { Angle } from '@itwin/core-geometry';
+import { AnnotationTextStyleProps } from '@itwin/core-common';
 import { AuthorizationClient } from '@itwin/core-common';
 import { AuxCoordSystem2dProps } from '@itwin/core-common';
 import { AuxCoordSystem3dProps } from '@itwin/core-common';
@@ -32,6 +33,7 @@ import { ChangedModels } from '@itwin/core-common';
 import { ChangedValueState } from '@itwin/core-common';
 import { ChangeOpCode } from '@itwin/core-common';
 import { ChangesetFileProps } from '@itwin/core-common';
+import { ChangesetHealthStats } from '@itwin/core-common';
 import { ChangesetId } from '@itwin/core-common';
 import { ChangesetIdWithIndex } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
@@ -188,7 +190,9 @@ import { PhysicalTypeProps } from '@itwin/core-common';
 import { PickAsyncMethods } from '@itwin/core-bentley';
 import { PickMethods } from '@itwin/core-bentley';
 import { Placement2d } from '@itwin/core-common';
+import { Placement2dProps } from '@itwin/core-common';
 import { Placement3d } from '@itwin/core-common';
+import { Placement3dProps } from '@itwin/core-common';
 import { Point2d } from '@itwin/core-geometry';
 import { Point3d } from '@itwin/core-geometry';
 import { Polyface } from '@itwin/core-geometry';
@@ -259,6 +263,7 @@ import { TextBlockLayoutResult } from '@itwin/core-common';
 import { TextFrameStyleProps } from '@itwin/core-common';
 import { TextRun } from '@itwin/core-common';
 import { TextStyleSettings } from '@itwin/core-common';
+import { TextStyleSettingsProps } from '@itwin/core-common';
 import { TextureData } from '@itwin/core-common';
 import { TextureLoadProps } from '@itwin/core-common';
 import { TextureMapProps } from '@itwin/core-common';
@@ -304,13 +309,28 @@ export class AnnotationElement2d extends GraphicalElement2d {
 }
 
 // @beta
+export class AnnotationTextStyle extends DefinitionElement {
+    protected constructor(props: AnnotationTextStyleProps, iModel: IModelDb);
+    // @internal (undocumented)
+    static get className(): string;
+    static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, settings?: TextStyleSettingsProps, description?: string): AnnotationTextStyle;
+    static createCode(iModel: IModelDb, definitionModelId: CodeScopeProps, name: string): Code;
+    description?: string;
+    static fromJSON(props: AnnotationTextStyleProps, iModel: IModelDb): AnnotationTextStyle;
+    protected static onInsert(arg: OnElementPropsArg): void;
+    protected static onUpdate(arg: OnElementPropsArg): void;
+    settings: TextStyleSettings;
+    toJSON(): AnnotationTextStyleProps;
+}
+
+// @beta
 export type AnyDb = IModelDb | ECDb;
 
 // @beta
 export function appendFrameToBuilder(builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams: GeometryParams): boolean;
 
 // @beta
-export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders: TextAnnotationLeader[], layout: TextBlockLayout, transform: Transform, params: GeometryParams, frame?: TextFrameStyleProps): boolean;
+export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders: TextAnnotationLeader[], layout: TextBlockLayout, transform: Transform, params: GeometryParams, textStyleResolver: TextStyleResolver): boolean;
 
 // @beta
 export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometryArgs): boolean;
@@ -322,6 +342,7 @@ export interface AppendTextAnnotationGeometryArgs {
     categoryId: Id64String;
     layout: TextBlockLayout;
     subCategoryId?: Id64String;
+    textStyleResolver: TextStyleResolver;
     wantDebugGeometry?: boolean;
 }
 
@@ -541,10 +562,16 @@ export class BriefcaseDb extends IModelDb {
     readonly briefcaseId: BriefcaseId;
     // (undocumented)
     close(): void;
+    // (undocumented)
+    disableChangesetStatTracking(): Promise<void>;
+    // (undocumented)
+    enableChangesetStatTracking(): Promise<void>;
     // @internal
     executeWritable(func: () => Promise<void>): Promise<void>;
     // (undocumented)
     static findByKey(key: string): BriefcaseDb;
+    // (undocumented)
+    getAllChangesetHealthData(): Promise<ChangesetHealthStats[]>;
     get isBriefcase(): boolean;
     get iTwinId(): GuidString;
     // (undocumented)
@@ -3020,8 +3047,8 @@ export abstract class FileNameResolver {
 // @internal
 export type FindFontId = (name: string, type?: FontType) => FontId;
 
-// @internal (undocumented)
-export type FindTextStyle = (name: string) => TextStyleSettings;
+// @internal
+export type FindTextStyle = (id: Id64String) => TextStyleSettings;
 
 // @beta
 export class FolderContainsRepositories extends ElementOwnsChildElements {
@@ -4183,10 +4210,9 @@ export interface LayoutTextBlockArgs {
     computeTextRange?: ComputeRangesForTextLayout;
     // @internal
     findFontId?: FindFontId;
-    // @internal
-    findTextStyle?: FindTextStyle;
     iModel: IModelDb;
     textBlock: TextBlock;
+    textStyleResolver: TextStyleResolver;
 }
 
 // @internal
@@ -5294,7 +5320,7 @@ export class RunLayout {
     // (undocumented)
     charOffset: number;
     // (undocumented)
-    static create(source: Run, context: LayoutContext): RunLayout;
+    static create(source: Run, parentParagraph: Paragraph, context: LayoutContext): RunLayout;
     // (undocumented)
     denominatorRange?: Range2d;
     // (undocumented)
@@ -6320,12 +6346,17 @@ export class TextAnnotation2d extends AnnotationElement2d {
     protected constructor(props: TextAnnotation2dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // (undocumented)
+    protected collectReferenceIds(ids: EntityReferenceSet): void;
+    static create(iModelDb: IModelDb, category: Id64String, model: Id64String, placement: Placement2dProps, textAnnotationData?: TextAnnotationProps, code?: CodeProps): TextAnnotation2d;
     static fromJSON(props: TextAnnotation2dProps, iModel: IModelDb): TextAnnotation2d;
     getAnnotation(): TextAnnotation | undefined;
+    // @beta
+    protected static onInsert(arg: OnElementPropsArg): void;
+    // @beta
+    protected static onUpdate(arg: OnElementPropsArg): void;
     setAnnotation(annotation: TextAnnotation): void;
-    // (undocumented)
     toJSON(): TextAnnotation2dProps;
+    protected static updateGeometry(iModelDb: IModelDb, props: TextAnnotation2dProps): void;
 }
 
 // @public @preview
@@ -6333,12 +6364,17 @@ export class TextAnnotation3d extends GraphicalElement3d {
     protected constructor(props: TextAnnotation3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // (undocumented)
+    protected collectReferenceIds(ids: EntityReferenceSet): void;
+    static create(iModelDb: IModelDb, category: Id64String, model: Id64String, placement: Placement3dProps, textAnnotationData?: TextAnnotationProps, code?: CodeProps): TextAnnotation3d;
     static fromJSON(props: TextAnnotation3dProps, iModel: IModelDb): TextAnnotation3d;
     getAnnotation(): TextAnnotation | undefined;
+    // @beta
+    protected static onInsert(arg: OnElementPropsArg): void;
+    // @beta
+    protected static onUpdate(arg: OnElementPropsArg): void;
     setAnnotation(annotation: TextAnnotation): void;
-    // (undocumented)
     toJSON(): TextAnnotation3dProps;
+    protected static updateGeometry(iModelDb: IModelDb, props: TextAnnotation3dProps): void;
 }
 
 // @beta
@@ -6361,6 +6397,26 @@ export interface TextLayoutRanges {
     justification: Range2d;
     // (undocumented)
     layout: Range2d;
+}
+
+// @beta
+export class TextStyleResolver {
+    constructor(args: TextStyleResolverArgs);
+    readonly blockSettings: TextStyleSettings;
+    findTextStyle(id: Id64String): TextStyleSettings;
+    resolveParagraphSettings(paragraph: Paragraph): TextStyleSettings;
+    resolveRunSettings(paragraph: Paragraph, run: Run): TextStyleSettings;
+    resolveTextAnnotationLeaderSettings(leader: TextAnnotationLeader): TextStyleSettings;
+    readonly scaleFactor: number;
+}
+
+// @beta
+export interface TextStyleResolverArgs {
+    // @internal
+    findTextStyle?: FindTextStyle;
+    iModel: IModelDb;
+    modelId?: Id64String;
+    textBlock: TextBlock;
 }
 
 // @public @preview

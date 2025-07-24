@@ -6,11 +6,13 @@
  * @module ElementGeometry
  */
 
-import { BaselineShift, FieldRun, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TabRun, TextBlock, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, FieldRun, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TabRun, TextAnnotationLeader, TextBlock, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Geometry, Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "../IModelDb";
-import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
+import { assert, Id64String, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 import * as LineBreaker from "linebreak";
+import { AnnotationTextStyle } from "./TextAnnotationElement";
+import { Drawing } from "../Element";
 
 
 /** @internal */
@@ -43,8 +45,20 @@ export type ComputeRangesForTextLayout = (args: ComputeRangesForTextLayoutArgs) 
  */
 export type FindFontId = (name: string, type?: FontType) => FontId;
 
+/** @internal chiefly for tests. */
+export type FindTextStyle = (id: Id64String) => TextStyleSettings;
+
 /** @internal */
-export type FindTextStyle = (name: string) => TextStyleSettings;
+function createFindTextStyleImpl(iModel: IModelDb): FindTextStyle {
+  return function findTextStyleImpl(id: Id64String): TextStyleSettings {
+    const annotationTextStyle = iModel.elements.tryGetElement<AnnotationTextStyle>(id);
+    if (annotationTextStyle && annotationTextStyle instanceof AnnotationTextStyle) {
+      return annotationTextStyle.settings;
+    }
+
+    return TextStyleSettings.fromJSON();
+  };
+}
 
 /**
  * Arguments supplied to [[computeLayoutTextBlockResult]].
@@ -53,12 +67,12 @@ export type FindTextStyle = (name: string) => TextStyleSettings;
 export interface LayoutTextBlockArgs {
   /** The text block whose extents are to be computed. */
   textBlock: TextBlock;
-  /** The iModel from which to obtain fonts and [TextStyle]($common)s when laying out glyphs. */
+  /** The iModel from which to obtain fonts and [[AnnotationTextStyle]]s when laying out glyphs. */
   iModel: IModelDb;
+  /** The text style resolver used to resolve effective text styles during layout. */
+  textStyleResolver: TextStyleResolver;
   /** @internal chiefly for tests, by default uses IModelJsNative.DgnDb.computeRangesForText. */
   computeTextRange?: ComputeRangesForTextLayout;
-  /** @internal chiefly for tests, by default looks up styles from a workspace. */
-  findTextStyle?: FindTextStyle;
   /** @internal chiefly for tests, by default uses IModelDb.fontMap. */
   findFontId?: FindFontId;
 }
@@ -76,15 +90,12 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
   const findFontId = args.findFontId ?? ((name, type) => args.iModel.fonts.findId({ name, type }) ?? 0);
   const computeTextRange = args.computeTextRange ?? ((x) => args.iModel.computeRangesForText(x));
 
-  // ###TODO finding text styles in workspaces.
-  const findTextStyle = args.findTextStyle ?? (() => TextStyleSettings.fromJSON());
-
-  return new TextBlockLayout(args.textBlock, new LayoutContext(args.textBlock, computeTextRange, findTextStyle, findFontId));
+  return new TextBlockLayout(args.textBlock, new LayoutContext(args.textStyleResolver, computeTextRange, findFontId));
 }
 
 /**
  * Gets the result of laying out the the contents of a TextBlock into a series of lines containing runs.
- * The visual layout accounts for the [TextStyle]($common)s, fonts, and [TextBlock.width]($common). It applies word-wrapping if needed.
+ * The visual layout accounts for the [[AnnotationTextStyle]]s, fonts, and [TextBlock.width]($common). It applies word-wrapping if needed.
  * The layout returned matches the visual layout of the geometry produced by [[appendTextAnnotationGeometry]].
  * @beta
  */
@@ -117,7 +128,6 @@ export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2
   const { textBlock, paragraphIndex, runLayoutResult, graphemeCharIndexes, iModel } = args;
   const findFontId = args.findFontId ?? ((name, type) => iModel.fonts.findId({ name, type }) ?? 0);
   const computeTextRange = args.computeTextRange ?? ((x) => iModel.computeRangesForText(x));
-  const findTextStyle = args.findTextStyle ?? (() => TextStyleSettings.fromJSON());
   const source = textBlock.paragraphs[paragraphIndex].runs[runLayoutResult.sourceRunIndex];
 
   if (source.type !== "text" || runLayoutResult.characterCount === 0) {
@@ -126,7 +136,7 @@ export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2
 
   const style = TextStyleSettings.fromJSON(runLayoutResult.textStyle);
 
-  const layoutContext = new LayoutContext(textBlock, computeTextRange, findTextStyle, findFontId);
+  const layoutContext = new LayoutContext(args.textStyleResolver, computeTextRange, findFontId);
   const graphemeRanges: Range2d[] = [];
 
   graphemeCharIndexes.forEach((_, index) => {
@@ -141,7 +151,14 @@ function scaleRange(range: Range2d, scale: number): void {
   range.high.scaleInPlace(scale);
 }
 
-function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings | TextStyleSettingsProps): TextStyleSettings {
+/**
+ * Applies block level settings (lineSpacingFactor, lineHeight, widthFactor, frame, and leader) to a [TextStyleSettings]($common).
+ * These must be set on the block, as they are meaningless on individual paragraphs/runs.
+ * However, leaders are a special case and can override the block's leader settings.
+ * Setting `isLeader` to `true` makes the [TextBlock]($common) settings not override the leader's settings.
+ * @internal
+ */
+function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings | TextStyleSettingsProps, isLeader: boolean = false): TextStyleSettings {
   if (source === target) {
     return target;
   }
@@ -149,23 +166,125 @@ function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings
   const lineSpacingFactor = source.lineSpacingFactor ?? target.lineSpacingFactor;
   const lineHeight = source.lineHeight ?? target.lineHeight;
   const widthFactor = source.widthFactor ?? target.widthFactor;
+  const frame = source.frame ?? target.frame;
+  const leader = source.leader ?? target.leader;
 
-  if (lineSpacingFactor !== target.lineSpacingFactor || lineHeight !== target.lineHeight || widthFactor !== target.widthFactor) {
-    target = target.clone({ lineSpacingFactor, lineHeight, widthFactor });
+  const leaderShouldChange = !isLeader && !target.leaderEquals(leader);
+
+  if (lineSpacingFactor !== target.lineSpacingFactor ||
+      lineHeight !== target.lineHeight ||
+      widthFactor !== target.widthFactor ||
+      !target.frameEquals(frame) ||
+      leaderShouldChange
+  ) {
+    const cloneProps: TextStyleSettingsProps = {
+      lineSpacingFactor,
+      lineHeight,
+      widthFactor,
+      frame,
+    };
+
+    if (leaderShouldChange) {
+      cloneProps.leader = leader;
+    }
+
+    target = target.clone(cloneProps);
   }
 
   return target;
 }
 
-class LayoutContext {
-  private readonly _textStyles = new Map<string, TextStyleSettings>();
-  private readonly _fontIds = new Map<string, FontId>();
-  public readonly blockSettings: TextStyleSettings;
+/**
+ * Arguments used when constructing a [[TextStyleResolver]].
+ * @beta
+ */
+export interface TextStyleResolverArgs {
+  /** The text block whose styles are being resolved. */
+  textBlock: TextBlock;
+  /** The iModel from which to obtain [[AnnotationTextStyle]]s when resolving styles. */
+  iModel: IModelDb;
+  /** The ID of the model containing the text block, used to compute the scale factor. */
+  modelId?: Id64String;
+  /** @internal chiefly for tests, by default looks up an [[AnnotationTextStyle]] in the iModel by ID. */
+  findTextStyle?: FindTextStyle;
+}
 
-  public constructor(block: TextBlock, private readonly _computeTextRange: ComputeRangesForTextLayout, private readonly _findTextStyle: FindTextStyle, private readonly _findFontId: FindFontId) {
-    const settings = this.findTextStyle(block.styleName);
-    this.blockSettings = applyBlockSettings(settings, block.styleOverrides);
+/**
+ * Resolves the effective style of TextBlockComponents and Leaders, taking into account overrides/style of the instance and its parent(s).
+ * @beta
+ */
+export class TextStyleResolver {
+  private readonly _textStyles = new Map<Id64String, TextStyleSettings>();
+  private readonly _findTextStyle: FindTextStyle;
+  /** The resolved style of the TextBlock. */
+  public readonly blockSettings: TextStyleSettings;
+  /** The scale factor of the model containing the TextBlock. */
+  public readonly scaleFactor: number;
+
+  public constructor(args: TextStyleResolverArgs) {
+    this._findTextStyle = args.findTextStyle ?? createFindTextStyleImpl(args.iModel);
+
+    this.scaleFactor = 1;
+    if (args.modelId) {
+      const element = args.iModel.elements.getElement(args.modelId);
+      if (element instanceof Drawing)
+        this.scaleFactor = element.scaleFactor;
+    }
+
+    this.blockSettings = this.findTextStyle(args.textBlock.styleId);
+    if (args.textBlock.styleOverrides)
+      this.blockSettings = this.blockSettings.clone(args.textBlock.styleOverrides);
   }
+
+  private resolveParagraphSettingsImpl(paragraph: Paragraph): TextStyleSettings {
+    let settings = this.blockSettings;
+
+    if (paragraph.overridesStyle)
+      settings = settings.clone(paragraph.styleOverrides);
+
+    return settings;
+  }
+
+  /** Looks up an [[AnnotationTextStyle]] by ID. Uses caching. */
+  public findTextStyle(id: Id64String): TextStyleSettings {
+    let style = this._textStyles.get(id);
+    if (undefined === style) {
+      this._textStyles.set(id, style = this._findTextStyle(id));
+    }
+
+    return style;
+  }
+
+  /** Resolves the effective style for a [TextAnnotationLeader]($common). The TextAnnotationLeader should be a sibling of the provided TextBlock. */
+  public resolveTextAnnotationLeaderSettings(leader: TextAnnotationLeader): TextStyleSettings {
+    let settings = this.blockSettings;
+
+    if (leader.styleOverrides)
+      settings = settings.clone(leader.styleOverrides);
+
+    return applyBlockSettings(settings, this.blockSettings, true);
+  }
+
+  /** Resolves the effective style for a [Paragraph]($common). Paragraph should be child of provided TextBlock. */
+  public resolveParagraphSettings(paragraph: Paragraph): TextStyleSettings {
+    return applyBlockSettings(this.resolveParagraphSettingsImpl(paragraph), this.blockSettings);
+  }
+
+  /** Resolves the effective style for a [Run]($common). Run should be child of provided Paragraph and TextBlock. */
+  public resolveRunSettings(paragraph: Paragraph, run: Run): TextStyleSettings {
+    let settings = this.resolveParagraphSettingsImpl(paragraph);
+
+    if (run.overridesStyle)
+      settings = settings.clone(run.styleOverrides);
+
+    return applyBlockSettings(settings, this.blockSettings);
+  }
+}
+
+class LayoutContext {
+  private readonly _fontIds = new Map<string, FontId>();
+
+  public constructor(public readonly textStyleResolver: TextStyleResolver, private readonly _computeTextRange: ComputeRangesForTextLayout, private readonly _findFontId: FindFontId) {}
 
   public findFontId(name: string): FontId {
     let fontId = this._fontIds.get(name);
@@ -174,24 +293,6 @@ class LayoutContext {
     }
 
     return fontId;
-  }
-
-  public findTextStyle(name: string): TextStyleSettings {
-    let style = this._textStyles.get(name);
-    if (undefined === style) {
-      this._textStyles.set(name, style = this._findTextStyle(name));
-    }
-
-    return style;
-  }
-
-  public createRunSettings(run: Run): TextStyleSettings {
-    let settings = this.findTextStyle(run.styleName);
-    if (run.overridesStyle) {
-      settings = settings.clone(run.styleOverrides);
-    }
-
-    return applyBlockSettings(settings, this.blockSettings);
   }
 
   public computeRangeForText(chars: string, style: TextStyleSettings, baselineShift: BaselineShift): TextLayoutRanges {
@@ -209,8 +310,8 @@ class LayoutContext {
       baselineShift,
       bold: style.isBold,
       italic: style.isItalic,
-      lineHeight: this.blockSettings.lineHeight,
-      widthFactor: this.blockSettings.widthFactor,
+      lineHeight: this.textStyleResolver.blockSettings.lineHeight,
+      widthFactor: this.textStyleResolver.blockSettings.widthFactor,
     });
 
     if ("none" !== baselineShift) {
@@ -349,8 +450,8 @@ export class RunLayout {
     this.fontId = props.fontId;
   }
 
-  public static create(source: Run, context: LayoutContext): RunLayout {
-    const style = context.createRunSettings(source);
+  public static create(source: Run, parentParagraph: Paragraph,  context: LayoutContext): RunLayout {
+    const style = context.textStyleResolver.resolveRunSettings(parentParagraph, source);
     const fontId = context.findFontId(style.fontName);
     const charOffset = 0;
     const offsetFromLine = { x: 0, y: 0 };
@@ -600,7 +701,7 @@ export class TextBlockLayout {
         curLine = this.flushLine(context, curLine, paragraph);
       }
 
-      let runs = paragraph.runs.map((run) => RunLayout.create(run, context));
+      let runs = paragraph.runs.map((run) => RunLayout.create(run, paragraph, context));
       if (doWrap) {
         runs = runs.map((run) => run.split(context)).flat();
       }
@@ -699,7 +800,7 @@ export class TextBlockLayout {
         return new LineLayout(nextParagraph);
       }
 
-      line.append(RunLayout.create(prevRun.clone(), context));
+      line.append(RunLayout.create(prevRun.clone(), line.source, context));
     }
 
     // Line origin is its baseline.
@@ -708,7 +809,7 @@ export class TextBlockLayout {
     // Place it below any existing lines
     if (this.lines.length > 0) {
       lineOffset.y += this._back.offsetFromDocument.y;
-      lineOffset.y -= context.blockSettings.lineSpacingFactor * context.blockSettings.lineHeight;
+      lineOffset.y -= context.textStyleResolver.blockSettings.lineSpacingFactor * context.textStyleResolver.blockSettings.lineHeight;
     }
 
     line.offsetFromDocument = lineOffset;

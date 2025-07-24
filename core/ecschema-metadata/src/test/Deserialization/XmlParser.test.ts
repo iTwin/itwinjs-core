@@ -1325,6 +1325,73 @@ describe("XmlParser", () => {
       const actualProps = parser.parsePrimitiveArrayProperty(propElement);
       assert.strictEqual(actualProps.maxOccurs, INT_MAX);
     });
+
+    it("double property, minimumValue and maximumValue should be parsed as a float number", () => {
+      const itemXml = `
+        <ECEntityClass typeName="TestEntityClass" description="Test description" displayLabel="TestLabel" modifier="Abstract">
+          <ECArrayProperty propertyName="TestArrayProperty" typeName="double" minimumValue="1.00001" maximumValue="1000.0004"/>
+        </ECEntityClass>`;
+
+      parser = new XmlParser(createSchemaXmlWithItems(itemXml));
+      const findResult = parser.findItem("TestEntityClass");
+      if (findResult === undefined)
+        throw new Error("Expected finding EntityClass with ArrayProperty to be successful");
+
+      const [, , parentElement] = findResult;
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
+      if (propertiesResult.length === 0)
+        throw new Error("Expected finding EntityClass ArrayProperty to be successful");
+
+      const [, , propElement] = propertiesResult[0];
+      const actualProps = parser.parsePrimitiveArrayProperty(propElement);
+      assert.strictEqual(actualProps.minValue, 1.00001);
+      assert.strictEqual(actualProps.maxValue, 1000.0004);
+    });
+
+    it("long property, minimumValue and maximumValue should be parsed as a float number", () => {
+      const itemXml = `
+        <ECEntityClass typeName="TestEntityClass" description="Test description" displayLabel="TestLabel" modifier="Abstract">
+          <ECArrayProperty propertyName="TestArrayProperty" typeName="long" minimumValue="1.00001" maximumValue="1000.0004"/>
+        </ECEntityClass>`;
+
+      parser = new XmlParser(createSchemaXmlWithItems(itemXml));
+      const findResult = parser.findItem("TestEntityClass");
+      if (findResult === undefined)
+        throw new Error("Expected finding EntityClass with ArrayProperty to be successful");
+
+      const [, , parentElement] = findResult;
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
+      if (propertiesResult.length === 0)
+        throw new Error("Expected finding EntityClass ArrayProperty to be successful");
+
+      const [, , propElement] = propertiesResult[0];
+      const actualProps = parser.parsePrimitiveArrayProperty(propElement);
+      assert.strictEqual(actualProps.minValue, 1.00001);
+      assert.strictEqual(actualProps.maxValue, 1000.0004);
+    });
+
+    it("integer property, minimumValue and maximumValue should be parsed as an integer number", () => {
+      const itemXml = `
+        <ECEntityClass typeName="TestEntityClass" description="Test description" displayLabel="TestLabel" modifier="Abstract">
+          <ECArrayProperty propertyName="TestArrayProperty" typeName="integer" minimumValue="1.1" maximumValue="1000.1"/>
+        </ECEntityClass>`;
+
+      parser = new XmlParser(createSchemaXmlWithItems(itemXml));
+      const findResult = parser.findItem("TestEntityClass");
+      if (findResult === undefined)
+        throw new Error("Expected finding EntityClass with ArrayProperty to be successful");
+
+      const [, , parentElement] = findResult;
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
+      if (propertiesResult.length === 0)
+        throw new Error("Expected finding EntityClass ArrayProperty to be successful");
+
+      const [, , propElement] = propertiesResult[0];
+      const actualProps = parser.parsePrimitiveArrayProperty(propElement);
+      assert.strictEqual(actualProps.minValue, 1);
+      assert.strictEqual(actualProps.maxValue, 1000);
+    });
+
   });
 
   describe("parseNavigationProperty", () => {
