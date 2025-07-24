@@ -415,7 +415,7 @@ export class Paragraph extends TextBlockComponent {
   }
 
   /** Create a paragraph from its JSON representation. */
-  public static create(props?: ParagraphProps): Paragraph {
+  public static create(props: ParagraphProps): Paragraph {
     return new Paragraph(props);
   }
 

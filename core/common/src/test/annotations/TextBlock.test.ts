@@ -178,10 +178,12 @@ describe("TextBlockComponent", () => {
     expect(p0.parent).to.equal(tb);
     expect(p1.parent).to.equal(tb);
 
+    expect(p0.runs.length).to.equal(1);
     p0.runs.forEach((run) => {
       expect(run.parent).to.equal(p0);
     });
 
+    expect(p1.runs.length).to.equal(4);
     p1.runs.forEach((run) => {
       expect(run.parent).to.equal(p1);
     });
