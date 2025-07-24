@@ -589,6 +589,7 @@ describe("Field evaluation", () => {
         block.appendRun(createField(source, "valid"));
 
         const targetId = insertAnnotationElement(block);
+        imodel.saveChanges();
         expectNumRelationships(1, targetId);
       });
     });
