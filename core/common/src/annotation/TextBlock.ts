@@ -58,6 +58,7 @@ export interface TextBlockStringifyOptions {
 export abstract class TextBlockComponent {
   private _styleOverrides: TextStyleSettingsProps;
   private _parent?: TextBlockComponent;
+  private _children?: TextBlockComponent[];
 
   /** @internal */
   protected constructor(props?: TextBlockComponentProps) {
@@ -71,6 +72,15 @@ export abstract class TextBlockComponent {
 
   public set parent(parent: TextBlockComponent | undefined) {
     this._parent = parent;
+  }
+
+  public get children(): TextBlockComponent[] | undefined {
+    return this._children;
+  }
+
+  public set children(children: TextBlockComponent[] | undefined) {
+    children?.forEach((child) => { child.parent = this; }); // Ensure each child has its parent set
+    this._children = children;
   }
 
   /** Deviations in individual properties of the [[TextStyle]] specified by [[styleName]].
@@ -100,6 +110,13 @@ export abstract class TextBlockComponent {
 
   /** Compute a string representation of the contents of this component and all of its sub-components. */
   public abstract stringify(options?: TextBlockStringifyOptions): string;
+
+  /**
+  * Returns true if this component has no children.
+  */
+  public get isEmpty(): boolean {
+    return this._children?.length === 0;
+  };
 
   /**
   * Returns true if the string representation of this component consists only of whitespace characters.
@@ -423,7 +440,7 @@ export class Paragraph extends TextBlockComponent {
     return new Paragraph(this.toJSON());
   }
 
-  public get isEmpty(): boolean {
+  public override get isEmpty(): boolean {
     return this.runs.length === 0;
   }
 
@@ -567,7 +584,7 @@ export class TextBlock extends TextBlockComponent {
   }
 
   /** Returns true if every paragraph in this text block is empty. */
-  public get isEmpty(): boolean {
+  public override get isEmpty(): boolean {
     return this.paragraphs.every((p) => p.isEmpty);
   }
 
