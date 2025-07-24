@@ -713,9 +713,10 @@ export class TextBlockLayout {
         // Next, determine if we can append this run to the current line without exceeding the document width
         const runWidth = run.range.xLength();
         const lineWidth = curLine.range.xLength();
+        const newWidth = runWidth + lineWidth + curLine.offsetFromDocument.x;
 
         // If true, then no word wrapping is required, so we can append to the current line.
-        if (runWidth + lineWidth < doc.width || Geometry.isAlmostEqualNumber(runWidth + lineWidth, doc.width, Geometry.smallMetricDistance)) {
+        if (newWidth < doc.width || Geometry.isAlmostEqualNumber(newWidth, doc.width, Geometry.smallMetricDistance)) {
           curLine.append(run);
           continue;
         }
@@ -754,7 +755,7 @@ export class TextBlockLayout {
 
     let minOffset = Number.MAX_VALUE;
     for (const line of this.lines) {
-      const lineWidth = line.justificationRange.xLength();
+      const lineWidth = line.justificationRange.xLength() + line.offsetFromDocument.x;
 
       let offset = docWidth - lineWidth;
       if ("center" === this.source.justification) {
