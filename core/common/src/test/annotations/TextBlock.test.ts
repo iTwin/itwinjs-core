@@ -41,7 +41,7 @@ describe("TextBlockComponent", () => {
     beforeEach(() => {
       block = TextBlock.create({ styleName: "block", styleOverrides: { widthFactor: 1234 }});
       paragraph = block.appendParagraph({ styleName: "paragraph", styleOverrides: { lineHeight: 42 } });
-      paragraph.appendRun(TextRun.create({ styleName: "run", styleOverrides: { fontName: "Consolas" } }));
+      paragraph.appendChild(TextRun.create({ styleName: "run", styleOverrides: { fontName: "Consolas" } }));
       run = paragraph.children![0] as TextRun;
     });
 

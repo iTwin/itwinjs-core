@@ -271,7 +271,7 @@ describe("layoutTextBlock", () => {
 
         const p = textBlock.appendParagraph();
         for (let j = 0; j <= i; j++) {
-          p.appendRun(TextRun.create({ styleName: "", content: "Run" }));
+          p.appendChild(TextRun.create({ styleName: "", content: "Run" }));
         }
       }
     });
@@ -893,8 +893,9 @@ describe("layoutTextBlock", () => {
 
       const layout = doLayout(textBlock);
       const result = layout.toResult();
+      const source = textBlock.children![0]; // FractionRun is not a TextRun
       const args: ComputeGraphemeOffsetsArgs = {
-        source: textBlock,
+        source,
         iModel: {} as any,
         findTextStyle: () => TextStyleSettings.defaults,
         findFontId: () => 0,
@@ -915,8 +916,9 @@ describe("layoutTextBlock", () => {
 
       const layout = doLayout(textBlock);
       const result = layout.toResult();
+      const source = textBlock.children![0]; // FractionRun is not a TextRun
       const args: ComputeGraphemeOffsetsArgs = {
-        source: textBlock,
+        source,
         iModel: {} as any,
         findTextStyle: () => TextStyleSettings.defaults,
         findFontId: () => 0,
@@ -937,8 +939,9 @@ describe("layoutTextBlock", () => {
 
       const layout = doLayout(textBlock);
       const result = layout.toResult();
+      const source = textBlock.children![0].children![0];
       const args: ComputeGraphemeOffsetsArgs = {
-        source: textBlock,
+        source,
         iModel: {} as any,
         findTextStyle: () => TextStyleSettings.defaults,
         findFontId: () => 0,
@@ -962,8 +965,9 @@ describe("layoutTextBlock", () => {
 
       const layout = doLayout(textBlock);
       const result = layout.toResult();
+      const source = textBlock.children![0].children![0];
       const args: ComputeGraphemeOffsetsArgs = {
-        source: textBlock,
+        source,
         iModel: {} as any,
         findTextStyle: () => TextStyleSettings.defaults,
         findFontId: () => 0,
@@ -988,8 +992,9 @@ describe("layoutTextBlock", () => {
 
       const layout = doLayout(textBlock);
       const result = layout.toResult();
+      const source = textBlock.children![0].children![0];
       const args: ComputeGraphemeOffsetsArgs = {
-        source: textBlock,
+        source,
         iModel: {} as any,
         findTextStyle: () => TextStyleSettings.defaults,
         findFontId: () => 0,
