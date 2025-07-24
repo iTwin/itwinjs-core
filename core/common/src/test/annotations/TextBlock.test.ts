@@ -154,7 +154,7 @@ describe("TextBlockComponent", () => {
 
   it("adds parents to runs and paragraphs", () => {
     const props: TextBlockProps = {
-      styleName: "",
+      styleId: "0x42",
       paragraphs: [
         makeParagraph([
           makeTextRun("abc"),
@@ -162,8 +162,8 @@ describe("TextBlockComponent", () => {
         makeParagraph([
           makeFractionRun("1", "π"),
           makeTextRun(" def   ghi"),
-          { type: "linebreak", styleName: "" },
-          { type: "tab", styleName: "" }
+          { type: "linebreak" },
+          { type: "tab" }
         ]),
       ],
     };
