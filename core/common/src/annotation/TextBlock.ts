@@ -6,7 +6,7 @@
  * @module Annotation
  */
 
-import { Id64String } from "@itwin/core-bentley";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { TextStyleSettings, TextStyleSettingsProps } from "./TextStyle";
 
 /** Options supplied to [[TextBlockComponent.clearStyleOverrides]] to control how the style overrides are cleared on the component and its child components.
@@ -65,6 +65,16 @@ export abstract class TextBlockComponent {
     this._styleOverrides = TextStyleSettings.cloneProps(props?.styleOverrides ?? {});
   }
 
+  public get root(): TextBlockComponent {
+    let current: TextBlockComponent | undefined = this.parent;
+
+    if (!current) return this;
+
+    while (current.parent) {
+      current = current.parent;
+    }
+    return current;
+  }
 
   public get parent(): TextBlockComponent | undefined {
     return this._parent;
@@ -81,6 +91,26 @@ export abstract class TextBlockComponent {
   public set children(children: TextBlockComponent[] | undefined) {
     children?.forEach((child) => { child.parent = this; }); // Ensure each child has its parent set
     this._children = children;
+  }
+
+  public get last(): TextBlockComponent | undefined {
+    return this._children?.[this._children.length - 1];
+  }
+
+  public get previousSibling(): TextBlockComponent | undefined {
+    if (!this.parent) return undefined;
+    const siblings = this.parent.children;
+    assert(siblings !== undefined, "TextBlockComponent must have a parent with children");
+    const index = siblings?.indexOf(this);
+    return index !== undefined && index > 0 ? siblings[index - 1] : undefined;
+  }
+
+  public get nextSibling(): TextBlockComponent | undefined {
+    if (!this.parent) return undefined;
+    const siblings = this.parent.children;
+    assert(siblings !== undefined, "TextBlockComponent must have a parent with children");
+    const index = siblings?.indexOf(this);
+    return index !== undefined && index < siblings.length - 1 ? siblings[index + 1] : undefined;
   }
 
   /** Deviations in individual properties of the [[TextStyle]] specified by [[styleName]].
@@ -422,6 +452,7 @@ export class Paragraph extends TextBlockComponent {
     this.runs = props?.runs?.map((run) => Run.fromJSON(run)) ?? [];
 
     this.runs.forEach(run => run.parent = this); // Set the parent of each run to this paragraph
+    this.children = this.runs; // Ensure the runs are also added to the children of this paragraph for consistency with TextBlockComponent
   }
 
   public override toJSON(): ParagraphProps {
@@ -477,7 +508,13 @@ export class Paragraph extends TextBlockComponent {
 
   public appendRun(run: Run): void {
     run.parent = this; // Set the parent to the paragraph
-    this.runs.push(run);
+
+    if (!this.children) {
+      this.children = [];
+    }
+
+    // Ensure the run is also added to the children of this paragraph for consistency with TextBlock
+    this.children.push(run);
   }
 }
 
@@ -557,9 +594,8 @@ export class TextBlock extends TextBlockComponent {
       bottom: props.margins?.bottom ?? 0,
     };
 
-    this.paragraphs = props.paragraphs?.map((x) => Paragraph.create(x)) ?? [];
-
-    this.paragraphs.forEach(paragraph => paragraph.parent = this); // Set the parent of each paragraph to this text block
+    this.paragraphs = [];
+    props.paragraphs?.forEach((x) => this.appendParagraph(x));
   }
 
   public override toJSON(): TextBlockProps {
@@ -615,7 +651,7 @@ export class TextBlock extends TextBlockComponent {
    * By default, the paragraph will be created with no [[styleOverrides]], so that it inherits the style of this block.
    * @param seedFromLast If true and [[paragraphs]] is not empty, the new paragraph will inherit the style overrides of the last [[Paragraph]] in this block.
    */
-  public appendParagraph(seedFromLast: boolean = false): Paragraph {
+  public appendParagraph(props?: ParagraphProps, seedFromLast: boolean = false): Paragraph {
     let styleOverrides: TextStyleSettingsProps = {};
 
     if (seedFromLast && this.paragraphs.length > 0) {
@@ -623,12 +659,17 @@ export class TextBlock extends TextBlockComponent {
       styleOverrides = { ...seed.styleOverrides };
     }
 
-    const paragraph = Paragraph.create({
+    const paragraphProps = props ?? {
       styleOverrides
-    });
+    };
+    const paragraph = Paragraph.create(paragraphProps);
 
     paragraph.parent = this; // Set the parent to this block
     this.paragraphs.push(paragraph);
+    if (!this.children) {
+      this.children = [];
+    }
+    this.children.push(paragraph); // Ensure the paragraph is also added to the children of this block for consistency
     return paragraph;
   }
 
@@ -636,7 +677,7 @@ export class TextBlock extends TextBlockComponent {
    * If the block contains no [[paragraphs]], a new one will first be created using [[appendParagraph]].
    */
   public appendRun(run: Run): void {
-    const paragraph = this.paragraphs[this.paragraphs.length - 1] ?? this.appendParagraph();
+    const paragraph = this.last instanceof Paragraph ? this.last : this.appendParagraph();
     paragraph.appendRun(run);
   }
 
