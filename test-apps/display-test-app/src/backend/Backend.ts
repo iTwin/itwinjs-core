@@ -187,7 +187,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 
     const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
     const textStyleResolver = new TextStyleResolver({textBlock, iModel, modelId});
-    const layout = layoutTextBlock({ iModel, textBlock, textStyleResolver });
+    const layout = layoutTextBlock({ iModel, source: textBlock, textStyleResolver });
     const builder = new ElementGeometry.Builder();
     appendTextAnnotationGeometry({ layout, textStyleResolver, annotationProps, builder, categoryId, wantDebugGeometry });
 

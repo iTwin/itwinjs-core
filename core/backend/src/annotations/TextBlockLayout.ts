@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { BaselineShift, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TabRun, TextAnnotationLeader, TextBlock, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TabRun, TextAnnotationLeader, TextBlock, TextBlockComponent, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Geometry, Range2d, WritableXAndY } from "@itwin/core-geometry";
 import { IModelDb } from "../IModelDb";
 import { assert, Id64String, NonFunctionPropertiesOf } from "@itwin/core-bentley";
@@ -66,7 +66,7 @@ function createFindTextStyleImpl(iModel: IModelDb): FindTextStyle {
  */
 export interface LayoutTextBlockArgs {
   /** The text block whose extents are to be computed. */
-  textBlock: TextBlock;
+  source: TextBlockComponent;
   /** The iModel from which to obtain fonts and [[AnnotationTextStyle]]s when laying out glyphs. */
   iModel: IModelDb;
   /** The text style resolver used to resolve effective text styles during layout. */
@@ -90,7 +90,8 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
   const findFontId = args.findFontId ?? ((name, type) => args.iModel.fonts.findId({ name, type }) ?? 0);
   const computeTextRange = args.computeTextRange ?? ((x) => args.iModel.computeRangesForText(x));
 
-  return new TextBlockLayout(args.textBlock, new LayoutContext(args.textStyleResolver, computeTextRange, findFontId));
+  const textBlock = args.source as TextBlock;
+  return new TextBlockLayout(textBlock, new LayoutContext(args.textStyleResolver, computeTextRange, findFontId));
 }
 
 /**
@@ -109,8 +110,6 @@ export function computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlo
  * @beta
  */
 export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
-  /** The index of the [Paragraph]($common) in the text block that contains the run layout result text. */
-  paragraphIndex: number;
   /** The run layout result for which grapheme ranges will be computed. */
   runLayoutResult: RunLayoutResult;
   /** An array of starting character indexes for each grapheme. Each entry represents the index of the first character in a grapheme. */
@@ -125,10 +124,9 @@ export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
  * @beta
  */
 export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2d[] {
-  const { textBlock, paragraphIndex, runLayoutResult, graphemeCharIndexes, iModel } = args;
+  const { source, runLayoutResult, graphemeCharIndexes, iModel } = args;
   const findFontId = args.findFontId ?? ((name, type) => iModel.fonts.findId({ name, type }) ?? 0);
   const computeTextRange = args.computeTextRange ?? ((x) => iModel.computeRangesForText(x));
-  const source = textBlock.paragraphs[paragraphIndex].runs[runLayoutResult.sourceRunIndex];
 
   if (source.type !== "text" || runLayoutResult.characterCount === 0) {
     return [];
@@ -141,7 +139,7 @@ export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2
 
   graphemeCharIndexes.forEach((_, index) => {
     const nextGraphemeCharIndex = graphemeCharIndexes[index + 1] ?? runLayoutResult.characterCount;
-    graphemeRanges.push(layoutContext.computeRangeForTextRun(style, source, runLayoutResult.characterOffset, nextGraphemeCharIndex).layout);
+    graphemeRanges.push(layoutContext.computeRangeForTextRun(style, source as TextRun, runLayoutResult.characterOffset, nextGraphemeCharIndex).layout);
   });
   return graphemeRanges;
 }
@@ -439,8 +437,8 @@ export class RunLayout {
     this.fontId = props.fontId;
   }
 
-  public static create(source: Run, parentParagraph: Paragraph, context: LayoutContext): RunLayout {
-    const style = context.textStyleResolver.resolveRunSettings(parentParagraph, source);
+  public static create(source: Run, context: LayoutContext): RunLayout {
+    const style = context.textStyleResolver.resolveRunSettings(source.parent as Paragraph, source);
     const fontId = context.findFontId(style.fontName);
     const charOffset = 0;
     const offsetFromLine = { x: 0, y: 0 };
@@ -521,7 +519,7 @@ export class RunLayout {
 
   public toResult(paragraph: Paragraph): RunLayoutResult {
     const result: RunLayoutResult = {
-      sourceRunIndex: paragraph.runs.indexOf(this.source),
+      sourceRunIndex: paragraph.children?.indexOf(this.source),
       fontId: this.fontId,
       characterOffset: this.charOffset,
       characterCount: this.numChars,
@@ -618,7 +616,7 @@ export class LineLayout {
 
   public toResult(textBlock: TextBlock): LineLayoutResult {
     return {
-      sourceParagraphIndex: textBlock.paragraphs.indexOf(this.source),
+      sourceParagraphIndex: textBlock.children?.indexOf(this.source),
       runs: this.runs.map((x) => x.toResult(this.source)),
       range: this.range.toJSON(),
       justificationRange: this.justificationRange.toJSON(),
@@ -677,19 +675,21 @@ export class TextBlockLayout {
 
   private populateLines(context: LayoutContext): void {
     const doc = this.source;
-    if (doc.paragraphs.length === 0) {
+    if (!doc.children || doc.children.length === 0) {
       return;
     }
 
     const doWrap = doc.width > 0;
-    let curLine = new LineLayout(doc.paragraphs[0]);
-    for (let i = 0; i < doc.paragraphs.length; i++) {
-      const paragraph = doc.paragraphs[i];
+    let curLine = new LineLayout(doc.children[0] as Paragraph);
+    for (let i = 0; i < doc.children.length; i++) {
+      const paragraph = doc.children[i] as Paragraph;
       if (i > 0) {
         curLine = this.flushLine(context, curLine, paragraph);
       }
 
-      let runs = paragraph.runs.map((run) => RunLayout.create(run, paragraph, context));
+      let runs = paragraph.children?.map((run) => RunLayout.create(run as Run, context));
+      if (!runs) continue;
+
       if (doWrap) {
         runs = runs.map((run) => run.split(context)).flat();
       }
@@ -789,7 +789,9 @@ export class TextBlockLayout {
         return new LineLayout(nextParagraph);
       }
 
-      line.append(RunLayout.create(prevRun.clone(), line.source, context));
+      const run = prevRun.clone();
+      run.parent = prevRun.parent; // todo: this might be problematic, so let me test it.
+      line.append(RunLayout.create(run, context));
     }
 
     // Line origin is its baseline.

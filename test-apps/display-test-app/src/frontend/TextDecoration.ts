@@ -124,7 +124,9 @@ class TextEditor implements Decorator {
   }
 
   public setIndentation(indentation: number): void {
-    const currentParagraph = this.textBlock.paragraphs[this.textBlock.paragraphs.length - 1];
+    const currentParagraph = this.textBlock.last;
+
+    if (!currentParagraph) return;
     currentParagraph.styleOverrides = {
       ...currentParagraph.styleOverrides,
       indentation,
