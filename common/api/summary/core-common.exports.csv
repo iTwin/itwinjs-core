@@ -14,8 +14,8 @@ public;interface;AnalysisStyleDisplacementProps
 public;interface;AnalysisStyleProps
 public;class;AnalysisStyleThematic
 public;interface;AnalysisStyleThematicProps
+beta;interface;AnnotationTextStyleProps
 public;interface;AppearanceOverrideProps
-beta;interface;ApplyTextStyleOptions
 public;interface;AreaFillProps
 public;namespace;AreaPattern
 beta;namespace;Atmosphere
@@ -122,6 +122,7 @@ beta;namespace;ChannelControlError
 public;interface;ChannelRootAspectProps
 preview;interface;ChannelRootAspectProps
 internal;interface;ClassifierTileTreeId
+beta;interface;ClearTextStyleOptions
 public;class;ClipIntersectionStyle
 public;interface;ClipIntersectionStyleProps
 public;class;ClipStyle
@@ -929,9 +930,7 @@ public;class;TextString
 beta;interface;TextStringGlyphData
 public;interface;TextStringPrimitive
 public;interface;TextStringProps
-beta;class;TextStyle
 beta;type;TextStyleColor
-beta;interface;TextStyleProps
 beta;class;TextStyleSettings
 beta;interface;TextStyleSettingsProps
 public;interface;TextureData
