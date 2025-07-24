@@ -172,6 +172,11 @@ export interface TextStyleSettingsProps {
    * Default: {shape: "none", fill: "none", border: black, borderWeight: 1} for no frame.
    */
   frame?: TextFrameStyleProps;
+  /** The offset (in meters) from the left edge of the text block to the start of the line of text.
+   * In nested runs, this is compounded with the indentations of the parent runs to determine the actual offset.
+   * Default: 0 meters.
+   */
+  indentation?: number;
 }
 
 function deepFreeze<T>(obj: T) {
@@ -245,6 +250,10 @@ export class TextStyleSettings {
    * These are equally spaced from the left edge of the TextBlock. Default is 4 meters.
    */
   public readonly tabInterval: number;
+  /** The offset (in meters) from the left edge of the text block to the start of the line of text.
+   * In nested runs, this is compounded with the indentations of the parent runs to determine the actual offset.
+   */
+  public readonly indentation: number;
   /** The frame settings of the [[TextAnnotation]]. */
   public readonly frame: Readonly<Required<TextFrameStyleProps>>;
 
@@ -272,6 +281,7 @@ export class TextStyleSettings {
       terminatorWidthFactor: 1.0,
     },
     tabInterval: 4,
+    indentation: 0,
     frame: {
       shape: "none",
       fill: "none",
@@ -311,6 +321,7 @@ export class TextStyleSettings {
     }
     this.leader = Object.freeze(leader) as Readonly<Required<TextLeaderStyleProps>>;
     this.tabInterval = props.tabInterval ?? defaults.tabInterval;
+    this.indentation = props.indentation ?? defaults.indentation;
     const frame = {
       shape: props.frame?.shape ?? defaults.frame.shape,
       fill: props.frame?.fill ?? defaults.frame.fill,
@@ -371,7 +382,7 @@ export class TextStyleSettings {
       && this.stackedFractionType === other.stackedFractionType && this.stackedFractionScale === other.stackedFractionScale
       && this.subScriptOffsetFactor === other.subScriptOffsetFactor && this.subScriptScale === other.subScriptScale
       && this.superScriptOffsetFactor === other.superScriptOffsetFactor && this.superScriptScale === other.superScriptScale
-      && this.tabInterval === other.tabInterval
+      && this.tabInterval === other.tabInterval && this.indentation === other.indentation
       && this.leaderEquals(other.leader)
       && this.frameEquals(other.frame)
   }

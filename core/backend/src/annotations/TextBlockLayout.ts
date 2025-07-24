@@ -7,7 +7,7 @@
  */
 
 import { BaselineShift, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TabRun, TextAnnotationLeader, TextBlock, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
-import { Geometry, Range2d } from "@itwin/core-geometry";
+import { Geometry, Range2d, WritableXAndY } from "@itwin/core-geometry";
 import { IModelDb } from "../IModelDb";
 import { assert, Id64String, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 import * as LineBreaker from "linebreak";
@@ -172,10 +172,10 @@ function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings
   const leaderShouldChange = !isLeader && !target.leaderEquals(leader);
 
   if (lineSpacingFactor !== target.lineSpacingFactor ||
-      lineHeight !== target.lineHeight ||
-      widthFactor !== target.widthFactor ||
-      !target.frameEquals(frame) ||
-      leaderShouldChange
+    lineHeight !== target.lineHeight ||
+    widthFactor !== target.widthFactor ||
+    !target.frameEquals(frame) ||
+    leaderShouldChange
   ) {
     const cloneProps: TextStyleSettingsProps = {
       lineSpacingFactor,
@@ -284,7 +284,7 @@ export class TextStyleResolver {
 class LayoutContext {
   private readonly _fontIds = new Map<string, FontId>();
 
-  public constructor(public readonly textStyleResolver: TextStyleResolver, private readonly _computeTextRange: ComputeRangesForTextLayout, private readonly _findFontId: FindFontId) {}
+  public constructor(public readonly textStyleResolver: TextStyleResolver, private readonly _computeTextRange: ComputeRangesForTextLayout, private readonly _findFontId: FindFontId) { }
 
   public findFontId(name: string): FontId {
     let fontId = this._fontIds.get(name);
@@ -439,7 +439,7 @@ export class RunLayout {
     this.fontId = props.fontId;
   }
 
-  public static create(source: Run, parentParagraph: Paragraph,  context: LayoutContext): RunLayout {
+  public static create(source: Run, parentParagraph: Paragraph, context: LayoutContext): RunLayout {
     const style = context.textStyleResolver.resolveRunSettings(parentParagraph, source);
     const fontId = context.findFontId(style.fontName);
     const charOffset = 0;
@@ -465,8 +465,8 @@ export class RunLayout {
         break;
       }
       default: { // "linebreak" or "tab"
-      // "tab": Tabs rely on the context they are in, so we compute its range later.
-      // lineBreak: We do this so that blank lines space correctly without special casing later.
+        // "tab": Tabs rely on the context they are in, so we compute its range later.
+        // lineBreak: We do this so that blank lines space correctly without special casing later.
         range = new Range2d(0, 0, 0, style.lineHeight);
         break;
       }
@@ -556,12 +556,13 @@ export class LineLayout {
   public source: Paragraph;
   public range = new Range2d(0, 0, 0, 0);
   public justificationRange = new Range2d(0, 0, 0, 0);
-  public offsetFromDocument = { x: 0, y: 0 };
+  public offsetFromDocument: WritableXAndY;
   public lengthFromLastTab = 0; // Used to track the length from the last tab for tab runs.
   private _runs: RunLayout[] = [];
 
   public constructor(source: Paragraph) {
     this.source = source;
+    this.offsetFromDocument = { x: source.styleOverrides.indentation ?? 0, y: 0 };
   }
 
   /** Compute a string representation, primarily for debugging purposes. */
@@ -607,7 +608,7 @@ export class LineLayout {
         this.justificationRange.extendRange(runJustificationRange ?? runLayoutRange);
       }
 
-      if (run.source.type === "tab") {
+      if ("tab" === run.source.type) {
         this.lengthFromLastTab = 0;
       } else {
         this.lengthFromLastTab += run.range.xLength();
@@ -791,7 +792,8 @@ export class TextBlockLayout {
     }
 
     // Line origin is its baseline.
-    const lineOffset = { x: 0, y: -line.range.yLength() };
+    const lineOffset = { ...line.offsetFromDocument }; // Start with the line's original offset, which includes indentation.
+    lineOffset.y = -line.range.yLength(); // Shift down the baseline
 
     // Place it below any existing lines
     if (this.lines.length > 0) {

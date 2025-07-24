@@ -123,6 +123,16 @@ class TextEditor implements Decorator {
     this.textBlock.appendParagraph();
   }
 
+  public setIndentation(indentation: number): void {
+    const currentParagraph = this.textBlock.paragraphs[this.textBlock.paragraphs.length - 1];
+    currentParagraph.styleOverrides = {
+      ...currentParagraph.styleOverrides,
+      indentation,
+    };
+
+    this.runStyle.indentation = indentation;
+  };
+
   public setDocumentWidth(width: number): void {
     this.textBlock.width = width;
   }
@@ -298,6 +308,11 @@ export class TextDecorationTool extends Tool {
         }
         break;
       }
+      case "indent": {
+        const indentation = Number.parseFloat(arg);
+        editor.setIndentation(indentation);
+        break;
+      }
       case "spacing":
         editor.documentStyle.lineSpacingFactor = Number.parseFloat(arg);
         break;
@@ -325,7 +340,7 @@ export class TextDecorationTool extends Tool {
         }
         break;
       }
-      case "subscriptscale" : {
+      case "subscriptscale": {
         const subScale = Number.parseFloat(arg);
         if (isNaN(subScale)) {
           throw new Error("Expected a number for subscript scale");
@@ -433,7 +448,7 @@ export class TextDecorationTool extends Tool {
         if (!arg) {
           throw new Error("Expected style name");
         }
-        const style: TextStyleSettingsProps = {...editor.documentStyle, ...editor.runStyle };
+        const style: TextStyleSettingsProps = { ...editor.documentStyle, ...editor.runStyle };
         const styleId = await dtaIpc.insertTextStyle(
           vp.iModel.key,
           arg,
@@ -449,7 +464,7 @@ export class TextDecorationTool extends Tool {
         if (!arg) {
           throw new Error("Expected style name");
         }
-        const style: TextStyleSettingsProps = {...editor.documentStyle, ...editor.runStyle };
+        const style: TextStyleSettingsProps = { ...editor.documentStyle, ...editor.runStyle };
         await dtaIpc.updateTextStyle(
           vp.iModel.key,
           arg,
