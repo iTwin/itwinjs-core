@@ -27,9 +27,13 @@ Once your new application is saved and a client ID is generated, add the client 
 
 > Note: The live reloading is for the frontend only. The backend would need to be re-built on each change using `npm run build:backend`.
 
+## Install
+
+- From a terminal at your application's root directory, run `npm install`. This will install all the dependencies listed in your package.json.
+
 ## Build
 
-From a terminal at your application's root directory, `npm run build`. This will create both the frontend in the "dist" folder and backend in the "lib" folder within the application's root directory. You may run `npm run preview` to start the Electron app and serve the frontend from a local static server. It is not necessary to build the frontend during development.
+From a terminal at your application's root directory, run `npm run build`. This will create both the frontend in the "dist" folder and backend in the "lib" folder within the application's root directory. You may run `npm run preview` to start the Electron app and serve the frontend from a local static server. It is not necessary to build the frontend during development.
 
 The app will open a pre-packaged offline snapshot iModel.
 

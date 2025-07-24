@@ -32,9 +32,13 @@ The application is built using [Vite](https://github.com/vitejs/vite), and scaff
 - The viewer can be modified via the Viewer component in the App.tsx file. Visit the [iTwin Viewer React](https://www.npmjs.com/package/@itwin/web-viewer-react) documentation for more information.
 - Visit the README file within the root directory of your application for additional development information.
 
+## Install
+
+- From a terminal at your application's root directory, run `npm install`. This will install all the dependencies listed in your package.json.
+
 ## Build
 
-- From a terminal at your application's root directory, `npm run build`. This will create a deployment-ready build in the "dist" folder within the application's root directory. You may run `npm run preview` to start a local server to preview your production build. It is not necessary to build the application during development.
+- From a terminal at your application's root directory, run `npm run build`. This will create a deployment-ready build in the "dist" folder within the application's root directory. You may run `npm run preview` to start a local server to preview your production build. It is not necessary to build the application during development.
 
 ## Useful Links
 
