@@ -640,10 +640,6 @@ describe.only("Field evaluation", () => {
 
       expectText("100123", targetId);
     });
-
-    it("requires BisCore 1.22 or newer", () => {
-      
-    });
   });
 });
 

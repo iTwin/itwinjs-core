@@ -12,11 +12,15 @@ import { IModelDb } from "../IModelDb";
 import { Element } from "../Element";
 import { updateElementFields } from "../internal/annotations/fields";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { ECVersion } from "@itwin/ecschema-metadata";
 
 export interface TextBlockAndId {
   readonly textBlock: TextBlock;
   readonly id: unknown;
 }
+
+    // ElementDrivesTextAnnotation was introduced in this version of BisCore - iModels with earlier versions cannot support field dependencies.
+const minBisCoreVersion = new ECVersion(1, 0, 22);
 
 /** Interface implemented by [[GeometricElement]] subclasses whose schemas declare them to implement the mix-in `BisCore:ITextAnnotation`.
  * @beta
@@ -41,7 +45,16 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     updateElementFields(props, iModel, true);
   }
 
+  public static isSupportedForIModel(iModel: IModelDb): boolean {
+    const bisCoreVersion = iModel.querySchemaVersionNumbers("BisCore");
+    return undefined !== bisCoreVersion && bisCoreVersion.compare(minBisCoreVersion) >= 0;
+  }
+
   public static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void {
+    if (!ElementDrivesTextAnnotation.isSupportedForIModel(iModel)) {
+      return;
+    }
+
     const annotationElement = iModel.elements.tryGetElement<Element>(annotationElementId);
     if (!annotationElement || !isITextAnnotation(annotationElement)) {
       return;
@@ -58,6 +71,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
         return DbResult.BE_SQLITE_ROW === stmt.step();
       });
     }
+
     const sourceToRelationship = new Map<Id64String, Id64String | null>();
     const blocks = annotationElement.getTextBlocks();
     for (const block of blocks) {
