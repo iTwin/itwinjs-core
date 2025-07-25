@@ -3591,9 +3591,10 @@ export class FeatureTableHeader {
 }
 
 // @beta
-export type FieldFormatter = {
+export interface FieldFormatter {
+    // (undocumented)
     [k: string]: any;
-};
+}
 
 // @beta
 export interface FieldPropertyHost {
