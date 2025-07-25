@@ -30,7 +30,7 @@ function translateBold(key: string) {
 }
 
 async function getFormatterSpecByKoQAndPersistenceUnit(koq: string, persistenceUnitName: string): Promise<FormatterSpec | undefined> {
-const formatProps = await IModelApp.formatsProvider.getFormat(koq);
+  const formatProps = await IModelApp.formatsProvider.getFormat(koq);
   if (undefined === formatProps)
     return undefined;
   return IModelApp.quantityFormatter.createFormatterSpec({
@@ -198,7 +198,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
   /** @internal */
   public override async onPostInstall() {
     await super.onPostInstall();
-    this._lengthFormatterSpec  = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.LENGTH", "Units.M");
+    this._lengthFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.LENGTH", "Units.M");
     this._angleFormatterSpec = await getFormatterSpecByKoQAndPersistenceUnit("AecUnits.ANGLE", "Units.RAD");
 
 
@@ -632,7 +632,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
     if (undefined !== snap) {
       if (undefined !== snap.primitive) {
         const locDetail = snap.primitive.closestPoint(point, false);
-        if (undefined !== locDetail && (HitGeomType.Segment === snap.geomType || snap.primitive.isInPlane(Plane3dByOriginAndUnitNormal.create(point, undefined !== snap.normal ? snap.normal : normal)!))) {
+        const snapPlane = Plane3dByOriginAndUnitNormal.create(point, undefined !== snap.normal ? snap.normal : normal);
+        if (undefined !== locDetail && (HitGeomType.Segment === snap.geomType || (snapPlane && snap.primitive.isInPlane(snapPlane)))) {
           const locRay = snap.primitive.fractionToPointAndUnitTangent(locDetail.fraction);
           tangent.setFrom(locRay.direction);
           if (undefined !== snap.normal)
@@ -1224,7 +1225,8 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
 
     const currPt = ev.point.clone();
     if (this._points.length > 0) {
-      const planePt = AccuDrawHintBuilder.projectPointToPlaneInView(currPt, this._points[0], this._matrix.getColumn(2), ev.viewport!, true);
+      const vp = ev.viewport;
+      const planePt = (vp ? AccuDrawHintBuilder.projectPointToPlaneInView(currPt, this._points[0], this._matrix.getColumn(2), vp, true) : undefined);
       if (undefined !== planePt)
         currPt.setFrom(planePt);
     }
