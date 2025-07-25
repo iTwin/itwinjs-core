@@ -310,7 +310,6 @@ describe("FieldRun", () => {
   describe("equals", () => {
     it("compares FieldRuns for equality", () => {
       const baseProps = {
-        styleName: "fieldStyle",
         propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
         propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
         cachedContent: "cachedValue",
