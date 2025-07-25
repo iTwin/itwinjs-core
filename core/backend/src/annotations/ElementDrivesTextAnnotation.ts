@@ -99,6 +99,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
         return false;
       }
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return iModel.withPreparedStatement("SELECT CodeValue FROM BisCore.Element WHERE ECInstanceId=?", (stmt) => {
         stmt.bindId(1, id);
         return DbResult.BE_SQLITE_ROW === stmt.step();
@@ -118,6 +119,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     }
 
     const staleRelationships = new Set<Id64String>();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     annotationElement.iModel.withPreparedStatement(`SELECT ECInstanceId, SourceECInstanceId FROM BisCore.ElementDrivesTextAnnotation WHERE TargetECInstanceId=${annotationElement.id}`, (stmt) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
         const relationshipId = stmt.getValue(0).getId();

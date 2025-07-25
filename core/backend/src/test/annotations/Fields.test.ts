@@ -230,7 +230,7 @@ describe.only("Field evaluation", () => {
         angles: new YawPitchRollAngles(),
       },
       jsonProperties: {
-        string: "abc",
+        stringProp: "abc",
         ints: [10, 11, 12, 13],
         zoo: {
           address: {
@@ -342,7 +342,7 @@ describe.only("Field evaluation", () => {
     });
 
     it("returns arbitrarily-nested JSON properties", () => {
-      expectValue("abc", { propertyName: "jsonProperties", jsonAccessors: ["string"] }, sourceElementId);
+      expectValue("abc", { propertyName: "jsonProperties", jsonAccessors: ["stringProp"] }, sourceElementId);
 
       expectValue(10, { propertyName: "jsonProperties", jsonAccessors: ["ints", 0] }, sourceElementId);
       expectValue(13, { propertyName: "jsonProperties", jsonAccessors: ["ints", 3] }, sourceElementId);
@@ -445,6 +445,7 @@ describe.only("Field evaluation", () => {
     function expectNumRelationships(expected: number, targetId?: Id64String): void {
       const where = targetId ? ` WHERE TargetECInstanceId=${targetId}` : "";
       const ecsql = `SELECT COUNT(*) FROM BisCore.ElementDrivesTextAnnotation ${where}`;
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       imodel.withPreparedStatement(ecsql, (stmt) => {
         expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
         expect(stmt.getValue(0).getInteger()).to.equal(expected);

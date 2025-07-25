@@ -9,10 +9,10 @@ import { assert, DbResult, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
-import { AnyClass, EntityClass, PrimitiveArrayProperty, Property, StructArrayProperty, StructProperty } from "@itwin/ecschema-metadata";
+import { AnyClass, EntityClass, Property, StructArrayProperty } from "@itwin/ecschema-metadata";
 
 export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
-type FieldStructValue = { [key: string]: any };
+interface FieldStructValue { [key: string]: any }
 type FieldValue = {
   primitive: FieldPrimitiveValue;
   struct?: never;
@@ -66,6 +66,7 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
   }
 
   // ###TODO handle aspects.
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   let curValue: FieldValue | undefined = iModel.withPreparedStatement(`SELECT ${propertyName} FROM ${host.schemaName}.${host.className} WHERE ECInstanceId=${host.elementId}`, (stmt) => {
     if (stmt.step() !== DbResult.BE_SQLITE_ROW) {
       return undefined;
@@ -236,6 +237,7 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
     const prop = context.getProperty(field);
     if (undefined !== prop) {
       // ###TODO formatting etc.
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       newContent = prop.value.toString();
     }
   } catch (err) {

@@ -230,7 +230,7 @@ describe("FieldRun", () => {
       });
 
       // Modify the original propertyPath to ensure the FieldRun's copy is unaffected
-      propertyPath.accessors![0] = 1;
+      propertyPath.accessors[0] = 1;
 
       expect(fieldRun.propertyPath).to.deep.equal({ propertyName: "array1", accessors: [0, "nestedProperty"] });
     });
