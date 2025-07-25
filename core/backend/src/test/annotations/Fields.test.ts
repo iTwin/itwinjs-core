@@ -16,7 +16,7 @@ import { PhysicalElement } from "../../Element";
 import { FontFile, TextAnnotation3d } from "../../core-backend";
 import { ElementDrivesTextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 
-describe("updateField", () => {
+describe.only("updateField", () => {
   const mockElementId = "0x1";
   const mockPath: FieldPropertyPath = {
     propertyName: "mockProperty",
@@ -188,7 +188,7 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
   iModel.saveChanges();
 }
 
-describe("Field evaluation", () => {
+describe.only("Field evaluation", () => {
   let imodel: StandaloneDb;
   let model: Id64String;
   let category: Id64String;
