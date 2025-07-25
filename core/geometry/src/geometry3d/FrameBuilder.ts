@@ -16,7 +16,7 @@ import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
 import { AxisOrder, AxisScaleSelect, Geometry } from "../Geometry";
-import { GrowableXYZArray } from "./GrowableXYZArray";
+import { IndexedXYZCollection } from "./IndexedXYZCollection";
 import { Matrix3d } from "./Matrix3d";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Point3dArray } from "./PointHelpers";
@@ -226,7 +226,7 @@ export class FrameBuilder {
           if (this.savedVectorCount() > 1)
             break;
         }
-    } else if (data instanceof GrowableXYZArray) {
+    } else if (data instanceof IndexedXYZCollection) {
       const point = Point3d.create();
       for (let i = 0; this.savedVectorCount() < 2; i++) {
         if (data.getPoint3dAtCheckedPointIndex(i, point) instanceof Point3d)
