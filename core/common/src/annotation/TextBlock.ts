@@ -387,7 +387,7 @@ export class TabRun extends TextBlockComponent {
    * | name          | "name"       | undefined | undefined     |
    * | spouse.name   | "spouse"     | [name]    | undefined     |
    * | colors[2]     | "colors"     | [2]       | undefined     |
-   * | spouse.favoriteRestaurants[1].address | "spouse" | ["favoriteRestaurants", 1] | undefined |
+   * | spouse.favoriteRestaurants[1].address | "spouse" | ["favoriteRestaurants", 1, "address"] | undefined |
    * | jsonProperties.contactInfo.email | "jsonProperties" | undefined | ["contactInfo", "email"] |
    * | spouse.jsonPropertes.contactInfo.phoneNumbers[0].areaCode | "spouse" | ["jsonProperties"] | ["contactInfo", "phoneNumbers", 0, "areaCode"] |
    * ```
