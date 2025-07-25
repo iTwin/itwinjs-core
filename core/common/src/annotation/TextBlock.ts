@@ -125,7 +125,7 @@ export abstract class TextBlockComponent {
   }
 }
 
-/**
+/** [[TextBlockComponent]]s contained within a [[Paragraph]].
  * @beta
  */
 export type Run = TextRun | FractionRun | TabRun | LineBreakRun | FieldRun;
@@ -376,49 +376,95 @@ export class TabRun extends TextBlockComponent {
 
 /** A chain of property accesses that resolves to a primitive value that forms the basis of the displayed content
  * of a [[FieldRun]].
- * The chain may traverse through structs, arrays, and JSON objects.
-* ###TODO examples
+   * The simplest property paths consist of a [[propertyName]] and nothing else, where `propertyName` identifies
+   * a primitive property.
+   * If `propertyName` identifies a struct or array property, then additional [[accessors]] are required to identify the specific value.
+   * If `propertyName` (including any [[accessors]]) resolves to a JSON property, then additional [[jsonAccessors]] are required to identify a specific value within the JSON.
+   * Some examples:
+   * ```
+   * | Access String | propertyName | accessors | jsonAccessors |
+   * | ------------- | ------------ | --------- | ------------- |
+   * | name          | "name"       | undefined | undefined     |
+   * | spouse.name   | "spouse"     | [name]    | undefined     |
+   * | colors[2]     | "colors"     | [2]       | undefined     |
+   * | spouse.favoriteRestaurants[1].address | "spouse" | ["favoriteRestaurants", 1] | undefined |
+   * | jsonProperties.contactInfo.email | "jsonProperties" | undefined | ["contactInfo", "email"] |
+   * | spouse.jsonPropertes.contactInfo.phoneNumbers[0].areaCode | "spouse" | ["jsonProperties"] | ["contactInfo", "phoneNumbers", 0, "areaCode"] |
+   * ```
  * @beta
  */
 export interface FieldPropertyPath {
-  /** The name of the root BIS property. */
+  /** The name of the BIS property of the [[FieldPropertyHost]] that serves as the root of the path. */
   propertyName: string;
-  /** Optional accessors for arrays and/or structs within the property identified by [[propertyName]]. */
+  /** Property names and/or array indices describing the path from [[propertyName]] to the ultimate BIS property. */
   accessors?: Array<string | number>;
-  /** If [[propertyName]] and [[accessors]] (if defined) resolve to a JSON property, optional accessors for
-   * selecting a field within the JSON.
+  /** If [[propertyName]] and [[accessors]] (if defined) resolve to a BIS property of extended type `Json`, property names and/or
+   * array indices for selecting a primitive value within the JSON.
    */
   jsonAccessors?: Array<string | number>;
 }
 
+/** Describes the source of the property value against which a [[FieldPropertyPath]] is evaluated.
+ * A field property is always hosted by an [Element]($backend). It may be a property of the element's BIS class itself,
+ * or that of one of its [ElementAspect]($backend)s.
+ * The [[schemaName]] and [[className]] should always identify the exact class that contains [[FieldPropertyPath.propertyName]] - not a subclass thereof.
+ * @beta
+ */
 export interface FieldPropertyHost {
+  /** The Id of the [Element]($backend) that hosts the property. */
   elementId: Id64String;
   /** The name of the schema containing the class identified by [[className]]. */
   schemaName: string;
-  /** The name of the exact class (not a subclass) containing the first property in [[FieldRun.propertyPath]]. */
+  /** The name of the exact class (not a subclass) containing the property identified by [[FieldPropertyPath.propertyName]]. */
   className: string;
 }
 
-// ###TODO: figure out formatting (later).
+/** Placeholder type for a description of how to format the raw property value resolved by a [[FieldPropertyPath]] into a [[FieldRun]]'s display string.
+ * *** COMING SOON ***
+ * @beta
+ */
 export type FieldFormatter = { [k: string]: any };
 
+/** JSON representation of a [[FieldRun]].
+ * @beta
+ */
 export interface FieldRunProps extends TextBlockComponentProps {
+  /** Discriminator field for the [[RunProps]] union. */
   readonly type: "field";
+  /** The element and BIS class containing the property described by [[propertyPath]]. */
   propertyHost: FieldPropertyHost;
+  /** Describes how to obtain the property value from [[propertyHost]]. */
   propertyPath: FieldPropertyPath;
+  /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]]. */
   formatter?: FieldFormatter;
+  /** The field's most recently evaluated display string. */
   cachedContent?: string;
 }
 
+/** A [[Run]] that displays the formatted value of a property of some [Element]($backend).
+ * When a [[TextBlock]] containing a [[FieldRun]] is written into the iModel as an [ITextAnnotation]($backend) element,
+ * a dependency is established between the two elements via the [ElementDrivesTextAnnotation]($backend) relationship such that
+ * whenever the source element specified by [[propertyHost]] is modified, the field(s) in the `ITextAnnotation` element are automatically
+ * recalculated, causing their [[cachedContent]] to update. If the field's display string cannot be evaluated (for example, because the specified element or
+ * property does not exist), then its cached content is set to [[FieldRun.invalidContentIndicator]].
+ * A [[FieldRun]] displays its [[cachedContent]] in the same way that [[TextRun]]s display their `content`, including word wrapping where appropriate.
+ * @beta
+ */
 export class FieldRun extends TextBlockComponent {
-  public static invalidContentIndicator = "####"; // maybe this should be specified by the text style?
+  /** Display string used to signal an error in computing the field's value. */
+  public static invalidContentIndicator = "####";
 
+  /** Discriminator field for the [[Run]] union. */
   public readonly type = "field";
+  /** The element and BIS class containing the property described by [[propertyPath]]. */
   public readonly propertyHost: Readonly<FieldPropertyHost>;
+  /** Describes how to obtain the property value from [[propertyHost]]. */
   public readonly propertyPath: Readonly<FieldPropertyPath>;
+  /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]]. */
   public readonly formatter?: FieldFormatter;
   private _cachedContent: string;
 
+  /** The field's most recently evaluated display string. */
   public get cachedContent(): string {
     return this._cachedContent;
   }
@@ -437,6 +483,7 @@ export class FieldRun extends TextBlockComponent {
     this.formatter = props.formatter;
   }
 
+  /** Create a FieldRun from its JSON representation. */
   public static create(props: Omit<FieldRunProps, "type">): FieldRun {
     return new FieldRun({
       ...props,
@@ -446,6 +493,7 @@ export class FieldRun extends TextBlockComponent {
     });
   }
 
+  /** Convert the FieldRun to its JSON representation. */
   public override toJSON(): FieldRunProps {
     const json: FieldRunProps = {
       ...super.toJSON(),
@@ -465,14 +513,17 @@ export class FieldRun extends TextBlockComponent {
     return json;
   }
 
+  /** Create a deep copy of this FieldRun. */
   public override clone(): FieldRun {
     return new FieldRun(this.toJSON());
   }
 
+  /** Convert this FieldRun to a simple string representation. */
   public override stringify(): string {
     return this.cachedContent;
   }
 
+  /** Returns true if `this` is equivalent to `other`. */
   public override equals(other: TextBlockComponent): boolean {
     if (!(other instanceof FieldRun)) {
       return false;

@@ -820,7 +820,6 @@ protected async buildPropertyCache(): Promise<Map<string, Property>> {
    * @param targetClass The class to check.
    */
   public isSync(targetClass: ECClass): boolean;
-
   public isSync(targetClass: string, schemaName: string): boolean;
 
   /** @internal */
