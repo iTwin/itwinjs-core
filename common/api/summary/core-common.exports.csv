@@ -312,6 +312,11 @@ public;class;FeatureOverrides
 public;enum;FeatureOverrideType
 public;class;FeatureTable
 internal;class;FeatureTableHeader
+beta;type;FieldFormatter
+beta;interface;FieldPropertyHost
+beta;interface;FieldPropertyPath
+beta;class;FieldRun
+beta;interface;FieldRunProps
 public;interface;FilePropertyProps
 public;enum;FillDisplay
 public;enum;FillFlags
