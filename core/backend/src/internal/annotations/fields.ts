@@ -11,10 +11,12 @@ import { XAndY, XYAndZ } from "@itwin/core-geometry";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, Property, StructArrayProperty } from "@itwin/ecschema-metadata";
 
+// A FieldPropertyPath must ultimately resolve to one of these primitive types.
 export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
 
 interface FieldStructValue { [key: string]: any }
 
+// An intermediate value obtained while evaluating a FieldPropertyPath.
 type FieldValue = {
   primitive: FieldPrimitiveValue;
   struct?: never;
@@ -37,11 +39,15 @@ type FieldValue = {
   structArray: FieldStructValue[];
 }
 
+// Metadata associated with a FieldProperty, providing info needed for formatting like kind-of-quantity, extended type, etc.
+// That information can be obtained from the EC Property. For JSON fields, we will need to allow the user to specify it explicitly
+// (TBD because formatting is not yet implemented).
 export interface FieldPropertyMetadata {
   readonly property: Property;
   // ###TODO probably want to know if it's a JSON property.
 }
 
+// The resolved primitive value of a field with metadata.
 export interface FieldProperty {
   value: FieldPrimitiveValue;
   metadata: FieldPropertyMetadata;
@@ -53,6 +59,7 @@ export interface UpdateFieldsContext {
   getProperty(field: FieldRun): FieldProperty | undefined
 }
 
+// Resolve the raw primitive value of the property that a field points to.
 function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | undefined {
   const host = field.propertyHost;
   const schemaItem = iModel.schemaContext.getSchemaItemSync(host.schemaName, host.className);
@@ -229,6 +236,7 @@ export function createUpdateContext(hostElementId: string, iModel: IModelDb, del
   };
 }
 
+// Recompute the display value of a single field, return false if it couldn't be evaluated.
 export function updateField(field: FieldRun, context: UpdateFieldsContext): boolean {
   if (context.hostElementId !== field.propertyHost.elementId) {
     return false;
@@ -270,6 +278,7 @@ export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext)
   return numUpdated;
 }
 
+// Invoked by ElementDrivesTextAnnotation to update fields in target element when source element changes or is deleted.
 export function updateElementFields(props: RelationshipProps, iModel: IModelDb, deleted: boolean): void {
   try {
     const target = iModel.elements.getElement(props.targetId);
