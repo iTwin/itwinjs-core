@@ -167,6 +167,11 @@ interface TestElementProps extends PhysicalElementProps {
 class TestElement extends PhysicalElement {
   public static override get className() { return "TestElement"; }
   declare public intProp: number;
+  declare public point: XYAndZ;
+  declare public maybeNull?: number;
+  declare public strings: string[];
+  declare public outerStruct: OuterStruct;
+  declare public outerStructs: OuterStruct[];
 }
 
 class FieldsSchema extends Schema {
@@ -219,7 +224,7 @@ describe("Field evaluation", () => {
       strings: ["a", "b", `"name": "c"`],
       outerStruct: {
         innerStruct: { bool: false, doubles: [1, 2, 3] },
-        innerStructs: [{ bool: true, doubles: [] }, { bool: false, doubles: [0] }],
+        innerStructs: [{ bool: true, doubles: [] }, { bool: false, doubles: [5, 4, 3, 2, 1] }],
       },
       outerStructs: [{
         innerStruct: { bool: true, doubles: [10, 9] },
@@ -476,12 +481,12 @@ describe("Field evaluation", () => {
       expect(relationship.targetId).to.equal(targetId);
     });
 
-    function createField(sourceId: Id64String, cachedContent: string, propertyName = "intProp"): FieldRun {
+    function createField(sourceId: Id64String, cachedContent: string, propertyName = "intProp", accessors?: Array<string | number>, jsonAccessors?: Array<string | number>): FieldRun {
       return FieldRun.create({
         styleOverrides: { fontName: "Karla" },
         propertyHost: { elementId: sourceId, schemaName: "Fields", className: "TestElement" },
         cachedContent,
-        propertyPath: { propertyName },
+        propertyPath: { propertyName, accessors, jsonAccessors },
       });
     }
 
@@ -640,6 +645,23 @@ describe("Field evaluation", () => {
       imodel.saveChanges();
 
       expectText("100123", targetId);
+    });
+
+    it("supports complex property paths", () => {
+      const sourceId = insertTestElement();
+      const block = TextBlock.create({ styleId: "0x123" });
+      block.appendRun(createField(sourceId, "", "outerStruct", ["innerStructs", 1, "doubles", -2]));
+      block.appendRun(createField(sourceId, "", "jsonProperties", undefined, ["zoo", "birds", 0, "name"]));
+      const targetId = insertAnnotationElement(block);
+      imodel.saveChanges();
+      expectText("2duck", targetId);
+
+      const source = imodel.elements.getElement<TestElement>(sourceId);
+      source.outerStruct.innerStructs[1].doubles[3] = 12.5;
+      source.jsonProperties.zoo.birds[0].name = "parrot";
+      source.update();
+      imodel.saveChanges();
+      expectText("12.5parrot", targetId);
     });
   });
 });
