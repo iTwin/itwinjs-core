@@ -12,7 +12,7 @@ import { AnnotationElement2d, DefinitionElement, GraphicalElement3d, OnElementId
 import { assert, Id64String } from "@itwin/core-bentley";
 import { layoutTextBlock, TextStyleResolver } from "./TextBlockLayout";
 import { appendTextAnnotationGeometry } from "./TextAnnotationGeometry";
-import { ElementDrivesTextAnnotation, ITextAnnotation, TextBlockAndId } from "./ElementDrivesTextAnnotation";
+import { ElementDrivesTextAnnotation, TextBlockAndId } from "./ElementDrivesTextAnnotation";
 
 function parseTextAnnotationData(json: string | undefined): TextAnnotationProps | undefined {
   if (!json) return undefined;
@@ -39,7 +39,7 @@ function getElementGeometryBuilderParams(iModel: IModelDb, modelId: Id64String, 
  * @see [[setAnnotation]] to change the textual content.
  * @public @preview
  */
-export class TextAnnotation2d extends AnnotationElement2d implements ITextAnnotation {
+export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnnotation */ {
   /** @internal */
   public static override get className(): string { return "TextAnnotation2d"; }
   /** Optional string containing the data associated with the text annotation. */
@@ -181,7 +181,7 @@ export class TextAnnotation2d extends AnnotationElement2d implements ITextAnnota
  * @see [[setAnnotation]] to change the textual content.
  * @public @preview
  */
-export class TextAnnotation3d extends GraphicalElement3d implements ITextAnnotation {
+export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnnotation */ {
   /** @internal */
   public static override get className(): string { return "TextAnnotation3d"; }
   /** Optional string containing the data associated with the text annotation. */

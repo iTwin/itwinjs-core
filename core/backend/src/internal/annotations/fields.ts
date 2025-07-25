@@ -12,7 +12,9 @@ import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation
 import { AnyClass, EntityClass, Property, StructArrayProperty } from "@itwin/ecschema-metadata";
 
 export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
+
 interface FieldStructValue { [key: string]: any }
+
 type FieldValue = {
   primitive: FieldPrimitiveValue;
   struct?: never;

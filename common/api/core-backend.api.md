@@ -2523,6 +2523,18 @@ export interface ElementDrivesElementProps extends RelationshipProps {
     status: number;
 }
 
+// @beta
+export class ElementDrivesTextAnnotation extends ElementDrivesElement {
+    // (undocumented)
+    static get className(): string;
+    static isSupportedForIModel(iModel: IModelDb): boolean;
+    // @internal (undocumented)
+    static onDeletedDependency(props: RelationshipProps, iModel: IModelDb): void;
+    // @internal (undocumented)
+    static onRootChanged(props: RelationshipProps, iModel: IModelDb): void;
+    static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void;
+}
+
 // @public
 export class ElementEncapsulatesElements extends ElementOwnsChildElements {
     constructor(parentId: Id64String, relClassName?: string);
@@ -4191,6 +4203,15 @@ export interface IpcHostOpts {
             noStack?: boolean;
         };
     };
+}
+
+// @beta
+export function isITextAnnotation(element: Element_2): element is ITextAnnotation & Element_2;
+
+// @beta
+export interface ITextAnnotation {
+    getTextBlocks(): Iterable<TextBlockAndId>;
+    updateTextBlocks(textBlocks: TextBlockAndId[]): void;
 }
 
 // @public
@@ -6347,7 +6368,7 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
 }
 
 // @public @preview
-export class TextAnnotation2d extends AnnotationElement2d implements ITextAnnotation {
+export class TextAnnotation2d extends AnnotationElement2d {
     protected constructor(props: TextAnnotation2dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
@@ -6373,7 +6394,7 @@ export class TextAnnotation2d extends AnnotationElement2d implements ITextAnnota
 }
 
 // @public @preview
-export class TextAnnotation3d extends GraphicalElement3d implements ITextAnnotation {
+export class TextAnnotation3d extends GraphicalElement3d {
     protected constructor(props: TextAnnotation3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
@@ -6396,6 +6417,12 @@ export class TextAnnotation3d extends GraphicalElement3d implements ITextAnnotat
     protected static updateGeometry(iModelDb: IModelDb, props: TextAnnotation3dProps): void;
     // @internal (undocumented)
     updateTextBlocks(textBlocks: TextBlockAndId[]): void;
+}
+
+// @beta
+export interface TextBlockAndId {
+    readonly id: unknown;
+    readonly textBlock: TextBlock;
 }
 
 // @beta
