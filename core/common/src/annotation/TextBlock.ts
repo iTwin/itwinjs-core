@@ -6,30 +6,25 @@
  * @module Annotation
  */
 
-import { TextStyleSettingsProps } from "./TextStyle";
+import { Id64String } from "@itwin/core-bentley";
+import { TextStyleSettings, TextStyleSettingsProps } from "./TextStyle";
 
-/** Options supplied to [[TextBlockComponent.applyStyle]] to control how the style is applied to the component and its child components.
+/** Options supplied to [[TextBlockComponent.clearStyleOverrides]] to control how the style overrides are cleared on the component and its child components.
  * @beta
  */
-export interface ApplyTextStyleOptions {
-  /** Controls whether any deviations from the style's settings stored in [[TextBlockComponent.styleOverrides]] are retained.
+export interface ClearTextStyleOptions {
+  /** Controls whether the styleOverrides of any child components are retained.
    * By default, all overrides are cleared.
    */
-  preserveOverrides?: boolean;
-  /** Controls whether the style should be recursively applied to the [[Paragraph]]s belonging to a [[TextBlock]] and the [[Run]]s belonging to a [[Paragraph]].
-   * By default, the style change propagates to child components.
-   */
-  preventPropagation?: boolean;
+  preserveChildrenOverrides?: boolean;
 }
 
 /** The JSON representation of a [[TextBlockComponent]].
  * @beta
  */
 export interface TextBlockComponentProps {
-  /** The name of a [[TextStyle]] stored in a [Workspace]($backend) from which the base [[TextStyleSettings]] applied to the component originates. */
-  styleName: string;
-  /** Deviations from the base [[TextStyleSettings]] defined by the [[TextStyle]] applied to this component.
-   * This permits you to, e.g., create a [[TextRun]] using "Arial" font and override it to use "Comic Sans" instead.
+  /** Deviations from the base [[TextStyleSettings]] defined by the [AnnotationTextStyle]($backend) applied to this component.
+   * This permits you to, e.g., create a [[TextBlock]] using "Arial" font and override one of its [[TextRun]]s to use "Comic Sans" instead.
    */
   styleOverrides?: TextStyleSettingsProps;
 }
@@ -57,32 +52,18 @@ export interface TextBlockStringifyOptions {
 }
 
 /** Abstract representation of any of the building blocks that make up a [[TextBlock]] document - namely [[Run]]s, [[Paragraph]]s, and [[TextBlock]] itself.
- * Each component can specify a [[TextStyle]] that formats its contents and optional [[styleOverrides]] to customize that formatting.
+ * The [[TextBlock]] can specify an [AnnotationTextStyle]($backend) that formats its contents. Each component can specify an optional [[styleOverrides]] to customize that formatting.
  * @beta
  */
 export abstract class TextBlockComponent {
-  private _styleName: string;
   private _styleOverrides: TextStyleSettingsProps;
 
   /** @internal */
-  protected constructor(props: TextBlockComponentProps) {
-    this._styleName = props.styleName;
-    this._styleOverrides = { ...props.styleOverrides };
+  protected constructor(props?: TextBlockComponentProps) {
+    this._styleOverrides = TextStyleSettings.cloneProps(props?.styleOverrides ?? {});
   }
 
-  /** The name of the [[TextStyle]] that provides the base formatting for the contents of this component.
-   * @note Assigning to this property is equivalent to calling [[applyStyle]] with default [[ApplyTextStyleOptions]], which propagates the style change to all of
-   * the components sub-components and clears any [[styleOverrides]].
-   */
-  public get styleName(): string {
-    return this._styleName;
-  }
-
-  public set styleName(styleName: string) {
-    this.applyStyle(styleName);
-  }
-
-  /** Deviations in individual properties of the [[TextStyle]] specified by [[styleName]].
+  /** Deviations in individual properties of the [[TextStyleSettings]] in the [AnnotationTextStyle]($backend) specified by `styleId` on the [[TextBlock]].
    * For example, if the style uses the "Arial" font, you can override that by settings `styleOverrides.fontName` to "Comic Sans".
    * @see [[clearStyleOverrides]] to reset this to an empty object.
    */
@@ -91,24 +72,15 @@ export abstract class TextBlockComponent {
   }
 
   public set styleOverrides(overrides: TextStyleSettingsProps) {
-    this._styleOverrides = { ...overrides };
+    this._styleOverrides = TextStyleSettings.cloneProps(overrides);
   }
 
-  /** Reset any [[styleOverrides]] applied to this component's [[TextStyle]]. */
-  public clearStyleOverrides(): void {
+  /** Reset any [[styleOverrides]] applied to this component. */
+  public clearStyleOverrides(_options?: ClearTextStyleOptions): void {
     this.styleOverrides = { };
   }
 
-  /** Apply the [[TextStyle]] specified by `styleName` to this component, optionally preserving [[styleOverrides]] and/or preventing propagation to sub-components. */
-  public applyStyle(styleName: string, options?: ApplyTextStyleOptions): void {
-    this._styleName = styleName;
-
-    if (!(options?.preserveOverrides)) {
-      this.clearStyleOverrides();
-    }
-  }
-
-  /** Returns true if [[styleOverrides]] specifies any deviations from this component's base [[TextStyle]]. */
+  /** Returns true if [[styleOverrides]] specifies any deviations from the [[TextBlock]]'s [AnnotationTextStyle]($backend). */
   public get overridesStyle(): boolean {
     return Object.keys(this.styleOverrides).length > 0;
   }
@@ -130,8 +102,7 @@ export abstract class TextBlockComponent {
   /** Convert this component to its JSON representation. */
   public toJSON(): TextBlockComponentProps {
     return {
-      styleName: this.styleName,
-      styleOverrides: { ...this.styleOverrides },
+      styleOverrides: TextStyleSettings.cloneProps(this.styleOverrides),
     };
   }
 
@@ -139,7 +110,7 @@ export abstract class TextBlockComponent {
   public equals(other: TextBlockComponent): boolean {
     const myKeys = Object.keys(this.styleOverrides);
     const yrKeys = Object.keys(other._styleOverrides);
-    if (this.styleName !== other.styleName || myKeys.length !== yrKeys.length) {
+    if (myKeys.length !== yrKeys.length) {
       return false;
     }
 
@@ -218,10 +189,10 @@ export class TextRun extends TextBlockComponent {
   /** Whether to display [[content]] as a subscript, superscript, or normally. */
   public baselineShift: BaselineShift;
 
-  private constructor(props: Omit<TextRunProps, "type">) {
+  private constructor(props?: Omit<TextRunProps, "type">) {
     super(props);
-    this.content = props.content ?? "";
-    this.baselineShift = props.baselineShift ?? "none";
+    this.content = props?.content ?? "";
+    this.baselineShift = props?.baselineShift ?? "none";
   }
 
   public override clone(): TextRun {
@@ -237,7 +208,7 @@ export class TextRun extends TextBlockComponent {
     };
   }
 
-  public static create(props: Omit<TextRunProps, "type">): TextRun {
+  public static create(props?: Omit<TextRunProps, "type">): TextRun {
     return new TextRun(props);
   }
 
@@ -257,9 +228,9 @@ export class TextRun extends TextBlockComponent {
 export interface FractionRunProps extends TextBlockComponentProps {
   /** Discriminator field for the [[RunProps]] union. */
   readonly type: "fraction";
-  /** The text displayed before or above the fraction separator, depending on [[TextStyle.stackedFractionType]]. Default: an empty string. */
+  /** The text displayed before or above the fraction separator, depending on [[TextStyleSettings.stackedFractionType]]. Default: an empty string. */
   numerator?: string;
-  /** The text displayed after or below the fraction separator, depending on [[TextStyle.stackedFractionType]]. Default: an empty string. */
+  /** The text displayed after or below the fraction separator, depending on [[TextStyleSettings.stackedFractionType]]. Default: an empty string. */
   denominator?: string;
 }
 
@@ -275,10 +246,10 @@ export class FractionRun extends TextBlockComponent {
   /** The fraction's denominator. */
   public denominator: string;
 
-  private constructor(props: Omit<FractionRunProps, "type">) {
+  private constructor(props?: Omit<FractionRunProps, "type">) {
     super(props);
-    this.numerator = props.numerator ?? "";
-    this.denominator = props.denominator ?? "";
+    this.numerator = props?.numerator ?? "";
+    this.denominator = props?.denominator ?? "";
   }
 
   public override toJSON(): FractionRunProps {
@@ -294,7 +265,7 @@ export class FractionRun extends TextBlockComponent {
     return new FractionRun(this.toJSON());
   }
 
-  public static create(props: Omit<FractionRunProps, "type">): FractionRun {
+  public static create(props?: Omit<FractionRunProps, "type">): FractionRun {
     return new FractionRun(props);
   }
 
@@ -324,7 +295,7 @@ export class LineBreakRun extends TextBlockComponent {
   /** Discriminator field for the [[Run]] union. */
   public readonly type = "linebreak";
 
-  private constructor(props: TextBlockComponentProps) {
+  private constructor(props?: TextBlockComponentProps) {
     super(props);
   }
 
@@ -335,7 +306,7 @@ export class LineBreakRun extends TextBlockComponent {
     };
   }
 
-  public static create(props: TextBlockComponentProps) {
+  public static create(props?: TextBlockComponentProps) {
     return new LineBreakRun(props);
   }
 
@@ -380,7 +351,7 @@ export class TabRun extends TextBlockComponent {
     return new TabRun(this.toJSON());
   }
 
-  public static create(props: Omit<TabRunProps, "type">): TabRun {
+  public static create(props?: Omit<TabRunProps, "type">): TabRun {
     return new TabRun(props);
   }
 
@@ -419,9 +390,9 @@ export class Paragraph extends TextBlockComponent {
   /** The runs within the paragraph. You can modify the contents of this array to change the content of the paragraph. */
   public readonly runs: Run[];
 
-  private constructor(props: ParagraphProps) {
+  private constructor(props?: ParagraphProps) {
     super(props);
-    this.runs = props.runs?.map((run) => Run.fromJSON(run)) ?? [];
+    this.runs = props?.runs?.map((run) => Run.fromJSON(run)) ?? [];
   }
 
   public override toJSON(): ParagraphProps {
@@ -432,7 +403,7 @@ export class Paragraph extends TextBlockComponent {
   }
 
   /** Create a paragraph from its JSON representation. */
-  public static create(props: ParagraphProps): Paragraph {
+  public static create(props?: ParagraphProps): Paragraph {
     return new Paragraph(props);
   }
 
@@ -440,13 +411,17 @@ export class Paragraph extends TextBlockComponent {
     return new Paragraph(this.toJSON());
   }
 
-  /** Apply the specified style to this [[Paragraph]], and - unless [[ApplyTextStyleOptions.preventPropagation]] is `true` - to all of its [[runs]]. */
-  public override applyStyle(styleName: string, options?: ApplyTextStyleOptions): void {
-    super.applyStyle(styleName, options);
-    if (!(options?.preventPropagation)) {
-      for (const run of this.runs) {
-        run.applyStyle(styleName, options);
-      }
+  /**
+   * Clears any [[styleOverrides]] applied to this Paragraph.
+   * Will also clear [[styleOverrides]] from all child components unless [[ClearTextStyleOptions.preserveChildrenOverrides]] is `true`.
+   */
+  public override clearStyleOverrides(options?: ClearTextStyleOptions): void {
+    super.clearStyleOverrides();
+    if (options?.preserveChildrenOverrides)
+      return;
+
+    for (const run of this.runs) {
+      run.clearStyleOverrides();
     }
   }
 
@@ -491,6 +466,8 @@ export interface TextBlockMargins {
  * @beta
  */
 export interface TextBlockProps extends TextBlockComponentProps {
+  /** The ID of an [AnnotationTextStyle]($backend) stored in the iModel from which the base [[TextStyleSettings]] applied to the [[TextBlock]] originates. */
+  styleId: Id64String;
   /** The width of the document in meters. Lines that would exceed this width are instead wrapped around to the next line if possible.
    * A value less than or equal to zero indicates no wrapping is to be applied.
    * Default: 0
@@ -511,6 +488,11 @@ export interface TextBlockProps extends TextBlockComponentProps {
  * @beta
  */
 export class TextBlock extends TextBlockComponent {
+  /** The ID of the [AnnotationTextStyle]($backend) that provides the base formatting for the contents of this TextBlock.
+   * @note Assigning to this property retains all style overrides on the TextBlock and its child components.
+   * Call [[clearStyleOverrides]] to clear the TextBlock's and optionally all children's style overrides.
+   */
+  public styleId: Id64String;
   /** The width of the document in meters. Lines that would exceed this width are instead wrapped around to the next line if possible.
    * A value less than or equal to zero indicates no wrapping is to be applied.
    * Default: 0
@@ -525,6 +507,7 @@ export class TextBlock extends TextBlockComponent {
 
   private constructor(props: TextBlockProps) {
     super(props);
+    this.styleId = props.styleId;
     this.width = props.width ?? 0;
     this.justification = props.justification ?? "left";
 
@@ -542,6 +525,7 @@ export class TextBlock extends TextBlockComponent {
   public override toJSON(): TextBlockProps {
     return {
       ...super.toJSON(),
+      styleId: this.styleId,
       width: this.width,
       justification: this.justification,
       margins: this.margins,
@@ -554,9 +538,9 @@ export class TextBlock extends TextBlockComponent {
     return new TextBlock(props);
   }
 
-  /** Create an empty text block containing no [[paragraphs]] and an empty [[styleName]]. */
+  /** Create an empty text block containing no [[paragraphs]] and an empty [[styleId]]. */
   public static createEmpty(): TextBlock {
-    return TextBlock.create({ styleName: "" });
+    return TextBlock.create({ styleId: "" });
   }
 
   /** Returns true if every paragraph in this text block is empty. */
@@ -568,13 +552,17 @@ export class TextBlock extends TextBlockComponent {
     return new TextBlock(this.toJSON());
   }
 
-  /** Apply the specified style to this block and - unless [[ApplyTextStyleOptions.preventPropagation]] is `true` - to all of its [[paragraphs]]. */
-  public override applyStyle(styleName: string, options?: ApplyTextStyleOptions): void {
-    super.applyStyle(styleName, options);
-    if (!(options?.preventPropagation)) {
-      for (const paragraph of this.paragraphs) {
-        paragraph.applyStyle(styleName, options);
-      }
+  /**
+   * Clears any [[styleOverrides]] applied to this TextBlock.
+   * Will also clear [[styleOverrides]] from all child components unless [[ClearTextStyleOptions.preserveChildrenOverrides]] is `true`.
+   */
+  public override clearStyleOverrides(options?: ClearTextStyleOptions): void {
+    super.clearStyleOverrides();
+    if (options?.preserveChildrenOverrides)
+      return;
+
+    for (const paragraph of this.paragraphs) {
+      paragraph.clearStyleOverrides();
     }
   }
 
@@ -584,14 +572,19 @@ export class TextBlock extends TextBlockComponent {
   }
 
   /** Add and return a new paragraph.
-   * If [[paragraphs]] is not empty, the style and overrides of the last [[Paragraph]] in the block will be applied to the new paragraph; otherwise,
-   * the paragraph will inherit this block's style with no overrides.
+   * By default, the paragraph will be created with no [[styleOverrides]], so that it inherits the style of this block.
+   * @param seedFromLast If true and [[paragraphs]] is not empty, the new paragraph will inherit the style overrides of the last [[Paragraph]] in this block.
    */
-  public appendParagraph(): Paragraph {
-    const seed = this.paragraphs[0];
+  public appendParagraph(seedFromLast: boolean = false): Paragraph {
+    let styleOverrides: TextStyleSettingsProps = {};
+
+    if (seedFromLast && this.paragraphs.length > 0) {
+      const seed = this.paragraphs[this.paragraphs.length - 1];
+      styleOverrides = { ...seed.styleOverrides };
+    }
+
     const paragraph = Paragraph.create({
-      styleName: seed?.styleName ?? this.styleName,
-      styleOverrides: seed?.styleOverrides ?? undefined,
+      styleOverrides
     });
 
     this.paragraphs.push(paragraph);
@@ -608,6 +601,10 @@ export class TextBlock extends TextBlockComponent {
 
   public override equals(other: TextBlockComponent): boolean {
     if (!(other instanceof TextBlock)) {
+      return false;
+    }
+
+    if (this.styleId !== other.styleId || !super.equals(other)) {
       return false;
     }
 

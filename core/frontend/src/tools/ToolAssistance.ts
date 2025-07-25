@@ -74,7 +74,7 @@ export type ToolAssistancePromptKey = "IdentifyElement" | "IdentifyPoint" | "Sta
 
 /** Identifies one of a set of commonly-used [[ToolAssistance]] messages notifying the user of the result of
  * the next input.
- * @see [[ToolAssistance.translateInput]] to obtain a corresponding localizaed message appropriate for displaying to the user.
+ * @see [[ToolAssistance.translateInput]] to obtain a corresponding localized message appropriate for displaying to the user.
  * @public
  * @extensions
  */
