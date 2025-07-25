@@ -253,7 +253,7 @@ describe("FieldRun", () => {
       expect(fieldRun.formatter).to.deep.equal({ formatType: "currency", precision: 2, options: { locale: "en-US", style: "decimal" } });
     });
 
-    it("deepyl clones propertyHost", () => {
+    it("deeply clones propertyHost", () => {
       const propertyHost = { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" };
 
       const fieldRun = FieldRun.create({
