@@ -74,8 +74,8 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
     return undefined;
   }
 
-  const isAspect = ecClass.isSync("BisCore", "ElementAspect");
-  const where = ` WHERE ${isAspect ? "ElementId" : "ECInstanceId"}=${host.elementId}`;
+  const isAspect = ecClass.isSync("ElementAspect", "BisCore");
+  const where = ` WHERE ${isAspect ? "Element.Id" : "ECInstanceId"}=${host.elementId}`;
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   let curValue: FieldValue | undefined = iModel.withPreparedStatement(`SELECT ${propertyName} FROM ${host.schemaName}.${host.className} ${where}`, (stmt) => {
     if (stmt.step() !== DbResult.BE_SQLITE_ROW) {

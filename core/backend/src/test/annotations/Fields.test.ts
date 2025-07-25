@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, FieldPropertyHost, FieldPropertyPath, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextRun } from "@itwin/core-common";
+import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextRun } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, FieldProperty, updateField, updateFields } from "../../internal/annotations/fields";
@@ -13,10 +13,10 @@ import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Schema, Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
 import { PhysicalElement } from "../../Element";
-import { FontFile, TextAnnotation3d } from "../../core-backend";
+import { ElementOwnsUniqueAspect, ElementUniqueAspect, FontFile, TextAnnotation3d } from "../../core-backend";
 import { ElementDrivesTextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 
-describe.only("updateField", () => {
+describe("updateField", () => {
   const mockElementId = "0x1";
   const mockPath: FieldPropertyPath = {
     propertyName: "mockProperty",
@@ -142,6 +142,11 @@ const fieldsSchemaXml = `
     <ECStructProperty propertyName="outerStruct" typeName="OuterStruct"/>
     <ECStructArrayProperty propertyName="outerStructs" typeName="OuterStruct" minOccurs="0" maxOccurs="unbounded"/>
   </ECEntityClass>
+
+  <ECEntityClass typeName="TestAspect" modifier="None">
+    <BaseClass>bis:ElementUniqueAspect</BaseClass>
+    <ECProperty propertyName="aspectProp" typeName="int"/>
+  </ECEntityClass>
 </ECSchema>
 `;
 
@@ -174,6 +179,16 @@ class TestElement extends PhysicalElement {
   declare public outerStructs: OuterStruct[];
 }
 
+class TestAspect extends ElementUniqueAspect {
+  public static override get className() { return "TestAspect"; }
+
+  declare public aspectProp: number;
+}
+
+interface TestAspectProps extends ElementAspectProps {
+  aspectProp: number;
+}
+
 class FieldsSchema extends Schema {
   public static override get schemaName() { return "Fields"; }
 }
@@ -182,6 +197,7 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
   if (!Schemas.getRegisteredSchema("Fields")) {
     Schemas.registerSchema(FieldsSchema);
     ClassRegistry.register(TestElement, FieldsSchema);
+    ClassRegistry.register(TestAspect, FieldsSchema);
   }
 
   await iModel.importSchemaStrings([fieldsSchemaXml]);
@@ -250,6 +266,14 @@ describe.only("Field evaluation", () => {
     };
 
     const id = imodel.elements.insertElement(props);
+
+    const aspectProps: TestAspectProps = {
+      classFullName: TestAspect.classFullName,
+      aspectProp: 999,
+      element: new ElementOwnsUniqueAspect(id),
+    };
+    imodel.elements.insertAspect(aspectProps);
+    
     imodel.saveChanges();
     return id;
   }
@@ -362,6 +386,11 @@ describe.only("Field evaluation", () => {
       expectValue(undefined, { propertyName: "int", jsonAccessors: ["whatever"] }, sourceElementId);
       expectValue(undefined, { propertyName: "strings", accessors: [2, "name"] }, sourceElementId);
       expectValue(undefined, { propertyName: "outerStruct", accessors: ["innerStruct"], jsonAccessors: ["bool"] }, sourceElementId);
+    });
+
+    it("returns the value of a property of an aspect", () => {
+      expect(imodel.elements.getAspects(sourceElementId, "Fields:TestAspect").length).to.equal(1);
+      expectValue(999, { propertyName: "aspectProp" }, { elementId: sourceElementId, schemaName: "Fields", className: "TestAspect" });
     });
   });
 
@@ -481,10 +510,14 @@ describe.only("Field evaluation", () => {
       expect(relationship.targetId).to.equal(targetId);
     });
 
-    function createField(sourceId: Id64String, cachedContent: string, propertyName = "intProp", accessors?: Array<string | number>, jsonAccessors?: Array<string | number>): FieldRun {
+    function createField(propertyHost: Id64String | FieldPropertyHost, cachedContent: string, propertyName = "intProp", accessors?: Array<string | number>, jsonAccessors?: Array<string | number>): FieldRun {
+      if (typeof propertyHost === "string") {
+        propertyHost = { schemaName: "Fields", className: "TestElement", elementId: propertyHost };
+      }
+
       return FieldRun.create({
         styleOverrides: { fontName: "Karla" },
-        propertyHost: { elementId: sourceId, schemaName: "Fields", className: "TestElement" },
+        propertyHost,
         cachedContent,
         propertyPath: { propertyName, accessors, jsonAccessors },
       });
@@ -626,6 +659,39 @@ describe.only("Field evaluation", () => {
 
       imodel.saveChanges();
       expectText(FieldRun.invalidContentIndicator, targetId);
+    });
+
+    it("updates fields when source element aspect is modified, deleted, or recreated", () => {
+      const sourceId = insertTestElement();
+      const block = TextBlock.create({ styleId: "0x123" });
+      block.appendRun(createField({ elementId: sourceId, schemaName: "Fields", className: "TestAspect" }, "", "aspectProp"));
+
+      const targetId = insertAnnotationElement(block);
+      imodel.saveChanges();
+      expectText("999", targetId);
+
+      const aspects = imodel.elements.getAspects(sourceId, "Fields:TestAspect");
+      expect(aspects.length).to.equal(1);
+      const aspect = aspects[0] as TestAspect;
+      expect(aspect.aspectProp).to.equal(999);
+
+      aspect.aspectProp = 12345;
+      imodel.elements.updateAspect(aspect.toJSON());
+      imodel.saveChanges();
+      expectText("12345", targetId);
+
+      imodel.elements.deleteAspect([aspect.id]);
+      imodel.saveChanges();
+      expectText(FieldRun.invalidContentIndicator, targetId);
+
+      const newAspect: TestAspectProps = {
+        element: new ElementOwnsUniqueAspect(sourceId),
+        classFullName: TestAspect.classFullName,
+        aspectProp: 42,
+      };
+      imodel.elements.insertAspect(newAspect);
+      imodel.saveChanges();
+      expectText("42", targetId);
     });
 
     it("updates only fields for specific modified element", () => {
