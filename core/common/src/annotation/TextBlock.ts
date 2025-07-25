@@ -525,7 +525,7 @@ export class FieldRun extends TextBlockComponent {
 
   /** Returns true if `this` is equivalent to `other`. */
   public override equals(other: TextBlockComponent): boolean {
-    if (!(other instanceof FieldRun)) {
+    if (!(other instanceof FieldRun) || !super.equals(other)) {
       return false;
     }
 
