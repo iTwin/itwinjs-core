@@ -326,12 +326,14 @@ function updateTextBlocks(elem: TextAnnotation2d | TextAnnotation3d, textBlocks:
   assert(textBlocks.length === 1);
   assert(textBlocks[0].id === undefined);
 
-  let annotation = elem.getAnnotation();
+  const annotation = elem.getAnnotation();
   if (!annotation) {
-    annotation = TextAnnotation.create({ textBlock: textBlocks[0].textBlock });
-  } else {
-    annotation.textBlock = textBlocks[0].textBlock;
+    // We must obtain the TextBlockAndId from the element in the first place, so the only way we could end up here is if
+    // somebody removed the text annotation after we called getTextBlocks. That's gotta be a mistake.
+    throw new Error("Text annotation element has no text");
   }
+
+  annotation.textBlock = textBlocks[0].textBlock;
 
   elem.setAnnotation(annotation);
   elem.update();
