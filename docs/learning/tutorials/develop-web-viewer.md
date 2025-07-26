@@ -1,11 +1,13 @@
 # Developing a Web Viewer
 
+The application is built using [Vite](https://github.com/vitejs/vite), and scaffolded using [degit](https://github.com/Rich-Harris/degit).
+
 ## Setup
 
 - [Install necessary prerequisites](./development-prerequisites.md).
-- From a terminal, `npx create-react-app your-app-name --template @itwin/web-viewer --scripts-version @bentley/react-scripts`
-  - This will generate a new application based on the iTwin Viewer React component in the `your-app-name` directory.
-- Open the `your-app-name` directory in VS Code.
+- From a terminal, `npx degit iTwin/viewer/packages/templates/web#master your-app-name`
+  - This will scaffold a new application based on the iTwin Viewer React component in the `your-app-name` directory.
+- Open the `your-app-name` directory in VS Code and run `npm install`. This will install all the dependencies listed in your package.json.
 - Follow these steps to obtain a new OIDC client to use in your viewer application:
 
   1. Go to <https://developer.bentley.com>
@@ -32,14 +34,13 @@
 
 ## Build
 
-- From a terminal at your application's root directory, `npm run build`. This will create a deployment-ready build in the "build" folder within the application's root directory. It is not necessary to build the application during development.
+- From a terminal at your application's root directory, run `npm run build`. This will create a deployment-ready build in the "dist" folder within the application's root directory. You may run `npm run preview` to start a local server to preview your production build. It is not necessary to build the application during development.
 
 ## Useful Links
 
 - [iTwin Viewer React](https://www.npmjs.com/package/@itwin/web-viewer-react)
-- [iTwin Viewer Create React App Template](https://www.npmjs.com/package/@itwin/cra-template-web-viewer)
-- [Bentley React Scripts](https://www.npmjs.com/package/@bentley/react-scripts)
-- [Create React App](https://create-react-app.dev/)
+- [iTwin Web Viewer Vite Template](https://github.com/iTwin/viewer/tree/master/packages/templates/web)
+- [Vite](https://vite.dev/guide/)
 
 ## Next Steps
 
