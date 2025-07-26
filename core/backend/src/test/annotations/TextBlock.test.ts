@@ -12,8 +12,6 @@ import { Id64String, ProcessDetector } from "@itwin/core-bentley";
 import { produceTextBlockGeometry } from "../../core-backend";
 import { computeTextRangeAsStringLength, doLayout } from "../AnnotationTestUtils";
 
-
-
 function makeTextRun(content: string): TextRun {
   return TextRun.create({ content });
 }
@@ -1419,7 +1417,6 @@ describe("produceTextBlockGeometry", () => {
     testMargins({ top: -1, right: -2, bottom: -3, left: -4 }, 1, 4);
   });
 });
-
 
 // Ignoring the text strings from the spell checker
 // cspell:ignore jklmnop vwxyz defg hijk ghij klmno pqrstu Tanuki aabb eeff nggg amet adipiscing elit Phasellus pretium malesuada venenatis eleifend Donec sapien Nullam commodo accumsan lacinia metus enim pharetra lacus facilisis Duis suscipit quis feugiat fermentum ut augue Mauris iaculis odio rhoncus lorem viverra turpis elementum posuere Consolas अनुच्छेद cdefg cdefgh cdefghi

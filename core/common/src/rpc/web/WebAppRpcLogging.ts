@@ -133,7 +133,7 @@ export abstract class WebAppRpcLogging {
 }
 
 declare global {
-  // eslint-disable-next-line no-var
+   
   var window: any;
 }
 

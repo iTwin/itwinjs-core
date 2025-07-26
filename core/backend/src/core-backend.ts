@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+export * from "./annotations/ElementDrivesTextAnnotation";
 export * from "./annotations/FrameGeometry";
 export * from "./annotations/LeaderGeometry";
 export * from "./annotations/TextAnnotationElement";
