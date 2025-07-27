@@ -14,7 +14,7 @@ import {
 } from "@itwin/core-geometry";
 import {
   AxisAlignedBox3d, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
-  MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
+  MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, OctEncodedNormalPair, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
   QPoint3dList, Quantization, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
@@ -1380,10 +1380,16 @@ export abstract class GltfReader {
     } else if (primitive.extensions?.EXT_mesh_primitive_edge_visibility) {
       const ext = primitive.extensions.EXT_mesh_primitive_edge_visibility;
       const visibility = this.readBufferData8(ext, "visibility");
-      if (visibility) {
+      if (visibility && mesh.points && mesh.pointQParams) {
+        const meshPoints = mesh.points;
+        const qparams = mesh.pointQParams;
+        const mates = this.readBufferData32(ext, "silhouetteMates");
         assert(undefined !== mesh.indices);
         let bitIndex = 0;
         let flagsIndex = 0;
+        let mateIndex = 0;
+        const points = [new Point3d(), new Point3d(), new Point3d(), new Point3d()];
+        const normals = [new Vector3d(), new Vector3d()];
         mesh.primitive.edges = new MeshEdges();
         for (let i = 0; i < mesh.indices.length; i++) {
           const viz = (visibility.buffer[flagsIndex] >> bitIndex) & 3;
@@ -1393,8 +1399,33 @@ export abstract class GltfReader {
             flagsIndex++;
           }
 
-          if (ImdlEdgeVisibility.Visible === viz) {
-            mesh.primitive.edges.visible.push(new MeshEdge(mesh.indices[i], mesh.indices[i %3 === 2 ? i - 2 : i + 1]));
+          const isSilhouette = ImdlEdgeVisibility.Silhouette === viz;
+          if (isSilhouette || ImdlEdgeVisibility.Visible === viz) {
+            const iMod3 = i % 3;
+            const i0 = mesh.indices[i];
+            const i1 = mesh.indices[iMod3 === 2 ? i - 2 : i + 1];
+            if (!isSilhouette) {
+              mesh.primitive.edges.visible.push(new MeshEdge(i0, i1));
+            } else {
+              const i2 = mesh.indices[iMod3 === 0 ? i + 2 : i - 1];
+              assert(undefined !== mates);
+              const i3 = mates.buffer[mateIndex++];
+
+              function getPoint(index: number, out: Point3d): void {
+                index *= 3;
+                qparams.unquantize(meshPoints[index], meshPoints[index + 1], meshPoints[index + 2], out);
+              }
+
+              getPoint(i0, points[0]);
+              getPoint(i1, points[1]);
+              getPoint(i2, points[2]);
+              getPoint(i3, points[3]);
+            
+              points[0].crossProductToPoints(points[1], points[2], normals[0]);
+              points[3].crossProductToPoints(points[1], points[2], normals[1]);
+              mesh.primitive.edges.silhouette.push(new MeshEdge(i0, i1));
+              mesh.primitive.edges.silhouetteNormals.push(new OctEncodedNormalPair(OctEncodedNormal.fromVector(normals[0]), OctEncodedNormal.fromVector(normals[1])));
+            }
           }
         }
       }
