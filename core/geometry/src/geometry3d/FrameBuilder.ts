@@ -9,7 +9,6 @@
 
 // import { Point2d } from "./Geometry2d";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
-import { InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
 import { Arc3d } from "../curve/Arc3d";
 import { CurveCollection } from "../curve/CurveCollection";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
@@ -181,7 +180,7 @@ export class FrameBuilder {
           break;
         this.announce(child);
       }
-    } else if (data instanceof CurvePrimitive) {
+    } else if (data instanceof CurvePrimitive) { // local x-axis aligns to first tangent vector
       if (data instanceof LineSegment3d) {
         this.announcePoint(data.startPoint());
         this.announcePoint(data.endPoint());
@@ -203,15 +202,7 @@ export class FrameBuilder {
             this.announcePoint(point);
           else break;
         }
-      } else if (data instanceof InterpolationCurve3d) {
-        const point = Point3d.create();
-        for (let i = 0; this.savedVectorCount() < 2; i++) {
-          if (i < data.options.fitPoints.length) {
-            point.setFrom(data.options.fitPoints[i]);
-            this.announcePoint(point);
-          } else break;
-        }
-      } else { // unimplemented CurvePrimitive type
+      } else { // generic CurvePrimitive
         const frame = data.fractionToFrenetFrame(0.0);
         if (undefined !== frame) {
           this.announcePoint(frame.getOrigin());
