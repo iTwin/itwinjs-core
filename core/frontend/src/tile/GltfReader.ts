@@ -43,6 +43,7 @@ import { createGraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch, Gra
 import { RenderGeometry } from "../internal/render/RenderGeometry";
 import { GraphicTemplate } from "../render/GraphicTemplate";
 import { LayerTileData } from "../internal/render/webgl/MapLayerParams";
+import { ImdlEdgeVisibility } from "../common/imdl/ImdlSchema";
 
 /** @internal */
 export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
@@ -1375,6 +1376,27 @@ export abstract class GltfReader {
         mesh.primitive.edges = new MeshEdges();
         for (let i = 0; i < data.count;)
           mesh.primitive.edges.visible.push(new MeshEdge(data.buffer[i++], data.buffer[i++]));
+      }
+    } else if (primitive.extensions?.EXT_mesh_primitive_edge_visibility) {
+      const ext = primitive.extensions.EXT_mesh_primitive_edge_visibility;
+      const visibility = this.readBufferData8(ext, "visibility");
+      if (visibility) {
+        assert(undefined !== mesh.indices);
+        let bitIndex = 0;
+        let flagsIndex = 0;
+        mesh.primitive.edges = new MeshEdges();
+        for (let i = 0; i < mesh.indices.length; i++) {
+          const viz = (visibility.buffer[flagsIndex] >> bitIndex) & 3;
+          bitIndex += 2;
+          if (bitIndex === 8) {
+            bitIndex = 0;
+            flagsIndex++;
+          }
+
+          if (ImdlEdgeVisibility.Visible === viz) {
+            mesh.primitive.edges.visible.push(new MeshEdge(mesh.indices[i], mesh.indices[i %3 === 2 ? i - 2 : i + 1]));
+          }
+        }
       }
     }
 

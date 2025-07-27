@@ -180,6 +180,16 @@ export interface GltfMeshPrimitive extends GltfProperty {
        */
       indices?: GltfId;
     };
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    EXT_mesh_primitive_edge_visibility?: {
+      visibility: GltfId;
+      silhouetteMates?: GltfId;
+      material?: GltfId;
+      lineStrings?: Array<{
+        indices: GltfId;
+        material?: GltfId;
+      }>;
+    };
     /** The [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_draco_mesh_compression/README.md) extension
      * allows glTF to support geometry compressed with Draco geometry compression.
      */
