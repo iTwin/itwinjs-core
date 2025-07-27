@@ -8,6 +8,7 @@
 
 import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "../curve/CurveExtendMode";
 import { CurveLocationDetailPair } from "../curve/CurveLocationDetail";
+import { CurveOps } from "../curve/CurveOps";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
 import { Geometry } from "../Geometry";
@@ -367,19 +368,6 @@ export class PolylineOps {
   ): boolean {
     if (points.length < 3)
       return true;
-    const p0 = points[0];
-    const vectorA = Vector3d.createStartEnd(p0, points[1]);
-    const distanceTolSquared = distanceTol * distanceTol;
-    let cross: number;
-    for (let i = 2; i < points.length; i++) {
-      const vectorB = Vector3d.createStartEnd(p0, points[i]);
-      if (xyOnly)
-        cross = vectorA.crossProductXY(vectorB);
-      else
-        cross = vectorA.crossProduct(vectorB).magnitude();
-      if (cross > distanceTolSquared)
-        return false;
-    }
-    return true;
+    return undefined !== CurveOps.isColinear(points, { maxDeviation: distanceTol, xyColinear: xyOnly });
   }
 }
