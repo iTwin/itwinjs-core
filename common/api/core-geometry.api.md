@@ -1749,9 +1749,12 @@ export class CurveOps {
         outsideOffsets: AnyCurve[];
         chains?: AnyChain;
     };
+    static computeLocalRange(curves: AnyCurve | MultiLineStringDataVariant, localRange: Range3d, localToWorld?: Transform): boolean;
     static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | OffsetOptions): CurveCollection | undefined;
     static createSingleOffsetPrimitiveXY(curve: CurvePrimitive, offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
-    static extendRange(range: Range3d, curves: AnyCurve | AnyCurve[]): Range3d;
+    static extendRange(range: Range3d, curves: AnyCurve | AnyCurve[], transform?: Transform): Range3d;
+    static isColinear(curves: AnyCurve | MultiLineStringDataVariant, options?: PlanarColinearOptions): Ray3d | undefined;
+    static isPlanar(curves: AnyCurve | MultiLineStringDataVariant, options?: PlanarColinearOptions): Transform | undefined;
     static sumLengths(curves: AnyCurve | AnyCurve[]): number;
 }
 
@@ -4094,6 +4097,15 @@ export interface PerpParallelOptions {
 }
 
 // @public
+export interface PlanarColinearOptions {
+    colinearRay?: Ray3d;
+    localToWorld?: Transform;
+    maxDeviation?: number;
+    radianTolerance?: number;
+    xyColinear?: boolean;
+}
+
+// @public
 export abstract class Plane3d implements PlaneAltitudeEvaluator {
     abstract altitude(spacePoint: Point3d): number;
     abstract altitudeXYZ(x: number, y: number, z: number): number;
@@ -4901,6 +4913,7 @@ export class PolylineOps {
     static compressSmallTriangles(source: Point3d[], maxTriangleArea: number): Point3d[];
     static createBisectorPlanesForDistinctPoints(centerline: IndexedXYZCollection | Point3d[], wrapIfPhysicallyClosed?: boolean): Plane3dByOriginAndUnitNormal[] | undefined;
     static edgeLengthRange(points: Point3d[]): Range1d;
+    static isColinear(points: Point3d[], distanceTol?: number, xyOnly?: boolean): boolean;
     static removeClosurePoint(data: Point3d[] | Point3d[][]): void;
 }
 
@@ -5101,7 +5114,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     static create(...point: Point3d[]): Range3d;
     static createArray<T extends Range3d>(points: Point3d[], result?: T): T;
     static createFrom<T extends Range3d>(other: Range3d, result?: T): T;
-    static createFromVariantData(data: MultiLineStringDataVariant): Range3d;
+    static createFromVariantData(data: MultiLineStringDataVariant, transform?: Transform, result?: Range3d): Range3d;
     static createInverseTransformedArray<T extends Range3d>(transform: Transform, points: Point3d[] | GrowableXYZArray): T;
     static createNull<T extends Range3d>(result?: T): T;
     static createRange2d<T extends Range3d>(range: Range2d, z?: number, result?: T): T;

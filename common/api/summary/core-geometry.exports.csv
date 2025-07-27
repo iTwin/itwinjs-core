@@ -202,6 +202,7 @@ internal;class;PascalCoefficients
 public;class;Path
 public;class;PathFragment
 public;interface;PerpParallelOptions
+public;interface;PlanarColinearOptions
 public;class;Plane3d
 public;class;Plane3dByOriginAndUnitNormal
 public;class;Plane3dByOriginAndVectors
