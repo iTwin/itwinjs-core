@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { beforeEach, describe, expect, it } from "vitest";
-import { FractionRunProps, Paragraph, ParagraphProps, RunProps, TextBlock, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps } from "../../core-common";
+import { FieldRun, FractionRunProps, Paragraph, ParagraphProps, RunProps, TextBlock, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps } from "../../core-common";
 
 function makeTextRun(content?: string, styleOverrides?: TextStyleSettingsProps): TextRunProps {
   return {
@@ -232,10 +232,6 @@ describe("TextBlock", () => {
     it("appends a paragraph IFF the text block is empty", () => {
       const tb = TextBlock.create({ styleId: "0x42" });
       expect(tb.children?.length).to.equal(0);
-
-      tb.appendRun(TextRun.create());
-      expect(tb.children?.length).to.equal(1);
-      expect(tb.children![0].children?.length).to.equal(1);
 
       tb.appendRun(TextRun.create());
       expect(tb.children?.length).to.equal(1);

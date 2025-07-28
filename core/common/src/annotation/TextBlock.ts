@@ -131,7 +131,7 @@ export abstract class TextBlockComponent {
 
   /** Reset any [[styleOverrides]] applied to this component. */
   public clearStyleOverrides(_options?: ClearTextStyleOptions): void {
-    this.styleOverrides = { };
+    this.styleOverrides = {};
   }
 
   /** Returns true if [[styleOverrides]] specifies any deviations from the [[TextBlock]]'s [AnnotationTextStyle]($backend). */
@@ -193,16 +193,16 @@ export abstract class TextBlockComponent {
   }
 }
 
-/**
+/** [[TextBlockComponent]]s contained within a [[Paragraph]].
  * @beta
  */
-export type Run = TextRun | FractionRun | TabRun | LineBreakRun;
+export type Run = TextRun | FractionRun | TabRun | LineBreakRun | FieldRun;
 
 /** The JSON representation of a [[Run]].
  * Use the `type` field to discriminate between the different kinds of runs.
  * @beta
  */
-export type RunProps = TextRunProps | FractionRunProps | TabRunProps | LineBreakRunProps;
+export type RunProps = TextRunProps | FractionRunProps | TabRunProps | LineBreakRunProps | FieldRunProps;
 
 /** A sequence of characters within a [[Paragraph]] that share a single style. Runs are the leaf nodes of a [[TextBlock]] document. When laid out for display, a single run may span
  * multiple lines, but it will never contain different styling.
@@ -219,6 +219,7 @@ export namespace Run { // eslint-disable-line @typescript-eslint/no-redeclare
       case "fraction": return FractionRun.create(props);
       case "tab": return TabRun.create(props);
       case "linebreak": return LineBreakRun.create(props);
+      case "field": return FieldRun.create(props);
     }
   }
 }
@@ -423,11 +424,11 @@ export class TabRun extends TextBlockComponent {
     return new TabRun(props);
   }
 
-    /**
-   * Converts a [[TabRun]] to its string representation.
-   * If the `tabsAsSpaces` option is provided, returns a string of spaces of the specified length.
-   * Otherwise, returns a tab character ("\t").
-   */
+  /**
+ * Converts a [[TabRun]] to its string representation.
+ * If the `tabsAsSpaces` option is provided, returns a string of spaces of the specified length.
+ * Otherwise, returns a tab character ("\t").
+ */
   public override stringify(options?: TextBlockStringifyOptions): string {
     if (options?.tabsAsSpaces) {
       return " ".repeat(options.tabsAsSpaces);
@@ -438,6 +439,203 @@ export class TabRun extends TextBlockComponent {
 
   public override equals(other: TextBlockComponent): boolean {
     return other instanceof TabRun && super.equals(other);
+  }
+}
+
+/** A chain of property accesses that resolves to a primitive value that forms the basis of the displayed content
+ * of a [[FieldRun]].
+   * The simplest property paths consist of a [[propertyName]] and nothing else, where `propertyName` identifies
+   * a primitive property.
+   * If `propertyName` identifies a struct or array property, then additional [[accessors]] are required to identify the specific value.
+   * If `propertyName` (including any [[accessors]]) resolves to a JSON property, then additional [[jsonAccessors]] are required to identify a specific value within the JSON.
+   * Some examples:
+   * ```
+   * | Access String | propertyName | accessors | jsonAccessors |
+   * | ------------- | ------------ | --------- | ------------- |
+   * | name          | "name"       | undefined | undefined     |
+   * | spouse.name   | "spouse"     | [name]    | undefined     |
+   * | colors[2]     | "colors"     | [2]       | undefined     |
+   * | spouse.favoriteRestaurants[1].address | "spouse" | ["favoriteRestaurants", 1, "address"] | undefined |
+   * | jsonProperties.contactInfo.email | "jsonProperties" | undefined | ["contactInfo", "email"] |
+   * | spouse.jsonProperties.contactInfo.phoneNumbers[0].areaCode | "spouse" | ["jsonProperties"] | ["contactInfo", "phoneNumbers", 0, "areaCode"] |
+   * ```
+ * @beta
+ */
+export interface FieldPropertyPath {
+  /** The name of the BIS property of the [[FieldPropertyHost]] that serves as the root of the path. */
+  propertyName: string;
+  /** Property names and/or array indices describing the path from [[propertyName]] to the ultimate BIS property. */
+  accessors?: Array<string | number>;
+  /** If [[propertyName]] and [[accessors]] (if defined) resolve to a BIS property of extended type `Json`, property names and/or
+   * array indices for selecting a primitive value within the JSON.
+   */
+  jsonAccessors?: Array<string | number>;
+}
+
+/** Describes the source of the property value against which a [[FieldPropertyPath]] is evaluated.
+ * A field property is always hosted by an [Element]($backend). It may be a property of the element's BIS class itself,
+ * or that of one of its [ElementAspect]($backend)s.
+ * The [[schemaName]] and [[className]] should always identify the exact class that contains [[FieldPropertyPath.propertyName]] - not a subclass thereof.
+ * @beta
+ */
+export interface FieldPropertyHost {
+  /** The Id of the [Element]($backend) that hosts the property. */
+  elementId: Id64String;
+  /** The name of the schema containing the class identified by [[className]]. */
+  schemaName: string;
+  /** The name of the exact class (not a subclass) containing the property identified by [[FieldPropertyPath.propertyName]]. */
+  className: string;
+}
+
+/** Placeholder type for a description of how to format the raw property value resolved by a [[FieldPropertyPath]] into a [[FieldRun]]'s display string.
+ * *** COMING SOON ***
+ * @beta
+ */
+export interface FieldFormatter { [k: string]: any }
+
+/** JSON representation of a [[FieldRun]].
+ * @beta
+ */
+export interface FieldRunProps extends TextBlockComponentProps {
+  /** Discriminator field for the [[RunProps]] union. */
+  readonly type: "field";
+  /** The element and BIS class containing the property described by [[propertyPath]]. */
+  propertyHost: FieldPropertyHost;
+  /** Describes how to obtain the property value from [[propertyHost]]. */
+  propertyPath: FieldPropertyPath;
+  /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]]. */
+  formatter?: FieldFormatter;
+  /** The field's most recently evaluated display string. */
+  cachedContent?: string;
+}
+
+/** A [[Run]] that displays the formatted value of a property of some [Element]($backend).
+ * When a [[TextBlock]] containing a [[FieldRun]] is written into the iModel as an [ITextAnnotation]($backend) element,
+ * a dependency is established between the two elements via the [ElementDrivesTextAnnotation]($backend) relationship such that
+ * whenever the source element specified by [[propertyHost]] is modified, the field(s) in the `ITextAnnotation` element are automatically
+ * recalculated, causing their [[cachedContent]] to update. If the field's display string cannot be evaluated (for example, because the specified element or
+ * property does not exist), then its cached content is set to [[FieldRun.invalidContentIndicator]].
+ * A [[FieldRun]] displays its [[cachedContent]] in the same way that [[TextRun]]s display their `content`, including word wrapping where appropriate.
+ * @beta
+ */
+export class FieldRun extends TextBlockComponent {
+  /** Display string used to signal an error in computing the field's value. */
+  public static invalidContentIndicator = "####";
+
+  /** Discriminator field for the [[Run]] union. */
+  public readonly type = "field";
+  /** The element and BIS class containing the property described by [[propertyPath]]. */
+  public readonly propertyHost: Readonly<FieldPropertyHost>;
+  /** Describes how to obtain the property value from [[propertyHost]]. */
+  public readonly propertyPath: Readonly<FieldPropertyPath>;
+  /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]]. */
+  public readonly formatter?: FieldFormatter;
+  private _cachedContent: string;
+
+  /** The field's most recently evaluated display string. */
+  public get cachedContent(): string {
+    return this._cachedContent;
+  }
+
+  /** @internal Used by core-backend when re-evaluating field content. */
+  public setCachedContent(content: string | undefined): void {
+    this._cachedContent = content ?? FieldRun.invalidContentIndicator;
+  }
+
+  private constructor(props: Omit<FieldRunProps, "type">) {
+    super(props);
+
+    this._cachedContent = props.cachedContent ?? FieldRun.invalidContentIndicator;
+    this.propertyHost = props.propertyHost
+    this.propertyPath = props.propertyPath;
+    this.formatter = props.formatter;
+  }
+
+  /** Create a FieldRun from its JSON representation. */
+  public static create(props: Omit<FieldRunProps, "type">): FieldRun {
+    return new FieldRun({
+      ...props,
+      propertyHost: { ...props.propertyHost },
+      propertyPath: structuredClone(props.propertyPath),
+      formatter: structuredClone(props.formatter),
+    });
+  }
+
+  /** Convert the FieldRun to its JSON representation. */
+  public override toJSON(): FieldRunProps {
+    const json: FieldRunProps = {
+      ...super.toJSON(),
+      type: "field",
+      propertyHost: { ...this.propertyHost },
+      propertyPath: structuredClone(this.propertyPath),
+    };
+
+    if (this.cachedContent !== FieldRun.invalidContentIndicator) {
+      json.cachedContent = this.cachedContent;
+    }
+
+    if (this.formatter) {
+      json.formatter = structuredClone(this.formatter);
+    }
+
+    return json;
+  }
+
+  /** Create a deep copy of this FieldRun. */
+  public override clone(): FieldRun {
+    return new FieldRun(this.toJSON());
+  }
+
+  /** Convert this FieldRun to a simple string representation. */
+  public override stringify(): string {
+    return this.cachedContent;
+  }
+
+  /** Returns true if `this` is equivalent to `other`. */
+  public override equals(other: TextBlockComponent): boolean {
+    if (!(other instanceof FieldRun) || !super.equals(other)) {
+      return false;
+    }
+
+    if (
+      this.propertyHost.elementId !== other.propertyHost.elementId ||
+      this.propertyHost.className !== other.propertyHost.className ||
+      this.propertyHost.schemaName !== other.propertyHost.schemaName
+    ) {
+      return false;
+    }
+
+    if (this.propertyPath.propertyName !== other.propertyPath.propertyName) {
+      return false;
+    }
+
+    const thisAccessors = this.propertyPath.accessors ?? [];
+    const otherAccessors = other.propertyPath.accessors ?? [];
+    const thisJsonAccessors = this.propertyPath.jsonAccessors ?? [];
+    const otherJsonAccessors = other.propertyPath.jsonAccessors ?? [];
+
+    if (thisAccessors.length !== otherAccessors.length || thisJsonAccessors.length !== otherJsonAccessors.length) {
+      return false;
+    }
+
+    if (!thisAccessors.every((value, index) => value === otherAccessors[index])) {
+      return false;
+    }
+
+    if (!thisJsonAccessors.every((value, index) => value === otherJsonAccessors[index])) {
+      return false;
+    }
+
+    if (this.formatter && other.formatter) {
+      // ###TODO better comparison of formatter objects.
+      if (JSON.stringify(this.formatter) !== JSON.stringify(other.formatter)) {
+        return false;
+      }
+    } else if (this.formatter || other.formatter) {
+      return false;
+    }
+
+    return true;
   }
 }
 

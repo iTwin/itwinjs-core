@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { BaselineShift, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TabRun, TextAnnotationLeader, TextBlock, TextBlockComponent, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, FieldRun, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TabRun, TextAnnotationLeader, TextBlock, TextBlockComponent, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Geometry, Range2d, WritableXAndY } from "@itwin/core-geometry";
 import { IModelDb } from "../IModelDb";
 import { assert, Id64String, NonFunctionPropertiesOf } from "@itwin/core-bentley";
@@ -328,8 +328,19 @@ class LayoutContext {
     return { layout, justification };
   }
 
-  public computeRangeForTextRun(style: TextStyleSettings, run: TextRun, charOffset: number, numChars: number): TextLayoutRanges {
-    return this.computeRangeForText(run.content.substring(charOffset, charOffset + numChars), style, run.baselineShift);
+  public computeRangeForTextRun(style: TextStyleSettings, run: TextRun | FieldRun, charOffset: number, numChars: number): TextLayoutRanges {
+    let content: string;
+    let baselineShift: BaselineShift;
+
+    if (run.type === "text") {
+      content = run.content;
+      baselineShift = run.baselineShift;
+    } else {
+      content = run.cachedContent;
+      baselineShift = "none";
+    }
+
+    return this.computeRangeForText(content.substring(charOffset, charOffset + numChars), style, baselineShift);
   }
 
   public computeRangeForFractionRun(style: TextStyleSettings, source: FractionRun): { layout: Range2d, numerator: Range2d, denominator: Range2d } {
@@ -447,8 +458,10 @@ export class RunLayout {
     let range, justificationRange, numeratorRange, denominatorRange;
 
     switch (source.type) {
+      case "field":
       case "text": {
-        numChars = source.content.length;
+        const content = source.type === "text" ? source.content : source.cachedContent;
+        numChars = content.length;
         const ranges = context.computeRangeForTextRun(style, source, charOffset, numChars);
         range = ranges.layout;
         justificationRange = ranges.justification;
