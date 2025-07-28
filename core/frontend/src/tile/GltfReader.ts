@@ -1376,6 +1376,8 @@ export abstract class GltfReader {
         for (let i = 0; i < data.count;)
           mesh.primitive.edges.visible.push(new MeshEdge(data.buffer[i++], data.buffer[i++]));
       }
+    } else if (primitive.extensions?.EXT_mesh_primitive_edge_visibility) {
+      
     }
 
     return mesh;
