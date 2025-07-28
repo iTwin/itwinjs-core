@@ -204,7 +204,7 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
   iModel.saveChanges();
 }
 
-describe.only("Field evaluation", () => {
+describe("Field evaluation", () => {
   let imodel: StandaloneDb;
   let model: Id64String;
   let category: Id64String;
