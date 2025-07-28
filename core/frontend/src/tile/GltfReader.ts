@@ -14,7 +14,7 @@ import {
 } from "@itwin/core-geometry";
 import {
   AxisAlignedBox3d, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
-  MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
+  MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, OctEncodedNormalPair, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
   QPoint3dList, Quantization, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
@@ -43,6 +43,7 @@ import { createGraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch, Gra
 import { RenderGeometry } from "../internal/render/RenderGeometry";
 import { GraphicTemplate } from "../render/GraphicTemplate";
 import { LayerTileData } from "../internal/render/webgl/MapLayerParams";
+import { compactEdgeIterator } from "../common/imdl/CompactEdges";
 
 /** @internal */
 export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
@@ -1377,7 +1378,28 @@ export abstract class GltfReader {
           mesh.primitive.edges.visible.push(new MeshEdge(data.buffer[i++], data.buffer[i++]));
       }
     } else if (primitive.extensions?.EXT_mesh_primitive_edge_visibility) {
-      
+      const ext = primitive.extensions.EXT_mesh_primitive_edge_visibility;
+      const visibility = this.readBufferData8(ext, "visibility");
+      if (visibility) {
+        const indices = mesh.indices;
+        assert(indices !== undefined);
+        assert(visibility.buffer instanceof Uint8Array);
+
+        const silhouetteNormals = this.readBufferData32(ext, "silhouetteNormals");
+        const normals = silhouetteNormals?.buffer instanceof Uint32Array ? silhouetteNormals.buffer : undefined;
+        mesh.primitive.edges = new MeshEdges();
+
+        for (const edge of compactEdgeIterator(visibility.buffer, normals, indices.length, (idx) => indices[idx])) {
+          if (undefined === edge.normals) {
+            mesh.primitive.edges.visible.push(new MeshEdge(edge.index0, edge.index1));
+          } else {
+            mesh.primitive.edges.silhouette.push(new MeshEdge(edge.index0, edge.index1));
+            const normal0 = new OctEncodedNormal(edge.normals & 0x00ff);
+            const normal1 = new OctEncodedNormal(edge.normals >> 8);
+            mesh.primitive.edges.silhouetteNormals.push(new OctEncodedNormalPair(normal0, normal1));
+          }
+        }
+      }
     }
 
     return mesh;
