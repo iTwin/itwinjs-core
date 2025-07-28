@@ -1423,6 +1423,8 @@ export abstract class GltfReader {
             
               points[0].crossProductToPoints(points[1], points[2], normals[0]);
               points[3].crossProductToPoints(points[1], points[2], normals[1]);
+              normals[0].tryNormalizeInPlace();
+              normals[1].tryNormalizeInPlace();
               mesh.primitive.edges.silhouette.push(new MeshEdge(i0, i1));
               mesh.primitive.edges.silhouetteNormals.push(new OctEncodedNormalPair(OctEncodedNormal.fromVector(normals[0]), OctEncodedNormal.fromVector(normals[1])));
             }
