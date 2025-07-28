@@ -268,10 +268,14 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
 // of fields whose display strings changed as a result.
 export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext): number {
   let numUpdated = 0;
-  for (const paragraph of textBlock.paragraphs) {
-    for (const run of paragraph.runs) {
-      if (run.type === "field" && updateField(run, context)) {
-        ++numUpdated;
+  if (textBlock.children) {
+    for (const paragraph of textBlock.children) {
+      if (paragraph.children) {
+        for (const run of paragraph.children) {
+          if (run.type === "field" && updateField(run as FieldRun, context)) {
+            ++numUpdated;
+          }
+        }
       }
     }
   }

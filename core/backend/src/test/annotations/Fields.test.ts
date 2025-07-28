@@ -273,7 +273,7 @@ describe("Field evaluation", () => {
       element: new ElementOwnsUniqueAspect(id),
     };
     imodel.elements.insertAspect(aspectProps);
-    
+
     imodel.saveChanges();
     return id;
   }
@@ -471,7 +471,7 @@ describe("Field evaluation", () => {
       const annotation = TextAnnotation.fromJSON({ textBlock: textBlock.toJSON() });
       elem.setAnnotation(annotation);
     }
-    
+
     return elem.insert();
   }
 
@@ -488,7 +488,7 @@ describe("Field evaluation", () => {
 
     it("can be inserted", () => {
       expectNumRelationships(0);
-      
+
       const targetId = insertAnnotationElement(undefined);
       expect(targetId).not.to.equal(Id64.invalid);
 
@@ -575,16 +575,16 @@ describe("Field evaluation", () => {
 
         const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
         const anno = target.getAnnotation()!;
-        anno.textBlock.paragraphs[0].runs.shift();
+        anno.textBlock.children![0].children!.shift();
         target.setAnnotation(anno);
         target.update();
         imodel.saveChanges();
-        
+
         expectNumRelationships(1, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).to.be.undefined;
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).not.to.be.undefined;
 
-        anno.textBlock.paragraphs.length = 0;
+        anno.textBlock.children!.length = 0;
         anno.textBlock.appendRun(createField(sourceA, "A2"));
         target.setAnnotation(anno);
         target.update();
@@ -594,7 +594,7 @@ describe("Field evaluation", () => {
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).not.to.be.undefined;
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).to.be.undefined;
 
-        anno.textBlock.paragraphs.length = 0;
+        anno.textBlock.children!.length = 0;
         anno.textBlock.appendRun(TextRun.create({
           styleOverrides: { fontName: "Karla" },
           content: "not a field",
@@ -620,7 +620,7 @@ describe("Field evaluation", () => {
         expectNumRelationships(1, targetId);
       });
     });
-    
+
     function expectText(expected: string, elemId: Id64String): void {
       const elem = imodel.elements.getElement<TextAnnotation3d>(elemId);
       const anno = elem.getAnnotation()!;
@@ -632,13 +632,13 @@ describe("Field evaluation", () => {
       const sourceId = insertTestElement();
       const block = TextBlock.create({ styleId: "0x123" });
       block.appendRun(createField(sourceId, "old value"));;
-      
+
       const targetId = insertAnnotationElement(block);
       imodel.saveChanges();
 
       const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
       expect(target.getAnnotation()).not.to.be.undefined;
-      
+
       expectText("100", targetId);
 
       let source = imodel.elements.getElement<TestElement>(sourceId);
