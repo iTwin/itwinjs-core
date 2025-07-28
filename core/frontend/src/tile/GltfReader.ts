@@ -1394,8 +1394,8 @@ export abstract class GltfReader {
             mesh.primitive.edges.visible.push(new MeshEdge(edge.index0, edge.index1));
           } else {
             mesh.primitive.edges.silhouette.push(new MeshEdge(edge.index0, edge.index1));
-            const normal0 = new OctEncodedNormal(edge.normals & 0x00ff);
-            const normal1 = new OctEncodedNormal(edge.normals >> 8);
+            const normal0 = new OctEncodedNormal(edge.normals & 0x0000ffff);
+            const normal1 = new OctEncodedNormal(edge.normals >>> 16);
             mesh.primitive.edges.silhouetteNormals.push(new OctEncodedNormalPair(normal0, normal1));
           }
         }
