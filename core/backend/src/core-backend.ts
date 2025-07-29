@@ -49,6 +49,7 @@ export * from "./IModelDb";
 export * from "./IModelDbFonts";
 export * from "./IModelElementCloneContext";
 export * from "./IModelHost";
+export * from "./IModelIncrementalSchemaLocater";
 export * from "./IModelJsFs";
 export * from "./SchemaSync";
 export * from "./IpcHost";
