@@ -530,9 +530,9 @@ export class RunLayout {
     });
   }
 
-  public toResult(paragraph: Paragraph): RunLayoutResult {
+  public toResult(component: TextBlockComponent): RunLayoutResult {
     const result: RunLayoutResult = {
-      sourceRunIndex: paragraph.children?.indexOf(this.source),
+      sourceRunIndex: component.children?.indexOf(this.source),
       fontId: this.fontId,
       characterOffset: this.charOffset,
       characterCount: this.numChars,
@@ -564,14 +564,14 @@ export class RunLayout {
  * @beta
  */
 export class LineLayout {
-  public source: Paragraph;
+  public source: TextBlockComponent;
   public range = new Range2d(0, 0, 0, 0);
   public justificationRange = new Range2d(0, 0, 0, 0);
   public offsetFromDocument: WritableXAndY;
   public lengthFromLastTab = 0; // Used to track the length from the last tab for tab runs.
   private _runs: RunLayout[] = [];
 
-  public constructor(source: Paragraph) {
+  public constructor(source: TextBlockComponent) {
     this.source = source;
     this.offsetFromDocument = { x: source.styleOverrides.indentation ?? 0, y: 0 };
   }
@@ -691,71 +691,102 @@ export class TextBlockLayout {
     if (!doc.children || doc.children.length === 0) {
       return;
     }
-
-    const doWrap = doc.width > 0;
-    let curLine = new LineLayout(doc.children[0] as Paragraph);
-    for (let i = 0; i < doc.children.length; i++) {
-      const paragraph = doc.children[i] as Paragraph;
-      if (i > 0) {
-        curLine = this.flushLine(context, curLine, paragraph);
-      }
-
-      let runs = paragraph.children?.map((run) => RunLayout.create(run as Run, context));
-      if (!runs) continue;
-
-      if (doWrap) {
-        runs = runs.map((run) => run.split(context)).flat();
-      }
-
-      for (const run of runs) {
-        if ("linebreak" === run.source.type) {
-          curLine.append(run);
-          curLine = this.flushLine(context, curLine);
-          continue;
-        }
-
-        // If this is a tab, we need to apply the tab shift first, and then we can treat it like a text run.
-        applyTabShift(run, curLine, context);
-
-        // If our width is not set (doWrap is false), then we don't have to compute word wrapping, so just append the run, and continue.
-        if (!doWrap) {
-          curLine.append(run);
-          continue;
-        }
-
-        // Next, determine if we can append this run to the current line without exceeding the document width
-        const runWidth = run.range.xLength();
-        const lineWidth = curLine.range.xLength();
-        const newWidth = runWidth + lineWidth + curLine.offsetFromDocument.x;
-
-        // If true, then no word wrapping is required, so we can append to the current line.
-        if (newWidth < doc.width || Geometry.isAlmostEqualNumber(newWidth, doc.width, Geometry.smallMetricDistance)) {
-          curLine.append(run);
-          continue;
-        }
-
-        // Do word wrapping
-        if (curLine.runs.length === 0) {
-          curLine.append(run);
-
-          // Lastly, flush line
-          curLine = this.flushLine(context, curLine);
-        } else {
-          // First, flush line
-          curLine = this.flushLine(context, curLine);
-
-          // Recompute tab shift if applicable
-          applyTabShift(run, curLine, context);
-
-          curLine.append(run);
-        }
-      }
-    }
-
-    if (curLine.runs.length > 0) {
-      this.flushLine(context, curLine);
-    }
+    this.populateComponent(doc, context, doc.width);
   }
+
+  private populateComponent(component: TextBlockComponent, context: LayoutContext, docWidth: number = 0, curLine?: LineLayout): LineLayout | undefined {
+    switch (component.type) {
+      case "textBlock": {
+        const children = component.children;
+        if (!children || children.length === 0) {
+          break;
+        }
+
+        curLine = new LineLayout(children[0]);
+        children.forEach((child) => curLine = this.populateComponent(child, context, docWidth, curLine));
+
+        if (curLine.runs.length > 0) {
+          curLine = this.flushLine(context, curLine);
+        }
+
+        break;
+      }
+      case "paragraph": {
+        component.children?.forEach(child => curLine = this.populateComponent(child, context, docWidth, curLine)) ?? false;
+        if (curLine && component.nextSibling) {
+          curLine = this.flushLine(context, curLine, component.nextSibling);
+        }
+        break;
+      }
+      case "text":
+      case "fraction":
+      case "tab": {
+        if (!curLine) return;
+
+        const run = component as Run;
+        const layout = RunLayout.create(run, context);
+        if (docWidth > 0) {
+          layout.split(context).forEach(r => { if (curLine) curLine = this.populateRun(curLine, r, context, docWidth) });
+        } else {
+          curLine = this.populateRun(curLine, layout, context, docWidth);
+        }
+        break;
+      }
+      case "linebreak": {
+        if (!curLine) return;
+
+        const run = component as Run;
+        const layout = RunLayout.create(run, context);
+
+        curLine.append(layout);
+        curLine = this.flushLine(context, curLine);
+        break;
+      }
+      default: return;
+    }
+
+    return curLine;
+  };
+
+  private populateRun(curLine: LineLayout, run: RunLayout, context: LayoutContext, docWidth: number): LineLayout {
+    // If this is a tab, we need to apply the tab shift first, and then we can treat it like a text run.
+    applyTabShift(run, curLine, context);
+
+    // If our width is not set (doWrap is false), then we don't have to compute word wrapping, so just append the run, and continue.
+    if (docWidth <= 0) {
+      curLine.append(run);
+      return curLine;
+    }
+
+    // Next, determine if we can append this run to the current line without exceeding the document width
+    const runWidth = run.range.xLength();
+    const lineWidth = curLine.range.xLength();
+    const newWidth = runWidth + lineWidth + curLine.offsetFromDocument.x;
+
+    // If true, then no word wrapping is required, so we can append to the current line.
+    if (newWidth < docWidth || Geometry.isAlmostEqualNumber(newWidth, docWidth, Geometry.smallMetricDistance)) {
+      curLine.append(run);
+      return curLine;
+    }
+
+    // Do word wrapping
+    if (curLine.runs.length === 0) {
+      curLine.append(run);
+
+      // Lastly, flush line
+      curLine = this.flushLine(context, curLine);
+    } else {
+      // First, flush line
+      curLine = this.flushLine(context, curLine);
+
+      // Recompute tab shift if applicable
+      applyTabShift(run, curLine, context);
+
+      curLine.append(run);
+    }
+
+    return curLine;
+  };
 
   private justifyLines(): void {
     // We don't want to justify empty text, or a single line of text whose width is 0. By default text is already left justified.
@@ -786,20 +817,20 @@ export class TextBlockLayout {
     }
   }
 
-  private flushLine(context: LayoutContext, line: LineLayout, nextParagraph?: Paragraph): LineLayout {
-    nextParagraph = nextParagraph ?? line.source;
+  private flushLine(context: LayoutContext, line: LineLayout, next?: TextBlockComponent): LineLayout {
+    next = next ?? line.source;
 
     // We want to guarantee that each layout line has at least one run.
     if (line.runs.length === 0) {
       // If we're empty, there should always be a preceding run, and it should be a line break.
       if (this.lines.length === 0 || this._back.runs.length === 0) {
-        return new LineLayout(nextParagraph);
+        return new LineLayout(next);
       }
 
       const prevRun = this._back.back.source;
-      assert(prevRun.type === "linebreak");
+      // assert(prevRun.type === "linebreak");
       if (prevRun.type !== "linebreak") {
-        return new LineLayout(nextParagraph);
+        return new LineLayout(next);
       }
 
       const run = prevRun.clone();
@@ -823,7 +854,7 @@ export class TextBlockLayout {
     this.textRange.extendRange(line.range.cloneTranslated(lineOffset));
 
     this.lines.push(line);
-    return new LineLayout(nextParagraph);
+    return new LineLayout(next);
   }
 
   private applyMargins(margins: TextBlockMargins) {
