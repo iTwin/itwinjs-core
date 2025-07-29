@@ -1728,6 +1728,7 @@ export class ColorIndex {
 
 // @public
 export enum CommonLoggerCategory {
+    Annotations = "core-common.Annotations",
     ElementProps = "core-common.ElementProps",
     Geometry = "core-common.Geometry",
     RpcInterfaceBackend = "core-backend.RpcInterface",
@@ -3587,6 +3588,52 @@ export class FeatureTableHeader {
     static readFrom(stream: ByteStream): FeatureTableHeader | undefined;
     // (undocumented)
     static sizeInBytes: number;
+}
+
+// @beta
+export interface FieldFormatter {
+    // (undocumented)
+    [k: string]: any;
+}
+
+// @beta
+export interface FieldPropertyHost {
+    className: string;
+    elementId: Id64String;
+    schemaName: string;
+}
+
+// @beta
+export interface FieldPropertyPath {
+    accessors?: Array<string | number>;
+    jsonAccessors?: Array<string | number>;
+    propertyName: string;
+}
+
+// @beta
+export class FieldRun extends TextBlockComponent {
+    get cachedContent(): string;
+    clone(): FieldRun;
+    static create(props: Omit<FieldRunProps, "type">): FieldRun;
+    equals(other: TextBlockComponent): boolean;
+    readonly formatter?: FieldFormatter;
+    static invalidContentIndicator: string;
+    readonly propertyHost: Readonly<FieldPropertyHost>;
+    readonly propertyPath: Readonly<FieldPropertyPath>;
+    // @internal
+    setCachedContent(content: string | undefined): void;
+    stringify(): string;
+    toJSON(): FieldRunProps;
+    readonly type = "field";
+}
+
+// @beta
+export interface FieldRunProps extends TextBlockComponentProps {
+    cachedContent?: string;
+    formatter?: FieldFormatter;
+    propertyHost: FieldPropertyHost;
+    propertyPath: FieldPropertyPath;
+    readonly type: "field";
 }
 
 // @public (undocumented)
@@ -9140,8 +9187,8 @@ export interface RscFontEncodingProps {
     plusMinus?: number;
 }
 
-// @beta (undocumented)
-export type Run = TextRun | FractionRun | TabRun | LineBreakRun;
+// @beta
+export type Run = TextRun | FractionRun | TabRun | LineBreakRun | FieldRun;
 
 // @beta
 export namespace Run {
@@ -9163,7 +9210,7 @@ export interface RunLayoutResult {
 }
 
 // @beta
-export type RunProps = TextRunProps | FractionRunProps | TabRunProps | LineBreakRunProps;
+export type RunProps = TextRunProps | FractionRunProps | TabRunProps | LineBreakRunProps | FieldRunProps;
 
 // @public
 export enum SchemaState {
