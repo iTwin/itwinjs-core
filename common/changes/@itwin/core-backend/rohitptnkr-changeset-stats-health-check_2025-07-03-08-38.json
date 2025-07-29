@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added functionality to enable health stats tracking for changesets.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/linear-referencing-common",
-  "version": "5.1.0-dev.60",
+  "version": "5.1.0-dev.65",
   "main": "lib/cjs/linear-referencing-common.js",
   "module": "lib/esm/linear-referencing-common.js",
   "typings": "lib/cjs/linear-referencing-common",
@@ -21,6 +21,7 @@
     "docs": "betools docs --json=../../../generated-docs/domains/linear-referencing-common/file.json --tsIndexFile=./linear-referencing-common.ts --onlyJson",
     "extract-api": "betools extract-api --entry=linear-referencing-common",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": ""
   },
   "repository": {
@@ -47,10 +48,10 @@
   ],
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
-    "eslint": "^9.13.0",
+    "eslint": "^9.31.0",
     "internal-tools": "workspace:*",
     "rimraf": "^6.0.1",
     "typescript": "~5.6.2"
