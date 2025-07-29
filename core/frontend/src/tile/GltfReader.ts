@@ -1400,6 +1400,30 @@ export abstract class GltfReader {
           }
         }
       }
+
+      const lineStrings = ext.lineStrings;
+      if (lineStrings?.length === 1) {
+        const polylineIndices = this.readBufferData32(lineStrings[0], "indices");
+        if (polylineIndices) {
+          if (!mesh.primitive.edges) {
+            mesh.primitive.edges = new MeshEdges();
+          }
+
+          const lineString: number[] = [];
+          for (let i = 0; i < polylineIndices.buffer.length; i++) {
+            const index = polylineIndices.buffer[i];
+            if (index === 0xffffffff) {
+              if (lineString.length > 1) {
+                mesh.primitive.edges.polylines.push(new MeshPolyline(lineString));
+              }
+
+              lineString.length = 0;
+            } else {
+              lineString.push(index);
+            }
+          }
+        }
+      }
     }
 
     return mesh;
