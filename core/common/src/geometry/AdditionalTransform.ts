@@ -85,6 +85,8 @@ export class Helmert2DWithZOffset implements Helmert2DWithZOffsetProps {
       Math.abs(this.scale - other.scale) < Geometry.smallFraction);
   }
 
+  /** Convert Helmert2DWithZOffset object into Transfrom object
+   * @public */
   public convertHelmertToTransform(): Transform {
     const rotationXY = Matrix3d.createRotationAroundAxisIndex(
       AxisIndex.Z,
