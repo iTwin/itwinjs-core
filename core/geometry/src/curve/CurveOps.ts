@@ -7,7 +7,7 @@
  * @module Curve
  */
 
-import { Geometry } from "../Geometry";
+import { AxisIndex, Geometry } from "../Geometry";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
 import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
 import { Vector3d } from "../geometry3d/Point3dVector3d";
@@ -187,7 +187,7 @@ export class CurveOps {
     const builderData: any[] = [curves];
     if (localToWorld)
       builderData.push(localToWorld);
-    localToWorld = FrameBuilder.createRightHandedFrame(Vector3d.unitZ(), builderData);
+    localToWorld = FrameBuilder.createRightHandedFrame(Vector3d.unitZ(), ...builderData);
     if (!localToWorld)
       return false;
     const worldToLocal = localToWorld.inverse();
@@ -224,30 +224,47 @@ export class CurveOps {
    * @param xyOnly whether to ignore z-coordinates of input geometry.
    * @param tolerance optional maximum allowable linear deviation, default [[Geometry.smallMetricDistance]].
    * @param result optional pre-allocated object to populate and return.
-   * @returns ray colinear with curves, or undefined if they are not colinear.
+   * @returns ray colinear with input, or undefined if input is not colinear.
    */
   public static isColinear(curves: AnyCurve | MultiLineStringDataVariant, options?: PlanarColinearOptions): Ray3d | undefined {
     const localRange = Range3d.create();
     const localToWorld = options?.localToWorld ?? Transform.createIdentity();
     if (!this.computeLocalRange(curves, localRange, localToWorld))
       return undefined;
-    const maxAltitude = options?.maxDeviation ?? Geometry.smallMetricDistance;
-    if (localRange.zLength() > Math.abs(maxAltitude))
+    const maxAltitude = Math.abs(options?.maxDeviation ?? Geometry.smallMetricDistance);
+    if (localRange.zLength() > maxAltitude)
       return undefined; // non-planar
+
     const ray = options?.colinearRay ?? Ray3d.createZero();
-    localToWorld.matrix.columnX(ray.direction);
     ray.origin.setFrom(localToWorld.origin);
-    if (options?.xyColinear) {
-      // cos(pi/2+t)= -sin(t) ~ |t| for small t
-      const angleTolerance = options?.radianTolerance ?? Geometry.smallAngleRadians;
-      if (localToWorld.matrix.dotColumnZ(Vector3d.unitZ()) > angleTolerance)
-        return undefined; // non-xy-colinear
-      ray.direction.z = 0.0;
-    } else {
-      // we know the local range is constructed with x-axis along the first vector found
-      if (localRange.yLength() > maxAltitude)
-        return undefined; // non-colinear
+
+    const xLength = localRange.xLength();
+    const yLength = localRange.yLength();
+    if (xLength <= maxAltitude && yLength <= maxAltitude) {
+      ray.direction.setZero();
+      return ray; // the input is essentially a point
     }
-    return ray;
+    if (yLength <= maxAltitude) {
+      localToWorld.matrix.columnX(ray.direction);
+      return ray; // the input lies along local x-axis
+    }
+    if (xLength <= maxAltitude) {
+      localToWorld.matrix.columnY(ray.direction);
+      return ray; // the input lies along local y-axis
+    }
+    if (!options?.xyColinear)
+      return undefined; // non-colinear
+
+    const angleTolerance = Math.abs(options?.radianTolerance ?? Geometry.smallAngleRadians);
+    const verticalPlaneDeviation = Math.abs(localToWorld.matrix.columnDotXYZ(AxisIndex.Z, 0, 0, 1));
+    if (verticalPlaneDeviation > angleTolerance) // cos(t + pi/2) = -sin(t) ~ -t for small t
+      return undefined; // non-xy-colinear
+
+    if (xLength > yLength)
+      localToWorld.matrix.columnX(ray.direction);
+    else
+      localToWorld.matrix.columnY(ray.direction);
+    ray.direction.z = 0.0;
+    return ray; // xy-colinear (plane is vertical)
   }
 }
