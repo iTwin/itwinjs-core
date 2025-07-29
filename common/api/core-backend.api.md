@@ -71,7 +71,10 @@ import { DisplayStyleSettingsProps } from '@itwin/core-common';
 import { DrawingProps } from '@itwin/core-common';
 import { EcefLocation } from '@itwin/core-common';
 import { ECSchemaProps } from '@itwin/core-common';
+import { ECSqlQueryOptions } from '@itwin/ecschema-metadata';
 import { ECSqlReader } from '@itwin/core-common';
+import { ECSqlSchemaLocater } from '@itwin/ecschema-metadata';
+import { ECSqlSchemaLocaterOptions } from '@itwin/ecschema-metadata';
 import { ECSqlValueType } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
 import { ElementAlignedBox3d } from '@itwin/core-common';
@@ -226,6 +229,7 @@ import { RunLayoutResult } from '@itwin/core-common';
 import { SchemaContext } from '@itwin/ecschema-metadata';
 import { SchemaItemKey } from '@itwin/ecschema-metadata';
 import { SchemaKey as SchemaKey_2 } from '@itwin/ecschema-metadata';
+import { SchemaProps } from '@itwin/ecschema-metadata';
 import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
@@ -4008,6 +4012,14 @@ export interface IModelHostOptions {
 export interface IModelIdArg extends TokenArg {
     // (undocumented)
     readonly iModelId: GuidString;
+}
+
+// @beta
+export class IModelIncrementalSchemaLocater extends ECSqlSchemaLocater {
+    constructor(iModel: IModelDb, options?: ECSqlSchemaLocaterOptions);
+    protected executeQuery<TRow>(query: string, options?: ECSqlQueryOptions): Promise<ReadonlyArray<TRow>>;
+    getSchemaProps(schemaKey: SchemaKey_2): Promise<SchemaProps | undefined>;
+    get iModelDb(): IModelDb;
 }
 
 // @public
