@@ -253,17 +253,17 @@ export class HalfEdgeGraphSearch {
     return components;
   }
   /**
-   * Breadth First Search through connected component of a graph.
-   * @param component vector of nodes, one per face.
+   * Breadth First Search through a connected component of a graph.
+   * @param component vector of nodes, appended with one per face of the explored component.
    * @param seed seed node in component.
    * @param visitMask mask to apply to visited nodes. Assumed cleared throughout component.
    * @param ignoreMask (optional) mask preset on faces to ignore. Default value is `HalfEdgeMask.EXTERIOR` to
-   * ignore exterior faces. Pass `HalfEdgeMask.NULL_MASK` to process all faces.
+   * ignore exterior faces. Pass `HalfEdgeMask.NULL_MASK` to process all faces of the component.
    * @param maxFaceCount (optional) maximum number of faces in the component. Should be positive; otherwise
    * `Infinity` is used.
    * @returns node at which to start next component if maximum face count exceeded, or undefined.
    */
-  private static exploreComponent(
+  public static exploreComponent(
     component: HalfEdge[],
     seed: HalfEdge,
     visitMask: HalfEdgeMask,
@@ -326,6 +326,7 @@ export class HalfEdgeGraphSearch {
     if (graph.countMask(ignoreMask) === 0)
       ignoreMask = HalfEdgeMask.NULL_MASK;
     const visitMask = HalfEdgeMask.VISITED;
+    graph.clearMask(visitMask);
     const boundaryMask: HalfEdgeMask = visitMask | ignoreMask;
     // Starting with the input node, look ahead for a boundary face. Failing that, return the input node.
     // Starting all floods at the boundary reduces the chance of ending up with a ring-shaped component at the boundary.
