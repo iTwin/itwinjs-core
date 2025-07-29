@@ -4014,7 +4014,7 @@ export interface IModelIdArg extends TokenArg {
     readonly iModelId: GuidString;
 }
 
-// @beta
+// @internal
 export class IModelIncrementalSchemaLocater extends ECSqlSchemaLocater {
     constructor(iModel: IModelDb, options?: ECSqlSchemaLocaterOptions);
     protected executeQuery<TRow>(query: string, options?: ECSqlQueryOptions): Promise<ReadonlyArray<TRow>>;

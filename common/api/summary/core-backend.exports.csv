@@ -329,6 +329,7 @@ public;class;IModelHost
 public;class;IModelHostConfiguration
 public;interface;IModelHostOptions
 public;interface;IModelIdArg
+internal;class;IModelIncrementalSchemaLocater
 public;class;IModelJsFs
 public;class;IModelJsFsStats
 public;interface;IModelNameArg

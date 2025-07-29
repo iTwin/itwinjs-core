@@ -11,7 +11,7 @@ import { IModelDb } from "./IModelDb";
 
 /**
  * A [[ECSqlSchemaLocater]]($ecschema-metadata) implementation that uses the [[IModelDb]] to load schemas incrementally.
- * @beta
+ * @internal
  */
 export class IModelIncrementalSchemaLocater extends ECSqlSchemaLocater {
   private readonly _iModel: IModelDb;
