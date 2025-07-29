@@ -8,10 +8,11 @@
 
 import { AnnotationTextStyleProps, BisCodeSpec, Code, CodeProps, CodeScopeProps, CodeSpec, ElementGeometry, ElementGeometryBuilderParams, EntityReferenceSet, Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { IModelDb } from "../IModelDb";
-import { AnnotationElement2d, DefinitionElement, GraphicalElement3d, OnElementPropsArg } from "../Element";
-import { Id64String } from "@itwin/core-bentley";
+import { AnnotationElement2d, DefinitionElement, GraphicalElement3d, OnElementIdArg, OnElementPropsArg } from "../Element";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { layoutTextBlock, TextStyleResolver } from "./TextBlockLayout";
 import { appendTextAnnotationGeometry } from "./TextAnnotationGeometry";
+import { ElementDrivesTextAnnotation, TextBlockAndId } from "./ElementDrivesTextAnnotation";
 
 function parseTextAnnotationData(json: string | undefined): TextAnnotationProps | undefined {
   if (!json) return undefined;
@@ -38,7 +39,7 @@ function getElementGeometryBuilderParams(iModel: IModelDb, modelId: Id64String, 
  * @see [[setAnnotation]] to change the textual content.
  * @public @preview
  */
-export class TextAnnotation2d extends AnnotationElement2d {
+export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnnotation */ {
   /** @internal */
   public static override get className(): string { return "TextAnnotation2d"; }
   /** Optional string containing the data associated with the text annotation. */
@@ -151,6 +152,28 @@ export class TextAnnotation2d extends AnnotationElement2d {
     if (annotation.textBlock.styleId)
       ids.addElement(annotation.textBlock.styleId);
   }
+
+  /** @internal */
+  public getTextBlocks(): Iterable<TextBlockAndId> {
+    return getTextBlocks(this);
+  }
+
+  /** @internal */
+  public updateTextBlocks(textBlocks: TextBlockAndId[]): void {
+    return updateTextBlocks(this, textBlocks);
+  }
+
+  /** @internal */
+  public static override onInserted(arg: OnElementIdArg): void {
+    super.onInserted(arg);
+    ElementDrivesTextAnnotation.updateFieldDependencies(arg.id, arg.iModel);
+  }
+
+  /** @internal */
+  public static override onUpdated(arg: OnElementIdArg): void {
+    super.onUpdated(arg);
+    ElementDrivesTextAnnotation.updateFieldDependencies(arg.id, arg.iModel);
+  }
 }
 
 /** An element that displays textual content within a 3d model.
@@ -158,7 +181,7 @@ export class TextAnnotation2d extends AnnotationElement2d {
  * @see [[setAnnotation]] to change the textual content.
  * @public @preview
  */
-export class TextAnnotation3d extends GraphicalElement3d {
+export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnnotation */ {
   /** @internal */
   public static override get className(): string { return "TextAnnotation3d"; }
   /** Optional string containing the data associated with the text annotation. */
@@ -270,6 +293,50 @@ export class TextAnnotation3d extends GraphicalElement3d {
     if (annotation.textBlock.styleId)
       ids.addElement(annotation.textBlock.styleId);
   }
+
+  /** @internal */
+  public getTextBlocks(): Iterable<TextBlockAndId> {
+    return getTextBlocks(this);
+  }
+
+  /** @internal */
+  public updateTextBlocks(textBlocks: TextBlockAndId[]): void {
+    return updateTextBlocks(this, textBlocks);
+  }
+
+  /** @internal */
+  public static override onInserted(arg: OnElementIdArg): void {
+    super.onInserted(arg);
+    ElementDrivesTextAnnotation.updateFieldDependencies(arg.id, arg.iModel);
+  }
+
+  /** @internal */
+  public static override onUpdated(arg: OnElementIdArg): void {
+    super.onUpdated(arg);
+    ElementDrivesTextAnnotation.updateFieldDependencies(arg.id, arg.iModel);
+  }
+}
+
+function getTextBlocks(elem: TextAnnotation2d | TextAnnotation3d): Iterable<TextBlockAndId> {
+  const annotation = elem.getAnnotation();
+  return annotation ? [{ textBlock: annotation.textBlock, id: undefined }] : [];
+}
+
+function updateTextBlocks(elem: TextAnnotation2d | TextAnnotation3d, textBlocks: TextBlockAndId[]): void {
+  assert(textBlocks.length === 1);
+  assert(textBlocks[0].id === undefined);
+
+  const annotation = elem.getAnnotation();
+  if (!annotation) {
+    // We must obtain the TextBlockAndId from the element in the first place, so the only way we could end up here is if
+    // somebody removed the text annotation after we called getTextBlocks. That's gotta be a mistake.
+    throw new Error("Text annotation element has no text");
+  }
+
+  annotation.textBlock = textBlocks[0].textBlock;
+
+  elem.setAnnotation(annotation);
+  elem.update();
 }
 
 /**
