@@ -333,6 +333,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     // @internal (undocumented)
     static isECClass(object: any): object is ECClass;
     isSync(targetClass: ECClass): boolean;
+    // (undocumented)
+    isSync(targetClass: string, schemaName: string): boolean;
     // @internal (undocumented)
     protected loadPrimitiveType(primitiveType: string | PrimitiveType | Enumeration | undefined, schema: Schema): Promise<PrimitiveType | Enumeration>;
     // @internal (undocumented)
