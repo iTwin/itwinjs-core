@@ -13,7 +13,7 @@ The classified and unclassified portions of the reality model can be displayed a
 
 Tools interact with classified regions of the reality model as if they were interacting with the classifying element. For example, hovering over a classified region will display a tooltip containing information about the classifying element, and selecting it can display the properties of that element.
 
-[This sample]($docs/sandboxes/iTwinPlatform/Classifiers/) demonstrates planar classification.
+[This sample](https://www.itwinjs.org/sandboxes/iTwinPlatform/Classifiers/) demonstrates planar classification.
 
 ## Planar clip masks
 
