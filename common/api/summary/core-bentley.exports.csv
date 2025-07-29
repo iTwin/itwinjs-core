@@ -41,8 +41,6 @@ internal;enum;DbConflictResolution
 public;enum;DbOpcode
 public;enum;DbResult
 internal;enum;DbValueType
-public;type;DeepReadonlyObject
-public;type;DeepRequiredObject
 public;class;Dictionary
 public;interface;DictionaryEntry
 public;class;DisposableList

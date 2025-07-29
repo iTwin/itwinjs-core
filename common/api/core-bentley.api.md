@@ -464,16 +464,6 @@ export enum DbValueType {
 }
 
 // @public
-export type DeepReadonlyObject<T> = T extends object ? {
-    readonly [K in keyof T]: DeepReadonlyObject<T[K]>;
-} : T;
-
-// @public
-export type DeepRequiredObject<T> = T extends object ? {
-    [K in keyof T]-?: DeepRequiredObject<T[K]>;
-} : T;
-
-// @public
 export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
     [Symbol.iterator](): Iterator<DictionaryEntry<K, V>>;
     constructor(compareKeys: OrderedComparator<K>, cloneKey?: CloneFunction<K>, cloneValue?: CloneFunction<V>);
