@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ==================================================================================
+|  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+|  * See LICENSE.md in the project root for license terms and full copyright notice.
+======================================================================================= -->
+<ECSchema schemaName="SchemaTest" alias="st" version="01.00.00" displayLabel="Test Schema" description="Schema for testing Schema queries" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  <ECSchemaReference name="BisCore" version="01.00.01" alias="bis"/>
+  <ECSchemaReference name="CoreCustomAttributes" version="01.00.03" alias="CoreCA"/>
+
+  <ECCustomAttributes>
+    <SchemaCustomAttribute xmlns="SchemaTest.01.00.00"/>
+  </ECCustomAttributes>
+
+  <ECEntityClass typeName="TestEntity" modifier="Abstract" displayLabel="TestLabel" description="TestDescription">
+    <BaseClass>bis:PhysicalElement</BaseClass>
+    <ECCustomAttributes>
+      <HiddenClass xmlns="CoreCustomAttributes.01.00.03">
+        <Show>false</Show>
+      </HiddenClass>
+      <EntityCustomAttribute xmlns="SchemaTest.01.00.00"/>
+    </ECCustomAttributes>
+    <ECProperty propertyName="PropertyWithCustomAttribute" typeName="int" displayLabel="PropertyHasAttribute" description="Property has CustomAttribute" >
+      <ECCustomAttributes>
+        <Localizable xmlns="CoreCustomAttributes.01.00.03"/>
+      </ECCustomAttributes>
+    </ECProperty>
+  </ECEntityClass>
+
+  <ECRelationshipClass typeName="TestEntityReferencesTestEntity" strength="referencing" modifier="None" displayLabel="TestEntityReferencesTestEntity" description="TestEntity references TestEntity">
+    <BaseClass>bis:ElementRefersToElements</BaseClass>
+
+    <ECCustomAttributes>
+      <RelationshipCustomAttribute xmlns="SchemaTest.01.00.00"/>
+    </ECCustomAttributes>
+
+    <Source multiplicity="(0..1)" roleLabel="Owner owns vehicles" polymorphic="true">
+      <Class class="TestEntity"/>
+      <ECCustomAttributes>
+        <ConstraintCustomAttribute xmlns="SchemaTest.01.00.00"/>
+      </ECCustomAttributes>
+    </Source>
+
+    <Target multiplicity="(0..*)" roleLabel="Vehicle belongs to owner" polymorphic="true">
+      <Class class="TestEntity"/>
+      <ECCustomAttributes>
+        <ConstraintCustomAttribute xmlns="SchemaTest.01.00.00"/>
+      </ECCustomAttributes>
+    </Target>
+  </ECRelationshipClass>
+
+  <ECEnumeration typeName="StringEnumeration" backingTypeName="string" isStrict="false" displayLabel="String Enumeration" description="Test Enumeration">
+    <ECEnumerator value="alpha" name="Alpha" displayLabel="First" description="Alpha description"/>
+    <ECEnumerator value="beta" name="Beta" displayLabel="Second" description="Beta description"/>
+    <ECEnumerator value="omega" name="Omega" displayLabel="Last" description="Omega description"/>
+  </ECEnumeration>
+
+  <PropertyCategory typeName="PropertyCategory1" priority="1" displayLabel="TestCategory1" description="Test PropertyCategory1" />
+
+  <ECCustomAttributeClass typeName="EntityCustomAttribute" appliesTo="EntityClass" modifier="Sealed"/>
+  <ECCustomAttributeClass typeName="RelationshipCustomAttribute" appliesTo="RelationshipClass" modifier="Sealed"/>
+  <ECCustomAttributeClass typeName="SchemaCustomAttribute" appliesTo="Schema" modifier="Sealed"/>
+  <ECCustomAttributeClass typeName="ConstraintCustomAttribute" appliesTo="AnyRelationshipConstraint" modifier="Sealed"/>
+</ECSchema>

@@ -6,12 +6,13 @@
  * @module ElementGeometry
  */
 
-import { ColorDef, ElementGeometry, FillDisplay, GeometryParams, TextAnnotation, TextAnnotationProps, TextFrameStyleProps } from "@itwin/core-common";
-import { TextBlockLayout } from "./TextBlockLayout";
+import { ColorDef, ElementGeometry, FillDisplay, GeometryParams, TextAnnotation, TextAnnotationProps, TextStyleSettings } from "@itwin/core-common";
+import { TextBlockLayout, TextStyleResolver } from "./TextBlockLayout";
 import { LineString3d, PointString3d, Range2d, Transform } from "@itwin/core-geometry";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { produceTextBlockGeometry } from "./TextBlockGeometry";
 import { appendFrameToBuilder, computeIntervalPoints } from "./FrameGeometry";
+import { appendLeadersToBuilder } from "./LeaderGeometry";
 
 /**
  * Properties required to compute the geometry of a text annotation.
@@ -23,6 +24,8 @@ export interface AppendTextAnnotationGeometryArgs {
   annotationProps: TextAnnotationProps;
   /** Layout provided by calling [[layoutTextBlock]] */
   layout: TextBlockLayout;
+  /** [[TextStyleResolver]] used to get styling and scale information for creating geometry. */
+  textStyleResolver: TextStyleResolver;
   /** Builder that will be added to in place */
   builder: ElementGeometry.Builder;
   /** The category the element will belong to. This will passed into the [[GeometryParams]] */
@@ -39,25 +42,31 @@ export interface AppendTextAnnotationGeometryArgs {
  */
 export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometryArgs): boolean {
   const annotation = TextAnnotation.fromJSON(props.annotationProps);
-  const range = Range2d.fromJSON(props.layout.range);
-  const transform = annotation.computeTransform(range);
+
+  const transform = annotation.computeTransform(props.layout.range, props.textStyleResolver.scaleFactor);
+
   let result = true;
 
   // Construct the TextBlockGeometry
   const params = new GeometryParams(props.categoryId, props.subCategoryId);
-  const entries = produceTextBlockGeometry(props.layout, annotation.computeTransform(props.layout.range));
+  const entries = produceTextBlockGeometry(props.layout, transform.clone());
   result = result && props.builder.appendTextBlock(entries, params);
 
   // Construct the frame geometry
-  if (annotation.frame && annotation.frame.shape !== "none") {
-    result = result && appendFrameToBuilder(props.builder, annotation.frame, range, transform, params);
+  if (props.textStyleResolver.blockSettings.frame.shape !== "none") {
+    result = result && appendFrameToBuilder(props.builder, props.textStyleResolver.blockSettings.frame, props.layout.range, transform.clone(), params);
+  }
+
+  // Construct the leader geometry
+  if (annotation.leaders && annotation.leaders.length > 0) {
+    result = result && appendLeadersToBuilder(props.builder, annotation.leaders, props.layout, transform.clone(), params, props.textStyleResolver);
   }
 
   // Construct the debug geometry
   if (props.wantDebugGeometry) {
-    result = result && debugAnchorPoint(props.builder, annotation, props.layout, annotation.computeTransform(props.layout.range));
-    result = result && debugRunLayout(props.builder, props.layout, annotation.computeTransform(props.layout.range));
-    if (annotation.frame) result = result && debugSnapPoints(props.builder, annotation.frame, props.layout.range, annotation.computeTransform(props.layout.range));
+    result = result && debugAnchorPoint(props.builder, annotation, props.layout, transform.clone());
+    result = result && debugRunLayout(props.builder, props.layout, transform.clone());
+    if (props.textStyleResolver.blockSettings.frame.shape !== "none") result = result && debugSnapPoints(props.builder, props.textStyleResolver.blockSettings, props.layout.range, transform.clone());
   }
 
   return result;
@@ -100,14 +109,14 @@ function debugAnchorPoint(builder: ElementGeometry.Builder, annotation: TextAnno
 }
 
 /** Draws the interval points defined by calling [[computeIntervalPoints]]. The points are shown as black dots 5x larger than the borderWeight */
-function debugSnapPoints(builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform): boolean {
-  if (undefined === frame.shape || frame.shape === "none")
+function debugSnapPoints(builder: ElementGeometry.Builder, style: TextStyleSettings, range: Range2d, transform: Transform): boolean {
+  if (style.frame.shape === "none")
     return false;
-  const points = computeIntervalPoints({ frame: frame.shape, range, transform, lineIntervalFactor: 0.5, arcIntervalFactor: 0.25 });
+  const points = computeIntervalPoints({ frame: style.frame.shape, range, transform, lineIntervalFactor: 0.5, arcIntervalFactor: 0.25 });
 
   const params = new GeometryParams(Id64.invalid);
   params.lineColor = ColorDef.black;
-  params.weight = (frame.borderWeight ?? 1) * 5; // We want the dots to be bigger than the frame so we can see them.
+  params.weight = style.frame.borderWeight * 5; // We want the dots to be bigger than the frame so we can see them.
   params.fillDisplay = FillDisplay.Always;
 
   const result = builder.appendGeometryParamsChange(params) && builder.appendGeometryQuery(PointString3d.create(points));
@@ -137,6 +146,7 @@ function debugRunLayout(builder: ElementGeometry.Builder, layout: TextBlockLayou
     "linebreak": ColorDef.fromString("yellow"),
     "fraction": ColorDef.fromString("green"),
     "tab": ColorDef.fromString("aquamarine"),
+    "field": ColorDef.fromString("purple"),
   }
 
   layout.lines.forEach(line => {

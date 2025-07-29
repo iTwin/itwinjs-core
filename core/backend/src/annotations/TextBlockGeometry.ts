@@ -63,6 +63,20 @@ function processTextRun(run: RunLayout, transform: Transform, context: GeometryC
   context.entries.push({ text: ts });
 }
 
+function processFieldRun(run: RunLayout, transform: Transform, context: GeometryContext): void {
+  assert(run.source.type === "field");
+  const text = run.source.cachedContent.substring(run.charOffset, run.charOffset + run.numChars);
+  if (text.length === 0) {
+    return;
+  }
+
+  const ts = createTextString(text, run);
+  ts.transformInPlace(transform);
+
+  setColor(run.style.color, context);
+  context.entries.push({ text: ts });
+}
+
 function createFractionTextString(text: string, run: RunLayout, origin: Point3d, transform: Transform): TextString {
   const ts = createTextString(text, run, origin);
   assert(undefined !== ts.widthFactor);
@@ -147,8 +161,10 @@ export function produceTextBlockGeometry(layout: TextBlockLayout, documentTransf
       documentTransform.multiplyTransformTransform(runTrans, runTrans);
       if ("text" === run.source.type) {
         processTextRun(run, runTrans, context);
-      } else {
+      } else if ("fraction" === run.source.type) {
         processFractionRun(run, runTrans, context);
+      } else {
+        processFieldRun(run, runTrans, context);
       }
     }
   }

@@ -101,7 +101,12 @@ export class CurveLocationDetail {
   public setIntervalRole(value: CurveIntervalRole): void {
     this.intervalRole = value;
   }
-  /** Set the (optional) fraction1 and point1, using direct assignment (capture!) to point1. */
+  /** Set the `fraction` and `point`, using direct assignment (capture!) to `point`. */
+  public captureFractionPoint(fraction: number, point: Point3d): void {
+    this.fraction = fraction;
+    this.point = point;
+  }
+  /** Set the (optional) `fraction1` and `point1`, using direct assignment (capture!) to `point1`. */
   public captureFraction1Point1(fraction1: number, point1: Point3d): void {
     this.fraction1 = fraction1;
     this.point1 = point1;
@@ -542,7 +547,7 @@ export class CurveLocationDetailPair {
 
 /**
  * Data bundle for a pair of arrays of CurveLocationDetail structures.
- * @deprecated in 4.x - will not be removed until after 2026-06-13. Use CurveLocationDetailPair[] instead.
+ * @deprecated in 4.2.0 - will not be removed until after 2026-06-13. Use CurveLocationDetailPair[] instead.
  * @public
  */
 export class CurveLocationDetailArrayPair {

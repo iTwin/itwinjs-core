@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+export * from "./annotations/ElementDrivesTextAnnotation";
 export * from "./annotations/FrameGeometry";
+export * from "./annotations/LeaderGeometry";
 export * from "./annotations/TextAnnotationElement";
 export * from "./annotations/TextAnnotationGeometry";
 export * from "./annotations/TextBlockGeometry";
@@ -89,9 +91,9 @@ if ((globalThis as any)[globalSymbolCoreBackend]) {
 
   const error = new Error(
     "Multiple @itwin/core-backend imports detected! This may happen if:\n" +
-      "- You have multiple versions of the package installed\n" +
-      "- Your bundling configuration is incorrect\n" +
-      "- You're importing from both ESM and CommonJS versions"
+    "- You have multiple versions of the package installed\n" +
+    "- Your bundling configuration is incorrect\n" +
+    "- You're importing from both ESM and CommonJS versions"
   );
 
   /* eslint-disable no-console */

@@ -337,7 +337,7 @@ export interface PresentationManagerProps {
    * Callback that provides [SchemaContext]($ecschema-metadata) for supplied [IModelDb]($core-backend).
    * [SchemaContext]($ecschema-metadata) is used for getting metadata required for values formatting.
    *
-   * @deprecated in 5.1. [IModelDb.schemaContext]($core-backend) is now used by default instead.
+   * @deprecated in 5.1. By default [IModelDb.schemaContext]($core-backend) is now used instead.
    */
   schemaContextProvider?: (imodel: IModelDb) => SchemaContext;
 
@@ -540,7 +540,7 @@ export class PresentationManager {
   public async getContentSet(
     requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute,
   ): Promise<Item[]> {
-    let items = await this._detail.getContentSet(requestOptions);
+    let items = await this._detail.getContentSet({ ...requestOptions, omitFormattedValues: true });
 
     if (!requestOptions.omitFormattedValues) {
       const formatter = this.createContentFormatter(requestOptions);
@@ -558,7 +558,7 @@ export class PresentationManager {
     requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> &
       BackendDiagnosticsAttribute,
   ): Promise<Content | undefined> {
-    const content = await this._detail.getContent(requestOptions);
+    const content = await this._detail.getContent({ ...requestOptions, omitFormattedValues: true });
     if (!content) {
       return undefined;
     }

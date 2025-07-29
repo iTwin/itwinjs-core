@@ -14,8 +14,8 @@ public;interface;AnalysisStyleDisplacementProps
 public;interface;AnalysisStyleProps
 public;class;AnalysisStyleThematic
 public;interface;AnalysisStyleThematicProps
+beta;interface;AnnotationTextStyleProps
 public;interface;AppearanceOverrideProps
-beta;interface;ApplyTextStyleOptions
 public;interface;AreaFillProps
 public;namespace;AreaPattern
 beta;namespace;Atmosphere
@@ -108,6 +108,7 @@ internal;interface;ChangedModels
 public;enum;ChangedValueState
 public;enum;ChangeOpCode
 public;interface;ChangesetFileProps
+beta;interface;ChangesetHealthStats
 public;type;ChangesetId
 public;interface;ChangesetIdWithIndex
 public;type;ChangesetIndex
@@ -121,6 +122,7 @@ beta;namespace;ChannelControlError
 public;interface;ChannelRootAspectProps
 preview;interface;ChannelRootAspectProps
 internal;interface;ClassifierTileTreeId
+beta;interface;ClearTextStyleOptions
 public;class;ClipIntersectionStyle
 public;interface;ClipIntersectionStyleProps
 public;class;ClipStyle
@@ -310,6 +312,11 @@ public;class;FeatureOverrides
 public;enum;FeatureOverrideType
 public;class;FeatureTable
 internal;class;FeatureTableHeader
+beta;interface;FieldFormatter
+beta;interface;FieldPropertyHost
+beta;interface;FieldPropertyPath
+beta;class;FieldRun
+beta;interface;FieldRunProps
 public;interface;FilePropertyProps
 public;enum;FillDisplay
 public;enum;FillFlags
@@ -500,6 +507,8 @@ public;function;isPowerOfTwo
 public;function;isValidImageSourceFormat
 internal;const;iTwinChannel
 public;interface;JsonGeometryStream
+beta;type;LeaderAttachment
+beta;type;LeaderTextPointOptions
 internal;interface;LegacyAnalysisStyleProps
 internal;interface;LightLocationProps
 public;class;LightSettings
@@ -620,6 +629,7 @@ internal;function;parseTileTreeIdAndContentId
 public;interface;PartReference
 public;type;PersistentBackgroundMapProps
 public;interface;PersistentGraphicsRequestProps
+beta;interface;PerStatementHealthStats
 public;interface;PhysicalElementProps
 preview;interface;PhysicalElementProps
 public;interface;PhysicalTypeProps
@@ -728,6 +738,7 @@ internal;class;RenderMaterialParams
 public;interface;RenderMaterialProps
 public;enum;RenderMode
 public;namespace;RenderSchedule
+internal;interface;EditingChanges
 internal;class;Interval
 public;class;RenderTexture
 public;namespace;RenderTexture
@@ -902,6 +913,9 @@ beta;interface;TextAnnotationAnchor
 beta;interface;TextAnnotationCreateArgs
 beta;type;TextAnnotationFillColor
 beta;type;TextAnnotationFrameShape
+beta;const;textAnnotationFrameShapes
+beta;interface;TextAnnotationLeader
+beta;interface;TextAnnotationLeaderProps
 beta;interface;TextAnnotationProps
 beta;class;TextBlock
 beta;class;TextBlockComponent
@@ -914,15 +928,14 @@ beta;interface;TextBlockMargins
 beta;interface;TextBlockProps
 beta;interface;TextBlockStringifyOptions
 beta;interface;TextFrameStyleProps
+beta;interface;TextLeaderStyleProps
 beta;class;TextRun
 beta;interface;TextRunProps
 public;class;TextString
 beta;interface;TextStringGlyphData
 public;interface;TextStringPrimitive
 public;interface;TextStringProps
-beta;class;TextStyle
 beta;type;TextStyleColor
-beta;interface;TextStyleProps
 beta;class;TextStyleSettings
 beta;interface;TextStyleSettingsProps
 public;interface;TextureData

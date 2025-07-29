@@ -1151,7 +1151,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /** Construct facets for a rotational sweep. */
   public addRotationalSweep(surface: RotationalSweep): void {
     const contour = surface.getSweepContourRef();
-    const section0 = StrokeCountSection.createForParityRegionOrChain(contour.getCurves(), this._options);
+    const section0 = StrokeCountSection.create(contour.getCurves(), this._options);
     const baseStrokes = section0.getStrokes();
     // ensure sweep is positive for buildRotationalNormalsInLineStrings
     const axis = surface.cloneAxisRay();
@@ -1195,7 +1195,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * Apply stroke counts to curve primitives.
    * * Recursively visit all children of data.
    * * At each primitive, invoke `computeStrokeCountForOptions` method with options from the builder.
-   * @deprecated in 4.x - will not be removed until after 2026-06-13. This method does nothing and is unneeded.
+   * @deprecated in 4.8.0 - will not be removed until after 2026-06-13. This method does nothing and is unneeded.
    */
   public applyStrokeCountsToCurvePrimitives(data: AnyCurve | GeometryQuery): void {
     const options = this._options;
@@ -1300,7 +1300,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /** Add facets from the linear sweep. */
   public addLinearSweep(surface: LinearSweep): void {
     const contour = surface.getCurvesRef();
-    const section0 = StrokeCountSection.createForParityRegionOrChain(contour, this._options);
+    const section0 = StrokeCountSection.create(contour, this._options);
     const stroke0 = section0.getStrokes();
     const sweepVector = surface.cloneSweepVector();
     const sweepTransform = Transform.createTranslation(sweepVector);
@@ -1322,7 +1322,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     let stroke1: AnyCurve;
     const sectionMaps = [];
     for (const contour of contours)
-      sectionMaps.push(StrokeCountSection.createForParityRegionOrChain(contour.curves, this._options));
+      sectionMaps.push(StrokeCountSection.create(contour.curves, this._options));
     if (StrokeCountSection.enforceStrokeCountCompatibility(sectionMaps)) {
       StrokeCountSection.enforceCompatibleDistanceSums(sectionMaps);
       for (let i = 0; i < contours.length; i++) {
