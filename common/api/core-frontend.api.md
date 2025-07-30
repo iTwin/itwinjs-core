@@ -3924,6 +3924,15 @@ export interface GltfMeshPrimitive extends GltfProperty {
         CESIUM_primitive_outline?: {
             indices?: GltfId;
         };
+        EXT_mesh_primitive_edge_visibility?: {
+            visibility: GltfId;
+            silhouetteNormals?: GltfId;
+            material?: GltfId;
+            lineStrings?: Array<{
+                indices: GltfId;
+                material?: GltfId;
+            }>;
+        };
         KHR_draco_mesh_compression?: DracoMeshCompression;
         EXT_mesh_features?: MeshFeatures;
     };
