@@ -32,7 +32,7 @@ describe("Model geometry changes", () => {
     modelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "TestModel");
     categoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
     imodel.saveChanges("set up");
-    imodel[_nativeDb].deleteAllTxns();
+    imodel[_nativeDb].clearAllTxns();
     imodel.txns.onGeometryChanged.addListener((props) => lastChanges = props);
   });
 

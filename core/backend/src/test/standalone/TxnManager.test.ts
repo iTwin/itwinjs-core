@@ -34,7 +34,7 @@ describe("TxnManager", () => {
       schemaLockHeld: true,
     };
     nativeDb.openIModel(pathname, OpenMode.ReadWrite, upgradeOptions);
-    nativeDb.deleteAllTxns();
+    nativeDb.clearAllTxns();
     nativeDb.closeFile();
   };
 
@@ -67,7 +67,7 @@ describe("TxnManager", () => {
     };
 
     imodel.saveChanges("schema change");
-    imodel[_nativeDb].deleteAllTxns();
+    imodel[_nativeDb].clearAllTxns();
     roImodel = StandaloneDb.openFile(testFileName, OpenMode.Readonly);
   });
 
@@ -954,6 +954,25 @@ describe("TxnManager", () => {
 
       imodel.txns.deleteAllTxns();
       expect(imodel.txns.hasLocalChanges).to.be.false;
+    });
+
+    it("TxnManager.deleteAllTxns not deleting briefcase changes", () => {
+      // Insert and save an element
+      const elId = imodel.elements.insertElement(props);
+      imodel.saveChanges();
+
+      // Confirm element exists
+      expect(() => imodel.elements.getElement(elId)).not.to.throw();
+
+      // Delete all txns
+      imodel.txns.deleteAllTxns();
+
+      // Close and reopen the briefcase
+      imodel.close();
+      imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
+
+      // The element should NOT exist if deleteAllTxns truly reverted the briefcase
+      expect(() => imodel.elements.getElement(elId)).to.throw();
     });
 
     it("clears undo/redo history", () => {

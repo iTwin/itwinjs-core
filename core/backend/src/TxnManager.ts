@@ -755,13 +755,22 @@ export class TxnManager {
    */
   public get hasLocalChanges(): boolean { return this.hasUnsavedChanges || this.hasPendingTxns; }
 
-  /** Destroy the record of all local changes that have yet to be saved and/or pushed.
+  /** Revert all local changes that have yet to be saved and/or pushed and destroy any record of them.
    * This permanently eradicates your changes - use with caution!
    * Typically, callers will want to subsequently use [[LockControl.releaseAllLocks]].
    * After calling this function, [[hasLocalChanges]], [[hasPendingTxns]], and [[hasUnsavedChanges]] will all be `false`.
    */
   public deleteAllTxns(): void {
     this._nativeDb.deleteAllTxns();
+  }
+
+  /** Destroy the record of all local changes that have yet to be saved and/or pushed.
+   * This permanently eradicates your changes - use with caution!
+   * Typically, callers will want to subsequently use [[LockControl.releaseAllLocks]].
+   * After calling this function, [[hasLocalChanges]], [[hasPendingTxns]], and [[hasUnsavedChanges]] will all be `false`.
+   */
+  public clearAllTxns(): void {
+    this._nativeDb.clearAllTxns();
   }
 
   /** Obtain a list of the EC instances that have been changed locally by the [[BriefcaseDb]] associated with this `TxnManager` and have not yet been pushed to the iModel.
