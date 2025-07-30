@@ -2,12 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { GrowableXYZArray } from "./GrowableXYZArray";
-import { IndexedXYZCollection } from "./IndexedXYZCollection";
-
 /** @packageDocumentation
  * @module ArraysAndInterfaces
  */
+
+import { GrowableXYZArray } from "./GrowableXYZArray";
+import { IndexedXYZCollection } from "./IndexedXYZCollection";
+
 /**
  * Abstract class managing an array of objects of type T, available for reuse by trusted callers.
  * * Derived class must implement `createForCache` and `clearForCache`.
