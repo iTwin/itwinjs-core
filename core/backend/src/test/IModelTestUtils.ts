@@ -40,6 +40,7 @@ import { _hubAccess } from "../internal/Symbols";
 chai.use(chaiAsPromised);
 
 /* eslint-disable @typescript-eslint/explicit-member-accessibility */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 RpcConfiguration.developmentMode = true;
 
