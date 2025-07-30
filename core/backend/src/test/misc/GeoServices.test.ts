@@ -9,7 +9,7 @@ import {
   Helmert2DWithZOffset,
 } from "@itwin/core-common";
 import { IModelNative } from "../../internal/NativePlatform";
-import { Geometry, Matrix3d, Point3d, Range2d, Range2dProps, XY, XYZ } from "@itwin/core-geometry";
+import { Geometry, Point3d, Range2d, Range2dProps } from "@itwin/core-geometry";
 import { GeoCoordConfig } from "../../GeoCoordConfig";
 import { getAvailableCoordinateReferenceSystems } from "../../GeographicCRSServices";
 
