@@ -955,4 +955,232 @@ describe("Formatting tests:", () => {
       }
     }
   });
+
+  describe("stationBaseFactor tests:", () => {
+    it("Default stationBaseFactor (undefined) works correctly", async () => {
+      const unitsProvider = new TestUnitsProvider();
+
+      const json = {
+        formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+        minWidth: 2,
+        precision: 2,
+        stationOffsetSize: 2,
+        type: "Station",
+      };
+      const testFormat = new Format("test");
+
+      await testFormat.fromJSON(unitsProvider, json);
+      expect(testFormat.stationBaseFactor).to.be.undefined;
+
+      const outJson = testFormat.toJSON();
+      expect(outJson.stationBaseFactor).to.be.undefined;
+    });
+
+    it("Valid stationBaseFactor is accepted", async () => {
+      const unitsProvider = new TestUnitsProvider();
+
+      const json = {
+        formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+        minWidth: 2,
+        precision: 2,
+        stationOffsetSize: 2,
+        stationBaseFactor: 5,
+        type: "Station",
+      };
+      const testFormat = new Format("test");
+
+      await testFormat.fromJSON(unitsProvider, json);
+      expect(testFormat.stationBaseFactor).toEqual(5);
+
+      const outJson = testFormat.toJSON();
+      expect(outJson.stationBaseFactor).toEqual(5);
+    });
+
+    it("Fractional stationBaseFactor is accepted", async () => {
+      const unitsProvider = new TestUnitsProvider();
+
+      const json = {
+        formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+        minWidth: 2,
+        precision: 2,
+        stationOffsetSize: 2,
+        stationBaseFactor: 2.5,
+        type: "Station",
+      };
+      const testFormat = new Format("test");
+
+      await testFormat.fromJSON(unitsProvider, json);
+      expect(testFormat.stationBaseFactor).toEqual(2.5);
+
+      const outJson = testFormat.toJSON();
+      expect(outJson.stationBaseFactor).toEqual(2.5);
+    });
+
+    it("Zero stationBaseFactor is rejected", async () => {
+      const unitsProvider = new TestUnitsProvider();
+
+      const json = {
+        formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+        minWidth: 2,
+        precision: 2,
+        stationOffsetSize: 2,
+        stationBaseFactor: 0,
+        type: "Station",
+      };
+      const testFormat = new Format("test");
+
+      await testFormat.fromJSON(unitsProvider, json).catch((err) => {
+        expect(err).toBeInstanceOf(QuantityError);
+        expect(err.message).toEqual(`The Format test has an invalid 'stationBaseFactor' attribute. It should be a positive number.`);
+      });
+    });
+
+    it("Negative stationBaseFactor is rejected", async () => {
+      const unitsProvider = new TestUnitsProvider();
+
+      const json = {
+        formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+        minWidth: 2,
+        precision: 2,
+        stationOffsetSize: 2,
+        stationBaseFactor: -1,
+        type: "Station",
+      };
+      const testFormat = new Format("test");
+
+      await testFormat.fromJSON(unitsProvider, json).catch((err) => {
+        expect(err).toBeInstanceOf(QuantityError);
+        expect(err.message).toEqual(`The Format test has an invalid 'stationBaseFactor' attribute. It should be a positive number.`);
+      });
+    });
+
+    it("Non-numeric stationBaseFactor is rejected", async () => {
+      const unitsProvider = new TestUnitsProvider();
+
+      const json = {
+        formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+        minWidth: 2,
+        precision: 2,
+        stationOffsetSize: 2,
+        stationBaseFactor: "invalid" as any, // intentionally invalid for testing error handling
+        type: "Station",
+      };
+      const testFormat = new Format("test");
+
+      await testFormat.fromJSON(unitsProvider, json).catch((err) => {
+        expect(err).toBeInstanceOf(QuantityError);
+        expect(err.message).toEqual(`The Format test has an invalid 'stationBaseFactor' attribute. It should be a positive number.`);
+      });
+    });
+
+    it("stationBaseFactor with different stationOffsetSize combinations", async () => {
+      const unitsProvider = new TestUnitsProvider();
+
+      const testCases = [
+        { stationBaseFactor: 1, stationOffsetSize: 2 },
+        { stationBaseFactor: 2, stationOffsetSize: 2 },
+        { stationBaseFactor: 5, stationOffsetSize: 3 },
+        { stationBaseFactor: 10, stationOffsetSize: 2 },
+        { stationBaseFactor: 2.5, stationOffsetSize: 4 },
+      ];
+
+      for (const testCase of testCases) {
+        const json = {
+          formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+          minWidth: 2,
+          precision: 2,
+          stationOffsetSize: testCase.stationOffsetSize,
+          stationBaseFactor: testCase.stationBaseFactor,
+          type: "Station",
+        };
+        const testFormat = new Format(`test-${testCase.stationBaseFactor}-${testCase.stationOffsetSize}`);
+
+        await expect(testFormat.fromJSON(unitsProvider, json)).resolves.not.toThrow();
+        expect(testFormat.stationBaseFactor).toEqual(testCase.stationBaseFactor);
+        expect(testFormat.stationOffsetSize).toEqual(testCase.stationOffsetSize);
+
+        const outJson = testFormat.toJSON();
+        expect(outJson.stationBaseFactor).toEqual(testCase.stationBaseFactor);
+        expect(outJson.stationOffsetSize).toEqual(testCase.stationOffsetSize);
+      }
+    });
+
+    it("stationBaseFactor is preserved during format cloning", async () => {
+      const unitsProvider = new TestUnitsProvider();
+
+      const json = {
+        formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+        minWidth: 2,
+        precision: 2,
+        stationOffsetSize: 3,
+        stationBaseFactor: 7.5,
+        type: "Station",
+      };
+      const originalFormat = new Format("original");
+      await originalFormat.fromJSON(unitsProvider, json);
+
+      const clonedFormat = originalFormat.clone();
+      expect(clonedFormat.stationBaseFactor).toEqual(7.5);
+      expect(clonedFormat.stationOffsetSize).toEqual(3);
+    });
+
+    it("stationBaseFactor can be set via setter", async () => {
+      const unitsProvider = new TestUnitsProvider();
+
+      const json = {
+        formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+        minWidth: 2,
+        precision: 2,
+        stationOffsetSize: 2,
+        type: "Station",
+      };
+      const testFormat = new Format("test");
+      await testFormat.fromJSON(unitsProvider, json);
+
+      // Initially undefined
+      expect(testFormat.stationBaseFactor).to.be.undefined;
+
+      // Set via setter
+      testFormat.stationBaseFactor = 3.14;
+      expect(testFormat.stationBaseFactor).toEqual(3.14);
+
+      // Set back to undefined
+      testFormat.stationBaseFactor = undefined;
+      expect(testFormat.stationBaseFactor).to.be.undefined;
+    });
+
+    it("Large stationBaseFactor values are accepted", async () => {
+      const unitsProvider = new TestUnitsProvider();
+
+      const json = {
+        formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+        minWidth: 2,
+        precision: 2,
+        stationOffsetSize: 2,
+        stationBaseFactor: 1000000,
+        type: "Station",
+      };
+      const testFormat = new Format("test");
+
+      await expect(testFormat.fromJSON(unitsProvider, json)).resolves.not.toThrow();
+      expect(testFormat.stationBaseFactor).toEqual(1000000);
+    });
+
+    it("Very small positive stationBaseFactor values are accepted", async () => {
+      const unitsProvider = new TestUnitsProvider();
+
+      const json = {
+        formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+        minWidth: 2,
+        precision: 2,
+        stationOffsetSize: 2,
+        stationBaseFactor: 0.001,
+        type: "Station",
+      };
+      const testFormat = new Format("test");
+
+      await expect(testFormat.fromJSON(unitsProvider, json)).resolves.not.toThrow();
+      expect(testFormat.stationBaseFactor).toEqual(0.001);
+    });
+  });
 });

@@ -34,6 +34,9 @@ export interface FormatProps {
   readonly stationOffsetSize?: number;
   readonly stationSeparator?: string;
 
+  /** Optional base factor for station formatting. Defaults to 1. */
+  readonly stationBaseFactor?: number;
+
   /** The base value for azimuth, specified from east counter-clockwise. */
   readonly azimuthBase?: number;
 

@@ -350,13 +350,15 @@ export class Formatter {
       // we assume that stopping value is always positive
       posMagnitude = Math.floor(posMagnitude * precisionScale + FPV_ROUNDFACTOR) / precisionScale;
 
-      const denominator = (Math.pow(10, spec.format.stationOffsetSize!));
+      const baseFactor = spec.format.stationBaseFactor ?? 1;
+      const stationOffsetSize = spec.format.stationOffsetSize || 3; // Provide default if undefined
+      const denominator = baseFactor * Math.pow(10, stationOffsetSize);
       const tVal = Math.floor(posMagnitude); // this is the integer part only
       const hiPart = Math.floor(tVal / denominator);
       const lowPart = tVal - hiPart * denominator;
       const fract = posMagnitude - tVal;
       const fractionPart = Math.floor(fract * precisionScale + FPV_ROUNDFACTOR);
-      const stationString = hiPart.toFixed(0) + spec.format.stationSeparator + lowPart.toFixed(0).padStart(spec.format.stationOffsetSize!, "0");
+      const stationString = hiPart.toFixed(0) + spec.format.stationSeparator + lowPart.toFixed(0).padStart(stationOffsetSize, "0");
       let fractionString = "";
       if (fractionPart > 0) {
         fractionString = (fractionPart/precisionScale).toFixed(spec.format.precision);
