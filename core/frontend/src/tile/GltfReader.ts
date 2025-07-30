@@ -1385,11 +1385,13 @@ export abstract class GltfReader {
         assert(indices !== undefined);
         assert(visibility.buffer instanceof Uint8Array);
 
-        const silhouetteNormals = this.readBufferData32(ext, "silhouetteNormals");
-        const normals = silhouetteNormals?.buffer instanceof Uint32Array ? silhouetteNormals.buffer : undefined;
+        const silhouetteNormals = this.readBufferData16(ext, "silhouetteNormals");
+        const normalPairs = silhouetteNormals ? new Uint32Array(silhouetteNormals.buffer.buffer, silhouetteNormals.buffer.byteOffset, silhouetteNormals.buffer.byteLength / 4) : undefined;
+        // const silhouetteNormals = this.readBufferData32(ext, "silhouetteNormals");
+        // const normalPairs = silhouetteNormals?.buffer instanceof Uint32Array ? silhouetteNormals.buffer: undefined;
         mesh.primitive.edges = new MeshEdges();
 
-        for (const edge of compactEdgeIterator(visibility.buffer, normals, indices.length, (idx) => indices[idx])) {
+        for (const edge of compactEdgeIterator(visibility.buffer, normalPairs, indices.length, (idx) => indices[idx])) {
           if (undefined === edge.normals) {
             mesh.primitive.edges.visible.push(new MeshEdge(edge.index0, edge.index1));
           } else {
@@ -1402,24 +1404,26 @@ export abstract class GltfReader {
       }
 
       const lineStrings = ext.lineStrings;
-      if (lineStrings?.length === 1) {
-        const polylineIndices = this.readBufferData32(lineStrings[0], "indices");
-        if (polylineIndices) {
-          if (!mesh.primitive.edges) {
-            mesh.primitive.edges = new MeshEdges();
-          }
+      if (lineStrings) {
+        for (const lineString of lineStrings) {
+          const polylineIndices = this.readBufferData32(lineString, "indices");
+          if (polylineIndices) {
+            if (!mesh.primitive.edges) {
+              mesh.primitive.edges = new MeshEdges();
+            }
 
-          const lineString: number[] = [];
-          for (let i = 0; i < polylineIndices.buffer.length; i++) {
-            const index = polylineIndices.buffer[i];
-            if (index === 0xffffffff) {
-              if (lineString.length > 1) {
-                mesh.primitive.edges.polylines.push(new MeshPolyline(lineString));
+            const lineString: number[] = [];
+            for (let i = 0; i < polylineIndices.buffer.length; i++) {
+              const index = polylineIndices.buffer[i];
+              if (index === 0xffffffff) {
+                if (lineString.length > 1) {
+                  mesh.primitive.edges.polylines.push(new MeshPolyline(lineString));
+                }
+
+                lineString.length = 0;
+              } else {
+                lineString.push(index);
               }
-
-              lineString.length = 0;
-            } else {
-              lineString.push(index);
             }
           }
         }
