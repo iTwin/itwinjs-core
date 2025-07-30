@@ -892,7 +892,23 @@ export namespace IModelConnection {
      * why the extents could not be obtained (e.g., because the Id did not identify a [GeometricModel]($backend)).
      */
     public async queryExtents(modelIds: Id64String | Id64String[]): Promise<ModelExtentsProps[]> {
-      const modelExtentsQuery = `
+      if (!this._iModel.isOpen)
+        return [];
+
+      if (typeof modelIds === "string")
+        modelIds = [modelIds];
+
+      let modelExtents = await this.queryModelExtents(modelIds);
+
+      if (modelExtents.some((extents) => extents === undefined)) {
+        modelExtents = await this.fillMissingModelExtents(modelIds, modelExtents);
+      }
+
+      return modelExtents;
+    }
+
+    private async queryModelExtents(modelIds: Id64String[]): Promise<ModelExtentsProps[]> {
+      const query = `
       SELECT
         Model.Id AS ECInstanceId,
         iModel_bbox_union(
@@ -939,7 +955,29 @@ export namespace IModelConnection {
       WHERE InVirtualSet(:ids64, ge.Model.Id) AND ge.Origin.X IS NOT NULL AND InVirtualSet(:ids64, gm.ECInstanceId) AND gm.$->isNotSpatiallyLocated?=true
       GROUP BY ge.Model.Id`;
 
-      const modelExistenceQuery = `
+      const params = new QueryBinder();
+      params.bindIdSet("ids64", modelIds);
+
+      const queryReader = this._iModel.createQueryReader(query, params, {
+        rowFormat: QueryRowFormat.UseECSqlPropertyNames,
+      });
+
+      const results: ModelExtentsProps[] = new Array(modelIds.length).fill(undefined);
+
+      for await (const row of queryReader) {
+        const index = modelIds.indexOf(row.ECInstanceId);
+
+        const byteArray = new Uint8Array(Object.values(row.bbox));
+        const extents = Range3d.fromArrayBuffer(byteArray.buffer);
+
+        results[index] = { id: row.ECInstanceId, extents, status: IModelStatus.Success };
+      }
+
+      return results;
+    }
+
+    private async fillMissingModelExtents(modelIds: Id64String[], modelExtents: ModelExtentsProps[]): Promise<ModelExtentsProps[]> {
+      const query = `
       WITH
       GeometricModels AS (
           SELECT
@@ -959,65 +997,40 @@ export namespace IModelConnection {
       WHERE InVirtualSet(:ids64, ECInstanceId)
         AND ECInstanceId NOT IN (SELECT ECInstanceId FROM GeometricModels)`;
 
-      const iModel = this._iModel;
-      if (!iModel.isOpen)
-        return [];
-
-      if (typeof modelIds === "string")
-        modelIds = [modelIds];
-
       const params = new QueryBinder();
       params.bindIdSet("ids64", modelIds);
 
-      const extentsQueryReader = this._iModel.createQueryReader(modelExtentsQuery, params, {
+      const queryReader = this._iModel.createQueryReader(query, params, {
         rowFormat: QueryRowFormat.UseECSqlPropertyNames,
       });
+      const queryRows = await queryReader.toArray();
 
-      const modelExtentsResults: ModelExtentsProps[] = new Array(modelIds.length).fill(undefined);
+      const results = modelExtents;
 
-      for await (const row of extentsQueryReader) {
-        const modelIndex = modelIds.indexOf(row.ECInstanceId);
-
-        const byteArray = new Uint8Array(Object.values(row.bbox));
-        const range3dProps = Range3d.fromArrayBuffer(byteArray.buffer);
-
-        modelExtentsResults[modelIndex] = { id: row.ECInstanceId, extents: range3dProps, status: IModelStatus.Success };
-      }
-
-      if (!modelExtentsResults.some((extents) => extents === undefined)) {
-        return modelExtentsResults;
-      }
-
-      const existenceQueryReader = this._iModel.createQueryReader(modelExistenceQuery, params, {
-        rowFormat: QueryRowFormat.UseECSqlPropertyNames,
-      });
-
-      const existenceQueryRows = await existenceQueryReader.toArray();
-
-      for (const [index, extentsResult] of modelExtentsResults.entries()) {
-        if (extentsResult === undefined) {
+      for (const [index, result] of results.entries()) {
+        if (result === undefined) {
           if (!Id64.isValidId64(modelIds[index])) {
-            modelExtentsResults[index] = { id: "0", extents: Range3d.createNull(), status: IModelStatus.InvalidId };
+            results[index] = { id: "0", extents: Range3d.createNull(), status: IModelStatus.InvalidId };
             continue;
           }
 
-          const modelRow = existenceQueryRows.find((model) => model.ECInstanceId === modelIds[index]);
+          const row = queryRows.find((model) => model.ECInstanceId === modelIds[index]);
 
-          if (modelRow === undefined) {
-            modelExtentsResults[index] = { id: modelIds[index], extents: Range3d.createNull(), status: IModelStatus.NotFound };
+          if (row === undefined) {
+            results[index] = { id: modelIds[index], extents: Range3d.createNull(), status: IModelStatus.NotFound };
             continue;
           }
 
-          if (modelRow.isGeometricModel) {
-            modelExtentsResults[index] = { id: modelIds[index], extents: Range3d.createNull(), status: IModelStatus.Success };
+          if (row.isGeometricModel) {
+            results[index] = { id: modelIds[index], extents: Range3d.createNull(), status: IModelStatus.Success };
             continue;
           }
 
-          modelExtentsResults[index] = { id: modelIds[index], extents: Range3d.createNull(), status: IModelStatus.WrongModel };
+          results[index] = { id: modelIds[index], extents: Range3d.createNull(), status: IModelStatus.WrongModel };
         }
       }
 
-      return modelExtentsResults;
+      return results
     }
 
     /** Query for a set of ModelProps of the specified ModelQueryParams.
