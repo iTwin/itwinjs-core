@@ -88,8 +88,9 @@ export abstract class PrimitiveTool extends InteractiveTool {
       return true; // No specific target, two spatial views are considered compatible.
 
     let allowView = false;
+    const targetView = this.targetView;
     view.forEachModel((model) => {
-      if (!allowView && this.targetView!.view.viewsModel(model.id))
+      if (!allowView && targetView.view.viewsModel(model.id))
         allowView = true;
     });
 

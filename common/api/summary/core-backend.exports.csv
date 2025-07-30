@@ -3,6 +3,7 @@ Release Tag;API Item Type;API Item Name
 public;interface;AcquireNewBriefcaseIdArg
 public;class;AnnotationElement2d
 preview;class;AnnotationElement2d
+beta;class;AnnotationTextStyle
 beta;type;AnyDb
 beta;function;appendFrameToBuilder
 beta;function;appendLeadersToBuilder
@@ -183,6 +184,7 @@ public;class;ElementAspect
 preview;class;ElementAspect
 beta;class;ElementDrivesElement
 beta;interface;ElementDrivesElementProps
+beta;class;ElementDrivesTextAnnotation
 public;class;ElementEncapsulatesElements
 public;class;ElementGroupsMembers
 public;interface;ElementGroupsMembersProps
@@ -353,6 +355,8 @@ beta;interface;InstanceChange
 public;class;IpcHandler
 public;class;IpcHost
 public;interface;IpcHostOpts
+beta;function;isITextAnnotation
+beta;interface;ITextAnnotation
 public;interface;ITwinIdArg
 public;class;KnownLocations
 beta;function;layoutTextBlock
@@ -567,8 +571,11 @@ public;class;TextAnnotation2d
 preview;class;TextAnnotation2d
 public;class;TextAnnotation3d
 preview;class;TextAnnotation3d
+beta;interface;TextBlockAndId
 beta;class;TextBlockLayout
 internal;interface;TextLayoutRanges
+beta;class;TextStyleResolver
+beta;interface;TextStyleResolverArgs
 public;class;Texture
 preview;class;Texture
 beta;interface;TextureCreateProps
