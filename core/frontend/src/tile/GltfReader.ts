@@ -1413,8 +1413,7 @@ export abstract class GltfReader {
             }
 
             const curLineString: number[] = [];
-            for (let i = 0; i < polylineIndices.buffer.length; i++) {
-              const index = polylineIndices.buffer[i];
+            for (const index of polylineIndices.buffer) {
               if (index === 0xffffffff) {
                 if (curLineString.length > 1) {
                   mesh.primitive.edges.polylines.push(new MeshPolyline(curLineString));
