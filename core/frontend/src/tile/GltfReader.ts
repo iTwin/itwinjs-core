@@ -1405,24 +1405,24 @@ export abstract class GltfReader {
 
       const lineStrings = ext.lineStrings;
       if (lineStrings) {
-        for (const lineString of lineStrings) {
-          const polylineIndices = this.readBufferData32(lineString, "indices");
+        for (const extLineString of lineStrings) {
+          const polylineIndices = this.readBufferData32(extLineString, "indices");
           if (polylineIndices) {
             if (!mesh.primitive.edges) {
               mesh.primitive.edges = new MeshEdges();
             }
 
-            const lineString: number[] = [];
+            const curLineString: number[] = [];
             for (let i = 0; i < polylineIndices.buffer.length; i++) {
               const index = polylineIndices.buffer[i];
               if (index === 0xffffffff) {
-                if (lineString.length > 1) {
-                  mesh.primitive.edges.polylines.push(new MeshPolyline(lineString));
+                if (curLineString.length > 1) {
+                  mesh.primitive.edges.polylines.push(new MeshPolyline(curLineString));
                 }
 
-                lineString.length = 0;
+                curLineString.length = 0;
               } else {
-                lineString.push(index);
+                curLineString.push(index);
               }
             }
           }
