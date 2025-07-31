@@ -36,6 +36,12 @@ export class SchemaUnitProvider implements UnitsProvider {
     }
     this._unitConverter = new UnitConverter(this._context);
   }
+  findUnitByNameSync(): UnitProps {
+    throw new Error("Method not implemented.");
+  }
+  getConversionSync(): UnitConversionProps {
+    throw new Error("Method not implemented.");
+  }
 
   /**
    * Find unit in a schema that has unitName.

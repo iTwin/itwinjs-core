@@ -103,7 +103,9 @@ export interface UnitsProvider {
   findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
   getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
   findUnitByName(unitName: string): Promise<UnitProps>;
+  findUnitByNameSync(unitName: string): UnitProps;
   getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
+  getConversionSync(fromUnit: UnitProps, toUnit: UnitProps): UnitConversionProps;
 }
 
 /**

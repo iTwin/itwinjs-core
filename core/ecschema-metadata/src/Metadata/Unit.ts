@@ -63,6 +63,20 @@ export class Unit extends SchemaItem {
     return true;
   }
 
+  // /**
+  //  * Returns true if a conversion can be calculated between the input units
+  //  * @alpha
+  //  */
+  // public static areCompatible(unitA: Unit, unitB: Unit): boolean {
+  //   const unitAPhenomenon = unitA.phenomenon;
+  //   const unitBPhenomenon = unitB.phenomenon;
+
+  //   if(SchemaItem.isSchemaItem(unitAPhenomenon) && SchemaItem.isSchemaItem(unitBPhenomenon))
+  //     if (!unitAPhenomenon || !unitBPhenomenon || !unitAPhenomenon.key.matches(unitBPhenomenon.key))
+  //       return false;
+  //   return true;
+  // }
+
   /**
    * Type guard to check if the SchemaItem is of type Unit.
    * @param item The SchemaItem to check.

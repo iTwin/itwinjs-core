@@ -273,6 +273,20 @@ export class Format extends BaseFormat {
     this.units!.push([newUnit, label]);
   }
 
+  private createUnitSync(unitsProvider: UnitsProvider, name: string, label?: string): void {
+    if (name === undefined || typeof (name) !== "string" || (label !== undefined && typeof (label) !== "string")) // throws if name is undefined or name isn't a string or if label is defined and isn't a string
+      throw new QuantityError(QuantityStatus.InvalidJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
+    for (const unit of this.units!) {
+      const unitObj = unit[0].name;
+      if (unitObj.toLowerCase() === name.toLowerCase()) // duplicate names are not allowed
+        throw new QuantityError(QuantityStatus.InvalidJson, `The unit ${unitObj} has a duplicate name.`);
+    }
+    const newUnit: UnitProps = unitsProvider.findUnitByNameSync(name);
+    if (!newUnit || !newUnit.isValid)
+      throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${name}'.`);
+    this.units!.push([newUnit, label]);
+  }
+
   /**
    *  Clone Format
    */
@@ -408,10 +422,90 @@ export class Format extends BaseFormat {
     }
   }
 
+  /**
+   * Populates this Format with the values from the provided.
+   */
+  public fromJSONSync(unitsProvider: UnitsProvider, jsonObj: FormatProps): void {
+    this.loadFormatProperties(jsonObj);
+
+    if (isCustomFormatProps(jsonObj))
+      this._customProps = jsonObj.custom;
+
+    if (undefined !== jsonObj.composite) { // optional
+      this._units = new Array<[UnitProps, string | undefined]>();
+      if (jsonObj.composite.includeZero !== undefined) {
+        if (typeof (jsonObj.composite.includeZero) !== "boolean") // includeZero must be a boolean IF it is defined
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);
+        this._includeZero = jsonObj.composite.includeZero;
+      }
+      if (jsonObj.composite.spacer !== undefined) {  // spacer must be a string IF it is defined
+        if (typeof (jsonObj.composite.spacer) !== "string")
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be of type 'string'.`);
+        if (jsonObj.composite.spacer.length > 1)
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It should be an empty or one character string.`);
+        this._spacer = jsonObj.composite.spacer;
+      }
+      if (jsonObj.composite.units !== undefined) { // if composite is defined, it must be an array with 1-4 units
+        if (!Array.isArray(jsonObj.composite.units)) { // must be an array
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'units' attribute. It must be of type 'array'`);
+        }
+        if (jsonObj.composite.units.length > 0 && jsonObj.composite.units.length <= 4) { // Composite requires 1-4 units
+          try {
+            for (const unit of jsonObj.composite.units) {
+              this.createUnitSync(unitsProvider, unit.name, unit.label);
+            }
+          } catch (e) {
+            throw e;
+          }
+        }
+      }
+      if (undefined === this.units || this.units.length === 0)
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with no valid 'units'`);
+    }
+
+    if(this.type === FormatType.Azimuth || this.type === FormatType.Bearing) {
+      // these units cannot be loaded from loadFormatProperties() because they require an async call, and the method signature is already public
+
+      if (undefined !== jsonObj.azimuthBaseUnit) {
+        if (typeof (jsonObj.azimuthBaseUnit) !== "string")
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'azimuthBaseUnit' attribute. It should be of type 'string'.`);
+
+        const baseUnit: UnitProps = unitsProvider.findUnitByNameSync(jsonObj.azimuthBaseUnit);
+        if (!baseUnit || !baseUnit.isValid)
+          throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${jsonObj.azimuthBaseUnit}' for azimuthBaseUnit in Format '${this.name}'.`);
+
+        this._azimuthBaseUnit = baseUnit;
+      }
+
+      if (undefined !== jsonObj.revolutionUnit) {
+        if (typeof (jsonObj.revolutionUnit) !== "string")
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'revolutionUnit' attribute. It should be of type 'string'.`);
+
+        const revolutionUnit: UnitProps = unitsProvider.findUnitByNameSync(jsonObj.revolutionUnit);
+        if (!revolutionUnit || !revolutionUnit.isValid)
+          throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${jsonObj.revolutionUnit}' for revolutionUnit in Format '${this.name}'.`);
+
+        this._revolutionUnit = revolutionUnit;
+      }
+
+      if (this._revolutionUnit === undefined)
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Azimuth' or 'Bearing' type therefore the attribute 'revolutionUnit' is required.`);
+      if (this._azimuthBase !== undefined && this._azimuthBaseUnit === undefined)
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an 'azimuthBase' attribute therefore the attribute 'azimuthBaseUnit' is required.`);
+    }
+  }
+
   /** Create a Format from FormatProps */
   public static async createFromJSON(name: string, unitsProvider: UnitsProvider, formatProps: FormatProps) {
     const actualFormat = new Format(name);
     await actualFormat.fromJSON(unitsProvider, formatProps);
+    return actualFormat;
+  }
+
+  /** Create a Format from FormatProps */
+  public static createFromJSONSync(name: string, unitsProvider: UnitsProvider, formatProps: FormatProps) {
+    const actualFormat = new Format(name);
+    actualFormat.fromJSONSync(unitsProvider, formatProps);
     return actualFormat;
   }
 

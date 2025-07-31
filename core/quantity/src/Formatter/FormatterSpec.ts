@@ -99,6 +99,44 @@ export class FormatterSpec {
     return conversions;
   }
 
+  /** Get an array of UnitConversionSpecs, one for each unit that is to be shown in the formatted quantity string. */
+  public static getUnitConversionsSync(format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): UnitConversionSpec[] {
+    const conversions: UnitConversionSpec[] = [];
+    let persistenceUnit = inputUnit;
+    if (!persistenceUnit) {
+      if (format.units) {
+        const [props] = format.units[0];
+        persistenceUnit = props;
+      } else {
+        throw new Error("Formatter Spec needs persistence unit to be specified");
+      }
+    }
+
+    if (format.units) {
+      let convertFromUnit = inputUnit;
+      for (const unit of format.units) {
+        let unitConversion: UnitConversionProps;
+        if (convertFromUnit) {
+          unitConversion = unitsProvider.getConversionSync(convertFromUnit, unit[0]);
+        } else {
+          unitConversion = { factor: 1.0, offset: 0.0 };
+        }
+        const unitLabel = (unit[1] && unit[1].length > 0) ? unit[1] : unit[0].label;
+        const spec = ({ name: unit[0].name, label: unitLabel, conversion: unitConversion, system: unit[0].system }) as UnitConversionSpec;
+
+        conversions.push(spec);
+        convertFromUnit = unit[0];
+      }
+    } else {
+      // if format is only numeric and a input unit is defined set spec to use the input unit as the format unit
+      if (inputUnit) {
+        const spec: UnitConversionSpec = { name: inputUnit.name, label: inputUnit.label, system: inputUnit.system, conversion: { factor: 1.0, offset: 0.0 } };
+        conversions.push(spec);
+      }
+    }
+
+    return conversions;
+  }
   /** Static async method to create a FormatSpec given the format and unit of the quantity that will be passed to the Formatter. The input unit will
    * be used to generate conversion information for each unit specified in the Format. This method is async due to the fact that the units provider must make
    * async calls to lookup unit definitions.
@@ -120,6 +158,34 @@ export class FormatterSpec {
     if (format.revolutionUnit !== undefined) {
       if (inputUnit !== undefined) {
         revolutionConversion = await unitsProvider.getConversion(format.revolutionUnit, inputUnit);
+      } else {
+        revolutionConversion = { factor: 1.0, offset: 0.0 };
+      }
+    }
+
+    return new FormatterSpec(name, format, conversions, inputUnit, azimuthBaseConversion, revolutionConversion);
+  }
+
+  /** Static method to create a FormatSpec given the format and unit of the quantity that will be passed to the Formatter. The input unit will
+   * be used to generate conversion information for each unit specified in the Format.
+   *  @param name     The name of a format specification.
+   *  @param unitsProvider The units provider is used to look up unit definitions and provide conversion information for converting between units.
+   *  @param inputUnit The unit the value to be formatted. This unit is often referred to as persistence unit.
+   */
+  public static createSync(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): FormatterSpec {
+    const conversions: UnitConversionSpec[] = FormatterSpec.getUnitConversionsSync(format, unitsProvider, inputUnit);
+    let azimuthBaseConversion: UnitConversionProps | undefined;
+    if (format.azimuthBaseUnit !== undefined) {
+      if (inputUnit !== undefined) {
+        azimuthBaseConversion = unitsProvider.getConversionSync(format.azimuthBaseUnit, inputUnit);
+      } else {
+        azimuthBaseConversion = { factor: 1.0, offset: 0.0 };
+      }
+    }
+    let revolutionConversion: UnitConversionProps | undefined;
+    if (format.revolutionUnit !== undefined) {
+      if (inputUnit !== undefined) {
+        revolutionConversion = unitsProvider.getConversionSync(format.revolutionUnit, inputUnit);
       } else {
         revolutionConversion = { factor: 1.0, offset: 0.0 };
       }
