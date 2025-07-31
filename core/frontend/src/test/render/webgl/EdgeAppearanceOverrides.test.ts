@@ -60,6 +60,12 @@ class EdgeDecorator extends TestDecorator {
   }
 }
 
+function makeHardEdges(): MeshArgsEdges {
+  const args = new MeshArgsEdges();
+  args.edges.edges = [new MeshEdge(0, 1), new MeshEdge(1, 2), new MeshEdge(2, 0)];
+  return args;
+}
+
 describe("EdgeAppearanceOverrides", () => {
   beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
   afterEach(() => TestDecorator.dropAll());
@@ -91,13 +97,13 @@ describe("EdgeAppearanceOverrides", () => {
   }
 
   it("overrides nothing by default", () => {
-    const edges = new MeshArgsEdges();
-    edges.edges.edges = [new MeshEdge(0, 1), new MeshEdge(1, 2), new MeshEdge(2, 0)];
-    expectColors([ColorDef.red], edges);
+    expectColors([ColorDef.red], makeHardEdges());
   });
 
   it("overrides color", () => {
-    
+    const edges = makeHardEdges();
+    edges.color = ColorDef.blue;
+    expectColors([ColorDef.red, ColorDef.blue], edges);
   });
 
   it("does not override display style", () => {
