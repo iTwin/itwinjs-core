@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Add support for `stationBaseFactor` in `FormatProps`",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}
