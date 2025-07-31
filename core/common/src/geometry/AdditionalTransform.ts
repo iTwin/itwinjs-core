@@ -7,7 +7,7 @@
  */
 // cspell:ignore Helmert
 
-import { Geometry } from "@itwin/core-geometry";
+import { Angle, AxisIndex, Geometry, Matrix3d, Transform, Vector3d } from "@itwin/core-geometry";
 
 /** An affine transformation with an additional Z Offset.
  *  The equations are:
@@ -83,6 +83,24 @@ export class Helmert2DWithZOffset implements Helmert2DWithZOffsetProps {
       Math.abs(this.translationZ - other.translationZ) < Geometry.smallMetricDistance &&
       Math.abs(this.rotDeg - other.rotDeg) < Geometry.smallAngleDegrees &&
       Math.abs(this.scale - other.scale) < Geometry.smallFraction);
+  }
+
+  /** Convert Helmert2DWithZOffset object into Transfrom object
+   * @public */
+  public convertHelmertToTransform(): Transform {
+    const rotationXY = Matrix3d.createRotationAroundAxisIndex(
+      AxisIndex.Z,
+      Angle.createDegrees(this?.rotDeg)
+    );
+    rotationXY.scaleColumnsInPlace(this.scale, this.scale, 1.0);
+    const translation = Vector3d.create(
+      this.translationX,
+      this.translationY,
+      this.translationZ
+    );
+    const helmertTransform = Transform.createRefs(translation, rotationXY);
+
+    return helmertTransform;
   }
 }
 

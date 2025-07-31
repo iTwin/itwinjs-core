@@ -5,7 +5,7 @@
 
 import { ElementGeometry, GeometryParams, TextBlock, TextStyleSettings } from "@itwin/core-common";
 import { AnyCurvePrimitive, Range2d } from "@itwin/core-geometry";
-import { ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, TextBlockLayout, TextLayoutRanges } from "../core-backend";
+import { ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, TextBlockLayout, TextLayoutRanges, TextStyleResolver } from "../core-backend";
 
 
 export function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
@@ -17,10 +17,16 @@ export function doLayout(textBlock: TextBlock, args?: {
   findTextStyle?: FindTextStyle;
   findFontId?: FindFontId;
 }): TextBlockLayout {
+  const textStyleResolver = new TextStyleResolver({
+    textBlock,
+    iModel: {} as any,
+    modelId: undefined,
+    findTextStyle: args?.findTextStyle ?? (() => TextStyleSettings.defaults)
+  });
   const layout = layoutTextBlock({
     textBlock,
     iModel: {} as any,
-    findTextStyle: args?.findTextStyle ?? (() => TextStyleSettings.defaults),
+    textStyleResolver,
     findFontId: args?.findFontId ?? (() => 0),
     computeTextRange: computeTextRangeAsStringLength,
   });
