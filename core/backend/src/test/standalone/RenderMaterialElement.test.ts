@@ -29,7 +29,7 @@ function removeUndefined(assetProps: RenderMaterialAssetProps): RenderMaterialAs
 }
 
 function defaultBooleans(assetProps: RenderMaterialAssetProps): RenderMaterialAssetProps {
-  const boolKeys = ["HasBaseColor", "HasDiffuse", "HasFinish", "HasReflect", "HasReflectColor", "HasSpecular", "HasSpecularColor", "HasTransmit"] as const;
+  const boolKeys = ["HasBaseColor", "HasDiffuse", "HasFinish", "HasReflect", "HasReflectColor", "HasSpecular", "HasSpecularColor"] as const;
   for (const boolKey of boolKeys)
     if (undefined === assetProps[boolKey])
       assetProps[boolKey] = false;
