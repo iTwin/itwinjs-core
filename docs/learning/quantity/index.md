@@ -4,6 +4,10 @@
   - [Terms and Concepts](#terms-and-concepts)
     - [Common Terms](#common-terms)
     - [FormatProps](#formatprops)
+    - [Station Format Properties](#station-format-properties)
+      - [stationOffsetSize](#stationoffsetsize)
+      - [stationBaseFactor](#stationbasefactor)
+        - [Station Format Examples](#station-format-examples)
     - [Concepts](#concepts)
       - [Formats Provider](#formats-provider)
       - [Units Provider](#units-provider)
@@ -45,6 +49,34 @@ If you're developing a frontend application that takes advantage of the core qua
 ### FormatProps
 
 For a detailed description of all the setting supported by FormatProp see the EC documentation on [Format](../../bis/ec/ec-format.md).
+
+### Station Format Properties
+
+Station formatting in iTwin.js supports properties that control how values are broken down into major and minor station components:
+
+#### stationOffsetSize
+
+The `stationOffsetSize` property specifies the number of decimal places for calculating the station offset magnitude. This works with `stationBaseFactor` to determine the effective station offset using the formula: `effective offset = stationBaseFactor * 10^stationOffsetSize`.
+
+#### stationBaseFactor
+
+The `stationBaseFactor` property provides additional flexibility for station formatting by acting as a multiplier for the base offset calculation. This allows for non-standard station intervals that aren't simple powers of 10. The default value is 1.
+
+> __Note__: The `stationBaseFactor` property is currently implemented as an iTwin.js-specific extension and is not supported in the native EC (Entity Context) layer. This feature will eventually be incorporated into the ECFormat specification to provide broader compatibility across the iTwin ecosystem.
+
+##### Station Format Examples
+
+| stationOffsetSize | stationBaseFactor | Value  | Effective Offset | Formatted |
+| ----------------- | ----------------- | ------ | ---------------- | --------- |
+| 2                 | 1                 | 1055.5 | 100              | 10+55.50  |
+| 3                 | 1                 | 1055.5 | 1000             | 1+055.50  |
+| 2                 | 5                 | 1055.5 | 500              | 2+55.50   |
+
+In the examples above:
+
+- With `stationOffsetSize=2` and `stationBaseFactor=1`: effective offset = 1 × 10² = 100
+- With `stationOffsetSize=3` and `stationBaseFactor=1`: effective offset = 1 × 10³ = 1000
+- With `stationOffsetSize=2` and `stationBaseFactor=5`: effective offset = 5 × 10² = 500
 
 ### Concepts
 
