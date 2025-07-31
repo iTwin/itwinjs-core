@@ -1387,8 +1387,6 @@ export abstract class GltfReader {
 
         const silhouetteNormals = this.readBufferData16(ext, "silhouetteNormals");
         const normalPairs = silhouetteNormals ? new Uint32Array(silhouetteNormals.buffer.buffer, silhouetteNormals.buffer.byteOffset, silhouetteNormals.buffer.byteLength / 4) : undefined;
-        // const silhouetteNormals = this.readBufferData32(ext, "silhouetteNormals");
-        // const normalPairs = silhouetteNormals?.buffer instanceof Uint32Array ? silhouetteNormals.buffer: undefined;
         mesh.primitive.edges = new MeshEdges();
 
         for (const edge of compactEdgeIterator(visibility.buffer, normalPairs, indices.length, (idx) => indices[idx])) {
