@@ -80,36 +80,8 @@ export class BasicUnitsProvider implements UnitsProvider {
     return new BadUnit();
   }
 
-  /** Find a unit given the unit's unique name. */
-  public findUnitByNameSync(unitName: string): UnitProps {
-    const unitDataEntry = this.findUnitDefinition(unitName);
-    if (unitDataEntry) {
-      return new BasicUnit(unitDataEntry.name, unitDataEntry.displayLabel, unitDataEntry.phenomenon, unitDataEntry.system);
-    }
-    return new BadUnit();
-  }
-
   /** Return the information needed to convert a value between two different units.  The units should be from the same phenomenon. */
   public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
-    const fromUnitData = this.findUnitDefinition(fromUnit.name);
-    const toUnitData = this.findUnitDefinition(toUnit.name);
-
-    if (fromUnitData && toUnitData) {
-      const deltaOffset = toUnitData.conversion.offset - fromUnitData.conversion.offset;
-      const deltaNumerator = toUnitData.conversion.numerator * fromUnitData.conversion.denominator;
-      const deltaDenominator = toUnitData.conversion.denominator * fromUnitData.conversion.numerator;
-
-      const conversionData = new ConversionData();
-      conversionData.factor = deltaNumerator / deltaDenominator;
-      conversionData.offset = deltaOffset;
-      return conversionData;
-    }
-
-    return new ConversionData();
-  }
-
-  /** Return the information needed to convert a value between two different units.  The units should be from the same phenomenon. */
-  public getConversionSync(fromUnit: UnitProps, toUnit: UnitProps): UnitConversionProps {
     const fromUnitData = this.findUnitDefinition(fromUnit.name);
     const toUnitData = this.findUnitDefinition(toUnit.name);
 

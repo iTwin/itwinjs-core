@@ -8,7 +8,7 @@
 
 import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
-import { UnitProps, UnitsProvider } from "../Interfaces";
+import { UnitProps, UnitsProvider, UnitsProviderSync } from "../Interfaces";
 import {
   DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, FractionalPrecision,
   getTraitString, parseFormatTrait, parseFormatType, parsePrecision, parseRatioType, parseScientificType, parseShowSignOption,
@@ -273,7 +273,7 @@ export class Format extends BaseFormat {
     this.units!.push([newUnit, label]);
   }
 
-  private createUnitSync(unitsProvider: UnitsProvider, name: string, label?: string): void {
+  private createUnitSync(unitsProvider: UnitsProviderSync, name: string, label?: string): void {
     if (name === undefined || typeof (name) !== "string" || (label !== undefined && typeof (label) !== "string")) // throws if name is undefined or name isn't a string or if label is defined and isn't a string
       throw new QuantityError(QuantityStatus.InvalidJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
     for (const unit of this.units!) {
@@ -425,7 +425,7 @@ export class Format extends BaseFormat {
   /**
    * Populates this Format with the values from the provided.
    */
-  public fromJSONSync(unitsProvider: UnitsProvider, jsonObj: FormatProps): void {
+  public fromJSONSync(unitsProvider: UnitsProviderSync, jsonObj: FormatProps): void {
     this.loadFormatProperties(jsonObj);
 
     if (isCustomFormatProps(jsonObj))
@@ -503,7 +503,7 @@ export class Format extends BaseFormat {
   }
 
   /** Create a Format from FormatProps */
-  public static createFromJSONSync(name: string, unitsProvider: UnitsProvider, formatProps: FormatProps) {
+  public static createFromJSONSync(name: string, unitsProvider: UnitsProviderSync, formatProps: FormatProps) {
     const actualFormat = new Format(name);
     actualFormat.fromJSONSync(unitsProvider, formatProps);
     return actualFormat;

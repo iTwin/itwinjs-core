@@ -1081,19 +1081,9 @@ export class QuantityFormatter implements UnitsProvider {
     return this._unitsProvider.findUnitByName(unitName);
   }
 
-  /** Find [UnitProp] for a specific unit name. */
-  public findUnitByNameSync(unitName: string): UnitProps {
-    return this._unitsProvider.findUnitByNameSync(unitName);
-  }
-
   /** Returns data needed to convert from one Unit to another in the same Unit Family/Phenomenon. */
   public async getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps> {
     return this._unitsProvider.getConversion(fromUnit, toUnit);
-  }
-
-  /** Returns data needed to convert from one Unit to another in the same Unit Family/Phenomenon. */
-  public getConversionSync(fromUnit: UnitProps, toUnit: UnitProps): UnitConversionProps {
-    return this._unitsProvider.getConversionSync(fromUnit, toUnit);
   }
 
   /**

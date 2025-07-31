@@ -6,7 +6,7 @@
  * @module Quantity
  */
 
-import { UnitConversionProps, UnitConversionSpec, UnitProps, UnitsProvider } from "../Interfaces";
+import { UnitConversionProps, UnitConversionSpec, UnitProps, UnitsProvider, UnitsProviderSync } from "../Interfaces";
 import { Format } from "./Format";
 import { Formatter } from "./Formatter";
 
@@ -100,7 +100,7 @@ export class FormatterSpec {
   }
 
   /** Get an array of UnitConversionSpecs, one for each unit that is to be shown in the formatted quantity string. */
-  public static getUnitConversionsSync(format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): UnitConversionSpec[] {
+  public static getUnitConversionsSync(format: Format, unitsProvider: UnitsProviderSync, inputUnit?: UnitProps): UnitConversionSpec[] {
     const conversions: UnitConversionSpec[] = [];
     let persistenceUnit = inputUnit;
     if (!persistenceUnit) {
@@ -172,7 +172,7 @@ export class FormatterSpec {
    *  @param unitsProvider The units provider is used to look up unit definitions and provide conversion information for converting between units.
    *  @param inputUnit The unit the value to be formatted. This unit is often referred to as persistence unit.
    */
-  public static createSync(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): FormatterSpec {
+  public static createSync(name: string, format: Format, unitsProvider: UnitsProviderSync, inputUnit?: UnitProps): FormatterSpec {
     const conversions: UnitConversionSpec[] = FormatterSpec.getUnitConversionsSync(format, unitsProvider, inputUnit);
     let azimuthBaseConversion: UnitConversionProps | undefined;
     if (format.azimuthBaseUnit !== undefined) {
