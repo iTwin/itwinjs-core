@@ -11,7 +11,7 @@ import {
   RelatedElement, RelatedElementProps, RelationshipProps, SchemaState,
 } from "@itwin/core-common";
 import {
-  DefinitionElement, DefinitionModel, ElementRefersToElements, EntityReferences, IModelDb, IModelJsFs, Model, RepositoryLink,
+  DefinitionElement, DefinitionModel, ElementRefersToElements, Entity, EntityReferences, IModelDb, IModelJsFs, Model, RepositoryLink,
   Schema, SnapshotDb, SpatialViewDefinition, StandaloneDb, UrlLink, ViewDefinition3d,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -20,7 +20,8 @@ import { Element } from "../../Element";
 import { Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
 import { OpenMode } from "@itwin/core-bentley";
-import { EntityClass, NavigationProperty, PrimitiveProperty } from "@itwin/ecschema-metadata";
+import { EntityClass, NavigationProperty, PrimitiveProperty, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
+import { error } from "console";
 
 describe("Class Registry", () => {
   let imodel: SnapshotDb;
@@ -190,15 +191,13 @@ describe("Class Registry - getRootMetaData", () => {
 describe.only("Class Registry - generated classes", () => {
   let imodel: SnapshotDb;
   const testSchemaPath = path.join(KnownTestLocations.assetsDir, "TestGeneratedClasses.ecschema.xml");
-  const schemaPathCustomA = path.join(KnownTestLocations.assetsDir, "CustomA.ecschema.xml");
-  const schemaPathCustomB = path.join(KnownTestLocations.assetsDir, "CustomB.ecschema.xml");
 
   before(async () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
     const testFileName = IModelTestUtils.prepareOutputFile("ClassRegistry", "GeneratedClasses.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
     assert.exists(imodel);
-    await imodel.importSchemas([testSchemaPath, schemaPathCustomA, schemaPathCustomB]); // will throw an exception if import fails
+    await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
   });
 
   after(() => {
@@ -318,17 +317,48 @@ describe.only("Class Registry - generated classes", () => {
     public static override get className() { return "Derived6"; }
   }
 
-  class ElementA extends DefinitionElement {
-    public static override get className() { return "ElementA"; }
-    public static get schemaName(): string { return "CustomA"; }
-    public static override get classFullName(): string { return "CustomA:ElementA"; }
+  class NonGeneratedElement extends DefinitionElement {
+    public static override get className() { return "NonGeneratedElement"; }
   }
 
-  it("Github issue - should generate correct classes", async () => {
+  it.only("Github issue - should generate correct classes", async () => {
+    await imodel.importSchemaStrings([
+      `<?xml version="1.0" encoding="UTF-8"?>
+        <ECSchema schemaName="CustomA" alias="custA" version="1.0.0"
+          xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+          <ECSchemaReference name="Functional" version="1.00" alias="func"/>
+          <ECEntityClass typeName="NonGeneratedElement">
+            <BaseClass>bis:DefinitionElement</BaseClass>
+          </ECEntityClass>
+          <ECEntityClass typeName="GeneratedElement">
+            <BaseClass>NonGeneratedElement</BaseClass>
+          </ECEntityClass>
+          <ECEntityClass typeName="ElementC">
+            <BaseClass>GeneratedElement</BaseClass>
+          </ECEntityClass>
+        </ECSchema>
+      `,
+      `<?xml version="1.0" encoding="UTF-8"?>
+        <ECSchema schemaName="CustomB" alias="custB" version="1.0.0"
+          xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+          <ECSchemaReference name="Functional" version="1.00" alias="func"/>
+          <ECSchemaReference name="CustomA" version="01.00" alias="custA"/>
+          <ECEntityClass typeName="DummyElement">
+            <BaseClass>bis:DefinitionElement</BaseClass>
+          </ECEntityClass>
+          <ECEntityClass typeName="ErrorElement">
+            <BaseClass>custA:ElementC</BaseClass>
+          </ECEntityClass>
+        </ECSchema>
+      `,
+    ]);
+
     class CustomASchema extends Schema {
       public static override get schemaName(): string { return "CustomA"; }
       public static get classes() {
-        return [ElementA];
+        return [NonGeneratedElement];
       }
       public static registerSchema() {
         if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
@@ -350,8 +380,6 @@ describe.only("Class Registry - generated classes", () => {
 
     class DummyElement extends DefinitionElement {
       public static override get className() { return "DummyElement"; }
-      public static override get classFullName(): string { return "CustomB:DummyElement"; }
-      public static get schemaName(): string { return "CustomB"; }
     }
 
     class CustomBSchema extends Schema {
@@ -377,19 +405,32 @@ describe.only("Class Registry - generated classes", () => {
 
     CustomBSchema.registerSchema();
 
-    const elementA = imodel.getJsClass("CustomA:ElementA");
-    assert.equal(elementA.classFullName, "CustomA:ElementA");
-    const elementB = imodel.getJsClass("CustomA:ElementB");
-    assert.equal(elementB.classFullName, "CustomA:ElementB");
+    const nonGeneratedElement = imodel.getJsClass("CustomA:NonGeneratedElement");
+    assert.equal(nonGeneratedElement.classFullName, "CustomA:NonGeneratedElement");
+    const generatedElement = imodel.getJsClass("CustomA:GeneratedElement");
+    assert.equal(generatedElement.classFullName, "CustomA:GeneratedElement");
     const elementC = imodel.getJsClass("CustomA:ElementC");
     assert.equal(elementC.classFullName, "CustomA:ElementC");
     const dummyElement = imodel.getJsClass("CustomB:DummyElement");
     assert.equal(dummyElement.classFullName, "CustomB:DummyElement");
+
+    //This is the class that had the wrong schema
     const errorElement = imodel.getJsClass("CustomB:ErrorElement");
     assert.equal(errorElement.classFullName, "CustomB:ErrorElement");
+    assert.isTrue(errorElement.schemaItemKey.matches(new SchemaItemKey("ErrorElement", new SchemaKey("CustomB", 1, 0, 0))));
+    assert.equal(errorElement.className, "ErrorElement");
+    assert.equal(errorElement.schema.schemaName, "CustomB");
 
-    // const test = ClassRegistry.getClass("CustomB:ErrorElement", imodel);
-    // assert.equal(test.classFullName, "CustomB:ErrorElement");
+    // Create an instance of ErrorElement
+    const errorElementInstance = Entity.instantiate(errorElement, { classFullName: errorElement.classFullName }, imodel);
+    assert.exists(errorElementInstance);
+    assert.instanceOf(errorElementInstance, errorElement);
+    assert.instanceOf(errorElementInstance, Entity);
+    assert.equal(errorElementInstance.className, "ErrorElement");
+    assert.equal(errorElementInstance.schemaName, "CustomB");
+    const metadata = await errorElementInstance.getMetaData();
+    assert.exists(metadata);
+    assert.equal(metadata.fullName, "CustomB.ErrorElement");
   });
 
   // if a single inherited class is not generated, the entire hierarchy is considered not-generated
