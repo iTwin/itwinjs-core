@@ -6,6 +6,8 @@
  * @module Rendering
  */
 
+import { ColorDef } from "../ColorDef";
+import { LinePixels } from "../LinePixels";
 import { OctEncodedNormalPair } from "../OctEncodedNormal";
 import { PolylineIndices } from "../RenderPolyline";
 
@@ -54,10 +56,17 @@ export class MeshEdge {
   }
 }
 
+export interface EdgeAppearanceOverrides {
+  color?: ColorDef;
+  linePixels?: LinePixels;
+  width?: number;
+}
+
 /** @internal */
 export class MeshEdges {
   public visible: MeshEdge[] = [];
   public silhouette: MeshEdge[] = [];
+  public appearance?: EdgeAppearanceOverrides;
   public polylines: MeshPolylineList = [];
   public silhouetteNormals: OctEncodedNormalPair[] = [];
   public constructor() { }

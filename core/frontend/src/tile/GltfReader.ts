@@ -1427,6 +1427,13 @@ export abstract class GltfReader {
           }
         }
       }
+
+      const materialId = ext.material;
+      const material = undefined !== materialId ? this._materials[materialId] : undefined;
+      const displayParams = material ? this.createDisplayParams(material, false) : undefined;
+      if (displayParams && mesh.primitive.edges) {
+        mesh.primitive.edges.appearance = { color: displayParams.lineColor };
+      }
     }
 
     return mesh;

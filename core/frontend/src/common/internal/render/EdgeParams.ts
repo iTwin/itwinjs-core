@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { LinePixels, MeshEdge, OctEncodedNormalPair, PolylineIndices } from "@itwin/core-common";
+import { ColorDef, EdgeAppearanceOverrides, LinePixels, MeshEdge, OctEncodedNormalPair, PolylineIndices } from "@itwin/core-common";
 import { VertexIndices } from "./VertexIndices";
 import { TesselatedPolyline, tesselatePolylineFromMesh, wantJointTriangles } from "./PolylineParams";
 import { MeshArgsEdges } from "./MeshPrimitives";
@@ -72,6 +72,7 @@ export interface IndexedEdgeParams {
   readonly indices: VertexIndices;
   /** The lookup table indexed by [[indices]]. */
   readonly edges: EdgeTable;
+  readonly appearance?: EdgeAppearanceOverrides;
 }
 
 /** @internal */
@@ -309,6 +310,11 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean, maxSize: n
       numSegments: numSegmentEdges,
       silhouettePadding,
     },
+    appearance: {
+      width: args.width,
+      linePixels: args.linePixels,
+      color: args.color,
+    }
   };
 }
 
