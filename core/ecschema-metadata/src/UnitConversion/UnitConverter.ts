@@ -58,6 +58,37 @@ export class UnitConverter {
   }
 
   /**
+   * Find conversion between from and to units, formatted {schemaName}.{schemaItemName} or {schemaName}:{schemaItemName}
+   * @param fromUnit SchemaItem full name of source unit
+   * @param toUnit SchemaItem full name of target unit
+   * @returns [[UnitConversion]] converting fromUnit -> toUnit with a factor and an offset
+   * @throws Error if from and to Units' SchemaItem is not found in Schema or Schema prefix is not found in SchemaContext
+   * @throws Error if from and to Units do not belong to the same phenomenon
+   * @throws Error if definitions' SchemaItems cannot be found in its own or referenced Schemas
+   * @throws Error if base units of source and target unit do not match
+   */
+  public calculateConversionSync(fromUnit: string, toUnit: string): UnitConversion {
+    const [fromSchemaName, fromSchemaItemName] = SchemaItem.parseFullName(fromUnit);
+    const [toSchemaName, toSchemaItemName] = SchemaItem.parseFullName(toUnit);
+    const fromSchemaKey = new SchemaKey(fromSchemaName);
+    const toSchemaKey = new SchemaKey(toSchemaName);
+
+    const fromSchema = this._context.getSchemaSync(fromSchemaKey);
+    const toSchema = this._context.getSchemaSync(toSchemaKey);
+
+    if (!fromSchema || !toSchema) {
+      throw new BentleyError(BentleyStatus.ERROR, "Cannot find from's and/or to's schema", () => {
+        return { from: fromUnit, fromSchema: fromSchemaName, to: toUnit, toSchema: toSchemaName };
+      });
+    }
+
+    const from = this._uGraph.resolveUnitSync(fromSchemaItemName, fromSchema);
+    const to = this._uGraph.resolveUnitSync(toSchemaItemName, toSchema);
+
+    return this.processUnitsSync(from, to);
+  }
+
+  /**
    * @param from Source unit converted from
    * @param to Target unit converted to
    * @internal
@@ -75,6 +106,44 @@ export class UnitConverter {
     // Add nodes and subsequent children to graph
     await this._uGraph.addUnit(from);
     await this._uGraph.addUnit(to);
+
+    const fromBaseUnits = new Map<string, number>();
+    const toBaseUnits = new Map<string, number>();
+    // Calculate map of UnitConversions to get between from -> base
+    const fromMapStore = this._uGraph.reduce(from, fromBaseUnits);
+    // Calculate map of UnitConversions to get between base -> to
+    const toMapStore = this._uGraph.reduce(to, toBaseUnits);
+
+    if (!this.checkBaseUnitsMatch(fromBaseUnits, toBaseUnits))
+      throw new BentleyError(BentleyStatus.ERROR, `Source and target units do not have matching base units`, () => {
+        return { from, to };
+      });
+
+    // Final calculations to get singular UnitConversion between from -> to
+    const fromMap = fromMapStore.get(from.key.fullName) || UnitConversion.identity;
+    const toMap = toMapStore.get(to.key.fullName) || UnitConversion.identity;
+    const fromInverse = fromMap.inverse();
+    return fromInverse.compose(toMap);
+  }
+
+  /**
+   * @param from Source unit converted from
+   * @param to Target unit converted to
+   * @internal
+   */
+  private processUnitsSync(from: Unit | Constant, to: Unit | Constant): UnitConversion {
+    if (from.key.matches(to.key))
+      return UnitConversion.identity;
+
+    const areCompatible = Unit.areCompatibleSync(from as Unit, to as Unit);
+    if (!areCompatible)
+      throw new BentleyError(BentleyStatus.ERROR, `Source and target units do not belong to same phenomenon`, () => {
+        return { from, to };
+      });
+
+    // Add nodes and subsequent children to graph
+    this._uGraph.addUnitSync(from);
+    this._uGraph.addUnitSync(to);
 
     const fromBaseUnits = new Map<string, number>();
     const toBaseUnits = new Map<string, number>();
