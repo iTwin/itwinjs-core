@@ -235,7 +235,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * * Point3d
    * * An array of 2 doubles
    * * An array of 3 doubles
-   * * A GrowableXYZArray
+   * * An IndexedXYZCollection
    * * Any json object satisfying Point3d.isXYAndZ
    * * Any json object satisfying Point3d.isXAndY
    * * A Float64Array of doubles, interpreted as xyzxyz
