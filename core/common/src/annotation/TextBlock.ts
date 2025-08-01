@@ -129,9 +129,19 @@ export abstract class TextBlockComponent {
     this._styleOverrides = TextStyleSettings.cloneProps(overrides);
   }
 
-  /** Reset any [[styleOverrides]] applied to this component. */
-  public clearStyleOverrides(_options?: ClearTextStyleOptions): void {
+  /**
+   * Clears any [[styleOverrides]] applied to this Paragraph.
+   * Will also clear [[styleOverrides]] from all child components unless [[ClearTextStyleOptions.preserveChildrenOverrides]] is `true`.
+   */
+  public clearStyleOverrides(options?: ClearTextStyleOptions): void {
     this.styleOverrides = {};
+
+    if (options?.preserveChildrenOverrides || !this.children)
+      return;
+
+    for (const child of this.children) {
+      child.clearStyleOverrides();
+    }
   }
 
   /** Returns true if [[styleOverrides]] specifies any deviations from the [[TextBlock]]'s [AnnotationTextStyle]($backend). */
@@ -678,23 +688,6 @@ export class Paragraph extends TextBlockComponent {
     return new Paragraph(this.toJSON());
   }
 
-  public override get isEmpty(): boolean {
-    return this.children?.length === 0;
-  }
-
-  /**
-   * Clears any [[styleOverrides]] applied to this Paragraph.
-   * Will also clear [[styleOverrides]] from all child components unless [[ClearTextStyleOptions.preserveChildrenOverrides]] is `true`.
-   */
-  public override clearStyleOverrides(options?: ClearTextStyleOptions): void {
-    super.clearStyleOverrides();
-    if (options?.preserveChildrenOverrides || !this.children)
-      return;
-
-    for (const child of this.children) {
-      child.clearStyleOverrides();
-    }
-  }
 
   /** Compute a string representation of this paragraph by concatenating the string representations of all of its [[runs]]. */
   public override stringify(options?: TextBlockStringifyOptions): string {
@@ -816,20 +809,6 @@ export class TextBlock extends TextBlockComponent {
 
   public override clone(): TextBlock {
     return new TextBlock(this.toJSON());
-  }
-
-  /**
-   * Clears any [[styleOverrides]] applied to this TextBlock.
-   * Will also clear [[styleOverrides]] from all child components unless [[ClearTextStyleOptions.preserveChildrenOverrides]] is `true`.
-   */
-  public override clearStyleOverrides(options?: ClearTextStyleOptions): void {
-    super.clearStyleOverrides();
-    if (options?.preserveChildrenOverrides || !this.children)
-      return;
-
-    for (const child of this.children) {
-      child.clearStyleOverrides();
-    }
   }
 
   /** Compute a string representation of the document's contents by concatenating the string representations of each of its [[paragraphs]], separated by [[TextBlockStringifyOptions.paragraphBreak]]. */
