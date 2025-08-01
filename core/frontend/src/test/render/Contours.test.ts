@@ -9,7 +9,7 @@ import { DecorateContext } from "../../ViewContext";
 import { ColorDef, ContourDisplay, ContourDisplayProps, RenderMode } from "@itwin/core-common";
 import { Viewport } from "../../Viewport";
 import { Point3d, Range3d } from "@itwin/core-geometry";
-import { Color, expectUniqueColors, readUniqueColors, readUniquePixelData, sortColorDefs, testBlankViewport } from "../openBlankViewport";
+import { Color, expectUniqueColors, readUniqueColors, readUniquePixelData, testBlankViewport } from "../openBlankViewport";
 import { GraphicType } from "../../common";
 import { StandardViewId } from "../../StandardView";
 import { DisplayStyle3dState } from "../../DisplayStyleState";

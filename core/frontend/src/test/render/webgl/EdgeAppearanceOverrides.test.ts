@@ -2,16 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ColorDef, ColorIndex, EdgeAppearanceOverrides, EmptyLocalization, FeatureIndex, FillFlags, HiddenLine, LinePixels, MeshEdge, MeshPolyline, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
+import { ColorDef, ColorIndex, EdgeAppearanceOverrides, EmptyLocalization, FeatureIndex, FillFlags, HiddenLine, LinePixels, MeshEdge, MeshPolyline, QParams3d, QPoint3dList } from "@itwin/core-common";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { MeshArgs } from "../../../render/MeshArgs";
 import { MeshArgsEdges } from "../../../common/internal/render/MeshPrimitives";
-import { Graphic, MeshGraphic, Primitive } from "../../../internal/webgl";
+import { MeshGraphic } from "../../../internal/webgl";
 import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";
 import { IModelApp } from "../../../IModelApp";
-import { ColorInfo } from "../../../internal/render/webgl/ColorInfo";
-import { lineCodeFromLinePixels } from "../../../common/internal/render/LineCode";
 import { RenderGraphic, RenderGraphicOwner } from "../../../render/RenderGraphic";
 import { TestDecorator } from "../../TestDecorators";
 import { DecorateContext } from "../../../ViewContext";

@@ -7,7 +7,7 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { EdgeAppearanceOverrides, LinePixels, RenderMode } from "@itwin/core-common";
+import { EdgeAppearanceOverrides, RenderMode } from "@itwin/core-common";
 import { RenderMemory } from "../../../render/RenderMemory";
 import { TextureHandle } from "./Texture";
 import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
