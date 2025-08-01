@@ -235,7 +235,73 @@ describe("TextBlock", () => {
 
       tb.appendRun(TextRun.create());
       expect(tb.children?.length).to.equal(1);
+      expect(tb.children![0].children?.length).to.equal(1);
+
+      tb.appendRun(TextRun.create());
+      expect(tb.children?.length).to.equal(1);
       expect(tb.children![0].children?.length).to.equal(2);
+    });
+  });
+
+  describe("equals", () => {
+    it("compares FieldRuns for equality", () => {
+      const baseProps = {
+        propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
+        propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
+        cachedContent: "cachedValue",
+      };
+
+      const combinations = [
+        { propertyHost: { elementId: "0x456", schemaName: "OtherSchema", className: "OtherClass" } },
+        { propertyHost: { elementId: "0x456", schemaName: "TestSchema", className: "TestClass" } },
+        { propertyHost: { elementId: "0x123", schemaName: "OtherSchema", className: "OtherClass" } },
+
+        { propertyPath: { propertyName: "otherProperty", accessors: [0, "nestedProperty"] } },
+        { propertyPath: { propertyName: "someProperty", accessors: [1, "nestedProperty"] } },
+        { propertyPath: { propertyName: "someProperty", accessors: [0, "otherNestedProperty"] } },
+        { propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty", "extraNestedProperty"] } },
+
+        { propertyPath: { propertyName: "otherProperty", accessors: [0, "nestedProperty"], jsonAccessors: ["array", 2] } },
+        { propertyPath: { propertyName: "someProperty", accessors: [1, "nestedProperty"], jsonAccessors: ["array", 2] } },
+        { propertyPath: { propertyName: "someProperty", accessors: [0, "otherNestedProperty"], jsonAccessors: ["array", 2] } },
+        { propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty", "extraNestedProperty"], jsonAccessors: ["array", 2] } },
+        { propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty", "extraNestedProperty"], jsonAccessors: ["array", 3] } },
+      ];
+
+      const fieldRuns = combinations.map((combo) =>
+        FieldRun.create({
+          ...baseProps,
+          ...combo,
+        })
+      );
+
+      for (let i = 0; i < fieldRuns.length; i++) {
+        const fieldRunA = fieldRuns[i];
+        for (let j = 0; j < fieldRuns.length; j++) {
+          const fieldRunB = fieldRuns[j];
+          if (i === j) {
+            expect(fieldRunA.equals(fieldRunB)).to.be.true;
+          } else {
+            expect(fieldRunA.equals(fieldRunB)).to.be.false;
+          }
+        }
+      }
+    });
+
+    it("ignores cached content", () => {
+      const field1 = FieldRun.create({
+        propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
+        propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
+        cachedContent: "1",
+      });
+
+      const field2 = FieldRun.create({
+        propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
+        propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
+        cachedContent: "2",
+      });
+
+      expect(field1.equals(field2)).to.be.true;
     });
   });
 });
