@@ -570,7 +570,7 @@ Typical workflow to create iModel geometry is
 
 1. Identify the suitable ECClass to persist your data. Typically this is a PhysicalElement
 2. Construct a [GeometryStreamBuilder]($core-common) to help with collecting all the geometric primitives that will be used to create the element.
-3. Create and map individual geometric primitives from the input data and feed it into the geometrystream. To learn how to create individual primitives that will be fed into the geometrystreambuilder, the [iTwin Geometry sample](/sample-showcase/?group=Geometry+Samples&sample=simple-3d-sample) is a good starting point
+3. Create and map individual geometric primitives from the input data and feed it into the geometrystream. To learn how to create individual primitives that will be fed into the geometrystreambuilder, the [iTwin Geometry sample](https://www.itwinjs.org/sandboxes/iTwinPlatform/Simple%203d/) is a good starting point
 4. Provide geometry and other details to the element creation logic. Please see [GeometricElement3d](./backend/createelements#geometricelement3d)
 
 ### Authentication
