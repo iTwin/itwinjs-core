@@ -21,7 +21,6 @@ import { Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
 import { OpenMode } from "@itwin/core-bentley";
 import { EntityClass, NavigationProperty, PrimitiveProperty, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
-import { error } from "console";
 
 describe("Class Registry", () => {
   let imodel: SnapshotDb;
@@ -188,7 +187,7 @@ describe("Class Registry - getRootMetaData", () => {
   });
 });
 
-describe.only("Class Registry - generated classes", () => {
+describe("Class Registry - generated classes", () => {
   let imodel: SnapshotDb;
   const testSchemaPath = path.join(KnownTestLocations.assetsDir, "TestGeneratedClasses.ecschema.xml");
 
@@ -321,7 +320,7 @@ describe.only("Class Registry - generated classes", () => {
     public static override get className() { return "NonGeneratedElement"; }
   }
 
-  it.only("Github issue - should generate correct classes", async () => {
+  it("Should provide correct schemas and full-names on generated classes", async () => {
     await imodel.importSchemaStrings([
       `<?xml version="1.0" encoding="UTF-8"?>
         <ECSchema schemaName="CustomA" alias="custA" version="1.0.0"
@@ -357,16 +356,15 @@ describe.only("Class Registry - generated classes", () => {
 
     class CustomASchema extends Schema {
       public static override get schemaName(): string { return "CustomA"; }
-      public static get classes() {
+      public static get classes(): typeof Entity[] {
         return [NonGeneratedElement];
       }
       public static registerSchema() {
         if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
           Schemas.unregisterSchema(this.schemaName);
           Schemas.registerSchema(this);
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          for (const class_ of this.classes) {
-            ClassRegistry.register(class_, this);
+          for (const ecClass of this.classes) {
+            ClassRegistry.register(ecClass, this);
           }
         }
       }
@@ -391,9 +389,8 @@ describe.only("Class Registry - generated classes", () => {
         if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
           Schemas.unregisterSchema(this.schemaName);
           Schemas.registerSchema(this);
-          // eslint-disable-next-line @typescript-eslint/naming-convention
-          for (const class_ of this.classes) {
-            ClassRegistry.register(class_, this);
+          for (const ecClass of this.classes) {
+            ClassRegistry.register(ecClass, this);
           }
         }
       }
