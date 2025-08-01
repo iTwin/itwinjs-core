@@ -42,8 +42,8 @@ class EdgeDecorator extends TestDecorator {
     const colors = new ColorIndex();
     colors.initUniform(ColorDef.red);
 
-    const points = [new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(1, 1, 0)];
-    const qpoints = new QPoint3dList(QParams3d.fromRange(Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1)));
+    const points = [new Point3d(0, 0, 0), new Point3d(10, 0, 0), new Point3d(10, 10, 0)];
+    const qpoints = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
     for (const point of points) {
       qpoints.add(point);
     }

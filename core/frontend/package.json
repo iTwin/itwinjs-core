@@ -22,8 +22,8 @@
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./public/locales/en-PSEUDO",
-    "test": "npm run webpackTestWorker && vitest --run",
-    "cover": "npm run webpackTestWorker && vitest --run",
+    "test": "npm run webpackTestWorker && vitest --inspect-brk --no-file-parallelism EdgeAppearanceOverrides",
+    "cover": "npm run webpackTestWorker && vitest --run EdgeAppearanceOverrides",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2 && npm run -s webpackTestWorker",
     "webpackTestWorker": "webpack --config ./src/test/worker/webpack.config.js 1>&2 && cpx \"./lib/test/test-worker.js\" ./lib/test",
     "webpackWorkers": "webpack --config ./src/workers/ImdlParser/webpack.config.js 1>&2"
