@@ -68,6 +68,24 @@ describe("FormatsProvider examples", () => {
     assert.equal(result, "50.0 m");
   });
 
+  it.only("SchemaFormatsProvider Synchronous Formatting", async () => {
+    // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Schema_Formats_Provider_Simple_Formatting
+    const formatsProvider = new SchemaFormatsProvider(schemaContext, "metric");
+    const unitsProvider = new SchemaUnitProvider(schemaContext);
+    const persistenceUnit = unitsProvider.findUnitByNameSync("Units.M"); // or unitsProvider.findUnit("m");
+
+    // No unit system was provided, and no format was found in the cache so the method will return the first presentation format for the KoQ, which uses KM.
+    const formatProps = await formatsProvider.getFormat("AecUnits.LENGTH");
+    const format = Format.createFromJSONSync("testFormat", unitsProvider, formatProps!);
+    const formatSpec = FormatterSpec.createSync("TestSpec", format, unitsProvider, persistenceUnit);
+
+    const result = formatSpec.applyFormatting(50); // The persistence unit is meters, so this input value is 50 m.
+    // result in formatted value of 50 m
+    // __PUBLISH_EXTRACT_END__
+
+    assert.equal(result, "50.0 m");
+  });
+
   it("SchemaFormatsProvider Formatting with Unit System provided", async () => {
     // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Schema_Formats_Provider_Simple_Formatting_With_Unit_System
     const formatsProvider = new SchemaFormatsProvider(schemaContext, "metric");
@@ -78,6 +96,24 @@ describe("FormatsProvider examples", () => {
     const formatProps = await formatsProvider.getFormat("AecUnits.LENGTH_LONG");
     const format = await Format.createFromJSON("testFormat", unitsProvider, formatProps!);
     const formatSpec = await FormatterSpec.create("TestSpec", format, unitsProvider, persistenceUnit);
+
+    const result = formatSpec.applyFormatting(50); // The persistence unit is meters, so this input value is 50 m.
+    // result in formatted value of 164'0 1/2"
+    // __PUBLISH_EXTRACT_END__
+
+    assert.equal(result, "164'0 1/2\"");
+  });
+
+  it.only("SchemaFormatsProvider Synchronous Formatting with Unit System provided", async () => {
+    // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Schema_Formats_Provider_Simple_Formatting_With_Unit_System
+    const formatsProvider = new SchemaFormatsProvider(schemaContext, "metric");
+    const unitsProvider = new SchemaUnitProvider(schemaContext);
+    const persistenceUnit = unitsProvider.findUnitByNameSync("Units.M"); // or unitsProvider.findUnit("m");
+
+    formatsProvider.unitSystem = "imperial"; // This will cause the method to return the first presentation format for the KoQ that uses imperial units.
+    const formatProps = await formatsProvider.getFormat("AecUnits.LENGTH_LONG");
+    const format = Format.createFromJSONSync("testFormat", unitsProvider, formatProps!);
+    const formatSpec = FormatterSpec.createSync("TestSpec", format, unitsProvider, persistenceUnit);
 
     const result = formatSpec.applyFormatting(50); // The persistence unit is meters, so this input value is 50 m.
     // result in formatted value of 164'0 1/2"
