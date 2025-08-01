@@ -956,13 +956,13 @@ describe("TxnManager", () => {
       expect(imodel.txns.hasLocalChanges).to.be.false;
     });
 
-    it("TxnManager.deleteAllTxns not deleting briefcase changes", () => {
+    it("TxnManager.deleteAllTxns should revert local changes", () => {
       // Insert and save an element
       const elId = imodel.elements.insertElement(props);
       imodel.saveChanges();
 
       // Confirm element exists
-      expect(() => imodel.elements.getElement(elId)).not.to.throw();
+      assert.isDefined(imodel.elements.tryGetElement(elId));
 
       // Delete all txns
       imodel.txns.deleteAllTxns();
@@ -972,7 +972,26 @@ describe("TxnManager", () => {
       imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
 
       // The element should NOT exist if deleteAllTxns truly reverted the briefcase
-      expect(() => imodel.elements.getElement(elId)).to.throw();
+      assert.isUndefined(imodel.elements.tryGetElement(elId));
+    });
+
+    it("TxnManager.clearAllTxns should not revert local changes", () => {
+      // Insert and save an element
+      const elId = imodel.elements.insertElement(props);
+      imodel.saveChanges();
+
+      // Confirm element exists
+      assert.isDefined(imodel.elements.tryGetElement(elId));
+
+      // Clear all txns
+      imodel.txns.clearAllTxns();
+
+      // Close and reopen the briefcase
+      imodel.close();
+      imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
+
+      // The element will exist as clearAllTxns will only clear the txn history, without reverting the changes
+      assert.isDefined(imodel.elements.tryGetElement(elId));
     });
 
     it("clears undo/redo history", () => {

@@ -5,7 +5,7 @@ import { KnownTestLocations, HubWrappers, IModelTestUtils } from "@itwin/core-ba
 import { IModel, Code, SubCategoryAppearance } from "@itwin/core-common";
 import { GuidString, Id64, Id64String } from "@itwin/core-bentley";
 
-describe("deleteAllTxns test", async () => {
+describe("Discarding local txns test", async () => {
   let briefcases: BriefcaseDb[];
   const adminToken = "super manager token";
   let elementPropsTemplate: any;
@@ -13,7 +13,7 @@ describe("deleteAllTxns test", async () => {
 
   before(async () => {
     await IModelHost.startup();
-    HubMock.startup("deleteAllTxnsTest", KnownTestLocations.outputDir);
+    HubMock.startup("discardLocalTxnsTest", KnownTestLocations.outputDir);
   });
 
   after(async () => {
@@ -38,7 +38,7 @@ describe("deleteAllTxns test", async () => {
       HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken })
     ]);
 
-    const firstBriefcase = briefcases[0];
+    const [firstBriefcase, secondBriefcase] = briefcases;
 
     try {
       await firstBriefcase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
@@ -77,6 +77,7 @@ describe("deleteAllTxns test", async () => {
       drawingCategoryId = DrawingCategory.insert(firstBriefcase, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance());
     firstBriefcase.saveChanges();
     await firstBriefcase.pushChanges({ description: "Initial Test Data Setup", accessToken: adminToken });
+    await secondBriefcase.pullChanges();
 
     elementPropsTemplate = {
       classFullName: "TestSchema:TestElement",
@@ -101,9 +102,13 @@ describe("deleteAllTxns test", async () => {
     return elementId;
   };
 
-  async function updateElementState(briefcase: BriefcaseDb, id: Id64String, state: string) {
+  async function updateElementState(briefcase: BriefcaseDb, id: Id64String, state: string, expectedToFail: boolean = false) {
     await briefcase.locks.acquireLocks({ exclusive: id });
-    const props = briefcase.elements.getElementProps({ id }) as any;
+    const props = briefcase.elements.tryGetElementProps({ id }) as any;
+    if (expectedToFail) {
+      assert.isUndefined(props);
+      return;
+    }
     props.elementState = state;
     briefcase.elements.updateElement(props);
 
@@ -131,236 +136,313 @@ describe("deleteAllTxns test", async () => {
     }
   }
 
-  it("deleteAllTxns should revert local changes", async () => {
-    // Basic data setup where both briefcases have a single element inserted
-    await setupTestSchemaAndModel();
-    assert.equal(briefcases.length, 2, "Two briefcases should be opened");
+  describe("deleteAllTxns", () => {
+    it("deleteAllTxns should revert local changes", async () => {
+      // Basic data setup where both briefcases have a single element inserted
+      await setupTestSchemaAndModel();
+      assert.equal(briefcases.length, 2, "Two briefcases should be opened");
 
-    const [firstBriefcase, secondBriefcase] = briefcases;
+      const [firstBriefcase, secondBriefcase] = briefcases;
 
-    const el1Id = await insertElement(firstBriefcase, "FirstElement");
+      const el1Id = await insertElement(firstBriefcase, "FirstElement");
 
-    // Sync both briefcases
-    await firstBriefcase.pushChanges({ description: "Insert Element", accessToken: adminToken });
-    await secondBriefcase.pullChanges({ accessToken: adminToken });
-    firstBriefcase.locks.releaseAllLocks();
+      // Sync both briefcases
+      await firstBriefcase.pushChanges({ description: "Insert Element", accessToken: adminToken });
+      await secondBriefcase.pullChanges({ accessToken: adminToken });
+      firstBriefcase.locks.releaseAllLocks();
 
-    // Insert 2 more elements
-    const el2Id = await insertElement(firstBriefcase, "SecondElement");
-    const el3Id = await insertElement(firstBriefcase, "ThirdElement");
+      // Insert 2 more elements
+      const el2Id = await insertElement(firstBriefcase, "SecondElement");
+      const el3Id = await insertElement(firstBriefcase, "ThirdElement");
 
-    // Finally, update the first element
-    await updateElementState(firstBriefcase, el1Id, "Updated");
+      // Finally, update the first element
+      await updateElementState(firstBriefcase, el1Id, "Updated");
 
-    testElement(firstBriefcase, el1Id, "Updated");
-    testElement(firstBriefcase, el2Id, "Inserted");
+      testElement(firstBriefcase, el1Id, "Updated");
+      testElement(firstBriefcase, el2Id, "Inserted");
 
-    testElement(secondBriefcase, el1Id, "Inserted");
-    testElement(secondBriefcase, el2Id);
-    testElement(secondBriefcase, el3Id);
+      testElement(secondBriefcase, el1Id, "Inserted");
+      testElement(secondBriefcase, el2Id);
+      testElement(secondBriefcase, el3Id);
 
-    // Delete all transactions and verify rollback
-    firstBriefcase[_nativeDb].deleteAllTxns();
+      // Delete all transactions and verify rollback
+      firstBriefcase[_nativeDb].deleteAllTxns();
 
-    testElement(firstBriefcase, el1Id, "Inserted");
-    testElement(secondBriefcase, el1Id, "Inserted");
+      testElement(firstBriefcase, el1Id, "Inserted");
+      testElement(secondBriefcase, el1Id, "Inserted");
 
-    testElement(firstBriefcase, el2Id);
-    testElement(secondBriefcase, el2Id);
-    testElement(firstBriefcase, el3Id);
-    testElement(secondBriefcase, el3Id);
+      testElement(firstBriefcase, el2Id);
+      testElement(secondBriefcase, el2Id);
+      testElement(firstBriefcase, el3Id);
+      testElement(secondBriefcase, el3Id);
 
-    // Release locks in firstBriefcase before deleting in secondBriefcase
-    await firstBriefcase.locks.releaseAllLocks();
+      // Release locks in firstBriefcase before deleting in secondBriefcase
+      await firstBriefcase.locks.releaseAllLocks();
 
-    // Now delete the element from the second briefcase
-    await deleteElement(secondBriefcase, el1Id);
+      // Now delete the element from the second briefcase
+      await deleteElement(secondBriefcase, el1Id);
 
-    // Assert element deletion
-    testElement(firstBriefcase, el1Id, "Inserted");
-    testElement(secondBriefcase, el1Id);
+      // Assert element deletion
+      testElement(firstBriefcase, el1Id, "Inserted");
+      testElement(secondBriefcase, el1Id);
 
-    secondBriefcase[_nativeDb].deleteAllTxns();
+      secondBriefcase[_nativeDb].deleteAllTxns();
 
-    testElement(firstBriefcase, el1Id, "Inserted");
-    testElement(secondBriefcase, el1Id, "Inserted");
+      testElement(firstBriefcase, el1Id, "Inserted");
+      testElement(secondBriefcase, el1Id, "Inserted");
+    });
+
+    it("Should only push changes made after txns are deleted", async () => {
+      // Basic data setup where both briefcases have a single element inserted
+      await setupTestSchemaAndModel();
+      assert.equal(briefcases.length, 2, "Two briefcases should be opened");
+
+      const [firstBriefcase, secondBriefcase] = briefcases;
+
+      const el1Id = await insertElement(firstBriefcase, "FirstElement");
+
+      // Sync both briefcases
+      await firstBriefcase.pushChanges({ description: "Insert Element", accessToken: adminToken });
+      await secondBriefcase.pullChanges({ accessToken: adminToken });
+      firstBriefcase.locks.releaseAllLocks();
+
+      await updateElementState(secondBriefcase, el1Id, "First Update");
+
+      secondBriefcase[_nativeDb].deleteAllTxns();
+
+      await updateElementState(secondBriefcase, el1Id, "Another Update");
+
+      await secondBriefcase.pushChanges({ description: "Update Element", accessToken: adminToken });
+      await firstBriefcase.pullChanges({ accessToken: adminToken });
+      secondBriefcase.locks.releaseAllLocks();
+
+      testElement(firstBriefcase, el1Id, "Another Update");
+      testElement(secondBriefcase, el1Id, "Another Update");
+    });
+
+    it("With conflicting changes", async () => {
+      // Basic data setup where both briefcases have a single element inserted
+      await setupTestSchemaAndModel();
+      assert.equal(briefcases.length, 2, "Two briefcases should be opened");
+
+      const [firstBriefcase, secondBriefcase] = briefcases;
+
+      const el1Id = await insertElement(firstBriefcase, "FirstElement");
+
+      // Sync both briefcases
+      await firstBriefcase.pushChanges({ description: "Insert Element", accessToken: adminToken });
+      await secondBriefcase.pullChanges({ accessToken: adminToken });
+      firstBriefcase.locks.releaseAllLocks();
+
+      await deleteElement(secondBriefcase, el1Id);
+
+      secondBriefcase[_nativeDb].deleteAllTxns();
+
+      await updateElementState(secondBriefcase, el1Id, "First Update");
+
+      await secondBriefcase.pushChanges({ description: "Update Element", accessToken: adminToken });
+      await firstBriefcase.pullChanges({ accessToken: adminToken });
+      secondBriefcase.locks.releaseAllLocks();
+
+      testElement(firstBriefcase, el1Id, "First Update");
+      testElement(secondBriefcase, el1Id, "First Update");
+    });
+
+    it("With conflicting changes with a relationships", async () => {
+      // Basic data setup where both briefcases have a single element inserted
+      await setupTestSchemaAndModel();
+      assert.equal(briefcases.length, 2, "Two briefcases should be opened");
+
+      const briefcase = briefcases[0];
+
+      const el1Id = await insertElement(briefcase, "FirstElement");
+      const el2Id = await insertElement(briefcase, "SecondElement");
+
+      [el1Id, el2Id].forEach(id => { assert.isDefined(briefcase.elements.getElement(id)); });
+
+      briefcase[_nativeDb].deleteAllTxns();
+
+      // Insert a relationship between the two elements
+      const relProps = {
+        classFullName: "TestSchema:ElementConnectsToElement",
+        sourceId: el1Id,
+        targetId: el2Id,
+      };
+      const relId = briefcase.relationships.insertInstance(relProps);
+      assert.isTrue(Id64.isValidId64(relId));
+
+      assert.isUndefined(briefcase.relationships.tryGetInstance("TestSchema:ElementConnectsToElement", relId));
+    });
+
+    it("Only the changes since the last push should be reversed", async () => {
+      // Basic data setup where both briefcases have a single element inserted
+      await setupTestSchemaAndModel();
+      assert.equal(briefcases.length, 2, "Two briefcases should be opened");
+
+      const [firstBriefcase, secondBriefcase] = briefcases;
+
+      // Insert 2 elements in the first briefcase
+      const el1Id = await insertElement(firstBriefcase, "FirstElement");
+      const el2Id = await insertElement(firstBriefcase, "SecondElement");
+
+      await firstBriefcase.pushChanges({ description: "Insert two Elements", accessToken: adminToken });
+      firstBriefcase.locks.releaseAllLocks();
+
+      // Update the first element
+      await updateElementState(firstBriefcase, el1Id, "Updated");
+
+      testElement(firstBriefcase, el1Id, "Updated");
+      testElement(firstBriefcase, el2Id, "Inserted");
+
+      await firstBriefcase.pushChanges({ description: "Update first Element", accessToken: adminToken });
+      firstBriefcase.locks.releaseAllLocks();
+
+      // Insert a third element
+      const el3Id = await insertElement(firstBriefcase, "ThirdElement");
+      testElement(firstBriefcase, el3Id, "Inserted");
+
+      // Also update the second element
+      await updateElementState(firstBriefcase, el2Id, "Temporary Update");
+
+      // Change of plans !
+      // Delete all txns since the last push
+      firstBriefcase[_nativeDb].deleteAllTxns();
+
+      // Update the second element with it's final value
+      await updateElementState(firstBriefcase, el2Id, "Final Update");
+      testElement(firstBriefcase, el2Id, "Final Update");
+
+      // Sync both briefcases
+      await firstBriefcase.pushChanges({ description: "Update second Element", accessToken: adminToken });
+      await secondBriefcase.pullChanges();
+      firstBriefcase.locks.releaseAllLocks();
+
+      // Check if all the values are as expected in the first briefcase
+      testElement(firstBriefcase, el1Id, "Updated");
+      testElement(firstBriefcase, el2Id, "Final Update");
+      testElement(firstBriefcase, el3Id);
+
+      // Check if the second briefcase has the same values after the pull
+      testElement(secondBriefcase, el1Id, "Updated");
+      testElement(secondBriefcase, el2Id, "Final Update");
+
+      // If TxnManager.ClearAllTxns() is called, the third element would be present in the first briefcase.
+      // But since the txn which inserted was cleared, it would not get pushed to the second briefcase.
+      // And both briefcases would have been out-of-sync.
+      // Since TxnManager.DeleteAllTxns() reverses the changes made, the third element would not exist in both briefcases.
+      testElement(secondBriefcase, el3Id);
+    });
+
+    it("Already reversed txns should be handled correctly", async () => {
+      // Basic data setup where both briefcases have a single element inserted
+      await setupTestSchemaAndModel();
+      assert.equal(briefcases.length, 2, "Two briefcases should be opened");
+
+      const firstBriefcase = briefcases[0];
+
+      const el1Id = await insertElement(firstBriefcase, "FirstElement");
+
+      // Sync both briefcases
+      await firstBriefcase.pushChanges({ description: "Insert Element", accessToken: adminToken });
+      firstBriefcase.locks.releaseAllLocks();
+
+      // Update the first element twice
+      await updateElementState(firstBriefcase, el1Id, "First Update");
+      await updateElementState(firstBriefcase, el1Id, "Second Update");
+
+      // Insert a second element
+      let el2Id = await insertElement(firstBriefcase, "SecondElement");
+
+      // Reverse 2 transactions
+      firstBriefcase.txns.reverseTxns(2);
+
+      testElement(firstBriefcase, el1Id, "First Update");
+      testElement(firstBriefcase, el2Id);
+
+      // Re-Insert the second element
+      el2Id = await insertElement(firstBriefcase, "SecondElement");
+      await updateElementState(firstBriefcase, el1Id, "Another Update");
+
+      // Reverse all the changes made since the last push
+      firstBriefcase[_nativeDb].deleteAllTxns();
+
+      testElement(firstBriefcase, el1Id, "Inserted");
+      testElement(firstBriefcase, el2Id);
+    });
   });
 
-  it("Should only push changes made after txns are deleted", async () => {
-    // Basic data setup where both briefcases have a single element inserted
-    await setupTestSchemaAndModel();
-    assert.equal(briefcases.length, 2, "Two briefcases should be opened");
+  describe("clearAllTxns", () => {
+    it("clearAllTxns should not revert local changes", async () => {
+      // Basic data setup where both briefcases have a single element inserted
+      await setupTestSchemaAndModel();
+      assert.equal(briefcases.length, 2, "Two briefcases should be opened");
 
-    const [firstBriefcase, secondBriefcase] = briefcases;
+      const [firstBriefcase, secondBriefcase] = briefcases;
 
-    const el1Id = await insertElement(firstBriefcase, "FirstElement");
+      const el1Id = await insertElement(firstBriefcase, "FirstElement");
 
-    // Sync both briefcases
-    await firstBriefcase.pushChanges({ description: "Insert Element", accessToken: adminToken });
-    await secondBriefcase.pullChanges({ accessToken: adminToken });
-    firstBriefcase.locks.releaseAllLocks();
+      // Sync both briefcases
+      await firstBriefcase.pushChanges({ description: "Insert Element", accessToken: adminToken });
+      await secondBriefcase.pullChanges({ accessToken: adminToken });
+      firstBriefcase.locks.releaseAllLocks();
 
-    await updateElementState(secondBriefcase, el1Id, "First Update");
+      // Insert 2 more elements
+      const el2Id = await insertElement(firstBriefcase, "SecondElement");
+      const el3Id = await insertElement(firstBriefcase, "ThirdElement");
 
-    secondBriefcase[_nativeDb].deleteAllTxns();
+      // Finally, update the first element
+      await updateElementState(firstBriefcase, el1Id, "Updated");
 
-    await updateElementState(secondBriefcase, el1Id, "Another Update");
+      testElement(firstBriefcase, el1Id, "Updated");
+      testElement(firstBriefcase, el2Id, "Inserted");
 
-    await secondBriefcase.pushChanges({ description: "Update Element", accessToken: adminToken });
-    await firstBriefcase.pullChanges({ accessToken: adminToken });
-    secondBriefcase.locks.releaseAllLocks();
+      testElement(secondBriefcase, el1Id, "Inserted");
+      testElement(secondBriefcase, el2Id);
+      testElement(secondBriefcase, el3Id);
 
-    testElement(firstBriefcase, el1Id, "Another Update");
-    testElement(secondBriefcase, el1Id, "Another Update");
-  });
+      // Clear all transactions
+      firstBriefcase[_nativeDb].clearAllTxns();
 
-  it("With conflicting changes", async () => {
-    // Basic data setup where both briefcases have a single element inserted
-    await setupTestSchemaAndModel();
-    assert.equal(briefcases.length, 2, "Two briefcases should be opened");
+      // The local changes should not be reverted
+      testElement(firstBriefcase, el1Id, "Updated");
+      testElement(firstBriefcase, el2Id, "Inserted");
 
-    const [firstBriefcase, secondBriefcase] = briefcases;
+      testElement(secondBriefcase, el1Id, "Inserted");
+      testElement(secondBriefcase, el2Id);
+      testElement(secondBriefcase, el3Id);
+    });
 
-    const el1Id = await insertElement(firstBriefcase, "FirstElement");
+    it("With conflicting changes", async () => {
+      // Basic data setup where both briefcases have a single element inserted
+      await setupTestSchemaAndModel();
+      assert.equal(briefcases.length, 2, "Two briefcases should be opened");
 
-    // Sync both briefcases
-    await firstBriefcase.pushChanges({ description: "Insert Element", accessToken: adminToken });
-    await secondBriefcase.pullChanges({ accessToken: adminToken });
-    firstBriefcase.locks.releaseAllLocks();
+      const [firstBriefcase, secondBriefcase] = briefcases;
 
-    await deleteElement(secondBriefcase, el1Id);
+      const el1Id = await insertElement(firstBriefcase, "FirstElement");
 
-    secondBriefcase[_nativeDb].deleteAllTxns();
+      // Sync both briefcases
+      await firstBriefcase.pushChanges({ description: "Insert Element", accessToken: adminToken });
+      await secondBriefcase.pullChanges({ accessToken: adminToken });
+      firstBriefcase.locks.releaseAllLocks();
 
-    await updateElementState(secondBriefcase, el1Id, "First Update");
+      // Delete element from the second briefcase
+      await deleteElement(secondBriefcase, el1Id);
 
-    await secondBriefcase.pushChanges({ description: "Update Element", accessToken: adminToken });
-    await firstBriefcase.pullChanges({ accessToken: adminToken });
-    secondBriefcase.locks.releaseAllLocks();
+      // Clear all transactions without reverting any local change
+      secondBriefcase[_nativeDb].clearAllTxns();
 
-    testElement(firstBriefcase, el1Id, "First Update");
-    testElement(secondBriefcase, el1Id, "First Update");
-  });
+      // Update should throw as the element was deleted and won't be found
+      await updateElementState(secondBriefcase, el1Id, "", true);
 
-  it("With conflicting changes with a relationships", async () => {
-    // Basic data setup where both briefcases have a single element inserted
-    await setupTestSchemaAndModel();
-    assert.equal(briefcases.length, 2, "Two briefcases should be opened");
+      // Nothing will be pushed as all transactions were cleared
+      await secondBriefcase.pushChanges({ description: "Deleted Element", accessToken: adminToken });
+      await firstBriefcase.pullChanges({ accessToken: adminToken });
+      secondBriefcase.locks.releaseAllLocks();
 
-    const briefcase = briefcases[0];
-
-    const el1Id = await insertElement(briefcase, "FirstElement");
-    const el2Id = await insertElement(briefcase, "SecondElement");
-
-    [el1Id, el2Id].forEach(id => { assert.isDefined(briefcase.elements.getElement(id)); });
-
-    briefcase[_nativeDb].deleteAllTxns();
-
-    // Insert a relationship between the two elements
-    const relProps = {
-      classFullName: "TestSchema:ElementConnectsToElement",
-      sourceId: el1Id,
-      targetId: el2Id,
-    };
-    const relId = briefcase.relationships.insertInstance(relProps);
-    assert.isTrue(Id64.isValidId64(relId));
-
-    expect(() => briefcase.relationships.getInstance("TestSchema:ElementConnectsToElement", relId)).to.throw();
-  });
-
-  it("Only the changes since the last push should be reversed", async () => {
-    // Basic data setup where both briefcases have a single element inserted
-    await setupTestSchemaAndModel();
-    assert.equal(briefcases.length, 2, "Two briefcases should be opened");
-
-    const [firstBriefcase, secondBriefcase] = briefcases;
-
-    // Insert 2 elements in the first briefcase
-    const el1Id = await insertElement(firstBriefcase, "FirstElement");
-    const el2Id = await insertElement(firstBriefcase, "SecondElement");
-
-    await firstBriefcase.pushChanges({ description: "Insert two Elements", accessToken: adminToken });
-    firstBriefcase.locks.releaseAllLocks();
-
-    // Update the first element
-    await updateElementState(firstBriefcase, el1Id, "Updated");
-
-    testElement(firstBriefcase, el1Id, "Updated");
-    testElement(firstBriefcase, el2Id, "Inserted");
-
-    await firstBriefcase.pushChanges({ description: "Update first Element", accessToken: adminToken });
-    firstBriefcase.locks.releaseAllLocks();
-
-    // Insert a third element
-    const el3Id = await insertElement(firstBriefcase, "ThirdElement");
-    testElement(firstBriefcase, el3Id, "Inserted");
-
-    // Also update the second element
-    await updateElementState(firstBriefcase, el2Id, "Temporary Update");
-
-    // Change of plans !
-    // Delete all txns since the last push
-    firstBriefcase[_nativeDb].deleteAllTxns();
-
-    // Update the second element with it's final value
-    await updateElementState(firstBriefcase, el2Id, "Final Update");
-    testElement(firstBriefcase, el2Id, "Final Update");
-
-    // Sync both briefcases
-    await firstBriefcase.pushChanges({ description: "Update second Element", accessToken: adminToken });
-    await secondBriefcase.pullChanges();
-    firstBriefcase.locks.releaseAllLocks();
-
-    // Check if all the values are as expected in the first briefcase
-    testElement(firstBriefcase, el1Id, "Updated");
-    testElement(firstBriefcase, el2Id, "Final Update");
-    testElement(firstBriefcase, el3Id);
-
-    // Check if the second briefcase has the same values after the pull
-    testElement(secondBriefcase, el1Id, "Updated");
-    testElement(secondBriefcase, el2Id, "Final Update");
-
-    // If TxnManager.ClearAllTxns() is called, the third element would be present in the first briefcase.
-    // But since the txn which inserted was cleared, it would not get pushed to the second briefcase.
-    // And both briefcases would have been out-of-sync.
-    // Since TxnManager.DeleteAllTxns() reverses the changes made, the third element would not exist in both briefcases.
-    testElement(secondBriefcase, el3Id);
-  });
-
-  it("Already reversed txns should be handled correctly", async () => {
-    // Basic data setup where both briefcases have a single element inserted
-    await setupTestSchemaAndModel();
-    assert.equal(briefcases.length, 2, "Two briefcases should be opened");
-
-    const firstBriefcase = briefcases[0];
-
-    const el1Id = await insertElement(firstBriefcase, "FirstElement");
-
-    // Sync both briefcases
-    await firstBriefcase.pushChanges({ description: "Insert Element", accessToken: adminToken });
-    firstBriefcase.locks.releaseAllLocks();
-
-    // Update the first element twice
-    await updateElementState(firstBriefcase, el1Id, "First Update");
-    await updateElementState(firstBriefcase, el1Id, "Second Update");
-
-    // Insert a second element
-    let el2Id = await insertElement(firstBriefcase, "SecondElement");
-
-    // Reverse 2 transactions
-    firstBriefcase.txns.reverseTxns(2);
-
-    testElement(firstBriefcase, el1Id, "First Update");
-    testElement(firstBriefcase, el2Id);
-
-    // Re-Insert the second element
-    el2Id = await insertElement(firstBriefcase, "SecondElement");
-    await updateElementState(firstBriefcase, el1Id, "Another Update");
-
-    // Reverse all the changes made since the last push
-    firstBriefcase[_nativeDb].deleteAllTxns();
-
-    testElement(firstBriefcase, el1Id, "Inserted");
-    testElement(firstBriefcase, el2Id);
+      // This essentially ends with both briefcases out of sync with no direct means to resync as all record of txns were cleared !!
+      testElement(firstBriefcase, el1Id, "Inserted"); // Element will still be present in the first briefcase
+      testElement(secondBriefcase, el1Id);  // Element will be absent from the second briefcase
+    });
   });
 });
