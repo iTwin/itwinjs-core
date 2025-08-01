@@ -16,7 +16,7 @@ import { RenderGraphic, RenderGraphicOwner } from "../../../render/RenderGraphic
 import { TestDecorator } from "../../TestDecorators";
 import { DecorateContext } from "../../../ViewContext";
 import { GraphicType } from "../../../common";
-import { expectUniqueColors, testBlankViewport } from "../../openBlankViewport";
+import { expectUniqueColors, readColorCounts, testBlankViewport } from "../../openBlankViewport";
 import { Viewport } from "../../../Viewport";
 import { GraphicBranch } from "../../../core-frontend";
 
@@ -79,30 +79,48 @@ describe("EdgeAppearanceOverrides", () => {
   afterEach(() => TestDecorator.dropAll());
   afterAll(async () => IModelApp.shutdown());
 
-  function expectColors(expected: ColorDef[], edges: MeshArgsEdges, customizeViewport?: (vp: Viewport) => void): void {
+  function test(edges: MeshArgsEdges, testFn: (vp: Viewport) => void): void {
     const decorator = EdgeDecorator.register(edges);
 
-    testBlankViewport((vp) => {
-      vp.viewFlags = vp.viewFlags.copy({
-        visibleEdges: true,
-        acsTriad: false,
-        grid: false,
-        lighting: false,
-        renderMode: RenderMode.SmoothShade,
-      });
-      
-      if (customizeViewport) {
-        customizeViewport(vp);
-      }
-      
+    testBlankViewport(testFn);
+    IModelApp.viewManager.dropDecorator(decorator);
+  }
+
+  // Returns the unique colors with the number of pixels of that color, in descending order.
+  function expectColors(expected: ColorDef[], edges: MeshArgsEdges): void {
+    test(edges, (vp) => {
       vp.renderFrame();
 
       // Add the viewport's background color as an expected color.
       expected = [...expected, ColorDef.black];
       expectUniqueColors(expected, vp);
     });
+  }
 
-    IModelApp.viewManager.dropDecorator(decorator);
+  // Asserts that the number of pixels of the specified color is less than or greater than the specified quantity.
+  function expectColorCount(color: ColorDef, expected: "greaterThan" | "lessThan", threshold: number, edges: MeshArgsEdges): number {
+    let count: number | undefined;
+
+    test(edges, (vp) => {
+      vp.renderFrame();
+      
+      const colors = readColorCounts(vp);
+      for (const kvp of colors) {
+        if (kvp.key.toColorDef().tbgr === color.tbgr) {
+          count = kvp.value;
+          break;
+        }
+      }
+
+      expect(count).not.to.be.undefined;
+      if (expected === "greaterThan") {
+        expect(count).greaterThan(threshold);
+      } else {
+        expect(count).lessThan(threshold);
+      }
+    });
+
+    return count!;
   }
 
   it("overrides nothing by default", () => {
@@ -113,6 +131,23 @@ describe("EdgeAppearanceOverrides", () => {
     const edges = makeHardEdges();
     edges.color = ColorDef.blue;
     expectColors([ColorDef.red, ColorDef.blue], edges);
+  });
+
+
+  it("overrides width", () => {
+    const edges = makeHardEdges();
+    edges.color = ColorDef.blue;
+    const count1 = expectColorCount(ColorDef.blue, "greaterThan", 0, edges);
+
+    edges.width = 5;
+    const count5 = expectColorCount(ColorDef.blue, "greaterThan", count1, edges);
+
+    edges.width = 3;
+    expectColorCount(ColorDef.blue, "greaterThan", count1, edges);
+    expectColorCount(ColorDef.blue, "lessThan", count5, edges);
+  });
+
+  it("overrides pattern", () => {
   });
 
   it("does not override display style", () => {
