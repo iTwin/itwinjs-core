@@ -461,11 +461,11 @@ describe("Formatting tests:", () => {
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
       expect(err).toBeInstanceOf(QuantityError);
-      expect(err.message).toEqual(`The Format test has an invalid 'stationOffsetSize' attribute. It should be a non-negative integer.`);
+      expect(err.message).toEqual(`The Format test has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
     });
   });
 
-  it("Zero stationOffsetSize is valid", async () => {
+  it("Zero stationOffsetSize is invalid", async () => {
     const unitsProvider = new TestUnitsProvider();
 
     const json = {
@@ -477,9 +477,11 @@ describe("Formatting tests:", () => {
     };
     const testFormat = new Format("test");
 
-    // Should not throw an error
-    await testFormat.fromJSON(unitsProvider, json);
-    expect(testFormat.stationOffsetSize).toEqual(0);
+    // Should throw an error because stationOffsetSize must be > 0
+    await testFormat.fromJSON(unitsProvider, json).catch((err) => {
+      expect(err).toBeInstanceOf(QuantityError);
+      expect(err.message).toEqual(`The Format test has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
+    });
   });
 
   it("Bad spacer (too many characters) in Composite", async () => {

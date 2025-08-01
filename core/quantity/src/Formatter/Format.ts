@@ -38,7 +38,7 @@ export class BaseFormat {
   protected _includeZero: boolean = true; // optional; default is true
   protected _minWidth?: number; // optional; positive int
   protected _scientificType?: ScientificType; // required if type is scientific; options: normalized, zeroNormalized
-  protected _stationOffsetSize?: number; // required when type is station; positive integer >= 0
+  protected _stationOffsetSize?: number; // required when type is station; positive integer > 0
   protected _stationBaseFactor?: number; // optional positive integer base factor for station formatting; default is 1
   protected _ratioType?: RatioType; // required if type is ratio; options: oneToN, NToOne, ValueBased, useGreatestCommonDivisor
   protected _azimuthBase?: number; // value always clockwise from north
@@ -178,8 +178,8 @@ export class BaseFormat {
     if (FormatType.Station === this.type) {
       if (undefined === formatProps.stationOffsetSize)
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Station' type therefore the attribute 'stationOffsetSize' is required.`);
-      if (!Number.isInteger(formatProps.stationOffsetSize) || formatProps.stationOffsetSize < 0) // must be a positive int >= 0
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationOffsetSize' attribute. It should be a non-negative integer.`);
+      if (!Number.isInteger(formatProps.stationOffsetSize) || formatProps.stationOffsetSize <= 0) // must be a positive int > 0
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
       this._stationOffsetSize = formatProps.stationOffsetSize;
 
       if (undefined !== formatProps.stationBaseFactor) {

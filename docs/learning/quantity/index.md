@@ -56,7 +56,7 @@ Station formatting in iTwin.js supports properties that control how values are b
 
 #### stationOffsetSize
 
-The `stationOffsetSize` property specifies the number of decimal places for calculating the station offset magnitude. This works with `stationBaseFactor` to determine the effective station offset using the formula: `effective offset = stationBaseFactor * 10^stationOffsetSize`.
+The `stationOffsetSize` property specifies the number of decimal places for calculating the station offset magnitude. This must be a positive integer greater than 0. This works with `stationBaseFactor` to determine the effective station offset using the formula: `effective offset = stationBaseFactor * 10^stationOffsetSize`.
 
 #### stationBaseFactor
 
