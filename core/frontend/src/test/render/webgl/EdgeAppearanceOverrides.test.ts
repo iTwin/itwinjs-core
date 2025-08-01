@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ColorDef, ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, LinePixels, MeshEdge, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
+import { ColorDef, ColorIndex, EdgeAppearanceOverrides, EmptyLocalization, FeatureIndex, FillFlags, HiddenLine, LinePixels, MeshEdge, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { MeshArgs } from "../../../render/MeshArgs";
@@ -18,27 +18,41 @@ import { DecorateContext } from "../../../ViewContext";
 import { GraphicType } from "../../../common";
 import { expectUniqueColors, readColorCounts, testBlankViewport } from "../../openBlankViewport";
 import { Viewport } from "../../../Viewport";
-import { GraphicBranch } from "../../../core-frontend";
+import { GraphicBranch, GraphicBranchOptions } from "../../../core-frontend";
 
 class EdgeDecorator extends TestDecorator {
   private readonly _graphic: RenderGraphicOwner;
-  public constructor(graphic: RenderGraphic) {
+  public constructor(graphic: RenderGraphic, hline?: EdgeAppearanceOverrides) {
     super();
 
     // Edges are disabled by default for view overlays. Turn them on.
     const branch = new GraphicBranch();
-    branch.viewFlagOverrides = { visibleEdges: true };
     branch.add(graphic);
+    branch.viewFlagOverrides = { visibleEdges: true };
+
+    let options: GraphicBranchOptions | undefined;
+    if (hline) {
+      options = {
+        hline: HiddenLine.Settings.fromJSON({
+          visible: {
+            ovrColor: undefined !== hline.color,
+            color: hline.color?.tbgr,
+            pattern: hline.linePixels,
+            width: hline.width,
+          },
+        }),
+      };
+    }
 
     const sys = IModelApp.renderSystem;
-    this._graphic = sys.createGraphicOwner(sys.createBranch(branch, Transform.createIdentity()));
+    this._graphic = sys.createGraphicOwner(sys.createBranch(branch, Transform.createIdentity(), options));
   }
 
   public decorate(context: DecorateContext): void {
     context.addDecoration(GraphicType.ViewOverlay, this._graphic);
   }
 
-  public static register(edges: MeshArgsEdges): EdgeDecorator {
+  public static register(edges: MeshArgsEdges, hline?: EdgeAppearanceOverrides): EdgeDecorator {
     const colors = new ColorIndex();
     colors.initUniform(ColorDef.red);
 
@@ -62,7 +76,7 @@ class EdgeDecorator extends TestDecorator {
     const graphic = IModelApp.renderSystem.createMesh(params);
     expect(graphic).instanceof(MeshGraphic);
 
-    const decorator = new EdgeDecorator(graphic!);
+    const decorator = new EdgeDecorator(graphic!, hline);
     IModelApp.viewManager.addDecorator(decorator);
     return decorator;
   }
@@ -79,26 +93,26 @@ describe("EdgeAppearanceOverrides", () => {
   afterEach(() => TestDecorator.dropAll());
   afterAll(async () => IModelApp.shutdown());
 
-  function test(edges: MeshArgsEdges, testFn: (vp: Viewport) => void): void {
-    const decorator = EdgeDecorator.register(edges);
+  function test(edges: MeshArgsEdges, testFn: (vp: Viewport) => void, hline?: EdgeAppearanceOverrides): void {
+    const decorator = EdgeDecorator.register(edges, hline);
 
     testBlankViewport(testFn);
     IModelApp.viewManager.dropDecorator(decorator);
   }
 
   // Returns the unique colors with the number of pixels of that color, in descending order.
-  function expectColors(expected: ColorDef[], edges: MeshArgsEdges): void {
+  function expectColors(expected: ColorDef[], edges: MeshArgsEdges, hline?: EdgeAppearanceOverrides): void {
     test(edges, (vp) => {
       vp.renderFrame();
 
       // Add the viewport's background color as an expected color.
       expected = [...expected, ColorDef.black];
       expectUniqueColors(expected, vp);
-    });
+    }, hline);
   }
 
   // Asserts that the number of pixels of the specified color is less than or greater than the specified quantity.
-  function expectColorCount(color: ColorDef, expected: "greaterThan" | "lessThan", threshold: number, edges: MeshArgsEdges): number {
+  function expectColorCount(color: ColorDef, expected: "greaterThan" | "lessThan", threshold: number, edges: MeshArgsEdges, hline?: EdgeAppearanceOverrides): number {
     let count: number | undefined;
 
     test(edges, (vp) => {
@@ -118,7 +132,7 @@ describe("EdgeAppearanceOverrides", () => {
       } else {
         expect(count).lessThan(threshold);
       }
-    });
+    }, hline);
 
     return count!;
   }
@@ -161,6 +175,10 @@ describe("EdgeAppearanceOverrides", () => {
   });
 
   it("does not override display style", () => {
-    
+    const edges = makeHardEdges();
+    expectColors([ColorDef.red, ColorDef.green], edges, { color: ColorDef.green });
+
+    edges.color = ColorDef.blue;
+    expectColors([ColorDef.red, ColorDef.green], edges, { color: ColorDef.green });
   });
 });
