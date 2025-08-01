@@ -8,7 +8,7 @@
 
 import { EdgeAppearanceOverrides, LinePixels, MeshEdge, OctEncodedNormalPair, PolylineIndices } from "@itwin/core-common";
 import { VertexIndices } from "./VertexIndices";
-import { TesselatedPolyline, wantJointTriangles } from "./PolylineParams";
+import { TesselatedPolyline, tesselatePolylineList, wantJointTriangles } from "./PolylineParams";
 import { MeshArgsEdges } from "./MeshPrimitives";
 import { assert } from "@itwin/core-bentley";
 import { MeshArgs } from "../../../render/MeshArgs";
@@ -87,6 +87,11 @@ export interface EdgeTableInfo {
   readonly silhouetteStartByteIndex: number;
 }
 
+export interface PolylineEdgeGroup {
+  polyline: TesselatedPolyline;
+  appearance?: EdgeAppearanceOverrides;
+}
+
 /** Describes the edges of a mesh.
  * @internal
  */
@@ -100,7 +105,7 @@ export interface EdgeParams {
   /** Single-segment edges of curved surfaces, displayed based on edge normal relative to eye. */
   readonly silhouettes?: SilhouetteParams;
   /** Polyline edges, always displayed when edge display is enabled. */
-  readonly polylines?: TesselatedPolyline;
+  readonly polylineGroups?: PolylineEdgeGroup[];
   /** Silhouettes and simple-segment edges, compactly represented as indices into a lookup table. */
   readonly indexed?: IndexedEdgeParams;
 }
@@ -328,22 +333,43 @@ export function createEdgeParams(args: {
   if (!edgeArgs)
     return undefined;
 
-  const doJoints = wantJointTriangles(edgeArgs.width, true === meshArgs.is2d);
-  const polylines = doJoints ? tesselatePolylineFromMesh(meshArgs) : undefined;
+  // If we've got a single polyline edge group and we don't need to round its corners, convert it to segment edges.
+  const polylinesToProcess =
+    1 === edgeArgs.polylines.groups?.length
+    && undefined === edgeArgs.polylines.groups[0].appearance
+    && !wantJointTriangles(edgeArgs.width, true === meshArgs.is2d)
+    ? edgeArgs.polylines.groups[0].polylines.map((x) => x.indices) : undefined;
 
   let segments: SegmentEdgeParams | undefined;
   let silhouettes: SilhouetteParams | undefined;
   let indexed: IndexedEdgeParams | undefined;
 
   if (createIndexed) {
-    const polylinesToProcess = 1 === edgeArgs.polylines.groups?.length && undefined === edgeArgs.polylines.groups[0].appearance ? edgeArgs.polylines.groups[0] : undefined;
-    indexed = buildIndexedEdges(edgeArgs, polylinesToProcess?.polylines.map((x) => x.indices), maxWidth);
+    indexed = buildIndexedEdges(edgeArgs, polylinesToProcess, maxWidth);
   } else {
-    segments = convertPolylinesAndEdges(undefined, edgeArgs.edges.edges);
+    segments = convertPolylinesAndEdges(polylinesToProcess, edgeArgs.edges.edges);
     silhouettes = edgeArgs.silhouettes.edges && edgeArgs.silhouettes.normals ? convertSilhouettes(edgeArgs.silhouettes.edges, edgeArgs.silhouettes.normals) : undefined;
   }
 
-  if (!segments && !silhouettes && !polylines && !indexed)
+  let polylineGroups: PolylineEdgeGroup[] | undefined;
+  if (!polylinesToProcess && edgeArgs.polylines.groups) {
+    for (const group of edgeArgs.polylines.groups) {
+      const polyline = tesselatePolylineList({
+        points: args.meshArgs.points,
+        polylines: group.polylines,
+        width: group.appearance?.width ?? edgeArgs.width,
+        is2d: true === args.meshArgs.is2d,
+      });
+
+      if (!polylineGroups) {
+        polylineGroups = [];
+      }
+
+      polylineGroups.push({ polyline, appearance: group.appearance });
+    }
+  }
+  
+  if (!segments && !silhouettes && !polylineGroups && !indexed)
     return undefined;
 
   return {
@@ -351,7 +377,7 @@ export function createEdgeParams(args: {
     linePixels: edgeArgs.linePixels,
     segments,
     silhouettes,
-    polylines,
+    polylineGroups,
     indexed,
   };
 }
