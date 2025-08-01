@@ -10,6 +10,10 @@ import { ColorIndex, FeatureIndex, FillFlags, OctEncodedNormal, QPoint3dList, Re
 import { MeshArgsEdges } from "../common/internal/render/MeshPrimitives";
 import { AuxChannel, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 
+/** The positions of the vertices in a [[MeshArgs]]. If the positions are not quantized, they must include
+ * a precomputed [Range3d]($core-geometry) encompassing all of the points.
+ * @public
+ */
 export type MeshArgsPositions = QPoint3dList | (Array<Point3d> & { range: Range3d });
 
 /** Arguments supplied to [[RenderSystem.createTriMesh]] describing a triangle mesh.

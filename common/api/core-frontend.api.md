@@ -79,6 +79,7 @@ import { EasingFunction } from '@itwin/core-common';
 import { EcefLocation } from '@itwin/core-common';
 import { EcefLocationProps } from '@itwin/core-common';
 import { ECSqlReader } from '@itwin/core-common';
+import { EdgeAppearanceOverrides } from '@itwin/core-common';
 import { EdgeArgs } from '@itwin/core-common';
 import { EdgeOptions } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
@@ -6994,15 +6995,18 @@ export interface MeshArgs {
     isVolumeClassifier?: boolean;
     material?: RenderMaterial;
     normals?: OctEncodedNormal[];
-    points: QPoint3dList | (Array<Point3d> & {
-        range: Range3d;
-    });
+    points: MeshArgsPositions;
     textureMapping?: {
         texture: RenderTexture;
         uvParams: Point2d[];
     };
     vertIndices: number[];
 }
+
+// @public
+export type MeshArgsPositions = QPoint3dList | (Array<Point3d> & {
+    range: Range3d;
+});
 
 // @public
 export enum MessageBoxIconType {
