@@ -454,15 +454,32 @@ describe("Formatting tests:", () => {
       formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
       minWidth: 2,
       precision: 2,
-      stationOffsetSize: 0,
+      stationOffsetSize: -1,
       type: "Station",
     };
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
       expect(err).toBeInstanceOf(QuantityError);
-      expect(err.message).toEqual(`The Format test has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
+      expect(err.message).toEqual(`The Format test has an invalid 'stationOffsetSize' attribute. It should be a non-negative integer.`);
     });
+  });
+
+  it("Zero stationOffsetSize is valid", async () => {
+    const unitsProvider = new TestUnitsProvider();
+
+    const json = {
+      formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+      minWidth: 2,
+      precision: 2,
+      stationOffsetSize: 0,
+      type: "Station",
+    };
+    const testFormat = new Format("test");
+
+    // Should not throw an error
+    await testFormat.fromJSON(unitsProvider, json);
+    expect(testFormat.stationOffsetSize).toEqual(0);
   });
 
   it("Bad spacer (too many characters) in Composite", async () => {
@@ -996,7 +1013,7 @@ describe("Formatting tests:", () => {
       expect(outJson.stationBaseFactor).toEqual(5);
     });
 
-    it("Fractional stationBaseFactor is accepted", async () => {
+    it("Fractional stationBaseFactor is rejected", async () => {
       const unitsProvider = new TestUnitsProvider();
 
       const json = {
@@ -1009,11 +1026,10 @@ describe("Formatting tests:", () => {
       };
       const testFormat = new Format("test");
 
-      await testFormat.fromJSON(unitsProvider, json);
-      expect(testFormat.stationBaseFactor).toEqual(2.5);
-
-      const outJson = testFormat.toJSON();
-      expect(outJson.stationBaseFactor).toEqual(2.5);
+      await testFormat.fromJSON(unitsProvider, json).catch((err) => {
+        expect(err).toBeInstanceOf(QuantityError);
+        expect(err.message).toEqual(`The Format test has an invalid 'stationBaseFactor' attribute. It should be a positive integer.`);
+      });
     });
 
     it("Zero stationBaseFactor is rejected", async () => {
@@ -1031,7 +1047,7 @@ describe("Formatting tests:", () => {
 
       await testFormat.fromJSON(unitsProvider, json).catch((err) => {
         expect(err).toBeInstanceOf(QuantityError);
-        expect(err.message).toEqual(`The Format test has an invalid 'stationBaseFactor' attribute. It should be a positive number.`);
+        expect(err.message).toEqual(`The Format test has an invalid 'stationBaseFactor' attribute. It should be a positive integer.`);
       });
     });
 
@@ -1050,7 +1066,7 @@ describe("Formatting tests:", () => {
 
       await testFormat.fromJSON(unitsProvider, json).catch((err) => {
         expect(err).toBeInstanceOf(QuantityError);
-        expect(err.message).toEqual(`The Format test has an invalid 'stationBaseFactor' attribute. It should be a positive number.`);
+        expect(err.message).toEqual(`The Format test has an invalid 'stationBaseFactor' attribute. It should be a positive integer.`);
       });
     });
 
@@ -1069,7 +1085,26 @@ describe("Formatting tests:", () => {
 
       await testFormat.fromJSON(unitsProvider, json).catch((err) => {
         expect(err).toBeInstanceOf(QuantityError);
-        expect(err.message).toEqual(`The Format test has an invalid 'stationBaseFactor' attribute. It should be a positive number.`);
+        expect(err.message).toEqual(`The Format test has an invalid 'stationBaseFactor' attribute. It should be a positive integer.`);
+      });
+    });
+
+    it("Fractional stationBaseFactor is rejected", async () => {
+      const unitsProvider = new TestUnitsProvider();
+
+      const json = {
+        formatTraits: ["trailZeroes", "keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+        minWidth: 2,
+        precision: 2,
+        stationOffsetSize: 2,
+        stationBaseFactor: 1.5,
+        type: "Station",
+      };
+      const testFormat = new Format("test");
+
+      await testFormat.fromJSON(unitsProvider, json).catch((err) => {
+        expect(err).toBeInstanceOf(QuantityError);
+        expect(err.message).toEqual(`The Format test has an invalid 'stationBaseFactor' attribute. It should be a positive integer.`);
       });
     });
 
@@ -1081,7 +1116,7 @@ describe("Formatting tests:", () => {
         { stationBaseFactor: 2, stationOffsetSize: 2 },
         { stationBaseFactor: 5, stationOffsetSize: 3 },
         { stationBaseFactor: 10, stationOffsetSize: 2 },
-        { stationBaseFactor: 2.5, stationOffsetSize: 4 },
+        { stationBaseFactor: 3, stationOffsetSize: 4 },
       ];
 
       for (const testCase of testCases) {
@@ -1113,14 +1148,14 @@ describe("Formatting tests:", () => {
         minWidth: 2,
         precision: 2,
         stationOffsetSize: 3,
-        stationBaseFactor: 7.5,
+        stationBaseFactor: 7,
         type: "Station",
       };
       const originalFormat = new Format("original");
       await originalFormat.fromJSON(unitsProvider, json);
 
       const clonedFormat = originalFormat.clone();
-      expect(clonedFormat.stationBaseFactor).toEqual(7.5);
+      expect(clonedFormat.stationBaseFactor).toEqual(7);
       expect(clonedFormat.stationOffsetSize).toEqual(3);
     });
 
@@ -1166,7 +1201,7 @@ describe("Formatting tests:", () => {
       expect(testFormat.stationBaseFactor).toEqual(1000000);
     });
 
-    it("Very small positive stationBaseFactor values are accepted", async () => {
+    it("Very small positive stationBaseFactor values are rejected", async () => {
       const unitsProvider = new TestUnitsProvider();
 
       const json = {
@@ -1179,8 +1214,10 @@ describe("Formatting tests:", () => {
       };
       const testFormat = new Format("test");
 
-      await expect(testFormat.fromJSON(unitsProvider, json)).resolves.not.toThrow();
-      expect(testFormat.stationBaseFactor).toEqual(0.001);
+      await testFormat.fromJSON(unitsProvider, json).catch((err) => {
+        expect(err).toBeInstanceOf(QuantityError);
+        expect(err.message).toEqual(`The Format test has an invalid 'stationBaseFactor' attribute. It should be a positive integer.`);
+      });
     });
   });
 });

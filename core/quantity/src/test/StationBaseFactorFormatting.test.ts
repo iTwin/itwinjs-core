@@ -85,25 +85,17 @@ describe("StationBaseFactor formatting behavior tests:", () => {
     await testStationFormatting(12345.67, 10, 3, "1+2345.67");
   });
 
-  it("Fractional stationBaseFactor = 0.5 halves the denominator", async () => {
-    // With stationOffsetSize = 3, denominator = 0.5 * 10^3 = 500
-    await testStationFormatting(12345.67, 0.5, 3, "24+345.67");
-
-    // With stationOffsetSize = 2, denominator = 0.5 * 10^2 = 50
-    await testStationFormatting(2500.75, 0.5, 2, "50+00.75");
-  });
-
   it("Small magnitude values with different stationBaseFactor", async () => {
     // Test with magnitude smaller than denominator
     await testStationFormatting(50.25, undefined, 2, "0+50.25"); // denominator = 100
     await testStationFormatting(50.25, 2, 2, "0+50.25"); // denominator = 200
-    await testStationFormatting(50.25, 0.5, 2, "1+00.25"); // denominator = 50
+    await testStationFormatting(250.25, 5, 2, "0+250.25"); // denominator = 500
   });
 
   it("Zero magnitude formatting", async () => {
     await testStationFormatting(0, undefined, 2, "0+00.00");
     await testStationFormatting(0, 5, 3, "0+000.00");
-    await testStationFormatting(0, 0.1, 2, "0+00.00");
+    await testStationFormatting(0, 2, 2, "0+00.00");
   });
 
   it("Large magnitude values with stationBaseFactor", async () => {

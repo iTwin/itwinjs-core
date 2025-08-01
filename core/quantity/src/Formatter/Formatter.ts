@@ -351,7 +351,7 @@ export class Formatter {
       posMagnitude = Math.floor(posMagnitude * precisionScale + FPV_ROUNDFACTOR) / precisionScale;
 
       const baseFactor = spec.format.stationBaseFactor ?? 1;
-      const stationOffsetSize = spec.format.stationOffsetSize || 3; // Provide default if undefined
+      const stationOffsetSize = spec.format.stationOffsetSize || 0; // Provide default if undefined
       const denominator = baseFactor * Math.pow(10, stationOffsetSize);
       const tVal = Math.floor(posMagnitude); // this is the integer part only
       const hiPart = Math.floor(tVal / denominator);
