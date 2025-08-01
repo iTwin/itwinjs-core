@@ -136,6 +136,7 @@ public;class;GrowableBlockedArray
 public;class;GrowableFloat64Array
 public;class;GrowableXYArray
 public;class;GrowableXYZArray
+public;class;GrowableXYZArrayCache
 public;type;HasZ
 public;interface;HoleFillOptions
 public;interface;ICloneable
@@ -251,6 +252,7 @@ public;class;RecursiveCurveProcessorWithStack
 public;enum;RegionBinaryOpType
 internal;class;RegionMomentsXY
 public;class;RegionOps
+public;class;ReusableObjectCache
 public;class;RotationalSweep
 public;class;RuledSweep
 alpha;class;Sample
