@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ColorDef, ColorIndex, EdgeAppearanceOverrides, EmptyLocalization, FeatureIndex, FillFlags, HiddenLine, LinePixels, MeshEdge, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
+import { ColorDef, ColorIndex, EdgeAppearanceOverrides, EmptyLocalization, FeatureIndex, FillFlags, HiddenLine, LinePixels, MeshEdge, MeshPolyline, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { MeshArgs } from "../../../render/MeshArgs";
@@ -180,5 +180,73 @@ describe("EdgeAppearanceOverrides", () => {
 
     edges.color = ColorDef.blue;
     expectColors([ColorDef.red, ColorDef.green], edges, { color: ColorDef.green });
+  });
+
+  describe("polyline edges", () => {
+    it("use base appearance if by default", () => {
+      const args = new MeshArgsEdges();
+      args.polylines.groups = [{ polylines: [new MeshPolyline([0, 1, 2])] }];
+      expectColors([ColorDef.red], args);
+
+      args.color = ColorDef.blue;
+      expectColors([ColorDef.red, ColorDef.blue], args);
+    });
+
+    it("override aspects of base appearance per group", () => {
+      const args = new MeshArgsEdges();
+      args.polylines.groups = [{
+        polylines: [new MeshPolyline([0, 1])],
+        appearance: { color: ColorDef.blue },
+      }];
+
+      expectColors([ColorDef.red, ColorDef.blue], args);
+
+      args.polylines.groups.push({
+        polylines: [new MeshPolyline([1, 2])],
+        appearance: { color: ColorDef.green },
+      });
+
+      expectColors([ColorDef.red, ColorDef.blue, ColorDef.green], args);
+
+      args.polylines.groups.push({
+        polylines: [new MeshPolyline([2, 0])],
+      });
+
+      expectColors([ColorDef.red, ColorDef.blue, ColorDef.green], args);
+
+      const countBlueSolid1 = expectColorCount(ColorDef.blue, "greaterThan", 0, args);
+      args.polylines.groups[0].appearance!.linePixels = LinePixels.Code1;
+      const countBlueDashed1 = expectColorCount(ColorDef.blue, "lessThan", countBlueSolid1, args);
+
+      args.polylines.groups[0].appearance!.width = 25;
+      expectColorCount(ColorDef.blue, "greaterThan", countBlueDashed1, args);
+    });
+
+    it("can have different appearance than segment edges", () => {
+      const args = new MeshArgsEdges();
+      args.polylines.groups = [{
+        polylines: [new MeshPolyline([0, 1])],
+        appearance: { color: ColorDef.blue },
+      }];
+      args.edges.edges = [new MeshEdge(1, 2)],
+      args.color = ColorDef.green;
+
+      expectColors([ColorDef.red, ColorDef.blue, ColorDef.green], args);
+    });
+
+    it("can have multiple polylines per group", () => {
+      const args = new MeshArgsEdges();
+      args.polylines.groups = [{
+        polylines: [new MeshPolyline([0, 1]), new MeshPolyline([1, 2])],
+        appearance: { color: ColorDef.blue },
+      }, {
+        polylines: [new MeshPolyline([2, 0])],
+        appearance: { color: ColorDef.green },
+      }];
+
+      expectColors([ColorDef.red, ColorDef.blue, ColorDef.green], args);
+      const blueCount = expectColorCount(ColorDef.blue, "greaterThan", 0, args);
+      expectColorCount(ColorDef.green, "lessThan", blueCount, args);
+    });
   });
 });
