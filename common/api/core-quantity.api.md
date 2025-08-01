@@ -124,7 +124,6 @@ export class BaseFormat {
     protected _spacer: string;
     // (undocumented)
     get spacerOrDefault(): string;
-    // (undocumented)
     get stationBaseFactor(): number | undefined;
     set stationBaseFactor(stationBaseFactor: number | undefined);
     // (undocumented)
