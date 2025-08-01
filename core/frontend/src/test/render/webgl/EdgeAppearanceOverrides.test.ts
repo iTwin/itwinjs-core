@@ -148,6 +148,16 @@ describe("EdgeAppearanceOverrides", () => {
   });
 
   it("overrides pattern", () => {
+    const edges = makeHardEdges();
+    edges.color = ColorDef.blue;
+    const countSolid = expectColorCount(ColorDef.blue, "greaterThan", 0, edges);
+
+    edges.linePixels = LinePixels.Invisible;
+    const countInvisible = expectColorCount(ColorDef.blue, "lessThan", countSolid, edges);
+
+    edges.linePixels = LinePixels.Code4;
+    expectColorCount(ColorDef.blue, "lessThan", countSolid, edges);
+    expectColorCount(ColorDef.blue, "greaterThan", countInvisible, edges);
   });
 
   it("does not override display style", () => {
