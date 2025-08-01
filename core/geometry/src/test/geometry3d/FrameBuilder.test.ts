@@ -19,6 +19,7 @@ import { Angle } from "../../geometry3d/Angle";
 import { FrameBuilder } from "../../geometry3d/FrameBuilder";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Point3dArray } from "../../geometry3d/PointHelpers";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { MomentData } from "../../geometry4d/MomentData";
@@ -124,7 +125,7 @@ describe("FrameBuilder", () => {
   });
 
   it("InterpolationCurve", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const builder = new FrameBuilder();
     const linestrings = [
@@ -168,6 +169,26 @@ describe("FrameBuilder", () => {
           }
         }
       }
+
+      // tests for variant 3D format
+      builder.clear();
+      builder.announce(points);
+      const frameC = builder.getValidatedFrame();
+      builder.clear();
+      const pointsAs3ColumnNumberArray = Point3dArray.cloneDeepJSONNumberArrays(points);
+      builder.announce(pointsAs3ColumnNumberArray);
+      const frameD = builder.getValidatedFrame();
+      if (ck.testDefined(frameC, "valid frame from Point3d[]") && ck.testDefined(frameD, "valid frame from 3-column number[][]"))
+        ck.testTransform(frameC, frameD, "variant 3d point format yields same builder frame");
+
+      // tests for variant 2D format (needs default normal vector for xy-colinear case)
+      const defaultNormal = Vector3d.unitZ();
+      const pointsAs2ColumnNumberArray = pointsAs3ColumnNumberArray.map((p: number[]) => [p[0], p[1]]);
+      const frameE = FrameBuilder.createRightHandedFrame(defaultNormal, pointsAs2ColumnNumberArray);
+      const projectedPointsAs3dColumnNumberArray = pointsAs3ColumnNumberArray.map((p: number[]) => [p[0], p[1], 0]);
+      const frameF = FrameBuilder.createRightHandedFrame(Vector3d.unitZ(), projectedPointsAs3dColumnNumberArray);
+      if (ck.testDefined(frameE, "valid frame from 2-column number[][]") && ck.testDefined(frameF, "valid frame from projected 3-column number[][]"))
+        ck.testTransform(frameE, frameF, "variant 2d point format yields same builder frame");
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "FrameBuilder", "InterpolationCurve");
     expect(ck.getNumErrors()).toBe(0);

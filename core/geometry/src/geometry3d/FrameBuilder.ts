@@ -22,6 +22,7 @@ import { Point3dArray } from "./PointHelpers";
 import { PolygonOps } from "./PolygonOps";
 import { Range3d } from "./Range";
 import { Transform } from "./Transform";
+import { XYAndZ } from "./XYZProps";
 
 /**
  * Helper class to accumulate points and vectors until there is enough data to define a coordinate system.
@@ -124,9 +125,9 @@ export class FrameBuilder {
   /**
    * Announce a new point. If this point is different from the origin, also compute and announce the vector from the origin.
    */
-  public announcePoint(point: Point3d): number {
+  public announcePoint(point: XYAndZ): number {
     if (!this._origin) {
-      this._origin = point.clone();
+      this._origin = Point3d.createFrom(point);
       return this.savedVectorCount();
     }
     // the new point may provide an additional vector
@@ -174,7 +175,13 @@ export class FrameBuilder {
       this.announcePoint(data);
     else if (data instanceof Vector3d)
       this.announceVector(data);
-    else if (Array.isArray(data)) {
+    else if (Geometry.isArrayOfNumberArray(data, 1, 3)) { // number[][] treated as xyz points
+      for (const pt of data)
+        this.announcePoint({ x: pt[0], y: pt[1], z: pt[2] });
+    } else if (Geometry.isArrayOfNumberArray(data, 1, 2)) { // number[][] treated as xy points
+      for (const pt of data)
+        this.announcePoint({ x: pt[0], y: pt[1], z: 0 });
+    } else if (Array.isArray(data)) {
       for (const child of data) {
         if (this.savedVectorCount() > 1)
           break;
@@ -225,7 +232,7 @@ export class FrameBuilder {
         else break;
       }
     } else if (data.hasOwnProperty("x") && data.hasOwnProperty("y") && data.hasOwnProperty("z")) {
-      this.announcePoint(Point3d.create(data.x, data.y, data.z));
+      this.announcePoint(data);
     }
   }
   /**

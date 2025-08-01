@@ -2088,7 +2088,7 @@ export type FractionMapper = (f: number) => number;
 export class FrameBuilder {
     constructor();
     announce(data: any): void;
-    announcePoint(point: Point3d): number;
+    announcePoint(point: XYAndZ): number;
     announceVector(vector: Vector3d): number;
     applyDefaultUpVector(vector?: Vector3d): void;
     clear(): void;
