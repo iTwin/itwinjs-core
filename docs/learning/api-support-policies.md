@@ -170,12 +170,13 @@ Very rarely, a critical security issue may arise that cannot reasonably be addre
 
 ## Version support status
 
-| Major Version | Status          | Release    | Active Start | Maintenance Start | End-of-life        |
-| ------------- | --------------- | ---------- | ------------ | ----------------- | ------------------ |
-| 1.x           | **End of life** | 2019-06-03 | 2020-05-07   | n/a               | 2020-11-01         |
-| 2.x           | **End of life** | 2020-05-07 | 2022-01-24   | 2022-12-31        | 2023-3-31          |
-| 3.x           | **End of life** | 2022-01-24 | 2023-05-22   | 2023-11-22        | 2024-05-22         |
-| 4.x           | **Current**     | 2023-05-22 | TBD          | TBD               | TBD                |
+| Major Version | Status          | Release    | Active Start | Maintenance Start | End-of-life |
+| ------------- | --------------- | ---------- | ------------ | ----------------- | ----------- |
+| 1.x           | **End of life** | 2019-06-03 | 2020-05-07   | n/a               | 2020-11-01  |
+| 2.x           | **End of life** | 2020-05-07 | 2022-01-24   | 2022-12-31        | 2023-3-31   |
+| 3.x           | **End of life** | 2022-01-24 | 2023-05-22   | 2023-11-22        | 2024-05-22  |
+| 4.x           | **Active**      | 2023-05-22 | 2025-06-13   | 2025-12-13        | 2026-06-13  |
+| 5.x           | **Current**     | 2025-06-13 | TBD          | TBD               | TBD         |
 
 _\*Dates are subject to change._
 
