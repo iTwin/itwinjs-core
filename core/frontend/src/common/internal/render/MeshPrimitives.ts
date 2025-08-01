@@ -106,12 +106,7 @@ export function createMeshArgs(mesh: Mesh): MeshArgs | undefined {
     edges.silhouettes.init(mesh.edges);
     edges.color = mesh.edges.appearance?.color;
 
-    const polylines = [];
-    for (const meshPolyline of mesh.edges.polylines)
-      if (meshPolyline.indices.length > 0)
-        polylines.push(meshPolyline.indices);
-
-    edges.polylines.init(polylines);
+    edges.polylines.init(mesh.edges.polylineGroups);
   }
 
   return {
