@@ -441,7 +441,8 @@ export abstract class IModelConnection extends IModel {
       let img: TextureIModelRead;
 
       try {
-        const {textureId, textureOptions} = TextureMapping.mapTextureLoadPropsToApiParams(textureLoadProps);
+        const textureId = textureLoadProps.name;
+        const textureOptions = textureLoadProps.maxTextureSize ? { maxTextureSize: textureLoadProps.maxTextureSize } : undefined;
         img = await this._iModelReadApi.getTexture(textureId, textureOptions);
       } catch (error: unknown) {
         if (error instanceof TextureNotFoundError) {
