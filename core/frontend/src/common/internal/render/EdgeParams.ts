@@ -6,9 +6,9 @@
  * @module Rendering
  */
 
-import { ColorDef, EdgeAppearanceOverrides, LinePixels, MeshEdge, OctEncodedNormalPair, PolylineIndices } from "@itwin/core-common";
+import { EdgeAppearanceOverrides, LinePixels, MeshEdge, OctEncodedNormalPair, PolylineIndices } from "@itwin/core-common";
 import { VertexIndices } from "./VertexIndices";
-import { TesselatedPolyline, tesselatePolylineFromMesh, wantJointTriangles } from "./PolylineParams";
+import { TesselatedPolyline, wantJointTriangles } from "./PolylineParams";
 import { MeshArgsEdges } from "./MeshPrimitives";
 import { assert } from "@itwin/core-bentley";
 import { MeshArgs } from "../../../render/MeshArgs";
@@ -229,10 +229,9 @@ function convertSilhouettes(edges: MeshEdge[], normalPairs: OctEncodedNormalPair
   };
 }
 
-function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean, maxSize: number): IndexedEdgeParams | undefined {
+function buildIndexedEdges(args: MeshArgsEdges, polylines: PolylineIndices[] | undefined, maxSize: number): IndexedEdgeParams | undefined {
   const hardEdges = args.edges?.edges;
   const silhouettes = args.silhouettes;
-  const polylines = doPolylines ? args.polylines?.lines : undefined;
 
   const numHardEdges = hardEdges?.length ?? 0;
   const numSilhouettes = silhouettes?.edges?.length ?? 0;
@@ -337,7 +336,8 @@ export function createEdgeParams(args: {
   let indexed: IndexedEdgeParams | undefined;
 
   if (createIndexed) {
-    indexed = buildIndexedEdges(edgeArgs, !doJoints, maxWidth);
+    const polylinesToProcess = 1 === edgeArgs.polylines.groups?.length && undefined === edgeArgs.polylines.groups[0].appearance ? edgeArgs.polylines.groups[0] : undefined;
+    indexed = buildIndexedEdges(edgeArgs, polylinesToProcess?.polylines.map((x) => x.indices), maxWidth);
   } else {
     segments = convertPolylinesAndEdges(undefined, edgeArgs.edges.edges);
     silhouettes = edgeArgs.silhouettes.edges && edgeArgs.silhouettes.normals ? convertSilhouettes(edgeArgs.silhouettes.edges, edgeArgs.silhouettes.normals) : undefined;
