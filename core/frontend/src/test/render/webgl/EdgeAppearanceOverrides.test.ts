@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ColorDef, ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, LinePixels, MeshEdge, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
-import { Point3d, Range3d } from "@itwin/core-geometry";
+import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { MeshArgs } from "../../../render/MeshArgs";
 import { MeshArgsEdges } from "../../../common/internal/render/MeshPrimitives";
@@ -18,12 +18,20 @@ import { DecorateContext } from "../../../ViewContext";
 import { GraphicType } from "../../../common";
 import { expectUniqueColors, testBlankViewport } from "../../openBlankViewport";
 import { Viewport } from "../../../Viewport";
+import { GraphicBranch } from "../../../core-frontend";
 
 class EdgeDecorator extends TestDecorator {
   private readonly _graphic: RenderGraphicOwner;
   public constructor(graphic: RenderGraphic) {
     super();
-    this._graphic = IModelApp.renderSystem.createGraphicOwner(graphic);
+
+    // Edges are disabled by default for view overlays. Turn them on.
+    const branch = new GraphicBranch();
+    branch.viewFlagOverrides = { visibleEdges: true };
+    branch.add(graphic);
+
+    const sys = IModelApp.renderSystem;
+    this._graphic = sys.createGraphicOwner(sys.createBranch(branch, Transform.createIdentity()));
   }
 
   public decorate(context: DecorateContext): void {
@@ -76,6 +84,7 @@ describe("EdgeAppearanceOverrides", () => {
 
     testBlankViewport((vp) => {
       vp.viewFlags = vp.viewFlags.copy({
+        visibleEdges: true,
         acsTriad: false,
         grid: false,
         lighting: false,
