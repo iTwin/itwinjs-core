@@ -56,12 +56,14 @@ export class MeshEdge {
   }
 }
 
+/** @internal */
 export interface EdgeAppearanceOverrides {
   color?: ColorDef;
   linePixels?: LinePixels;
   width?: number;
 }
 
+/** @internal */
 export interface MeshPolylineGroup {
   polylines: MeshPolyline[];
   appearance?: EdgeAppearanceOverrides;
