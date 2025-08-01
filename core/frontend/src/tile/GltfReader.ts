@@ -1405,7 +1405,6 @@ export abstract class GltfReader {
       const lineStrings = ext.lineStrings;
       if (lineStrings) {
         for (const extLineString of lineStrings) {
-          // ###TODO primitive restart value won't be 0xffffffff if underlying buffer is not u32...
           const polylineIndices = this.readBufferData32(extLineString, "indices");
           if (polylineIndices) {
             if (!mesh.primitive.edges) {
