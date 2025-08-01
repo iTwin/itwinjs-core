@@ -1,8 +1,8 @@
 import { assert, expect } from "chai";
 import { _nativeDb, BriefcaseDb, ChannelControl, DrawingCategory, IModelHost } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
-import { KnownTestLocations, HubWrappers, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
-import { IModel, Code, SubCategoryAppearance } from "@itwin/core-common";
+import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
+import { Code, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { GuidString, Id64, Id64String } from "@itwin/core-bentley";
 
 describe("Discarding local txns test", async () => {
@@ -40,30 +40,26 @@ describe("Discarding local txns test", async () => {
 
     const [firstBriefcase, secondBriefcase] = briefcases;
 
-    try {
-      await firstBriefcase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
-        <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
-          <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
+    await firstBriefcase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
 
-          <ECEntityClass typeName="TestElement">
-            <BaseClass>bis:GraphicalElement2d</BaseClass>
-            <ECProperty propertyName="ElementName" typeName="string" />
-            <ECProperty propertyName="ElementState" typeName="string" />
-          </ECEntityClass>
+        <ECEntityClass typeName="TestElement">
+          <BaseClass>bis:GraphicalElement2d</BaseClass>
+          <ECProperty propertyName="ElementName" typeName="string" />
+          <ECProperty propertyName="ElementState" typeName="string" />
+        </ECEntityClass>
 
-          <ECRelationshipClass typeName="ElementConnectsToElement" strength="referencing" modifier="Sealed">
-            <BaseClass>bis:ElementRefersToElements</BaseClass>
-            <Source multiplicity="(0..1)" roleLabel="connects to" polymorphic="false">
-              <Class class="TestElement"/>
-            </Source>
-            <Target multiplicity="(0..*)" roleLabel="is connected to" polymorphic="false">
-              <Class class="TestElement"/>
-            </Target>
-          </ECRelationshipClass>
-        </ECSchema>`]);
-    } catch (error: any) {
-      console.log(`Error: ${JSON.stringify(error)}`);
-    }
+        <ECRelationshipClass typeName="ElementConnectsToElement" strength="referencing" modifier="Sealed">
+          <BaseClass>bis:ElementRefersToElements</BaseClass>
+          <Source multiplicity="(0..1)" roleLabel="connects to" polymorphic="false">
+            <Class class="TestElement"/>
+          </Source>
+          <Target multiplicity="(0..*)" roleLabel="is connected to" polymorphic="false">
+            <Class class="TestElement"/>
+          </Target>
+        </ECRelationshipClass>
+      </ECSchema>`]);
     firstBriefcase.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
     // Create drawing model and category
@@ -93,9 +89,8 @@ describe("Discarding local txns test", async () => {
       ...elementPropsTemplate,
       elementName: name,
       elementState: "Inserted",
-    } as any);
+    });
     assert.isTrue(Id64.isValidId64(elementId));
-
     briefcase.saveChanges();
 
     testElement(briefcase, elementId, "Inserted");
@@ -104,14 +99,14 @@ describe("Discarding local txns test", async () => {
 
   async function updateElementState(briefcase: BriefcaseDb, id: Id64String, state: string, expectedToFail: boolean = false) {
     await briefcase.locks.acquireLocks({ exclusive: id });
-    const props = briefcase.elements.tryGetElementProps({ id }) as any;
+    const props = briefcase.elements.tryGetElementProps({ id });
     if (expectedToFail) {
       assert.isUndefined(props);
       return;
     }
-    props.elementState = state;
-    briefcase.elements.updateElement(props);
-
+    assert.isDefined(props);
+    (props as any).elementState = state;
+    briefcase.elements.updateElement(props as any);
     briefcase.saveChanges();
 
     testElement(briefcase, id, state);
@@ -120,7 +115,6 @@ describe("Discarding local txns test", async () => {
   async function deleteElement(briefcase: BriefcaseDb, id: Id64String) {
     await briefcase.locks.acquireLocks({ exclusive: id });
     briefcase.elements.deleteElement(id);
-
     briefcase.saveChanges();
 
     testElement(briefcase, id);
@@ -149,11 +143,13 @@ describe("Discarding local txns test", async () => {
       // Sync both briefcases
       await firstBriefcase.pushChanges({ description: "Insert Element", accessToken: adminToken });
       await secondBriefcase.pullChanges({ accessToken: adminToken });
-      firstBriefcase.locks.releaseAllLocks();
+      await firstBriefcase.locks.releaseAllLocks();
 
       // Insert 2 more elements
-      const el2Id = await insertElement(firstBriefcase, "SecondElement");
-      const el3Id = await insertElement(firstBriefcase, "ThirdElement");
+      const [el2Id, el3Id] = await Promise.all([
+        insertElement(firstBriefcase, "SecondElement"),
+        insertElement(firstBriefcase, "ThirdElement")
+      ]);
 
       // Finally, update the first element
       await updateElementState(firstBriefcase, el1Id, "Updated");
@@ -204,7 +200,7 @@ describe("Discarding local txns test", async () => {
       // Sync both briefcases
       await firstBriefcase.pushChanges({ description: "Insert Element", accessToken: adminToken });
       await secondBriefcase.pullChanges({ accessToken: adminToken });
-      firstBriefcase.locks.releaseAllLocks();
+      await firstBriefcase.locks.releaseAllLocks();
 
       await updateElementState(secondBriefcase, el1Id, "First Update");
 
@@ -214,7 +210,7 @@ describe("Discarding local txns test", async () => {
 
       await secondBriefcase.pushChanges({ description: "Update Element", accessToken: adminToken });
       await firstBriefcase.pullChanges({ accessToken: adminToken });
-      secondBriefcase.locks.releaseAllLocks();
+      await secondBriefcase.locks.releaseAllLocks();
 
       testElement(firstBriefcase, el1Id, "Another Update");
       testElement(secondBriefcase, el1Id, "Another Update");
@@ -232,7 +228,7 @@ describe("Discarding local txns test", async () => {
       // Sync both briefcases
       await firstBriefcase.pushChanges({ description: "Insert Element", accessToken: adminToken });
       await secondBriefcase.pullChanges({ accessToken: adminToken });
-      firstBriefcase.locks.releaseAllLocks();
+      await firstBriefcase.locks.releaseAllLocks();
 
       await deleteElement(secondBriefcase, el1Id);
 
@@ -242,7 +238,7 @@ describe("Discarding local txns test", async () => {
 
       await secondBriefcase.pushChanges({ description: "Update Element", accessToken: adminToken });
       await firstBriefcase.pullChanges({ accessToken: adminToken });
-      secondBriefcase.locks.releaseAllLocks();
+      await secondBriefcase.locks.releaseAllLocks();
 
       testElement(firstBriefcase, el1Id, "First Update");
       testElement(secondBriefcase, el1Id, "First Update");
@@ -255,8 +251,10 @@ describe("Discarding local txns test", async () => {
 
       const briefcase = briefcases[0];
 
-      const el1Id = await insertElement(briefcase, "FirstElement");
-      const el2Id = await insertElement(briefcase, "SecondElement");
+      const [el1Id, el2Id] = await Promise.all([
+        insertElement(briefcase, "FirstElement"),
+        insertElement(briefcase, "SecondElement")
+      ]);
 
       [el1Id, el2Id].forEach(id => { assert.isDefined(briefcase.elements.getElement(id)); });
 
@@ -282,11 +280,13 @@ describe("Discarding local txns test", async () => {
       const [firstBriefcase, secondBriefcase] = briefcases;
 
       // Insert 2 elements in the first briefcase
-      const el1Id = await insertElement(firstBriefcase, "FirstElement");
-      const el2Id = await insertElement(firstBriefcase, "SecondElement");
+      const [el1Id, el2Id] = await Promise.all([
+        insertElement(firstBriefcase, "FirstElement"),
+        insertElement(firstBriefcase, "SecondElement")
+      ]);
 
       await firstBriefcase.pushChanges({ description: "Insert two Elements", accessToken: adminToken });
-      firstBriefcase.locks.releaseAllLocks();
+      await firstBriefcase.locks.releaseAllLocks();
 
       // Update the first element
       await updateElementState(firstBriefcase, el1Id, "Updated");
@@ -295,7 +295,7 @@ describe("Discarding local txns test", async () => {
       testElement(firstBriefcase, el2Id, "Inserted");
 
       await firstBriefcase.pushChanges({ description: "Update first Element", accessToken: adminToken });
-      firstBriefcase.locks.releaseAllLocks();
+      await firstBriefcase.locks.releaseAllLocks();
 
       // Insert a third element
       const el3Id = await insertElement(firstBriefcase, "ThirdElement");
@@ -315,7 +315,7 @@ describe("Discarding local txns test", async () => {
       // Sync both briefcases
       await firstBriefcase.pushChanges({ description: "Update second Element", accessToken: adminToken });
       await secondBriefcase.pullChanges();
-      firstBriefcase.locks.releaseAllLocks();
+      await firstBriefcase.locks.releaseAllLocks();
 
       // Check if all the values are as expected in the first briefcase
       testElement(firstBriefcase, el1Id, "Updated");
@@ -344,7 +344,7 @@ describe("Discarding local txns test", async () => {
 
       // Sync both briefcases
       await firstBriefcase.pushChanges({ description: "Insert Element", accessToken: adminToken });
-      firstBriefcase.locks.releaseAllLocks();
+      await firstBriefcase.locks.releaseAllLocks();
 
       // Update the first element twice
       await updateElementState(firstBriefcase, el1Id, "First Update");
@@ -384,7 +384,7 @@ describe("Discarding local txns test", async () => {
       // Sync both briefcases
       await firstBriefcase.pushChanges({ description: "Insert Element", accessToken: adminToken });
       await secondBriefcase.pullChanges({ accessToken: adminToken });
-      firstBriefcase.locks.releaseAllLocks();
+      await firstBriefcase.locks.releaseAllLocks();
 
       // Insert 2 more elements
       const el2Id = await insertElement(firstBriefcase, "SecondElement");
@@ -424,7 +424,7 @@ describe("Discarding local txns test", async () => {
       // Sync both briefcases
       await firstBriefcase.pushChanges({ description: "Insert Element", accessToken: adminToken });
       await secondBriefcase.pullChanges({ accessToken: adminToken });
-      firstBriefcase.locks.releaseAllLocks();
+      await firstBriefcase.locks.releaseAllLocks();
 
       // Delete element from the second briefcase
       await deleteElement(secondBriefcase, el1Id);
@@ -438,7 +438,7 @@ describe("Discarding local txns test", async () => {
       // Nothing will be pushed as all transactions were cleared
       await secondBriefcase.pushChanges({ description: "Deleted Element", accessToken: adminToken });
       await firstBriefcase.pullChanges({ accessToken: adminToken });
-      secondBriefcase.locks.releaseAllLocks();
+      await secondBriefcase.locks.releaseAllLocks();
 
       // This essentially ends with both briefcases out of sync with no direct means to resync as all record of txns were cleared !!
       testElement(firstBriefcase, el1Id, "Inserted"); // Element will still be present in the first briefcase
