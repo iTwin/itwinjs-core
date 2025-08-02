@@ -19,7 +19,7 @@ import {
   SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ViewDefinitionProps,
   ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
-import { Point3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
+import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
@@ -876,8 +876,13 @@ export namespace IModelConnection {
      * @see [[queryExtents]] for a similar function that does not throw and produces a deterministically-ordered result.
      */
     public async queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]> {
-      const iModel = this._iModel;
-      return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryModelRanges(iModel.getRpcProps(), [...Id64.toIdSet(modelIds)]) : [];
+      const results = await this.queryExtents([...Id64.toIdSet(modelIds)]);
+
+      if (results.length === 1 && results[0].status !== IModelStatus.Success) {
+        throw new IModelError(results[0].status, "error querying model range");
+      }
+
+      return results.filter((x) => x.status === IModelStatus.Success).map((x) => x.extents);
     }
 
     /** For each [GeometricModel]($backend) specified by Id, attempts to obtain the union of the volumes of all geometric elements within that model.
@@ -887,14 +892,145 @@ export namespace IModelConnection {
      * why the extents could not be obtained (e.g., because the Id did not identify a [GeometricModel]($backend)).
      */
     public async queryExtents(modelIds: Id64String | Id64String[]): Promise<ModelExtentsProps[]> {
-      const iModel = this._iModel;
-      if (!iModel.isOpen)
+      if (!this._iModel.isOpen)
         return [];
 
       if (typeof modelIds === "string")
         modelIds = [modelIds];
 
-      return IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryModelExtents(iModel.getRpcProps(), modelIds);
+      let modelExtents = await this.queryModelExtents(modelIds);
+
+      if (modelExtents.some((extents) => extents === undefined)) {
+        modelExtents = await this.fillMissingModelExtents(modelIds, modelExtents);
+      }
+
+      return modelExtents;
+    }
+
+    private async queryModelExtents(modelIds: Id64String[]): Promise<ModelExtentsProps[]> {
+      const query = `
+      SELECT
+        Model.Id AS ECInstanceId,
+        iModel_bbox_union(
+          iModel_placement_aabb(
+            iModel_placement(
+              iModel_point(Origin.X, Origin.Y, 0),
+              iModel_angles(Rotation, 0, 0),
+              iModel_bbox(
+                BBoxLow.X, BBoxLow.Y, -1,
+                BBoxHigh.X, BBoxHigh.Y, 1
+              )
+            )
+          )
+        ) AS bbox
+      FROM bis.GeometricElement2d
+      WHERE InVirtualSet(:ids64, Model.Id) AND Origin.X IS NOT NULL
+      GROUP BY Model.Id
+      UNION
+      SELECT
+        ge.Model.Id AS ECInstanceId,
+        iModel_bbox(
+          min(i.MinX), min(i.MinY), min(i.MinZ),
+          max(i.MaxX), max(i.MaxY), max(i.MaxZ)
+        ) AS bbox
+      FROM bis.SpatialIndex AS i, bis.GeometricElement3d AS ge, bis.GeometricModel3d AS gm
+      WHERE InVirtualSet(:ids64, ge.Model.Id) AND ge.ECInstanceId=i.ECInstanceId AND InVirtualSet(:ids64, gm.ECInstanceId) AND (gm.$->isNotSpatiallyLocated?=false OR gm.$->isNotSpatiallyLocated? IS NULL)
+      GROUP BY ge.Model.Id
+      UNION
+      SELECT
+        ge.Model.Id AS ECInstanceId,
+        iModel_bbox_union(
+          iModel_placement_aabb(
+            iModel_placement(
+              iModel_point(ge.Origin.X, ge.Origin.Y, ge.Origin.Z),
+              iModel_angles(ge.Yaw, ge.Pitch, ge.Roll),
+              iModel_bbox(
+                ge.BBoxLow.X, ge.BBoxLow.Y, ge.BBoxLow.Z,
+                ge.BBoxHigh.X, ge.BBoxHigh.Y, ge.BBoxHigh.Z
+              )
+            )
+          )
+        ) AS bbox
+      FROM bis.GeometricElement3d AS ge, bis.GeometricModel3d as gm
+      WHERE InVirtualSet(:ids64, ge.Model.Id) AND ge.Origin.X IS NOT NULL AND InVirtualSet(:ids64, gm.ECInstanceId) AND gm.$->isNotSpatiallyLocated?=true
+      GROUP BY ge.Model.Id`;
+
+      const params = new QueryBinder();
+      params.bindIdSet("ids64", modelIds);
+
+      const queryReader = this._iModel.createQueryReader(query, params, {
+        rowFormat: QueryRowFormat.UseECSqlPropertyNames,
+      });
+
+      const results: ModelExtentsProps[] = new Array(modelIds.length).fill(undefined);
+
+      for await (const row of queryReader) {
+        const index = modelIds.indexOf(row.ECInstanceId);
+
+        const byteArray = new Uint8Array(Object.values(row.bbox));
+        const extents = Range3d.fromArrayBuffer(byteArray.buffer);
+
+        results[index] = { id: row.ECInstanceId, extents, status: IModelStatus.Success };
+      }
+
+      return results;
+    }
+
+    private async fillMissingModelExtents(modelIds: Id64String[], modelExtents: ModelExtentsProps[]): Promise<ModelExtentsProps[]> {
+      const query = `
+      WITH
+      GeometricModels AS (
+          SELECT
+              ECInstanceId
+          FROM bis.GeometricModel
+          WHERE InVirtualSet(:ids64, ECInstanceId)
+      )
+      SELECT
+          ECInstanceId,
+          true AS isGeometricModel
+      FROM GeometricModels
+      UNION ALL
+      SELECT
+          ECInstanceId,
+          false AS isGeometricModel
+      FROM bis.Model
+      WHERE InVirtualSet(:ids64, ECInstanceId)
+        AND ECInstanceId NOT IN (SELECT ECInstanceId FROM GeometricModels)`;
+
+      const params = new QueryBinder();
+      params.bindIdSet("ids64", modelIds);
+
+      const queryReader = this._iModel.createQueryReader(query, params, {
+        rowFormat: QueryRowFormat.UseECSqlPropertyNames,
+      });
+      const queryRows = await queryReader.toArray();
+
+      const results = modelExtents;
+
+      for (const [index, result] of results.entries()) {
+        if (result === undefined) {
+          if (!Id64.isValidId64(modelIds[index])) {
+            results[index] = { id: "0", extents: Range3d.createNull(), status: IModelStatus.InvalidId };
+            continue;
+          }
+
+          const row = queryRows.find((model) => model.ECInstanceId === modelIds[index]);
+
+          if (row === undefined) {
+            results[index] = { id: modelIds[index], extents: Range3d.createNull(), status: IModelStatus.NotFound };
+            continue;
+          }
+
+          if (row.isGeometricModel) {
+            results[index] = { id: modelIds[index], extents: Range3d.createNull(), status: IModelStatus.Success };
+            continue;
+          }
+
+          results[index] = { id: modelIds[index], extents: Range3d.createNull(), status: IModelStatus.WrongModel };
+        }
+      }
+
+      return results
     }
 
     /** Query for a set of ModelProps of the specified ModelQueryParams.
