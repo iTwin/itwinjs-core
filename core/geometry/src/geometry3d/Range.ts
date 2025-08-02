@@ -278,8 +278,10 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     return result;
   }
   /** Create a range from freely structured MultiLineStringDataVariant. */
-  public static createFromVariantData(data: MultiLineStringDataVariant): Range3d {
-    const collector = new PointStreamRangeCollector();
+  public static createFromVariantData(data: MultiLineStringDataVariant, transform?: Transform, result?: Range3d): Range3d {
+    if (result)
+      result.setNull();
+    const collector = new PointStreamRangeCollector(transform, result);
     VariantPointDataStream.streamXYZ(data, collector);
     return collector.claimResult();
   }

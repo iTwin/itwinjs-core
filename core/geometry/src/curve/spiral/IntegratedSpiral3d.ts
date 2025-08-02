@@ -384,7 +384,6 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
   }
 
   /** Return the frenet frame at fractional position. */
-
   public override fractionToFrenetFrame(activeFraction: number, result?: Transform): Transform {
     const globalFraction = this.activeFractionInterval.fractionToPoint(activeFraction);
     result = result ? result : Transform.createIdentity();
