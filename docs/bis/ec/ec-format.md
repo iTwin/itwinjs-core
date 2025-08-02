@@ -108,6 +108,10 @@ Supported ratio type:
 
 - Example: StationOffsetSize of 2, in base 10, represents an offset of 100.
 
+**stationBaseFactor** defines the base factor for station formatting (only supported in quantity package, not in EC). Must be a positive integer.
+
+- Example: StationBaseFactor of 1, and a StationOffsetSize of 3, formats 1234.56 as 1+234.56.
+
 **stationSeparator** the character used to separate the station and off set portions of a `station` formatted value.
 
 **azimuthBase** A numeric value indicating the base when type is set to azimuth. If set, the `azimuthBaseUnit` has to also be set to indicate which unit this value is in. Defaults to north. A value provided is interpreted from north clockwise.
