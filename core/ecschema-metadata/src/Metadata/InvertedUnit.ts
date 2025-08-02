@@ -25,10 +25,10 @@ export class InvertedUnit extends SchemaItem {
   public override readonly schemaItemType = InvertedUnit.schemaItemType;
   /** @internal */
   public static override get schemaItemType() { return SchemaItemType.InvertedUnit; }
-  private _invertsUnit?: LazyLoadedUnit; // required
+  private _invertsUnit?: LazyLoadedUnit | Unit; // required
   private _unitSystem?: LazyLoadedUnitSystem; // required
 
-  public get invertsUnit(): LazyLoadedUnit | undefined { return this._invertsUnit; }
+  public get invertsUnit(): LazyLoadedUnit | Unit | undefined { return this._invertsUnit; }
   public get unitSystem(): LazyLoadedUnitSystem | undefined { return this._unitSystem; }
 
   /**
