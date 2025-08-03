@@ -6,13 +6,20 @@ publish: false
 
 Table of contents:
 
-- [Electron 36 and 37 support](#electron-36-and-37-support)
-- [Google Photorealistic 3D Tiles support](#google-photorealistic-3d-tiles-support)
-- [Text changes and styling](#text-changes-and-styling)
-- [API deprecations](#api-deprecations)
-  - [@itwin/presentation-common](#itwinpresentation-common)
-  - [@itwin/presentation-backend](#itwinpresentation-backend)
-  - [@itwin/presentation-frontend](#itwinpresentation-frontend)
+- [NextVersion](#nextversion)
+  - [Electron 36 and 37 support](#electron-36-and-37-support)
+  - [Google Photorealistic 3D Tiles support](#google-photorealistic-3d-tiles-support)
+  - [Station formatting enhancements](#station-formatting-enhancements)
+    - [Examples](#examples)
+  - [Text changes and styling](#text-changes-and-styling)
+    - [Persisting text](#persisting-text)
+    - [Drawing scale](#drawing-scale)
+    - [Styling text](#styling-text)
+  - [API deprecations](#api-deprecations)
+    - [@itwin/presentation-common](#itwinpresentation-common)
+    - [@itwin/presentation-backend](#itwinpresentation-backend)
+    - [@itwin/presentation-frontend](#itwinpresentation-frontend)
+  - [Schedule Script Editing Mode](#schedule-script-editing-mode)
 
 ## Electron 36 and 37 support
 
@@ -25,6 +32,24 @@ iTwin.js now supports displaying Google Photorealistic 3D Tiles via the new `Goo
 ![Google Photorealistic 3D Tiles - Exton](../learning/frontend/google-photorealistic-3d-tiles-1.jpg "Google Photorealistic 3D Tiles - Exton")
 
 ![Google Photorealistic 3D Tiles - Philadelphia](../learning/frontend/google-photorealistic-3d-tiles-2.jpg "Google Photorealistic 3D Tiles - Philadelphia")
+
+## Station formatting enhancements
+
+Available in `@itwin/core-quantity`, station formatting now supports a new `stationBaseFactor` property in [FormatProps]($quantity) to provide greater flexibility in station offset calculations. This property works in conjunction with the existing `stationOffsetSize` property to determine the effective station offset using the formula: `effective offset = stationBaseFactor * 10^stationOffsetSize`.
+
+The `stationBaseFactor` property allows for non-standard station intervals that aren't simple powers of 10. The default value is 1, which maintains backward compatibility with existing station formats.
+
+> __Note__: The `stationBaseFactor` property is currently implemented as an iTwin.js-specific extension and is not supported in the native EC (Entity Context) layer. This feature will eventually be incorporated into the ECFormat specification to provide broader compatibility across the iTwin ecosystem.
+
+### Examples
+
+| stationOffsetSize | stationBaseFactor | Value  | Effective Offset | Formatted |
+| ----------------- | ----------------- | ------ | ---------------- | --------- |
+| 2                 | 1                 | 1055.5 | 100              | 10+55.50  |
+| 2                 | 5                 | 1055.5 | 500              | 2+55.50   |
+| 3                 | 2                 | 1055.5 | 2000             | 0+1055.50 |
+
+This enhancement enables more flexible station formatting for applications that require custom station intervals, such as specialized surveying or engineering workflows.
 
 ## Text changes and styling
 
