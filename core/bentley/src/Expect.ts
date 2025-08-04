@@ -11,6 +11,7 @@
  * @param message Optional error message to be used in thrown Error.
  * @returns The original value if it is defined.
  * @throws Error if the value is undefined.
+ * @beta
  */
 export function expectDefined<T>(value: T | undefined, message?: string): T {
   if (value === undefined) {
@@ -27,6 +28,7 @@ export function expectDefined<T>(value: T | undefined, message?: string): T {
  * @param message Optional error message to be used in thrown Error.
  * @returns The original value if it is not null.
  * @throws Error if the value is null.
+ * @beta
  */
 export function expectNotNull<T>(value: T | null, message?: string): T {
   if (value === null) {
