@@ -1403,7 +1403,7 @@ export abstract class GltfReader {
         let curIndex3 = 0;
         let curSilhouetteMateIndex = 0;
         const nextNormals = silhouetteMates ? (edge: CompactEdge, index2: number) => {
-          const index3 = indices[silhouetteMates[curSilhouetteMateIndex++]];
+          const index3 = silhouetteMates[curSilhouetteMateIndex++];
           getPoint(edge.index0, points[0]);
           getPoint(edge.index1, points[1]);
           getPoint(index2, points[2]);
@@ -1422,7 +1422,7 @@ export abstract class GltfReader {
           return (n0 | (n1 << 16)) >>> 0;
         } : undefined;
 
-        const debugMates = true;
+        const debugMates = false;
         if (!debugMates) {
           for (const edge of compactEdgeIterator(visibility.buffer, indices.length, (idx) => indices[idx], nextNormals)) {
             if (undefined === edge.normals) {

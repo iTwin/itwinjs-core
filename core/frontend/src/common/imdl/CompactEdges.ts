@@ -71,7 +71,7 @@ export type GetNextSilhouetteNormalPair = (edge: CompactEdge, index2: number) =>
     output.index1 = decodeIndex(iMod3 === 2 ? i - 2 : i + 1);
     if (ImdlEdgeVisibility.Silhouette === visibility) {
       assert(undefined !== nextNormals);
-      const index2Offset = iMod3 === 0 ? 2 : (iMod3 === 1 ? -2 : -1);
+      const index2Offset = iMod3 === 0 ? 2 : -1;
       const index2 = decodeIndex(i + index2Offset);
       output.normals = nextNormals(output, index2);
     } else {
