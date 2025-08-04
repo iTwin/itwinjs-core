@@ -2543,6 +2543,14 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
 }
 
 // @public
+export class GrowableXYZArrayCache extends ReusableObjectCache<GrowableXYZArray> {
+    constructor();
+    protected clearForCache(data: GrowableXYZArray): void;
+    protected createForCache(numPoints?: number, growthFactor?: number): GrowableXYZArray;
+    grabAndFill(source: IndexedXYZCollection): GrowableXYZArray;
+}
+
+// @public
 export type HasZ = Readonly<WriteableHasZ>;
 
 // @public
@@ -5394,6 +5402,16 @@ export class RegionOps {
     };
     static splitToPathsBetweenBreaks(source: AnyCurve | undefined, makeClones: boolean): AnyChain | undefined;
     static testPointInOnOutRegionXY(curves: AnyRegion, x: number, y: number): number;
+}
+
+// @public
+export abstract class ReusableObjectCache<T> {
+    protected constructor();
+    protected abstract clearForCache(data: T): void;
+    protected abstract createForCache(): T;
+    dropAllToCache(data: T[]): void;
+    dropToCache(data: T | undefined): void;
+    grabFromCache(): T;
 }
 
 // @public

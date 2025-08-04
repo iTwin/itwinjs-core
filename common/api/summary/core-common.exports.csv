@@ -14,8 +14,8 @@ public;interface;AnalysisStyleDisplacementProps
 public;interface;AnalysisStyleProps
 public;class;AnalysisStyleThematic
 public;interface;AnalysisStyleThematicProps
+beta;interface;AnnotationTextStyleProps
 public;interface;AppearanceOverrideProps
-beta;interface;ApplyTextStyleOptions
 public;interface;AreaFillProps
 public;namespace;AreaPattern
 beta;namespace;Atmosphere
@@ -108,6 +108,7 @@ internal;interface;ChangedModels
 public;enum;ChangedValueState
 public;enum;ChangeOpCode
 public;interface;ChangesetFileProps
+beta;interface;ChangesetHealthStats
 public;type;ChangesetId
 public;interface;ChangesetIdWithIndex
 public;type;ChangesetIndex
@@ -121,6 +122,7 @@ beta;namespace;ChannelControlError
 public;interface;ChannelRootAspectProps
 preview;interface;ChannelRootAspectProps
 internal;interface;ClassifierTileTreeId
+beta;interface;ClearTextStyleOptions
 public;class;ClipIntersectionStyle
 public;interface;ClipIntersectionStyleProps
 public;class;ClipStyle
@@ -244,6 +246,7 @@ public;interface;ECSchemaReferenceProps
 public;class;ECSqlReader
 public;enum;ECSqlSystemProperty
 public;enum;ECSqlValueType
+internal;interface;EdgeAppearanceOverrides
 internal;class;EdgeArgs
 internal;interface;EdgeOptions
 internal;interface;EditingScopeNotifications
@@ -310,6 +313,11 @@ public;class;FeatureOverrides
 public;enum;FeatureOverrideType
 public;class;FeatureTable
 internal;class;FeatureTableHeader
+beta;interface;FieldFormatter
+beta;interface;FieldPropertyHost
+beta;interface;FieldPropertyPath
+beta;class;FieldRun
+beta;interface;FieldRunProps
 public;interface;FilePropertyProps
 public;enum;FillDisplay
 public;enum;FillFlags
@@ -622,6 +630,7 @@ internal;function;parseTileTreeIdAndContentId
 public;interface;PartReference
 public;type;PersistentBackgroundMapProps
 public;interface;PersistentGraphicsRequestProps
+beta;interface;PerStatementHealthStats
 public;interface;PhysicalElementProps
 preview;interface;PhysicalElementProps
 public;interface;PhysicalTypeProps
@@ -927,9 +936,7 @@ public;class;TextString
 beta;interface;TextStringGlyphData
 public;interface;TextStringPrimitive
 public;interface;TextStringProps
-beta;class;TextStyle
 beta;type;TextStyleColor
-beta;interface;TextStyleProps
 beta;class;TextStyleSettings
 beta;interface;TextStyleSettingsProps
 public;interface;TextureData

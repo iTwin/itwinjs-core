@@ -75,6 +75,12 @@ export class RealityTile extends Tile {
   private readonly _geometricError?: number;
   /** @internal */
   protected _copyright?: string;
+  /** @internal */
+  public override readonly tree: RealityTileTree;
+  /** @internal */
+  public get reprojectionTransform(): Transform | undefined {
+    return this._reprojectionTransform;
+  }
 
   /** @internal */
   public constructor(props: RealityTileParams, tree: RealityTileTree) {
@@ -85,6 +91,7 @@ export class RealityTile extends Tile {
     this.rangeCorners = props.rangeCorners;
     this.region = props.region;
     this._geometricError = props.geometricError;
+    this.tree = tree;
 
     if (undefined === this.transformToRoot)
       return;
@@ -121,7 +128,7 @@ export class RealityTile extends Tile {
   /** @internal */
   public get realityParent(): RealityTile { return this.parent as RealityTile; }
   /** @internal */
-  public get realityRoot(): RealityTileTree { return this.tree as RealityTileTree; }
+  public get realityRoot(): RealityTileTree { return this.tree; }
   /** @internal */
   public get graphicType(): TileGraphicType | undefined { return undefined; }     // If undefined, use tree type.
   /** @internal */

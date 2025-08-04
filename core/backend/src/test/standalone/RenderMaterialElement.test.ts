@@ -29,7 +29,7 @@ function removeUndefined(assetProps: RenderMaterialAssetProps): RenderMaterialAs
 }
 
 function defaultBooleans(assetProps: RenderMaterialAssetProps): RenderMaterialAssetProps {
-  const boolKeys = ["HasBaseColor", "HasDiffuse", "HasFinish", "HasReflect", "HasReflectColor", "HasSpecular", "HasSpecularColor", "HasTransmit"] as const;
+  const boolKeys = ["HasBaseColor", "HasDiffuse", "HasFinish", "HasReflect", "HasReflectColor", "HasSpecular", "HasSpecularColor"] as const;
   for (const boolKey of boolKeys)
     if (undefined === assetProps[boolKey])
       assetProps[boolKey] = false;
@@ -178,6 +178,31 @@ describe("RenderMaterialElement", () => {
         reflectColor: [0, 0, 1],
       };
 
+      /* eslint-disable @typescript-eslint/naming-convention */
+      test(params, {
+        HasBaseColor: true, color: params.color,
+        HasSpecularColor: true, specular_color: params.specularColor,
+        HasFinish: true, finish: params.finish,
+        HasTransmit: true, transmit: params.transmit,
+        HasDiffuse: true, diffuse: params.diffuse,
+        HasSpecular: true, specular: params.specular,
+        HasReflect: true, reflect: params.reflect,
+        HasReflectColor: true, reflect_color: params.reflectColor,
+      });
+
+      params.transmit = undefined;
+      /* eslint-disable @typescript-eslint/naming-convention */
+      test(params, {
+        HasBaseColor: true, color: params.color,
+        HasSpecularColor: true, specular_color: params.specularColor,
+        HasFinish: true, finish: params.finish,
+        HasDiffuse: true, diffuse: params.diffuse,
+        HasSpecular: true, specular: params.specular,
+        HasReflect: true, reflect: params.reflect,
+        HasReflectColor: true, reflect_color: params.reflectColor,
+      });
+
+      params.transmit = 0.0;
       /* eslint-disable @typescript-eslint/naming-convention */
       test(params, {
         HasBaseColor: true, color: params.color,

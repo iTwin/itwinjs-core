@@ -6,12 +6,20 @@ publish: false
 
 Table of contents:
 
-- [Electron 36 and 37 support](#electron-36-and-37-support)
-- [Google Photorealistic 3D Tiles support](#google-photorealistic-3d-tiles-support)
-- [API deprecations](#api-deprecations)
-  - [@itwin/presentation-common](#itwinpresentation-common)
-  - [@itwin/presentation-backend](#itwinpresentation-backend)
-  - [@itwin/presentation-frontend](#itwinpresentation-frontend)
+- [NextVersion](#nextversion)
+  - [Electron 36 and 37 support](#electron-36-and-37-support)
+  - [Google Photorealistic 3D Tiles support](#google-photorealistic-3d-tiles-support)
+  - [Station formatting enhancements](#station-formatting-enhancements)
+    - [Examples](#examples)
+  - [Text changes and styling](#text-changes-and-styling)
+    - [Persisting text](#persisting-text)
+    - [Drawing scale](#drawing-scale)
+    - [Styling text](#styling-text)
+  - [API deprecations](#api-deprecations)
+    - [@itwin/presentation-common](#itwinpresentation-common)
+    - [@itwin/presentation-backend](#itwinpresentation-backend)
+    - [@itwin/presentation-frontend](#itwinpresentation-frontend)
+  - [Schedule Script Editing Mode](#schedule-script-editing-mode)
 
 ## Electron 36 and 37 support
 
@@ -24,6 +32,44 @@ iTwin.js now supports displaying Google Photorealistic 3D Tiles via the new `Goo
 ![Google Photorealistic 3D Tiles - Exton](../learning/frontend/google-photorealistic-3d-tiles-1.jpg "Google Photorealistic 3D Tiles - Exton")
 
 ![Google Photorealistic 3D Tiles - Philadelphia](../learning/frontend/google-photorealistic-3d-tiles-2.jpg "Google Photorealistic 3D Tiles - Philadelphia")
+
+## Station formatting enhancements
+
+Available in `@itwin/core-quantity`, station formatting now supports a new `stationBaseFactor` property in [FormatProps]($quantity) to provide greater flexibility in station offset calculations. This property works in conjunction with the existing `stationOffsetSize` property to determine the effective station offset using the formula: `effective offset = stationBaseFactor * 10^stationOffsetSize`.
+
+The `stationBaseFactor` property allows for non-standard station intervals that aren't simple powers of 10. The default value is 1, which maintains backward compatibility with existing station formats.
+
+> __Note__: The `stationBaseFactor` property is currently implemented as an iTwin.js-specific extension and is not supported in the native EC (Entity Context) layer. This feature will eventually be incorporated into the ECFormat specification to provide broader compatibility across the iTwin ecosystem.
+
+### Examples
+
+| stationOffsetSize | stationBaseFactor | Value  | Effective Offset | Formatted |
+| ----------------- | ----------------- | ------ | ---------------- | --------- |
+| 2                 | 1                 | 1055.5 | 100              | 10+55.50  |
+| 2                 | 5                 | 1055.5 | 500              | 2+55.50   |
+| 3                 | 2                 | 1055.5 | 2000             | 0+1055.50 |
+
+This enhancement enables more flexible station formatting for applications that require custom station intervals, such as specialized surveying or engineering workflows.
+
+## Text changes and styling
+
+### Persisting text
+
+[TextAnnotation2d]($backend) and [TextAnnotation3d]($backend) now use the new BIS property `textAnnotationData` to persist the [TextAnnotation]($common) instead of storing it in the `jsonProperties`. You should still use `setAnnotation` and `getAnnotation` to interact with the persisted [TextAnnotation]($common).
+
+### Drawing scale
+
+Producing geometry for a [TextAnnotation]($common) inside of a [Drawing]($backend) now automatically scales the text by the `Drawing.scaleFactor`.
+
+### Styling text
+
+[AnnotationTextStyle]($backend) is a new class enabling [TextStyleSettings]($common) to be persisted in the iModel. It replaces the TextStyle class which is now removed.
+
+[TextBlock]($common)s, [Paragraph]($common)s, and [Run]($common)s no longer refer to a persisted style by name. Instead, [TextBlock]($common)s refer to an [AnnotationTextStyle]($backend) by ID. [Paragraph]($common)s and [Run]($common)s can only provide style overrides.
+
+[TextFrameStyleProps]($common) and [TextLeaderStyleProps]($common) are now part of [TextStyleSettings]($common)s. [TextAnnotationLeader]($common)s can only specify style overrides.
+
+Text styling is now inherited by child [TextBlockComponent]($common)s. That means each style property overridden or inherited by the parent is also applied to the child, unless the child explicitly provides its own override for that property. [TextAnnotationLeader]($common)s are a special case. They are children of [TextAnnotation]($common)s. So are [TextBlock]($common)s. Leaders inherit their default styling from the [AnnotationTextStyle]($backend) specified by their sibling [TextBlock]($common). Use the [TextStyleResolver]($backend) class to resolve the effective style of TextBlockComponents and Leaders, taking into account overrides/style of the instance and its parent(s)/sibling.
 
 ## API deprecations
 
