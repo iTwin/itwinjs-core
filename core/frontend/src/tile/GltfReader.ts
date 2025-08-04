@@ -43,7 +43,7 @@ import { createGraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch, Gra
 import { RenderGeometry } from "../internal/render/RenderGeometry";
 import { GraphicTemplate } from "../render/GraphicTemplate";
 import { LayerTileData } from "../internal/render/webgl/MapLayerParams";
-import { compactEdgeIterator } from "../common/imdl/CompactEdges";
+import { CompactEdge, compactEdgeIterator } from "../common/imdl/CompactEdges";
 import { MeshPolylineGroup } from "@itwin/core-common/lib/cjs/internal/RenderMesh";
 
 /** @internal */
@@ -1381,16 +1381,44 @@ export abstract class GltfReader {
     } else if (primitive.extensions?.EXT_mesh_primitive_edge_visibility) {
       const ext = primitive.extensions.EXT_mesh_primitive_edge_visibility;
       const visibility = this.readBufferData8(ext, "visibility");
-      if (visibility) {
+      if (visibility && mesh.points && mesh.pointQParams) {
         const indices = mesh.indices;
         assert(indices !== undefined);
         assert(visibility.buffer instanceof Uint8Array);
 
-        const silhouetteNormals = this.readBufferData16(ext, "silhouetteNormals");
-        const normalPairs = silhouetteNormals ? new Uint32Array(silhouetteNormals.buffer.buffer, silhouetteNormals.buffer.byteOffset, silhouetteNormals.buffer.byteLength / 4) : undefined;
+        const silhouetteMates = this.readBufferData32(ext, "silhouetteMates")?.buffer;
         mesh.primitive.edges = new MeshEdges();
 
-        for (const edge of compactEdgeIterator(visibility.buffer, normalPairs, indices.length, (idx) => indices[idx])) {
+        const qparams = mesh.pointQParams;
+        const meshPoints = mesh.points;
+        function getPoint(index: number, out: Point3d): void {
+          index *= 3;
+          qparams.unquantize(meshPoints[index], meshPoints[index + 1], meshPoints[index + 2], out);
+        }
+        
+        const points = [new Point3d(), new Point3d(), new Point3d(), new Point3d()];
+        const normals = [new Vector3d(), new Vector3d()];
+        
+        let curSilhouetteMateIndex = 0;
+        const nextNormals = silhouetteMates ? (edge: CompactEdge, index2: number) => {
+          const index3 = indices[silhouetteMates[curSilhouetteMateIndex++]];
+          getPoint(edge.index0, points[0]);
+          getPoint(edge.index1, points[1]);
+          getPoint(index2, points[2]);
+          getPoint(index3, points[3]);
+
+          points[2].crossProductToPoints(points[0], points[1], normals[0]);
+          points[3].crossProductToPoints(points[0], points[1], normals[1]);
+          normals[0].tryNormalizeInPlace();
+          normals[1].tryNormalizeInPlace();
+
+          const n0 = OctEncodedNormal.encodeXYZ(normals[0].x, normals[0].y, normals[0].z);
+          const n1 = OctEncodedNormal.encodeXYZ(normals[1].x, normals[1].y, normals[1].z);
+
+          return (n0 | (n1 << 16)) >>> 0;
+        } : undefined;
+
+        for (const edge of compactEdgeIterator(visibility.buffer, indices.length, (idx) => indices[idx], nextNormals)) {
           if (undefined === edge.normals) {
             mesh.primitive.edges.visible.push(new MeshEdge(edge.index0, edge.index1));
           } else {

@@ -37,14 +37,21 @@ export interface CompactEdge {
   normals?: number;
 }
 
+/** @internal */
+export type GetNextSilhouetteNormalPair = (edge: CompactEdge, index2: number) => number;
+
 /** Iterate over the compact edges.
  * @note The same object is returned on each iteration, mutated in place.
  * @internal
  */
-export function * compactEdgeIterator(visibilityFlags: Uint8Array, normalPairs: Uint32Array | undefined, numIndices: number, decodeIndex: (index: number) => number): IterableIterator<CompactEdge> {
+ export function * compactEdgeIterator(
+   visibilityFlags: Uint8Array,
+   numIndices: number,
+   decodeIndex: (index: number) => number,
+   nextNormals: GetNextSilhouetteNormalPair | undefined
+ ): IterableIterator<CompactEdge> {
   let bitIndex = 0;
   let flagsIndex = 0;
-  let normalIndex = 0;
 
   const output: CompactEdge = { index0: 0, index1: 1 };
   for (let i = 0; i < numIndices; i++) {
@@ -59,11 +66,14 @@ export function * compactEdgeIterator(visibilityFlags: Uint8Array, normalPairs: 
       continue;
     }
 
+    const iMod3 = i % 3;
     output.index0 = decodeIndex(i);
-    output.index1 = decodeIndex(i % 3 === 2 ? i - 2 : i + 1);
+    output.index1 = decodeIndex(iMod3 === 2 ? i - 2 : i + 1);
     if (ImdlEdgeVisibility.Silhouette === visibility) {
-      assert(undefined !== normalPairs);
-      output.normals = normalPairs[normalIndex++];
+      assert(undefined !== nextNormals);
+      const index2Offset = iMod3 === 0 ? 2 : (iMod3 === 1 ? -2 : -1);
+      const index2 = decodeIndex(i + index2Offset);
+      output.normals = nextNormals(output, index2);
     } else {
       output.normals = undefined;
     }
@@ -98,7 +108,9 @@ export function indexedEdgeParamsFromCompactEdges(compact: CompactEdgeParams): I
 
   let curVisibleIndex = 0;
   let curSilhouetteIndex = 0;
-  for (const edge of compactEdgeIterator(compact.visibility, compact.normalPairs, compact.vertexIndices.length, (vertIdx) => compact.vertexIndices.decodeIndex(vertIdx))) {
+  let curNormalIndex = 0;
+  const nextNormals = compact.normalPairs ? () => compact.normalPairs![curNormalIndex++] : undefined;
+  for (const edge of compactEdgeIterator(compact.visibility, compact.vertexIndices.length, (vertIdx) => compact.vertexIndices.decodeIndex(vertIdx), nextNormals)) {
     if (undefined === edge.normals) {
       const index = curVisibleIndex++;
       const byteIndex = index * 6;
