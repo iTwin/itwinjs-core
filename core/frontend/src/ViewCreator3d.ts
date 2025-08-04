@@ -7,7 +7,7 @@
  * @module Views
  */
 
-import { CompressedId64Set, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
+import { CompressedId64Set, expectDefined, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
   Camera, CategorySelectorProps, Code, CustomViewState3dCreatorOptions, DisplayStyle3dProps, Environment, IModel, IModelReadRpcInterface,
   ModelSelectorProps, RenderMode, ViewDefinition3dProps, ViewStateProps,
@@ -231,7 +231,7 @@ export class ViewCreator3d {
     if (mergedDisplayProps.jsonProperties !== undefined) {
       mergedDisplayProps.jsonProperties.styles = {
         ...mergedDisplayProps.jsonProperties.styles,
-        ...viewStateProps.displayStyleProps.jsonProperties!.styles,
+        ...expectDefined(viewStateProps.displayStyleProps.jsonProperties).styles,
       };
     }
 

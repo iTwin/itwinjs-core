@@ -200,6 +200,7 @@ export class NativeApp {
    */
   public static async openStorage(name: string): Promise<Storage> {
     if (this._storages.has(name))
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return this._storages.get(name)!;
 
     const storage = new Storage(await this.nativeAppIpc.storageMgrOpen(name));
