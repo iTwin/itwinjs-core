@@ -1387,6 +1387,7 @@ export abstract class GltfReader {
         assert(visibility.buffer instanceof Uint8Array);
 
         const silhouetteMates = this.readBufferData32(ext, "silhouetteMates")?.buffer;
+        const silhouetteNormals = this.readBufferData32(ext, "silhouetteNormals");
         mesh.primitive.edges = new MeshEdges();
 
         const qparams = mesh.pointQParams;
@@ -1403,6 +1404,7 @@ export abstract class GltfReader {
         let curIndex3 = 0;
         let curSilhouetteMateIndex = 0;
         const nextNormals = silhouetteMates ? (edge: CompactEdge, index2: number) => {
+          const silIdx = curSilhouetteMateIndex;
           const index3 = silhouetteMates[curSilhouetteMateIndex++];
           getPoint(edge.index0, points[0]);
           getPoint(edge.index1, points[1]);
@@ -1413,12 +1415,16 @@ export abstract class GltfReader {
           points[3].crossProductToPoints(points[0], points[1], normals[1]);
           normals[0].tryNormalizeInPlace();
           normals[1].tryNormalizeInPlace();
+          normals[1] = normals[1].negate();
 
           const n0 = OctEncodedNormal.encodeXYZ(normals[0].x, normals[0].y, normals[0].z);
           const n1 = OctEncodedNormal.encodeXYZ(normals[1].x, normals[1].y, normals[1].z);
 
-          curIndex2 = index2;
+          curIndex2 = edge.index0;
           curIndex3 = index3;
+
+          const sn0 = OctEncodedNormal.decodeValue(silhouetteNormals!.buffer[silIdx] & 0x0000ffff);
+          const sn1 = OctEncodedNormal.decodeValue(silhouetteNormals!.buffer[silIdx] >>> 16);
           return (n0 | (n1 << 16)) >>> 0;
         } : undefined;
 
