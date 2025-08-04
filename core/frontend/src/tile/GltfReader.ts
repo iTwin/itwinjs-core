@@ -1399,6 +1399,8 @@ export abstract class GltfReader {
         const points = [new Point3d(), new Point3d(), new Point3d(), new Point3d()];
         const normals = [new Vector3d(), new Vector3d()];
         
+        let curIndex2 = 0;
+        let curIndex3 = 0;
         let curSilhouetteMateIndex = 0;
         const nextNormals = silhouetteMates ? (edge: CompactEdge, index2: number) => {
           const index3 = indices[silhouetteMates[curSilhouetteMateIndex++]];
@@ -1415,17 +1417,28 @@ export abstract class GltfReader {
           const n0 = OctEncodedNormal.encodeXYZ(normals[0].x, normals[0].y, normals[0].z);
           const n1 = OctEncodedNormal.encodeXYZ(normals[1].x, normals[1].y, normals[1].z);
 
+          curIndex2 = index2;
+          curIndex3 = index3;
           return (n0 | (n1 << 16)) >>> 0;
         } : undefined;
 
-        for (const edge of compactEdgeIterator(visibility.buffer, indices.length, (idx) => indices[idx], nextNormals)) {
-          if (undefined === edge.normals) {
-            mesh.primitive.edges.visible.push(new MeshEdge(edge.index0, edge.index1));
-          } else {
-            mesh.primitive.edges.silhouette.push(new MeshEdge(edge.index0, edge.index1));
-            const normal0 = new OctEncodedNormal(edge.normals & 0x0000ffff);
-            const normal1 = new OctEncodedNormal(edge.normals >>> 16);
-            mesh.primitive.edges.silhouetteNormals.push(new OctEncodedNormalPair(normal0, normal1));
+        const debugMates = true;
+        if (!debugMates) {
+          for (const edge of compactEdgeIterator(visibility.buffer, indices.length, (idx) => indices[idx], nextNormals)) {
+            if (undefined === edge.normals) {
+              mesh.primitive.edges.visible.push(new MeshEdge(edge.index0, edge.index1));
+            } else {
+              mesh.primitive.edges.silhouette.push(new MeshEdge(edge.index0, edge.index1));
+              const normal0 = new OctEncodedNormal(edge.normals & 0x0000ffff);
+              const normal1 = new OctEncodedNormal(edge.normals >>> 16);
+              mesh.primitive.edges.silhouetteNormals.push(new OctEncodedNormalPair(normal0, normal1));
+            }
+          }
+        } else {
+          for (const edge of compactEdgeIterator(visibility.buffer, indices.length, (idx) => indices[idx], nextNormals)) {
+            if (undefined !== edge.normals) {
+              mesh.primitive.edges.visible.push(new MeshEdge(curIndex2, curIndex3));
+            }
           }
         }
       }
