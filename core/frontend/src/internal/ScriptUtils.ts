@@ -102,7 +102,7 @@ function isTimelineEntryEqual(a: RenderSchedule.ElementTimeline, b: RenderSchedu
       if ((c1 === undefined) !== (c2 === undefined))
         return false;
 
-      if (c1 !== undefined && !c1.equals(c2!))
+      if (c1 !== undefined && c2 !== undefined && !c1.equals(c2))
         return false;
 
       // Cutting Plane (CLIPPING)

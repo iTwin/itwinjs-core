@@ -102,7 +102,7 @@ export class GeometryAccumulator {
     // Adjust the mesh range based on displacements applied to vertices by analysis style, if applicable.
     let range;
     if (this._analysisDisplacement) {
-      const channel = pf.data.auxData?.channels.find((x) => x.name === this._analysisDisplacement!.channelName);
+      const channel = pf.data.auxData?.channels.find((x) => x.name === this._analysisDisplacement?.channelName);
       const displacementRange = channel?.computeDisplacementRange(this._analysisDisplacement.scale);
       if (displacementRange && !displacementRange.isNull) {
         range = Range3d.createNull();
