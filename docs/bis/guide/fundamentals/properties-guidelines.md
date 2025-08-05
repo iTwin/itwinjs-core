@@ -4,23 +4,23 @@ BIS offers multiple ways to capture properties of Entities being modeled. It is 
 
 ## Introduction
 
-Not every property of an Entity needs to be persisted into a BIS repository. Some properties can be derived from persisted data, therefore saving them in a BIS repository turns derived properties into effectively cached data that needs to be kept in-sync as the more fundamental properties change. This situation effectively applies to iTwin Native apps that directly store their data in BIS repositories.
+Not every property of an Entity needs to be persisted into a BIS repository. Some properties can be derived from persisted data, therefore saving them in a BIS repository turns derived properties into effectively cached data that needs to be kept in-sync as the more fundamental properties change. This situation often applies to iTwin Native apps that directly store their data in BIS repositories.
 
 ## Persisted Properties
 
 The following sections focus on properties that are meant to be persisted in a BIS repository.
 
-### First-class Properties
+### Essential Element Properties
 
-A property of an Entity can be implemented as an [ECProperty](../../ec/ec-property.md) directly defined on the [Element-class](./data-classification.md#element-class) that represents it - also known as a `First-class property`. This is the strategy recommended to follow for properties considered as *essential* according to the semantics and [modeling perspective](../data-organization/modeling-perspectives.md) captured by the element-class modeling the associated Entity.
+Properties considered *essential* according to the semantics and [modeling perspective](../data-organization/modeling-perspectives.md) captured by the element-class modeling the associated Entity, are typically captured in a BIS class as _First-class_ properties. Under that strategy, a property of an Entity is implemented as an [ECProperty](../../ec/ec-property.md) directly defined on the [Element-class](./data-classification.md#element-class) that represents it.
 
-Note, however, that there may be properties whose applicability dependend on the state of a more general concept on a specific Entity. Such properties shall be implemented via a class-hierarchy based on `Element-Aspects`(./elementaspect-fundamentals.md). If the overall concept is considered *essential* for the associated Entity, the target multiplicity of its associated `ElementOwnsUniqueAspect` or `ElementOwnsMultiAspect` relationship shall be set accordingly (i.e. 1..1 or 1..* respectively). See [Sub-Properties and ElementAspects](./elementaspect-fundamentals.md#sub-properties-and-elementaspects) for more information and an example of this situation.
+Note, however, that there may be *essential* properties whose applicability dependend on the state of a more general *essential* property on a specific Entity. Such *essential* properties shall be implemented via a class-hierarchy based on [`_Mandatory_ Element-Aspects`](./elementaspect-fundamentals.md#sub-properties-and-mandatory-elementaspects). If the overall concept is considered *essential* for the associated Entity, the target multiplicity of its associated `ElementOwnsUniqueAspect` or `ElementOwnsMultiAspect` relationship shall be set accordingly (i.e. 1..1 or 1..* respectively). See [Sub-Properties and _mandatory_ ElementAspects](./elementaspect-fundamentals.md#sub-properties-and-mandatory-elementaspects) for more information and an example of this situation.
 
-First-class properties shall be shown in UX controls as attribution of their associated Element-class, unless they are selectively hidden by using the `HiddenProperty` or `HiddenClass` *Custom-Attributes*.
+*Essential* Element properties shall be shown in UX controls as attribution of their associated Element-class, unless they are selectively hidden by using the `HiddenProperty` or `HiddenClass` *Custom-Attributes*.
 
-### Optional Properties
+### Non-essential Element Properties
 
-Properties of an Entity considered optional can be implemented as [EC Properties](../../ec/ec-property.md) of an [Element-Aspect](./elementaspect-fundamentals.md). An `Element-Aspect` is a set of properties that can be attached to an `Element` instance.
+Properties of an Entity considered non-essential are implemented as [EC Properties](../../ec/ec-property.md) of an [Element-Aspect](./elementaspect-fundamentals.md). An `Element-Aspect` is a set of properties that can be attached to an `Element` instance.
 
 Element-Aspect properties shall be shown in UX controls as attribution of their associated Element-instance, unless they are selectively hidden by using the `HiddenProperty` or `HiddenClass` *Custom-Attributes*.
 
