@@ -16,11 +16,14 @@ import { ECVersion, SchemaKey } from "./SchemaKey";
  * The SchemaLoader object should be held in memory if multiple calls to [[getSchema]] or [[tryGetSchema]]
  * is a possibility, thereby avoiding unnecessary schema retrievals from the function.
  *
+ * Since the development of this class, the IModelDb class has been enhanced to include a schema context.
+ * In most cases, that is sufficient so a SchemaLoader is not needed. This class is likely to be removed in the future.
+ *
  * ** Example **
  * ```ts
  * [[include:IModelSchemas.loadFromDb]]
  * ```
- * @beta Is this concept needed no that backend and frontend will have contexts cached on the iModel?
+ * @beta This will no longer be needed as of 5.0.0 since IModelDb now has a schema context.
  */
 export class SchemaLoader {
   private _context: SchemaContext;

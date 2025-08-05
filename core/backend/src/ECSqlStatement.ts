@@ -63,7 +63,7 @@ export interface ECSqlRowArg {
  * - [Executing ECSQL]($docs/learning/backend/ExecutingECSQL) provides more background on ECSQL and an introduction on how to execute ECSQL with the iTwin.js API.
  * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples) illustrate the use of the iTwin.js API for executing and working with ECSQL
  * @public
- * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
+ * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) to query.
  * For ECDb, use [ECDb.withCachedWriteStatement]($backend) or [ECDb.withWriteStatement]($backend) to Insert/Update/Delete.
  */
 export class ECSqlStatement implements IterableIterator<any>, Disposable {
@@ -132,7 +132,7 @@ export class ECSqlStatement implements IterableIterator<any>, Disposable {
     }
   }
 
-  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
   public dispose(): void {
     this[Symbol.dispose]();
   }
@@ -496,6 +496,18 @@ export class ECSqlWriteStatement {
     this._stmt.reset();
   }
 
+  /**
+   * Releases the native resources held by this ECSqlWriteStatement.
+   *
+   * This method should be called when the statement is no longer needed to free up native resources.
+   *
+   * > Do not call this method directly on a statement that is being managed by a statement cache.
+   */
+  public [Symbol.dispose](): void {
+    if (this._stmt)
+      this._stmt[Symbol.dispose]();
+  }
+
   /** Get the Native SQL statement
    * @internal
    */
@@ -643,6 +655,10 @@ export class ECSqlWriteStatement {
    */
   public stepForInsert(): ECSqlInsertResult {
     return this._stmt.stepForInsert();
+  }
+
+  public step(): DbResult {
+    return this._stmt.step();
   }
 
   /** Get the query result's column count (only for ECSQL SELECT statements). */
@@ -831,7 +847,7 @@ export class ECSqlBinder {
  * - [[ECSqlStatement.getValue]]
  * - [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
  * @public
- * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) instead.
+ * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) instead.
  */
 export interface ECEnumValue {
   schema: string;
@@ -847,7 +863,7 @@ export interface ECEnumValue {
  * - [ECSqlStatement.getValue]($backend)
  * - [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
  * @public
- * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) instead.
+ * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) instead.
 */
 export class ECSqlValue {
   private _val: IModelJsNative.ECSqlValue;
@@ -927,8 +943,9 @@ export class ECSqlValue {
 /** Iterator over members of a struct [ECSqlValue]($backend) or the elements of an array [ECSqlValue]($backend).
  * See [ECSqlValue.getStructIterator]($backend) or [ECSqlValue.getArrayIterator]($backend).
  * @public
- * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) instead.
+ * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) instead.
 */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
   private _it: IModelJsNative.ECSqlValueIterator;
 
@@ -950,7 +967,7 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
 /** Information about an ECSQL column in an ECSQL query result.
  * See [ECSqlValue.columnInfo]($backend), [ECSqlStatement.getValue]($backend), [ECSqlStatement]($backend)
  * @public
- * @deprecated in 4.11.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) instead.
+ * @deprecated in 4.11 - will not be removed until after 2026-06-13.  Use [IModelDb.createQueryReader]($backend) or [ECDb.createQueryReader]($backend) instead.
  */
 export interface ECSqlColumnInfo {
   /** Gets the data type of the column.

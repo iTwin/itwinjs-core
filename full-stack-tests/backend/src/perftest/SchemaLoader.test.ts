@@ -62,7 +62,7 @@ describe("SchemaLoaderPerformance", () => {
   function getBisSchemaPaths(): string[] {
     const bisSchemaPaths: string[] = [];
 
-    bisSchemaPaths.push(path.join(assetDir, "Units.01.00.08.ecschema.xml"));
+    bisSchemaPaths.push(path.join(assetDir, "Units.01.00.09.ecschema.xml"));
     bisSchemaPaths.push(path.join(assetDir, "Formats.01.00.00.ecschema.xml"));
 
     bisSchemaPaths.push(path.join(assetDir, "BisCore.ecschema.xml"));
@@ -87,7 +87,7 @@ describe("SchemaLoaderPerformance", () => {
 
   function copyBisSchemasToAssetsDir() {
     // Copy BisSchemas that we need for performance testing
-    fs.copyFileSync(getSchemaPath("Standard", "Units.01.00.08.ecschema.xml"), path.join(assetDir, "Units.01.00.08.ecschema.xml"));
+    fs.copyFileSync(getSchemaPath("Standard", "Units.01.00.09.ecschema.xml"), path.join(assetDir, "Units.01.00.09.ecschema.xml"));
     fs.copyFileSync(getSchemaPath("Standard", "Formats.01.00.00.ecschema.xml"), path.join(assetDir, "Formats.01.00.00.ecschema.xml"));
 
     fs.copyFileSync(getSchemaPath("Dgn", "BisCore.ecschema.xml"), path.join(assetDir, "BisCore.ecschema.xml"));
@@ -131,7 +131,7 @@ describe("SchemaLoaderPerformance", () => {
     const imodel: StandaloneDb = StandaloneDb.openFile(iModelFilepath, OpenMode.Readonly);
 
     const startTime: number = new Date().getTime();
-    const schemaResult =  await imodel[_nativeDb].getSchemaPropsAsync(schemaName);
+    const schemaResult = await imodel[_nativeDb].getSchemaPropsAsync(schemaName);
     const endTime: number = new Date().getTime();
 
     if (schemaResult === undefined) {

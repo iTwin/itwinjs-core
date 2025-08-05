@@ -10,8 +10,8 @@ import { firstValueFrom } from "rxjs";
 import { eachValueFrom } from "rxjs-for-await";
 import { IModelDb } from "@itwin/core-backend";
 import { BeEvent, Id64Array } from "@itwin/core-bentley";
-import { UnitSystemKey } from "@itwin/core-quantity";
-import { SchemaContext } from "@itwin/ecschema-metadata";
+import { FormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
+import { SchemaContext, SchemaFormatsProvider } from "@itwin/ecschema-metadata";
 import {
   UnitSystemFormat as CommonUnitSystemFormat,
   ComputeSelectionRequestOptions,
@@ -67,13 +67,13 @@ import {
   LocalizationHelper,
 } from "@itwin/presentation-common/internal";
 import { getContentItemsObservableFromClassNames, getContentItemsObservableFromElementIds } from "./ElementPropertiesHelper.js";
+import { _presentation_manager_detail } from "./InternalSymbols.js";
 import { NativePlatformRequestTypes } from "./NativePlatform.js";
 import { getRulesetIdObject, PresentationManagerDetail } from "./PresentationManagerDetail.js";
 import { RulesetManager } from "./RulesetManager.js";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager.js";
 import { SelectionScopesHelper } from "./SelectionScopesHelper.js";
 import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, getLocalizedStringEN } from "./Utils.js";
-import { _presentation_manager_detail } from "./InternalSymbols.js";
 
 /**
  * Presentation hierarchy cache mode.
@@ -211,7 +211,7 @@ export interface PresentationManagerCachingConfig {
  * assigning default unit formats for specific phenomenons (see [[PresentationManagerProps.defaultFormats]]).
  *
  * @public
- * @deprecated in 4.3. The type has been moved to `@itwin/presentation-common` package.
+ * @deprecated in 4.3 - will not be removed until after 2026-06-13. The type has been moved to `@itwin/presentation-common` package.
  */
 export type UnitSystemFormat = CommonUnitSystemFormat;
 
@@ -257,7 +257,7 @@ export interface PresentationManagerProps {
    *
    *   which means the assets can be found through a relative path `./assets/` from the `{source file being executed}`.
    *
-   * @deprecated in 4.2. This attribute is not used anymore - the package is not using private assets anymore.
+   * @deprecated in 4.2 - will not be removed until after 2026-06-13. This attribute is not used anymore - the package is not using private assets anymore.
    */
   presentationAssetsRoot?: string | PresentationAssetsRootConfig;
 
@@ -288,8 +288,17 @@ export interface PresentationManagerProps {
   /**
    * A map of default unit formats to use for formatting properties that don't have a presentation format
    * in requested unit system.
+   *
+   * @deprecated in 5.1. Use `formatsProvider` instead. Still used as a fallback if `formatsProvider` is not supplied.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   defaultFormats?: FormatsMap;
+
+  /**
+   * A custom formats provider to use for formatting property values with units. Defaults to [SchemaFormatsProvider]($ecschema-metadata) if
+   * not supplied.
+   */
+  formatsProvider?: FormatsProvider;
 
   /**
    * A number of worker threads to use for handling presentation requests. Defaults to `2`.
@@ -301,7 +310,7 @@ export interface PresentationManagerProps {
    * data changes are not tracked at all.
    *
    * @beta
-   * @deprecated in 4.4. The manager now always tracks for iModel data changes without polling.
+   * @deprecated in 4.4 - will not be removed until after 2026-06-13. The manager now always tracks for iModel data changes without polling.
    */
   updatesPollInterval?: number;
 
@@ -327,6 +336,8 @@ export interface PresentationManagerProps {
   /**
    * Callback that provides [SchemaContext]($ecschema-metadata) for supplied [IModelDb]($core-backend).
    * [SchemaContext]($ecschema-metadata) is used for getting metadata required for values formatting.
+   *
+   * @deprecated in 5.1. By default [IModelDb.schemaContext]($core-backend) is now used instead.
    */
   schemaContextProvider?: (imodel: IModelDb) => SchemaContext;
 
@@ -349,6 +360,7 @@ export class PresentationManager {
   private _props: PresentationManagerProps;
   private _detail: PresentationManagerDetail;
   private _localizationHelper: LocalizationHelper;
+  private _schemaContextProvider: (imodel: IModelDb) => SchemaContext;
 
   /**
    * Creates an instance of PresentationManager.
@@ -358,6 +370,8 @@ export class PresentationManager {
     this._props = props ?? {};
     this._detail = new PresentationManagerDetail(this._props);
     this._localizationHelper = new LocalizationHelper({ getLocalizedString: props?.getLocalizedString ?? getLocalizedStringEN });
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    this._schemaContextProvider = props?.schemaContextProvider ?? ((imodel: IModelDb) => imodel.schemaContext);
   }
 
   /** Get / set active unit system used to format property values with units */
@@ -374,7 +388,7 @@ export class PresentationManager {
     this._detail[Symbol.dispose]();
   }
 
-  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
   /* c8 ignore next 3 */
   public dispose() {
     this[Symbol.dispose]();
@@ -505,6 +519,20 @@ export class PresentationManager {
     return this._detail.getContentSetSize(requestOptions);
   }
 
+  private createContentFormatter({ imodel, unitSystem }: { imodel: IModelDb; unitSystem?: UnitSystemKey }): ContentFormatter {
+    if (!unitSystem) {
+      unitSystem = this.props.defaultUnitSystem ?? "metric";
+    }
+    const schemaContext = this._schemaContextProvider(imodel);
+    const koqPropertyFormatter = new KoqPropertyValueFormatter({
+      schemaContext,
+      formatsProvider: this.props.formatsProvider ?? new SchemaFormatsProvider(schemaContext, unitSystem),
+    });
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    koqPropertyFormatter.defaultFormats = this.props.defaultFormats;
+    return new ContentFormatter(new ContentPropertyValueFormatter(koqPropertyFormatter), unitSystem);
+  }
+
   /**
    * Retrieves the content set based on the supplied content descriptor.
    * @public
@@ -512,17 +540,10 @@ export class PresentationManager {
   public async getContentSet(
     requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute,
   ): Promise<Item[]> {
-    let items = await this._detail.getContentSet({
-      ...requestOptions,
-      ...(!requestOptions.omitFormattedValues && this.props.schemaContextProvider !== undefined ? { omitFormattedValues: true } : undefined),
-    });
+    let items = await this._detail.getContentSet({ ...requestOptions, omitFormattedValues: true });
 
-    if (!requestOptions.omitFormattedValues && this.props.schemaContextProvider !== undefined) {
-      const koqPropertyFormatter = new KoqPropertyValueFormatter(this.props.schemaContextProvider(requestOptions.imodel), this.props.defaultFormats);
-      const formatter = new ContentFormatter(
-        new ContentPropertyValueFormatter(koqPropertyFormatter),
-        requestOptions.unitSystem ?? this.props.defaultUnitSystem,
-      );
+    if (!requestOptions.omitFormattedValues) {
+      const formatter = this.createContentFormatter(requestOptions);
       items = await formatter.formatContentItems(items, requestOptions.descriptor);
     }
 
@@ -537,21 +558,13 @@ export class PresentationManager {
     requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> &
       BackendDiagnosticsAttribute,
   ): Promise<Content | undefined> {
-    const content = await this._detail.getContent({
-      ...requestOptions,
-      ...(!requestOptions.omitFormattedValues && this.props.schemaContextProvider !== undefined ? { omitFormattedValues: true } : undefined),
-    });
-
+    const content = await this._detail.getContent({ ...requestOptions, omitFormattedValues: true });
     if (!content) {
       return undefined;
     }
 
-    if (!requestOptions.omitFormattedValues && this.props.schemaContextProvider !== undefined) {
-      const koqPropertyFormatter = new KoqPropertyValueFormatter(this.props.schemaContextProvider(requestOptions.imodel), this.props.defaultFormats);
-      const formatter = new ContentFormatter(
-        new ContentPropertyValueFormatter(koqPropertyFormatter),
-        requestOptions.unitSystem ?? this.props.defaultUnitSystem,
-      );
+    if (!requestOptions.omitFormattedValues) {
+      const formatter = this.createContentFormatter(requestOptions);
       await formatter.formatContent(content);
     }
 
@@ -724,7 +737,7 @@ export class PresentationManager {
   /**
    * Retrieves available selection scopes.
    * @public
-   * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public async getSelectionScopes(_requestOptions: SelectionScopeRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<SelectionScope[]> {
@@ -734,7 +747,7 @@ export class PresentationManager {
   /**
    * Computes selection based on provided element IDs and selection scope.
    * @public
-   * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public async computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<KeySet> {

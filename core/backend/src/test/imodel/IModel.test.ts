@@ -13,7 +13,7 @@ import {
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
   ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, LightLocationProps, MapImageryProps, PhysicalElementProps,
   PointWithStatus, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
-  TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
+  TextureMapProps, TextureMapUnits, TypeDefinitionElementProps, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
 import {
   Geometry, GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, XYZProps, YawPitchRollAngles,
@@ -23,7 +23,7 @@ import { V2CheckpointManager } from "../../CheckpointManager";
 import {
   _nativeDb, BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions,
   DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement,
-  Element, ElementDrivesElement, ElementGroupsMembers, ElementGroupsMembersProps, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d,
+  Element, ElementDrivesElement, ElementGroupsMembers, ElementGroupsMembersProps, ElementOwnsChildElements, Entity, GenericGraphicalType2d, GeometricElement2d, GeometricElement3d,
   GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation,
   LinkPartition, Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, SpatialCategory,
   SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
@@ -1073,11 +1073,76 @@ describe("iModel", () => {
     }
   }
 
+  it("should get metadata for a relationship", async () => {
+    const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "relationshipMetadata.bim");
+    const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "relationshipMetadata" } });
+
+    const partitionId = imodel.elements.insertElement({
+      classFullName: "BisCore:PhysicalPartition",
+      model: IModel.repositoryModelId,
+      parent: {
+        relClassName: "BisCore:SubjectOwnsPartitionElements",
+        id: IModel.rootSubjectId,
+      },
+      code: new Code({
+        spec: imodel.codeSpecs.getByName(BisCodeSpec.informationPartitionElement).id,
+        scope: IModel.rootSubjectId,
+        value: "physical model",
+      }),
+    });
+
+    for await (const row of imodel.createQueryReader(`SELECT * FROM bis.Element LIMIT ${1}`)) {
+      const relId = imodel.relationships.insertInstance({
+        classFullName: "BisCore:ElementHasLinks",
+        sourceId: partitionId,
+        targetId: row.ECInstanceId,
+      });
+      const relationship = imodel.relationships.getInstance("BisCore:ElementHasLinks", relId);
+      const metadata = await relationship.getMetaData();
+      assert.isDefined(metadata, "metadata should be defined");
+    }
+    imodel.close();
+  });
+
   it("should get metadata for class", () => {
     const metaData = imodel1.schemaContext.getSchemaItemSync(Element.classFullName, EntityClass);
     assert.exists(metaData);
     if (metaData !== undefined)
       checkElementMetaData(metaData);
+  });
+
+  it("should iterate through metadata for a relationship", async () => {
+    const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "relationshipMetadata.bim");
+    const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "relationshipMetadata" } });
+
+    const partitionId = imodel.elements.insertElement({
+      classFullName: "BisCore:PhysicalPartition",
+      model: IModel.repositoryModelId,
+      parent: {
+        relClassName: "BisCore:SubjectOwnsPartitionElements",
+        id: IModel.rootSubjectId,
+      },
+      code: new Code({
+        spec: imodel.codeSpecs.getByName(BisCodeSpec.informationPartitionElement).id,
+        scope: IModel.rootSubjectId,
+        value: "physical model",
+      }),
+    });
+
+    for await (const row of imodel.createQueryReader(`SELECT * FROM bis.Element LIMIT ${1}`)) {
+      const relId = imodel.relationships.insertInstance({
+        classFullName: "BisCore:ElementHasLinks",
+        sourceId: partitionId,
+        targetId: row.ECInstanceId,
+      });
+      const relationship = imodel.relationships.getInstance("BisCore:ElementHasLinks", relId);
+      relationship.forEach((propName, propMeta) => {
+        assert.isDefined(propName, "Property name should be defined");
+        assert.isDefined(propMeta, "Property metadata should be defined");
+      });
+    }
+
+    imodel.close();
   });
 
   it("update the project extents", async () => {
@@ -1416,12 +1481,15 @@ describe("iModel", () => {
     testImodel.models.deleteModel(newModelId);
 
     // Test insertModel error handling
-    assert.throws(() => {
+    try {
       testImodel.models.insertModel({
         classFullName: DefinitionModel.classFullName,
         modeledElement: { id: "0x10000000bad" },
       });
-    }, IModelError);
+    } catch (error: any) {
+      assert.isTrue(error instanceof IModelError || error.iTwinErrorId !== undefined);
+    }
+
   });
 
   it("should create model with custom relationship to modeled element", async () => {
@@ -1783,6 +1851,39 @@ describe("iModel", () => {
     assert.isTrue(iModel2.ecefLocation !== undefined);
 
     iModel2.close();
+  });
+
+  describe("async coordinate conversions", () => {
+    it("should output same number of points as input", async () => {
+      const iModelCoords: Point3d[] = [];
+      const geoCoords: Point3d[] = [];
+      for (let numPts = 0; numPts < 3; numPts++) {
+        const geoResponse = await imodel5.getGeoCoordinatesFromIModelCoordinates({ target: "WGS84", iModelCoords });
+        expect(geoResponse.geoCoords.length).to.equal(numPts);
+        
+        const iModelResponse = await imodel5.getIModelCoordinatesFromGeoCoordinates({ source: "WGS84", geoCoords });
+        expect(iModelResponse.iModelCoords.length).to.equal(numPts);
+        
+        iModelCoords.push(new Point3d());
+        geoCoords.push(new Point3d());
+      }
+    });
+
+    it("should always have fromCache = 0", async () => {
+      const iModelCoords: Point3d[] = [];
+      const geoCoords: Point3d[] = [];
+      for (let numPts = 0; numPts < 3; numPts++) {
+        const geoResponse = await imodel5.getGeoCoordinatesFromIModelCoordinates({ target: "WGS84", iModelCoords });
+        expect(geoResponse.fromCache).to.equal(0);
+        
+        const iModelResponse = await imodel5.getIModelCoordinatesFromGeoCoordinates({ source: "WGS84", geoCoords });
+        expect(iModelResponse.iModelCoords.length).to.equal(numPts);
+        expect(iModelResponse.fromCache).to.equal(0);
+        
+        iModelCoords.push(new Point3d());
+        geoCoords.push(new Point3d());
+      }
+    });
   });
 
   if (!ProcessDetector.isIOSAppBackend) {
@@ -2350,10 +2451,45 @@ describe("iModel", () => {
     db.close();
   });
 
+  it("Cache cleared on abandonChanges", () => {
+    const standaloneFile = IModelTestUtils.prepareOutputFile("IModel", "StandaloneReadWrite.bim");
+    const db = StandaloneDb.createEmpty(standaloneFile, { rootSubject: { name: "Standalone" } });
+    db.saveChanges();
+
+    const code = Code.createEmpty();
+    code.value = "foo";
+    const props: TypeDefinitionElementProps = {
+      classFullName: GenericGraphicalType2d.classFullName,
+      model: IModel.dictionaryId,
+      code,
+    };
+    const id = db.elements.insertElement(props);
+    const element1 = db.elements.getElementProps(id);
+    db.abandonChanges();
+
+    code.value = "bar";
+    const props2: TypeDefinitionElementProps = {
+      classFullName: GenericGraphicalType2d.classFullName,
+      model: IModel.dictionaryId,
+      code,
+    };
+    const id2 = db.elements.insertElement(props2);
+    expect(id2).to.equal(id);
+    const element2 = db.elements.getElementProps(id2);
+    expect(element2).to.not.equal(element1);
+
+    db.abandonChanges();
+    db.close();
+  });
+
   it("Standalone iModel properties", () => {
     const standaloneRootSubjectName = "Standalone";
     const standaloneFile1 = IModelTestUtils.prepareOutputFile("IModel", "Standalone1.bim");
-    let standaloneDb1 = StandaloneDb.createEmpty(standaloneFile1, { rootSubject: { name: standaloneRootSubjectName } });
+    const ecefLocation =  new EcefLocation({ origin: [1, 2, 3], orientation: { yaw: 0, pitch: 0, roll: 0 } })
+    const geographicCoordinateSystem = {
+      horizontalCRS: { id: "10TM115-27" },
+    }
+    let standaloneDb1 = StandaloneDb.createEmpty(standaloneFile1, { rootSubject: { name: standaloneRootSubjectName }, ecefLocation, geographicCoordinateSystem });
     assert.isTrue(standaloneDb1.isStandaloneDb());
     assert.isTrue(standaloneDb1.isStandalone);
     assert.isFalse(standaloneDb1.isReadonly, "Expect standalone iModels to be read-write during create");
@@ -2366,6 +2502,8 @@ describe("iModel", () => {
     assert.equal(standaloneDb1.iTwinId, Guid.empty);
     assert.strictEqual("", standaloneDb1.changeset.id);
     assert.strictEqual(0, standaloneDb1.changeset.index);
+    assert.deepEqual(standaloneDb1.ecefLocation?.origin, ecefLocation.origin, "standalone ecefLocation should be set");
+    assert.strictEqual(standaloneDb1.geographicCoordinateSystem?.horizontalCRS?.id, "10TM115-27", "standalone coordinate system should be set");
     assert.equal(standaloneDb1.openMode, OpenMode.ReadWrite);
     standaloneDb1.close();
     assert.isFalse(standaloneDb1.isOpen);
@@ -2384,7 +2522,11 @@ describe("iModel", () => {
     const snapshotFile2 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot2.bim");
     const snapshotFile3 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot3.bim");
     const imodel = await generateTestSnapshot("test_for_snapshot.bim", "test.bim");
-    let snapshotDb1 = SnapshotDb.createEmpty(snapshotFile1, { rootSubject: { name: snapshotRootSubjectName }, createClassViews: true });
+    const ecefLocation =  new EcefLocation({ origin: [1, 2, 3], orientation: { yaw: 0, pitch: 0, roll: 0 } })
+    const geographicCoordinateSystem = {
+      horizontalCRS: { id: "10TM115-27" },
+    }
+    let snapshotDb1 = SnapshotDb.createEmpty(snapshotFile1, { rootSubject: { name: snapshotRootSubjectName }, createClassViews: true, ecefLocation, geographicCoordinateSystem });
     let snapshotDb2 = SnapshotDb.createFrom(snapshotDb1, snapshotFile2);
     let snapshotDb3 = SnapshotDb.createFrom(imodel, snapshotFile3, { createClassViews: true });
     assert.isTrue(snapshotDb1.isSnapshotDb());
@@ -2421,6 +2563,8 @@ describe("iModel", () => {
     assert.isTrue(snapshotDb1.isOpen);
     assert.isTrue(snapshotDb2.isOpen);
     assert.isTrue(snapshotDb3.isOpen);
+    assert.deepEqual(snapshotDb1.ecefLocation?.origin, ecefLocation.origin, "snapshot ecefLocation should be set");
+    assert.strictEqual(snapshotDb1.geographicCoordinateSystem?.horizontalCRS?.id, "10TM115-27", "snapshot coordinate system should be set");
     snapshotDb1.close();
     snapshotDb2.close();
     snapshotDb3.close();
@@ -2898,6 +3042,36 @@ describe("iModel", () => {
     imodel.close();
   });
 
+  it("should throw iTwinErrors on element CRUD opertion fails", async () => {
+    const code = Code.createEmpty();
+    code.value = "foo";
+
+    const props: TypeDefinitionElementProps = {
+      classFullName: GenericGraphicalType2d.classFullName,
+      model: IModel.dictionaryId,
+      code,
+    };
+    imodel1.elements.insertElement(props);
+
+    expect(() => imodel1.elements.insertElement(props)).throws("Error inserting element [duplicate code]").to.have.property("iTwinErrorId");
+    const updateProps: TypeDefinitionElementProps = {
+      id: Id64.fromString("0x111111"),
+      classFullName: GenericGraphicalType2d.classFullName,
+      model: IModel.dictionaryId,
+      code,
+    };
+    expect(() => imodel1.elements.updateElement(updateProps)).throws(`Error updating element [missing id], id: ${updateProps.id}`).to.have.property("iTwinErrorId");
+    expect(() => imodel1.elements.deleteElement(updateProps.id!)).throws(`Error deleting element [missing id], id: ${updateProps.id}`).to.have.property("iTwinErrorId");
+
+    expect(() => imodel1.models.insertModel({classFullName: DefinitionModel.classFullName, modeledElement: { id: "0x10000000bad" }})).throws("Error inserting model [error=10004], class=BisCore:DefinitionModel").to.have.property("iTwinErrorId");
+    expect(() => imodel1.models.updateModel({
+      id: Id64.fromString("0x111111"),
+      modeledElement: { id: Id64.fromString("0x111111")},
+      classFullName: ""
+    })).throws(`Error updating model [missing id], id: ${Id64.fromString("0x111111")}`).to.have.property("iTwinErrorId");
+    expect(() => imodel1.models.deleteModel(Id64.fromString("0x111111"))).throws(`Error deleting model [missing id], id: ${Id64.fromString("0x111111")}`).to.have.property("iTwinErrorId");
+  });
+
   it("throws NotFound when attempting to access element props after closing the iModel", () => {
     const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "accessAfterClose.bim");
     const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "accessAfterClose" } });
@@ -2943,5 +3117,190 @@ describe("iModel", () => {
     expect(() => imodel.relationships.insertInstance(props)).to.throw(`Failed to insert relationship [${imodelPath}]: rc=2067, constraint failed (BE_SQLITE_CONSTRAINT_UNIQUE)`);
 
     imodel.close();
+  });
+
+    function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String, className: string): GeometricElementProps {
+    // Create props
+    const elementProps: GeometricElementProps = {
+      classFullName: className,
+      model: modId,
+      category: catId,
+      code: Code.createEmpty(),
+    };
+    return elementProps;
+  }
+
+  function insertElement(imodel: IModelDb, mId: Id64String, cId: Id64String, cName: string, propName: string): Id64String {
+    const elementProps = createElemProps(imodel, mId, cId, cName);
+    const geomElement = imodel.elements.createElement(elementProps);
+    (geomElement as any).name = propName; // Add a custom property to the element
+    const id = imodel.elements.insertElement(geomElement.toJSON());
+    assert.isTrue(Id64.isValidId64(id), "insert failed");
+    return id;
+  }
+
+  function validateADrivesBRowCount(imodel: IModelDb, expectedRows: number): void {
+    const reader = IModelTestUtils.executeQuery(imodel, `select * from trs.ADrivesB`);
+    assert.strictEqual(reader.length, expectedRows, `Expected ${expectedRows} rows in trs.ADrivesB table`);
+  }
+
+  function validateNavProp(imodel: IModelDb, expectedNavPropValue: any): void {
+    const reader = IModelTestUtils.executeQuery(imodel, `select NavPropChildB from trs.ChildA`);
+    assert.strictEqual(reader.length, 1);
+    assert.deepEqual(reader[0].navPropChildB, expectedNavPropValue, `Expected NavPropChildB to be "${expectedNavPropValue}"`);
+  }
+
+  it("Validate invalid relationship classes being inserted/updated", async () => {
+    const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "invalidRelationshipClass.bim");
+
+    if (IModelJsFs.existsSync(imodelPath))
+      IModelJsFs.unlinkSync(imodelPath);
+
+    const testImodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "invalidRelationshipClass" } });
+
+    await testImodel.importSchemaStrings([
+      `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestRelationSchema" alias="trs" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+          <ECEntityClass typeName="TestElement">
+              <BaseClass>bis:PhysicalElement</BaseClass>
+              <ECProperty propertyName="Name" typeName="string" />
+          </ECEntityClass>
+
+          <ECEntityClass typeName="ChildA" >
+            <BaseClass>TestElement</BaseClass>
+            <ECNavigationProperty propertyName="NavPropChildB" relationshipName="ADrivesB" direction="Forward" readOnly="True">
+            </ECNavigationProperty>
+          </ECEntityClass>
+
+          <ECEntityClass typeName="ChildB" >
+            <BaseClass>TestElement</BaseClass>
+          </ECEntityClass>
+
+          <ECRelationshipClass typeName="ADrivesB" strengthDirection="Backward" strength="referencing" modifier="Sealed">
+            <Source multiplicity="(0..*)" polymorphic="true" roleLabel="drives">
+              <Class class="ChildA"/>
+            </Source>
+            <Target multiplicity="(0..1)" polymorphic="true" roleLabel="is driven by">
+              <Class class="ChildB"/>
+            </Target>
+          </ECRelationshipClass>
+
+          <ECEntityClass typeName="ChildC">
+            <BaseClass>TestElement</BaseClass>
+          </ECEntityClass>
+
+          <ECEntityClass typeName="ChildD">
+            <BaseClass>TestElement</BaseClass>
+          </ECEntityClass>
+
+          <ECRelationshipClass typeName="CIsRelatedToD" strength="referencing" modifier="Sealed">
+             <BaseClass>bis:ElementRefersToElements</BaseClass>
+            <Source multiplicity="(0..*)" roleLabel="IsRelatedTo" polymorphic="true">
+              <Class class="ChildC"/>
+            </Source>
+            <Target multiplicity="(0..*)" roleLabel="IsRelatedTo (Reversed)" polymorphic="true">
+              <Class class="ChildD"/>
+            </Target>
+          </ECRelationshipClass>
+        </ECSchema>`]);
+
+    // Enable ECSQL write validation and verify it's set
+    const pragmaRows = IModelTestUtils.executeQuery(testImodel, `PRAGMA validate_ecsql_writes=true`);
+    assert.exists(pragmaRows);
+    assert.strictEqual(pragmaRows[0].validate_ecsql_writes, true);
+
+    // Ensure ADrivesB table is empty before test
+    validateADrivesBRowCount(testImodel, 0);
+
+    // Create a physical model and spatial category if needed
+    const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty(), true);
+    let spatialCategoryId = SpatialCategory.queryCategoryIdByName(testImodel, IModel.dictionaryId, "MySpatialCategory");
+    if (!spatialCategoryId) {
+      spatialCategoryId = SpatialCategory.insert(
+        testImodel,
+        IModel.dictionaryId,
+        "MySpatialCategory",
+        new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() })
+      );
+    }
+
+    // Insert a ChildB element to be referenced by ChildA
+    const idB = insertElement(testImodel, newModelId, spatialCategoryId, "TestRelationSchema:ChildB", "ChildBElement");
+    assert.isTrue(Id64.isValidId64(idB), "Insert ChildBElement failed");
+
+    testImodel.saveChanges();
+
+    // Prepare base props for ChildA
+    const elementProps = createElemProps(testImodel, newModelId, spatialCategoryId, "TestRelationSchema:ChildA");
+
+    // Test various relationship class names for navigation property
+    const testCases = [
+      { name: "trs:ADrivesB", shouldSucceed: true, expectedRows: 1 },
+      { name: "trs.FakeClass", shouldSucceed: true, expectedRows: 0 },
+      { name: "trs:ChildA", shouldSucceed: false, expectedRows: 0 },
+      { name: "trs:ChildB", shouldSucceed: false, expectedRows: 0 },
+      { name: "trs:CIsRelatedToD", shouldSucceed: false, expectedRows: 0 },
+    ];
+
+    for (const { name, shouldSucceed, expectedRows } of testCases) {
+      const elemRef = new RelatedElement({ id: idB, relClassName: name });
+      (elementProps as any).navPropChildB = elemRef;
+      (elementProps as any).name = "ChildAElement";
+      const geomElement = testImodel.elements.createElement(elementProps);
+
+      let idA: Id64String | undefined;
+      try {
+        idA = testImodel.elements.insertElement(geomElement.toJSON());
+        if (shouldSucceed)
+          assert.isTrue(Id64.isValidId64(idA), `Insert should have succeeded for ${name}.`);
+        else
+          assert.fail(`Insert should have failed for ${name}.`);
+      } catch (err: any) {
+        if (shouldSucceed)
+          assert.fail(`Insert should have succeeded for ${name}. Error: ${err.message}`);
+
+        // If should not succeed, error is expected
+      }
+
+      // Validate row count in ADrivesB table
+      validateADrivesBRowCount(testImodel, expectedRows);
+
+      // If insert succeeded, test update and delete scenarios
+      if (expectedRows === 1 && idA !== undefined) {
+        validateNavProp(testImodel,  { id: idB, relClassName: "TestRelationSchema.ADrivesB" });
+
+        const editElem: any = testImodel.elements.getElement(idA);
+        editElem.navPropChildB = new RelatedElement({ id: idB, relClassName: "trs.FakeClass" });
+        editElem.name= "ChildAElementUpdated";
+        testImodel.elements.updateElement(editElem);
+
+        validateADrivesBRowCount(testImodel, 1);
+        validateNavProp(testImodel,  { id: idB, relClassName: "TestRelationSchema.ADrivesB" });
+
+        const editedElem: any = testImodel.elements.getElement(idA);
+        assert.equal(editedElem.name, "ChildAElementUpdated", `Expected name to be "ChildAElementUpdated" after update, but got "${editedElem.name}"`);
+        assert.strictEqual(editedElem.navPropChildB.relClassName, "TestRelationSchema.ADrivesB", `Expected navPropChildB to be "TestRelationSchema.ADrivesB" after update, but got "${editedElem.navPropChildB}"`);
+
+        // Set the nav prop value to null
+        editElem.name= "ChildAElementNulled";
+        editElem.navPropChildB = null;
+        testImodel.elements.updateElement(editElem);
+
+        validateADrivesBRowCount(testImodel, 0);
+        const nulledElem: any = testImodel.elements.getElement(idA);
+        assert.equal(nulledElem.name, "ChildAElementNulled", `Expected name to be "ChildAElementNulled" after nulling, but got "${nulledElem.name}"`);
+        assert.isUndefined(nulledElem.navPropChildB, `Expected navPropChildB to be undefined after nulling, but got "${nulledElem.navPropChildB}"`);
+
+        if (shouldSucceed) {
+          // Delete the element
+          testImodel.elements.deleteElement(idA);
+          assert.isUndefined(testImodel.elements.tryGetElement(idA), `Expected element with id ${idA} to be deleted, but it still exists.`);
+        }
+      }
+
+      testImodel.abandonChanges();
+    }
+    testImodel.close();
   });
 });

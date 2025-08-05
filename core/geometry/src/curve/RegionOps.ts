@@ -7,6 +7,7 @@
  * @module Curve
  */
 
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../Geometry";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
@@ -38,6 +39,8 @@ import { CurveWireMomentsXYZ } from "./CurveWireMomentsXYZ";
 import { GeometryQuery } from "./GeometryQuery";
 import { ChainCollectorContext } from "./internalContexts/ChainCollectorContext";
 import { PolygonWireOffsetContext } from "./internalContexts/PolygonOffsetContext";
+import { TransferWithSplitArcs } from "./internalContexts/TransferWithSplitArcs";
+import { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
 import { Loop, SignedLoops } from "./Loop";
 import { JointOptions, OffsetOptions } from "./OffsetOptions";
@@ -76,13 +79,14 @@ export enum RegionBinaryOpType {
 
 /**
  * Class `RegionOps` has static members for calculations on regions (areas).
- * * Regions are represented by these `CurveCollection` subclasses:
- *   * `Loop` -- a single loop
- *   * `ParityRegion` -- a collection of loops, interpreted by parity rules.
- * The common "One outer loop and many Inner loops" is a parity region.
- *   * `UnionRegion` -- a collection of `Loop` and `ParityRegion` objects understood as a (probably disjoint) union.
- * * **NOTE:** Most of the methods in this class ignore z-coordinates, so callers should ensure that input geometry has
- * been rotated parallel to the xy-plane.
+ * * Regions are represented by these [[CurveCollection]] subclasses:
+ *   * [[Loop]] -- a single loop
+ *   * [[ParityRegion]] -- a collection of loops, interpreted by parity rules.
+ * The common "One outer loop and many inner loops" is a parity region.
+ *   * [[UnionRegion]] -- a collection of `Loop` and `ParityRegion` objects understood as a (probably disjoint) union.
+ * * Most of the methods in this class:
+ *   * Ignore z-coordinates, so callers should ensure that input geometry has been rotated parallel to the xy-plane.
+ *   * Assume consistent Loop orientation: "solid" Loops are counterclockwise; "hole" Loops are clockwise.
  * @public
  */
 export class RegionOps {
@@ -117,7 +121,8 @@ export class RegionOps {
   /**
    * Return a (signed) xy area for a region.
    * * The input region should lie in a plane parallel to the xy-plane, as z-coords will be ignored.
-   * * The area is negative if and only if the region is oriented clockwise with respect to the positive z-axis.
+   * * For a non-self-intersecting Loop, the returned area is negative if and only if the Loop is oriented clockwise
+   * with respect to the positive z-axis.
    * @param region any [[Loop]], [[ParityRegion]], or [[UnionRegion]].
    */
   public static computeXYArea(region: AnyRegion): number | undefined {
@@ -322,15 +327,66 @@ export class RegionOps {
     return this.finishGraphToPolyface(graph, triangulate);
   }
   /**
+   * Return the region's simplest representation by stripping redundant parent(s).
+   * * No Boolean operations are performed.
+   * @param region input region (unchanged). Assumed to have at least one child.
+   * @returns
+   * * For a [[UnionRegion]] with exactly one child, return the child if it is a [[Loop]],
+   * or if it is a [[ParityRegion]] with multiple children; otherwise return the `ParityRegion`'s `Loop`.
+   * * For a `ParityRegion` with exactly one child, return the `Loop`.
+   * * All other inputs returned unchanged.
+   * @see [[simplifyRegion]]
+   */
+  public static simplifyRegionType(region: AnyRegion): AnyRegion {
+    if (region instanceof UnionRegion) {
+      if (region.children.length === 1)
+        return this.simplifyRegionType(region.children[0]);
+    } else if (region instanceof ParityRegion) {
+      if (region.children.length === 1)
+        return region.children[0];
+    }
+    return region;
+  }
+  /**
+   * Simplify the region's parent/child hierarchy in place:
+   * * Regions with exactly one child are simplified as per [[simplifyRegionType]].
+   * * Regions without children are removed.
+   * * No Boolean operations are performed.
+   * @param region region to simplify in place
+   * @returns reference to the updated input region
+   * @see [[simplifyRegionType]]
+   */
+  public static simplifyRegion(region: AnyRegion): AnyRegion | undefined {
+    if (region instanceof Loop)
+      return region.children.length > 0 ? region : undefined;
+    // remove childless Parity/UnionRegion
+    for (let i = 0; i < region.children.length; ++i) {
+      const child = region.children[i];
+      const newChild = this.simplifyRegion(child);
+      if (!newChild) {
+        region.children.splice(i--, 1);
+      } else if (newChild !== child) {
+        assert(!(newChild instanceof UnionRegion));
+        region.children.splice(i--, 1, newChild);
+      }
+    }
+    if (region.children.length === 0)
+      return undefined;
+    // remove redundant Parity/UnionRegion parent
+    if (region.children.length === 1)
+      return region.children.splice(0, 1)[0];
+    return region;
+  }
+  /**
    * Return areas defined by a boolean operation.
-   * * If there are multiple regions in loopsA, they are treated as a union.
-   * * If there are multiple regions in loopsB, they are treated as a union.
-   * @param loopsA first set of loops
-   * @param loopsB second set of loops
+   * @note For best results, input regions should have correctly oriented loops. See [[sortOuterAndHoleLoopsXY]].
+   * @note A common use case of this method is to convert a region with overlapping children into one with
+   * non-overlapping children: `regionOut = RegionOps.regionBooleanXY(regionIn, undefined, RegionBinaryOpType.Union)`.
+   * @param loopsA first set of loops (treated as a union)
+   * @param loopsB second set of loops (treated as a union)
    * @param operation indicates Union, Intersection, Parity, AMinusB, or BMinusA
    * @param mergeTolerance absolute distance tolerance for merging loops
-   * @returns a region resulting from merging input loops and the boolean operation. May contain bridge edges added
-   * to connect interior loops to exterior loops.
+   * @returns a region resulting from merging input loops and the boolean operation.
    */
   public static regionBooleanXY(
     loopsA: AnyRegion | AnyRegion[] | undefined,
@@ -338,14 +394,14 @@ export class RegionOps {
     operation: RegionBinaryOpType,
     mergeTolerance: number = Geometry.smallMetricDistance,
   ): AnyRegion | undefined {
-    // Always return UnionRegion for now. But keep return type as AnyRegion:
-    // in the future, we might return the *simplest* region type.
     const result = UnionRegion.create();
     const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
     context.addMembers(loopsA, loopsB);
     context.annotateAndMergeCurvesInGraph(mergeTolerance);
+    const visitMask = context.graph.grabMask(false);
     const range = context.groupA.range().union(context.groupB.range());
     const areaTol = this.computeXYAreaTolerance(range, mergeTolerance);
+    const bridgeMask = HalfEdgeMask.BRIDGE_EDGE;
     context.runClassificationSweep(
       operation,
       (_graph: HalfEdgeGraph, face: HalfEdge, faceType: -1 | 0 | 1, area: number) => {
@@ -355,13 +411,14 @@ export class RegionOps {
         if (Math.abs(area) < areaTol)
           return;
         if (faceType === 1) {
-          const loop = PlanarSubdivision.createLoopInFace(face);
-          if (loop)
-            result.tryAddChild(loop);
+          const loopOrParityRegion = PlanarSubdivision.createLoopOrParityRegionInFace(face, bridgeMask, visitMask);
+          if (loopOrParityRegion)
+            result.tryAddChild(loopOrParityRegion);
         }
       },
     );
-    return result;
+    context.graph.dropMask(visitMask);
+    return this.simplifyRegion(result);
   }
   /**
    * Return a polyface whose facets are a boolean operation between the input regions.
@@ -674,21 +731,20 @@ export class RegionOps {
    * @param curves Path or loop (or larger collection containing paths and loops) to be simplified
    * @param options options for tolerance and selective simplification.
    */
-  public static consolidateAdjacentPrimitives(
-    curves: CurveCollection, options?: ConsolidateAdjacentCurvePrimitivesOptions,
-  ): void {
+  public static consolidateAdjacentPrimitives(curves: CurveCollection, options?: ConsolidateAdjacentCurvePrimitivesOptions): void {
     const context = new ConsolidateAdjacentCurvePrimitivesContext(options);
     curves.dispatchToGeometryHandler(context);
   }
   /**
-   * Reverse and reorder loops in the xy-plane for consistency and containment.
-   * @param loops multiple loops in any order and orientation, z-coordinates ignored
+   * Reverse and reorder loops in the xy-plane for consistent orientation and containment.
+   * @param loops multiple loops in any order and orientation, z-coordinates ignored.
+   * * For best results, all overlaps should be containments, i.e., loop boundaries can touch, but should not cross.
    * @returns a region that captures the input pointers. This region is a:
-   * * `Loop` if there is exactly one input loop. It is oriented counterclockwise.
-   * * `ParityRegion` if input consists of exactly one outer loop with at least one hole loop.
+   * * [[Loop]] if there is exactly one input loop. It is oriented counterclockwise.
+   * * [[ParityRegion]] if input consists of exactly one outer loop with at least one hole loop.
    * Its first child is an outer loop oriented counterclockwise; all subsequent children are holes oriented
    * clockwise.
-   * * `UnionRegion` if any other input configuration. Its children are individually ordered/oriented as in
+   * * [[UnionRegion]] if any other input configuration. Its children are individually ordered/oriented as in
    * the above cases.
    * @see [[PolygonOps.sortOuterAndHoleLoopsXY]]
    */
@@ -705,18 +761,42 @@ export class RegionOps {
     return SortablePolygon.sortAsAnyRegion(loopAndArea);
   }
   /**
+   * Collect inputs that are nominally closed: regions, and physically closed curves.
+   * * Physically closed input curves are each returned wrapped in a Loop to facilitate xy-algorithms,
+   * but outside this limited context, these Loops only makes sense if they are planar.
+  */
+  private static collectRegionsAndClosedPrimitives(curves: AnyCurve | AnyCurve[], tolerance: number = Geometry.smallMetricDistance): AnyRegion[] {
+    const regions: AnyRegion[] = [];
+    if (!Array.isArray(curves))
+      curves = [curves];
+    for (const curve of curves) {
+      if (curve instanceof Loop || curve instanceof ParityRegion || curve instanceof UnionRegion) {
+        regions.push(curve);
+      } else if (curve instanceof Path) {
+        if (curve.isPhysicallyClosedCurve(tolerance))
+          regions.push(Loop.create(...curve.children));
+      } else if (curve instanceof CurvePrimitive) {
+        if (curve.isPhysicallyClosedCurve(tolerance))
+          regions.push(Loop.create(curve));
+      }
+    }
+    return regions;
+  }
+  /**
    * Find all xy-areas bounded by the unstructured, possibly intersecting curves.
    * * For best results, input curves should be parallel to the xy-plane, as z-coordinates are ignored.
-   * * A common use case of this method is to assemble the bounding "exterior" loop (or loops) containing the
-   * input curves.
-   * * This method does not add bridge edges to connect outer loops to inner loops. Each disconnected loop,
-   * regardless of its containment, is returned as its own SignedLoops object. Pre-process with [[regionBooleanXY]]
-   * to add bridge edges so that [[constructAllXYRegionLoops]] will return outer and inner loops in the same
-   * SignedLoops object.
-   * @param curvesAndRegions Any collection of curves. Each Loop/ParityRegion/UnionRegion contributes its curve
-   * primitives.
-   * @param tolerance optional distance tolerance for coincidence
-   * @returns array of [[SignedLoops]], each entry of which describes the faces in a single connected component:
+   * * "Holes" implied/bounded by inputs are _not_ preserved/discovered in output; in particular [[ParityRegion]]
+   * hole loops are treated like any other positive area loops.
+   * * A common use case of this method is to assemble the bounding negative-area "exterior" loop for each connected
+   * component of input curves. Passing `addBridges = true` decreases the number of connected components for nested
+   * input [[Loop]]s, and thus increases the likelihood of returning exactly one exterior loop. (This is why the
+   * default value for `addBridges` is `true`.)
+   * @param curvesAndRegions Any collection of curves. Each [[AnyRegion]] contributes its children _stripped of
+   * parity context_.
+   * @param tolerance optional distance tolerance for coincidence.
+   * @param addBridges whether to add line segments to connect nested input [[Loop]]s (default is `true`). When `false`,
+   * no line segments are added to the input curves, but the number of output components may be greater than expected.
+   * @returns array of [[SignedLoops]], each entry of which describes the areas bounded by a single connected component:
    *    * `positiveAreaLoops` contains "interior" loops, _including holes in ParityRegion input_. These loops have
    * positive area and counterclockwise orientation.
    *    * `negativeAreaLoops` contains (probably just one) "exterior" loop which is ordered clockwise.
@@ -725,11 +805,25 @@ export class RegionOps {
    * to the edge and a constituent curve in each.
    */
   public static constructAllXYRegionLoops(
-    curvesAndRegions: AnyCurve | AnyCurve[], tolerance: number = Geometry.smallMetricDistance,
+    curvesAndRegions: AnyCurve | AnyCurve[],
+    tolerance: number = Geometry.smallMetricDistance,
+    addBridges: boolean = true,
   ): SignedLoops[] {
-    const primitives = RegionOps.collectCurvePrimitives(curvesAndRegions, undefined, true, true);
+    let primitives = RegionOps.collectCurvePrimitives(curvesAndRegions, undefined, true, true);
+    primitives = TransferWithSplitArcs.clone(BagOfCurves.create(...primitives)).children as CurvePrimitive[];
     const range = this.curveArrayRange(primitives);
     const areaTol = this.computeXYAreaTolerance(range, tolerance);
+    if (addBridges) { // generate a temp graph to extract its bridge edges
+      const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
+      const regions = this.collectRegionsAndClosedPrimitives(curvesAndRegions, tolerance);
+      context.addMembers(regions, undefined);
+      context.annotateAndMergeCurvesInGraph(tolerance);
+      context.graph.announceEdges((_graph, edge: HalfEdge) => {
+        if (edge.isMaskSet(HalfEdgeMask.BRIDGE_EDGE))
+          primitives.push(LineSegment3d.create(edge.getPoint3d(), edge.faceSuccessor.getPoint3d()));
+        return true;
+      });
+    }
     const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(primitives, tolerance);
     const graph = PlanarSubdivision.assembleHalfEdgeGraph(primitives, intersections, tolerance);
     return PlanarSubdivision.collectSignedLoopSetsInHalfEdgeGraph(graph, areaTol);
@@ -877,12 +971,10 @@ export class RegionOps {
   }
   /**
    * Facet the region according to stroke options.
+   * @note For best results, [[UnionRegion]] input should consist of non-overlapping children. See [[regionBooleanXY]].
+   * @note For best results, [[ParityRegion]] input should be correctly oriented. See [[sortOuterAndHoleLoopsXY]].
    * @param region a closed xy-planar region, possibly with holes.
    * * The z-coordinates of the region are ignored. Caller is responsible for rotating the region into plane local coordinates beforehand, and reversing the rotation afterwards.
-   * * For best results, `UnionRegion` input should consist of non-overlapping children.
-   * Caller can ensure this by passing in `region = RegionOps.regionBooleanXY(unionRegion, undefined, RegionBinaryOpType.Union)`.
-   * * For best results, `ParityRegion` input should be correctly oriented (holes have opposite orientation to their containing loop).
-   * Caller can ensure this for non-intersecting loops by passing in `region = RegionOps.sortOuterAndHoleLoopsXY(loops)`.
    * @param options primarily how to stroke the region boundary, but also how to facet the region interior.
    * * By default, a triangulation is returned, but if `options.maximizeConvexFacets === true`, edges between coplanar triangles are removed to return maximally convex facets.
    * @returns facets for the region, or undefined if facetting failed
@@ -946,16 +1038,20 @@ function pushToInOnOutArrays(
 }
 
 /**
- * * Options to control method `RegionOps.consolidateAdjacentPrimitives`
+ * * Options to control method `RegionOps.consolidateAdjacentPrimitives`.
  * @public
  */
 export class ConsolidateAdjacentCurvePrimitivesOptions {
-  /** True to consolidate adjacent linear geometry into a single LineString3d */
+  /** True to consolidate adjacent linear geometry into a single LineString3d. */
   public consolidateLinearGeometry: boolean = true;
-  /** True to consolidate contiguous compatible arcs into a single Arc3d */
+  /** True to consolidate contiguous compatible arcs into a single Arc3d. */
   public consolidateCompatibleArcs: boolean = true;
-  /** Tolerance for collapsing identical points */
-  public duplicatePointTolerance = Geometry.smallMetricDistance;
-  /** Tolerance for removing interior colinear points. */
-  public colinearPointTolerance = Geometry.smallMetricDistance;
+  /** True to consolidate the first and last primitives of a [[Loop]], allowing the start/end point to change. */
+  public consolidateLoopSeam?: boolean = false;
+  /** Disable LineSegment3d and LineString3d point compression. */
+  public disableLinearCompression?: boolean = false;
+  /** Tolerance for detecting identical points. */
+  public duplicatePointTolerance: number = Geometry.smallMetricDistance;
+  /** Tolerance for removing interior colinear points (if `!disableLinearCompression`). */
+  public colinearPointTolerance: number = Geometry.smallMetricDistance;
 }

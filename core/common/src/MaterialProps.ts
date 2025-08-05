@@ -63,7 +63,7 @@ export interface TextureMapProps {
   /** Weight at which to combine diffuse image and color; if undefined, defaults to 1.0 */
   pattern_weight?: number;
   /** If true, override the mapping mode with constant LOD mapping for the normal map, defaults to false.
-   * @deprecated in 4.4. It never functioned properly - use [[pattern_useconstantlod]] instead.
+   * @deprecated in 4.4 - will not be removed until after 2026-06-13. It never functioned properly - use [[pattern_useconstantlod]] instead.
    */
   pattern_useConstantLod?: boolean;
   /** If true, override the mapping mode with constant LOD mapping for the normal map, defaults to false. */
@@ -155,9 +155,12 @@ export interface RenderMaterialAssetProps {
   HasFinish?: boolean;
   /** Specular exponent (surface shininess); range is 0 to 128; if undefined, defaults to 13.5 */
   finish?: number;
-  /** If true, this material has surface transparency; if undefined, defaults to false */
+  /** If true, then this material overrides the surface transparency to be the value of [[transmit]].
+   * If false, then this material overrides the surface to be fully opaque.
+   * If undefined, then this material does not override the surface transparency at all.
+   */
   HasTransmit?: boolean;
-  /** Surface transparency; if undefined, defaults to 0.0 */
+  /** Surface transparency; if undefined, defaults to 0.0. Has no effect unless [[HasTransmit]] is true. */
   transmit?: number;
   /** If true, this material has a value for diffuse reflectivity; if undefined, defaults to false */
   HasDiffuse?: boolean;

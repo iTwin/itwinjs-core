@@ -332,4 +332,9 @@ export class IModelTile extends Tile {
 
     return this.isParentDisplayable ? SelectParent.Yes : SelectParent.No;
   }
+
+  public override clearLayers(): void {
+    super.clearLayers();
+    this.disposeChildren();
+  }
 }

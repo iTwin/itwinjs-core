@@ -592,8 +592,8 @@ export class XmlParser extends AbstractParser<Element> {
   }
 
   public parsePrimitiveProperty(xmlElement: Element): PrimitivePropertyProps {
-    const propertyProps = this.getPrimitiveOrEnumPropertyBaseProps(xmlElement);
     const typeName = this.getPropertyTypeName(xmlElement);
+    const propertyProps = this.getPrimitiveOrEnumPropertyBaseProps(xmlElement, typeName);
     const primitivePropertyProps = { ...propertyProps, typeName };
     return primitivePropertyProps;
   }
@@ -607,7 +607,7 @@ export class XmlParser extends AbstractParser<Element> {
 
   public parsePrimitiveArrayProperty(xmlElement: Element): PrimitiveArrayPropertyProps {
     const typeName = this.getPropertyTypeName(xmlElement);
-    const propertyProps = this.getPrimitiveOrEnumPropertyBaseProps(xmlElement);
+    const propertyProps = this.getPrimitiveOrEnumPropertyBaseProps(xmlElement, typeName);
     const minAndMaxOccurs = this.getPropertyMinAndMaxOccurs(xmlElement);
 
     return {
@@ -951,7 +951,8 @@ export class XmlParser extends AbstractParser<Element> {
     return this.getQualifiedTypeName(rawTypeName);
   }
 
-  private getPrimitiveOrEnumPropertyBaseProps(xmlElement: Element): PrimitiveOrEnumPropertyBaseProps {
+  private getPrimitiveOrEnumPropertyBaseProps(xmlElement: Element, typeName: string): PrimitiveOrEnumPropertyBaseProps {
+    const primitiveType = parsePrimitiveType(typeName);
     const propertyProps = this.getPropertyProps(xmlElement);
     const propName = propertyProps.name;
     const extendedTypeName = this.getOptionalAttribute(xmlElement, "extendedTypeName");
@@ -959,10 +960,20 @@ export class XmlParser extends AbstractParser<Element> {
       `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'minimumLength' attribute. It should be a numeric value.`);
     const maxLength = this.getOptionalIntAttribute(xmlElement, "maximumLength",
       `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'maximumLength' attribute. It should be a numeric value.`);
-    const minValue = this.getOptionalIntAttribute(xmlElement, "minimumValue",
+
+    let minValue: number | undefined;
+    let maxValue: number | undefined;
+    if (primitiveType === PrimitiveType.Double || primitiveType === PrimitiveType.Long) {
+      minValue = this.getOptionalFloatAttribute(xmlElement, "minimumValue",
       `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'minimumValue' attribute. It should be a numeric value.`);
-    const maxValue = this.getOptionalIntAttribute(xmlElement, "maximumValue",
-      `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'maximumValue' attribute. It should be a numeric value.`);
+      maxValue = this.getOptionalFloatAttribute(xmlElement, "maximumValue",
+        `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'maximumValue' attribute. It should be a numeric value.`);
+    } else {
+      minValue = this.getOptionalIntAttribute(xmlElement, "minimumValue",
+        `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'minimumValue' attribute. It should be a numeric value.`);
+      maxValue = this.getOptionalIntAttribute(xmlElement, "maximumValue",
+        `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'maximumValue' attribute. It should be a numeric value.`);
+    }
 
     return {
       ...propertyProps,

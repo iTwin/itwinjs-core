@@ -219,7 +219,7 @@ export class BSpline1dNd {
    * Test if the leading and trailing polygon coordinates are replicated in the manner of a "closed" bspline polygon
    * which has been expanded to act as a normal bspline.
    * @returns true if `degree` leading and trailing polygon blocks match.
-   * @deprecated in 4.x. Use `testClosablePolygon` instead.
+   * @deprecated in 4.2.1 - will not be removed until after 2026-06-13. Use `testClosablePolygon` instead.
    */
   public testCloseablePolygon(mode?: BSplineWrapMode): boolean {
     return this.testClosablePolygon(mode);

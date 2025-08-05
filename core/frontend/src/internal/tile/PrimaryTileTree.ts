@@ -246,7 +246,7 @@ class PrimaryTreeReference extends TileTreeReference {
   public get treeOwner(): TileTreeOwner {
     const newId = this.createTreeId(this.view, this._id.modelId);
     const timeline = IModelApp.tileAdmin.getScriptInfoForTreeId(this._id.modelId, this.view.displayStyle[_scheduleScriptReference])?.timeline;
-    if (0 !== compareIModelTileTreeIds(newId, this._id.treeId) || timeline !== this._id.timeline) {
+    if (0 !== compareIModelTileTreeIds(newId, this._id.treeId) || timeline?.isEditingCommitted) {
       this._id = {
         modelId: this._id.modelId,
         is3d: this._id.is3d,
@@ -281,7 +281,8 @@ class PrimaryTreeReference extends TileTreeReference {
     const edgesRequired = visibleEdges || RenderMode.SmoothShade !== renderMode || IModelApp.tileAdmin.alwaysRequestEdges;
     const edges = edgesRequired ? IModelApp.tileAdmin.edgeOptions : false;
     const sectionCut = this._sectionClip?.clipString;
-    return { type: BatchType.Primary, edges, animationId, sectionCut };
+    const disablePolyfaceDecimation = IModelApp.tileAdmin.disablePolyfaceDecimation;
+    return { type: BatchType.Primary, edges, animationId, sectionCut, disablePolyfaceDecimation };
   }
 
   protected computeBaseTransform(tree: TileTree): Transform {
@@ -487,7 +488,7 @@ class MaskTreeReference extends TileTreeReference {
     return this._owner;
   }
   protected createTreeId(): PrimaryTileTreeId {
-    return { type: BatchType.Primary, edges: false };
+    return { type: BatchType.Primary, edges: false, disablePolyfaceDecimation: IModelApp.tileAdmin.disablePolyfaceDecimation };
   }
 }
 
@@ -513,7 +514,7 @@ export class ModelMapLayerTileTreeReference extends MapLayerTileTreeReference {
   }
 
   protected createTreeId(): PrimaryTileTreeId {
-    return { type: BatchType.Primary, edges: false };
+    return { type: BatchType.Primary, edges: false, disablePolyfaceDecimation: IModelApp.tileAdmin.disablePolyfaceDecimation };
   }
 
   public get treeOwner(): TileTreeOwner {

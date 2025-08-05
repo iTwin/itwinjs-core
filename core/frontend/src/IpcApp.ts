@@ -28,6 +28,7 @@ export interface IpcAppOptions {
  */
 export class IpcApp {
   private static _ipc: IpcSocketFrontend | undefined;
+  private static _removeAppNotify: RemoveFunction | undefined;
   /** Get the implementation of the [[IpcSocketFrontend]] interface. */
 
   private static get ipc(): IpcSocketFrontend { return this._ipc!; }
@@ -114,7 +115,7 @@ export class IpcApp {
   }
 
   /** @internal
-   * @deprecated in 4.8. Use [[makeIpcProxy]] for a type-safe interface.
+   * @deprecated in 4.8 - will not be removed until after 2026-06-13. Use [[makeIpcProxy]] for a type-safe interface.
    */
   public static async callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any> {
     return this[_callIpcChannel](channelName, methodName, ...args);
@@ -152,12 +153,13 @@ export class IpcApp {
    * @note this should not be called directly. It is called by NativeApp.startup */
   public static async startup(ipc: IpcSocketFrontend, opts?: IpcAppOptions) {
     this._ipc = ipc;
-    IpcAppNotifyHandler.register(); // receives notifications from backend
+    this._removeAppNotify = IpcAppNotifyHandler.register(); // receives notifications from backend
     await IModelApp.startup(opts?.iModelApp);
   }
 
   /** @internal */
   public static async shutdown() {
+    this._removeAppNotify?.();
     this._ipc = undefined;
     await IModelApp.shutdown();
   }

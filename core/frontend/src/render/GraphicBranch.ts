@@ -8,6 +8,7 @@
 
 import { disposeArray, Id64String } from "@itwin/core-bentley";
 import {
+  ContourDisplay,
   FeatureAppearanceProvider, HiddenLine, RealityModelDisplaySettings, ViewFlagOverrides, ViewFlags,
 } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
@@ -101,7 +102,7 @@ export class GraphicBranch implements Disposable /* , RenderMemory.Consumer */ {
     this.clear();
   }
 
-  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
   public dispose() {
     this[Symbol.dispose]();
   }
@@ -160,4 +161,6 @@ export interface GraphicBranchOptions {
    * No [ClipStyle.insideColor]($common), [ClipStyle.outsideColor]($common), or [ClipStyle.intersectionStyle]($common) will be applied.
    */
   disableClipStyle?: true;
+  /** @internal */
+  contours?: ContourDisplay;
 }

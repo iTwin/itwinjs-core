@@ -24,7 +24,9 @@ export enum FillDisplay {
   ByView = 1,
   /** always fill, even if the fill attribute is off for the viewport */
   Always = 2,
-  /** always fill, fill will always be behind other geometry */
+  /** always fill, fill will always be behind other geometry belonging to the same element.
+   * @note Edge geometry is not produced for shapes with this fill type. If you want an outline, add it as separate geometry.
+   */
   Blanking = 3,
 }
 
