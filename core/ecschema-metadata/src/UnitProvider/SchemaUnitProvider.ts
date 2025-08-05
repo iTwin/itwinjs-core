@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus } from "@itwin/core-bentley";
-import { BadUnit, UnitConversionInvert, UnitConversionProps, UnitExtraData, UnitProps, UnitsProvider } from "@itwin/core-quantity";
+import { BadUnit, UnitConversionInvert, UnitConversionProps, UnitExtraData, UnitProps, UnitsProvider, UnitsProviderSync } from "@itwin/core-quantity";
 import { ISchemaLocater, SchemaContext } from "../Context";
 import { SchemaItem } from "../Metadata/SchemaItem";
 import { SchemaItemKey, SchemaKey } from "../SchemaKey";
@@ -16,7 +16,7 @@ import { InvertedUnit } from "../Metadata/InvertedUnit";
  * Class used to find Units in SchemaContext by attributes such as Phenomenon and DisplayLabel.
  * @beta
  */
-export class SchemaUnitProvider implements UnitsProvider {
+export class SchemaUnitProvider implements UnitsProvider, UnitsProviderSync {
   private _unitConverter: UnitConverter;
   private _context: SchemaContext;
 
@@ -333,16 +333,18 @@ export class SchemaUnitProvider implements UnitsProvider {
     }
 
     const invertsUnit = unit.invertsUnit;
-    if (!invertsUnit || !SchemaItem.isSchemaItem(invertsUnit))
+    if (!invertsUnit)
       return new BadUnit();
-    else
+    else {
+      const invertsUnitItem = this._context.getSchemaItemSync(invertsUnit.fullName, Unit);
       return {
         name: unit.fullName,
         label: unit.label ?? "",
-        phenomenon: invertsUnit.phenomenon ? invertsUnit.phenomenon.fullName : "",
+        phenomenon: invertsUnitItem?.phenomenon ? invertsUnitItem.phenomenon.fullName : "",
         isValid: true,
         system: unit.unitSystem === undefined ? "" : unit.unitSystem.fullName,
       };
+    }
   }
 
   /**
