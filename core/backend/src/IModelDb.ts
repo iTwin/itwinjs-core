@@ -2117,8 +2117,10 @@ export namespace IModelDb {
     public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element>): T {
       const element = this.tryGetElement<T>(elementId, elementClass);
       if (undefined === element) {
-        if (typeof elementId === "string" || elementId instanceof Code)
+        if (typeof elementId === "string")
           throw new IModelError(IModelStatus.NotFound, `Element=${elementId}`);
+        else if (elementId instanceof Code)
+          throw new IModelError(IModelStatus.NotFound, `Element=${JSON.stringify(elementId)}`);
         else
           throw new IModelError(IModelStatus.NotFound, `Element={id: ${elementId.id} federationGuid: ${elementId.federationGuid}, code={spec: ${elementId.code?.spec}, scope: ${elementId.code?.scope}, value: ${elementId.code?.value}}}`);
       }

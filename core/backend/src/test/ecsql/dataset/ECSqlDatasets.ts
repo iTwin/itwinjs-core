@@ -194,9 +194,11 @@ export class ECSqlDatasets {
     }
 
     // Add two instances of feature class instance with a navigation property
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const elementWithNavProp = iModel.elements.createElement(createElemWithNavProp("TestFeature", iModel, newModelId, spatialCategoryId, ++index, elementIds.pop()!));
     assert.isTrue(Id64.isValidId64(iModel.elements.insertElement(elementWithNavProp.toJSON())), "element with nav props insert failed");
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const anotherElementWithNavProp = iModel.elements.createElement(createElemWithNavProp("TestFeature", iModel, newModelId, spatialCategoryId, ++index, elementIds.pop()!));
     assert.isTrue(Id64.isValidId64(iModel.elements.insertElement(anotherElementWithNavProp.toJSON())), "element with nav props insert failed");
 
