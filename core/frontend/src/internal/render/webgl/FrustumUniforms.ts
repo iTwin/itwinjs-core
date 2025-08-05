@@ -6,6 +6,7 @@
  * @module WebGL
  */
 
+import { expectDefined } from "@itwin/core-bentley";
 import { InverseMatrixState, Matrix4d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Frustum, Npc } from "@itwin/core-common";
 import { UniformHandle } from "./UniformHandle";
@@ -125,7 +126,7 @@ export class FrustumUniforms {
 
     const viewX = normalizedDifference(nearLowerRight, nearLowerLeft, this._scratch.viewX);
     const viewY = normalizedDifference(nearUpperLeft, nearLowerLeft, this._scratch.viewY);
-    const viewZ = viewX.crossProduct(viewY, this._scratch.viewZ).normalize()!;
+    const viewZ = expectDefined(viewX.crossProduct(viewY, this._scratch.viewZ).normalize());
 
     this._planFraction = newFraction;
 

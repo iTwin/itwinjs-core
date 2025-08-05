@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, JsonUtils, Logger, utf8ToString,
+  assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, expectDefined, JsonUtils, Logger, utf8ToString,
 } from "@itwin/core-bentley";
 import {
   Angle, IndexedPolyface, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform, Vector3d,
@@ -467,13 +467,13 @@ export function getMeshPrimitives(mesh: GltfMesh | undefined): GltfMeshPrimitive
 
     for (const primitiveIndex of group.primitives) {
       const thisPrimitive = primitives[primitiveIndex];
-      
+
       // Spec: all primitives must use indexed geometry and a given primitive may appear in at most one group.
       // Spec: all primitives must have same topology.
       if (undefined === thisPrimitive?.indices || thisPrimitive.mode !== primitive.mode) {
         return meshPrimitives;
       }
-      
+
       primitives[primitiveIndex] = undefined;
     }
 
@@ -843,6 +843,8 @@ export abstract class GltfReader {
           this._instanceFeatures.push(new Feature(instanceElementId));
         }
 
+        // If the map didn't contain instanceElementId, it was inserted above
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const instanceFeatureId = this._instanceElementIdToFeatureId.get(instanceElementId)!;
         featureIds[localInstanceId * 3 + 0] = instanceFeatureId & 0xFF;
         featureIds[localInstanceId * 3 + 1] = (instanceFeatureId >> 8) & 0xFF;
@@ -1568,10 +1570,15 @@ export abstract class GltfReader {
       points[i * 3 + 2] = mesh.points[index * 3 + 2];
 
       if (normals)
+        // normals is only defined if mesh.normals is defined.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         normals[i] = mesh.normals![index];
 
       if (uvs) {
+        // uvs is only defined if mesh.uvs is defined.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         uvs[i * 2 + 0] = mesh.uvs![index * 2 + 0];
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         uvs[i * 2 + 1] = mesh.uvs![index * 2 + 1];
       }
     }
@@ -1708,7 +1715,7 @@ export abstract class GltfReader {
         if (featureIdDesc.attribute === undefined) {
           continue;
         }
-        const {buffer, stride} = featureIdBuffers.get(featureIdDesc.attribute)!;
+        const {buffer, stride} = expectDefined(featureIdBuffers.get(featureIdDesc.attribute));
         const featureId = buffer[vertexId * stride];
         const propertyTableId = featureIdDesc.propertyTable ?? 0;
         vertexUniqueId = `${vertexUniqueId}-${featureId}-${propertyTableId}`;
@@ -1722,7 +1729,7 @@ export abstract class GltfReader {
           if (featureIdDesc.attribute === undefined) {
             continue;
           }
-          const {buffer, stride} = featureIdBuffers.get(featureIdDesc.attribute)!;
+          const {buffer, stride} = expectDefined(featureIdBuffers.get(featureIdDesc.attribute));
           const featureId = buffer[vertexId * stride];
 
           const table = this._structuralMetadata.tables[featureIdDesc.propertyTable ?? 0];
