@@ -31,7 +31,7 @@ export class RegisteredRuleset implements Disposable, Ruleset {
     this._disposeFunc(this);
   }
 
-  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
   /* c8 ignore next 3 */
   public dispose() {
     this[Symbol.dispose]();

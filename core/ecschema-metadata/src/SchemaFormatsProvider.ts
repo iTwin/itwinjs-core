@@ -14,10 +14,11 @@ import { SchemaItemFormatProps } from "./Deserialization/JsonProps";
 import { BeEvent, Logger } from "@itwin/core-bentley";
 import { KindOfQuantity } from "./Metadata/KindOfQuantity";
 import { getFormatProps } from "./Metadata/OverrideFormat";
-import { FormatProps, FormatsChangedArgs, FormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
+import { FormatDefinition, FormatProps, FormatsChangedArgs, FormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
 import { Unit } from "./Metadata/Unit";
 import { InvertedUnit } from "./Metadata/InvertedUnit";
 import { Schema } from "./Metadata/Schema";
+import { UnitSystem } from "./Metadata/UnitSystem";
 const loggerCategory = "SchemaFormatsProvider";
 /**
  * Provides default formats and kind of quantities from a given SchemaContext or SchemaLocater.
@@ -59,7 +60,23 @@ export class SchemaFormatsProvider implements FormatsProvider {
     this.onFormatsChanged.raiseEvent({ formatsChanged });
   }
 
-  private async getKindOfQuantityFormatFromSchema(itemKey: SchemaItemKey): Promise<SchemaItemFormatProps | undefined> {
+  /** When using a presentation unit from a KindOfQuantity, the label and description should come from the KindOfQuantity */
+  private convertToFormatDefinition(format: SchemaItemFormatProps, kindOfQuantity: KindOfQuantity): FormatDefinition {
+    // Destructure all properties except 'rest'
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { name, label, description, $schema, schema, schemaVersion, schemaItemType,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      customAttributes, originalECSpecMajorVersion, originalECSpecMinorVersion, ...rest } = format;
+
+    return {
+      ...rest,
+      name: kindOfQuantity.fullName,
+      label: kindOfQuantity.label ?? format.label,
+      description: kindOfQuantity.description ?? format.description,
+    }
+  }
+
+  private async getKindOfQuantityFormatFromSchema(itemKey: SchemaItemKey): Promise<FormatDefinition | undefined> {
     let kindOfQuantity: KindOfQuantity | undefined;
     try {
       kindOfQuantity = await this._context.getSchemaItem(itemKey, KindOfQuantity);
@@ -73,19 +90,20 @@ export class SchemaFormatsProvider implements FormatsProvider {
     }
 
     // Find the first presentation format that matches the provided unit system.
-    const unitSystemGroupNames = getUnitSystemGroupNames(this._unitSystem);
+    const unitSystemMatchers = getUnitSystemGroupMatchers(this._unitSystem);
     const presentationFormats = kindOfQuantity.presentationFormats;
-    for (const system of unitSystemGroupNames) {
+    for (const matcher of unitSystemMatchers) {
       for (const lazyFormat of presentationFormats) {
         const format = await lazyFormat;
         const unit = await (format.units && format.units[0][0]);
         if (!unit) {
           continue;
         }
-        const currentUnitSystem = unit.unitSystem;
-        if (currentUnitSystem && currentUnitSystem.name.toUpperCase() === system) {
+        const currentUnitSystem = await unit.unitSystem;
+        if (currentUnitSystem && matcher(currentUnitSystem)) {
           this._formatsRetrieved.add(itemKey.fullName);
-          return getFormatProps(format);
+          const props = getFormatProps(format);
+          return this.convertToFormatDefinition(props, kindOfQuantity);
         }
       }
     }
@@ -93,9 +111,10 @@ export class SchemaFormatsProvider implements FormatsProvider {
     // If no matching presentation format was found, use persistence unit format if it matches unit system.
     const persistenceUnit = await kindOfQuantity.persistenceUnit;
     const persistenceUnitSystem = await persistenceUnit?.unitSystem;
-    if (persistenceUnitSystem && unitSystemGroupNames.includes(persistenceUnitSystem.name.toUpperCase())) {
+    if (persistenceUnitSystem && unitSystemMatchers.some((matcher) => matcher(persistenceUnitSystem))) {
       this._formatsRetrieved.add(itemKey.fullName);
-      return getPersistenceUnitFormatProps(persistenceUnit!);
+      const props = getPersistenceUnitFormatProps(persistenceUnit!);
+      return this.convertToFormatDefinition(props, kindOfQuantity);
     }
 
     const defaultFormat = kindOfQuantity.defaultPresentationFormat;
@@ -103,7 +122,8 @@ export class SchemaFormatsProvider implements FormatsProvider {
       return undefined;
     }
     this._formatsRetrieved.add(itemKey.fullName);
-    return getFormatProps(await defaultFormat);
+    const defaultProps = getFormatProps(await defaultFormat);
+    return this.convertToFormatDefinition(defaultProps, kindOfQuantity);
   }
 
 
@@ -114,7 +134,7 @@ export class SchemaFormatsProvider implements FormatsProvider {
    * @param name The full name of the Format or KindOfQuantity.
    * @returns
    */
-  public async getFormat(name: string): Promise<SchemaItemFormatProps | undefined> {
+  public async getFormat(name: string): Promise<FormatDefinition | undefined> {
     const [schemaName, schemaItemName] = SchemaItem.parseFullName(name);
     const schemaKey = new SchemaKey(schemaName);
     let schema: Schema | undefined;
@@ -146,16 +166,20 @@ export class SchemaFormatsProvider implements FormatsProvider {
   }
 }
 
-function getUnitSystemGroupNames(unitSystem?: UnitSystemKey) {
-  switch (unitSystem) {
+function getUnitSystemGroupMatchers(groupKey?: UnitSystemKey) {
+  function createMatcher(name: string | string[]) {
+    const names = Array.isArray(name) ? name : [name];
+    return (unitSystem: UnitSystem) => names.some((n) => n === unitSystem.name.toUpperCase());
+  }
+  switch (groupKey) {
     case "imperial":
-      return ["IMPERIAL", "USCUSTOM", "INTERNATIONAL", "FINANCE"];
+      return ["IMPERIAL", "USCUSTOM", "INTERNATIONAL", "FINANCE"].map(createMatcher);
     case "metric":
-      return ["SI", "METRIC", "INTERNATIONAL", "FINANCE"];
+      return [["SI", "METRIC"], "INTERNATIONAL", "FINANCE"].map(createMatcher);
     case "usCustomary":
-      return ["USCUSTOM", "INTERNATIONAL", "FINANCE"];
+      return ["USCUSTOM", "INTERNATIONAL", "FINANCE"].map(createMatcher);
     case "usSurvey":
-      return ["USSURVEY", "USCUSTOM", "INTERNATIONAL", "FINANCE"];
+      return ["USSURVEY", "USCUSTOM", "INTERNATIONAL", "FINANCE"].map(createMatcher);
   }
   return [];
 }

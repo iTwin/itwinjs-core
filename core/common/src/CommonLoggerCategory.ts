@@ -12,6 +12,8 @@
  * @extensions
  */
 export enum CommonLoggerCategory {
+  /** The logger category used by common APIs relating to text annotations. */
+  Annotations = "core-common.Annotations",
   /** The logger category used by common classes relating to ElementProps. */
   ElementProps = "core-common.ElementProps",
   /** The logger category used by common classes relating to Geometry. */

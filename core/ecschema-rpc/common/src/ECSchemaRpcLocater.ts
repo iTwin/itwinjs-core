@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import { ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType, SchemaProps } from "@itwin/ecschema-metadata";
 import { IModelRpcProps } from "@itwin/core-common";
 import { ECSchemaRpcInterface } from "./ECSchemaRpcInterface";
 
@@ -36,7 +36,15 @@ export class ECSchemaRpcLocater implements ISchemaLocater {
     * @param matchType The match type to use when locating the schema
     */
   public async getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
-    const schemaJson = await ECSchemaRpcInterface.getClient().getSchemaJSON(this.token, schemaKey.name);
+    let schemaJson: SchemaProps;
+    try {
+      schemaJson = await ECSchemaRpcInterface.getClient().getSchemaJSON(this.token, schemaKey.name);
+    } catch(e: any) {
+      if (e.message && e.message === "schema not found")
+        return undefined;
+
+      throw(e);
+    }
     const schemaInfo = await Schema.startLoadingFromJson(schemaJson, context || new SchemaContext());
     if (schemaInfo !== undefined && schemaInfo.schemaKey.matches(schemaKey, matchType)) {
       return schemaInfo;
@@ -51,7 +59,7 @@ export class ECSchemaRpcLocater implements ISchemaLocater {
    * @param _matchType How to match key against candidate schemas
    * @param _context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
    * @throws Error Always throws an error indicating this method is not supported.
-   * @deprecated in 5.0 Use the asynchronous `getSchema` method for schema retrieval.
+   * @deprecated in 5.0. Use the asynchronous `getSchema` method for schema retrieval.
   */
   public getSchemaSync(_schemaKey: SchemaKey, _matchType: SchemaMatchType, _context: SchemaContext): Schema | undefined {
     throw new Error("getSchemaSync is not supported. Use the asynchronous getSchema method instead.");

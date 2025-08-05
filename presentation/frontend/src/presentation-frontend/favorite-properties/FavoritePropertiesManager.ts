@@ -103,7 +103,7 @@ export class FavoritePropertiesManager implements Disposable {
     }
   }
 
-  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
   /* c8 ignore next 3 */
   public dispose() {
     this[Symbol.dispose]();
@@ -111,7 +111,7 @@ export class FavoritePropertiesManager implements Disposable {
 
   /**
    * Initialize favorite properties for the provided IModelConnection.
-   * @deprecated in 4.5. Initialization is performed automatically by all async methods and only needed for deprecated [[FavoritePropertiesManager.has]] and [[FavoritePropertiesManager.sortFields]].
+   * @deprecated in 4.5 - will not be removed until after 2026-06-13. Initialization is performed automatically by all async methods and only needed for deprecated [[FavoritePropertiesManager.has]] and [[FavoritePropertiesManager.sortFields]].
    */
   public initializeConnection = async (imodel: IModelConnection) => {
     const imodelId = imodel.iModelId!;
@@ -355,7 +355,7 @@ export class FavoritePropertiesManager implements Disposable {
    * @param imodel IModelConnection.
    * @param scope FavoritePropertiesScope to check for favorite properties. It also checks the more general scopes.
    * @note `initializeConnection` must be called with the `imodel` before calling this function.
-   * @deprecated in 4.5. Use [[FavoritePropertiesManager.hasAsync]] instead. This method is not async, therefore it requires early initialization by calling [[FavoritePropertiesManager.initializeConnection]].
+   * @deprecated in 4.5 - will not be removed until after 2026-06-13. Use [[FavoritePropertiesManager.hasAsync]] instead. This method is not async, therefore it requires early initialization by calling [[FavoritePropertiesManager.initializeConnection]].
    */
   public has(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): boolean {
     this.validateInitialization(imodel);
@@ -388,7 +388,7 @@ export class FavoritePropertiesManager implements Disposable {
    * @param imodel IModelConnection.
    * @param fields Array of Field's that needs to be sorted.
    * @note `initializeConnection` must be called with the `imodel` before calling this function.
-   * @deprecated in 4.5. Use [[FavoritePropertiesManager.sortFieldsAsync]] instead. This method is not async, therefore it requires early initialization by calling [[FavoritePropertiesManager.initializeConnection]].
+   * @deprecated in 4.5 - will not be removed until after 2026-06-13. Use [[FavoritePropertiesManager.sortFieldsAsync]] instead. This method is not async, therefore it requires early initialization by calling [[FavoritePropertiesManager.initializeConnection]].
    */
   public sortFields = (imodel: IModelConnection, fields: Field[]): Field[] => {
     this.validateInitialization(imodel);

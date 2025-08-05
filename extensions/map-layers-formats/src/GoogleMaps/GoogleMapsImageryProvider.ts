@@ -8,9 +8,8 @@
 
 import { BentleyError, BentleyStatus, Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
-import { DecorateContext, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapTile, QuadIdProps, ScreenViewport, Tile } from "@itwin/core-frontend";
-import { GoogleMapsDecorator } from "./GoogleMapDecorator.js";
-import {  GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors, GoogleMapsSession, GoogleMapsSessionManager, ViewportInfo } from "./GoogleMapsSession.js";
+import { DecorateContext, GoogleMapsDecorator, IModelApp, MapCartoRectangle, MapLayerImageryProvider, MapTile, QuadIdProps, ScreenViewport, Tile } from "@itwin/core-frontend";
+import { GoogleMapsCreateSessionOptions, GoogleMapsLayerTypes, GoogleMapsMapTypes, GoogleMapsScaleFactors, GoogleMapsSession, GoogleMapsSessionManager, ViewportInfo } from "./GoogleMapsSession.js";
 import { NativeGoogleMapsSessionManager } from "../internal/NativeGoogleMapsSession.js";
 import { GoogleMapsUtils } from "../internal/GoogleMapsUtils.js";
 
@@ -50,8 +49,11 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
   }
 
   protected async getSessionManager (): Promise<GoogleMapsSessionManager> {
+    if (this._sessionManager)
+      return this._sessionManager;
+
     if (this._settings.accessKey?.value) {
-      return this._sessionManager ?? new NativeGoogleMapsSessionManager(this._settings.accessKey.value);
+      return new NativeGoogleMapsSessionManager(this._settings.accessKey.value);
     } else {
       const msg = `Missing GoogleMaps api key`;
       Logger.logError(loggerCategory, msg);

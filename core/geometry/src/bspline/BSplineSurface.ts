@@ -28,7 +28,7 @@ export enum UVSelect {
   uDirection = 0,
   /**
    * index of v direction
-   * @deprecated in 4.x. Use vDirection instead.
+   * @deprecated in 4.3.0 - will not be removed until after 2026-06-13. Use vDirection instead.
    */
   VDirection = 1,
   /** index of v direction */
@@ -368,7 +368,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
   }
   /**
    * sum poles by the weights in the basisBuffer, using poles for given span
-   * @deprecated in 4.x. Use sumPoleBufferDerivativesForSpan instead.
+   * @deprecated in 4.3.0 - will not be removed until after 2026-06-13. Use sumPoleBufferDerivativesForSpan instead.
    */
   public sumpoleBufferDerivativesForSpan(spanIndexU: number, spanIndexV: number) {
     return this.sumPoleBufferDerivativesForSpan(spanIndexU, spanIndexV);
@@ -593,7 +593,6 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
   public getPointGridJSON(): PackedPointGrid {
     const result = {
       points: Point3dArray.unpackNumbersToNestedArraysIJK(this.coffs, 3, this.numPolesUV(0)),
-      weighStyle: WeightStyle.WeightsAlreadyAppliedToCoordinates, // @deprecated in 4.x. Use weightStyle instead.
       weightStyle: WeightStyle.UnWeighted,
       numCartesianDimensions: 3,
     };
@@ -1053,7 +1052,6 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     const result = {
       points: Point3dArray.unpackNumbersToNestedArraysIJK(this.coffs, 4, this.numPolesUV(0)),
       numCartesianDimensions: 3,
-      weighStyle: WeightStyle.WeightsAlreadyAppliedToCoordinates, // @deprecated in 4.x. Use weightStyle instead.
       weightStyle: WeightStyle.WeightsAlreadyAppliedToCoordinates,
     };
     return result;

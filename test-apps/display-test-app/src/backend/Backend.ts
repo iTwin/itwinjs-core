@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { Guid, Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { IModelDb, IModelHost, IModelHostOptions, LocalhostIpcHost, produceTextAnnotationGeometry } from "@itwin/core-backend";
+import { appendTextAnnotationGeometry, IModelDb, IModelHost, IModelHostOptions, layoutTextBlock, LocalhostIpcHost, TextStyleResolver } from "@itwin/core-backend";
 import {
-  IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager, TextAnnotation, TextAnnotationProps, TextBlockGeometryProps,
+  DynamicGraphicsRequest2dProps, ElementGeometry, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, Placement2dProps, RpcInterfaceDefinition, RpcManager, TextAnnotation, TextAnnotationProps,
 } from "@itwin/core-common";
 import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
@@ -182,10 +182,25 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
   }
 
-  public override async produceTextAnnotationGeometry(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, debugAnchorPointAndRange?: boolean): Promise<TextBlockGeometryProps> {
+  public override async generateTextAnnotationGeometry(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, categoryId: Id64String, modelId: Id64String, placementProps: Placement2dProps, wantDebugGeometry?: boolean): Promise<Uint8Array | undefined> {
     const iModel = IModelDb.findByKey(iModelToken.key);
-    const annotation = TextAnnotation.fromJSON(annotationProps);
-    return produceTextAnnotationGeometry({ iModel, annotation, debugAnchorPointAndRange });
+
+    const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
+    const textStyleResolver = new TextStyleResolver({textBlock, iModel, modelId});
+    const layout = layoutTextBlock({ iModel, textBlock, textStyleResolver });
+    const builder = new ElementGeometry.Builder();
+    appendTextAnnotationGeometry({ layout, textStyleResolver, annotationProps, builder, categoryId, wantDebugGeometry });
+
+    const requestProps: DynamicGraphicsRequest2dProps = {
+      id: Guid.createValue(),
+      toleranceLog10: -5,
+      type: "2d",
+      placement: placementProps,
+      categoryId,
+      geometry: { format: "flatbuffer", data: builder.entries },
+    }
+
+    return iModel.generateElementGraphics(requestProps);
   }
 
   public override async getFormatSetFromFile(filename: string): Promise<FormatSet> {

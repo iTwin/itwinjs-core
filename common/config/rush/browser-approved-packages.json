@@ -20,7 +20,7 @@
     },
     {
       "name": "@bentley/bis-custom-attributes-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/cif-bridge-schema",
@@ -64,7 +64,7 @@
     },
     {
       "name": "@bentley/cif-units-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "@bentley/construction-schema",
@@ -72,7 +72,7 @@
     },
     {
       "name": "@bentley/core-custom-attributes-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/ecdb-map-schema",
@@ -124,7 +124,7 @@
     },
     {
       "name": "@bentley/road-rail-units-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "@bentley/spatial-composition-schema",
@@ -164,7 +164,7 @@
     },
     {
       "name": "@itwin/core-backend",
-      "allowedCategories": [ "backend", "edit", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "edit", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@itwin/core-bentley",
@@ -329,6 +329,10 @@
     {
       "name": "@itwin/presentation-frontend",
       "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/presentation-shared",
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@itwin/reality-data-client",
@@ -513,6 +517,10 @@
     {
       "name": "deep-equal",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
+      "name": "deep-equal-in-any-order",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "detect-port",

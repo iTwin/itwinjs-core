@@ -89,8 +89,8 @@ export type AnnounceCurvePrimitive = (cp: CurvePrimitive) => void;
  */
 export interface TangentOptions {
   /**
-   * The tangent returned by [[CurvePrimitive.closestTangent]] is nearest this point as seen in the view plane.
-   * * Default value is `P`.
+   * The tangent point returned by [[CurvePrimitive.closestTangent]] is nearest to this point as seen in the view plane.
+   * * Default value is the fixed point `P`.
    */
   hintPoint?: Point3d,
   /**
@@ -614,8 +614,8 @@ export abstract class CurvePrimitive extends GeometryQuery {
    */
   public closestTangent(spacePoint: Point3d, options?: TangentOptions): CurveLocationDetail | undefined {
     const hint = options?.hintPoint ?? spacePoint;
-    let toLocal: Matrix3d| undefined;
-    if (options?.vectorToEye && !options.vectorToEye.isExactEqual({x: 0, y: 0, z: 1}))
+    let toLocal: Matrix3d | undefined;
+    if (options?.vectorToEye && !options.vectorToEye.isExactEqual({ x: 0, y: 0, z: 1 }))
       toLocal = Matrix3d.createRigidViewAxesZTowardsEye(options.vectorToEye.x, options.vectorToEye.y, options.vectorToEye.z);
     const measureHintDist2 = (pt: Point3d): number => { // measure distance to hint in view plane coordinates
       return toLocal?.multiplyTransposeXYZ(hint.x - pt.x, hint.y - pt.y, hint.z - pt.z).magnitudeSquaredXY() ?? pt.distanceSquaredXY(hint);
@@ -776,6 +776,18 @@ export abstract class CurvePrimitive extends GeometryQuery {
   public endPoint(result?: Point3d): Point3d {
     return this.fractionToPoint(1.0, result);
   }
+  /**
+   * Whether the start and end points are defined and within tolerance.
+   * * Does not check for planarity or degeneracy.
+   * @param tolerance optional distance tolerance (default is [[Geometry.smallMetricDistance]])
+   * @param xyOnly if true, ignore z coordinate (default is `false`)
+   */
+  public isPhysicallyClosedCurve(tolerance: number = Geometry.smallMetricDistance, xyOnly: boolean = false): boolean {
+    const p0 = this.startPoint();
+    const p1 = this.endPoint();
+    return p0 !== undefined && p1 !== undefined && (xyOnly ? p0.isAlmostEqualXY(p1, tolerance) : p0.isAlmostEqual(p1, tolerance));
+  }
+
   /** Append stroke points to caller-supplied linestring. */
   public abstract emitStrokes(dest: LineString3d, options?: StrokeOptions): void;
   /**

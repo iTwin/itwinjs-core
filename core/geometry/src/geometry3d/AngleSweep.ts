@@ -13,17 +13,20 @@ import { GrowableFloat64Array } from "./GrowableFloat64Array";
 /**
  * An `AngleSweep` is a pair of angles at start and end of an interval.
  *
- * *  For stroking purposes, the "included interval" is all angles numerically reached
- * by theta = start + f*(end-start), where f is between 0 and 1.
- * *  This stroking formula is simple numbers -- 2PI shifts are not involved.
- * *  2PI shifts do become important in the reverse mapping of an angle to a fraction.
- * *  If "start < end" the angle proceeds CCW around the unit circle.
- * *  If "end < start" the angle proceeds CW around the unit circle.
- * *  Angles beyond 360 are fine as endpoints.
- * *  (350,370) covers the same unit angles as (-10,10).
- * *  (370,350) covers the same unit angles as (10,-10).
- * *  math details related fraction API can be found at docs/learning/geometry/Angle.md
- *  * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/AngleSweep
+ * * For stroking purposes, the "included interval" is all angles numerically reached
+ * by `theta = start + f * (end - start)`, where `0 <= f <= 1`.
+ * * This stroking formula is simple numbers -- 2PI shifts are not involved.
+ * * 2PI shifts do become important in the reverse mapping of an angle to a fraction.
+ * * Angles greater than 360 and less than 0 are fine as endpoints.
+ * * An AngleSweep determines orientation only _in concert with a reference vector_, e.g., a plane normal like (0,0,1).
+ *   * Be careful reading orientation from an AngleSweep without a reference vector!
+ *   * If "start < end" the angles in the sweep proceed counterclockwise around the reference vector.
+ *   * If "start > end" the angles in the sweep proceed clockwise around the reference vector.
+ *   * (350,370) covers the same angles as (-10,10), and both sweeps are counterclockwise around the reference vector.
+ *   * (370,350) covers the same angles as (10,-10), and both sweeps are clockwise around the reference vector.
+ *   * (370,350) covers the same angles as (-10,10), but the sweeps have opposite orientation.
+ * * Math details can be found at docs/learning/geometry/Angle.md .
+ * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/AngleSweep .
  * @public
  */
 export class AngleSweep implements BeJSONFunctions {
@@ -118,7 +121,7 @@ export class AngleSweep implements BeJSONFunctions {
     result.setStartEndRadians(startRadians, endRadians);
     return result;
   }
-  /** Return the angle obtained by subtracting radians from this angle. */
+  /** Return the AngleSweep obtained by subtracting radians from the start and end angles of this sweep. */
   public cloneMinusRadians(radians: number): AngleSweep {
     return new AngleSweep(this._radians0 - radians, this._radians1 - radians);
   }
@@ -259,12 +262,14 @@ export class AngleSweep implements BeJSONFunctions {
    * @param fraction fraction of the sweep.
    * @param radians0 start angle of sweep (in radians).
    * @param radians1 end angle of sweep (in radians).
-   * @param toNegativeFraction return an exterior fraction period-shifted to within one period of the start (true) or
-   * end (false) of the sweep.
+   * @param toNegativeFraction exterior fraction handling:
+   * * if true, return `fraction` period-shifted to within one period of the start
+   * * if false, return `fraction` period-shifted to within one period of the end
+   * * if undefined, return the period-shift of `fraction` closest to [0,1].
    * @returns period-shifted fraction. If `fraction` is already in [0,1], or the sweep is empty, then `fraction` is
    * returned unchanged.
    */
-  public static fractionToSignedPeriodicFractionStartEnd(fraction: number, radians0: number, radians1: number, toNegativeFraction: boolean): number {
+  public static fractionToSignedPeriodicFractionStartEnd(fraction: number, radians0: number, radians1: number, toNegativeFraction?: boolean): number {
     const sweep = radians1 - radians0;
     if (Angle.isAlmostEqualRadiansNoPeriodShift(0, sweep))
       return fraction; // empty sweep
@@ -274,20 +279,29 @@ export class AngleSweep implements BeJSONFunctions {
     fraction = fraction % period; // period-shifted equivalent fraction closest to 0 with same sign as fraction
     if (fraction + period < 1)
       fraction += period; // it's really an interior fraction
-    if (Geometry.isIn01(fraction) || (toNegativeFraction && fraction < 0) || (!toNegativeFraction && fraction > 1))
+    if (Geometry.isIn01(fraction))
       return fraction;
-    return toNegativeFraction ? fraction - period : fraction + period; // shift to other side of sweep
+    if (toNegativeFraction === true)
+      return fraction < 0 ? fraction : fraction - period;
+    if (toNegativeFraction === false)
+      return fraction > 1 ? fraction : fraction + period;
+    const fractionDistFrom01 = fraction < 0 ? -fraction : fraction - 1;
+    const fraction2 = fraction < 0 ? fraction + period : fraction - period; // period-shift with opposite sign
+    const fraction2DistFrom01 = fraction2 < 0 ? -fraction2 : fraction2 - 1;
+    return fractionDistFrom01 < fraction2DistFrom01 ? fraction : fraction2; // choose the period-shift closer to [0,1]
   }
   /**
    * Convert a sweep fraction to the equivalent period-shifted fraction inside this sweep, or within one period of
    * zero on the desired side.
    * @param fraction fraction of the sweep.
-   * @param toNegativeFraction return an exterior fraction period-shifted to within one period of the start (true) or
-   * end (false) of the sweep.
+   * @param toNegativeFraction exterior fraction handling:
+   * * if true, return `fraction` period-shifted to within one period of the start
+   * * if false, return `fraction` period-shifted to within one period of the end
+   * * if undefined, return the period-shift of `fraction` closest to [0,1].
    * @returns period-shifted fraction. If `fraction` is already in [0,1], or the sweep is empty, then `fraction` is
    * returned unchanged.
    */
-  public fractionToSignedPeriodicFraction(fraction: number, toNegativeFraction: boolean): number {
+  public fractionToSignedPeriodicFraction(fraction: number, toNegativeFraction?: boolean): number {
     return AngleSweep.fractionToSignedPeriodicFractionStartEnd(fraction, this._radians0, this._radians1, toNegativeFraction);
   }
 

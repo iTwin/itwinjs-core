@@ -15,7 +15,7 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
 import { VariantCurveExtendParameter } from "./CurveExtendMode";
 import { CurveLocationDetail } from "./CurveLocationDetail";
-import { CurvePrimitive } from "./CurvePrimitive";
+import { CurvePrimitive, TangentOptions } from "./CurvePrimitive";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
 import { AnyCurve, type AnyRegion } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
@@ -32,6 +32,8 @@ import { StrokeOptions } from "./StrokeOptions";
 
 import type { Path } from "./Path";
 import type { Loop } from "./Loop";
+import { AnnounceTangentStrokeHandler } from "./internalContexts/AnnounceTangentStrokeHandler";
+import { Matrix3d } from "../geometry3d/Matrix3d";
 
 /** Note: CurveChain and BagOfCurves classes are located in this file to prevent circular dependency. */
 
@@ -92,6 +94,71 @@ export abstract class CurveCollection extends GeometryQuery {
       }
     }
     return detailA;
+  }
+  /**
+   * Announce all points `P` on the contained curves such that the line containing `spacePoint` and `P` is tangent to
+   * the contained curves in the view defined by `options.vectorToEye`.
+   * * Strictly speaking, each tangent line lies in the plane through `P` whose normal is the cross product of the curve
+   * tangent at `P` and `options.vectorToEye`. This is equivalent to tangency as seen in a view plane perpendicular to
+   * `options.vectorToEye`.
+   * @param spacePoint point in space.
+   * @param announceTangent callback to announce each computed tangent. The received [[CurveLocationDetail]] is reused
+   * internally, so it should be cloned in the callback if it needs to be saved.
+   * @param options (optional) options for computing tangents. See [[TangentOptions]] for defaults.
+   */
+  public emitTangents(
+    spacePoint: Point3d, announceTangent: (tangent: CurveLocationDetail) => any, options?: TangentOptions,
+  ): void {
+    const strokeHandler = new AnnounceTangentStrokeHandler(spacePoint, announceTangent, options);
+    if (this.children !== undefined) {
+      for (const child of this.children) {
+        if (child instanceof CurvePrimitive)
+          child.emitStrokableParts(strokeHandler, options?.strokeOptions);
+        else if (child instanceof CurveCollection)
+          child.emitTangents(spacePoint, announceTangent, options);
+      }
+    }
+  }
+  /**
+   * Return all points `P` on the contained curves such that the line containing `spacePoint` and `P` is tangent to the
+   * contained curves in the view defined by `options.vectorToEye`.
+   * * See [[emitTangents]] for the definition of tangency employed.
+   * @param spacePoint point in space.
+   * @param options (optional) options for computing tangents. See [[TangentOptions]] for defaults.
+   * @returns an array of details of all tangent points or undefined if no tangent was found.
+   */
+  public allTangents(spacePoint: Point3d, options?: TangentOptions): CurveLocationDetail[] | undefined {
+    const tangents: CurveLocationDetail[] = [];
+    this.emitTangents(spacePoint, (t: CurveLocationDetail) => tangents.push(t.clone()), options);
+    return (tangents.length === 0) ? undefined : tangents;
+  }
+  /**
+   * Return the point `P` on the contained curves such that the line containing `spacePoint` and `P` is tangent to the
+   * contained curves in the view defined by `options.vectorToEye`, and `P` is closest to `options.hintPoint` in this view.
+   * * See [[emitTangents]] for the definition of tangency employed.
+   * @param spacePoint point in space.
+   * @param options (optional) options for computing tangents. See [[TangentOptions]] for defaults.
+   * @returns the detail of the closest tangent point or undefined if no tangent was found.
+   */
+  public closestTangent(spacePoint: Point3d, options?: TangentOptions): CurveLocationDetail | undefined {
+    const hint = options?.hintPoint ?? spacePoint;
+    let toLocal: Matrix3d | undefined;
+    if (options?.vectorToEye && !options.vectorToEye.isExactEqual({ x: 0, y: 0, z: 1 }))
+      toLocal = Matrix3d.createRigidViewAxesZTowardsEye(options.vectorToEye.x, options.vectorToEye.y, options.vectorToEye.z);
+    const measureHintDist2 = (pt: Point3d): number => { // measure distance to hint in view plane coordinates
+      return toLocal?.multiplyTransposeXYZ(hint.x - pt.x, hint.y - pt.y, hint.z - pt.z).magnitudeSquaredXY() ?? pt.distanceSquaredXY(hint);
+    };
+    let closestTangent: CurveLocationDetail | undefined;
+    let closestDist2 = Geometry.largeCoordinateResult;
+    const collectClosestTangent = (tangent: CurveLocationDetail) => {
+      const dist2 = measureHintDist2(tangent.point);
+      if (!closestTangent || dist2 < closestDist2) {
+        closestTangent = tangent.clone(closestTangent);
+        closestDist2 = dist2;
+      }
+    };
+    this.emitTangents(spacePoint, collectClosestTangent, options);
+    return closestTangent;
   }
   /** Reverse the collection's data so that each child curve's fractional stroking moves in the opposite direction. */
   public reverseInPlace(): void {
@@ -263,6 +330,19 @@ export abstract class CurveCollection extends GeometryQuery {
   public projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
     return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
   }
+  /** Return the immediate parent of the input curve in the instance, or undefined if it is not a descendant. */
+  public findParentOfDescendant(descendant: AnyCurve): CurveCollection | undefined {
+    for (const child of this.children) {
+      if (child === descendant)
+        return this;
+      if (child instanceof CurveCollection) {
+        const parent = child.findParentOfDescendant(descendant);
+        if (parent)
+          return parent;
+      }
+    }
+    return undefined;
+  };
 }
 
 /**
@@ -302,6 +382,17 @@ export abstract class CurveChain extends CurveCollection {
       return lastChild.fractionToPoint(1.0, result);
     else
       return undefined;
+  }
+  /**
+   * Whether the chain start and end points are defined and within tolerance.
+   * * Does not check for planarity or degeneracy.
+   * @param tolerance optional distance tolerance (default is [[Geometry.smallMetricDistance]])
+   * @param xyOnly if true, ignore z coordinate (default is `false`)
+   */
+  public isPhysicallyClosedCurve(tolerance: number = Geometry.smallMetricDistance, xyOnly: boolean = false): boolean {
+    const p0 = this.startPoint();
+    const p1 = this.endPoint();
+    return p0 !== undefined && p1 !== undefined && (xyOnly ? p0.isAlmostEqualXY(p1, tolerance) : p0.isAlmostEqual(p1, tolerance));
   }
   /**
    * Return the start point and derivative of the first child of the curve chain.

@@ -45,4 +45,4 @@ All [general use customization rules](../customization/index.md#rules) can be ap
 
 ## External resources
 
-- [A simple Presentation-driven hierarchy](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=presetation-tree-sample)
+- [A simple Presentation-driven hierarchy](https://www.itwinjs.org/sandboxes/iTwinPlatform/Presentation%20Tree/)

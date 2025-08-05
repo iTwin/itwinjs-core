@@ -79,6 +79,14 @@ export class EntityJsClassMap {
 /** Maintains the mapping between the name of a BIS [ECClass]($ecschema-metadata) (in "schema:class" format) and the JavaScript [[Entity]] class that implements it.
  * Applications or modules that supply their own Entity subclasses should use [[registerModule]] or [[register]] at startup
  * to establish their mappings.
+ *
+ * When creating custom Entity subclasses for registration, you should:
+ * - Override the `className` property to match your ECClass name:
+ *   ```typescript
+ *   public static override get className() { return "TestElement"; }
+ *   ```
+ * - Do NOT override `schemaName` or `schema` - these will be wired up automatically during registration
+ *
  * @public
  */
 export class ClassRegistry {
@@ -328,7 +336,7 @@ export class ClassRegistry {
  * A cache that records the mapping between class names and class metadata.
  * @see [[IModelDb.classMetaDataRegistry]] to access the registry for a specific iModel.
  * @internal
- * @deprecated in 5.0. Please use `schemaContext` from the `iModel` instead.
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Please use `schemaContext` from the `iModel` instead.
  *
  * @example
  * @

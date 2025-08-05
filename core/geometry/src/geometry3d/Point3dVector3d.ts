@@ -11,7 +11,6 @@ import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
 import { HasZ, XAndY, XYAndZ, XYZProps } from "./XYZProps";
 
-// cspell:words CWXY CCWXY arctan Rodrigues
 /**
  * * `XYZ` is a minimal object containing x,y,z and operations that are meaningful without change in both
  * point and vector.
@@ -609,7 +608,7 @@ export class Point3d extends XYZ {
     );
   }
   /** Return point + vectorA * scalarA + vectorB * scalarB */
-  public plus2Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYZ, scalarB: number, result?: Point3d): Point3d {
+  public plus2Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, result?: Point3d): Point3d {
     return Point3d.create(this.x + vectorA.x * scalarA + vectorB.x * scalarB,
       this.y + vectorA.y * scalarA + vectorB.y * scalarB,
       this.z + vectorA.z * scalarA + vectorB.z * scalarB,
@@ -882,7 +881,7 @@ export class Vector3d extends XYZ {
    * @returns undefined if axis has no length.
    */
   public static createRotateVectorAroundVector(vector: Vector3d, axis: Vector3d, angle?: Angle): Vector3d | undefined {
-    // Rodriguez formula, https://en.wikipedia.org/wiki/Rodrigues'_rotation_formula
+    // cf. https://en.wikipedia.org/wiki/Rodrigues_rotation_formula
     const unitAxis = axis.normalize();
     if (unitAxis) {
       const xProduct = unitAxis.crossProduct(vector);
@@ -1482,7 +1481,7 @@ export class Vector3d extends XYZ {
   /**
    * Return the (strongly-typed) angle from this vector to vectorB, using only the xy parts.
    * * The returned angle is between -180 and 180 degrees.
-   * * Use `planarAngleTo` and `signedAngleTo` to return an angle measured in a specific plane.
+   * * Use [[planarAngleTo]] and [[signedAngleTo]] to return an angle measured in a specific plane.
    * @param vectorB target vector.
    */
   public angleToXY(vectorB: Vector3d): Angle {
@@ -1495,7 +1494,7 @@ export class Vector3d extends XYZ {
    * * If the cross product of `this` vector and `vectorB` lies on the same side of the plane as `vectorW`,
    * this function returns `radiansTo(vectorB)`; otherwise, it returns `-radiansTo(vectorB)`.
    * * `vectorW` does not have to be perpendicular to the plane.
-   * * Use `planarRadiansTo` to measure the angle between vectors that are projected to another plane.
+   * * Use [[planarRadiansTo]] to measure the angle between vectors that are projected to another plane.
    * @param vectorB target vector.
    * @param vectorW determines the side of the plane in which the returned angle is measured
    */
@@ -1515,7 +1514,7 @@ export class Vector3d extends XYZ {
    * * If the cross product of this vector and vectorB lies on the same side of the plane as vectorW,
    * this function returns `angleTo(vectorB)`; otherwise, it returns `-angleTo(vectorB)`.
    * * `vectorW` does not have to be perpendicular to the plane.
-   * * Use `planarAngleTo` to measure the angle between vectors that are projected to another plane.
+   * * Use [[planarAngleTo]] to measure the angle between vectors that are projected to another plane.
    * @param vectorB target vector.
    * @param vectorW determines the side of the plane in which the returned angle is measured
    */

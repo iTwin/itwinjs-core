@@ -84,7 +84,7 @@ export class RegionMomentsXY extends NullGeometryHandler {
     segment.endPoint(this._point1);
     momentData.accumulateTriangleMomentsXY(undefined, this._point0, this._point1);
   }
-  /** Accumulate integrals from origin to all primitives in the chain. */
+  /** Accumulate integrals from origin to all primitives in the loop. */
   public override handleLoop(loop: Loop): MomentData | undefined {
     const momentData = this._activeMomentData = MomentData.create();
     momentData.needOrigin = false;
@@ -94,19 +94,21 @@ export class RegionMomentsXY extends NullGeometryHandler {
     return momentData;
   }
   private handleAnyRegion(region: AnyRegion): MomentData | undefined {
-    const summedMoments = MomentData.create();
-    // guarantee there is no overlapping children
+    // guarantee there are no overlapping children and parity loops have been properly oriented
     const merged = RegionOps.regionBooleanXY(region, undefined, RegionBinaryOpType.Union);
-    if (merged) {
-      for (const child of merged.children) {
-        const childMoments = child.dispatchToGeometryHandler(this);
-        if (childMoments) {
-          const sign0 = childMoments.signFactor(1.0);
-          summedMoments.accumulateProducts(childMoments, sign0);
-        }
-      }
-    } else {
+    if (!merged)
       return undefined;
+    if (merged instanceof Loop)
+      return this.handleLoop(merged);
+    const summedMoments = MomentData.create();
+    for (const child of merged.children) {
+      const childMoments = child.dispatchToGeometryHandler(this) as MomentData | undefined;
+      if (childMoments) {
+        // parity region hole sums subtract; all other regions add
+        const scale = (merged instanceof ParityRegion && childMoments.quantitySum < 0) ? -1.0 : 1.0;
+        const sign0 = childMoments.signFactor(scale);
+        summedMoments.accumulateProducts(childMoments, sign0);
+      }
     }
     return summedMoments;
   }
@@ -118,7 +120,8 @@ export class RegionMomentsXY extends NullGeometryHandler {
   public override handleUnionRegion(region: UnionRegion): MomentData | undefined {
     return this.handleAnyRegion(region);
   }
-  private _strokeOptions?: StrokeOptions;
+
+  private _strokeOptions?: StrokeOptions; // TODO: expose to callers in RegionOps
   private getStrokeOptions(): StrokeOptions {
     if (this._strokeOptions)
       return this._strokeOptions;
@@ -132,22 +135,22 @@ export class RegionMomentsXY extends NullGeometryHandler {
    * Handle a single curve primitive (not loop).
    * * Stroke the curve and accumulate stroke array.
    */
-  public handleCurvePrimitive(cp: CurvePrimitive) {
+  public handleCurvePrimitive(cp: CurvePrimitive): void {
     const strokes = LineString3d.create();
     const options = this.getStrokeOptions();
     cp.emitStrokes(strokes, options);
     this.handleLineString3d(strokes);
   }
   /** Handle strongly typed  BSplineCurve3d  as generic curve primitive. */
-  public override handleBSplineCurve3d(g: BSplineCurve3d) {
-    return this.handleCurvePrimitive(g);
+  public override handleBSplineCurve3d(g: BSplineCurve3d): void {
+    this.handleCurvePrimitive(g);
   }
   /** Handle strongly typed  BSplineCurve3dH  as generic curve primitive. */
-  public override handleBSplineCurve3dH(g: BSplineCurve3dH) {
-    return this.handleCurvePrimitive(g);
+  public override handleBSplineCurve3dH(g: BSplineCurve3dH): void {
+    this.handleCurvePrimitive(g);
   }
   /** Handle strongly typed  TransitionSpiral as generic curve primitive. */
-  public override handleTransitionSpiral(g: TransitionSpiral3d) {
-    return this.handleCurvePrimitive(g);
+  public override handleTransitionSpiral(g: TransitionSpiral3d): void {
+    this.handleCurvePrimitive(g);
   }
 }

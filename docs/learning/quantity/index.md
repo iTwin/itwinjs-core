@@ -4,18 +4,24 @@
   - [Terms and Concepts](#terms-and-concepts)
     - [Common Terms](#common-terms)
     - [FormatProps](#formatprops)
+    - [Station Format Properties](#station-format-properties)
+      - [stationOffsetSize](#stationoffsetsize)
+      - [stationBaseFactor](#stationbasefactor)
+        - [Station Format Examples](#station-format-examples)
     - [Concepts](#concepts)
       - [Formats Provider](#formats-provider)
       - [Units Provider](#units-provider)
       - [Unit Conversion](#unit-conversion)
   - [Persistence](#persistence)
     - [FormatSet](#formatset)
+  - [Using KindOfQuantities to Retrieve Formats](#using-kindofquantities-to-retrieve-formats)
   - [Examples of Usage](#examples-of-usage)
     - [Numeric Format](#numeric-format)
     - [Composite Format](#composite-format)
     - [Parsing Values](#parsing-values)
     - [Using a FormatsProvider](#using-a-formatsprovider)
     - [Using a MutableFormatsProvider](#using-a-mutableformatsprovider)
+    - [Registering a SchemaFormatsProvider on IModelConnection open](#registering-a-schemaformatsprovider-on-imodelconnection-open)
     - [Mathematical Operation Parsing](#mathematical-operation-parsing)
       - [Limitations](#limitations)
 
@@ -43,6 +49,34 @@ If you're developing a frontend application that takes advantage of the core qua
 ### FormatProps
 
 For a detailed description of all the setting supported by FormatProp see the EC documentation on [Format](../../bis/ec/ec-format.md).
+
+### Station Format Properties
+
+Station formatting in iTwin.js supports properties that control how values are broken down into major and minor station components:
+
+#### stationOffsetSize
+
+The `stationOffsetSize` property specifies the number of decimal places for calculating the station offset magnitude. This must be a positive integer greater than 0. This works with `stationBaseFactor` to determine the effective station offset using the formula: `effective offset = stationBaseFactor * 10^stationOffsetSize`.
+
+#### stationBaseFactor
+
+The `stationBaseFactor` property provides additional flexibility for station formatting by acting as a multiplier for the base offset calculation. This allows for non-standard station intervals that aren't simple powers of 10. The default value is 1.
+
+> __Note__: The `stationBaseFactor` property is currently implemented as an iTwin.js-specific extension and is not supported in the native EC (Entity Context) layer. This feature will eventually be incorporated into the ECFormat specification to provide broader compatibility across the iTwin ecosystem.
+
+##### Station Format Examples
+
+| stationOffsetSize | stationBaseFactor | Value  | Effective Offset | Formatted |
+| ----------------- | ----------------- | ------ | ---------------- | --------- |
+| 2                 | 1                 | 1055.5 | 100              | 10+55.50  |
+| 3                 | 1                 | 1055.5 | 1000             | 1+055.50  |
+| 2                 | 5                 | 1055.5 | 500              | 2+55.50   |
+
+In the examples above:
+
+- With `stationOffsetSize=2` and `stationBaseFactor=1`: effective offset = 1 × 10² = 100
+- With `stationOffsetSize=3` and `stationBaseFactor=1`: effective offset = 1 × 10³ = 1000
+- With `stationOffsetSize=2` and `stationBaseFactor=5`: effective offset = 5 × 10² = 500
 
 ### Concepts
 
@@ -154,6 +188,26 @@ Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../
 
 </details>
 
+## Using KindOfQuantities to Retrieve Formats
+
+Building off of [FormatSet](#formatset), Tools and components that format quantities across applications should be linked to a [KindOfQuantity](../../bis/ec/kindofquantity.md) and a Persistence Unit. See [Domains](../../bis/domains/index.md) for available schemas, including `AecUnits` and `RoadRailUnits`, which define many `KindOfQuantity` values.
+
+The table below lists common measurements with their typical `KindOfQuantity` and Persistence Unit. This allows tools to request a default `KindOfQuantity` from [IModelApp.formatsProvider]($core-frontend) and a Persistence Unit from [IModelApp.quantityFormatter]($core-frontend) to create a `FormatterSpec` for quantity formatting.
+
+| Measurement  | Actual KindOfQuantity (EC Full Name) | Persistence Unit
+| ------------- | ------------- | -------------
+| Length  |  AecUnits.LENGTH | Units.M
+| Angle  | AecUnits.ANGLE  | Units.RAD
+| Area  |  AecUnits.AREA | Units.SQ_M
+| Volume  | AecUnits.VOLUME  | Units.CUB_M
+| Latitude/Longitude | AecUnits.ANGLE | Units.RAD
+| Coordinate | AecUnits.LENGTH | Units.M
+| Stationing | RoadRailUnits.STATION | Units.M
+| Length (Survey Feet) | RoadRailUnits.LENGTH | Units.M
+| Bearing | RoadRailUnits.BEARING | Units.RAD
+| Weight | AecUnits.WEIGHT | Units.KG
+| Time | AecUnits.TIME | Units.S
+
 ## Examples of Usage
 
 ### Numeric Format
@@ -240,6 +294,19 @@ The example below is of a `MutableFormatsProvider` that lets you add/remove form
 
 ```ts
 [[include:Quantity_Formatting.Mutable_Formats_Provider_Adding_A_Format]]
+```
+
+</details>
+
+### Registering a SchemaFormatsProvider on IModelConnection open
+
+The simplest way to get formats from schemas into an iTwin application is to register a new `SchemaFormatsProvider` through a [IModelConnection.onOpen]($core-frontend) event listener, passing [IModelConnection.schemaContext]($core-frontend) to the provider. The example below illustrates how that can be done.
+
+<details>
+  <summary> Example of registering a SchemaFormatsProvider on IModelConnection open
+
+```ts
+[[include:Quantity_Formatting.Schema_Fmt_Provider_on_IModelConnection_Open]]
 ```
 
 </details>

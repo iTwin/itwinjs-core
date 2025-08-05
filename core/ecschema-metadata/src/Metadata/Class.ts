@@ -372,6 +372,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       correctType = structType;
 
     if (!correctType)
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
 
     return correctType;
@@ -393,6 +394,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       correctType = structType;
 
     if (!correctType)
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
 
     return correctType;
@@ -817,11 +819,27 @@ protected async buildPropertyCache(): Promise<Map<string, Property>> {
    * A synchronous version of the [[ECClass.is]], indicating if the targetClass is of this type.
    * @param targetClass The class to check.
    */
-  public isSync(targetClass: ECClass): boolean {
-    if (SchemaItem.equalByKey(this, targetClass))
-      return true;
+  public isSync(targetClass: ECClass): boolean;
+  public isSync(targetClass: string, schemaName: string): boolean;
 
-    return this.traverseBaseClassesSync((thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey), targetClass);
+  /** @internal */
+  public isSync(targetClass: ECClass | string, schemaName?: string): boolean {
+    if (schemaName !== undefined) {
+      assert(typeof (targetClass) === "string", "Expected targetClass of type string because schemaName was specified");
+
+      const key = new SchemaItemKey(targetClass, new SchemaKey(schemaName));
+      if (SchemaItem.equalByKey(this, key))
+        return true;
+
+      return this.traverseBaseClassesSync((thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey), key);
+    } else {
+      assert(ECClass.isECClass(targetClass), "Expected targetClass to be of type ECClass");
+
+      if (SchemaItem.equalByKey(this, targetClass))
+        return true;
+
+      return this.traverseBaseClassesSync((thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey), targetClass);
+    }
   }
 
   /**

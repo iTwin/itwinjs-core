@@ -122,11 +122,11 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
     return result;
   }
   /** Near-equality test, using `Geometry.isSameCoordinate` on all 4 x,y,z,w */
-  public isAlmostEqual(other: Point4d): boolean {
-    return Geometry.isSameCoordinate(this.x, other.x)
-      && Geometry.isSameCoordinate(this.y, other.y)
-      && Geometry.isSameCoordinate(this.z, other.z)
-      && Geometry.isSameCoordinate(this.w, other.w);
+  public isAlmostEqual(other: Point4d, tolerance: number = Geometry.smallMetricDistance): boolean {
+    return Geometry.isSameCoordinate(this.x, other.x, tolerance)
+      && Geometry.isSameCoordinate(this.y, other.y, tolerance)
+      && Geometry.isSameCoordinate(this.z, other.z, tolerance)
+      && Geometry.isSameCoordinate(this.w, other.w, tolerance);
   }
   /**
    * Test for same coordinate by direct x,y,z,w args
@@ -135,11 +135,11 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * @param z z to test
    * @param w w to test
    */
-  public isAlmostEqualXYZW(x: number, y: number, z: number, w: number): boolean {
-    return Geometry.isSameCoordinate(this.x, x)
-      && Geometry.isSameCoordinate(this.y, y)
-      && Geometry.isSameCoordinate(this.z, z)
-      && Geometry.isSameCoordinate(this.w, w);
+  public isAlmostEqualXYZW(x: number, y: number, z: number, w: number, tolerance: number = Geometry.smallMetricDistance): boolean {
+    return Geometry.isSameCoordinate(this.x, x, tolerance)
+      && Geometry.isSameCoordinate(this.y, y, tolerance)
+      && Geometry.isSameCoordinate(this.z, z, tolerance)
+      && Geometry.isSameCoordinate(this.w, w, tolerance);
   }
 
   /**
@@ -161,14 +161,21 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
   public distanceSquaredXYZW(other: Point4d): number {
     return Geometry.hypotenuseSquaredXYZW(other.xyzw[0] - this.xyzw[0], other.xyzw[1] - this.xyzw[1], other.xyzw[2] - this.xyzw[2], other.xyzw[3] - this.xyzw[3]);
   }
-  /** Return the distance between the instance and other after normalizing by weights
-   */
+  /** Return the xy distance between the instance and `other` after normalizing by weights */
   public realDistanceXY(other: Point4d): number | undefined {
     const wA = this.w;
     const wB = other.w;
     if (Geometry.isSmallMetricDistance(wA) || Geometry.isSmallMetricDistance(wB))
       return undefined;
     return Geometry.hypotenuseXY(other.xyzw[0] / wB - this.xyzw[0] / wA, other.xyzw[1] / wB - this.xyzw[1] / wA);
+  }
+  /** Return the xy squared distance between the instance and `other` after normalizing by weights */
+  public realDistanceSquaredXY(other: Point4d): number | undefined {
+    const wA = this.w;
+    const wB = other.w;
+    if (Geometry.isSmallMetricDistance(wA) || Geometry.isSmallMetricDistance(wB))
+      return undefined;
+    return Geometry.hypotenuseSquaredXY(other.xyzw[0] / wB - this.xyzw[0] / wA, other.xyzw[1] / wB - this.xyzw[1] / wA);
   }
   /** Return the largest absolute distance between corresponding components
    * * x,y,z,w all participate without normalization.
@@ -246,7 +253,7 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * extract 4 consecutive numbers from a Float64Array into a Point4d.
    * @param data buffer of numbers
    * @param xIndex first index for x,y,z,w sequence. Assumed to be a valid index!
-   * @deprecated in 4.x. Use createFromPacked instead.
+   * @deprecated in 4.3.0 - will not be removed until after 2026-06-13. Use createFromPacked instead.
    */
   public static createFromPackedXYZW(data: Float64Array, xIndex: number = 0, result?: Point4d): Point4d {
     return Point4d.create(data[xIndex], data[xIndex + 1], data[xIndex + 2], data[xIndex + 3], result);
@@ -378,13 +385,17 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
    * * If the xyz part of `this` are all zero, (a clone of) `spacePoint` is returned.
    */
   public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {
-    const h = this.altitude(spacePoint);
+    return this.projectXYZToPlane(spacePoint.x, spacePoint.y, spacePoint.z, result);
+  }
+  /** Return the projection of (x,y,z) onto the plane. */
+  public override projectXYZToPlane(x: number, y: number, z: number, result?: Point3d): Point3d {
+    const h = this.altitudeXYZ(x, y, z);
     const nn = this.magnitudeSquaredXYZ();
     // this unusual tol is needed so that toPlane3dByOriginAndUnitNormal agrees with its original implementation
     const alpha = Geometry.conditionalDivideCoordinate(-h, nn, Geometry.largeFractionResult * Geometry.largeFractionResult);
     if (alpha === undefined)
-      return spacePoint.clone(result);
-    return spacePoint.plusXYZ(alpha * this.x, alpha * this.y, alpha * this.z, result);
+      return Point3d.create(x, y, z, result);
+    return Point3d.create(x + alpha * this.x, y + alpha * this.y, z + alpha * this.z, result);
   }
   /** scale all components (including w!!) */
   public scale(scale: number, result?: Point4d): Point4d {
