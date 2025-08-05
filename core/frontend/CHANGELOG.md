@@ -1,6 +1,443 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Fri, 15 Mar 2024 19:16:22 GMT and should not be manually modified.
+This log was last generated on Wed, 16 Jul 2025 15:01:35 GMT and should not be manually modified.
+
+## 5.0.4
+Wed, 16 Jul 2025 14:59:59 GMT
+
+_Version update only_
+
+## 5.0.3
+Fri, 11 Jul 2025 00:56:56 GMT
+
+_Version update only_
+
+## 5.0.2
+Thu, 26 Jun 2025 22:16:01 GMT
+
+_Version update only_
+
+## 5.0.1
+Tue, 17 Jun 2025 18:33:52 GMT
+
+_Version update only_
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- Made QuadIdProps public
+- Add new async `addAttributions` method  on `TileTreeReference`. Also make sure ImageryTileTree / providers are included when decorating the view.
+- Fix issue validating ArcGIS service urls
+- Added new `MapLayerSessionManager` API.  Minor additions to `MapCartoRectangle` and `QuadId` classes.
+- Add iterator-based alternatives to various forEach-style APIs.
+- Removed part of deprecated APIs from core-frontend
+- Removed deprecated scheduleScriptReference and onScheduleScriptReferencedChanged from DisplayStyleState.
+- removed getThumbnail api
+- Add ReadImageToCanvasOptions
+- Fix failure to resolve relative texture URIs in 3D Tiles
+- Add support for reading and interpreting Cesium tiles containing EXT_mesh_features extension.
+- Raise `IModelConnection.onChange` when a new `BlankConnection` is created.
+- Support Models' and SubCategories' selection in `SelectionSet`.
+- Resolves CVE-2025-27152
+- support draping model map layers onto iModels
+- Implement draping of models within iModels onto attached reality data.
+- Fix draping to reality bug
+- Upgrade compile target to ES2023 and module to ES2022
+- `SnapshotConnection.openFile` is now only available in IPC apps
+- add CatalogConnection
+- Fixed problem causing bg map masking of large models to crash.
+- Fix duplicate Bing map attributions.
+- Deprecated `IModelConnection.getMassPropertiesPerCandidate`
+- Remove calls to deprecated core-common APIs
+- Add support for tiles compressed with meshoptimizer
+- Add `@itwin/ecschema-metadata`, `@itwin/ecschema-rpcinterface-common` peer dependencies. Make iModel-specific `SchemaContext` available on `IModelConnection` through the new `schemaContext` getter.
+- Deprecate `quantityType` getters for subclasses of `FormattedQuantityDescription` and allow passing in `kindOfQuantityName` to constructor
+- Add `formatsProvider` property to `IModelApp` and `IModelAppOptions`, new `QuantityFormatter` helper methods to help consumers supply their own format specifications for formatting numeric values.
+- Add Viewport.backgroundMapTileTreeReference
+- Fix decoration graphics failing to use line color for planar region outlines.
+- Fix conversion of RGBA to RGB when decoding point cloud colors.
+- Add BriefcaseConnection.abandonChanges.
+- Fix white pixels of textured surfaces sometimes drawing as black.
+- Honor maximumScreenSpaceError specified in tileset.
+- Added TileAdmin.Options.disablePolyfaceDecimation.
+- HitDetail and Viewport.readPixels include contour line information.
+- Drop dependency on @itwin/core-telemetry
+- Change core peer dependencies to strict version.
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+### Updates
+
+- Honor maximumScreenSpaceError specified in tileset.
+
+## 4.11.5
+Fri, 06 Jun 2025 13:41:18 GMT
+
+_Version update only_
+
+## 4.11.4
+Tue, 03 Jun 2025 16:15:19 GMT
+
+_Version update only_
+
+## 4.11.3
+Wed, 28 May 2025 13:56:22 GMT
+
+_Version update only_
+
+## 4.11.2
+Tue, 20 May 2025 20:14:45 GMT
+
+_Version update only_
+
+## 4.11.1
+Wed, 30 Apr 2025 13:13:21 GMT
+
+_Version update only_
+
+## 4.11.0
+Wed, 16 Apr 2025 15:50:28 GMT
+
+### Updates
+
+- Fix issue validating ArcGIS service urls
+- Add support for reading and interpreting Cesium tiles containing EXT_mesh_features extension.
+- Resolves CVE-2025-27152
+- Fixed problem causing bg map masking of large models to crash.
+- Fix duplicate Bing map attributions.
+- Deprecated `IModelConnection.getMassPropertiesPerCandidate`
+- Fix decoration graphics failing to use line color for planar region outlines.
+- Fix conversion of RGBA to RGB when decoding point cloud colors.
+
+## 4.10.13
+Thu, 10 Apr 2025 17:47:21 GMT
+
+_Version update only_
+
+## 4.10.12
+Wed, 02 Apr 2025 19:35:47 GMT
+
+_Version update only_
+
+## 4.10.11
+Wed, 19 Mar 2025 15:30:39 GMT
+
+### Updates
+
+- Fixed problem causing bg map masking of large models to crash.
+
+## 4.10.10
+Tue, 11 Mar 2025 15:25:11 GMT
+
+### Updates
+
+- Resolves CVE-2025-27152
+
+## 4.10.9
+Tue, 11 Mar 2025 05:17:33 GMT
+
+### Updates
+
+- Fix issue validating ArcGIS service urls
+
+## 4.10.8
+Thu, 06 Mar 2025 14:13:37 GMT
+
+_Version update only_
+
+## 4.10.7
+Tue, 18 Feb 2025 17:27:03 GMT
+
+_Version update only_
+
+## 4.10.6
+Fri, 24 Jan 2025 08:02:40 GMT
+
+_Version update only_
+
+## 4.10.5
+Tue, 21 Jan 2025 21:56:45 GMT
+
+_Version update only_
+
+## 4.10.4
+Mon, 13 Jan 2025 14:06:43 GMT
+
+_Version update only_
+
+## 4.10.3
+Mon, 06 Jan 2025 14:00:13 GMT
+
+_Version update only_
+
+## 4.10.2
+Thu, 21 Nov 2024 15:22:20 GMT
+
+### Updates
+
+- Fix duplicate Bing map attributions.
+
+## 4.10.1
+Thu, 14 Nov 2024 18:11:00 GMT
+
+_Version update only_
+
+## 4.10.0
+Wed, 13 Nov 2024 15:23:38 GMT
+
+### Updates
+
+- Deprecate `SnapshotConnection.openRemote`
+- Fixed problem with zoom when background map is on and allow3dManipulations is on.
+- Fixed reading of KHR compressed meshes in GLTF reader.
+- When a inUseLocks error is thrown on the backend during an IPC call, it will also be thrown on the frontend.
+- Promote some overridden methods/properties from internal to public.
+- Fix WorkerReturnType for async implementations.
+- Add support for instancing to GraphicBuilder, GraphicDescriptionBuilder, and glTF.
+- Add support for snapping to secondary iModels within a viewport.
+- Permit FeatureAppearance to independently override line color and transparency.
+- Add option to temporarily hide specific elements for Viewport.readPixels.
+- Support snapping within section drawing attachments.
+- Allow context reality model visibility to be toggled on/off
+- Support ContourDisplay rendering.
+
+## 4.9.7
+Wed, 06 Nov 2024 19:23:04 GMT
+
+_Version update only_
+
+## 4.9.6
+Tue, 05 Nov 2024 15:22:45 GMT
+
+_Version update only_
+
+## 4.9.5
+Tue, 22 Oct 2024 20:01:40 GMT
+
+_Version update only_
+
+## 4.9.4
+Wed, 09 Oct 2024 20:22:04 GMT
+
+### Updates
+
+- Fix WorkerReturnType for async implementations.
+
+## 4.9.3
+Thu, 03 Oct 2024 19:15:45 GMT
+
+_Version update only_
+
+## 4.9.2
+Wed, 02 Oct 2024 15:14:43 GMT
+
+_Version update only_
+
+## 4.9.1
+Wed, 25 Sep 2024 20:10:58 GMT
+
+_Version update only_
+
+## 4.9.0
+Mon, 23 Sep 2024 13:44:01 GMT
+
+### Updates
+
+- Fix range problem for elements during edit which sometimes made the dissappear.
+- Permit TiledGraphicsProviders to contribute to planar clip masks.
+- Fix incorrect bounding box for RenderGraphic created from GraphicDescription.
+- Change MapLayerImageryProvider.supportsMapFeatureInfo from alpha to public
+
+## 4.8.7
+Fri, 13 Sep 2024 15:11:17 GMT
+
+_Version update only_
+
+## 4.8.6
+Fri, 06 Sep 2024 05:06:49 GMT
+
+_Version update only_
+
+## 4.8.5
+Wed, 28 Aug 2024 17:27:23 GMT
+
+_Version update only_
+
+## 4.8.4
+Thu, 22 Aug 2024 17:37:06 GMT
+
+_Version update only_
+
+## 4.8.3
+Fri, 16 Aug 2024 18:18:14 GMT
+
+_Version update only_
+
+## 4.8.2
+Thu, 15 Aug 2024 15:33:49 GMT
+
+_Version update only_
+
+## 4.8.1
+Mon, 12 Aug 2024 14:05:54 GMT
+
+_Version update only_
+
+## 4.8.0
+Thu, 08 Aug 2024 16:15:37 GMT
+
+### Updates
+
+- Fixed planar masks when using new tiles
+- Improve resolution of planar clip masks
+- Fixed new tiles not updating planar clip mask immediately.
+- Fixed performance problem for planar clip masks
+- Fix missing login dialog for some ArcGIS services
+- Fix error reading ArcGIS Map service capabilities when Kerberos authentication is used
+- fixed material issues with frontend schedule scripts
+- Check validity of OCP CRS before using it.
+- Trigger additional `onMouseMotion` call for tools to react to the last AccuSnap.
+- Allow elements in edit scope to be updated by schedule scripts.
+- Add support for gLTF extention EXT_mesh_gpu_instancing, that allows assigning unique identifiers to individual instances of a mesh, which can be used to look up per-instance data in the structural metadata table. This version also contains a fix to support absolute tile URLs in 3D tiles tileset.json
+- Load up front all subcategories of used spatial categories and 3D elements when creating a default view.
+- Update ThirdPartyNotices.md
+- Provide WorkerProxy to simplify use of Worker scripts, and enable creation of graphics on Workers using GraphicDescriptionBuilder.
+- Fix Viewport's never-drawn elements overriding the display style's excluded elements.
+- Promote ScreenViewport and OffScreenViewport constructors.
+- Include the extents of all TiledGraphicsProviders when computing ViewingSpace extents.
+- Add support for creating textures and materials in a Worker.
+
+## 4.7.8
+Wed, 31 Jul 2024 13:38:04 GMT
+
+_Version update only_
+
+## 4.7.7
+Fri, 19 Jul 2024 14:52:42 GMT
+
+### Updates
+
+- Fix Viewport's never-drawn elements overriding the display style's excluded elements.
+
+## 4.7.6
+Fri, 12 Jul 2024 14:42:55 GMT
+
+### Updates
+
+- Fix missing login dialog for some ArcGIS services
+
+## 4.7.5
+Thu, 11 Jul 2024 15:24:55 GMT
+
+### Updates
+
+- Improve resolution of planar clip masks
+
+## 4.7.4
+Mon, 01 Jul 2024 14:06:23 GMT
+
+_Version update only_
+
+## 4.7.3
+Thu, 27 Jun 2024 21:09:02 GMT
+
+### Updates
+
+- Fixed new tiles not updating planar clip mask immediately.
+
+## 4.7.2
+Sat, 22 Jun 2024 01:09:54 GMT
+
+### Updates
+
+- Fixed planar masks when using new tiles
+- Include the extents of all TiledGraphicsProviders when computing ViewingSpace extents.
+
+## 4.7.1
+Thu, 13 Jun 2024 22:47:31 GMT
+
+_Version update only_
+
+## 4.7.0
+Wed, 12 Jun 2024 18:02:16 GMT
+
+### Updates
+
+- Fixed various issues related to terrain tile collecting.
+- Fix failed HTTP RPC request not being rejected if `X-Protocol-Version` is not available.
+- Increase maximum number of categories passed into querySubCategories
+- Reduce coupling between project extents and tile cache, so that cached tiles can remain valid after adjusting the project extents by less than an order of magnitude.
+
+## 4.6.2
+Sat, 08 Jun 2024 00:50:25 GMT
+
+_Version update only_
+
+## 4.6.1
+Wed, 29 May 2024 14:35:17 GMT
+
+_Version update only_
+
+## 4.6.0
+Mon, 13 May 2024 20:32:51 GMT
+
+### Updates
+
+- Increase default extent limits for drawing views and fix incorrect clipping of section drawing attachments.
+- Fixed problem cases freeing tile memory under memory pressure
+- Fix map layer WMTS validation process to correctly return authentication error
+- Fixed various issues related to terrain tile collecting.
+- Fix an issue preventing model map layer from being hidden
+- Added support for OGC Features map layers.
+- Include BIS class metadata with transaction events.
+- Fix dynamic element graphics being clipped to the project extents in 2d models.
+- Add support for EXT_meshopt_compression glTF extension.
+
+## 4.5.2
+Tue, 16 Apr 2024 14:46:22 GMT
+
+### Updates
+
+- Fix an issue preventing model map layer from being hidden
+
+## 4.5.1
+Wed, 03 Apr 2024 18:26:58 GMT
+
+### Updates
+
+- Fix map layer WMTS validation process to correctly return authentication error
+
+## 4.5.0
+Tue, 02 Apr 2024 19:06:00 GMT
+
+### Updates
+
+- Change gpuMemoryLimit setting used when undefined
+- Disable tile preloading when under memory pressure
+- Add textures to reality mesh stats
+- Fix an issue where the background map would become blank after adding a new map-layer
+- added ability of batched tiles to generate cut plane graphics
+- Fix regression in GPU timings due a  change in chromium's behavior.
+- Dispose of all viewports when IModelApp.shutdown() is called to clear up WebGL resources, and avoid memory leak
+- make CheckpointConnection.openRemote work for IPC
+- Add TileTreeReference.createFromRenderGraphic. Permit TiledGraphicsProvider to supply a tooltip.
+- Added an iterator over the entries in a BatchTableProperties.
+- Add support for custom data sources in TerrainSettings, including Cesium ION assets.
+- Add support for dynamic spatial classifiers.
+- Fix incorrect transforms computed for instanced glTF meshes.
+
+## 4.4.9
+Mon, 15 Apr 2024 20:29:22 GMT
+
+_Version update only_
+
+## 4.4.8
+Mon, 25 Mar 2024 22:22:26 GMT
+
+_Version update only_
 
 ## 4.4.7
 Fri, 15 Mar 2024 19:15:14 GMT
@@ -75,6 +512,18 @@ Mon, 12 Feb 2024 18:15:58 GMT
 - Fix incorrect transparency for text rendered as raster glyphs.
 - Remove maximum depth constraint for reality tile trees.
 - Clone view attachments when cloning a sheet or drawing view.
+
+## 4.3.5
+Mon, 25 Mar 2024 16:54:36 GMT
+
+_Version update only_
+
+## 4.3.4
+Fri, 22 Mar 2024 13:30:31 GMT
+
+### Updates
+
+- Bump @itwin/object-storage-core
 
 ## 4.3.3
 Wed, 03 Jan 2024 19:28:38 GMT

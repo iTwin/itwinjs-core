@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-
+import { describe, expect, it } from "vitest";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -19,6 +18,7 @@ import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { getRandomNumber } from "../testFunctions";
 
 // cspell:word subtriangle
 function verifyTriangle(ck: Checker, triangle: BarycentricTriangle) {
@@ -80,7 +80,7 @@ describe("BarycentricTriangle", () => {
     verifyTriangle(ck, BarycentricTriangle.createXYZXYZXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0));
     verifyTriangle(ck, BarycentricTriangle.createXYZXYZXYZ(1, 4, 2, 7, -2, 1.5, 2.2, 9.0, 10));
     ck.checkpoint("BarycentricTriangle.Create");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("BarycentricTriangle.ClosestPoint", () => {
@@ -147,9 +147,9 @@ describe("BarycentricTriangle", () => {
     // some special barycentric triples
     const specialPoints: Point3d[] = [];
     const barycentricInsideOn: [TriangleLocationDetail, boolean][] = [
-      [triangle.pointToFraction(centroid)!, true],
-      [triangle.pointToFraction(incenter)!, true],
-      [triangle.pointToFraction(triangle.circumcenter())!, false],
+      [triangle.pointToFraction(centroid), true],
+      [triangle.pointToFraction(incenter), true],
+      [triangle.pointToFraction(triangle.circumcenter()), false],
     ];
     for (const specialPt of barycentricInsideOn) {
       ck.testBoolean(specialPt[0].isInsideOrOn, specialPt[1], "special point containment");
@@ -249,14 +249,9 @@ describe("BarycentricTriangle", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BarycentricTriangle", "closestPoint");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
-
-/** Return a random number between -100 and 100 */
-function getRandomNumber() {
-  return 200 * Math.random() - 100;
-}
 
 describe("BarycentricTriangle.intersectRay3d", () => {
   it("BarycentricTriangle.intersectRay3d", () => {
@@ -273,8 +268,8 @@ describe("BarycentricTriangle.intersectRay3d", () => {
     let rotatedIntersectionPoint: TriangleLocationDetail; // rotate ray and triangle and then find intersection
     let rotatedOriginalIntersectionPoint = Point3d.createZero(); // find intersection and then rotate the intersection
     let rotationMatrix: Matrix3d;
-    const angle: Angle = Angle.createDegrees(getRandomNumber());
-    const rotationAxis: Vector3d = Vector3d.create(getRandomNumber(), getRandomNumber(), getRandomNumber());
+    const angle: Angle = Angle.createDegrees(getRandomNumber(-100, 100));
+    const rotationAxis: Vector3d = Vector3d.create(getRandomNumber(-100, 100), getRandomNumber(-100, 100), getRandomNumber(-100, 100));
     if (!rotationAxis.magnitude()) {
       rotationMatrix = Matrix3d.identity;
     } else {
@@ -369,6 +364,6 @@ describe("BarycentricTriangle.intersectRay3d", () => {
     intersectionPoint = triangle.intersectRay3d(ray);
     ck.testBoolean(intersectionPoint.isValid, false, "expect no intersection when ray direction is (0,0,0)");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

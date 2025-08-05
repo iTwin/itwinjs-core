@@ -29,7 +29,7 @@ describe("EditorParams", () => {
     const customParams: CustomFormattedNumberParams = {
       type: PropertyEditorParamTypes.CustomFormattedNumber,
       formatFunction: (numberValue: number) => `${numberValue}`,
-      parseFunction: (_stringValue: string) => { return { value: 1.0 }; }, // eslint-disable-line arrow-body-style
+      parseFunction: (_stringValue: string) => { return { value: 1.0 }; },
     };
     expect(isCustomFormattedNumberParams(customParams)).to.be.true;
   });

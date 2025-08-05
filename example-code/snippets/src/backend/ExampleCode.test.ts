@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import { AccessToken, Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
-import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, Element, IModelHost, PhysicalModel, SettingDictionary, SettingsPriority, StandaloneDb, Subject } from "@itwin/core-backend";
-import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, IModel } from "@itwin/core-common";
-import { IModelTestUtils } from "./IModelTestUtils";
+import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, Element, ExportGraphics, ExportGraphicsInfo, IModelJsFs, PhysicalModel, SnapshotDb, StandaloneDb, Subject } from "@itwin/core-backend";
+import { AccessToken, Guid, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
+import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, ConflictingLocksError, ElementGeometryInfo, IModel } from "@itwin/core-common";
+import { BentleyGeometryFlatBuffer, Geometry, IndexedPolyface, PolyfaceQuery, Range3d, Sphere } from "@itwin/core-geometry";
+import { assert } from "chai";
+import { IModelTestUtils, KnownTestLocations } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Example Code", () => {
@@ -37,6 +37,31 @@ describe("Example Code", () => {
     newExtents.high.z += .001;
     iModel.updateProjectExtents(newExtents);
     // __PUBLISH_EXTRACT_END__
+  });
+
+  it("should check for an InUseLocksError", async () => {
+    if (iModel.isBriefcase) {
+      const elementId = PhysicalModel.insert(iModel, IModel.rootSubjectId, "newModelCode2");
+      assert.isTrue(elementId !== undefined);
+      // __PUBLISH_EXTRACT_START__ ITwinError.catchAndHandleITwinError
+      try {
+        await iModel.locks.acquireLocks({ exclusive: elementId });
+      } catch (err: unknown) {
+        if (ConflictingLocksError.isError(err)) {
+          if (err.conflictingLocks) {
+            for (const inUseLock of err.conflictingLocks) {
+              const _briefcaseId = inUseLock.briefcaseIds[0];
+              const _state = inUseLock.state;
+              const _objectId = inUseLock.objectId;
+              // Create a user friendly error message
+            }
+          }
+        } else {
+          throw err;
+        }
+        // __PUBLISH_EXTRACT_END__
+      }
+    }
   });
 
   it("should extract working example code", async () => {
@@ -83,7 +108,7 @@ describe("Example Code", () => {
       const codeSpecDup: CodeSpec = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
       testImodel.codeSpecs.insert(codeSpecDup); // throws in case of error
       assert.fail();
-    } catch (err) {
+    } catch {
       // We expect this to fail.
     }
 
@@ -96,114 +121,48 @@ describe("Example Code", () => {
 
   });
 
-  it("Settings", async () => {
-    // __PUBLISH_EXTRACT_START__ Settings.addDictionaryDefine
-    interface TemplateRsc {
-      container: string;
-      template: {
-        name: string;
-        loadByDefault?: boolean;
-      };
-    }
+  it("export elements from local bim file", async () => {
+    const inFile = `${KnownTestLocations.assetsDir}\\test.bim`; // contains 3 translates of a sphere
+    const elementIds: Id64Array = ["0x1d"]; // one of the spheres
 
-    const templates: TemplateRsc[] = [
-      {
-        container: "default-app1",
-        template: {
-          name: "vertical 1",
-          loadByDefault: false,
-        },
-      },
-      {
-        container: "default-app1",
-        template: {
-          name: "horizontal 4",
-        },
-      },
-    ];
+    // __PUBLISH_EXTRACT_START__ IModelDb.exportGeometry
+    // export each element as a mesh
+    const singleMesh: IndexedPolyface[] = [];
+    await Snippets.extractGeometryFromBimFile(inFile, elementIds, singleMesh);
+    assert.strictEqual(1, singleMesh.length, "extracted the mesh");
 
-    const defaultsDict: SettingDictionary = {
-      "core/default-tool": "select",
-      "samples/start/leftPane": true,
-      "myApp/tree/label": "distribution of work",
-      "myApp/tree/indent": 4,
-      "myApp/categories": ["category1", "lowest", "upper"],
-      "myApp/list/clickMode": "doubleClick",
-      "myApp/templateResources": templates,
-    };
+    // write each element's flatbuffer serialization to a file
+    const outFileBase = `${KnownTestLocations.outputDir}\\geom`;
+    await Snippets.extractGeometryFromBimFile(inFile, elementIds, outFileBase, true);
+    const outFile = `${outFileBase}-${elementIds[0].toString()}.fb`;
+    assert.isTrue(IModelJsFs.existsSync(outFile), "wrote flatbuffer file");
+
+    // apply ecsql query to generate the ids of elements to export
+    const query = "SELECT ECInstanceId FROM bis.Element WHERE ECClassId=0xe7";
+    const threeMeshes: IndexedPolyface[] = [];
+    await Snippets.extractGeometryFromBimFile(inFile, query, threeMeshes);
+    assert.strictEqual(3, threeMeshes.length, "extracted all three meshes from the model");
     // __PUBLISH_EXTRACT_END__
 
-    // __PUBLISH_EXTRACT_START__ Settings.addDictionary
-    let workspace = IModelHost.appWorkspace;
-    let settings = workspace.settings;
-    settings.addDictionary("initial values", SettingsPriority.defaults, defaultsDict);
-    let defaultTool = settings.getString("core/default-tool"); // returns "select"
-    const leftPane = settings.getBoolean("samples/start/leftPane"); // returns true
-    const categories = settings.getArray<string>("myApp/categories"); // returns ["category1", "lowest", "upper"]
-    const t1 = settings.getArray<TemplateRsc>("myApp/templateResources"); // returns copy of `templates`
-    // __PUBLISH_EXTRACT_END__
-
-    expect(defaultTool).eq(defaultsDict["core/default-tool"]);
-    expect(leftPane).eq(defaultsDict["samples/start/leftPane"]);
-    expect(categories).deep.equal(defaultsDict["myApp/categories"]);
-    expect(t1).deep.equal(templates);
-
-    // __PUBLISH_EXTRACT_START__ Settings.addITwinDictionary
-    const iTwin555: SettingDictionary = {
-      "core/default-tool": "measure",
-      "app5/markerName": "arrows",
-      "app5/markerIcon": "arrows.ico",
-    };
-    workspace = iModel.workspace;
-    settings = workspace.settings;
-    settings.addDictionary("for iTwin 555", SettingsPriority.iTwin, iTwin555);
-    defaultTool = settings.getString("core/default-tool"); // returns "measure"
-    // __PUBLISH_EXTRACT_END__
-    expect(defaultTool).eq(iTwin555["core/default-tool"]);
-
-    // __PUBLISH_EXTRACT_START__ Settings.dropITwinDictionary
-    workspace = iModel.workspace;
-    settings = workspace.settings;
-    settings.dropDictionary("for iTwin 555");
-    defaultTool = settings.getString("core/default-tool"); // returns "select" again
-    // __PUBLISH_EXTRACT_END__
-    expect(defaultTool).eq(defaultsDict["core/default-tool"]);
-
-    // __PUBLISH_EXTRACT_START__ Settings.containerAlias
-    const iTwinDict: SettingDictionary = {
-      "cloud/containers": [
-        { name: "default-fonts", containerId: "fonts-01", accountName: "" },
-        { name: "gcs-data", containerId: "gcsdata-01", accountName: "" },
-      ],
-    };
-    const iModelDict: SettingDictionary = {
-      "cloud/containers": [
-        { name: "default-icons", containerId: "icons-01", accountName: "" },
-        { name: "default-lang", containerId: "lang-05", accountName: "" },
-        { name: "default-fonts", containerId: "fonts-02", accountName: "" },
-        { name: "default-key", containerId: "key-05", accountName: "" },
-      ],
-    };
-
-    workspace = iModel.workspace;
-    settings = workspace.settings;
-    const fontContainerName = "default-fonts";
-    settings.addDictionary("iTwin", SettingsPriority.iTwin, iTwinDict);
-    settings.addDictionary("iModel", SettingsPriority.iModel, iModelDict);
-
-    expect(workspace.resolveContainer(fontContainerName).containerId).equals("fonts-02"); // iModel has higher priority than iTwin
-
-    settings.dropDictionary("iModel"); // drop iModel dict
-    expect(workspace.resolveContainer(fontContainerName).containerId).equals("fonts-01"); // now resolves to iTwin value
-
-    settings.dropDictionary("iTwin"); // drop iTwin dict
-    expect(() => workspace.resolveContainer(fontContainerName)).to.throw("no setting");
-    // __PUBLISH_EXTRACT_END__
+    // verify outputs
+    const buf = IModelJsFs.readFileSync(outFile);
+    assert.isTrue(buf.length > 0, "read flatbuffer file");
+    const bytes = new Uint8Array(Buffer.isBuffer(buf) ? buf : Buffer.from(buf));
+    const geometry1 = BentleyGeometryFlatBuffer.bytesToGeometry(bytes, true);
+    assert.isTrue(geometry1 !== undefined, "deserialized the geometry");
+    assert.isTrue(geometry1 instanceof Sphere, "geometry is an ellipsoid");
+    const radius = (geometry1 as Sphere).trueSphereRadius();
+    assert.isTrue(radius !== undefined, "ellipsoid is a sphere");
+    const meshVolume = PolyfaceQuery.sumTetrahedralVolumes(singleMesh[0]);
+    const sphereVolume = 4 / 3 * Math.PI * radius! * radius! * radius!;
+    assert.isTrue(Geometry.isAlmostEqualNumber(sphereVolume, meshVolume, 0.005), "mesh and sphere volumes compare");
+    for (const mesh of threeMeshes)
+      assert.isTrue(Geometry.isAlmostEqualNumber(meshVolume, PolyfaceQuery.sumTetrahedralVolumes(mesh)), "all meshes have same volume");
   });
 
   it("CodeService", async () => {
 
-    if (false) { // this will compile but it will not run, because the root elementhas no federationGuid -- waiting for a fix
+    if (false) { // this will compile but it will not run, because the root element has no federationGuid -- waiting for a fix
 
       // __PUBLISH_EXTRACT_START__ CodeService.reserveInternalCodeForNewElement
       const code = Subject.createCode(iModel, IModel.rootSubjectId, "main transfer pump"); // an example a code that an app might use
@@ -290,5 +249,49 @@ namespace Snippets {
     iModel.elements.insertAspect(aspectProps);
     // __PUBLISH_EXTRACT_END__
   }
+
+  /**
+   * Given a .bim file and an array of element ids, extract the element geometry into flatbuffer files and/or export them as meshes.
+   * @param bimFilePathName full pathname of input .bim file, e.g., "c:\\tmp\\foo.bim".
+   * @param elementIds array of element ids in the bim file (e.g., ["0x1d", "0x2000000000a"]), or an ECSQL query that collects element ids in the first entry of each row.
+   * @param geometry array to populate with meshes exported via [IModelDb.exportGraphics]($core-backend), or base pathname (e.g., "c:\\tmp\\bar") to extract element
+   * geometry as flatbuffer files with names of the form `${basePathName}-${elementId.toString()}.fb`.
+   * @param noPartMesh optional flag to ignore parts when exporting meshes.
+   * @returns number of elements exported
+   */
+  export async function extractGeometryFromBimFile(bimFilePathName: string, elementIds: Id64Array | string, geometry: IndexedPolyface[] | string, noPartMesh?: boolean) {
+    // __PUBLISH_EXTRACT_START__ IModelDb.extractGeometry
+    const myIModel = SnapshotDb.openFile(bimFilePathName);
+    const elementIdArray = Array.isArray(elementIds) ? elementIds : [];
+    const query = Array.isArray(elementIds) ? "" : elementIds;
+    if (query.length > 0) {
+      const reader = myIModel.createQueryReader(query);
+      while (await reader.step())
+        elementIdArray.push(reader.current[0]);
+    }
+    if (elementIdArray.length === 0)
+      return;
+    const fbFilePathNameBase = Array.isArray(geometry) ? undefined : geometry;
+    if (fbFilePathNameBase) {
+      for (const elementId of elementIdArray) {
+        myIModel.elementGeometryRequest({
+          elementId,
+          onGeometry: (info: ElementGeometryInfo) => {
+            for (const entry of info.entryArray)
+              IModelJsFs.writeFileSync(`${fbFilePathNameBase}-${elementId.toString()}.fb`, entry.data);
+          }});
+      }
+    }
+    const meshes = Array.isArray(geometry) ? geometry : undefined;
+    if (meshes)
+      myIModel.exportGraphics({
+        elementIdArray,
+        onGraphics: (info: ExportGraphicsInfo) => meshes.push(ExportGraphics.convertToIndexedPolyface(info.mesh)),
+        partInstanceArray: noPartMesh ? [] : undefined,
+      });
+    myIModel.close();
+    // __PUBLISH_EXTRACT_END__
+  }
+
 }
 Snippets.elementAspectSnippet;

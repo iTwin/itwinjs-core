@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { GeoCoordinatesResponseProps, GeoCoordStatus, IModelCoordinatesResponseProps } from "@itwin/core-common";
-import { GeoConverter, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { GeoConverter, IModelConnection } from "@itwin/core-frontend";
 import { Geometry, Point3d, XYZProps } from "@itwin/core-geometry";
 import { TestUtility } from "../TestUtility";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 // spell-checker: disable
 
@@ -21,7 +22,7 @@ describe("GeoCoord", () => {
 
   before(async () => {
     await TestUtility.startFrontend();
-    iModel = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
+    iModel = await TestSnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
     // make an array of 10x10 geoPoints in geoPointList.
     for (let iLatitude: number = 0; iLatitude < 10; iLatitude++) {
       for (let iLongitude: number = 0; iLongitude < 10; iLongitude++) {

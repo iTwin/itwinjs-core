@@ -4,13 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Code, DisplayStyle3dProps, DisplayStyleProps, ElementProps, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
-import { CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
+import {
+  _scheduleScriptReference, CheckpointConnection, DisplayStyle3dState, IModelApp, IModelConnection, SpatialViewState, ViewState,
+} from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { TestUtility } from "../TestUtility";
 
 function countTileTrees(view: ViewState): number {
   let numTrees = 0;
-  view.forEachModelTreeRef((_) => ++numTrees);
+  for (const _ of view.getModelTreeRefs()) {
+    ++numTrees;
+  }
+
   return numTrees;
 }
 
@@ -92,7 +97,7 @@ describe("Schedule script (#integration)", () => {
     const styleHasNonEmptyElementIds = (styleProps: DisplayStyleProps) => {
       expect(styleProps.jsonProperties).not.to.be.undefined;
       expect(styleProps.jsonProperties!.styles).not.to.be.undefined;
-      const script = styleProps.jsonProperties!.styles!.scheduleScript!; // eslint-disable-line deprecation/deprecation
+      const script = styleProps.jsonProperties!.styles!.scheduleScript!;
       expect(script).not.to.be.undefined;
       return scriptHasNonEmptyElementIds(script);
     };
@@ -142,7 +147,7 @@ describe("Schedule script (#integration)", () => {
 
     expect(countTileTrees(view)).to.equal(2);
 
-    view.displayStyle.settings.scheduleScriptProps = undefined; // eslint-disable-line deprecation/deprecation
+    view.displayStyle.settings.scheduleScriptProps = undefined;
     expect(view.displayStyle.scheduleScript).to.be.undefined;
     expect(countTileTrees(view)).to.equal(1);
 
@@ -161,11 +166,10 @@ describe("Schedule script (#integration)", () => {
       }],
     }];
 
-    view.displayStyle.settings.scheduleScriptProps = json; // eslint-disable-line deprecation/deprecation
+    view.displayStyle.settings.scheduleScriptProps = json;
     expect(view.displayStyle.scheduleScript).not.to.be.undefined;
 
-    // eslint-disable-next-line deprecation/deprecation
-    expect(view.displayStyle.scheduleScriptReference!.sourceId).to.equal(embedStyleId);
+    expect(view.displayStyle[_scheduleScriptReference]!.sourceId).to.equal(embedStyleId);
     expect(countTileTrees(view)).to.equal(3);
   });
 
@@ -177,16 +181,16 @@ describe("Schedule script (#integration)", () => {
     expect(countTileTrees(view)).to.equal(2);
 
     const script = view.displayStyle.scheduleScript!;
-    view.displayStyle.settings.scheduleScriptProps = undefined; // eslint-disable-line deprecation/deprecation
+    view.displayStyle.settings.scheduleScriptProps = undefined;
     expect(view.displayStyle.scheduleScript).to.be.undefined;
     expect(countTileTrees(view)).to.equal(1);
 
-    view.displayStyle.settings.scheduleScriptProps = script.toJSON(); // eslint-disable-line deprecation/deprecation
+    view.displayStyle.settings.scheduleScriptProps = script.toJSON();
     expect(view.displayStyle.scheduleScript).not.to.be.undefined;
     expect(countTileTrees(view)).to.equal(2);
 
     const style = view.displayStyle.clone();
-    style.settings.scheduleScriptProps = undefined; // eslint-disable-line deprecation/deprecation
+    style.settings.scheduleScriptProps = undefined;
     view.displayStyle = style;
     expect(countTileTrees(view)).to.equal(1);
   });
@@ -277,5 +281,47 @@ describe("Schedule script (#integration)", () => {
     expect(style.scheduleScript).to.be.undefined;
     await style.load();
     expect(style.scheduleScript).not.to.be.undefined;
+  });
+
+  it("sets schedule script in editing mode without triggering tile tree refresh", async () => {
+    const view = await dbNew.views.load(viewId) as SpatialViewState;
+    const style = view.displayStyle;
+
+    const original = style.scheduleScript!;
+    const edited = RenderSchedule.Script.fromJSON(original.toJSON())!;
+    style.setScheduleEditing(edited);
+
+    expect(style.scheduleScript).to.not.be.undefined;
+    expect(style.scheduleScript!.modelTimelines.every(t => t.isEditingCommitted === false)).to.be.true;
+
+    expect(countTileTrees(view)).to.equal(2);
+  });
+
+  it("commits edited schedule script and updates tile tree owner", async () => {
+    const view = await dbNew.views.load(viewId) as SpatialViewState;
+    const style = view.displayStyle;
+
+    const edited = RenderSchedule.Script.fromJSON(style.scheduleScript!.toJSON())!;
+    style.setScheduleEditing(edited);
+    style.commitScheduleEditing();
+
+    expect(style.scheduleScript!.modelTimelines.every(t => t.isEditingCommitted)).to.be.true;
+  });
+
+  it("fires editing and commit events when using editing mode", async () => {
+    const style = await loadDisplayStyle(embedStyleId, dbNew);
+    const script = RenderSchedule.Script.fromJSON(style.scheduleScript!.toJSON())!;
+
+    let editingChangedFired = false;
+    let committedFired = false;
+
+    style.onScheduleEditingChanged.addOnce(() => editingChangedFired = true);
+    style.onScheduleEditingCommitted.addOnce(() => committedFired = true);
+
+    style.setScheduleEditing(script);
+    expect(editingChangedFired).to.be.true;
+
+    style.commitScheduleEditing();
+    expect(committedFired).to.be.true;
   });
 });

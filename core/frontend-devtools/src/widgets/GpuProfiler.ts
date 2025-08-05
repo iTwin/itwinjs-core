@@ -135,7 +135,7 @@ export class GpuProfiler {
     parent.appendChild(this._div);
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this._debugControl.resultsCallback = undefined;
   }
 

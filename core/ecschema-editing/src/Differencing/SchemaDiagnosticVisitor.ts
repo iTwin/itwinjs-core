@@ -9,47 +9,27 @@
 import type { AnyDiagnostic } from "../Validation/Diagnostic";
 import { SchemaCompareCodes } from "../Validation/SchemaCompareDiagnostics";
 import {
-  AnyECType, AnyEnumerator, AnySchemaItemProps, CustomAttribute, ECClass, ECClassModifier, Enumeration, Mixin, Property, PropertyProps,
-  RelationshipConstraint, RelationshipConstraintProps, Schema, SchemaItem, SchemaItemType, schemaItemTypeToString,
+  AnyEnumerator, AnyPropertyProps, AnySchemaItem, CustomAttribute, ECClass,
+  Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, OverrideFormat, Property, PropertyProps,
+  RelationshipConstraint, RelationshipConstraintProps, Schema, SchemaItem, Unit,
 } from "@itwin/ecschema-metadata";
 import {
-  AnySchemaDifference,
-  DifferenceType,
-  SchemaClassMixinDifference,
-  SchemaDifference,
-  SchemaDifferences,
-  SchemaEnumeratorDifference,
-  SchemaItemDifference,
-  SchemaItemTypeName,
-  SchemaPropertyDifference,
-  SchemaRelationshipConstraintClassDifference,
-  SchemaRelationshipConstraintDifference,
-  SchemaType,
+  type AnyClassItemDifference,
+  type AnySchemaItemDifference,
+  type AnySchemaItemPathDifference,
+  type ClassPropertyDifference,
+  type CustomAttributeDifference,
+  type DifferenceType,
+  type EntityClassMixinDifference,
+  type EnumeratorDifference,
+  type FormatUnitDifference,
+  type KindOfQuantityPresentationFormatDifference,
+  type RelationshipConstraintClassDifference,
+  type RelationshipConstraintDifference,
+  type SchemaDifference,
+  SchemaOtherTypes,
+  type SchemaReferenceDifference,
 } from "./SchemaDifference";
-import { ConflictCode, SchemaDifferenceConflict } from "./SchemaConflicts";
-
-/**
- * Recursive syncronous function to figure whether a given class derived from
- * a class with the given baseClassName.
- */
-function derivedFrom(ecClass: ECClass|undefined, baseClassName: string): boolean {
-  if(ecClass === undefined) {
-    return false;
-  }
-  if(ecClass && ecClass.name === baseClassName) {
-    return true;
-  }
-  return derivedFrom(ecClass.getBaseClassSync(), baseClassName);
-}
-
-/**
- * Definition of lookup args to locate certain elements in the existing differences.
- */
-interface LookupArgs {
-  schemaType?: string;
-  itemName?: string;
-  path?: string;
-}
 
 /**
  * The SchemaDiagnosticVisitor is a visitor implementation for diagnostic entries
@@ -59,28 +39,19 @@ interface LookupArgs {
  */
 export class SchemaDiagnosticVisitor {
 
-  private readonly _differenceReport: SchemaDifferences;
+  public readonly schemaDifferences: Array<SchemaDifference | SchemaReferenceDifference>;
+  public readonly schemaItemDifferences: Array<AnySchemaItemDifference
+    | EntityClassMixinDifference
+    | KindOfQuantityPresentationFormatDifference
+    | FormatUnitDifference>;
+  public readonly schemaItemPathDifferences: Array<AnySchemaItemPathDifference>;
+  public readonly customAttributeDifferences: Array<CustomAttributeDifference>;
 
-  constructor(differenceReport: SchemaDifferences) {
-    this._differenceReport = differenceReport;
-  }
-
-  private addEntry<T extends AnySchemaDifference>(entry: T): T {
-    this._differenceReport.changes.push(entry);
-    return entry;
-  }
-
-  private lookupEntry(changeType: DifferenceType, args: LookupArgs) {
-    return this._differenceReport.changes && this._differenceReport.changes.find((change) => {
-      return (change.changeType === changeType)
-      && (!args.schemaType || change.schemaType === args.schemaType)
-      && (!args.itemName || change.itemName === args.itemName)
-      && change.path === args.path;
-    });
-  }
-
-  private addConflict(conflict: SchemaDifferenceConflict) {
-    this._differenceReport.conflicts.push(conflict);
+  constructor() {
+    this.schemaDifferences = [];
+    this.schemaItemDifferences = [];
+    this.schemaItemPathDifferences = [];
+    this.customAttributeDifferences = [];
   }
 
   /**
@@ -88,7 +59,7 @@ export class SchemaDiagnosticVisitor {
    * @internal
    */
   public visit(diagnostic: AnyDiagnostic) {
-    switch(diagnostic.code) {
+    switch (diagnostic.code) {
       case SchemaCompareCodes.SchemaDelta:
         return this.visitChangedSchemaProperties(diagnostic);
 
@@ -112,10 +83,8 @@ export class SchemaDiagnosticVisitor {
       case SchemaCompareCodes.PropertyCategoryDelta:
       case SchemaCompareCodes.RelationshipDelta:
       case SchemaCompareCodes.UnitDelta:
-        return this.visitChangedSchemaItem(diagnostic);
-
       case SchemaCompareCodes.EnumerationDelta:
-        return this.visitChangedEnumeration(diagnostic);
+        return this.visitChangedSchemaItem(diagnostic);
 
       case SchemaCompareCodes.EnumeratorDelta:
         return this.visitChangedEnumerator(diagnostic);
@@ -139,456 +108,424 @@ export class SchemaDiagnosticVisitor {
       case SchemaCompareCodes.CustomAttributeInstanceClassMissing:
         return this.visitMissingCustomAttributeInstance(diagnostic);
 
-      // Currently not handled...
-      case SchemaCompareCodes.FormatUnitMissing:
       case SchemaCompareCodes.PresentationUnitMissing:
+        return this.visitMissingPresentationUnit(diagnostic);
+
+      case SchemaCompareCodes.FormatUnitMissing:
+        return this.visitMissingFormatUnit(diagnostic);
       case SchemaCompareCodes.UnitLabelOverrideDelta:
-        break;
+        return this.visitChangedFormatUnitLabel(diagnostic);
     }
     return;
   }
 
   private visitChangedSchemaProperties(diagnostic: AnyDiagnostic) {
-    let modifyEntry = this.lookupEntry("modify", { schemaType: "Schema" }) as SchemaDifference;
+    let modifyEntry = this.schemaDifferences.find((entry): entry is SchemaDifference => {
+      return entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.Schema;
+    });
+
     let hasChanges = false;
-    const existsAlready = modifyEntry !== undefined;
-    if(!existsAlready) {
+    let addEntry = false;
+    if (modifyEntry === undefined) {
+      addEntry = true;
       modifyEntry = {
         changeType: "modify",
-        schemaType: "Schema",
-        json: {},
+        schemaType: SchemaOtherTypes.Schema,
+        difference: {},
       };
     }
 
     // Only label and description are taken from the source schema. If the schema name or alias
     // differs, those are ignored for now.
     const [propertyName, propertyValue] = diagnostic.messageArgs as [string, any];
-    switch(propertyName) {
-      case "label":
-        modifyEntry.json.label = propertyValue;
-        hasChanges = true;
-        break;
-      case "description":
-        modifyEntry.json.description = propertyValue;
-        hasChanges = true;
-        break;
+    if (propertyName === "label") {
+      modifyEntry.difference.label = propertyValue;
+      hasChanges = true;
+    }
+    if (propertyName === "description") {
+      modifyEntry.difference.description = propertyValue;
+      hasChanges = true;
     }
 
-    if(!existsAlready && hasChanges) {
-      this.addEntry(modifyEntry);
+    if (addEntry && hasChanges) {
+      this.schemaDifferences.push(modifyEntry);
     }
   }
 
   private visitMissingSchemaItem(diagnostic: AnyDiagnostic) {
-    const schemaItem = diagnostic.ecDefinition as SchemaItem;
-    this.addEntry({
+    const schemaItem = diagnostic.ecDefinition as AnySchemaItem;
+
+    this.schemaItemDifferences.push({
       changeType: "add",
-      schemaType: getSchemaItemName(schemaItem.schemaItemType),
+      schemaType: schemaItem.schemaItemType,
       itemName: schemaItem.name,
-      json: schemaItem.toJSON(),
+      difference: schemaItem.toJSON(),
     });
   }
 
   private visitChangedSchemaItem(diagnostic: AnyDiagnostic) {
-    const schemaItem = diagnostic.ecDefinition as SchemaItem;
-    if(this.lookupEntry("add", { itemName: schemaItem.name })) {
+    const schemaItem = diagnostic.ecDefinition as AnySchemaItem;
+    const [propertyName, sourceValue, _targetValue] = diagnostic.messageArgs as [string, unknown, unknown];
+    if (propertyName === "schemaItemType") {
+      // If the schema item type is different, the whole item is added as "new" item. The
+      // difference validator will then figure whether there is a conflict with items of
+      // of the same name.
+      return this.visitMissingSchemaItem(diagnostic);
+    }
+
+    if (sourceValue === undefined) {
       return;
     }
 
-    const [propertyName, sourceValue, targetValue] = diagnostic.messageArgs as [keyof AnySchemaItemProps, any, any];
-    if(propertyName === "schemaItemType") {
-      return this.addConflict({
-        code:        ConflictCode.ConflictingItemName,
-        schemaType:  getSchemaItemName(schemaItem.schemaItemType),
-        itemName:    schemaItem.name,
-        source:      sourceValue,
-        target:      targetValue,
-        description: "Target schema already contains a schema item with the name but different type.",
-      });
-    }
+    let modifyEntry = this.schemaItemDifferences.find((entry): entry is AnySchemaItemDifference => {
+      return entry.changeType === "modify" && entry.itemName === schemaItem.name;
+    });
 
-    if(sourceValue === undefined) {
-      return;
-    }
-
-    let modifyEntry = this.lookupEntry("modify", { itemName: schemaItem.name }) as SchemaItemDifference;
-    if(!modifyEntry) {
-      modifyEntry = this.addEntry({
+    if (modifyEntry === undefined) {
+      modifyEntry = {
         changeType: "modify",
-        schemaType: getSchemaItemName(schemaItem.schemaItemType),
+        schemaType: schemaItem.schemaItemType,
         itemName: schemaItem.name,
-        json: {},
-      });
+        difference: {},
+      } as AnySchemaItemDifference;
+      this.schemaItemDifferences.push(modifyEntry);
     }
 
-    modifyEntry.json[propertyName] = sourceValue;
-  }
-
-  private visitChangedEnumeration(diagnostic: AnyDiagnostic) {
-    const enumeration = diagnostic.ecDefinition as Enumeration;
-    if(this.lookupEntry("add", { itemName: enumeration.name })) {
-      return;
-    }
-
-    const [propertyName, sourceValue, targetValue] = diagnostic.messageArgs as [string, string, string];
-    if(propertyName === "type") {
-      return this.addConflict({
-        code:        ConflictCode.ConflictingEnumerationType,
-        schemaType:  getSchemaItemName(SchemaItemType.Enumeration),
-        itemName:    enumeration.name,
-        source:      sourceValue,
-        target:      targetValue,
-        description: "Enumeration has a different primitive type.",
-      });
-    }
-
-    return this.visitChangedSchemaItem(diagnostic);
+    // TODO: Since propertyName is type of string, the compiler complains about accepting
+    // an unspecific string as property indexer. Casted to any as short term fix but that
+    // needs to be handled better in future.
+    (modifyEntry.difference as any)[propertyName] = sourceValue;
   }
 
   private visitMissingEnumerator(diagnostic: AnyDiagnostic) {
-    const enumeration = diagnostic.ecDefinition as SchemaItem;
-    if(this.lookupEntry("add", { itemName: enumeration.name })) {
-      return;
-    }
-
+    const enumeration = diagnostic.ecDefinition as Enumeration;
     const [enumerator] = diagnostic.messageArgs as [AnyEnumerator];
-    this.addEntry({
+    this.schemaItemPathDifferences.push({
       changeType: "add",
-      schemaType: "Enumeration",
+      schemaType: SchemaOtherTypes.Enumerator,
       itemName: enumeration.name,
       path: "$enumerators",
-      json: enumerator,
+      difference: enumerator,
     });
   }
 
   private lookupEnumeratorEntry(changeType: DifferenceType, item: string, enumeratorName: string) {
-    return this._differenceReport.changes && this._differenceReport.changes.find((change) => {
+    return this.schemaItemPathDifferences.find((change) => {
       return change.changeType === changeType
-      && change.schemaType === "Enumeration"
-      && change.itemName === item
-      && change.path === "$enumerators"
-      && (change.json as AnyEnumerator).name === enumeratorName;
+        && change.schemaType === SchemaOtherTypes.Enumerator
+        && change.itemName === item
+        && change.path === "$enumerators"
+        && change.difference.name === enumeratorName;
     });
   }
 
   private visitChangedEnumerator(diagnostic: AnyDiagnostic) {
     const enumeration = diagnostic.ecDefinition as Enumeration;
-    if(this.lookupEntry("add", { itemName: enumeration.name })) {
+    const [enumerator, propertyName, sourceValue] = diagnostic.messageArgs as [AnyEnumerator, keyof AnyEnumerator, any];
+    if (this.lookupEnumeratorEntry("add", enumeration.name, enumerator.name)) {
       return;
     }
 
-    const [enumerator, propertyName, sourceValue, targetValue] = diagnostic.messageArgs as [AnyEnumerator, keyof AnyEnumerator, any, any];
-    if(this.lookupEnumeratorEntry("add", enumeration.name, enumerator.name)) {
-      return;
-    }
+    let modifyEntry = this.schemaItemPathDifferences.find((entry): entry is EnumeratorDifference => {
+      return entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.Enumerator && entry.itemName === enumeration.name && entry.path === enumerator.name;
+    });
 
-    if(!this.validateEnumerator(enumeration, enumerator, propertyName, sourceValue, targetValue)) {
-      return;
-    }
-
-    const enumeratorPath = `$enumerators.${enumerator.name}`;
-    let modifyEntry = this.lookupEntry("modify", { itemName: enumeration.name, path: enumeratorPath}) as SchemaEnumeratorDifference;
-    if(!modifyEntry) {
-      modifyEntry = this.addEntry({
+    if (modifyEntry === undefined) {
+      modifyEntry = {
         changeType: "modify",
-        schemaType: "Enumeration",
+        schemaType: SchemaOtherTypes.Enumerator,
         itemName: enumeration.name,
-        path: enumeratorPath,
-        json: {},
-      });
+        path: enumerator.name,
+        difference: {},
+      };
+      this.schemaItemPathDifferences.push(modifyEntry);
     }
 
-    if(sourceValue !== undefined) {
-      modifyEntry.json[propertyName] = sourceValue;
+    if (sourceValue !== undefined) {
+      modifyEntry.difference[propertyName] = sourceValue;
     }
-  }
-
-  private validateEnumerator(enumeration: Enumeration, enumerator: AnyEnumerator, propertyName: string, sourceValue: unknown, targetValue: unknown) {
-    if(propertyName === "value") {
-      this.addConflict({
-        code:        ConflictCode.ConflictingEnumeratorValue,
-        schemaType:  getSchemaItemName(SchemaItemType.Enumeration),
-        itemName:    enumeration.name,
-        path:        enumerator.name,
-        source:      sourceValue,
-        target:      targetValue,
-        description: "Enumerator values must not differ.",
-      });
-      return false;
-    }
-
-    return true;
   }
 
   private visitMissingProperty(diagnostic: AnyDiagnostic) {
     const property = diagnostic.ecDefinition as Property;
-    if(this.lookupEntry("add", { itemName: property.class.name })) {
-      return;
-    }
-
-    this.addEntry({
+    this.schemaItemPathDifferences.push({
       changeType: "add",
-      schemaType: "Property",
+      schemaType: SchemaOtherTypes.Property,
       itemName: property.class.name,
-      path: property.name,
-      json:  property.toJSON(),
+      path:  property.name,
+      difference: property.toJSON() as AnyPropertyProps,
     });
   }
 
   private visitChangedProperty(diagnostic: AnyDiagnostic) {
     const property = diagnostic.ecDefinition as Property;
-    if(this.lookupEntry("add", { itemName: property.class.name})
-    || this.lookupEntry("add", { itemName: property.class.name, path: property.name })) {
-      return;
-    }
-    const [propertyName, sourceValue, targetValue] = diagnostic.messageArgs as [keyof PropertyProps, any, any];
-    if(!this.validatePropertyChange(property, propertyName, sourceValue, targetValue)) {
-      return;
+    const [propertyName, sourceValue] = diagnostic.messageArgs as [keyof PropertyProps, any, any];
+
+    if (isPropertyTypeName(property, propertyName)) {
+      return this.visitMissingProperty(diagnostic);
     }
 
-    let modifyEntry = this.lookupEntry("modify", { itemName: property.class.name, path: property.name}) as SchemaPropertyDifference;
-    if(!modifyEntry) {
-      modifyEntry = this.addEntry({
+    let modifyEntry = this.schemaItemPathDifferences.find((entry): entry is ClassPropertyDifference => {
+      return entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.Property && entry.itemName === property.class.name && entry.path === property.name;
+    });
+
+    if (modifyEntry === undefined) {
+      modifyEntry = {
         changeType: "modify",
-        schemaType: "Property",
+        schemaType: SchemaOtherTypes.Property,
         itemName: property.class.name,
         path: property.name,
-        json: {},
-      });
+        difference: {},
+      };
+      this.schemaItemPathDifferences.push(modifyEntry);
     }
 
-    if(propertyName !== "name" && sourceValue !== undefined) {
-      modifyEntry.json[propertyName] = sourceValue;
+    if (propertyName !== "name") {
+      modifyEntry.difference[propertyName] = sourceValue;
     }
-  }
-
-  private validatePropertyChange(ecProperty: Property, propertyName: string, sourceValue: unknown, targetValue: unknown): boolean {
-    if(propertyName === "primitiveType") {
-      this.addConflict({
-        code:        ConflictCode.ConflictingPropertyName,
-        schemaType:  getSchemaItemName(ecProperty.class.schemaItemType),
-        itemName:    ecProperty.class.name,
-        path:        ecProperty.name,
-        source:      sourceValue,
-        target:      targetValue,
-        description: "Target class already contains a property with a different type.",
-      });
-      return false;
-    }
-    return true;
   }
 
   private visitMissingBaseClass(diagnostic: AnyDiagnostic) {
     const ecClass = diagnostic.ecDefinition as ECClass;
-    if(this.lookupEntry("add", { itemName: ecClass.name })) {
-      return;
-    }
+    const [sourceBaseClass] = diagnostic.messageArgs as [ECClass, ECClass];
 
-    const [sourceBaseClass, targetBaseClass] = diagnostic.messageArgs as [ECClass, ECClass];
-    if(!this.validateBaseClassChange(ecClass, sourceBaseClass, targetBaseClass)) {
-      return;
-    }
+    let modifyEntry = this.schemaItemDifferences.find((entry): entry is AnyClassItemDifference => {
+      return entry.changeType === "modify" && entry.schemaType === ecClass.schemaItemType && entry.itemName === ecClass.name;
+    });
 
-    let modifyEntry = this.lookupEntry("modify",{ itemName: ecClass.name }) as SchemaItemDifference<{ baseClass: string }>;
-    if(!modifyEntry) {
-      modifyEntry = this.addEntry({
+    if (modifyEntry === undefined) {
+      modifyEntry = {
         changeType: "modify",
-        schemaType: getSchemaItemName(ecClass.schemaItemType),
+        schemaType: ecClass.schemaItemType,
         itemName: ecClass.name,
-        json: {},
-      });
+        difference: {},
+      } as AnyClassItemDifference;
+      this.schemaItemDifferences.push(modifyEntry);
     }
 
-    modifyEntry.json.baseClass = sourceBaseClass.fullName;
-  }
-
-  private validateBaseClassChange(targetClass: ECClass, sourceBaseClass?: ECClass, targetBaseClass?: ECClass): boolean {
-    if(sourceBaseClass === undefined) {
-      this.addConflict({
-        code:        ConflictCode.RemovingBaseClass,
-        schemaType:  getSchemaItemName(targetClass.schemaItemType),
-        itemName:    targetClass.name,
-        path:        "$baseClass",
-        source:      undefined,
-        target:      targetBaseClass?.fullName,
-        description: "BaseClass cannot be set unset if there has been a baseClass before.",
-      });
-      return false;
-    }
-
-    if(sourceBaseClass.modifier === ECClassModifier.Sealed) {
-      this.addConflict({
-        code:        ConflictCode.SealedBaseClass,
-        schemaType:  getSchemaItemName(targetClass.schemaItemType),
-        itemName:    targetClass.name,
-        path:        "$baseClass",
-        source:      sourceBaseClass.fullName,
-        target:      targetBaseClass?.fullName,
-        description: "BaseClass is sealed.",
-      });
-      return false;
-    }
-
-    if(targetBaseClass && !derivedFrom(sourceBaseClass, targetBaseClass.name)) {
-      this.addConflict({
-        code:         ConflictCode.ConflictingBaseClass,
-        schemaType:   getSchemaItemName(targetClass.schemaItemType),
-        itemName:     targetClass.name,
-        path:         "$baseClass",
-        source:       sourceBaseClass.fullName,
-        target:       targetBaseClass.fullName,
-        description: "BaseClass is not valid, source class must derive from target.",
-      });
-      return false;
-    }
-    return true;
+    modifyEntry.difference.baseClass = sourceBaseClass !== undefined ? sourceBaseClass.fullName : undefined;
   }
 
   private visitMissingMixinOnClass(diagnostic: AnyDiagnostic) {
     const ecClass = diagnostic.ecDefinition as ECClass;
-    if(this.lookupEntry("add", { itemName: ecClass.name })) {
-      return;
-    }
-
     const [mixin] = diagnostic.messageArgs as [Mixin];
-    if(!this.validateMixin(ecClass, mixin)) {
-      return;
-    }
 
-    let modifyEntry = this.lookupEntry("modify", { itemName: ecClass.name, path: "$mixins" }) as SchemaClassMixinDifference;
-    if(!modifyEntry) {
-      modifyEntry = this.addEntry({
-        changeType: "modify",
-        schemaType: "EntityClass",
+    let addEntry = this.schemaItemDifferences.find((entry): entry is EntityClassMixinDifference => {
+      return entry.changeType === "add" && entry.schemaType === SchemaOtherTypes.EntityClassMixin && entry.itemName === ecClass.name;
+    });
+
+    if (addEntry === undefined) {
+      addEntry = {
+        changeType: "add",
+        schemaType: SchemaOtherTypes.EntityClassMixin,
         itemName: ecClass.name,
-        path: "$mixins",
-        json: [],
-      });
+        difference: [],
+      };
+      this.schemaItemDifferences.push(addEntry);
     }
-
-    modifyEntry.json.push(mixin.fullName);
-  }
-
-  private validateMixin(targetClass: ECClass, mixin: Mixin): boolean {
-    if(mixin.appliesTo && !derivedFrom(targetClass, mixin.appliesTo.name)) {
-      this.addConflict({
-        code:         ConflictCode.MixinAppliedMustDeriveFromConstraint,
-        schemaType:   getSchemaItemName(targetClass.schemaItemType),
-        itemName:     targetClass.name,
-        path:         "$mixins",
-        source:       mixin.fullName,
-        target:       undefined,
-        description: "Mixin cannot applied to this class.",
-      });
-      return false;
-    }
-
-    return true;
+    addEntry.difference.push(mixin.fullName);
   }
 
   private visitMissingRelationshipConstraintClass(diagnostic: AnyDiagnostic) {
     const constraint = diagnostic.ecDefinition as RelationshipConstraint;
     const className = constraint.relationshipClass.name;
-    const constraintPath = `$${constraint.isSource ? "source" : "target"}.constraintClasses`;
-    if(this.lookupEntry("add", { itemName: className })) {
-      return;
-    }
+    const constraintPath = constraint.isSource ? "$source" : "$target";
 
-    let modifyEntry = this.lookupEntry("modify", { itemName: className, path: constraintPath}) as SchemaRelationshipConstraintClassDifference;
-    if(!modifyEntry) {
-      modifyEntry = this.addEntry({
-        changeType: "modify",
-        schemaType: "RelationshipClass",
+    let addEntry = this.schemaItemPathDifferences.find((entry): entry is RelationshipConstraintClassDifference => {
+      return entry.changeType === "add" && entry.schemaType === SchemaOtherTypes.RelationshipConstraintClass, entry.itemName === className && entry.path === constraintPath;
+    });
+
+    if (!addEntry) {
+      addEntry = {
+        changeType: "add",
+        schemaType: SchemaOtherTypes.RelationshipConstraintClass,
         itemName: className,
         path: constraintPath,
-        json: [],
-      });
+        difference: [],
+      };
+      this.schemaItemPathDifferences.push(addEntry);
     }
 
     const [constraintClass] = diagnostic.messageArgs as [ECClass];
-    modifyEntry.json.push(constraintClass.fullName);
+    addEntry.difference.push(constraintClass.fullName);
   }
 
   private visitChangedRelationshipConstraint(diagnostic: AnyDiagnostic) {
     const constraint = diagnostic.ecDefinition as RelationshipConstraint;
     const className = constraint.relationshipClass.name;
-    const constraintPath = `$${constraint.isSource ? "source" : "target"}`;
-    if(this.lookupEntry("add", { itemName: className })) {
+    const constraintPath = constraint.isSource ? "$source" : "$target";
+    if (this.schemaItemDifferences.find((entry) => entry.changeType === "add" && entry.itemName === className)) {
       return;
     }
 
-    let modifyEntry = this.lookupEntry("modify", { itemName: className, path: constraintPath }) as SchemaRelationshipConstraintDifference;
-    if(!modifyEntry) {
-      modifyEntry = this.addEntry({
+    let modifyEntry = this.schemaItemPathDifferences.find((entry): entry is RelationshipConstraintDifference => {
+      return entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.RelationshipConstraint && entry.itemName === className && entry.path === constraintPath;
+    });
+
+    if (modifyEntry === undefined) {
+      modifyEntry = {
         changeType: "modify",
-        schemaType: "RelationshipConstraint",
+        schemaType: SchemaOtherTypes.RelationshipConstraint,
         itemName: className,
         path: constraintPath,
-        json: {},
-      });
+        difference: {},
+      };
+      this.schemaItemPathDifferences.push(modifyEntry);
     }
 
     const [propertyName, propertyValue] = diagnostic.messageArgs as [keyof RelationshipConstraintProps, any];
-    if(propertyValue !== undefined) {
-      modifyEntry.json[propertyName] = propertyValue;
+    if (propertyName === "abstractConstraint" && propertyValue !== undefined) {
+      modifyEntry.difference.abstractConstraint = propertyValue;
+    }
+    if (propertyName === "multiplicity" && propertyValue !== undefined) {
+      modifyEntry.difference.multiplicity = propertyValue;
+    }
+    if (propertyName === "polymorphic" && propertyValue !== undefined) {
+      modifyEntry.difference.polymorphic = propertyValue;
+    }
+    if (propertyName === "roleLabel" && propertyValue !== undefined) {
+      modifyEntry.difference.roleLabel = propertyValue;
     }
   }
 
   private visitSchemaReference(diagnostic: AnyDiagnostic, changeType: DifferenceType) {
     const [referencedSchema] = diagnostic.messageArgs as [Schema];
-    this.addEntry({
+    this.schemaDifferences.push({
       changeType,
-      schemaType: "Schema",
-      path: "$references",
-      json: {
-        name:     referencedSchema.name,
-        version:  referencedSchema.schemaKey.version.toString(),
+      schemaType: SchemaOtherTypes.SchemaReference,
+      difference: {
+        name: referencedSchema.name,
+        version: referencedSchema.schemaKey.version.toString(),
       },
     });
   }
 
   private visitMissingCustomAttributeInstance(diagnostic: AnyDiagnostic) {
-    const { schemaType, itemName, path } = getItemNameAndPath(diagnostic.ecDefinition);
-    if(itemName && (this.lookupEntry("add", { itemName }) || this.lookupEntry("add", { itemName, path }))) {
+    const [customAttribute] = diagnostic.messageArgs as [CustomAttribute];
+    const ecType = diagnostic.ecDefinition;
+    if (Schema.isSchema(ecType)) {
+      return this.customAttributeDifferences.push({
+        changeType: "add",
+        schemaType: SchemaOtherTypes.CustomAttributeInstance,
+        appliedTo: "Schema",
+        difference: customAttribute,
+      });
+    }
+
+    if (SchemaItem.isSchemaItem(ecType)) {
+      return this.customAttributeDifferences.push({
+        changeType: "add",
+        schemaType: SchemaOtherTypes.CustomAttributeInstance,
+        appliedTo: "SchemaItem",
+        itemName: ecType.name,
+        difference: customAttribute,
+      });
+    }
+
+    if (Property.isProperty(ecType)) {
+      return this.customAttributeDifferences.push({
+        changeType: "add",
+        schemaType: SchemaOtherTypes.CustomAttributeInstance,
+        appliedTo: "Property",
+        itemName: ecType.class.name,
+        path: ecType.name,
+        difference: customAttribute,
+      });
+    }
+
+    if (RelationshipConstraint.isRelationshipConstraint(ecType)) {
+      return this.customAttributeDifferences.push({
+        changeType: "add",
+        schemaType: SchemaOtherTypes.CustomAttributeInstance,
+        appliedTo: "RelationshipConstraint",
+        itemName: ecType.relationshipClass.name,
+        path: ecType.isSource ? "$source" : "$target",
+        difference: customAttribute,
+      });
+    }
+    return;
+  }
+
+  private visitMissingPresentationUnit(diagnostic: AnyDiagnostic) {
+    const koq = diagnostic.ecDefinition as KindOfQuantity;
+    const [presentationFormat] = diagnostic.messageArgs as [Format | OverrideFormat];
+
+    let addEntry = this.schemaItemDifferences.find((entry): entry is KindOfQuantityPresentationFormatDifference => {
+      return entry.changeType === "add" && entry.schemaType === SchemaOtherTypes.KindOfQuantityPresentationFormat
+        && entry.itemName === koq.name;
+    });
+
+    if (addEntry === undefined) {
+      addEntry = {
+        changeType: "add",
+        schemaType: SchemaOtherTypes.KindOfQuantityPresentationFormat,
+        itemName: koq.name,
+        difference: [],
+      };
+      this.schemaItemDifferences.push(addEntry);
+    }
+    addEntry.difference.push(presentationFormat.fullName);
+  }
+
+  private visitMissingFormatUnit(diagnostic: AnyDiagnostic) {
+    const format = diagnostic.ecDefinition as Format;
+
+    for (let index = this.schemaItemPathDifferences.length-1; index>=0; index--) {
+      const entry = this.schemaItemPathDifferences[index];
+      if (entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.FormatUnitLabel && entry.itemName === format.name) {
+        this.schemaItemPathDifferences.splice(index, 1);
+      }
+    }
+
+    let modifyEntry = this.schemaItemDifferences.find((entry): entry is FormatUnitDifference => {
+      return entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.FormatUnit
+        && entry.itemName === format.name;
+    });
+
+    if (modifyEntry === undefined && format.units) {
+      modifyEntry = {
+        changeType: "modify",
+        schemaType: SchemaOtherTypes.FormatUnit,
+        itemName: format.name,
+        difference: [],
+      };
+
+      for (const [unit, label] of format.units) {
+        modifyEntry.difference.push({
+          name: unit.fullName,
+          label,
+        });
+      };
+
+      this.schemaItemDifferences.push(modifyEntry);
+    }
+  }
+
+  private visitChangedFormatUnitLabel(diagnostic: AnyDiagnostic) {
+    const format = diagnostic.ecDefinition as Format;
+
+    if (this.schemaItemDifferences.find((entry): entry is FormatUnitDifference => { return entry.changeType === "modify"
+        && entry.schemaType === SchemaOtherTypes.FormatUnit && entry.itemName === format.name})) {
       return;
     }
 
-    const [customAttribute] = diagnostic.messageArgs as [CustomAttribute];
-    this.addEntry({
-      changeType: "add",
-      schemaType,
-      itemName: itemName!,
-      path: `${path ? `${path}.` : ""}$customAttributes`,
-      json: customAttribute as any,
+    const [unit, label] = diagnostic.messageArgs as [Unit | InvertedUnit, string | undefined];
+    this.schemaItemPathDifferences.push({
+      changeType: "modify",
+      schemaType: SchemaOtherTypes.FormatUnitLabel,
+      itemName: format.name,
+      path: unit.fullName,
+      difference: {
+        label,
+      },
     });
-  }
-}
+  };
+};
 
-function getItemNameAndPath(type: AnyECType): { schemaType: SchemaType, itemName?: string, path?: string } {
-  if(Schema.isSchema(type))
-    return {
-      schemaType: "Schema",
-    };
-  if(SchemaItem.isSchemaItem(type))
-    return {
-      schemaType: getSchemaItemName(type.schemaItemType),
-      itemName: type.name,
-    };
-  if(type instanceof Property)
-    return {
-      schemaType: "Property",
-      itemName: type.class.name,
-      path: type.name,
-    };
-  if(type instanceof RelationshipConstraint)
-    return {
-      schemaType: "RelationshipClass",
-      itemName: type.relationshipClass.name,
-      path: type.isSource ? "$source" : "$target",
-    };
-  throw Error("Unhandled Type");
-}
-
-function getSchemaItemName(schemaItemType: SchemaItemType) {
-  return schemaItemTypeToString(schemaItemType) as SchemaItemTypeName;
+function isPropertyTypeName(property: Property, propertyName: string) {
+  return (propertyName === "type") ||
+    (property.isEnumeration() && propertyName === "enumeration") ||
+    (property.isPrimitive() && propertyName === "primitiveType") ||
+    (property.isStruct() && propertyName === "structClass") ||
+    (property.isNavigation() && propertyName === "relationshipClass");
 }

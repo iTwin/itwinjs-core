@@ -652,7 +652,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
    * @param zFraction plane altitude within the 0..1 z fraction range
    * @param upwardNormal true for CCW as viewed from above
    * @param addClosure true to add closure edge back to the start
-   * @returns
+   * @returns rectangle points
    */
   public rectangleXY(
     zFraction: number = 0.0, upwardNormal: boolean = true, addClosure: boolean = true,
@@ -726,17 +726,45 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       && other.high.y <= this.high.y
       && other.high.z <= this.high.z;
   }
-  /** Test if there is any intersection with other range */
-  public intersectsRange(other: Range3d): boolean {
-    return !(this.low.x > other.high.x
+  /**
+   * Test if there is any intersection with the other range.
+   * @param other the other range.
+   * @param margin optional signed distance by which to expand/shrink `other` in all directions.
+   */
+  public intersectsRange(other: Range3d, margin?: number): boolean {
+    if (margin) {
+      return !(
+        this.low.x > other.high.x + margin
+        || this.low.y > other.high.y + margin
+        || this.low.z > other.high.z + margin
+        || other.low.x > this.high.x + margin
+        || other.low.y > this.high.y + margin
+        || other.low.z > this.high.z + margin
+      );
+    }
+    return !(
+      this.low.x > other.high.x
       || this.low.y > other.high.y
       || this.low.z > other.high.z
       || other.low.x > this.high.x
       || other.low.y > this.high.y
-      || other.low.z > this.high.z);
+      || other.low.z > this.high.z
+    );
   }
-  /** Test if there is any intersection with other range, ignoring z. */
-  public intersectsRangeXY(other: Range3d): boolean {
+  /**
+   * Test if there is any intersection with the other range, ignoring z.
+   * @param other the other range.
+   * @param margin optional signed distance by which to expand/shrink `other` in all xy-directions.
+   */
+  public intersectsRangeXY(other: Range3d, margin?: number): boolean {
+    if (margin) {
+      return !(
+        this.low.x > other.high.x + margin
+        || this.low.y > other.high.y + margin
+        || other.low.x > this.high.x + margin
+        || other.low.y > this.high.y + margin
+      );
+    }
     return !(
       this.low.x > other.high.x
       || this.low.y > other.high.y
@@ -768,7 +796,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
       RangeBase._EXTREME_POSITIVE,
     );
   }
-  /** Expand this range by distances a (possibly signed) in all directions */
+  /** Expand this range to include the given point. */
   public extendXYZ(x: number, y: number, z: number): void {
     if (x < this.low.x)
       this.low.x = x;
@@ -801,28 +829,28 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
         xyz1.z + g * (xyz0.z - xyz1.z));
     }
   }
-  /** Expand this range by distances a in only the x direction.  */
+  /** Expand this range to include the x-coordinate. */
   public extendXOnly(x: number): void {
     if (x < this.low.x)
       this.low.x = x;
     if (x > this.high.x)
       this.high.x = x;
   }
-  /** Expand this range by distances a in only the x direction.  */
+  /** Expand this range to include the y-coordinate. */
   public extendYOnly(y: number): void {
     if (y < this.low.y)
       this.low.y = y;
     if (y > this.high.y)
       this.high.y = y;
   }
-  /** Expand this range by distances a in only the x direction.  */
+  /** Expand this range to include the z-coordinate. */
   public extendZOnly(z: number): void {
     if (z < this.low.z)
       this.low.z = z;
     if (z > this.high.z)
       this.high.z = z;
   }
-  /** Expand one component of this range  */
+  /** Expand this range to include the specified coordinate `a`. */
   public extendSingleAxis(a: number, axisIndex: AxisIndex): void {
     if (axisIndex === AxisIndex.X)
       this.extendXOnly(a);
@@ -836,7 +864,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     if (!Geometry.isSmallMetricDistance(w))
       this.extendXYZ(x / w, y / w, z / w);
   }
-  /** Expand this range to include a point. */
+  /** Expand this range to include an optionally transformed point. */
   public extendPoint(point: Point3d, transform?: Transform): void {
     if (transform) {
       this.extendTransformedXYZ(transform, point.x, point.y, point.z);
@@ -1211,9 +1239,16 @@ export class Range1d extends RangeBase {
   }
   /** Test if a number is within the range. */
   public containsX(x: number): boolean {
-    return x >= this.low
-      && x <= this.high;
+    return x >= this.low && x <= this.high;
   }
+  /**
+   * Test if a number is in within the open range.
+   * * This method differs from `containsX` by returning false if x equals either range extreme.
+   */
+  public containsXOpen(x: number): boolean {
+    return x > this.low && x < this.high;
+  }
+
   /** Test of other range is within this range */
   public containsRange(other: Range1d): boolean {
     return other.low >= this.low
@@ -1493,6 +1528,22 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     result.setDirect(this.low.x, this.low.y, this.high.x, this.high.y, false);
     return result;
   }
+
+  /**
+   * Return a copy, translated by adding `shift` components in all directions.
+   * @note The translation of a null range is also a null range.
+   */
+  public cloneTranslated(shift: XAndY, result?: this): this {
+    result = result ? result : new (this.constructor as any)() as this;
+    if (!this.isNull)
+      result.setDirect(
+        this.low.x + shift.x, this.low.y + shift.y,
+        this.high.x + shift.x, this.high.y + shift.y,
+        false,
+      );
+    return result;
+  }
+
   /** Create a range with no content. */
   public static createNull<T extends Range2d>(result?: T): T {
     result = result ? result : new this() as T;

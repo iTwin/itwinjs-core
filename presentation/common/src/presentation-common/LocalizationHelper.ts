@@ -6,21 +6,20 @@
  * @module Core
  */
 
-import { CategoryDescription } from "./content/Category";
-import { Content } from "./content/Content";
-import { Descriptor } from "./content/Descriptor";
-import { Field } from "./content/Fields";
-import { Item } from "./content/Item";
-import { DisplayValue, DisplayValueGroup, Value } from "./content/Value";
-import { ElementProperties } from "./ElementProperties";
-import { Node } from "./hierarchy/Node";
-import { NodePathElement } from "./hierarchy/NodePathElement";
-import { LabelCompositeValue, LabelDefinition } from "./LabelDefinition";
+import { CategoryDescription } from "./content/Category.js";
+import { Content } from "./content/Content.js";
+import { Descriptor } from "./content/Descriptor.js";
+import { Field } from "./content/Fields.js";
+import { Item } from "./content/Item.js";
+import { DisplayValue, DisplayValueGroup, Value } from "./content/Value.js";
+import { ElementProperties } from "./ElementProperties.js";
+import { Node } from "./hierarchy/Node.js";
+import { NodePathElement } from "./hierarchy/NodePathElement.js";
+import { COMPOSITE_LABEL_DEFINITION_TYPENAME, LabelCompositeValue, LabelDefinition } from "./LabelDefinition.js";
 
 const KEY_PATTERN = /@[\w\d\-_]+:[\w\d\-\._]+?@/g;
 
-/** @internal */
-export interface LocalizationHelperProps {
+interface LocalizationHelperProps {
   getLocalizedString: (key: string) => string;
 }
 
@@ -61,7 +60,7 @@ export class LocalizationHelper {
       values: compositeValue.values.map((value) => this.getLocalizedLabelDefinition(value)),
     });
 
-    if (labelDefinition.typeName === LabelDefinition.COMPOSITE_DEFINITION_TYPENAME) {
+    if (labelDefinition.typeName === COMPOSITE_LABEL_DEFINITION_TYPENAME) {
       return {
         ...labelDefinition,
         rawValue: getLocalizedComposite(labelDefinition.rawValue as LabelCompositeValue),
@@ -128,12 +127,27 @@ export class LocalizationHelper {
         displayValues: Object.entries(item.displayValues).reduce((o, [k, v]) => ({ ...o, [k]: this.getLocalizedDisplayValue(v) }), {}),
       }));
     }
+    if (Value.isArray(value)) {
+      return value.map((v) => this.getLocalizedRawValue(v));
+    }
+    if (Value.isMap(value)) {
+      return Object.entries(value).reduce((o, [k, v]) => ({ ...o, [k]: this.getLocalizedRawValue(v) }), {});
+    }
     return value;
   }
 
   // warning: this function mutates the field
-  private getLocalizedContentField(field: Field) {
+  private getLocalizedContentField<TField extends Field>(field: TField) {
     field.label = this.getLocalizedString(field.label);
+    if (field.isPropertiesField()) {
+      if (field.isStructPropertiesField()) {
+        field.memberFields = field.memberFields.map((m) => this.getLocalizedContentField(m));
+      } else if (field.isArrayPropertiesField()) {
+        field.itemsField = this.getLocalizedContentField(field.itemsField);
+      }
+    } else if (field.isNestedContentField()) {
+      field.nestedFields = field.nestedFields.map((m) => this.getLocalizedContentField(m));
+    }
     return field;
   }
 
@@ -159,7 +173,7 @@ export class LocalizationHelper {
     if (typeof value === "string") {
       return this.getLocalizedString(value);
     }
-    if (Array.isArray(value)) {
+    if (DisplayValue.isArray(value)) {
       return value.map((v) => this.getLocalizedDisplayValue(v));
     }
     return Object.entries(value).reduce((o, [k, v]) => ({ ...o, [k]: this.getLocalizedDisplayValue(v) }), {});

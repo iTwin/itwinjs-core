@@ -46,7 +46,7 @@ const argv = yargs
     await creator.create();
     process.stdout.write(`IModel: ${argv.output} Created for Point Cloud: ${argv.blobFileName}`);
     await IModelHost.shutdown();
-  } catch (_error) {
+  } catch {
     process.stdout.write("Error occurred creating IModel\n");
     await IModelHost.shutdown();
   }

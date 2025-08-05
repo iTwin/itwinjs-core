@@ -8,7 +8,7 @@
     },
     {
       "name": "@bentley/aec-units-schema",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "@bentley/architectural-physical-schema",
@@ -20,7 +20,7 @@
     },
     {
       "name": "@bentley/bis-custom-attributes-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/cif-bridge-schema",
@@ -64,7 +64,7 @@
     },
     {
       "name": "@bentley/cif-units-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "@bentley/construction-schema",
@@ -72,7 +72,7 @@
     },
     {
       "name": "@bentley/core-custom-attributes-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/ecdb-map-schema",
@@ -84,7 +84,7 @@
     },
     {
       "name": "@bentley/formats-schema",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "@bentley/icons-generic",
@@ -124,7 +124,7 @@
     },
     {
       "name": "@bentley/road-rail-units-schema",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "common", "internal" ]
     },
     {
       "name": "@bentley/spatial-composition-schema",
@@ -136,7 +136,7 @@
     },
     {
       "name": "@bentley/units-schema",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
       "name": "@itwin/appui-abstract",
@@ -164,7 +164,7 @@
     },
     {
       "name": "@itwin/core-backend",
-      "allowedCategories": [ "backend", "edit", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "edit", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@itwin/core-bentley",
@@ -211,20 +211,12 @@
       "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal" ]
     },
     {
-      "name": "@itwin/core-telemetry",
-      "allowedCategories": [ "backend", "frontend" ]
-    },
-    {
-      "name": "@itwin/core-webpack-tools",
-      "allowedCategories": [ "backend", "internal", "tools" ]
-    },
-    {
       "name": "@itwin/ecschema-editing",
       "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/ecschema-locaters",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
       "name": "@itwin/ecschema-metadata",
@@ -232,7 +224,7 @@
     },
     {
       "name": "@itwin/ecschema-rpcinterface-common",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/ecschema-rpcinterface-impl",
@@ -339,12 +331,20 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/presentation-shared",
+      "allowedCategories": [ "backend", "common" ]
+    },
+    {
       "name": "@itwin/reality-data-client",
       "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/service-authorization",
       "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "@itwin/unified-selection",
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@itwin/webgl-compatibility",
@@ -381,6 +381,14 @@
     {
       "name": "@typescript-eslint/parser",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@vitest/browser",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "@vitest/coverage-v8",
+      "allowedCategories": [ "common", "frontend" ]
     },
     {
       "name": "@xmldom/xmldom",
@@ -425,6 +433,10 @@
     {
       "name": "buffer",
       "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "c8",
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "cache-require-paths",
@@ -507,6 +519,10 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
+      "name": "deep-equal-in-any-order",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "detect-port",
       "allowedCategories": [ "tools" ]
     },
@@ -524,10 +540,6 @@
     },
     {
       "name": "esbuild",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "esbuild-plugin-external-global",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -555,6 +567,14 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "fast-xml-parser",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "fetch-mock",
+      "allowedCategories": [ "extensions" ]
+    },
+    {
       "name": "file-loader",
       "allowedCategories": [ "tools" ]
     },
@@ -571,6 +591,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "flatbush",
+      "allowedCategories": [ "extensions" ]
+    },
+    {
       "name": "form-data",
       "allowedCategories": [ "backend" ]
     },
@@ -583,8 +607,16 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "get-system-fonts",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "glob",
       "allowedCategories": [ "backend", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "global-jsdom",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "google-protobuf",
@@ -612,7 +644,7 @@
     },
     {
       "name": "internal-tools",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "inversify",
@@ -643,12 +675,24 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "linebreak",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "lodash",
       "allowedCategories": [ "backend", "tools" ]
     },
     {
+      "name": "marked",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "memfs",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "meshoptimizer",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "mkdirp",
@@ -667,6 +711,10 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "mysql2",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "nock",
       "allowedCategories": [ "internal" ]
     },
@@ -680,6 +728,10 @@
     },
     {
       "name": "npm-run-all",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "npm-run-all2",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
@@ -703,12 +755,16 @@
       "allowedCategories": [ "integration-testing" ]
     },
     {
+      "name": "os-browserify",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "path-browserify",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "playwright",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "prettier",
@@ -736,6 +792,10 @@
     },
     {
       "name": "rollup-plugin-copy",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "rollup-plugin-external-globals",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -780,11 +840,15 @@
     },
     {
       "name": "source-map-support",
-      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "spdy",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "sql-formatter",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "stream-browserify",
@@ -813,6 +877,10 @@
     {
       "name": "ts-node",
       "allowedCategories": [ "backend", "internal" ]
+    },
+    {
+      "name": "tty-browserify",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "typedoc",
@@ -851,12 +919,24 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "vite-multiple-assets",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "vite-plugin-env-compatible",
       "allowedCategories": [ "internal" ]
     },
     {
       "name": "vite-plugin-inspect",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "vite-plugin-static-copy",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "vitest",
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "webpack",

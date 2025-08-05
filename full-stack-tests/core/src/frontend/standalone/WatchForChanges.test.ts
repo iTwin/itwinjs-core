@@ -8,9 +8,10 @@ import { Guid, Id64, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { ColorDef, ElementAlignedBox3d, PackedFeature, RenderFeatureTable } from "@itwin/core-common";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
-  BriefcaseConnection, GeometricModelState, IModelApp, MockRender, RenderGraphic, TileTree, ViewCreator3d,
+  BriefcaseConnection, GeometricModelState, IModelApp, RenderGraphic, TileTree, ViewCreator3d,
 } from "@itwin/core-frontend";
-import { coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineStringElement, makeModelCode, transformElements } from "../Editing";
+import { MockRender } from "@itwin/core-frontend/lib/cjs/internal/render/MockRender"
+import { addAllowedChannel, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineStringElement, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
 class System extends MockRender.System {
@@ -59,6 +60,7 @@ for (const watchForChanges of [false, true]) {
 
       // Populate the iModel with some initial geometry.
       rwConn = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
+      await addAllowedChannel(rwConn, "shared");
       modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(rwConn.key, (await makeModelCode(rwConn, rwConn.models.repositoryModelId, Guid.createValue())));
       const dictId = await rwConn.models.getDictionaryModel();
       categoryId = await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictId, Guid.createValue(), { color: 0 });
@@ -88,13 +90,24 @@ for (const watchForChanges of [false, true]) {
     });
 
     async function expectModelChanges(func: () => Promise<void>): Promise<void> {
-      const promise = new Promise<void>((resolve) => {
-        roConn.onBufferedModelChanges.addOnce((modelIds) => {
-          expect(modelIds.size).to.equal(1);
-          expect(modelIds.has(modelId)).to.be.true;
-          resolve();
-        });
-      });
+      const promise = Promise.race([
+        // Wait for onBufferedModelChanges to be triggered
+        new Promise<void>((resolve, reject) => {
+          roConn.onBufferedModelChanges.addOnce((modelIds) => {
+            try {
+              expect(modelIds.size).to.equal(1);
+              expect(modelIds.has(modelId)).to.be.true;
+              resolve();
+            } catch (error: any) {
+              reject(new Error(error));
+            }
+          });
+        }),
+        // Time out to prevent the tests from hanging
+        new Promise<void>((_resolve, reject) => {
+          setTimeout(() => reject(new Error("Timeout: onBufferedModelChanges did not fire within the specified time")), 120*1000); // 2 min
+        }),
+      ]);
 
       await func();
       return promise;
@@ -157,7 +170,7 @@ for (const watchForChanges of [false, true]) {
 
       prevGuid = model.geometryGuid;
       prevTree = newTree;
-      const elemId2 = await insertLineStringElement(rwConn, { model: modelId, category: categoryId, color: ColorDef.red, points: [projCenter.clone(), projCenter.plus({x:2, y:0, z:0})] });
+      const elemId2 = await insertLineStringElement(rwConn, { model: modelId, category: categoryId, color: ColorDef.red, points: [projCenter.clone(), projCenter.plus({ x: 2, y: 0, z: 0 })] });
       await expectModelChanges(async () => rwConn.saveChanges());
 
       expect(model.geometryGuid).not.to.equal(prevGuid);

@@ -27,7 +27,7 @@ class ShadowMapDecoration {
       this._removeMe();
       this._removeMe = undefined;
       for (const gf of this._graphics) {
-        gf.dispose();
+        gf[Symbol.dispose]();
         if (gf instanceof RenderGraphicOwner)
           gf.disposeGraphic();
       }

@@ -506,16 +506,22 @@ export class BarycentricTriangle {
   }
   /**
    * Compute the intersection of a line (parameterized as a ray) with the plane of this triangle.
-   * * This method is slower than `Ray3d.intersectionWithTriangle`.
+   * * Intersection data is returned for the line-plane intersection.
+   * * No intersection is returned if the line is parallel to the plane.
+   * * As for the *ray*, it intersects this triangle if and only if the returned detail `d` has
+   * `d.isValid === true` and `d.a >= 0` and `d.isInsideOrOn === true`.
+   * * This method is slower than `Ray3d.intersectionWithTriangle` but returns more information about the intersection.
    * @param ray infinite line to intersect, as a ray
    * @param result optional pre-allocated object to fill and return
-   * @returns details d of the line-plane intersection point `d.world`:
-   * * `d.a` is the intersection parameter along the ray.
-   * * The line intersects the plane of the triangle if and only if `d.isValid` returns true.
-   * * The ray intersects the plane of the triangle if and only if `d.isValid` returns true and `d.a` >= 0.
-   * * The ray intersects the triangle if and only if `d.isValid` returns true, `d.a` >= 0, and `d.isInsideOrOn`
-   * returns true.
-   * * `d.classify` can be used to determine where the intersection lies with respect to the triangle.
+   * @returns details `d` of the intersection point `p` of the line and the plane of this triangle:
+   * * `d.isValid`: false if and only if `ray.direction` is parallel to the plane, or the ray or triangle is degenerate.
+   * * `d.world`: coordinates of `p`.
+   * * `d.local`: barycentric coordinates of `p`.
+   * * `d.a`: the intersection parameter of `p` along the ray. Negative means `p` is behind the ray origin.
+   * * `d.classify`: where `p` lies with respect to the triangle.
+   * * `d.isInsideOrOn`: whether `p` is inside or on the triangle.
+   * * `d.closestEdgeIndex`: the index of the triangle edge `e` onto which `p` projects.
+   * * `d.closestEdgeParam`: the edge parameter at which `p` projects onto `e`.
    * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/RayTriangleIntersection
    * @see [[pointToFraction]]
   */
@@ -536,6 +542,9 @@ export class BarycentricTriangle {
     const v = BarycentricTriangle._workVector1 = Vector3d.createStartEnd(
       this.points[0], this.points[2], BarycentricTriangle._workVector1,
     );
+    const scaledVolume = d.tripleProduct(u, v);
+    if (scaledVolume * scaledVolume <= u.dotProduct(u) * v.dotProduct(v) * d.dotProduct(d) * Geometry.smallAngleRadiansSquared)
+      return result; // parallel (no solution)
     const M = BarycentricTriangle._workMatrix = Matrix3d.createColumns(u, v, d, BarycentricTriangle._workMatrix);
     const c = Vector3d.createStartEnd(this.points[0], r0, BarycentricTriangle._workVector0);  // reuse workVector0
     const solution = BarycentricTriangle._workVector1;  // reuse workVector1

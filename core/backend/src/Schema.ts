@@ -9,8 +9,34 @@
 import { IModelStatus } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
 import { ClassRegistry } from "./ClassRegistry";
+import { ECVersion, SchemaKey } from "@itwin/ecschema-metadata";
 
 /** Base class for all schema classes - see [working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md).
+ *
+ * When subclassing from Schema, it is good practice to follow this pattern:
+ *
+ * ```typescript
+ * class MyCustomSchema extends Schema {
+ *   public static override get schemaName(): string { return "MyCustomSchema"; }
+ *   public static get classes(): typeof Entity[] {
+ *     return [MyOwnECClass, AnotherECClass];
+ *   }
+ *   public static registerSchema() {
+ *     if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
+ *       Schemas.unregisterSchema(this.schemaName);
+ *       Schemas.registerSchema(this);
+ *       for (const ecClass of this.classes) {
+ *         ClassRegistry.register(ecClass, this);
+ *       }
+ *     }
+ *   }
+ *
+ *   public static unregisterSchema() {
+ *     Schemas.unregisterSchema(this.schemaName);
+ *   }
+ * }
+ * ```
+ *
  * @public
  */
 export class Schema {
@@ -20,6 +46,14 @@ export class Schema {
    * be one JavaScript class for a given BIS schema (usually the errant schema will collide with its superclass.)
    */
   public static get schemaName(): string { throw new Error(`you must override static schemaName in ${this.name}`); }
+
+  /** Unique identifier for this schema, typed variant of [[schemaName]].
+   * @internal
+   */
+  public static get schemaKey(): SchemaKey {
+    // We cannot cache this here because the schemaName may be overridden without this being overridden
+    return new SchemaKey(this.schemaName, ECVersion.NO_VERSION); // backend cares little for versions right now, as only one version can exist in an imodel
+  }
 
   /** if true, this Schema is a proxy for a missing Domain marked with the `BisCore.SchemaHasBehavior` customAttribute.
    * Classes generated for this Schema will disallow protected operations.
@@ -49,21 +83,53 @@ export class Schema {
   protected constructor() { throw new Error(`cannot create an instance of a Schema ${this.constructor.name}`); }
 }
 
+/**
+ * Holds a map of registered schemas.
+ * @public
+ */
+export class SchemaMap {
+  private readonly _schemas = new Map<string, typeof Schema>();
+
+  /** @internal */
+  public get(schemaName: string): typeof Schema | undefined {
+    return this._schemas.get(schemaName.toLowerCase());
+  }
+
+  /** @internal */
+  public set(schemaName: string, schema: typeof Schema): void {
+    this._schemas.set(schemaName.toLowerCase(), schema);
+  }
+
+  /** @internal */
+  public delete(schemaName: string): boolean {
+    return this._schemas.delete(schemaName.toLowerCase());
+  }
+
+  /** Register a schema prior to using it.
+   * @throws [[IModelError]] if a schema of the same name is already registered.
+   * @public
+   */
+  public registerSchema(schema: typeof Schema) {
+    const key = schema.schemaName.toLowerCase();
+    if (this.get(key))
+      throw new IModelError(IModelStatus.DuplicateName, `Schema "${schema.schemaName}" is already registered`);
+    this.set(key, schema);
+  }
+}
+
 /** Manages registered schemas
  * @public
  */
 export class Schemas {
-  private static readonly _registeredSchemas = new Map<string, typeof Schema>();
+  private static readonly _globalSchemas = new SchemaMap();
   private constructor() { } // this is a singleton
 
   /** Register a schema prior to using it.
+   * This method registers the schema globally, to register a schema within the scope of a single iModel, use `IModelDb.schemaMap`.
    * @throws [[IModelError]] if a schema of the same name is already registered.
    */
   public static registerSchema(schema: typeof Schema) {
-    const key = schema.schemaName.toLowerCase();
-    if (this.getRegisteredSchema(key))
-      throw new IModelError(IModelStatus.DuplicateName, `Schema "${schema.schemaName}" is already registered`);
-    this._registeredSchemas.set(key, schema);
+    this._globalSchemas.registerSchema(schema);
   }
 
   /** Unregister a schema, by name, if one is already registered.
@@ -76,12 +142,12 @@ export class Schemas {
     if (undefined !== schema)
       ClassRegistry.unregisterClassesFrom(schema);
 
-    return this._registeredSchemas.delete(schemaName.toLowerCase());
+    return this._globalSchemas.delete(schemaName.toLowerCase());
   }
 
   /** Look up a previously registered schema
    * @param schemaName The name of the schema
    * @returns the previously registered schema or undefined if not registered.
    */
-  public static getRegisteredSchema(schemaName: string): typeof Schema | undefined { return this._registeredSchemas.get(schemaName.toLowerCase()); }
+  public static getRegisteredSchema(schemaName: string): typeof Schema | undefined { return this._globalSchemas.get(schemaName.toLowerCase()); }
 }

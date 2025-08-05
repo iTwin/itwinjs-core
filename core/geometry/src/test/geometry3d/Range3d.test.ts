@@ -2,8 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-
+import { assert, describe, expect, it } from "vitest";
 import { Arc3d } from "../../curve/Arc3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
@@ -11,7 +10,7 @@ import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d, Range2d, Range3d, RangeBase } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { SineCosinePolynomial } from "../../numerics/Polynomials";
@@ -23,7 +22,7 @@ import { prettyPrint } from "../testFunctions";
 // (assume points are distinct ...)
 function exerciseWithTransformedPoints(ck: Checker, frame: Transform, points: Point3d[]) {
   const rangeA = Range3d.createTransformedArray(frame, points);
-  const transformedPoints = frame.multiplyPoint3dArray(points)!;
+  const transformedPoints = frame.multiplyPoint3dArray(points);
   const inverseFrame = frame.inverse();
   if (inverseFrame) {
     const rangeQ = Range3d.createArray(points);
@@ -174,7 +173,7 @@ describe("Range3d", () => {
     ck.testCoordinate(0, rangeQ.diagonal().magnitude(), "single point diagonal is 000");
 
     ck.checkpoint("Range3d.HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     rangeQ.extend(new Point3d(20, 22, 54));
     const expected = new Float64Array(6);
     expected[0] = rangeQ.low.x;
@@ -216,7 +215,7 @@ describe("Range3d", () => {
     ck.testExactNumber(f64B[3], rangeA2d.high.y);
 
     ck.checkpoint("Range3d.With2d");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("VariableArgs", () => {
@@ -236,13 +235,13 @@ describe("Range3d", () => {
     }
 
     ck.checkpoint("Range3d.VariableArgs");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Distance", () => {
     const ck = new Checker();
     const lattice1 = Sample.createPoint3dLattice(-1, 1.3, 4);
-    const range = Range3d.createArray(lattice1)!;
+    const range = Range3d.createArray(lattice1);
     range.scaleAboutCenterInPlace(0.45);
     const rangeX = Range1d.createXX(range.low.x, range.high.x);
     const rangeY = Range1d.createXX(range.low.y, range.high.y);
@@ -257,7 +256,7 @@ describe("Range3d", () => {
     }
 
     ck.checkpoint("Range3d.Distance");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   // overlapping interval combinations
   //  ---------------------10-----------------20-----------------
@@ -341,7 +340,7 @@ describe("Range3d", () => {
       }
     }
     ck.checkpoint("Range3d.Containment1d");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Containment1d", () => {
@@ -375,7 +374,7 @@ describe("Range3d", () => {
 
     }
     ck.checkpoint("Range3d.Containment1d");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DiagonalContainment3d", () => {
@@ -416,7 +415,7 @@ describe("Range3d", () => {
       ck.testTrue(rangeN.isAlmostEqual(rangeB), "createFrom");
     }
     ck.checkpoint("Range3d.DiagonalContainment3d");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DiagonalContainment2d", () => {
@@ -459,7 +458,7 @@ describe("Range3d", () => {
       ck.testTrue(rangeN.isAlmostEqual(rangeB), "createFrom");
     }
     ck.checkpoint("Range3d.DiagonalContainment2d");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SineWaveRange", () => {
@@ -510,7 +509,7 @@ describe("Range3d", () => {
       y0 += 4.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Angle", "SineWaveRange");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("MiscRange1d", () => {
@@ -535,7 +534,7 @@ describe("Range3d", () => {
 
     ck.checkpoint("Range3d.MiscRange1d");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SinglePointRanges", () => {
@@ -567,7 +566,7 @@ describe("Range3d", () => {
     ck.testCoordinate(twoDelta, r3.xLength(), "expand");
     ck.testCoordinate(twoDelta, r3.yLength(), "expand");
     ck.testCoordinate(twoDelta, r3.zLength(), "expand");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Misc3d", () => {
@@ -582,7 +581,7 @@ describe("Range3d", () => {
     const range1 = Range3d.fromJSON([Point3d.create(1, 2, 3), Point3d.create(6, 3, 2)]);
     ck.testRange3d(range0, range1);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Misc2d", () => {
@@ -596,7 +595,7 @@ describe("Range3d", () => {
 
     const range1 = Range2d.fromJSON({ low: [1, 2], high: [3, 6] });
     ck.testRange2d(range0, range1);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Misc1d", () => {
@@ -610,7 +609,7 @@ describe("Range3d", () => {
 
     const range1 = Range1d.fromJSON({ low: 1, high: 2 });
     ck.testRange1d(range0, range1);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("WorldToLocal3d", () => {
     const ck = new Checker();
@@ -636,7 +635,7 @@ describe("Range3d", () => {
     rangeA.localToWorldArrayInPlace(localPointsB);
     ck.testPoint3dArray(worldPoints, localPointsB);
     ck.checkpoint("Range3d.WorldToLocal3d");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ScalarQueries3d", () => {
@@ -653,7 +652,7 @@ describe("Range3d", () => {
     const singlePointRange = Range3d.createXYZ(1, 2, 3);
     const singlePointNpcToWorld = singlePointRange.getNpcToWorldRangeTransform();
     ck.testTrue(singlePointNpcToWorld.matrix.isIdentity, "npcToWorld for single point has identity scales");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ScalarQueries2d", () => {
@@ -662,7 +661,7 @@ describe("Range3d", () => {
     const rangeB = Range2d.createXYXY(rangeA.xLow, rangeA.yLow, rangeA.xHigh, rangeA.yHigh);
     ck.testRange2d(rangeA, rangeB, "Range scalar queries");
     ck.testTrue(rangeA.containsPoint(rangeB.center));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("EnsureMinLengths", () => {
@@ -677,12 +676,12 @@ describe("Range3d", () => {
     ck.testTrue(rangeA.yLength() >= 2.0);
     ck.testTrue(rangeA.zLength() >= 2.0);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ZeroCases", () => {
     const ck = new Checker();
     ck.testTrue(RangeBase.isExtremeValue(RangeBase.coordinateToRangeAbsoluteDistance(0, 10, 1)));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("DistanceToNullRange", () => {
     const ck = new Checker();
@@ -696,7 +695,7 @@ describe("Range3d", () => {
 
     ck.testExactNumber(0, null3.maxAbs(), "Range3d.null maxAbs is 0");
     ck.testTrue(RangeBase.isExtremeValue(RangeBase.coordinateToRangeAbsoluteDistance(0, 10, 1)));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Float64ArrayConstructors", () => {
     const ck = new Checker();
@@ -716,7 +715,7 @@ describe("Range3d", () => {
 
     r2.freeze();
     r3.freeze();
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Reuse corners", () => {
     const ck = new Checker();
@@ -734,7 +733,7 @@ describe("Range3d", () => {
       ck.testPoint3d(cornerA[i], cornerB[i], "range.corners overwrites");
       ck.testTrue(range.containsPoint(cornerB[i]));
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("CreateFromNull", () => {
     const ck = new Checker();
@@ -744,7 +743,7 @@ describe("Range3d", () => {
     ck.testTrue(r1.isNull);
     ck.testTrue(r2.isNull);
     ck.testTrue(r3.isNull);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SmallSweep", () => {
     const ck = new Checker();
@@ -752,6 +751,69 @@ describe("Range3d", () => {
     const arc = Arc3d.createXYZXYZXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0, sweep);
     const range = Range3d.createNull();
     arc.extendRange(range);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("IntersectionWithMargin", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    let y0 = 0;
+
+    const maxCoordA = 1;
+    const rangeA = Range3d.createXYZXYZ(-maxCoordA, -maxCoordA, -maxCoordA, maxCoordA, maxCoordA, maxCoordA);
+    let radiusA = rangeA.diagonal().magnitude() / 2;
+
+    const maxCoordB = 0.5;
+    const rangeB = Range3d.createXYZXYZ(-maxCoordB, -maxCoordB, -maxCoordB, maxCoordB, maxCoordB, maxCoordB);
+    let radiusB = rangeB.diagonal().magnitude() / 2;
+
+    let displacementLength = radiusA + radiusB;
+    let margin = radiusB * 1.5;
+    const iters = 25;
+
+    for (let i = 0; i < iters; i++) {
+      const displacement = Vector3d.create(Math.random(), Math.random(), Math.random());
+      for (let j = 0; j < 3; j++)
+        displacement.setAt(j, Geometry.correctSmallFraction(displacement.at(j), 0.0) * ((Math.random() > 0.5) ? 1.0 : -1.0));
+      if (!displacement.scaleToLength(displacementLength, displacement))
+        continue;
+      const rangeC = rangeB.cloneTranslated(displacement);
+      const rangeD = rangeC.clone();
+      rangeD.expandInPlace(margin);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, [rangeA, rangeC, rangeD], x0, y0);
+      ck.testFalse(rangeA.intersectsRange(rangeC), "rangeA does not intersect rangeC");
+      ck.testTrue(rangeA.intersectsRange(rangeC, margin), "rangeA intersects rangeC with positive margin");
+      ck.testTrue(rangeA.intersectsRange(rangeD), "rangeA intersects rangeD");
+      ck.testFalse(rangeA.intersectsRange(rangeD, -margin), "rangeA does not intersect rangeD with negative margin");
+      x0 += 3 * displacementLength;
+    }
+
+    x0 = 0;
+    y0 += 3 * displacementLength
+
+    // cover xy variant
+    radiusA = Geometry.distanceXYXY(rangeA.low.x, rangeA.low.y, rangeA.high.x, rangeA.high.y) / 2;
+    radiusB = Geometry.distanceXYXY(rangeB.low.x, rangeB.low.y, rangeB.high.x, rangeB.high.y) / 2;
+    displacementLength = radiusA + radiusB;
+    margin = radiusB * 1.5;
+    for (let i = 0; i < iters; i++) {
+      const displacement = Vector3d.create(Math.random(), Math.random());
+      for (let j = 0; j < 3; j++)
+        displacement.setAt(j, Geometry.correctSmallFraction(displacement.at(j), 0.0) * ((Math.random() > 0.5) ? 1.0 : -1.0));
+      if (!displacement.scaleToLength(displacementLength, displacement))
+        continue;
+      const rangeC = rangeB.cloneTranslated(displacement);
+      const rangeD = rangeC.clone();
+      rangeD.expandInPlace(margin);
+      GeometryCoreTestIO.captureRangeEdges(allGeometry, [rangeA, rangeC, rangeD], x0, y0);
+      ck.testFalse(rangeA.intersectsRangeXY(rangeC), "rangeA does not xy-intersect rangeC");
+      ck.testTrue(rangeA.intersectsRangeXY(rangeC, margin), "rangeA xy-intersects rangeC with positive margin");
+      ck.testTrue(rangeA.intersectsRangeXY(rangeD), "rangeA xy-intersects rangeD");
+      ck.testFalse(rangeA.intersectsRangeXY(rangeD, -margin), "rangeA does not xy-intersect rangeD with negative margin");
+      x0 += 3 * displacementLength;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Range3d", "IntersectionWithMargin");
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

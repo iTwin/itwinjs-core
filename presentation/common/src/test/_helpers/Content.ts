@@ -3,6 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import {
+  ArrayPropertiesField,
   CategoryDescription,
   ClassInfo,
   Descriptor,
@@ -20,12 +21,13 @@ import {
   RelationshipPath,
   RendererDescription,
   SelectClassInfo,
+  StructPropertiesField,
   StructTypeDescription,
   TypeDescription,
   ValuesMap,
-} from "../../presentation-common";
-import { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification";
-import { createTestECClassInfo, createTestECInstanceKey, createTestRelationshipPath } from "./EC";
+} from "../../presentation-common.js";
+import { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification.js";
+import { createTestECClassInfo, createTestECInstanceKey, createTestPropertyInfo, createTestRelationshipPath } from "./EC.js";
 
 /**
  * @internal Used for testing only.
@@ -48,6 +50,16 @@ export const createTestSelectClassInfo = (props?: Partial<SelectClassInfo>) => (
   ...props,
 });
 
+/** @internal Used for testing only. */
+export function createTestLabelDefinition(props?: Partial<LabelDefinition>): LabelDefinition {
+  return {
+    typeName: "string",
+    rawValue: "test raw value",
+    displayValue: "test display value",
+    ...props,
+  };
+}
+
 /**
  * @internal Used for testing only.
  */
@@ -61,16 +73,15 @@ export function createTestSimpleContentField(props?: {
   editor?: EditorDescription;
   renderer?: RendererDescription;
 }) {
-  return new Field(
-    props?.category ?? createTestCategoryDescription(),
-    props?.name ?? "SimpleField",
-    props?.label ?? "Simple Field",
-    props?.type ?? { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
-    props?.isReadonly ?? false,
-    props?.priority ?? 0,
-    props?.editor,
-    props?.renderer,
-  );
+  return new Field({
+    category: createTestCategoryDescription(),
+    name: "SimpleField",
+    label: "Simple Field",
+    type: { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
+    isReadonly: false,
+    priority: 0,
+    ...props,
+  });
 }
 
 /**
@@ -87,17 +98,86 @@ export function createTestPropertiesContentField(props: {
   editor?: EditorDescription;
   renderer?: RendererDescription;
 }) {
-  return new PropertiesField(
-    props.category ?? createTestCategoryDescription(),
-    props.name ?? "PropertiesField",
-    props.label ?? "Properties Field",
-    props.type ?? { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
-    props.isReadonly ?? false,
-    props.priority ?? 0,
-    props.properties,
-    props.editor,
-    props.renderer,
-  );
+  return new PropertiesField({
+    category: createTestCategoryDescription(),
+    name: "PropertiesField",
+    label: "Properties Field",
+    type: { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
+    isReadonly: false,
+    priority: 0,
+    ...props,
+  });
+}
+
+/**
+ * @internal Used for testing only.
+ */
+export function createTestArrayPropertiesContentField(props: {
+  properties: Property[];
+  category?: CategoryDescription;
+  type?: TypeDescription;
+  itemsField?: PropertiesField;
+  name?: string;
+  label?: string;
+  isReadonly?: boolean;
+  priority?: number;
+  editor?: EditorDescription;
+  renderer?: RendererDescription;
+}) {
+  return new ArrayPropertiesField({
+    category: createTestCategoryDescription(),
+    name: "ArrayPropertiesField",
+    label: "Array Properties Field",
+    type: {
+      valueFormat: PropertyValueFormat.Array,
+      typeName: "string[]",
+      memberType: {
+        valueFormat: PropertyValueFormat.Primitive,
+        typeName: "string",
+      },
+    },
+    itemsField: createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo() }] }),
+    isReadonly: false,
+    priority: 0,
+    ...props,
+  });
+}
+
+/**
+ * @internal Used for testing only.
+ */
+export function createTestStructPropertiesContentField(props: {
+  properties: Property[];
+  category?: CategoryDescription;
+  type?: TypeDescription;
+  memberFields?: PropertiesField[];
+  name?: string;
+  label?: string;
+  isReadonly?: boolean;
+  priority?: number;
+  editor?: EditorDescription;
+  renderer?: RendererDescription;
+}) {
+  return new StructPropertiesField({
+    category: createTestCategoryDescription(),
+    name: "StructPropertiesField",
+    label: "Struct Properties Field",
+    type: {
+      valueFormat: PropertyValueFormat.Struct,
+      typeName: "TestStruct",
+      members: [
+        {
+          name: "member1",
+          label: "Member 1",
+          type: { valueFormat: PropertyValueFormat.Primitive, typeName: "string" },
+        },
+      ],
+    },
+    memberFields: [createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "member1", type: "string" }) }] })],
+    isReadonly: false,
+    priority: 0,
+    ...props,
+  });
 }
 
 /**
@@ -126,23 +206,17 @@ export function createTestNestedContentField(props: {
       type: f.type,
     })),
   };
-  const field = new NestedContentField(
-    props.category ?? createTestCategoryDescription(),
-    props.name ?? "NestedContentField",
-    props.label ?? "Nested Content",
-    nestedContentFieldType,
-    props.isReadonly ?? false,
-    props.priority ?? 0,
-    props.contentClassInfo ?? createTestECClassInfo(),
-    props.pathToPrimaryClass ?? createTestRelationshipPath(1),
-    props.nestedFields,
-    props.editor,
-    !!props.autoExpand,
-    props.renderer,
-  );
-  if (props.relationshipMeaning) {
-    field.relationshipMeaning = props.relationshipMeaning;
-  }
+  const field = new NestedContentField({
+    category: createTestCategoryDescription(),
+    name: "NestedContentField",
+    label: "Nested Content",
+    type: nestedContentFieldType,
+    isReadonly: false,
+    priority: 0,
+    contentClassInfo: createTestECClassInfo(),
+    pathToPrimaryClass: createTestRelationshipPath(1),
+    ...props,
+  });
   field.rebuildParentship();
   return field;
 }
@@ -152,7 +226,6 @@ export function createTestNestedContentField(props: {
  */
 export function createTestContentDescriptor(props: Partial<DescriptorSource> & { fields: Field[] }) {
   return new Descriptor({
-    connectionId: "",
     displayType: "",
     contentFlags: 0,
     selectClasses: [createTestSelectClassInfo()],
@@ -165,6 +238,7 @@ export function createTestContentDescriptor(props: Partial<DescriptorSource> & {
  * @internal Used for testing only.
  */
 export function createTestContentItem(props: {
+  inputKeys?: InstanceKey[];
   primaryKeys?: InstanceKey[];
   label?: LabelDefinition | string;
   imageId?: string;
@@ -174,14 +248,15 @@ export function createTestContentItem(props: {
   mergedFieldNames?: string[];
   extendedData?: { [key: string]: any };
 }) {
-  return new Item(
-    props.primaryKeys ?? [createTestECInstanceKey()],
-    props.label ?? "",
-    props.imageId ?? "",
-    props.classInfo,
-    props.values,
-    props.displayValues,
-    props.mergedFieldNames ?? [],
-    props.extendedData,
-  );
+  const item = new Item({
+    ...props,
+    primaryKeys: props.primaryKeys ?? [createTestECInstanceKey()],
+    label: props.label
+      ? typeof props.label === "string"
+        ? createTestLabelDefinition({ displayValue: props.label })
+        : props.label
+      : createTestLabelDefinition(),
+    mergedFieldNames: props.mergedFieldNames ?? [],
+  });
+  return item;
 }

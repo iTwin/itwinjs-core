@@ -7,13 +7,13 @@
  */
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Path, Point3d, Transform, Vector3d, XYZProps } from "@itwin/core-geometry";
-import { GeometryClass, LinePixels } from "@itwin/core-common";
+import { ContourGroup, GeometryClass, LinePixels } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { GraphicType } from "./render/GraphicBuilder";
 import { IconSprites, Sprite } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport, Viewport } from "./Viewport";
+import { GraphicType } from "./common/render/GraphicType";
 
 /**
  * @public
@@ -27,6 +27,8 @@ export enum SnapMode {
   Origin = 1 << 4,
   Bisector = 1 << 5,
   Intersection = 1 << 6,
+  PerpendicularPoint = 1 << 7,
+  TangentPoint = 1 << 8,
 }
 
 /**
@@ -106,17 +108,60 @@ export enum HitDetailType {
   Intersection = 3,
 }
 
-/** Describes the [ViewAttachment]($backend), if any, from which the hit represented by a [[HitDetail]] originated.
- * @note Only [[SheetViewState]]s contain view attachments.
+/** As part of a [[HitPath]], describes the [ViewAttachment]($backend), if any, from which the hit represented by a [[HitDetail]] originated.
  * @beta
  */
 export interface ViewAttachmentHitInfo {
   /** The element Id of the [ViewAttachment]($backend) from which the hit originated. */
   readonly id: Id64String;
   /** The viewport that renders the contents of the attached view into the [[ScreenViewport]].
+   * @note Do not alter the state of this viewport.
    * @alpha
    */
   readonly viewport: Viewport;
+}
+
+/** As part of a [[HitPath]], describes the [SectionDrawing]($backend), if any, from which the hit represented by a [[HitDetail]] originated.
+ * @beta
+ */
+export interface SectionDrawingAttachmentHitInfo {
+  /** The viewport that renders the contents of the attached view into the [[ScreenViewport]].
+   * @note Do not alter the state of this viewport.
+   * @alpha
+   */
+  readonly viewport: Viewport;
+}
+
+/** As part of a [[HitDetail]], describes a series of "attached" views through which the hit was located.
+ * Typically, the contents of a view are rendered directly to the screen via [[HitDetail.viewport]].
+ * However, in some contexts one view might be "attached" to the viewport's view via a [ViewAttachment]($backend), [SectionDrawing]($backend), or both.
+ * HitPath captures this information in one of the following possible ways:
+ * 1. A [[SheetViewState]] renders another view through a [ViewAttachment]($backend), in which case [[viewAttachment]] will be defined.
+ * 2. A [[DrawingViewState]] renders a [[SpatialViewState]] through a [SectionDrawing]($backend) attachment, in which case [[sectionDrawingAttachment]] will be defined; or
+ * 3. A combination of 1 and 2 where a [ViewAttachment]($backend) on a sheet renders a [SectionDrawing]($backend) with an attached [[SpatialViewState]], in which both [viewAttachment]] and [[sectionDrawingAttachment]] will be defined.
+ * @beta
+ */
+export interface HitPath {
+  /** Details about the [ViewAttachment]($backend) through which the hit was obtained. */
+  viewAttachment?: ViewAttachmentHitInfo;
+  /** Details about the [SectionDrawing]($backend) attachment through which the hit was obtained. */
+  sectionDrawingAttachment?: SectionDrawingAttachmentHitInfo;
+};
+
+/** Information about a [contour line]($docs/learning/display/ContourDisplay.md) that generated a [[HitDetail]] or [[Pixel]].
+ * @see [[HitDetail.contour]]
+ * @see [[Pixel.Data.contour]]
+ * @beta
+ */
+export interface ContourHit {
+  /** The contour group that generated the contour line, as specified by [[ContourDisplay.groups]]. */
+  readonly group: ContourGroup;
+  /** True if the contour is a major contour line as specified by the [[group]] from which it originated, false if it is a minor contour line. */
+  readonly isMajor: boolean;
+  /** The height in world coordinates of the contour line. This is always a multiple of the [Contour.minorInterval]($common) defined for the [[group]].
+   * @note The multiple may be approximate due to the limitations of floating-point precision.
+   */
+  readonly elevation: number;
 }
 
 /** Arguments supplied to the [[HitDetail]] constructor.
@@ -151,17 +196,22 @@ export interface HitDetailProps {
    * @internal
    */
   readonly sourceIModel?: IModelConnection;
+  /** @internal */
+  readonly transformFromSourceIModel?: Transform;
   /** @internal chiefly for debugging */
   readonly tileId?: string;
   /** True if the hit originated from a reality model classifier.
    * @alpha
    */
   readonly isClassifier?: boolean;
-  /** Information about the [ViewAttachment]($backend) within which the hit geometry resides, if any.
-   * @note Only [[SheetViewState]]s can have view attachments.
+  /** Describes the path by which the hit was located through a series of attached views.
    * @beta
    */
-  readonly viewAttachment?: ViewAttachmentHitInfo;
+  readonly path?: HitPath;
+  /** Information about the [contour line]($docs/learning/display/ContourDisplay.md), if any, from which this hit originated.
+   * @beta
+   */
+  readonly contour?: ContourHit;
 }
 
 /** A HitDetail stores the result when locating geometry displayed in a view.
@@ -200,6 +250,8 @@ export class HitDetail {
    * @internal
    */
   public get sourceIModel(): IModelConnection | undefined { return this._props.sourceIModel; }
+  /** @internal */
+  public get transformFromSourceIModel(): Transform | undefined { return this._props.transformFromSourceIModel; }
   /** @internal chiefly for debugging */
   public get tileId(): string | undefined { return this._props.tileId; }
   /** True if the hit originated from a reality model classifier.
@@ -210,12 +262,20 @@ export class HitDetail {
    * @note Only [[SheetViewState]]s can have view attachments.
    * @beta
    */
-  public get viewAttachment(): ViewAttachmentHitInfo | undefined { return this._props.viewAttachment; }
+  public get viewAttachment(): ViewAttachmentHitInfo | undefined { return this._props.path?.viewAttachment; }
+  /** Describes the path by which the hit was located through a series of attached views.
+   * @beta
+   */
+  public get path(): HitPath | undefined { return this._props.path; }
+  /** Information about the [contour line]($docs/learning/display/ContourDisplay.md), if any, from which this hit originated.
+   * @beta
+   */
+  public get contour(): ContourHit | undefined { return this._props.contour; }
 
   /** Create a new HitDetail from the inputs to and results of a locate operation. */
   public constructor(props: HitDetailProps);
 
-  /** @deprecated in 4.1. Use the overload that takes a [[HitDetailProps]]. */
+  /** @deprecated in 4.1 - will not be removed until after 2026-06-13. Use the overload that takes a [[HitDetailProps]]. */
   public constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
 
   /** @internal */
@@ -241,6 +301,9 @@ export class HitDetail {
         isClassifier,
       };
     } else {
+      // Ignore an empty path.
+      const path = arg0.path?.sectionDrawingAttachment || arg0.path?.viewAttachment ? arg0.path : undefined;
+
       // Tempting to use { ...arg0 } but spread operator omits getters so, e.g., if input is a HitDetail we would lose all the properties.
       this._props = {
         testPoint: arg0.testPoint,
@@ -255,9 +318,11 @@ export class HitDetail {
         geometryClass: arg0.geometryClass,
         modelId: arg0.modelId,
         sourceIModel: arg0.sourceIModel,
+        transformFromSourceIModel: arg0.transformFromSourceIModel,
         tileId: arg0.tileId,
         isClassifier: arg0.isClassifier,
-        viewAttachment: arg0.viewAttachment,
+        path,
+        contour: arg0.contour,
       };
     }
   }
@@ -359,11 +424,18 @@ export class SnapDetail extends HitDetail {
   public get isHot(): boolean { return this.heat !== SnapHeat.None; }
   /** Determine whether the [[adjustedPoint]] is different than the [[snapPoint]]. This happens, for example, when points are adjusted for grids, acs plane snap, and AccuDraw. */
   public get isPointAdjusted(): boolean { return !this.adjustedPoint.isExactEqual(this.snapPoint); }
+
   /** Change the snap point. */
   public setSnapPoint(point: Point3d, heat: SnapHeat) {
     this.snapPoint.setFrom(point);
     this.adjustedPoint.setFrom(point);
     this.heat = heat;
+  }
+
+  /** Change the snap mode. */
+  public setSnapMode(snapMode: SnapMode) {
+    this.snapMode = snapMode;
+    this.sprite = IconSprites.getSpriteFromUrl(SnapDetail.getSnapSpriteUrl(snapMode));
   }
 
   /** Set curve primitive and HitGeometryType for this SnapDetail. */
@@ -472,6 +544,8 @@ export class SnapDetail extends HitDetail {
       case SnapMode.Origin: return `${IModelApp.publicPath}sprites/SnapOrigin.png`;
       case SnapMode.Bisector: return `${IModelApp.publicPath}sprites/SnapBisector.png`;
       case SnapMode.Intersection: return `${IModelApp.publicPath}sprites/SnapIntersection.png`;
+      case SnapMode.PerpendicularPoint: return `${IModelApp.publicPath}sprites/SnapPerpendicularPoint.png`;
+      case SnapMode.TangentPoint: return `${IModelApp.publicPath}sprites/SnapTangentPoint.png`;
     }
     return "";
   }

@@ -568,6 +568,11 @@ export namespace RenderSchedule {
     public readonly cuttingPlane?: TimelineEntryList<CuttingPlaneEntry, CuttingPlaneEntryProps, CuttingPlane | undefined>;
     /** The total time period represented by this timeline. */
     public readonly duration: Range1d;
+    /** Indicates whether the schedule editing session has been finalized and is no longer active.
+     * @internal
+     */
+
+    public isEditingCommitted: boolean = false;
 
     public constructor(props: TimelineProps) {
       this.duration = Range1d.createNull();
@@ -1206,11 +1211,25 @@ export namespace RenderSchedule {
     public get maxBatchId(): number {
       return this._maxBatchId ?? (this._maxBatchId = this.modelTimelines.reduce((accum, timeline) => Math.max(accum, timeline.maxBatchId), 0));
     }
+
+    /**
+     * Replaces all elementIds in a ScriptProps object with an empty string. Returns modified ScriptProps.
+     * @param scheduleScript The script props to modify.
+     * @internal */
+    public static removeScheduleScriptElementIds(scheduleScript: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps {
+      scheduleScript.forEach((modelTimeline) => {
+        modelTimeline.elementTimelines.forEach((elementTimeline) => {
+          if (elementTimeline.elementIds) {
+            elementTimeline.elementIds = "";
+          }
+        });
+      });
+      return scheduleScript;
+    }
   }
 
   /** A reference to a [[RenderSchedule.Script]], optionally identifying the source of the script.
-   * @see [DisplayStyle.loadScheduleScript]($backend) and [DisplayStyleState.scheduleScript]($frontend) to obtain the script reference for a display style on the frontend
-   * and backend respectively.
+   * @see [DisplayStyle.loadScheduleScript]($backend) to obtain the script reference for a display style.
    * @see [DisplayStyleState.scheduleScript]($frontend) or [DisplayStyleState.changeRenderTimeline]($frontend) to change a display style's script on the frontend.
    */
   export class ScriptReference {
@@ -1457,5 +1476,16 @@ export namespace RenderSchedule {
     public finish(): ScriptProps {
       return this._models.map((x) => x.finish());
     }
+  }
+
+  /**
+   * Describes changes made to a schedule script during an editing session.
+   * Used to notify which model timeline was affected and which element IDs were changed.
+   *
+   * @internal
+   */
+  export interface EditingChanges {
+    timeline: ModelTimeline;
+    elements: Set<Id64String>;
   }
 }

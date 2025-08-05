@@ -14,4 +14,5 @@ export abstract class MutableConstant extends Constant {
   public abstract override setNumerator(numerator: number): void;
   public abstract override setDenominator(denominator: number): void;
   public abstract override setDisplayLabel(displayLabel: string): void;
+  public abstract override setDescription(description: string): void;
 }

@@ -107,7 +107,7 @@ export class ClipVector implements Clipper {
         if (clipPrim)
           result._clips.push(clipPrim);
       }
-    } catch (e) {
+    } catch {
       result.clear();
     }
     return result;

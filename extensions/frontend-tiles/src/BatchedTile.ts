@@ -4,15 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, BeTimePoint, ByteStream, Logger } from "@itwin/core-bentley";
-import { Transform } from "@itwin/core-geometry";
 import { ColorDef, Tileset3dSchema } from "@itwin/core-common";
 import {
   GraphicBranch, GraphicBuilder, IModelApp, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
   TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TileUser, TileVisibility, Viewport,
 } from "@itwin/core-frontend";
-import { loggerCategory } from "./LoggerCategory";
-import { BatchedTileTree } from "./BatchedTileTree";
-import { frontendTilesOptions } from "./FrontendTiles";
+import { Transform } from "@itwin/core-geometry";
+import { BatchedTileTree } from "./BatchedTileTree.js";
+import { frontendTilesOptions } from "./FrontendTiles.js";
+import { IndexedDBCache, LocalCache, PassThroughCache } from "./IndexedDBCache.js";
+import { loggerCategory } from "./LoggerCategory.js";
 
 /** @internal */
 export interface BatchedTileParams extends TileParams {
@@ -29,6 +30,7 @@ export class BatchedTile extends Tile {
   private readonly _unskippable: boolean;
   /** Transform from the tile's local coordinate system to that of the tileset. */
   public readonly transformToRoot?: Transform;
+  private readonly _localCache: LocalCache;
 
   public get batchedTree(): BatchedTileTree {
     return this.tree as BatchedTileTree;
@@ -49,6 +51,8 @@ export class BatchedTile extends Tile {
       this._maximumSize = 0;
     }
 
+    this._localCache = frontendTilesOptions.useIndexedDBCache ? new IndexedDBCache("BatchedTileCache") : new PassThroughCache();
+
     if (!params.transformToRoot)
       return;
 
@@ -57,6 +61,7 @@ export class BatchedTile extends Tile {
     this.transformToRoot.multiplyRange(this.range, this.range);
     if (this._contentRange)
       this.transformToRoot.multiplyRange(this._contentRange, this._contentRange);
+
   }
 
   private get _batchedChildren(): BatchedTile[] | undefined {
@@ -137,8 +142,8 @@ export class BatchedTile extends Tile {
   public override async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
     const url = new URL(this.contentId, this.batchedTree.reader.baseUrl);
     url.search = this.batchedTree.reader.baseUrl.search;
-    const response = await fetch(url.toString());
-    return response.arrayBuffer();
+    const response = await this._localCache.fetch(url.pathname.toString(), fetch, url.toString());
+    return response;
   }
 
   public override async readContent(data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
@@ -157,6 +162,11 @@ export class BatchedTile extends Tile {
         isLeaf: this.isLeaf,
         // Don't waste time attempting to split based on model groupings if all models are in the same group.
         modelGroups: modelGroups && modelGroups.length > 1 ? modelGroups : undefined,
+        tileData: {
+          ecefTransform: this.tree.iModel.ecefLocation?.getTransform() ?? Transform.createIdentity(),
+          range: this.range,
+          layerClassifiers: this.tree.layerHandler?.layerClassifiers,
+        },
       });
 
       if (this.transformToRoot) {

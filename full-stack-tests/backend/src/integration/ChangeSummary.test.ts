@@ -13,6 +13,7 @@ import {
   BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ECSqlStatement, ElementOwnsChildElements, IModelHost, IModelJsFs,
   SpatialCategory,
 } from "@itwin/core-backend";
+import { _hubAccess } from "@itwin/core-backend/lib/cjs/internal/Symbols";
 import { HubWrappers, IModelTestUtils, KnownTestLocations, TestChangeSetUtility } from "@itwin/core-backend/lib/cjs/test/index";
 import { HubUtility, TestUserType } from "../HubUtility";
 
@@ -35,6 +36,7 @@ function getChangeSummaryAsJson(iModel: BriefcaseDb, changeSummaryId: string) {
   const changeSummary: ChangeSummary = ChangeSummaryManager.queryChangeSummary(iModel, changeSummaryId);
   const content = { id: changeSummary.id, changeSet: changeSummary.changeSet, instanceChanges: new Array<any>() };
 
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId", (stmt) => {
     stmt.bindId(1, changeSummary.id);
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -109,6 +111,7 @@ describe("ChangeSummary", () => {
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,ExtendedProperties FROM change.ChangeSummary ORDER BY ECInstanceId", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -120,6 +123,7 @@ describe("ChangeSummary", () => {
         assert.isAtLeast(rowCount, 3);
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT ECClassId,Summary,WsgId,ParentWsgId,Description,PushDate,UserCreated FROM imodelchange.ChangeSet ORDER BY Summary.Id", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -145,7 +149,7 @@ describe("ChangeSummary", () => {
     setupTest(emptyIModelId);
     await purgeAcquiredBriefcases(accessToken, emptyIModelId);
 
-    const changeSets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: emptyIModelId });
+    const changeSets = await IModelHost[_hubAccess].queryChangesets({ accessToken, iModelId: emptyIModelId });
     assert.equal(changeSets.length, 0);
 
     const iModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: emptyIModelId });
@@ -158,6 +162,7 @@ describe("ChangeSummary", () => {
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT WsgId, Summary, ParentWsgId, Description, PushDate, UserCreated FROM imodelchange.ChangeSet", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
       });
@@ -169,7 +174,7 @@ describe("ChangeSummary", () => {
   it("Extract ChangeSummary for single changeset", async () => {
     setupTest(iModelId);
 
-    const changeSets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId });
+    const changeSets = await IModelHost[_hubAccess].queryChangesets({ accessToken, iModelId });
     assert.isAtLeast(changeSets.length, 3);
     // extract summary for second changeset
     const changesetId = changeSets[1].id;
@@ -187,6 +192,7 @@ describe("ChangeSummary", () => {
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT WsgId, Summary, ParentWsgId, Description, PushDate, UserCreated FROM imodelchange.ChangeSet", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
         const row: any = myStmt.getRow();
@@ -207,7 +213,7 @@ describe("ChangeSummary", () => {
   it("Extracting ChangeSummaries for a range of changesets", async () => {
     setupTest(iModelId);
 
-    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId });
+    const changesets = await IModelHost[_hubAccess].queryChangesets({ accessToken, iModelId });
     assert.isAtLeast(changesets.length, 3);
     const firstChangeSet = changesets[0];
     const lastChangeSet = changesets[1];
@@ -222,6 +228,7 @@ describe("ChangeSummary", () => {
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT WsgId, Summary, ParentWsgId, Description, PushDate, UserCreated FROM imodelchange.ChangeSet ORDER BY Summary.Id", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
         let row: any = myStmt.getRow();
@@ -250,7 +257,7 @@ describe("ChangeSummary", () => {
   it("Subsequent ChangeSummary extractions", async () => {
     setupTest(iModelId);
 
-    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId });
+    const changesets = await IModelHost[_hubAccess].queryChangesets({ accessToken, iModelId });
     assert.isAtLeast(changesets.length, 3);
     // first extraction: just first changeset
     const firstChangesetId = changesets[0].id;
@@ -268,6 +275,7 @@ describe("ChangeSummary", () => {
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT WsgId, Summary, ParentWsgId, Description, PushDate, UserCreated FROM imodelchange.ChangeSet", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
         const row: any = myStmt.getRow();
@@ -294,6 +302,7 @@ describe("ChangeSummary", () => {
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT cset.WsgId changesetId FROM change.ChangeSummary csum JOIN imodelchange.ChangeSet cset ON csum.ECInstanceId=cset.Summary.Id ORDER BY csum.ECInstanceId", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -318,11 +327,11 @@ describe("ChangeSummary", () => {
 
     let perfLogger = new PerfLogger("CreateChangeSummaries");
     await ChangeSummaryManager.createChangeSummaries({ accessToken, iTwinId, iModelId, range: { first: 0 } });
-    perfLogger.dispose();
+    perfLogger[Symbol.dispose]();
 
     perfLogger = new PerfLogger("IModelDb.open");
     const iModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId });
-    perfLogger.dispose();
+    perfLogger[Symbol.dispose]();
     try {
       assert.exists(iModel);
       ChangeSummaryManager.attachChangeCache(iModel);
@@ -333,6 +342,7 @@ describe("ChangeSummary", () => {
         IModelJsFs.mkdirSync(outDir);
 
       const changeSummaries = new Array<ChangeSummary>();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.ChangeSummary ORDER BY ECInstanceId", (stmt) => {
         perfLogger = new PerfLogger("ChangeSummaryManager.queryChangeSummary");
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -340,7 +350,7 @@ describe("ChangeSummary", () => {
           const csum: ChangeSummary = ChangeSummaryManager.queryChangeSummary(iModel, Id64.fromJSON(row.id));
           changeSummaries.push(csum);
         }
-        perfLogger.dispose();
+        perfLogger[Symbol.dispose]();
       });
 
       for (const changeSummary of changeSummaries) {
@@ -349,6 +359,7 @@ describe("ChangeSummary", () => {
           IModelJsFs.unlinkSync(filePath);
 
         const content = { id: changeSummary.id, changeSet: changeSummary.changeSet, instanceChanges: new Array<any>() };
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         iModel.withPreparedStatement("SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId", (stmt) => {
           stmt.bindId(1, changeSummary.id);
           perfLogger = new PerfLogger(`ChangeSummaryManager.queryInstanceChange for all instances in ChangeSummary ${changeSummary.id}`);
@@ -384,7 +395,7 @@ describe("ChangeSummary", () => {
 
             content.instanceChanges.push(instanceChange);
           }
-          perfLogger.dispose();
+          perfLogger[Symbol.dispose]();
         });
 
         IModelJsFs.writeFileSync(filePath, JSON.stringify(content));
@@ -437,7 +448,7 @@ describe("ChangeSummary", () => {
 
     // Validate that the second change summary captures the change to the parent correctly
     try {
-      const changeSummaryIds = await ChangeSummaryManager.createChangeSummaries({ accessToken, iTwinId: iModel.iTwinId, iModelId, range: { first: 0 }});
+      const changeSummaryIds = await ChangeSummaryManager.createChangeSummaries({ accessToken, iTwinId: iModel.iTwinId, iModelId, range: { first: 0 } });
       assert.strictEqual(2, changeSummaryIds.length);
 
       ChangeSummaryManager.attachChangeCache(iModel);
@@ -470,7 +481,7 @@ describe("ChangeSummary", () => {
       await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
     }
 
-    await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId: testITwinId, iModelId: testIModelId });
+    await IModelHost[_hubAccess].deleteIModel({ accessToken, iTwinId: testITwinId, iModelId: testIModelId });
   });
 
   // FIXME: Failed OIDC signin for TestUserType.SuperManager.
@@ -495,7 +506,7 @@ describe("ChangeSummary", () => {
     // User2 applies the change set and extracts the change summary
     await iModel.pullChanges({ accessToken: userContext2 });
 
-    const changeSummariesIds = await ChangeSummaryManager.createChangeSummaries({ accessToken: userContext2, iTwinId: iModel.iTwinId, iModelId: iModel.iModelId, range: { first: 0 }});
+    const changeSummariesIds = await ChangeSummaryManager.createChangeSummaries({ accessToken: userContext2, iTwinId: iModel.iTwinId, iModelId: iModel.iModelId, range: { first: 0 } });
     if (changeSummariesIds.length !== 1)
       throw new Error("ChangeSet summary extraction returned invalid ChangeSet summary IDs.");
 
@@ -503,9 +514,10 @@ describe("ChangeSummary", () => {
     // const changeSummaryJson = getChangeSummaryAsJson(iModel, changeSummaryId);
     // console.log(JSON.stringify(changeSummaryJson, undefined, 2)); // eslint-disable-line
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModel.withPreparedStatement(
-      "SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId",
-      (sqlStatement: ECSqlStatement) => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      "SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId", (sqlStatement: ECSqlStatement) => {
         sqlStatement.bindId(1, changeSummaryId);
         while (sqlStatement.step() === DbResult.BE_SQLITE_ROW) {
           const instanceChangeId = Id64.fromJSON(sqlStatement.getRow().id);
@@ -523,7 +535,7 @@ describe("ChangeSummary", () => {
 
   it("Detaching and reattaching change cache", async () => {
     setupTest(iModelId);
-    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId });
+    const changesets = await IModelHost[_hubAccess].queryChangesets({ accessToken, iModelId });
     const iModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId, asOf: IModelVersion.first().toJSON(), briefcaseId: 0 });
     try {
       for (const changeset of changesets) {
@@ -534,6 +546,7 @@ describe("ChangeSummary", () => {
         ChangeSummaryManager.attachChangeCache(iModel);
         assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         iModel.withPreparedStatement("SELECT WsgId, Summary FROM imodelchange.ChangeSet WHERE Summary.Id=?", (myStmt) => {
           myStmt.bindId(1, changeSummaryId);
           assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
@@ -557,6 +570,7 @@ describe("ChangeSummary", () => {
         ChangeSummaryManager.attachChangeCache(iModel);
         assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         iModel.withPreparedStatement("SELECT WsgId, Summary FROM imodelchange.ChangeSet WHERE Summary.Id=?", (myStmt) => {
           myStmt.bindId(1, changeSummaryId);
           assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
@@ -593,6 +607,7 @@ describe("ChangeSummary", () => {
     try {
       ChangeSummaryManager.attachChangeCache(iModel);
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,ExtendedProperties FROM change.ChangeSummary ORDER BY ECInstanceId", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -603,6 +618,7 @@ describe("ChangeSummary", () => {
         assert.isAtLeast(rowCount, 4);
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT ECClassId,Summary,WsgId,ParentWsgId,Description,PushDate,UserCreated FROM imodelchange.ChangeSet ORDER BY Summary.Id", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -624,7 +640,7 @@ describe("ChangeSummary", () => {
   it("Create change summaries for just the latest change set", async () => {
     setupTest(iModelId);
 
-    const first = (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.latest() })).index;
+    const first = (await IModelHost[_hubAccess].getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.latest() })).index;
 
     const summaryIds = await ChangeSummaryManager.createChangeSummaries({ accessToken, iTwinId, iModelId, range: { first } });
     const iModel = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId });
@@ -632,6 +648,7 @@ describe("ChangeSummary", () => {
     try {
       ChangeSummaryManager.attachChangeCache(iModel);
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,ExtendedProperties FROM change.ChangeSummary ORDER BY ECInstanceId", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -642,6 +659,7 @@ describe("ChangeSummary", () => {
         assert.strictEqual(rowCount, 1);
       });
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       iModel.withPreparedStatement("SELECT ECClassId,Summary,WsgId,ParentWsgId,Description,PushDate,UserCreated FROM imodelchange.ChangeSet ORDER BY Summary.Id", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -663,7 +681,7 @@ describe("ChangeSummary", () => {
     setupTest(iModelId);
     let errorThrown = false;
 
-    const first = (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.latest() })).index;
+    const first = (await IModelHost[_hubAccess].getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.latest() })).index;
     try {
       await ChangeSummaryManager.createChangeSummaries({ accessToken, iTwinId, iModelId, range: { first, end: 0 } });
     } catch (err) {

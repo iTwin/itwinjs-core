@@ -6,8 +6,6 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-// cspell:word JSONXY
-// cspell:word CWXY CCWXY
 
 import { BeJSONFunctions, Geometry, PerpParallelOptions } from "../Geometry";
 import { Angle } from "./Angle";
@@ -128,6 +126,10 @@ export class XY implements XAndY {
   /** Returns true if the x,y components are both small by metric metric tolerance */
   public get isAlmostZero(): boolean {
     return Geometry.isSmallMetricDistance(this.x) && Geometry.isSmallMetricDistance(this.y);
+  }
+  /** Return true if the x and y components are all exactly zero */
+  public get isZero(): boolean {
+    return this.x === 0.0 && this.y === 0.0;
   }
   /** Return the largest absolute value of any component */
   public maxAbs(): number {
@@ -311,6 +313,11 @@ export class Point2d extends XY implements BeJSONFunctions {
       this.y + vectorA.y * scalarA + vectorB.y * scalarB + vectorC.y * scalarC,
       result,
     );
+  }
+  /** Multiply the x, y parts by scale. */
+  public scaleInPlace(scale: number) {
+    this.x *= scale;
+    this.y *= scale;
   }
   /**
    * Return the dot product of vector from this to targetA and vector from this to targetB

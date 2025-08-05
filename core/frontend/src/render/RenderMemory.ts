@@ -185,6 +185,8 @@ export namespace RenderMemory {
     /** @internal */
     public addFeatureOverrides(numBytes: number) { this.addConsumer(ConsumerType.FeatureOverrides, numBytes); }
     /** @internal */
+    public addContours(numBytes: number) { this.addConsumer(ConsumerType.FeatureOverrides, numBytes); }
+    /** @internal */
     public addClipVolume(numBytes: number) { this.addConsumer(ConsumerType.ClipVolumes, numBytes); }
     /** @internal */
     public addPlanarClassifier(numBytes: number) { this.addConsumer(ConsumerType.PlanarClassifiers, numBytes); }

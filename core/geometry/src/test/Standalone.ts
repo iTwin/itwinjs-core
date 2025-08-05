@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { assert } from "vitest";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 
 // GeometryCoreTestIO.consoleLog("=========================");

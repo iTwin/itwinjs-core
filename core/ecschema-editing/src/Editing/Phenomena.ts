@@ -6,47 +6,46 @@
  * @module Editing
  */
 
-import { PhenomenonProps, SchemaKey } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import { Phenomenon, PhenomenonProps, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
+import { SchemaContextEditor } from "./Editor";
 import { MutablePhenomenon } from "./Mutable/MutablePhenomenon";
+import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
+import { SchemaItems } from "./SchemaItems";
 
 /**
  * @alpha
  * A class allowing you to create schema items of type Phenomenon.
  */
-export class Phenomena {
-  public constructor(protected _schemaEditor: SchemaContextEditor) { }
-
-  public async create(schemaKey: SchemaKey, name: string, definition: string, displayLabel?: string): Promise<SchemaItemEditResults> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
-
-    const newPhenomenon = (await schema.createPhenomenon(name)) as MutablePhenomenon;
-    if (newPhenomenon === undefined)
-      return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
-
-    if (displayLabel)
-      newPhenomenon.setDisplayLabel(displayLabel);
-
-    await newPhenomenon.setDefinition(definition);
-
-    return { itemKey: newPhenomenon.key };
+export class Phenomena extends SchemaItems {
+  protected override get itemTypeClass(): typeof Phenomenon {
+    return Phenomenon;
   }
 
-  public async createFromProps(schemaKey: SchemaKey, phenomenonProps: PhenomenonProps): Promise<SchemaItemEditResults> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+  public constructor(schemaEditor: SchemaContextEditor) {
+    super(SchemaItemType.Phenomenon, schemaEditor);
+  }
 
-    if (phenomenonProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
+  public async create(schemaKey: SchemaKey, name: string, definition: string, displayLabel?: string): Promise<SchemaItemKey> {
+    try {
+      const newPhenomenon = await this.createSchemaItem<Phenomenon>(schemaKey, this.schemaItemType, (schema) => schema.createPhenomenon.bind(schema), name) as MutablePhenomenon;
 
-    const newPhenomenon = (await schema.createPhenomenon(phenomenonProps.name));
-    if (newPhenomenon === undefined)
-      return { errorMessage: `Failed to create class ${phenomenonProps.name} in schema ${schemaKey.toString(true)}.` };
+      if (displayLabel)
+        newPhenomenon.setDisplayLabel(displayLabel);
 
-    await newPhenomenon.fromJSON(phenomenonProps);
-    return { itemKey: newPhenomenon.key };
+      await newPhenomenon.setDefinition(definition);
+
+      return newPhenomenon.key;
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
+    }
+  }
+
+  public async createFromProps(schemaKey: SchemaKey, phenomenonProps: PhenomenonProps): Promise<SchemaItemKey> {
+    try {
+      const newPhenomenon = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createPhenomenon.bind(schema), phenomenonProps);
+      return newPhenomenon.key;
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, phenomenonProps.name!, schemaKey), e);
+    }
   }
 }

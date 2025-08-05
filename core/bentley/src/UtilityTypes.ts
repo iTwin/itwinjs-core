@@ -6,6 +6,22 @@
  * @module Utils
  */
 
+/**
+ * A type that recursively makes all properties of object `T` required, including all properties of nested objects.
+ * @public
+ */
+export type DeepRequiredObject<T> = T extends object
+  ? { [K in keyof T]-?: DeepRequiredObject<T[K]> }
+  : T
+
+/**
+ * A type that recursively makes all properties of object `T` readonly, including all properties of nested objects.
+ * @public
+ */
+export type DeepReadonlyObject<T> = T extends object
+  ? { readonly [K in keyof T]: DeepReadonlyObject<T[K]> } :
+  T
+
 /** The inverse of TypeScript's Readonly<T> type, producing a type that has all the properties of `T` with any `readonly` modifiers removed.
  * @public
  */
@@ -72,7 +88,7 @@ export function asInstanceOf<T>(obj: any, constructor: Constructor<T>): T | unde
  * @public
  */
 export type NonFunctionPropertyNamesOf<T> = {
-  [K in keyof T]: T[K] extends Function ? never : K;
+  [K in keyof T]: T[K] extends (...args: any) => any ? never : K;
 }[keyof T];
 
 /** Produces a type consisting of all of the public properties of `T` except for those of type `function`.
@@ -98,6 +114,11 @@ export type PickAsyncMethods<T> = { [P in keyof T]: T[P] extends AsyncFunction ?
  */
 export type AsyncMethodsOf<T> = { [P in keyof T]: T[P] extends AsyncFunction ? P : never }[keyof T];
 
+/** A type that is either `T` or `Promise<T>`.
+ * @public
+ */
+export type MaybePromise<T> = T | Promise<T>;
+
 /** Extracts the type to which the Promise returned by an async function resolves.
  * @public
  */
@@ -106,7 +127,7 @@ export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any
 /** The members of `T` that are functions and no other properties
  * @public
  */
-export type PickMethods<T> = { [P in keyof T]: T[P] extends Function ? T[P] : never; };
+export type PickMethods<T> = { [P in keyof T]: T[P] extends (...args: any) => any ? T[P] : never; };
 
 /** The members of `T` that are functions that do not return a Promise
  * @public
@@ -120,7 +141,7 @@ export type PickSyncMethods<T> = Omit<PickMethods<T>, AsyncMethodsOf<T>>;
  * ```
  * @public
  */
-export function omit<T extends {}, K extends readonly (keyof T)[]>(t: T, keys: K): Omit<T, K[number]> {
+export function omit<T extends object, K extends readonly (keyof T)[]>(t: T, keys: K): Omit<T, K[number]> {
   const clone = { ...t };
   for (const key of keys)
     delete clone[key];

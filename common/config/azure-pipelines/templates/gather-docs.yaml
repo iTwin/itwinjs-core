@@ -103,12 +103,6 @@ steps:
       artifactName: Connector-Framework Docs
       buildTag: hasDocs
       useCurrentDocsArtifact: ${{ parameters.useCurrentConnectorFrameworkDocsArtifact }}
-      stagingSteps:
-        - task: CopyFiles@2
-          displayName: Copy Connector Framework Docs to staging
-          inputs:
-            SourceFolder: $(Pipeline.Workspace)/Connector-Framework Docs
-            TargetFolder: ${{ parameters.stagingDir }}/reference/connector-framework/
 
   # The .updated.json is cached to track when the docs were last updated
   - task: DownloadPipelineArtifact@2

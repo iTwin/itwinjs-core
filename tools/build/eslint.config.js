@@ -1,4 +1,5 @@
 const iTwinPlugin = require("@itwin/eslint-plugin");
+const eslintBaseConfig = require("../../common/config/eslint/eslint.config.base");
 
 module.exports = [
   {
@@ -8,7 +9,8 @@ module.exports = [
   {
     files: ["**/*.ts"],
     rules: {
-      "deprecation/deprecation": "off"
+      "@typescript-eslint/no-deprecated": "off"
     }
-  }
+  },
+  ...eslintBaseConfig
 ];

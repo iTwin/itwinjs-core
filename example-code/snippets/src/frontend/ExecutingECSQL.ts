@@ -93,7 +93,7 @@ async function executeECSql_HandlingRows(iModel: IModelConnection): Promise<void
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_HandlingRows_ForLoopJsLiteral
     for await (const row of iModel.createQueryReader("SELECT * FROM bis.Element")) {
-      const jsRow: {} = row.toRow(); // explicitly typed for example purposes
+      const jsRow: object = row.toRow(); // explicitly typed for example purposes
     }
     // __PUBLISH_EXTRACT_END__
   }
@@ -102,7 +102,7 @@ async function executeECSql_HandlingRows(iModel: IModelConnection): Promise<void
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_HandlingRows_StepJsLiteral
     const reader = iModel.createQueryReader("SELECT * FROM bis.Element");
     while (await reader.step()) {
-      const jsRow: {} = reader.current.toRow(); // explicitly typed for example purposes
+      const jsRow: object = reader.current.toRow(); // explicitly typed for example purposes
     }
     // __PUBLISH_EXTRACT_END__
   }

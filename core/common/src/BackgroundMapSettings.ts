@@ -67,11 +67,11 @@ export interface BackgroundMapProps {
 export interface DeprecatedBackgroundMapProps {
   /** Identifies the source of the map tiles. Currently supported providers are "BingProvider" and "MapBoxProvider".
    * Default value: "BingProvider"
-   * @deprecated in 3.x. use MapImageryProps.backgroundBase.
+   * @deprecated in 3.6.0 - might be removed in next major version. Use MapImageryProps.backgroundBase.
    */
   providerName?: string;
   /** Options for customizing the tiles supplied by the provider. If undefined, default values of all members are used.
-   * @deprecated in 3.x. use MapImageryProps.backgroundBase
+   * @deprecated in 3.6.0 - might be removed in next major version. Use MapImageryProps.backgroundBase
    */
   providerData?: {
     /** The type of map graphics to request. Default value: BackgroundMapType.Hybrid. */
@@ -204,9 +204,9 @@ export class BackgroundMapSettings {
 
     // Preserve deprecated imagery provider properties.
     if ("BingProvider" !== this._provider.name)
-      props.providerName = this._provider.name; // eslint-disable-line deprecation/deprecation
+      props.providerName = this._provider.name; // eslint-disable-line @typescript-eslint/no-deprecated
     if (BackgroundMapType.Hybrid !== this._provider.type)
-      props.providerData = { mapType: this._provider.type }; // eslint-disable-line deprecation/deprecation
+      props.providerData = { mapType: this._provider.type }; // eslint-disable-line @typescript-eslint/no-deprecated
 
     return props;
   }

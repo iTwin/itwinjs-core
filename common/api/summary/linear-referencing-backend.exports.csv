@@ -1,28 +1,28 @@
 sep=;
-Release Tag;API Item
-beta;DistanceExpression 
-beta;ILinearElementProvidedBySource 
-beta;ILinearLocationLocatesElement 
-beta;ILinearlyLocatedAlongILinearElement 
-beta;ILinearlyLocatedAttributesElement 
-beta;IReferentReferencesElement 
-beta;LinearElement
-beta;LinearLocation 
-beta;class LinearLocationElement 
-beta;LinearlyLocated
-beta;class LinearlyLocatedAttribution 
-beta;LinearlyLocatedBase
-beta;LinearlyLocatedMultipleAt 
-beta;LinearlyLocatedMultipleFromTo 
-beta;LinearlyLocatedSingleAt 
-beta;LinearlyLocatedSingleFromTo 
-beta;LinearlyReferencedAtLocation 
-beta;LinearlyReferencedAtPositionRefersToReferent 
-beta;LinearlyReferencedFromPositionRefersToReferent 
-beta;LinearlyReferencedFromToLocation 
-beta;LinearlyReferencedLocation 
-beta;LinearlyReferencedToPositionRefersToReferent 
-beta;class LinearPhysicalElement 
-beta;LinearReferencingSchema 
-beta;Referent 
-beta;class ReferentElement 
+Release Tag;API Item Type;API Item Name
+beta;class;DistanceExpression
+beta;class;ILinearElementProvidedBySource
+beta;class;ILinearLocationLocatesElement
+beta;class;ILinearlyLocatedAlongILinearElement
+beta;class;ILinearlyLocatedAttributesElement
+beta;class;IReferentReferencesElement
+beta;class;LinearElement
+beta;class;LinearLocation
+beta;class;LinearLocationElement
+beta;class;LinearlyLocated
+beta;class;LinearlyLocatedAttribution
+beta;interface;LinearlyLocatedBase
+beta;interface;LinearlyLocatedMultipleAt
+beta;interface;LinearlyLocatedMultipleFromTo
+beta;interface;LinearlyLocatedSingleAt
+beta;interface;LinearlyLocatedSingleFromTo
+beta;class;LinearlyReferencedAtLocation
+beta;class;LinearlyReferencedAtPositionRefersToReferent
+beta;class;LinearlyReferencedFromPositionRefersToReferent
+beta;class;LinearlyReferencedFromToLocation
+beta;class;LinearlyReferencedLocation
+beta;class;LinearlyReferencedToPositionRefersToReferent
+beta;class;LinearPhysicalElement
+beta;class;LinearReferencingSchema
+beta;class;Referent
+beta;class;ReferentElement

@@ -12,6 +12,7 @@ import { HitDetail } from "../../HitDetail";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { createModelMapLayerTileTreeReference, MapLayerImageryProvider, TileTreeReference } from "../internal";
+import { DecorateContext } from "../../ViewContext";
 
 /**
  * A [[TileTreeReference]] to be used specifically for [[MapTileTree]]s.
@@ -67,6 +68,11 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
   /** Returns the transparency value of the map layer. */
   public get transparency() { return this._transparency; }
 
+  public override canSupplyToolTip(hit: HitDetail): boolean {
+    const tree = this.treeOwner.tileTree;
+    return undefined !== tree && hit.iModel === tree.iModel && tree.modelId === hit.sourceId;
+  }
+
   /* Returns a tooltip describing the hit with the map layer name. */
   public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
     const tree = this.treeOwner.tileTree;
@@ -78,6 +84,10 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
     const div = document.createElement("div");
     div.innerHTML = strings.join("<br>");
     return div;
+  }
+
+  public override decorate(_context: DecorateContext): void {
+    this.imageryProvider?.decorate(_context);
   }
 }
 

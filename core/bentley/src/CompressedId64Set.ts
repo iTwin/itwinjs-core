@@ -55,7 +55,7 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
   }
 
   /** Create a sorted array from `ids`, then return a compact string representation of those Ids.
-   * @see [[compressIds]] if `ids` is known to already be sorted.
+   * @see [[CompressedId64Set.compressIds]] if `ids` is known to already be sorted.
    */
   export function sortAndCompress(ids: Iterable<Id64String>): CompressedId64Set {
     // `string` is an Iterable<string>. In that case assume caller passed a single Id64String.

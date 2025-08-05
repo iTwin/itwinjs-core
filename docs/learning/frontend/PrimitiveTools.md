@@ -150,7 +150,9 @@ Setting [ToolAdmin.acsPlaneSnapLock]($frontend) makes it easier to work on the A
 
 ![AccuDraw example](./accudraw.png "Example of AccuDraw using axis lock to constrain snapped point")
 
-[AccuDrawHintBuilder]($frontend) is an aide for entering coordinate data. By using *shortcuts* to position and orient the AccuDraw compass, locking a direction, or entering distance and angle values, the user is able to accurately enter points. AccuDraw isn't strictly controlled by the user however, the tool is also able to provide additional context to AccuDraw in the form of *hints* to make the tool easier to use.
+[AccuDraw]($frontend) is an aide for entering coordinate data. By using *shortcuts* to position and orient the AccuDraw compass, locking a direction, or entering distance and angle values, the user is able to accurately input points. AccuDraw isn't strictly controlled by the user however, interactive tools are able to provide additional context to AccuDraw in the form of *hints* via [AccuDrawHintBuilder]($frontend) for a more intuitive experience.
+
+[AccuDraw]($frontend) does not include a user interface or a default set of keyboard shortcuts. Applications are expected to provide both the user interface and a suitable set of shortcuts. Refer [here](./AccuDrawUI) for information regarding a user interface for AccuDraw provided by iTwin.js and how to use it.
 
 > When [ToolAdmin.acsContextLock]($frontend) is enabled the AccuDraw shortcuts for orienting the compass to top, front, or side will be relative to the view's ACS instead of the global system. Additionally, when AccuDraw first becomes active when using an interactive tool it will orient itself to the view's ACS.
 
@@ -190,17 +192,3 @@ Tools should use [AccuDrawHintBuilder.getCurrentRotation]($frontend) to get the 
 3. Current view rotation
 
 > By calling [AccuDrawHintBuilder.getCurrentRotation]($frontend) the interactive tool doesn't need to consider if AccuDraw is active or not.
-
-### AccuDraw and Nearest Snap
-
-You can combine AccuDraw's distance and axis locks with [SnapMode.Nearest]($frontend) to adjust the current point to the intersection with the snapped geometry.
-
-![accudraw nearest axis lock](./accudraw-nearest-axis.png "Example showing keypoint vs. nearest snap with axis lock")
-
-1. Keypoint snap projects the closest keypoint on the snapped geometry to the locked axis
-2. Nearest snap finds the intersection of the locked axis and the snapped geometry
-
-![accudraw nearest distance lock](./accudraw-nearest-distance.png "Example showing keypoint vs. nearest snap with distance lock")
-
-1. Keypoint snap sets the current point at the locked distance along the vector from the compass origin to closest keypoint.
-2. Nearest snap finds the intersection between the circle defined by the locked distance and the snapped geometry.

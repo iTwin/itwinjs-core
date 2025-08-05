@@ -2,10 +2,35 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import { BentleyError, BentleyStatus } from "../BentleyError";
+import { describe, expect, it } from "vitest";
+import { BentleyError, BentleyStatus, ITwinError } from "../BentleyError";
 
 describe("BentleyError.getErrorMessage", () => {
+  it("test iTwinError", () => {
+    expect(ITwinError.isError(null, "a", "b")).false;
+    expect(ITwinError.isError(undefined, "a", "b")).false;
+    expect(ITwinError.isError(1, "a", "b")).false;
+    expect(ITwinError.isError("test", "a", "b")).false;
+    expect(ITwinError.isError({ a: 34 }, "a", "b")).false;
+    expect(ITwinError.isError({ iTwinErrorId: 34 }, "a", "b")).false;
+    expect(ITwinError.isError({ iTwinErrorId: null }, "a", "b")).false;
+    expect(ITwinError.isError({ iTwinErrorId: undefined }, "a", "b")).false;
+    expect(ITwinError.isError({ iTwinErrorId: {} }, "a", "b")).false;
+    expect(ITwinError.isError({ iTwinErrorId: { a: null } }, "a", "b")).false;
+
+    const err: ITwinError = {
+      iTwinErrorId: {
+        key: "key1",
+        scope: "scope1",
+      },
+      name: "testErr",
+      message: "test message",
+    };
+    expect(ITwinError.isError(err, "a", "b")).false;
+    expect(ITwinError.isError(err, "scope1", "b")).false;
+    expect(ITwinError.isError(err, "scope1", "key1")).true;
+    expect(ITwinError.isError(ITwinError.create(err), "scope1", "key1")).true;
+  });
   it("returns string values", () => {
     expect(BentleyError.getErrorMessage("foo")).to.equal("foo");
     expect(BentleyError.getErrorMessage("")).to.equal("");
@@ -138,7 +163,7 @@ describe("BentleyError.getErrorProps", () => {
     const err = new BentleyError(BentleyStatus.SUCCESS, "message");
     const serialized = BentleyError.getErrorProps(err);
     expect(serialized).to.be.an("object");
-    expect(serialized).to.eql({ message: err.toString(), stack: err.stack });
+    expect(serialized).to.eql({ message: err.toString(), stack: err.stack });  // eslint-disable-line @typescript-eslint/no-base-to-string
     expect(serialized).to.not.have.property("metadata");
   });
 
@@ -147,7 +172,7 @@ describe("BentleyError.getErrorProps", () => {
     const err = new BentleyError(BentleyStatus.ERROR, "fail", () => metadata);
     const serialized = BentleyError.getErrorProps(err);
     expect(serialized).to.be.an("object");
-    expect(serialized).to.eql({ message: err.toString(), stack: err.stack, metadata });
+    expect(serialized).to.eql({ message: err.toString(), stack: err.stack, metadata });  // eslint-disable-line @typescript-eslint/no-base-to-string
   });
 
   it("returns values that can safely be JSON round-tripped", () => {

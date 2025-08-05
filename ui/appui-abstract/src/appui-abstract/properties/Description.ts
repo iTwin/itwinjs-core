@@ -86,8 +86,13 @@ export interface PropertyDescription {
   /** Quantity type key used to look up formatting and parsing specs. This is typically either the name of a quantity type used by a tool
    *  or the full name of a KOQ (schema:koq).
    * @alpha
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `kindOfQuantityName` instead.
    */
   quantityType?: string;
+  /** [[KindOfQuantity]] full name used to look up [[FormatProps]]
+   * @beta
+   */
+  kindOfQuantityName?: string;
   /** Get the custom DataController by this name and register it with the property editor */
   dataController?: string;
   /** Should property label for composite (struct & array) properties be rendered. */

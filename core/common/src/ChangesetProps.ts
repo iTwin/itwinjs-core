@@ -53,6 +53,8 @@ export enum ChangesetType {
   Regular = 0,
   /** changeset *does* contain schema changes. */
   Schema = 1,
+  /** Schema changeset pushed by iModel with SchemaSync enabled */
+  SchemaSync = Schema | 64,
 }
 
 /** Properties of a changeset
@@ -77,10 +79,12 @@ export interface ChangesetProps {
   userCreated: string;
   /** The size, in bytes, of this changeset */
   size: number;
+  /** The uncompressed size, in bytes, of this changeset */
+  uncompressedSize?: number;
 }
 
 /** Properties of a changeset file
- * @internal
+ * @public
  */
 export interface ChangesetFileProps extends ChangesetProps {
   /** The full pathname of the local file holding this changeset. */
@@ -97,4 +101,32 @@ export interface ChangesetRange {
   first: ChangesetIndex;
   /** index of last changeset. If undefined, all changesets after first are returned. */
   end?: ChangesetIndex;
+}
+
+/**
+ * Statistics for a single SQL statement executed during changeset application.
+ * @beta
+ */
+export interface PerStatementHealthStats {
+  sqlStatement: string;
+  dbOperation: string;
+  rowCount: number;
+  elapsedMs: number;
+  fullTableScans: number;
+}
+
+/**
+ * Aggregated health statistics for a changeset application.
+ * @beta
+ */
+export interface ChangesetHealthStats {
+  changesetId: string;
+  uncompressedSizeBytes: number;
+  sha1ValidationTimeMs: number;
+  insertedRows: number;
+  updatedRows: number;
+  deletedRows: number;
+  totalElapsedMs: number;
+  totalFullTableScans: number;
+  perStatementStats: [PerStatementHealthStats];
 }

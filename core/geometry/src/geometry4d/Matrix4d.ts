@@ -30,7 +30,7 @@ export type Matrix4dProps = Point4dProps[];
  *   * indices 8,9,10,11 are the "z row"  They may be called the zx,zy,zz,zw entries
  *   * indices 12,13,14,15 are the "w row".  They may be called the wx,wy,wz,ww entries
  * * If "w row" contains numeric values 0,0,0,1, the Matrix4d is equivalent to a Transform with
- *  * The upper right 3x3 matrix (entries 0,1,2,4,5,6,8,9,10) are the 3x3 matrix part of the transform
+ *  * The upper left 3x3 matrix (entries 0,1,2,4,5,6,8,9,10) are the 3x3 matrix part of the transform
  *  * The far right column entries xw,yw,zw are the "origin" (sometimes called "translation") part of the transform.
  * @public
  */
@@ -190,7 +190,7 @@ export class Matrix4d implements BeJSONFunctions {
     return Matrix4d.createRowValues(scaleX, 0, 0, tx, 0, scaleY, 0, ty, 0, 0, scaleZ, tz, 0, 0, 0, 1, result);
   }
   /**
-   * Create a mapping the scales and translates (no rotation) from box A to boxB
+   * Create a mapping that scales and translates (no rotation) from box A to box B
    * @param lowA low point of box A
    * @param highA high point of box A
    * @param lowB low point of box B
@@ -502,7 +502,7 @@ export class Matrix4d implements BeJSONFunctions {
   }
   /** multiply each matrix * points[i].   This produces a weighted xyzw.
    * Immediately renormalize back to xyz and replace the original point.
-   * If zero weight appears in the result (i.e. input is on eyeplane)leave the mapped xyz untouched.
+   * If zero weight appears in the result (i.e. input is on eyeplane) leave the mapped xyz untouched.
    */
   public multiplyPoint3dArrayQuietNormalize(points: Point3d[]) {
     points.forEach((point) => this.multiplyXYZWQuietRenormalize(point.x, point.y, point.z, 1.0, point));
@@ -686,7 +686,7 @@ export class Matrix4d implements BeJSONFunctions {
     this._coffs[15] += a * vectorV.w;
   }
   /**
-   * ADD (n place) scale*A*B*AT where
+   * Add (in place) scale*A*B*AT where
    * * A is a pure translation with final column [x,y,z,1]
    * * B is the given `matrixB`
    * * AT is the transpose of A.
@@ -731,22 +731,19 @@ export class Matrix4d implements BeJSONFunctions {
     this._coffs[15] += scale * beta;
   }
   /**
-   * Multiply and replace contents of this matrix by A*this*AT where
-   * * A is a pure translation with final column [x,y,z,1]
-   * * this is this matrix.
-   * * AT is the transpose of A.
-   * * scale is a multiplier.
-   * @param matrixB the middle matrix.
-   * @param ax x part of translation
-   * @param ay y part of translation
-   * @param az z part of translation
-   * @param scale scale factor for entire product
+   * Multiply and replace contents of ` this` matrix by `A*this*AT` where
+   * * `A` is a pure translation with final column [x,y,z,1].
+   * * `this` is this matrix.
+   * * `AT` is the transpose of A.
+   * @param ax x part of translation.
+   * @param ay y part of translation.
+   * @param az z part of translation.
    */
-  public multiplyTranslationSandwichInPlace(ax: number, ay: number, az: number) {
+  public multiplyTranslationSandwichInPlace(ax: number, ay: number, az: number) : void {
     const bx = this._coffs[3];
     const by = this._coffs[7];
     const bz = this._coffs[11];
-    // matrixB can be non-symmetric!!
+    // matrixB can be non-symmetric
     const cx = this._coffs[12];
     const cy = this._coffs[13];
     const cz = this._coffs[14];
@@ -773,6 +770,6 @@ export class Matrix4d implements BeJSONFunctions {
     this._coffs[12] += axBeta;
     this._coffs[13] += ayBeta;
     this._coffs[14] += azBeta;
-    // coffs[15] is unchanged !!!
+    // coffs[15] is unchanged
   }
 }

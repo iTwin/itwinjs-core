@@ -10,7 +10,7 @@ import { TestResult, testSuites } from "./ElectronBackendTests";
 
 /** Spawns new Electron process and executes a single test before terminating newly spawned process. */
 async function spawnElectronMainProcess(suiteToRun: string, testToRun: string) {
-  const command = require("electron/index.js"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const command = require("electron/index.js"); // eslint-disable-line @typescript-eslint/no-require-imports
 
   const args = [
     path.join(__dirname, "./RunSingleTest.js"),

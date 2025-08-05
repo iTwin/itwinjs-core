@@ -18,7 +18,7 @@ import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
 import { Order2Bezier } from "../numerics/BezierPolynomials";
-import { SmallSystem } from "../numerics/Polynomials";
+import { SmallSystem } from "../numerics/SmallSystem";
 import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { CurveIntervalRole, CurveLocationDetail, CurveLocationDetailPair } from "./CurveLocationDetail";
 import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
@@ -27,8 +27,6 @@ import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRange
 import { LineString3d } from "./LineString3d";
 import { OffsetOptions } from "./OffsetOptions";
 import { StrokeOptions } from "./StrokeOptions";
-
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 
 /**
  * A LineSegment3d is:
@@ -68,6 +66,10 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    */
   public get point1Ref(): Point3d {
     return this._point1;
+  }
+  /** Return a copy of the start and end points in an array. */
+  public get points(): Point3d[] {
+    return [this._point0.clone(), this._point1.clone()];
   }
   /** A LineSegment3d extends along its infinite line. */
   public override get isExtensibleFractionSpace(): boolean {

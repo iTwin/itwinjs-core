@@ -145,13 +145,13 @@ export class YawPitchRollAngles {
    * * Comparisons are via `isAlmostEqualAllowPeriodShift`.
    * @param other YawPitchRollAngles source
    */
-  public isAlmostEqual(other: YawPitchRollAngles) {
+  public isAlmostEqual(other: YawPitchRollAngles): boolean {
     return this.yaw.isAlmostEqualAllowPeriodShift(other.yaw)
       && this.pitch.isAlmostEqualAllowPeriodShift(other.pitch)
       && this.roll.isAlmostEqualAllowPeriodShift(other.roll);
   }
   /** Make a copy of this YawPitchRollAngles */
-  public clone() {
+  public clone(): YawPitchRollAngles {
     return new YawPitchRollAngles(
       this.yaw.clone(),
       this.pitch.clone(),
@@ -164,7 +164,7 @@ export class YawPitchRollAngles {
    * * The rigid matrix is always a right handed coordinate system.
    * @param result optional pre-allocated `Matrix3d`
    */
-  public toMatrix3d(result?: Matrix3d) {
+  public toMatrix3d(result?: Matrix3d): Matrix3d {
     const cz = Math.cos(this.yaw.radians);
     const sz = Math.sin(this.yaw.radians);
     const cy = Math.cos(this.pitch.radians);

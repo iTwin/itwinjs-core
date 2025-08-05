@@ -34,7 +34,7 @@ export class QuantityConstants {
       return QuantityConstants._LOCALE_DECIMAL_SEPARATOR;
 
     QuantityConstants._LOCALE_DECIMAL_SEPARATOR = ".";
-    const matches = (12345.6789).toLocaleString()!.match(/345(.*)67/);
+    const matches = (12345.6789).toLocaleString().match(/345(.*)67/);
     if (matches && matches.length > 1)
       QuantityConstants._LOCALE_DECIMAL_SEPARATOR = matches[1];
 
@@ -47,8 +47,8 @@ export class QuantityConstants {
       return QuantityConstants._LOCALE_THOUSAND_SEPARATOR;
 
     QuantityConstants._LOCALE_THOUSAND_SEPARATOR = ",";
-    const matches = (12345.6789).toLocaleString()!.match(/12(.*)345/);
-    if (matches && matches.length > 0)
+    const matches = (12345.6789).toLocaleString().match(/12(.*)345/);
+    if (matches && matches.length > 1 && matches[1] !== "")
       QuantityConstants._LOCALE_THOUSAND_SEPARATOR = matches[1];
 
     return QuantityConstants._LOCALE_THOUSAND_SEPARATOR;

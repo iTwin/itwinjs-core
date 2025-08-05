@@ -311,7 +311,7 @@ export interface ImageCheckBoxParams extends BasePropertyEditorParams {
  * @public
  */
 export interface ParseResults {
-  value?: string | number | boolean | {} | string[] | Date | [] | undefined;
+  value?: string | number | boolean | object | string[] | Date | [] | undefined;
   parseError?: string;
 }
 

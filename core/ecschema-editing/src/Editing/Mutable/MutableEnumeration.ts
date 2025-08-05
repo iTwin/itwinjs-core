@@ -11,4 +11,5 @@ export abstract class MutableEnumeration extends Enumeration {
   public abstract override addEnumerator(enumerator: AnyEnumerator): void;
   public abstract override setIsStrict(isStrict: boolean): void;
   public abstract override setDisplayLabel(displayLabel: string): void;
+  public abstract override setDescription(description: string): void;
 }

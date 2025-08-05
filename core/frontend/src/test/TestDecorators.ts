@@ -8,8 +8,7 @@ import { Point3d, Sphere, Transform } from "@itwin/core-geometry";
 import { IModelApp } from "../IModelApp";
 import { DecorateContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
-import { GraphicType, PickableGraphicOptions } from "../render/GraphicBuilder";
-import { GraphicBranch } from "../core-frontend";
+import { GraphicBranch, GraphicType, PickableGraphicOptions } from "../core-frontend";
 
 /** A base class used strictly for `instanceof` checks in tests.
  * @internal

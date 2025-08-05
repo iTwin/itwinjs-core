@@ -10,47 +10,68 @@ import { BSplineWrapMode, KnotVector } from "../bspline/KnotVector";
 import { NumberArray } from "../geometry3d/PointHelpers";
 
 /**
- * `SerializationHelpers` namespace has helper classes for serializing and deserializing geometry.
- * @internal
+ * The `SerializationHelpers` namespace has helper classes for serializing and deserializing geometry, such as B-spline curves and surfaces.
+ * @public
  */
 export namespace SerializationHelpers {
+  /** Interface for data common to B-spline curves and surfaces. */
   export interface BSplineParams {
+    /** The number of control points, aka poles. */
     numPoles: number;
+    /** B-spline order, one more than the degree. */
     order: number;
+    /** Whether the B-spline is to be considered closed. */
     closed?: boolean;
+    /** Full knot vector. */
     knots: number[] | Float64Array;
+    /** Wrap mode, for data roundtrip. */
     wrapMode?: BSplineWrapMode;
   }
+  /** Interface for B-spline curve data. */
   export interface BSplineCurveData {
+    /** Control points, aka poles. */
     poles: number[][] | Float64Array;
-    dim: number;                          // # coordinates per pole = inner dimension of poles array (3,4)
-    weights?: number[] | Float64Array;    // if defined, poles are assumed to be weighted and dim 3
+    /** The number of coordinates per pole. This is the inner dimension of the poles number array. Possible values: 3, 4. Dimension 4 means the curve is rational, with poles of homogeneous form [wx,wy,wz,w]. */
+    dim: number;
+    /** Weights for a rational curve that is specified by parallel arrays of poles and weights. If defined, dim is expected to be 3, and poles are of homogeneous form [wx,wy,wz]. */
+    weights?: number[] | Float64Array;
+    /** Knots and other B-spline data. */
     params: BSplineParams;
   }
+  /** Interface for B-spline surface data. */
   export interface BSplineSurfaceData {
+    /** Control points, aka poles in row-major order. */
     poles: number[][][] | Float64Array;
-    dim: number;                          // # coordinates per pole = inner dimension of poles array (3,4)
-    weights?: number[][] | Float64Array;  // if defined, poles are assumed to be weighted and dim 3
-    uParams: BSplineParams;               // uParams.numPoles = # cols (middle dimension) of poles
-    vParams: BSplineParams;               // vParams.numPoles = # rows (outer dimension) of poles
+    /** The number of coordinates per pole. This is the inner dimension of the poles number array. Possible values: 3, 4. Dimension 4 means the surface is rational, with poles of homogeneous form [wx,wy,wz,w]. */
+    dim: number;
+    /** Weights for a rational surface that is specified by parallel arrays of poles and weights. If defined, dim is expected to be 3, and poles are of homogeneous form [wx,wy,wz]. */
+    weights?: number[][] | Float64Array;
+    /** Knots and other B-spline data with respect to the surface u parameter. uParams.numPoles = # columns (middle dimension) of the poles array. */
+    uParams: BSplineParams;
+    /** Knots and other B-spline data with respect to the surface v parameter. vParams.numPoles = # rows (outer dimension) of the poles array. */
+    vParams: BSplineParams;
   }
+  /** Interface of options for import/export. */
   export interface BSplineDataOptions {
-    jsonPoles?: boolean;        // type of output pole/weight arrays. true: structured number array; false: Float64Array; undefined: either
-    jsonKnots?: boolean;        // type of output knot arrays. true: number array; false: Float64Array; undefined: either
-    removeExtraKnots?: boolean; // extraneous knot handling during Import: true: remove them; false | undefined: leave them. Has no effect during Export, which always outputs the extraneous knots.
+    /** Type of output pole/weight arrays. true: structured number array; false: Float64Array; undefined: either. */
+    jsonPoles?: boolean;
+    /** Type of output knot arrays. true: number array; false: Float64Array; undefined: either. */
+    jsonKnots?: boolean;
+    /** Extraneous knot handling during Import: true: remove them; false | undefined: leave them. Has no effect during Export, which always outputs the extraneous knots. */
+    removeExtraKnots?: boolean;
   }
 
-  /** Constructor with required data. Inputs are captured, not copied. */
+  /** Constructor for BSplineCurveData that populates the required data. Inputs are captured, not copied. */
   export function createBSplineCurveData(poles: number[][] | Float64Array, dim: number, knots: number[] | Float64Array, numPoles: number, order: number): BSplineCurveData {
     return { poles, dim, params: { numPoles, order, knots } };
   }
 
-  /** Constructor with required data. Inputs are captured, not copied. */
+  /** Constructor for BSplineSurfaceData that populates the required data. Inputs are captured, not copied. */
   export function createBSplineSurfaceData(poles: number[][][] | Float64Array, dim: number, uKnots: number[] | Float64Array, uNumPoles: number, uOrder: number, vKnots: number[] | Float64Array, vNumPoles: number, vOrder: number): BSplineSurfaceData {
     return { poles, dim, uParams: { numPoles: uNumPoles, order: uOrder, knots: uKnots }, vParams: { numPoles: vNumPoles, order: vOrder, knots: vKnots } };
   }
 
-  /** Clone curve data */
+  /** Clone B-spline curve data */
   export function cloneBSplineCurveData(source: BSplineCurveData): BSplineCurveData {
     return {
       poles: (source.poles instanceof Float64Array) ? new Float64Array(source.poles) : NumberArray.copy2d(source.poles),
@@ -66,7 +87,7 @@ export namespace SerializationHelpers {
     };
   }
 
-  /** Clone surface data */
+  /** Clone B-spline surface data */
   export function cloneBSplineSurfaceData(source: BSplineSurfaceData): BSplineSurfaceData {
     return {
       poles: (source.poles instanceof Float64Array) ? new Float64Array(source.poles) : NumberArray.copy3d(source.poles),
@@ -89,8 +110,8 @@ export namespace SerializationHelpers {
     };
   }
 
-  /** Copy from source to dest */
-  function copyBSplineCurveDataPoles(source: BSplineCurveData): {poles?: number[][], weights?: number[]} {
+  /** Copy B-spline curve data from source to dest */
+  function copyBSplineCurveDataPoles(source: BSplineCurveData): { poles?: number[][], weights?: number[] } {
     let nPole = 0;
     let nCoordPerPole = 0;
     let nPoleCoords = 0;
@@ -134,11 +155,11 @@ export namespace SerializationHelpers {
       poles = NumberArray.copy2d(source.poles);
     if (poles && source.weights)
       weights = NumberArray.create(source.weights);
-    return {poles, weights};
+    return { poles, weights };
   }
 
-  /** Copy from source to dest */
-  function copyBSplineSurfaceDataPoles(source: BSplineSurfaceData): {poles?: number[][][], weights?: number[][]} {
+  /** Copy B-spline surface data from source to dest */
+  function copyBSplineSurfaceDataPoles(source: BSplineSurfaceData): { poles?: number[][][], weights?: number[][] } {
     let nPoleRow = 0;
     let nPolePerRow = 0;
     let nCoordPerPole = 0;
@@ -194,10 +215,10 @@ export namespace SerializationHelpers {
       else
         weights = NumberArray.copy2d(source.weights);
     }
-    return {poles, weights};
+    return { poles, weights };
   }
 
-  /** Convert data arrays to the types specified by options. */
+  /** Convert B-spline curve data arrays to the types specified by options. */
   function convertBSplineCurveDataArrays(data: BSplineCurveData, options?: BSplineDataOptions) {
     if (undefined !== options?.jsonPoles) {
       const packedPoles = data.poles instanceof Float64Array;
@@ -223,7 +244,7 @@ export namespace SerializationHelpers {
     }
   }
 
-  /** Convert data arrays to the types specified by options. */
+  /** Convert B-spline surface data arrays to the types specified by options. */
   function convertBSplineSurfaceDataArrays(data: BSplineSurfaceData, options?: BSplineDataOptions) {
     if (undefined !== options?.jsonPoles) {
       const packedPoles = data.poles instanceof Float64Array;
@@ -255,9 +276,230 @@ export namespace SerializationHelpers {
     }
   }
 
+  /**
+   * Process 1-based blocked indices into 0-based indices.
+   * @param sourceIndices signed, 1-based, 0-terminated/padded source indices, blocking specified by `numPerBlock`
+   * @param numPerBlock index blocking: fixed blocks of size numPerBlock > 1, possibly 0-padded; otherwise, variable-sized blocks terminated by 0
+   * @param announceZeroBasedIndex callback to receive a 0-based index and optional flag indicating whether the sign of the source index is positive
+   * @param terminateBlock optional callback called after each index block has been announced
+  */
+  export function announceZeroBasedIndicesFromSignedOneBasedIndices(
+    sourceIndices: Int32Array,
+    numPerBlock: number,
+    announceZeroBasedIndex: (i0: number, flag?: boolean) => any,
+    terminateBlock?: () => any,
+  ): void {
+    let numIndices = sourceIndices.length;
+    if (!numIndices)
+      return;
+    if (numPerBlock > 1) {
+      numIndices -= sourceIndices.length % numPerBlock;
+      for (let i = 0; i < numIndices; i++) {
+        const p = sourceIndices[i];
+        if (p !== 0)  // skip padding
+          announceZeroBasedIndex(Math.abs(p) - 1, p > 0);
+        if (terminateBlock && ((i + 1) % numPerBlock) === 0)
+          terminateBlock();
+      }
+    } else {
+      for (let i = 0; i < numIndices; i++) {
+        const p = sourceIndices[i];
+        if (p !== 0)  // skip terminator
+          announceZeroBasedIndex(Math.abs(p) - 1, p > 0);
+        if (terminateBlock) {
+          if (p === 0) {
+            if (i + 1 === numIndices || sourceIndices[i + 1] !== 0)  // skip extra terminators
+              terminateBlock();
+          } else {
+            if (i + 1 === numIndices)  // missing last terminator
+              terminateBlock();
+          }
+        }
+      }
+    }
+  }
+
+  /**
+   * Process 0-based indices with blocking specified by another index array.
+   * @param sourceIndices 0-based source indices. This array is compressed (has no blocking).
+   * @param blockingIndices 1-based source indices, blocking specified by `numPerBlock`. Assumed to have length equal to its zero count plus `sourceIndices.length`.
+   * @param numPerBlock index blocking: fixed blocks of size numPerBlock > 1, possibly 0-padded; otherwise, variable-sized blocks terminated by 0
+   * @param announceZeroBasedIndex callback to receive a 0-based index
+   * @param terminateBlock optional callback called after each index block has been announced
+  */
+  export function announceZeroBasedIndicesWithExternalBlocking(
+    sourceIndices: Int32Array,
+    blockingIndices: Int32Array,
+    numPerBlock: number,
+    announceZeroBasedIndex: (i0: number) => any,
+    terminateBlock?: () => any,
+  ): void {
+    if (!sourceIndices.length || !blockingIndices.length)
+      return;
+    const blockingZeroCount = blockingIndices.filter((i) => i === 0).length;
+    if (sourceIndices.length + blockingZeroCount !== blockingIndices.length)
+      return; // invalid input
+    let iSource = 0;
+    let numBlocking = blockingIndices.length;
+    if (numPerBlock > 1) {
+      numBlocking -= blockingIndices.length % numPerBlock;
+      for (let iBlocking = 0; iBlocking < numBlocking && iSource < sourceIndices.length; iBlocking++) {
+        const p = blockingIndices[iBlocking];
+        if (p !== 0)  // skip padding
+          announceZeroBasedIndex(sourceIndices[iSource++]);
+        if (terminateBlock && ((iBlocking + 1) % numPerBlock) === 0)
+          terminateBlock();
+      }
+    } else {
+      for (let iBlocking = 0; iBlocking < numBlocking && iSource < sourceIndices.length; iBlocking++) {
+        const p = blockingIndices[iBlocking];
+        if (p !== 0)  // skip terminator
+          announceZeroBasedIndex(sourceIndices[iSource++]);
+        if (terminateBlock) {
+          if (p === 0) {
+            if (iBlocking + 1 === numBlocking || blockingIndices[iBlocking + 1] !== 0)  // skip extra terminators
+              terminateBlock();
+          } else {
+            if (iBlocking + 1 === numBlocking)  // missing last terminator
+              terminateBlock();
+          }
+        }
+      }
+    }
+  }
+
+  /** Special values for persistent zero-based edge mate indices. */
+  export enum EdgeMateIndex {
+    /** Separates face loops. */
+    BlockSeparator = -1,
+    /** Indicates no edge mate. */
+    NoEdgeMate = -2
+  };
+
+  /**
+   * Build two index arrays into a source array:
+   * * `sourceStarts[k]` is the first index of the k_th block in `sourceIndices`.
+   * * `compressedStarts[k]` is the first index of the k_th block in a compressed clone `C` of `sourceIndices`
+   * with all pads/terminators removed.
+   * * The last entry of `sourceStarts`/`compressedStarts` is the length of `sourceIndices`/`C`.
+   * @returns `undefined` if invalid inputs, or the two computed arrays of block start indices.
+  */
+  function buildBlockStartIndices(sourceIndices: Int32Array, numPerBlock: number, blockSeparator: number): { sourceStarts: number[], compressedStarts: number[] } | undefined {
+    if (sourceIndices.length === 0 || sourceIndices[0] === blockSeparator)
+      return undefined;
+    const sourceStarts: number[] = [];
+    const compressedStarts: number[] = [];
+    sourceStarts.push(0);
+    compressedStarts.push(0);
+    const getBlockLength = (iBlockStart: number): number => {
+      if (sourceIndices[iBlockStart] === blockSeparator)
+        return 0;
+      for (let i = iBlockStart + 1; i < sourceIndices.length; i++) {
+        if ((sourceIndices[i - 1] !== blockSeparator && sourceIndices[i] === blockSeparator) || (numPerBlock > 2 && (i % numPerBlock === 0)))
+          return i - iBlockStart;
+        if (i === sourceIndices.length - 1) // last fixed block, or unterminated last variable block
+          return sourceIndices.length - iBlockStart;
+      }
+      return 0;
+    }
+    for (let i = 0; i < sourceIndices.length;) {
+      const blockLength = getBlockLength(i);
+      if (blockLength <= 0)
+        return undefined;
+      i += blockLength;
+      for (; i < sourceIndices.length && sourceIndices[i] === blockSeparator; i++);
+      sourceStarts.push(i);
+      compressedStarts.push(compressedStarts[compressedStarts.length - 1] + blockLength);
+    }
+    return { sourceStarts, compressedStarts };
+  }
+
+  /**
+   * Compress a 0-based blocked index array by removing block separators/pads and remapping each index.
+   * * The entries of `sourceIndices` are reflexive indices, i.e., they index `sourceIndices`.
+   * * The remapped index `j` must refer to the same block location in the compressed array to which the
+   * original index `i >= 0` refers in `sourceIndices`; therefore `j` is obtained from `i` by subtracting the
+   * number of block separators/pads preceding `sourceIndices[i]`.
+   * @param sourceIndices array of blocked indices to process. Each entry is a 0-based reflexive index, `nullValue`, or `blockSeparator`.
+   * @param numPerBlock index blocking for sourceIndices: padded block size > 2 or variable-sized terminated blocks.
+   * @param blockSeparator negative value that terminates/pads blocks in sourceIndices, e.g. -1. This value is not announced.
+   * @param nullValue negative value that represents "no index" in sourceIndices, e.g., -2. This value is announced as "undefined".
+   * @param announceRemappedIndex callback to receive a remapped index.
+   * @returns true if and only if the mapping was successful.
+   */
+  export function announceCompressedZeroBasedReflexiveIndices(
+    sourceIndices: Int32Array,
+    numPerBlock: number,
+    blockSeparator: number,
+    nullValue: number,
+    announceRemappedIndex: (i: number | undefined) => any,
+  ): boolean {
+    if (!sourceIndices.length || blockSeparator >= 0 || nullValue >= 0 || (blockSeparator === nullValue))
+      return false;
+    // remapped index = source index - # preceding terminators/pads in sourceIndices
+    // Instead of counting terminators/pads, we use a pair of block start index arrays
+    const blocking = buildBlockStartIndices(sourceIndices, numPerBlock, blockSeparator);
+    if (!blocking)
+      return false;
+    for (const index of sourceIndices) {
+      if (index === nullValue)
+        announceRemappedIndex(undefined);
+      else if (index >= 0) {
+        const iBlock = NumberArray.searchStrictlyIncreasingNumbers(blocking.sourceStarts, index);
+        if (iBlock === undefined)
+          return false;
+        const blockOffset = index - blocking.sourceStarts[iBlock];
+        announceRemappedIndex(blocking.compressedStarts[iBlock] + blockOffset);
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Uncompress a 0-based index array by inserting block separators and remapping each index.
+   * * Defined entries of `sourceIndices` are reflexive indices, i.e., they index `sourceIndices`.
+   * * The remapped index `j` must refer to the same block location in the uncompressed array to which the
+   * original defined index `i` refers in `sourceIndices`; therefore `j` is obtained from `i` by adding the
+   * number of full blocks preceding `sourceIndices[i]`.
+   * @param sourceIndices array of compressed indices to process. Each entry is a 0-based reflexive index, or `undefined`.
+   * @param sourceStarts sourceStarts[k] is the first index of the k_th block in `sourceIndices`; its last entry is the
+   * length of `sourceIndices`.
+   * @param blockSeparator negative value that represents an announced block terminator, e.g. -1.
+   * @param nullValue negative value to announce for an undefined source index, e.g., -2.
+   * @param announceRemappedIndex callback to receive a remapped index.
+   * @returns true if and only if the mapping was successful.
+   */
+  export function announceUncompressedZeroBasedReflexiveIndices(
+    sourceIndices: Array<number | undefined>,
+    sourceStarts: ReadonlyArray<number>,
+    blockSeparator: number,
+    nullValue: number,
+    announceRemappedIndex: (i: number) => any,
+  ): boolean {
+    if (!sourceIndices.length || sourceStarts.length < 2 || blockSeparator >= 0 || nullValue >= 0 || (blockSeparator === nullValue))
+      return false;
+    // remapped index = source index + # preceding blocks in sourceIndices
+    for (let i = 0; i < sourceStarts.length - 1; i++) {
+      for (let j = sourceStarts[i]; j < sourceStarts[i + 1]; j++) {
+        const index = sourceIndices[j];
+        if (index === undefined)
+          announceRemappedIndex(nullValue);
+        else if (index >= 0) {
+          const iBlock = NumberArray.searchStrictlyIncreasingNumbers(sourceStarts, index);
+          if (iBlock === undefined)
+            return false;
+          announceRemappedIndex(index + iBlock);
+        }
+      }
+      announceRemappedIndex(blockSeparator);
+    }
+    return true;
+  }
+
+  /** Helper class for preparing geometry data for import. */
   export class Import {
     /** copy knots, with options to control destination type and extraneous knot removal */
-    private static copyKnots(knots: Float64Array | number[], options?: BSplineDataOptions, iStart?: number, iEnd?: number): Float64Array| number[] {
+    private static copyKnots(knots: Float64Array | number[], options?: BSplineDataOptions, iStart?: number, iEnd?: number): Float64Array | number[] {
       if (undefined === iStart)
         iStart = 0;
       if (undefined === iEnd)
@@ -461,6 +703,7 @@ export namespace SerializationHelpers {
     }
   }
 
+  /** Helper class for preparing geometry data for export. */
   export class Export {
     /**
      * Restore special legacy periodic B-spline knots opened via BSplineWrapMode.OpenByRemovingKnots logic.

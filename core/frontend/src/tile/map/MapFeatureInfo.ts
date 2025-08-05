@@ -8,7 +8,7 @@
 
 import { PropertyDescription, PropertyRecord, PropertyValue } from "@itwin/appui-abstract";
 import { Cartographic } from "@itwin/core-common";
-import { GraphicPrimitive } from "../../render/GraphicPrimitive";
+import { GraphicPrimitive } from "../../common/render/GraphicPrimitive";
 
 /** Options supplied to a `Viewport.getMapFeatureInfo` .
  * @beta

@@ -2,10 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as almostEqual from "almost-equal";
 import { Constant } from "../Metadata/Constant";
 import { Unit } from "../Metadata/Unit";
-import { SchemaItemType } from "../ECObjects";
+import { almostEqual } from "@itwin/core-quantity";
 
 /**
  * Class used for storing calculated conversion between two Units [[UnitConverter.calculateConversion]] and converting values from one Unit to another [[UnitConverter.evaluate]]
@@ -78,10 +77,10 @@ export class UnitConversion {
    * Returns UnitConversion with unit's numerator and denominator in factor and unit's offset in offset for reducing
    * @internal
    */
-  public static from(unit: Unit | Constant): UnitConversion {
-    if (unit.schemaItemType === SchemaItemType.Unit)
-      return new UnitConversion(unit.denominator / unit.numerator, -unit.offset);
+  public static from(unitOrConstant: Unit | Constant): UnitConversion {
+    if (Unit.isUnit(unitOrConstant))
+      return new UnitConversion(unitOrConstant.denominator / unitOrConstant.numerator, -unitOrConstant.offset);
 
-    return new UnitConversion(unit.denominator / unit.numerator, 0.0);
+    return new UnitConversion(unitOrConstant.denominator / unitOrConstant.numerator, 0.0);
   }
 }

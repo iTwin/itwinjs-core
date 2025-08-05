@@ -6,11 +6,13 @@
  * @module Relationships
  */
 
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { EntityReferenceSet, IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
+import { DbResult, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
+import { EntityReferenceSet, IModelError, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
+import { _nativeDb } from "./internal/Symbols";
+import { RelationshipClass } from "@itwin/ecschema-metadata";
 
 export type { SourceAndTarget, RelationshipProps } from "@itwin/core-common"; // for backwards compatibility
 
@@ -18,7 +20,6 @@ export type { SourceAndTarget, RelationshipProps } from "@itwin/core-common"; //
  * @public
  */
 export class Relationship extends Entity {
-  /** @internal */
   public static override get className(): string { return "Relationship"; }
   public readonly sourceId: Id64String;
   public readonly targetId: Id64String;
@@ -34,6 +35,21 @@ export class Relationship extends Entity {
     val.sourceId = this.sourceId;
     val.targetId = this.targetId;
     return val;
+  }
+
+  /** Query metadata for this relationship class from the iModel's schema. Returns cached metadata if available.*/
+  public override async getMetaData(): Promise<RelationshipClass> {
+    if (this._metadata && RelationshipClass.isRelationshipClass(this._metadata)) {
+      return this._metadata;
+    }
+
+    const relationship = await this.iModel.schemaContext.getSchemaItem(this.schemaItemKey, RelationshipClass);
+    if (relationship !== undefined) {
+      this._metadata = relationship;
+      return this._metadata;
+    } else {
+      throw new Error(`Cannot get metadata for ${this.classFullName}`);
+    }
   }
 
   /**
@@ -67,7 +83,6 @@ export class Relationship extends Entity {
  * @public
  */
 export class ElementRefersToElements extends Relationship {
-  /** @internal */
   public static override get className(): string { return "ElementRefersToElements"; }
   /** Create an instance of the Relationship.
    * @param iModel The iModel that will contain the relationship
@@ -100,7 +115,6 @@ export class ElementRefersToElements extends Relationship {
  * @public
  */
 export class DrawingGraphicRepresentsElement extends ElementRefersToElements {
-  /** @internal */
   public static override get className(): string { return "DrawingGraphicRepresentsElement"; }
 }
 
@@ -108,7 +122,6 @@ export class DrawingGraphicRepresentsElement extends ElementRefersToElements {
  * @public
  */
 export class GraphicalElement3dRepresentsElement extends ElementRefersToElements {
-  /** @internal */
   public static override get className(): string { return "GraphicalElement3dRepresentsElement"; }
 }
 
@@ -118,7 +131,6 @@ export class GraphicalElement3dRepresentsElement extends ElementRefersToElements
  * @beta
  */
 export class SynchronizationConfigProcessesSources extends ElementRefersToElements {
-  /** @internal */
   public static override get className(): string { return "SynchronizationConfigProcessesSources"; }
 }
 
@@ -127,7 +139,6 @@ export class SynchronizationConfigProcessesSources extends ElementRefersToElemen
  * @beta
  */
 export class SynchronizationConfigSpecifiesRootSources extends SynchronizationConfigProcessesSources {
-  /** @internal */
   public static override get className(): string { return "SynchronizationConfigSpecifiesRootSources"; }
 }
 
@@ -142,7 +153,6 @@ export interface ElementGroupsMembersProps extends RelationshipProps {
  * @public
  */
 export class ElementGroupsMembers extends ElementRefersToElements {
-  /** @internal */
   public static override get className(): string { return "ElementGroupsMembers"; }
   public memberPriority: number;
 
@@ -162,7 +172,6 @@ export class ElementGroupsMembers extends ElementRefersToElements {
  * @public
  */
 export class DefinitionGroupGroupsDefinitions extends ElementGroupsMembers {
-  /** @internal */
   public static override get className(): string { return "DefinitionGroupGroupsDefinitions"; }
 }
 
@@ -172,7 +181,6 @@ export class DefinitionGroupGroupsDefinitions extends ElementGroupsMembers {
  * @public
  */
 export class GroupImpartsToMembers extends ElementGroupsMembers {
-  /** @internal */
   public static override get className(): string { return "GroupImpartsToMembers"; }
 }
 
@@ -181,7 +189,6 @@ export class GroupImpartsToMembers extends ElementGroupsMembers {
  * @beta
  */
 export class ExternalSourceGroupGroupsSources extends ElementGroupsMembers {
-  /** @internal */
   public static override get className(): string { return "ExternalSourceGroupGroupsSources"; }
 }
 
@@ -378,7 +385,6 @@ export interface ElementDrivesElementProps extends RelationshipProps {
  * @beta
  */
 export class ElementDrivesElement extends Relationship {
-  /** @internal */
   public static override get className(): string { return "ElementDrivesElement"; }
   /** Relationship status
    * * 0 indicates no errors. Set after a successful evaluation.
@@ -421,7 +427,6 @@ export class ElementDrivesElement extends Relationship {
  * @internal
  */
 export class ModelSelectorRefersToModels extends Relationship {
-  /** @internal */
   public static override get className(): string { return "ModelSelectorRefersToModels"; }
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
@@ -447,7 +452,7 @@ export class Relationships {
 
   /** Check classFullName to ensure it is a link table relationship class. */
   private checkRelationshipClass(classFullName: string) {
-    if (!this._iModel.nativeDb.isLinkTableRelationship(classFullName.replace(".", ":"))) {
+    if (!this._iModel[_nativeDb].isLinkTableRelationship(classFullName.replace(".", ":"))) {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Class '${classFullName}' must be a relationship class and it should be subclass of BisCore:ElementRefersToElements or BisCore:ElementDrivesElement.`);
     }
   }
@@ -459,19 +464,19 @@ export class Relationships {
    */
   public insertInstance(props: RelationshipProps): Id64String {
     this.checkRelationshipClass(props.classFullName);
-    return props.id = this._iModel.nativeDb.insertLinkTableRelationship(props);
+    return props.id = this._iModel[_nativeDb].insertLinkTableRelationship(props);
   }
 
   /** Update the properties of an existing relationship instance in the iModel.
    * @param props the properties of the relationship instance to update. Any properties that are not present will be left unchanged.
    */
   public updateInstance(props: RelationshipProps): void {
-    this._iModel.nativeDb.updateLinkTableRelationship(props);
+    this._iModel[_nativeDb].updateLinkTableRelationship(props);
   }
 
   /** Delete an Relationship instance from this iModel. */
   public deleteInstance(props: RelationshipProps): void {
-    this._iModel.nativeDb.deleteLinkTableRelationship(props);
+    this._iModel[_nativeDb].deleteLinkTableRelationship(props);
   }
 
   /** Get the props of a Relationship instance
@@ -498,11 +503,13 @@ export class Relationships {
   public tryGetInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined {
     let props: T | undefined;
     if (typeof criteria === "string") {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       props = this._iModel.withPreparedStatement(`SELECT * FROM ${relClassFullName} WHERE ecinstanceid=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, criteria);
         return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getRow() as T : undefined;
       });
     } else {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       props = this._iModel.withPreparedStatement(`SELECT * FROM ${relClassFullName} WHERE SourceECInstanceId=? AND TargetECInstanceId=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, criteria.sourceId);
         stmt.bindId(2, criteria.targetId);

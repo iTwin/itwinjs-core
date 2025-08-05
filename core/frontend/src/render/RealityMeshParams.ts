@@ -8,13 +8,14 @@
 
 import { assert, Uint16ArrayBuilder, UintArray, UintArrayBuilder } from "@itwin/core-bentley";
 import {
-  IndexedPolyface, Point2d, Point3d, Polyface, Range2d, Range3d, Transform, Vector3d, XAndY, XYAndZ,
+  IndexedPolyface, Point2d, Point3d, Range2d, Range3d, Transform, Vector3d, XAndY, XYAndZ,
 } from "@itwin/core-geometry";
 import {
   OctEncodedNormal, QPoint2d, QPoint2dBuffer, QPoint2dBufferBuilder, QPoint3d, QPoint3dBuffer, QPoint3dBufferBuilder, RenderTexture,
 } from "@itwin/core-common";
 import { GltfMeshData } from "../tile/internal";
-import { MeshPrimitiveType } from "../common/render/primitives/MeshPrimitive";
+import { MeshPrimitiveType } from "../common/internal/render/MeshPrimitive";
+import { LayerTileData } from "../internal/render/webgl/MapLayerParams";
 
 function precondition(condition: boolean, message: string | (() => string)): asserts condition {
   if (condition)
@@ -46,6 +47,8 @@ export interface RealityMeshParams {
   featureID?: number; // default 0
   /** @alpha unused by terrain meshes */
   texture?: RenderTexture;
+  /** @internal */
+  tileData?: LayerTileData;
 }
 
 /** @public */
@@ -73,7 +76,7 @@ export namespace RealityMeshParams {
   }
 
   /** @alpha */
-  export function toPolyface(params: RealityMeshParams, options?: { transform?: Transform, wantNormals?: boolean, wantParams?: boolean }): Polyface | undefined {
+  export function toPolyface(params: RealityMeshParams, options?: { transform?: Transform, wantNormals?: boolean, wantParams?: boolean }): IndexedPolyface | undefined {
     const { positions, normals, uvs, indices } = params;
     const includeNormals = options?.wantNormals && undefined !== normals;
     const includeParams = options?.wantParams;

@@ -6,9 +6,9 @@
  * @module PresentationRules
  */
 
-import { CustomRendererSpecification } from "./CustomRendererSpecification";
-import { CategoryIdentifier } from "./PropertyCategorySpecification";
-import { PropertyEditorSpecification } from "./PropertyEditorsSpecification";
+import { CustomRendererSpecification } from "./CustomRendererSpecification.js";
+import { CategoryIdentifier } from "./PropertyCategorySpecification.js";
+import { PropertyEditorSpecification } from "./PropertyEditorsSpecification.js";
 
 /**
  * This content modifier allows including additional calculated properties into the content.
@@ -24,7 +24,7 @@ export interface CalculatedPropertiesSpecification {
    * Defines an expression to calculate the value. The expression can use [ECInstance]($docs/presentation/advanced/ECExpressions.md#ecinstance)
    * and [Ruleset Variables]($docs/presentation/advanced/ECExpressions.md#ruleset-variables-user-settings) symbol contexts.
    */
-  value: string;
+  value?: string;
 
   /** The attribute allows moving the calculated property into a different category. */
   categoryId?: string | CategoryIdentifier;
@@ -49,4 +49,17 @@ export interface CalculatedPropertiesSpecification {
    * @type integer
    */
   priority?: number;
+
+  /**
+   * Specifies return type of the calculated property. If unsupported type is provided, calculated property won't appear in the property pane.
+   *
+   * Type can have these values: `string`, `boolean`, `bool`, `dateTime`, `double`, `int`, `long`
+   */
+  type?: `string` | `boolean` | `bool` | `dateTime` | `double` | `int` | `long`;
+
+  /**
+   * A map of [ECExpressions]($docs/presentation/customization/ECExpressions.md) whose
+   * evaluation results are used as extended data values.
+   */
+  extendedData?: { [key: string]: string };
 }

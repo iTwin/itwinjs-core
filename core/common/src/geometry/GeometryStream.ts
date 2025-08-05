@@ -8,7 +8,7 @@
 
 import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
-  Angle, AnyGeometryQuery, GeometryQuery, IModelJson as GeomJson, LowAndHighXYZ, Matrix3d, Point2d, Point3d, Range3d, Transform, TransformProps,
+  Angle, AnyGeometryQuery, GeometryQuery, IModelJson as GeomJson, LineSegment3d, LowAndHighXYZ, Matrix3d, Point2d, Point3d, Range3d, Transform, TransformProps,
   Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps,
 } from "@itwin/core-geometry";
 import { ColorDef, ColorDefProps } from "../ColorDef";
@@ -22,6 +22,7 @@ import { LineStyle } from "./LineStyle";
 import { TextString, TextStringProps } from "./TextString";
 import { Base64EncodedString } from "../Base64EncodedString";
 import { Placement2d, Placement3d } from "./Placement";
+import { TextBlockGeometryProps } from "../annotation/TextBlockGeometryProps";
 
 /** Establish a non-default [[SubCategory]] or to override [[SubCategoryAppearance]] for the geometry that follows.
  * A GeometryAppearanceProps always signifies a reset to the [[SubCategoryAppearance]] for subsequent [[GeometryStreamProps]] entries for undefined values.
@@ -322,14 +323,41 @@ export class GeometryStreamBuilder {
 
   /** Append a [[TextString]] supplied in either local or world coordinates to the [[GeometryStreamProps]] array */
   public appendTextString(textString: TextString): boolean {
-    if (undefined === this._worldToLocal) {
-      this.geometryStream.push({ textString });
-      return true;
+    if (this._worldToLocal) {
+      textString = new TextString(textString);
+      if (!textString.transformInPlace(this._worldToLocal)) {
+        return false;
+      }
     }
-    const localTextString = new TextString(textString);
-    if (!localTextString.transformInPlace(this._worldToLocal))
-      return false;
-    this.geometryStream.push({ textString: localTextString });
+
+    this.geometryStream.push({ textString: textString.toJSON() });
+    return true;
+  }
+
+  /** Append a series of entries representing a [[TextBlock]] to the [[GeometryStreamProps]] array.
+   * @beta
+   */
+  public appendTextBlock(block: TextBlockGeometryProps): boolean {
+    for (const entry of block.entries) {
+      let result: boolean;
+      if (undefined !== entry.text) {
+        result = this.appendTextString(new TextString(entry.text));
+      } else if (undefined !== entry.color) {
+        if (entry.color === "subcategory") {
+          result = this.appendSubCategoryChange(Id64.invalid);
+        } else {
+          this.geometryStream.push({ appearance: { color: entry.color } });
+          result = true;
+        }
+      } else {
+        result = this.appendGeometry(LineSegment3d.fromJSON(entry.separator));
+      }
+
+      if (!result) {
+        return false;
+      }
+    }
+
     return true;
   }
 
@@ -370,7 +398,7 @@ export class GeometryStreamBuilder {
       return true;
     }
     const entityTrans = Transform.fromJSON(brep.transform);
-    const localTrans = entityTrans.multiplyTransformTransform(this._worldToLocal);
+    const localTrans = this._worldToLocal.multiplyTransformTransform(entityTrans);
     const localBrep: BRepEntity.DataProps = {
       data: brep.data,
       type: brep.type,
@@ -700,7 +728,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
       } else if (entry.brep) {
         if (this.entry.localToWorld !== undefined) {
           const entityTrans = Transform.fromJSON(entry.brep.transform);
-          entry.brep.transform = entityTrans.multiplyTransformTransform(this.entry.localToWorld).toJSON();
+          entry.brep.transform = this.entry.localToWorld.multiplyTransformTransform(entityTrans).toJSON();
         }
 
         this.entry.setBRep(entry.brep);

@@ -13,7 +13,7 @@ import { IndexedReadWriteXYZCollection, IndexedXYZCollection, MultiLineStringDat
 import { Matrix3d } from "./Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Point2d } from "./Point2dVector2d";
-import { Point3d, Vector3d } from "./Point3dVector3d";
+import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
 import { PointStreamGrowableXYZArrayCollector, VariantPointDataStream } from "./PointStreaming";
 import { Range1d, Range3d } from "./Range";
 import { Transform } from "./Transform";
@@ -58,13 +58,13 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * @param destOffset copy to instance array starting at this point index; zero if undefined
    * @return count and offset of points copied
    */
-  protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): {count: number, offset: number} {
+  protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): { count: number, offset: number } {
     // validate inputs and convert from points to entries
     let myOffset = (undefined !== destOffset) ? destOffset * 3 : 0;
     if (myOffset < 0)
       myOffset = 0;
     if (myOffset >= this._data.length)
-      return {count: 0, offset: 0};
+      return { count: 0, offset: 0 };
     let myCount = (undefined !== sourceCount) ? sourceCount * 3 : source.length;
     if (myCount > 0) {
       if (myCount > source.length)
@@ -75,14 +75,14 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
         myCount -= myCount % 3;
     }
     if (myCount <= 0)
-      return {count: 0, offset: 0};
+      return { count: 0, offset: 0 };
     if (myCount === source.length)
       this._data.set(source, myOffset);
     else if (source instanceof Float64Array)
       this._data.set(source.subarray(0, myCount), myOffset);
     else
       this._data.set(source.slice(0, myCount), myOffset);
-    return {count: myCount / 3, offset: myOffset / 3};
+    return { count: myCount / 3, offset: myOffset / 3 };
   }
 
   /** The number of points in use. When the length is increased, the array is padded with zeroes. */
@@ -139,6 +139,54 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     result._xyzInUse = this.length;
     return result;
   }
+  /**
+   * Clone the input array with each successive duplicate point removed.
+   * * First and last points are always preserved.
+   * @param source the source array
+   * @param tolerance optional distance tol for compression (default [[Geometry.smallMetricDistance]])
+   * @param result optional pre-allocated object to populate and return. Can be a reference to `source`, in
+   * which case the array is compressed in place and returned.
+   * @see [[cloneCompressed]], [[compressInPlace]], [[PolylineOps.compressShortEdges]]
+   */
+  public static createCompressed(source: IndexedXYZCollection, tolerance: number = Geometry.smallMetricDistance, result?: GrowableXYZArray): GrowableXYZArray {
+    const dupIndices = source.findOrderedDuplicates(tolerance, true);
+    const newSize = source.length - dupIndices.length;
+    if (!result)
+      result = new GrowableXYZArray(newSize);
+    if (result !== source) {
+      result.clear();
+      result.resize(newSize, true);
+    }
+    for (let iRead = 0, iWrite = 0, iDup = 0; iRead < source.length; ++iRead) {
+      if (iDup < dupIndices.length && iRead === dupIndices[iDup])
+        ++iDup; // skip the duplicate
+      else
+        result.transferFromGrowableXYZArray(iWrite++, source, iRead);
+    }
+    result.resize(newSize);
+    return result;
+  }
+  /**
+   * Clone the instance array with each successive duplicate point removed.
+   * * First and last points are always preserved.
+   * @param tolerance optional distance tol for compression (default [[Geometry.smallMetricDistance]])
+   * @param result optional pre-allocated object to populate and return. Can be a reference to the instance array, in
+   * which case the array is compressed in place and returned.
+   * @see [[createCompressed]], [[compressInPlace]], [[PolylineOps.compressShortEdges]]
+   */
+  public cloneCompressed(tolerance: number = Geometry.smallMetricDistance, result?: GrowableXYZArray): GrowableXYZArray {
+    return GrowableXYZArray.createCompressed(this, tolerance, result);
+  }
+  /**
+   * Compress the input array by removing successive duplicate points.
+   * * First and last points are always preserved.
+   * @param tolerance optional distance tol for compression (default [[Geometry.smallMetricDistance]])
+   * @returns the instance array.
+   * @see [[createCompressed]], [[cloneCompressed]], [[PolylineOps.compressShortEdges]]
+   */
+  public compressInPlace(tolerance: number = Geometry.smallMetricDistance): GrowableXYZArray {
+    return GrowableXYZArray.createCompressed(this, tolerance, this);
+  }
   /** Create an array from various point data formats.
    * Valid inputs are:
    * * Point2d
@@ -187,7 +235,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * * Point3d
    * * An array of 2 doubles
    * * An array of 3 doubles
-   * * A GrowableXYZArray
+   * * An IndexedXYZCollection
    * * Any json object satisfying Point3d.isXYAndZ
    * * Any json object satisfying Point3d.isXAndY
    * * A Float64Array of doubles, interpreted as xyzxyz
@@ -296,15 +344,6 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       this._xyzInUse--;
   }
   /**
-   * Test if index is valid for an xyz (point or vector) within this array
-   * @param index xyz index to test.
-   */
-  public isIndexValid(index: number): boolean {
-    if (index >= this._xyzInUse || index < 0)
-      return false;
-    return true;
-  }
-  /**
    * Clear all xyz data, but leave capacity unchanged.
    */
   public clear() {
@@ -391,13 +430,12 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * @param sourceIndex point index in source array
    * @returns true if destIndex and sourceIndex are both valid.
    */
-  public transferFromGrowableXYZArray(destIndex: number, source: GrowableXYZArray, sourceIndex: number): boolean {
+  public transferFromGrowableXYZArray(destIndex: number, source: IndexedXYZCollection, sourceIndex: number): boolean {
     if (this.isIndexValid(destIndex) && source.isIndexValid(sourceIndex)) {
       const i = destIndex * 3;
-      const j = sourceIndex * 3;
-      this._data[i] = source._data[j];
-      this._data[i + 1] = source._data[j + 1];
-      this._data[i + 2] = source._data[j + 2];
+      this._data[i] = source.getXAtUncheckedPointIndex(sourceIndex);
+      this._data[i + 1] = source.getYAtUncheckedPointIndex(sourceIndex);
+      this._data[i + 2] = source.getZAtUncheckedPointIndex(sourceIndex);
       return true;
     }
     return false;
@@ -468,7 +506,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       result.push(Point3d.create(data[i], data[i + 1], data[i + 2]));
     return result;
   }
-    /** multiply each point by the transform, replace values. */
+  /** multiply each point by the transform, replace values. */
   public static multiplyTransformInPlace(transform: Transform, data: GrowableXYZArray[] | GrowableXYZArray) {
     if (Array.isArray(data)) {
       for (const d of data)
@@ -638,8 +676,12 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     }
   }
   /** get range of points. */
-  public override getRange(transform?: Transform): Range3d {
-    const range = Range3d.createNull();
+  public override getRange(transform?: Transform, result?: Range3d): Range3d {
+    let range = result;
+    if (range)
+      range.setNull();
+    else
+      range = Range3d.createNull();
     this.extendRange(range, transform);
     return range;
   }
@@ -753,7 +795,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     return 0.5 * area;
   }
 
-  /** Compute a vector from index origin i to indexed target j  */
+  /** Compute a vector from index origin i to indexed target j. */
   public vectorIndexIndex(i: number, j: number, result?: Vector3d): Vector3d | undefined {
     if (!this.isIndexValid(i) || !this.isIndexValid(j))
       return undefined;
@@ -763,10 +805,12 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     return Vector3d.create(
       data[j] - data[i],
       data[j + 1] - data[i + 1],
-      data[j + 2] - data[i + 2], result);
+      data[j + 2] - data[i + 2],
+      result,
+    );
   }
 
-  /** Compute a vector from origin to indexed target j */
+  /** Compute a vector from origin to indexed target j. */
   public vectorXYAndZIndex(origin: XYAndZ, j: number, result?: Vector3d): Vector3d | undefined {
     if (this.isIndexValid(j)) {
       const data = this._data;
@@ -774,12 +818,14 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       return Vector3d.create(
         data[j] - origin.x,
         data[j + 1] - origin.y,
-        data[j + 2] - origin.z, result);
+        data[j + 2] - origin.z,
+        result,
+      );
     }
     return undefined;
   }
 
-  /** Compute the cross product of vectors from from indexed origin to indexed targets i and j */
+  /** Compute the cross product of vectors from from indexed origin to indexed targets i and j. */
   public crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined {
     if (this.isIndexValid(originIndex) && this.isIndexValid(targetAIndex) && this.isIndexValid(targetBIndex)) {
       const i = originIndex * 3;
@@ -789,7 +835,8 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       return Geometry.crossProductXYZXYZ(
         data[j] - data[i], data[j + 1] - data[i + 1], data[j + 2] - data[i + 2],
         data[k] - data[i], data[k + 1] - data[i + 1], data[k + 2] - data[i + 2],
-        result);
+        result,
+      );
     }
     return undefined;
   }
@@ -821,7 +868,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
         data[i], data[i + 1], data[i + 2],
         data[j], data[j + 1], data[j + 2],
         data[k], data[k + 1], data[k + 2]);
-      }
+    }
   }
 
   /**
@@ -1037,12 +1084,27 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * @param componentIndex Index (0,1,2) of component to be replaced.
    * @param func function to be called as `func(x,y,z)`, returning a replacement value for componentIndex
    */
-  public mapComponent(componentIndex: 0 | 1 | 2, func: (x: number, y: number, z: number) => number) {
+  public mapComponent(componentIndex: 0 | 1 | 2, func: (x: number, y: number, z: number) => number): void {
     const n = this._data.length;
     let q;
     for (let i = 0; i + 2 < n; i += 3) {
       q = func(this._data[i], this._data[i + 1], this._data[i + 2]);
       this._data[i + componentIndex] = q;
+    }
+  }
+
+  /**
+   * Pass the (x,y,z) of each point to a function which returns a replacement for the point.
+   * * @param func function to be called as `func(x,y,z)`, returning a replacement point.
+   */
+  public mapPoint(func: (x: number, y: number, z: number) => XYZ): void {
+    const n = this._data.length;
+    let q;
+    for (let i = 0; i + 2 < n; i += 3) {
+      q = func(this._data[i], this._data[i + 1], this._data[i + 2]);
+      this._data[i] = q.x;
+      this._data[i + 1] = q.y;
+      this._data[i + 2] = q.z;
     }
   }
 }

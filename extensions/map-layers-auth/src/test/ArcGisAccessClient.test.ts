@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-
-import * as sinon from "sinon";
-import { ArcGisAccessClient, ArcGisOAuth2Endpoint, ArcGisUrl } from "../map-layers-auth";
+import fetchMock from "fetch-mock";
+import sinon from "sinon";
+import { ArcGisAccessClient, ArcGisOAuth2Endpoint, ArcGisUrl } from "../map-layers-auth.js";
 
 describe("ArcGisUtilities tests", () => {
   const sandbox = sinon.createSandbox();
@@ -25,16 +25,17 @@ describe("ArcGisUtilities tests", () => {
       },
     });
 
-    sandbox.stub(global, "fetch").callsFake(async function (_input, _init) {
-      return Promise.resolve((({
-        status: 400,
-      } as unknown) as Response));
+    fetchMock.mock("*",  {
+      status: 400,
+      headers: {"Content-Type": "application/json"},
+      body: {},
     });
 
   });
 
   afterEach(async () => {
     sandbox.restore();
+    fetchMock.restore();
     fakeAccessClient = undefined;
   });
 

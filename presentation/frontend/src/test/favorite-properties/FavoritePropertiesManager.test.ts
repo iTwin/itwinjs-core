@@ -15,16 +15,17 @@ import {
   createTestPropertyInfo,
   createTestRelatedClassInfo,
   createTestSimpleContentField,
-} from "@itwin/presentation-common/lib/cjs/test";
+} from "@itwin/presentation-common/test-utils";
 import {
   createFieldOrderInfos,
   FavoritePropertiesManager,
   FavoritePropertiesOrderInfo,
   FavoritePropertiesScope,
   getFieldInfos,
-  IFavoritePropertiesStorage,
-} from "../../presentation-frontend";
-import { PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
+  PropertyFullName,
+} from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager.js";
+import { IFavoritePropertiesStorage } from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage.js";
+import { ensureIModelInitialized, startIModelInitialization } from "../../presentation-frontend/IModelConnectionInitialization.js";
 
 describe("FavoritePropertiesManager", () => {
   let manager: FavoritePropertiesManager;
@@ -61,7 +62,7 @@ describe("FavoritePropertiesManager", () => {
   });
 
   afterEach(() => {
-    manager.dispose();
+    manager[Symbol.dispose]();
     storageMock.reset();
     imodelMock.reset();
   });
@@ -82,7 +83,7 @@ describe("FavoritePropertiesManager", () => {
       .returns(() => ecSqlReaderMock.object);
   }
 
-  /* eslint-disable deprecation/deprecation */
+  /* eslint-disable @typescript-eslint/no-deprecated */
   describe("initializeConnection", () => {
     it("loads iTwin and iModel scopes", async () => {
       await manager.initializeConnection(imodelMock.object);
@@ -155,20 +156,24 @@ describe("FavoritePropertiesManager", () => {
       expect(orderInfos.length).to.eq(4);
     });
   });
-  /* eslint-enable deprecation/deprecation */
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
-  describe("startConnectionInitialization", () => {
-    it("calls initializeConnection once", () => {
-      const s = sinon.spy(manager, "initializeConnection");
-      manager.startConnectionInitialization(imodelMock.object);
-      manager.startConnectionInitialization(imodelMock.object);
-      expect(s).to.be.calledOnce;
-    });
+  it("initializes connection when `startIModelInitialization` is called", () => {
+    const spy = sinon.spy(manager, "initializeConnection");
+    startIModelInitialization(imodelMock.object);
+    startIModelInitialization(imodelMock.object);
+    expect(spy).to.be.calledOnce;
+  });
+
+  it("initializes connection when `ensureInitialized` is called", async () => {
+    const spy = sinon.spy(manager, "initializeConnection");
+    await ensureIModelInitialized(imodelMock.object);
+    expect(spy).to.be.calledOnce;
   });
 
   describe("has", () => {
     it("[deprecated] throws if not initialized", () => {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(() => manager.has(propertyField1, imodelMock.object, FavoritePropertiesScope.IModel)).to.throw(
         `Favorite properties are not initialized for iModel: '${imodelId}', in iTwin: '${iTwinId}'. Call initializeConnection() with an IModelConnection to initialize.`,
       );
@@ -248,7 +253,7 @@ describe("FavoritePropertiesManager", () => {
 
   describe("add", () => {
     it("calls `ensureInitialized`", async () => {
-      const spy = sinon.spy(manager, "ensureInitialized");
+      const spy = sinon.spy(manager, "initializeConnection");
       await manager.add(propertyField1, imodelMock.object, FavoritePropertiesScope.Global);
       expect(spy).to.be.calledOnce;
     });
@@ -286,7 +291,7 @@ describe("FavoritePropertiesManager", () => {
 
   describe("remove", () => {
     it("calls `ensureInitialized`", async () => {
-      const spy = sinon.spy(manager, "ensureInitialized");
+      const spy = sinon.spy(manager, "initializeConnection");
       await manager.remove(propertyField1, imodelMock.object, FavoritePropertiesScope.Global);
       expect(spy).to.be.calledOnce;
     });
@@ -364,8 +369,8 @@ describe("FavoritePropertiesManager", () => {
   });
 
   describe("clear", () => {
-    it("calls `ensureInitialized`", async () => {
-      const spy = sinon.spy(manager, "ensureInitialized");
+    it("initializes connection", async () => {
+      const spy = sinon.spy(manager, "initializeConnection");
       await manager.clear(imodelMock.object, FavoritePropertiesScope.Global);
       expect(spy).to.be.calledOnce;
     });

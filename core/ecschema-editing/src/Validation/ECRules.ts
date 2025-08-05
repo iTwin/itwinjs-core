@@ -8,14 +8,15 @@
 
 import {
   AnyClass, AnyProperty, CustomAttribute, CustomAttributeContainerProps, ECClass, ECClassModifier,
-  ECStringConstants, EntityClass, Enumeration, PrimitiveProperty, PrimitiveType, primitiveTypeToString,
+  ECStringConstants, EntityClass, Enumeration, Mixin, PrimitiveProperty, PrimitiveType, primitiveTypeToString,
   Property, RelationshipClass, RelationshipConstraint, RelationshipMultiplicity, Schema, SchemaGraph, SchemaItemType,
-  schemaItemTypeToString, StrengthDirection, strengthDirectionToString,
+  StrengthDirection, strengthDirectionToString,
 } from "@itwin/ecschema-metadata";
 import {
   ClassDiagnostic, createClassDiagnosticClass, createCustomAttributeContainerDiagnosticClass, createPropertyDiagnosticClass,
   createRelationshipConstraintDiagnosticClass, createSchemaDiagnosticClass, createSchemaItemDiagnosticClass, CustomAttributeContainerDiagnostic,
-  PropertyDiagnostic, RelationshipConstraintDiagnostic, SchemaDiagnostic, SchemaItemDiagnostic,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  DiagnosticType, PropertyDiagnostic, RelationshipConstraintDiagnostic, SchemaDiagnostic, SchemaItemDiagnostic,
 } from "./Diagnostic";
 import { IRuleSet } from "./Rules";
 
@@ -295,7 +296,7 @@ export async function* baseClassIsOfDifferentType(ecClass: AnyClass): AsyncItera
   if (baseClass.schemaItemType === ecClass.schemaItemType)
     return;
 
-  const itemType = schemaItemTypeToString(baseClass.schemaItemType);
+  const itemType = baseClass.schemaItemType;
   yield new Diagnostics.BaseClassIsOfDifferentType(ecClass, [ecClass.fullName, baseClass.fullName, itemType]);
 }
 
@@ -312,7 +313,7 @@ export async function* incompatibleValueTypePropertyOverride(property: AnyProper
     return;
 
   async function callback(baseClass: ECClass): Promise<PropertyDiagnostic<any[]> | undefined> {
-    const baseProperty = await baseClass.getProperty(property.name);
+    const baseProperty = await baseClass.getProperty(property.name, true);
     if (!baseProperty)
       return;
 
@@ -346,7 +347,7 @@ export async function* incompatibleTypePropertyOverride(property: AnyProperty): 
     return;
 
   async function callback(baseClass: ECClass): Promise<PropertyDiagnostic<any[]> | undefined> {
-    const baseProperty = await baseClass.getProperty(property.name);
+    const baseProperty = await baseClass.getProperty(property.name, true);
     if (!baseProperty)
       return;
 
@@ -373,7 +374,7 @@ export async function* incompatibleUnitPropertyOverride(property: AnyProperty): 
     return;
 
   async function callback(baseClass: ECClass): Promise<PropertyDiagnostic<any[]> | undefined> {
-    const baseProperty = await baseClass.getProperty(property.name);
+    const baseProperty = await baseClass.getProperty(property.name, true);
     if (!baseProperty || !baseProperty.kindOfQuantity)
       return;
 
@@ -448,7 +449,7 @@ export async function* validateNavigationProperty(property: AnyProperty): AsyncI
   }
 
   const isClassSupported = async (ecClass: ECClass, propertyName: string, constraintName: string): Promise<boolean> => {
-    if (constraintName === ecClass.fullName && undefined !== await ecClass.getProperty(propertyName))
+    if (constraintName === ecClass.fullName && undefined !== await ecClass.getProperty(propertyName, true))
       return true;
 
     const inheritedProp = await ecClass.getInheritedProperty(propertyName);
@@ -705,8 +706,8 @@ async function applyConstraintClassesDeriveFromAbstractConstraint(ecClass: Relat
   for (const classPromise of constraint.constraintClasses) {
     const constraintClass = await classPromise;
 
-    if (constraintClass.schemaItemType === SchemaItemType.Mixin && abstractConstraint.schemaItemType === SchemaItemType.EntityClass) {
-      if (!await (constraintClass).applicableTo(abstractConstraint as EntityClass)) {
+    if (Mixin.isMixin(constraintClass) && EntityClass.isEntityClass(abstractConstraint)) {
+      if (!await (constraintClass).applicableTo(abstractConstraint)) {
         const constraintType = constraint.isSource ? ECStringConstants.RELATIONSHIP_END_SOURCE : ECStringConstants.RELATIONSHIP_END_TARGET;
         return new Diagnostics.ConstraintClassesDeriveFromAbstractConstraint(ecClass, [constraintClass.fullName, constraintType, constraint.relationshipClass.fullName, abstractConstraint.fullName]);
       }

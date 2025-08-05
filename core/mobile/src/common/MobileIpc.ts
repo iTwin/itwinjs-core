@@ -16,7 +16,7 @@ import { MobileRpcRequest } from "./MobileRpcRequest";
 
 const IPC = "__ipc__";
 
-class IpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
+class IpcInterface extends RpcInterface {
   public static interfaceName = IPC;
   public static interfaceVersion = "0.0.0";
   public async send() { }
@@ -62,10 +62,9 @@ export class MobileIpcTransport extends IpcWebSocketTransport {
   }
 
   private async sendToBackend(message: IpcWebSocketMessage) {
-    const request = new MobileRpcRequest(this._client, "send", [message]);
+    using request = new MobileRpcRequest(this._client, "send", [message]);
     const encoded = await MobileRpcProtocol.encodeRequest(request);
     this._protocol.sendToBackend(encoded);
-    request.dispose();
   }
 
   private sendToFrontend(message: IpcWebSocketMessage) {

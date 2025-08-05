@@ -12,7 +12,7 @@ import { IModelDb } from "./IModelDb";
 import { CodeService } from "./CodeService";
 
 /** Manages [CodeSpecs]($docs/BIS/guide/fundamentals/element-fundamentals.md#codespec) within an [[IModelDb]]
- * @public
+ * @public @preview
  */
 export class CodeSpecs {
   private static tableName = "bis_CodeSpec";
@@ -62,7 +62,7 @@ export class CodeSpecs {
   public hasId(codeSpecId: Id64String): boolean {
     try {
       return undefined !== this.getById(codeSpecId);
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -87,7 +87,7 @@ export class CodeSpecs {
   public hasName(name: string): boolean {
     try {
       return undefined !== this.getByName(name);
-    } catch (error) {
+    } catch {
       return false;
     }
   }

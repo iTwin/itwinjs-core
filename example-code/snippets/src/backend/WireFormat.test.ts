@@ -31,7 +31,6 @@ describe("Wire Format Snippets", () => {
     // __PUBLISH_EXTRACT_END__
     assert.isDefined(elementProps);
 
-    /* eslint-disable */
     const expectedProps =
     // __PUBLISH_EXTRACT_START__ WireFormat_RootSubject.json
     {
@@ -47,7 +46,6 @@ describe("Wire Format Snippets", () => {
     }
       // __PUBLISH_EXTRACT_END__
       ;
-    /* eslint-enable */
 
     expect(JSON.parse(json)).deep.eq(expectedProps);
   });
@@ -59,7 +57,6 @@ describe("Wire Format Snippets", () => {
     // __PUBLISH_EXTRACT_END__
     assert.isDefined(modelProps);
 
-    /* eslint-disable */
     const expectedProps =
     // __PUBLISH_EXTRACT_START__ WireFormat_RepositoryModel.json
     {
@@ -77,7 +74,6 @@ describe("Wire Format Snippets", () => {
     }
       // __PUBLISH_EXTRACT_END__
       ;
-    /* eslint-enable */
 
     expect(JSON.parse(json)).deep.eq(expectedProps);
   });
@@ -127,7 +123,6 @@ describe("Wire Format Snippets", () => {
 
     // __PUBLISH_EXTRACT_END__
 
-    /* eslint-disable */
     const expectedArcJson =
     // __PUBLISH_EXTRACT_START__ WireFormat_GeometricElement3d_Arc.json
     {
@@ -153,10 +148,8 @@ describe("Wire Format Snippets", () => {
     }
       // __PUBLISH_EXTRACT_END__
       ;
-    /* eslint-enable */
     expect(JSON.parse(arcJson)).deep.eq(expectedArcJson);
 
-    /* eslint-disable */
     const expectedLineStringJson =
       // __PUBLISH_EXTRACT_START__ WireFormat_GeometricElement3d_LineString.json
 
@@ -179,10 +172,8 @@ describe("Wire Format Snippets", () => {
       ]
       // __PUBLISH_EXTRACT_END__
       ;
-    /* eslint-enable */
     expect(JSON.parse(lineStringJson)).deep.eq(expectedLineStringJson);
 
-    /* eslint-disable */
     const expectedGeomStreamJson =
       // __PUBLISH_EXTRACT_START__ WireFormat_GeometricElement3d_GeometryStream.json
       [
@@ -231,10 +222,8 @@ describe("Wire Format Snippets", () => {
       ]
       // __PUBLISH_EXTRACT_END__
       ;
-    /* eslint-enable */
     expect(JSON.parse(geometryStreamJson)).deep.eq(expectedGeomStreamJson);
 
-    /* eslint-disable */
     const expectedPlacementJson =
     // __PUBLISH_EXTRACT_START__ WireFormat_GeometricElement3d_Placement.json
     {
@@ -249,10 +238,8 @@ describe("Wire Format Snippets", () => {
     }
       // __PUBLISH_EXTRACT_END__
       ;
-    /* eslint-enable */
     expect(JSON.parse(placementJson)).deep.eq(expectedPlacementJson);
 
-    /* eslint-disable */
     const expectedElementJson =
     // __PUBLISH_EXTRACT_START__ WireFormat_GeometricElement3d_Element.json
     {
@@ -321,7 +308,6 @@ describe("Wire Format Snippets", () => {
     }
       // __PUBLISH_EXTRACT_END__
       ;
-    /* eslint-enable */
     expect(JSON.parse(elementPropsJson)).deep.eq(expectedElementJson);
   });
 

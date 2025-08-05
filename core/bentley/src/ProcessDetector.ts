@@ -31,7 +31,7 @@ export class ProcessDetector {
    * @note This method will return `true` for any frontend running on an iPad, whether it is a user-launched web browser (e.g. Safari) or the frontend of a mobile app.
    */
   public static get isIPadBrowser() {
-    return this.isBrowserProcess && window.navigator.platform === "iPad" || (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 0 && !("MSStream" in window)); /* eslint-disable-line deprecation/deprecation */
+    return this.isBrowserProcess && window.navigator.platform === "iPad" || (window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 0 && !("MSStream" in window)); /* eslint-disable-line @typescript-eslint/no-deprecated */
   }
 
   /** Is this process running in a browser on an iPhone?

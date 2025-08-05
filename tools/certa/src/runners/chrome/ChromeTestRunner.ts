@@ -44,7 +44,7 @@ export class ChromeTestRunner {
     webserverProcess = spawnChildProcess("node", [require.resolve("./webserver")], webserverEnv, true);
 
     // Don't continue until the webserver is started and listening.
-    const webserverExited = new Promise<never>((_resolve, reject) => webserverProcess.once("exit", () => reject("Webserver exited!")));
+    const webserverExited = new Promise<never>((_resolve, reject) => webserverProcess.once("exit", () => reject(new Error("Webserver exited!"))));
     const webserverStarted = new Promise<number>((resolve) => webserverProcess.once("message", resolve));
     const actualPort = await Promise.race([webserverExited, webserverStarted]);
     if (actualPort !== config.ports.frontend)
@@ -65,6 +65,7 @@ export class ChromeTestRunner {
       writeCoverageData(coverage);
 
     process.exitCode = failures;
+    (process as any).emit("chrome-test-runner-done");
   }
 }
 
@@ -81,7 +82,10 @@ async function runTestsInPlaywright(config: CertaConfig, port: string) {
       page.on("dialog", async (dialog: any) => dialog.dismiss());
 
       // Re-throw any uncaught exceptions from the frontend in the backend
-      page.on("pageerror", reject);
+      page.on("pageerror", async (error) => {
+        await browser.close();
+        reject(error);
+      });
 
       // Expose some functions to the frontend that will execute _in the backend context_
       await page.exposeFunction("_CertaConsole", (type: ConsoleMethodName, args: any[]) => console[type](...args));
@@ -117,7 +121,8 @@ async function runTestsInPlaywright(config: CertaConfig, port: string) {
         });
       });
     } catch (error) {
-      reject(error);
+      await browser.close();
+      reject(error); // eslint-disable-line @typescript-eslint/prefer-promise-reject-errors
     }
   });
 }

@@ -96,7 +96,7 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
       const scopeStarted = await IpcApp.appFunctionIpc.toggleGraphicalEditingScope(imodel.key, true);
       assert(scopeStarted); // If it didn't, the backend threw an error.
     } catch (e) {
-      scope.dispose();
+      scope[Symbol.dispose]();
       throw e;
     }
 
@@ -122,7 +122,7 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
       try {
         this.onExited.raiseEvent(this);
       } finally {
-        this.dispose();
+        this[Symbol.dispose]();
       }
     }
   }
@@ -159,7 +159,7 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
     this._cleanup = this.registerImpl();
   }
 
-  private dispose(): void {
+  private [Symbol.dispose](): void {
     this._disposed = true;
 
     this.onExiting.clear();
@@ -172,6 +172,11 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
       this._cleanup();
       this._cleanup = undefined;
     }
+  }
+
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
+  public dispose() {
+    this[Symbol.dispose]();
   }
 
   /** @internal */
@@ -203,7 +208,7 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
 
     if (deletedIds) {
       this.iModel.selectionSet.remove(deletedIds);
-      this.iModel.hilited.setHilite(deletedIds, false);
+      this.iModel.hilited.remove({ elements: deletedIds });
     }
 
     this.onGeometryChanges.raiseEvent(changes, this);

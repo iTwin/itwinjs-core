@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
@@ -97,6 +97,7 @@ class StrokeCountSearch extends NullGeometryHandler {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 function curvePrimitiveHasInstanceOf<T extends Function>(cp: CurvePrimitive, classType: T): boolean {
   if (cp instanceof classType)
     return true;
@@ -223,7 +224,7 @@ class ExerciseCurve {
     if (curve instanceof BSplineCurve3d) return;  // TODO
     // if (curve instanceof TransitionSpiral3d) return;  // TODO
     for (const fractionA of [0.421, 0.421, 0.45, 0.45]) {
-      const tangentA = curve.fractionToPointAndDerivative(fractionA)!;
+      const tangentA = curve.fractionToPointAndDerivative(fractionA);
       if (ck.testPointer(tangentA)) {
         const plane = Plane3dByOriginAndUnitNormal.create(tangentA.origin, tangentA.direction)!;
         const intersections: CurveLocationDetail[] = [];
@@ -694,7 +695,7 @@ describe("Curves", () => {
     const ck = new Checker();
     ExerciseCurve.testManyCurves(ck);
     ck.checkpoint("End CurvePrimitive.Evaluations");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DistanceIndexClonePartial", () => {
@@ -745,7 +746,7 @@ describe("Curves", () => {
     const dxGap = 1.0;
     const allGeometry: GeometryQuery[] = [];
     for (const p of paths) {
-      const q = p.clone()!;
+      const q = p.clone();
       ck.testTrue(p.isAlmostEqual(q), "clone is same curve");
       GeometryCoreTestIO.captureGeometry(allGeometry, q, dx, 0.0);
       ExerciseCurve.exerciseFractionToPoint(ck, p, true, false);
@@ -792,14 +793,14 @@ describe("Curves", () => {
           ck.testLT(p1.distance(c1x.point), proximityFactor * e, "small distance from curve");
         p.closestPoint(p1, CurveExtendMode.OnCurve);
       }
-      dx += p.range()!.xLength() + dxGap;
+      dx += p.range().xLength() + dxGap;
       if (ck.getNumErrors() > error0)
         GeometryCoreTestIO.consoleLog("  With this curve", prettyPrint(IModelJson.Writer.toIModelJson(p.path)));
     }
 
     ck.checkpoint("CurvePrimitive.Create and exercise distanceIndex");
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurvePrimitive", "CurveChainWithDistanceIndex");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("DistanceIndexMismatches", () => {
@@ -810,7 +811,7 @@ describe("Curves", () => {
     const pathD = Sample.createSquareWavePath(4, 1, 1, 0, 0, 2);    // 4 wave as 4 linestrings
     const emptyBag = BagOfCurves.create();
     const bag1 = BagOfCurves.create();
-    const bagWithPath = BagOfCurves.create(pathA.clone()!);
+    const bagWithPath = BagOfCurves.create(pathA.clone());
 
     const lineSegment = LineSegment3d.createXYXY(0, 0, 1, 1);
     bag1.tryAddChild(lineSegment.clone());
@@ -842,7 +843,7 @@ describe("Curves", () => {
     ck.checkpoint("CurvePrimitive.DistanceIndexMismatches");
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurvePrimitive", "CurveChainWithDistanceIndex");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("DistanceIndexClosestPoint", () => {
     const ck = new Checker();
@@ -851,16 +852,16 @@ describe("Curves", () => {
     let y0 = 0;
     const primitives = [];
     primitives.push(LineString3d.create(Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(1.8, 2, 0), Point3d.create(2, 3, 0)));
-    primitives.push(Arc3d.createCircularStartMiddleEnd(Point3d.create(2, 3, 0), Point3d.create(2.2, 4, 0), Point3d.create(2, 5, 0))!);
+    primitives.push(Arc3d.createCircularStartMiddleEnd(Point3d.create(2, 3, 0), Point3d.create(2.2, 4, 0), Point3d.create(2, 5, 0)));
     primitives.push(LineString3d.create(Point3d.create(2, 5, 0), Point3d.create(2.2, 6, 0), Point3d.create(1, 7, 0), Point3d.create(2, 8, 0)));
-    primitives.push(Arc3d.createCircularStartMiddleEnd(Point3d.create(2, 8, 0), Point3d.create(1.7, 9, 0), Point3d.create(2, 10, 0))!);
+    primitives.push(Arc3d.createCircularStartMiddleEnd(Point3d.create(2, 8, 0), Point3d.create(1.7, 9, 0), Point3d.create(2, 10, 0)));
     primitives.push(LineSegment3d.create(Point3d.create(2, 10, 0), Point3d.create(2.1, 11, 0)));
     for (const numPrimitive of [1, 2, 3, 4, 5]) {
       for (const primitive0 of [0, 1, 2, 3, 4]) {
         const path = Path.create();
         for (let i = primitive0; i < primitives.length && i < primitive0 + numPrimitive; i++)
           path.tryAddChild(primitives[i]);
-        const indexedPath = CurveChainWithDistanceIndex.createCapture(path)!;
+        const indexedPath = CurveChainWithDistanceIndex.createCapture(path);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0);
         const range = indexedPath.range();
 
@@ -868,7 +869,7 @@ describe("Curves", () => {
           for (let y = range.low.y - 1.0; y <= range.high.y + 1.1; y += 0.5) {
             const spacePoint = Point3d.create(x, y);
             const detail = indexedPath.closestPoint(spacePoint, false);
-            if (ck.testDefined(detail) && detail) {
+            if (ck.testDefined(detail)) {
               const unitTangent = indexedPath.fractionToPointAndUnitTangent(detail.fraction);
               // strokes .. space point to new evaluation to short step on tangent back to nearby point on line from space point to detail point
               GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(spacePoint, unitTangent.origin,
@@ -885,7 +886,7 @@ describe("Curves", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurvePrimitive", "DistanceIndexClosestPoint");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
@@ -932,7 +933,7 @@ describe("CurvePrimitive.Newton", () => {
       }
     }
     ck.checkpoint("CurvePrimitive.Newton");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -969,7 +970,7 @@ describe("CurvePrimitive.TransitionSpiral", () => {
     ck.testCoordinate(c.curveLength(), trapezoidSum, "spiral length versus trapezoid sum");
 
     ck.checkpoint("CurvePrimitive.TransitionSpiral");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1029,7 +1030,7 @@ describe("Samples", () => {
     testSamples(ck, Sample.createSimpleIndexedPolyfaces(1));
     testSamples(ck, Sample.createClipPlanes());
     ck.checkpoint("Samples");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1073,7 +1074,7 @@ describe("Linestring3dSpecials", () => {
       geometry.push(linestring);
       const df = 0.125 / (linestring.numPoints() - 1);
       for (let fraction = 0; fraction <= 1.0000001; fraction += df) {
-        const frame0 = linestring.fractionToFrenetFrame(fraction)!;
+        const frame0 = linestring.fractionToFrenetFrame(fraction);
         geometry.push(LineString3d.create(frame0.origin,
           frame0.multiplyXYZ(ax, 0, 0),
           frame0.multiplyXYZ(0, ay, 0),
@@ -1087,7 +1088,7 @@ describe("Linestring3dSpecials", () => {
     }
     GeometryCoreTestIO.saveGeometry(geometry, "Linestring3d", "fractionToFrenetFrame");
     ck.checkpoint("Linestring3dSpecials.FrenetFrame");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("appendPlaneIntersections", () => {
@@ -1140,7 +1141,7 @@ describe("Linestring3dSpecials", () => {
     }
 
     ck.checkpoint("Linestring3d.appendPlaneIntersections");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1166,7 +1167,7 @@ describe("CoordinateXYZ", () => {
     }
 
     ck.checkpoint("CoordinateXYZ.Hello");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1215,12 +1216,12 @@ describe("IsomorphicCurves", () => {
         for (let i = 0; i + 1 < currentPoints.length; i++) {
           path.tryAddChild(LineSegment3d.create(currentPoints[i], currentPoints[i + 1]));
         }
-        const chain = CurveChainWithDistanceIndex.createCapture(path, options)!;
+        const chain = CurveChainWithDistanceIndex.createCapture(path, options);
         compareIsomorphicCurves(ck, linestring, chain);
       }
     }
     ck.checkpoint("IsomorphicCurves.Hello");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
 });
@@ -1247,7 +1248,7 @@ describe("CylindricalRange", () => {
         ck.testLE(e, 2.0 * options.chordTol);
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 describe("GeometryQuery", () => {
@@ -1264,7 +1265,7 @@ describe("GeometryQuery", () => {
     ck.testFalse(pathA.isAlmostEqual(pathC));
     ck.testTrue(pathC.isAlmostEqual(pathC));
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("CurvePrimitive", () => {
@@ -1274,6 +1275,6 @@ describe("GeometryQuery", () => {
     const path = Path.create(LineSegment3d.createXYXY(1, 2, 3, 4));
     ck.testUndefined(path.getChild(-1));
     ck.testUndefined(path.getChild(3));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

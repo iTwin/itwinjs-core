@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Point3d, Range3d, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import { Cartographic, EcefLocation, EmptyLocalization, GeoCoordStatus, PointWithStatus } from "@itwin/core-common";
 import { BlankConnection } from "../IModelConnection";
@@ -59,21 +59,21 @@ describe("CoordinateConverter", () => {
     }));
   }
 
-  before(async () => {
+  beforeAll(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
     iModel = new Connection();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await iModel.close();
     await IModelApp.shutdown();
   });
 
   it("initializes default options", () => {
     const c = new Converter({ iModel, requestPoints });
-    expect(c.maxPointsPerRequest).to.equal(300);
-    expect(c.pending.isEmpty).to.be.true;
-    expect(c.cache.size).to.equal(0);
+    expect(c.maxPointsPerRequest).toEqual(300);
+    expect(c.pending.isEmpty).toBe(true);
+    expect(c.cache.size).toEqual(0);
   });
 
   it("initializes custom options", () => {
@@ -83,7 +83,7 @@ describe("CoordinateConverter", () => {
       maxPointsPerRequest: 123,
     });
 
-    expect(c.maxPointsPerRequest).to.equal(123);
+    expect(c.maxPointsPerRequest).toEqual(123);
   });
 
   it("clamps options to permitted ranges", () => {
@@ -93,7 +93,7 @@ describe("CoordinateConverter", () => {
       maxPointsPerRequest: 0,
     });
 
-    expect(c.maxPointsPerRequest).to.equal(1);
+    expect(c.maxPointsPerRequest).toEqual(1);
 
     c = new Converter({
       iModel,
@@ -101,20 +101,20 @@ describe("CoordinateConverter", () => {
       maxPointsPerRequest: -5,
     });
 
-    expect(c.maxPointsPerRequest).to.equal(1);
+    expect(c.maxPointsPerRequest).toEqual(1);
   });
 
   function expectConvertedPoint(requested: XYZProps, received: PointWithStatus): void {
-    expect(received.s).to.equal(GeoCoordStatus.Success);
+    expect(received.s).toEqual(GeoCoordStatus.Success);
     const rec = Point3d.fromJSON(received.p);
     const req = Point3d.fromJSON(requested);
-    expect(rec.x).to.equal(req.x + 1);
-    expect(rec.y).to.equal(req.y - 1);
-    expect(rec.z).to.equal(req.z);
+    expect(rec.x).toEqual(req.x + 1);
+    expect(rec.y).toEqual(req.y - 1);
+    expect(rec.z).toEqual(req.z);
   }
 
   function expectConverted(requested: XYZProps[], received: PointWithStatus[]): void {
-    expect(requested.length).to.equal(received.length);
+    expect(requested.length).toEqual(received.length);
     for (let i = 0; i < requested.length; i++)
       expectConvertedPoint(requested[i], received[i]);
   }
@@ -151,8 +151,8 @@ describe("CoordinateConverter", () => {
     ];
 
     const c = new Converter({ iModel, requestPoints });
-    expect((await c.convert(input)).fromCache).to.equal(0);
-    expect((await c.convert(input)).fromCache).to.equal(2);
+    expect((await c.convert(input)).fromCache).toEqual(0);
+    expect((await c.convert(input)).fromCache).toEqual(2);
   });
 
   it("makes no request if all points are in cache", async () => {
@@ -164,13 +164,13 @@ describe("CoordinateConverter", () => {
 
     const c = new Converter({ iModel, requestPoints: reqPts });
     const input = [ [ 0, 1, 2 ] ];
-    expect(nRequests).to.equal(0);
+    expect(nRequests).toEqual(0);
     await c.convert(input);
-    expect(nRequests).to.equal(1);
+    expect(nRequests).toEqual(1);
     await c.convert(input);
-    expect(nRequests).to.equal(1);
+    expect(nRequests).toEqual(1);
     await c.convert([[3, 4, 5]]);
-    expect(nRequests).to.equal(2);
+    expect(nRequests).toEqual(2);
   });
 
   it("requests only points that are not in cache", async () => {
@@ -184,10 +184,13 @@ describe("CoordinateConverter", () => {
     });
 
     await c.convert([[0, 0, 0], [1, 1, 1]]);
-    expect(ptsRequested).to.deep.equal([{x: 0, y: 0, z: 0}, {x: 1, y: 1, z: 1}]);
+    expect(ptsRequested).toEqual([
+      { x: 0, y: 0, z: 0 },
+      { x: 1, y: 1, z: 1 },
+    ]);
 
     await c.convert([[1, 1, 1], [2, 2, 2]]);
-    expect(ptsRequested).to.deep.equal([{x: 2, y: 2, z: 2}]);
+    expect(ptsRequested).toEqual([{ x: 2, y: 2, z: 2 }]);
   });
 
   async function waitOneFrame(): Promise<void> {
@@ -208,28 +211,28 @@ describe("CoordinateConverter", () => {
       },
     });
 
-    expect(c.state).to.equal("idle");
+    expect(c.state).toEqual("idle");
     const p0 = c.convert([[0, 0, 0]]);
-    expect(c.state).to.equal("scheduled");
-    expect(c.pending.length).to.equal(1);
-    expect(c.inflight.length).to.equal(0);
+    expect(c.state).toEqual("scheduled");
+    expect(c.pending.length).toEqual(1);
+    expect(c.inflight.length).toEqual(0);
 
     await waitOneFrame();
-    expect(c.state).to.equal("in-flight");
-    expect(c.inflight.length).to.equal(1);
-    expect(c.pending.length).to.equal(0);
+    expect(c.state).toEqual("in-flight");
+    expect(c.inflight.length).toEqual(1);
+    expect(c.pending.length).toEqual(0);
 
     const p1 = c.convert([[1, 1, 1]]);
-    expect(c.pending.length).to.equal(1);
+    expect(c.pending.length).toEqual(1);
 
     await waitOneFrame();
-    expect(c.state).to.equal("in-flight");
-    expect(c.pending.length).to.equal(1);
+    expect(c.state).toEqual("in-flight");
+    expect(c.pending.length).toEqual(1);
 
     const r = await Promise.all([p0, p1]);
-    expect(c.state).to.equal("idle");
-    expect(c.pending.length).to.equal(0);
-    expect(c.inflight.length).to.equal(0);
+    expect(c.state).toEqual("idle");
+    expect(c.pending.length).toEqual(0);
+    expect(c.inflight.length).toEqual(0);
     expectConverted([[0, 0, 0]], r[0].points);
     expectConverted([[1, 1, 1]], r[1].points);
   });
@@ -250,7 +253,7 @@ describe("CoordinateConverter", () => {
     const p1 = c.convert([[1, 1, 1], [2, 2, 2]]);
     const results = await Promise.all([p0, p1]);
 
-    expect(ptsRequested).to.deep.equal([
+    expect(ptsRequested).toEqual([
       [{x: 0, y: 0, z: 0}, {x: 1, y: 1, z: 1}],
       [{x: 2, y: 2, z: 2}],
     ]);
@@ -280,7 +283,7 @@ describe("CoordinateConverter", () => {
       [0, 0, 0],
     ]);
 
-    expect(ptsRequested).to.deep.equal([
+    expect(ptsRequested).toEqual([
       {x: 0, y: 0, z: 0},
       {x: 1, y: 1, z: 1},
       {x: 2, y: 2, z: 2},
@@ -298,12 +301,12 @@ describe("CoordinateConverter", () => {
     });
 
     const result = await c.convert([[1, 2, 3]]);
-    expect(result.points.length).to.equal(1);
+    expect(result.points.length).toEqual(1);
     const p = Point3d.fromJSON(result.points[0].p);
-    expect(result.points[0].s).to.equal(GeoCoordStatus.CSMapError);
-    expect(p.x).to.equal(1);
-    expect(p.y).to.equal(2);
-    expect(p.z).to.equal(3);
+    expect(result.points[0].s).toEqual(GeoCoordStatus.CSMapError);
+    expect(p.x).toEqual(1);
+    expect(p.y).toEqual(2);
+    expect(p.z).toEqual(3);
   });
 
   it("does not make a request if the iModel is closed", async () => {
@@ -318,19 +321,19 @@ describe("CoordinateConverter", () => {
     });
 
     const p = c.convert([[1, 2, 3]]);
-    expect(requested).to.be.false;
+    expect(requested).toBe(false);
     await imodel.close();
     const pts = await p;
-    expect(requested).to.be.false;
-    expect(pts.points.length).to.equal(1);
-    expect(pts.points[0].s).to.equal(GeoCoordStatus.CSMapError);
+    expect(requested).toBe(false);
+    expect(pts.points.length).toEqual(1);
+    expect(pts.points[0].s).toEqual(GeoCoordStatus.CSMapError);
   });
 
   it("batches requests received during the same frame", async () => {
     const c = new Converter({
       iModel,
       requestPoints: async (pts: XYAndZ[]) => {
-        expect(pts).to.deep.equal([{x: 0, y: 0, z: 0}, {x: 1, y: 1, z: 1}]);
+        expect(pts).toEqual([{x: 0, y: 0, z: 0}, {x: 1, y: 1, z: 1}]);
         return requestPoints(pts);
       },
     });
@@ -340,7 +343,7 @@ describe("CoordinateConverter", () => {
       c.convert([[1, 1, 1]]),
     ]);
 
-    expect(results.length).to.equal(2);
+    expect(results.length).toEqual(2);
     expectConverted([[0, 0, 0]], results[0].points);
     expectConverted([[1, 1, 1]], results[1].points);
   });
@@ -359,7 +362,7 @@ describe("CoordinateConverter", () => {
 
     const input = [[0, 0, 0], [1, 1, 1], [2, 2, 2], [3, 3, 3], [4, 4, 4]];
     const output = await c.convert(input);
-    expect(nRequests).to.equal(3);
+    expect(nRequests).toEqual(3);
     expectConverted(input, output.points);
   });
 
@@ -370,7 +373,7 @@ describe("CoordinateConverter", () => {
     });
 
     const results = await c.convert([[2, 2, 2], [1, 1, 1], [3, 3, 3]]);
-    expect(results.points).to.deep.equal([{
+    expect(results.points).toEqual([{
       s: GeoCoordStatus.CSMapError,
       p: {x: 2, y: 2, z: 2},
     }, {

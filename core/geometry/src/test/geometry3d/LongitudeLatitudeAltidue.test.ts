@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { LongitudeLatitudeNumber } from "../../geometry3d/LongitudeLatitudeAltitude";
 import { Checker } from "../Checker";
 
@@ -38,14 +38,14 @@ describe("LongitudeLatitudeNumber", () => {
     ck.testFalse(createAsDegrees.isAlmostEqual(b));
     LongitudeLatitudeNumber.createRadians(a.longitudeRadians, a.latitudeRadians, a.altitude, b);
     ck.testTrue(b.isAlmostEqual(a));
-    const c = LongitudeLatitudeNumber.createZero ();
+    const c = LongitudeLatitudeNumber.createZero();
     LongitudeLatitudeNumber.createDegrees(a.longitudeDegrees, a.latitudeDegrees, a.altitude, c);
     ck.testTrue(b.isAlmostEqual(c));
 
-    const d = LongitudeLatitudeNumber.createZero ();
+    const d = LongitudeLatitudeNumber.createZero();
     LongitudeLatitudeNumber.create(a.longitude, a.latitude, a.altitude, d);
     ck.testTrue(b.isAlmostEqual(d));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

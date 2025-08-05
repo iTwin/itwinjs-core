@@ -6,8 +6,8 @@
  * @module Rendering
  */
 
-import { IDisposable } from "@itwin/core-bentley";
 import { RenderMemory } from "./RenderMemory";
+import { Range3d } from "@itwin/core-geometry";
 
 /** Abstract representation of an object which can be rendered by a [[RenderSystem]].
  * Two broad classes of graphics exist:
@@ -17,11 +17,21 @@ import { RenderMemory } from "./RenderMemory";
  * @public
  * @extensions
  */
-export abstract class RenderGraphic implements IDisposable /* , RenderMemory.Consumer */ {
-  public abstract dispose(): void;
+export abstract class RenderGraphic implements Disposable /* , RenderMemory.Consumer */ {
+  public [Symbol.dispose](): void {
+    this.dispose(); // eslint-disable-line @typescript-eslint/no-deprecated
+  }
+
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Will be made protected in a future release. Use [Symbol.dispose] instead. */
+  public abstract dispose(): void; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /** @internal */
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
+
+  /** Extend `range` to include the bounding box of this graphic, including any child graphics.
+  * @internal
+  */
+  public abstract unionRange(range: Range3d): void;
 }
 
 /** A graphic that owns another graphic. By default, every time a [[Viewport]]'s decorations or dynamics graphics change, the previous graphics are disposed of.
@@ -37,9 +47,11 @@ export abstract class RenderGraphicOwner extends RenderGraphic {
   /** Does nothing. To dispose of the owned graphic, use [[disposeGraphic]]. */
   public dispose(): void { }
   /** Disposes of the owned graphic. */
-  public disposeGraphic(): void { this.graphic.dispose(); }
+  public disposeGraphic(): void { this.graphic[Symbol.dispose](); }
   /** @internal */
   public collectStatistics(stats: RenderMemory.Statistics): void { this.graphic.collectStatistics(stats); }
+  /** @internal */
+  public override unionRange(range: Range3d): void { this.graphic.unionRange(range); }
 }
 
 /** An array of [[RenderGraphic]]s.

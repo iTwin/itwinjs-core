@@ -1,8 +1,8 @@
 sep=;
-Release Tag;API Item
-beta;BasicManipulationCommandIpc 
-beta;EditCommandIpc
-beta;editorBuiltInCmdIds:
-beta;EditorIpc
-internal;editorIpcStrings:
-beta;FlatBufferGeometryFilter
+Release Tag;API Item Type;API Item Name
+beta;interface;BasicManipulationCommandIpc
+beta;interface;EditCommandIpc
+beta;const;editorBuiltInCmdIds
+beta;interface;EditorIpc
+internal;const;editorIpcStrings
+beta;interface;FlatBufferGeometryFilter

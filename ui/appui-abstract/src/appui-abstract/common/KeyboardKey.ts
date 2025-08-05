@@ -7,7 +7,7 @@
  */
 
 /** Enumeration for Function Keys
- * @public @deprecated in 4.3. Please use the `ts-key-enum` npm package or string literals.
+ * @public @deprecated in 4.3 - will not be removed until after 2026-06-13. Please use the `ts-key-enum` npm package or string literals.
  */
 export enum FunctionKey {
   F1 = "F1",
@@ -25,7 +25,7 @@ export enum FunctionKey {
 }
 
 /** Enumeration for Special Keys
- * @public @deprecated in 4.3. Please use the `ts-key-enum` npm package or string literals.
+ * @public @deprecated in 4.3 - will not be removed until after 2026-06-13. Please use the `ts-key-enum` npm package or string literals.
  */
 export enum SpecialKey {
   Home = "Home",
@@ -41,6 +41,7 @@ export enum SpecialKey {
   ArrowUp = "ArrowUp",
   ArrowDown = "ArrowDown",
   Enter = "Enter",
+  // eslint-disable-next-line @typescript-eslint/no-duplicate-enum-values
   Return = "Enter",
   Space = " ",
   Backspace = "Backspace",
@@ -53,9 +54,9 @@ export enum SpecialKey {
 }
 
 /** Determines if a KeyboardEvent.key is an Arrow key
- * @public @deprecated in 4.3. Please use a custom implementation moving forward.
+ * @public @deprecated in 4.3 - will not be removed until after 2026-06-13. Please use a custom implementation moving forward.
  */
 export function isArrowKey(key: string): boolean {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   return (key === SpecialKey.ArrowLeft || key === SpecialKey.ArrowRight || key === SpecialKey.ArrowUp || key === SpecialKey.ArrowDown);
 }

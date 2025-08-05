@@ -50,7 +50,6 @@ export namespace EntityReferences {
 
   /** split a concrete entity id into its type and raw id */
   export function split(id: EntityReference): [ConcreteEntityTypes, Id64String] {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
     return [id[0] as ConcreteEntityTypes, id.slice(1)];
   }
 

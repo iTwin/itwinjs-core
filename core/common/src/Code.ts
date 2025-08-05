@@ -69,6 +69,8 @@ export class Code implements CodeProps {
   public static isValid(c: CodeProps): boolean { return Id64.isValidId64(c.spec); }
   /** Determine if this code is valid but not otherwise meaningful (and therefore not necessarily unique) */
   public static isEmpty(c: CodeProps): boolean { return this.isValid(c) && (c.value === undefined || c.value === ""); }
+
+  public toString(): string { return `[Code: ${this.spec}, ${this.scope}, ${this.value}]`; }
 }
 
 /** Names of the internal BIS CodeSpecs. These names match those specified by the native library.
@@ -168,6 +170,14 @@ export enum BisCodeSpec {
    * @see [Sheet.createCode]($backend)
    */
   sheet = "bis:Sheet",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [SheetIndex]($backend) elements.
+   * @see [SheetIndex.createCode]($backend)
+   */
+  sheetIndex = "bis:SheetIndex",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [SheetIndexEntry]($backend) elements.
+   * @see [SheetIndexEntry.createCode]($backend)
+   */
+  sheetIndexEntry = "bis:SheetIndexEntry",
   /** The name of the standard [[CodeSpec]] used when creating codes for [SpatialCategory]($backend) elements.
    * @see [SpatialCategory.createCode]($backend)
    */
@@ -322,18 +332,5 @@ export class CodeSpec {
       this.properties.scopeSpec.fGuidRequired = true;
     else
       this.properties.scopeSpec.fGuidRequired = undefined;
-  }
-
-  /** Will be true if the codes associated with this CodeSpec are managed along with the iModel and false if the codes are managed by an external service.
-   * @deprecated in 3.6 Use scopeReq instead.
-   */
-  public get isManagedWithIModel(): boolean {
-    return this.properties.spec?.isManagedWithDgnDb ?? true;
-  }
-  public set isManagedWithIModel(value: boolean) {
-    if (!this.properties.spec)
-      this.properties.spec = {};
-
-    this.properties.spec.isManagedWithDgnDb = value;
   }
 }

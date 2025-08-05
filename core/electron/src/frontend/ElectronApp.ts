@@ -7,11 +7,11 @@
  * @module Renderer
  */
 
-import { ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
+import { ProcessDetector } from "@itwin/core-bentley";
 import { IpcListener, IpcSocketFrontend } from "@itwin/core-common";
-import { IpcApp, NativeApp, NativeAppOpts } from "@itwin/core-frontend";
+import { _callIpcChannel, IpcApp, NativeApp, NativeAppOpts } from "@itwin/core-frontend";
 import type { IpcRenderer } from "electron";
-import { DialogModuleMethod, electronIpcStrings } from "../common/ElectronIpcInterface";
+import { electronIpcStrings } from "../common/ElectronIpcInterface";
 import { ElectronRpcManager } from "../common/ElectronRpcManager";
 import type { ITwinElectronApi } from "../common/ITwinElectronApi";
 
@@ -42,7 +42,7 @@ class ElectronIpc implements IpcSocketFrontend {
   constructor() {
     // use the methods on window.itwinjs exposed by ElectronPreload.ts, or ipcRenderer directly if running with nodeIntegration=true (**only** for tests).
     // Note that `require("electron")` doesn't work with nodeIntegration=false - that's what it stops
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     this._api = window.itwinjs ?? require("electron").ipcRenderer;
   }
 }
@@ -68,7 +68,7 @@ export class ElectronApp {
       throw new Error("Not running under Electron");
     if (!this.isValid) {
       this._ipc = new ElectronIpc();
-      ElectronRpcManager.initializeFrontend(this._ipc, opts?.iModelApp?.rpcInterfaces); // eslint-disable-line deprecation/deprecation
+      ElectronRpcManager.initializeFrontend(this._ipc, opts?.iModelApp?.rpcInterfaces); // eslint-disable-line @typescript-eslint/no-deprecated
     }
     await NativeApp.startup(this._ipc!, opts);
   }
@@ -77,16 +77,6 @@ export class ElectronApp {
     this._ipc = undefined;
     await NativeApp.shutdown();
     ElectronRpcManager.terminateFrontend();
-  }
-
-  /**
-   * Call an asynchronous method in the [Electron.Dialog](https://www.electronjs.org/docs/api/dialog) interface from a previously initialized ElectronFrontend.
-   * @param methodName the name of the method to call
-   * @param args arguments to method
-   * @deprecated in 3.x. use [[dialogIpc]]
-   */
-  public static async callDialog<T extends DialogModuleMethod>(methodName: T, ...args: Parameters<Electron.Dialog[T]>) {
-    return IpcApp.callIpcChannel(electronIpcStrings.dialogChannel, "callDialog", methodName, ...args) as PromiseReturnType<Electron.Dialog[T]>;
   }
 
   /** Proxy object for calling methods of `Electron.Dialog` */

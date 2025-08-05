@@ -41,7 +41,7 @@ export interface TileTreeOwner {
   /** Do not call this directly.
    * @internal
    */
-  dispose(): void;
+  [Symbol.dispose](): void;
 
   /** Waits for [[load]], then resolves. It is generally preferable to call [[load]] directly rather than `await`ing this method. */
   loadTree(): Promise<TileTree | undefined>;

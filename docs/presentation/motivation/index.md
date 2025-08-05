@@ -4,10 +4,6 @@
 
 As explained in the [ECSQL](../../learning/ECSQL.md) overview page, data from iModels can be queried using the language just like querying from any relational database using SQL. That's often the most straightforward way to get raw data from the iModels.
 
-> Try it yourself:
->
-> <iframe class="embedded-console" src="https://imodelconsole.bentley.com/?embedded=true&nosignin=true&imodel=Metrostation%20Sample&query=SELECT%20UserLabel,Category,StructuralQuantities__x002F____x0040__AreaSurfaceNetModeled,StructuralQuantities__x002F____x0040__Length%20FROM%20BuildingDataGroup:Concrete__x0020__Pile%20WHERE%20ECInstanceId=0x20000028e6b"></iframe>
-
 However, raw data is not something that should be presented to end users - it needs to be formatted according to user's preferences (language, locale, units, etc.) before feeding it to UI components. The below image shows content for an element whose properties were selected in the above query - notice how the values get formatted before loading them into the component:
 
 ![Formatted properties](./media/formatted-properties-metric.png)
@@ -16,7 +12,7 @@ In addition, because the data in iModels is normalized, the pieces of data need 
 
 ![Property sources](./media/property-grid-source-queries.png)
 
-Lastly, having a constantly evolving domains' layer that needs to used as basis for all ECSQL queries makes creating hierarchies an even more difficult task than it already is. Each type of parent node needs to have a unique ECSQL query to load its children and each of the queries need to involve relationships, target classes, navigation properties, handle polymorphism, grouping, sorting, paging and everything else. That is all doable, but wouldn't it be great if it was doable in declarative way by defining rules for the hierarchy in JSON and [**only a few lines of code**](https://www.itwinjs.org/sample-showcase/?group=UI+Trees&sample=presetation-tree-sample&imodel=Metrostation+Sample)?
+Lastly, having a constantly evolving domains' layer that needs to used as basis for all ECSQL queries makes creating hierarchies an even more difficult task than it already is. Each type of parent node needs to have a unique ECSQL query to load its children and each of the queries need to involve relationships, target classes, navigation properties, handle polymorphism, grouping, sorting, paging and everything else. That is all doable, but wouldn't it be great if it was doable in declarative way by defining rules for the hierarchy in JSON and [**only a few lines of code**](https://www.itwinjs.org/sandboxes/iTwinPlatform/Presetation%20Tree/)?
 
 ![Hierarchy sources](./media/hierarchy-level-sources.png)
 

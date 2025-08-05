@@ -7,9 +7,10 @@ import { assert, expect } from "chai";
 import { assert as bAssert } from "@itwin/core-bentley";
 import { ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, FeatureOverrideType, LinePixels, RgbColor } from "@itwin/core-common";
 import {
-  EmphasizeElements, FeatureSymbology, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
+  EmphasizeElements, FeatureSymbology, IModelConnection, ScreenViewport, SpatialViewState, StandardViewId,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("EmphasizeElements tests", () => {
   let imodel: IModelConnection;
@@ -22,7 +23,7 @@ describe("EmphasizeElements tests", () => {
 
   before(async () => {
     await TestUtility.startFrontend(undefined, true);
-    imodel = await SnapshotConnection.openFile("test.bim");
+    imodel = await TestSnapshotConnection.openFile("test.bim");
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
   });
@@ -380,14 +381,14 @@ describe("EmphasizeElements tests", () => {
 
   it("to/from JSON", async () => {
     function roundTrip(populate: (emph: EmphasizeElements, vp: ScreenViewport) => void): void {
-      const vp1 = ScreenViewport.create(viewDiv, spatialView.clone());
+      using vp1 = ScreenViewport.create(viewDiv, spatialView.clone());
       EmphasizeElements.clear(vp1);
       const before = EmphasizeElements.getOrCreate(vp1);
       populate(before, vp1);
 
       const inputJson = JSON.stringify(before.toJSON(vp1));
 
-      const vp2 = ScreenViewport.create(viewDiv, spatialView.clone());
+      using vp2 = ScreenViewport.create(viewDiv, spatialView.clone());
       const after = EmphasizeElements.getOrCreate(vp2);
       after.fromJSON(JSON.parse(inputJson), vp2);
       const outputJson = JSON.stringify(after.toJSON(vp2));
@@ -436,9 +437,6 @@ describe("EmphasizeElements tests", () => {
 
       EmphasizeElements.clear(vp1);
       EmphasizeElements.clear(vp2);
-
-      vp1.dispose();
-      vp2.dispose();
     }
 
     roundTrip((emph, _vp) => {

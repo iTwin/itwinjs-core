@@ -15,8 +15,6 @@ import { RpcRequest } from "./RpcRequest";
 import { RpcRequestContext } from "./RpcRequestContext";
 import { RpcRoutingToken } from "./RpcRoutingToken";
 
-/* eslint-disable deprecation/deprecation */
-
 /** @internal */
 export type RpcConfigurationSupplier = (routing?: RpcRoutingToken) => { new(): RpcConfiguration }; // eslint-disable-line @typescript-eslint/prefer-function-type
 
@@ -212,7 +210,7 @@ export class RpcDirectRequest extends RpcRequest {
         this.fulfillment = await this.protocol.fulfill(request);
         resolve(this.fulfillment.status);
       } catch (err) {
-        reject(err);
+        reject(err); // eslint-disable-line @typescript-eslint/prefer-promise-reject-errors
       }
     });
   }

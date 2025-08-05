@@ -10,7 +10,7 @@
 import { CurveAndSurfaceLocationDetail, UVSurfaceLocationDetail } from "../bspline/SurfaceLocationDetail";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { Geometry } from "../Geometry";
-import { SmallSystem } from "../numerics/Polynomials";
+import { SmallSystem } from "../numerics/SmallSystem";
 import { UVSurface } from "./GeometryHandler";
 import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors";
 import { Point3d } from "./Point3dVector3d";

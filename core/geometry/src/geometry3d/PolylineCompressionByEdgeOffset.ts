@@ -165,17 +165,21 @@ export class PolylineCompressionContext {
     context.acceptPointByIndex(indexA);
     context.recursiveCompressByChordErrorGo(indexA, indexB);
   }
-  /** Copy points from source to dest, omitting those too close to predecessor.
-   * * First and last points are always preserved.
+  /**
+   * Return a simplified subset of given points, omitting a point if very close to its predecessor.
+   * * This is a local search, with a single pass over the data.
+   * * First and last points are always retained.
+   * @param data input points
+   * @param maxEdgeLength length of largest edge to be compressed out
    */
-  public static compressInPlaceByShortEdgeLength(data: GrowableXYZArray, edgeLength: number) {
+  public static compressInPlaceByShortEdgeLength(data: GrowableXYZArray, maxEdgeLength: number) {
     const n = data.length;
     if (n < 2)
       return;
     let lastAcceptedIndex = 0;
     // back up from final point ..
     let indexB = n - 1;
-    while (indexB > 0 && data.distanceIndexIndex(indexB - 1, n - 1)! < edgeLength)
+    while (indexB > 0 && data.distanceIndexIndex(indexB - 1, n - 1)! <= maxEdgeLength)
       indexB--;
     if (indexB === 0) {
       // Theres only one point there.
@@ -188,7 +192,7 @@ export class PolylineCompressionContext {
     let candidateIndex = lastAcceptedIndex + 1;
     while (candidateIndex <= indexB) {
       const d = data.distanceIndexIndex(lastAcceptedIndex, candidateIndex)!;
-      if (d >= edgeLength) {
+      if (d > maxEdgeLength) {
         data.moveIndexToIndex(candidateIndex, lastAcceptedIndex + 1);
         lastAcceptedIndex++;
       }
@@ -197,10 +201,13 @@ export class PolylineCompressionContext {
     data.length = lastAcceptedIndex + 1;
   }
 
-  /** Copy points from source to dest, omitting those too close to predecessor.
-   * * First and last points are always preserved.
+  /**
+   * Return a simplified subset of given points, omitting the middle of three successive points if the triangle they form is small.
+   * * This is a local search, with a single pass over the data.
+   * @param data input points
+   * @param maxTriangleArea area of largest triangle to compress
    */
-  public static compressInPlaceBySmallTriangleArea(data: GrowableXYZArray, triangleArea: number) {
+  public static compressInPlaceBySmallTriangleArea(data: GrowableXYZArray, maxTriangleArea: number) {
     const n = data.length;
     if (n < 3)
       return;
@@ -208,7 +215,7 @@ export class PolylineCompressionContext {
     const cross = Vector3d.create();
     for (let i1 = 1; i1 + 1 < n; i1++) {
       data.crossProductIndexIndexIndex(lastAcceptedIndex, i1, i1 + 1, cross);
-      if (0.5 * cross.magnitude() > triangleArea) {
+      if (0.5 * cross.magnitude() > maxTriangleArea) {
         data.moveIndexToIndex(i1, ++lastAcceptedIndex);
       }
     }
@@ -258,9 +265,9 @@ export class PolylineCompressionContext {
    * @param points
    * @param perpendicularDistance
    */
-  public static compressColinearWrapInPlace(points: Point3d[], tolerance: number) {
+  public static compressColinearWrapInPlace(points: Point3d[], duplicatePointTolerance: number, colinearPointTolerance: number) {
     const lastIndex = points.length - 1;
-    if (lastIndex >= 3 && points[0].distance(points[lastIndex]) < tolerance) {
+    if (lastIndex >= 3 && points[0].distance(points[lastIndex]) < duplicatePointTolerance) {
       // indices of 3 points potentially colinear.
       const indexA = lastIndex - 1;
       const indexB = 0;
@@ -272,7 +279,7 @@ export class PolylineCompressionContext {
       const fraction = Geometry.conditionalDivideFraction(uDotV, uDotU);
       if (fraction !== undefined && fraction > 0.0 && fraction < 1.0) {
         const h2 = vectorV.magnitudeSquared() - fraction * fraction * uDotU;
-        if (Math.sqrt(Math.abs(h2)) < tolerance) {
+        if (Math.sqrt(Math.abs(h2)) < colinearPointTolerance) {
           points[0] = points[indexA];
           points.pop();
         }

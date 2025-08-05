@@ -7,17 +7,17 @@
  */
 
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { Field, PropertiesField } from "./content/Fields";
-import { Item } from "./content/Item";
-import { PrimitiveTypeDescription, PropertyValueFormat } from "./content/TypeDescription";
-import { DisplayValue, Value } from "./content/Value";
-import { ClassInfo, InstanceKey, RelationshipPath } from "./EC";
-import { MultiSchemaClassesSpecification, SingleSchemaClassSpecification } from "./rules/ClassSpecifications";
-import { ContentSpecificationTypes } from "./rules/content/ContentSpecification";
-import { RelatedInstanceSpecification } from "./rules/RelatedInstanceSpecification";
-import { RelationshipDirection } from "./rules/RelationshipDirection";
-import { RuleTypes } from "./rules/Rule";
-import { Ruleset } from "./rules/Ruleset";
+import { Field, PropertiesField } from "./content/Fields.js";
+import { Item } from "./content/Item.js";
+import { PrimitiveTypeDescription, PropertyValueFormat } from "./content/TypeDescription.js";
+import { DisplayValue, Value } from "./content/Value.js";
+import { ClassInfo, InstanceKey, RelationshipPath } from "./EC.js";
+import { MultiSchemaClassesSpecification, SingleSchemaClassSpecification } from "./rules/ClassSpecifications.js";
+import { ContentSpecificationTypes } from "./rules/content/ContentSpecification.js";
+import { RelatedInstanceSpecification } from "./rules/RelatedInstanceSpecification.js";
+import { RelationshipDirection } from "./rules/RelationshipDirection.js";
+import { RuleTypes } from "./rules/Rule.js";
+import { Ruleset } from "./rules/Ruleset.js";
 
 /**
  * A factory class that can be used to create presentation rulesets targeted towards
@@ -103,7 +103,7 @@ export type PrimitivePropertyValue = string | number | boolean | Point | Instanc
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
 type Point = { x: number; y: number; z?: number };
 
-const toString = (displayValue: Value | DisplayValue): string => {
+const toString = (displayValue: string | undefined): string => {
   if (!displayValue) {
     return "NULL";
   }
@@ -177,7 +177,7 @@ const getPropertyValue = (record: Item, field: Field): PrimitiveValueDef => {
     value = value[0].values[currFieldName];
     currFieldName = fieldNamesStack.pop();
   }
-  if (!isPrimitivePropertyValue(value)) {
+  if (!isPrimitivePropertyValue(value) || !(typeof displayValue === "undefined" || typeof displayValue === "string")) {
     throw new Error("Can only create 'similar instances' ruleset for primitive values");
   }
   return { raw: value, display: toString(displayValue) };

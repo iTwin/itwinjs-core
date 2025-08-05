@@ -4,12 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 const path = require("path");
-const glob = require("glob");
+const { globSync } = require("glob");
 const webpack = require("webpack");
 
 module.exports = {
   mode: "development",
-  entry: glob.sync(path.resolve(__dirname, "lib/**/*.test.js")),
+  entry: globSync(path.resolve(__dirname, "lib/**/*.test.js"), {
+    windowsPathsNoEscape: true,
+  }),
   output: {
     path: path.resolve(__dirname, "lib/dist"),
     filename: "bundled-tests.js",

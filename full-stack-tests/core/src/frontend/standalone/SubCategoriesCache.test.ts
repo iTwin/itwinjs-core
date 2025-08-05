@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { BeDuration, Id64, Id64Arg, Id64Set, Id64String } from "@itwin/core-bentley";
-import { IModelConnection, SnapshotConnection, SubCategoriesCache } from "@itwin/core-frontend";
+import { IModelConnection, SubCategoriesCache } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("SubCategoriesCache", () => {
   // test.bim:
@@ -24,7 +25,7 @@ describe("SubCategoriesCache", () => {
 
   before(async () => {
     await TestUtility.startFrontend(undefined, true);
-    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
@@ -136,7 +137,7 @@ describe("SubCategoriesCache", () => {
     const q = new Queue(imodel);
     q.expectEmpty();
 
-    q.dispose();
+    q[Symbol.dispose]();
     q.expectEmpty(true);
   });
 
@@ -293,7 +294,7 @@ describe("SubCategoriesCache", () => {
     promise.then(() => promiseFulfilled = true); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     q.expectMembers(true, false, true);
-    q.dispose();
+    q[Symbol.dispose]();
     q.expectEmpty(true);
 
     // The promise will fulfill. The results will be added to the cache, but our processing function will not execute.
@@ -313,7 +314,7 @@ describe("SubCategoriesCache", () => {
 
     // Dispose, then request same category. Should be ignored.
     let processed = false;
-    q.dispose();
+    q[Symbol.dispose]();
     q.q("0x17", () => processed = true);
     q.expectEmpty(true);
     expect(processed).to.be.false;
@@ -321,7 +322,7 @@ describe("SubCategoriesCache", () => {
 
   it("should not process pending asynchronous requests after disposal", async () => {
     const q = new Queue(imodel);
-    q.q("0x17", () => q.dispose());
+    q.q("0x17", () => q[Symbol.dispose]());
 
     let processedPending = false;
     q.q("0x2d", () => processedPending = true);
@@ -336,7 +337,7 @@ describe("SubCategoriesCache", () => {
     const q = new Queue(imodel);
 
     // Asynchronous request to load category.
-    q.q("0x17", () => q.dispose());
+    q.q("0x17", () => q[Symbol.dispose]());
 
     // Request same category, which would normally be processed synchronously as soon as first request completes.
     let processedPending = false;
@@ -351,7 +352,7 @@ describe("SubCategoriesCache", () => {
 
   it("should not create requests after disposal", () => {
     const q = new Queue(imodel);
-    q.dispose();
+    q[Symbol.dispose]();
     q.q("0x17");
     q.expectEmpty(true);
   });

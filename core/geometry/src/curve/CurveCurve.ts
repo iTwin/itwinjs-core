@@ -22,6 +22,7 @@ import { CurveCurveIntersectXYZ } from "./internalContexts/CurveCurveIntersectXY
 export class CurveCurve {
   /**
    * Return xy intersections of 2 curves.
+   * * Curves can be extended if extend flags are set. B-splines are not extended even if the flag is set.
    * @param curveA first curve
    * @param extendA true to allow curveA to extend
    * @param curveB second curve
@@ -39,6 +40,7 @@ export class CurveCurve {
   }
   /**
    * Return xy intersections of 2 projected curves.
+   * * Curves can be extended if extend flags are set. B-splines are not extended even if the flag is set.
    * @param worldToLocal transform (possibly perspective) defining the local coordinates in which to compute xy intersections
    * @param curveA first curve
    * @param extendA true to allow curveA to extend
@@ -59,16 +61,15 @@ export class CurveCurve {
     return handler.grabPairedResults();
   }
   /**
- * Return full 3d xyz intersections of 2 curves.
- *  * Implemented for combinations of LineSegment3d, LineString3d, Arc3d.
- *  * Not Implemented for bspline and bezier curves.
- * @beta
- * @param curveA first curve
- * @param extendA true to allow curveA to extend
- * @param curveB second curve
- * @param extendB true to allow curveB to extend
- * @returns array of intersections structured as CurveLocationDetailPair[]
- */
+   * Return full 3d xyz intersections of 2 curves.
+   *  * Implemented for combinations of LineSegment3d, LineString3d, Arc3d.
+   *  * Not Implemented for bspline and bezier curves.
+   * @param curveA first curve
+   * @param extendA true to allow curveA to extend
+   * @param curveB second curve
+   * @param extendB true to allow curveB to extend
+   * @returns array of intersections structured as CurveLocationDetailPair[]
+   */
   public static intersectionXYZPairs(
     curveA: AnyCurve, extendA: boolean, curveB: AnyCurve, extendB: boolean,
   ): CurveLocationDetailPair[] {

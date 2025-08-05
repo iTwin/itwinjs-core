@@ -10,4 +10,5 @@ import { UnitSystem } from "@itwin/ecschema-metadata";
  */
 export abstract class MutableUnitSystem extends UnitSystem {
   public abstract override setDisplayLabel(displayLabel: string): void;
+  public abstract override setDescription(description: string): void;
 }

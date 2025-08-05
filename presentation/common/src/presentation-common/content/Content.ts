@@ -6,8 +6,8 @@
  * @module Content
  */
 
-import { Descriptor, DescriptorJSON } from "./Descriptor";
-import { Item, ItemJSON } from "./Item";
+import { Descriptor, DescriptorJSON } from "./Descriptor.js";
+import { Item, ItemJSON } from "./Item.js";
 
 /**
  * Serialized [[Content]] JSON representation.
@@ -51,7 +51,7 @@ export class Content {
     }
 
     if (typeof json === "string") {
-      return JSON.parse(json, (key, value) => Content.reviver(key, value));
+      return Content.fromJSON(JSON.parse(json));
     }
 
     const descriptor = Descriptor.fromJSON(json.descriptor);
@@ -59,17 +59,7 @@ export class Content {
       return undefined;
     }
 
-    const contentSet = json.contentSet.map((itemJson: ItemJSON) => Item.fromJSON(itemJson)).filter<Item>((item): item is Item => item !== undefined);
+    const contentSet = json.contentSet.map((itemJson) => Item.fromJSON(itemJson)).filter<Item>((item): item is Item => item !== undefined);
     return new Content(descriptor, contentSet);
-  }
-
-  /**
-   * Reviver function that can be used as a second argument for
-   * `JSON.parse` method when parsing Content objects.
-   *
-   * @internal
-   */
-  public static reviver(key: string, value: any): any {
-    return key === "" ? Content.fromJSON(value) : value;
   }
 }

@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Quantity
  */
@@ -9,9 +9,12 @@
 import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { UnitProps, UnitsProvider } from "../Interfaces";
-import { DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, formatTypeToString, FractionalPrecision,
-  getTraitString, parseFormatTrait, parseFormatType, parsePrecision, parseScientificType, parseShowSignOption, ScientificType,
-  scientificTypeToString, ShowSignOption, showSignOptionToString } from "./FormatEnums";
+import {
+  DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, FractionalPrecision,
+  getTraitString, parseFormatTrait, parseFormatType, parsePrecision, parseRatioType, parseScientificType, parseShowSignOption,
+  RatioType, ScientificType,
+  ShowSignOption,
+} from "./FormatEnums";
 import { CloneOptions, CustomFormatProps, FormatProps, isCustomFormatProps } from "./Interfaces";
 
 // cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses
@@ -36,6 +39,13 @@ export class BaseFormat {
   protected _minWidth?: number; // optional; positive int
   protected _scientificType?: ScientificType; // required if type is scientific; options: normalized, zeroNormalized
   protected _stationOffsetSize?: number; // required when type is station; positive integer > 0
+  protected _stationBaseFactor?: number; // optional positive integer base factor for station formatting; default is 1
+  protected _ratioType?: RatioType; // required if type is ratio; options: oneToN, NToOne, ValueBased, useGreatestCommonDivisor
+  protected _azimuthBase?: number; // value always clockwise from north
+  protected _azimuthBaseUnit?: UnitProps; // unit for azimuthBase value
+  protected _azimuthCounterClockwise?: boolean; // if set to true, azimuth values are returned counter-clockwise from base
+  protected _revolutionUnit?: UnitProps; // unit that represents a revolution, required for bearing or azimuth types
+  protected _allowMathematicOperations: boolean = false; // optional; enables calculating mathematic operations like addition and subtraction; default is false.
 
   constructor(name: string) {
     this._name = name;
@@ -58,6 +68,9 @@ export class BaseFormat {
   public get scientificType(): ScientificType | undefined { return this._scientificType; }
   public set scientificType(scientificType: ScientificType | undefined) { this._scientificType = scientificType; }
 
+  public get ratioType(): RatioType | undefined { return this._ratioType; }
+  public set ratioType(ratioType: RatioType | undefined) { this._ratioType = ratioType; }
+
   public get showSignOption(): ShowSignOption { return this._showSignOption; }
   public set showSignOption(showSignOption: ShowSignOption) { this._showSignOption = showSignOption; }
 
@@ -74,16 +87,44 @@ export class BaseFormat {
   public set stationSeparator(stationSeparator: string) { this._stationSeparator = stationSeparator; }
 
   public get stationOffsetSize(): number | undefined { return this._stationOffsetSize; }
-  public set stationOffsetSize(stationOffsetSize: number | undefined) {stationOffsetSize =  this._stationOffsetSize = stationOffsetSize; }
+  public set stationOffsetSize(stationOffsetSize: number | undefined) { stationOffsetSize = this._stationOffsetSize = stationOffsetSize; }
+
+  /** Gets the station base factor used for station formatting. This is a positive integer that acts as a multiplier
+   * for the base offset calculation. The default value is 1.
+   */
+  public get stationBaseFactor(): number | undefined {
+    return this._stationBaseFactor;
+  }
+  public set stationBaseFactor(stationBaseFactor: number | undefined) {
+    this._stationBaseFactor = stationBaseFactor;
+  }
+
+  public get allowMathematicOperations(): boolean { return this._allowMathematicOperations; }
+  public set allowMathematicOperations(allowMathematicOperations: boolean) { this._allowMathematicOperations = allowMathematicOperations; }
 
   public get formatTraits(): FormatTraits { return this._formatTraits; }
   public set formatTraits(formatTraits: FormatTraits) { this._formatTraits = formatTraits; }
 
   public get spacer(): string | undefined { return this._spacer; }
   public set spacer(spacer: string | undefined) { this._spacer = spacer ?? this._spacer; }
+  public get spacerOrDefault(): string { return this._spacer ?? " "; }
 
   public get includeZero(): boolean | undefined { return this._includeZero; }
   public set includeZero(includeZero: boolean | undefined) { this._includeZero = includeZero ?? this._includeZero; }
+
+  // default "north" is applied by the formatter (quarter rotation counter clockwise from east, the value depends on the units used)
+  public get azimuthBase(): number | undefined { return this._azimuthBase; }
+  public set azimuthBase(azimuthBase: number | undefined) { this._azimuthBase = azimuthBase; }
+
+  public get azimuthBaseUnit(): UnitProps | undefined { return this._azimuthBaseUnit; }
+  public set azimuthBaseUnit(azimuthBaseUnit: UnitProps | undefined) { this._azimuthBaseUnit = azimuthBaseUnit; }
+
+  public get azimuthCounterClockwise(): boolean | undefined { return this._azimuthCounterClockwise; }
+  public set azimuthCounterClockwise(azimuthCounterClockwise: boolean | undefined) { this._azimuthCounterClockwise = azimuthCounterClockwise; }
+  public get azimuthClockwiseOrDefault(): boolean { return !this._azimuthCounterClockwise; }
+
+  public get revolutionUnit(): UnitProps | undefined { return this._revolutionUnit; }
+  public set revolutionUnit(revolutionUnit: UnitProps | undefined) { this._revolutionUnit = revolutionUnit; }
 
   /** This method parses input string that is typically extracted for persisted JSON data and validates that the string is a valid FormatType. Throws exception if not valid. */
   public parseFormatTraits(formatTraitsFromJson: string | string[]) {
@@ -115,6 +156,13 @@ export class BaseFormat {
       this._scientificType = parseScientificType(formatProps.scientificType, this.name);
     }
 
+    if (this.type === FormatType.Ratio){
+      if (undefined === formatProps.ratioType)
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Ratio' type therefore the attribute 'ratioType' is required.`);
+
+      this._ratioType = parseRatioType(formatProps.ratioType, this.name);
+    }
+
     if (undefined !== formatProps.roundFactor) { // optional; default is 0.0
       if (typeof (formatProps.roundFactor) !== "number")
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'roundFactor' attribute. It should be of type 'number'.`);
@@ -130,9 +178,16 @@ export class BaseFormat {
     if (FormatType.Station === this.type) {
       if (undefined === formatProps.stationOffsetSize)
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Station' type therefore the attribute 'stationOffsetSize' is required.`);
-      if (!Number.isInteger(formatProps.stationOffsetSize) || formatProps.stationOffsetSize < 0) // must be a positive int > 0
+      if (!Number.isInteger(formatProps.stationOffsetSize) || formatProps.stationOffsetSize <= 0) // must be a positive int > 0
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
       this._stationOffsetSize = formatProps.stationOffsetSize;
+
+      if (undefined !== formatProps.stationBaseFactor) {
+        // optional - must be a positive integer
+        if (!Number.isInteger(formatProps.stationBaseFactor) || formatProps.stationBaseFactor <= 0)
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationBaseFactor' attribute. It should be a positive integer.`);
+        this._stationBaseFactor = formatProps.stationBaseFactor;
+      }
     }
 
     if (undefined !== formatProps.showSignOption) { // optional; default is "onlyNegative"
@@ -175,6 +230,23 @@ export class BaseFormat {
       if (formatProps.stationSeparator.length > 1)
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationSeparator' attribute. It should be an empty or one character string.`);
       this._stationSeparator = formatProps.stationSeparator;
+    }
+
+    if (undefined !== formatProps.azimuthBase) { // optional; default is a quarter rotation (90 degrees) which represents north
+      if (typeof (formatProps.azimuthBase) !== "number")
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'azimuthBase' attribute. It should be of type 'number'.`);
+      this._azimuthBase = formatProps.azimuthBase;
+    }
+
+    if (undefined !== formatProps.azimuthCounterClockwise) { // optional; default is false
+      if (typeof (formatProps.azimuthCounterClockwise) !== "boolean")
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'azimuthCounterClockwise' attribute. It should be of type 'boolean'.`);
+      this._azimuthCounterClockwise = formatProps.azimuthCounterClockwise;
+    }
+    if (undefined !== formatProps.allowMathematicOperations) { // optional; default is false
+      if (typeof (formatProps.allowMathematicOperations) !== "boolean")
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'allowMathematicOperations' attribute. It should be of type 'boolean'.`);
+      this._allowMathematicOperations = formatProps.allowMathematicOperations;
     }
   }
 }
@@ -235,9 +307,15 @@ export class Format extends BaseFormat {
     newFormat._uomSeparator = this._uomSeparator;
     newFormat._stationSeparator = this._stationSeparator;
     newFormat._stationOffsetSize = this._stationOffsetSize;
+    newFormat._stationBaseFactor = this._stationBaseFactor;
     newFormat._formatTraits = this._formatTraits;
     newFormat._spacer = this._spacer;
     newFormat._includeZero = this._includeZero;
+    newFormat._azimuthBase = this._azimuthBase;
+    newFormat._azimuthBaseUnit = this._azimuthBaseUnit;
+    newFormat._azimuthCounterClockwise = this._azimuthCounterClockwise;
+    newFormat._ratioType = this._ratioType;
+    newFormat._revolutionUnit = this._revolutionUnit;
     newFormat._customProps = this._customProps;
     this._units && (newFormat._units = [...this._units]);
 
@@ -316,6 +394,37 @@ export class Format extends BaseFormat {
       if (undefined === this.units || this.units.length === 0)
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with no valid 'units'`);
     }
+
+    if(this.type === FormatType.Azimuth || this.type === FormatType.Bearing) {
+      // these units cannot be loaded from loadFormatProperties() because they require an async call, and the method signature is already public
+
+      if (undefined !== jsonObj.azimuthBaseUnit) {
+        if (typeof (jsonObj.azimuthBaseUnit) !== "string")
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'azimuthBaseUnit' attribute. It should be of type 'string'.`);
+
+        const baseUnit: UnitProps = await unitsProvider.findUnitByName(jsonObj.azimuthBaseUnit);
+        if (!baseUnit || !baseUnit.isValid)
+          throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${jsonObj.azimuthBaseUnit}' for azimuthBaseUnit in Format '${this.name}'.`);
+
+        this._azimuthBaseUnit = baseUnit;
+      }
+
+      if (undefined !== jsonObj.revolutionUnit) {
+        if (typeof (jsonObj.revolutionUnit) !== "string")
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'revolutionUnit' attribute. It should be of type 'string'.`);
+
+        const revolutionUnit: UnitProps = await unitsProvider.findUnitByName(jsonObj.revolutionUnit);
+        if (!revolutionUnit || !revolutionUnit.isValid)
+          throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${jsonObj.revolutionUnit}' for revolutionUnit in Format '${this.name}'.`);
+
+        this._revolutionUnit = revolutionUnit;
+      }
+
+      if (this._revolutionUnit === undefined)
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Azimuth' or 'Bearing' type therefore the attribute 'revolutionUnit' is required.`);
+      if (this._azimuthBase !== undefined && this._azimuthBaseUnit === undefined)
+        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an 'azimuthBase' attribute therefore the attribute 'azimuthBaseUnit' is required.`);
+    }
   }
 
   /** Create a Format from FormatProps */
@@ -345,38 +454,37 @@ export class Format extends BaseFormat {
       };
     }
 
-    if (this.customProps)
-      return {
-        type: formatTypeToString(this.type),
-        precision: this.precision,
-        roundFactor: this.roundFactor,
-        minWidth: this.minWidth,
-        showSignOption: showSignOptionToString(this.showSignOption),
-        formatTraits: formatTraitsToArray(this.formatTraits),
-        decimalSeparator: this.decimalSeparator,
-        thousandSeparator: this.thousandSeparator,
-        uomSeparator: this.uomSeparator,
-        scientificType: this.scientificType ? scientificTypeToString(this.scientificType) : undefined,
-        stationOffsetSize: this.stationOffsetSize,
-        stationSeparator: this.stationSeparator,
-        composite,
-        custom: this.customProps,
-      } as CustomFormatProps;
+    const azimuthBaseUnit = this.azimuthBaseUnit ? this.azimuthBaseUnit.name : undefined;
+    const revolutionUnit = this.revolutionUnit ? this.revolutionUnit.name : undefined;
 
-    return {
-      type: formatTypeToString(this.type),
+    const baseFormatProps: FormatProps = {
+      type: this.type,
       precision: this.precision,
       roundFactor: this.roundFactor,
       minWidth: this.minWidth,
-      showSignOption: showSignOptionToString(this.showSignOption),
+      showSignOption: this.showSignOption,
       formatTraits: formatTraitsToArray(this.formatTraits),
       decimalSeparator: this.decimalSeparator,
       thousandSeparator: this.thousandSeparator,
       uomSeparator: this.uomSeparator,
-      scientificType: this.scientificType ? scientificTypeToString(this.scientificType) : undefined,
+      scientificType: this.scientificType ? this.scientificType : undefined,
+      ratioType: this.ratioType,
       stationOffsetSize: this.stationOffsetSize,
       stationSeparator: this.stationSeparator,
+      stationBaseFactor: this.stationBaseFactor,
+      azimuthBase: this.azimuthBase,
+      azimuthBaseUnit,
+      azimuthCounterClockwise: this.azimuthCounterClockwise,
+      revolutionUnit,
       composite,
     };
+
+    if (this.customProps)
+      return {
+        ...baseFormatProps,
+        custom: this.customProps,
+      } as CustomFormatProps;
+
+    return baseFormatProps;
   }
 }

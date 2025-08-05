@@ -20,7 +20,7 @@ class DebugToolTipProvider implements ToolTipProvider {
     // discard and overwrite
     await tooltipPromise;
 
-    const keys: Array<keyof HitDetail> = ["sourceId", "modelId", "subCategoryId", "tileId", "geometryClass"];
+    const keys = ["sourceId", "modelId", "subCategoryId", "tileId", "geometryClass"] satisfies Array<keyof HitDetail>;
     let html = "";
     for (const key of keys) {
       const value = hit[key];
@@ -28,6 +28,16 @@ class DebugToolTipProvider implements ToolTipProvider {
         continue;
 
       html = `${html + key}: ${value.toString()}<br>`;
+    }
+
+    if (hit.contour) {
+      const actualZ = hit.hitPoint.z;
+      const elev = hit.contour.elevation;
+      const type = hit.contour.isMajor ? "Major" : "Minor";
+      const group = hit.contour.group.name ? ` (${hit.contour.group.name})` : "";
+
+      const contourInfo = `${type} contour${group}<br>Elevation: ${elev} (z=${actualZ})`;
+      html = `${html}${contourInfo}<br>`;
     }
 
     const div = document.createElement("div");

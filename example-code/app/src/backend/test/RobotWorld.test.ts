@@ -27,7 +27,7 @@ describe("RobotWorld", () => {
     try {
       RobotWorldEngine.countRobots(iModel);
       assert.fail("RobotWorldEngine.countRobots should throw because the schema is not loaded yet");
-    } catch (err) {
+    } catch {
       // expect countRobots to fail
     }
 

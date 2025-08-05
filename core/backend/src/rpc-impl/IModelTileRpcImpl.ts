@@ -15,6 +15,8 @@ import { IModelHost } from "../IModelHost";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
 import { RpcTrace } from "../rpc/tracing";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
+import { IModelNative } from "../internal/NativePlatform";
+import { _nativeDb } from "../internal/Symbols";
 
 interface TileRequestProps {
   accessToken?: AccessToken;
@@ -72,7 +74,7 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
 
     if (tileQP.isPending) {
       this.log("issuing pending status for", props);
-      throw new RpcPendingResponse(); // eslint-disable-line deprecation/deprecation
+      throw new RpcPendingResponse(); // eslint-disable-line @typescript-eslint/only-throw-error
     }
 
     this.deleteMemoized(props);
@@ -85,7 +87,7 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
 
     assert(tileQP.isRejected);
     this.log("rejected", props);
-    throw tileQP.error; // eslint-disable-line no-throw-literal
+    throw tileQP.error;
   }
 }
 
@@ -108,7 +110,7 @@ class RequestTileTreePropsMemoizer extends TileRequestMemoizer<IModelTileTreePro
   private constructor() {
     super(getTileTreeProps, generateTileRequestKey);
     IModelHost.onBeforeShutdown.addOnce(() => {
-      this.dispose();
+      this[Symbol.dispose]();
       RequestTileTreePropsMemoizer._instance = undefined;
     });
   }
@@ -138,7 +140,7 @@ async function getTileContent(props: TileContentRequestProps): Promise<TileConte
       tileGenerationTime: tile.elapsedSeconds.toString(),
       tileSize: tile.content.byteLength.toString(),
     };
-    await IModelHost.tileStorage?.uploadTile(db.iModelId, db.changeset.id, props.treeId, props.contentId, tile.content, props.guid, tileMetadata);
+    await IModelHost.tileStorage?.uploadTile(props.tokenProps.iModelId ?? db.iModelId, props.tokenProps.changeset?.id ?? db.changeset.id, props.treeId, props.contentId, tile.content, props.guid, tileMetadata);
     const { accessToken: _, ...safeProps } = props;
     Logger.logInfo(BackendLoggerCategory.IModelTileRequestRpc, "Generated and uploaded tile", { tileMetadata, ...safeProps });
 
@@ -166,7 +168,7 @@ class RequestTileContentMemoizer extends TileRequestMemoizer<TileContentSource, 
   private constructor() {
     super(getTileContent, generateTileContentKey);
     IModelHost.onBeforeShutdown.addOnce(() => {
-      this.dispose();
+      this[Symbol.dispose]();
       RequestTileContentMemoizer._instance = undefined;
     });
   }
@@ -184,11 +186,11 @@ class RequestTileContentMemoizer extends TileRequestMemoizer<TileContentSource, 
 }
 
 function currentActivity() {
-  return RpcTrace.expectCurrentActivity; // eslint-disable-line deprecation/deprecation
+  return RpcTrace.expectCurrentActivity;
 }
 
 /** @internal */
-export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInterface { // eslint-disable-line deprecation/deprecation
+export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInterface {
   public static register() { RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl); }
 
   public async requestTileTreeProps(tokenProps: IModelRpcProps, treeId: string): Promise<IModelTileTreeProps> {
@@ -205,7 +207,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
       return;
     }
 
-    return db.nativeDb.purgeTileTrees(modelIds);
+    return db[_nativeDb].purgeTileTrees(modelIds);
   }
 
   public async generateTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string | undefined): Promise<TileContentSource> {
@@ -225,7 +227,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   }
 
   public async queryVersionInfo(): Promise<TileVersionInfo> {
-    return IModelHost.platform.getTileVersionInfo();
+    return IModelNative.platform.getTileVersionInfo();
   }
 
   /** @internal */
@@ -247,6 +249,6 @@ export async function cancelTileContentRequests(tokenProps: IModelRpcProps, cont
       RequestTileContentMemoizer.instance.deleteMemoized(props);
     }
 
-    iModel.nativeDb.cancelTileContentRequests(entry.treeId, entry.contentIds);
+    iModel[_nativeDb].cancelTileContentRequests(entry.treeId, entry.contentIds);
   }
 }

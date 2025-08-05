@@ -1,14 +1,73 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Field fromJSON creates valid ArrayPropertiesField from valid JSON 1`] = `
+Object {
+  "category": "test-category",
+  "isReadonly": false,
+  "itemsField": Object {
+    "category": "test-category",
+    "editor": Object {
+      "name": "custom-editor",
+    },
+    "isReadonly": false,
+    "label": "Properties Field",
+    "name": "PropertiesField",
+    "priority": 0,
+    "properties": Array [
+      Object {
+        "property": Object {
+          "classInfo": Object {
+            "id": "0x1",
+            "label": "Class Label",
+            "name": "SchemaName:ClassName",
+          },
+          "name": "PropertyName",
+          "type": "string",
+        },
+      },
+    ],
+    "renderer": Object {
+      "name": "custom-renderer",
+    },
+    "type": Object {
+      "typeName": "string",
+      "valueFormat": "Primitive",
+    },
+  },
+  "label": "Array Properties Field",
+  "name": "ArrayPropertiesField",
+  "priority": 0,
+  "properties": Array [
+    Object {
+      "property": Object {
+        "classInfo": Object {
+          "id": "0x1",
+          "label": "Class Label",
+          "name": "SchemaName:ClassName",
+        },
+        "name": "PropertyName",
+        "type": "string",
+      },
+    },
+  ],
+  "type": Object {
+    "memberType": Object {
+      "typeName": "string",
+      "valueFormat": "Primitive",
+    },
+    "typeName": "string[]",
+    "valueFormat": "Array",
+  },
+}
+`;
+
 exports[`Field fromJSON creates valid Field from valid JSON 1`] = `
 Object {
   "category": "test-category",
-  "editor": undefined,
   "isReadonly": false,
   "label": "Simple Field",
   "name": "SimpleField",
   "priority": 0,
-  "renderer": undefined,
   "type": Object {
     "typeName": "string",
     "valueFormat": "Primitive",
@@ -19,26 +78,22 @@ Object {
 exports[`Field fromJSON creates valid NestedContentField from valid JSON 1`] = `
 Object {
   "actualPrimaryClassIds": Array [],
-  "autoExpand": false,
   "category": "test-category",
   "contentClassInfo": Object {
     "id": "0x1",
     "label": "Class Label",
     "name": "SchemaName:ClassName",
   },
-  "editor": undefined,
   "isReadonly": false,
   "label": "Nested Content",
   "name": "NestedContentField",
   "nestedFields": Array [
     Object {
       "category": "test-category",
-      "editor": undefined,
       "isReadonly": false,
       "label": "Simple Field",
       "name": "SimpleField",
       "priority": 0,
-      "renderer": undefined,
       "type": Object {
         "typeName": "string",
         "valueFormat": "Primitive",
@@ -69,7 +124,6 @@ Object {
   ],
   "priority": 0,
   "relationshipMeaning": "RelatedInstance",
-  "renderer": undefined,
   "type": Object {
     "members": Array [
       Object {
@@ -90,7 +144,6 @@ Object {
 exports[`Field fromJSON creates valid PropertiesField from valid JSON 1`] = `
 Object {
   "category": "test-category",
-  "editor": undefined,
   "isReadonly": false,
   "label": "Properties Field",
   "name": "PropertiesField",
@@ -108,7 +161,6 @@ Object {
       },
     },
   ],
-  "renderer": undefined,
   "type": Object {
     "typeName": "string",
     "valueFormat": "Primitive",
@@ -116,29 +168,89 @@ Object {
 }
 `;
 
+exports[`Field fromJSON creates valid StructPropertiesField from valid JSON 1`] = `
+Object {
+  "category": "test-category",
+  "isReadonly": false,
+  "label": "Struct Properties Field",
+  "memberFields": Array [
+    Object {
+      "category": "test-category",
+      "isReadonly": false,
+      "label": "Properties Field",
+      "name": "PropertiesField",
+      "priority": 0,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": Object {
+              "id": "0x1",
+              "label": "Class Label",
+              "name": "SchemaName:ClassName",
+            },
+            "name": "PropertyName",
+            "type": "string",
+          },
+        },
+      ],
+      "type": Object {
+        "typeName": "string",
+        "valueFormat": "Primitive",
+      },
+    },
+  ],
+  "name": "StructPropertiesField",
+  "priority": 0,
+  "properties": Array [
+    Object {
+      "property": Object {
+        "classInfo": Object {
+          "id": "0x1",
+          "label": "Class Label",
+          "name": "SchemaName:ClassName",
+        },
+        "name": "PropertyName",
+        "type": "string",
+      },
+    },
+  ],
+  "type": Object {
+    "members": Array [
+      Object {
+        "label": "Member One",
+        "name": "member1",
+        "type": Object {
+          "typeName": "string",
+          "valueFormat": "Primitive",
+        },
+      },
+    ],
+    "typeName": "MyStruct",
+    "valueFormat": "Struct",
+  },
+}
+`;
+
 exports[`NestedContentField fromJSON creates valid NestedContentField from valid JSON 1`] = `
 Object {
   "actualPrimaryClassIds": Array [],
-  "autoExpand": false,
+  "autoExpand": true,
   "category": "test-category",
   "contentClassInfo": Object {
     "id": "0x1",
     "label": "Class Label",
     "name": "SchemaName:ClassName",
   },
-  "editor": undefined,
   "isReadonly": false,
   "label": "Nested Content",
   "name": "NestedContentField",
   "nestedFields": Array [
     Object {
       "category": "test-category",
-      "editor": undefined,
       "isReadonly": false,
       "label": "Simple Field",
       "name": "SimpleField",
       "priority": 0,
-      "renderer": undefined,
       "type": Object {
         "typeName": "string",
         "valueFormat": "Primitive",
@@ -169,7 +281,6 @@ Object {
   ],
   "priority": 0,
   "relationshipMeaning": "RelatedInstance",
-  "renderer": undefined,
   "type": Object {
     "members": Array [
       Object {
@@ -190,26 +301,22 @@ Object {
 exports[`NestedContentField fromJSON creates valid NestedContentField from valid JSON with \`relationshipMeaning\` 1`] = `
 Object {
   "actualPrimaryClassIds": Array [],
-  "autoExpand": false,
   "category": "test-category",
   "contentClassInfo": Object {
     "id": "0x1",
     "label": "Class Label",
     "name": "SchemaName:ClassName",
   },
-  "editor": undefined,
   "isReadonly": false,
   "label": "Nested Content",
   "name": "NestedContentField",
   "nestedFields": Array [
     Object {
       "category": "test-category",
-      "editor": undefined,
       "isReadonly": false,
       "label": "Simple Field",
       "name": "SimpleField",
       "priority": 0,
-      "renderer": undefined,
       "type": Object {
         "typeName": "string",
         "valueFormat": "Primitive",
@@ -240,7 +347,6 @@ Object {
   ],
   "priority": 0,
   "relationshipMeaning": "SameInstance",
-  "renderer": undefined,
   "type": Object {
     "members": Array [
       Object {
@@ -261,7 +367,6 @@ Object {
 exports[`PropertiesField fromJSON creates valid PropertiesField from valid JSON 1`] = `
 Object {
   "category": "test-category",
-  "editor": undefined,
   "isReadonly": false,
   "label": "Properties Field",
   "name": "PropertiesField",
@@ -279,7 +384,6 @@ Object {
       },
     },
   ],
-  "renderer": undefined,
   "type": Object {
     "typeName": "string",
     "valueFormat": "Primitive",
@@ -290,7 +394,6 @@ Object {
 exports[`PropertiesField fromJSON creates valid PropertiesField from valid JSON with navigation property 1`] = `
 Object {
   "category": "test-category",
-  "editor": undefined,
   "isReadonly": false,
   "label": "Properties Field",
   "name": "PropertiesField",
@@ -322,7 +425,6 @@ Object {
       },
     },
   ],
-  "renderer": undefined,
   "type": Object {
     "typeName": "string",
     "valueFormat": "Primitive",

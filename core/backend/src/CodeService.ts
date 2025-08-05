@@ -7,7 +7,7 @@ import { BentleyError, GuidString, IModelStatus, MarkRequired, Mutable } from "@
 import { CodeProps, FontId, FontType } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelDb } from "./IModelDb";
-import { SettingObject } from "./workspace/Settings";
+import { SettingsContainer } from "./workspace/Settings";
 import { VersionedSqliteDb } from "./SQLiteDb";
 
 /**
@@ -162,6 +162,8 @@ export namespace CodeService {
   export interface InternalWriteMethods extends WriteMethods {
     /**  @internal */
     reserveFontId(props: CodeService.FontIndexProps): Promise<FontId>;
+    /** @internal */
+    reserveEmbeddedFaceDataId(facesKey: string): Promise<number>;
     /**  @internal */
     reserveBisCodeSpecs(specs: CodeService.BisCodeSpecIndexProps[]): Promise<void>;
   }
@@ -320,7 +322,7 @@ export namespace CodeService {
   /** a name and a json object. Used for code specs, authors and origins. */
   export interface NameAndJson {
     readonly name: string;
-    readonly json?: SettingObject;
+    readonly json?: SettingsContainer;
   }
 
   /** A code Scope guid, and code spec name. */
@@ -351,7 +353,7 @@ export namespace CodeService {
     /** The name of the author of this code. May be undefined. */
     readonly author?: AuthorName;
     /** Option json properties associated with this code. May be undefined. */
-    readonly json?: SettingObject;
+    readonly json?: SettingsContainer;
   }
 
   /** A filter used to limit and/or sort the values returned by an iteration. */
@@ -391,7 +393,7 @@ export namespace CodeService {
     /** An optional value for the state of the code. */
     readonly state?: CodeState;
     /** An optional json object to be stored with the code. */
-    readonly json?: SettingObject;
+    readonly json?: SettingsContainer;
   }
 
   /** Properties of a "proposed" new code to be reserved.

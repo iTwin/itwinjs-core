@@ -6,16 +6,17 @@ import { expect } from "chai";
 import {
   ColorDef, RenderMode, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps, ThematicGradientColorScheme, ThematicGradientMode,
 } from "@itwin/core-common";
-import { IModelConnection, SnapshotConnection, ViewRect, ViewState3d } from "@itwin/core-frontend";
+import { IModelConnection, ViewRect, ViewState3d } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { Color, TestViewport, testViewportsWithDpr } from "../TestViewport";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("Thematic display", () => {
   let imodel: IModelConnection;
 
   before(async () => {
     await TestUtility.startFrontend();
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {

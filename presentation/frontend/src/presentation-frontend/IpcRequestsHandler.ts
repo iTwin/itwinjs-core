@@ -4,14 +4,18 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { IpcApp } from "@itwin/core-frontend";
-import {
-  PRESENTATION_IPC_CHANNEL_NAME,
-  PresentationIpcInterface,
-  RulesetVariable,
-  RulesetVariableJSON,
-  SetRulesetVariableParams,
-  UnsetRulesetVariableParams,
-} from "@itwin/presentation-common";
+import { RulesetVariable } from "@itwin/presentation-common";
+import { PRESENTATION_IPC_CHANNEL_NAME, PresentationIpcInterface } from "@itwin/presentation-common/internal";
+
+interface SetRulesetVariableParams {
+  rulesetId: string;
+  variable: RulesetVariable;
+}
+
+interface UnsetRulesetVariableParams {
+  rulesetId: string;
+  variableId: string;
+}
 
 /** @internal */
 export class IpcRequestsHandler {
@@ -22,20 +26,18 @@ export class IpcRequestsHandler {
     this.clientId = clientId;
   }
 
-  public async setRulesetVariable(params: Omit<SetRulesetVariableParams<RulesetVariable>, "clientId">) {
-    const jsonParams: SetRulesetVariableParams<RulesetVariableJSON> = {
+  public async setRulesetVariable(params: SetRulesetVariableParams) {
+    return this._ipcProxy.setRulesetVariable({
       ...params,
       clientId: this.clientId,
       variable: RulesetVariable.toJSON(params.variable),
-    };
-    return this._ipcProxy.setRulesetVariable(jsonParams);
+    });
   }
 
-  public async unsetRulesetVariable(params: Omit<UnsetRulesetVariableParams, "clientId">) {
-    const jsonParams: UnsetRulesetVariableParams = {
+  public async unsetRulesetVariable(params: UnsetRulesetVariableParams) {
+    return this._ipcProxy.unsetRulesetVariable({
       ...params,
       clientId: this.clientId,
-    };
-    return this._ipcProxy.unsetRulesetVariable(jsonParams);
+    });
   }
 }

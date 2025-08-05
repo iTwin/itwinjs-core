@@ -7,7 +7,7 @@
  */
 
 import { BeTimePoint, dispose } from "@itwin/core-bentley";
-import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Polyface, Transform } from "@itwin/core-geometry";
+import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, IndexedPolyface, Point3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, Frustum } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch, GraphicBranchOptions } from "../render/GraphicBranch";
@@ -31,18 +31,19 @@ export interface RealityTileParams extends TileParams {
   readonly geometricError?: number;
 }
 
-/** The geometry representing the contents of a reality tile. Currently only polyfaces are returned
- * @beta
+/** The geometry representing the contents of a reality tile. Currently only polyfaces are returned.
  * @see [[RealityTile.geometry]] to access a particular tile's geometry.
+ * @public
  */
 export interface RealityTileGeometry {
   /** Polyfaces representing the tile's geometry. */
-  polyfaces?: Polyface[];
+  polyfaces?: IndexedPolyface[];
 }
 
 /** @internal */
 export interface RealityTileContent extends TileContent {
   geometry?: RealityTileGeometry;
+  copyright?: string;
 }
 
 const scratchLoadedChildren = new Array<RealityTile>();
@@ -72,6 +73,14 @@ export class RealityTile extends Tile {
   protected _reprojectionTransform?: Transform;
   private _reprojectedGraphic?: RenderGraphic;
   private readonly _geometricError?: number;
+  /** @internal */
+  protected _copyright?: string;
+  /** @internal */
+  public override readonly tree: RealityTileTree;
+  /** @internal */
+  public get reprojectionTransform(): Transform | undefined {
+    return this._reprojectionTransform;
+  }
 
   /** @internal */
   public constructor(props: RealityTileParams, tree: RealityTileTree) {
@@ -82,6 +91,7 @@ export class RealityTile extends Tile {
     this.rangeCorners = props.rangeCorners;
     this.region = props.region;
     this._geometricError = props.geometricError;
+    this.tree = tree;
 
     if (undefined === this.transformToRoot)
       return;
@@ -101,6 +111,16 @@ export class RealityTile extends Tile {
   public override setContent(content: RealityTileContent): void {
     super.setContent(content);
     this._geometry = content.geometry;
+    this._copyright = content.copyright;
+  }
+
+  /** @internal */
+  public override freeMemory(): void {
+    // Prevent freeing if AdditiveRefinementStepChildren are present, since they depend on the parent tile to draw.
+    // This assumes at least one of the step children is currently selected, which is not necessarily the case.  Eventually the
+    // normal periodic pruning of expired tiles will clean up that case, but it could be held them in memory longer than necessary.
+    if (!this.realityChildren?.some((child) => child.isStepChild))
+      super.freeMemory();
   }
 
   /** @internal */
@@ -108,7 +128,7 @@ export class RealityTile extends Tile {
   /** @internal */
   public get realityParent(): RealityTile { return this.parent as RealityTile; }
   /** @internal */
-  public get realityRoot(): RealityTileTree { return this.tree as RealityTileTree; }
+  public get realityRoot(): RealityTileTree { return this.tree; }
   /** @internal */
   public get graphicType(): TileGraphicType | undefined { return undefined; }     // If undefined, use tree type.
   /** @internal */
@@ -119,9 +139,10 @@ export class RealityTile extends Tile {
   public get isLoaded() { return this.loadStatus === TileLoadStatus.Ready; }      // Reality tiles may depend on secondary tiles (maps) so can ge loaded but not ready.
   /** A representation of the tile's geometry.
    * This property is only available when using [[TileGeometryCollector]].
-   * @beta
    */
   public get geometry(): RealityTileGeometry | undefined { return this._geometry; }
+  /** @internal */
+  public get copyright(): string | undefined { return this._copyright; }
 
   /** @internal */
   public override get isDisplayable(): boolean {

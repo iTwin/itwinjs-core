@@ -45,8 +45,7 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
     let tilesetUrl: string | undefined;
     try {
       tilesetUrl = await rdSource.getServiceUrl(iTwinId);
-    } catch (e) {
-    }
+    } catch { }
 
     return (tilesetUrl !== undefined) ? rdSource : undefined;
   }

@@ -6,10 +6,12 @@
 import { assert } from "chai";
 import {
   GeographicCRSInterpretRequestProps, GeographicCRSProps,
+  Helmert2DWithZOffset,
 } from "@itwin/core-common";
-import { IModelHost } from "../../IModelHost";
-import { Geometry } from "@itwin/core-geometry";
+import { IModelNative } from "../../internal/NativePlatform";
+import { Geometry, Point3d, Range2d, Range2dProps } from "@itwin/core-geometry";
 import { GeoCoordConfig } from "../../GeoCoordConfig";
+import { getAvailableCoordinateReferenceSystems } from "../../GeographicCRSServices";
 
 // spell-checker: disable
 
@@ -21,7 +23,7 @@ describe("GeoServices", () => {
   const completionTest = async (incompleteGCS: GeographicCRSProps, completeCRS: GeographicCRSProps) => {
 
     const requestProps: GeographicCRSInterpretRequestProps = { format: "JSON", geographicCRSDef: JSON.stringify(incompleteGCS) };
-    const response = IModelHost.platform.GeoServices.getGeographicCRSInterpretation(requestProps);
+    const response = IModelNative.platform.GeoServices.getGeographicCRSInterpretation(requestProps);
 
     assert.isTrue(response.status === 0);
 
@@ -443,7 +445,7 @@ describe("GeoServices", () => {
     const interpretWKTTest = async (testWKT: string, completeCRS: GeographicCRSProps) => {
 
       const requestProps: GeographicCRSInterpretRequestProps = { format: "WKT", geographicCRSDef: testWKT };
-      const response = IModelHost.platform.GeoServices.getGeographicCRSInterpretation(requestProps);
+      const response = IModelNative.platform.GeoServices.getGeographicCRSInterpretation(requestProps);
 
       assert.isTrue(response.status === 0);
 
@@ -804,12 +806,123 @@ describe("GeoServices", () => {
     });
   });
 
+  describe("Verify list of CRS", async () => {
+    const validationRange = 50;
+    const validationRangeSmall = 10;
+
+    interface CRSValidationOptions {
+      expectedCount: number;
+      allowedRange: number;
+      extent?: Range2dProps;
+      includeWorld?: boolean;
+    }
+
+    const validateCRSList = async (options: CRSValidationOptions): Promise<void> => {
+      const { expectedCount, allowedRange, extent, includeWorld } = options;
+      const listOfCRS = await getAvailableCoordinateReferenceSystems({ extent, includeWorld });
+
+      // Check fields of returned coordinate reference systems
+      const extentRange: Range2d = Range2d.fromJSON(extent);
+      for (const crs of listOfCRS) {
+        // Validate extent
+        if (extent !== undefined) {
+          const crsExtentRange: Range2d = Range2d.fromJSON(crs.crsExtent);
+          const intersects = extentRange.intersectsRange(crsExtentRange);
+          assert.isTrue(intersects);
+        }
+
+        // These fields should always be present
+        assert.isTrue(crs.name !== undefined);
+        assert.isTrue(crs.description !== undefined);
+        assert.isTrue(crs.deprecated === true || crs.deprecated === false);
+      }
+
+      assert.isTrue(listOfCRS.length > expectedCount - allowedRange && listOfCRS.length < expectedCount + allowedRange);
+    };
+
+    const validateExtent = (expectedExtent: Range2d, crsExtent: Range2dProps) => {
+      const crsExtentRange: Range2d = Range2d.fromJSON(crsExtent);
+      assert.equal(crsExtentRange.low.x, expectedExtent.low.x);
+      assert.equal(crsExtentRange.low.y, expectedExtent.low.y);
+      assert.equal(crsExtentRange.high.x, expectedExtent.high.x);
+      assert.equal(crsExtentRange.high.y, expectedExtent.high.y);
+    };
+
+    it("should get all CRS", async () => {
+      await validateCRSList({expectedCount: 12_332, allowedRange: validationRange, includeWorld: true});
+    });
+
+    it("should get all CRS, excluding world crs", async () => {
+      await validateCRSList({expectedCount: 11_975, allowedRange: validationRange});
+    })
+
+    it("should return CRS that are in the specified range (1)", async () => {
+      const extent: Range2dProps = { low: { x: 60.1, y: 61.2 }, high: { x: 62.3, y: 63.4 } };
+      await validateCRSList({expectedCount: 82, allowedRange: validationRangeSmall, extent});
+      await validateCRSList({expectedCount: 439, allowedRange: validationRangeSmall, extent, includeWorld: true});
+    });
+
+    it("should return CRS that are in the specified range (2)", async () => {
+      const extent: Range2dProps = { low: { x: 0, y: 2 }, high: { x: 1, y: 3 } };
+      await validateCRSList({expectedCount: 67, allowedRange: validationRangeSmall, extent});
+      await validateCRSList({expectedCount: 424, allowedRange: validationRangeSmall, extent, includeWorld: true});
+    });
+
+    it("should return CRS that are in the specified range (3)", async () => {
+      const extent: Range2dProps = { low: { x: 0.3, y: 2.4 }, high: { x: 1.6, y: 3.77 } };
+      await validateCRSList({expectedCount: 62, allowedRange: validationRangeSmall, extent});
+      await validateCRSList({expectedCount: 419, allowedRange: validationRangeSmall, extent, includeWorld: true});
+    });
+
+    it("should retrieve the whole list of CRS and validate the properties for a few selected CRS.", async () => {
+      const listOfCRS = await getAvailableCoordinateReferenceSystems({includeWorld: true});
+      let nbFound = 0;
+      for (const crs of listOfCRS) {
+        switch (crs.name) {
+          case "3TM111-83":
+            nbFound++;
+            assert.equal(crs.description, "Use NAD83-AB/3TM-111 instead.");
+            assert.equal(crs.deprecated, true);
+            validateExtent(Range2d.fromJSON({ low: { x: -113, y: 48 }, high: { x: -109, y: 84 } }), crs.crsExtent);
+            break;
+          case "NAD27-CAN.MTM-1":
+            nbFound++;
+            assert.equal(crs.description, "NAD27 / MTM zone 1");
+            assert.equal(crs.deprecated, false);
+            validateExtent(Range2d.fromJSON({ low: { x: -54.5, y: 45 }, high: { x: -50.5, y: 55 } }), crs.crsExtent);
+            break;
+          case "AL83-EF":
+            nbFound++;
+            assert.equal(crs.description, "NAD83 Alabama State Plane, East Zone, US Foot");
+            assert.equal(crs.deprecated, false);
+            validateExtent(Range2d.fromJSON({ low: { x: -87.5, y: 30 }, high: { x: -84, y: 35.75 } }), crs.crsExtent);
+            break;
+          case "ME-E":
+            nbFound++;
+            assert.equal(crs.description, "NAD27 Maine State Plane, East Zone(1801), US Foot");
+            assert.equal(crs.deprecated, false);
+            validateExtent(Range2d.fromJSON({ low: { x: -71, y: 43.5 }, high: { x: -66, y: 48 } }), crs.crsExtent);
+            break;
+
+          // world CRS
+          case "EPSG:4326":
+            nbFound++;
+            assert.equal(crs.description, "WGS 84");
+            assert.equal(crs.deprecated, false);
+            validateExtent(Range2d.fromJSON({ low: { x: -180, y: -90 }, high: { x: 180, y: 90 } }), crs.crsExtent);
+            break;
+        }
+      }
+      assert.equal(nbFound, 5);
+    });
+  });
+
   it("should not be able to interpret an invalid GeographicCRS", async () => {
 
     const interpretInvalidTest = async (formatCRS: "WKT" | "JSON", testInvalid: string) => {
 
       const requestProps: GeographicCRSInterpretRequestProps = { format: formatCRS, geographicCRSDef: testInvalid };
-      const response = IModelHost.platform.GeoServices.getGeographicCRSInterpretation(requestProps);
+      const response = IModelNative.platform.GeoServices.getGeographicCRSInterpretation(requestProps);
 
       // At the moment return codes are not really error specific (we mostly return 32768) so we do not validate
       // actual error code for now.
@@ -833,5 +946,18 @@ describe("GeoServices", () => {
 
     // Unknown identifier
     await interpretInvalidTest("JSON", '{ horizontalCRS: { id: "UNKNOWN" }, verticalCRS: { id: "NAVD29" } }');
+  });
+
+  it("should return expected Transform from Helmert2DWithZOffset object", async () =>{
+    const helmertTransform = new Helmert2DWithZOffset({ translationX: 1, translationY: 1, translationZ: 1, rotDeg: 90, scale: 2 });
+    const convertedTransform = helmertTransform.convertHelmertToTransform();
+
+    const originExpected = Point3d.fromJSON({x:1, y:1, z:1});
+    assert(convertedTransform.origin.isAlmostEqual(originExpected));
+    const expectedCoffs = [0, -2, 0, 2, 0, 0, 0, 0, 1];
+    const actualCoffs = Array.from(convertedTransform.matrix.coffs);
+    for (let i = 0; i < expectedCoffs.length; ++i) {
+      assert(Math.abs(actualCoffs[i] - expectedCoffs[i]) < 1e-12, `Matrix coefficient at index ${i} differs: expected ${expectedCoffs[i]}, got ${actualCoffs[i]}`);
+    }
   });
 });

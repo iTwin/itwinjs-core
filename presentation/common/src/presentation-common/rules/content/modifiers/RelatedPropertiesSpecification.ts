@@ -6,8 +6,8 @@
  * @module PresentationRules
  */
 
-import { RelationshipPathSpecification } from "../../RelationshipPathSpecification";
-import { PropertySpecification } from "../PropertySpecification";
+import { RelationshipPathSpecification } from "../../RelationshipPathSpecification.js";
+import { PropertySpecification } from "../PropertySpecification.js";
 
 /**
  * Meaning of the relationship.
@@ -82,7 +82,6 @@ export interface RelatedPropertiesSpecification {
 
   /**
    * Specifies whether the specification should be ignored if another higher priority specification for the same relationship already exists.
-   * @beta
    */
   skipIfDuplicate?: boolean;
 

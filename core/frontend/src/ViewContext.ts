@@ -11,22 +11,25 @@ import {
   Matrix3d, Point2d,
   Point3d, Range1d, Transform, XAndY,
 } from "@itwin/core-geometry";
-import { Frustum, FrustumPlanes, SpatialClassifier, ViewFlags } from "@itwin/core-common";
+import { Frustum, FrustumPlanes, ViewFlags } from "@itwin/core-common";
 import { CachedDecoration, DecorationsCache } from "./DecorationsCache";
 import { IModelApp } from "./IModelApp";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { Decorations } from "./render/Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./render/GraphicBranch";
-import { GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "./render/GraphicBuilder";
+import { GraphicBuilder, ViewportGraphicBuilderOptions } from "./render/GraphicBuilder";
 import { GraphicList, RenderGraphic } from "./render/RenderGraphic";
-import { RenderPlanarClassifier } from "./render/RenderPlanarClassifier";
-import { RenderSystem, RenderTextureDrape } from "./render/RenderSystem";
+import { RenderPlanarClassifier } from "./internal/render/RenderPlanarClassifier";
+import { RenderSystem, } from "./render/RenderSystem";
 import { RenderTarget } from "./render/RenderTarget";
 import { Scene } from "./render/Scene";
 import { SpatialClassifierTileTreeReference, Tile, TileGraphicType, TileLoadStatus, TileTreeReference } from "./tile/internal";
 import { ViewingSpace } from "./ViewingSpace";
 import { ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator } from "./Viewport";
+import { ActiveSpatialClassifier } from "./SpatialClassifiersState";
+import { GraphicType } from "./common/render/GraphicType";
+import { RenderTextureDrape } from "./internal/render/RenderTextureDrape";
 
 /** Provides context for producing [[RenderGraphic]]s for drawing within a [[Viewport]].
  * @public
@@ -106,18 +109,24 @@ export class RenderContext {
  * @public
  */
 export class DynamicsContext extends RenderContext {
-  private _dynamics?: GraphicList;
+  private _foreground?: GraphicList;
+  private _overlay?: GraphicList;
 
   /** Add a graphic to the list of dynamic graphics to be drawn in this context's [[Viewport]]. */
-  public addGraphic(graphic: RenderGraphic) {
-    if (undefined === this._dynamics)
-      this._dynamics = [];
-    this._dynamics.push(graphic);
+  public addGraphic(graphic: RenderGraphic): void {
+    this.add(graphic, false);
+  }
+
+  /** @internal */
+  public add(graphic: RenderGraphic, isOverlay: boolean) {
+    const key = isOverlay ? "_overlay" : "_foreground";
+    const list = this[key] ?? (this[key] = []);
+    list.push(graphic);
   }
 
   /** @internal */
   public changeDynamics(): void {
-    this.viewport.changeDynamics(this._dynamics);
+    this.viewport.changeDynamics(this._foreground, this._overlay);
   }
 
   /** Create a builder for producing a [[RenderGraphic]] appropriate for rendering within this context's [[Viewport]].
@@ -481,7 +490,7 @@ export class SceneContext extends RenderContext {
   public get textureDrapes() { return this.scene.textureDrapes; }
 
   /** @internal */
-  public setVolumeClassifier(classifier: SpatialClassifier, modelId: Id64String): void {
+  public setVolumeClassifier(classifier: ActiveSpatialClassifier, modelId: Id64String): void {
     this.scene.volumeClassifier = { classifier, modelId };
   }
 }

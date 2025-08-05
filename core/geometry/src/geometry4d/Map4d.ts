@@ -111,11 +111,11 @@ export class Map4d implements BeJSONFunctions {
     return this._matrix0.isAlmostEqual(other._matrix0) && this._matrix1.isAlmostEqual(other._matrix1);
   }
   /**
-   * Create a map between a frustum and world coordinates.
-   * @param origin lower left of frustum
-   * @param uVector Vector from lower left rear to lower right rear.
-   * @param vVector Vector from lower left rear to upper left rear.
-   * @param wVector Vector from lower left rear to lower left front, i.e. lower left rear towards eye.
+   * Create a world to NPC map that maps between world coordinates and the given frustum.
+   * @param origin lower left rear of frustum
+   * @param uVector Vector from origin to lower right rear.
+   * @param vVector Vector from origin to upper left rear.
+   * @param wVector Vector from origin to lower left front, i.e. origin towards eye.
    * @param fraction front size divided by rear size.
    */
   public static createVectorFrustum(

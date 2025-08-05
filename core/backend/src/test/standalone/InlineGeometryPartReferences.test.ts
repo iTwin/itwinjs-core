@@ -10,7 +10,7 @@ import {
   Code, ColorDef, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, IModel,
 } from "@itwin/core-common";
 import {
-  GenericSchema, GeometricElement3d, GeometryPart, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements,
+  _nativeDb, GenericSchema, GeometricElement3d, GeometryPart, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -242,7 +242,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
   }
 
   function inlinePartRefs(): number {
-    const result = imodel.nativeDb.inlineGeometryPartReferences();
+    const result = imodel[_nativeDb].inlineGeometryPartReferences();
     expect(result.numCandidateParts).to.equal(result.numPartsDeleted);
     expect(result.numRefsInlined).to.equal(result.numCandidateParts);
     return result.numRefsInlined;

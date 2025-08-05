@@ -7,7 +7,7 @@ The iTwin.js library potentially incorporates work from the following third-part
 
 The MIT License
 
-Copyright © 2010-2017 three.js authors
+Copyright © 2010-2024 three.js authors
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,9 +27,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
-## [cesium.js](https://cesiumjs.org/)
+## [cesium.js](https://github.com/CesiumGS/cesium)
 
-Copyright 2011-2017 Cesium Contributors
+Copyright 2011-2022 CesiumJS Contributors
 
 Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 

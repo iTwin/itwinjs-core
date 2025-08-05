@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import * as sinon from "sinon";
-import { ArcGisTokenGenerator } from "../map-layers-auth";
+import sinon from "sinon";
+import { ArcGisTokenGenerator } from "../map-layers-auth.js";
 
 describe("ArcGisTokenGenerator", () => {
   const sandbox = sinon.createSandbox();
@@ -18,7 +18,7 @@ describe("ArcGisTokenGenerator", () => {
   });
 
   it("should make proper info request and extract tokenServicesUrl from response", async () => {
-    const fetchStub = sandbox.stub(global, "fetch").callsFake(async function (_input, _init) {
+    const fetchStub = sandbox.stub(globalThis, "fetch").callsFake(async function (_input, _init) {
 
       return Promise.resolve((({
         status: 200,

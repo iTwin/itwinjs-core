@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export * from "./PhysicalMaterialElements";
-export * from "./PhysicalMaterialSchema";
+export * from "./PhysicalMaterialElements.js";
+export * from "./PhysicalMaterialSchema.js";
 
 /** @docs-package-description
  * The `@itwin/physical-material-backend` package contains classes related to working with physical materials on the backend.

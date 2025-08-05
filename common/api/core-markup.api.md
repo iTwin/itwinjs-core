@@ -91,7 +91,7 @@ export class DistanceTool extends ArrowTool {
 
 // @public
 export class EditTextTool extends MarkupTool {
-    constructor(text?: G | Text_2 | undefined, _fromPlaceTool?: boolean);
+    constructor(text?: (Text_2 | G) | undefined, _fromPlaceTool?: boolean);
     // (undocumented)
     boxed?: G;
     // (undocumented)
@@ -113,7 +113,7 @@ export class EditTextTool extends MarkupTool {
     protected showPrompt(): void;
     startEditor(): void;
     // (undocumented)
-    text?: G | Text_2 | undefined;
+    text?: (Text_2 | G) | undefined;
     // (undocumented)
     static toolId: string;
 }

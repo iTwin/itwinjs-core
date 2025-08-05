@@ -2,57 +2,70 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Schema, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { SchemaChanges } from "../Validation/SchemaChanges";
-import { SchemaMergeContext } from "./SchemaMerger";
+import type { SchemaMergeContext } from "./SchemaMerger";
+import type { SchemaReferenceDifference } from "../Differencing/SchemaDifference";
+import type { SchemaContextEditor } from "../Editing/Editor";
+import { ECVersion, Schema, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 
 /**
- * Merges the schema references of two schemas.
- * @param mergeContext  current merge context
- * @param changes       schema changes.
+ * Merges a new reference to an external schema into the target schema.
  * @internal
  */
-export default async function mergeSchemaReferences(mergeContext: SchemaMergeContext, changes: SchemaChanges) {
-  const targetSchema = mergeContext.targetSchema;
-
-  // If the target schema does not have a reference to a schema yet, it can be added
-  // but should be checked if it's schema references have collisions with existing references.
-  for(const missingSchemaReference of changes.missingSchemaReferences) {
-    const [referencedSchema] = missingSchemaReference.diagnostic.messageArgs! as [Schema];
-    await mergeContext.editor.addSchemaReference(targetSchema.schemaKey, referencedSchema);
-  }
-
-  // If the source schema referenced a schema that is also referenced by the target
-  // schema but in a different version, it is marked as delta. Here we need to check if
-  // the source schema is compatible to the existing one. This is not be checked by the
-  // schema instance when added.
-  for(const differentSchemaReference of changes.schemaReferenceDeltas) {
-    const [referencedSchema] = differentSchemaReference.diagnostic.messageArgs! as [Schema];
-    const existingSchema = (await targetSchema.getReference(referencedSchema.name))!;
-
-    const [older, latest] = compareSchemas(existingSchema, referencedSchema);
-    if(!latest.schemaKey.matches(older.schemaKey, SchemaMatchType.LatestWriteCompatible)) {
-      throw new Error(`Schemas references of ${referencedSchema.name} have incompatible versions: ${older.schemaKey.version} and ${latest.schemaKey.version}`);
-    }
-    if(latest === existingSchema) {
-      continue;
-    }
-
-    const index = targetSchema.references.findIndex((reference) => reference === existingSchema);
-    targetSchema.references.splice(index, 1);
-
-    await mergeContext.editor.addSchemaReference(targetSchema.schemaKey, referencedSchema);
-  }
+export async function addSchemaReferences(context: SchemaMergeContext, change: SchemaReferenceDifference) {
+  const referencedSchema = await locateSchema(context.editor, change.difference.name, change.difference.version);
+  await context.editor.addSchemaReference(context.targetSchemaKey, referencedSchema);
 }
 
 /**
- * Compares the schemas and return them in order of their versions [older, latest].
- * @param left    The first schema to be added.
- * @param right   The second schema to be added.
+ * Merges differences to an existing schema references in the target schema.
+ * @internal
+ */
+export async function modifySchemaReferences(context: SchemaMergeContext, change: SchemaReferenceDifference) {
+  const existingSchema  = await context.targetSchema.getReference(change.difference.name) as Schema;
+  const [older, latest] = sortSchemas(existingSchema.schemaKey, new SchemaKey(change.difference.name, ECVersion.fromString(change.difference.version)));
+  if(latest === existingSchema.schemaKey) {
+    return;
+  }
+
+  if(!latest.matches(older, SchemaMatchType.LatestWriteCompatible)) {
+    throw new Error(`Schemas references of ${change.difference.name} have incompatible versions: ${older.version} and ${latest.version}`);
+  }
+
+  const index = context.targetSchema.references.findIndex((reference) => reference === existingSchema);
+  context.targetSchema.references.splice(index, 1);
+
+  const referencedSchema = await locateSchema(context.editor, change.difference.name, change.difference.version);
+  await context.editor.addSchemaReference(context.targetSchema.schemaKey, referencedSchema);
+}
+
+/**
+ * Tries to locate the Schema in the current Context
+ * @param editor      Current editor context.
+ * @param schemaName  The schema name to be looked up.
+ * @param version     The schemas version to beo looked up.
+ * @returns           The schema found in the context.
+ */
+async function locateSchema(editor: SchemaContextEditor, schemaName?: string, version?: string): Promise<Schema> {
+  if(schemaName === undefined || version === undefined) {
+    throw new Error("Schema name and version must not be undefined.");
+  }
+
+  const schemaKey = new SchemaKey(schemaName, ECVersion.fromString(version));
+  const schema = await editor.schemaContext.getSchema(schemaKey, SchemaMatchType.LatestWriteCompatible);
+  if(schema === undefined) {
+    throw new Error(`Referenced schema ${schemaKey.toString()} could not be found in target context`);
+  }
+  return schema;
+}
+
+/**
+ * Sorts the schemas and return them in order of their versions [older, latest].
+ * @param left    The first schema key to be added.
+ * @param right   The second schema key to be added.
  * @returns       The schemas in order.
  */
-function compareSchemas(left: Schema, right: Schema): [Schema, Schema] {
-  return left.schemaKey.compareByVersion(right.schemaKey) < 0
+function sortSchemas(left: SchemaKey, right: SchemaKey): [SchemaKey, SchemaKey] {
+  return left.compareByVersion(right) < 0
     ? [left, right]
     : [right, left];
 }
