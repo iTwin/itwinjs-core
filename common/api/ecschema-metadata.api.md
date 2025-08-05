@@ -762,6 +762,8 @@ export class Format extends SchemaItem {
     // @internal (undocumented)
     protected setSpacer(spacer: string): void;
     // @internal (undocumented)
+    protected setStationBaseFactor(stationBaseFactor: number): void;
+    // @internal (undocumented)
     protected setStationOffsetSize(stationOffsetSize: number): void;
     // @internal (undocumented)
     protected setStationSeparator(separator: string): void;
@@ -775,6 +777,8 @@ export class Format extends SchemaItem {
     get showSignOption(): ShowSignOption;
     // (undocumented)
     get spacer(): string | undefined;
+    // (undocumented)
+    get stationBaseFactor(): number | undefined;
     // (undocumented)
     get stationOffsetSize(): number | undefined;
     // (undocumented)

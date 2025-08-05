@@ -241,6 +241,10 @@ export enum ImdlEdgeVisibility {
   Silhouette,
   /** The edge is always visible. */
   Visible,
+  /** Used only by EXT_mesh_primitive_edge_visibility to indicate a repeated edge previously encoded as `Visible`.
+   iMdl simply marks these redundant edges as `Hidden`.
+   */
+  VisibleDuplicate,
 }
 
 /** A more compact representation of [[ImdlIndexedEdges]]. For each vertex index in the mesh, it encodes 2 bits indicating the visibility of the edge between

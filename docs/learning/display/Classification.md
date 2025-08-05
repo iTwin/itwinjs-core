@@ -7,13 +7,13 @@ Spatial classification and planar clip masking are related ways of using one set
 Spatial classification uses one or more design models to contextualize a reality model by associating portions of the reality model with elements in the design models. Two types of classification are supported:
 
 - Planar classification: The design models are projected onto a plane. The region of the reality model that intersects the volume extruded from an element's footprint become classified by that element.
-- Volume classification: Regions of the reality model that intersect the 3d volume of an element become classified by that element.  Geometry used for volume classification must be fully closed, non-intersecting volumes.
+- Volume classification: Regions of the reality model that intersect the 3d volume of an element become classified by that element. Geometry used for volume classification must be fully closed, non-intersecting volumes.
 
 The classified and unclassified portions of the reality model can be displayed as normal, hidden, or dimmed. The classified portions can additionally be recolored using the color of the classifying element, or hilited.
 
 Tools interact with classified regions of the reality model as if they were interacting with the classifying element. For example, hovering over a classified region will display a tooltip containing information about the classifying element, and selecting it can display the properties of that element.
 
-[This sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=classifier-sample&context=Metrostation+Sample&imodel=Philadelphia) demonstrates planar classification.
+[This sample](https://www.itwinjs.org/sandboxes/iTwinPlatform/Classifiers/) demonstrates planar classification.
 
 ## Planar clip masks
 
