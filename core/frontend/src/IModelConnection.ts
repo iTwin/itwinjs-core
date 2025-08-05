@@ -1102,7 +1102,7 @@ export namespace IModelConnection {
      * For example, [[getProps]] and [[queryProps]] omit the [GeometryStreamProps]($common) property of [GeometricElementProps]($common) and [GeometryPartProps]($common)
      * because it can be quite large and is generally not useful to frontend code. The following code requests that the geometry stream be included:
      * ```ts
-        *  const props = await iModel.elements.loadProps(elementId, { wantGeometry: true });
+     *  const props = await iModel.elements.loadProps(elementId, { wantGeometry: true });
      * ```
      * @param identifier Identifies the element by its Id, federation Guid, or [Code]($common).
      * @param options Optionally includes or excludes specific properties.
@@ -1142,28 +1142,28 @@ export namespace IModelConnection {
         return [];
 
       const select3d = `
-      SELECT
-      ECInstanceId,
-        Origin.x as x, Origin.y as y, Origin.z as z,
-        BBoxLow.x as lx, BBoxLow.y as ly, BBoxLow.z as lz,
-        BBoxHigh.x as hx, BBoxHigh.y as hy, BBoxHigh.z as hz,
-        Yaw, Pitch, Roll,
-        NULL as Rotation
-        FROM bis.GeometricElement3d
-        WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL`;
+        SELECT
+        ECInstanceId,
+          Origin.x as x, Origin.y as y, Origin.z as z,
+          BBoxLow.x as lx, BBoxLow.y as ly, BBoxLow.z as lz,
+          BBoxHigh.x as hx, BBoxHigh.y as hy, BBoxHigh.z as hz,
+          Yaw, Pitch, Roll,
+          NULL as Rotation
+          FROM bis.GeometricElement3d
+          WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL`;
 
       // Note: For the UNION ALL statement, the column aliases in select2d are ignored - so they
       // must match those in select3d.
       const select2d = `
-      SELECT
-      ECInstanceId,
-        Origin.x as x, Origin.y as y, NULL as z,
-        BBoxLow.x as lx, BBoxLow.y as ly, NULL as lz,
-        BBoxHigh.x as hx, BBoxHigh.y as hy, NULL as hz,
-        NULL as yaw, NULL as pitch, NULL as roll,
-        Rotation
-        FROM bis.GeometricElement2d
-        WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL`;
+        SELECT
+        ECInstanceId,
+          Origin.x as x, Origin.y as y, NULL as z,
+          BBoxLow.x as lx, BBoxLow.y as ly, NULL as lz,
+          BBoxHigh.x as hx, BBoxHigh.y as hy, NULL as hz,
+          NULL as yaw, NULL as pitch, NULL as roll,
+          Rotation
+          FROM bis.GeometricElement2d
+          WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL`;
 
       const idCriterion = `ECInstanceId IN (${ids.join(",")})`;
 
@@ -1178,7 +1178,7 @@ export namespace IModelConnection {
         default:
           ecsql = `
             SELECT * FROM (
-        ${select3d}
+              ${select3d}
               UNION ALL
               ${select2d}
             ) WHERE ${idCriterion}`;
@@ -1357,7 +1357,7 @@ export namespace IModelConnection {
      * For example:
      * ```ts
      * [[include:IModelConnection.Views.getSpatialViewList]]
-        * ```
+     * ```
      * @param queryParams The parameters for the views to find. The `limit` and `offset` members should be used to page results.
      * @throws [IModelError]($common) If the generated statement is invalid or would return too many props.
      */
