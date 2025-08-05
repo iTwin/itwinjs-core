@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-electron",
-  "version": "5.1.0-dev.66",
+  "version": "5.2.0-dev.0",
   "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",
   "engines": {

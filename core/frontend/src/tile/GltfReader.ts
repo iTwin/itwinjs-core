@@ -13,8 +13,8 @@ import {
   Angle, IndexedPolyface, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform, Vector3d,
 } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
-  MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
+  AxisAlignedBox3d, BatchType, ColorDef, EdgeAppearanceOverrides, ElementAlignedBox3d, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, GlbHeader, ImageSource, LinePixels, MeshEdge,
+  MeshEdges, MeshPolyline, MeshPolylineList, OctEncodedNormal, OctEncodedNormalPair, PackedFeatureTable, QParams2d, QParams3d, QPoint2dList,
   QPoint3dList, Quantization, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
@@ -43,6 +43,8 @@ import { createGraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch, Gra
 import { RenderGeometry } from "../internal/render/RenderGeometry";
 import { GraphicTemplate } from "../render/GraphicTemplate";
 import { LayerTileData } from "../internal/render/webgl/MapLayerParams";
+import { compactEdgeIterator } from "../common/imdl/CompactEdges";
+import { MeshPolylineGroup } from "@itwin/core-common/lib/cjs/internal/RenderMesh";
 
 /** @internal */
 export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
@@ -1376,9 +1378,84 @@ export abstract class GltfReader {
         for (let i = 0; i < data.count;)
           mesh.primitive.edges.visible.push(new MeshEdge(data.buffer[i++], data.buffer[i++]));
       }
+    } else if (primitive.extensions?.EXT_mesh_primitive_edge_visibility) {
+      const ext = primitive.extensions.EXT_mesh_primitive_edge_visibility;
+      const visibility = this.readBufferData8(ext, "visibility");
+      if (visibility) {
+        const indices = mesh.indices;
+        assert(indices !== undefined);
+        assert(visibility.buffer instanceof Uint8Array);
+
+        const silhouetteNormals = this.readBufferData16(ext, "silhouetteNormals");
+        const normalPairs = silhouetteNormals ? new Uint32Array(silhouetteNormals.buffer.buffer, silhouetteNormals.buffer.byteOffset, silhouetteNormals.buffer.byteLength / 4) : undefined;
+        mesh.primitive.edges = new MeshEdges();
+
+        for (const edge of compactEdgeIterator(visibility.buffer, normalPairs, indices.length, (idx) => indices[idx])) {
+          if (undefined === edge.normals) {
+            mesh.primitive.edges.visible.push(new MeshEdge(edge.index0, edge.index1));
+          } else {
+            mesh.primitive.edges.silhouette.push(new MeshEdge(edge.index0, edge.index1));
+            const normal0 = new OctEncodedNormal(edge.normals & 0x0000ffff);
+            const normal1 = new OctEncodedNormal(edge.normals >>> 16);
+            mesh.primitive.edges.silhouetteNormals.push(new OctEncodedNormalPair(normal0, normal1));
+          }
+        }
+      }
+
+      const lineStrings = ext.lineStrings;
+      if (lineStrings) {
+        for (const extLineString of lineStrings) {
+          const polylineIndices = this.readBufferData32(extLineString, "indices");
+          if (polylineIndices) {
+            if (!mesh.primitive.edges) {
+              mesh.primitive.edges = new MeshEdges();
+            }
+
+            const curGroup: MeshPolylineGroup = {
+              appearance: this.getEdgeAppearance(extLineString.material),
+              polylines: [],
+            };
+            
+            const curLineString: number[] = [];
+            for (const index of polylineIndices.buffer) {
+              if (index === 0xffffffff) {
+                if (curLineString.length > 1) {
+                  curGroup.polylines.push(new MeshPolyline(curLineString));
+                }
+
+                curLineString.length = 0;
+              } else {
+                curLineString.push(index);
+              }
+            }
+
+            if (curLineString.length > 1) {
+              curGroup.polylines.push(new MeshPolyline(curLineString));
+            }
+
+            if (curGroup.polylines.length > 0) {
+              mesh.primitive.edges.polylineGroups.push(curGroup);
+            }
+          }
+        }
+      }
+
+      if (mesh.primitive.edges) {
+        mesh.primitive.edges.appearance = this.getEdgeAppearance(ext.material);
+      }
     }
 
     return mesh;
+  }
+
+  private getEdgeAppearance(materialId: GltfId | undefined): EdgeAppearanceOverrides | undefined {
+    const material = undefined !== materialId ? this._materials[materialId] : undefined;
+    const displayParams = material ? this.createDisplayParams(material, false) : undefined;
+    if (displayParams) {
+      return { color: displayParams.lineColor };
+    }
+
+    return undefined;
   }
 
   private readPointCloud2(primitive: GltfMeshPrimitive, hasFeatures: boolean): GltfPointCloud | undefined {

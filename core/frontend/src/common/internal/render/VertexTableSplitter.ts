@@ -623,8 +623,8 @@ function splitEdges(source: EdgeParams, nodes: Map<number, Node>, maxDimension: 
   remapSegmentEdges("segments", source, nodes, edges);
   remapSegmentEdges("silhouettes", source, nodes, edges);
 
-  if (source.polylines)
-    remapPolylineEdges(source.polylines, nodes, edges);
+  if (source.polylineGroups?.length === 1)
+    remapPolylineEdges(source.polylineGroups[0].polyline, nodes, edges);
 
   if (source.indexed)
     remapIndexedEdges(source.indexed, nodes, edges);
@@ -672,11 +672,13 @@ function splitEdges(source: EdgeParams, nodes: Map<number, Node>, maxDimension: 
         endPointAndQuadIndices: remappedEdges.silhouettes.endPointAndQuadIndices.toUint8Array(),
         normalPairs: remappedEdges.silhouettes.normalPairs.toUint8Array(),
       } : undefined,
-      polylines: remappedEdges.polylines ? {
-        indices: remappedEdges.polylines.indices.toVertexIndices(),
-        prevIndices: remappedEdges.polylines.prevIndices.toVertexIndices(),
-        nextIndicesAndParams: remappedEdges.polylines.nextIndicesAndParams.toUint8Array(),
-      } : undefined,
+      polylineGroups: remappedEdges.polylines ? [{
+        polyline: {
+          indices: remappedEdges.polylines.indices.toVertexIndices(),
+          prevIndices: remappedEdges.polylines.prevIndices.toVertexIndices(),
+          nextIndicesAndParams: remappedEdges.polylines.nextIndicesAndParams.toUint8Array(),
+        },
+      }] : undefined,
       indexed: remappedEdges.indexed ? {
         indices: edgeIndices,
         edges: edgeTable,

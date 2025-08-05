@@ -246,6 +246,7 @@ public;interface;ECSchemaReferenceProps
 public;class;ECSqlReader
 public;enum;ECSqlSystemProperty
 public;enum;ECSqlValueType
+internal;interface;EdgeAppearanceOverrides
 internal;class;EdgeArgs
 internal;interface;EdgeOptions
 internal;interface;EditingScopeNotifications
