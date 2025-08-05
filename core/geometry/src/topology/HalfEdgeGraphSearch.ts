@@ -7,7 +7,7 @@
  * @module Topology
  */
 import { Range1d } from "../geometry3d/Range";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction, NodeFunction, NodeToNumberFunction } from "./Graph";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction, NodeToNumberFunction } from "./Graph";
 import { SignedDataSummary } from "./SignedDataSummary";
 import { XYParitySearchContext } from "./XYParitySearchContext";
 
@@ -361,12 +361,13 @@ export class HalfEdgeGraphSearch {
   }
   /**
    * Test if test point (xTest,yTest) is inside/outside a face or on an edge.
+   * * NOTE: a point outside the graph (in the exterior face) returns -1.
    * @param seedNode any node on the face loop.
    * @param xTest x coordinate of the test point.
    * @param yTest y coordinate of the test point.
    * @returns 0 if ON, 1 if IN, -1 if OUT.
    */
-  public static pointInOrOnFaceXY(seedNode: HalfEdge, xTest: number, yTest: number): number | undefined {
+  public static pointInOrOnFaceXY(seedNode: HalfEdge, xTest: number, yTest: number): number {
     const context = new XYParitySearchContext(xTest, yTest);
     // walk around looking for an accepted node to start the search (seedNode is usually ok)
     let nodeA = seedNode;
