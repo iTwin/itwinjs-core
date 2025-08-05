@@ -126,44 +126,6 @@ export class SchemaFormatsProvider implements FormatsProvider {
     return this.convertToFormatDefinition(defaultProps, kindOfQuantity);
   }
 
-  // /**
-  //  * Retrieves a Format from a SchemaContext. If the format is part of a KindOfQuantity, the first presentation format in the KindOfQuantity that matches the current unit system will be retrieved.
-  //  * If no presentation format matches the current unit system, the persistence unit format will be retrieved if it matches the current unit system.
-  //  * Else, the default presentation format will be retrieved.
-  //  * @param name The full name of the Format or KindOfQuantity.
-  //  * @returns
-  //  */
-  // public getFormatSync(name: string): FormatDefinition | undefined {
-  //   const [schemaName, schemaItemName] = SchemaItem.parseFullName(name);
-  //   const schemaKey = new SchemaKey(schemaName);
-  //   let schema: Schema | undefined;
-  //   try {
-  //     schema = this._context.getSchemaSync(schemaKey);
-  //   } catch {
-  //     Logger.logError(loggerCategory, `Failed to find schema ${schemaName}`);
-  //     return undefined;
-  //   }
-  //   if (!schema) {
-  //     return undefined;
-  //   }
-  //   const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
-
-  //   if (schema.name === "Formats") {
-  //     let format: Format | undefined;
-  //     try {
-  //       format = this._context.getSchemaItemSync(itemKey, Format);
-  //     } catch {
-  //       Logger.logError(loggerCategory, `Failed to find Format ${itemKey.fullName}`);
-  //       return undefined;
-  //     }
-  //     if (!format) {
-  //       return undefined;
-  //     }
-  //     return format.toJSON(true);
-  //   }
-  //   return this.getKindOfQuantityFormatFromSchema(itemKey);
-  // }
-
   /**
    * Retrieves a Format from a SchemaContext. If the format is part of a KindOfQuantity, the first presentation format in the KindOfQuantity that matches the current unit system will be retrieved.
    * If no presentation format matches the current unit system, the persistence unit format will be retrieved if it matches the current unit system.
