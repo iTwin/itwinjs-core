@@ -207,7 +207,7 @@ export class ShaderProgram implements WebGLDisposable {
     if (this._attrMap !== undefined) {
       for (const [key, attr] of this._attrMap) {
         gl.bindAttribLocation(this._glProgram, attr.location, key);
-      };
+      }
     }
 
     gl.linkProgram(this._glProgram);
