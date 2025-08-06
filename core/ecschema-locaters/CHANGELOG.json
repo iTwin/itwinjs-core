@@ -2,6 +2,12 @@
   "name": "@itwin/ecschema-locaters",
   "entries": [
     {
+      "version": "5.0.5",
+      "tag": "@itwin/ecschema-locaters_v5.0.5",
+      "date": "Wed, 06 Aug 2025 15:34:15 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.0.4",
       "tag": "@itwin/ecschema-locaters_v5.0.4",
       "date": "Wed, 16 Jul 2025 14:59:59 GMT",
