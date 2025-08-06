@@ -830,21 +830,21 @@ export namespace IModelConnection {
       WITH
       GeometricModels AS(
         SELECT
-              ECInstanceId
-          FROM bis.GeometricModel
-          WHERE InVirtualSet(: ids64, ECInstanceId)
+          ECInstanceId
+        FROM bis.GeometricModel
+        WHERE InVirtualSet(: ids64, ECInstanceId)
       )
       SELECT
-      ECInstanceId,
+        ECInstanceId,
         true AS isGeometricModel
       FROM GeometricModels
       UNION ALL
       SELECT
-      ECInstanceId,
+        ECInstanceId,
         false AS isGeometricModel
       FROM bis.Model
       WHERE InVirtualSet(: ids64, ECInstanceId)
-        AND ECInstanceId NOT IN(SELECT ECInstanceId FROM GeometricModels)`;
+      AND ECInstanceId NOT IN(SELECT ECInstanceId FROM GeometricModels)`;
 
     private _loadedExtents: ModelExtentsProps[] = [];
 
@@ -859,7 +859,13 @@ export namespace IModelConnection {
     }
 
     /** @internal */
-    constructor(private _iModel: IModelConnection) { }
+    constructor(private _iModel: IModelConnection) {
+      if (this._iModel.isBriefcaseConnection()) {
+        this._iModel.txns.onModelGeometryChanged.addListener((changes) => {
+          this._loadedExtents = this._loadedExtents.filter((extent) => !changes.some((change) => change.id === extent.id));
+        });
+      }
+    }
 
     /** The Id of the [RepositoryModel]($backend). */
     public get repositoryModelId(): string { return "0x1"; }
@@ -967,52 +973,69 @@ export namespace IModelConnection {
       if (typeof modelIds === "string")
         modelIds = [modelIds];
 
-      let remainingModelIds = this._getUnloadedModelIds(modelIds);
+      const modelExtents: ModelExtentsProps[] = [];
+
+      for (const modelId of modelIds) {
+        if (!Id64.isValidId64(modelId)) {
+          modelExtents.push({ id: modelId, extents: Range3d.createNull(), status: IModelStatus.InvalidId });
+        }
+      }
+
+      const getUnloadedModelIds = () => modelIds.filter((modelId) => !modelExtents.some((loadedExtent) => loadedExtent.id === modelId));
+
+      let remainingModelIds = getUnloadedModelIds();
       if (remainingModelIds.length > 0) {
         for (const modelId of remainingModelIds) {
-          if (!Id64.isValidId64(modelId)) {
-            this._loadedExtents.push({ id: modelId, extents: Range3d.createNull(), status: IModelStatus.InvalidId });
-          }
-        }
-
-        remainingModelIds = this._getUnloadedModelIds(remainingModelIds);
-        if (remainingModelIds.length > 0) {
-          let params = new QueryBinder();
-          params.bindIdSet("ids64", remainingModelIds);
-
-          const extentsQueryReader = this._iModel.createQueryReader(this._modelExtentsQuery, params, {
-            rowFormat: QueryRowFormat.UseECSqlPropertyNames,
-          });
-
-          for await (const row of extentsQueryReader) {
-            const byteArray = new Uint8Array(Object.values(row.bbox));
-            const extents = Range3d.fromArrayBuffer(byteArray.buffer);
-
-            this._loadedExtents.push({ id: row.ECInstanceId, extents, status: IModelStatus.Success });
-          }
-
-          remainingModelIds = this._getUnloadedModelIds(remainingModelIds);
-          if (remainingModelIds.length > 0) {
-            params = new QueryBinder();
-            params.bindIdSet("ids64", remainingModelIds);
-
-            const modelExistenceQueryReader = this._iModel.createQueryReader(this._modelExistenceQuery, params, {
-              rowFormat: QueryRowFormat.UseECSqlPropertyNames,
-            });
-
-            for await (const row of modelExistenceQueryReader) {
-              if (row.isGeometricModel) {
-                this._loadedExtents.push({ id: row.ECInstanceId, extents: Range3d.createNull(), status: IModelStatus.Success });
-              } else {
-                this._loadedExtents.push({ id: row.ECInstanceId, extents: Range3d.createNull(), status: IModelStatus.WrongModel });
-              }
-            }
+          const modelExtent = this._loadedExtents.find((extent) => modelId === extent.id);
+          if (modelExtent) {
+            modelExtents.push(modelExtent);
           }
         }
       }
 
+      remainingModelIds = getUnloadedModelIds();
+      if (remainingModelIds.length > 0) {
+        const params = new QueryBinder();
+        params.bindIdSet("ids64", remainingModelIds);
+
+        const extentsQueryReader = this._iModel.createQueryReader(this._modelExtentsQuery, params, {
+          rowFormat: QueryRowFormat.UseECSqlPropertyNames,
+        });
+
+        for await (const row of extentsQueryReader) {
+          const byteArray = new Uint8Array(Object.values(row.bbox));
+          const extents = Range3d.fromArrayBuffer(byteArray.buffer);
+
+          const extent = { id: row.ECInstanceId, extents, status: IModelStatus.Success };
+          modelExtents.push(extent);
+          this._loadedExtents.push(extent);
+        }
+      }
+
+      remainingModelIds = getUnloadedModelIds();
+      if (remainingModelIds.length > 0) {
+        const params = new QueryBinder();
+        params.bindIdSet("ids64", remainingModelIds);
+
+        const modelExistenceQueryReader = this._iModel.createQueryReader(this._modelExistenceQuery, params, {
+          rowFormat: QueryRowFormat.UseECSqlPropertyNames,
+        });
+
+        for await (const row of modelExistenceQueryReader) {
+          let extent: ModelExtentsProps;
+          if (row.isGeometricModel) {
+            extent = { id: row.ECInstanceId, extents: Range3d.createNull(), status: IModelStatus.Success };
+          } else {
+            extent = { id: row.ECInstanceId, extents: Range3d.createNull(), status: IModelStatus.WrongModel };
+          }
+          modelExtents.push(extent);
+          this._loadedExtents.push(extent);
+        }
+      }
+
       return modelIds.map((modelId) => {
-        let extent = this._loadedExtents.find((loadedExtent) => loadedExtent.id === modelId);
+        let extent = modelExtents.find((loadedExtent) => loadedExtent.id === modelId);
+
         if (extent === undefined) {
           extent = { id: modelId, extents: Range3d.createNull(), status: IModelStatus.NotFound };
           this._loadedExtents.push(extent);
@@ -1024,10 +1047,6 @@ export namespace IModelConnection {
 
         return extent;
       });
-    }
-
-    private _getUnloadedModelIds(modelIds: Id64String[]) {
-      return modelIds.filter((modelId) => !this._loadedExtents.some((loadedExtent) => loadedExtent.id === modelId));
     }
 
     /** Query for a set of ModelProps of the specified ModelQueryParams.
