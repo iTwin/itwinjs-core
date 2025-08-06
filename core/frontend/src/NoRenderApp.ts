@@ -20,7 +20,6 @@ import { _implementationProhibited } from "./common/internal/Symbols";
  * @internal
  */
 export class NullTarget extends RenderTarget {
-  protected override readonly [_implementationProhibited] = undefined;
   public get analysisFraction(): number { return 0; }
   public set analysisFraction(_fraction: number) { }
   public get renderSystem() { return undefined as any; }

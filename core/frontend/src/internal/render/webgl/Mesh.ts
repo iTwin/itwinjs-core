@@ -21,7 +21,7 @@ import { EdgeGeometry, PolylineEdgeGeometry, SilhouetteEdgeGeometry } from "./Ed
 import { IndexedEdgeGeometry } from "./IndexedEdgeGeometry";
 import { SurfaceGeometry } from "./SurfaceGeometry";
 import { MeshData } from "./MeshData";
-import { RenderGeometry } from "../../../internal/render/RenderGeometry";
+import { RenderGeometry } from "../../../render/RenderGeometry";
 
 /** @internal */
 export class MeshRenderGeometry implements RenderGeometry {

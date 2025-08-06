@@ -44,7 +44,7 @@ import { AnimationBranchStates } from "./internal/render/AnimationBranchState";
 import { Pixel } from "./render/Pixel";
 import { GraphicList } from "./render/RenderGraphic";
 import { RenderMemory } from "./render/RenderMemory";
-import { createRenderPlanFromViewport } from "./internal/render/RenderPlan";
+import { createRenderPlanFromViewport } from "./render/RenderPlan";
 import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
@@ -68,6 +68,7 @@ import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
 import { GraphicType } from "./common/render/GraphicType";
 import { compareMapLayer } from "./internal/render/webgl/MapLayerParams";
+import { System } from "./internal/render/webgl/System";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -3123,7 +3124,7 @@ export class ScreenViewport extends Viewport {
   /** The parent HTMLDivElement of the canvas. */
   public readonly parentDiv: HTMLDivElement;
   /** The div created to hold all viewport elements. */
-  public readonly vpDiv: HTMLDivElement;
+  public vpDiv: HTMLDivElement;
   /** The canvas to display the view contents. */
   public readonly canvas: HTMLCanvasElement;
   /** The HTMLDivElement used for HTML decorations. May be referenced from the DOM by class "overlay-decorators".
@@ -3132,6 +3133,13 @@ export class ScreenViewport extends Viewport {
   public readonly decorationDiv: HTMLDivElement;
   /** The HTMLDivElement used for toolTips. May be referenced from the DOM by class "overlay-tooltip". */
   public readonly toolTipDiv: HTMLDivElement;
+
+  /**  add a child element to this.vpDiv and set its size and position the same as the parent.  */
+  private static sAddChildDiv(parent: HTMLElement, element: HTMLElement, zIndex: number) {
+    ScreenViewport.setToParentSize(element);
+    element.style.zIndex = zIndex.toString();
+    parent.appendChild(element);
+  }
 
   /** Create a new ScreenViewport that shows a View of an iModel into an HTMLDivElement. This method will create a new HTMLCanvasElement as a child of the supplied parentDiv.
    * It also creates two new child HTMLDivElements: one of class "overlay-decorators" for HTML overlay decorators, and one of class
@@ -3146,7 +3154,21 @@ export class ScreenViewport extends Viewport {
       throw new Error("viewport cannot be created from a div with zero width or height");
 
     const canvas = document.createElement("canvas");
-    const vp = new this(canvas, parentDiv, IModelApp.renderSystem.createTarget(canvas));
+
+    // what about Cesium.... it wants the parent first?  canvas is not added to parentDiv when createTarget happens, which is a problem.
+    let vpDiv: HTMLDivElement | undefined;
+    if (!(IModelApp.renderSystem instanceof System)) {
+      // first remove all children of the parent Div
+      ScreenViewport.removeAllChildren(parentDiv);
+
+      vpDiv = IModelApp.makeHTMLElement("div", { className: "imodeljs-vp" });
+      this.sAddChildDiv(parentDiv, vpDiv, 0);
+
+      this.sAddChildDiv(vpDiv, canvas, 10);
+      // div is this.vpDiv, need to specify
+    }
+
+    const vp = new this(canvas, parentDiv, IModelApp.renderSystem.createTarget(canvas), vpDiv);
     vp.initialize();
 
     vp.changeView(view);
@@ -3263,18 +3285,26 @@ export class ScreenViewport extends Viewport {
     logo.onmousemove = logo.onmousedown = logo.onmouseup = (ev) => ev.stopPropagation();
   }
 
-  protected constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget) {
+  protected constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget, vpDiv?: HTMLDivElement) {
     super(target);
     this.canvas = canvas;
     this.parentDiv = parentDiv;
 
-    // first remove all children of the parent Div
-    ScreenViewport.removeAllChildren(parentDiv);
+    if (IModelApp.renderSystem instanceof System) {
+      // first remove all children of the parent Div
+      ScreenViewport.removeAllChildren(parentDiv);
 
-    const div = this.vpDiv = IModelApp.makeHTMLElement("div", { className: "imodeljs-vp" });
-    this.addChildDiv(this.parentDiv, div, 0);
+      const div = this.vpDiv = IModelApp.makeHTMLElement("div", { className: "imodeljs-vp" });
+      this.addChildDiv(this.parentDiv, div, 0);
 
-    this.addChildDiv(this.vpDiv, canvas, 10);
+      this.addChildDiv(this.vpDiv, canvas, 10);
+    } else if (vpDiv) {
+      this.vpDiv = vpDiv;
+    } else {
+      // this should not happen, but we are quieting the compiler for now...
+      this.vpDiv = IModelApp.makeHTMLElement("div", { className: "imodeljs-vp" });
+    }
+
     this.target.updateViewRect();
 
     // SEE: decorationDiv doc comment
@@ -3721,6 +3751,9 @@ export class ScreenViewport extends Viewport {
    */
   public get rendersToScreen(): boolean { return undefined !== this._webglCanvas; }
   public set rendersToScreen(toScreen: boolean) {
+    if (!(IModelApp.renderSystem instanceof System))
+      return; // When using Cesium, let's avoid these workarounds and just trust it to do the right thing.
+
     if (toScreen === this.rendersToScreen)
       return;
 

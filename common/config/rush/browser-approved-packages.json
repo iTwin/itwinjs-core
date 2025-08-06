@@ -451,6 +451,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "cesium",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "chai",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },

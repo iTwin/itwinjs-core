@@ -23,13 +23,13 @@ import { CustomGraphicBuilderOptions, ViewportGraphicBuilderOptions } from "./Gr
 import { Pixel } from "./Pixel";
 import { GraphicList } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
-import { RenderPlan } from "../internal/render/RenderPlan";
+import { RenderPlan } from "./RenderPlan";
 import { RenderPlanarClassifier } from "../internal/render/RenderPlanarClassifier";
 import { RenderSystem, } from "./RenderSystem";
 import { Scene } from "./Scene";
 import { QueryTileFeaturesOptions, QueryVisibleFeaturesCallback } from "./VisibleFeature";
 import { ActiveSpatialClassifier } from "../SpatialClassifiersState";
-import { _implementationProhibited } from "../common/internal/Symbols";
+// import { _implementationProhibited } from "../common/internal/Symbols";
 import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
 import { RenderTargetDebugControl } from "../internal/render/RenderTargetDebugControl";
 
@@ -39,8 +39,8 @@ import { RenderTargetDebugControl } from "../internal/render/RenderTargetDebugCo
  * @public
  */
 export abstract class RenderTarget implements Disposable, RenderMemory.Consumer {
-  /** @internal */
-  protected abstract readonly [_implementationProhibited]: unknown;
+  // /** @internal */
+  // protected abstract readonly [_implementationProhibited]: unknown;
 
   /** @internal */
   public pickOverlayDecoration(_pt: XAndY): CanvasDecoration | undefined { return undefined; }

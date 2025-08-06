@@ -14,7 +14,7 @@ import { createMeshParams } from "../../../common/internal/render/VertexTableBui
 import { Texture } from "../../../internal/render/webgl/Texture";
 import { createBlankConnection } from "../../createBlankConnection";
 import { InstancedGraphicParams, MeshArgs } from "../../../core-frontend";
-import { RenderGeometry } from "../../../internal/render/RenderGeometry";
+import { RenderGeometry } from "../../../render/RenderGeometry";
 
 function expectMemory(consumer: RenderMemory.Consumers, total: number, max: number, count: number) {
   expect(consumer.totalBytes).toEqual(total);

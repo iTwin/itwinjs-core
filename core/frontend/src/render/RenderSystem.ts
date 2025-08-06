@@ -47,14 +47,14 @@ import { _featureTable, _implementationProhibited, _renderSystem, _textures, _tr
 import { GraphicDescriptionContext, GraphicDescriptionContextProps, WorkerGraphicDescriptionContextProps } from "../common/render/GraphicDescriptionContext";
 import { MeshArgs } from "./MeshArgs";
 import { PolylineArgs } from "./PolylineArgs";
-import { RenderGeometry } from "../internal/render/RenderGeometry";
+import { RenderGeometry } from "./RenderGeometry";
 import { RenderInstancesParams } from "../common/render/RenderInstancesParams";
 import { GraphicTemplate } from "./GraphicTemplate";
 import { RenderSystemDebugControl } from "../internal/render/RenderSystemDebugControl";
 import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
 import { RenderTerrainGeometry } from "../internal/render/RenderTerrain";
 import { RenderSkyBoxParams } from "../internal/render/RenderSkyBoxParams";
-import { RenderAreaPattern } from "../internal/render/RenderAreaPattern";
+import { RenderAreaPattern } from "./RenderAreaPattern";
 import { LayerTileData } from "../internal/render/webgl/MapLayerParams";
 
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh

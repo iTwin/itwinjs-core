@@ -21,7 +21,7 @@ import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { VertexLUT } from "./VertexLUT";
-import { RenderGeometry } from "../../../internal/render/RenderGeometry";
+import { RenderGeometry } from "../../../render/RenderGeometry";
 
 /** @internal */
 export class PointStringGeometry extends LUTGeometry implements RenderGeometry {

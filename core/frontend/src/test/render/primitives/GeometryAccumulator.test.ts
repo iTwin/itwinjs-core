@@ -14,7 +14,7 @@ import { Branch } from "../../../internal/render/webgl/Graphic";
 import { createBlankConnection } from "../../createBlankConnection";
 import { FakeGeometry } from "./Fake";
 import { GraphicType } from "../../../common";
-import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
+import { PrimitiveBuilder } from "../../../render/PrimitiveBuilder";
 import { GeometryAccumulator } from "../../../common/internal/render/GeometryAccumulator";
 import { DisplayParams } from "../../../common/internal/render/DisplayParams";
 import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
