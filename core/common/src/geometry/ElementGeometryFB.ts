@@ -5,6 +5,7 @@
 /** @packageDocumentation
  * @module Serialization
  */
+import { expectNotNull } from "@itwin/core-bentley";
 import { flatbuffers } from "flatbuffers";
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/explicit-member-accessibility */
@@ -89,21 +90,21 @@ export namespace EGFBAccessors {
      * @returns number
      */
     x(): number {
-      return this.bb!.readFloat64(this.bb_pos);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     y(): number {
-      return this.bb!.readFloat64(this.bb_pos + 8);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 8);
     }
 
     /**
      * @returns number
      */
     z(): number {
-      return this.bb!.readFloat64(this.bb_pos + 16);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 16);
     }
 
     /**
@@ -145,14 +146,14 @@ export namespace EGFBAccessors {
      * @returns number
      */
     x(): number {
-      return this.bb!.readFloat64(this.bb_pos);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     y(): number {
-      return this.bb!.readFloat64(this.bb_pos + 8);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 8);
     }
 
     /**
@@ -192,21 +193,21 @@ export namespace EGFBAccessors {
      * @returns number
      */
     x(): number {
-      return this.bb!.readFloat64(this.bb_pos);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     y(): number {
-      return this.bb!.readFloat64(this.bb_pos + 8);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 8);
     }
 
     /**
      * @returns number
      */
     z(): number {
-      return this.bb!.readFloat64(this.bb_pos + 16);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 16);
     }
 
     /**
@@ -248,63 +249,63 @@ export namespace EGFBAccessors {
      * @returns number
      */
     x00(): number {
-      return this.bb!.readFloat64(this.bb_pos);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     x01(): number {
-      return this.bb!.readFloat64(this.bb_pos + 8);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 8);
     }
 
     /**
      * @returns number
      */
     x02(): number {
-      return this.bb!.readFloat64(this.bb_pos + 16);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 16);
     }
 
     /**
      * @returns number
      */
     x10(): number {
-      return this.bb!.readFloat64(this.bb_pos + 24);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 24);
     }
 
     /**
      * @returns number
      */
     x11(): number {
-      return this.bb!.readFloat64(this.bb_pos + 32);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 32);
     }
 
     /**
      * @returns number
      */
     x12(): number {
-      return this.bb!.readFloat64(this.bb_pos + 40);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 40);
     }
 
     /**
      * @returns number
      */
     x20(): number {
-      return this.bb!.readFloat64(this.bb_pos + 48);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 48);
     }
 
     /**
      * @returns number
      */
     x21(): number {
-      return this.bb!.readFloat64(this.bb_pos + 56);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 56);
     }
 
     /**
      * @returns number
      */
     x22(): number {
-      return this.bb!.readFloat64(this.bb_pos + 64);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 64);
     }
 
     /**
@@ -359,84 +360,84 @@ export namespace EGFBAccessors {
      * @returns number
      */
     x00(): number {
-      return this.bb!.readFloat64(this.bb_pos);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     x01(): number {
-      return this.bb!.readFloat64(this.bb_pos + 8);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 8);
     }
 
     /**
      * @returns number
      */
     x02(): number {
-      return this.bb!.readFloat64(this.bb_pos + 16);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 16);
     }
 
     /**
      * @returns number
      */
     tx(): number {
-      return this.bb!.readFloat64(this.bb_pos + 24);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 24);
     }
 
     /**
      * @returns number
      */
     x10(): number {
-      return this.bb!.readFloat64(this.bb_pos + 32);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 32);
     }
 
     /**
      * @returns number
      */
     x11(): number {
-      return this.bb!.readFloat64(this.bb_pos + 40);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 40);
     }
 
     /**
      * @returns number
      */
     x12(): number {
-      return this.bb!.readFloat64(this.bb_pos + 48);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 48);
     }
 
     /**
      * @returns number
      */
     ty(): number {
-      return this.bb!.readFloat64(this.bb_pos + 56);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 56);
     }
 
     /**
      * @returns number
      */
     x20(): number {
-      return this.bb!.readFloat64(this.bb_pos + 64);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 64);
     }
 
     /**
      * @returns number
      */
     x21(): number {
-      return this.bb!.readFloat64(this.bb_pos + 72);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 72);
     }
 
     /**
      * @returns number
      */
     x22(): number {
-      return this.bb!.readFloat64(this.bb_pos + 80);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 80);
     }
 
     /**
      * @returns number
      */
     tz(): number {
-      return this.bb!.readFloat64(this.bb_pos + 88);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 88);
     }
 
     /**
@@ -496,42 +497,42 @@ export namespace EGFBAccessors {
      * @returns number
      */
     x00(): number {
-      return this.bb!.readFloat64(this.bb_pos);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     x01(): number {
-      return this.bb!.readFloat64(this.bb_pos + 8);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 8);
     }
 
     /**
      * @returns number
      */
     tx(): number {
-      return this.bb!.readFloat64(this.bb_pos + 16);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 16);
     }
 
     /**
      * @returns number
      */
     y00(): number {
-      return this.bb!.readFloat64(this.bb_pos + 24);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 24);
     }
 
     /**
      * @returns number
      */
     y01(): number {
-      return this.bb!.readFloat64(this.bb_pos + 32);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 32);
     }
 
     /**
      * @returns number
      */
     ty(): number {
-      return this.bb!.readFloat64(this.bb_pos + 40);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 40);
     }
 
     /**
@@ -579,35 +580,35 @@ export namespace EGFBAccessors {
      * @returns number
      */
     useColor(): number {
-      return this.bb!.readUint8(this.bb_pos);
+      return expectNotNull(this.bb).readUint8(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     useMaterial(): number {
-      return this.bb!.readUint8(this.bb_pos + 1);
+      return expectNotNull(this.bb).readUint8(this.bb_pos + 1);
     }
 
     /**
      * @returns number
      */
     color(): number {
-      return this.bb!.readUint32(this.bb_pos + 4);
+      return expectNotNull(this.bb).readUint32(this.bb_pos + 4);
     }
 
     /**
      * @returns flatbuffers.Long
      */
     materialId(): flatbuffers.Long {
-      return this.bb!.readInt64(this.bb_pos + 8);
+      return expectNotNull(this.bb).readInt64(this.bb_pos + 8);
     }
 
     /**
      * @returns number
      */
     transparency(): number {
-      return this.bb!.readFloat64(this.bb_pos + 16);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 16);
     }
 
     /**
@@ -615,7 +616,7 @@ export namespace EGFBAccessors {
      * @returns DPoint2d|null
      */
     uv(obj?: DPoint2d): DPoint2d | null {
-      return (obj || new DPoint2d()).__init(this.bb_pos + 24, this.bb!);
+      return (obj || new DPoint2d()).__init(this.bb_pos + 24, expectNotNull(this.bb));
     }
 
     /**
@@ -667,14 +668,14 @@ export namespace EGFBAccessors {
      * @returns number
      */
     faceIndex(): number {
-      return this.bb!.readUint32(this.bb_pos);
+      return expectNotNull(this.bb).readUint32(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     symbIndex(): number {
-      return this.bb!.readUint32(this.bb_pos + 4);
+      return expectNotNull(this.bb).readUint32(this.bb_pos + 4);
     }
 
     /**
@@ -714,14 +715,14 @@ export namespace EGFBAccessors {
      * @returns number
      */
     low(): number {
-      return this.bb!.readFloat64(this.bb_pos);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     high(): number {
-      return this.bb!.readFloat64(this.bb_pos + 8);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 8);
     }
 
     /**
@@ -782,24 +783,24 @@ export namespace EGFBAccessors {
      * @returns DPoint3d
      */
     coords(index: number, obj?: DPoint3d): DPoint3d | null {
-      var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset ? (obj || new DPoint3d()).__init(this.bb!.__vector(this.bb_pos + offset) + index * 24, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 4);
+      return offset ? (obj || new DPoint3d()).__init(expectNotNull(this.bb).__vector(this.bb_pos + offset) + index * 24, expectNotNull(this.bb)) : null;
     }
 
     /**
      * @returns number
      */
     coordsLength(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 4);
+      return offset ? expectNotNull(this.bb).__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns BoundaryType
      */
     boundary(): BoundaryType {
-      var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : BoundaryType.None;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 6);
+      return offset ? /**  */ (expectNotNull(this.bb).readInt8(this.bb_pos + offset)) : BoundaryType.None;
     }
 
     /**
@@ -893,24 +894,24 @@ export namespace EGFBAccessors {
      * @returns DPoint2d
      */
     coords(index: number, obj?: DPoint2d): DPoint2d | null {
-      var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset ? (obj || new DPoint2d()).__init(this.bb!.__vector(this.bb_pos + offset) + index * 16, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 4);
+      return offset ? (obj || new DPoint2d()).__init(expectNotNull(this.bb).__vector(this.bb_pos + offset) + index * 16, expectNotNull(this.bb)) : null;
     }
 
     /**
      * @returns number
      */
     coordsLength(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 4);
+      return offset ? expectNotNull(this.bb).__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns BoundaryType
      */
     boundary(): BoundaryType {
-      var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : BoundaryType.None;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 6);
+      return offset ? /**  */ (expectNotNull(this.bb).readInt8(this.bb_pos + offset)) : BoundaryType.None;
     }
 
     /**
@@ -1003,8 +1004,8 @@ export namespace EGFBAccessors {
      * @returns DPoint3d|null
      */
     center(obj?: DPoint3d): DPoint3d | null {
-      var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 4);
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, expectNotNull(this.bb)) : null;
     }
 
     /**
@@ -1012,8 +1013,8 @@ export namespace EGFBAccessors {
      * @returns DVec3d|null
      */
     vector0(obj?: DVec3d): DVec3d | null {
-      var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset ? (obj || new DVec3d()).__init(this.bb_pos + offset, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 6);
+      return offset ? (obj || new DVec3d()).__init(this.bb_pos + offset, expectNotNull(this.bb)) : null;
     }
 
     /**
@@ -1021,32 +1022,32 @@ export namespace EGFBAccessors {
      * @returns DVec3d|null
      */
     vector90(obj?: DVec3d): DVec3d | null {
-      var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset ? (obj || new DVec3d()).__init(this.bb_pos + offset, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 8);
+      return offset ? (obj || new DVec3d()).__init(this.bb_pos + offset, expectNotNull(this.bb)) : null;
     }
 
     /**
      * @returns number
      */
     start(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 10);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     sweep(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 12);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 12);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns BoundaryType
      */
     boundary(): BoundaryType {
-      var offset = this.bb!.__offset(this.bb_pos, 14);
-      return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : BoundaryType.None;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 14);
+      return offset ? /**  */ (expectNotNull(this.bb).readInt8(this.bb_pos + offset)) : BoundaryType.None;
     }
 
     /**
@@ -1167,16 +1168,16 @@ export namespace EGFBAccessors {
      * @returns Transform|null
      */
     entityTransform(obj?: Transform): Transform | null {
-      var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset ? (obj || new Transform()).__init(this.bb_pos + offset, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 4);
+      return offset ? (obj || new Transform()).__init(this.bb_pos + offset, expectNotNull(this.bb)) : null;
     }
 
     /**
      * @returns BRepType
      */
     brepType(): BRepType {
-      var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : BRepType.Solid;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 6);
+      return offset ? /**  */ (expectNotNull(this.bb).readInt8(this.bb_pos + offset)) : BRepType.Solid;
     }
 
     /**
@@ -1184,24 +1185,24 @@ export namespace EGFBAccessors {
      * @returns number
      */
     entityData(index: number): number | null {
-      var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset ? this.bb!.readUint8(this.bb!.__vector(this.bb_pos + offset) + index) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 8);
+      return offset ? expectNotNull(this.bb).readUint8(expectNotNull(this.bb).__vector(this.bb_pos + offset) + index) : 0;
     }
 
     /**
      * @returns number
      */
     entityDataLength(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 8);
+      return offset ? expectNotNull(this.bb).__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Uint8Array
      */
     entityDataArray(): Uint8Array | null {
-      var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset ? new Uint8Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 8);
+      return offset ? new Uint8Array(expectNotNull(this.bb).bytes().buffer, expectNotNull(this.bb).bytes().byteOffset + expectNotNull(this.bb).__vector(this.bb_pos + offset), expectNotNull(this.bb).__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -1210,16 +1211,16 @@ export namespace EGFBAccessors {
      * @returns FaceSymbology
      */
     symbology(index: number, obj?: FaceSymbology): FaceSymbology | null {
-      var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset ? (obj || new FaceSymbology()).__init(this.bb!.__vector(this.bb_pos + offset) + index * 40, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 10);
+      return offset ? (obj || new FaceSymbology()).__init(expectNotNull(this.bb).__vector(this.bb_pos + offset) + index * 40, expectNotNull(this.bb)) : null;
     }
 
     /**
      * @returns number
      */
     symbologyLength(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 10);
+      return offset ? expectNotNull(this.bb).__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
@@ -1228,16 +1229,16 @@ export namespace EGFBAccessors {
      * @returns FaceSymbologyIndex
      */
     symbologyIndex(index: number, obj?: FaceSymbologyIndex): FaceSymbologyIndex | null {
-      var offset = this.bb!.__offset(this.bb_pos, 12);
-      return offset ? (obj || new FaceSymbologyIndex()).__init(this.bb!.__vector(this.bb_pos + offset) + index * 8, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 12);
+      return offset ? (obj || new FaceSymbologyIndex()).__init(expectNotNull(this.bb).__vector(this.bb_pos + offset) + index * 8, expectNotNull(this.bb)) : null;
     }
 
     /**
      * @returns number
      */
     symbologyIndexLength(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 12);
-      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 12);
+      return offset ? expectNotNull(this.bb).__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
@@ -1385,16 +1386,16 @@ export namespace EGFBAccessors {
      * @returns number
      */
     drawBorder(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 4);
+      return offset ? expectNotNull(this.bb).readUint8(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     useFillTint(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 6);
+      return offset ? expectNotNull(this.bb).readUint8(this.bb_pos + offset) : 0;
     }
 
     /**
@@ -1402,8 +1403,8 @@ export namespace EGFBAccessors {
      * @returns DPoint3d|null
      */
     tileCorner0(obj?: DPoint3d): DPoint3d | null {
-      var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 8);
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, expectNotNull(this.bb)) : null;
     }
 
     /**
@@ -1411,8 +1412,8 @@ export namespace EGFBAccessors {
      * @returns DPoint3d|null
      */
     tileCorner1(obj?: DPoint3d): DPoint3d | null {
-      var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 10);
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, expectNotNull(this.bb)) : null;
     }
 
     /**
@@ -1420,8 +1421,8 @@ export namespace EGFBAccessors {
      * @returns DPoint3d|null
      */
     tileCorner2(obj?: DPoint3d): DPoint3d | null {
-      var offset = this.bb!.__offset(this.bb_pos, 12);
-      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 12);
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, expectNotNull(this.bb)) : null;
     }
 
     /**
@@ -1429,32 +1430,32 @@ export namespace EGFBAccessors {
      * @returns DPoint3d|null
      */
     tileCorner3(obj?: DPoint3d): DPoint3d | null {
-      var offset = this.bb!.__offset(this.bb_pos, 14);
-      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 14);
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, expectNotNull(this.bb)) : null;
     }
 
     /**
      * @returns number
      */
     width(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 16);
-      return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 16);
+      return offset ? expectNotNull(this.bb).readUint32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     height(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 18);
-      return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 18);
+      return offset ? expectNotNull(this.bb).readUint32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     format(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 20);
-      return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 20);
+      return offset ? expectNotNull(this.bb).readUint32(this.bb_pos + offset) : 0;
     }
 
     /**
@@ -1462,32 +1463,32 @@ export namespace EGFBAccessors {
      * @returns number
      */
     byteData(index: number): number | null {
-      var offset = this.bb!.__offset(this.bb_pos, 22);
-      return offset ? this.bb!.readUint8(this.bb!.__vector(this.bb_pos + offset) + index) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 22);
+      return offset ? expectNotNull(this.bb).readUint8(expectNotNull(this.bb).__vector(this.bb_pos + offset) + index) : 0;
     }
 
     /**
      * @returns number
      */
     byteDataLength(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 22);
-      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 22);
+      return offset ? expectNotNull(this.bb).__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Uint8Array
      */
     byteDataArray(): Uint8Array | null {
-      var offset = this.bb!.__offset(this.bb_pos, 22);
-      return offset ? new Uint8Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 22);
+      return offset ? new Uint8Array(expectNotNull(this.bb).bytes().buffer, expectNotNull(this.bb).bytes().byteOffset + expectNotNull(this.bb).__vector(this.bb_pos + offset), expectNotNull(this.bb).__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
      * @returns flatbuffers.Long
      */
     textureId(): flatbuffers.Long {
-      var offset = this.bb!.__offset(this.bb_pos, 24);
-      return offset ? this.bb!.readInt64(this.bb_pos + offset) : this.bb!.createLong(0, 0);
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 24);
+      return offset ? expectNotNull(this.bb).readInt64(this.bb_pos + offset) : expectNotNull(this.bb).createLong(0, 0);
     }
 
     /**
@@ -1673,8 +1674,8 @@ export namespace EGFBAccessors {
      * @returns flatbuffers.Long
      */
     geomPartId(): flatbuffers.Long {
-      var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset ? this.bb!.readInt64(this.bb_pos + offset) : this.bb!.createLong(0, 0);
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 4);
+      return offset ? expectNotNull(this.bb).readInt64(this.bb_pos + offset) : expectNotNull(this.bb).createLong(0, 0);
     }
 
     /**
@@ -1682,40 +1683,40 @@ export namespace EGFBAccessors {
      * @returns DPoint3d|null
      */
     origin(obj?: DPoint3d): DPoint3d | null {
-      var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 6);
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, expectNotNull(this.bb)) : null;
     }
 
     /**
      * @returns number
      */
     yaw(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 8);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     pitch(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 10);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     roll(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 12);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 12);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     scale(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 14);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 1.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 14);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 1.0;
     }
 
     /**
@@ -1835,80 +1836,80 @@ export namespace EGFBAccessors {
      * @returns flatbuffers.Long
      */
     subCategoryId(): flatbuffers.Long {
-      var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset ? this.bb!.readInt64(this.bb_pos + offset) : this.bb!.createLong(0, 0);
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 4);
+      return offset ? expectNotNull(this.bb).readInt64(this.bb_pos + offset) : expectNotNull(this.bb).createLong(0, 0);
     }
 
     /**
      * @returns number
      */
     color(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 6);
+      return offset ? expectNotNull(this.bb).readUint32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     weight(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 8);
+      return offset ? expectNotNull(this.bb).readUint32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns flatbuffers.Long
      */
     lineStyleId(): flatbuffers.Long {
-      var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset ? this.bb!.readInt64(this.bb_pos + offset) : this.bb!.createLong(0, 0);
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 10);
+      return offset ? expectNotNull(this.bb).readInt64(this.bb_pos + offset) : expectNotNull(this.bb).createLong(0, 0);
     }
 
     /**
      * @returns number
      */
     transparency(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 12);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 12);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     displayPriority(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 14);
-      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 14);
+      return offset ? expectNotNull(this.bb).readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns GeometryClass
      */
     geomClass(): GeometryClass {
-      var offset = this.bb!.__offset(this.bb_pos, 16);
-      return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : GeometryClass.Primary;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 16);
+      return offset ? /**  */ (expectNotNull(this.bb).readInt8(this.bb_pos + offset)) : GeometryClass.Primary;
     }
 
     /**
      * @returns number
      */
     useColor(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 18);
-      return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 18);
+      return offset ? expectNotNull(this.bb).readUint8(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     useWeight(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 20);
-      return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 20);
+      return offset ? expectNotNull(this.bb).readUint8(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     useStyle(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 22);
-      return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 22);
+      return offset ? expectNotNull(this.bb).readUint8(this.bb_pos + offset) : 0;
     }
 
     /**
@@ -2064,64 +2065,64 @@ export namespace EGFBAccessors {
      * @returns number
      */
     modifiers(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 4);
+      return offset ? expectNotNull(this.bb).readUint32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     scale(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 6);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     dashScale(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 8);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     gapScale(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 10);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     startWidth(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 12);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 12);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     endWidth(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 14);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 14);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     distPhase(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 16);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 16);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     fractPhase(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 18);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 18);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
@@ -2129,32 +2130,32 @@ export namespace EGFBAccessors {
      * @returns DPoint3d|null
      */
     normal(obj?: DPoint3d): DPoint3d | null {
-      var offset = this.bb!.__offset(this.bb_pos, 20);
-      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 20);
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, expectNotNull(this.bb)) : null;
     }
 
     /**
      * @returns number
      */
     yaw(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 22);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 22);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     pitch(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 24);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 24);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     roll(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 26);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 26);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
@@ -2328,16 +2329,16 @@ export namespace EGFBAccessors {
      * @returns number
      */
     useMaterial(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 4);
+      return offset ? expectNotNull(this.bb).readUint8(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns flatbuffers.Long
      */
     materialId(): flatbuffers.Long {
-      var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset ? this.bb!.readInt64(this.bb_pos + offset) : this.bb!.createLong(0, 0);
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 6);
+      return offset ? expectNotNull(this.bb).readInt64(this.bb_pos + offset) : expectNotNull(this.bb).createLong(0, 0);
     }
 
     /**
@@ -2345,8 +2346,8 @@ export namespace EGFBAccessors {
      * @returns DPoint3d|null
      */
     origin(obj?: DPoint3d): DPoint3d | null {
-      var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 8);
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, expectNotNull(this.bb)) : null;
     }
 
     /**
@@ -2354,32 +2355,32 @@ export namespace EGFBAccessors {
      * @returns DPoint3d|null
      */
     size(obj?: DPoint3d): DPoint3d | null {
-      var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 10);
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, expectNotNull(this.bb)) : null;
     }
 
     /**
      * @returns number
      */
     yaw(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 12);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 12);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     pitch(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 14);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 14);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     roll(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 16);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 16);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
@@ -2387,8 +2388,8 @@ export namespace EGFBAccessors {
      * @returns Trans2x3|null
      */
     trans2x3(obj?: Trans2x3): Trans2x3 | null {
-      var offset = this.bb!.__offset(this.bb_pos, 18);
-      return offset ? (obj || new Trans2x3()).__init(this.bb_pos + offset, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 18);
+      return offset ? (obj || new Trans2x3()).__init(this.bb_pos + offset, expectNotNull(this.bb)) : null;
     }
 
     /**
@@ -2526,40 +2527,40 @@ export namespace EGFBAccessors {
      * @returns number
      */
     stepCount(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 4);
+      return offset ? expectNotNull(this.bb).readUint32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     margin(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 6);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     marginColor(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 8);
+      return offset ? expectNotNull(this.bb).readUint32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     mode(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 10);
+      return offset ? expectNotNull(this.bb).readUint32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     colorScheme(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 12);
-      return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 12);
+      return offset ? expectNotNull(this.bb).readUint32(this.bb_pos + offset) : 0;
     }
 
     /**
@@ -2567,8 +2568,8 @@ export namespace EGFBAccessors {
      * @returns DRange1d|null
      */
     range(obj?: DRange1d): DRange1d | null {
-      var offset = this.bb!.__offset(this.bb_pos, 14);
-      return offset ? (obj || new DRange1d()).__init(this.bb_pos + offset, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 14);
+      return offset ? (obj || new DRange1d()).__init(this.bb_pos + offset, expectNotNull(this.bb)) : null;
     }
 
     /**
@@ -2688,80 +2689,80 @@ export namespace EGFBAccessors {
      * @returns FillDisplay
      */
     fill(): FillDisplay {
-      var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : FillDisplay.None;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 4);
+      return offset ? /**  */ (expectNotNull(this.bb).readInt8(this.bb_pos + offset)) : FillDisplay.None;
     }
 
     /**
      * @returns number
      */
     color(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 6);
+      return offset ? expectNotNull(this.bb).readUint32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     useColor(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 8);
+      return offset ? expectNotNull(this.bb).readUint8(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     backgroundFill(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 10);
+      return offset ? expectNotNull(this.bb).readUint8(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     transparency(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 12);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 12);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns GradientMode
      */
     mode(): GradientMode {
-      var offset = this.bb!.__offset(this.bb_pos, 14);
-      return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : GradientMode.None;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 14);
+      return offset ? /**  */ (expectNotNull(this.bb).readInt8(this.bb_pos + offset)) : GradientMode.None;
     }
 
     /**
      * @returns number
      */
     flags(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 16);
-      return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 16);
+      return offset ? expectNotNull(this.bb).readUint16(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     angle(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 18);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 18);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     tint(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 20);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 20);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     shift(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 22);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 22);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
@@ -2769,24 +2770,24 @@ export namespace EGFBAccessors {
      * @returns number
      */
     colors(index: number): number | null {
-      var offset = this.bb!.__offset(this.bb_pos, 24);
-      return offset ? this.bb!.readUint32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 24);
+      return offset ? expectNotNull(this.bb).readUint32(expectNotNull(this.bb).__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
      * @returns number
      */
     colorsLength(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 24);
-      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 24);
+      return offset ? expectNotNull(this.bb).__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Uint32Array
      */
     colorsArray(): Uint32Array | null {
-      var offset = this.bb!.__offset(this.bb_pos, 24);
-      return offset ? new Uint32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 24);
+      return offset ? new Uint32Array(expectNotNull(this.bb).bytes().buffer, expectNotNull(this.bb).bytes().byteOffset + expectNotNull(this.bb).__vector(this.bb_pos + offset), expectNotNull(this.bb).__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -2794,24 +2795,24 @@ export namespace EGFBAccessors {
      * @returns number
      */
     values(index: number): number | null {
-      var offset = this.bb!.__offset(this.bb_pos, 26);
-      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 26);
+      return offset ? expectNotNull(this.bb).readFloat64(expectNotNull(this.bb).__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
      * @returns number
      */
     valuesLength(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 26);
-      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 26);
+      return offset ? expectNotNull(this.bb).__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Float64Array
      */
     valuesArray(): Float64Array | null {
-      var offset = this.bb!.__offset(this.bb_pos, 26);
-      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 26);
+      return offset ? new Float64Array(expectNotNull(this.bb).bytes().buffer, expectNotNull(this.bb).bytes().byteOffset + expectNotNull(this.bb).__vector(this.bb_pos + offset), expectNotNull(this.bb).__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -2819,8 +2820,8 @@ export namespace EGFBAccessors {
      * @returns ThematicSettings|null
      */
     thematicSettings(obj?: ThematicSettings): ThematicSettings | null {
-      var offset = this.bb!.__offset(this.bb_pos, 28);
-      return offset ? (obj || new ThematicSettings()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 28);
+      return offset ? (obj || new ThematicSettings()).__init(expectNotNull(this.bb).__indirect(this.bb_pos + offset), expectNotNull(this.bb)) : null;
     }
 
     /**
@@ -3045,8 +3046,8 @@ export namespace EGFBAccessors {
      * @returns number
      */
     angle(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 4);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
@@ -3054,8 +3055,8 @@ export namespace EGFBAccessors {
      * @returns DPoint2d|null
      */
     through(obj?: DPoint2d): DPoint2d | null {
-      var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset ? (obj || new DPoint2d()).__init(this.bb_pos + offset, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 6);
+      return offset ? (obj || new DPoint2d()).__init(this.bb_pos + offset, expectNotNull(this.bb)) : null;
     }
 
     /**
@@ -3063,8 +3064,8 @@ export namespace EGFBAccessors {
      * @returns DPoint2d|null
      */
     offset(obj?: DPoint2d): DPoint2d | null {
-      var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset ? (obj || new DPoint2d()).__init(this.bb_pos + offset, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 8);
+      return offset ? (obj || new DPoint2d()).__init(this.bb_pos + offset, expectNotNull(this.bb)) : null;
     }
 
     /**
@@ -3072,24 +3073,24 @@ export namespace EGFBAccessors {
      * @returns number
      */
     dashes(index: number): number | null {
-      var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 10);
+      return offset ? expectNotNull(this.bb).readFloat64(expectNotNull(this.bb).__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
      * @returns number
      */
     dashesLength(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 10);
+      return offset ? expectNotNull(this.bb).__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Float64Array
      */
     dashesArray(): Float64Array | null {
-      var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 10);
+      return offset ? new Float64Array(expectNotNull(this.bb).bytes().buffer, expectNotNull(this.bb).bytes().byteOffset + expectNotNull(this.bb).__vector(this.bb_pos + offset), expectNotNull(this.bb).__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -3213,8 +3214,8 @@ export namespace EGFBAccessors {
      * @returns DPoint3d|null
      */
     origin(obj?: DPoint3d): DPoint3d | null {
-      var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 4);
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, expectNotNull(this.bb)) : null;
     }
 
     /**
@@ -3222,104 +3223,104 @@ export namespace EGFBAccessors {
      * @returns RotMatrix|null
      */
     rotation(obj?: RotMatrix): RotMatrix | null {
-      var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset ? (obj || new RotMatrix()).__init(this.bb_pos + offset, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 6);
+      return offset ? (obj || new RotMatrix()).__init(this.bb_pos + offset, expectNotNull(this.bb)) : null;
     }
 
     /**
      * @returns number
      */
     space1(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 8);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     space2(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 10);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     angle1(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 12);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 12);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     angle2(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 14);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 14);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     scale(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 16);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 16);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     color(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 18);
-      return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 18);
+      return offset ? expectNotNull(this.bb).readUint32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     weight(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 20);
-      return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 20);
+      return offset ? expectNotNull(this.bb).readUint32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     useColor(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 22);
-      return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 22);
+      return offset ? expectNotNull(this.bb).readUint8(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     useWeight(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 24);
-      return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 24);
+      return offset ? expectNotNull(this.bb).readUint8(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     invisibleBoundary(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 26);
-      return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 26);
+      return offset ? expectNotNull(this.bb).readUint8(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     snappable(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 28);
-      return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 28);
+      return offset ? expectNotNull(this.bb).readUint8(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns flatbuffers.Long
      */
     symbolId(): flatbuffers.Long {
-      var offset = this.bb!.__offset(this.bb_pos, 30);
-      return offset ? this.bb!.readInt64(this.bb_pos + offset) : this.bb!.createLong(0, 0);
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 30);
+      return offset ? expectNotNull(this.bb).readInt64(this.bb_pos + offset) : expectNotNull(this.bb).createLong(0, 0);
     }
 
     /**
@@ -3328,16 +3329,16 @@ export namespace EGFBAccessors {
      * @returns DwgHatchDefLine
      */
     defLine(index: number, obj?: DwgHatchDefLine): DwgHatchDefLine | null {
-      var offset = this.bb!.__offset(this.bb_pos, 32);
-      return offset ? (obj || new DwgHatchDefLine()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 32);
+      return offset ? (obj || new DwgHatchDefLine()).__init(expectNotNull(this.bb).__indirect(expectNotNull(this.bb).__vector(this.bb_pos + offset) + index * 4), expectNotNull(this.bb)) : null;
     }
 
     /**
      * @returns number
      */
     defLineLength(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 32);
-      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 32);
+      return offset ? expectNotNull(this.bb).__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
@@ -3540,84 +3541,84 @@ export namespace EGFBAccessors {
      * @returns number
      */
     form3d00(): number {
-      return this.bb!.readFloat64(this.bb_pos);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     form3d01(): number {
-      return this.bb!.readFloat64(this.bb_pos + 8);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 8);
     }
 
     /**
      * @returns number
      */
     form3d02(): number {
-      return this.bb!.readFloat64(this.bb_pos + 16);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 16);
     }
 
     /**
      * @returns number
      */
     form3d03(): number {
-      return this.bb!.readFloat64(this.bb_pos + 24);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 24);
     }
 
     /**
      * @returns number
      */
     form3d10(): number {
-      return this.bb!.readFloat64(this.bb_pos + 32);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 32);
     }
 
     /**
      * @returns number
      */
     form3d11(): number {
-      return this.bb!.readFloat64(this.bb_pos + 40);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 40);
     }
 
     /**
      * @returns number
      */
     form3d12(): number {
-      return this.bb!.readFloat64(this.bb_pos + 48);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 48);
     }
 
     /**
      * @returns number
      */
     form3d13(): number {
-      return this.bb!.readFloat64(this.bb_pos + 56);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 56);
     }
 
     /**
      * @returns number
      */
     form3d20(): number {
-      return this.bb!.readFloat64(this.bb_pos + 64);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 64);
     }
 
     /**
      * @returns number
      */
     form3d21(): number {
-      return this.bb!.readFloat64(this.bb_pos + 72);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 72);
     }
 
     /**
      * @returns number
      */
     form3d22(): number {
-      return this.bb!.readFloat64(this.bb_pos + 80);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 80);
     }
 
     /**
      * @returns number
      */
     form3d23(): number {
-      return this.bb!.readFloat64(this.bb_pos + 88);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 88);
     }
 
     /**
@@ -3677,28 +3678,28 @@ export namespace EGFBAccessors {
      * @returns number
      */
     lowx(): number {
-      return this.bb!.readFloat64(this.bb_pos);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     lowy(): number {
-      return this.bb!.readFloat64(this.bb_pos + 8);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 8);
     }
 
     /**
      * @returns number
      */
     highx(): number {
-      return this.bb!.readFloat64(this.bb_pos + 16);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 16);
     }
 
     /**
      * @returns number
      */
     highy(): number {
-      return this.bb!.readFloat64(this.bb_pos + 24);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 24);
     }
 
     /**
@@ -3742,14 +3743,14 @@ export namespace EGFBAccessors {
      * @returns number
      */
     x(): number {
-      return this.bb!.readFloat64(this.bb_pos);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     y(): number {
-      return this.bb!.readFloat64(this.bb_pos + 8);
+      return expectNotNull(this.bb).readFloat64(this.bb_pos + 8);
     }
 
     /**
@@ -3808,64 +3809,64 @@ export namespace EGFBAccessors {
      * @returns number
      */
     majorVersion(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 4);
+      return offset ? expectNotNull(this.bb).readUint8(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     minorVersion(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 6);
+      return offset ? expectNotNull(this.bb).readUint8(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     fontId(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 8);
+      return offset ? expectNotNull(this.bb).readUint32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns boolean
      */
     isBold(): boolean {
-      var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 10);
+      return offset ? !!expectNotNull(this.bb).readInt8(this.bb_pos + offset) : false;
     }
 
     /**
      * @returns boolean
      */
     isItalic(): boolean {
-      var offset = this.bb!.__offset(this.bb_pos, 12);
-      return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 12);
+      return offset ? !!expectNotNull(this.bb).readInt8(this.bb_pos + offset) : false;
     }
 
     /**
      * @returns boolean
      */
     isUnderlined(): boolean {
-      var offset = this.bb!.__offset(this.bb_pos, 14);
-      return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 14);
+      return offset ? !!expectNotNull(this.bb).readInt8(this.bb_pos + offset) : false;
     }
 
     /**
      * @returns number
      */
     height(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 16);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 16);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     widthFactor(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 18);
-      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 18);
+      return offset ? expectNotNull(this.bb).readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
@@ -4003,16 +4004,16 @@ export namespace EGFBAccessors {
      * @returns number
      */
     majorVersion(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 4);
-      return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 4);
+      return offset ? expectNotNull(this.bb).readUint8(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     minorVersion(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 6);
-      return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 6);
+      return offset ? expectNotNull(this.bb).readUint8(this.bb_pos + offset) : 0;
     }
 
     /**
@@ -4022,8 +4023,8 @@ export namespace EGFBAccessors {
     text(): string | null;
     text(optionalEncoding: flatbuffers.Encoding): string | Uint8Array | null;
     text(optionalEncoding?: any): string | Uint8Array | null {
-      var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 8);
+      return offset ? expectNotNull(this.bb).__string(this.bb_pos + offset, optionalEncoding) : null;
     }
 
     /**
@@ -4031,8 +4032,8 @@ export namespace EGFBAccessors {
      * @returns TextStringStyle|null
      */
     style(obj?: TextStringStyle): TextStringStyle | null {
-      var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset ? (obj || new TextStringStyle()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 10);
+      return offset ? (obj || new TextStringStyle()).__init(expectNotNull(this.bb).__indirect(this.bb_pos + offset), expectNotNull(this.bb)) : null;
     }
 
     /**
@@ -4040,8 +4041,8 @@ export namespace EGFBAccessors {
      * @returns TextStringTransform|null
      */
     transform(obj?: TextStringTransform): TextStringTransform | null {
-      var offset = this.bb!.__offset(this.bb_pos, 12);
-      return offset ? (obj || new TextStringTransform()).__init(this.bb_pos + offset, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 12);
+      return offset ? (obj || new TextStringTransform()).__init(this.bb_pos + offset, expectNotNull(this.bb)) : null;
     }
 
     /**
@@ -4049,8 +4050,8 @@ export namespace EGFBAccessors {
      * @returns TextStringRange|null
      */
     range(obj?: TextStringRange): TextStringRange | null {
-      var offset = this.bb!.__offset(this.bb_pos, 14);
-      return offset ? (obj || new TextStringRange()).__init(this.bb_pos + offset, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 14);
+      return offset ? (obj || new TextStringRange()).__init(this.bb_pos + offset, expectNotNull(this.bb)) : null;
     }
 
     /**
@@ -4058,24 +4059,24 @@ export namespace EGFBAccessors {
      * @returns number
      */
     glyphIds(index: number): number | null {
-      var offset = this.bb!.__offset(this.bb_pos, 16);
-      return offset ? this.bb!.readUint32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 16);
+      return offset ? expectNotNull(this.bb).readUint32(expectNotNull(this.bb).__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
      * @returns number
      */
     glyphIdsLength(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 16);
-      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 16);
+      return offset ? expectNotNull(this.bb).__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Uint32Array
      */
     glyphIdsArray(): Uint32Array | null {
-      var offset = this.bb!.__offset(this.bb_pos, 16);
-      return offset ? new Uint32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 16);
+      return offset ? new Uint32Array(expectNotNull(this.bb).bytes().buffer, expectNotNull(this.bb).bytes().byteOffset + expectNotNull(this.bb).__vector(this.bb_pos + offset), expectNotNull(this.bb).__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -4084,16 +4085,16 @@ export namespace EGFBAccessors {
      * @returns TextStringGlyphOrigin
      */
     glyphOrigins(index: number, obj?: TextStringGlyphOrigin): TextStringGlyphOrigin | null {
-      var offset = this.bb!.__offset(this.bb_pos, 18);
-      return offset ? (obj || new TextStringGlyphOrigin()).__init(this.bb!.__vector(this.bb_pos + offset) + index * 16, this.bb!) : null;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 18);
+      return offset ? (obj || new TextStringGlyphOrigin()).__init(expectNotNull(this.bb).__vector(this.bb_pos + offset) + index * 16, expectNotNull(this.bb)) : null;
     }
 
     /**
      * @returns number
      */
     glyphOriginsLength(): number {
-      var offset = this.bb!.__offset(this.bb_pos, 18);
-      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
+      var offset = expectNotNull(this.bb).__offset(this.bb_pos, 18);
+      return offset ? expectNotNull(this.bb).__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
