@@ -27,6 +27,7 @@ import { RebaseChangesetConflictArgs, TxnArgs } from "../../internal/ChangesetCo
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 chai.use(chaiAsPromised);
 import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
+import { Point3d } from "@itwin/core-geometry";
 
 async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
   try {
@@ -506,7 +507,7 @@ describe("Change merge method", () => {
     b1.close();
     b2.close();
   });
-  it.only("delete instance (data conflict) ", async () => {
+  it.only("delete instance (data conflict)", async () => {
     const b1 = await ctx.openB1(true /* = noLock */);
     const b2 = await ctx.openB2(true /* = noLock */);
 
@@ -518,12 +519,13 @@ describe("Change merge method", () => {
     const eb1 = b1.elements.getElementProps<PhysicalElementProps>(e1);
     eb1.userLabel = "test1";
     eb1.placement = { origin: { x: 1, y: 1, z: 1 }, angles: { yaw: 1, pitch: 1, roll: 1 } };
+    eb1.geom = IModelTestUtils.createBox(Point3d.create(3, 3, 3));
 
     b1.elements.updateElement(eb1);
     b1.saveChanges();
     await b1.pushChanges({ description: `update physical object [id=${e1}]` });
 
-    b2.elements.deleteElement(e1);;
+    b2.elements.deleteElement(e1);
     b2.saveChanges();
     await b2.pullChanges();
 
@@ -534,7 +536,5 @@ describe("Change merge method", () => {
 
     b1.close();
     b2.close();
-
   });
 });
-
