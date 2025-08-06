@@ -139,7 +139,10 @@ export namespace HiddenLine {
         return true;
       else if (this.ovrColor !== other.ovrColor || this.pattern !== other.pattern || this.width !== other.width)
         return false;
+      else if ((undefined === this.color) !== (undefined === other.color))
+        return false;
       else
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return undefined === this.color || this.color.equals(other.color!);
     }
 
@@ -191,6 +194,8 @@ export namespace HiddenLine {
       else if (json instanceof Settings)
         return json;
       else
+        // Undefined check happened in JsonUtils.isEmptyObjectOrUndefined()
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return new Settings(json!);
     }
 
