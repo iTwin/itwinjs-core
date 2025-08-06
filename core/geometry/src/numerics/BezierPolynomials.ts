@@ -669,7 +669,7 @@ export class UnivariateBezier extends BezierCoffs {
     const order = this.order;
     const coffs = this.coffs;
     const orderD = order - 1;
-    for (let iterations = 0; iterations++ < 10;) {
+    for (let iterations = 0; iterations++ < 20;) {
       UnivariateBezier._basisBuffer = PascalCoefficients.getBezierBasisValues(order, u, UnivariateBezier._basisBuffer);
       f = 0;
       for (let i = 0; i < order; i++)
@@ -743,16 +743,12 @@ export class UnivariateBezier extends BezierCoffs {
         }
       }
       if (numNewtonOK)
-        continue;
-      // if any crossing was found and led to a good newton, the "continue" jumped past this.
-      // if no crossings found, there are no roots to be had -- accept
+        continue; // crossing and convergence
       if (numCrossing === 0)
-        return roots;
-      // reach here if there were crossings but not roots.
-      // is this just a local min?  or maybe a big problem?   Whatever, accept it
-      return roots;
+        return roots; // no crossing, no root
+      return roots; // crossing but failed to converge. Local min? Glacial convergence?
     }
-    return roots;
+    return undefined;
   }
 }
 /** Bezier polynomial specialized to order 2 (2 coefficients, straight line function)\
