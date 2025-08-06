@@ -9,7 +9,7 @@ import { DecorateContext } from "../../ViewContext";
 import { ColorDef, ContourDisplay, ContourDisplayProps, RenderMode } from "@itwin/core-common";
 import { Viewport } from "../../Viewport";
 import { Point3d, Range3d } from "@itwin/core-geometry";
-import { Color, readUniqueColors, readUniquePixelData, sortColorDefs, testBlankViewport } from "../openBlankViewport";
+import { Color, expectUniqueColors, readUniqueColors, readUniquePixelData, testBlankViewport } from "../openBlankViewport";
 import { GraphicType } from "../../common";
 import { StandardViewId } from "../../StandardView";
 import { DisplayStyle3dState } from "../../DisplayStyleState";
@@ -104,10 +104,6 @@ describe("Contour lines", () => {
     style.settings.contours = ContourDisplay.fromJSON(props);
   }
 
-  function hexifyColors(defs: ColorDef[]): string[] {
-    return defs.map((x) => x.tbgr.toString(16));
-  }
-
   function isWhitish(c: Color): boolean {
     const hasOneFullComponent = (c.r === 0xff || c.g === 0xff || c.b === 0xff) && c.a === 0xff;
     const hasAllLargeComponents = (c.r > 222 && c.g > 222 && c.b > 222);
@@ -148,10 +144,7 @@ describe("Contour lines", () => {
 
   // Expect the colors in the viewport to be sorted and match the expected colors.
   function expectColors(vp: Viewport, expected: ColorDef[]): void {
-    sortColorDefs(expected);
-    vp.renderFrame();
-    const actual = hexifyColors(readUniqueColors(vp).toColorDefs());
-    expect(actual).to.deep.equal(hexifyColors(expected));
+    expectUniqueColors(expected, vp);
   }
 
   // Expect each of the functions in the isExpectedColorFuncs array to return true for at least one color in the viewport. Also expect that no unexpected colors are present in the viewport.

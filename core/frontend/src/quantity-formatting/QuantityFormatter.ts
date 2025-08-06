@@ -930,7 +930,7 @@ export class QuantityFormatter implements UnitsProvider {
    * @return a formatted string.
    */
   public formatQuantity(magnitude: number, formatSpec?: FormatterSpec): string;
-   
+
   public formatQuantity(args: number | object, spec?: FormatterSpec): string | Promise<string> {
     if (typeof args === "number") {
       /** Format a quantity value. Default FormatterSpec implementation uses Formatter.formatQuantity. */

@@ -281,6 +281,10 @@ export function readPixel(vp: Viewport, x: number, y: number, excludeNonLocatabl
   return pixels.array[0];
 }
 
+function hexifyColors(defs: ColorDef[]): string[] {
+  return defs.map((x) => x.tbgr.toString(16));
+}
+
 /** Read colors for each pixel; return the unique ones.
  * Omit `readRect` to read the contents of the entire viewport.
  * @internal
@@ -296,6 +300,13 @@ export function readUniqueColors(vp: Viewport, readRect?: ViewRect): ColorSet {
     colors.insert(Color.from(rgba));
 
   return colors;
+}
+
+export function expectUniqueColors(expected: ColorDef[], vp: Viewport, readRect?: ViewRect): void {
+  sortColorDefs(expected);
+  vp.renderFrame();
+  const actual = hexifyColors(readUniqueColors(vp, readRect).toColorDefs());
+  expect(actual).to.deep.equal(hexifyColors(expected));
 }
 
 export function readColorCounts(vp: Viewport, readRect?: ViewRect): Dictionary<Color, number> {
