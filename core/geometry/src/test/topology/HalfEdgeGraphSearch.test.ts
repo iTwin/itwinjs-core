@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -14,7 +13,6 @@ import { XAndY } from "../../geometry3d/XYZProps";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Point3dArrayRangeTreeContext } from "../../polyface/RangeTree/Point3dArrayRangeTreeContext";
 import { Sample } from "../../serialization/GeometrySamples";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "../../topology/HalfEdgeGraphSearch";
@@ -293,7 +291,6 @@ describe("HalfEdgeGraphSearch", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  // Proof of concept: find face of a graph containing a point (ignoring z-coords).
   it("containingFaceWithRangeTree", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -302,48 +299,23 @@ describe("HalfEdgeGraphSearch", () => {
     if (ck.testDefined(mesh, "Sample mesh created")) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
       const graph = PolyfaceQuery.convertToHalfEdgeGraph(mesh);
-      const searcher3d = Point3dArrayRangeTreeContext.createCapture(graph.allHalfEdges); // works here only because graph vertices are in xy-plane
-      const searcher2d = Point3dArrayRangeTreeContext.createCapture(graph.allHalfEdges, undefined, undefined, true);
-      if (ck.testDefined(searcher3d, "Range tree created") && ck.testDefined(searcher2d, "XY Range tree created")) {
-        const findContainingFace = (searcher: Point3dArrayRangeTreeContext, pt: XAndY): HalfEdge | undefined => {
-          const cld = searcher.searchForClosestPoint(pt);
-          if (ck.testDefined(cld, "search succeeded")) {
-            if (ck.testType(cld, CurveLocationDetail, "found closest point")) {
-              const vertexIndex = cld.fraction;
-              const closestVertex = graph.allHalfEdges[vertexIndex];
-              let face = closestVertex;
-              do {
-                if (HalfEdgeGraphSearch.pointInOrOnFaceXY(face, pt.x, pt.y) >= 0)
-                  return face; // found pt in interior face
-              } while (closestVertex !== (face = face.vertexSuccessor));
-              return closestVertex.findMaskAroundVertex(HalfEdgeMask.EXTERIOR); // found pt in exterior face
-            }
-          }
-          return undefined;
-        };
-        // test boundary/interior points
-        for (let i = 0; i < 100; i++) {
-          const testPt = Point3d.create(getRandomNumberScaled(side, 0.05), getRandomNumberScaled(side, 0.05), getRandomNumberScaled(1, 0, true));
-          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, testPt, 0.1);
-          const containingFace3d = findContainingFace(searcher3d, testPt);
-          const containingFace2d = findContainingFace(searcher2d, testPt);
-          if (ck.testDefined(containingFace3d, "found containing face in 3d range tree")) {
-            if (ck.testDefined(containingFace2d, "found containing face in 2d range tree")) {
-              if (ck.testTrue(containingFace3d.findAroundFace(containingFace2d), "both searchers found the same face")) {
-                const quadRange = Range2d.createArray(containingFace3d.collectAroundFace() as XAndY[]);
-                ck.testTrue(quadRange.containsPoint(testPt), "range contains test point");
-              }
-            }
-          }
+      // test interior points
+      for (let i = 0; i < 100; i++) {
+        const testPt = Point3d.create(getRandomNumberScaled(side, 0.05), getRandomNumberScaled(side, 0.05), getRandomNumberScaled(1, 0, true));
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, testPt, 0.1);
+        const containingFace = HalfEdgeGraphSearch.findContainingFaceXY(graph, testPt);
+        if (ck.testDefined(containingFace, "found containing face in 3d range tree")) {
+            const quadRange = Range2d.createArray(containingFace.collectAroundFace() as XAndY[]);
+            ck.testTrue(quadRange.containsPoint(testPt), "range contains test point");
         }
-        // test exterior point
-        const exteriorPt = Point3d.create(-1, -1);
-        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, exteriorPt, 0.1);
-        const exteriorFace = findContainingFace(searcher2d, exteriorPt);
-        if (ck.testDefined(exteriorFace, "found containing face of exterior point"))
-          ck.testTrue(exteriorFace.isMaskSet(HalfEdgeMask.EXTERIOR), "the containing face for an exterior point is exterior");
       }
-    }
+      // test exterior point
+      const exteriorPt = Point3d.create(-1, -1);
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, exteriorPt, 0.1);
+      const exteriorFace = HalfEdgeGraphSearch.findContainingFaceXY(graph, exteriorPt);
+      if (ck.testDefined(exteriorFace, "found containing face of exterior point"))
+        ck.testTrue(exteriorFace.isMaskSet(HalfEdgeMask.EXTERIOR), "the containing face for an exterior point is exterior");
+      }
     GeometryCoreTestIO.saveGeometry(allGeometry, "HalfEdgeGraphSearch", "containingFaceWithRangeTree");
     expect(ck.getNumErrors()).toBe(0);
   });

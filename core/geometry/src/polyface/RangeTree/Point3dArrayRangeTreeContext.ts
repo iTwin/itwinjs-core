@@ -51,7 +51,7 @@ export class Point3dArrayRangeTreeContext {
    * Create a range tree context with given points:
    * * initialize with single-point ranges
    * * appData are point indices
-   * @param points captured
+   * @param points reference captured
    * @param maxChildPerNode maximum children per range tree node (default 4)
    * @param maxAppDataPerLeaf maximum point indices per leaf node (default 4)
    * @param xyOnly whether to compute xy-distances, ignoring z-coordinates of points
