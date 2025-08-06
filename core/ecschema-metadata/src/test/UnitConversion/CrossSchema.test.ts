@@ -41,18 +41,37 @@ describe("Cross Schema unit definitions tests", () => {
     deserializeXmlSync(usSchemaXml, context);
   });
 
-  testData.forEach((test: TestData) => {
-    it(`should convert ${test.fromSchema}:${test.from} to ${test.toSchema}:${test.to}`, async () => {
-      const converter = new UnitConverter(context);
-      const fromFullName = `${test.fromSchema}.${test.from}`;
-      const toFullName = `${test.toSchema}.${test.to}`;
-      const map = await converter.calculateConversion(fromFullName, toFullName);
-      const actual = map.evaluate(test.input);
-      expect(
-        almostEqual(test.expect, actual, tolerance),
-        `${test.input} ${test.from} in ${test.to} should be ${test.expect}
-         and not ${actual} error = ${Math.abs(test.expect - actual)} > ${tolerance}`,
-      ).to.be.true;
+  describe("Async", () =>{
+    testData.forEach((test: TestData) => {
+      it(`should convert ${test.fromSchema}:${test.from} to ${test.toSchema}:${test.to}`, async () => {
+        const converter = new UnitConverter(context);
+        const fromFullName = `${test.fromSchema}.${test.from}`;
+        const toFullName = `${test.toSchema}.${test.to}`;
+        const map = await converter.calculateConversion(fromFullName, toFullName);
+        const actual = map.evaluate(test.input);
+        expect(
+          almostEqual(test.expect, actual, tolerance),
+          `${test.input} ${test.from} in ${test.to} should be ${test.expect}
+          and not ${actual} error = ${Math.abs(test.expect - actual)} > ${tolerance}`,
+        ).to.be.true;
+      });
+    });
+  });
+
+  describe("Sync", () => {
+    testData.forEach((test: TestData) => {
+      it(`(sync) should convert ${test.fromSchema}:${test.from} to ${test.toSchema}:${test.to}`,() => {
+        const converter = new UnitConverter(context);
+        const fromFullName = `${test.fromSchema}.${test.from}`;
+        const toFullName = `${test.toSchema}.${test.to}`;
+        const map = converter.calculateConversionSync(fromFullName, toFullName);
+        const actual = map.evaluate(test.input);
+        expect(
+          almostEqual(test.expect, actual, tolerance),
+          `${test.input} ${test.from} in ${test.to} should be ${test.expect}
+          and not ${actual} error = ${Math.abs(test.expect - actual)} > ${tolerance}`,
+        ).to.be.true;
+      });
     });
   });
 });
