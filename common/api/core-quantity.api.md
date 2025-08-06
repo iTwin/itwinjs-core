@@ -224,11 +224,13 @@ export class Format extends BaseFormat {
     constructor(name: string);
     clone(options?: CloneOptions): Format;
     static createFromJSON(name: string, unitsProvider: UnitsProvider, formatProps: FormatProps): Promise<Format>;
+    static createFromJSONSync(name: string, unitsProvider: UnitsProviderSync, formatProps: FormatProps): Format;
     // (undocumented)
     get customProps(): any;
     // (undocumented)
     protected _customProps?: any;
     fromJSON(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void>;
+    fromJSONSync(unitsProvider: UnitsProviderSync, jsonObj: FormatProps): void;
     // (undocumented)
     get hasUnits(): boolean;
     // (undocumented)
@@ -324,11 +326,13 @@ export class FormatterSpec {
     // (undocumented)
     protected _conversions: UnitConversionSpec[];
     static create(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<FormatterSpec>;
+    static createSync(name: string, format: Format, unitsProvider: UnitsProviderSync, inputUnit?: UnitProps): FormatterSpec;
     // (undocumented)
     get format(): Format;
     // (undocumented)
     protected _format: Format;
     static getUnitConversions(format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<UnitConversionSpec[]>;
+    static getUnitConversionsSync(format: Format, unitsProvider: UnitsProviderSync, inputUnit?: UnitProps): UnitConversionSpec[];
     // (undocumented)
     get name(): string;
     // (undocumented)
@@ -698,6 +702,14 @@ export interface UnitsProvider {
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
     // (undocumented)
     getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
+}
+
+// @beta
+export interface UnitsProviderSync {
+    // (undocumented)
+    findUnitByNameSync(unitName: string): UnitProps;
+    // (undocumented)
+    getConversionSync(fromUnit: UnitProps, toUnit: UnitProps): UnitConversionProps;
 }
 
 // @beta

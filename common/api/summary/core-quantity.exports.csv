@@ -62,4 +62,5 @@ beta;interface;UnitConversionSpec
 alpha;interface;UnitExtraData
 beta;interface;UnitProps
 beta;interface;UnitsProvider
+beta;interface;UnitsProviderSync
 beta;type;UnitSystemKey
