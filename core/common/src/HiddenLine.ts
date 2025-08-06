@@ -189,14 +189,12 @@ export namespace HiddenLine {
 
     /** Create a DisplaySettings from its JSON representation. */
     public static fromJSON(json?: SettingsProps): Settings {
-      if (JsonUtils.isEmptyObjectOrUndefined(json))
+      if (!JsonUtils.isNonEmptyObject(json))
         return this.defaults;
       else if (json instanceof Settings)
         return json;
       else
-        // Undefined check happened in JsonUtils.isEmptyObjectOrUndefined()
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        return new Settings(json!);
+        return new Settings(json);
     }
 
     public toJSON(): SettingsProps {
