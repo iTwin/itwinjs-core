@@ -510,31 +510,32 @@ export class Triangulator {
   /**
    * Perform 0, 1, or more edge flips to improve aspect ratio just behind an ear that was just cut.
    * @param ear the triangle corner which just served as the ear node.
-   * @returns the node at the back corner after flipping."appropriately positioned" node for the usual advance to ear.faceSuccessor.edgeMate.faceSuccessor.
+   * @returns the node at the back corner after flipping, "appropriately positioned" for the usual advance to `ear.faceSuccessor.edgeMate.faceSuccessor`.
    */
-  private static doPostCutFlips(ear: HalfEdge) {
-    //    B is the ear -- inside a (probably newly created) triangle ABC
-    //    CA is the recently added cut edge.
-    //    AB is the candidate to be flipped.
-    //    triangle B1 A1 D is on the other side of AB
-    //    The condition for flipping is:
-    //           ! both triangles must be TRIANGULATED_NODE_MASK
-    //           ! circumcircle condition flags D as in the circle of ABC
-    //     after flip, node A moves to the vertex of D, and is the effective "ear",  with the cap edge C A1
-    //      after flip, consider the A1 D (whose nodes are A1 and flipped A!!!)
+  private static doPostCutFlips(ear: HalfEdge): HalfEdge {
+    // B0 is at the ear vertex, inside ear triangle T = A0 B0 C.
+    // C is the recently cut edge added to form the ear cap.
+    // A0/B1 is the quad diagonal edge candidate to be flipped.
+    // Triangle T' = B1 A1 D1 is on the other side of the quad diagonal.
+    // The conditions for flipping are:
+    //   * both triangles T, T' must be TRIANGULATED_NODE_MASK
+    //   * the Delaunay circumcircle condition flags the vertex at D1 as in the circumcircle of T
+    // After flip, node A0 becomes D1.vertexSuccessor, and is the effective "ear", with (same) cap edge C.
+    // The next quad diagonal edge candidate to consider in the loop is A1/D0.
     //
-    //                           *                                 *
-    //                       . C0|                             . / |
-    //                  .        |                        .  C0 /B1|
-    //               .           |                     .       /v  |
-    //           .              ^|                 .          /    |
-    //       .  A0 ---->       B0|             .            /     ^|
-    //   *=======================*   -->   * A1            /     B0*
-    //     \ A1     <----   B1/              \            /     /
-    //       \             /                   \        /    /
-    //         \         /                       \    ^/ D1/
-    //           \  D1 /                           \A0/  /
-    //              *                                 *
+    //                         *                                 *
+    //                     .  C|                             . / |
+    //                  .      |                          .  C/B1|
+    //              .          |                      .      /   |
+    //          .              |                  .         /    |
+    //      .  A0  ---->     B0|              .            /     |
+    //   *=====================*    -->    * A1           /   B0 *
+    //    \ A1     <----  B1 /              \            /     /
+    //      \              /                  \         /    /
+    //        \          /                      \      /   /
+    //          \      /                          \ A0/D1/
+    //         D0 \D1/                           D0 \/ /
+    //             *                                 *
     let b0 = ear;
     let a0 = b0.facePredecessor;
     let b1 = a0.edgeMate;
@@ -548,6 +549,7 @@ export class Triangulator {
       b0 = a0;
       a0 = b0.facePredecessor;
       b1 = a0.edgeMate;
+      // Move to next quad with diagonal a0/b1
     }
     return b0;
   }
