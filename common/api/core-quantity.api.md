@@ -124,10 +124,6 @@ export class BaseFormat {
     protected _spacer: string;
     // (undocumented)
     get spacerOrDefault(): string;
-    get stationBaseFactor(): number | undefined;
-    set stationBaseFactor(stationBaseFactor: number | undefined);
-    // (undocumented)
-    protected _stationBaseFactor?: number;
     // (undocumented)
     get stationOffsetSize(): number | undefined;
     set stationOffsetSize(stationOffsetSize: number | undefined);
@@ -285,7 +281,6 @@ export interface FormatProps {
     readonly scientificType?: string;
     // (undocumented)
     readonly showSignOption?: string;
-    readonly stationBaseFactor?: number;
     readonly stationOffsetSize?: number;
     // (undocumented)
     readonly stationSeparator?: string;

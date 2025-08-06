@@ -79,7 +79,6 @@ import { EasingFunction } from '@itwin/core-common';
 import { EcefLocation } from '@itwin/core-common';
 import { EcefLocationProps } from '@itwin/core-common';
 import { ECSqlReader } from '@itwin/core-common';
-import { EdgeAppearanceOverrides } from '@itwin/core-common';
 import { EdgeArgs } from '@itwin/core-common';
 import { EdgeOptions } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
@@ -3925,15 +3924,6 @@ export interface GltfMeshPrimitive extends GltfProperty {
         CESIUM_primitive_outline?: {
             indices?: GltfId;
         };
-        EXT_mesh_primitive_edge_visibility?: {
-            visibility: GltfId;
-            silhouetteNormals?: GltfId;
-            material?: GltfId;
-            lineStrings?: Array<{
-                indices: GltfId;
-                material?: GltfId;
-            }>;
-        };
         KHR_draco_mesh_compression?: DracoMeshCompression;
         EXT_mesh_features?: MeshFeatures;
     };
@@ -6995,18 +6985,15 @@ export interface MeshArgs {
     isVolumeClassifier?: boolean;
     material?: RenderMaterial;
     normals?: OctEncodedNormal[];
-    points: MeshArgsPositions;
+    points: QPoint3dList | (Array<Point3d> & {
+        range: Range3d;
+    });
     textureMapping?: {
         texture: RenderTexture;
         uvParams: Point2d[];
     };
     vertIndices: number[];
 }
-
-// @public
-export type MeshArgsPositions = QPoint3dList | (Array<Point3d> & {
-    range: Range3d;
-});
 
 // @public
 export enum MessageBoxIconType {

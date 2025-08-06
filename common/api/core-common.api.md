@@ -2907,16 +2907,6 @@ export enum ECSqlValueType {
 }
 
 // @internal (undocumented)
-export interface EdgeAppearanceOverrides {
-    // (undocumented)
-    color?: ColorDef;
-    // (undocumented)
-    linePixels?: LinePixels;
-    // (undocumented)
-    width?: number;
-}
-
-// @internal (undocumented)
 export class EdgeArgs {
     // (undocumented)
     clear(): void;
@@ -6102,9 +6092,7 @@ export class MeshEdge {
 export class MeshEdges {
     constructor();
     // (undocumented)
-    appearance?: EdgeAppearanceOverrides;
-    // (undocumented)
-    polylineGroups: MeshPolylineGroup[];
+    polylines: MeshPolylineList;
     // (undocumented)
     silhouette: MeshEdge[];
     // (undocumented)
@@ -7137,17 +7125,17 @@ export const POLICY: unique symbol;
 
 // @internal (undocumented)
 export class PolylineEdgeArgs {
-    constructor(groups?: MeshPolylineGroup[]);
+    constructor(lines?: PolylineIndices[]);
     // (undocumented)
     clear(): void;
     // (undocumented)
-    groups?: MeshPolylineGroup[];
-    // (undocumented)
-    init(groups?: MeshPolylineGroup[]): boolean;
+    init(lines?: PolylineIndices[]): boolean;
     // (undocumented)
     get isValid(): boolean;
     // (undocumented)
-    get numGroups(): number;
+    lines?: PolylineIndices[];
+    // (undocumented)
+    get numLines(): number;
 }
 
 // @public
