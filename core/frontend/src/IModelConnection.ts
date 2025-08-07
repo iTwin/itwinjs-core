@@ -984,12 +984,10 @@ export namespace IModelConnection {
       const getUnloadedModelIds = () => modelIds.filter((modelId) => !modelExtents.some((loadedExtent) => loadedExtent.id === modelId));
 
       let remainingModelIds = getUnloadedModelIds();
-      if (remainingModelIds.length > 0) {
-        for (const modelId of remainingModelIds) {
-          const modelExtent = this._loadedExtents.find((extent) => modelId === extent.id);
-          if (modelExtent) {
-            modelExtents.push(modelExtent);
-          }
+      for (const modelId of remainingModelIds) {
+        const modelExtent = this._loadedExtents.find((extent) => modelId === extent.id);
+        if (modelExtent) {
+          modelExtents.push(modelExtent);
         }
       }
 
