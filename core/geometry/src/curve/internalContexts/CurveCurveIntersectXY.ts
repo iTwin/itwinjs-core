@@ -582,7 +582,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         let bezier: BezierCurve3dH | undefined;
         for (let spanIndex = 0; ; spanIndex++) {
           bezier = cpB.getSaturatedBezierSpan3dH(spanIndex, bezier);
-          if (!bezier) break;
+          if (!bezier)
+            break;
           if (this._worldToLocalPerspective)
             bezier.tryMultiplyMatrix4dInPlace(this._worldToLocalPerspective);
           else if (this._worldToLocalAffine)

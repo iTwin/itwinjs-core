@@ -1111,6 +1111,19 @@ export class ClipUtilities {
     }
     return UnionOfConvexClipPlaneSets.createConvexSets(newClippers);
   }
+  /**
+   * Creates clippers for regions closest to the children of a curve chain.
+   * @param curveChain A curve chain; xy-only (z-coordinate is ignored). Must have at least 2 children.
+   * @param strokeOptions Optional stroke options to control the sampling of the curve chain.
+   * @param distanceTol Optional distance tolerance to use when comparing points; default is Geometry.smallMetricDistance.
+   * @returns An array of UnionOfConvexClipPlaneSets where each member representing a union of convex regions closest to
+   * the children of a curve chain, or undefined if the input is invalid.
+   */
+  // public static createClippersForRegionsClosestToCurvePrimitivesXY(
+  //   curveChain: CurveChain, strokeOptions?: StrokeOptions, distanceTol: number = Geometry.smallMetricDistance,
+  // ): UnionOfConvexClipPlaneSets[] | undefined {
+  //   return Voronoi.createClippersForRegionsClosestToCurvePrimitivesXY(curveChain, strokeOptions, distanceTol);
+  // }
 }
 function moveFragments(
   fragments: GrowableXYZArray[],

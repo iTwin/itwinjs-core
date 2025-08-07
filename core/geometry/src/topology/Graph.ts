@@ -1062,10 +1062,12 @@ export class HalfEdge implements HalfEdgeUserData {
    * @param announceSkipped optional function that is called at each edge that is skipped.
    * @return whether a super face was found. Specifically, if a vertex loop has all edges with `skipMask` set, the return value is `false`.
    */
-  public announceEdgesInSuperFace(skipEdge: HalfEdgeMask | HalfEdgeToBooleanFunction, announceEdge: NodeFunction, announceSkipped?: NodeFunction): boolean {
+  public announceEdgesInSuperFace(
+    skipEdge: HalfEdgeMask | HalfEdgeToBooleanFunction, announceEdge: NodeFunction, announceSkipped?: NodeFunction,
+  ): boolean {
     const maxIter = 10000; // safeguard against infinite loops
     let iter = 0;
-    const mySkipEdge : HalfEdgeToBooleanFunction = skipEdge instanceof Function ? skipEdge : (he: HalfEdge) => he.isMaskSet(skipEdge);
+    const mySkipEdge: HalfEdgeToBooleanFunction = skipEdge instanceof Function ? skipEdge : (he: HalfEdge) => he.isMaskSet(skipEdge);
     const findNextNodeAroundVertex = (he: HalfEdge): HalfEdge | undefined => {
       let vNode = he;
       do {
