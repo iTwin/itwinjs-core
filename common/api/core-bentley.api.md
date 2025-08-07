@@ -586,10 +586,10 @@ export abstract class ErrorCategory extends StatusCategory {
     error: boolean;
 }
 
-// @beta
+// @internal
 export function expectDefined<T>(value: T | undefined, message?: string): T;
 
-// @beta
+// @internal
 export function expectNotNull<T>(value: T | null, message?: string): T;
 
 // @public
