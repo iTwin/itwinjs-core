@@ -10,14 +10,11 @@ import { CurveChainWireOffsetContext } from "../curve/internalContexts/PolygonOf
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
-import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
+import { Geometry } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { UVSurface } from "../geometry3d/GeometryHandler";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { Matrix3d } from "../geometry3d/Matrix3d";
-import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
-import { PlaneOps } from "../geometry3d/PlaneOps";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../geometry3d/PolygonOps";
 import { Range2d, Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
@@ -398,71 +395,6 @@ export class GeometryCoreTestIO {
         this.captureGeometry(collection, LineString3d.create(corners), dx, dy, dz);
       }
     }
-  }
-  public static createAndCaptureLoopWithNormal(
-    collection: GeometryQuery[],
-    numSides: number,
-    center: Point3d | Point3d[],
-    normal: Vector3d,
-    showNormal: boolean,
-    a: number,
-    dx: number = 0,
-    dy: number = 0,
-    dz: number = 0,
-  ): void {
-    if (Array.isArray(center)) {
-      for (const c of center)
-        this.createAndCaptureXYMarker(collection, numSides, c, a, dx, dy, dz);
-      return;
-    }
-    const axes = Matrix3d.createRigidViewAxesZTowardsEye(normal.x, normal.y, normal.z);
-    const frame = Transform.createOriginAndMatrix(center.plusXYZ(dx, dy, dz), axes);
-    if (numSides < 3)
-      numSides = 3;
-    if (numSides > 3) {
-      const linestring = LineString3d.create();
-      const radiansStep = Math.PI * 2 / numSides;
-      for (let i = 0; i < numSides; i++) {
-        const radians = i * radiansStep;
-        const u = a * Math.cos(radians);
-        const v = a * Math.sin(radians);
-        linestring.addPoint(frame.multiplyXYZ(u, v, 0));
-      }
-      linestring.addClosurePoint();
-      collection.push(Loop.create(linestring));
-    } else {
-      const arc = Arc3d.createXYZXYZXYZ(0, 0, 0, a, 0, 0, 0, a, 0);
-      arc.tryTransformInPlace(frame);
-      collection.push(Loop.create(arc));
-    }
-    if (showNormal)
-      collection.push(LineSegment3d.create(center, center.plusScaled(normal, 1 / normal.magnitude())));
-  }
-  public static createAndCaptureLoopOnPlane(
-    collection: GeometryQuery[],
-    numSides: number,
-    plane: PlaneAltitudeEvaluator | Plane3dByOriginAndUnitNormal | Array<PlaneAltitudeEvaluator | Plane3dByOriginAndUnitNormal>,
-    a: number,
-    showNormal: boolean = false,
-    dx: number = 0,
-    dy: number = 0,
-    dz: number = 0,
-  ): void {
-    if (Array.isArray(plane)) {
-      for (const p of plane)
-        this.createAndCaptureLoopOnPlane(collection, numSides, p, a, showNormal, dx, dy, dz);
-      return;
-    }
-    let center: Point3d;
-    let normal: Vector3d;
-    if (plane instanceof Plane3dByOriginAndUnitNormal) {
-      center = plane.getOriginRef().clone();
-      normal = plane.getNormalRef().clone();
-    } else {
-      center = PlaneOps.closestPointToOrigin(plane);
-      normal = PlaneOps.planeNormal(plane);
-    }
-    this.createAndCaptureLoopWithNormal(collection, numSides, center, normal, showNormal, a, dx, dy, dz);
   }
   /**
    * Create edges of a range.

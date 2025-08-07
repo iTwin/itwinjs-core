@@ -657,13 +657,12 @@ describe("Voronoi", () => {
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 0.5;
     const clippers = Voronoi.createClippersForRegionsClosestToCurvePrimitivesXY(path, strokeOptions)!;
-    if (ck.testDefined(clippers)) {
-      for (const clipperUnions of clippers)
-        for (const clipper of clipperUnions.convexSets)
-          GeometryCoreTestIO.createAndCaptureLoopOnPlane(allGeometry, 4, clipper.clipPlanes, 1, true);
-      // GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(voronoi));
+    if (ck.testDefined(clippers))
       ck.testCoordinate(clippers.length, path.children.length, "Voronoi should have 3 faces");
-    }
+    const clippedCurves: AnyCurve[][] = [];
+    for (const clipperUnions of clippers)
+      clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
+    comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "ColinearCurveChain");
     expect(ck.getNumErrors()).toBe(0);
