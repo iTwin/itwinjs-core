@@ -933,7 +933,7 @@ describe("TxnManager", () => {
       expect(imodel.txns.hasPendingTxns).to.be.false;
       expect(imodel.txns.hasUnsavedChanges).to.be.true;
 
-      imodel.txns.deleteAllTxns();
+      imodel[_nativeDb].deleteAllTxns();
       expect(imodel.txns.hasLocalChanges).to.be.false;
 
       imodel.elements.insertElement(props);
@@ -942,7 +942,7 @@ describe("TxnManager", () => {
       expect(imodel.txns.hasPendingTxns).to.be.true;
       expect(imodel.txns.hasUnsavedChanges).to.be.false;
 
-      imodel.txns.deleteAllTxns();
+      imodel[_nativeDb].deleteAllTxns();
       expect(imodel.txns.hasLocalChanges).to.be.false;
 
       imodel.elements.insertElement(props);
@@ -952,7 +952,7 @@ describe("TxnManager", () => {
       expect(imodel.txns.hasPendingTxns).to.be.true;
       expect(imodel.txns.hasUnsavedChanges).to.be.true;
 
-      imodel.txns.deleteAllTxns();
+      imodel[_nativeDb].deleteAllTxns();
       expect(imodel.txns.hasLocalChanges).to.be.false;
     });
 
@@ -965,7 +965,7 @@ describe("TxnManager", () => {
       assert.isDefined(imodel.elements.tryGetElement(elId));
 
       // Delete all txns
-      imodel.txns.deleteAllTxns();
+      imodel[_nativeDb].deleteAllTxns();
 
       // Close and reopen the briefcase
       imodel.close();
@@ -984,7 +984,7 @@ describe("TxnManager", () => {
       assert.isDefined(imodel.elements.tryGetElement(elId));
 
       // Clear all txns
-      imodel.txns.clearAllTxns();
+      imodel[_nativeDb].clearAllTxns();
 
       // Close and reopen the briefcase
       imodel.close();
@@ -1002,7 +1002,7 @@ describe("TxnManager", () => {
       imodel.saveChanges();
       expect(imodel.txns.isUndoPossible).to.be.true;
 
-      imodel.txns.deleteAllTxns();
+      imodel[_nativeDb].deleteAllTxns();
       expect(imodel.txns.isUndoPossible).to.be.false;
 
       imodel.elements.insertElement(props);
@@ -1010,7 +1010,7 @@ describe("TxnManager", () => {
       imodel.txns.reverseSingleTxn();
       expect(imodel.txns.isRedoPossible).to.be.true;
 
-      imodel.txns.deleteAllTxns();
+      imodel[_nativeDb].deleteAllTxns();
       expect(imodel.txns.isRedoPossible).to.be.false;
     });
   });
