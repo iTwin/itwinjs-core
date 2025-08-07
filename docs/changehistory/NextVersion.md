@@ -11,6 +11,7 @@ Table of contents:
   - [Google Photorealistic 3D Tiles support](#google-photorealistic-3d-tiles-support)
   - [Station formatting enhancements](#station-formatting-enhancements)
     - [Examples](#examples)
+  - [Coordinate KindOfQuantity support](#coordinate-kindofquantity-support)
   - [Text changes and styling](#text-changes-and-styling)
     - [Persisting text](#persisting-text)
     - [Drawing scale](#drawing-scale)
@@ -50,6 +51,30 @@ The `stationBaseFactor` property allows for non-standard station intervals that 
 | 3                 | 2                 | 1055.5 | 2000             | 0+1055.50 |
 
 This enhancement enables more flexible station formatting for applications that require custom station intervals, such as specialized surveying or engineering workflows.
+
+## Coordinate KindOfQuantity support
+
+The [QuantityFormatter]($frontend) now supports the `AecUnits.LENGTH_COORDINATE` KindOfQuantity for coordinate formatting. This provides better schema integration and consistency with other iTwin applications when formatting coordinate values.
+
+The default [QuantityTypeFormatsProvider]($frontend) has been updated to include format properties for `AecUnits.LENGTH_COORDINATE`, ensuring coordinate formatting is available out of the box without requiring additional schema configuration.
+
+Previously, coordinate formatting was only available through `QuantityType.Coordinate`. With this enhancement, applications can now use the KindOfQuantity-based approach:
+
+```ts
+// Using KindOfQuantity for coordinate formatting
+const formatSpec = IModelApp.quantityFormatter.getSpecsByName("AecUnits.LENGTH_COORDINATE");
+if (formatSpec) {
+  const formattedCoordinate = IModelApp.quantityFormatter.formatQuantity(coordinateValue, formatSpec.formatterSpec);
+}
+```
+
+This change aligns with the broader migration from `QuantityType` enum values to KindOfQuantity-based formatting, providing:
+
+- Schema-based format definitions that can be customized per iModel
+- Consistent formatting behavior across iTwin applications
+- Better integration with the FormatsProvider system
+
+For migration guidance, see the [Quantity Formatting documentation](../learning/frontend/QuantityFormatting.md#migration-from-quantitytype-to-kindofquantity).
 
 ## Text changes and styling
 
