@@ -40,6 +40,10 @@ export type ConvexClipPlaneSetProps = ClipPlaneProps[];
 export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
   /** Value acting as "at infinity" for coordinates along a ray. */
   public static readonly hugeVal = 1e37;
+  /** (property accessor)  Return the (reference to the) array of `ConvexClipPlaneSet` */
+  public get clipPlanes(): ClipPlane[] {
+    return this._planes;
+  }
   /** Planes that define the convex set. */
   private _planes: ClipPlane[];
   // private _parity: number;   <--- Not yet used
@@ -800,7 +804,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     const plane = Plane3dByOriginAndUnitNormal.createXYPlane();
     const visitor = convexMesh instanceof Polyface ? convexMesh.createVisitor(0) : convexMesh;
     visitor.setNumWrap(0);
-    for (visitor.reset(); visitor.moveToNextFacet(); ) {
+    for (visitor.reset(); visitor.moveToNextFacet();) {
       if (undefined !== PolygonOps.areaNormalGo(visitor.point, normal)) {
         normal.scaleInPlace(scale);
         if (undefined !== Plane3dByOriginAndUnitNormal.create(visitor.point.front()!, normal, plane))

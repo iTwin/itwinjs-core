@@ -7,15 +7,13 @@
  */
 
 import { CloneFunction, Dictionary, OrderedComparator } from "@itwin/core-bentley";
+import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { Arc3d } from "../curve/Arc3d";
 import { CurveChain } from "../curve/CurveCollection";
 import { CurveCurve } from "../curve/CurveCurve";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
-import { AnyRegion } from "../curve/CurveTypes";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
-import { Loop } from "../curve/Loop";
-import { RegionBinaryOpType, RegionOps } from "../curve/RegionOps";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry } from "../Geometry";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
@@ -27,7 +25,9 @@ import { SmallSystem } from "../numerics/SmallSystem";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { HalfEdgeGraphMerge, HalfEdgeGraphOps } from "./Merging";
 import { Triangulator } from "./Triangulation";
-import { CurveLocationDetailPair } from "../curve/CurveLocationDetail";
+import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
+import { HalfEdgeGraphSearch } from "./HalfEdgeGraphSearch";
+import { ClipPlane } from "../clipping/ClipPlane";
 
 interface Line {
   start: XAndY;
@@ -330,10 +330,14 @@ export class Voronoi {
     const bisectorStart = Point3d.createAdd2Scaled(midPoint, 1, perp, -scale);
     const bisectorEnd = Point3d.createAdd2Scaled(midPoint, 1, perp, scale);
     const bisector: Line = { start: bisectorStart, end: bisectorEnd };
-    const intersection = voronoiBoundary.intersect(bisector);
-    if (!intersection || intersection.length <= 1)
+    const intersections = voronoiBoundary.intersect(bisector);
+    if (!intersections || intersections.length <= 1)
       return undefined;
-    return { start: intersection[0], end: intersection[1] }; // limit bisector to the voronoi boundary
+    // remove duplicate intersections
+    const uniqueIntersections = Array.from(new Set(intersections.map(p => `${p.x},${p.y}`)))
+      .map(p => p.split(',').map(Number))
+      .map(p => Point3d.create(p[0], p[1]));
+    return { start: uniqueIntersections[0], end: uniqueIntersections[1] }; // limit bisector to the voronoi boundary
   }
   // create a Voronoi diagram for a graph with colinear points
   private static createVoronoiForColinearPoints(graph: HalfEdgeGraph): HalfEdgeGraph | undefined {
@@ -387,11 +391,100 @@ export class Voronoi {
       return graph ? Voronoi.createVoronoi(graph) : undefined;
     }
   }
+  private static findSuperFaceStart(
+    graph: HalfEdgeGraph, voronoiDiagram: HalfEdgeGraph, superFaceEdgeMask: HalfEdgeMask,
+  ): HalfEdge | undefined {
+    let start: HalfEdge | undefined;
+    voronoiDiagram.announceEdges((_voronoi: HalfEdgeGraph, seed: HalfEdge) => {
+      if (seed.isMaskSet(HalfEdgeMask.EXTERIOR) || seed.isMaskSet(superFaceEdgeMask))
+        return true; // skip exterior faces or previously visited super face edges
+      if (seed.edgeMate.isMaskSet(HalfEdgeMask.EXTERIOR) ||
+        graph.allHalfEdges[seed.faceTag].edgeTag !== graph.allHalfEdges[seed.edgeMate.faceTag].edgeTag) {
+        start = seed;
+        return false;
+      }
+      return true;
+    });
+    return start;
+  }
+  private static findSuperFace(graph: HalfEdgeGraph, start: HalfEdge, superFaceEdgeMask: HalfEdgeMask): HalfEdge[] {
+    const superFace: HalfEdge[] = [];
+    const childIndex = graph.allHalfEdges[start.faceTag].edgeTag
+    start.announceEdgesInSuperFace(
+      (node: HalfEdge) => {
+        if (node.edgeMate.isMaskSet(HalfEdgeMask.EXTERIOR) ||
+          (graph.allHalfEdges[node.faceTag].edgeTag === childIndex &&
+            graph.allHalfEdges[node.edgeMate.faceTag].edgeTag !== childIndex)) {
+          return false;
+        }
+        return true;
+      },
+      (node: HalfEdge) => {
+        superFace.push(node);
+        node.setMask(superFaceEdgeMask);
+      }
+    );
+    return superFace;
+  }
+  private static generateClippersFromSuperFaces(
+    superFaces: HalfEdge[][], superFaceEdgeMask: HalfEdgeMask, superFaceOutsideMask: HalfEdgeMask,
+  ): UnionOfConvexClipPlaneSets[] | undefined {
+    const allClippers: UnionOfConvexClipPlaneSets[] = [];
+    for (const superFace of superFaces) {
+      superFace[0].announceEdgesInSuperFace(
+        (node: HalfEdge) => {
+          if (!node.isMaskSet(superFaceEdgeMask))
+            return true;
+          return false;
+        },
+        (node: HalfEdge) => { node.edgeMate.setMask(superFaceOutsideMask); }
+      );
+      const convexFacesInSuperFace: HalfEdge[] = [];
+      HalfEdgeGraphSearch.exploreComponent(
+        superFace[0], HalfEdgeMask.VISITED, superFaceOutsideMask, undefined, convexFacesInSuperFace,
+      );
+      superFace[0].announceEdgesInSuperFace(
+        (node: HalfEdge) => {
+          if (!node.isMaskSet(superFaceEdgeMask))
+            return true;
+          return false;
+        },
+        (node: HalfEdge) => { node.edgeMate.clearMask(superFaceOutsideMask); }
+      );
+      const clippersOfSuperFace: ConvexClipPlaneSet[] = [];
+      for (const face of convexFacesInSuperFace) {
+        const clipPlanesOfConvexFace: ClipPlane[] = [];
+        const clipperOfConvexFace: ConvexClipPlaneSet = ConvexClipPlaneSet.createEmpty();
+        let edge = face;
+        let nextEdge = edge.faceSuccessor;
+        do {
+          if (edge.isMaskSet(HalfEdgeMask.BOUNDARY_EDGE)) {
+            edge = nextEdge;
+            nextEdge = nextEdge.faceSuccessor;
+            continue; // skip boundary edges
+          }
+          const edgeVector = Vector3d.createStartEnd(edge.getPoint3d(), nextEdge.getPoint3d());
+          const normal = Vector3d.unitZ().crossProduct(edgeVector);
+          const clipPlane = ClipPlane.createNormalAndPoint(normal, edge.getPoint3d());
+          if (!clipPlane) {
+            return undefined; // failed to create clip plane
+          }
+          clipPlanesOfConvexFace.push(clipPlane);
+          edge = nextEdge;
+          nextEdge = nextEdge.faceSuccessor;
+        } while (edge !== face)
+        ConvexClipPlaneSet.createPlanes(clipPlanesOfConvexFace, clipperOfConvexFace);
+        clippersOfSuperFace.push(clipperOfConvexFace);
+      }
+      allClippers.push(UnionOfConvexClipPlaneSets.createConvexSets(clippersOfSuperFace));
+    }
+    return allClippers;
+  }
   // find the Voronoi diagram for a set of points with child indices and
-  // then combine Voronoi faces for each child index into a single region
-  private static createVoronoiFromPointsWithIndices(
+  // then from it, generate a set of convex clippers for each child
+  private static createClippersForPointsWithIndices(
     pointsWithIndices: [Point3d, number][], numChildren: number, distanceTol: number,
-  ): AnyRegion[] | undefined {
+  ): UnionOfConvexClipPlaneSets[] | undefined {
     if (!pointsWithIndices || pointsWithIndices.length < 2)
       return undefined;
     const comparePoints: OrderedComparator<Point3d> = (p0: Point3d, p1: Point3d) => {
@@ -423,6 +516,7 @@ export class Voronoi {
     const pointToIndexDic = new Dictionary<Point3d, number>(comparePoints, clonePoint);
     for (const [point, index] of pointsWithIndices)
       pointToIndexDic.insert(point, index);
+    // generate initial voronoi diagram
     let voronoiDiagram: HalfEdgeGraph | undefined;
     let graph: HalfEdgeGraph | undefined;
     if (PolylineOps.isColinear(Array.from(pointToIndexDic.keys()), distanceTol, true)) {
@@ -448,32 +542,28 @@ export class Voronoi {
     }
     if (!voronoiDiagram)
       return undefined;
-    // a 2D array where row index is equal child index (stored in edgeTags of graph nodes) and each row stores loops;
-    // all loops in a row represent all faces of the Voronoi diagram that have "faceTag = row index = child index"
-    const loops: Loop[][] = new Array(numChildren).fill(null).map(() => []);
-    const allFaces = voronoiDiagram.collectFaceLoops();
-    for (const face of allFaces) {
-      if (face.isMaskSet(HalfEdgeMask.EXTERIOR))
-        continue; // skip exterior face
-      const childIndex = graph.allHalfEdges[face.faceTag as number].edgeTag;
-      const points = face.collectAroundFace().map((node) => node.getPoint3d()) as Point3d[];
-      loops[childIndex].push(Loop.createPolygon(points));
+    // set super face related masks to the voronoi diagram
+    const SUPER_FACE_EDGE_MASK = voronoiDiagram.grabMask();
+    const SUPER_FACE_OUTSIDE_MASK = voronoiDiagram.grabMask();
+    voronoiDiagram.clearMask(SUPER_FACE_EDGE_MASK);
+    const superFaces: HalfEdge[][] = [];
+    for (let i = 0; i < numChildren; i++) {
+      const start = Voronoi.findSuperFaceStart(graph, voronoiDiagram, SUPER_FACE_EDGE_MASK);
+      if (!start)
+        return undefined;
+      superFaces.push(Voronoi.findSuperFace(graph, start, SUPER_FACE_EDGE_MASK));
     }
-    // combine loops for each child index into a single region
-    const combinedRegions: AnyRegion[] = [];
-    for (let childIndex = 0; childIndex < numChildren; childIndex++) {
-      let loopOut: AnyRegion | undefined;
-      for (const loop of loops[childIndex])
-        loopOut = RegionOps.regionBooleanXY(loop, loopOut, RegionBinaryOpType.Union);
-      if (loopOut === undefined)
-        return undefined; // failed to create a region for this child index
-      const signedLoops = RegionOps.constructAllXYRegionLoops(loopOut);
-      if (signedLoops.length === 0)
-        return undefined; // failed to create signed loops for this child index
-      // @dave: not sure below line is correct but works fine
-      combinedRegions.push(signedLoops[0].negativeAreaLoops[0]);
-    }
-    return combinedRegions;
+    // modify voronoi graph to have only convex faces within each super face
+    const success = Triangulator.triangulateAllInteriorFaces(voronoiDiagram);
+    console.log(`success: ${success}`);
+    HalfEdgeGraphOps.expandConvexFaces(voronoiDiagram, SUPER_FACE_EDGE_MASK);
+
+    // generate clippers from super faces
+    voronoiDiagram.clearMask(HalfEdgeMask.VISITED);
+    const allClippers = Voronoi.generateClippersFromSuperFaces(superFaces, SUPER_FACE_EDGE_MASK, SUPER_FACE_OUTSIDE_MASK);
+    voronoiDiagram.dropMask(SUPER_FACE_EDGE_MASK);
+    voronoiDiagram.dropMask(SUPER_FACE_OUTSIDE_MASK);
+    return allClippers;
   }
   // stoke child curve from start and end to get sample points; skip the first and last points on the child curve
   // each sample point is a tuple of [Point3d, childIndex]
@@ -496,16 +586,16 @@ export class Voronoi {
     return true;
   }
   /**
-   * Creates a Voronoi diagram from a curve chain.
-   * @param curveChain A curve chain; xy-only (z-coordinate is ignored).
+   * Creates clippers for regions closest to the children of a curve chain.
+   * @param curveChain A curve chain; xy-only (z-coordinate is ignored). Must have at least 2 children.
    * @param strokeOptions Optional stroke options to control the sampling of the curve chain.
    * @param distanceTol Optional distance tolerance to use when comparing points; default is Geometry.smallMetricDistance.
-   * @returns An array of AnyRegion where each region representing a face of Voronoi diagram corresponding a child of curve
-   * chain, or undefined if the input is invalid.
+   * @returns An array of UnionOfConvexClipPlaneSets where each member representing a union of convex regions closest to
+   * the children of a curve chain, or undefined if the input is invalid.
    */
-  public static createVoronoiFromCurveChain(
+  public static createClippersForRegionsClosestToCurvePrimitivesXY(
     curveChain: CurveChain, strokeOptions?: StrokeOptions, distanceTol: number = Geometry.smallMetricDistance,
-  ): AnyRegion[] | undefined {
+  ): UnionOfConvexClipPlaneSets[] | undefined {
     const children = curveChain.children;
     if (!children || children.length <= 1)
       return undefined;
@@ -561,7 +651,7 @@ export class Voronoi {
       if (!addIntersectionPoints(circle, children[i], i))
         return undefined;
     }
-    return Voronoi.createVoronoiFromPointsWithIndices(pointsWithIndices, numChildren, distanceTol);
+    return Voronoi.createClippersForPointsWithIndices(pointsWithIndices, numChildren, distanceTol);
   }
 }
 
@@ -615,3 +705,5 @@ class VoronoiBoundary {
     return intersections;
   }
 }
+
+
