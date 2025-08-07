@@ -18,7 +18,6 @@ import {
   ChannelControl,
   DictionaryModel,
   IModelHost,
-  PhysicalElement,
   SpatialCategory,
   SqliteChangesetReader
 } from "../../core-backend";
