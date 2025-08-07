@@ -95,6 +95,9 @@ describe("IModelConnection.Models", () => {
 
       const models = new IModelConnection.Models(iModelConnectionFake);
 
+      IModelConnection.onOpen.raiseEvent(iModelConnectionFake);
+      expect(models["_geometryChangedListener"]).to.not.be.undefined;
+
       expect(models["_loadedExtents"]).to.be.empty;
 
       const firstResult = await models.queryExtents(modelIds);
@@ -115,6 +118,9 @@ describe("IModelConnection.Models", () => {
       onModelGeometryChanged.raiseEvent([{ id: modelIds[0] }, { id: modelIds[1] }]);
       expect(models["_loadedExtents"].length).to.be.equal(1);
       expect(models["_loadedExtents"][0].id).to.be.equal(modelIds[2]);
+
+      IModelConnection.onClose.raiseEvent(iModelConnectionFake);
+      expect(models["_geometryChangedListener"]).to.be.undefined;
     });
 
     it("should not cache extents with invalid Id64", async () => {

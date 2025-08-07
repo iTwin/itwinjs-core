@@ -14,7 +14,7 @@ import {
   Cartographic, CodeProps, CodeScopeSpec, CodeSpec, CodeSpecProperties, DbQueryRequest, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
-  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams, Placement, Placement2d,
+  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelIdAndGeometryGuid, ModelProps, ModelQueryParams, Placement, Placement2d,
   Placement3d, QueryBinder, QueryOptions, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
   SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ViewDefinitionProps,
   ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
@@ -847,6 +847,7 @@ export namespace IModelConnection {
       AND ECInstanceId NOT IN(SELECT ECInstanceId FROM GeometricModels)`;
 
     private _loadedExtents: ModelExtentsProps[] = [];
+    private _geometryChangedListener?: (changes: readonly ModelIdAndGeometryGuid[]) => void;
 
     private _loaded = new Map<string, ModelState>();
 
@@ -860,11 +861,22 @@ export namespace IModelConnection {
 
     /** @internal */
     constructor(private _iModel: IModelConnection) {
-      if (this._iModel.isBriefcaseConnection()) {
-        this._iModel.txns.onModelGeometryChanged.addListener((changes) => {
-          this._loadedExtents = this._loadedExtents.filter((extent) => !changes.some((change) => change.id === extent.id));
-        });
-      }
+      IModelConnection.onOpen.addListener(() => {
+        if (this._iModel.isBriefcaseConnection()) {
+          this._geometryChangedListener = (changes) => {
+            this._loadedExtents = this._loadedExtents.filter((extent) => !changes.some((change) => change.id === extent.id));
+          };
+
+          this._iModel.txns.onModelGeometryChanged.addListener(this._geometryChangedListener);
+        }
+      });
+
+      IModelConnection.onClose.addListener(() => {
+        if (this._iModel.isBriefcaseConnection() && this._geometryChangedListener) {
+          this._iModel.txns.onModelGeometryChanged.removeListener(this._geometryChangedListener);
+          this._geometryChangedListener = undefined;
+        }
+      });
     }
 
     /** The Id of the [RepositoryModel]($backend). */
