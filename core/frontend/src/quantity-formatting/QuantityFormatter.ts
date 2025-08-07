@@ -929,7 +929,7 @@ export class QuantityFormatter implements UnitsProvider {
    * @return a formatted string.
    */
   public formatQuantity(magnitude: number, formatSpec?: FormatterSpec): string;
-  // eslint-disable-next-line @typescript-eslint/promise-function-async
+   
   public formatQuantity(args: number | object, spec?: FormatterSpec): string | Promise<string> {
     if (typeof args === "number") {
       /** Format a quantity value. Default FormatterSpec implementation uses Formatter.formatQuantity. */
@@ -977,7 +977,7 @@ export class QuantityFormatter implements UnitsProvider {
    * @return QuantityParseResult object containing either the parsed value or an error value if unsuccessful.
    */
   public parseToQuantityValue(inString: string, parserSpec?: ParserSpec): QuantityParseResult;
-  // eslint-disable-next-line @typescript-eslint/promise-function-async
+   
   public parseToQuantityValue(args: string | object, parserSpec?: ParserSpec): QuantityParseResult | Promise<QuantityParseResult> {
     if (typeof args === "string") {
       /** Parse a quantity value. Default ParserSpec implementation uses ParserSpec.parseToQuantityValue. */
