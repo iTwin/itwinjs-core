@@ -24,7 +24,6 @@ import {
 import { HubMock } from "../../internal/HubMock";
 import { RebaseChangesetConflictArgs, TxnArgs } from "../../internal/ChangesetConflictArgs";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
-import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
 import { Point3d } from "@itwin/core-geometry";
 chai.use(chaiAsPromised);
 
