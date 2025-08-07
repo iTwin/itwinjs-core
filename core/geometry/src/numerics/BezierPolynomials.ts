@@ -743,12 +743,12 @@ export class UnivariateBezier extends BezierCoffs {
         }
       }
       if (numNewtonOK)
-        continue; // crossing and convergence
+        continue; // crossing and convergence; proceed to deflate order-1 Bezier
       if (numCrossing === 0)
-        return roots; // no crossing, no root
-      return roots; // crossing but failed to converge. Local min? Glacial convergence?
+        break; // no crossing, no root; further deflation impossible
+      break; // crossing, no root. Local min? Glacial convergence?
     }
-    return undefined;
+    return roots.length > 0 ? roots : undefined;
   }
 }
 /** Bezier polynomial specialized to order 2 (2 coefficients, straight line function)\
