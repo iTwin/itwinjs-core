@@ -216,7 +216,7 @@ export abstract class IModelConnection extends IModel {
   /** @internal */
   protected constructor(iModelProps: IModelConnectionProps) {
     super(iModelProps);
-    super.initialize(expectDefined(iModelProps.name), iModelProps);
+    super.initialize(iModelProps.name ?? "<undefined>", iModelProps);
     this.models = new IModelConnection.Models(this);
     this.elements = new IModelConnection.Elements(this);
     this.codeSpecs = new IModelConnection.CodeSpecs(this);
