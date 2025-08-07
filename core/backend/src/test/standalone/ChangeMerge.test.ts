@@ -501,7 +501,7 @@ describe("Change merge method", () => {
     b1.close();
     b2.close();
   });
-  it.only("delete instance (data conflict)", async () => {
+  it("delete instance (data conflict)", async () => {
     const b1 = await ctx.openB1(true /* = noLock */);
     const b2 = await ctx.openB2(true /* = noLock */);
 
