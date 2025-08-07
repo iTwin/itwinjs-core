@@ -7,7 +7,7 @@
  */
 
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
-import { CategoryDescription } from "./content/Category";
+import { CategoryDescription } from "./content/Category.js";
 import {
   IContentVisitor,
   ProcessFieldHierarchiesProps,
@@ -20,10 +20,10 @@ import {
   StartItemProps,
   StartStructProps,
   traverseContentItem,
-} from "./content/ContentTraverser";
-import { Descriptor } from "./content/Descriptor";
-import { Item } from "./content/Item";
-import { PropertyValueFormat } from "./content/TypeDescription";
+} from "./content/ContentTraverser.js";
+import { Descriptor } from "./content/Descriptor.js";
+import { Item } from "./content/Item.js";
+import { PropertyValueFormat } from "./content/TypeDescription.js";
 
 /**
  * Data structure for storing element properties information in a simplified format.
@@ -351,6 +351,7 @@ class ElementPropertiesBuilder implements IContentVisitor {
   public processPrimitiveValue(props: ProcessPrimitiveValueProps): void {
     this._currentAppender.append(props.field.label, {
       type: "primitive",
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       value: props.displayValue?.toString() ?? "",
     });
   }

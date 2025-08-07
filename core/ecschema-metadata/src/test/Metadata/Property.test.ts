@@ -8,7 +8,7 @@ import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { DelayedPromiseWithProps } from "../../DelayedPromise";
 import { PrimitiveType, StrengthDirection } from "../../ECObjects";
-import { ECObjectsError } from "../../Exception";
+import { ECSchemaError } from "../../Exception";
 import { ECClass, MutableClass, StructClass } from "../../Metadata/Class";
 import { CustomAttribute } from "../../Metadata/CustomAttribute";
 import { EntityClass } from "../../Metadata/EntityClass";
@@ -25,6 +25,7 @@ import { PropertyType } from "../../PropertyTypes";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -162,7 +163,7 @@ describe("Property", () => {
         category: "TestSchema.NonExistentPropertyCategory",
       };
       await testProp.fromJSON(propertyJson);
-      await expect(testProp.category).to.be.rejectedWith(ECObjectsError, `The Property BadProp has a 'category' ("TestSchema.NonExistentPropertyCategory") that cannot be found.`);
+      await expect(testProp.category).to.be.rejectedWith(ECSchemaError, `The Property BadProp has a 'category' ("TestSchema.NonExistentPropertyCategory") that cannot be found.`);
 
     });
 
@@ -174,7 +175,7 @@ describe("Property", () => {
         kindOfQuantity: "TestSchema.NonExistentKindOfQuantity",
       };
       await testProp.fromJSON(propertyJson);
-      await expect(testProp.kindOfQuantity).to.be.rejectedWith(ECObjectsError, `The Property BadProp has a 'kindOfQuantity' ("TestSchema.NonExistentKindOfQuantity") that cannot be found.`);
+      await expect(testProp.kindOfQuantity).to.be.rejectedWith(ECSchemaError, `The Property BadProp has a 'kindOfQuantity' ("TestSchema.NonExistentKindOfQuantity") that cannot be found.`);
     });
   });
 
@@ -271,7 +272,7 @@ describe("Property", () => {
 
     it("Serialization with one custom attribute- only class name", async () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         name: "ValidProp",
         type: "PrimitiveProperty",
       };
@@ -286,7 +287,7 @@ describe("Property", () => {
     });
     it("Serialization with one custom attribute- additional properties", () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         name: "ValidProp",
         type: "PrimitiveProperty",
       };
@@ -303,7 +304,7 @@ describe("Property", () => {
     });
     it("Serialization with multiple custom attributes- only class name", async () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         name: "ValidProp",
         type: "PrimitiveProperty",
       };
@@ -320,7 +321,7 @@ describe("Property", () => {
     });
     it("Serialization with multiple custom attributes- additional properties", async () => {
       const propertyJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         name: "ValidProp",
         type: "PrimitiveProperty",
       };
@@ -366,9 +367,10 @@ describe("Property", () => {
 
     function getSchemaJson(customAttributeJson?: any) {
       return {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
         name: "TestSchema",
         version: "1.2.3",
+        alias: "ts",
         items: {
           ...customAttributeJson,
           testClass: {
@@ -926,7 +928,7 @@ describe("PrimitiveProperty", () => {
         typeName: "string",
       };
       expect(testProperty).to.exist;
-      await expect(testProperty.fromJSON(propertyJson)).to.be.rejectedWith(ECObjectsError);
+      await expect(testProperty.fromJSON(propertyJson)).to.be.rejectedWith(ECSchemaError);
     });
   });
 
@@ -1100,7 +1102,7 @@ describe("EnumerationProperty", () => {
         typeName: "ThisDoesNotMatch",
       };
       expect(testProperty).to.exist;
-      await expect(testProperty.fromJSON(propertyJson)).to.be.rejectedWith(ECObjectsError);
+      await expect(testProperty.fromJSON(propertyJson)).to.be.rejectedWith(ECSchemaError);
     });
   });
 
@@ -1211,7 +1213,7 @@ describe("StructProperty", () => {
         typeName: "ThisDoesNotMatch",
       };
       expect(testProperty).to.exist;
-      await expect(testProperty.fromJSON(propertyJson)).to.be.rejectedWith(ECObjectsError);
+      await expect(testProperty.fromJSON(propertyJson)).to.be.rejectedWith(ECSchemaError);
     });
   });
 

@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module AccuDraw
  */
-import { FormatType, Parser } from "@itwin/core-quantity";
+import { Parser } from "@itwin/core-quantity";
 import { AccuDraw, CompassMode, ItemField } from "../AccuDraw";
 import { ViewRect } from "../common/ViewRect";
 import { IModelApp } from "../IModelApp";
@@ -133,7 +133,6 @@ export class AccuDrawViewportUI extends AccuDraw {
     this._toolTipsSuspended = undefined;
   }
 
-
   private setDynamicKeyinStatus(item: ItemField): void {
     // This does nothing if keyin status is already dynamic...
     AccuDrawShortcuts.itemFieldCompletedInput(item);
@@ -149,14 +148,6 @@ export class AccuDrawViewportUI extends AccuDraw {
 
     const itemField = this._controls.itemFields[item];
     itemField.setSelectionRange(0, itemField.value.length);
-  }
-
-  private makeParserHappy(value: string, isAngle: boolean): string {
-    // TODO: Work around for default length parser not accepting output formatted with dash separator, ex. 20'-6"...
-    const parserSpec = (isAngle ? undefined : this.getLengthParser());
-    if (undefined === parserSpec)
-      return value;
-    return (FormatType.Fractional === parserSpec.format.type && -1 !== value.indexOf("'-") ? value.replaceAll("'-", "':") : value);
   }
 
   private evaluateExpression(operator: string, operandA: number, operandB: number): number {
@@ -191,7 +182,7 @@ export class AccuDrawViewportUI extends AccuDraw {
       return undefined; // Nothing to do...
 
     const operandAStr = currentValue.substring(0, operator);
-    const parseResultA = parserSpec.parseToQuantityValue(this.makeParserHappy(operandAStr, isAngle));
+    const parseResultA = parserSpec.parseToQuantityValue(operandAStr);
     if (!Parser.isParsedQuantity(parseResultA))
       return undefined; // First operand isn't valid, try to parse current value (which is also likely to fail)...
 
@@ -205,7 +196,7 @@ export class AccuDrawViewportUI extends AccuDraw {
       if (Number.isNaN(operandB))
         return operandAStr; // Second operand is invalid number, set value to first operand which is valid...
     } else {
-      const parseResultB = parserSpec.parseToQuantityValue(this.makeParserHappy(operandBStr, isAngle));
+      const parseResultB = parserSpec.parseToQuantityValue(operandBStr);
       if (!Parser.isParsedQuantity(parseResultB))
         return operandAStr; // Second operand is invalid quantity, set value to first operand which is valid...
       operandB = parseResultB.value;
@@ -225,16 +216,16 @@ export class AccuDrawViewportUI extends AccuDraw {
     const itemField = this._controls.itemFields[item];
     const currentValue = itemField.value;
 
-    // If current value has been deleted, unlock field and refresh for current cursor location...
+    // If value was cleared, unlock field and sync internal state to cursor location while preserving partial keyin status...
     if (0 === currentValue.length) {
-      this.updateFieldLock(item, false);
+      await this.processFieldInput(item, currentValue, false);
       IModelApp.toolAdmin.simulateMotionEvent();
       return;
     }
 
     const isAngle = (ItemField.ANGLE_Item === item);
     const expressionValue = this.parseExpression(currentValue, isAngle);
-    return this.processFieldInput(item, this.makeParserHappy(expressionValue ?? currentValue, isAngle), false);
+    return this.processFieldInput(item, expressionValue ?? currentValue, false);
   }
 
   private async acceptPartialInput(item: ItemField, forward?: boolean): Promise<void> {
@@ -243,13 +234,20 @@ export class AccuDrawViewportUI extends AccuDraw {
 
     const itemField = this._controls.itemFields[item];
     const currentValue = itemField.value;
+
+    // Accepting with cleared value needs to set state back to dynamic and sync field to internal state...
+    if (0 === currentValue.length && undefined === forward) {
+      this.setDynamicKeyinStatus(item);
+      return this.updateItemFieldValue(itemField, item);
+    }
+
     const isAngle = (ItemField.ANGLE_Item === item);
     const expressionValue = this.parseExpression(currentValue, isAngle);
 
     if (undefined === forward)
-      return AccuDrawShortcuts.itemFieldAcceptInput(item, this.makeParserHappy(expressionValue ?? currentValue, isAngle));
+      return AccuDrawShortcuts.itemFieldAcceptInput(item, expressionValue ?? currentValue);
 
-    return AccuDrawShortcuts.itemFieldNavigate(item, this.makeParserHappy(expressionValue ?? currentValue, isAngle), forward);
+    return AccuDrawShortcuts.itemFieldNavigate(item, expressionValue ?? currentValue, forward);
   }
 
   private acceptSavedValue(item: ItemField, next: boolean): void {
@@ -476,10 +474,8 @@ export class AccuDrawViewportUI extends AccuDraw {
   }
 
   private async onKeyboardEvent(ev: KeyboardEvent, isDown: boolean): Promise<void> {
-    if (ev.ctrlKey || ev.altKey || ev.metaKey) {
-      ev.preventDefault(); // Ignore qualifiers other than shift...
-      return;
-    }
+    if (ev.ctrlKey || ev.altKey || ev.metaKey)
+      return; // Ignore qualifiers other than shift...
 
     switch (ev.key) {
       case "Escape":
@@ -526,6 +522,7 @@ export class AccuDrawViewportUI extends AccuDraw {
     this._controls.overlay.remove();
     this._controls = undefined;
     this.unsuspendToolTips();
+    this.removedControlRect();
   }
 
   private createControlDiv(): HTMLDivElement {
@@ -548,7 +545,7 @@ export class AccuDrawViewportUI extends AccuDraw {
     if (isDynamic && item === this._expression?.item)
       this._expression = undefined; // Only valid when entering partial input...
 
-    itemField.style.caretColor = isDynamic ? itemField.style.backgroundColor : itemField.style.color;
+    itemField.style.caretColor = isDynamic ? "transparent" : itemField.style.color;
   }
 
   private updateItemFieldValue(itemField: HTMLInputElement, item: ItemField) {
@@ -634,6 +631,12 @@ export class AccuDrawViewportUI extends AccuDraw {
     return itemLock;
   }
 
+  /** Called after the controls have been removed from the view. */
+  protected removedControlRect(): void { }
+
+  /** Called after the position of the controls in the supplied view is updated. */
+  protected changedControlRect(_rect: ViewRect, _vp: ScreenViewport): void { }
+
   /** Use to override the position of the controls in the supplied view. */
   protected modifyControlRect(_rect: ViewRect, _vp: ScreenViewport): void { }
 
@@ -685,7 +688,7 @@ export class AccuDrawViewportUI extends AccuDraw {
     if (undefined === this._controls) {
       const overlay = vp.addNewDiv("accudraw-overlay", true, 35);
       const div = this.createControlDiv();
-      const is3dLayout = vp.view.is3d();
+      const is3dLayout = this.is3dCompass(vp);
       const isHorizontalLayout = props.horizontalArrangement;
 
       overlay.appendChild(div);
@@ -739,7 +742,7 @@ export class AccuDrawViewportUI extends AccuDraw {
       div.style.height = isHorizontalLayout ? `${itemHeight * props.rowSpacingFactor}px` : `${rowOffset}px`;
 
       this._controls = { overlay, div, itemFields, itemLocks };
-      this.updateControlVisibility(CompassMode.Polar === this.compassMode, vp.view.is3d());
+      this.updateControlVisibility(CompassMode.Polar === this.compassMode, this.is3dCompass(vp));
       this.setFocusItem(this._focusItem);
       this.suspendToolTips();
 
@@ -765,6 +768,9 @@ export class AccuDrawViewportUI extends AccuDraw {
 
     this._controls.div.style.left = `${controlRect.left}px`;
     this._controls.div.style.top = `${controlRect.top}px`;
+
+    this.changedControlRect(controlRect, vp);
+    return;
   }
 
   private get _isFocusHome(): boolean {
@@ -790,6 +796,14 @@ export class AccuDrawViewportUI extends AccuDraw {
   public override get hasInputFocus(): boolean {
     // Indicate when keyboard shortcuts can't be used (i.e. focus not at AccuDraw or Home) by changing compass to monochrome...
     return (this._isFocusHome || this._isFocusAccuDraw);
+  }
+
+  /** Get the item field that currently has input focus.
+   */
+  public override getFocusItem(): ItemField | undefined {
+    if (!this._isFocusAccuDraw)
+      return undefined;
+    return this._focusItem;
   }
 
   /** Request to set focus to the specified AccuDraw input field to start entering values.

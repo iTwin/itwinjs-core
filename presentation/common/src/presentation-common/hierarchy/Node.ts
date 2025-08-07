@@ -6,8 +6,8 @@
  * @module Hierarchies
  */
 
-import { LabelDefinition } from "../LabelDefinition";
-import { NodeKey } from "./Key";
+import { LabelDefinition } from "../LabelDefinition.js";
+import { NodeKey } from "./Key.js";
 
 /**
  * Data structure that describes a tree node.
@@ -22,7 +22,7 @@ export interface Node {
   description?: string;
   /**
    * Image ID
-   * @deprecated in 3.x. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details. Will
+   * @deprecated in 3.3.0 - might be removed in next major version. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details. Will
    * be removed with [[PropertyGroup.imageId]] and [[PropertyRangeGroupSpecification.imageId]].
    */
   imageId?: string;

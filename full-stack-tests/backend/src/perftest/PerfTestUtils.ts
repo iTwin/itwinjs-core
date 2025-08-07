@@ -29,6 +29,7 @@ export class PerfTestDataMgr {
     if (this.db) {
       await this.db.importSchemas([schemaPath]);
       if (testCName)
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         assert.isDefined(this.db.getMetaData(testCName), `Class Name ${testCName}is not present in iModel.`);
       this.db.saveChanges();
     }
@@ -155,6 +156,7 @@ export class PerfTestUtility {
        AND abc.TargetECInstanceId != ec_classid('${schemaName}', '${className}')
        AND schema.Name != 'BisCore')`;
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel.withPreparedStatement(ecsql, (stmt: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
         props.push(stmt.getRow().name);
@@ -205,6 +207,7 @@ export class PerfTestUtility {
 
   public static getCount(imodel: IModelDb, className: string) {
     let count = 0;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     imodel.withPreparedStatement(`SELECT count(*) AS [count] FROM ${className}`, (stmt: ECSqlStatement) => {
       assert.equal(DbResult.BE_SQLITE_ROW, stmt.step());
       const row = stmt.getRow();

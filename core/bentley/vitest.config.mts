@@ -25,5 +25,8 @@ export default defineConfig({
     },
     minWorkers: 1,
     maxWorkers: 3,
+  },
+  optimizeDeps: {
+    force: true,
   }
 })

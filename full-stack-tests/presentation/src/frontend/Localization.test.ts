@@ -6,9 +6,9 @@ import { expect } from "chai";
 import { IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, Content, DefaultContentDisplayTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
-import { TestIModelConnection } from "../IModelSetupUtils";
-import { initialize, terminate, testLocalization } from "../IntegrationTests";
-import { collect, getFieldByLabel } from "../Utils";
+import { TestIModelConnection } from "../IModelSetupUtils.js";
+import { initialize, terminate, testLocalization } from "../IntegrationTests.js";
+import { collect, getFieldByLabel } from "../Utils.js";
 
 describe("Localization", async () => {
   let imodel: IModelConnection;

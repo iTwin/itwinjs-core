@@ -13,11 +13,11 @@ import type * as ElectronModule from "electron";
 
 import * as fs from "fs";
 import * as path from "path";
-import { BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
+import { AsyncMethodsOf, BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
 import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
-import { DialogModuleMethod, electronIpcStrings } from "../common/ElectronIpcInterface";
+import { electronIpcStrings } from "../common/ElectronIpcInterface";
 
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
@@ -289,7 +289,7 @@ export class ElectronHost {
 
 class ElectronDialogHandler extends IpcHandler {
   public get channelName() { return electronIpcStrings.dialogChannel; }
-  public async callDialog(method: DialogModuleMethod, ...args: any) {
+  public async callDialog(method: AsyncMethodsOf<Electron.Dialog>, ...args: any) {
     const dialog = ElectronHost.electron.dialog;
     const dialogMethod = dialog[method] as (...args: any[]) => any;
     if (typeof dialogMethod !== "function")

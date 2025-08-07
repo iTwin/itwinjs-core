@@ -9,10 +9,11 @@ import { assert, BeDuration, BeTimePoint } from "@itwin/core-bentley";
 import { Content, Item, KeySet, PageOptions } from "@itwin/presentation-common";
 import { Presentation as PresentationBackend, PresentationManager } from "@itwin/presentation-backend";
 import { Presentation as PresentationFrontend } from "@itwin/presentation-frontend";
-import { initialize } from "../../IntegrationTests";
-import { collect } from "../../Utils";
-import { createContentTestSuite } from "./Utils";
-import { createTestContentDescriptor, createTestContentItem, ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
+import { initialize } from "../../IntegrationTests.js";
+import { collect } from "../../Utils.js";
+import { createContentTestSuite } from "./Utils.js";
+import { createTestContentDescriptor, createTestContentItem, ResolvablePromise } from "@itwin/presentation-common/test-utils";
+import { _presentation_manager_detail } from "@itwin/presentation-backend/internal";
 
 createContentTestSuite({ skipInitialize: true })("Error handling", ({ getDefaultSuiteIModel }) => {
   const frontendTimeout = 50;
@@ -40,9 +41,9 @@ createContentTestSuite({ skipInitialize: true })("Error handling", ({ getDefault
       [Symbol.dispose]: () => void resolvablePromise.resolve(""),
     };
     sinon.stub(PresentationBackend, "getManager").returns({
-      getDetail: () => ({
+      [_presentation_manager_detail]: {
         getContentDescriptor: async () => resolvablePromise,
-      }),
+      },
     } as unknown as PresentationManager);
 
     const start = BeTimePoint.now();
@@ -65,13 +66,13 @@ createContentTestSuite({ skipInitialize: true })("Error handling", ({ getDefault
     };
     sinon.stub(PresentationBackend, "getManager").returns({
       getContentSetSize: async () => 2,
-      getDetail: () => ({
+      [_presentation_manager_detail]: {
         getContent: async ({ paging }: { paging?: PageOptions }) =>
           new Content(
             createTestContentDescriptor({ fields: [] }),
             (paging?.start ?? 0) === 0 ? [createTestContentItem({ values: {}, displayValues: {} })] : await resolvableItemsPromise,
           ),
-      }),
+      },
     } as unknown as PresentationManager);
 
     const result = await PresentationFrontend.presentation.getContentIterator({

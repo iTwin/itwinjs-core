@@ -13,7 +13,7 @@ import { SchemaProps } from "../Deserialization/JsonProps";
 import { XmlParser } from "../Deserialization/XmlParser";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { ECClassModifier, isSupportedSchemaItemType, PrimitiveType } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { AnyClass, SchemaInfo } from "../Interfaces";
 import { ECVersion, SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { ECName } from "../ECName";
@@ -33,25 +33,26 @@ import { RelationshipClass } from "./RelationshipClass";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 import { UnitSystem } from "./UnitSystem";
-
-const SCHEMAURL3_2_JSON = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
-const SCHEMAURL3_2_XML = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
+import { ECSchemaNamespaceUris } from "../Constants";
+import { SchemaLoadingController } from "../utils/SchemaLoadingController";
 
 /**
- * @beta
+ * @public @preview
  */
 export class Schema implements CustomAttributeContainerProps {
   private static _currentECSpecVersion = "3.2";
   private _context: SchemaContext;
-  protected _schemaKey?: SchemaKey;
-  protected _alias?: string;
-  protected _label?: string;
-  protected _description?: string;
+  private _schemaKey?: SchemaKey;
+  private _alias?: string;
+  private _label?: string;
+  private _description?: string;
   public readonly references: Schema[];
   private readonly _items: Map<string, SchemaItem>;
   private _customAttributes?: Map<string, CustomAttribute>;
   private _originalECSpecMajorVersion?: number;
   private _originalECSpecMinorVersion?: number;
+  private _loadingController?: SchemaLoadingController;
+
   /**
    * Constructs an empty Schema with the given name and version in the provided context.
    * @param context The SchemaContext that will control the lifetime of the schema
@@ -84,7 +85,7 @@ export class Schema implements CustomAttributeContainerProps {
     if (alias !== undefined && ECName.validate(alias)) {
       this._alias = alias;
     } else if (nameOrKey !== undefined) {
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this.name} does not have the required 'alias' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Schema ${this.name} does not have the required 'alias' attribute.`);
     }
 
     this._originalECSpecMajorVersion = Schema.currentECSpecMajorVersion;
@@ -93,31 +94,31 @@ export class Schema implements CustomAttributeContainerProps {
 
   public get schemaKey() {
     if (undefined === this._schemaKey)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema has an invalid or missing SchemaKey.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The schema has an invalid or missing SchemaKey.`);
     return this._schemaKey;
   }
 
   public get name() {
     if (this._schemaKey === undefined)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema has an invalid or missing SchemaKey.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The schema has an invalid or missing SchemaKey.`);
     return this.schemaKey.name;
   }
 
   public get readVersion() {
     if (this._schemaKey === undefined)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema has an invalid or missing SchemaKey.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The schema has an invalid or missing SchemaKey.`);
     return this.schemaKey.readVersion;
   }
 
   public get writeVersion() {
     if (this._schemaKey === undefined)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema has an invalid or missing SchemaKey.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The schema has an invalid or missing SchemaKey.`);
     return this.schemaKey.writeVersion;
   }
 
   public get minorVersion() {
     if (this._schemaKey === undefined)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema has an invalid or missing SchemaKey.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The schema has an invalid or missing SchemaKey.`);
     return this.schemaKey.minorVersion;
   }
 
@@ -126,9 +127,14 @@ export class Schema implements CustomAttributeContainerProps {
   public static get currentECSpecMajorVersion(): number { return parseInt(Schema._currentECSpecVersion.split(".")[0], 10); }
   public static get currentECSpecMinorVersion(): number { return parseInt(Schema._currentECSpecVersion.split(".")[1], 10); }
 
+  private get _isECSpecVersionUnsupported(): boolean {
+    return (this.originalECSpecMajorVersion !== 3 || this.originalECSpecMinorVersion === undefined
+      || (this.originalECSpecMinorVersion < 2 || this.originalECSpecMinorVersion > Schema.currentECSpecMinorVersion))
+  }
+
   public get alias() {
     if (this._alias === undefined || this._alias === null) {
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this.name} does not have the required 'alias' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Schema ${this.name} does not have the required 'alias' attribute.`);
     } else { return this._alias; }
   }
 
@@ -148,6 +154,15 @@ export class Schema implements CustomAttributeContainerProps {
   public get context(): SchemaContext { return this._context; }
 
   /**
+   * Returns the SchemaLoadingController for this Schema. This would only be set if the schema is
+   * loaded incrementally.
+   * @internal
+   */
+  public get loadingController(): SchemaLoadingController | undefined{
+    return this._loadingController;
+  }
+
+  /**
    * Returns a SchemaItemKey given the item name and the schema it belongs to
    * @param fullName fully qualified name {Schema name}.{Item Name}
    */
@@ -157,21 +172,22 @@ export class Schema implements CustomAttributeContainerProps {
     if (this.name !== schemaName) {
       const newSchemaRef = this.getReferenceSync(schemaName);
       if (undefined === newSchemaRef)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to find the referenced SchemaItem ${itemName}.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to find the referenced SchemaItem ${itemName}.`);
       schemaKey = newSchemaRef.schemaKey;
     }
     return new SchemaItemKey(itemName, schemaKey);
   }
 
+  /** @internal */
   protected addItem<T extends SchemaItem>(item: T): void {
     if (undefined !== this.getItemSync(item.name))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateItem, `The SchemaItem ${item.name} cannot be added to the schema ${this.name} because it already exists`);
+      throw new ECSchemaError(ECSchemaStatus.DuplicateItem, `The SchemaItem ${item.name} cannot be added to the schema ${this.name} because it already exists`);
 
     this._items.set(item.name.toUpperCase(), item);
   }
 
   /**
-   * @alpha
+   * @internal
    */
   protected createClass<T extends AnyClass>(type: (new (_schema: Schema, _name: string, _modifier?: ECClassModifier) => T), name: string, modifier?: ECClassModifier): T {
     const item = new type(this, name, modifier);
@@ -182,7 +198,7 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Deletes a class from within this schema.
    * @param name the local (unqualified) class name, lookup is case-insensitive
-   * @alpha
+   * @internal
    */
   protected async deleteClass(name: string): Promise<void> {
     const schemaItem = await this.getItem(name);
@@ -194,7 +210,7 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Deletes a class from within this schema.
    * @param name the local (unqualified) class name, lookup is case-insensitive
-   * @alpha
+   * @internal
    */
   protected deleteClassSync(name: string): void {
     const schemaItem = this.getItemSync(name);
@@ -205,7 +221,7 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Deletes a SchemaItem from within this schema.
    * @param name the local (unqualified) class name, lookup is case-insensitive
-   * @alpha
+   * @internal
    */
   protected async deleteSchemaItem(name: string): Promise<void> {
     const schemaItem = await this.getItem(name);
@@ -217,7 +233,7 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Deletes a SchemaItem from within this schema.
    * @param name the local (unqualified) class name, lookup is case-insensitive
-   * @alpha
+   * @internal
    */
   protected deleteSchemaItemSync(name: string): void {
     const schemaItem = this.getItemSync(name);
@@ -225,15 +241,14 @@ export class Schema implements CustomAttributeContainerProps {
       this._items.delete(name.toUpperCase());
   }
 
-  /**
-   * @alpha
-   */
+  /** @internal */
   protected createItem<T extends SchemaItem>(type: (new (_schema: Schema, _name: string) => T), name: string): T {
     const item = new type(this, name);
     this.addItem(item);
     return item;
   }
 
+  /** @internal */
   protected addCustomAttribute(customAttribute: CustomAttribute) {
     if (!this._customAttributes)
       this._customAttributes = new Map<string, CustomAttribute>();
@@ -245,11 +260,13 @@ export class Schema implements CustomAttributeContainerProps {
    * Creates a EntityClass with the provided name in this schema.
    * @param name
    * @param modifier
+   * @internal
    */
   protected async createEntityClass(name: string, modifier?: ECClassModifier): Promise<EntityClass> {
     return this.createClass<EntityClass>(EntityClass, name, modifier);
   }
 
+  /** @internal */
   protected createEntityClassSync(name: string, modifier?: ECClassModifier): EntityClass {
     return this.createClass<EntityClass>(EntityClass, name, modifier);
   }
@@ -257,19 +274,23 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Creates a Mixin with the provided name in this schema.
    * @param name
+   * @internal
    */
   protected async createMixinClass(name: string): Promise<Mixin> { return this.createClass<Mixin>(Mixin, name); }
+  /** @internal */
   protected createMixinClassSync(name: string): Mixin { return this.createClass<Mixin>(Mixin, name); }
 
   /**
    * Creates a StructClass with the provided name in this schema.
    * @param name
    * @param modifier
+   * @internal
    */
   protected async createStructClass(name: string, modifier?: ECClassModifier): Promise<StructClass> {
     return this.createClass<StructClass>(StructClass, name, modifier);
   }
 
+  /** @internal */
   protected createStructClassSync(name: string, modifier?: ECClassModifier): StructClass {
     return this.createClass<StructClass>(StructClass, name, modifier);
   }
@@ -278,11 +299,13 @@ export class Schema implements CustomAttributeContainerProps {
    * Creates a CustomAttributeClass with the provided name in this schema.
    * @param name
    * @param modifier
+   * @internal
    */
   protected async createCustomAttributeClass(name: string, modifier?: ECClassModifier): Promise<CustomAttributeClass> {
     return this.createClass<CustomAttributeClass>(CustomAttributeClass, name, modifier);
   }
 
+  /** @internal */
   protected createCustomAttributeClassSync(name: string, modifier?: ECClassModifier): CustomAttributeClass {
     return this.createClass<CustomAttributeClass>(CustomAttributeClass, name, modifier);
   }
@@ -291,11 +314,13 @@ export class Schema implements CustomAttributeContainerProps {
    * Creates a RelationshipClass with the provided name in this schema.
    * @param name
    * @param modifier
+   * @internal
    */
   protected async createRelationshipClass(name: string, modifier?: ECClassModifier): Promise<RelationshipClass> {
     return this.createRelationshipClassSync(name, modifier);
   }
 
+  /** @internal */
   protected createRelationshipClassSync(name: string, modifier?: ECClassModifier): RelationshipClass {
     return this.createClass<RelationshipClass>(RelationshipClass, name, modifier);
   }
@@ -303,11 +328,15 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Creates an Enumeration with the provided name in this schema.
    * @param name
+   * @param primitiveType
+   *
+   * @internal
    */
   protected async createEnumeration(name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String): Promise<Enumeration> {
     return this.createEnumerationSync(name, primitiveType);
   }
 
+  /** @internal */
   protected createEnumerationSync(name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String): Enumeration {
     const item = new Enumeration(this, name, primitiveType);
     this.addItem(item);
@@ -317,11 +346,13 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Creates an KindOfQuantity with the provided name in this schema.
    * @param name
+   * @internal
    */
   protected async createKindOfQuantity(name: string): Promise<KindOfQuantity> {
     return this.createKindOfQuantitySync(name);
   }
 
+  /** @internal */
   protected createKindOfQuantitySync(name: string): KindOfQuantity {
     return this.createItem<KindOfQuantity>(KindOfQuantity, name);
   }
@@ -329,11 +360,13 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Creates a Constant with the provided name in this schema.
    * @param name
+   * @internal
    */
   protected async createConstant(name: string): Promise<Constant> {
     return this.createItem<Constant>(Constant, name);
   }
 
+  /** @internal */
   protected createConstantSync(name: string): Constant {
     return this.createItem<Constant>(Constant, name);
   }
@@ -341,11 +374,13 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Creates a Inverted Unit with the provided name in this schema.
    * @param name
+   * @internal
    */
   protected async createInvertedUnit(name: string): Promise<InvertedUnit> {
     return this.createItem<InvertedUnit>(InvertedUnit, name);
   }
 
+  /** @internal */
   protected createInvertedUnitSync(name: string): InvertedUnit {
     return this.createItem<InvertedUnit>(InvertedUnit, name);
   }
@@ -353,11 +388,13 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Creates an Format with the provided name in this schema.
    * @param name
+   * @internal
    */
   protected async createFormat(name: string): Promise<Format> {
     return this.createItem<Format>(Format, name);
   }
 
+  /** @internal */
   protected createFormatSync(name: string): Format {
     return this.createItem<Format>(Format, name);
   }
@@ -365,11 +402,13 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Creates a UnitSystem with the provided name in this schema.
    * @param name
+   * @internal
    */
   protected async createUnitSystem(name: string): Promise<UnitSystem> {
     return this.createItem<UnitSystem>(UnitSystem, name);
   }
 
+  /** @internal */
   protected createUnitSystemSync(name: string): UnitSystem {
     return this.createItem<UnitSystem>(UnitSystem, name);
   }
@@ -377,11 +416,13 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Creates a Phenomenon with the provided name in this schema.
    * @param name
+   * @internal
    */
   protected async createPhenomenon(name: string): Promise<Phenomenon> {
     return this.createItem<Phenomenon>(Phenomenon, name);
   }
 
+  /** @internal */
   protected createPhenomenonSync(name: string): Phenomenon {
     return this.createItem<Phenomenon>(Phenomenon, name);
   }
@@ -389,11 +430,13 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Creates a Unit with the provided name in this schema.
    * @param name
+   * @internal
    */
   protected async createUnit(name: string): Promise<Unit> {
     return this.createItem<Unit>(Unit, name);
   }
 
+  /** @internal */
   protected createUnitSync(name: string): Unit {
     return this.createItem<Unit>(Unit, name);
   }
@@ -401,30 +444,33 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * Creates an PropertyCategory with the provided name in this schema.
    * @param name
+   * @internal
    */
   protected async createPropertyCategory(name: string): Promise<PropertyCategory> {
     return this.createItem<PropertyCategory>(PropertyCategory, name);
   }
 
+  /** @internal */
   protected createPropertyCategorySync(name: string): PropertyCategory {
     return this.createItem<PropertyCategory>(PropertyCategory, name);
   }
+
   /**
    *
    * @param refSchema
+   * @internal
    */
   protected async addReference(refSchema: Schema): Promise<void> {
     // TODO validation of reference schema. For now just adding
     this.addReferenceSync(refSchema);
   }
 
+  /** @internal */
   protected addReferenceSync(refSchema: Schema): void {
     this.references.push(refSchema);
   }
 
-  /**
-   * @alpha Used for schema editing.
-   */
+  /** @internal */
   protected setContext(context: SchemaContext): void {
     this._context = context;
   }
@@ -434,10 +480,11 @@ export class Schema implements CustomAttributeContainerProps {
    * @param readVersion The read version of the schema. If undefined, the value from the existing SchemaKey will be used.
    * @param writeVersion The write version of the schema. If undefined, the value from the existing SchemaKey will be used.
    * @param minorVersion The minor version of the schema. If undefined, the value from the existing SchemaKey will be used.
+   * @internal
    */
   public setVersion(readVersion?: number, writeVersion?: number, minorVersion?: number): void {
     if (!this._schemaKey)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaKey, `The schema '${this.name}' has an invalid SchemaKey.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaKey, `The schema '${this.name}' has an invalid SchemaKey.`);
 
     const newVersion = new ECVersion(readVersion ?? this._schemaKey.readVersion, writeVersion ?? this._schemaKey.writeVersion, minorVersion ?? this._schemaKey.minorVersion);
     this._schemaKey = new SchemaKey(this._schemaKey.name, newVersion);
@@ -548,7 +595,7 @@ export class Schema implements CustomAttributeContainerProps {
   public async getItem<T extends typeof SchemaItem>(name: string, itemConstructor: T): Promise<InstanceType<T> | undefined>
   public async getItem<T extends typeof SchemaItem>(name: string, itemConstructor?: T): Promise<SchemaItem | InstanceType<T> | undefined> {
     // this method exists so we can rewire it later when we load partial schemas, for now it is identical to the sync version
-    if(itemConstructor === undefined)
+    if (itemConstructor === undefined)
       return this.getItemSync(name) as InstanceType<T> | undefined;
 
     return this.getItemSync(name, itemConstructor);
@@ -567,7 +614,7 @@ export class Schema implements CustomAttributeContainerProps {
     if (value === undefined || itemConstructor === undefined)
       return value;
 
-    if(isSupportedSchemaItemType(value.schemaItemType, itemConstructor.schemaItemType))
+    if (isSupportedSchemaItemType(value.schemaItemType, itemConstructor.schemaItemType))
       return value as InstanceType<T>;
 
     return undefined;
@@ -599,8 +646,8 @@ export class Schema implements CustomAttributeContainerProps {
       return undefined;
 
     return itemConstructor
-        ? refSchema.getItem(itemName, itemConstructor)
-        : refSchema.getItem(itemName);
+      ? refSchema.getItem(itemName, itemConstructor)
+      : refSchema.getItem(itemName);
   }
 
   /**
@@ -629,16 +676,16 @@ export class Schema implements CustomAttributeContainerProps {
       return undefined;
 
     return itemConstructor
-        ? refSchema.getItemSync(itemName, itemConstructor)
-        : refSchema.getItemSync(itemName);
+      ? refSchema.getItemSync(itemName, itemConstructor)
+      : refSchema.getItemSync(itemName);
   }
 
   /**
-   * Returns an iterator over all of the items in this schema.
+   * Returns all of the loaded items in this schema.
    */
-  public getItems(): IterableIterator<SchemaItem>;
-  public getItems<T extends typeof SchemaItem>(itemConstructor: T): IterableIterator<InstanceType<T>>;
-  public * getItems<T extends typeof SchemaItem>(itemConstructor?: T): IterableIterator<InstanceType<T> | SchemaItem> {
+  public getItems(): Iterable<SchemaItem>;
+  public getItems<T extends typeof SchemaItem>(itemConstructor: T): Iterable<InstanceType<T>>;
+  public * getItems<T extends typeof SchemaItem>(itemConstructor?: T): Iterable<InstanceType<T> | SchemaItem> {
     if (!this._items)
       return;
 
@@ -686,11 +733,11 @@ export class Schema implements CustomAttributeContainerProps {
    * Save this Schema's properties to an object for serializing to JSON.
    */
   public toJSON(): SchemaProps {
-    if (!this.isECSpecVersionSupported())
-      throw new ECObjectsError(ECObjectsStatus.NewerECSpecVersion, `The Schema '${this.name}' has an unsupported ECSpecVersion and cannot be serialized.`);
+    if (this._isECSpecVersionUnsupported)
+      throw new ECSchemaError(ECSchemaStatus.NewerECSpecVersion, `The Schema '${this.name}' has an unsupported ECSpecVersion and cannot be serialized.`);
 
     const schemaJson: { [value: string]: any } = {};
-    schemaJson.$schema = SCHEMAURL3_2_JSON; // $schema is required
+    schemaJson.$schema = ECSchemaNamespaceUris.SCHEMAURL3_2_JSON; // $schema is required
     schemaJson.name = this.name; // name is required
     schemaJson.version = this.schemaKey.version.toString(true);
     schemaJson.alias = this.alias; // alias is required
@@ -718,11 +765,11 @@ export class Schema implements CustomAttributeContainerProps {
    * @param schemaXml An empty DOM document to which the schema will be written
    */
   public async toXml(schemaXml: Document): Promise<Document> {
-    if (!this.isECSpecVersionSupported())
-      throw new ECObjectsError(ECObjectsStatus.NewerECSpecVersion, `The Schema '${this.name}' has an unsupported ECSpecVersion and cannot be serialized.`);
+    if (this._isECSpecVersionUnsupported)
+      throw new ECSchemaError(ECSchemaStatus.NewerECSpecVersion, `The Schema '${this.name}' has an unsupported ECSpecVersion and cannot be serialized.`);
 
     const schemaMetadata = schemaXml.createElement("ECSchema");
-    schemaMetadata.setAttribute("xmlns", SCHEMAURL3_2_XML);
+    schemaMetadata.setAttribute("xmlns", ECSchemaNamespaceUris.SCHEMAURL3_2_XML);
     schemaMetadata.setAttribute("version", this.schemaKey.version.toString());
     schemaMetadata.setAttribute("schemaName", this.name);
     schemaMetadata.setAttribute("alias", this.alias ? this.alias : "");
@@ -761,36 +808,6 @@ export class Schema implements CustomAttributeContainerProps {
     return schemaXml;
   }
 
-  // Check if the ECSpecVersion read-version is greater than the current ECSpecVersion supported.
-  // If a specific ECSpecVersion is given, check against that version.
-  // If no argument is given, check against the original ECSpecVersion of the schema.
-  private isECSpecMajorVersionSupported(ecSpecMajorVersionToCheck?: number): boolean {
-    // If argument is supplied, check the argument against the current ECSpecVersion supported
-    if (ecSpecMajorVersionToCheck !== undefined)
-      return (Schema.currentECSpecMajorVersion >= ecSpecMajorVersionToCheck);
-
-    // If argument is not supplied, check against the original ECSpecVersion of the schema
-    if (this.originalECSpecMajorVersion === undefined)
-      return false;
-    return (Schema.currentECSpecMajorVersion >= this.originalECSpecMajorVersion);
-  }
-
-  // Check if the full ECSpecVersion is greater than the current ECSpecVersion supported.
-  // If a specific ECSpecVersion is given, check against that version.
-  // If no argument is given, check against the original ECSpecVersion of the schema.
-  private isECSpecVersionSupported(ecSpecMajorVersionToCheck?: number, ecSpecMinorVersionToCheck?: number): boolean {
-    // If arguments are supplied, check the arguments against the current ECSpecVersion supported
-    if (ecSpecMajorVersionToCheck !== undefined && ecSpecMinorVersionToCheck !== undefined) {
-      if (!this.isECSpecMajorVersionSupported(ecSpecMajorVersionToCheck))
-        return false;
-      return (Schema.currentECSpecMinorVersion >= ecSpecMinorVersionToCheck);
-    }
-    // If arguments are not supplied, check against the original ECSpecVersion of the schema
-    if (!this.isECSpecMajorVersionSupported() || this.originalECSpecMinorVersion === undefined)
-      return false;
-    return (Schema.currentECSpecMinorVersion >= this.originalECSpecMinorVersion);
-  }
-
   /**
    * Loads the schema header (name, version alias, label and description) from the input SchemaProps
    */
@@ -801,13 +818,13 @@ export class Schema implements CustomAttributeContainerProps {
       this._schemaKey = new SchemaKey(schemaName, version);
     } else {
       if (schemaProps.name.toLowerCase() !== this.name.toLowerCase())
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this.name} does not match the provided name, '${schemaProps.name}'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Schema ${this.name} does not match the provided name, '${schemaProps.name}'.`);
       if (this.schemaKey.version.compare(ECVersion.fromString(schemaProps.version)))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this.name} has the version '${this.schemaKey.version}' that does not match the provided version '${schemaProps.version}'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Schema ${this.name} has the version '${this.schemaKey.version}' that does not match the provided version '${schemaProps.version}'.`);
     }
 
     if (schemaProps.$schema.match(`https://dev\\.bentley\\.com/json_schemas/ec/([0-9]+)/ecschema`) == null && schemaProps.$schema.match(`http://www\\.bentley\\.com/schemas/Bentley\\.ECXML\\.([0-9]+)`) == null)
-      throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, `The Schema '${this.name}' has an unsupported namespace '${schemaProps.$schema}'.`);
+      throw new ECSchemaError(ECSchemaStatus.MissingSchemaUrl, `The Schema '${this.name}' has an unsupported namespace '${schemaProps.$schema}'.`);
 
     // The schema props have not been parsed. Parse the ECXml version from the $schema attribute
     let ecVersion: ECSpecVersion;
@@ -817,16 +834,16 @@ export class Schema implements CustomAttributeContainerProps {
       ecVersion = { readVersion: schemaProps.ecSpecMajorVersion, writeVersion: schemaProps.ecSpecMinorVersion } as ECSpecVersion;
     }
 
-    this._originalECSpecMajorVersion = ecVersion?.readVersion;
-    this._originalECSpecMinorVersion = ecVersion?.writeVersion;
+    this._originalECSpecMajorVersion = ecVersion.readVersion;
+    this._originalECSpecMinorVersion = ecVersion.writeVersion;
 
-    if (!this.isECSpecMajorVersionSupported(ecVersion?.readVersion))
-      throw new ECObjectsError(ECObjectsStatus.NewerECSpecVersion, `The Schema '${this.name}' has an unsupported ECVersion and cannot be loaded.`);
+    if (ecVersion.readVersion !== 3 || (ecVersion.readVersion === 3 && ecVersion.writeVersion < 2))
+      throw new ECSchemaError(ECSchemaStatus.InvalidECVersion, `The Schema '${this.name}' has an unsupported ECVersion ${ecVersion.readVersion}.${ecVersion.writeVersion} and cannot be loaded.`);
 
     if (ECName.validate(schemaProps.alias)) {
       this._alias = schemaProps.alias;
     } else {
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${schemaProps.name} does not have the required 'alias' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Schema ${schemaProps.name} does not have the required 'alias' attribute.`);
     }
 
     if (undefined !== schemaProps.label)
@@ -887,31 +904,27 @@ export class Schema implements CustomAttributeContainerProps {
     return schema !== undefined && schema.schemaKey !== undefined && schema.context !== undefined;
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected setDisplayLabel(displayLabel: string) {
     this._label = displayLabel;
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected setDescription(description: string) {
     this._description = description;
   }
 
-  /**
-   * @alpha
-   * Used for schema editing.
-   */
+  /** @internal */
   protected setAlias(alias: string) {
     if (!ECName.validate(alias)) {
-      throw new ECObjectsError(ECObjectsStatus.InvalidECName, "The specified schema alias is invalid.");
+      throw new ECSchemaError(ECSchemaStatus.InvalidECName, "The specified schema alias is invalid.");
     }
     this._alias = alias;
+  }
+
+  /** @internal */
+  public setLoadingController(controller: SchemaLoadingController) {
+    this._loadingController = controller;
   }
 }
 

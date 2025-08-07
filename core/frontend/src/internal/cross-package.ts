@@ -48,7 +48,9 @@ export {
  SpatialTileTreeReferences,
  type WGS84Extent,
  WmsUtilities,
+ LayerTileTreeHandler, type MapLayerTreeSetting, LayerTileTreeReferenceHandler
 } from "../tile/internal";
+export { GoogleMapsDecorator, LogoDecoration } from "./GoogleMapsDecorator";
 
 // Used by display-test-app which currently builds using both ESModules and CommonJS.
 // Remove once CommonJS is dropped.

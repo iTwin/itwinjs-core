@@ -1,6 +1,121 @@
 # Change Log - @itwin/presentation-backend
 
-This log was last generated on Tue, 18 Feb 2025 17:30:07 GMT and should not be manually modified.
+This log was last generated on Wed, 06 Aug 2025 15:37:23 GMT and should not be manually modified.
+
+## 5.0.5
+Wed, 06 Aug 2025 15:34:16 GMT
+
+_Version update only_
+
+## 5.0.4
+Wed, 16 Jul 2025 14:59:59 GMT
+
+_Version update only_
+
+## 5.0.3
+Fri, 11 Jul 2025 00:56:56 GMT
+
+_Version update only_
+
+## 5.0.2
+Thu, 26 Jun 2025 22:16:01 GMT
+
+_Version update only_
+
+## 5.0.1
+Tue, 17 Jun 2025 18:33:52 GMT
+
+_Version update only_
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- Add Symbols to prevent duplicate instances of package
+- Depreciate ECSqlStatement API
+- Dropped support for Node 18
+- Fix `getDisplayLabelDefinitions` implementation not taking into account different formats and casings of full class name.
+- Added ESM support
+- Add `type: "module"` to `package.json` to tell Node.js to load this package as ESM by default.
+- Deprecate unified selection related APIs.
+- Log ruleset ID rather than the whole ruleset in INFO level logs
+- Fix Presentation RPC returning details contained within thrown errors. Instead of doing that, we now re-throw the error and let RPC system handle it (by re-throwing a generic error instead).
+- Add `PresentationManager.getElementProperties` overload for specifying elements by id rather than class name.
+- Remove `@internal` APIs from public barrel exports file.
+- Clean up APIs deprecated in 3.x
+- Clean up APIs deprecated in 3.x
+- Return errors in a way native to our RPC system. For web cases that also means proper HTTP response status codes.
+- Change core peer dependencies to strict version.
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+_Version update only_
+
+## 4.11.5
+Fri, 06 Jun 2025 13:41:18 GMT
+
+### Updates
+
+- Fix `getDisplayLabelDefinitions` implementation not taking into account different formats and casings of full class name.
+
+## 4.11.4
+Tue, 03 Jun 2025 16:15:19 GMT
+
+_Version update only_
+
+## 4.11.3
+Wed, 28 May 2025 13:56:23 GMT
+
+_Version update only_
+
+## 4.11.2
+Tue, 20 May 2025 20:14:46 GMT
+
+_Version update only_
+
+## 4.11.1
+Wed, 30 Apr 2025 13:13:21 GMT
+
+_Version update only_
+
+## 4.11.0
+Wed, 16 Apr 2025 15:50:28 GMT
+
+### Updates
+
+- Add `PresentationManager.getElementProperties` overload for specifying elements by id rather than class name.
+
+## 4.10.13
+Thu, 10 Apr 2025 17:47:21 GMT
+
+_Version update only_
+
+## 4.10.12
+Wed, 02 Apr 2025 19:35:47 GMT
+
+_Version update only_
+
+## 4.10.11
+Wed, 19 Mar 2025 15:30:39 GMT
+
+_Version update only_
+
+## 4.10.10
+Tue, 11 Mar 2025 15:25:11 GMT
+
+_Version update only_
+
+## 4.10.9
+Tue, 11 Mar 2025 05:17:33 GMT
+
+_Version update only_
+
+## 4.10.8
+Thu, 06 Mar 2025 14:13:37 GMT
+
+_Version update only_
 
 ## 4.10.7
 Tue, 18 Feb 2025 17:27:03 GMT

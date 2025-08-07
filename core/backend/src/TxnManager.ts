@@ -20,13 +20,13 @@ import { _nativeDb } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs, TxnArgs } from "./internal/ChangesetConflictArgs";
 
 /** A string that identifies a Txn.
- * @public
+ * @public @preview
  */
 export type TxnIdString = string;
 
 /** An error generated during dependency validation.
  * @see [[TxnManager.validationErrors]].
- * @public
+ * @public @preview
  */
 export interface ValidationError {
   /** If true, txn is aborted. */
@@ -39,7 +39,7 @@ export interface ValidationError {
 
 /** Describes a set of [[Element]]s or [[Model]]s that changed as part of a transaction.
  * @see [[TxnManager.onElementsChanged]] and [[TxnManager.onModelsChanged]].
- * @public
+ * @public @preview
  */
 export interface TxnChangedEntities {
   /** The entities that were inserted by the transaction. */
@@ -157,6 +157,7 @@ class ChangedEntitiesProc {
 
   private populateMetadata(db: BriefcaseDb | StandaloneDb, classIds: Id64Array): NotifyEntitiesChangedMetadata[] {
     // Ensure metadata for all class Ids is loaded. Loading metadata for a derived class loads metadata for all of its superclasses.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const classIdsToLoad = classIds.filter((x) => undefined === db.classMetaDataRegistry.findByClassId(x));
     if (classIdsToLoad.length > 0) {
       const classIdsStr = classIdsToLoad.join(",");
@@ -164,6 +165,7 @@ class ChangedEntitiesProc {
       db.withPreparedSqliteStatement(sql, (stmt) => {
         while (stmt.step() === DbResult.BE_SQLITE_ROW) {
           const classFullName = `${stmt.getValueString(2)}:${stmt.getValueString(0)}`;
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           db.tryGetMetaData(classFullName);
         }
       });
@@ -172,6 +174,7 @@ class ChangedEntitiesProc {
     // Define array indices for the metadata array entries correlating to the class Ids in the input list.
     const nameToIndex = new Map<string, number>();
     for (const classId of classIds) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const meta = db.classMetaDataRegistry.findByClassId(classId);
       nameToIndex.set(meta?.ecclass ?? "", nameToIndex.size);
     }
@@ -182,6 +185,7 @@ class ChangedEntitiesProc {
       const bases: number[] = [];
       result[index] = { name, bases };
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const meta = db.tryGetMetaData(name);
       if (!meta) {
         return;
@@ -352,7 +356,7 @@ export class ChangeMergeManager {
 }
 
 /** Manages local changes to a [[BriefcaseDb]] or [[StandaloneDb]] via [Txns]($docs/learning/InteractiveEditing.md)
- * @public
+ * @public @preview
  */
 export class TxnManager {
   /** @internal */
@@ -462,6 +466,7 @@ export class TxnManager {
 
   /** @internal */
   protected _onChangesApplied() {
+    this._iModel.clearCaches();
     ChangedEntitiesProc.process(this._iModel, this);
     this.onChangesApplied.raiseEvent();
     IpcHost.notifyTxns(this._iModel, "notifyChangesApplied");
@@ -732,13 +737,22 @@ export class TxnManager {
   /** Test if a TxnId is valid */
   public isTxnIdValid(txnId: TxnIdString): boolean { return this._nativeDb.isTxnIdValid(txnId); }
 
-  /** Query if there are any pending Txns in this IModelDb that are waiting to be pushed.  */
+  /** Query if there are any pending Txns in this IModelDb that are waiting to be pushed.
+   * @see [[IModelDb.pushChanges]]
+   */
   public get hasPendingTxns(): boolean { return this._nativeDb.hasPendingTxns(); }
 
-  /** Query if there are any changes in memory that have yet to be saved to the IModelDb. */
+  /**
+   * Query if there are any changes in memory that have yet to be saved to the IModelDb.
+   * @see [[IModelDb.saveChanges]]
+   */
   public get hasUnsavedChanges(): boolean { return this._nativeDb.hasUnsavedChanges(); }
 
-  /** Query if there are un-saved or un-pushed local changes. */
+  /**
+   * Query if there are changes in memory that have not been saved to the iModelDb or if there are Txns that are waiting to be pushed.
+   * @see [[IModelDb.saveChanges]]
+   * @see [[IModelDb.pushChanges]]
+   */
   public get hasLocalChanges(): boolean { return this.hasUnsavedChanges || this.hasPendingTxns; }
 
   /** Destroy the record of all local changes that have yet to be saved and/or pushed.

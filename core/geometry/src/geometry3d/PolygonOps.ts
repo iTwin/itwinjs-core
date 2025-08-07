@@ -16,6 +16,7 @@ import { FrameBuilder } from "./FrameBuilder";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
 import { Matrix3d } from "./Matrix3d";
+import { Plane3d } from "./Plane3d";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Point2d, Vector2d } from "./Point2dVector2d";
 import { Point3dArrayCarrier } from "./Point3dArrayCarrier";
@@ -340,6 +341,37 @@ export class CutLoopMergeContext {
   }
 }
 /**
+ * Bundle of options for [[PolygonOps.volumeBetweenPolygonAndPlane]].
+ * @public
+ * @see [[VolumeBetweenPolygonAndPlaneOutput]]
+ */
+export interface VolumeBetweenPolygonAndPlaneOptions {
+  /** Whether to skip computation of the area moments. If `true` only volume and area are returned. Default is `false`. */
+  skipMoments?: boolean;
+  /** Work point. If `skipMoments` is undefined/false, this point is returned as the area moment origin. */
+  workPoint0?: Point3d;
+  /** Another work point. */
+  workPoint1?: Point3d;
+  /** Work vector. */
+  workVector?: Vector3d;
+  /** Work matrix. If `skipMoments` is undefined/false, this matrix is returned as the area moment products. */
+  workMatrix?: Matrix4d;
+}
+/**
+ * Bundle of output data for [[PolygonOps.volumeBetweenPolygonAndPlane]].
+ * @public
+ */
+export interface VolumeBetweenPolygonAndPlaneOutput {
+  /** Six times the signed volume of the truncated prism between the polygon and the plane. */
+  volume6: number;
+  /** Two times the signed area of the polygon's projection onto the plane. */
+  area2: number;
+  /** Origin of the facet used to accumulate `products`. */
+  origin?: Point3d;
+  /** Raw accumulated second moment area products of the polygon's projection onto the plane. */
+  products?: Matrix4d;
+}
+/**
  * Various static methods to perform computations on an array of points interpreted as a polygon.
  * @public
  */
@@ -518,61 +550,63 @@ export class PolygonOps {
     return s;
   }
   /**
-   * Return a Ray3d with (assuming the polygon is planar and not self-intersecting):
-   * * `origin` at the centroid of the (3D) polygon,
-   * * `direction` is the unit vector perpendicular to the plane,
-   * * `a` is the area.
-   * @param points
+   * Return a [[Ray3d]] with:
+   * * `origin` is the centroid of the polygon,
+   * * `direction` is a unit vector perpendicular to the polygon plane,
+   * * `a` is the polygon area.
+   * @param points the polygon vertices in order. Points can lie in any plane. First and last point do not have to be equal.
+   * @param result optional pre-allocated result to populate and return.
    */
-  public static centroidAreaNormal(points: IndexedXYZCollection | Point3d[]): Ray3d | undefined {
+  public static centroidAreaNormal(points: IndexedXYZCollection | Point3d[], result?: Ray3d): Ray3d | undefined {
     if (Array.isArray(points)) {
       const carrier = new Point3dArrayCarrier(points);
-      return this.centroidAreaNormal(carrier);
+      return this.centroidAreaNormal(carrier, result);
     }
     const n = points.length;
     if (n === 3) {
-      const normal = points.crossProductIndexIndexIndex(0, 1, 2)!;
+      const normal = points.crossProductIndexIndexIndex(0, 1, 2, result?.direction)!;
       const a = 0.5 * normal.magnitude();
-      const centroid = points.getPoint3dAtCheckedPointIndex(0)!;
+      const centroid = points.getPoint3dAtCheckedPointIndex(0, result?.origin)!;
       points.accumulateScaledXYZ(1, 1.0, centroid);
       points.accumulateScaledXYZ(2, 1.0, centroid);
       centroid.scaleInPlace(1.0 / 3.0);
-      const result = Ray3d.createCapture(centroid, normal);
+      if (!result)
+        result = Ray3d.createCapture(centroid, normal);
       if (result.tryNormalizeInPlaceWithAreaWeight(a))
         return result;
       return undefined;
     }
     if (n >= 3) {
-
       const areaNormal = Vector3d.createZero();
       // This will work with or without closure edge.  If closure is given, the last vector is 000.
       for (let i = 2; i < n; i++) {
         points.accumulateCrossProductIndexIndexIndex(0, i - 1, i, areaNormal);
       }
       areaNormal.normalizeInPlace();
-
       const origin = points.getPoint3dAtCheckedPointIndex(0)!;
       const vector0 = Vector3d.create();
       const vector1 = Vector3d.create();
       points.vectorXYAndZIndex(origin, 1, vector0);
       let cross = Vector3d.create();
       const centroidSum = Vector3d.createZero();
-      const normalSum = Vector3d.createZero();
+      const normal = Vector3d.createZero(result?.direction);
       let signedTriangleArea;
-      // This will work with or without closure edge.  If closure is given, the last vector is 000.
+      // This will work with or without closure edge. If closure is given, the last vector is 000.
       for (let i = 2; i < n; i++) {
         points.vectorXYAndZIndex(origin, i, vector1);
         cross = vector0.crossProduct(vector1, cross);
-        signedTriangleArea = areaNormal.dotProduct(cross);    // well, actually twice the area.
-        normalSum.addInPlace(cross); // this grows to twice the area
+        signedTriangleArea = areaNormal.dotProduct(cross); // well, actually twice the area.
+        normal.addInPlace(cross); // this grows to twice the area
         const b = signedTriangleArea / 6.0;
         centroidSum.plus2Scaled(vector0, b, vector1, b, centroidSum);
         vector0.setFrom(vector1);
       }
-      const area = 0.5 * normalSum.magnitude();
+      const area = 0.5 * normal.magnitude();
       const inverseArea = Geometry.conditionalDivideFraction(1, area);
       if (inverseArea !== undefined) {
-        const result = Ray3d.createCapture(origin.plusScaled(centroidSum, inverseArea), normalSum);
+        const centroid = origin.plusScaled(centroidSum, inverseArea, result?.origin);
+        if (!result)
+          result = Ray3d.createCapture(centroid, normal);
         result.tryNormalizeInPlaceWithAreaWeight(area);
         return result;
       }
@@ -703,7 +737,41 @@ export class PolygonOps {
       }
     }
   }
-
+  /**
+   * Compute the signed volume of the truncated prism between a facet and a plane.
+   * * Useful for parallel algorithms.
+   * @param facetPoints input 3D polygon; on return the points are projected onto the plane. Wraparound point is optional.
+   * @param plane infinite plane bounding volume between the facet and (virtual) side facets perpendicular to the plane (unmodified).
+   * @param options optional flags and pre-allocated temporary storage.
+   * @returns computed data for this facet:
+   * * `volume6`: six times the signed volume of the truncated prism between the facet and the plane.
+   * * `area2`: two times the signed area of the facet's projection onto the plane.
+   * * `origin`: origin of the facet used to accumulate area moments.
+   * * `products`: raw accumulated second moment area products of the facet's projection onto the plane.
+   * @see [[PolyfaceQuery.sumVolumeBetweenFacetsAndPlane]]
+   */
+  public static volumeBetweenPolygonAndPlane(facetPoints: GrowableXYZArray, plane: Plane3d, options?: VolumeBetweenPolygonAndPlaneOptions): VolumeBetweenPolygonAndPlaneOutput {
+    let origin: Point3d | undefined;
+    let products: Matrix4d | undefined;
+    let singleProjectedFacetAreaTimes2 = 0.0;
+    let signedTruncatedPrismVolumeTimes6 = 0.0;
+    const h0 = facetPoints.evaluateUncheckedIndexPlaneAltitude(0, plane);
+    for (let i = 1; i + 1 < facetPoints.length; i++) {
+      const triangleNormal = facetPoints.crossProductIndexIndexIndex(0, i, i + 1, options?.workVector)!;
+      const hA = facetPoints.evaluateUncheckedIndexPlaneAltitude(i, plane);
+      const hB = facetPoints.evaluateUncheckedIndexPlaneAltitude(i + 1, plane);
+      const signedProjectedTriangleAreaTimes2 = triangleNormal.dotProductXYZ(plane.normalX(), plane.normalY(), plane.normalZ());
+      singleProjectedFacetAreaTimes2 += signedProjectedTriangleAreaTimes2;
+      signedTruncatedPrismVolumeTimes6 += signedProjectedTriangleAreaTimes2 * (h0 + hA + hB);
+    }
+    if (!options?.skipMoments) {
+      origin = facetPoints.getPoint3dAtUncheckedPointIndex(0, options?.workPoint0);
+      products = Matrix4d.createZero(options?.workMatrix);
+      facetPoints.mapPoint((x: number, y: number, z: number) => plane.projectXYZToPlane(x, y, z, options?.workPoint1));
+      PolygonOps.addSecondMomentAreaProducts(facetPoints, origin, products);
+    }
+    return { volume6: signedTruncatedPrismVolumeTimes6, area2: singleProjectedFacetAreaTimes2, origin, products };
+  }
   /** Test the direction of turn at the vertices of the polygon, ignoring z-coordinates.
    * * For a polygon without self-intersections and successive colinear edges, this is a convexity and orientation test: all positive is convex and counterclockwise, all negative is convex and clockwise.
    * * Beware that a polygon which turns through more than a full turn can cross itself and close, but is not convex.
@@ -858,8 +926,9 @@ export class PolygonOps {
     return numReverse;
   }
   /**
-   * Reverse and reorder loops in the xy-plane for consistency and containment.
-   * @param loops multiple polygons in any order and orientation, z-coordinates ignored
+   * Reverse and reorder loops in the xy-plane for consistent orientation and containment.
+   * @param loops multiple polygons in any order and orientation, z-coordinates ignored.
+   * * For best results, all overlaps should be containments, i.e., loop boundaries can touch, but should not cross.
    * @returns array of arrays of polygons that capture the input pointers. In each first level array:
    * * The first polygon is an outer loop, oriented counterclockwise.
    * * Any subsequent polygons are holes of the outer loop, oriented clockwise.

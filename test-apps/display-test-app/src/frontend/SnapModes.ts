@@ -40,6 +40,8 @@ export function addSnapModes(container: HTMLElement): HTMLElement {
       { name: "Center", value: SnapMode.Center },
       { name: "Origin", value: SnapMode.Origin },
       { name: "Intersection", value: SnapMode.Intersection },
+      { name: "Perpendicular Point", value: SnapMode.PerpendicularPoint },
+      { name: "Tangent Point", value: SnapMode.TangentPoint },
       { name: "Multi-snap", value: multiSnapMode },
     ],
   });

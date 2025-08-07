@@ -905,6 +905,9 @@ export const enum FragmentShaderComponent {
   // (Optional) Apply planar classifier.
   // vec4 applyPlanarClassification(vec4)
   ApplyPlanarClassifier,
+  // (Optional) Apply Draping.
+  // vec4 ApplyDraping(vec4)
+  ApplyDraping,
   // (Optional) Apply solar shadow map.
   // vec4 applySolarShadowMap(vec4)
   ApplySolarShadowMap,
@@ -929,6 +932,10 @@ export const enum FragmentShaderComponent {
   // (Optional) Override render order to be output to pick buffers.
   // float overrideRenderOrder(float renderOrder)
   OverrideRenderOrder,
+  // (Optional) Compute the contour line information to be output to pick buffers.
+  // vec4 computeContourLineInfo()
+  // Defaults to vec4(0.0) indicating no contour line.
+  ComputeContourLineInfo,
   // (Optional) Apply atmospheric scattering effect. (For Skybox and RealityMesh only)
   // vec4 applyAtmosphericScattering()
   ApplyAtmosphericScattering,
@@ -1107,6 +1114,12 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     if (applyAtmosphericScattering) {
       prelude.addFunction("vec4 applyAtmosphericScattering(vec4 baseColor)", applyAtmosphericScattering);
       main.addline("  baseColor = applyAtmosphericScattering(baseColor);");
+    }
+
+    const applyDraping = this.get(FragmentShaderComponent.ApplyDraping);
+    if (undefined !== applyDraping) {
+      prelude.addFunction("vec4 applyDraping(vec4 baseColor)", applyDraping);
+      main.addline(`${clipIndent}  baseColor = applyDraping(baseColor);`);
     }
 
     const applyDebug = this.get(FragmentShaderComponent.ApplyDebugColor);

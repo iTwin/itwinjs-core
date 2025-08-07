@@ -225,7 +225,7 @@ export function insertElementAspect<TAdditionalProps extends object>(
 }
 
 function setupOutputFileLocation(fileName: string): LocalFileName {
-  const testOutputDir = path.join(__dirname, ".imodels");
+  const testOutputDir = path.join(import.meta.dirname, ".imodels");
   !IModelJsFs.existsSync(testOutputDir) && IModelJsFs.mkdirSync(testOutputDir);
 
   const ext = ".bim";

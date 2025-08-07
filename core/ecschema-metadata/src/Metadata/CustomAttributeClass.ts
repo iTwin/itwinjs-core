@@ -10,21 +10,22 @@ import { CustomAttributeClassProps } from "../Deserialization/JsonProps";
 import {
   containerTypeToString, CustomAttributeContainerType, parseCustomAttributeContainerType, SchemaItemType,
 } from "../ECObjects";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { ECSchemaError, ECSchemaStatus } from "../Exception";
 import { ECClass } from "./Class";
 import { SchemaItem } from "./SchemaItem";
 
 /**
  * A Typescript class representation of an ECCustomAttributeClass.
- * @beta
+ * @public @preview
  */
 export class CustomAttributeClass extends ECClass {
   public override readonly schemaItemType = CustomAttributeClass.schemaItemType;
+  /** @internal */
   public static override get schemaItemType() { return SchemaItemType.CustomAttributeClass; }
-  protected _appliesTo?: CustomAttributeContainerType;
+  private _appliesTo?: CustomAttributeContainerType;
 
   /**
-   * @deprecated in 4.8 use [[appliesTo]]
+   * @deprecated in 4.8 - will not be removed until after 2026-06-13. Use [[appliesTo]]
    * */
   public get containerType(): CustomAttributeContainerType {
     return this.appliesTo;
@@ -32,7 +33,7 @@ export class CustomAttributeClass extends ECClass {
 
   public get appliesTo(): CustomAttributeContainerType {
     if (undefined === this._appliesTo)
-      throw new ECObjectsError(ECObjectsStatus.InvalidContainerType, `The CustomAttributeClass ${this.name} does not have a CustomAttributeContainerType.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidContainerType, `The CustomAttributeClass ${this.name} does not have a CustomAttributeContainerType.`);
     return this._appliesTo;
   }
 
@@ -58,7 +59,7 @@ export class CustomAttributeClass extends ECClass {
     super.fromJSONSync(customAttributeProps);
     const appliesTo = parseCustomAttributeContainerType(customAttributeProps.appliesTo);
     if (undefined === appliesTo)
-      throw new ECObjectsError(ECObjectsStatus.InvalidContainerType, `${appliesTo} is not a valid CustomAttributeContainerType.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidContainerType, `${appliesTo} is not a valid CustomAttributeContainerType.`);
     this._appliesTo = appliesTo;
   }
 
@@ -67,7 +68,7 @@ export class CustomAttributeClass extends ECClass {
   }
 
   /**
-   * @alpha Used in schema editing.
+   * @internal
    */
   protected setAppliesTo(containerType: CustomAttributeContainerType) {
     this._appliesTo = containerType;
@@ -89,10 +90,11 @@ export class CustomAttributeClass extends ECClass {
    * Type assertion to check if the SchemaItem is of type CustomAttributeClass.
    * @param item The SchemaItem to check.
    * @returns The item cast to CustomAttributeClass if it is a CustomAttributeClass, undefined otherwise.
+   * @internal
    */
   public static assertIsCustomAttributeClass(item?: SchemaItem): asserts item is CustomAttributeClass {
     if (!this.isCustomAttributeClass(item))
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.CustomAttributeClass}' (CustomAttributeClass)`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidSchemaItemType, `Expected '${SchemaItemType.CustomAttributeClass}' (CustomAttributeClass)`);
   }
 }
 /**

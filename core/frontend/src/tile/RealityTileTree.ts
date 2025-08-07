@@ -18,7 +18,7 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
 import {
-  GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGeometryCollector,
+  MapTile, RealityTile, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGeometryCollector,
   TileGraphicType, TileParams, TileTree, TileTreeParams,
 } from "./internal";
 
@@ -165,6 +165,7 @@ export interface RealityTileTreeParams extends TileTreeParams {
   readonly rootToEcef?: Transform;
   readonly gcsConverterAvailable: boolean;
   readonly baseUrl?: string;
+  readonly reprojectGeometry?: boolean;
 }
 
 /** Base class for a [[TileTree]] representing a reality model (e.g., a point cloud or photogrammetry mesh) or 3d terrain with map imagery.
@@ -192,6 +193,9 @@ export class RealityTileTree extends TileTree {
   protected _ecefToDb?: Transform;
   /** @internal */
   public readonly baseUrl?: string;
+  /** If set to true, tile geometry will be reprojected using the tile's reprojection transform when geometry is collected.
+   * @internal */
+  public reprojectGeometry?: boolean;
 
   /** @internal */
   public constructor(params: RealityTileTreeParams) {
@@ -211,6 +215,7 @@ export class RealityTileTree extends TileTree {
       }
     }
     this.baseUrl = params.baseUrl;
+    this.reprojectGeometry = params.reprojectGeometry;
   }
 
   /** The mapping of per-feature JSON properties from this tile tree's batch table, if one is defined.
@@ -273,7 +278,7 @@ export class RealityTileTree extends TileTree {
       sortIndices.sort((a, b) => selectedTiles[a].depth - selectedTiles[b].depth);
     }
 
-    if (!(args instanceof GraphicsCollectorDrawArgs))
+    if (args.shouldCollectClassifierGraphics)
       this.collectClassifierGraphics(args, selectedTiles);
 
     assert(selectedTiles.length === displayedTileDescendants.length);

@@ -6,12 +6,12 @@
  * @module PresentationRules
  */
 
-import { RelatedInstanceSpecification } from "../RelatedInstanceSpecification";
-import { ChildNodeRule } from "./ChildNodeRule";
-import { CustomNodeSpecification } from "./CustomNodeSpecification";
-import { CustomQueryInstanceNodesSpecification } from "./CustomQueryInstanceNodesSpecification";
-import { InstanceNodesOfSpecificClassesSpecification } from "./InstanceNodesOfSpecificClassesSpecification";
-import { RelatedInstanceNodesSpecification } from "./RelatedInstanceNodesSpecification";
+import { RelatedInstanceSpecification } from "../RelatedInstanceSpecification.js";
+import { ChildNodeRule } from "./ChildNodeRule.js";
+import { CustomNodeSpecification } from "./CustomNodeSpecification.js";
+import { CustomQueryInstanceNodesSpecification } from "./CustomQueryInstanceNodesSpecification.js";
+import { InstanceNodesOfSpecificClassesSpecification } from "./InstanceNodesOfSpecificClassesSpecification.js";
+import { RelatedInstanceNodesSpecification } from "./RelatedInstanceNodesSpecification.js";
 
 /**
  * Used for serializing array of [[ChildNodeSpecification]]

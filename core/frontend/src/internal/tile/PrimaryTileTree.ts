@@ -11,7 +11,8 @@ import {
   OrderedId64Iterable,
 } from "@itwin/core-bentley";
 import {
-  BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapLayerSettings, ModelMapLayerSettings,
+  BaseLayerSettings,
+  BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings,
   PrimaryTileTreeId, RenderMode, RenderSchedule, SpatialClassifier, ViewFlagOverrides, ViewFlagsProperties,
 } from "@itwin/core-common";
 import { Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
@@ -26,7 +27,8 @@ import { SpatialViewState } from "../../SpatialViewState";
 import { SceneContext } from "../../ViewContext";
 import { AttachToViewportArgs, ViewState, ViewState3d } from "../../ViewState";
 import {
-  IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, MapLayerTileTreeReference, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
+  DisclosedTileTreeSet,
+  IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, LayerTileTreeReferenceHandler, MapLayerTileTreeReference, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
   TileTreeSupplier,
 } from "../../tile/internal";
 import { _scheduleScriptReference } from "../../common/internal/Symbols";
@@ -140,9 +142,30 @@ class PrimaryTreeReference extends TileTreeReference {
   private readonly _sectionClip?: StringifiedClipVector;
   private readonly _sectionCutAppearanceProvider?: FeatureAppearanceProvider;
   protected readonly _animationTransformNodeId?: number;
+  private _layerRefHandler: LayerTileTreeReferenceHandler;
+  public readonly iModel: IModelConnection;
 
-  public constructor(view: ViewState, model: GeometricModelState, planProjection: boolean, transformNodeId: number | undefined, sectionClip?: StringifiedClipVector) {
+  public shouldDrapeLayer(layerTreeRef?: MapLayerTileTreeReference): boolean {
+    const mapLayerSettings = layerTreeRef?.layerSettings;
+    if (mapLayerSettings && mapLayerSettings instanceof ModelMapLayerSettings)
+      return ModelMapLayerDrapeTarget.IModel === mapLayerSettings.drapeTarget;
+    return false;
+  }
+
+  public constructor(
+    view: ViewState,
+    model: GeometricModelState,
+    planProjection: boolean,
+    transformNodeId: number | undefined,
+    sectionClip?: StringifiedClipVector,
+    backgroundBase?: BaseLayerSettings,
+    backgroundLayers?: MapLayerSettings[]
+  ) {
     super();
+
+    this.iModel = model.iModel;
+
+    this._layerRefHandler = new LayerTileTreeReferenceHandler(this, false, backgroundBase, backgroundLayers, false);
     this.view = view;
     this.model = model;
     this._animationTransformNodeId = transformNodeId;
@@ -198,6 +221,11 @@ class PrimaryTreeReference extends TileTreeReference {
     return false;
   }
 
+  public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
+    super.discloseTileTrees(trees);
+    this._layerRefHandler.discloseTileTrees(trees);
+  }
+
   protected override getClipVolume(_tree: TileTree): RenderClipVolume | undefined {
     // ###TODO: reduce frequency with which getModelClip() is called
     return this.view.is3d() && !this._sectionClip ? this.view.getModelClip(this.model.id) : undefined;
@@ -218,7 +246,7 @@ class PrimaryTreeReference extends TileTreeReference {
   public get treeOwner(): TileTreeOwner {
     const newId = this.createTreeId(this.view, this._id.modelId);
     const timeline = IModelApp.tileAdmin.getScriptInfoForTreeId(this._id.modelId, this.view.displayStyle[_scheduleScriptReference])?.timeline;
-    if (0 !== compareIModelTileTreeIds(newId, this._id.treeId) || timeline !== this._id.timeline) {
+    if (0 !== compareIModelTileTreeIds(newId, this._id.treeId) || timeline?.isEditingCommitted) {
       this._id = {
         modelId: this._id.modelId,
         is3d: this._id.is3d,
@@ -253,7 +281,8 @@ class PrimaryTreeReference extends TileTreeReference {
     const edgesRequired = visibleEdges || RenderMode.SmoothShade !== renderMode || IModelApp.tileAdmin.alwaysRequestEdges;
     const edges = edgesRequired ? IModelApp.tileAdmin.edgeOptions : false;
     const sectionCut = this._sectionClip?.clipString;
-    return { type: BatchType.Primary, edges, animationId, sectionCut };
+    const disablePolyfaceDecimation = IModelApp.tileAdmin.disablePolyfaceDecimation;
+    return { type: BatchType.Primary, edges, animationId, sectionCut, disablePolyfaceDecimation };
   }
 
   protected computeBaseTransform(tree: TileTree): Transform {
@@ -267,6 +296,14 @@ class PrimaryTreeReference extends TileTreeReference {
       return baseTf;
 
     return displayTf.premultiply ? displayTf.transform.multiplyTransformTransform(baseTf) : baseTf.multiplyTransformTransform(displayTf.transform);
+  }
+
+  public override addToScene(context: SceneContext): void {
+    const tree = this.treeOwner.load() as IModelTileTree;
+    if (undefined === tree || !this._layerRefHandler.initializeLayers(context))
+      return;     // Not loaded yet.
+
+    super.addToScene(context);
   }
 }
 
@@ -312,8 +349,14 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
   private get _view3d() { return this.view as ViewState3d; }
   private readonly _baseTransform = Transform.createIdentity();
 
-  public constructor(view: ViewState3d, model: GeometricModelState, sectionCut?: StringifiedClipVector) {
-    super(view, model, true, undefined, sectionCut);
+  public constructor(
+    view: ViewState3d,
+    model: GeometricModelState,
+    sectionCut?: StringifiedClipVector,
+    backgroundBase?: BaseLayerSettings,
+    backgroundLayers?: MapLayerSettings[]
+  ) {
+    super(view, model, true, undefined, sectionCut, backgroundBase, backgroundLayers);
     this._viewFlagOverrides.forceSurfaceDiscard = true;
   }
 
@@ -392,15 +435,29 @@ function isPlanProjection(view: ViewState, model: GeometricModelState): boolean 
   return undefined !== model3d && model3d.isPlanProjection;
 }
 
-function createTreeRef(view: ViewState, model: GeometricModelState, sectionCut: StringifiedClipVector | undefined): PrimaryTreeReference {
+function createTreeRef(
+  view: ViewState,
+  model: GeometricModelState,
+  sectionCut: StringifiedClipVector | undefined,
+  backgroundBase?: BaseLayerSettings,
+  backgroundLayers?: MapLayerSettings[]
+): PrimaryTreeReference {
   if (false !== IModelApp.renderSystem.options.planProjections && isPlanProjection(view, model))
-    return new PlanProjectionTreeReference(view as ViewState3d, model, sectionCut);
+    return new PlanProjectionTreeReference(view as ViewState3d, model, sectionCut, backgroundBase, backgroundLayers);
 
-  return new PrimaryTreeReference(view, model, false, undefined, sectionCut);
+  return new PrimaryTreeReference(view, model, false, undefined, sectionCut, backgroundBase, backgroundLayers);
 }
 
-export function createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): PrimaryTreeReference {
-  return createTreeRef(view, model, undefined);
+export function createPrimaryTileTreeReference(
+  view: ViewState,
+  model: GeometricModelState,
+  getBackgroundBase?: () => BaseLayerSettings,
+  getBackgroundLayers?: () => MapLayerSettings[]
+): PrimaryTreeReference {
+  const backgroundBase = getBackgroundBase?.();
+  const backgroundLayers = getBackgroundLayers?.();
+
+  return createTreeRef(view, model, undefined, backgroundBase, backgroundLayers);
 }
 
 class MaskTreeReference extends TileTreeReference {
@@ -431,7 +488,7 @@ class MaskTreeReference extends TileTreeReference {
     return this._owner;
   }
   protected createTreeId(): PrimaryTileTreeId {
-    return { type: BatchType.Primary, edges: false };
+    return { type: BatchType.Primary, edges: false, disablePolyfaceDecimation: IModelApp.tileAdmin.disablePolyfaceDecimation };
   }
 }
 
@@ -457,7 +514,7 @@ export class ModelMapLayerTileTreeReference extends MapLayerTileTreeReference {
   }
 
   protected createTreeId(): PrimaryTileTreeId {
-    return { type: BatchType.Primary, edges: false };
+    return { type: BatchType.Primary, edges: false, disablePolyfaceDecimation: IModelApp.tileAdmin.disablePolyfaceDecimation };
   }
 
   public get treeOwner(): TileTreeOwner {

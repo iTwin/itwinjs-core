@@ -9,6 +9,7 @@ import { Phenomenon } from "../../Metadata/Phenomenon";
 import { Schema } from "../../Metadata/Schema";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { ECSchemaNamespaceUris } from "../../Constants";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -17,9 +18,10 @@ describe("Phenomenon tests", () => {
 
   it("should get fullName", async () => {
     const schemaJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: "TestSchema",
       version: "1.2.3",
+      alias: "ts",
       items: {
         testPhenomenon: {
           schemaItemType: "Phenomenon",
@@ -88,7 +90,7 @@ describe("Phenomenon tests", () => {
     });
     it("Basic test", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         schemaItemType: "Phenomenon",
         name: "AREA",
         label: "Area",
@@ -106,7 +108,7 @@ describe("Phenomenon tests", () => {
     });
     it("Basic test", () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         schemaItemType: "Phenomenon",
         name: "AREA",
         label: "Area",
@@ -125,7 +127,7 @@ describe("Phenomenon tests", () => {
     });
     it("async - Basic test", async () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         schemaItemType: "Phenomenon",
         name: "AREA",
         definition: "Units.LENGTH(2)",
@@ -136,7 +138,7 @@ describe("Phenomenon tests", () => {
     });
     it("sync - Basic test", () => {
       const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         schemaItemType: "Phenomenon",
         name: "AREA",
         definition: "Units.LENGTH(2)",
@@ -147,7 +149,7 @@ describe("Phenomenon tests", () => {
     });
     it("async - JSON stringify serialization", async () => {
       const phenomJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         schemaItemType: "Phenomenon",
         name: "AREA",
         definition: "Units.LENGTH(2)",
@@ -159,7 +161,7 @@ describe("Phenomenon tests", () => {
     });
     it("sync - JSON stringify serialization", () => {
       const phenomJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+        $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
         schemaItemType: "Phenomenon",
         name: "AREA",
         definition: "Units.LENGTH(2)",
@@ -174,7 +176,7 @@ describe("Phenomenon tests", () => {
   describe("toXml", () => {
     const newDom = createEmptyXmlDocument();
     const schemaJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/schemaitem",
+      $schema: ECSchemaNamespaceUris.SCHEMAITEMURL3_2,
       schemaItemType: "Phenomenon",
       name: "AREA",
       definition: "Units.LENGTH(2)",

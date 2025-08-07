@@ -8,15 +8,15 @@
 
 import { BeEvent, Id64String } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
-import { Descriptor, SelectionInfo } from "./content/Descriptor";
-import { FieldDescriptor } from "./content/Fields";
-import { Item } from "./content/Item";
-import { InstanceKey } from "./EC";
-import { ElementProperties } from "./ElementProperties";
-import { InstanceFilterDefinition } from "./InstanceFilterDefinition";
-import { Ruleset } from "./rules/Ruleset";
-import { RulesetVariable } from "./RulesetVariables";
-import { SelectionScopeProps } from "./selection/SelectionScope";
+import { Descriptor, SelectionInfo } from "./content/Descriptor.js";
+import { FieldDescriptor } from "./content/Fields.js";
+import { Item } from "./content/Item.js";
+import { InstanceKey } from "./EC.js";
+import { ElementProperties } from "./ElementProperties.js";
+import { InstanceFilterDefinition } from "./InstanceFilterDefinition.js";
+import { Ruleset } from "./rules/Ruleset.js";
+import { RulesetVariable } from "./RulesetVariables.js";
+import { SelectionScopeProps } from "./selection/SelectionScope.js";
 
 /**
  * A generic request options type used for both hierarchy and content requests.
@@ -34,13 +34,6 @@ export interface RequestOptions<TIModel> {
    * unit is used if unit system is not specified.
    */
   unitSystem?: UnitSystemKey;
-
-  /**
-   * Expected form of response. This property is set automatically on newer frontends.
-   * `unparsed-json` — deliver response from native addon without parsing it.
-   * @internal
-   */
-  transport?: "unparsed-json";
 }
 
 /**
@@ -186,7 +179,7 @@ export interface DistinctValuesRequestOptions<TIModel, TDescriptor, TKeySet, TRu
 /**
  * Request type for element properties requests
  * @public
- * @deprecated in 4.x. Use [[SingleElementPropertiesRequestOptions]] or [[MultiElementPropertiesRequestOptions]] directly.
+ * @deprecated in 4.4.0 - will not be removed until after 2026-06-13. Use [[SingleElementPropertiesRequestOptions]] or [[MultiElementPropertiesRequestOptions]] directly.
  */
 export type ElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> =
   | SingleElementPropertiesRequestOptions<TIModel>
@@ -293,14 +286,14 @@ export interface DisplayLabelsRequestOptions<TIModel, TInstanceKey> extends Requ
 /**
  * Request options used for selection scope related requests
  * @public
- * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * Request options used for calculating selection based on given instance keys and selection scope.
  * @public
- * @deprecated in 5.0. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `computeSelection` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md#selection-scopes) package instead.
  */
 export interface ComputeSelectionRequestOptions<TIModel> extends RequestOptions<TIModel> {
   elementIds: Id64String[];

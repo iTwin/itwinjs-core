@@ -11,7 +11,7 @@ import { Guid, GuidString } from "@itwin/core-bentley";
 /**
  * A helper to track ongoing async tasks. Usage:
  * ```
- * { 
+ * {
  *   using _r = tracker.trackAsyncTask();
  *   await doSomethingAsync();
  * }

@@ -27,6 +27,7 @@ export enum QueryRowFormat {
   UseECSqlPropertyIndexes,
   /** Each row is an object in which each non-null column value can be accessed by a [remapped property name]($docs/learning/ECSqlRowFormat.md).
    * This format is backwards-compatible with the format produced by iTwin.js 2.x. Null values are omitted.
+   * @depreacted in 4.11.  Switch to UseECSqlPropertyIndexes for best performance, and UseECSqlPropertyNames if you want a JSON object as the result.
    */
   UseJsPropertyNames,
 }
@@ -62,7 +63,7 @@ export interface QueryPropertyMetaData {
   /** The name is the property's alias if the property is a generated one, otherwise, it is the name of the property. */
   name: string;
   /** If this property is a PrimitiveECProperty, extend type is the extended type name of this property, if it is not defined locally will be inherited from base property if one exists, otherwise extend type is set to an empty string.
-   * @deprecated in 4.11 Use extendedType instead
+   * @deprecated in 4.11 - will not be removed until after 2026-06-13. Use extendedType instead
    */
   extendType: string;
   /** If this property is a PrimitiveECProperty, extended type is the extended type name of this property, if it is not defined locally will be inherited from base property if one exists, otherwise extended type will be undefined. */
@@ -115,10 +116,6 @@ export interface BaseReaderOptions {
    * concurrent query is configure to honour it.
    */
   delay?: number;
-  /**
-   * @internal
-   */
-  testingArgs?: TestingArgs;
 }
 
 /**
@@ -144,6 +141,7 @@ export interface QueryOptions extends BaseReaderOptions {
   /**
    * Convert ECClassId, SourceECClassId, TargetECClassId and RelClassId to respective name.
    * When true, XXXXClassId property will be returned as className.
+   * @deprecated in 4.11 - will not be removed until after 2026-06-13. Use ecsql function ec_classname to get class name instead.
    * */
   convertClassIdsToClassNames?: boolean;
   /**
@@ -223,8 +221,10 @@ export class QueryOptionsBuilder {
    * If set ECClassId, SourceECClassId and TargetECClassId system properties will return qualified name of class instead of a @typedef Id64String.
    * @param val A boolean value.
    * @returns @type QueryOptionsBuilder for fluent interface.
+   * @deprecated in 4.11 - will not be removed until after 2026-06-13. Use ecsql function ec_classname to get class name instead.
    */
   public setConvertClassIdsToNames(val: boolean) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._options.convertClassIdsToClassNames = val;
     return this;
   }
@@ -254,16 +254,6 @@ export class QueryOptionsBuilder {
    */
   public setDelay(val: number) {
     this._options.delay = val;
-    return this;
-  }
-  /**
- * @internal
- * Use for testing internal logic. This parameter is ignored by default unless concurrent query is configure to not ignore it.
- * @param val Testing arguments.
- * @returns @type QueryOptionsBuilder for fluent interface.
- */
-  public setTestingArgs(val: TestingArgs) {
-    this._options.testingArgs = val;
     return this;
   }
 }
@@ -689,11 +679,6 @@ export enum DbResponseStatus {
 }
 
 /** @internal */
-export interface TestingArgs {
-  interrupt?: boolean
-}
-
-/** @internal */
 export enum DbValueFormat {
   ECSqlNames = 0,
   JsNames = 1
@@ -702,7 +687,6 @@ export enum DbValueFormat {
 /** @internal */
 export interface DbRequest extends BaseReaderOptions {
   kind?: DbRequestKind;
-  testingArgs?: TestingArgs
 }
 
 /** @internal */
@@ -771,15 +755,16 @@ export interface DbQueryConfig {
   requestQueueSize?: number;
   /** Number of worker thread, default to 4 */
   workerThreads?: number;
+  /** Use thread connection to prepare the statement */
   doNotUsePrimaryConnToPrepare?: boolean;
-  /** After no activity for given time concurrenty query will automatically shutdown */
-  autoShutdowWhenIdlelForSeconds?: number;
+  /** After no activity for given time concurrent query will automatically shutdown */
+  autoShutdownWhenIdleForSeconds?: number;
   /** Maximum number of statement cache per worker. Default to 40 */
   statementCacheSizePerWorker?: number;
-  /* Monitor poll interval in milliseconds. Its responsable for cancelling queries that pass quota. It can be set between 1000 and Max time quota for query */
+  /* Monitor poll interval in milliseconds. Its responsible for cancelling queries that pass quota. It can be set between 1000 and Max time quota for query */
   monitorPollInterval?: number;
   /** Set memory map io for each worker connection size in bytes. Default to zero mean do not use mmap io */
   memoryMapFileSize?: number;
-  /** Used by test to simulate certain test cases. Its is false by default. */
-  allowTestingArgs?: boolean;
+  /** How often to measure progress of a running ECSql statement which is used to enforced time limit */
+  progressOpCount?: number;
 }
