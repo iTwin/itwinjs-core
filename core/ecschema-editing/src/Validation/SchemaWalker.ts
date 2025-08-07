@@ -50,10 +50,8 @@ export class SchemaWalker {
   }
 
   private async traverseClass(ecClass: ECClass): Promise<void> {
-    if (ecClass.properties) {
-      for (const property of ecClass.properties) {
-        await this._visitorHelper.visitSchemaPart(property);
-      }
+    for (const property of await ecClass.getProperties(true)) {
+      await this._visitorHelper.visitSchemaPart(property);
     }
 
     if (ecClass.schemaItemType === SchemaItemType.RelationshipClass) {

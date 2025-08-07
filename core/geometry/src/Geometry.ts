@@ -8,19 +8,17 @@
  */
 
 import { AngleSweep } from "./geometry3d/AngleSweep";
-import { Point2d, Vector2d, XY } from "./geometry3d/Point2dVector2d";
+import { Point2d, Vector2d } from "./geometry3d/Point2dVector2d";
 import { Point3d, Vector3d, XYZ } from "./geometry3d/Point3dVector3d";
-import { XAndY } from "./geometry3d/XYZProps";
+import { XAndY, XYAndZ } from "./geometry3d/XYZProps";
 import { Point4d } from "./geometry4d/Point4d";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
 /**
  * Enumeration of the 6 possible orderings of XYZ axis order
- * * **Note:** There are 3 axis order with right hand system (XYZ = 0, YZX = 1, ZXY = 2) and 3 axis order with
- * left hand system (XZY = 4, YXZ = 5, ZYX = 6). Note that `AxisOrder` is encoding the handedness as well. Cross
- * product of the i_th axis in an ordering (i=0,1,2), with the i+1_th in that ordering, will produce the i+2_th
- * axis in that ordering.
+ * * AxisOrder encodes handedness as well. There are 3 right-handed axis orderings (XYZ, YZX, ZXY) and 3 left-handed orderings (XZY, YXZ, ZYX).
+ * * Given an axis ordering, the cross product of axis _i_ with axis _i+1_ yields axis _i+2_.
  * @public
  */
 export enum AxisOrder {
@@ -210,7 +208,7 @@ export type AngleSweepProps =
 /**
 * Interface for method with a clone operation.
 * @public
-* @deprecated in 4.x. Use ICloneable.
+* @deprecated in 4.4.0 - will not be removed until after 2026-06-13. Use ICloneable.
 */
 export interface Cloneable<T> {
   /** Required method to return a deep clone. */
@@ -237,7 +235,7 @@ export interface PerpParallelOptions {
    */
   radianSquaredTol?: number;
   /**
-   * Squared distance tolerance for detecting a zero-length vector.
+   * Squared distance tolerance for detecting equal points.
    * Default: [[Geometry.smallMetricDistanceSquared]].
    */
   distanceSquaredTol?: number;
@@ -282,7 +280,7 @@ export class Geometry {
   public static readonly largeCoordinateResult = 1.0e13;
   /**
    * Numeric value that may considered infinite for metric coordinates.
-   * @deprecated in 4.x. Use [[largeCoordinateResult]].
+   * @deprecated in 4.9.0 - will not be removed until after 2026-06-13. Use [[largeCoordinateResult]].
    * * This coordinate should be used only as a placeholder indicating "at infinity" -- computing actual
    * points at this coordinate invites numerical problems.
    */
@@ -293,7 +291,7 @@ export class Geometry {
   }
   /**
    * Test if the absolute value of x is at least [[largeCoordinateResult]].
-   * @deprecated in 4.x. Use [[isLargeCoordinateResult]].
+   * @deprecated in 4.9.0 - will not be removed until after 2026-06-13. Use [[isLargeCoordinateResult]].
    */
   public static isHugeCoordinate(x: number): boolean {
     return Geometry.isLargeCoordinateResult(x);
@@ -448,7 +446,7 @@ export class Geometry {
    * Lexical comparison of (a.x, a.y) and (b.x, b.y) with x as first test and y as second (z is ignored).
    * * This is appropriate for a horizontal sweep in the plane.
    */
-  public static lexicalXYLessThan(a: XY | XYZ, b: XY | XYZ): -1 | 0 | 1 {
+  public static lexicalXYLessThan(a: XAndY, b: XAndY): -1 | 0 | 1 {
     if (a.x < b.x)
       return -1;
     else if (a.x > b.x)
@@ -463,7 +461,7 @@ export class Geometry {
    * Lexical comparison of (a.x, a.y) and (b.x, b.y) with y as first test and x as second (z is ignored).
    * * This is appropriate for a vertical sweep in the plane.
    */
-  public static lexicalYXLessThan(a: XY | XYZ, b: XY | XYZ): -1 | 0 | 1 {
+  public static lexicalYXLessThan(a: XAndY, b: XAndY): -1 | 0 | 1 {
     if (a.y < b.y)
       return -1;
     else if (a.y > b.y)
@@ -475,7 +473,7 @@ export class Geometry {
     return 0;
   }
   /** Lexical comparison of (a.x, a.y, a.z) and (b.x, b.y, b.z) with x as first test, y as second, and z as third. */
-  public static lexicalXYZLessThan(a: XYZ, b: XYZ): -1 | 0 | 1 {
+  public static lexicalXYZLessThan(a: XYAndZ, b: XYAndZ): -1 | 0 | 1 {
     if (a.x < b.x)
       return -1;
     else if (a.x > b.x)
@@ -535,6 +533,20 @@ export class Geometry {
    */
   public static isAlmostEqualEitherNumber(a: number, b: number, c: number, tolerance: number = Geometry.smallAngleRadians): boolean {
     return this.isAlmostEqualNumber(a, b, tolerance) || this.isAlmostEqualNumber(a, c, tolerance);
+  }
+  /**
+   * Toleranced test for equality to any of `count` numbers supplied by `iterator`.
+   * @param a value to test
+   * @param values array of values to test against, or an object that provides the i_th value, where 0 <= i < length.
+   * @param tolerance relative tolerance. Default value is [[smallAngleRadians]].
+   * @returns true if and only if `a` is almost equal to at least one value supplied by `iterator`.
+   */
+  public static isAlmostEqualAnyNumber(a: number, values: number[] | { iter: (i: number) => number, length: number }, tolerance: number = Geometry.smallAngleRadians): boolean {
+    const value = Array.isArray(values) ? (i: number) => values[i] : values.iter;
+    for (let i = 0; i < values.length; i++)
+      if (this.isAlmostEqualNumber(a, value(i), tolerance))
+        return true;
+    return false;
   }
   /**
    * Toleranced equality test using tolerance `tolerance * ( 1 + abs(a.x) + abs(a.y) + abs(b.x) + abs(b.y) )`.
@@ -708,6 +720,16 @@ export class Geometry {
    */
   public static distanceXYXY(x0: number, y0: number, x1: number, y1: number): number {
     return Geometry.hypotenuseXY(x1 - x0, y1 - y0);
+  }
+  /**
+   * Return the squared distance between xy points given as numbers.
+   * @param x0 x coordinate of point 0
+   * @param y0 y coordinate of point 0
+   * @param x1 x coordinate of point 1
+   * @param y1 y coordinate of point 1
+   */
+  public static distanceSquaredXYXY(x0: number, y0: number, x1: number, y1: number): number {
+    return Geometry.hypotenuseSquaredXY(x1 - x0, y1 - y0);
   }
   /**
    * Return the distance between xyz points given as numbers.
@@ -1297,7 +1319,7 @@ export class Geometry {
   /**
    * Clone an array whose members have type `T`, which implements the clone method.
    * * If the clone method returns `undefined`, then `undefined` is forced into the cloned array.
-   * @deprecated in 4.x. Use cloneArray.
+   * @deprecated in 4.4.0 - will not be removed until after 2026-06-13. Use cloneArray.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public static cloneMembers<T extends Cloneable<T>>(array: T[] | undefined): T[] | undefined {

@@ -6,9 +6,9 @@
  * @module Core
  */
 
-import { Rule } from "./rules/Rule";
-import { Ruleset, SupplementationInfo } from "./rules/Ruleset";
-import { VariablesGroup } from "./rules/Variables";
+import { Rule } from "./rules/Rule.js";
+import { Ruleset, SupplementationInfo } from "./rules/Ruleset.js";
+import { VariablesGroup } from "./rules/Variables.js";
 
 /**
  * A ruleset that is registered in a ruleset manager.
@@ -31,8 +31,8 @@ export class RegisteredRuleset implements Disposable, Ruleset {
     this._disposeFunc(this);
   }
 
-  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
-  // istanbul ignore next
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
+  /* c8 ignore next 3 */
   public dispose() {
     this[Symbol.dispose]();
   }

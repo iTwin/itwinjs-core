@@ -7,8 +7,8 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { SingleSchemaClassSpecification } from "./ClassSpecifications";
-import { RelationshipPathSpecification } from "./RelationshipPathSpecification";
+import { SingleSchemaClassSpecification } from "./ClassSpecifications.js";
+import { RelationshipPathSpecification } from "./RelationshipPathSpecification.js";
 
 /**
  * Defines base attributes for [[RelatedInstanceByPathSpecification]] and [[RelatedInstanceByTargetInstancesSpecification]].

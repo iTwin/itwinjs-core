@@ -19,6 +19,18 @@ export type ImageryMapLayerFormatId  = "ArcGIS" | "BingMaps" | "MapboxImagery" |
 /** @public */
 export type SubLayerId = string | number;
 
+/**
+ * Type for map layer provider array property.
+ * @beta
+ */
+export type MapLayerProviderArrayProperty = number[] | string[] | boolean[];
+
+/**
+ * Type for map layer provider properties.
+ * @beta
+ */
+export interface MapLayerProviderProperties { [key: string]: number | string | boolean | MapLayerProviderArrayProperty };
+
 /** JSON representation of the settings associated with a map sublayer included within a [[MapLayerProps]].
  * A map sub layer represents a set of objects within the layer that can be controlled separately.  These
  * are produced only from map servers that produce images on demand and are not supported by tiled (cached) servers.
@@ -132,10 +144,12 @@ export interface CommonMapLayerProps {
 
   /** A user-friendly name for the layer. */
   name: string;
+
   /** A transparency value from 0.0 (fully opaque) to 1.0 (fully transparent) to apply to map graphics when drawing,
    * or false to indicate the transparency should not be overridden.
    * Default value: 0.
    */
+
   transparency?: number;
   /** True to indicate background is transparent.
    * Default: true.
@@ -169,6 +183,23 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
   */
   queryParams?: { [key: string]: string };
 
+  /** Properties specific to the map layer provider.
+   * @beta
+  */
+  properties?: MapLayerProviderProperties;
+
+}
+
+/** The target onto which to drape a model map layer.
+ * @beta
+ */
+export enum ModelMapLayerDrapeTarget {
+  /** Drape only onto the globe. */
+  Globe = 1 << 0,
+  /** Drape only onto all attached reality data. */
+  RealityData = 1 << 1,
+  /** Drape only onto all models within the iModel. */
+  IModel = 1 << 2,
 }
 
 /** JSON representation of a [[ModelMapLayerSettings]].
@@ -178,7 +209,10 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
 export interface ModelMapLayerProps extends CommonMapLayerProps {
   /** The Id of the [GeometricModel]($backend) containing the geometry to be drawn by the layer. */
   modelId: Id64String;
-
+  /** Specifies the target onto which to drape this model map layer. Defaults to [ModelMapLayerDrapeTarget.Globe]($common).
+   * @beta
+   */
+  drapeTarget?: ModelMapLayerDrapeTarget;
   /** @internal */
   url?: never;
   /** @internal */
@@ -297,6 +331,12 @@ export class ImageMapLayerSettings extends MapLayerSettings {
    * @beta
   */
   public unsavedQueryParams?: { [key: string]: string };
+
+  /** Properties specific to the map layer provider.
+   * @beta
+  */
+  public readonly properties?: MapLayerProviderProperties;
+
   public readonly subLayers: MapSubLayerSettings[];
   public override get source(): string { return this.url; }
 
@@ -311,6 +351,11 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     if (props.queryParams) {
       this.savedQueryParams = {...props.queryParams};
     }
+
+    if (props.properties) {
+      this.properties = {...props.properties}
+    }
+
     this.subLayers = [];
     if (!props.subLayers)
       return;
@@ -338,6 +383,10 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     if (this.savedQueryParams)
       props.queryParams = {...this.savedQueryParams};
 
+    if (this.properties) {
+      props.properties = structuredClone(this.properties);
+    }
+
     return props;
   }
 
@@ -351,7 +400,6 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     // Clone members not part of MapLayerProps
     clone.userName = this.userName;
     clone.password = this.password;
-    clone.accessKey = this.accessKey;
     if (this.unsavedQueryParams)
       clone.unsavedQueryParams = {...this.unsavedQueryParams};
     if (this.savedQueryParams)
@@ -374,6 +422,11 @@ export class ImageMapLayerSettings extends MapLayerSettings {
       props.queryParams = {...this.savedQueryParams};
     }
 
+    if (changedProps.properties) {
+      props.properties = {...changedProps.properties}
+    } else  if (this.properties) {
+      props.properties = {...this.properties}
+    }
     return props;
   }
 
@@ -483,26 +536,33 @@ export class ImageMapLayerSettings extends MapLayerSettings {
  * @public
  */
 export class ModelMapLayerSettings extends MapLayerSettings {
+  /** Specifies the target onto which to drape this model map layer. Defaults to [ModelMapLayerDrapeTarget.Globe]($common).
+   * @beta
+   */
+  public readonly drapeTarget: ModelMapLayerDrapeTarget;
   public readonly modelId: Id64String;
   public override get source(): string { return this.modelId; }
 
   /** @internal */
   protected constructor(modelId: Id64String,  name: string, visible = true,
-    transparency: number = 0, transparentBackground = true) {
+    transparency: number = 0, transparentBackground = true, drapeTarget = ModelMapLayerDrapeTarget.Globe) {
     super(name, visible, transparency, transparentBackground);
     this.modelId = modelId;
+    this.drapeTarget = drapeTarget;
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
   public static override fromJSON(json: ModelMapLayerProps): ModelMapLayerSettings {
     const transparentBackground = (json.transparentBackground === undefined) ? true : json.transparentBackground;
-    return new this(json.modelId, json.name, json.visible, json.transparency, transparentBackground);
+    return new this(json.modelId, json.name, json.visible, json.transparency, transparentBackground, json.drapeTarget);
   }
 
   /** return JSON representation of this MapLayerSettings object */
   public override toJSON(): ModelMapLayerProps {
     const props = super._toJSON() as ModelMapLayerProps;
     props.modelId = this.modelId;
+    if (this.drapeTarget !== ModelMapLayerDrapeTarget.Globe)
+      props.drapeTarget = this.drapeTarget;
     return props;
   }
 
@@ -518,6 +578,7 @@ export class ModelMapLayerSettings extends MapLayerSettings {
   protected override cloneProps(changedProps: Partial<ModelMapLayerProps>): ModelMapLayerProps {
     const props = super.cloneProps(changedProps) as ModelMapLayerProps;
     props.modelId = changedProps.modelId ?? this.modelId;
+    props.drapeTarget = changedProps.drapeTarget ?? this.drapeTarget;
     return props;
   }
 

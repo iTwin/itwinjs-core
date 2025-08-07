@@ -11,6 +11,7 @@ export function createSchemaJsonWithItems(itemsJson: any, referenceJson?: any): 
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "TestSchema",
     version: "1.2.3",
+    alias: "ts",
     items: {
       ...itemsJson,
     },
@@ -40,7 +41,7 @@ export class ReferenceSchemaLocater implements ISchemaLocater {
     return undefined;
   }
 
-  public async getSchemaInfo(schemaKey: Readonly<SchemaKey>, _matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
+  public async getSchemaInfo(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
     if (this._schemaList.has(schemaKey.name)) {
       const schemaBody = this._schemaList.get(schemaKey.name);
       const schemaInfo = this._asyncParser(schemaBody, context);

@@ -10,13 +10,13 @@
 
 import * as path from "path";
 import {
-  AccessToken, BeDuration, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, Optional, StopWatch,
+  AccessToken, BeDuration, ChangeSetStatus, DbResult, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, Optional, StopWatch
 } from "@itwin/core-bentley";
 import {
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
   LocalDirName, LocalFileName, RequestNewBriefcaseProps,
 } from "@itwin/core-common";
-import { AcquireNewBriefcaseIdArg, IModelNameArg } from "./BackendHubAccess";
+import { AcquireNewBriefcaseIdArg, DownloadChangesetArg, DownloadChangesetRangeArg, IModelNameArg } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, CheckpointProps, ProgressFunction } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
@@ -402,6 +402,20 @@ export class BriefcaseManager {
     return status;
   }
 
+  /** Download all the changesets in the specified range.
+   * @beta
+   */
+  public static async downloadChangesets(arg: DownloadChangesetRangeArg): Promise<ChangesetFileProps[]> {
+    return IModelHost[_hubAccess].downloadChangesets(arg);
+  }
+
+  /** Download a single changeset.
+   * @beta
+   */
+  public static async downloadChangeset(arg: DownloadChangesetArg): Promise<ChangesetFileProps> {
+    return IModelHost[_hubAccess].downloadChangeset(arg);
+  }
+
   /** Query the hub for the properties for a ChangesetIndex or ChangesetId  */
   public static async queryChangeset(arg: { iModelId: GuidString, changeset: ChangesetIndexOrId }): Promise<ChangesetProps> {
     return IModelHost[_hubAccess].queryChangeset({ ...arg, accessToken: await IModelHost.getAccessToken() });
@@ -595,6 +609,10 @@ export class BriefcaseManager {
       throw new IModelError(IModelStatus.NoContent, "error creating changeset");
 
     changesetProps.size = fileSize;
+    const id = IModelNative.platform.DgnDb.computeChangesetId(changesetProps);
+    if (id !== changesetProps.id) {
+      throw new IModelError(DbResult.BE_SQLITE_ERROR_InvalidChangeSetVersion, `Changeset id ${changesetProps.id} does not match computed id ${id}.`);
+    }
 
     let retryCount = arg.pushRetryCount ?? 3;
     while (true) {

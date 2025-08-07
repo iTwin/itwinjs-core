@@ -51,29 +51,36 @@ export class Triangulator {
     c.z = f.z;
   }
   /**
-   * * nodeA is a given node
-   * * nodeA1 is its nodeA.faceSuccessor
-   * * nodeA2 is nodeA1.faceSuccessor, i.e. 3rd node of triangle A
-   * * nodeB  is nodeA.edgeMate, i.e. a node in the "other" triangle at nodeA's edge
-   * * nodeB1 is nodeB.faceSuccessor
-   * * nodeB2 is nodeB1.faceSuccessor, i.e the 3rd node of triangle B
-   * Construct (as simple doubles, to avoid object creation) xy vectors from:
-   * * (ux,uy): nodeA to nodeA1, i.e. the shared edge
-   * * (vx,vy): nodeA to nodeA2,
-   * * (wx,wy): nodeA to nodeB2
-   * * this determinant is positive if nodeA is "in the circle" of nodeB2, nodeA1, nodeA2
-   * * Return true if clearly positive
-   * * Return false if clearly negative or almost zero.
-   * @param nodeA node on the diagonal edge of candidate for edge flip.
+   * Given a node in triangle A on the edge shared by triangle B, test whether the far vertex of B lies inside the circumcircle of A.
+   * @param nodeA node on the shared edge between triangles A and B.
+   * @return The following are equivalent:
+   *   * return true
+   *   * the computed determinant is strongly positive (greater than epsilon)
+   *   * the far vertex of B lies strictly inside the circumcircle of A
+   *   * the quad AB fails the Delaunay condition
+   *   * the quad CD obtained from AB by switching to the other diagonal satisfies the Delaunay condition
+   *   * to satisfy Delaunay, the caller should flip the diagonal of AB (obtaining CD)
    */
-  public static computeInCircleDeterminantIsStrongPositive(nodeA: HalfEdge): boolean {
-    // Assume triangle A1,A2,B2 is ccw.
-    // Shift the triangle to the origin (by negated A coords).
-    // The Delaunay condition is computed by projecting the origin and the shifted triangle
-    // points up to the paraboloid z = x*x + y*y. Due to the radially symmetric convexity of
-    // this surface and the ccw orientation of this triangle, "A is inside triangle A1,A2,B2"
-    // is equivalent to "the volume of the parallelepiped formed by the projected points is
-    // negative, as computed by the triple product."
+  public static computeCircumcircleDeterminantIsStrongPositive(nodeA: HalfEdge): boolean {
+    // Confusingly enough, what we are actually doing here is testing the quad CD.
+    // * CD satisfies the Delaunay condition if and only if AB does not.
+    // * So let AB be convex, with CCW triangles (A,A1,A2) and (B,B1,B2) where A and B are edge mates.
+    //   Then CD consists of two CCW triangles that share an edge between the vertices at A2 and B2.
+    //   We only have to test one of the two triangles of CD---whether its circumcircle contains the far vertex.
+    //   By a beautiful theorem (Corollary 5.7.1 in O'Rourke, Computational Geometry in C, 2nd ed.), the following
+    //   are equivalent based on the radial symmetry and convexity of the paraboloid P defined by z = x*x + y*y,
+    //   and the CCW triangle orientation:
+    //   * A is outside the circumcircle of the CCW triangle with vertices (A1,A2,B2).
+    //   * The volume of the tetrahedron (determinant) formed by the projections of the quad points to P is negative.
+    //   * The volume of the parallelepiped (triple product) formed by vectors u=A1-A, v=A2-A, w=B2-A projected to P is negative.
+    //   * The triple product u.(v x w) is negative.
+    //   * The triple product w.(v x u) is positive <-- this is what we compute below.
+    //   * The quad CD satisfies the Delaunay condition.
+    //   * The quad AB fails the Delaunay condition.
+    //   * Return true.
+    // * When AB is non-convex, CD is convex and consists of a large CCW triangle that contains the other CW triangle.
+    //   This containment causes the triple product to be positive, which implies CD fails (and thus AB satisfies)
+    //   the Delaunay condition, so this method returns false.
     const nodeA1 = nodeA.faceSuccessor;
     const nodeA2 = nodeA1.faceSuccessor;
     if (nodeA2.faceSuccessor !== nodeA)
@@ -98,7 +105,8 @@ export class Triangulator {
     const q = Geometry.tripleProduct(
       wx, wy, tx,
       vx, vy, ty,
-      ux, uy, tz);
+      ux, uy, tz,
+    );
     if (q < 0)
       return false;
     const denom = Math.abs(wx * vy * tz) + Math.abs(wy * ty * ux) + Math.abs(tx * vx * uy)
@@ -108,7 +116,7 @@ export class Triangulator {
 
   /**
    *  *  Visit each node of the graph array
-   *  *  If a flip would be possible, test the results of flipping using incircle condition
+   *  *  If a flip would be possible, test the results of flipping using circumcircle condition
    *  *  If revealed to be an improvement, conduct the flip, mark involved nodes as unvisited, and repeat until all nodes are visited
    */
   public static flipTriangles(graph: HalfEdgeGraph): number {
@@ -122,7 +130,7 @@ export class Triangulator {
 
   /**
    *  *  Visit each node of the graph array
-   *  *  If a flip would be possible, test the results of flipping using incircle condition
+   *  *  If a flip would be possible, test the results of flipping using circumcircle condition
    *  *  If revealed to be an improvement, conduct the flip, mark involved nodes as unvisited, and repeat until all nodes are visited
    */
   public static flipTrianglesInEdgeSet(graph: HalfEdgeGraph, edgeSet: MarkedEdgeSet): number {
@@ -138,7 +146,7 @@ export class Triangulator {
       if (node.isMaskSet(barrierMasks)) // Flip not allowed
         continue;
 
-      if (Triangulator.computeInCircleDeterminantIsStrongPositive(node)) {
+      if (Triangulator.computeCircumcircleDeterminantIsStrongPositive(node)) {
         // Flip the triangles
         Triangulator.flipEdgeBetweenTriangles(node.edgeMate.faceSuccessor, node.edgeMate.facePredecessor, node.edgeMate, node.faceSuccessor, node, node.facePredecessor);
         // keep looking at the 2 faces
@@ -184,7 +192,7 @@ export class Triangulator {
       context.insertAndRetriangulate(p, zRule);
       numInsert++; // eslint-disable-line @typescript-eslint/no-unused-vars
     }
-    if (face0.countEdgesAroundFace() > 3) // all vertices are on the hull (or duplicates of them)
+    if (face0.countEdgesAroundFace() > 3) // no strictly interior vertices to split the hull polygon, so triangulate it
       return Triangulator.createTriangulatedGraphFromSingleLoop(hull);
     return graph;
   }
@@ -508,7 +516,7 @@ export class Triangulator {
     //    triangle B1 A1 D is on the other side of AB
     //    The condition for flipping is:
     //           ! both triangles must be TRIANGULATED_NODE_MASK
-    //           ! incircle condition flags D as in the circle of ABC
+    //           ! circumcircle condition flags D as in the circle of ABC
     //     after flip, node A moves to the vertex of D, and is the effective "ear",  with the cap edge C A1
     //      after flip, consider the A1 D (whose nodes are A1 and flipped A!!!)
     //
@@ -528,7 +536,7 @@ export class Triangulator {
     let a0 = b0.facePredecessor;
     let b1 = a0.edgeMate;
     while (Triangulator.isInteriorTriangle(a0) && Triangulator.isInteriorTriangle(b1)) {
-      const detA = Triangulator.computeInCircleDeterminantIsStrongPositive(a0);
+      const detA = Triangulator.computeCircumcircleDeterminantIsStrongPositive(a0);
       if (!detA)
         break;
       // Flip the triangles

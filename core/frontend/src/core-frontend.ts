@@ -9,6 +9,7 @@ export * from "./AuxCoordSys";
 export * from "./BingLocation";
 export * from "./BriefcaseConnection";
 export * from "./BriefcaseTxns";
+export * from "./CatalogConnection";
 export * from "./CategorySelectorState";
 export * from "./ChangeFlags";
 export * from "./CheckpointConnection";
@@ -122,6 +123,7 @@ export {
   type TiledGraphicsProvider,
   type TileDrawArgParams, TileDrawArgs,
   type CollectTileStatus, type TileGeometryCollectorOptions, TileGeometryCollector, type GeometryTileTreeReference,
+  type GeometryTileTreeReferenceOptions,
   type TileParams,
   TileRequestChannels,
   type TileContentDecodingStatistics, TileRequestChannelStatistics, TileRequestChannel,
@@ -135,7 +137,7 @@ export {
   TileUsageMarker,
   TileUser,
   BingElevationProvider,
-  QuadId,
+  QuadId, type QuadIdProps,
   MapTilingScheme, GeographicTilingScheme, WebMercatorProjection, WebMercatorTilingScheme,
   type MapLayerIndex,
   MapTileProjection, MapTile,

@@ -25,9 +25,9 @@ import {
   StructTypeDescription,
   TypeDescription,
   ValuesMap,
-} from "../../presentation-common";
-import { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification";
-import { createTestECClassInfo, createTestECInstanceKey, createTestPropertyInfo, createTestRelationshipPath } from "./EC";
+} from "../../presentation-common.js";
+import { RelationshipMeaning } from "../../presentation-common/rules/content/modifiers/RelatedPropertiesSpecification.js";
+import { createTestECClassInfo, createTestECInstanceKey, createTestPropertyInfo, createTestRelationshipPath } from "./EC.js";
 
 /**
  * @internal Used for testing only.

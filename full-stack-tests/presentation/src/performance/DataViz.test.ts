@@ -30,10 +30,10 @@ import {
   Value,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { ECClassHierarchy, ECClassInfo } from "../ECClasHierarchy";
-import { initialize, terminate } from "../IntegrationTests";
-import { collect, getFieldsByLabel } from "../Utils";
-import { TestIModelConnection } from "../IModelSetupUtils";
+import { ECClassHierarchy, ECClassInfo } from "../ECClasHierarchy.js";
+import { initialize, terminate } from "../IntegrationTests.js";
+import { collect, getFieldsByLabel } from "../Utils.js";
+import { TestIModelConnection } from "../IModelSetupUtils.js";
 
 /**
  * The below specifies what iModel to use and what Fields (properties) to use for simulating DataViz
@@ -352,10 +352,13 @@ describe("#performance DataViz requests", () => {
         const createWhereClause = (propertyClassAlias: string, filteredProperty: PropertyInfo, values: Value[]) => {
           return values.reduce((filter, rawValue) => {
             if (filter !== "") {
+              // eslint-disable-next-line @typescript-eslint/no-base-to-string
               filter += " OR ";
             }
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
             filter += `${propertyClassAlias}.${filteredProperty.name}`;
             if (rawValue === undefined || rawValue === null) {
+              // eslint-disable-next-line @typescript-eslint/no-base-to-string
               filter += " IS NULL";
             } else {
               // eslint-disable-next-line @typescript-eslint/no-base-to-string
@@ -379,6 +382,7 @@ describe("#performance DataViz requests", () => {
           ) => {
             for (const distinctValuesEntry of distinctValues) {
               const [displayValue, rawValues] = distinctValuesEntry;
+              // eslint-disable-next-line @typescript-eslint/no-base-to-string
               const filteredClassesQuery = `${queryBase}${createWhereClause(propertyClassAlias, filteredProperty, [...rawValues])}`;
               for await (const { classId } of iModel.createQueryReader(filteredClassesQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
                 pushValues(displayValueEntries, displayValue, [
@@ -437,20 +441,20 @@ describe("#performance DataViz requests", () => {
                         relatedInstances:
                           pathFromContentToPropertyClass.length > 0
                             ? [
-                              {
-                                relationshipPath: pathFromContentToPropertyClass.map((step) => {
-                                  const [relationshipSchemaName, relationshipClassName] = step.relationshipName.split(":");
-                                  const [targetSchemaName, targetClassName] = step.targetClassName.split(":");
-                                  return {
-                                    relationship: { schemaName: relationshipSchemaName, className: relationshipClassName },
-                                    direction: step.isForwardRelationship ? RelationshipDirection.Forward : RelationshipDirection.Backward,
-                                    targetClass: { schemaName: targetSchemaName, className: targetClassName },
-                                  };
-                                }),
-                                isRequired: true,
-                                alias: propertyClassAlias,
-                              },
-                            ]
+                                {
+                                  relationshipPath: pathFromContentToPropertyClass.map((step) => {
+                                    const [relationshipSchemaName, relationshipClassName] = step.relationshipName.split(":");
+                                    const [targetSchemaName, targetClassName] = step.targetClassName.split(":");
+                                    return {
+                                      relationship: { schemaName: relationshipSchemaName, className: relationshipClassName },
+                                      direction: step.isForwardRelationship ? RelationshipDirection.Forward : RelationshipDirection.Backward,
+                                      targetClass: { schemaName: targetSchemaName, className: targetClassName },
+                                    };
+                                  }),
+                                  isRequired: true,
+                                  alias: propertyClassAlias,
+                                },
+                              ]
                             : [],
                         instanceFilter: rawValues.reduce<string>((filter, rawValue) => {
                           if (filter !== "") {

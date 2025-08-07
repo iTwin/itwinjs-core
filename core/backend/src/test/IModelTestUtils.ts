@@ -18,7 +18,7 @@ import {
 } from "@itwin/core-common";
 import { Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { RequestNewBriefcaseArg } from "../BriefcaseManager";
-import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
+import { CheckpointManager, CheckpointProps, DownloadRequest, V2CheckpointManager } from "../CheckpointManager";
 import { ClassRegistry } from "../ClassRegistry";
 import {
   _nativeDb, AuxCoordSystem2d, BriefcaseDb, BriefcaseLocalValue, BriefcaseManager, CategorySelector, ChannelControl, DisplayStyle2d, DisplayStyle3d, DrawingCategory,
@@ -32,7 +32,7 @@ import { DefinitionModel, DocumentListModel, DrawingModel, InformationRecordMode
 import { DrawingGraphicRepresentsElement, ElementDrivesElement, Relationship, RelationshipProps } from "../Relationship";
 import { DownloadAndOpenArgs, RpcBriefcaseUtility } from "../rpc-impl/RpcBriefcaseUtility";
 import { Schema, Schemas } from "../Schema";
-import { HubMock } from "../HubMock";
+import { HubMock } from "../internal/HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { BackendHubAccess } from "../BackendHubAccess";
 import { _hubAccess } from "../internal/Symbols";
@@ -40,6 +40,7 @@ import { _hubAccess } from "../internal/Symbols";
 chai.use(chaiAsPromised);
 
 /* eslint-disable @typescript-eslint/explicit-member-accessibility */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 
 RpcConfiguration.developmentMode = true;
 
@@ -184,7 +185,7 @@ export class HubWrappers {
     }
   }
 
-  /** Downloads and opens a v1 checkpoint */
+  /** Downloads a checkpoint and opens it as a SnapShotDb */
   public static async downloadAndOpenCheckpoint(args: { accessToken: AccessToken, iTwinId: GuidString, iModelId: GuidString, asOf?: IModelVersionProps }): Promise<SnapshotDb> {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
@@ -196,7 +197,18 @@ export class HubWrappers {
       changeset: (await IModelHost[_hubAccess].getChangesetFromVersion({ accessToken: args.accessToken, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId })),
     };
 
-    return V1CheckpointManager.getCheckpointDb({ checkpoint, localFile: V1CheckpointManager.getFileName(checkpoint) });
+    const folder = path.join(V2CheckpointManager.getFolder(), checkpoint.iModelId);
+    const filename = path.join(folder, `${checkpoint.changeset.id === "" ? "first" : checkpoint.changeset.id}.bim`);
+    const request: DownloadRequest = { checkpoint, localFile: filename };
+    let db = SnapshotDb.tryFindByKey(CheckpointManager.getKey(request.checkpoint));
+    if (undefined !== db)
+      return db;
+    db = IModelTestUtils.tryOpenLocalFile(request);
+    if (db)
+      return db;
+    await V2CheckpointManager.downloadCheckpoint(request);
+    await CheckpointManager.updateToRequestedVersion(request);
+    return IModelTestUtils.openCheckpoint(request.localFile, request.checkpoint);
   }
 
   /** Opens the specific Checkpoint iModel, `SyncMode.FixedVersion`, through the same workflow the IModelReadRpc.getConnectionProps method will use. Replicates the way a frontend would open the iModel. */
@@ -263,11 +275,28 @@ export class HubWrappers {
 
 export class IModelTestUtils {
 
+
   protected static get knownTestLocations(): { outputDir: string, assetsDir: string } { return KnownTestLocations; }
 
   /** Generate a name for an iModel that's unique using the baseName provided and appending a new GUID.  */
   public static generateUniqueName(baseName: string) {
     return `${baseName} - ${Guid.createValue()}`;
+  }
+
+
+  public static openCheckpoint(fileName: LocalFileName, checkpoint: CheckpointProps) {
+    const snapshot = SnapshotDb.openFile(fileName, { key: CheckpointManager.getKey(checkpoint) });
+    (snapshot as any)._iTwinId = checkpoint.iTwinId;
+    return snapshot;
+  }
+
+  /** try to open an existing local file to satisfy a download request */
+  public static tryOpenLocalFile(request: DownloadRequest): SnapshotDb | undefined {
+    const checkpoint = request.checkpoint;
+    if (CheckpointManager.verifyCheckpoint(checkpoint, request.localFile))
+      return this.openCheckpoint(request.localFile, checkpoint);
+
+    return undefined;
   }
 
   /** Prepare for an output file by:
@@ -479,6 +508,7 @@ export class IModelTestUtils {
   }
 
   public static executeQuery(db: IModelDb, ecsql: string, bindings?: any[] | object): any[] {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return db.withPreparedStatement(ecsql, (stmt) => {
       if (bindings)
         stmt.bindValues(bindings);
@@ -619,6 +649,7 @@ export class IModelTestUtils {
   }
 
   public static queryByUserLabel(iModelDb: IModelDb, userLabel: string): Id64String {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return iModelDb.withPreparedStatement(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE UserLabel=:userLabel`, (statement: ECSqlStatement): Id64String => {
       statement.bindString("userLabel", userLabel);
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getId() : Id64.invalid;
@@ -626,6 +657,7 @@ export class IModelTestUtils {
   }
 
   public static queryByCodeValue(iModelDb: IModelDb, codeValue: string): Id64String {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return iModelDb.withPreparedStatement(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE CodeValue=:codeValue`, (statement: ECSqlStatement): Id64String => {
       statement.bindString("codeValue", codeValue);
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getId() : Id64.invalid;
@@ -663,6 +695,7 @@ export class IModelTestUtils {
     }
     IModelJsFs.appendFileSync(outputFileName, `${iModelDb.pathName}\n`);
     IModelJsFs.appendFileSync(outputFileName, "\n=== CodeSpecs ===\n");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModelDb.withPreparedStatement(`SELECT ECInstanceId,Name FROM BisCore:CodeSpec ORDER BY ECInstanceId`, (statement: ECSqlStatement): void => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const codeSpecId = statement.getValue(0).getId();
@@ -671,6 +704,7 @@ export class IModelTestUtils {
       }
     });
     IModelJsFs.appendFileSync(outputFileName, "\n=== Schemas ===\n");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModelDb.withPreparedStatement(`SELECT Name FROM ECDbMeta.ECSchemaDef ORDER BY ECInstanceId`, (statement: ECSqlStatement): void => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const schemaName: string = statement.getValue(0).getString();
@@ -678,6 +712,7 @@ export class IModelTestUtils {
       }
     });
     IModelJsFs.appendFileSync(outputFileName, "\n=== Models ===\n");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModelDb.withPreparedStatement(`SELECT ECInstanceId FROM ${Model.classFullName} ORDER BY ECInstanceId`, (statement: ECSqlStatement): void => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const modelId = statement.getValue(0).getId();
@@ -686,6 +721,7 @@ export class IModelTestUtils {
       }
     });
     IModelJsFs.appendFileSync(outputFileName, "\n=== ViewDefinitions ===\n");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModelDb.withPreparedStatement(`SELECT ECInstanceId FROM ${ViewDefinition.classFullName} ORDER BY ECInstanceId`, (statement: ECSqlStatement): void => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const viewDefinitionId = statement.getValue(0).getId();
@@ -694,18 +730,21 @@ export class IModelTestUtils {
       }
     });
     IModelJsFs.appendFileSync(outputFileName, "\n=== Elements ===\n");
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${Element.classFullName}`, (statement: ECSqlStatement): void => {
       if (DbResult.BE_SQLITE_ROW === statement.step()) {
         const count: number = statement.getValue(0).getInteger();
         IModelJsFs.appendFileSync(outputFileName, `Count of ${Element.classFullName}=${count}\n`);
       }
     });
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${PhysicalObject.classFullName}`, (statement: ECSqlStatement): void => {
       if (DbResult.BE_SQLITE_ROW === statement.step()) {
         const count: number = statement.getValue(0).getInteger();
         IModelJsFs.appendFileSync(outputFileName, `Count of ${PhysicalObject.classFullName}=${count}\n`);
       }
     });
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${GeometryPart.classFullName}`, (statement: ECSqlStatement): void => {
       if (DbResult.BE_SQLITE_ROW === statement.step()) {
         const count: number = statement.getValue(0).getInteger();

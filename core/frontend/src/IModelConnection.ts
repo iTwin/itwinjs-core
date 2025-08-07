@@ -11,7 +11,7 @@ import {
   PickAsyncMethods, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
-  Cartographic, CodeProps, CodeSpec, DbQueryRequest, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
+  Cartographic, CodeProps, CodeScopeSpec, CodeSpec, CodeSpecProperties, DbQueryRequest, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
   MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams, Placement, Placement2d,
@@ -35,6 +35,9 @@ import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
 import { _requestSnap } from "./common/internal/Symbols";
 import { IpcApp } from "./IpcApp";
+import { SchemaContext } from "@itwin/ecschema-metadata";
+import { ECSchemaRpcLocater } from '@itwin/ecschema-rpcinterface-common';
+
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
@@ -153,13 +156,15 @@ export abstract class IModelConnection extends IModel {
   public readonly onClose = new BeEvent<(_imodel: IModelConnection) => void>();
 
   /** The font map for this IModelConnection. Only valid after calling #loadFontMap and waiting for the returned promise to be fulfilled.
-   * @deprecated in 5.0.0. If you need font Ids on the front-end for some reason, write an Ipc method that queries [IModelDb.fonts]($backend).
+   * @deprecated in 5.0.0 - will not be removed until after 2026-06-13. If you need font Ids on the front-end for some reason, write an Ipc method that queries [IModelDb.fonts]($backend).
    */
   public fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
 
+  private _schemaContext?: SchemaContext;
+
   /** Load the FontMap for this IModelConnection.
    * @returns Returns a Promise<FontMap> that is fulfilled when the FontMap member of this IModelConnection is valid.
-   * @deprecated in 5.0.0. If you need font Ids on the front-end for some reason, write an Ipc method that queries [IModelDb.fonts]($backend).
+   * @deprecated in 5.0.0 - will not be removed until after 2026-06-13. If you need font Ids on the front-end for some reason, write an Ipc method that queries [IModelDb.fonts]($backend).
    */
   public async loadFontMap(): Promise<FontMap> { // eslint-disable-line @typescript-eslint/no-deprecated
     if (undefined === this.fontMap) { // eslint-disable-line @typescript-eslint/no-deprecated
@@ -304,7 +309,7 @@ export abstract class IModelConnection extends IModel {
   }
 
   /** @internal
-   * @deprecated in 4.8. Use AccuSnap.doSnapRequest.
+   * @deprecated in 4.8 - will not be removed until after 2026-06-13. Use AccuSnap.doSnapRequest.
    */
   public async requestSnap(props: SnapRequestProps): Promise<SnapResponseProps> {
     return this[_requestSnap](props);
@@ -351,7 +356,7 @@ export abstract class IModelConnection extends IModel {
   }
 
   /** Request mass properties for multiple elements from the backend.
-   * @deprecated in 4.11. Use [[IModelConnection.getMassProperties]].
+   * @deprecated in 4.11 - will not be removed until after 2026-06-13. Use [[IModelConnection.getMassProperties]].
    */
   public async getMassPropertiesPerCandidate(requestProps: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> {  // eslint-disable-line @typescript-eslint/no-deprecated
     return IModelReadRpcInterface.getClientForRouting(this.routingContext.token).getMassPropertiesPerCandidate(this.getRpcProps(), requestProps);
@@ -612,6 +617,26 @@ export abstract class IModelConnection extends IModel {
     }
     return ("number" === typeof this._projectCenterAltitude) ? this._projectCenterAltitude : undefined;
   }
+
+  /**
+   * Gets the context that allows accessing the metadata (see `@itwin/ecschema-metadata` package) of this iModel.
+   * The context is created lazily when this property is accessed for the first time, with an `ECSchemaRpcLocater` registered as a fallback locater, enabling users to register their own locater that'd take more priority.
+   * This means to correctly access schema context, client-side applications must register `ECSchemaRpcInterface` following instructions for [RPC configuration]($docs/learning/rpcinterface/#client-side-configuration).
+   * Server-side applications would also [configure RPC]($docs/learning/rpcinterface/#server-side-configuration) as needed.
+   *
+   * @note While a `BlankConnection` returns a valid `schemaContext`, it has an invalid locater registered by default, and will throw an error when trying to call it's methods.
+   * @beta
+   */
+  public get schemaContext(): SchemaContext {
+    if (this._schemaContext === undefined) {
+      const context = new SchemaContext();
+      const locater = new ECSchemaRpcLocater(this._getRpcProps());
+      context.addFallbackLocater(locater);
+      this._schemaContext = context;
+    }
+
+    return this._schemaContext;
+  }
 }
 
 /** A connection that exists without an iModel. Useful for connecting to Reality Data services.
@@ -704,7 +729,7 @@ export class SnapshotConnection extends IModelConnection {
 
   /** Open an IModelConnection to a remote read-only snapshot iModel from a key that will be resolved by the backend.
    * @note This method is intended for web applications.
-   * @deprecated in 4.10. Use [[CheckpointConnection.openRemote]].
+   * @deprecated in 4.10 - will not be removed until after 2026-06-13. Use [[CheckpointConnection.openRemote]].
    */
   public static async openRemote(fileKey: string): Promise<SnapshotConnection> {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
@@ -1053,21 +1078,71 @@ export namespace IModelConnection {
 
   /** The collection of [[CodeSpec]] entities for an [[IModelConnection]]. */
   export class CodeSpecs {
-    private _loaded?: CodeSpec[];
-
     /** @internal */
     constructor(private _iModel: IModelConnection) { }
 
-    /** Loads all CodeSpec from the remote IModelDb. */
-    private async _loadAllCodeSpecs(): Promise<void> {
-      if (this._loaded)
-        return;
+    private _isCodeSpecProperties(x: any): x is CodeSpecProperties {
+      if (!x || !x.scopeSpec || !Object.values(CodeScopeSpec.Type).includes(x.scopeSpec.type))
+        return false;
 
-      this._loaded = [];
-      const codeSpecArray: any[] = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getAllCodeSpecs(this._iModel.getRpcProps());
-      for (const codeSpec of codeSpecArray) {
-        this._loaded.push(CodeSpec.createFromJson(this._iModel, Id64.fromString(codeSpec.id), codeSpec.name, codeSpec.jsonProperties));
+      if (typeof x.scopeSpec.fGuidRequired !== "boolean" && typeof x.scopeSpec.fGuidRequired !== "undefined")
+        return false;
+
+      if (typeof x.scopeSpec.relationship !== "string" && typeof x.scopeSpec.relationship !== "undefined")
+        return false;
+
+      if (typeof x.spec?.isManagedWithDgnDb !== "boolean" && typeof x.spec?.isManagedWithDgnDb !== "undefined")
+        return false;
+
+      if (typeof x.version !== "string" && typeof x.version !== "undefined")
+        return false;
+
+      return true;
+    }
+
+    private async _loadCodeSpec(identifier: { name: string; id?: undefined } | { id: string; name?: undefined }): Promise<CodeSpec> {
+      const isNameDefined = identifier.name !== undefined;
+      const query = `
+        SELECT ECInstanceId AS Id, Name, JsonProperties
+        FROM BisCore.CodeSpec
+        WHERE ${isNameDefined ? `Name=:name` : `Id=:id`}`;
+
+      const params = new QueryBinder();
+      if (isNameDefined) {
+        params.bindString("name", identifier.name);
+      } else {
+        params.bindId("id", identifier.id);
       }
+
+      const queryReader = this._iModel.createQueryReader(query, params, {
+        rowFormat: QueryRowFormat.UseECSqlPropertyNames,
+      });
+
+      const queryResult = await queryReader.next();
+
+      if (queryResult.done) throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
+
+      const codeSpecResult = queryResult.value;
+
+      if (
+        typeof codeSpecResult.Id !== "string" ||
+        typeof codeSpecResult.Name !== "string" ||
+        typeof codeSpecResult.JsonProperties !== "string"
+      )
+        throw new Error("Invalid CodeSpec was returned");
+
+      const jsonProperties = JSON.parse(codeSpecResult.JsonProperties);
+
+      if (!this._isCodeSpecProperties(jsonProperties))
+        throw new Error("Invalid CodeSpecProperties returned in the CodeSpec");
+
+      const codeSpec = CodeSpec.createFromJson(
+        this._iModel,
+        Id64.fromString(codeSpecResult.Id),
+        codeSpecResult.Name,
+        jsonProperties
+      );
+      return codeSpec;
     }
 
     /** Look up a CodeSpec by Id.
@@ -1076,15 +1151,11 @@ export namespace IModelConnection {
      * @throws [[IModelError]] if the Id is invalid or if no CodeSpec with that Id could be found.
      */
     public async getById(codeSpecId: Id64String): Promise<CodeSpec> {
+      if (codeSpecId === "") throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
       if (!Id64.isValid(codeSpecId))
         throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", () => ({ codeSpecId }));
 
-      await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
-      const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.id === codeSpecId);
-      if (!found)
-        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
-
-      return found;
+      return this._loadCodeSpec({ id: codeSpecId });
     }
 
     /** Look up a CodeSpec by name.
@@ -1093,12 +1164,9 @@ export namespace IModelConnection {
      * @throws [[IModelError]] if no CodeSpec with the specified name could be found.
      */
     public async getByName(name: string): Promise<CodeSpec> {
-      await this._loadAllCodeSpecs(); // ensure all codeSpecs have been downloaded
-      const found: CodeSpec | undefined = this._loaded!.find((codeSpec: CodeSpec) => codeSpec.name === name);
-      if (!found)
-        throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
+      if (name === "") throw new IModelError(IModelStatus.NotFound, "CodeSpec not found");
 
-      return found;
+      return this._loadCodeSpec({ name });
     }
   }
 
@@ -1175,7 +1243,7 @@ export namespace IModelConnection {
      * There is no guarantee that this view will be suitable for the purposes of any other applications.
      * Most applications should ignore the default view and instead create a [[ViewState]] that fits their own requirements using APIs like [[ViewCreator3d]].
      * @returns the Id of the default view as defined in the iModel's property table, or an invalid ID if no default view is defined.
-     * @deprecated in 4.2. Create a ViewState to your own specifications.
+     * @deprecated in 4.2 - will not be removed until after 2026-06-13. Create a ViewState to your own specifications.
      */
     public async queryDefaultViewId(): Promise<Id64String> {
       const iModel = this._iModel;

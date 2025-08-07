@@ -1000,15 +1000,16 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /**
    * Append (clone of) one point.
-   * * BUT ... skip if duplicates the tail of prior points.
-   * * if fraction is given, "duplicate" considers both point and fraction.
+   * @param point the point to append. If same as the last point, nothing is appended.
+   * @param fraction optional associated fraction to append. If same as the last fraction, nothing is appended.
+   * It is assumed that both fractions refer to the same CurvePrimitive.
    */
   public appendStrokePoint(point: Point3d, fraction?: number): void {
     const n = this._points.length;
     let add = true;
-    const addFraction = fraction !== undefined && this._fractions !== undefined;
+    const addFraction = (fraction !== undefined) && (this._fractions !== undefined);
     if (n > 0) {
-      if (addFraction && Geometry.isSameCoordinate(fraction, this._fractions!.back()))
+      if (addFraction && Geometry.isSmallRelative(fraction - this._fractions!.back()))
         add = false;
       if (point.isAlmostEqual(this._points.getPoint3dAtUncheckedPointIndex(n - 1)))
         add = false;
@@ -1043,27 +1044,29 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       this._derivatives.resize(n1);
   }
   /**
-   * Append a suitable evaluation of a curve ..
-   * * always append the curve point
-   * * if fraction array is present, append the fraction
-   * * if derivative array is present, append the derivative
-   * BUT ... skip if duplicates the tail of prior points.
+   * Append a suitable evaluation of a curve.
+   * * If the computed point is the same as the last point, nothing is appended.
+   * * Otherwise, the point is appended, as well as the fraction and derivative (if those arrays are present).
+   * @param curve the curve to evaluate.
+   * @param fraction the fraction at which to evaluate the curve.
    */
   public appendFractionToPoint(curve: CurvePrimitive, fraction: number) {
+    let ray: Ray3d | undefined;
+    let point: Point3d | undefined;
+    const n = this._points.length;
     if (this._derivatives) {
-      const ray = curve.fractionToPointAndDerivative(fraction, LineString3d._workRay);
-      if (this._fractions)
-        this._fractions.push(fraction);
-      this._points.push(ray.origin);
-      if (this._derivatives)
-        this._derivatives.push(ray.direction);
-
+      ray = curve.fractionToPointAndDerivative(fraction, LineString3d._workRay);
+      point = ray.origin;
     } else {
-      const point = curve.fractionToPoint(fraction, LineString3d._workPointA);
-      if (this._fractions)
-        this._fractions.push(fraction);
-      this._points.push(point);
+      point = curve.fractionToPoint(fraction, LineString3d._workPointA);
     }
+    if (n > 0 && point.isAlmostEqual(this._points.getPoint3dAtUncheckedPointIndex(n - 1)))
+      return;
+    if (ray)
+      this._derivatives?.push(ray.direction);
+    if (this._fractions)
+      this._fractions.push(fraction);
+    this._points.push(point);
   }
   /**
    * Clear all array data:
@@ -1179,22 +1182,31 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     handler.startCurvePrimitive(this);
     if (n > 1) {
       const df = 1.0 / (n - 1);
-      // This is a linestring.
-      // There is no need for chordTol and angleTol within a segment.
-      // Do NOT apply min strokes per primitive.
+      // this is a line string; there is no need for chordTol and angleTol within a segment
+      // DO NOT apply min strokes per primitive
       if (options && options.hasMaxEdgeLength) {
         for (let i = 1; i < n; i++) {
           const numStroke = options.applyMaxEdgeLength(
             1, this._points.getPoint3dAtUncheckedPointIndex(i - 1).distance(this._points.getPoint3dAtUncheckedPointIndex(i)),
           );
           handler.announceSegmentInterval(
-            this, this._points.getPoint3dAtUncheckedPointIndex(i - 1), this._points.getPoint3dAtUncheckedPointIndex(i), numStroke, (i - 1) * df, i * df,
+            this,
+            this._points.getPoint3dAtUncheckedPointIndex(i - 1),
+            this._points.getPoint3dAtUncheckedPointIndex(i),
+            numStroke,
+            (i - 1) * df,
+            i * df,
           );
         }
       } else {
         for (let i = 1; i < n; i++) {
           handler.announceSegmentInterval(
-            this, this._points.getPoint3dAtUncheckedPointIndex(i - 1), this._points.getPoint3dAtUncheckedPointIndex(i), 1, (i - 1) * df, i * df,
+            this,
+            this._points.getPoint3dAtUncheckedPointIndex(i - 1),
+            this._points.getPoint3dAtUncheckedPointIndex(i),
+            1,
+            (i - 1) * df,
+            i * df,
           );
         }
       }
@@ -1335,8 +1347,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     this.addResolvedPoint(localA.index, localA.fraction, result._points);
     for (let index = index0; index <= index1; index++) {
       if (this._points.isIndexValid(index)) {
-        this._points.getPoint3dAtUncheckedPointIndex(index, LineString3d._workPointA);
-        result._points.push(LineString3d._workPointA);
+        result._points.pushFromGrowableXYZArray(this._points, index);
       }
     }
     this.addResolvedPoint(localB.index, localB.fraction, result._points);
@@ -1350,11 +1361,22 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       );
     return undefined;
   }
+  /**
+   * Whether the start and end points are defined and within tolerance.
+   * * Does not check for planarity or degeneracy.
+   * @param tolerance optional distance tolerance (default is [[Geometry.smallMetricDistance]])
+   * @param xyOnly if true, ignore z coordinate (default is `false`)
+   */
+  public override isPhysicallyClosedCurve(tolerance: number = Geometry.smallMetricDistance, xyOnly: boolean = false): boolean {
+    if (!this._points.length)
+      return false;
+    if (xyOnly)
+      return this._points.almostEqualXYIndexIndex(0, this._points.length - 1, tolerance)!; // we know the indices are valid
+    return this._points.almostEqualIndexIndex(0, this._points.length - 1, tolerance)!;
+  }
   /** Returns true if first and last points are within metric tolerance. */
   public get isPhysicallyClosed(): boolean {
-    return this._points.length > 0 && Geometry.isSmallMetricDistance(
-      this._points.distanceIndexIndex(0, this._points.length - 1)!,
-    );
+    return this.isPhysicallyClosedCurve();
   }
 
   /**

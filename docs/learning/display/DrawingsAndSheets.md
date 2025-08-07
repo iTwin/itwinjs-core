@@ -2,7 +2,7 @@
 
 iTwin.js supports two types of 2d models - [Drawing]($backend)s and [Sheet]($backend)s - which can be visualized using a [DrawingViewState]($frontend) or [SheetViewState]($frontend) respectively.
 
-[This sample](https://www.itwinjs.org/sample-showcase/?group=Viewer&sample=viewer-only-2d-sample&imodel=House+Sample) demonstrates display of drawings and sheets.
+[This sample](https://www.itwinjs.org/sandboxes/iTwinPlatform/2d%20Viewer/) demonstrates display of drawings and sheets.
 
 ## Drawings
 

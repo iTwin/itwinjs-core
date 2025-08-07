@@ -313,7 +313,7 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
     super(props, iModel);
     this.origin = Point2d.fromJSON(props.origin);
     this.angle = JsonUtils.asDouble(props.angle);
-    this._rMatrix = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(this.angle))!;
+    this._rMatrix = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(this.angle)) ?? Matrix3d.createIdentity();
   }
 
   public override toJSON(): AuxCoordSystem2dProps {

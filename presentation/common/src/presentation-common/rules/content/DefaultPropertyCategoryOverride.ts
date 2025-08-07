@@ -6,8 +6,8 @@
  * @module PresentationRules
  */
 
-import { RuleBase } from "../Rule";
-import { PropertyCategorySpecification } from "./modifiers/PropertyCategorySpecification";
+import { RuleBase } from "../Rule.js";
+import { PropertyCategorySpecification } from "./modifiers/PropertyCategorySpecification.js";
 
 /**
  * A rule that allows overriding the default property category.

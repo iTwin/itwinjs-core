@@ -6,7 +6,7 @@
  * @module Hierarchies
  */
 
-import { Node } from "./Node";
+import { Node } from "./Node.js";
 
 /**
  * Describes a single step in the nodes path.

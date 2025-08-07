@@ -18,7 +18,7 @@ import {
   AnalysisStyle, BackgroundMapProps, BackgroundMapProviderProps, BackgroundMapSettings, Camera, CartographicRange, ClipStyle, ColorDef, DisplayStyleSettingsProps,
   Easing, ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer,
   Interpolation, isPlacement2dProps, LightSettings, ModelMapLayerSettings, Npc, NpcCenter, Placement,
-  Placement2d, Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
+  Placement2d, Placement3d, PlacementProps, RenderSchedule, SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@itwin/core-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
@@ -67,6 +67,7 @@ import { queryVisibleFeatures } from "./internal/render/QueryVisibileFeatures";
 import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
 import { GraphicType } from "./common/render/GraphicType";
+import { compareMapLayer } from "./internal/render/webgl/MapLayerParams";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -435,6 +436,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
   /** Mark the viewport's [[ViewState]] as having changed, so that the next call to [[renderFrame]] will invoke [[setupFromView]] to synchronize with the view.
    * This method is not typically invoked directly - the controller is automatically invalidated in response to events such as a call to [[changeView]].
+   * Additionally, refresh the Reality Tile Tree to reflect changes in the map layer.
    */
   public invalidateController(): void {
     this._controllerValid = this._analysisFractionValid = false;
@@ -834,6 +836,11 @@ export abstract class Viewport implements Disposable, TileUser {
     this.displayStyle.changeBackgroundMapProvider(props);
   }
 
+  /** A reference to the [[TileTree]] used to display the background map in this viewport, if the background map is being displayed. */
+  public get backgroundMapTileTreeReference(): TileTreeReference | undefined {
+    return this.backgroundMap;
+  }
+
   /** @internal */
   public get backgroundMap(): MapTileTreeReference | undefined { return this._mapTiledGraphicsProvider?.backgroundMap; }
 
@@ -1159,7 +1166,7 @@ export abstract class Viewport implements Disposable, TileUser {
     this.detachFromView();
   }
 
-  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
   public dispose() {
     this[Symbol.dispose]();
   }
@@ -1297,6 +1304,30 @@ export abstract class Viewport implements Disposable, TileUser {
     removals.push(settings.onTimePointChanged.addListener(scheduleChanged));
     removals.push(style.onScheduleScriptChanged.addListener(scriptChanged));
 
+
+    const scheduleEditingChanged = async (
+      changes: RenderSchedule.EditingChanges[]
+    ) => {
+      for (const ref of this.getTileTreeRefs()) {
+        const tree = ref.treeOwner.tileTree;
+        await tree?.onScheduleEditingChanged(changes);
+      }
+    };
+
+    const scheduleEditingCommitted = () => {
+      for (const ref of this.getTileTreeRefs()) {
+        const tree = ref.treeOwner.tileTree;
+        tree?.onScheduleEditingCommitted();
+      }
+    };
+
+    removals.push(
+      style.onScheduleEditingChanged.addListener((changes) => {
+        void scheduleEditingChanged(changes);
+      })
+    );
+    removals.push(style.onScheduleEditingCommitted.addListener(scheduleEditingCommitted));
+
     removals.push(settings.onViewFlagsChanged.addListener((vf) => {
       if (vf.backgroundMap !== this.viewFlags.backgroundMap)
         this.invalidateController();
@@ -1332,6 +1363,7 @@ export abstract class Viewport implements Disposable, TileUser {
       removals.push(settings.onAmbientOcclusionSettingsChanged.addListener(displayStyleChanged));
       removals.push(settings.onEnvironmentChanged.addListener(displayStyleChanged));
       removals.push(settings.onPlanProjectionSettingsChanged.addListener(displayStyleChanged));
+      removals.push(settings.onContoursChanged.addListener(displayStyleChanged));
     }
   }
 
@@ -1580,7 +1612,7 @@ export abstract class Viewport implements Disposable, TileUser {
   }
 
   /** Apply a function to every tile tree reference associated with the map layers displayed by this viewport.
-   * @deprecated in 5.0. Use [[mapTileTreeRefs]] instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[mapTileTreeRefs]] instead.
    */
   public forEachMapTreeRef(func: (ref: TileTreeReference) => void): void {
     if (this._mapTiledGraphicsProvider)
@@ -1594,7 +1626,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
 
   /** Apply a function to every [[TileTreeReference]] displayed by this viewport.
-   * @deprecated in 5.0. Use [[getTileTreeRefs]] instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[getTileTreeRefs]] instead.
    */
   public forEachTileTreeRef(func: (ref: TileTreeReference) => void): void {
     for (const ref of this.getTileTreeRefs()) {
@@ -1697,8 +1729,8 @@ export abstract class Viewport implements Disposable, TileUser {
   }
 
   /** @internal */
-  public changeDynamics(dynamics: GraphicList | undefined): void {
-    this.target.changeDynamics(dynamics);
+  public changeDynamics(dynamics: GraphicList | undefined, overlay: GraphicList | undefined): void {
+    this.target.changeDynamics(dynamics, overlay);
     this.invalidateDecorations();
   }
 
@@ -1788,7 +1820,9 @@ export abstract class Viewport implements Disposable, TileUser {
     this.updateChangeFlags(view);
     this.doSetupFromView(view);
     this.invalidateController();
-    this.target.reset();
+
+    const isMapLayerChanged = undefined !== prevView && compareMapLayer(prevView, view);
+    this.target.reset(isMapLayerChanged); // Handle Reality Map Tile Map Layer changes & update logic
 
     if (undefined !== prevView && prevView !== view) {
       this.onChangeView.raiseEvent(this, prevView);
@@ -2720,7 +2754,7 @@ export abstract class Viewport implements Disposable, TileUser {
   /** Reads the current image from this viewport into an HTMLCanvasElement with a Canvas2dRenderingContext such that additional 2d graphics can be drawn onto it.
   * When using this overload, the returned image will not include canvas decorations if only one viewport is active.
   * If multiple viewports are active, the returned image will always include canvas decorations.
-  * @deprecated in 5.0 Use the overload accepting a ReadImageToCanvasOptions.
+  * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use the overload accepting a ReadImageToCanvasOptions.
   */
   public readImageToCanvas(): HTMLCanvasElement;
 
@@ -3206,7 +3240,7 @@ export class ScreenViewport extends Viewport {
     logo.src = `${IModelApp.publicPath}images/imodeljs-icon.svg`;
     logo.alt = "";
 
-    const showLogos = (ev: Event) => {
+    const showLogos = async (ev: Event) => {
       const aboutBox = IModelApp.makeModalDiv({ autoClose: true, width: 460, closeBox: true, rootDiv: this.vpDiv.ownerDocument.body }).modal;
       aboutBox.className += " imodeljs-about"; // only added so the CSS knows this is the about dialog
       const logos = IModelApp.makeHTMLElement("table", { parent: aboutBox, className: "logo-cards" });
@@ -3216,10 +3250,11 @@ export class ScreenViewport extends Viewport {
       }
 
       logos.appendChild(IModelApp.makeIModelJsLogoCard());
+      const promises = new Array<Promise<void>>();
       for (const ref of this.getTileTreeRefs()) {
-        ref.addLogoCards(logos, this);
+        promises.push(ref.addAttributions(logos, this));
       }
-
+      await Promise.all(promises);
       ev.stopPropagation();
     };
 
@@ -3461,7 +3496,7 @@ export class ScreenViewport extends Viewport {
       this._decorationCache.prohibitRemoval = true;
 
       context.addFromDecorator(this.view);
-      for (const ref of this.tiledGraphicsProviderRefs()) {
+      for (const ref of this.getTileTreeRefs()) {
         context.addFromDecorator(ref);
       }
 

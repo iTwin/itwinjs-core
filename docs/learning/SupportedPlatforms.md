@@ -18,7 +18,7 @@ The following Node.js versions are officially supported by the iTwin.js backend 
 | iTwin.js - Node Support | iTwin.js 3.x | iTwin.js 4.x | iTwin.js 5.x |
 | ----------------------- | ------------ | ------------ | ------------ |
 | Node 22 (>=22.11)       | ❌           | ✅ (>= 4.10) | ✅          |
-| Node 20 (>=20.9)        | ❌           | ✅ (>= 4.3)  | ✅          |
+| Node 20 (>=20.11)        | ❌           | ✅ (>= 4.3)  | ✅          |
 | Node 18 (>=18.12)       | ✅ (>= 3.5)  | ✅           | ❌          |
 | Node 16 (>=16.13)       | ✅           | ❌           | ❌          |
 | Node 14 (>=14.17)       | ✅           | ❌           | ❌          |
@@ -29,8 +29,8 @@ The following Node.js versions are officially supported by the iTwin.js backend 
 
 | Operating System | Architectures | Versions                                                                                                           | Notes           |
 | ---------------- | ------------- | ------------------------------------------------------------------------------------------------------------------ | --------------- |
-| Linux            | all           | GLIBC >= 2.31, GLIBCXX >= 3.4.28                                                                                   |                 |
-| Windows          | all           | [Visual Studio 2017 C Runtime](https://support.microsoft.com/help/2977003/the-latest-supported-visual-c-downloads) |                 |
+| Linux            | x64           | GLIBC >= 2.36, GLIBCXX >= 3.4.30                                                                                   |                 |
+| Windows          | x64           | [Visual Studio 2022 Redistributable](https://learn.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-170#latest-microsoft-visual-c-redistributable-version) |                 |
 | macOS            | x64           | **Discontinued in iTwin.js 5.0**                                                                                                  |                 |
 | macOS            | arm64         | >= 14                                                                                                              | >= iTwin.js 3.3 |
 
@@ -50,7 +50,7 @@ iTwin.js strives to support as many modern browsers as possible, though it requi
 
 ## Electron
 
-To enable the development of desktop applications, iTwin.js supports the latest Electron releases. As of iTwin.js 5.0, Electron 34 is the minimum requirement. See [Electron platform requirements](https://github.com/electron/electron/#platform-support) for supported Windows, Linux and MacOS versions.
+To enable the development of desktop applications, iTwin.js supports the latest Electron releases. As of iTwin.js 5.0, Electron 35 is the minimum requirement. See [Electron platform requirements](https://github.com/electron/electron/#platform-support) for supported Windows, Linux and MacOS versions.
 
 ## Mobile Native
 

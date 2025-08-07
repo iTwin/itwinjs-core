@@ -7,9 +7,9 @@ import envCompatible from "vite-plugin-env-compatible";
 import browserslistToEsbuild from "browserslist-to-esbuild";
 import copy from "rollup-plugin-copy";
 import ignore from "rollup-plugin-ignore";
-import rollupVisualizer from "rollup-plugin-visualizer";
+import { visualizer as rollupVisualizer } from "rollup-plugin-visualizer";
 import externalGlobals from "rollup-plugin-external-globals";
-import { webpackStats } from "rollup-plugin-webpack-stats";
+import webpackStats from "rollup-plugin-webpack-stats";
 import * as packageJson from "./package.json";
 import path from "path";
 import { createRequire } from "module";
@@ -39,13 +39,13 @@ Object.keys(packageJson.dependencies).forEach((pkgName) => {
         assets.push(assetsPath);
       }
 
-      // ignore pkgs outside the monorepo (will have temp in path) and pkgs that are for backend
-      if (pkgPath.includes("temp") || pkgPath.includes("backend")) return;
+      // ignore pkgs outside the monorepo (will have temp in path) and pkgs that are for backend, or ecschema-metadata
+      if (pkgPath.includes("temp") || pkgPath.includes("backend") || pkgPath.includes("ecschema-metadata")) return;
       packageAliases[pkgName] = pkgPath
         .replace("\\lib\\cjs\\", "\\src\\")
         .replace("/lib/cjs/", "/src/")
         .replace(".js", ".ts");
-    } catch {}
+    } catch { }
   }
 });
 
@@ -90,14 +90,14 @@ export default defineConfig(() => {
         plugins: [
           ...(process.env.OUTPUT_STATS !== undefined
             ? [
-                rollupVisualizer({
-                  open: true,
-                  filename: "stats.html",
-                  template: "treemap",
-                  sourcemap: true,
-                }),
-                webpackStats(), // needs to be the last plugin
-              ]
+              rollupVisualizer({
+                open: true,
+                filename: "stats.html",
+                template: "treemap",
+                sourcemap: true,
+              }),
+              webpackStats(), // needs to be the last plugin
+            ]
             : []),
           externalGlobals({
             // allow global `window` object to access electron as external global

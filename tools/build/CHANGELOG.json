@@ -2,6 +2,171 @@
   "name": "@itwin/build-tools",
   "entries": [
     {
+      "version": "5.0.5",
+      "tag": "@itwin/build-tools_v5.0.5",
+      "date": "Wed, 06 Aug 2025 15:34:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.4",
+      "tag": "@itwin/build-tools_v5.0.4",
+      "date": "Wed, 16 Jul 2025 14:59:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.3",
+      "tag": "@itwin/build-tools_v5.0.3",
+      "date": "Fri, 11 Jul 2025 00:56:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.2",
+      "tag": "@itwin/build-tools_v5.0.2",
+      "date": "Thu, 26 Jun 2025 22:16:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.1",
+      "tag": "@itwin/build-tools_v5.0.1",
+      "date": "Tue, 17 Jun 2025 18:33:51 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.0",
+      "tag": "@itwin/build-tools_v5.0.0",
+      "date": "Fri, 13 Jun 2025 20:25:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Bump `typedoc-plugin-merge-modules` dependency to a version that supports typedoc `0.26`."
+          },
+          {
+            "comment": "Bump `typedoc` dependency to a version that supports typescript `5.6`."
+          },
+          {
+            "comment": "Deprecate  unused --includes flag"
+          },
+          {
+            "comment": "Fix `typedoc` not finding `typedoc-plugin-merge-modules` plugin when hoisting is disabled."
+          },
+          {
+            "comment": "add temporary fix for typedoc@0.26 issue #2802"
+          },
+          {
+            "comment": "Upgrade @microsoft/api-extractor to 7.49"
+          },
+          {
+            "comment": "Upgrade compile target to ES2023"
+          },
+          {
+            "comment": "Dropped support for Node 18"
+          },
+          {
+            "comment": "Enabled `useDefineForClassFields` TypeScript config flag"
+          },
+          {
+            "comment": "Bumped `cross-spawn` to `7.0.5`"
+          },
+          {
+            "comment": "Add a `tsconfig` option to `docs` command to allow specifying a custom TS configuration."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.6",
+      "tag": "@itwin/build-tools_v4.11.6",
+      "date": "Mon, 16 Jun 2025 15:00:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.5",
+      "tag": "@itwin/build-tools_v4.11.5",
+      "date": "Fri, 06 Jun 2025 13:41:18 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.4",
+      "tag": "@itwin/build-tools_v4.11.4",
+      "date": "Tue, 03 Jun 2025 16:15:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.3",
+      "tag": "@itwin/build-tools_v4.11.3",
+      "date": "Wed, 28 May 2025 13:56:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.2",
+      "tag": "@itwin/build-tools_v4.11.2",
+      "date": "Tue, 20 May 2025 20:14:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.1",
+      "tag": "@itwin/build-tools_v4.11.1",
+      "date": "Wed, 30 Apr 2025 13:13:21 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.0",
+      "tag": "@itwin/build-tools_v4.11.0",
+      "date": "Wed, 16 Apr 2025 15:50:28 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Bump `typedoc` dependency to a version that supports typescript `5.6`."
+          },
+          {
+            "comment": "Deprecate  unused --includes flag"
+          },
+          {
+            "comment": "add temporary fix for typedoc@0.26 issue #2802"
+          },
+          {
+            "comment": "Bumped `cross-spawn` to `7.0.5`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.10.13",
+      "tag": "@itwin/build-tools_v4.10.13",
+      "date": "Thu, 10 Apr 2025 17:47:21 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.12",
+      "tag": "@itwin/build-tools_v4.10.12",
+      "date": "Wed, 02 Apr 2025 19:35:47 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.11",
+      "tag": "@itwin/build-tools_v4.10.11",
+      "date": "Wed, 19 Mar 2025 15:30:39 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.10",
+      "tag": "@itwin/build-tools_v4.10.10",
+      "date": "Tue, 11 Mar 2025 15:25:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.9",
+      "tag": "@itwin/build-tools_v4.10.9",
+      "date": "Tue, 11 Mar 2025 05:17:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.8",
+      "tag": "@itwin/build-tools_v4.10.8",
+      "date": "Thu, 06 Mar 2025 14:13:37 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.10.7",
       "tag": "@itwin/build-tools_v4.10.7",
       "date": "Tue, 18 Feb 2025 17:27:03 GMT",

@@ -38,9 +38,9 @@ export interface ClipPlaneProps {
   normal?: XYZProps;
   /** The plane's signed distance from the origin. */
   dist?: number;
-  /** Defaults to `false`. */
+  /** Defaults to `false`. Interpretation of this flag is algorithm-specific. */
   invisible?: boolean;
-  /** Defaults to `false`. */
+  /** Defaults to `false`. Interpretation of this flag is algorithm-specific. */
   interior?: boolean;
 }
 
@@ -244,11 +244,11 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
   public get inwardNormalRef(): Vector3d {
     return this._inwardNormal;
   }
-  /**  Return the "interior" property bit */
+  /**  Return the "interior" property flag. Interpretation of this flag is algorithm-specific. */
   public get interior() {
     return this._interior;
   }
-  /**  Return the "invisible" property bit. */
+  /**  Return the "invisible" property flag. Interpretation of this flag is algorithm-specific. */
   public get invisible() {
     return this._invisible;
   }
@@ -474,7 +474,7 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     this._distanceFromOrigin = this._inwardNormal.dotProduct(plane.getOriginRef());
     return true;
   }
-  /** Set the invisible flag. Interpretation of this is up to the use code algorithms. */
+  /** Set the invisible flag. Interpretation of this flag is algorithm-specific. */
   public setInvisible(invisible: boolean) {
     this._invisible = invisible;
   }
@@ -625,7 +625,11 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
   }
   /** Project a point in space to the plane. */
   public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {
-    const d = -this.altitude(spacePoint);
-    return spacePoint.plusXYZ(d * this._inwardNormal.x, d * this._inwardNormal.y, d * this._inwardNormal.z, result);
+    return this.projectXYZToPlane(spacePoint.x, spacePoint.y, spacePoint.z, result);
+  }
+  /** Return the projection of (x,y,z) onto the plane. */
+  public override projectXYZToPlane(x: number, y: number, z: number, result?: Point3d): Point3d {
+    const scale = -this.altitudeXYZ(x, y, z);
+    return Point3d.create(x + scale * this._inwardNormal.x, y + scale * this._inwardNormal.y, z + scale * this._inwardNormal.z, result);
   }
 }

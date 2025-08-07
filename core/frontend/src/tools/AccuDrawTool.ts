@@ -7,11 +7,11 @@
  */
 
 import { BentleyStatus } from "@itwin/core-bentley";
-import { AxisOrder, Geometry, Matrix3d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { AccuDraw, AccuDrawFlags, AccuDrawHintBuilder, CompassMode, ContextMode, ItemField, KeyinStatus, LockedStates, RotationMode, ThreeAxes } from "../AccuDraw";
+import { Geometry, Matrix3d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { AccuDraw, AccuDrawFlags, CompassMode, ContextMode, ItemField, KeyinStatus, LockedStates, RotationMode, ThreeAxes } from "../AccuDraw";
 import { TentativeOrAccuSnap } from "../AccuSnap";
 import { ACSDisplayOptions, AuxCoordSystemState } from "../AuxCoordSys";
-import { SnapDetail, SnapHeat } from "../HitDetail";
+import { SnapDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { DecorateContext } from "../ViewContext";
 import { ScreenViewport, Viewport } from "../Viewport";
@@ -191,7 +191,7 @@ export class AccuDrawShortcuts {
     }
 
     const vp = accudraw.currentView;
-    const is3d = vp ? vp.view.is3d() : false;
+    const is3d = vp ? accudraw.is3dCompass(vp) : false;
     const isPolar = (CompassMode.Polar === accudraw.compassMode);
     switch (index) {
       case ItemField.DIST_Item:
@@ -867,10 +867,6 @@ export class AccuDrawShortcuts {
     return IModelApp.tools.run("AccuDraw.RotateElement");
   }
 
-  public static async rotatePerpendicular() {
-    return IModelApp.tools.run("AccuDraw.RotatePerpendicular");
-  }
-
   public static async defineACSByElement() {
     return IModelApp.tools.run("AccuDraw.DefineACSByElement");
   }
@@ -1179,7 +1175,7 @@ abstract class AccuDrawShortcutsTool extends InputCollector {
   protected get wantActivateOnStart(): boolean { return false; } // Whether to automatically enable AccuDraw before the 1st data button...
   protected get wantClearSnapOnStart(): boolean { return false; } // Whether to preserve active Tentative/AccuSnap on install...
   protected get wantManipulationImmediate(): boolean { return false; } // Whether additional input is required to process on install...
-  protected get wantExitOnDataButtonUp(): boolean { return false; } // Whether to exit on button up instead of down (see rotate perpendicular)...
+  protected get wantExitOnDataButtonUp(): boolean { return false; } // Whether to exit on button up instead of down...
 
   public override async onInstall(): Promise<boolean> {
     if (!this.allowShortcut)
@@ -1354,73 +1350,6 @@ export class AccuDrawRotateElementTool extends AccuDrawShortcutsTool {
       AccuDrawShortcuts.processPendingHints(); // Would normally be processed after button down, necessary when called from post install...
     if (!isMotion)
       IModelApp.accuDraw.changeBaseRotationMode(RotationMode.Context); // Hold temporary rotation for tool duration...
-    return true;
-  }
-}
-
-/** @beta */
-export class AccuDrawRotatePerpendicularTool extends AccuDrawRotateElementTool {
-  public static override toolId = "AccuDraw.RotatePerpendicular";
-  private _location?: { point: Point3d, viewport: ScreenViewport };
-
-  /** @internal */
-  protected override get wantExitOnDataButtonUp(): boolean { return true; } // Complete on button up since button down clears tentative...
-
-  /** @internal */
-  protected override onManipulationComplete(): AccuDrawFlags {
-    if (undefined !== this._location) {
-      // Use tentative to hold adjusted snap location for suspended tool...
-      IModelApp.tentativePoint.setPoint(this._location.point);
-      IModelApp.tentativePoint.viewport = this._location.viewport;
-      IModelApp.tentativePoint.showTentative();
-    }
-
-    return AccuDrawFlags.SetRMatrix | AccuDrawFlags.Disable;
-  }
-
-  /** @internal */
-  protected override updateOrientation(snap: SnapDetail, viewport: ScreenViewport, isMotion: boolean): boolean {
-    const curve = snap.getCurvePrimitive();
-    if (undefined === curve)
-      return false;
-
-    const accudraw = IModelApp.accuDraw;
-    const rMatrix = AccuDraw.getSnapRotation(snap, viewport);
-    if (undefined === rMatrix)
-      return false;
-
-    const zVec = rMatrix.getRow(2); // This is a row matrix...
-    const spacePoint = AccuDrawHintBuilder.projectPointToPlaneInView(accudraw.origin, snap.getPoint(), zVec, viewport, true);
-    if (undefined === spacePoint)
-      return false;
-
-    const detail = curve.closestPoint(spacePoint, true);
-    if (undefined === detail?.curve)
-      return false;
-
-    const point = AccuDrawHintBuilder.projectPointToPlaneInView(detail.point, accudraw.origin, zVec, viewport, true);
-    if (undefined === point)
-      return false;
-
-    const xVec = new Vector3d();
-    if (normalizedDifference(point, accudraw.origin, xVec) < Geometry.smallAngleRadians)
-      return false;; // Closest point and compass origin coincide...
-
-    const yVec = xVec.unitCrossProduct(zVec);
-    if (undefined === yVec)
-      return false;
-
-    rMatrix.setColumns(xVec, yVec, zVec);
-    Matrix3d.createRigidFromMatrix3d(rMatrix, AxisOrder.XZY, rMatrix);
-    rMatrix.transposeInPlace();
-
-    snap.setSnapPoint(point, SnapHeat.InRange); // Force hot snap so that adjust point uses it for alignments...
-    accudraw.setContext(AccuDrawFlags.SetRMatrix | AccuDrawFlags.AlwaysSetOrigin, accudraw.origin, rMatrix);
-    accudraw.adjustPoint(point, viewport, false); // Update internals for new snap location...
-
-    if (!isMotion)
-      this._location = { point, viewport };
-
     return true;
   }
 }

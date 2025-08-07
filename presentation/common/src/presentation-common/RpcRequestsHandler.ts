@@ -8,16 +8,16 @@
 
 import { Guid, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcManager, RpcRequest } from "@itwin/core-common";
-import { PresentationCommonLoggerCategory } from "./CommonLoggerCategory";
-import { DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
-import { ItemJSON } from "./content/Item";
-import { ClientDiagnostics, ClientDiagnosticsAttribute, ClientDiagnosticsHandler } from "./Diagnostics";
-import { InstanceKey } from "./EC";
-import { PresentationError, PresentationStatus } from "./Error";
-import { NodeKey } from "./hierarchy/Key";
-import { Node } from "./hierarchy/Node";
-import { KeySetJSON } from "./KeySet";
-import { LabelDefinition } from "./LabelDefinition";
+import { PresentationCommonLoggerCategory } from "./CommonLoggerCategory.js";
+import { DescriptorJSON, DescriptorOverrides } from "./content/Descriptor.js";
+import { ItemJSON } from "./content/Item.js";
+import { ClientDiagnostics, ClientDiagnosticsAttribute, ClientDiagnosticsHandler } from "./Diagnostics.js";
+import { InstanceKey } from "./EC.js";
+import { PresentationError, PresentationStatus } from "./Error.js";
+import { NodeKey } from "./hierarchy/Key.js";
+import { Node } from "./hierarchy/Node.js";
+import { KeySetJSON } from "./KeySet.js";
+import { LabelDefinition } from "./LabelDefinition.js";
 import {
   ComputeSelectionRequestOptions,
   ContentDescriptorRequestOptions,
@@ -35,14 +35,14 @@ import {
   RequestOptions,
   RequestOptionsWithRuleset,
   SelectionScopeRequestOptions,
-} from "./PresentationManagerOptions";
-import { ContentSourcesRpcResult, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse } from "./PresentationRpcInterface";
-import { Ruleset } from "./rules/Ruleset";
-import { RulesetVariableJSON } from "./RulesetVariables";
-import { SelectionScope } from "./selection/SelectionScope";
-import { createCancellableTimeoutPromise, PagedResponse } from "./Utils";
-import { NodePathElement } from "./hierarchy/NodePathElement";
-import { DisplayValueGroup } from "./content/Value";
+} from "./PresentationManagerOptions.js";
+import { ContentSourcesRpcResult, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse } from "./PresentationRpcInterface.js";
+import { Ruleset } from "./rules/Ruleset.js";
+import { RulesetVariableJSON } from "./RulesetVariables.js";
+import { SelectionScope } from "./selection/SelectionScope.js";
+import { createCancellableTimeoutPromise, PagedResponse } from "./Utils.js";
+import { NodePathElement } from "./hierarchy/NodePathElement.js";
+import { DisplayValueGroup } from "./content/Value.js";
 
 /**
  * Default timeout for how long we're going to wait for RPC request to be fulfilled before throwing

@@ -28,7 +28,7 @@ import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "../common/render/InstancedGraphicParams";
 import { Mesh } from "../common/internal/render/MeshPrimitives";
-import { RealityMeshGraphicParams } from "../internal/render/RealityMeshGraphicParams";
+import { MeshMapLayerGraphicParams } from "../internal/render/MeshMapLayerGraphicParams";
 import { RealityMeshParams } from "./RealityMeshParams";
 import { PointCloudArgs } from "../common/internal/render/PointCloudPrimitive";
 import { RenderClipVolume } from "./RenderClipVolume";
@@ -55,6 +55,7 @@ import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
 import { RenderTerrainGeometry } from "../internal/render/RenderTerrain";
 import { RenderSkyBoxParams } from "../internal/render/RenderSkyBoxParams";
 import { RenderAreaPattern } from "../internal/render/RenderAreaPattern";
+import { LayerTileData } from "../internal/render/webgl/MapLayerParams";
 
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
 
@@ -173,7 +174,7 @@ export abstract class RenderSystem implements Disposable {
     this.dispose(); // eslint-disable-line @typescript-eslint/no-deprecated
   }
 
-  /** @deprecated in 5.0 Will be made protected in a future release. Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Will be made protected in a future release. Use [Symbol.dispose] instead. */
   public abstract dispose(): void; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /** The maximum permitted width or height of a texture supported by this render system. */
@@ -266,10 +267,11 @@ export abstract class RenderSystem implements Disposable {
   }
 
   /** @internal */
-  public createGeometryFromMesh(mesh: Mesh, viOrigin: Point3d | undefined): RenderGeometry | undefined {
+  public createGeometryFromMesh(mesh: Mesh, viOrigin: Point3d | undefined, tileData?: LayerTileData): RenderGeometry | undefined {
     const meshArgs = mesh.toMeshArgs();
     if (meshArgs) {
       const meshParams = createMeshParams(meshArgs, this.maxTextureSize, IModelApp.tileAdmin.edgeOptions.type !== "non-indexed");
+      meshParams.tileData = tileData;
       return this.createMeshGeometry(meshParams, viOrigin);
     }
 
@@ -369,7 +371,7 @@ export abstract class RenderSystem implements Disposable {
   }
 
   /** @internal */
-  public createRealityMeshGraphic(_params: RealityMeshGraphicParams, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
+  public createRealityMeshGraphic(_params: MeshMapLayerGraphicParams, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createRealityMesh(realityMesh: RealityMeshParams, disableTextureDisposal = false): RenderGraphic | undefined {
     const geom = this.createRealityMeshGeometry(realityMesh, disableTextureDisposal);
@@ -820,7 +822,7 @@ export namespace RenderSystem {
     /** Previously, this property dictated whether to attempt to use a WebGL 2 rendering context before falling back to WebGL 1.
      * WebGL 1 is no longer supported, so this property is now ignored.
      * @public
-     * @deprecated in 4.x. WebGL 1 is no longer supported.
+     * @deprecated in 4.0.0 - will not be removed until after 2026-06-13. WebGL 1 is no longer supported.
      */
     useWebGL2?: boolean;
 

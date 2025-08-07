@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import { join } from "path";
-import { restore as sinonRestore, spy as sinonSpy } from "sinon";
+import { restore as sinonRestore, type SinonSpy, spy as sinonSpy } from "sinon";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@itwin/core-common";
 import { ClassRegistry } from "../../ClassRegistry";
@@ -18,7 +18,6 @@ import {
 import { ElementOwnsChildElements, ElementOwnsUniqueAspect, SubjectOwnsPartitionElements } from "../../NavigationRelationship";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import Sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
 
 let iModelDb: StandaloneDb;
 const insertedLabel = "inserted label";
@@ -276,7 +275,7 @@ describe("Functional Domain", () => {
 
     const testChannelKey1 = "channel 1 for tests";
     const testChannelKey2 = "channel 2 for tests";
-    function testChannel<T>(channelKey: ChannelKey, fn: () => T, spies: Sinon.SinonSpy[]) {
+    function testChannel<T>(channelKey: ChannelKey, fn: () => T, spies: SinonSpy[]) {
       iModelDb.channels.removeAllowedChannel(channelKey);
       expect(fn).throws("not allowed");
       iModelDb.channels.addAllowedChannel(channelKey);
@@ -366,7 +365,7 @@ describe("Functional Domain", () => {
     assert.isTrue(spy.partition.onSubModelInserted.calledOnce);
     assert.equal(spy.partition.onSubModelInserted.getCall(0).args[0].subModelId, modelId, "Element.onSubModelInserted should have correct subModelId");
 
-    expect(() => iModelDb.channels.insertChannelSubject({ subjectName: "Test Functional Subject 2", channelKey: testChannelKey1 })).to.throw("a channel root for the specified key already exists");
+    expect(() => iModelDb.channels.insertChannelSubject({ subjectName: "Test Functional Subject 2", channelKey: testChannelKey1 })).to.throw(`Channel ${testChannelKey1} root already exist`);
     const subject2Id = iModelDb.channels.insertChannelSubject({ subjectName: "Test Functional Subject 2", channelKey: testChannelKey2 });
     iModelDb.channels.addAllowedChannel(testChannelKey2);
 

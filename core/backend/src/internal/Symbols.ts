@@ -25,3 +25,6 @@ export const _verifyChannel = Symbol.for(sym("verifyChannel"));
 export const _hubAccess = Symbol.for(sym("hubAccess"));
 export const _setHubAccess = Symbol.for(sym("setHubAccess"));
 export const _getHubAccess = Symbol.for(sym("getHubAccess"));
+export const _mockCheckpoint = Symbol.for(sym("mockCheckpoint"));
+export const _cache = Symbol.for(sym("cache"));
+export const _instanceKeyCache = Symbol.for(sym("instanceKeyCache"));

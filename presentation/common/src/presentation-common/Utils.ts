@@ -6,8 +6,8 @@
  * @module Core
  */
 
-import { NodeKey } from "./hierarchy/Key";
-import { KeySet } from "./KeySet";
+import { NodeKey } from "./hierarchy/Key.js";
+import { KeySet } from "./KeySet.js";
 
 /**
  * Create a type with `T` properties excluding properties listed in `K`.
@@ -112,18 +112,17 @@ type NullToUndefined<T> = T extends null
 
 /** @internal */
 export function deepReplaceNullsToUndefined<T>(obj: T): NullToUndefined<T> {
-  /* istanbul ignore next */
+  /* c8 ignore next 3 */
   if (obj === null) {
     return undefined as any;
   }
-  /* istanbul ignore next */
+  /* c8 ignore next 3 */
   if (Array.isArray(obj)) {
     return obj.map(deepReplaceNullsToUndefined) as NullToUndefined<T>;
   }
   if (typeof obj === "object") {
     return Object.keys(obj).reduce((acc, key) => {
       const value = obj[key as keyof T];
-      /* istanbul ignore else */
       if (value !== null && value !== undefined) {
         acc[key as keyof NullToUndefined<T>] = deepReplaceNullsToUndefined(value) as any;
       }

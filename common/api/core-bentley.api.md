@@ -76,6 +76,7 @@ export class BentleyError extends Error {
     constructor(errorNumber: number, message?: string, metaData?: LoggingMetaData);
     // (undocumented)
     errorNumber: number;
+    static getErrorKey(errorNumber: number): string;
     static getErrorMessage(error: unknown): string;
     static getErrorMetadata(error: unknown): object | undefined;
     static getErrorProps(error: unknown): ErrorProps;
@@ -84,6 +85,15 @@ export class BentleyError extends Error {
     static getMetaData(metaData: LoggingMetaData): object | undefined;
     get hasMetaData(): boolean;
     protected _initName(): string;
+    // @beta
+    static isError<T extends LegacyITwinErrorWithNumber>(error: unknown, errorNumber?: number): error is T;
+    get iTwinErrorId(): {
+        scope: string;
+        key: string;
+    };
+    // (undocumented)
+    static readonly iTwinErrorScope = "bentley-error";
+    get loggingMetadata(): object | undefined;
 }
 
 // @public
@@ -209,6 +219,9 @@ export enum ChangeSetStatus {
 // @public
 export type CloneFunction<T> = (value: T) => T;
 
+// @public
+export function compareArrays<T>(lhs: ReadonlyArray<T>, rhs: ReadonlyArray<T>, compare: (a: T, b: T) => number): number;
+
 // @public (undocumented)
 export function compareBooleans(a: boolean, b: boolean): number;
 
@@ -223,6 +236,12 @@ export function compareNumbersOrUndefined(lhs?: number, rhs?: number): number;
 
 // @public (undocumented)
 export function comparePossiblyUndefined<T>(compareDefined: (lhs: T, rhs: T) => number, lhs?: T, rhs?: T): number;
+
+// @beta
+export function compareSimpleArrays(lhs?: SimpleTypesArray, rhs?: SimpleTypesArray): number;
+
+// @beta
+export function compareSimpleTypes(lhs: number | string | boolean, rhs: number | string | boolean): number;
 
 // @public (undocumented)
 export function compareStrings(a: string, b: string): number;
@@ -443,6 +462,16 @@ export enum DbValueType {
     // (undocumented)
     TextVal = 3
 }
+
+// @public
+export type DeepReadonlyObject<T> = T extends object ? {
+    readonly [K in keyof T]: DeepReadonlyObject<T[K]>;
+} : T;
+
+// @public
+export type DeepRequiredObject<T> = T extends object ? {
+    [K in keyof T]-?: DeepRequiredObject<T[K]>;
+} : T;
 
 // @public
 export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
@@ -1008,6 +1037,24 @@ export function isProperSubclassOf<SuperClass extends new (..._: any[]) => any, 
 // @public
 export function isSubclassOf<SuperClass extends new (..._: any[]) => any, NonSubClass extends new (..._: any[]) => any, SubClass extends new (..._: any[]) => InstanceType<SuperClass>>(subclass: SuperClass | SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass | SuperClass;
 
+// @beta
+export interface ITwinError extends Error {
+    readonly iTwinErrorId: ITwinErrorId;
+}
+
+// @beta (undocumented)
+export namespace ITwinError {
+    export function create<T extends ITwinError>(args: Omit<T, "name">): T;
+    export function isError<T extends ITwinError>(error: unknown, scope: string, key?: string): error is T;
+    export function throwError<T extends ITwinError>(args: Omit<T, "name">): never;
+}
+
+// @beta
+export interface ITwinErrorId {
+    readonly key: string;
+    readonly scope: string;
+}
+
 // @public (undocumented)
 export interface JSONSchema {
     // (undocumented)
@@ -1157,9 +1204,18 @@ export namespace JsonUtils {
     export function isEmptyObject(json: any): boolean;
     export function isEmptyObjectOrUndefined(json: any): boolean;
     export function isNonEmptyObject(value: any): value is object;
+    export function isObject(json: unknown): json is {
+        [key: string]: unknown;
+    };
     export function setOrRemoveBoolean(json: any, key: string, val: boolean, defaultVal: boolean): void;
     export function setOrRemoveNumber(json: any, key: string, val: number, defaultVal: number): void;
     export function toObject(val: any): any;
+}
+
+// @beta
+export interface LegacyITwinErrorWithNumber extends ITwinError {
+    readonly errorNumber: number;
+    loggingMetadata?: object;
 }
 
 // @public
@@ -1557,6 +1613,9 @@ export enum RpcInterfaceStatus {
 
 // @public
 export function shallowClone<T>(value: T): T;
+
+// @beta
+export type SimpleTypesArray = number[] | string[] | boolean[];
 
 // @public
 export class SortedArray<T> extends ReadonlySortedArray<T> {

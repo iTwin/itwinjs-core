@@ -16,10 +16,9 @@ import { ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart } fro
 import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { IModelError } from "./IModelError";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
-import { TextAnnotationProps } from "./annotation/TextAnnotation";
 
 /** Properties of a NavigationProperty.
- * @public
+ * @public @preview
  * @extensions
  */
 export interface RelatedElementProps {
@@ -30,7 +29,7 @@ export interface RelatedElementProps {
 }
 
 /** Properties of an [Element]($docs/bis/guide/fundamentals/element-fundamentals)
- * @public
+ * @public @preview
  * @extensions
  */
 export interface ElementProps extends EntityProps {
@@ -52,7 +51,7 @@ export interface ElementProps extends EntityProps {
 }
 
 /** The Id and relationship class of an Element that is somehow related to another Element
- * @public
+ * @public @preview
  */
 export class RelatedElement implements RelatedElementProps {
   /** The Id of the element to which this element is related. */
@@ -93,13 +92,13 @@ export class RelatedElement implements RelatedElementProps {
 }
 
 /** A [RelatedElement]($common) relationship that describes the [TypeDefinitionElement]($backend) of an element.
- * @public
+ * @public @preview
  */
 export class TypeDefinition extends RelatedElement {
 }
 
 /** Properties of a [GeometricElement]($backend)
- * @public
+ * @public @preview
  * @extensions
  */
 export interface GeometricElementProps extends ElementProps {
@@ -116,7 +115,7 @@ export interface GeometricElementProps extends ElementProps {
 }
 
 /** Properties of a [[Placement3d]]
- * @public
+ * @public @preview
  * @extensions
  */
 export interface Placement3dProps {
@@ -126,7 +125,7 @@ export interface Placement3dProps {
 }
 
 /** Properties of a [[Placement2d]]
- * @public
+ * @public @preview
  * @extensions
  */
 export interface Placement2dProps {
@@ -136,27 +135,27 @@ export interface Placement2dProps {
 }
 
 /**
- * @public
+ * @public @preview
  * @extensions
  */
 export type PlacementProps = Placement2dProps | Placement3dProps;
 
 /** determine if this is Placement2dProps
- * @public
+ * @public @preview
  */
 export function isPlacement2dProps(props: PlacementProps): props is Placement2dProps {
   return (props as Placement2dProps).angle !== undefined;
 }
 
 /** determine if this is Placement3dProps
- * @public
+ * @public @preview
  */
 export function isPlacement3dProps(props: PlacementProps): props is Placement3dProps {
   return !isPlacement2dProps(props);
 }
 
 /** Properties that define a [GeometricElement3d]($backend)
- * @public
+ * @public @preview
  * @extensions
  */
 export interface GeometricElement3dProps extends GeometricElementProps {
@@ -165,19 +164,19 @@ export interface GeometricElement3dProps extends GeometricElementProps {
 }
 
 /** JSON representation of a [TextAnnotation3d]($backend).
- * @public
+ * @public @preview
  * @extensions
  */
 export interface TextAnnotation3dProps extends GeometricElement3dProps {
-  jsonProperties?: {
-    [key: string]: any;
-    /** @beta */
-    annotation?: TextAnnotationProps;
-  };
+  /** The stringified JSON representation of the text annotation.
+   * @see [[TextAnnotationProps]] for the JSON representation.
+   * @note Don't set this property directly - use [TextAnnotation3d.setAnnotation]($backend) instead.
+   */
+  textAnnotationData?: string;
 }
 
 /** Properties that define a [PhysicalElement]($backend)
- * @public
+ * @public @preview
  * @extensions
  */
 export interface PhysicalElementProps extends GeometricElement3dProps {
@@ -185,7 +184,7 @@ export interface PhysicalElementProps extends GeometricElement3dProps {
 }
 
 /** An enumeration of the different types of [SectionDrawing]($backend)s.
- * @public
+ * @public @preview
  * @extensions
  */
 export enum SectionType {
@@ -195,11 +194,25 @@ export enum SectionType {
   Plan = 6,
 }
 
-/** Properties that define a [SectionDrawing]($backend).
- * @public
+/** Properties that define a [Drawing]($backend).
+ * @public @preview
  * @extensions
  */
-export interface SectionDrawingProps extends ElementProps {
+export interface DrawingProps extends ElementProps {
+  /** A factor used by tools to adjust the size of text in [GeometricElement2d]($backend)s in the associated [DrawingModel]($backend) and to compute the
+   * size of the [ViewAttachment]($backend) created when attaching the [Drawing]($backend) to a [Sheet]($backend).
+   * Default: 1.
+   * @note The scale factor **must** be greater than zero.
+   * @public @preview
+   */
+  scaleFactor?: number;
+}
+
+/** Properties that define a [SectionDrawing]($backend).
+ * @public @preview
+ * @extensions
+ */
+export interface SectionDrawingProps extends DrawingProps {
   /** The type of section used to generate the drawing. Default: Section. */
   sectionType?: SectionType;
   /** The spatial view from which the section was generated. */
@@ -220,7 +233,7 @@ export interface SectionDrawingProps extends ElementProps {
 }
 
 /** Properties that define a [SectionDrawingLocation]($backend)
- * @public
+ * @public @preview
  * @extensions
  */
 export interface SectionDrawingLocationProps extends GeometricElement3dProps {
@@ -229,7 +242,7 @@ export interface SectionDrawingLocationProps extends GeometricElement3dProps {
 }
 
 /** Properties that define a [GeometricElement2d]($backend)
- * @public
+ * @public @preview
  * @extensions
  */
 export interface GeometricElement2dProps extends GeometricElementProps {
@@ -237,20 +250,20 @@ export interface GeometricElement2dProps extends GeometricElementProps {
   typeDefinition?: RelatedElementProps;
 }
 
-/** JSON representation of a [TextAnnotation2d]($backend).
- * @public
+/** Properties that define a [TextAnnotation2d]($backend).
+ * @public @preview
  * @extensions
  */
 export interface TextAnnotation2dProps extends GeometricElement2dProps {
-  jsonProperties?: {
-    [key: string]: any;
-    /** @beta */
-    annotation?: TextAnnotationProps;
-  };
+  /** The stringified JSON representation of the text annotation.
+   * @see [[TextAnnotationProps]] for the JSON representation.
+   * @note Don't set this property directly - use [TextAnnotation2d.setAnnotation]($backend) instead.
+   */
+  textAnnotationData?: string;
 }
 
 /** Properties of a [GeometryPart]($backend)
- * @public
+ * @public @preview
  * @extensions
  */
 export interface GeometryPartProps extends ElementProps {
@@ -263,7 +276,7 @@ export interface GeometryPartProps extends ElementProps {
 }
 
 /** Properties for a [ViewAttachment]($backend)
- * @public
+ * @public @preview
  * @extensions
  */
 export interface ViewAttachmentProps extends GeometricElement2dProps {
@@ -286,7 +299,7 @@ export interface ViewAttachmentProps extends GeometricElement2dProps {
 }
 
 /** Properties of a [Subject]($backend)
- * @public
+ * @public @preview
  * @extensions
  */
 export interface SubjectProps extends ElementProps {
@@ -311,7 +324,7 @@ export interface SheetTemplateProps extends ElementProps {
 }
 
 /** Properties of a [Sheet]($backend).
- * @public
+ * @public @preview
  * @extensions
  */
 export interface SheetProps extends ElementProps {
@@ -323,7 +336,7 @@ export interface SheetProps extends ElementProps {
 }
 
 /** Properties of a [DefinitionElement]($backend)
- * @public
+ * @public @preview
  * @extensions
  */
 export interface DefinitionElementProps extends ElementProps {
@@ -331,7 +344,7 @@ export interface DefinitionElementProps extends ElementProps {
 }
 
 /** Properties of a [TypeDefinitionElement]($backend)
- * @public
+ * @public @preview
  * @extensions
  */
 export interface TypeDefinitionElementProps extends DefinitionElementProps {
@@ -339,7 +352,7 @@ export interface TypeDefinitionElementProps extends DefinitionElementProps {
 }
 
 /** Properties of a [PhysicalType]($backend)
- * @public
+ * @public @preview
  * @extensions
  */
 export interface PhysicalTypeProps extends TypeDefinitionElementProps {
@@ -348,7 +361,7 @@ export interface PhysicalTypeProps extends TypeDefinitionElementProps {
 }
 
 /** Properties of a [InformationPartitionElement]($backend)
- * @public
+ * @public @preview
  * @extensions
  */
 export interface InformationPartitionElementProps extends ElementProps {
@@ -357,7 +370,7 @@ export interface InformationPartitionElementProps extends ElementProps {
 
 /** Options controlling which properties are included or excluded when querying [[DisplayStyleProps]].
  * @see [[ViewStateLoadProps]] and [[ElementLoadOptions]].
- * @public
+ * @public @preview
  * @extensions
  */
 export interface DisplayStyleLoadProps {
@@ -373,7 +386,7 @@ export interface DisplayStyleLoadProps {
 
 /** Options controlling which properties are included or excluded when querying [[RenderTimelineProps]].
  * @see [[ElementLoadOptions.renderTimeline]].
- * @public
+ * @public @preview
  * @extensions
  */
 export interface RenderTimelineLoadProps {
@@ -385,7 +398,7 @@ export interface RenderTimelineLoadProps {
 
 /** Options used to specify properties to include or exclude when querying [[ElementProps]] with functions like
  * [IModelDb.Elements.getElementProps]($backend) and [IModelConnection.Elements.loadProps]($frontend).
- * @public
+ * @public @preview
  * @extensions
  */
 export interface ElementLoadOptions {
@@ -407,7 +420,7 @@ export interface ElementLoadOptions {
 }
 
 /** Parameters to specify what element to load for functions like [IModelDb.Elements.getElementProps]($backend).
- * @public
+ * @public @preview
  * @extensions
  */
 export interface ElementLoadProps extends ElementLoadOptions {
@@ -421,7 +434,7 @@ export interface ElementLoadProps extends ElementLoadOptions {
 }
 
 /** Properties of an [ElementAspect]($backend)
- * @public
+ * @public @preview
  * @extensions
  */
 export interface ElementAspectProps extends EntityProps {
@@ -429,7 +442,7 @@ export interface ElementAspectProps extends EntityProps {
 }
 
 /** Properties of an [ExternalSourceAspect]($backend) that stores synchronization information for an element originating from an external source.
- * @public
+ * @public @preview
  * @extensions
  */
 export interface ExternalSourceAspectProps extends ElementAspectProps {
@@ -492,7 +505,7 @@ export interface ExternalSourceAttachmentProps extends ElementProps {
 }
 
 /** Properties of an [ChannelRootAspect]($backend) that identifies an Element as the root of a *channel* which is a subset of the overall iModel hierarchy that is independently maintained.
- * @public
+ * @public @preview
  * @extensions
  */
 export interface ChannelRootAspectProps extends ElementAspectProps {
@@ -501,7 +514,7 @@ export interface ChannelRootAspectProps extends ElementAspectProps {
 }
 
 /** Properties of a [LineStyle]($backend)
- * @public
+ * @public @preview
  * @extensions
  */
 export interface LineStyleProps extends DefinitionElementProps {
@@ -518,7 +531,7 @@ export interface LightLocationProps extends GeometricElement3dProps {
 }
 
 /** The *rank* for a Category
- * @public
+ * @public @preview
  * @extensions
  */
 export enum Rank {
@@ -533,7 +546,7 @@ export enum Rank {
 }
 
 /** Parameters of a [Category]($backend)
- * @public
+ * @public @preview
  * @extensions
  */
 export interface CategoryProps extends DefinitionElementProps {
@@ -542,7 +555,7 @@ export interface CategoryProps extends DefinitionElementProps {
 }
 
 /** Parameters of a [SubCategory]($backend)
- * @public
+ * @public @preview
  * @extensions
  */
 export interface SubCategoryProps extends DefinitionElementProps {
@@ -551,7 +564,7 @@ export interface SubCategoryProps extends DefinitionElementProps {
 }
 
 /** Parameters of a [UrlLink]($backend)
- * @public
+ * @public @preview
  * @extensions
  */
 export interface UrlLinkProps extends ElementProps {
@@ -560,7 +573,7 @@ export interface UrlLinkProps extends ElementProps {
 }
 
 /** Parameters of a [RepositoryLink]($backend)
- * @public
+ * @public @preview
  * @extensions
  */
 export interface RepositoryLinkProps extends UrlLinkProps {
@@ -576,7 +589,7 @@ export interface SynchronizationConfigLinkProps extends UrlLinkProps {
 }
 
 /** Wire format describing a [RenderTimeline]($backend).
- * @public
+ * @public @preview
  * @extensions
  */
 export interface RenderTimelineProps extends ElementProps {
@@ -615,4 +628,16 @@ export interface SheetIndexReferenceProps extends SheetIndexEntryProps {
 export interface SheetReferenceProps extends SheetIndexEntryProps {
   /** The bis:Sheet that this bis:SheetReference is pointing to. */
   sheet?: RelatedElementProps;
+}
+
+/** Properties that define an [AnnotationTextStyle]($backend).
+ * @beta
+ */
+export interface AnnotationTextStyleProps extends DefinitionElementProps {
+  /** An optional human-readable description of the text style.*/
+  description?: string;
+  /** The stringified JSON representation of the text style.
+   * @see [[TextStyleSettingsProps]]
+   */
+  settings?: string;
 }

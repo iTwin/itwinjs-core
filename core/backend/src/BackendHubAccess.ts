@@ -8,11 +8,11 @@
 
 import { AccessToken, GuidString, Id64String, IModelHubStatus } from "@itwin/core-bentley";
 import {
-  BriefcaseId, ChangesetFileProps, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexAndId, ChangesetIndexOrId, ChangesetProps, ChangesetRange,
+  BriefcaseId, ChangesetFileProps, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange,
   LockState as CommonLockState, IModelError, IModelVersion,
   LocalDirName, LocalFileName,
 } from "@itwin/core-common";
-import { CheckpointProps, DownloadRequest, ProgressFunction } from "./CheckpointManager";
+import { CheckpointProps, ProgressFunction } from "./CheckpointManager";
 import type { TokenArg } from "./IModelDb";
 
 /** Exception thrown if lock cannot be acquired.
@@ -31,7 +31,7 @@ export class LockConflict extends IModelError {
 }
 
 /** The state of a lock. See [Acquiring locks on elements.]($docs/learning/backend/ConcurrencyControl.md#acquiring-locks-on-elements).
- * @deprecated in 4.7 Use [LockState]($common)
+ * @deprecated in 4.7 - will not be removed until after 2026-06-13. Use [LockState]($common)
  * @public
  */
 export enum LockState {
@@ -171,12 +171,6 @@ export interface DownloadChangesetRangeArg extends ChangesetRangeArg, DownloadPr
 }
 
 /**
- * @deprecated in 3.x. Use [[DownloadRequest]].
- * @internal
- */
-export type CheckpointArg = DownloadRequest;
-
-/**
  * Arguments to create a new iModel in iModelHub
  *  @public
  */
@@ -218,13 +212,6 @@ export interface BackendHubAccess {
 
   /** get an array of the briefcases assigned to a user. */
   getMyBriefcaseIds: (arg: IModelIdArg) => Promise<BriefcaseId[]>;
-
-  /**
-   * Download a v1 checkpoint
-   * @deprecated in 3.x. V1 checkpoints are deprecated. Download V2 checkpoint using [[V2CheckpointManager.downloadCheckpoint]].
-   * @internal
-   */
-  downloadV1Checkpoint: (arg: CheckpointArg) => Promise<ChangesetIndexAndId>; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /** Get the access props for a V2 checkpoint. Returns undefined if no V2 checkpoint exists. */
   queryV2Checkpoint: (arg: CheckpointProps) => Promise<V2CheckpointAccessProps | undefined>;

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Schema as MetaSchema, SchemaContext, SchemaLoader, SchemaPropsGetter } from "@itwin/ecschema-metadata";
+import { Schema as MetaSchema, SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
 import { ClassRegistry, Element, ElementAspect, IModelDb, Relationship, Schema, Schemas } from "@itwin/core-backend";
 import { AnyDiagnostic, ISchemaChanges, ISchemaCompareReporter, SchemaChanges, SchemaComparer, SchemaContextEditor } from "@itwin/ecschema-editing";
 import { MutableSchema } from "@itwin/ecschema-metadata/lib/cjs/Metadata/Schema";
@@ -31,12 +31,6 @@ export interface SchemaVersion {
   minorVersion: number;
 }
 
-export async function tryGetSchema(db: IModelDb, schemaName: string): Promise<MetaSchema | undefined> {
-  const loader = new SchemaLoader((name) => db.getSchemaProps(name));
-  const schema = loader.tryGetSchema(schemaName);
-  return schema;
-}
-
 // __PUBLISH_EXTRACT_START__  DynamicSchema-syncDynamicSchema.example-code
 export async function syncDynamicSchema(
   db: IModelDb,
@@ -45,7 +39,7 @@ export async function syncDynamicSchema(
 ): Promise<pcf.ItemState> {
 
   const { schemaName } = props;
-  const existingSchema = await tryGetSchema(db, schemaName);
+  const existingSchema = await db.schemaContext.getSchema(new SchemaKey(schemaName));
 
   const version = getSchemaVersion(db, schemaName);
   const latestSchema = await createDynamicSchema(db, version, domainSchemaNames, props);
@@ -148,14 +142,19 @@ async function createDynamicSchema(
   const { schemaName, schemaAlias } = props;
   const newSchema = new MetaSchema(context, schemaName, schemaAlias, version.readVersion, version.writeVersion, version.minorVersion);
 
-  const loader = new SchemaLoader(db as unknown as SchemaPropsGetter);
-  const bisSchema = loader.getSchema("BisCore");
+  const bisSchema = await db.schemaContext.getSchema(new SchemaKey("BisCore"));
+  if (bisSchema === undefined) {
+    throw new Error("BisCore schema not found");
+  }
   await context.addSchema(newSchema);
   await context.addSchema(bisSchema);
   await (newSchema as MutableSchema).addReference(bisSchema); // TODO remove this hack later
 
   for (const currSchemaName of domainSchemaNames) {
-    const schema = loader.getSchema(currSchemaName);
+    const schema = await db.schemaContext.getSchema(new SchemaKey(currSchemaName));
+    if (schema === undefined) {
+      throw new Error(`Schema ${currSchemaName} not found`);
+    }
     await context.addSchema(schema);
     await (newSchema as MutableSchema).addReference(schema);
   }
@@ -190,8 +189,8 @@ class DynamicSchemaCompareReporter implements ISchemaCompareReporter {
     this.changes.push(schemaChanges as SchemaChanges);
   }
 
-  public get diagnostics(): AnyDiagnostic [] {
-    let diagnostics: AnyDiagnostic [] = [];
+  public get diagnostics(): AnyDiagnostic[] {
+    let diagnostics: AnyDiagnostic[] = [];
     for (const changes of this.changes) {
       diagnostics = diagnostics.concat(changes.allDiagnostics);
     }

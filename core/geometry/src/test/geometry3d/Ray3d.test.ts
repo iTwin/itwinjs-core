@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-
+import { BeDuration, StopWatch } from "@itwin/core-bentley";
 import { CurveFactory } from "../../curve/CurveFactory";
 import { CurveCurveApproachType } from "../../curve/CurveLocationDetail";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -21,7 +21,7 @@ import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { prettyPrint } from "../testFunctions";
+import { getRandomNumber, prettyPrint } from "../testFunctions";
 
 /** create rays, using optional result (which may be undefined) */
 function createRays(ck: Checker, target?: Ray3d) {
@@ -314,10 +314,6 @@ describe("Ray3d.isAlmostEqualPointSet", () => {
   });
 });
 
-/** Return a random number between -100 and 100 */
-function getRandomNumber() {
-  return 200 * Math.random() - 100;
-}
 function captureRay(allGeometry: GeometryQuery[], ray: Ray3d, rotatedRay: Ray3d) {
   GeometryCoreTestIO.captureGeometry(
     allGeometry,
@@ -358,8 +354,10 @@ describe("Ray3d.IntersectionWithTriangle", () => {
     let rotatedIntersectionPoint: Point3d | undefined; // rotate ray and triangle and then find intersection
     let rotatedOriginalIntersectionPoint = Point3d.createZero(); // find intersection and then rotate the intersection
     let rotationMatrix: Matrix3d;
-    const angle: Angle = Angle.createDegrees(getRandomNumber());
-    const rotationAxis: Vector3d = Vector3d.create(getRandomNumber(), getRandomNumber(), getRandomNumber());
+    const angle: Angle = Angle.createDegrees(getRandomNumber(-100, 100));
+    const rotationAxis: Vector3d = Vector3d.create(
+      getRandomNumber(-100, 100), getRandomNumber(-100, 100), getRandomNumber(-100, 100),
+    );
     if (!rotationAxis.magnitude()) {
       rotationMatrix = Matrix3d.identity;
     } else {
@@ -510,8 +508,8 @@ describe("Ray3d.IntersectionWithTriangle", () => {
     const origins: Point3d[] = [];
     const directions: Vector3d[] = [];
     for (let i = 0; i < N; i++) {
-      origins.push(Point3d.create(getRandomNumber(), getRandomNumber(), getRandomNumber()));
-      directions.push(Vector3d.create(getRandomNumber(), getRandomNumber(), getRandomNumber()));
+      origins.push(Point3d.create(getRandomNumber(-100, 100), getRandomNumber(-100, 100), getRandomNumber(-100, 100)));
+      directions.push(Vector3d.create(getRandomNumber(-100, 100), getRandomNumber(-100, 100), getRandomNumber(-100, 100)));
     }
     // create N*N rays
     const rays: Ray3d[] = [];
@@ -525,9 +523,9 @@ describe("Ray3d.IntersectionWithTriangle", () => {
     for (let i = 0; i < N * N; i++) {
       triangles.push(
         BarycentricTriangle.createXYZXYZXYZ(
-          getRandomNumber(), getRandomNumber(), getRandomNumber(),
-          getRandomNumber(), getRandomNumber(), getRandomNumber(),
-          getRandomNumber(), getRandomNumber(), getRandomNumber(),
+          getRandomNumber(-100, 100), getRandomNumber(-100, 100), getRandomNumber(-100, 100),
+          getRandomNumber(-100, 100), getRandomNumber(-100, 100), getRandomNumber(-100, 100),
+          getRandomNumber(-100, 100), getRandomNumber(-100, 100), getRandomNumber(-100, 100),
         ),
       );
     }
@@ -537,26 +535,26 @@ describe("Ray3d.IntersectionWithTriangle", () => {
     let intersectionPoint2: TriangleLocationDetail | undefined;
     let timeByRay3d: number = 0;
     let timeByBarycentricTriangle: number = 0;
-    let startTime: number;
-    let endTime: number;
+    let elapsedTime: BeDuration;
+    const timer = new StopWatch();
 
     for (const ray of rays) {
       for (const triangle of triangles) {
         // shoot ray at triangle using Ray3d class
-        startTime = performance.now();
+        timer.start();
         intersectionPoint1 = ray.intersectionWithTriangle(
           triangle.points[0], triangle.points[1], triangle.points[2],
         );
-        endTime = performance.now();
-        timeByRay3d = timeByRay3d + endTime - startTime;
+        elapsedTime = timer.stop();
+        timeByRay3d += elapsedTime.milliseconds;
         if (intersectionPoint1 !== undefined) {
           intersectionPoints1.push(intersectionPoint1);
         }
         // shoot ray at triangle using BarycentricTriangle class
-        startTime = performance.now();
+        timer.start();
         intersectionPoint2 = triangle.intersectRay3d(ray);
-        endTime = performance.now();
-        timeByBarycentricTriangle = timeByBarycentricTriangle + endTime - startTime;
+        elapsedTime = timer.stop();
+        timeByBarycentricTriangle += elapsedTime.milliseconds;
         if (intersectionPoint2.isInsideOrOn && intersectionPoint2.a >= 0) { // ray intersection not just line intersection
           intersectionPoints2.push(intersectionPoint2.world);
         }
@@ -591,8 +589,8 @@ describe("Ray3d.IntersectionWithTriangle", () => {
     let rotatedIntersectionPoint: Point3d | undefined; // rotate ray and triangle and then find intersection
     let rotatedOriginalIntersectionPoint = Point3d.createZero(); // find intersection and then rotate the intersection
     let rotationMatrix: Matrix3d;
-    const angle: Angle = Angle.createDegrees(getRandomNumber());
-    const rotationAxis: Vector3d = Vector3d.create(getRandomNumber(), getRandomNumber(), getRandomNumber());
+    const angle: Angle = Angle.createDegrees(getRandomNumber(-100, 100));
+    const rotationAxis: Vector3d = Vector3d.create(getRandomNumber(-100, 100), getRandomNumber(-100, 100), getRandomNumber(-100, 100));
     if (!rotationAxis.magnitude()) {
       rotationMatrix = Matrix3d.identity;
     } else {

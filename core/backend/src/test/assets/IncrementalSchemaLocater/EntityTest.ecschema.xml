@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ==================================================================================
+|  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+|  * See LICENSE.md in the project root for license terms and full copyright notice.
+======================================================================================= -->
+<ECSchema schemaName="EntityTest" alias="et" version="01.00.00" displayLabel="Entity Test Schema" description="Schema for testing EntityClasses" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  <ECSchemaReference name="BisCore" version="01.00.01" alias="bis"/>
+  <ECSchemaReference name="CoreCustomAttributes" version="01.00.03" alias="CoreCA"/>
+
+  <ECEntityClass typeName="EntityModifierNone" modifier="None" displayLabel="TestLabel" description="TestDescription">
+    <BaseClass>bis:PhysicalElement</BaseClass>
+    <BaseClass>ITestMixin</BaseClass>
+    <ECCustomAttributes>
+      <HiddenClass xmlns="CoreCustomAttributes.01.00.03">
+        <Show>false</Show>
+      </HiddenClass>
+      <TestCustomAttribute xmlns="EntityTest.01.00.00"/>
+    </ECCustomAttributes>
+    <ECProperty propertyName="StringProperty" typeName="string" displayLabel="String" description="String Property"/>
+  </ECEntityClass>
+
+  <ECEntityClass typeName="EntityModifierAbstract" modifier="Abstract" displayLabel="TestLabel" description="TestDescription">
+    <BaseClass>bis:PhysicalElement</BaseClass>
+    <BaseClass>ITestMixin</BaseClass>
+    <ECProperty propertyName="StringProperty" typeName="string" displayLabel="String" description="String Property"/>
+  </ECEntityClass>
+
+  <ECEntityClass typeName="EntityModifierSealed" modifier="Sealed" displayLabel="TestLabel" description="TestDescription">
+    <BaseClass>bis:PhysicalElement</BaseClass>
+    <BaseClass>ITestMixin</BaseClass>
+    <ECProperty propertyName="StringProperty" typeName="string" displayLabel="String" description="String Property"/>
+  </ECEntityClass>
+
+  <ECEntityClass typeName="ITestMixin" modifier="Abstract">
+    <ECCustomAttributes>
+      <IsMixin xmlns="CoreCustomAttributes.01.00.03">
+        <AppliesToEntityClass>bis:PhysicalElement</AppliesToEntityClass>
+      </IsMixin>
+    </ECCustomAttributes>
+  </ECEntityClass>
+
+  <ECCustomAttributeClass typeName="TestCustomAttribute" appliesTo="EntityClass" modifier="Sealed"/>
+</ECSchema>

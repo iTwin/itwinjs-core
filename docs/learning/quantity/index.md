@@ -4,14 +4,26 @@
   - [Terms and Concepts](#terms-and-concepts)
     - [Common Terms](#common-terms)
     - [FormatProps](#formatprops)
+    - [Station Format Properties](#station-format-properties)
+      - [stationOffsetSize](#stationoffsetsize)
+      - [stationBaseFactor](#stationbasefactor)
+        - [Station Format Examples](#station-format-examples)
     - [Concepts](#concepts)
+      - [Formats Provider](#formats-provider)
       - [Units Provider](#units-provider)
       - [Unit Conversion](#unit-conversion)
-    - [Examples of Usage](#examples-of-usage)
-      - [Numeric Format](#numeric-format)
-      - [Composite Format](#composite-format)
-      - [Parsing Values](#parsing-values)
-      - [Mathematical Operation Parsing](#mathematical-operation-parsing)
+  - [Persistence](#persistence)
+    - [FormatSet](#formatset)
+  - [Using KindOfQuantities to Retrieve Formats](#using-kindofquantities-to-retrieve-formats)
+  - [Examples of Usage](#examples-of-usage)
+    - [Numeric Format](#numeric-format)
+    - [Composite Format](#composite-format)
+    - [Parsing Values](#parsing-values)
+    - [Using a FormatsProvider](#using-a-formatsprovider)
+    - [Using a MutableFormatsProvider](#using-a-mutableformatsprovider)
+    - [Registering a SchemaFormatsProvider on IModelConnection open](#registering-a-schemaformatsprovider-on-imodelconnection-open)
+    - [Mathematical Operation Parsing](#mathematical-operation-parsing)
+      - [Limitations](#limitations)
 
 The __@itwin/core-quantity__ package contains classes for quantity formatting and parsing.
 For detailed API documentation, see our [iTwin.js reference documentation](https://www.itwinjs.org/reference/core-quantity/quantity/).
@@ -25,24 +37,62 @@ If you're developing a frontend application that takes advantage of the core qua
 - Unit - A named unit of measure which can be located by its name or label. The definition of any unit is represented through its [UnitProps]($quantity).
 - [UnitsProvider]($quantity) - An interface that locates the `UnitProps` for a unit given name or label. This interface also provides methods for [UnitConversion]($quantity) to allow converting from one unit to another.
 - Unit Family/[Phenomenon]($ecschema-metadata) - A physical quantity that can be measured (e.g., length, temperature, pressure).  Only units in the same phenomenon can be converted between.
-- Persistence Unit - The unit used to store the quantity value in memory or to persist the value in an editable iModel. iModels define the persistence unit through [KindOfQuantity]($docs/bis/ec/kindofquantity/) objects.
+- Persistence Unit - The unit used to store the quantity value in memory or to persist the value in an editable [iModel](../../learning/iModels.md). iModels define the persistence unit through [KindOfQuantity]($docs/bis/ec/kindofquantity/) objects.
 - [KindOfQuantity]($docs/bis/ec/kindofquantity/) - An object that defines a persistence unit and presentation formats.
 - [Format]($quantity) - The display format for the quantity value. For example, an angle may be persisted in radians but formatted and shown to user in degrees.
 - CompositeValue - An addition to the format specification that allows the explicit specification of a unit label, it also allows the persisted value to be displayed as up to 4 sub-units. Typical multi-unit composites are used to display `feet'-inches"` and `degree°minutes'seconds"`.
 - [FormatterSpec]($quantity) - Holds the format specification as well as the [UnitConversion]($quantity) between the persistence unit and all units defined in the format. This is done to avoid any async calls by the `UnitsProvider` during the formatting process.
-- [ParserSpec]($quantity) - Holds the format specification as well as the [UnitConversion]($quantity) between the persistence unit and all other units in the same phenomenon. This is done to avoid async calls by the `UnitsProvider` and to allow users to input quantities in different unit systems than specified. For instance, if a metric unit system is set, a user could enter `43in` and have the result properly converted to meters.
-- [Formatter]($quantity) - A class that holds methods to format a quantity value into a text string. Given a `FormatterSpec` object — which includes one or more unit definitions, each with their own conversion information and a specified format — and a single magnitude number, the `Formatter` can convert this number into a text string, adhering to the properties specified in the `formatTraits`.
-- [Parser]($quantity) - A class that holds methods to parse a text string into a single number. Given a `ParserSpec` object containing a Format's Units and their Unit Conversions, as well as an input string, the Parser can either return an object `QuantityParseResult` that contains the magnitude of type `number`, or an object `ParseQuantityError`.
+- [ParserSpec]($quantity) - Holds the format specification as well as the [UnitConversion]($quantity) between the persistence unit and all other units in the same `Phenomenon`. This is done to avoid async calls by the `UnitsProvider` and to allow users to input quantities in different unit systems than specified. For instance, if a metric unit system is set, a user could enter `43in` and have the result properly converted to meters.
+- [Formatter]($quantity) - A class that holds methods to format a quantity value into a text string. Given a `FormatterSpec` object — which includes one or more unit definitions, each with their own conversion information and a specified `Format` — and a single magnitude number, the `Formatter` can convert this number into a text string, adhering to the properties specified in `formatTraits`.
+- [Parser]($quantity) - A class that holds methods to parse a text string into a single number. Given a `ParserSpec` object containing a `Format` `Units` and their unit conversions, as well as an input string, the Parser can either return an object `QuantityParseResult` that contains the magnitude of type `number`, or an object `ParseQuantityError`.
 
 ### FormatProps
 
 For a detailed description of all the setting supported by FormatProp see the EC documentation on [Format](../../bis/ec/ec-format.md).
 
+### Station Format Properties
+
+Station formatting in iTwin.js supports properties that control how values are broken down into major and minor station components:
+
+#### stationOffsetSize
+
+The `stationOffsetSize` property specifies the number of decimal places for calculating the station offset magnitude. This must be a positive integer greater than 0. This works with `stationBaseFactor` to determine the effective station offset using the formula: `effective offset = stationBaseFactor * 10^stationOffsetSize`.
+
+#### stationBaseFactor
+
+The `stationBaseFactor` property provides additional flexibility for station formatting by acting as a multiplier for the base offset calculation. This allows for non-standard station intervals that aren't simple powers of 10. The default value is 1.
+
+> __Note__: The `stationBaseFactor` property is currently implemented as an iTwin.js-specific extension and is not supported in the native EC (Entity Context) layer. This feature will eventually be incorporated into the ECFormat specification to provide broader compatibility across the iTwin ecosystem.
+
+##### Station Format Examples
+
+| stationOffsetSize | stationBaseFactor | Value  | Effective Offset | Formatted |
+| ----------------- | ----------------- | ------ | ---------------- | --------- |
+| 2                 | 1                 | 1055.5 | 100              | 10+55.50  |
+| 3                 | 1                 | 1055.5 | 1000             | 1+055.50  |
+| 2                 | 5                 | 1055.5 | 500              | 2+55.50   |
+
+In the examples above:
+
+- With `stationOffsetSize=2` and `stationBaseFactor=1`: effective offset = 1 × 10² = 100
+- With `stationOffsetSize=3` and `stationBaseFactor=1`: effective offset = 1 × 10³ = 1000
+- With `stationOffsetSize=2` and `stationBaseFactor=5`: effective offset = 5 × 10² = 500
+
 ### Concepts
+
+#### Formats Provider
+
+The [FormatDefinition]($quantity) interface is an extension of FormatProps to help identify formats.
+
+A [FormatsProvider]($quantity) interface helps provide all the necessary `Formats` for displaying formatted quantity values, while also enabling users to add formats of their own.
+
+A [MutableFormatsProvider]($quantity) interface extends the read-only `FormatsProvider` above by allowing adding or removing `Formats` to the provider.
+
+The [SchemaFormatsProvider]($ecschema-metadata) takes in a [SchemaContext]($ecschema-metadata), to provide `Formats` coming from schemas. The `SchemaFormatsProvider` also requires a [UnitSystemKey]($quantity) passed in to filter the [FormatDefinition]($quantity) returned, according to the current unit system set in the `SchemaFormatsProvider`. When getting a format, the `SchemaFormatsProvider` will throw an error if it receives a non-valid [EC full name](https://www.itwinjs.org/bis/ec/ec-name/#full-name).
 
 #### Units Provider
 
-To appropriately parse and output formatted values, a units provider is used to define all available units and provides conversion factors between units. There are several implementations of the UnitsProvider across iTwin.js:
+To appropriately parse and output formatted values, a units provider is used to define all available units and provides conversion factors between units. There are several implementations of the [UnitsProvider]($quantity) across iTwin.js:
 
 The [BasicUnitsProvider]($frontend) holds many common units and their conversions between each other.
 
@@ -54,54 +104,125 @@ The [AlternateUnitLabelsProvider]($quantity) interface allows users to specify a
 
 Unit conversion is performed through a [UnitConversionSpec]($quantity). These objects are generated by a `UnitsProvider`, with the implementation determined by each specific provider. During initialization, a `ParserSpec` or `FormatterSpec` can ask for `UnitConversionSpec` objects provided via the `UnitsProvider`. During parsing and formatting, the specification will retrieve the `UnitConversionSpec` between the source and destination units to apply the unit conversion.
 
-### Examples of Usage
+## Persistence
 
-#### Numeric Format
+We expose APIs and interfaces to support persistence of formats. Different from [KindOfQuantity](../../bis/ec/kindofquantity.md), which enables persistence of formats at the schema level, this section covers persistence at the application level.
 
-  The example below uses a simple numeric format and generates a formatted string with 4 decimal place precision. For numeric formats there is no conversion to other units; the unit passed in is the unit returned with the unit label appended if "showUnitLabel" trait is set.
+### FormatSet
+
+[FormatSet]($ecschema-metadata) defines properties necessary to support persistence of a set of `Formats`.
+
+Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../../bis/ec/ec-name.md) for a [KindOfQuantity](../../bis/ec/kindofquantity.md). During an application's runtime, the `Format` associated to a `KindofQuantity` within a `FormatSet` would take precedence and be used over the default presentation formats of that `KindOfQuantity`.
+
+> The naming convention for a valid format within a FormatSet is <full-schema-name>:<koq-name>
+.
 <details>
-<summary>Example Code</summary>
+<summary>Example of a metric-based FormatSet as JSON</summary>
 
-```ts
-    import { BasicUnitsProvider } from "@itwin/core-frontend";
-    import { BasicUnit, Format, FormatterSpec } from "@itwin/core-quantity";
-
-    const unitsProvider = new BasicUnitsProvider();
-    const formatData = {
-      formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel", "trailZeroes", "use1000Separator"],
-      precision: 4,
-      type: "Decimal",
-      uomSeparator: " ",
-      thousandSeparator: ",",
-      decimalSeparator: ".",
-    };
-
-    // generate a Format from FormatProps to display 4 decimal place value
-    const format = new Format("4d");
-    // load the format props into the format, since unit provider is used to validate units the call must be asynchronous.
-    await format.fromJSON(unitsProvider, formatData);
-
-    // define input/output unit
-    const unitName = "Units.FT";
-    const unitLabel = "ft";
-    const unitFamily = "Units.LENGTH";
-    const inUnit = new BasicUnit(unitName, unitLabel, unitFamily);
-
-    const magnitude = -12.5416666666667;
-
-    // create the formatter spec - the name is not used by the formatter it is only
-    // provided so user can cache formatter spec and then retrieve spec via its name.
-    const spec = await FormatterSpec.create("test", format, unitsProvider, inUnit);
-
-    // apply the formatting held in FormatterSpec
-    const formattedValue = spec.applyFormatting(magnitude);
-
-    // result in formattedValue of "-12.5417 ft"
+```json
+{
+  "name": "metric",
+  "label": "Metric",
+  "formats": {
+    "AecUnits.LENGTH": {
+      "composite": {
+        "includeZero": true,
+        "spacer": "",
+        "units": [{ "label": "m", "name": "Units.M" }]
+      },
+      "formatTraits": ["keepSingleZero", "showUnitLabel"],
+      "precision": 4,
+      "type": "Decimal",
+      "decimalSeparator": "."
+    },
+    "AecUnits.Angle": {
+      "description": "degrees (labeled) 2 decimal places",
+      "composite": {
+        "includeZero": true,
+        "spacer": "",
+        "units": [{ "label": "°", "name": "Units.ARC_DEG" }]
+      },
+      "formatTraits": ["keepSingleZero", "showUnitLabel"],
+      "precision": 2,
+      "type": "Decimal",
+      "uomSeparator": ""
+    }
+  }
+}
 ```
 
 </details>
 
-#### Composite Format
+<details>
+<summary>Example of a imperial-based FormatSet as JSON</summary>
+
+```json
+{
+  "name": "imperial",
+  "label": "Imperial",
+  "formats": {
+    "AecUnits.LENGTH": {
+      "composite": {
+        "includeZero": true,
+        "spacer": "",
+        "units": [{ "label": "'", "name": "Units.FT" }, { "label": "\"", "name": "Units.IN" }]},
+      "formatTraits": ["keepSingleZero", "showUnitLabel"],
+      "precision": 4,
+      "type": "Decimal",
+    },
+    "AecUnits.Angle": {
+      "description": "degrees minutes seconds (labeled) 0 decimal places",
+      "composite": {
+        "includeZero": true,
+        "spacer": "",
+        "units": [{ "label": "°", "name": "Units.ARC_DEG" }, { "label": "'", "name": "Units.ARC_MINUTE" }, { "label": "\"", "name": "Units.ARC_SECOND" }]
+      },
+      "formatTraits": ["keepSingleZero", "showUnitLabel"],
+      "precision": 2,
+      "type": "Decimal",
+      "uomSeparator": ""
+    }
+  }
+}
+```
+
+</details>
+
+## Using KindOfQuantities to Retrieve Formats
+
+Building off of [FormatSet](#formatset), Tools and components that format quantities across applications should be linked to a [KindOfQuantity](../../bis/ec/kindofquantity.md) and a Persistence Unit. See [Domains](../../bis/domains/index.md) for available schemas, including `AecUnits` and `RoadRailUnits`, which define many `KindOfQuantity` values.
+
+The table below lists common measurements with their typical `KindOfQuantity` and Persistence Unit. This allows tools to request a default `KindOfQuantity` from [IModelApp.formatsProvider]($core-frontend) and a Persistence Unit from [IModelApp.quantityFormatter]($core-frontend) to create a `FormatterSpec` for quantity formatting.
+
+| Measurement  | Actual KindOfQuantity (EC Full Name) | Persistence Unit
+| ------------- | ------------- | -------------
+| Length  |  AecUnits.LENGTH | Units.M
+| Angle  | AecUnits.ANGLE  | Units.RAD
+| Area  |  AecUnits.AREA | Units.SQ_M
+| Volume  | AecUnits.VOLUME  | Units.CUB_M
+| Latitude/Longitude | AecUnits.ANGLE | Units.RAD
+| Coordinate | AecUnits.LENGTH | Units.M
+| Stationing | RoadRailUnits.STATION | Units.M
+| Length (Survey Feet) | RoadRailUnits.LENGTH | Units.M
+| Bearing | RoadRailUnits.BEARING | Units.RAD
+| Weight | AecUnits.WEIGHT | Units.KG
+| Time | AecUnits.TIME | Units.S
+
+## Examples of Usage
+
+### Numeric Format
+
+The example below uses a simple numeric format and generates a formatted string with 4 decimal place precision. For numeric formats there is no conversion to other units; the unit passed in is the unit returned with the unit label appended if `showUnitLabel` trait is set.
+<details>
+<summary>Example Code</summary>
+
+```ts
+[[include:Quantity_Formatting.Numeric]]
+```
+
+</details>
+
+### Composite Format
 
 For the composite format below, we provide a unit in meters and produce a formatted string showing feet and inches to a precision of 1/8th inch.
 
@@ -109,92 +230,88 @@ For the composite format below, we provide a unit in meters and produce a format
 <summary>Example Code</summary>
 
 ```ts
-    import { BasicUnit, Format, FormatterSpec } from "@itwin/core-quantity";
-
-    const formatData = {
-      composite: {
-        includeZero: true,
-        spacer: "-",
-        units: [
-          {
-            label: "'",
-            name: "Units.FT",
-          },
-          {
-            label: "\"",
-            name: "Units.IN",
-          },
-        ],
-      },
-      formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: 8,
-      type: "Fractional",
-      uomSeparator: "",
-    };
-
-    // generate a Format from FormatProps to display feet and inches
-    const format = new Format("fi8");
-    // load the format props into the format, since unit provider is used to validate units the call must be asynchronous.
-    await format.fromJSON(unitsProvider, formatData);
-
-    // define input unit
-    const unitName = "Units.M";
-    const unitLabel = "m";
-    const unitFamily = "Units.LENGTH";
-    const inUnit = new BasicUnit(unitName, unitLabel, unitFamily);
-
-    const magnitude = 1.0;
-
-    // create the formatter spec - the name is not used by the formatter it is only
-    // provided so user can cache formatter spec and then retrieve spec via its name.
-    const spec = await FormatterSpec.create("test", format, unitsProvider, inUnit);
-
-    // apply the formatting held in FormatterSpec
-    const formattedValue = spec.applyFormatting(magnitude);
-
-    // result in formattedValue of 3'-3 3/8"
+[[include:Quantity_Formatting.Composite]]
 ```
 
 </details>
 
-#### Parsing Values
+### Parsing Values
 
 <details>
-  <summary>Example Code:</summary>
+  <summary>Example Code</summary>
 
 ```ts
-  import { Format, ParserSpec } from "@itwin/core-quantity";
-
-  // define output unit and also used to determine the unit family used during parsing
-  const outUnit = await unitsProvider.findUnitByName("Units.M");
-
-  const formatData = {
-    composite: {
-      includeZero: true,
-      spacer: "-",
-      units: [{ label: "'", name: "Units.FT" }, { label: "\"", name: "Units.IN" }],
-    },
-    formatTraits: ["keepSingleZero", "showUnitLabel"],
-    precision: 8,
-    type: "Fractional",
-    uomSeparator: "",
-  };
-
-  // generate a Format from FormatProps used to determine possible labels
-  const format = new Format("test");
-  await format.fromJSON(unitsProvider, formatData);
-
-  const inString = "2FT 6IN";
-
-  // create the parserSpec spec which will hold all unit conversions from possible units to the output unit
-  const parserSpec = await ParserSpec.create(format, unitsProvider, outUnit, unitsProvider);
-  const parseResult = parserSpec.parseToQuantityValue(inString);
-  //  parseResult.value 0.762  (value in meters)
+[[include:Quantity_Formatting.Simple_Parsing]]
 ```
 
 </details>
 
-#### Mathematical Operation Parsing
+### Using a FormatsProvider
+
+The example below uses the `SchemaFormatsProvider`, an implementation of a `FormatsProvider`, found in `ecschema-metadata` to format values associated with the length of an object.
+
+<details>
+  <summary>Example of Formatting</summary>
+
+```ts
+[[include:Quantity_Formatting.Schema_Formats_Provider_Simple_Formatting]]
+```
+
+</details>
+
+The example below uses the `SchemaFormatsProvider`, an implementation of a `FormatsProvider`, found in `ecschema-metadata` to parse values associated with the length of an object.
+
+<details>
+  <summary>Example of Parsing</summary>
+
+```ts
+[[include:Quantity_Formatting.Schema_Formats_Provider_Simple_Parsing]]
+```
+
+</details>
+
+When retrieving a format from a schema, users might want to ensure the format they get matches the unit system they are currently using. They can either pass in the unit system on initialization, or change them after initialization, like so:
+
+<details>
+  <summary>Example of Formatting with Unit System</summary>
+
+```ts
+[[include:Quantity_Formatting.Schema_Formats_Provider_Simple_Formatting_With_Unit_System]]
+```
+
+</details>
+
+### Using a MutableFormatsProvider
+
+The example below is of a `MutableFormatsProvider` that lets you add/remove formats during runtime.
+
+<details>
+  <summary>Example of a MutableFormatsProvider implementation</summary>
+
+```ts
+[[include:Quantity_Formatting.Mutable_Formats_Provider]]
+```
+
+```ts
+[[include:Quantity_Formatting.Mutable_Formats_Provider_Adding_A_Format]]
+```
+
+</details>
+
+### Registering a SchemaFormatsProvider on IModelConnection open
+
+The simplest way to get formats from schemas into an iTwin application is to register a new `SchemaFormatsProvider` through a [IModelConnection.onOpen]($core-frontend) event listener, passing [IModelConnection.schemaContext]($core-frontend) to the provider. The example below illustrates how that can be done.
+
+<details>
+  <summary> Example of registering a SchemaFormatsProvider on IModelConnection open
+
+```ts
+[[include:Quantity_Formatting.Schema_Fmt_Provider_on_IModelConnection_Open]]
+```
+
+</details>
+
+### Mathematical Operation Parsing
 
 The quantity formatter supports parsing mathematical operations. The operation is solved, formatting each value present, according to the specified format. This makes it possible to process several different units at once.
 
@@ -202,30 +319,35 @@ The quantity formatter supports parsing mathematical operations. The operation i
 <summary>Example Code</summary>
 
 ```Typescript
-  import { BasicUnitsProvider } from "@itwin/core-frontend";
-  import { Format, Parser } from "@itwin/core-quantity";
+[[include:Quantity_Formatting.Basic_Math_Operations_Parsing]]
+```
 
-  const unitsProvider = new BasicUnitsProvider(); // If @itwin/core-frontend is available, can use IModelApp.quantityFormatter.unitsProvider
-  const formatData = {
-    formatTraits: ["keepSingleZero", "showUnitLabel"],
-    precision: 8,
-    type: "Fractional",
-    uomSeparator: "",
-    allowMathematicOperations: true,
-  };
+</details>
 
-  const format = new Format("exampleFormat");
-  await format.fromJSON(unitsProvider, formatData);
-  // Operation containing many units (feet, inches, yards).
-  const mathematicalOperation = "5 ft + 12 in + 1 yd -1 ft 6 in";
+#### Limitations
 
-  // Asynchronous implementation
-  const quantityProps = await Parser.parseIntoQuantity(mathematicalOperation, format, unitsProvider);
-  // quantityProps.magnitude 7.5 (value in feet)
+Only plus(`+`) and minus(`-`) signs are supported for now.
+Other operators will end up returning a parsing error or an invalid input result.
+If a Format uses a spacer that conflicts with one of the operators above, additional restrictions will apply:
 
-  // Synchronous implementation
-  const parseResult = Parser.parseToQuantityValue(mathematicalOperation, format, feetConversionSpecs);
-  // parseResult.value 7.5 (value in feet)
+1. Mathematical operations only apply when the operator is in front of whitespace. So `-2FT 6IN + 6IN` is equal to `-2FT-6IN + 6IN`, and `-2FT-6IN - 6IN` is not equal to `-2FT-6IN- 6IN`.
+
+<details>
+<summary>Example</summary>
+
+```Typescript
+[[include:Quantity_Formatting.Math_Whitespace_Limitation]]
+```
+
+</details>
+
+2. For a value like `2FT 6IN-0.5`, the `-` sign will be treated as a spacer and not subtraction. However, the `0.5` value will use the default unit conversion provided to the parser, because it's not a part of the composite unit when that composite is made up of only 2 units - `FT` and `IN`.
+
+<details>
+<summary>Example</summary>
+
+```Typescript
+[[include:Quantity_Formatting.Math_Composite_Limitation]]
 ```
 
 </details>
