@@ -1767,7 +1767,11 @@ export abstract class Viewport implements Disposable, TileUser {
     try {
       // The comparison `id !== previous` above ensures the following assertion, but the compiler doesn't recognize it.
       assert(undefined !== id || undefined !== previous);
-      this.onFlashedIdChanged.raiseEvent(this, { current: expectDefined(id), previous });
+      expectDefined(id ?? previous); // Make sure that id or previous is defined.
+      // Note; we don't actually know that id is defined below, but since only current of previous needs to be
+      // defined, we only need to assert that one of them is defined. Either would work.
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      this.onFlashedIdChanged.raiseEvent(this, { current: id!, previous });
     } finally {
       this._assigningFlashedId = false;
     }
