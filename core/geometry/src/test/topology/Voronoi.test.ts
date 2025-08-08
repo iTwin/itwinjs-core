@@ -99,7 +99,7 @@ function verifyVoronoi(ck: Checker, graph: HalfEdgeGraph, voronoi: HalfEdgeGraph
 }
 
 // compare the lengths and centroids of the path children to the clipped curves
-function  comparePathToClippedCurves(
+function comparePathToClippedCurves(
   allGeometry: GeometryQuery[], ck: Checker, path: Path, clippedCurves: AnyCurve[][], dy = 10,
 ): void {
   const clippedCurvesLengths: number[] = [];
@@ -128,22 +128,17 @@ function  comparePathToClippedCurves(
       childrenCentroids.push(centroid);
     }
   }
-  const sortedClippedCurvesLengths = [...clippedCurvesLengths].sort((x, y) => x - y);
-  const sortedChildrenLengths = [...childrenLengths].sort((x, y) => x - y);
-  for (let i = 0; i < sortedClippedCurvesLengths.length; i++)
-    console.log(`${i} clippedLength ${sortedClippedCurvesLengths[i]} childLength ${sortedChildrenLengths[i]}`);
-  ck.testTrue(sortedClippedCurvesLengths.every((val, index) => val === sortedChildrenLengths[index]));
-
-  const sortedClippedCurvesCentroids = [...clippedCurvesCentroids].sort((a, b) => a.x - b.x || a.y - b.y);
-  const sortedChildrenCentroids = [...childrenCentroids].sort((a, b) => a.x - b.x || a.y - b.y);
-  for (let i = 0; i < sortedClippedCurvesCentroids.length; i++)
+  for (let i = 0; i < clippedCurvesLengths.length; i++)
+    console.log(`${i} clippedLength: ${clippedCurvesLengths[i]} | childLength: ${childrenLengths[i]}`);
+  ck.testTrue(clippedCurvesLengths.every((val, index) => val === childrenLengths[index]));
+  for (let i = 0; i < clippedCurvesCentroids.length; i++)
     console.log(
-      `${i} clippedCentroid ${sortedClippedCurvesCentroids[i].x},${sortedClippedCurvesCentroids[i].y} ` +
-      `childCentroid ${sortedChildrenCentroids[i].x},${sortedChildrenCentroids[i].y}`
+      `${i} clippedCentroid: ${clippedCurvesCentroids[i].x},${clippedCurvesCentroids[i].y}` +
+      ` | childCentroid: ${childrenCentroids[i].x},${childrenCentroids[i].y}`
     );
   ck.testTrue(
-    sortedClippedCurvesCentroids.every(
-      (val, index) => val.isAlmostEqual(sortedChildrenCentroids[index])
+    clippedCurvesCentroids.every(
+      (val, index) => val.isAlmostEqual(childrenCentroids[index])
     )
   );
 }

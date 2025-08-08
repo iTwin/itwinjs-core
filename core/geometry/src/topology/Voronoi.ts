@@ -606,12 +606,17 @@ export class Voronoi {
         return undefined;
       superFaces.push(this.findSuperFace(start, superFaceEdgeMask));
     }
+    superFaces.sort((a, b) => {
+      const tagA = this._delaunayGraph.allHalfEdges[a[0].faceTag].edgeTag ?? 0;
+      const tagB = this._delaunayGraph.allHalfEdges[b[0].faceTag].edgeTag ?? 0;
+      return tagA - tagB;
+    });
+
     return superFaces;
   }
   // modify voronoi graph such that each super face only has convex faces
   public convexifySuperFaces(superFaceEdgeMask: HalfEdgeMask) {
     const success = Triangulator.triangulateAllInteriorFaces(this._voronoiGraph);
-    console.log(`success: ${success}`);
     HalfEdgeGraphOps.expandConvexFaces(this._voronoiGraph, superFaceEdgeMask);
   }
   // generate clippers from super faces
