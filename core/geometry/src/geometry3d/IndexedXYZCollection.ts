@@ -10,6 +10,7 @@
 import { Geometry } from "../Geometry";
 import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
 import { Range3d } from "./Range";
+import { Transform } from "./Transform";
 import { XAndY, XYAndZ } from "./XYZProps";
 
 class PointsIterator implements Iterator<Point3d>, Iterable<Point3d> {
@@ -216,13 +217,17 @@ export abstract class IndexedXYZCollection {
     return (i % this.length);
   }
   /** Return the range of the points. */
-  public getRange(): Range3d {
-    const range = Range3d.createNull();
+  public getRange(transform?: Transform, result?: Range3d): Range3d {
+    let range = result;
+    if (range)
+      range.setNull();
+    else
+      range = Range3d.createNull();
     const n = this.length;
     const point = Point3d.create();
     for (let i = 0; i < n; i++) {
       this.getPoint3dAtUncheckedPointIndex(i, point);
-      range.extendPoint(point);
+      range.extendPoint(point, transform);
     }
     return range;
   }
@@ -334,6 +339,7 @@ export abstract class IndexedXYZCollection {
    * @param index0 index of first point
    * @param index1 index of second point
    * @param tolerance max coordinate difference to be considered equal. For exact test, pass 0. Defaults to `Geometry.smallMetricDistance`.
+   * @returns whether the points are equal within tolerance, or `undefined` if either index is invalid.
    */
   public almostEqualIndexIndex(index0: number, index1: number, tolerance = Geometry.smallMetricDistance): boolean | undefined {
     if (index0 < 0 || index0 >= this.length || index1 < 0 || index1 >= this.length)
@@ -341,6 +347,19 @@ export abstract class IndexedXYZCollection {
     return Geometry.isSameCoordinate(this.getXAtUncheckedPointIndex(index0), this.getXAtUncheckedPointIndex(index1), tolerance)
       && Geometry.isSameCoordinate(this.getYAtUncheckedPointIndex(index0), this.getYAtUncheckedPointIndex(index1), tolerance)
       && Geometry.isSameCoordinate(this.getZAtUncheckedPointIndex(index0), this.getZAtUncheckedPointIndex(index1), tolerance);
+  }
+  /**
+   * Test whether the xy-coordinates of the indexed points are equal within tolerance. The z-coordinates are ignored.
+   * @param index0 index of first point
+   * @param index1 index of second point
+   * @param tolerance max coordinate difference to be considered equal. For exact test, pass 0. Defaults to `Geometry.smallMetricDistance`.
+   * @returns whether the xy-coordinates of the points are equal within tolerance, or `undefined` if either index is invalid.
+   */
+  public almostEqualXYIndexIndex(index0: number, index1: number, tolerance = Geometry.smallMetricDistance): boolean | undefined {
+    if (index0 < 0 || index0 >= this.length || index1 < 0 || index1 >= this.length)
+      return undefined;
+    return Geometry.isSameCoordinate(this.getXAtUncheckedPointIndex(index0), this.getXAtUncheckedPointIndex(index1), tolerance)
+      && Geometry.isSameCoordinate(this.getYAtUncheckedPointIndex(index0), this.getYAtUncheckedPointIndex(index1), tolerance);
   }
 }
 /**

@@ -25,7 +25,7 @@ import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "./Entity
 /** Holds the list of Ids of GeometricModels displayed by a [[SpatialViewDefinition]]. Multiple SpatialViewDefinitions may point to the same ModelSelector.
  * @see [ModelSelectorState]($frontend)
  * See [how to create a ModelSelector]$(docs/learning/backend/CreateElements.md#ModelSelector).
- * @public
+ * @public @preview
  */
 export class ModelSelector extends DefinitionElement {
   public static override get className(): string { return "ModelSelector"; }
@@ -125,7 +125,7 @@ export class ModelSelector extends DefinitionElement {
 /** Holds a list of Ids of Categories to be displayed in a view.
  * @see [CategorySelectorState]($frontend)
  * See [how to create a CategorySelector]$(docs/learning/backend/CreateElements.md#CategorySelector).
- * @public
+ * @public @preview
  */
 export class CategorySelector extends DefinitionElement {
   public static override get className(): string { return "CategorySelector"; }
@@ -227,7 +227,7 @@ export class CategorySelector extends DefinitionElement {
  * plus additional view-specific parameters in their [[Element.jsonProperties]].
  * Subclasses of ViewDefinition determine which model(s) are viewed.
  * @note ViewDefinition is only available in the backend. See [ViewState]($frontend) for usage in the frontend.
- * @public
+ * @public @preview
  */
 export abstract class ViewDefinition extends DefinitionElement {
   public static override get className(): string { return "ViewDefinition"; }
@@ -364,7 +364,7 @@ export abstract class ViewDefinition extends DefinitionElement {
 }
 
 /** Defines a view of one or more 3d models.
- * @public
+ * @public @preview
  */
 export abstract class ViewDefinition3d extends ViewDefinition {
   private readonly _details: ViewDetails3d;
@@ -473,7 +473,7 @@ export abstract class ViewDefinition3d extends ViewDefinition {
  *        * ModelIds  -------> SpatialModels    <----------GeometricElement3d.Model
  *    * CategorySelector
  *        * CategoryIds -----> SpatialCategories <----------GeometricElement3d.Category
- * @public
+ * @public @preview
  */
 export class SpatialViewDefinition extends ViewDefinition3d {
   public static override get className(): string { return "SpatialViewDefinition"; }
@@ -600,7 +600,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection.
  * See [how to create a OrthographicViewDefinition]$(docs/learning/backend/CreateElements.md#OrthographicViewDefinition).
- * @public
+ * @public @preview
  */
 export class OrthographicViewDefinition extends SpatialViewDefinition {
   public static override get className(): string { return "OrthographicViewDefinition"; }
@@ -670,7 +670,7 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
 }
 
 /** Defines a view of a single 2d model. Each 2d model has its own coordinate system, so only one may appear per view.
- * @public
+ * @public @preview
  */
 export class ViewDefinition2d extends ViewDefinition {
   private readonly _details: ViewDetails;
@@ -757,7 +757,7 @@ export class ViewDefinition2d extends ViewDefinition {
 }
 
 /** Defines a view of a [[DrawingModel]].
- * @public
+ * @public @preview
  */
 export class DrawingViewDefinition extends ViewDefinition2d {
   public static override get className(): string { return "DrawingViewDefinition"; }
@@ -812,11 +812,64 @@ export class DrawingViewDefinition extends ViewDefinition2d {
   }
 }
 
-/** Defines a view of a [[SheetModel]].
+/** Arguments to be passed in to [[SheetViewDefinition.create]]
  * @public
+*/
+export interface CreateSheetViewDefinitionArgs {
+  /** The iModel in which the sheet view will be created. */
+  iModel: IModelDb;
+  /** The  Id of the [[DefinitionModel]] into which the sheet view will be inserted. */
+  definitionModelId: Id64String;
+  /** The name to use as the view's Code value. */
+  name: string;
+  /** The Id of the sheet model whose contents will be displayed by this view. */
+  baseModelId: Id64String;
+  /** The [[CategorySelector]] that this view should use. */
+  categorySelectorId: Id64String;
+  /** The [[DisplayStyle2d]] that this view should use. */
+  displayStyleId: Id64String;
+  /** Defines the view origin and extents. */
+  range: Range2d;
+}
+
+/** Defines a view of a [[SheetModel]].
+ * @public @preview
  */
 export class SheetViewDefinition extends ViewDefinition2d {
   public static override get className(): string { return "SheetViewDefinition"; }
+
+  protected constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
+
+  /** Create a SheetViewDefinition */
+  public static create(args: CreateSheetViewDefinitionArgs): SheetViewDefinition {
+    const { baseModelId, categorySelectorId, displayStyleId, range } = args;
+    const props: ViewDefinition2dProps = {
+      classFullName: this.classFullName,
+      model: args.definitionModelId,
+      code: this.createCode(args.iModel, args.definitionModelId, args.name),
+      baseModelId,
+      categorySelectorId,
+      displayStyleId,
+      origin: { x: range.low.x, y: range.low.y },
+      delta: range.diagonal(),
+      angle: 0,
+    };
+
+    return new SheetViewDefinition(props, args.iModel);
+  }
+
+  /** Insert a SheetViewDefinition into an IModelDb */
+  public static insert(args: CreateSheetViewDefinitionArgs): Id64String {
+    const view = this.create(args);
+    return args.iModel.elements.insertElement(view.toJSON());
+  }
+
+  /** Create a SheetViewDefinition from JSON props */
+  public static fromJSON(props: Omit<ViewDefinition2dProps, "classFullName">, iModel: IModelDb): SheetViewDefinition {
+    return new SheetViewDefinition({ ...props, classFullName: this.classFullName }, iModel);
+  }
 }
 
 /** A ViewDefinition used to display a 2d template model.
@@ -835,7 +888,7 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
 
 /** An auxiliary coordinate system element. Auxiliary coordinate systems can be used by views to show
  * coordinate information in different units and/or orientations.
- * @public
+ * @public @preview
  */
 export abstract class AuxCoordSystem extends DefinitionElement {
   public static override get className(): string { return "AuxCoordSystem"; }
@@ -849,7 +902,7 @@ export abstract class AuxCoordSystem extends DefinitionElement {
 }
 
 /** A 2d auxiliary coordinate system.
- * @public
+ * @public @preview
  */
 export class AuxCoordSystem2d extends AuxCoordSystem {
   public static override get className(): string { return "AuxCoordSystem2d"; }
@@ -873,7 +926,7 @@ export class AuxCoordSystem2d extends AuxCoordSystem {
 }
 
 /** A 3d auxiliary coordinate system.
- * @public
+ * @public @preview
  */
 export class AuxCoordSystem3d extends AuxCoordSystem {
   public static override get className(): string { return "AuxCoordSystem3d"; }
@@ -901,7 +954,7 @@ export class AuxCoordSystem3d extends AuxCoordSystem {
 }
 
 /** A spatial auxiliary coordinate system.
- * @public
+ * @public @preview
  */
 export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
   public static override get className(): string { return "AuxCoordSystemSpatial"; }
@@ -917,7 +970,7 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
 }
 
 /** Represents an *attachment* of a [[ViewDefinition]] to a [[Sheet]].
- * @public
+ * @public @preview
  */
 export class ViewAttachment extends GraphicalElement2d {
   public static override get className(): string { return "ViewAttachment"; }

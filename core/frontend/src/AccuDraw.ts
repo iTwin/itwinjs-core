@@ -1836,17 +1836,17 @@ export class AccuDraw {
     const useAcs = vp ? vp.isContextRotationRequired : false;
     switch (this.flags.baseRotation) {
       case RotationMode.Top: {
-        baseRMatrix = AccuDraw.getStandardRotation(StandardViewId.Top, vp, useAcs)!;
+        baseRMatrix = AccuDraw.getStandardRotation(StandardViewId.Top, vp, useAcs);
         break;
       }
 
       case RotationMode.Front: {
-        baseRMatrix = AccuDraw.getStandardRotation(StandardViewId.Front, vp, useAcs)!;
+        baseRMatrix = AccuDraw.getStandardRotation(StandardViewId.Front, vp, useAcs);
         break;
       }
 
       case RotationMode.Side: {
-        baseRMatrix = AccuDraw.getStandardRotation(StandardViewId.Right, vp, useAcs)!;
+        baseRMatrix = AccuDraw.getStandardRotation(StandardViewId.Right, vp, useAcs);
         break;
       }
 
@@ -2494,6 +2494,8 @@ export class AccuDraw {
   public onFieldKeyinStatusChange(_index: ItemField) { }
   /** Called to request focus change to the specified input field */
   public setFocusItem(_index: ItemField) { }
+  /** Called to get the item field that currently has input focus */
+  public getFocusItem(): ItemField | undefined { return undefined; }
 
   private static getMinPolarMag(origin: Point3d): number {
     return (1.0e-12 * (1.0 + origin.magnitude()));
@@ -2600,7 +2602,7 @@ export class AccuDraw {
     if (!this._distanceRoundOff.active || !this._distanceRoundOff.units.size)
       return undefined;
 
-    let roundValue = this._distanceRoundOff.units.values().next().value!;
+    let roundValue = this._distanceRoundOff.units.values().next().value ?? 0;
 
     if (this._distanceRoundOff.units.size > 1) {
       // NOTE: Set isn't ordered, find smallest entry...
@@ -2632,7 +2634,7 @@ export class AccuDraw {
     if (!this._angleRoundOff.active || !this._angleRoundOff.units.size)
       return undefined;
 
-    let roundValue = this._angleRoundOff.units.values().next().value!;
+    let roundValue = this._angleRoundOff.units.values().next().value ?? 0;
 
     if (this._angleRoundOff.units.size > 1) {
       // NOTE: Set isn't ordered, find smallest entry...

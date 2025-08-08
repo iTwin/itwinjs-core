@@ -40,7 +40,7 @@ export interface OnAspectIdArg extends OnAspectArg {
 /** An Element Aspect is a class that defines a set of properties that are related to (and owned by) a single element.
  * Semantically, an ElementAspect can be considered part of the Element. Thus, an ElementAspect is deleted if its owning Element is deleted.
  * BIS Guideline: Subclass ElementUniqueAspect or ElementMultiAspect rather than subclassing ElementAspect directly.
- * @public
+ * @public @preview
  */
 export class ElementAspect extends Entity {
   public static override get className(): string { return "ElementAspect"; }
@@ -111,26 +111,26 @@ export class ElementAspect extends Entity {
   protected static onDeleted(_arg: OnAspectIdArg): void { }
 }
 /** An Element Unique Aspect is an ElementAspect where there can be only zero or one instance of the Element Aspect class per Element.
- * @public
+ * @public @preview
  */
 export class ElementUniqueAspect extends ElementAspect {
   public static override get className(): string { return "ElementUniqueAspect"; }
 }
 
 /** An Element Multi-Aspect is an ElementAspect where there can be **n** instances of the Element Aspect class per Element.
- * @public
+ * @public @preview
  */
 export class ElementMultiAspect extends ElementAspect {
   public static override get className(): string { return "ElementMultiAspect"; }
 }
 
 /**
- * @public
+ * @public @preview
  */
 export class ChannelRootAspect extends ElementUniqueAspect {
   public static override get className(): string { return "ChannelRootAspect"; }
   /** Insert a ChannelRootAspect on the specified element.
-   * @deprecated in 4.0 use [[ChannelControl.makeChannelRoot]]. This method does not enforce the rule that channels may not nest and is therefore dangerous.
+   * @deprecated in 4.0 - will not be removed until after 2026-06-13. Use [[ChannelControl.makeChannelRoot]]. This method does not enforce the rule that channels may not nest and is therefore dangerous.
    */
   public static insert(iModel: IModelDb, ownerId: Id64String, channelName: string) {
     const props: ChannelRootAspectProps = { classFullName: this.classFullName, element: { id: ownerId }, owner: channelName };
@@ -140,7 +140,7 @@ export class ChannelRootAspect extends ElementUniqueAspect {
 
 /** An ElementMultiAspect that stores synchronization information for an Element originating from an external source.
  * @note The associated ECClass was added to the BisCore schema in version 1.0.2
- * @public
+ * @public @preview
  */
 export class ExternalSourceAspect extends ElementMultiAspect {
   public static override get className(): string { return "ExternalSourceAspect"; }
@@ -230,10 +230,10 @@ export class ExternalSourceAspect extends ElementMultiAspect {
   }
 }
 
-/** @public */
+/** @public @preview */
 export namespace ExternalSourceAspect {
   /** Standard values for the `Kind` property of `ExternalSourceAspect`.
-   * @public
+   * @public @preview
    */
   export enum Kind {
     /** Indicates that the [[ExternalSourceAspect]] is storing [[Element]] provenance */

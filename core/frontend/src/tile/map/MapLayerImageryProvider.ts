@@ -132,7 +132,7 @@ export abstract class MapLayerImageryProvider {
 
   public get tilingScheme(): MapTilingScheme { return this.useGeographicTilingScheme ? this._geographicTilingScheme : this._mercatorTilingScheme; }
 
-  /** @deprecated in 5.0 Use [addAttributions] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
   public addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void { }
 
   /**
@@ -259,7 +259,7 @@ export abstract class MapLayerImageryProvider {
   }
 
   /** @internal */
-  public async makeTileRequest(url: string, timeoutMs?: number): Promise<Response> {
+  public async makeTileRequest(url: string, timeoutMs?: number, authorization?: string): Promise<Response> {
 
     // We want to complete the first request before letting other requests go;
     // this done to avoid flooding server with requests missing credentials
@@ -270,7 +270,7 @@ export abstract class MapLayerImageryProvider {
 
     let response: Response|undefined;
     try {
-      response = await this.makeRequest(url, timeoutMs);
+      response = await this.makeRequest(url, timeoutMs, authorization);
     } finally {
       this.onFirstRequestCompleted.raiseEvent();
     }
@@ -282,13 +282,16 @@ export abstract class MapLayerImageryProvider {
   }
 
   /** @internal */
-  public async makeRequest(url: string, timeoutMs?: number) {
+  public async makeRequest(url: string, timeoutMs?: number, authorization?: string): Promise<Response> {
 
     let response: Response|undefined;
 
     let headers: Headers | undefined;
     let hasCreds = false;
-    if (this._settings.userName && this._settings.password) {
+    if (authorization) {
+      headers = new Headers();
+      headers.set("Authorization", authorization);
+    } else if (this._settings.userName && this._settings.password) {
       hasCreds = true;
       headers = new Headers();
       this.setRequestAuthorization(headers);

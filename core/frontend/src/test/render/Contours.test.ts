@@ -9,11 +9,11 @@ import { DecorateContext } from "../../ViewContext";
 import { ColorDef, ContourDisplay, ContourDisplayProps, RenderMode } from "@itwin/core-common";
 import { Viewport } from "../../Viewport";
 import { Point3d, Range3d } from "@itwin/core-geometry";
-import { readUniqueColors, readUniquePixelData, sortColorDefs, testBlankViewport } from "../openBlankViewport";
+import { Color, expectUniqueColors, readUniqueColors, readUniquePixelData, testBlankViewport } from "../openBlankViewport";
 import { GraphicType } from "../../common";
 import { StandardViewId } from "../../StandardView";
 import { DisplayStyle3dState } from "../../DisplayStyleState";
-import { compareBooleans, compareNumbers, compareStrings } from "@itwin/core-bentley";
+import { compareBooleans, compareNumbers, compareStrings, CompressedId64Set, OrderedId64Iterable } from "@itwin/core-bentley";
 import { Pixel } from "../../core-frontend";
 
 describe("Contour lines", () => {
@@ -97,31 +97,91 @@ describe("Contour lines", () => {
     vp.view.lookAtVolume(range);
     vp.synchWithView();
   }
-  
+
   function setContours(vp: Viewport, props: ContourDisplayProps): void {
     expect(vp.view.isSpatialView()).to.be.true;
     const style = (vp.view.displayStyle as DisplayStyle3dState);
     style.settings.contours = ContourDisplay.fromJSON(props);
   }
 
-  function hexifyColors(defs: ColorDef[]): string[] {
-    return defs.map((x) => x.tbgr.toString(16));
+  function isWhitish(c: Color): boolean {
+    const hasOneFullComponent = (c.r === 0xff || c.g === 0xff || c.b === 0xff) && c.a === 0xff;
+    const hasAllLargeComponents = (c.r > 222 && c.g > 222 && c.b > 222);
+    return hasOneFullComponent && hasAllLargeComponents
   }
 
-  // ###TODO this test expects specific colors without accounting for the alpha blending applied to contour lines.
-  // Make it pass and add a bunch of additional tests.
-  it.skip("renders contours of expected colors", () => {
-    testViewport((vp) => {
-      function expectColors(expected: ColorDef[]): void {
-        sortColorDefs(expected);
-        vp.renderFrame();
-        const actual = hexifyColors(readUniqueColors(vp).toColorDefs());
-        expect(actual).to.deep.equal(hexifyColors(expected));
-      }
+  function isBlack(c: Color): boolean {
+    return c.r === 0 && c.g === 0 && c.b === 0 && c.a === 0xff;
+  }
 
+  function isReddish(c: Color): boolean {
+    const tendsTowardRed = c.r > c.g && c.r > c.b && c.a === 0xff;
+    const rgDiff = Math.abs(c.r - c.g);
+    const rbDiff = Math.abs(c.r - c.b);
+    return tendsTowardRed && rgDiff > 10 && rbDiff > 10;
+  }
+
+  function isGreenish(c: Color): boolean {
+    const tendsTowardGreen = c.g > c.r && c.g > c.b && c.a === 0xff;
+    const grDiff = Math.abs(c.g - c.r);
+    const gbDiff = Math.abs(c.g - c.b);
+    return tendsTowardGreen && grDiff > 10 && gbDiff > 10;
+  }
+
+  function isBluish(c: Color): boolean {
+    const tendsTowardBlue = c.b > c.r && c.b > c.g && c.a === 0xff;
+    const brDiff = Math.abs(c.b - c.r);
+    const bgDiff = Math.abs(c.b - c.g);
+    return tendsTowardBlue && brDiff > 10 && bgDiff > 10;
+  }
+
+  function isPurplish(c: Color): boolean {
+    const tendsTowardPurple = c.r > c.g && c.b > c.g && c.a === 0xff;
+    const rgDiff = Math.abs(c.r - c.g);
+    const bgDiff = Math.abs(c.b - c.g);
+    return tendsTowardPurple && rgDiff > 10 && bgDiff > 10 && Math.abs(rgDiff - bgDiff) <= 10;
+  }
+
+  // Expect the colors in the viewport to be sorted and match the expected colors.
+  function expectColors(vp: Viewport, expected: ColorDef[]): void {
+    expectUniqueColors(expected, vp);
+  }
+
+  // Expect each of the functions in the isExpectedColorFuncs array to return true for at least one color in the viewport. Also expect that no unexpected colors are present in the viewport.
+  function expectCorrectColors(vp: Viewport, isExpectedColorFuncs: ((col: Color) => boolean)[]) {
+    vp.renderFrame();
+    const colors = readUniqueColors(vp);
+
+    // First check if we find at least one occurence of each expected color.
+    let numExpectedColorsFound = 0;
+    for (const isExpectedColor of isExpectedColorFuncs) {
+      for (const c of colors.array) {
+        if (isExpectedColor(c)) {
+          numExpectedColorsFound++;
+          break;
+        }
+      }
+    }
+    expect(numExpectedColorsFound).to.equal(isExpectedColorFuncs.length);
+
+    // Now check that we don't find any unexpected colors.
+    for (const c of colors.array) {
+      let foundExpectedColor = false;
+      for (const isExpectedColor of isExpectedColorFuncs) {
+        if (isExpectedColor(c)) {
+          foundExpectedColor = true;
+          break;
+        }
+      }
+      expect(foundExpectedColor).to.be.true;
+    }
+  }
+
+  it("renders contours of expected colors with one group", () => {
+    testViewport((vp) => {
       lookAt(vp, 0, 0, 10, 10);
       ContourDecorator.register(0, 0, "0x1");
-      expectColors([ColorDef.red, ColorDef.black]);
+      expectColors(vp, [ColorDef.red, ColorDef.black]);
 
       const contourDef = {
         majorStyle: {
@@ -136,7 +196,7 @@ describe("Contour lines", () => {
         majorIntervalCount: 1,
         showGeometry: true,
       };
-      
+
       const contourProps: ContourDisplayProps = {
         groups: [{
           name: "A",
@@ -144,20 +204,211 @@ describe("Contour lines", () => {
         }],
         displayContours: false,
       };
-      
+
+      // Contours are disabled; we should not expect any colors from the contour lines to be present in the viewport.
       setContours(vp, contourProps);
       vp.renderFrame();
-      expectColors([ColorDef.black, ColorDef.red]);
+      expectColors(vp, [ColorDef.black, ColorDef.red]);
 
+      // Expected only colors close to black, red, and blue to be in the rendered scene. Also expect at least one occurrence each of near-black, near-red, and near-blue to occur. If the contours do not render properly, this test will fail.
       contourProps.displayContours = true;
       setContours(vp, contourProps);
       vp.renderFrame();
-      expectColors([ColorDef.black, ColorDef.red, ColorDef.blue]);
+      expectCorrectColors(vp, [(c) => { return isBlack(c); }, (c) => { return isReddish(c); }, (c) => { return isBluish(c); }]);
 
+      // Expect the same conditions as above, except add whitish to the list of expected colors because majorIntervalCount is now 2. If a whitish hue is not detected in the viewport, this test will fail.
       contourDef.majorIntervalCount = 2;
       setContours(vp, contourProps);
       vp.renderFrame();
-      expectColors([ColorDef.black, ColorDef.red, ColorDef.blue, ColorDef.white]);
+      expectCorrectColors(vp, [(c) => { return isBlack(c); }, (c) => { return isReddish(c); }, (c) => { return isBluish(c); }, (c) => { return isWhitish(c); }]);
+    });
+  });
+
+  it("renders contours of expected colors for multiple default groups", () => {
+    testViewport((vp) => {
+      lookAt(vp, 0, 0, 10, 10);
+      ContourDecorator.register(0, 0, "0x1");
+      expectColors(vp, [ColorDef.red, ColorDef.black]);
+
+      const contourDefA = {
+        majorStyle: {
+          color: { r: 0, g: 0, b: 255 }, // blue
+          pixelWidth: 8,
+        },
+        minorStyle: {
+          color: { r: 255, g: 255, b: 255 }, // white
+          pixelWidth: 1,
+        },
+        minorInterval: 1,
+        majorIntervalCount: 1,
+        showGeometry: true,
+      };
+
+      const contourDefB = {
+        majorStyle: {
+          color: { r: 255, g: 0, b: 255 }, // purple
+          pixelWidth: 2,
+        },
+        minorStyle: {
+          color: { r: 0, g: 255, b: 0 }, // green
+          pixelWidth: 1,
+        },
+        minorInterval: 2,
+        majorIntervalCount: 1,
+        showGeometry: true,
+      };
+
+      const contourProps: ContourDisplayProps = {
+        groups: [{
+          name: "A",
+          contourDef: contourDefA,
+        },
+        {
+          name: "B",
+          contourDef: contourDefB,
+        }],
+        displayContours: false,
+      };
+
+      // Contours are disabled; we should not expect any colors from the contour lines to be present in the viewport.
+      setContours(vp, contourProps);
+      vp.renderFrame();
+      expectColors(vp, [ColorDef.black, ColorDef.red]);
+
+      // The last default group occuring in the array should be the only one that draws based on the documentation. Verify this occurs (purplish present but not bluish).
+      contourProps.displayContours = true;
+      setContours(vp, contourProps);
+      vp.renderFrame();
+      expectCorrectColors(vp, [(c) => { return isBlack(c); }, (c) => { return isReddish(c); }, (c) => { return isPurplish(c); }]);
+
+      // Flip the default groups so we now expect blue to be present and purple to be absent.
+      contourProps.displayContours = true;
+      contourProps.groups?.reverse();
+      setContours(vp, contourProps);
+      vp.renderFrame();
+      expectCorrectColors(vp, [(c) => { return isBlack(c); }, (c) => { return isReddish(c); }, (c) => { return isBluish(c); }]);
+    });
+  });
+
+  it("renders contours of expected colors with underlying geometry not shown", () => {
+    testViewport((vp) => {
+      lookAt(vp, 0, 0, 10, 10);
+      ContourDecorator.register(0, 0, "0x1");
+      expectColors(vp, [ColorDef.red, ColorDef.black]);
+
+      const contourDef = {
+        majorStyle: {
+          color: { r: 0, g: 0, b: 255 },
+          pixelWidth: 2,
+        },
+        minorStyle: {
+          color: { r: 255, g: 255, b: 255 },
+          pixelWidth: 1,
+        },
+        minorInterval: 1,
+        majorIntervalCount: 1,
+        showGeometry: false,
+      };
+
+      const contourProps: ContourDisplayProps = {
+        groups: [{
+          name: "A",
+          contourDef,
+        }],
+        displayContours: false,
+      };
+
+      // Contours are disabled; we should not expect any colors from the contour lines to be present in the viewport.
+      setContours(vp, contourProps);
+      vp.renderFrame();
+      expectColors(vp, [ColorDef.black, ColorDef.red]);
+
+      // Expect only colors close to black and blue to be in the rendered scene. Also expect at least one occurrence each of near-black and near-blue to occur. If the contours do not render properly, this test will fail.
+      // Furthermore, the underlying red geometry is not expected to be present in the viewport because showGeometry is false.
+      contourProps.displayContours = true;
+      setContours(vp, contourProps);
+      vp.renderFrame();
+      expectCorrectColors(vp, [(c) => { return isBlack(c); }, (c) => { return isBluish(c); }]);
+
+      // Expect the same conditions as above, except add whitish to the list of expected colors because majorIntervalCount is now 2. If a whitish hue is not detected in the viewport, this test will fail.
+      contourDef.majorIntervalCount = 2;
+      setContours(vp, contourProps);
+      vp.renderFrame();
+      expectCorrectColors(vp, [(c) => { return isBlack(c); }, (c) => { return isBluish(c); }, (c) => { return isWhitish(c); }]);
+    });
+  });
+
+  it("renders contours of expected colors with two differently styled groups", () => {
+    testViewport((vp) => {
+      ContourDecorator.register(0, 0, "0x1");
+      ContourDecorator.register(10, -10, "0x2");
+      lookAt(vp, 0, -10, 20, 10);
+      expectColors(vp, [ColorDef.red, ColorDef.black]);
+
+      const contourDefA = {
+        majorStyle: {
+          color: { r: 0, g: 0, b: 255 },
+          pixelWidth: 2,
+        },
+        minorStyle: {
+          color: { r: 255, g: 255, b: 255 },
+          pixelWidth: 1,
+        },
+        minorInterval: 1,
+        majorIntervalCount: 1,
+        showGeometry: true,
+      };
+
+      const contourDefB = {
+        majorStyle: {
+          color: { r: 255, g: 0, b: 255 },
+          pixelWidth: 2,
+        },
+        minorStyle: {
+          color: { r: 0, g: 255, b: 0 },
+          pixelWidth: 1,
+        },
+        minorInterval: 2,
+        majorIntervalCount: 1,
+        showGeometry: true,
+      };
+
+      const contourProps: ContourDisplayProps = {
+        groups: [{
+          name: "A",
+          contourDef: contourDefA,
+          subCategories: CompressedId64Set.compressIds(OrderedId64Iterable.sortArray(["0x1"])),
+        },
+        {
+          name: "B",
+          contourDef: contourDefB,
+          subCategories: CompressedId64Set.compressIds(OrderedId64Iterable.sortArray(["0x2"])),
+        }],
+        displayContours: false,
+      };
+
+      // Contours are disabled; we should not expect any colors from the contour lines to be present in the viewport.
+      setContours(vp, contourProps);
+      vp.renderFrame();
+      expectColors(vp, [ColorDef.black, ColorDef.red]);
+
+      // Expect black, reddish, bluish, and purplish colors to be in the rendered scene because blue and purple describe the contours in the two separate groups.
+      contourProps.displayContours = true;
+      setContours(vp, contourProps);
+      vp.renderFrame();
+      expectCorrectColors(vp, [(c) => { return isBlack(c); }, (c) => { return isReddish(c); }, (c) => { return isBluish(c); }, (c) => { return isPurplish(c); }]);
+
+      // Expect the same conditions as above, except add whitish to the list of expected colors because majorIntervalCount is now 2 for group A. If a whitish hue is not detected in the viewport, this test will fail.
+      contourDefA.majorIntervalCount = 2;
+      setContours(vp, contourProps);
+      vp.renderFrame();
+      expectCorrectColors(vp, [(c) => { return isBlack(c); }, (c) => { return isReddish(c); }, (c) => { return isBluish(c); }, (c) => { return isPurplish(c); }, (c) => { return isWhitish(c); }]);
+
+      // Expect the same conditions as above, except add greenish to the list of expected colors because majorIntervalCount is now 2 for group B. If a greenish hue is not detected in the viewport, this test will fail.
+      contourDefB.majorIntervalCount = 2;
+      setContours(vp, contourProps);
+      vp.renderFrame();
+      expectCorrectColors(vp, [(c) => { return isBlack(c); }, (c) => { return isReddish(c); }, (c) => { return isBluish(c); }, (c) => { return isPurplish(c); }, (c) => { return isWhitish(c); }, (c) => { return isGreenish(c); }]);
     });
   });
 
@@ -229,7 +480,7 @@ describe("Contour lines", () => {
       displayContours: args?.display ?? false,
     };
   }
-    
+
   it("renders no contours if display style has no ContourDisplay", () => {
     testViewport((vp) => {
       lookAt(vp, 0, 0, 10, 10);
@@ -260,7 +511,7 @@ describe("Contour lines", () => {
       expectContours(vp, []);
     });
   });
-  
+
   it("renders major contours for a single group", () => {
     testViewport((vp) => {
       lookAt(vp, 0, 0, 10, 10);
@@ -322,7 +573,7 @@ describe("Contour lines", () => {
       }
       expectContours(vp, expectedContours);
   }
-    
+
   it("renders contours from multiple groups", () => {
     testViewport((vp) => {
       expectMultipleContourGroups(vp);

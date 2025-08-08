@@ -1,6 +1,71 @@
 # Change Log - @itwin/physical-material-backend
 
-This log was last generated on Wed, 30 Apr 2025 13:16:15 GMT and should not be manually modified.
+This log was last generated on Fri, 08 Aug 2025 14:15:05 GMT and should not be manually modified.
+
+## 5.1.0
+Fri, 08 Aug 2025 12:51:53 GMT
+
+_Version update only_
+
+## 5.0.5
+Wed, 06 Aug 2025 15:34:16 GMT
+
+_Version update only_
+
+## 5.0.4
+Wed, 16 Jul 2025 14:59:59 GMT
+
+_Version update only_
+
+## 5.0.3
+Fri, 11 Jul 2025 00:56:56 GMT
+
+_Version update only_
+
+## 5.0.2
+Thu, 26 Jun 2025 22:16:01 GMT
+
+_Version update only_
+
+## 5.0.1
+Tue, 17 Jun 2025 18:33:52 GMT
+
+_Version update only_
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- Depreciate ECSqlStatement API
+- Dropped support for Node 18
+- Added ESM support
+- Change core peer dependencies to strict version.
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+_Version update only_
+
+## 4.11.5
+Fri, 06 Jun 2025 13:41:18 GMT
+
+_Version update only_
+
+## 4.11.4
+Tue, 03 Jun 2025 16:15:19 GMT
+
+_Version update only_
+
+## 4.11.3
+Wed, 28 May 2025 13:56:23 GMT
+
+_Version update only_
+
+## 4.11.2
+Tue, 20 May 2025 20:14:46 GMT
+
+_Version update only_
 
 ## 4.11.1
 Wed, 30 Apr 2025 13:13:21 GMT

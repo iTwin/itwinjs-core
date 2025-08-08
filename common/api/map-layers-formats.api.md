@@ -13,6 +13,7 @@ import { ColorDef } from '@itwin/core-common';
 import { EventHandled } from '@itwin/core-frontend';
 import { HitDetail } from '@itwin/core-frontend';
 import { ImageMapLayerSettings } from '@itwin/core-common';
+import { ImageryMapLayerFormat } from '@itwin/core-frontend';
 import { ImageryMapTileTree } from '@itwin/core-frontend';
 import { ImageSource } from '@itwin/core-common';
 import { Listener } from '@itwin/core-bentley';
@@ -23,8 +24,10 @@ import { MapCartoRectangle } from '@itwin/core-frontend';
 import { MapFeatureInfo } from '@itwin/core-frontend';
 import { MapFeatureInfoOptions } from '@itwin/core-frontend';
 import { MapLayerFeatureInfo } from '@itwin/core-frontend';
+import { MapLayerImageryProvider } from '@itwin/core-frontend';
 import { PrimitiveTool } from '@itwin/core-frontend';
 import { QuadId } from '@itwin/core-frontend';
+import { QuadIdProps } from '@itwin/core-frontend';
 import { Transform } from '@itwin/core-geometry';
 
 // @internal
@@ -58,6 +61,20 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     get tileSize(): number;
 }
 
+// @beta
+export abstract class BaseGoogleMapsSession implements GoogleMapsSession {
+    // (undocumented)
+    protected abstract getTileApiBaseUrl(): string;
+    // (undocumented)
+    protected getTilePositionUrl(position: QuadIdProps): URL;
+    // (undocumented)
+    abstract getTileRequest(position: QuadIdProps): GoogleMapsRequest;
+    // (undocumented)
+    abstract getTileSize(): number;
+    // (undocumented)
+    abstract getViewportInfoRequest(rectangle: MapCartoRectangle, zoomLevel: number): GoogleMapsRequest;
+}
+
 // @internal (undocumented)
 export class DefaultArcGiSymbology implements FeatureDefaultSymbology {
     // (undocumented)
@@ -78,6 +95,7 @@ export class DefaultArcGiSymbology implements FeatureDefaultSymbology {
 export const GoogleMaps: {
     createMapLayerSettings: (name?: string, opts?: GoogleMapsCreateSessionOptions) => ImageMapLayerSettings;
     createBaseLayerSettings: (opts?: GoogleMapsCreateSessionOptions) => BaseMapLayerSettings;
+    getMapLayerSessionOptions: (settings: ImageMapLayerSettings) => GoogleMapsCreateSessionOptions;
 };
 
 // @beta
@@ -94,19 +112,57 @@ export interface GoogleMapsCreateSessionOptions {
 // @beta
 export type GoogleMapsLayerTypes = "layerRoadmap" | "layerStreetview";
 
+// @public
+export class GoogleMapsMapLayerFormat extends ImageryMapLayerFormat {
+    // @internal (undocumented)
+    static createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined;
+    static formatId: string;
+}
+
 // @beta
 export type GoogleMapsMapTypes = "roadmap" | "satellite" | "terrain";
+
+// @beta
+export interface GoogleMapsOptions {
+    // (undocumented)
+    sessionManager?: GoogleMapsSessionManager;
+}
+
+// @beta
+export interface GoogleMapsRequest {
+    // (undocumented)
+    authorization?: string;
+    url: URL;
+}
 
 // @beta
 export type GoogleMapsScaleFactors = "scaleFactor1x" | "scaleFactor2x" | "scaleFactor4x";
 
 // @beta
 export interface GoogleMapsSession {
+    // (undocumented)
+    getTileRequest: (position: QuadIdProps) => GoogleMapsRequest;
+    // (undocumented)
+    getTileSize: () => number;
+    // (undocumented)
+    getViewportInfoRequest(rectangle: MapCartoRectangle, zoomLevel: number): GoogleMapsRequest;
+}
+
+// @beta
+export interface GoogleMapsSessionData {
     expiry: number;
     imageFormat: string;
     session: string;
     tileHeight: number;
     tileWidth: number;
+}
+
+// @beta
+export abstract class GoogleMapsSessionManager {
+    // (undocumented)
+    abstract createSession(sessionOptions: GoogleMapsCreateSessionOptions): Promise<GoogleMapsSession>;
+    // (undocumented)
+    readonly type = "GoogleMapsSessionManager";
 }
 
 // @beta
@@ -151,6 +207,8 @@ export interface MapFeatureInfoToolData {
 
 // @beta
 export class MapLayersFormats {
+    // (undocumented)
+    static get googleMapsOpts(): GoogleMapsOptions | undefined;
     static initialize(config?: MapLayersFormatsConfig): Promise<void>;
     // (undocumented)
     static localization: Localization;
@@ -159,6 +217,8 @@ export class MapLayersFormats {
 
 // @beta
 export interface MapLayersFormatsConfig {
+    // (undocumented)
+    googleMapsOpts?: GoogleMapsOptions;
     // (undocumented)
     localization?: Localization;
 }
@@ -181,14 +241,6 @@ export interface MaxZoomRectangle {
 export interface ViewportInfo {
     copyright: string;
     maxZoomRects: MaxZoomRectangle[];
-}
-
-// @beta
-export interface ViewportInfoRequestParams {
-    key: string;
-    rectangle: MapCartoRectangle;
-    session: string;
-    zoom: number;
 }
 
 // (No @packageDocumentation comment for this package)

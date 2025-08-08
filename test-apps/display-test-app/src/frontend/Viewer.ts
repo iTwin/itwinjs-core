@@ -33,6 +33,8 @@ import { RealityModelSettingsPanel } from "./RealityModelDisplaySettingsWidget";
 import { ContoursPanel } from "./Contours";
 import { GoogleMapsPanel } from "./GoogleMaps";
 import { DtaConfiguration } from "../common/DtaConfiguration";
+import { DtaRpcInterface } from "../common/DtaRpcInterface";
+import { LocalFormatsProvider } from "./LocalFormatsProvider";
 
 
 // cspell:ignore savedata topdiv savedview viewtop
@@ -425,6 +427,14 @@ export class Viewer extends Window {
       tooltip: "Contour display",
     });
 
+    this.toolBar.addItem(createToolButton({
+      iconUnicode: "\ue9cc",
+      tooltip: "Load Format Set from JSON file",
+      click: async () => {
+        await this.loadFormatSetFromFile();
+      },
+    }));
+
     if(this._configuration.googleMapsUi) {
       this.toolBar.addDropDown({
         iconUnicode: "\ue9e8",
@@ -548,6 +558,21 @@ export class Viewer extends Window {
   private async selectIModel(): Promise<void> {
     const fileName = await this.surface.selectFileName();
     return undefined !== fileName ? this.openIModel({ fileName, writable: this.surface.openReadWrite }) : Promise.resolve();
+  }
+
+  private async loadFormatSetFromFile(): Promise<void> {
+    const filename = await this.surface.selectJsonConfigFilename();
+
+    if (!filename) {
+      return;
+    }
+    const formatSet = await DtaRpcInterface.getClient().getFormatSetFromFile(filename)
+
+    const localFormatsProvider = new LocalFormatsProvider({
+      fallbackFormatsProvider: IModelApp.formatsProvider,
+      formatSet
+    });
+    IModelApp.formatsProvider = localFormatsProvider;
   }
 
   private async openIModel(props: OpenIModelProps): Promise<void> {

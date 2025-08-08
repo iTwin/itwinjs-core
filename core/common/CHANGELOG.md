@@ -1,6 +1,114 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Wed, 30 Apr 2025 13:16:15 GMT and should not be manually modified.
+This log was last generated on Fri, 08 Aug 2025 14:15:04 GMT and should not be manually modified.
+
+## 5.1.0
+Fri, 08 Aug 2025 12:51:53 GMT
+
+### Updates
+
+- Mark iModel edit API as @preview
+- remove unused parameters for concurrent query
+- TextAnnotation element props use new BIS property `textAnnotationData`. TextAnnotations now use `AnnotationTextStyle`. `TextBlockComponents` no longer propagate styling to children. Styling is implicitly inherited from parents. `Paragraph`s and `Run`s no longer have `styleId` property. Moving frames from `TextAnnotation`s to `TextStyleSettings`. Annotations account for drawing scale when computing transform. Removing `TextStyle` class.
+- Refactoring the TextAnnotationGeometry and adding support for frames
+- Slight typing change of TextAnnotationFrameShape
+- Added `TabRun`s to `TextBlock`
+- add function to convert Helmert obj to Transform obj
+- Thinning iModelPlatform API
+- Make CreateEmptyStandaloneIModelProps public
+- Add support for text fields.
+- Introducing Text Annotation Leaders
+- Updated deprecation comments to new template
+
+## 5.0.5
+Wed, 06 Aug 2025 15:34:15 GMT
+
+_Version update only_
+
+## 5.0.4
+Wed, 16 Jul 2025 14:59:59 GMT
+
+_Version update only_
+
+## 5.0.3
+Fri, 11 Jul 2025 00:56:56 GMT
+
+_Version update only_
+
+## 5.0.2
+Thu, 26 Jun 2025 22:16:01 GMT
+
+_Version update only_
+
+## 5.0.1
+Tue, 17 Jun 2025 18:33:52 GMT
+
+### Updates
+
+- Make CreateEmptyStandaloneIModelProps public
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Updates
+
+- Add new `properties` property to `ImageMapLayerSettings` class.
+- Deprecated the property extendType of QueryPropertyMetaData and added new property extendedType to QueryPropertyMetaData
+- removed getThumbnail api
+- Mark iModel edit API as @preview
+- Update ECSql reader api to support no stat and error code.
+- Adding support for margins to `TextBlock`
+- Resolves CVE-2025-27152
+- Depreciate ECSqlStatement API
+- add new imodel drapeTarget to ModelMapLayerProps
+- Add drapeTarget to ModelMapLayerProps (Reality data now a possible target)
+- FontMap.getFont now uses case insensitive matching for font names.
+- Upgrade compile target to ES2023 and module to ES2022
+- Removed `WipRpcInterface`
+- Deprecate `SnapshotIModelRpcInterface`
+- add CatalogIModelTypes
+- Add CesiumIonAssetId enum
+- Deprecated `MassPropertiesPerCandidateRequestProps` and `MassPropertiesPerCandidateResponseProps`
+- Deprecated `GeoCoordStatus.Pending`
+- Thinning iModelPlatform API
+- Revert BackendTypes to Public
+- Remove 3.x Deprecated APIs
+- Add support for tiles compressed with meshoptimizer
+- Adding Errors for Channels
+- Refactoring ITwin Error
+- Adding metadata for bentley error in IpcInvokeReturn
+- Updated IpcInvokeReturn to include error metadata
+- Add DrawingProps with scaleFactor.
+- Add new font APIs.
+- Remove deprecated IModelEncryptionProps
+- Removes re-exports from @itwin/core-bentley
+- Deprecate metadata types replaced by ecschema-metadata
+- Change core peer dependencies to strict version.
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+_Version update only_
+
+## 4.11.5
+Fri, 06 Jun 2025 13:41:18 GMT
+
+_Version update only_
+
+## 4.11.4
+Tue, 03 Jun 2025 16:15:19 GMT
+
+_Version update only_
+
+## 4.11.3
+Wed, 28 May 2025 13:56:22 GMT
+
+_Version update only_
+
+## 4.11.2
+Tue, 20 May 2025 20:14:45 GMT
+
+_Version update only_
 
 ## 4.11.1
 Wed, 30 Apr 2025 13:13:21 GMT

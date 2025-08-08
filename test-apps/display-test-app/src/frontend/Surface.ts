@@ -7,7 +7,7 @@ import { Range3d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
 import { BlankConnection, BlankConnectionProps, IModelApp, Tool } from "@itwin/core-frontend";
 import { DisplayTestApp } from "./App";
-import { BrowserFileSelector, selectFileName } from "./FileOpen";
+import { BrowserFileSelector, selectFileName, selectJsonConfigFilename } from "./FileOpen";
 import { FpsMonitor } from "./FpsMonitor";
 import { NotificationsWindow } from "./Notifications";
 import { addSnapModes } from "./SnapModes";
@@ -422,6 +422,10 @@ export class Surface {
 
   public async selectFileName(): Promise<string | undefined> {
     return selectFileName(this.browserFileSelector);
+  }
+
+  public async selectJsonConfigFilename(): Promise<string | undefined> {
+    return selectJsonConfigFilename(this.browserFileSelector);
   }
 
   public async selectHubIModel(): Promise<OpenIModelProps | undefined> {

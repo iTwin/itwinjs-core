@@ -1,6 +1,96 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Wed, 30 Apr 2025 13:16:15 GMT and should not be manually modified.
+This log was last generated on Fri, 08 Aug 2025 14:15:05 GMT and should not be manually modified.
+
+## 5.1.0
+Fri, 08 Aug 2025 12:51:53 GMT
+
+### Updates
+
+- Export `Ruleset.schema.json` through exports field
+- Fix `InstanceKey.compare` implementation not taking into account different formats and casings of full class name.
+- `UnitSystemFormat`, `FormatsMap` and `KoqPropertyValueFormatter` constructor using the latter type have been deprecated. Instead, the constructor overload with "props" object should be used. The props object allows passing an optional `FormatsProvider` to use for finding formatting props for different types of values. When not specified, the `SchemaFormatsProvider` is used by default, so the behavior stays the same as before. Ideally, it's expected that frontend apps will pass `IModelApp.formatsProvider` for this prop.
+- Updated deprecation comments to new template
+
+## 5.0.5
+Wed, 06 Aug 2025 15:34:16 GMT
+
+_Version update only_
+
+## 5.0.4
+Wed, 16 Jul 2025 14:59:59 GMT
+
+_Version update only_
+
+## 5.0.3
+Fri, 11 Jul 2025 00:56:56 GMT
+
+_Version update only_
+
+## 5.0.2
+Thu, 26 Jun 2025 22:16:01 GMT
+
+_Version update only_
+
+## 5.0.1
+Tue, 17 Jun 2025 18:33:52 GMT
+
+_Version update only_
+
+## 5.0.0
+Fri, 13 Jun 2025 20:25:38 GMT
+
+### Minor changes
+
+- All public methods of `PresentationRpcInterface` have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as `PresentationManager` should be used instead.
+
+### Updates
+
+- Export `Ruleset.schema.json` through exports field
+- Add value constraints to `PropertyInfo`
+- KeySet: Always store instance key class name in `Schema:Class` format.
+- Upgrade compile target to ES2023 and module to ES2022
+- Fixed enum property values formatting issue, where raw value was used instead of enum's display value.
+- Fix `InstanceKey.compare` implementation not taking into account different formats and casings of full class name.
+- Deprecate `imageId` property of `CustomNodeSpecification` and `PropertyRangeGroupSpecification`.
+- Deprecate `labelDefinition` property of `ItemJSON` and `NestedContentValue` in favor of newly added `label`.
+- Deprecate `fromJSON` and `toJSON` methods of `Field` and its subclasses.
+- Add `type: "module"` to `package.json` to tell Node.js to load this package as ESM by default.
+- Deprecate unified selection related APIs.
+- When serializing content, don't put `undefined` values to JSON.
+- Extend `MultiElementPropertiesRequestOptions` to support specifying input element either through `elementClasses` or `elementIds` arrays.
+- Remove `@internal` APIs from public barrel exports file.
+- Stop using `Object.create` and `Object.assign` and use proper constructors and operators instead.
+- Clean up APIs deprecated in 3.x
+- Refactor RPC "pending" response handling to rely on our RPC system rather than custom implementation
+- Change core peer dependencies to strict version.
+
+## 4.11.6
+Mon, 16 Jun 2025 15:00:15 GMT
+
+_Version update only_
+
+## 4.11.5
+Fri, 06 Jun 2025 13:41:18 GMT
+
+### Updates
+
+- Fix `InstanceKey.compare` implementation not taking into account different formats and casings of full class name.
+
+## 4.11.4
+Tue, 03 Jun 2025 16:15:19 GMT
+
+_Version update only_
+
+## 4.11.3
+Wed, 28 May 2025 13:56:23 GMT
+
+_Version update only_
+
+## 4.11.2
+Tue, 20 May 2025 20:14:46 GMT
+
+_Version update only_
 
 ## 4.11.1
 Wed, 30 Apr 2025 13:13:21 GMT

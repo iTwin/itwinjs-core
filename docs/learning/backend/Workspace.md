@@ -137,7 +137,6 @@ The "hardinessRange" setting is obtained from the iModel's settings dictionary, 
 
 "Resources" are bits of data that an application depends on at run-time to perform its functions. The kinds of resources can vary widely from one application to another, but some common examples include:
 
-- [TextStyle]($common)s and fonts used when placing [TextAnnotation]($common)s.
 - [GeographicCRS]($common)es used to specify an iModel's spatial coordinate system.
 - Images that can be used as pattern maps for [Texture]($backend)s.
 - [SettingsDictionary]($backend)s defining reusable settings.

@@ -1,4 +1,5 @@
 import { BeEvent } from "@itwin/core-bentley";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { Format, FormatDefinition, FormatsChangedArgs, FormatterSpec, MutableFormatsProvider, ParsedQuantity, ParserSpec } from "@itwin/core-quantity";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
 import {  SchemaContext,  SchemaFormatsProvider,  SchemaUnitProvider } from "@itwin/ecschema-metadata";
@@ -117,5 +118,28 @@ describe("FormatsProvider examples", () => {
     // __PUBLISH_EXTRACT_END__
 
     assert.equal(retrievedFormat, format);
+  });
+
+  it("on IModelConnection open, register schema formats provider", async () => {
+    // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Schema_Fmt_Provider_on_IModelConnection_Open
+    const removeIModelConnectionListener = IModelConnection.onOpen.addListener((iModel: IModelConnection) => {
+      if (iModel.isBlankConnection()) return; // Don't register on blank connections.
+
+      const schemaFormatsProvider = new SchemaFormatsProvider(iModel.schemaContext, IModelApp.quantityFormatter.activeUnitSystem);
+      const removeUnitSystemListener = IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener((args) => {
+        schemaFormatsProvider.unitSystem = args.system;
+      });
+
+      iModel.onClose.addOnce(() => {
+        removeUnitSystemListener();
+      });
+      IModelApp.formatsProvider = schemaFormatsProvider;
+    });
+
+    IModelConnection.onClose.addOnce(() => {
+      removeIModelConnectionListener();
+      IModelApp.resetFormatsProvider();
+    });
+    // __PUBLISH_EXTRACT_END__
   });
 });

@@ -69,7 +69,93 @@ Rare exceptions may be made to this policy when a breaking API change is require
 
 Most public APIs are intended to remain stable indefinitely, but occasionally a breaking change is required to fix a bug, introduce new functionality, or address performance problems. The deprecation policy ensures that such changes are introduced deliberately and predictably to help users plan ahead.
 
-Before a "public" API can be removed it must first be marked as "deprecated" in version `N` of the package. It must remain stable for the duration of version `N+1`. Finally, in version `N+2` it _may_ be removed. This means that, for example, an API deprecated in version 4.1 of a package cannot be removed until version 6.0 at the earliest.
+Before a "public" API can be removed it must first be marked as "deprecated", with a clear upgrade path described in the deprecation note and the earliest date when it might be removed. A grace period of one year is given for consumers to update their code. After the grace period, deprecated APIs may be removed in any following major release. We recommend using [typescript-eslint](https://typescript-eslint.io/) with the [no-deprecated rule](https://typescript-eslint.io/rules/no-deprecated/) enabled so that you get timely warnings when you use deprecated APIs.
+
+The same policy applies to "preview" APIs, with a 3 month grace period instead of a year.
+
+_Only_ the exact API element that is being deprecated will be removed. For example, this does not extend to different method overloads. Some examples of what deprecation notes might look like are given below.
+
+Deprecated method:
+
+```ts
+// Before:
+
+/** @public */
+public methodA();
+
+// After deprecation:
+
+/**
+ * @public
+ * @deprecated in 5.1 - will not be removed until after 2026-01-01. Please use methodB instead.
+ */
+public methodA();
+/** @public */
+public methodB();
+
+// After removal:
+
+/** @public */
+public methodB();
+```
+
+Optional parameter made mandatory:
+
+```ts
+// Before:
+
+/** @public */
+public methodA(arg1?: string);
+
+// After deprecation:
+/**
+ * @public
+ * @deprecated in 5.1 - will not be removed until after 2026-01-01. Please use the overload with a string parameter instead.
+ */
+public methodA();
+/** @public */
+public methodA(arg1: string);
+
+// After removal:
+
+/** @public */
+public methodA(arg1: string);
+```
+
+New property added to an interface:
+
+```ts
+// Before:
+
+/** @public */
+export interface A {
+  foo: string;
+}
+
+// After deprecation:
+
+/**
+ * @public
+ * @deprecated in 5.1 - will not be removed until after 2026-01-01. Please use B instead.
+ */
+export interface A {
+  foo: string;
+}
+/** @public */
+export interface B extends A {
+  bar: string;
+}
+
+// After removal:
+
+/** @public */
+export interface B {
+  foo: string;
+  bar: string;
+}
+```
+
+Before version 5.0, deprecation notes did not include a date. APIs deprecated in versions 4.x might be removed in 6.0 or later major versions.
 
 ## Package support policy
 
@@ -84,12 +170,13 @@ Very rarely, a critical security issue may arise that cannot reasonably be addre
 
 ## Version support status
 
-| Major Version | Status          | Release    | Active Start | Maintenance Start | End-of-life        |
-| ------------- | --------------- | ---------- | ------------ | ----------------- | ------------------ |
-| 1.x           | **End of life** | 2019-06-03 | 2020-05-07   | n/a               | 2020-11-01         |
-| 2.x           | **End of life** | 2020-05-07 | 2022-01-24   | 2022-12-31        | 2023-3-31          |
-| 3.x           | **End of life** | 2022-01-24 | 2023-05-22   | 2023-11-22        | 2024-05-22         |
-| 4.x           | **Current**     | 2023-05-22 | TBD          | TBD               | TBD                |
+| Major Version | Status          | Release    | Active Start | Maintenance Start | End-of-life |
+| ------------- | --------------- | ---------- | ------------ | ----------------- | ----------- |
+| 1.x           | **End of life** | 2019-06-03 | 2020-05-07   | n/a               | 2020-11-01  |
+| 2.x           | **End of life** | 2020-05-07 | 2022-01-24   | 2022-12-31        | 2023-3-31   |
+| 3.x           | **End of life** | 2022-01-24 | 2023-05-22   | 2023-11-22        | 2024-05-22  |
+| 4.x           | **Active**      | 2023-05-22 | 2025-06-13   | 2025-12-13        | 2026-06-13  |
+| 5.x           | **Current**     | 2025-06-13 | TBD          | TBD               | TBD         |
 
 _\*Dates are subject to change._
 

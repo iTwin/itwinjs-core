@@ -87,6 +87,7 @@ import {
   createTestSelectClassInfo,
   createTestSimpleContentField,
 } from "@itwin/presentation-common/test-utils";
+import { _presentation_manager_detail } from "../presentation-backend/InternalSymbols.js";
 import {
   NativePlatformDefinition,
   NativePlatformRequestTypes,
@@ -104,7 +105,6 @@ import { RulesetManagerImpl } from "../presentation-backend/RulesetManager.js";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager.js";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper.js";
 import { stubECSqlReader } from "./Helpers.js";
-import { _presentation_manager_detail } from "../presentation-backend/InternalSymbols.js";
 
 describe("PresentationManager", () => {
   before(async () => {
@@ -115,7 +115,7 @@ describe("PresentationManager", () => {
       try {
         IModelNative.platform;
         isLoaded = true;
-      } catch { }
+      } catch {}
       if (!isLoaded) {
         throw e; // re-throw if startup() failed to set up NativePlatform
       }
@@ -795,6 +795,7 @@ describe("PresentationManager", () => {
         } satisfies SelectionInfo,
       };
       imodelMock.reset();
+      imodelMock.setup((x) => x.schemaContext).returns(() => new SchemaContext());
       nativePlatformMock.reset();
       nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
       recreateManager();
@@ -852,7 +853,7 @@ describe("PresentationManager", () => {
       });
       sinon.stub(manager[_presentation_manager_detail], "rulesets").value(
         sinon.createStubInstance(RulesetManagerImpl, {
-          add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
+          add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => {})),
         }),
       );
     }
@@ -1629,6 +1630,7 @@ describe("PresentationManager", () => {
             descriptorOverrides: descriptor.createDescriptorOverrides(),
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            omitFormattedValues: true,
           },
         };
 
@@ -1683,6 +1685,7 @@ describe("PresentationManager", () => {
             descriptorOverrides: descriptor.createDescriptorOverrides(),
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            omitFormattedValues: true,
           },
         };
 
@@ -1731,6 +1734,7 @@ describe("PresentationManager", () => {
             descriptorOverrides: {},
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            omitFormattedValues: true,
           },
         };
 
@@ -1775,6 +1779,7 @@ describe("PresentationManager", () => {
             descriptorOverrides: {},
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            omitFormattedValues: true,
           },
         };
 
@@ -1809,9 +1814,6 @@ describe("PresentationManager", () => {
       });
 
       it("returns formatted content set", async () => {
-        // setup manager to support formatting
-        recreateManager({ schemaContextProvider: () => new SchemaContext() });
-
         // what the addon receives
         const keys = new KeySet([createTestECInstancesNodeKey()]);
         const fieldName = "test field";
@@ -1867,9 +1869,6 @@ describe("PresentationManager", () => {
       });
 
       it("returns content without formatting", async () => {
-        // setup manager to support formatting
-        recreateManager({ schemaContextProvider: () => new SchemaContext() });
-
         // what the addon receives
         const keys = new KeySet([createTestECInstancesNodeKey()]);
         const fieldName = "test field";
@@ -1948,6 +1947,7 @@ describe("PresentationManager", () => {
             descriptorOverrides: descriptor.createDescriptorOverrides(),
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            omitFormattedValues: true,
           },
         };
 
@@ -2006,6 +2006,7 @@ describe("PresentationManager", () => {
             descriptorOverrides: descriptor.createDescriptorOverrides(),
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            omitFormattedValues: true,
           },
         };
 
@@ -2058,6 +2059,7 @@ describe("PresentationManager", () => {
             descriptorOverrides: {},
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            omitFormattedValues: true,
           },
         };
 
@@ -2115,6 +2117,7 @@ describe("PresentationManager", () => {
             descriptorOverrides: {},
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            omitFormattedValues: true,
           },
         };
 
@@ -2174,6 +2177,7 @@ describe("PresentationManager", () => {
             },
             paging: testData.pageOptions,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            omitFormattedValues: true,
           },
         };
 
@@ -2211,9 +2215,6 @@ describe("PresentationManager", () => {
       });
 
       it("returns formatted content", async () => {
-        // setup manager to support formatting
-        recreateManager({ schemaContextProvider: () => new SchemaContext() });
-
         // what the addon receives
         const keys = new KeySet([createTestECInstancesNodeKey()]);
         const fieldName = "test field name";
@@ -2272,9 +2273,6 @@ describe("PresentationManager", () => {
       });
 
       it("returns content without formatting", async () => {
-        // setup manager to support formatting
-        recreateManager({ schemaContextProvider: () => new SchemaContext() });
-
         // what the addon receives
         const keys = new KeySet([createTestECInstancesNodeKey()]);
         const fieldName = "test field name";
@@ -2399,6 +2397,7 @@ describe("PresentationManager", () => {
               contentFlags: ContentFlags.ShowLabels,
             },
             rulesetId: "ElementProperties",
+            omitFormattedValues: true,
           },
         };
 
@@ -2429,6 +2428,7 @@ describe("PresentationManager", () => {
               contentFlags: ContentFlags.ShowLabels,
             },
             rulesetId: "ElementProperties",
+            omitFormattedValues: true,
           },
         };
 
@@ -2451,9 +2451,7 @@ describe("PresentationManager", () => {
               values: {
                 test: "test value",
               },
-              displayValues: {
-                test: "test display value",
-              },
+              displayValues: {},
             }),
           ],
         ).toJSON();
@@ -2474,7 +2472,7 @@ describe("PresentationManager", () => {
               items: {
                 ["Test Field"]: {
                   type: "primitive",
-                  value: "test display value",
+                  value: "test value",
                 },
               },
             },
@@ -2499,6 +2497,7 @@ describe("PresentationManager", () => {
               contentFlags: ContentFlags.ShowLabels,
             },
             rulesetId: "ElementProperties",
+            omitFormattedValues: true,
           },
         };
 
@@ -2521,9 +2520,7 @@ describe("PresentationManager", () => {
               values: {
                 test: "test value",
               },
-              displayValues: {
-                test: "test display value",
-              },
+              displayValues: {},
             }),
           ],
         ).toJSON();
@@ -2544,7 +2541,7 @@ describe("PresentationManager", () => {
               items: {
                 ["Test Field"]: {
                   type: "primitive",
-                  value: "test display value",
+                  value: "test value",
                 },
               },
             },
@@ -2603,6 +2600,7 @@ describe("PresentationManager", () => {
               },
             },
             keys: new KeySet(),
+            omitFormattedValues: true,
           },
         };
 
@@ -2629,9 +2627,7 @@ describe("PresentationManager", () => {
               values: {
                 test: "test value 1",
               },
-              displayValues: {
-                test: "test display value 1",
-              },
+              displayValues: {},
             }),
             createTestContentItem({
               label: "test label 2",
@@ -2640,9 +2636,7 @@ describe("PresentationManager", () => {
               values: {
                 test: "test value 2",
               },
-              displayValues: {
-                test: "test display value 2",
-              },
+              displayValues: {},
             }),
           ].map((item) => item.toJSON()),
         );
@@ -2663,7 +2657,7 @@ describe("PresentationManager", () => {
                 items: {
                   ["Test Field"]: {
                     type: "primitive",
-                    value: "test display value 1",
+                    value: "test value 1",
                   },
                 },
               },
@@ -2679,7 +2673,7 @@ describe("PresentationManager", () => {
                 items: {
                   ["Test Field"]: {
                     type: "primitive",
-                    value: "test display value 2",
+                    value: "test value 2",
                   },
                 },
               },
@@ -2732,6 +2726,7 @@ describe("PresentationManager", () => {
               },
             },
             keys: new KeySet(),
+            omitFormattedValues: true,
           },
         };
 
@@ -2758,9 +2753,7 @@ describe("PresentationManager", () => {
               values: {
                 test: "test value 1",
               },
-              displayValues: {
-                test: "test display value 1",
-              },
+              displayValues: {},
             }),
             createTestContentItem({
               label: "test label 2",
@@ -2769,9 +2762,7 @@ describe("PresentationManager", () => {
               values: {
                 test: "test value 2",
               },
-              displayValues: {
-                test: "test display value 2",
-              },
+              displayValues: {},
             }),
             createTestContentItem({
               label: "test label 3",
@@ -2780,9 +2771,7 @@ describe("PresentationManager", () => {
               values: {
                 test: "test value 3",
               },
-              displayValues: {
-                test: "test display value 3",
-              },
+              displayValues: {},
             }),
           ].map((item) => item.toJSON()),
         );
@@ -2803,7 +2792,7 @@ describe("PresentationManager", () => {
                 items: {
                   ["Test Field"]: {
                     type: "primitive",
-                    value: "test display value 1",
+                    value: "test value 1",
                   },
                 },
               },
@@ -2819,7 +2808,7 @@ describe("PresentationManager", () => {
                 items: {
                   ["Test Field"]: {
                     type: "primitive",
-                    value: "test display value 2",
+                    value: "test value 2",
                   },
                 },
               },
@@ -2835,7 +2824,7 @@ describe("PresentationManager", () => {
                 items: {
                   ["Test Field"]: {
                     type: "primitive",
-                    value: "test display value 3",
+                    value: "test value 3",
                   },
                 },
               },
@@ -2889,6 +2878,7 @@ describe("PresentationManager", () => {
               },
             },
             keys: new KeySet(),
+            omitFormattedValues: true,
           },
         };
 
@@ -2915,9 +2905,7 @@ describe("PresentationManager", () => {
               values: {
                 test: "test value 1",
               },
-              displayValues: {
-                test: "test display value 1",
-              },
+              displayValues: {},
             }),
             createTestContentItem({
               label: "@Presentation:label.notSpecified@",
@@ -2926,9 +2914,7 @@ describe("PresentationManager", () => {
               values: {
                 test: "test value 2",
               },
-              displayValues: {
-                test: "test display value 2",
-              },
+              displayValues: {},
             }),
           ].map((item) => item.toJSON()),
         );
@@ -2949,7 +2935,7 @@ describe("PresentationManager", () => {
                 items: {
                   ["Test Field"]: {
                     type: "primitive",
-                    value: "test display value 1",
+                    value: "test value 1",
                   },
                 },
               },
@@ -2965,7 +2951,7 @@ describe("PresentationManager", () => {
                 items: {
                   ["Test Field"]: {
                     type: "primitive",
-                    value: "test display value 2",
+                    value: "test value 2",
                   },
                 },
               },
@@ -3019,6 +3005,7 @@ describe("PresentationManager", () => {
               },
             },
             keys: new KeySet(),
+            omitFormattedValues: true,
           },
         };
 
@@ -3419,7 +3406,7 @@ describe("PresentationManager", () => {
         });
         sinon.stub(manager[_presentation_manager_detail], "rulesets").value(
           sinon.createStubInstance(RulesetManagerImpl, {
-            add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
+            add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => {})),
           }),
         );
         // what the addon returns

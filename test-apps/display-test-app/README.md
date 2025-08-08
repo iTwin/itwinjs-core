@@ -138,6 +138,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, a semicolon-separated list of names of WebGLExtensions to be disabled. See WebGLExtensionName for valid names (case-sensitive).
 * IMJS_DISABLE_INSTANCING
   * If defined, instanced geometry will not be generated for tiles. See TileAdmin.enableInstancing.
+* IMJS_DISABLE_POLYFACE_DECIMATION
+  * If defined, `TileAdmin.Options.disablePolyfaceDecimation` will be set to `true` at startup.
 * IMJS_DISABLE_INDEXED_EDGES
   * If defined, indexed edges will not be produced. See TileAdmin.enableIndexedEdges.
 * IMJS_NO_IMPROVED_ELISION
@@ -194,6 +196,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, sets a Google Maps key within the `MapLayerOptions` as a "key" type.
 * IMJS_CESIUM_ION_KEY
   * If defined, the API key supplying access to Cesium ION assets.
+* IMJS_GOOGLE_3D_TILES_KEY
+  * If defined, the API key supplying access to Google Photorealistic 3D Tiles.
 * IMJS_IMODEL_ID
   * If defined, the GuidString of the iModel to fetch from the iModel Hub and open.
 * IMJS_URL_PREFIX

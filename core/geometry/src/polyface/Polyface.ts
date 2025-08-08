@@ -493,7 +493,7 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   }
   /**
    * Clean up the open facet.
-   * @deprecated in 4.x to remove nebulous "open facet" concept from the API. Call [[PolyfaceData.trimAllIndexArrays]]
+   * @deprecated in 4.5.0 - will not be removed until after 2026-06-13. To remove nebulous "open facet" concept from the API. Call [[PolyfaceData.trimAllIndexArrays]]
    * instead.
    */
   public cleanupOpenFacet(): void {
@@ -538,7 +538,7 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
         messages.push("edgeMateIndex count must equal pointIndex count");
       else if (!this.data.edgeMateIndex.every((i: number | undefined) => i === undefined || this.data.isValidEdgeIndex(i)))
         messages.push("invalid edgeMate encountered");
-      }
+    }
     return 0 === messages.length;
   }
 
@@ -645,7 +645,7 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   }
   /**
    * Given the index of a facet, return the data pertaining to the face it is a part of.
-   * @deprecated in 4.x. Use [[IndexedPolyface.tryGetFaceData]], which verifies the index is in range.
+   * @deprecated in 4.5.0 - will not be removed until after 2026-06-13. Use [[IndexedPolyface.tryGetFaceData]], which verifies the index is in range.
    */
   public getFaceDataByFacetIndex(facetIndex: number): FacetFaceData {
     return this.data.face[this._facetToFaceData[facetIndex]];
@@ -685,24 +685,46 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleIndexedPolyface(this);
   }
+  /** If the input accesses an edgeMateIndex array, return it along with the owning IndexedPolyface. */
+  public static hasEdgeMateIndex(polyface: Polyface | PolyfaceVisitor): { parent: IndexedPolyface, edgeMateIndex: Array<number | undefined> } | undefined {
+    let parent: IndexedPolyface | undefined;
+    if (polyface instanceof Polyface) {
+      if (polyface instanceof IndexedPolyface)
+        parent = polyface;
+    } else if (polyface.clientPolyface() && polyface.clientPolyface() instanceof IndexedPolyface)
+      parent = polyface.clientPolyface() as IndexedPolyface;
+    if (parent) {
+      const edgeMateIndex = parent.data.edgeMateIndex;
+      if (edgeMateIndex && edgeMateIndex.length > 0 && edgeMateIndex.length === parent.data.indexCount)
+        return { parent, edgeMateIndex };
+    }
+    return undefined;
+  }
 }
 
 /**
- * A PolyfaceVisitor manages data while walking through facets.
+ * A PolyfaceVisitor manages data while iterating facets.
  * * The polyface visitor holds data for one facet at a time.
  * * The caller can request the position in the addressed polyfaceData as a "readIndex".
  * * The readIndex values (as numbers) are not assumed to be sequential (i.e., they might be contiguous facet indices
  * or the indexing scheme might have gaps at the whim of the particular PolyfaceVisitor implementation).
+ * * Example usage:
+ * ```
+ * const visitor = myPolyface.createVisitor();
+ * for (visitor.reset(); visitor.moveToNextFacet(); ) {
+ *   // process the current facet
+ * }
+ * ```
  * @public
  */
 export interface PolyfaceVisitor extends PolyfaceData {
   /** Load data for the facet with given index. */
   moveToReadIndex(index: number): boolean;
-  /** Return the readIndex of the currently loaded facet. */
+  /** Return the index of the currently loaded facet. */
   currentReadIndex(): number;
   /** Load data for the next facet. */
   moveToNextFacet(): boolean;
-  /** Reset to initial state for reading all facets sequentially with moveToNextFacet. */
+  /** Restart the visitor at the first facet. */
   reset(): void;
   /** Return the point index of vertex i within the currently loaded facet. */
   clientPointIndex(i: number): number;
@@ -740,4 +762,6 @@ export interface PolyfaceVisitor extends PolyfaceData {
    * * Allows implementers to improve the efficiency of e.g., [[PolyfaceQuery.visitorClientFacetCount]].
    */
   getVisitableFacetCount?(): number;
+  /** Create a visitor for a subset of the facets visitable by the instance. */
+  createSubsetVisitor?(facetIndices: number[], numWrap: number): PolyfaceVisitor;
 }
