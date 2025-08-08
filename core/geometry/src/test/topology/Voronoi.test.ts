@@ -112,7 +112,7 @@ function comparePathToClippedCurves(
     const momentData = RegionOps.computeXYZWireMomentSums(curve);
     if (ck.testDefined(momentData)) {
       const length = momentData.quantitySum;
-      clippedCurvesLengths.push(parseFloat(length.toFixed(4)));
+      clippedCurvesLengths.push(parseFloat(length.toFixed(6)));
       const centroid = momentData.origin;
       clippedCurvesCentroids.push(centroid);
     }
@@ -123,7 +123,7 @@ function comparePathToClippedCurves(
     const momentData = RegionOps.computeXYZWireMomentSums(child);
     if (ck.testDefined(momentData)) {
       const length = momentData.quantitySum;
-      childrenLengths.push(parseFloat(length.toFixed(4)));
+      childrenLengths.push(parseFloat(length.toFixed(6)));
       const centroid = momentData.origin;
       childrenCentroids.push(centroid);
     }
