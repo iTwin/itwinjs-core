@@ -33,6 +33,7 @@ import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 import { Transform } from "../geometry3d/Transform";
 import { XAndY } from "../geometry3d/XYZProps";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
+import { HalfEdgeMask } from "../topology/Graph";
 import { Voronoi } from "../topology/Voronoi";
 import { ClipPlane } from "./ClipPlane";
 import { ClipPrimitive } from "./ClipPrimitive";
@@ -40,7 +41,6 @@ import { ClipVector } from "./ClipVector";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { LineStringOffsetClipperContext } from "./internalContexts/LineStringOffsetClipperContext";
 import { UnionOfConvexClipPlaneSets } from "./UnionOfConvexClipPlaneSets";
-import { HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph";
 
 /**
  * Enumerated type for describing where geometry lies with respect to clipping planes.

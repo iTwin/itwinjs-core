@@ -4,13 +4,12 @@ import * as fs from "fs";
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { ClipUtilities, PolygonClipper } from "../../clipping/ClipUtils";
+import { ClipUtilities } from "../../clipping/ClipUtils";
 import { Arc3d, LineSegment3d, LineString3d, StrokeOptions } from "../../core-geometry";
 import { BagOfCurves } from "../../curve/CurveCollection";
 import { AnyCurve } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Path } from "../../curve/Path";
-import { Loop } from "../../curve/Loop";
 import { RegionOps } from "../../curve/RegionOps";
 import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
@@ -24,10 +23,6 @@ import { Voronoi } from "../../topology/Voronoi";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { getRandomNumber } from "../testFunctions";
-import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
-import { Range3d } from "../../geometry3d/Range";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
 
 function createBagOfCurves(graph: HalfEdgeGraph): BagOfCurves {
   const bag = BagOfCurves.create();
@@ -96,7 +91,7 @@ function verifyVoronoiTopology(ck: Checker, delaunay: HalfEdgeGraph, voronoi: Ha
           ck.testCoordinate(
             closestVoronoiHalfEdge?.faceTag,
             expectedFaceTag,
-            "point (" + spacePoint.x + ", " + spacePoint.y + ") belongs to the face with faceTag " + expectedFaceTag,
+            `point ("${spacePoint.x}", "${spacePoint.y}") belongs to the face with faceTag "${expectedFaceTag}"`,
           );
         }
       }
@@ -134,41 +129,20 @@ function comparePathToClippedCurves(
       childrenCentroids.push(centroid);
     }
   }
-  for (let i = 0; i < clippedCurvesLengths.length; i++)
-    console.log(`${i} clippedLength: ${clippedCurvesLengths[i]} | childLength: ${childrenLengths[i]}`);
+  // KEEP console.logs FOR DEBUGGING
+  // for (let i = 0; i < clippedCurvesLengths.length; i++)
+  //   console.log(`${i} clippedLength: ${clippedCurvesLengths[i]} | childLength: ${childrenLengths[i]}`);
   ck.testTrue(clippedCurvesLengths.every((val, index) => val === childrenLengths[index]));
-  for (let i = 0; i < clippedCurvesCentroids.length; i++)
-    console.log(
-      `${i} clippedCentroid: ${clippedCurvesCentroids[i].x},${clippedCurvesCentroids[i].y}` +
-      ` | childCentroid: ${childrenCentroids[i].x},${childrenCentroids[i].y}`
-    );
+  // for (let i = 0; i < clippedCurvesCentroids.length; i++)
+  //   console.log(
+  //     `${i} clippedCentroid: ${clippedCurvesCentroids[i].x},${clippedCurvesCentroids[i].y}` +
+  //     ` | childCentroid: ${childrenCentroids[i].x},${childrenCentroids[i].y}`
+  //   );
   ck.testTrue(
     clippedCurvesCentroids.every(
       (val, index) => val.isAlmostEqual(childrenCentroids[index])
     )
   );
-}
-
-function captureClippers(allGeometry: GeometryQuery[], ck: Checker, clippers: PolygonClipper[], range: Range3d): void {
-  const xyPolygon = range.rectangleXY(0, true, true);
-  if (xyPolygon) {
-    const cache = new GrowableXYZArrayCache();
-    const inside: GrowableXYZArray[] = [];
-    const outside: GrowableXYZArray[] = [];
-    const xyPolygonCarrier = new Point3dArrayCarrier(xyPolygon);
-    for (const clipper of clippers) {
-      clipper.appendPolygonClip(xyPolygonCarrier, inside, outside, cache);
-      const loops: Loop[] = [];
-      for (const polygon of inside)
-        loops.push(Loop.createPolygon(polygon));
-      const components = RegionOps.constructAllXYRegionLoops(loops);
-      if (ck.testExactNumber(1, components.length, "clipper is a single xy-region swept in z"))
-        if (ck.testExactNumber(1, components[0].negativeAreaLoops.length, "clipper region has no holes"))
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, components[0].negativeAreaLoops[0]);
-      cache.dropAllToCache(inside);
-      cache.dropAllToCache(outside);
-    }
-  }
 }
 
 describe("Voronoi", () => {
@@ -739,33 +713,16 @@ describe("Voronoi", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, child);
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 0.5;
-    // const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(path, strokeOptions)!;
+    const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(path, strokeOptions)!;
 
-    const voronoi = Voronoi.createFromCurveChain(path, strokeOptions);
-    if (ck.testDefined(voronoi)) {
-      const voronoiGraph = voronoi.getVoronoiGraph();
-      const SUPER_FACE_EDGE_MASK = voronoiGraph.grabMask();
-      const SUPER_FACE_OUTSIDE_MASK = voronoiGraph.grabMask();
-      voronoiGraph.clearMask(SUPER_FACE_EDGE_MASK);
-      const superFaces = voronoi.getSuperFaces(path.children.length, SUPER_FACE_EDGE_MASK);
-      if (superFaces === undefined || superFaces.length === 0)
-        return undefined;
-      voronoi.convexifySuperFaces(SUPER_FACE_EDGE_MASK);
-      voronoiGraph.clearMask(HalfEdgeMask.VISITED);
-      const clippers = voronoi.generateClippersFromSuperFaces(superFaces, SUPER_FACE_EDGE_MASK, SUPER_FACE_OUTSIDE_MASK);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, voronoi.createPolyface(SUPER_FACE_EDGE_MASK));
-      voronoiGraph.dropMask(SUPER_FACE_EDGE_MASK);
-      voronoiGraph.dropMask(SUPER_FACE_OUTSIDE_MASK);
-
-      if (ck.testDefined(clippers, "Clippers should be defined")) {
-        ck.testCoordinate(clippers.length, path.children.length, "Voronoi should have 5 faces");
-        const clippedCurves: AnyCurve[][] = [];
-        for (const clipperUnions of clippers)
-          clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
-        comparePathToClippedCurves(allGeometry, ck, path, clippedCurves, 20);
-        // captureClippers(allGeometry, ck, clippers, path.range());
-      }
+    if (ck.testDefined(clippers, "Clippers should be defined")) {
+      ck.testCoordinate(clippers.length, path.children.length, "Voronoi should have 5 faces");
+      const clippedCurves: AnyCurve[][] = [];
+      for (const clipperUnions of clippers)
+        clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
+      comparePathToClippedCurves(allGeometry, ck, path, clippedCurves, 20);
     }
+
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "CurveChain");
     expect(ck.getNumErrors()).toBe(0);
@@ -793,22 +750,21 @@ describe("Voronoi", () => {
       const SUPER_FACE_OUTSIDE_MASK = voronoiGraph.grabMask();
       voronoiGraph.clearMask(SUPER_FACE_EDGE_MASK);
       const superFaces = voronoi.getSuperFaces(path.children.length, SUPER_FACE_EDGE_MASK);
-      if (superFaces === undefined || superFaces.length === 0)
-        return undefined;
-      voronoi.convexifySuperFaces(SUPER_FACE_EDGE_MASK);
-      voronoiGraph.clearMask(HalfEdgeMask.VISITED);
-      const clippers = voronoi.generateClippersFromSuperFaces(superFaces, SUPER_FACE_EDGE_MASK, SUPER_FACE_OUTSIDE_MASK);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, voronoi.createPolyface(SUPER_FACE_EDGE_MASK));
-      voronoiGraph.dropMask(SUPER_FACE_EDGE_MASK);
-      voronoiGraph.dropMask(SUPER_FACE_OUTSIDE_MASK);
+      if (ck.testDefined(superFaces)) {
+        voronoi.convexifySuperFaces(SUPER_FACE_EDGE_MASK);
+        voronoiGraph.clearMask(HalfEdgeMask.VISITED);
+        const clippers = voronoi.generateClippersFromSuperFaces(superFaces, SUPER_FACE_EDGE_MASK, SUPER_FACE_OUTSIDE_MASK);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, voronoi.createPolyface(SUPER_FACE_EDGE_MASK));
+        voronoiGraph.dropMask(SUPER_FACE_EDGE_MASK);
+        voronoiGraph.dropMask(SUPER_FACE_OUTSIDE_MASK);
 
-      if (ck.testDefined(clippers, "Clippers should be defined")) {
-        ck.testCoordinate(clippers.length, path.children.length, "Voronoi should have 7 faces");
-        const clippedCurves: AnyCurve[][] = [];
-        for (const clipperUnions of clippers)
-          clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
-        comparePathToClippedCurves(allGeometry, ck, path, clippedCurves, 1000);
-        // captureClippers(allGeometry, ck, clippers, path.range());
+        if (ck.testDefined(clippers, "Clippers should be defined")) {
+          ck.testCoordinate(clippers.length, path.children.length, "Voronoi should have 7 faces");
+          const clippedCurves: AnyCurve[][] = [];
+          for (const clipperUnions of clippers)
+            clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
+          comparePathToClippedCurves(allGeometry, ck, path, clippedCurves, 1000);
+        }
       }
     }
 
@@ -839,22 +795,21 @@ describe("Voronoi", () => {
       const SUPER_FACE_OUTSIDE_MASK = voronoiGraph.grabMask();
       voronoiGraph.clearMask(SUPER_FACE_EDGE_MASK);
       const superFaces = voronoi.getSuperFaces(path.children.length, SUPER_FACE_EDGE_MASK);
-      if (superFaces === undefined || superFaces.length === 0)
-        return undefined;
-      voronoi.convexifySuperFaces(SUPER_FACE_EDGE_MASK);
-      voronoiGraph.clearMask(HalfEdgeMask.VISITED);
-      const clippers = voronoi.generateClippersFromSuperFaces(superFaces, SUPER_FACE_EDGE_MASK, SUPER_FACE_OUTSIDE_MASK);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, voronoi.createPolyface(SUPER_FACE_EDGE_MASK));
-      voronoiGraph.dropMask(SUPER_FACE_EDGE_MASK);
-      voronoiGraph.dropMask(SUPER_FACE_OUTSIDE_MASK);
+      if (ck.testDefined(superFaces)) {
+        voronoi.convexifySuperFaces(SUPER_FACE_EDGE_MASK);
+        voronoiGraph.clearMask(HalfEdgeMask.VISITED);
+        const clippers = voronoi.generateClippersFromSuperFaces(superFaces, SUPER_FACE_EDGE_MASK, SUPER_FACE_OUTSIDE_MASK);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, voronoi.createPolyface(SUPER_FACE_EDGE_MASK));
+        voronoiGraph.dropMask(SUPER_FACE_EDGE_MASK);
+        voronoiGraph.dropMask(SUPER_FACE_OUTSIDE_MASK);
 
-      if (ck.testDefined(clippers, "Clippers should be defined")) {
-        ck.testCoordinate(clippers.length, path.children.length, "Voronoi should have 18 faces");
-        const clippedCurves: AnyCurve[][] = [];
-        for (const clipperUnions of clippers)
-          clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
-        comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
-        // captureClippers(allGeometry, ck, clippers, path.range());
+        if (ck.testDefined(clippers, "Clippers should be defined")) {
+          ck.testCoordinate(clippers.length, path.children.length, "Voronoi should have 18 faces");
+          const clippedCurves: AnyCurve[][] = [];
+          for (const clipperUnions of clippers)
+            clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
+          comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
+        }
       }
     }
 
@@ -893,22 +848,21 @@ describe("Voronoi", () => {
       const SUPER_FACE_OUTSIDE_MASK = voronoiGraph.grabMask();
       voronoiGraph.clearMask(SUPER_FACE_EDGE_MASK);
       const superFaces = voronoi.getSuperFaces(path.children.length, SUPER_FACE_EDGE_MASK);
-      if (superFaces === undefined || superFaces.length === 0)
-        return undefined;
-      voronoi.convexifySuperFaces(SUPER_FACE_EDGE_MASK);
-      voronoiGraph.clearMask(HalfEdgeMask.VISITED);
-      const clippers = voronoi.generateClippersFromSuperFaces(superFaces, SUPER_FACE_EDGE_MASK, SUPER_FACE_OUTSIDE_MASK);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, voronoi.createPolyface(SUPER_FACE_EDGE_MASK));
-      voronoiGraph.dropMask(SUPER_FACE_EDGE_MASK);
-      voronoiGraph.dropMask(SUPER_FACE_OUTSIDE_MASK);
+      if (ck.testDefined(superFaces)) {
+        voronoi.convexifySuperFaces(SUPER_FACE_EDGE_MASK);
+        voronoiGraph.clearMask(HalfEdgeMask.VISITED);
+        const clippers = voronoi.generateClippersFromSuperFaces(superFaces, SUPER_FACE_EDGE_MASK, SUPER_FACE_OUTSIDE_MASK);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, voronoi.createPolyface(SUPER_FACE_EDGE_MASK));
+        voronoiGraph.dropMask(SUPER_FACE_EDGE_MASK);
+        voronoiGraph.dropMask(SUPER_FACE_OUTSIDE_MASK);
 
-      if (ck.testDefined(clippers, "Clippers should be defined")) {
-        ck.testCoordinate(clippers.length, path.children.length, "Voronoi should have 9 faces");
-        const clippedCurves: AnyCurve[][] = [];
-        for (const clipperUnions of clippers)
-          clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
-        comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
-        // captureClippers(allGeometry, ck, clippers, path.range());
+        if (ck.testDefined(clippers, "Clippers should be defined")) {
+          ck.testCoordinate(clippers.length, path.children.length, "Voronoi should have 9 faces");
+          const clippedCurves: AnyCurve[][] = [];
+          for (const clipperUnions of clippers)
+            clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
+          comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
+        }
       }
     }
 

@@ -615,7 +615,7 @@ export class Voronoi {
   }
   // modify voronoi graph such that each super face only has convex faces
   public convexifySuperFaces(superFaceEdgeMask: HalfEdgeMask) {
-    const success = Triangulator.triangulateAllInteriorFaces(this._voronoiGraph);
+    Triangulator.triangulateAllInteriorFaces(this._voronoiGraph);
     HalfEdgeGraphOps.expandConvexFaces(this._voronoiGraph, superFaceEdgeMask);
   }
   // generate clippers from super faces
