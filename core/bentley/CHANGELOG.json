@@ -2,6 +2,24 @@
   "name": "@itwin/core-bentley",
   "entries": [
     {
+      "version": "5.1.0",
+      "tag": "@itwin/core-bentley_v5.1.0",
+      "date": "Fri, 08 Aug 2025 12:51:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add TypeScript utility types `DeepReadonlyObject` and `DeepRequiredObject`."
+          },
+          {
+            "comment": "Add compareArrays for ordered comparison of arrays."
+          },
+          {
+            "comment": "Updated deprecation comments to new template"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.0.5",
       "tag": "@itwin/core-bentley_v5.0.5",
       "date": "Wed, 06 Aug 2025 15:34:15 GMT",

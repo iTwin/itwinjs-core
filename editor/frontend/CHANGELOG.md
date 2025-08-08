@@ -1,6 +1,13 @@
 # Change Log - @itwin/editor-frontend
 
-This log was last generated on Wed, 06 Aug 2025 15:35:39 GMT and should not be manually modified.
+This log was last generated on Fri, 08 Aug 2025 12:51:53 GMT and should not be manually modified.
+
+## 5.1.0
+Fri, 08 Aug 2025 12:51:53 GMT
+
+### Updates
+
+- Draw dynamics as overlays if they belong to an overlay plan projection model.
 
 ## 5.0.5
 Wed, 06 Aug 2025 15:34:16 GMT
