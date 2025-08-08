@@ -173,7 +173,6 @@ export class Voronoi {
       bisector.end.x, bisector.end.y,
       this._idToIndexMap.get(vertex.edgeMate.id), this._idToIndexMap.get(vertex.id),
     );
-    // HalfEdgeGraphMerge.clusterAndMergeXYTheta(this._voronoiGraph);
     return true;
   }
   private handleInteriorEdge(
@@ -215,7 +214,6 @@ export class Voronoi {
         this._idToIndexMap.get(seed.edgeMate.id), this._idToIndexMap.get(seed.id),
       );
     }
-    // HalfEdgeGraphMerge.clusterAndMergeXYTheta(this._voronoiGraph);
     return true;
   }
   private addVoronoiBoundary(voronoiBoundary: VoronoiBoundary) {
@@ -231,8 +229,6 @@ export class Voronoi {
     this._voronoiGraph.addEdgeXY(
       voronoiBoundary.p3.x, voronoiBoundary.p3.y, voronoiBoundary.p0.x, voronoiBoundary.p0.y,
     );
-    // HalfEdgeGraphMerge.splitIntersectingEdges(this._voronoiGraph);
-    // HalfEdgeGraphMerge.clusterAndMergeXYTheta(this._voronoiGraph);
   }
   // populate EXTERIOR and BOUNDARY_EDGE masks and remaining face tags
   private populateMasksAndFaceTags(): void {
@@ -368,7 +364,6 @@ export class Voronoi {
           bisector.end.x, bisector.end.y,
           voronoi._idToIndexMap.get(seed.id), voronoi._idToIndexMap.get(seed.edgeMate.id),
         );
-        // HalfEdgeGraphMerge.clusterAndMergeXYTheta(voronoi._voronoiGraph);
         return true;
       },
     );
@@ -675,14 +670,14 @@ export class Voronoi {
     return allClippers;
   }
   // Creates a Polyface from the Voronoi diagram super faces.
-  // public createPolyface(): IndexedPolyface {
-  //   return PolyfaceBuilder.graphToPolyface(
-  //     this._voronoiGraph,
-  //     undefined,
-  //     undefined,
-  //     (node: HalfEdge) => { node.isMaskSet(this._superFaceEdgeMask) }
-  //   );
-  // }
+  public createPolyface(): IndexedPolyface {
+    return PolyfaceBuilder.graphToPolyface(
+      this._voronoiGraph,
+      undefined,
+      undefined,
+      (node: HalfEdge) => { node.isMaskSet(this._superFaceEdgeMask) }
+    );
+  }
 }
 
 /**
