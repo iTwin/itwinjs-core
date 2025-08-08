@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/linear-referencing-common",
-      "comment": "",
+      "comment": "Revert linear-referencing-common from pure esm to cjs/esm",
       "type": "none"
     }
   ],

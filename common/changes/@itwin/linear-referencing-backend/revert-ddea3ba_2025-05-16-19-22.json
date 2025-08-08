@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/linear-referencing-backend",
-      "comment": "",
+      "comment": "Revert linear-referencing-backend from pure esm to cjs/esm",
       "type": "none"
     }
   ],
