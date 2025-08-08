@@ -2,6 +2,27 @@
   "name": "@itwin/core-quantity",
   "entries": [
     {
+      "version": "5.1.0",
+      "tag": "@itwin/core-quantity_v5.1.0",
+      "date": "Fri, 08 Aug 2025 12:51:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Expand parsing flexibility for Bearing formats"
+          },
+          {
+            "comment": "Add support for `stationBaseFactor` in `FormatProps`"
+          },
+          {
+            "comment": "Make error message clearer"
+          },
+          {
+            "comment": "Updated deprecation comments to new template"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.0.5",
       "tag": "@itwin/core-quantity_v5.0.5",
       "date": "Wed, 06 Aug 2025 15:34:15 GMT",
