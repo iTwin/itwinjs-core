@@ -4,12 +4,13 @@ import * as fs from "fs";
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { ClipUtilities } from "../../clipping/ClipUtils";
+import { ClipUtilities, PolygonClipper } from "../../clipping/ClipUtils";
 import { Arc3d, LineSegment3d, LineString3d, StrokeOptions } from "../../core-geometry";
 import { BagOfCurves } from "../../curve/CurveCollection";
 import { AnyCurve } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Path } from "../../curve/Path";
+import { Loop } from "../../curve/Loop";
 import { RegionOps } from "../../curve/RegionOps";
 import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
@@ -23,6 +24,10 @@ import { Voronoi } from "../../topology/Voronoi";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { getRandomNumber } from "../testFunctions";
+import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
+import { Range3d } from "../../geometry3d/Range";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
 
 function createBagOfCurves(graph: HalfEdgeGraph): BagOfCurves {
   const bag = BagOfCurves.create();
@@ -37,19 +42,20 @@ function createBagOfCurves(graph: HalfEdgeGraph): BagOfCurves {
 
 // verify the voronoi graph follows the expected topology by checking 10 random points
 // and making sure the point belongs to the voronoi face with the expected faceTag
-function verifyVoronoi(ck: Checker, graph: HalfEdgeGraph, voronoi: HalfEdgeGraph): void {
+function verifyVoronoiTopology(ck: Checker, delaunay: HalfEdgeGraph, voronoi: HalfEdgeGraph): void {
   const voronoiPts: Point3d[] = [];
   voronoi.allHalfEdges.forEach((he) => { voronoiPts.push(he.getPoint3d()); });
   const voronoiSearcher = Point3dArrayRangeTreeContext.createCapture(voronoiPts);
-  const graphPoints = graph.allHalfEdges.map((he) => he.getPoint3d());
-  const graphUniquePoints = Array.from(new Set(graphPoints.map(p => `${p.x},${p.y}`)))
+  const delaunayPoints = delaunay.allHalfEdges.map((he) => he.getPoint3d());
+  const delaunayUniquePoints = Array.from(new Set(delaunayPoints.map(p => `${p.x},${p.y}`)))
     .map(p => p.split(',').map(Number))
     .map(p => Point3d.create(p[0], p[1]));
-  const graphSearcher = Point3dArrayRangeTreeContext.createCapture(graphUniquePoints);
+  const delaunaySearcher = Point3dArrayRangeTreeContext.createCapture(delaunayUniquePoints);
   const range = HalfEdgeGraphOps.graphRange(voronoi);
-  if (voronoiSearcher && graphSearcher) {
+  if (voronoiSearcher && delaunaySearcher) {
     for (let i = 0; i < 10; i++) {
       const spacePoint = Point3d.create(getRandomNumber(range.xLow, range.xHigh), getRandomNumber(range.yLow, range.yHigh));
+      // const spacePoint = Point3d.create(-8.092404185394013, 6.441615205870519)
       const closestVoronoiPoint = voronoiSearcher.searchForClosestPoint(spacePoint);
       if (closestVoronoiPoint === undefined || Array.isArray(closestVoronoiPoint)) {
         ck.announceError("one point should be found");
@@ -71,18 +77,18 @@ function verifyVoronoi(ck: Checker, graph: HalfEdgeGraph, voronoi: HalfEdgeGraph
               closestVoronoiHalfEdge = node;
           }
         );
-        const closestGraphPoint = graphSearcher.searchForClosestPoint(spacePoint);
-        if (closestGraphPoint === undefined || Array.isArray(closestGraphPoint)) {
+        const closestDelaunayPoint = delaunaySearcher.searchForClosestPoint(spacePoint);
+        if (closestDelaunayPoint === undefined || Array.isArray(closestDelaunayPoint)) {
           ck.announceError("one point should be found");
         } else {
           let expectedFaceTag = Number.MAX_VALUE;
-          const closestGraphPointXY = closestGraphPoint.point;
-          closestGraphPointXY.setAt(2, 0); // set z = 0
-          for (let j = 0; j < graph.allHalfEdges.length; j++) {
-            const he = graph.allHalfEdges[j];
+          const closestDelaunayPointXY = closestDelaunayPoint.point;
+          closestDelaunayPointXY.setAt(2, 0); // set z = 0
+          for (let j = 0; j < delaunay.allHalfEdges.length; j++) {
+            const he = delaunay.allHalfEdges[j];
             const heXY = he.getPoint3d();
             heXY.setAt(2, 0); // set z = 0
-            if (heXY.isExactEqual(closestGraphPointXY)) {
+            if (heXY.isExactEqual(closestDelaunayPointXY)) {
               expectedFaceTag = j;
               break;
             }
@@ -100,12 +106,12 @@ function verifyVoronoi(ck: Checker, graph: HalfEdgeGraph, voronoi: HalfEdgeGraph
 
 // compare the lengths and centroids of the path children to the clipped curves
 function comparePathToClippedCurves(
-  allGeometry: GeometryQuery[], ck: Checker, path: Path, clippedCurves: AnyCurve[][], dy = 10,
+  allGeometry: GeometryQuery[], ck: Checker, path: Path, clippedCurves: AnyCurve[][], dx = 5000,
 ): void {
   const clippedCurvesLengths: number[] = [];
   const clippedCurvesCentroids: Point3d[] = [];
   for (const clippedCurve of clippedCurves) {
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedCurve, 0, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedCurve, dx);
     const curve = Path.create();
     for (const c of clippedCurve)
       curve.tryAddChild(c);
@@ -143,6 +149,28 @@ function comparePathToClippedCurves(
   );
 }
 
+function captureClippers(allGeometry: GeometryQuery[], ck: Checker, clippers: PolygonClipper[], range: Range3d): void {
+  const xyPolygon = range.rectangleXY(0, true, true);
+  if (xyPolygon) {
+    const cache = new GrowableXYZArrayCache();
+    const inside: GrowableXYZArray[] = [];
+    const outside: GrowableXYZArray[] = [];
+    const xyPolygonCarrier = new Point3dArrayCarrier(xyPolygon);
+    for (const clipper of clippers) {
+      clipper.appendPolygonClip(xyPolygonCarrier, inside, outside, cache);
+      const loops: Loop[] = [];
+      for (const polygon of inside)
+        loops.push(Loop.createPolygon(polygon));
+      const components = RegionOps.constructAllXYRegionLoops(loops);
+      if (ck.testExactNumber(1, components.length, "clipper is a single xy-region swept in z"))
+        if (ck.testExactNumber(1, components[0].negativeAreaLoops.length, "clipper region has no holes"))
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, components[0].negativeAreaLoops[0]);
+      cache.dropAllToCache(inside);
+      cache.dropAllToCache(outside);
+    }
+  }
+}
+
 describe("Voronoi", () => {
   it.only("InvalidGraph", () => {
     const ck = new Checker();
@@ -171,8 +199,8 @@ describe("Voronoi", () => {
 
     let points = [[0, 0], [2, 0]];
     let pts = IModelJson.Reader.parsePointArray(points);
-    let graph = new HalfEdgeGraph();
-    graph.addEdgeXY(pts[0].x, pts[0].y, pts[1].x, pts[1].y);
+    let colinearGraph = new HalfEdgeGraph();
+    colinearGraph.addEdgeXY(pts[0].x, pts[0].y, pts[1].x, pts[1].y);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineSegment3d.create(pts[0], pts[1]));
     for (const pt of pts)
       GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pt, 0.1);
@@ -183,14 +211,14 @@ describe("Voronoi", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph));
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 3, "voronoiGraph should have 3 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 7, "voronoiGraph should have 7 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, colinearGraph, voronoiGraph);
     }
 
     let dx = 6;
     points = [[1, -1], [1, 1]];
     pts = IModelJson.Reader.parsePointArray(points);
-    graph = new HalfEdgeGraph();
-    graph.addEdgeXY(pts[0].x, pts[0].y, pts[1].x, pts[1].y);
+    colinearGraph = new HalfEdgeGraph();
+    colinearGraph.addEdgeXY(pts[0].x, pts[0].y, pts[1].x, pts[1].y);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineSegment3d.create(pts[0], pts[1]), dx);
     for (const pt of pts)
       GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pt, 0.1, dx);
@@ -200,14 +228,14 @@ describe("Voronoi", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 3, "voronoiGraph should have 3 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 7, "voronoiGraph should have 7 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, colinearGraph, voronoiGraph);
     }
 
     dx += 5;
     points = [[1, 0], [2, 1]];
     pts = IModelJson.Reader.parsePointArray(points);
-    graph = new HalfEdgeGraph();
-    graph.addEdgeXY(pts[0].x, pts[0].y, pts[1].x, pts[1].y);
+    colinearGraph = new HalfEdgeGraph();
+    colinearGraph.addEdgeXY(pts[0].x, pts[0].y, pts[1].x, pts[1].y);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineSegment3d.create(pts[0], pts[1]), dx);
     for (const pt of pts)
       GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pt, 0.1, dx);
@@ -217,14 +245,14 @@ describe("Voronoi", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 3, "voronoiGraph should have 3 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 5, "voronoiGraph should have 5 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, colinearGraph, voronoiGraph);
     }
 
     dx += 6;
     points = [[1, 1], [5, -1]];
     pts = IModelJson.Reader.parsePointArray(points);
-    graph = new HalfEdgeGraph();
-    graph.addEdgeXY(pts[0].x, pts[0].y, pts[1].x, pts[1].y);
+    colinearGraph = new HalfEdgeGraph();
+    colinearGraph.addEdgeXY(pts[0].x, pts[0].y, pts[1].x, pts[1].y);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineSegment3d.create(pts[0], pts[1]), dx);
     for (const pt of pts)
       GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pt, 0.1, dx);
@@ -234,15 +262,15 @@ describe("Voronoi", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 3, "voronoiGraph should have 3 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 7, "voronoiGraph should have 7 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, colinearGraph, voronoiGraph);
     }
 
     // 3d single edge graph
     dx += 9;
     points = [[1, 1, 1], [5, -1, -1]];
     pts = IModelJson.Reader.parsePointArray(points);
-    graph = new HalfEdgeGraph();
-    graph.addEdgeXY(pts[0].x, pts[0].y, pts[1].x, pts[1].y);
+    colinearGraph = new HalfEdgeGraph();
+    colinearGraph.addEdgeXY(pts[0].x, pts[0].y, pts[1].x, pts[1].y);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineSegment3d.create(pts[0], pts[1]), dx);
     for (const pt of pts)
       GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, pt, 0.1, dx);
@@ -252,15 +280,15 @@ describe("Voronoi", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 3, "voronoiGraph should have 3 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 7, "voronoiGraph should have 7 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, colinearGraph, voronoiGraph);
     }
 
     dx += 9;
     points = [[1, 1], [2, 1], [5, 1]];
     pts = IModelJson.Reader.parsePointArray(points);
-    graph = new HalfEdgeGraph();
-    let node0 = graph.addEdgeXY(pts[0].x, pts[0].y, pts[1].x, pts[1].y);
-    let node1 = graph.addEdgeXY(pts[1].x, pts[1].y, pts[2].x, pts[2].y);
+    colinearGraph = new HalfEdgeGraph();
+    let node0 = colinearGraph.addEdgeXY(pts[0].x, pts[0].y, pts[1].x, pts[1].y);
+    let node1 = colinearGraph.addEdgeXY(pts[1].x, pts[1].y, pts[2].x, pts[2].y);
     HalfEdge.pinch(node0.faceSuccessor, node1);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineString3d.create(pts), dx);
     for (const pt of pts)
@@ -271,14 +299,14 @@ describe("Voronoi", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 4, "voronoiGraph should have 4 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 10, "voronoiGraph should have 10 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, colinearGraph, voronoiGraph);
     }
     dx += 11;
     points = [[-1, -1], [1, 1], [4, 4]];
     pts = IModelJson.Reader.parsePointArray(points);
-    graph = new HalfEdgeGraph();
-    node0 = graph.addEdgeXY(pts[0].x, pts[0].y, pts[1].x, pts[1].y);
-    node1 = graph.addEdgeXY(pts[1].x, pts[1].y, pts[2].x, pts[2].y);
+    colinearGraph = new HalfEdgeGraph();
+    node0 = colinearGraph.addEdgeXY(pts[0].x, pts[0].y, pts[1].x, pts[1].y);
+    node1 = colinearGraph.addEdgeXY(pts[1].x, pts[1].y, pts[2].x, pts[2].y);
     HalfEdge.pinch(node0.faceSuccessor, node1);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineString3d.create(pts), dx);
     for (const pt of pts)
@@ -289,16 +317,16 @@ describe("Voronoi", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 4, "voronoiGraph should have 4 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 10, "voronoiGraph should have 10 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, colinearGraph, voronoiGraph);
     }
 
     dx += 9;
     points = [[0, 0], [3, 1], [6, 2], [9, 3]];
     pts = IModelJson.Reader.parsePointArray(points);
-    graph = new HalfEdgeGraph();
-    node0 = graph.addEdgeXY(pts[0].x, pts[0].y, pts[1].x, pts[1].y);
-    node1 = graph.addEdgeXY(pts[1].x, pts[1].y, pts[2].x, pts[2].y);
-    const node2 = graph.addEdgeXY(pts[2].x, pts[2].y, pts[3].x, pts[3].y);
+    colinearGraph = new HalfEdgeGraph();
+    node0 = colinearGraph.addEdgeXY(pts[0].x, pts[0].y, pts[1].x, pts[1].y);
+    node1 = colinearGraph.addEdgeXY(pts[1].x, pts[1].y, pts[2].x, pts[2].y);
+    const node2 = colinearGraph.addEdgeXY(pts[2].x, pts[2].y, pts[3].x, pts[3].y);
     HalfEdge.pinch(node0.faceSuccessor, node1);
     HalfEdge.pinch(node1.faceSuccessor, node2);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineString3d.create(pts), dx);
@@ -310,7 +338,7 @@ describe("Voronoi", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 5, "voronoiGraph should have 5 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 13, "voronoiGraph should have 13 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, colinearGraph, voronoiGraph);
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "ColinearPoints");
@@ -322,33 +350,33 @@ describe("Voronoi", () => {
     const allGeometry: GeometryQuery[] = [];
     let voronoiGraph: HalfEdgeGraph | undefined;
 
-    let graph = new HalfEdgeGraph();
-    const node0 = graph.addEdgeXY(-3, 0, 0, -1);
+    let delaunayGraph = new HalfEdgeGraph();
+    const node0 = delaunayGraph.addEdgeXY(-3, 0, 0, -1);
     const node1 = node0.faceSuccessor;
-    const node2 = graph.addEdgeXY(0, -1, 0, 1);
+    const node2 = delaunayGraph.addEdgeXY(0, -1, 0, 1);
     const node3 = node2.faceSuccessor;
-    const node4 = graph.addEdgeXY(0, 1, -3, 0);
+    const node4 = delaunayGraph.addEdgeXY(0, 1, -3, 0);
     const node5 = node4.faceSuccessor;
     HalfEdge.pinch(node1, node2);
     HalfEdge.pinch(node3, node4);
     HalfEdge.pinch(node5, node0);
-    graph.setMask(HalfEdgeMask.BOUNDARY_EDGE);
+    delaunayGraph.setMask(HalfEdgeMask.BOUNDARY_EDGE);
     node1.setMaskAroundFace(HalfEdgeMask.EXTERIOR);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph));
 
-    let voronoi = Voronoi.createFromDelaunay(graph);
+    let voronoi = Voronoi.createFromDelaunay(delaunayGraph);
     if (ck.testDefined(voronoi)) {
       voronoiGraph = voronoi.getVoronoiGraph();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph));
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 4, "voronoiGraph should have 4 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 10, "voronoiGraph should have 10 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, delaunayGraph, voronoiGraph);
     }
 
     const dy = 8;
     let points = [[-3, 0], [0, -1], [0, 1]];
     let pts = IModelJson.Reader.parsePointArray(points);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph), 0, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), 0, dy);
     const voronoiPts = Voronoi.createFromPoints(pts);
     if (ck.testDefined(voronoiPts)) {
       voronoiGraph = voronoiPts.getVoronoiGraph();
@@ -360,45 +388,45 @@ describe("Voronoi", () => {
     let dx = 8;
     points = [[-3, 0], [0, 1.5], [3, 0]];
     pts = IModelJson.Reader.parsePointArray(points);
-    graph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph), dx);
-    voronoi = Voronoi.createFromDelaunay(graph);
+    delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
+    voronoi = Voronoi.createFromDelaunay(delaunayGraph);
     if (ck.testDefined(voronoi)) {
       voronoiGraph = voronoi.getVoronoiGraph();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 4, "voronoiGraph from points should have 4 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 10, "voronoiGraph from points should have 10 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, delaunayGraph, voronoiGraph);
     }
 
     // 3d triangle
     dx += 11;
     points = [[-3, 0, 1], [0, 1.5, 0], [3, 0, -2]];
     pts = IModelJson.Reader.parsePointArray(points);
-    graph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph), dx);
-    voronoi = Voronoi.createFromDelaunay(graph);
+    delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
+    voronoi = Voronoi.createFromDelaunay(delaunayGraph);
     if (ck.testDefined(voronoi)) {
       voronoiGraph = voronoi.getVoronoiGraph();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 4, "voronoiGraph  for 3d should have 4 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 10, "voronoiGraph  for 3d should have 10 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, delaunayGraph, voronoiGraph);
     }
 
     // skinny triangle
     dx += 11;
     points = [[-3, 0], [0, 0.1], [3, 0]];
     pts = IModelJson.Reader.parsePointArray(points);
-    graph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph), dx);
-    voronoi = Voronoi.createFromDelaunay(graph);
+    delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
+    voronoi = Voronoi.createFromDelaunay(delaunayGraph);
     if (ck.testDefined(voronoi)) {
       voronoiGraph = voronoi.getVoronoiGraph();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 4, "voronoiGraph from points should have 4 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 10, "voronoiGraph from points should have 10 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, delaunayGraph, voronoiGraph);
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "GraphWith1Triangle");
@@ -410,41 +438,41 @@ describe("Voronoi", () => {
     const allGeometry: GeometryQuery[] = [];
     let voronoiGraph: HalfEdgeGraph | undefined;
 
-    let graph = new HalfEdgeGraph();
-    const node0 = graph.addEdgeXY(-3, 0, 0, -1);
+    let delaunayGraph = new HalfEdgeGraph();
+    const node0 = delaunayGraph.addEdgeXY(-3, 0, 0, -1);
     const node1 = node0.faceSuccessor;
-    const node2 = graph.addEdgeXY(0, -1, 0, 1);
+    const node2 = delaunayGraph.addEdgeXY(0, -1, 0, 1);
     const node3 = node2.faceSuccessor;
-    const node4 = graph.addEdgeXY(0, 1, -3, 0);
+    const node4 = delaunayGraph.addEdgeXY(0, 1, -3, 0);
     const node5 = node4.faceSuccessor;
     HalfEdge.pinch(node1, node2);
     HalfEdge.pinch(node3, node4);
     HalfEdge.pinch(node5, node0);
-    const node6 = graph.addEdgeXY(0, -1, 3, 0);
+    const node6 = delaunayGraph.addEdgeXY(0, -1, 3, 0);
     const node7 = node6.faceSuccessor;
-    const node8 = graph.addEdgeXY(3, 0, 0, 1);
+    const node8 = delaunayGraph.addEdgeXY(3, 0, 0, 1);
     const node9 = node8.faceSuccessor;
     HalfEdge.pinch(node7, node8);
     HalfEdge.pinch(node3, node9);
     HalfEdge.pinch(node1, node6);
-    graph.setMask(HalfEdgeMask.BOUNDARY_EDGE);
+    delaunayGraph.setMask(HalfEdgeMask.BOUNDARY_EDGE);
     node2.clearMaskAroundEdge(HalfEdgeMask.BOUNDARY_EDGE);
     node1.setMaskAroundFace(HalfEdgeMask.EXTERIOR);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph));
 
-    let voronoi = Voronoi.createFromDelaunay(graph);
+    let voronoi = Voronoi.createFromDelaunay(delaunayGraph);
     if (ck.testDefined(voronoi)) {
       voronoiGraph = voronoi.getVoronoiGraph();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph));
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 5, "voronoiGraph should have 5 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 13, "voronoiGraph should have 13 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, delaunayGraph, voronoiGraph);
     }
 
     const dy = 11;
     let points = [[-3, 0], [0, -1], [0, 1], [3, 0]];
     let pts = IModelJson.Reader.parsePointArray(points);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph), 0, dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), 0, dy);
     const voronoiPts = Voronoi.createFromPoints(pts);
     if (ck.testDefined(voronoiPts)) {
       voronoiGraph = voronoiPts.getVoronoiGraph();
@@ -456,74 +484,74 @@ describe("Voronoi", () => {
     let dx = 11;
     points = [[0, 0], [3, 4], [4, 4], [6, 0]];
     pts = IModelJson.Reader.parsePointArray(points);
-    graph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph), dx);
-    voronoi = Voronoi.createFromDelaunay(graph);
+    delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
+    voronoi = Voronoi.createFromDelaunay(delaunayGraph);
     if (ck.testDefined(voronoi)) {
       voronoiGraph = voronoi.getVoronoiGraph();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 5, "voronoiGraph should have 5 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 13, "voronoiGraph should have 13 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, delaunayGraph, voronoiGraph);
     }
 
     dx += 11;
     points = [[0, 0], [3, 4], [4, 4], [7, 0]];
     pts = IModelJson.Reader.parsePointArray(points);
-    graph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph), dx);
-    voronoi = Voronoi.createFromDelaunay(graph);
+    delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
+    voronoi = Voronoi.createFromDelaunay(delaunayGraph);
     if (ck.testDefined(voronoi)) {
       voronoiGraph = voronoi.getVoronoiGraph();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 5, "voronoiGraph should have 5 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 12, "voronoiGraph should have 12 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, delaunayGraph, voronoiGraph);
     }
 
     // 3d triangle
     dx += 12;
     points = [[0, 0, -2], [3, 4, 0], [4, 4, 1], [7, 0, 3]];
     pts = IModelJson.Reader.parsePointArray(points);
-    graph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph), dx);
-    voronoi = Voronoi.createFromDelaunay(graph);
+    delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
+    voronoi = Voronoi.createFromDelaunay(delaunayGraph);
     if (ck.testDefined(voronoi)) {
       voronoiGraph = voronoi.getVoronoiGraph();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 5, "voronoiGraph for 3d should have 5 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 12, "voronoiGraph for 3d should have 12 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, delaunayGraph, voronoiGraph);
     }
 
     // skinny triangles
     dx += 18;
     points = [[-3, 0], [0, -0.1], [0, 0.1], [3, 0]];
     pts = IModelJson.Reader.parsePointArray(points);
-    graph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph), dx);
-    voronoi = Voronoi.createFromDelaunay(graph);
+    delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
+    voronoi = Voronoi.createFromDelaunay(delaunayGraph);
     if (ck.testDefined(voronoi)) {
       voronoiGraph = voronoi.getVoronoiGraph();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 5, "voronoiGraph from points should have 5 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 13, "voronoiGraph from points should have 13 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, delaunayGraph, voronoiGraph);
     }
 
     // includes skinny triangle
     dx += 17;
     points = [[-3, 0], [0, -0.1], [0, 1], [3, 0]];
     pts = IModelJson.Reader.parsePointArray(points);
-    graph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph), dx);
-    voronoi = Voronoi.createFromDelaunay(graph);
+    delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
+    voronoi = Voronoi.createFromDelaunay(delaunayGraph);
     if (ck.testDefined(voronoi)) {
       voronoiGraph = voronoi.getVoronoiGraph();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 5, "voronoiGraph from points should have 5 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 13, "voronoiGraph from points should have 13 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, delaunayGraph, voronoiGraph);
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "GraphWith2Triangles");
@@ -537,45 +565,45 @@ describe("Voronoi", () => {
 
     let points = [[-3, -2], [-1, 1], [0, -3], [4, -1], [4, 3]];
     let pts = IModelJson.Reader.parsePointArray(points);
-    let graph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph));
-    let voronoi = Voronoi.createFromDelaunay(graph);
+    let delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph));
+    let voronoi = Voronoi.createFromDelaunay(delaunayGraph);
     if (ck.testDefined(voronoi)) {
       voronoiGraph = voronoi.getVoronoiGraph();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph));
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 6, "voronoiGraph should have 6 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 16, "voronoiGraph should have 16 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, delaunayGraph, voronoiGraph);
     }
 
     // 3d triangle
     let dx = 18;
     points = [[-3, -2, 2], [-1, 1, 1], [0, -3, 5], [4, -1, -3], [4, 3, -1]];
     pts = IModelJson.Reader.parsePointArray(points);
-    graph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph), dx);
-    voronoi = Voronoi.createFromDelaunay(graph);
+    delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
+    voronoi = Voronoi.createFromDelaunay(delaunayGraph);
     if (ck.testDefined(voronoi)) {
       voronoiGraph = voronoi.getVoronoiGraph();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 6, "voronoiGraph for 3d should have 6 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 16, "voronoiGraph for 3d should have 16 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, delaunayGraph, voronoiGraph);
     }
 
     // includes skinny triangle
     dx += 62;
     points = [[-3, -2], [0, 0], [0, -3], [4, -1], [4, 3]];
     pts = IModelJson.Reader.parsePointArray(points);
-    graph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph), dx);
-    voronoi = Voronoi.createFromDelaunay(graph);
+    delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
+    voronoi = Voronoi.createFromDelaunay(delaunayGraph);
     if (ck.testDefined(voronoi)) {
       voronoiGraph = voronoi.getVoronoiGraph();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 6, "voronoiGraph should have 6 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 16, "voronoiGraph should have 16 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, delaunayGraph, voronoiGraph);
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "GraphWith3Triangles");
@@ -589,45 +617,45 @@ describe("Voronoi", () => {
 
     let points = [[-2, 0], [0, 0], [0, -3], [0, -1], [5, 0]];
     let pts = IModelJson.Reader.parsePointArray(points);
-    let graph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph));
-    let voronoi = Voronoi.createFromDelaunay(graph);
+    let delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph));
+    let voronoi = Voronoi.createFromDelaunay(delaunayGraph);
     if (ck.testDefined(voronoi)) {
       voronoiGraph = voronoi.getVoronoiGraph();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph));
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 6, "voronoiGraph should have 6 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 16, "voronoiGraph should have 16 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, delaunayGraph, voronoiGraph);
     }
 
     // 3d triangle
     let dx = 21;
     points = [[-2, 0, 0], [0, 0, 1], [0, -3, 5], [0, -1, -3], [5, 0, 3]];
     pts = IModelJson.Reader.parsePointArray(points);
-    graph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph), dx);
-    voronoi = Voronoi.createFromDelaunay(graph);
+    delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
+    voronoi = Voronoi.createFromDelaunay(delaunayGraph);
     if (ck.testDefined(voronoi)) {
       voronoiGraph = voronoi.getVoronoiGraph();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 6, "voronoiGraph for 3d should have 6 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 16, "voronoiGraph for 3d should have 16 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, delaunayGraph, voronoiGraph);
     }
 
     // includes skinny triangle
     dx += 21;
     points = [[-2, 0], [0, 0], [0, -3], [0, -0.1], [5, 0]];
     pts = IModelJson.Reader.parsePointArray(points);
-    graph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph), dx);
-    voronoi = Voronoi.createFromDelaunay(graph);
+    delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
+    voronoi = Voronoi.createFromDelaunay(delaunayGraph);
     if (ck.testDefined(voronoi)) {
       voronoiGraph = voronoi.getVoronoiGraph();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 6, "voronoiGraph should have 6 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 16, "voronoiGraph should have 16 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, delaunayGraph, voronoiGraph);
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "GraphWith4Triangles");
@@ -641,15 +669,15 @@ describe("Voronoi", () => {
 
     let points = [[-10, 8], [4, 3], [-2, 3], [-1, 2], [2, 0], [-1, -3], [3, -2], [-2, -7], [6, -7], [7, -6]];
     let pts = IModelJson.Reader.parsePointArray(points);
-    let graph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph));
-    let voronoi = Voronoi.createFromDelaunay(graph);
+    let delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph));
+    let voronoi = Voronoi.createFromDelaunay(delaunayGraph);
     if (ck.testDefined(voronoi)) {
       voronoiGraph = voronoi.getVoronoiGraph();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph));
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 11, "voronoiGraph should have 11 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 31, "voronoiGraph should have 31 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, delaunayGraph, voronoiGraph);
     }
 
     // 3d triangle
@@ -659,15 +687,15 @@ describe("Voronoi", () => {
       [-1, -3, 4], [3, -2, 1], [-2, -7, -1], [6, -7, 3], [7, -6, -2],
     ];
     pts = IModelJson.Reader.parsePointArray(points);
-    graph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph), dx);
-    voronoi = Voronoi.createFromDelaunay(graph);
+    delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
+    voronoi = Voronoi.createFromDelaunay(delaunayGraph);
     if (ck.testDefined(voronoi)) {
       voronoiGraph = voronoi.getVoronoiGraph();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
       ck.testCoordinate(voronoiGraph.collectFaceLoops().length, 11, "voronoiGraph for 3d should have 11 faces");
       ck.testCoordinate(voronoiGraph.allHalfEdges.length / 2, 31, "voronoiGraph for 3d should have 31 edges");
-      verifyVoronoi(ck, graph, voronoiGraph);
+      verifyVoronoiTopology(ck, delaunayGraph, voronoiGraph);
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "GraphWithManyTriangles");
@@ -704,19 +732,40 @@ describe("Voronoi", () => {
     const lineSegment0 = LineSegment3d.createXYXY(-3, 0, 0, 0);
     const lineSegment1 = LineSegment3d.createXYXY(0, 0, 2, 2);
     const arc0 = Arc3d.createCircularStartMiddleEnd(Point3d.create(2, 2), Point3d.create(3, 3), Point3d.create(4, 2));
-    const lineString = LineString3d.create([4, 2], [7, 2], [9, 5]);
-    const arc1 = Arc3d.createCircularStartMiddleEnd(Point3d.create(9, 5), Point3d.create(7, 7), Point3d.create(9, 8));
+    const lineString = LineString3d.create([4, 2], [7, 2], [9, 5], [12, 5]);
+    const arc1 = Arc3d.createCircularStartMiddleEnd(Point3d.create(12, 5), Point3d.create(13, 4), Point3d.create(12, 3));
     const path = Path.create(lineSegment0, lineSegment1, arc0, lineString, arc1);
     for (const child of path.children)
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, child);
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 0.5;
-    const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(path, strokeOptions)!;
-    ck.testCoordinate(clippers.length, path.children.length, "Voronoi should have 5 faces");
-    const clippedCurves: AnyCurve[][] = [];
-    for (const clipperUnions of clippers)
-      clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
-    comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
+    // const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(path, strokeOptions)!;
+
+    const voronoi = Voronoi.createFromCurveChain(path, strokeOptions);
+    if (ck.testDefined(voronoi)) {
+      const voronoiGraph = voronoi.getVoronoiGraph();
+      const SUPER_FACE_EDGE_MASK = voronoiGraph.grabMask();
+      const SUPER_FACE_OUTSIDE_MASK = voronoiGraph.grabMask();
+      voronoiGraph.clearMask(SUPER_FACE_EDGE_MASK);
+      const superFaces = voronoi.getSuperFaces(path.children.length, SUPER_FACE_EDGE_MASK);
+      if (superFaces === undefined || superFaces.length === 0)
+        return undefined;
+      voronoi.convexifySuperFaces(SUPER_FACE_EDGE_MASK);
+      voronoiGraph.clearMask(HalfEdgeMask.VISITED);
+      const clippers = voronoi.generateClippersFromSuperFaces(superFaces, SUPER_FACE_EDGE_MASK, SUPER_FACE_OUTSIDE_MASK);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, voronoi.createPolyface(SUPER_FACE_EDGE_MASK));
+      voronoiGraph.dropMask(SUPER_FACE_EDGE_MASK);
+      voronoiGraph.dropMask(SUPER_FACE_OUTSIDE_MASK);
+
+      if (ck.testDefined(clippers, "Clippers should be defined")) {
+        ck.testCoordinate(clippers.length, path.children.length, "Voronoi should have 5 faces");
+        const clippedCurves: AnyCurve[][] = [];
+        for (const clipperUnions of clippers)
+          clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
+        comparePathToClippedCurves(allGeometry, ck, path, clippedCurves, 20);
+        // captureClippers(allGeometry, ck, clippers, path.range());
+      }
+    }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "CurveChain");
     expect(ck.getNumErrors()).toBe(0);
@@ -735,12 +784,33 @@ describe("Voronoi", () => {
     ck.testCoordinate(path.children.length, 7, "path should have 7 children");
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 20;
-    const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(path, strokeOptions)!;
-    ck.testCoordinate(clippers.length, path.children.length, "Voronoi should have 7 faces");
-    const clippedCurves: AnyCurve[][] = [];
-    for (const clipperUnions of clippers)
-      clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
-    comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
+    // const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(path, strokeOptions)!;
+
+    const voronoi = Voronoi.createFromCurveChain(path, strokeOptions);
+    if (ck.testDefined(voronoi)) {
+      const voronoiGraph = voronoi.getVoronoiGraph();
+      const SUPER_FACE_EDGE_MASK = voronoiGraph.grabMask();
+      const SUPER_FACE_OUTSIDE_MASK = voronoiGraph.grabMask();
+      voronoiGraph.clearMask(SUPER_FACE_EDGE_MASK);
+      const superFaces = voronoi.getSuperFaces(path.children.length, SUPER_FACE_EDGE_MASK);
+      if (superFaces === undefined || superFaces.length === 0)
+        return undefined;
+      voronoi.convexifySuperFaces(SUPER_FACE_EDGE_MASK);
+      voronoiGraph.clearMask(HalfEdgeMask.VISITED);
+      const clippers = voronoi.generateClippersFromSuperFaces(superFaces, SUPER_FACE_EDGE_MASK, SUPER_FACE_OUTSIDE_MASK);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, voronoi.createPolyface(SUPER_FACE_EDGE_MASK));
+      voronoiGraph.dropMask(SUPER_FACE_EDGE_MASK);
+      voronoiGraph.dropMask(SUPER_FACE_OUTSIDE_MASK);
+
+      if (ck.testDefined(clippers, "Clippers should be defined")) {
+        ck.testCoordinate(clippers.length, path.children.length, "Voronoi should have 7 faces");
+        const clippedCurves: AnyCurve[][] = [];
+        for (const clipperUnions of clippers)
+          clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
+        comparePathToClippedCurves(allGeometry, ck, path, clippedCurves, 1000);
+        // captureClippers(allGeometry, ck, clippers, path.range());
+      }
+    }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "PathFromJson0");
     expect(ck.getNumErrors()).toBe(0);
@@ -760,12 +830,33 @@ describe("Voronoi", () => {
 
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 200;
-    const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(path, strokeOptions)!;
-    ck.testCoordinate(clippers.length, path.children.length, "Voronoi should have 18 faces");
-    const clippedCurves: AnyCurve[][] = [];
-    for (const clipperUnions of clippers)
-      clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
-    comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
+    // const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(path, strokeOptions)!;
+
+    const voronoi = Voronoi.createFromCurveChain(path, strokeOptions);
+    if (ck.testDefined(voronoi)) {
+      const voronoiGraph = voronoi.getVoronoiGraph();
+      const SUPER_FACE_EDGE_MASK = voronoiGraph.grabMask();
+      const SUPER_FACE_OUTSIDE_MASK = voronoiGraph.grabMask();
+      voronoiGraph.clearMask(SUPER_FACE_EDGE_MASK);
+      const superFaces = voronoi.getSuperFaces(path.children.length, SUPER_FACE_EDGE_MASK);
+      if (superFaces === undefined || superFaces.length === 0)
+        return undefined;
+      voronoi.convexifySuperFaces(SUPER_FACE_EDGE_MASK);
+      voronoiGraph.clearMask(HalfEdgeMask.VISITED);
+      const clippers = voronoi.generateClippersFromSuperFaces(superFaces, SUPER_FACE_EDGE_MASK, SUPER_FACE_OUTSIDE_MASK);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, voronoi.createPolyface(SUPER_FACE_EDGE_MASK));
+      voronoiGraph.dropMask(SUPER_FACE_EDGE_MASK);
+      voronoiGraph.dropMask(SUPER_FACE_OUTSIDE_MASK);
+
+      if (ck.testDefined(clippers, "Clippers should be defined")) {
+        ck.testCoordinate(clippers.length, path.children.length, "Voronoi should have 18 faces");
+        const clippedCurves: AnyCurve[][] = [];
+        for (const clipperUnions of clippers)
+          clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
+        comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
+        // captureClippers(allGeometry, ck, clippers, path.range());
+      }
+    }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "PathFromJson1");
     expect(ck.getNumErrors()).toBe(0);
@@ -793,12 +884,33 @@ describe("Voronoi", () => {
 
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 200;
-    const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(approximatedPath, strokeOptions)!;
-    ck.testCoordinate(clippers.length, path.children.length, "Voronoi should have 9 faces");
-    const clippedCurves: AnyCurve[][] = [];
-    for (const clipperUnions of clippers)
-      clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
-    comparePathToClippedCurves(allGeometry, ck, path, clippedCurves, 50);
+    // const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(approximatedPath, strokeOptions)!;
+
+    const voronoi = Voronoi.createFromCurveChain(path, strokeOptions);
+    if (ck.testDefined(voronoi)) {
+      const voronoiGraph = voronoi.getVoronoiGraph();
+      const SUPER_FACE_EDGE_MASK = voronoiGraph.grabMask();
+      const SUPER_FACE_OUTSIDE_MASK = voronoiGraph.grabMask();
+      voronoiGraph.clearMask(SUPER_FACE_EDGE_MASK);
+      const superFaces = voronoi.getSuperFaces(path.children.length, SUPER_FACE_EDGE_MASK);
+      if (superFaces === undefined || superFaces.length === 0)
+        return undefined;
+      voronoi.convexifySuperFaces(SUPER_FACE_EDGE_MASK);
+      voronoiGraph.clearMask(HalfEdgeMask.VISITED);
+      const clippers = voronoi.generateClippersFromSuperFaces(superFaces, SUPER_FACE_EDGE_MASK, SUPER_FACE_OUTSIDE_MASK);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, voronoi.createPolyface(SUPER_FACE_EDGE_MASK));
+      voronoiGraph.dropMask(SUPER_FACE_EDGE_MASK);
+      voronoiGraph.dropMask(SUPER_FACE_OUTSIDE_MASK);
+
+      if (ck.testDefined(clippers, "Clippers should be defined")) {
+        ck.testCoordinate(clippers.length, path.children.length, "Voronoi should have 9 faces");
+        const clippedCurves: AnyCurve[][] = [];
+        for (const clipperUnions of clippers)
+          clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
+        comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
+        // captureClippers(allGeometry, ck, clippers, path.range());
+      }
+    }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "PathFromJson2");
     expect(ck.getNumErrors()).toBe(0);

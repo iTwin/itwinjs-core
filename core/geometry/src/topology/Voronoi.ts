@@ -456,9 +456,6 @@ export class Voronoi {
     pointsWithIndices.push([endPoint, numChildren - 1]);
     // add 2 equidistance points from children intersections
     // distance should be small enough so no other points exist between the 2 points
-    let radius = 0.001;
-    if (strokeOptions.maxEdgeLength && radius > strokeOptions.maxEdgeLength)
-      radius = strokeOptions.maxEdgeLength / 2;
     const addIntersectionPoints = (circle: Arc3d, child: CurvePrimitive, childIndex: number) => {
       const intersections = CurveCurve.intersectionProjectedXYPairs(undefined, circle, false, child, false);
       if (intersections.length === 0)
@@ -468,14 +465,16 @@ export class Voronoi {
       pointsWithIndices.push([intersections[0].detailA.point, childIndex]);
       return true;
     };
-    for (let i = 1; i < numChildren; i++) {
-      const length = children[i].curveLength();
-      if (length < radius)
-        radius = length / 2;
-      const circle = Arc3d.createCenterNormalRadius(children[i].startPoint(), Vector3d.create(0, 0, 1), radius);
-      if (!addIntersectionPoints(circle, children[i - 1], i - 1))
+    for (let k = 1; k < numChildren; k++) {
+      const length0 = children[k - 1].curveLength();
+      const length1 = children[k].curveLength();
+      let radius = Math.min(length0, length1) / 100;
+      if (strokeOptions.maxEdgeLength && radius > strokeOptions.maxEdgeLength)
+        radius = strokeOptions.maxEdgeLength / 2;
+      const circle = Arc3d.createCenterNormalRadius(children[k].startPoint(), Vector3d.create(0, 0, 1), radius);
+      if (!addIntersectionPoints(circle, children[k - 1], k - 1))
         return undefined;
-      if (!addIntersectionPoints(circle, children[i], i))
+      if (!addIntersectionPoints(circle, children[k], k))
         return undefined;
     }
     return pointsWithIndices;
@@ -674,15 +673,20 @@ export class Voronoi {
     }
     return allClippers;
   }
-  // Creates a Polyface from the Voronoi diagram super faces.
-  // public createPolyface(): IndexedPolyface {
-  //   return PolyfaceBuilder.graphToPolyface(
-  //     this._voronoiGraph,
-  //     undefined,
-  //     undefined,
-  //     (node: HalfEdge) => { node.isMaskSet(this._superFaceEdgeMask) }
-  //   );
-  // }
+  // Creates a Polyface from the Voronoi diagram super faces
+  public createPolyface(superFaceEdgeMask: HalfEdgeMask): IndexedPolyface {
+    return PolyfaceBuilder.graphToPolyface(
+      this._voronoiGraph,
+      undefined,
+      undefined,
+      (node: HalfEdge) => {
+        if (node.isMaskSet(superFaceEdgeMask)) {
+          return true;
+        }
+        return false;
+      }
+    );
+  }
 }
 
 /**
