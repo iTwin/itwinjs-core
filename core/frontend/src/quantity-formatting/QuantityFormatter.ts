@@ -335,6 +335,7 @@ export class QuantityTypeFormatsProvider implements FormatsProvider {
     ["AecUnits.ANGLE", QuantityType.Angle],
     ["AecUnits.AREA", QuantityType.Area],
     ["AecUnits.VOLUME", QuantityType.Volume],
+    ["AecUnits.LENGTH_COORDINATE", QuantityType.Coordinate],
     ["RoadRailUnits.STATION", QuantityType.Stationing],
     ["RoadRailUnits.LENGTH", QuantityType.LengthSurvey],
   ]);
@@ -607,7 +608,7 @@ export class QuantityFormatter implements UnitsProvider {
   public async onInitialized() {
     await this.initializeQuantityTypesRegistry();
 
-    const initialKoQs = [["AecUnits.LENGTH", "Units.M"], ["AecUnits.ANGLE", "Units.RAD"], ["AecUnits.AREA", "Units.SQ_M"], ["AecUnits.VOLUME", "Units.CUB_M"], ["RoadRailUnits.STATION", "Units.M"], ["RoadRailUnits.LENGTH", "Units.M"]];
+    const initialKoQs = [["AecUnits.LENGTH", "Units.M"], ["AecUnits.ANGLE", "Units.RAD"], ["AecUnits.AREA", "Units.SQ_M"], ["AecUnits.VOLUME", "Units.CUB_M"], ["AecUnits.LENGTH_COORDINATE", "Units.M"], ["RoadRailUnits.STATION", "Units.M"], ["RoadRailUnits.LENGTH", "Units.M"]];
     for (const entry of initialKoQs) {
       try {
         await this.addFormattingSpecsToRegistry(entry[0], entry[1]);
@@ -929,7 +930,7 @@ export class QuantityFormatter implements UnitsProvider {
    * @return a formatted string.
    */
   public formatQuantity(magnitude: number, formatSpec?: FormatterSpec): string;
-   
+
   public formatQuantity(args: number | object, spec?: FormatterSpec): string | Promise<string> {
     if (typeof args === "number") {
       /** Format a quantity value. Default FormatterSpec implementation uses Formatter.formatQuantity. */
@@ -977,7 +978,7 @@ export class QuantityFormatter implements UnitsProvider {
    * @return QuantityParseResult object containing either the parsed value or an error value if unsuccessful.
    */
   public parseToQuantityValue(inString: string, parserSpec?: ParserSpec): QuantityParseResult;
-   
+
   public parseToQuantityValue(args: string | object, parserSpec?: ParserSpec): QuantityParseResult | Promise<QuantityParseResult> {
     if (typeof args === "string") {
       /** Parse a quantity value. Default ParserSpec implementation uses ParserSpec.parseToQuantityValue. */
