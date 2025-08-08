@@ -670,14 +670,14 @@ export class Voronoi {
     return allClippers;
   }
   // Creates a Polyface from the Voronoi diagram super faces.
-  public createPolyface(): IndexedPolyface {
-    return PolyfaceBuilder.graphToPolyface(
-      this._voronoiGraph,
-      undefined,
-      undefined,
-      (node: HalfEdge) => { node.isMaskSet(this._superFaceEdgeMask) }
-    );
-  }
+  // public createPolyface(): IndexedPolyface {
+  //   return PolyfaceBuilder.graphToPolyface(
+  //     this._voronoiGraph,
+  //     undefined,
+  //     undefined,
+  //     (node: HalfEdge) => { node.isMaskSet(this._superFaceEdgeMask) }
+  //   );
+  // }
 }
 
 /**
