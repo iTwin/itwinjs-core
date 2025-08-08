@@ -1,6 +1,15 @@
 # Change Log - @itwin/core-bentley
 
-This log was last generated on Wed, 06 Aug 2025 15:37:23 GMT and should not be manually modified.
+This log was last generated on Fri, 08 Aug 2025 14:15:04 GMT and should not be manually modified.
+
+## 5.1.0
+Fri, 08 Aug 2025 12:51:53 GMT
+
+### Updates
+
+- Add TypeScript utility types `DeepReadonlyObject` and `DeepRequiredObject`.
+- Add compareArrays for ordered comparison of arrays.
+- Updated deprecation comments to new template
 
 ## 5.0.5
 Wed, 06 Aug 2025 15:34:15 GMT

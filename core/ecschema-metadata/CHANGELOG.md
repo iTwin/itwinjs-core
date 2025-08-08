@@ -1,6 +1,20 @@
 # Change Log - @itwin/ecschema-metadata
 
-This log was last generated on Wed, 06 Aug 2025 15:37:23 GMT and should not be manually modified.
+This log was last generated on Fri, 08 Aug 2025 14:15:04 GMT and should not be manually modified.
+
+## 5.1.0
+Fri, 08 Aug 2025 12:51:53 GMT
+
+### Updates
+
+- Both buildPropertyCache and buildPropertyCacheSync, take no parameters and build the cache in house and return the cache map. Additionally, mergeProperties is now removed.
+- Introduced internal incremental schema loading API to be consumed by IModelIncrementalSchemaLocater in core/backend and RpcIncrementalSchemaLocater in core/ecschema-rpc packages.
+- Use the latest released version 1.0.9 of units schema
+- Handle SI and METRIC unit systems as one unit system in SchemaFormatsProvider
+- Gracefully handle errors, including rpc, when retrieving schema items in `SchemaFormatsProvider`
+- Add support for `stationBaseFactor` in `Format`
+- Use labels and descriptions from KindOfQuantity when using it's presentation unit in SchemaFormatsProvider
+- Updated deprecation comments to new template
 
 ## 5.0.5
 Wed, 06 Aug 2025 15:34:15 GMT

@@ -2,6 +2,18 @@
   "name": "@itwin/editor-frontend",
   "entries": [
     {
+      "version": "5.1.0",
+      "tag": "@itwin/editor-frontend_v5.1.0",
+      "date": "Fri, 08 Aug 2025 12:51:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Draw dynamics as overlays if they belong to an overlay plan projection model."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.0.5",
       "tag": "@itwin/editor-frontend_v5.0.5",
       "date": "Wed, 06 Aug 2025 15:34:16 GMT",
