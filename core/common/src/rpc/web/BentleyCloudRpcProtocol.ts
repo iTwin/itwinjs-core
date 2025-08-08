@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus, expectDefined } from "@itwin/core-bentley";
+import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcConfiguration } from "../core/RpcConfiguration";
