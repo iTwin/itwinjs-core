@@ -2,6 +2,21 @@
   "name": "@itwin/appui-abstract",
   "entries": [
     {
+      "version": "5.1.0",
+      "tag": "@itwin/appui-abstract_v5.1.0",
+      "date": "Fri, 08 Aug 2025 12:51:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Deprecate `quantityType` in `PropertyDescription`, replaced by optional `kindOfQuantityName`"
+          },
+          {
+            "comment": "Updated deprecation comments to new template"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.0.5",
       "tag": "@itwin/appui-abstract_v5.0.5",
       "date": "Wed, 06 Aug 2025 15:34:15 GMT",

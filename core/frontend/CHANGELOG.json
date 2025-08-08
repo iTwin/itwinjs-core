@@ -2,6 +2,72 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "5.1.0",
+      "tag": "@itwin/core-frontend_v5.1.0",
+      "date": "Fri, 08 Aug 2025 12:51:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for EXT_mesh_primitive_edge_visibility glTF extension."
+          },
+          {
+            "comment": "Made QuadIdProps public"
+          },
+          {
+            "comment": "Fix issue with WMTS server using ResourceURL"
+          },
+          {
+            "comment": "Added new `MapLayerSessionManager` API.  Minor additions to `MapCartoRectangle` and `QuadId` classes."
+          },
+          {
+            "comment": "Support Contour Line on Section Drawing"
+          },
+          {
+            "comment": "Support Google Photorealistic 3D Tiles."
+          },
+          {
+            "comment": "Changed IModelReadRpcInterface.getAllCodeSpecs to use ECSqlReader. Added CodeSpecs tests."
+          },
+          {
+            "comment": "Add support for new KindOfQuantity for coordinate length"
+          },
+          {
+            "comment": "Add `@itwin/ecschema-metadata`, `@itwin/ecschema-rpcinterface-common` peer dependencies. Make iModel-specific `SchemaContext` available on `IModelConnection` through the new `schemaContext` getter."
+          },
+          {
+            "comment": "Deprecate `quantityType` getters for subclasses of `FormattedQuantityDescription` and allow passing in `kindOfQuantityName` to constructor"
+          },
+          {
+            "comment": "Add `formatsProvider` property to `IModelApp` and `IModelAppOptions`, new `QuantityFormatter` helper methods to help consumers supply their own format specifications for formatting numeric values."
+          },
+          {
+            "comment": "Add support for glTF EXT_mesh_primitive_restart extension."
+          },
+          {
+            "comment": "Add Viewport.backgroundMapTileTreeReference"
+          },
+          {
+            "comment": "Honor maximumScreenSpaceError specified in tileset."
+          },
+          {
+            "comment": "Added TileAdmin.Options.disablePolyfaceDecimation."
+          },
+          {
+            "comment": "HitDetail and Viewport.readPixels include contour line information."
+          },
+          {
+            "comment": "schedule script editing mode"
+          },
+          {
+            "comment": "new reprojectGeometry option available when creating a geometry tile tree reference."
+          },
+          {
+            "comment": "Updated deprecation comments to new template"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.0.5",
       "tag": "@itwin/core-frontend_v5.0.5",
       "date": "Wed, 06 Aug 2025 15:34:15 GMT",
