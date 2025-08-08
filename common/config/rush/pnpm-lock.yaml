@@ -1607,6 +1607,9 @@ importers:
       chai:
         specifier: ^4.3.10
         version: 4.3.10
+      cpx2:
+        specifier: ^8.0.0
+        version: 8.0.0
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
