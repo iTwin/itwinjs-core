@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/analytical-backend",
-      "comment": "",
+      "comment": "revert delivery of pure esm to deliver cjs/esm",
       "type": "none"
     }
   ],
