@@ -3119,7 +3119,7 @@ describe("iModel", () => {
     imodel.close();
   });
 
-    function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String, className: string): GeometricElementProps {
+  function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String, className: string): GeometricElementProps {
     // Create props
     const elementProps: GeometricElementProps = {
       classFullName: className,
@@ -3302,5 +3302,102 @@ describe("iModel", () => {
       testImodel.abandonChanges();
     }
     testImodel.close();
+  });
+  
+  function assertSchemaVersion(imodel: IModelDb, schemaName: string, expectedVersion: string) {
+    const schemaProps = imodel.getSchemaProps(schemaName);
+    assert.isDefined(schemaProps);
+    assert.strictEqual(schemaProps.version, expectedVersion);
+  }
+
+  async function assertClassProperty(imodel: IModelDb, classNameFullName: string, properties: any) {
+    const testClass = await imodel.schemaContext.getSchemaItem(classNameFullName, EntityClass);
+    assert.isDefined(testClass);
+    for (const prop of properties) {
+      const property = await testClass?.getProperty(prop.propName);
+      assert.equal(prop.propertyExists, property !== undefined, `Property ${prop.propName} existence check failed for class ${classNameFullName}`);
+    }
+  }
+
+  it("Major schema updates should only work for dynamic schemas", async () => {
+    const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "majorschemaupgrade.bim");
+
+    // Remove the file if it already exists
+    if (IModelJsFs.existsSync(imodelPath))
+      IModelJsFs.unlinkSync(imodelPath);
+
+    // Create a new empty snapshot iModel
+    const testImodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "majorschemaupgrade" } });
+
+    // Import initial schema and verify version
+    await testImodel.importSchemaStrings([`<?xml version="1.0" encoding="utf-8" ?>
+      <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
+
+          <ECEntityClass typeName="TestClass" >
+              <BaseClass>bis:PhysicalElement</BaseClass>
+              <ECProperty propertyName="PropToDelete" typeName="string" />
+          </ECEntityClass>
+      </ECSchema>`]);
+    assertSchemaVersion(testImodel, "TestSchema", "01.00.00");
+    await assertClassProperty(testImodel, "TestSchema.TestClass", [{ propName: "PropToDelete", propertyExists: true }]);
+
+    // Attempt to delete a property 'PropToDelete' in a major schema update on a non-dynamic schema (should fail)
+    try {
+      await testImodel.importSchemaStrings([`<?xml version="1.0" encoding="utf-8" ?>
+        <ECSchema schemaName="TestSchema" alias="ts" version="2.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+            <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
+
+            <ECEntityClass typeName="TestClass" >
+                <BaseClass>bis:PhysicalElement</BaseClass>
+            </ECEntityClass>
+        </ECSchema>`]);
+        assert.fail("Expected an error to be thrown when trying to delete a property in a major schema update on a non-dynamic schema.");
+    } catch {
+      // Confirm schema version and property still exist
+      assertSchemaVersion(testImodel, "TestSchema", "01.00.00");
+      await assertClassProperty(testImodel, "TestSchema.TestClass", [{ propName: "PropToDelete", propertyExists: true }]);
+    }
+
+    // Make the schema dynamic and verify version and properties
+    await testImodel.importSchemaStrings([`<?xml version="1.0" encoding="utf-8" ?>
+      <ECSchema schemaName="TestSchema" alias="ts" version="1.0.1" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
+        <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
+
+        <ECCustomAttributes>
+            <DynamicSchema xmlns = 'CoreCustomAttributes.1.0.0' />
+        </ECCustomAttributes>
+
+        <ECEntityClass typeName="TestClass" >
+          <BaseClass>bis:PhysicalElement</BaseClass>
+          <ECProperty propertyName="PropToDelete" typeName="string" />
+          <ECProperty propertyName="AnotherProperty" typeName="int" />
+        </ECEntityClass>
+      </ECSchema>`]);
+    assertSchemaVersion(testImodel, "TestSchema", "01.00.01");
+    await assertClassProperty(testImodel, "TestSchema.TestClass", [{ propName: "PropToDelete", propertyExists: true }, { propName: "AnotherProperty", propertyExists: true }]);
+
+    // Now try to delete a property 'PropToDelete' in a major schema update on a dynamic schema (should succeed)
+    try {
+      await testImodel.importSchemaStrings([`<?xml version="1.0" encoding="utf-8" ?>
+        <ECSchema schemaName="TestSchema" alias="ts" version="2.0.1" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
+        <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
+
+        <ECCustomAttributes>
+            <DynamicSchema xmlns = 'CoreCustomAttributes.1.0.0' />
+        </ECCustomAttributes>
+
+        <ECEntityClass typeName="TestClass" >
+          <BaseClass>bis:PhysicalElement</BaseClass>
+          <ECProperty propertyName="AnotherProperty" typeName="int" />
+        </ECEntityClass>
+      </ECSchema>`]);
+    assertSchemaVersion(testImodel, "TestSchema", "02.00.01");
+    await assertClassProperty(testImodel, "TestSchema.TestClass", [{ propName: "PropToDelete", propertyExists: false }, { propName: "AnotherProperty", propertyExists: true }]);
+    } catch {
+      assert.fail("Expected no error to be thrown when deleting a property in a major schema update on a dynamic schema.");
+    }
   });
 });
