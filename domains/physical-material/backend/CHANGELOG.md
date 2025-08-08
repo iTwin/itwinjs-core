@@ -1,6 +1,13 @@
 # Change Log - @itwin/physical-material-backend
 
-This log was last generated on Fri, 08 Aug 2025 12:51:53 GMT and should not be manually modified.
+This log was last generated on Fri, 08 Aug 2025 18:06:10 GMT and should not be manually modified.
+
+## 5.1.1
+Fri, 08 Aug 2025 18:06:10 GMT
+
+### Updates
+
+- revert delivery of pure esm to deliver cjs/esm
 
 ## 5.1.0
 Fri, 08 Aug 2025 12:51:53 GMT
