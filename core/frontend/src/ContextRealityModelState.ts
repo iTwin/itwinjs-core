@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { assert, expectDefined, Id64String } from "@itwin/core-bentley";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { ContextRealityModel, ContextRealityModelProps, FeatureAppearance, RealityDataFormat, RealityDataSourceKey } from "@itwin/core-common";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { IModelConnection } from "./IModelConnection";
@@ -56,7 +56,7 @@ export class ContextRealityModelState extends ContextRealityModel {
       }) :
       createOrbitGtTileTreeReference({
         iModel,
-        orbitGtBlob: expectDefined(props.orbitGtBlob),
+        orbitGtBlob: props.orbitGtBlob,
         rdSourceKey: this.rdSourceKey,
         name: props.name,
         classifiers: this.classifiers,
