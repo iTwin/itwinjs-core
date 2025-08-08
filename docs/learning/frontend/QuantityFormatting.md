@@ -36,7 +36,7 @@ Here is a table of replacements for each `QuantityType`:
 | Area  |  AecUnits.AREA |
 | Volume  | AecUnits.VOLUME  |
 | LatLong | AecUnits.ANGLE |
-| Coordinate | AecUnits.LENGTH |
+| Coordinate | AecUnits.LENGTH_COORDINATE |
 | Stationing | RoadRailUnits.STATION |
 | LengthSurvey | RoadRailUnits.LENGTH |
 | LengthEngineering | AecUnits.LENGTH |
@@ -338,6 +338,7 @@ The [AlternateUnitLabelsProvider]($quantity) interface allows users to specify a
 ### Mathematical Operation Parsing
 
 The quantity formatter supports parsing mathematical operations. The operation is solved, formatting every values present, according to the specified format. This makes it possible to process several different units at once.
+
 ```Typescript
 const unitsProvider = new BasicUnitsProvider(); // If @itwin/core-frontend is available, can use IModelApp.quantityFormatter.unitsProvider
 const outUnit = await unitsProvider.findUnitByName("Units.FT");

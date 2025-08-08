@@ -194,19 +194,20 @@ Building off of [FormatSet](#formatset), Tools and components that format quanti
 
 The table below lists common measurements with their typical `KindOfQuantity` and Persistence Unit. This allows tools to request a default `KindOfQuantity` from [IModelApp.formatsProvider]($core-frontend) and a Persistence Unit from [IModelApp.quantityFormatter]($core-frontend) to create a `FormatterSpec` for quantity formatting.
 
-| Measurement  | Actual KindOfQuantity (EC Full Name) | Persistence Unit
-| ------------- | ------------- | -------------
-| Length  |  AecUnits.LENGTH | Units.M
-| Angle  | AecUnits.ANGLE  | Units.RAD
-| Area  |  AecUnits.AREA | Units.SQ_M
-| Volume  | AecUnits.VOLUME  | Units.CUB_M
-| Latitude/Longitude | AecUnits.ANGLE | Units.RAD
-| Coordinate | AecUnits.LENGTH | Units.M
-| Stationing | RoadRailUnits.STATION | Units.M
-| Length (Survey Feet) | RoadRailUnits.LENGTH | Units.M
-| Bearing | RoadRailUnits.BEARING | Units.RAD
-| Weight | AecUnits.WEIGHT | Units.KG
-| Time | AecUnits.TIME | Units.S
+| Measurement  | Actual KindOfQuantity (EC Full Name) | Persistence Unit |
+| ------------- | ------------- | ------------- |
+| Length  |  AecUnits.LENGTH | Units.M |
+| Angle  | AecUnits.ANGLE  | Units.RAD |
+| Area  |  AecUnits.AREA | Units.SQ_M |
+| Volume  | AecUnits.VOLUME  | Units.CUB_M |
+| Latitude/Longitude | AecUnits.ANGLE | Units.RAD |
+| Coordinate | AecUnits.LENGTH_COORDINATE | Units.M |
+| Stationing | RoadRailUnits.STATION | Units.M |
+| Length (Survey Feet) | RoadRailUnits.LENGTH | Units.M |
+| Bearing | RoadRailUnits.BEARING | Units.RAD |
+| Weight | AecUnits.WEIGHT | Units.KG |
+| Time | AecUnits.TIME | Units.S |
+
 
 ## Examples of Usage
 
