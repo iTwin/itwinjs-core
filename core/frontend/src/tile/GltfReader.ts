@@ -445,7 +445,15 @@ export function getMeshPrimitives(mesh: GltfMesh | undefined): GltfMeshPrimitive
   // Start with a copy of mesh.primitives. For each group, replace the first primitive in the group with a primitive representing the entire group,
   // and set the rest of the primitives in the group to `undefined`.
   // This allows us to identify which remaining primitives do not use primitive restart, and any errors involving a primitive appearing in more than one group.
-  const primitives: Array<GltfMeshPrimitive | undefined> = [...meshPrimitives];
+  let primitives: Array<GltfMeshPrimitive | undefined> = [];
+  if (meshPrimitives.length > 50000) {
+    // This method is slower for smaller array sizes, but when the size of meshPrimitives gets larger its performance is ok.
+    primitives = primitives.concat(meshPrimitives);
+  } else {
+    // This method runs faster, but gets a stack overflow when the size of meshPrimitives is too large.
+    primitives = [...meshPrimitives];
+  }
+
   for (const group of ext.primitiveGroups) {
     // Spec: the group must not be empty and all indices must be valid array indices into mesh.primitives.
     const firstPrimitiveIndex = group.primitives[0];
@@ -469,13 +477,13 @@ export function getMeshPrimitives(mesh: GltfMesh | undefined): GltfMeshPrimitive
 
     for (const primitiveIndex of group.primitives) {
       const thisPrimitive = primitives[primitiveIndex];
-      
+
       // Spec: all primitives must use indexed geometry and a given primitive may appear in at most one group.
       // Spec: all primitives must have same topology.
       if (undefined === thisPrimitive?.indices || thisPrimitive.mode !== primitive.mode) {
         return meshPrimitives;
       }
-      
+
       primitives[primitiveIndex] = undefined;
     }
 
@@ -1415,7 +1423,7 @@ export abstract class GltfReader {
               appearance: this.getEdgeAppearance(extLineString.material),
               polylines: [],
             };
-            
+
             const curLineString: number[] = [];
             for (const index of polylineIndices.buffer) {
               if (index === 0xffffffff) {
