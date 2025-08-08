@@ -108,7 +108,7 @@ export abstract class SchemaItem {
 
     if (undefined !== schemaItemProps.schemaVersion) {
       if (this.key.schemaKey.version.compare(ECVersion.fromString(schemaItemProps.schemaVersion)))
-        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${String(this.key.schemaKey.version)}.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${this.key.schemaKey.version.toString()}.`);
     }
   }
 
@@ -125,7 +125,7 @@ export abstract class SchemaItem {
 
     if (undefined !== schemaItemProps.schemaVersion) {
       if (this.key.schemaKey.version.compare(ECVersion.fromString(schemaItemProps.schemaVersion)))
-        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${String(this.key.schemaKey.version)}.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${this.key.schemaKey.version.toString()}.`);
     }
   }
 

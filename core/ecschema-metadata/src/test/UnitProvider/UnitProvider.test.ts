@@ -149,21 +149,21 @@ describe("Unit Provider tests", () => {
     it("should find alternate display labels of Units.US_SURVEY_FT", () => {
       const altDisplayLabels = provider.getAlternateDisplayLabels("Units.US_SURVEY_FT");
       const expectedLabels = ["ft", "SF", "USF", "ft (US Survey)"];
-      expect(altDisplayLabels, `Alternate display labels should be ${JSON.stringify(expectedLabels)}`).to.include.members(expectedLabels);
+      expect(altDisplayLabels, `Alternate display labels should be ${expectedLabels.toString()}`).to.include.members(expectedLabels);
       expect(altDisplayLabels).to.have.lengthOf(4);
     });
 
     it("should find alternate display labels of Units.CUB_US_SURVEY_FT", () => {
       const altDisplayLabels = provider.getAlternateDisplayLabels("Units.CUB_US_SURVEY_FT");
       const expectedLabels = ["cf"];
-      expect(altDisplayLabels, `Alternate display labels should be ${JSON.stringify(expectedLabels)}`).to.include.members(expectedLabels);
+      expect(altDisplayLabels, `Alternate display labels should be ${expectedLabels.toString()}`).to.include.members(expectedLabels);
       expect(altDisplayLabels).to.have.lengthOf(1);
     });
 
     it("should not find any alternate display labels of Unit", () => {
       const altDisplayLabels = provider.getAlternateDisplayLabels("Units.CELSIUS");
       const expectedLabels: string[] = [];
-      expect(altDisplayLabels, `Alternate display labels should be ${JSON.stringify(expectedLabels)}`).to.include.members(expectedLabels);
+      expect(altDisplayLabels, `Alternate display labels should be ${expectedLabels.toString()}`).to.include.members(expectedLabels);
       expect(altDisplayLabels).to.have.lengthOf(0);
     });
 
