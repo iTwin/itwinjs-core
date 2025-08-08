@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/physical-material-backend",
+      "comment": "Revert physical-material-backend from pure esm to cjs/esm",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/physical-material-backend"
+}
