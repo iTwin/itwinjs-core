@@ -6,6 +6,7 @@
  * @module Validation
  */
 
+import { expectDefined } from "@itwin/core-bentley";
 import {
   AnyClass, AnyProperty, CustomAttribute, CustomAttributeContainerProps, ECClass, ECClassModifier,
   ECStringConstants, EntityClass, Enumeration, Mixin, PrimitiveProperty, PrimitiveType, primitiveTypeToString,
@@ -328,7 +329,7 @@ export async function* incompatibleValueTypePropertyOverride(property: AnyProper
     if (!baseType || primitiveType === baseType)
       return;
 
-    return new Diagnostics.IncompatibleValueTypePropertyOverride(property, [property.class.fullName, property.name, baseClass.fullName, primitiveTypeToString(baseType), primitiveTypeToString(primitiveType!)]);
+    return new Diagnostics.IncompatibleValueTypePropertyOverride(property, [property.class.fullName, property.name, baseClass.fullName, primitiveTypeToString(baseType), primitiveTypeToString(expectDefined(primitiveType))]);
   }
 
   for await (const baseClass of property.class.getAllBaseClasses()) {

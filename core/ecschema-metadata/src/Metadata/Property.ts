@@ -6,6 +6,7 @@
  * @module Metadata
  */
 
+import { expectDefined } from "@itwin/core-bentley";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import {
   ArrayPropertyProps, EnumerationPropertyProps, NavigationPropertyProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps,
@@ -515,7 +516,7 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
    */
   public override toJSON(): EnumerationPropertyProps {
     const schemaJson = super.toJSON() as any;
-    schemaJson.typeName = this.enumeration!.fullName;
+    schemaJson.typeName = expectDefined(this.enumeration).fullName;
     return schemaJson;
   }
 
@@ -529,9 +530,9 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
   public override fromJSONSync(enumerationPropertyProps: EnumerationPropertyProps) {
     super.fromJSONSync(enumerationPropertyProps);
     if (undefined !== enumerationPropertyProps.typeName) {
-      if (!(this.enumeration!.fullName).match(enumerationPropertyProps.typeName)) // need to match {schema}.{version}.{itemName} on typeName
+      if (!(expectDefined(this.enumeration).fullName).match(enumerationPropertyProps.typeName)) // need to match {schema}.{version}.{itemName} on typeName
         throw new ECSchemaError(ECSchemaStatus.InvalidECJson, ``);
-      const enumSchemaItemKey = this.class.schema.getSchemaItemKey(this.enumeration!.fullName);
+      const enumSchemaItemKey = this.class.schema.getSchemaItemKey(expectDefined(this.enumeration).fullName);
       if (!enumSchemaItemKey)
         throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the enumeration ${enumerationPropertyProps.typeName}.`);
       this._enumeration = new DelayedPromiseWithProps<SchemaItemKey, Enumeration>(enumSchemaItemKey,
@@ -547,8 +548,8 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
   /** @internal */
   public override async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
-    const enumeration = await this.enumeration;
-    const enumerationName = XmlSerializationUtils.createXmlTypedName(this.schema, enumeration!.schema, enumeration!.name);
+    const enumeration = expectDefined(await this.enumeration);
+    const enumerationName = XmlSerializationUtils.createXmlTypedName(this.schema, enumeration.schema, enumeration.name);
     itemElement.setAttribute("typeName", enumerationName);
     return itemElement;
   }

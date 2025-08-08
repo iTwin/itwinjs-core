@@ -6,6 +6,7 @@
  * @module Editing
  */
 
+import { expectDefined } from "@itwin/core-bentley";
 import {
   CustomAttribute, DelayedPromiseWithProps, ECClass, ECClassModifier, EntityClass, LazyLoadedRelationshipConstraintClass, Mixin, NavigationPropertyProps,
   RelationshipClass, RelationshipClassProps, RelationshipConstraint, RelationshipEnd, RelationshipMultiplicity, SchemaItemKey, SchemaItemType,
@@ -102,7 +103,7 @@ export class RelationshipClasses extends ECClasses {
 
       return newClass.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, relationshipProps.name!, schemaKey), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, relationshipProps.name ?? "<unknown>", schemaKey), e);
     }
   }
 
@@ -121,9 +122,9 @@ export class RelationshipClasses extends ECClasses {
     await super.setBaseClass(itemKey, baseClassKey);
 
     try {
-      await this.validate(relClass!);
+      await this.validate(expectDefined(relClass));
     } catch(e: any) {
-      await (relClass! as ECClass as MutableClass).setBaseClass(baseClass);
+      await (expectDefined(relClass) as ECClass as MutableClass).setBaseClass(baseClass);
       throw new SchemaEditingError(ECEditingStatus.SetBaseClass, new ClassId(SchemaItemType.RelationshipClass, itemKey), e);
     }
   }

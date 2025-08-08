@@ -28,7 +28,7 @@ export async function modifySchemaReferences(context: SchemaMergeContext, change
   }
 
   if(!latest.matches(older, SchemaMatchType.LatestWriteCompatible)) {
-    throw new Error(`Schemas references of ${change.difference.name} have incompatible versions: ${older.version} and ${latest.version}`);
+    throw new Error(`Schemas references of ${change.difference.name} have incompatible versions: ${older.version.toString()} and ${latest.version.toString()}`);
   }
 
   const index = context.targetSchema.references.findIndex((reference) => reference === existingSchema);

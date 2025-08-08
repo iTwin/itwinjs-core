@@ -113,6 +113,8 @@ export class SchemaFormatsProvider implements FormatsProvider {
     const persistenceUnitSystem = await persistenceUnit?.unitSystem;
     if (persistenceUnitSystem && unitSystemMatchers.some((matcher) => matcher(persistenceUnitSystem))) {
       this._formatsRetrieved.add(itemKey.fullName);
+      // It is only possible to get here if persistenceUnit is defined.
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const props = getPersistenceUnitFormatProps(persistenceUnit!);
       return this.convertToFormatDefinition(props, kindOfQuantity);
     }

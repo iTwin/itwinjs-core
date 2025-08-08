@@ -6,6 +6,7 @@
  * @module Metadata
  */
 
+import { expectDefined } from "@itwin/core-bentley";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
 import { RelationshipClassProps, RelationshipConstraintProps } from "../Deserialization/JsonProps";
@@ -344,7 +345,7 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
         throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the abstractConstraint ${relationshipConstraintProps.abstractConstraint}.`);
       this.setAbstractConstraint(new DelayedPromiseWithProps<SchemaItemKey, AnyConstraintClass>(abstractConstraintSchemaItemKey,
         async () => {
-          const tempAbstractConstraint = await relClassSchema.lookupItem(relationshipConstraintProps.abstractConstraint!);
+          const tempAbstractConstraint = await relClassSchema.lookupItem(expectDefined(relationshipConstraintProps.abstractConstraint));
           if (undefined === tempAbstractConstraint ||
             (!EntityClass.isEntityClass(tempAbstractConstraint) && !Mixin.isMixin(tempAbstractConstraint) && !RelationshipClass.isRelationshipClass(tempAbstractConstraint)))
             throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the abstractConstraint ${relationshipConstraintProps.abstractConstraint}.`);
