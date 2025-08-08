@@ -479,7 +479,7 @@ export class SchemaChanges extends BaseSchemaChanges {
   }
 
   private addChangeToEntityClassMap(change: ISchemaChange, ecClass: EntityClass) {
-      const existingChanges = this.entityClassChanges.get(ecClass.name);
+    const existingChanges = this.entityClassChanges.get(ecClass.name);
     if (undefined !== existingChanges) {
       existingChanges.addChange(change);
     } else {
