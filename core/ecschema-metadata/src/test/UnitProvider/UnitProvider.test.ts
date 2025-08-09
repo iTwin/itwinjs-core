@@ -96,6 +96,41 @@ describe("Unit Provider tests", () => {
       }
     });
 
+    // Tests for findUnitByNameSync
+    it("should synchronously find units by unit names in Units schema", () => {
+      const unit1 = provider.findUnitByNameSync("Units.KM");
+      expect(unit1.name === "Units.KM", `Unit name should be Units.KM and not ${unit1.name}`).to.be.true;
+
+      const unit2 = provider.findUnitByNameSync("Units.KM_PER_HR");
+      expect(unit2.name === "Units.KM_PER_HR", `Unit name should be Units.KM_PER_HR and not ${unit2.name}`).to.be.true;
+    });
+
+    it("should synchronously find units by unit names in MetricUnits schema", () => {
+      const unit1 = provider.findUnitByNameSync("MetricUnits.KM");
+      expect(unit1.name === "MetricUnits.KM", `Unit name should be MetricUnits.KM and not ${unit1.name}`).to.be.true;
+
+      const unit2 = provider.findUnitByNameSync("MetricUnits.M_PER_KM");
+      expect(unit2.name === "MetricUnits.M_PER_KM", `Unit name should be MetricUnits.M_PER_KM and not ${unit2.name}`).to.be.true;
+    });
+
+    it("should throw when schema is not found (sync)", () => {
+      try {
+        provider.findUnitByNameSync("MockSchema.KM");
+      } catch (err: any) {
+        expect(err).to.be.an("error");
+        expect(err.message).to.equal("Cannot find schema for unit");
+      }
+    });
+
+    it("should throw when phenomenon is not found (sync)", () => {
+      try {
+        provider.findUnitByNameSync("Units.MOCKUNIT");
+      } catch (err: any) {
+        expect(err).to.be.an("error");
+        expect(err.message).to.equal("Cannot find schema item/unit");
+      }
+    });
+
     // Tests for findUnitsByPhenomenon
     it("should find units that belong to Units.LENGTH phenomenon", async () => {
       const filteredUnits: UnitProps[] = await provider.getUnitsByFamily("Units.LENGTH");

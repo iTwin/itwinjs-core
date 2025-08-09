@@ -28,62 +28,124 @@ describe("Quantity", () => {
       provider = new SchemaUnitProvider(context);
     });
 
-    it("Convert between inverted and base units", async () => {
-      const invertedUnit = await provider.findUnitByName("Units.HORIZONTAL_PER_VERTICAL");
-      assert.isTrue(invertedUnit.isValid);
-      const baseUnit = await provider.findUnitByName("Units.VERTICAL_PER_HORIZONTAL");
-      assert.isTrue(baseUnit.isValid);
+    describe("Async", () => {
+      it("Convert between inverted and base units", async () => {
+        const invertedUnit = await provider.findUnitByName("Units.HORIZONTAL_PER_VERTICAL");
+        assert.isTrue(invertedUnit.isValid);
+        const baseUnit = await provider.findUnitByName("Units.VERTICAL_PER_HORIZONTAL");
+        assert.isTrue(baseUnit.isValid);
 
-      const invertedValue = 2.0;
-      const baseValue = 0.5;
+        const invertedValue = 2.0;
+        const baseValue = 0.5;
 
-      const baseQuantity = new Quantity(baseUnit, baseValue);
-      const invertedQuantity = new Quantity(invertedUnit, invertedValue);
+        const baseQuantity = new Quantity(baseUnit, baseValue);
+        const invertedQuantity = new Quantity(invertedUnit, invertedValue);
 
-      const toInvertedConversion = await provider.getConversion(baseUnit, invertedUnit);
-      const invertedResult = baseQuantity.convertTo(invertedUnit, toInvertedConversion);
-      expect(invertedResult).to.not.be.undefined;
-      if (invertedResult) {
-        expect(invertedResult.magnitude).to.equal(invertedValue);
-        expect(invertedResult.unit.name).to.equal(invertedUnit.name);
-      }
+        const toInvertedConversion = await provider.getConversion(baseUnit, invertedUnit);
+        const invertedResult = baseQuantity.convertTo(invertedUnit, toInvertedConversion);
+        expect(invertedResult).to.not.be.undefined;
+        if (invertedResult) {
+          expect(invertedResult.magnitude).to.equal(invertedValue);
+          expect(invertedResult.unit.name).to.equal(invertedUnit.name);
+        }
 
-      const toBaseConversion = await provider.getConversion(invertedUnit, baseUnit);
-      const baseResult = invertedQuantity.convertTo(baseUnit, toBaseConversion);
-      expect(baseResult).to.not.be.undefined;
-      if (baseResult) {
-        expect(baseResult.magnitude).to.equal(baseValue);
-        expect(baseResult.unit.name).to.equal(baseUnit.name);
-      }
+        const toBaseConversion = await provider.getConversion(invertedUnit, baseUnit);
+        const baseResult = invertedQuantity.convertTo(baseUnit, toBaseConversion);
+        expect(baseResult).to.not.be.undefined;
+        if (baseResult) {
+          expect(baseResult.magnitude).to.equal(baseValue);
+          expect(baseResult.unit.name).to.equal(baseUnit.name);
+        }
+      });
+
+      it("Convert between meters and feet", async () => {
+        const metersUnit = await provider.findUnitByName("Units.M");
+        assert.isTrue(metersUnit.isValid);
+        const feetUnit = await provider.findUnitByName("Units.FT");
+        assert.isTrue(feetUnit.isValid);
+
+        const metersValue = 1.0;
+        const feetValue = 3.28084;
+
+        const metersQuantity = new Quantity(metersUnit, metersValue);
+        const feetQuantity = new Quantity(feetUnit, feetValue);
+
+        const toFeetConversion = await provider.getConversion(metersUnit, feetUnit);
+        const feetResult = metersQuantity.convertTo(feetUnit, toFeetConversion);
+        expect(feetResult).to.not.be.undefined;
+        if (feetResult) {
+          expect(feetResult.magnitude).to.be.closeTo(feetValue, 0.00001);
+          expect(feetResult.unit.name).to.equal(feetUnit.name);
+        }
+
+        const toMetersConversion = await provider.getConversion(feetUnit, metersUnit);
+        const metersResult = feetQuantity.convertTo(metersUnit, toMetersConversion);
+        expect(metersResult).to.not.be.undefined;
+        if (metersResult) {
+          expect(metersResult.magnitude).to.be.closeTo(metersValue, 0.00001);
+          expect(metersResult.unit.name).to.equal(metersUnit.name);
+        }
+      });
     });
 
-    it("Convert between meters and feet", async () => {
-      const metersUnit = await provider.findUnitByName("Units.M");
-      assert.isTrue(metersUnit.isValid);
-      const feetUnit = await provider.findUnitByName("Units.FT");
-      assert.isTrue(feetUnit.isValid);
+    describe("Sync", () => {
+      it("Convert between inverted and base units", () => {
+        const invertedUnit = provider.findUnitByNameSync("Units.HORIZONTAL_PER_VERTICAL");
+        assert.isTrue(invertedUnit.isValid);
+        const baseUnit = provider.findUnitByNameSync("Units.VERTICAL_PER_HORIZONTAL");
+        assert.isTrue(baseUnit.isValid);
 
-      const metersValue = 1.0;
-      const feetValue = 3.28084;
+        const invertedValue = 2.0;
+        const baseValue = 0.5;
 
-      const metersQuantity = new Quantity(metersUnit, metersValue);
-      const feetQuantity = new Quantity(feetUnit, feetValue);
+        const baseQuantity = new Quantity(baseUnit, baseValue);
+        const invertedQuantity = new Quantity(invertedUnit, invertedValue);
 
-      const toFeetConversion = await provider.getConversion(metersUnit, feetUnit);
-      const feetResult = metersQuantity.convertTo(feetUnit, toFeetConversion);
-      expect(feetResult).to.not.be.undefined;
-      if (feetResult) {
-        expect(feetResult.magnitude).to.be.closeTo(feetValue, 0.00001);
-        expect(feetResult.unit.name).to.equal(feetUnit.name);
-      }
+        const toInvertedConversion = provider.getConversionSync(baseUnit, invertedUnit);
+        const invertedResult = baseQuantity.convertTo(invertedUnit, toInvertedConversion);
+        expect(invertedResult).to.not.be.undefined;
+        if (invertedResult) {
+          expect(invertedResult.magnitude).to.equal(invertedValue);
+          expect(invertedResult.unit.name).to.equal(invertedUnit.name);
+        }
 
-      const toMetersConversion = await provider.getConversion(feetUnit, metersUnit);
-      const metersResult = feetQuantity.convertTo(metersUnit, toMetersConversion);
-      expect(metersResult).to.not.be.undefined;
-      if (metersResult) {
-        expect(metersResult.magnitude).to.be.closeTo(metersValue, 0.00001);
-        expect(metersResult.unit.name).to.equal(metersUnit.name);
-      }
+        const toBaseConversion = provider.getConversionSync(invertedUnit, baseUnit);
+        const baseResult = invertedQuantity.convertTo(baseUnit, toBaseConversion);
+        expect(baseResult).to.not.be.undefined;
+        if (baseResult) {
+          expect(baseResult.magnitude).to.equal(baseValue);
+          expect(baseResult.unit.name).to.equal(baseUnit.name);
+        }
+      });
+
+      it("Convert between meters and feet", () => {
+        const metersUnit = provider.findUnitByNameSync("Units.M");
+        assert.isTrue(metersUnit.isValid);
+        const feetUnit = provider.findUnitByNameSync("Units.FT");
+        assert.isTrue(feetUnit.isValid);
+
+        const metersValue = 1.0;
+        const feetValue = 3.28084;
+
+        const metersQuantity = new Quantity(metersUnit, metersValue);
+        const feetQuantity = new Quantity(feetUnit, feetValue);
+
+        const toFeetConversion = provider.getConversionSync(metersUnit, feetUnit);
+        const feetResult = metersQuantity.convertTo(feetUnit, toFeetConversion);
+        expect(feetResult).to.not.be.undefined;
+        if (feetResult) {
+          expect(feetResult.magnitude).to.be.closeTo(feetValue, 0.00001);
+          expect(feetResult.unit.name).to.equal(feetUnit.name);
+        }
+
+        const toMetersConversion = provider.getConversionSync(feetUnit, metersUnit);
+        const metersResult = feetQuantity.convertTo(metersUnit, toMetersConversion);
+        expect(metersResult).to.not.be.undefined;
+        if (metersResult) {
+          expect(metersResult.magnitude).to.be.closeTo(metersValue, 0.00001);
+          expect(metersResult.unit.name).to.equal(metersUnit.name);
+        }
+      });
     });
   });
 

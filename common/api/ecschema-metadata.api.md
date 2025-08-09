@@ -20,6 +20,7 @@ import { UnitConversionProps } from '@itwin/core-quantity';
 import { UnitExtraData } from '@itwin/core-quantity';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
+import { UnitsProviderSync } from '@itwin/core-quantity';
 import { UnitSystemKey } from '@itwin/core-quantity';
 
 // @public @preview
@@ -2232,12 +2233,14 @@ export interface SchemaReferenceProps {
 }
 
 // @beta
-export class SchemaUnitProvider implements UnitsProvider {
+export class SchemaUnitProvider implements UnitsProvider, UnitsProviderSync {
     constructor(contextOrLocater: ISchemaLocater, _unitExtraData?: UnitExtraData[]);
     findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
     findUnitByName(unitName: string): Promise<UnitProps>;
+    findUnitByNameSync(unitName: string): UnitProps;
     getAlternateDisplayLabels(unitName: string): Array<string>;
     getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversionProps>;
+    getConversionSync(fromUnit: UnitProps, toUnit: UnitProps): UnitConversionProps;
     getUnitsByFamily(phenomenon: string): Promise<Array<UnitProps>>;
 }
 
@@ -2326,6 +2329,8 @@ export class Unit extends SchemaItem {
     constructor(schema: Schema, name: string);
     // @alpha
     static areCompatible(unitA: Unit, unitB: Unit): Promise<boolean>;
+    // @alpha
+    static areCompatibleSync(unitA: Unit, unitB: Unit): boolean;
     // @internal
     static assertIsUnit(item?: SchemaItem): asserts item is Unit;
     // (undocumented)
@@ -2387,6 +2392,7 @@ export class UnitConversion {
 export class UnitConverter {
     constructor(_context: SchemaContext);
     calculateConversion(fromUnit: string, toUnit: string): Promise<UnitConversion>;
+    calculateConversionSync(fromUnit: string, toUnit: string): UnitConversion;
 }
 
 // @public @preview (undocumented)

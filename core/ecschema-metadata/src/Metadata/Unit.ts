@@ -64,6 +64,19 @@ export class Unit extends SchemaItem {
   }
 
   /**
+   * Returns true if a conversion can be calculated between the input units
+   * @alpha
+   */
+  public static areCompatibleSync(unitA: Unit, unitB: Unit): boolean {
+    const unitAPhenomenon = unitA.phenomenon;
+    const unitBPhenomenon = unitB.phenomenon;
+
+    if (!unitAPhenomenon || !unitBPhenomenon || !unitAPhenomenon.matches(unitBPhenomenon))
+      return false;
+    return true;
+  }
+
+  /**
    * Type guard to check if the SchemaItem is of type Unit.
    * @param item The SchemaItem to check.
    * @returns True if the item is a Unit, false otherwise.

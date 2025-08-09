@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus } from "@itwin/core-bentley";
-import { BadUnit, UnitConversionInvert, UnitConversionProps, UnitExtraData, UnitProps, UnitsProvider } from "@itwin/core-quantity";
+import { BadUnit, UnitConversionInvert, UnitConversionProps, UnitExtraData, UnitProps, UnitsProvider, UnitsProviderSync } from "@itwin/core-quantity";
 import { ISchemaLocater, SchemaContext } from "../Context";
 import { SchemaItem } from "../Metadata/SchemaItem";
 import { SchemaItemKey, SchemaKey } from "../SchemaKey";
@@ -16,7 +16,7 @@ import { InvertedUnit } from "../Metadata/InvertedUnit";
  * Class used to find Units in SchemaContext by attributes such as Phenomenon and DisplayLabel.
  * @beta
  */
-export class SchemaUnitProvider implements UnitsProvider {
+export class SchemaUnitProvider implements UnitsProvider, UnitsProviderSync {
   private _unitConverter: UnitConverter;
   private _context: SchemaContext;
 
@@ -60,6 +60,34 @@ export class SchemaUnitProvider implements UnitsProvider {
     const invertedUnit = await this._context.getSchemaItem(itemKey, InvertedUnit);
     if (invertedUnit && invertedUnit.schemaItemType === SchemaItemType.InvertedUnit) {
       return this.getUnitsProps(invertedUnit);
+    }
+
+    return new BadUnit();
+  }
+
+  /**
+   * Find unit in a schema that has unitName.
+   * @param unitName Full name of unit.
+   * @returns UnitProps interface from @itwin/core-quantity whose name matches unitName.
+   */
+  public findUnitByNameSync(unitName: string): UnitProps {
+    // Check if schema exists and unit exists in schema
+    const [schemaName, schemaItemName] = SchemaItem.parseFullName(unitName);
+    const schemaKey = new SchemaKey(schemaName);
+    const schema = this._context.getSchemaSync(schemaKey);
+
+    if (!schema) {
+      return new BadUnit(); // return BadUnit if schema does not exist
+    }
+
+    const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
+    const unit = this._context.getSchemaItemSync(itemKey, Unit);
+    if (unit && unit.schemaItemType === SchemaItemType.Unit)
+      return this.getUnitsPropsSync(unit);
+
+    const invertedUnit = this._context.getSchemaItemSync(itemKey, InvertedUnit);
+    if (invertedUnit && invertedUnit.schemaItemType === SchemaItemType.InvertedUnit) {
+      return this.getUnitsPropsSync(invertedUnit);
     }
 
     return new BadUnit();
@@ -188,6 +216,35 @@ export class SchemaUnitProvider implements UnitsProvider {
     return result;
   }
 
+  /**
+   * Gets the @itwin/core-quantity UnitConversionProps for the given fromUnit and toUnit.
+   * @param fromUnit The UnitProps of the 'from' unit.
+   * @param toUnit The UnitProps of the 'to' unit.
+   * @returns The UnitConversionProps interface from the @itwin/core-quantity package.
+   */
+  public getConversionSync(fromUnit: UnitProps, toUnit: UnitProps): UnitConversionProps {
+    // need to check if either side is an inverted unit. The UnitConverter can only handle Units
+    if (!fromUnit.isValid || !toUnit.isValid)
+      throw new BentleyError(BentleyStatus.ERROR, "Both provided units must be valid.", () => {
+        return { fromUnit, toUnit };
+      });
+
+    const { unitName: fromUnitName, isInverted: fromIsInverted } = this.checkUnitPropsForConversionSync(fromUnit, this._context);
+    const { unitName: toUnitName, isInverted: toIsInverted } = this.checkUnitPropsForConversionSync(toUnit, this._context);
+
+    const conversion = this._unitConverter.calculateConversionSync(fromUnitName, toUnitName);
+    const result: UnitConversionProps = {
+      factor: conversion.factor,
+      offset: conversion.offset,
+    };
+    if (fromIsInverted && !toIsInverted)
+      result.inversion = UnitConversionInvert.InvertPreConversion;
+    else if (!fromIsInverted && toIsInverted)
+      result.inversion = UnitConversionInvert.InvertPostConversion;
+
+    return result;
+  }
+
   private async checkUnitPropsForConversion(input: UnitProps, context: SchemaContext): Promise<{ unitName: string, isInverted: boolean }> {
     const [schemaName, schemaItemName] = SchemaItem.parseFullName(input.name);
     const schemaKey = new SchemaKey(schemaName);
@@ -201,6 +258,27 @@ export class SchemaUnitProvider implements UnitsProvider {
 
     const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
     const invertedUnit = await context.getSchemaItem(itemKey, InvertedUnit);
+    // Check if we found an item, the item is an inverted unit, and it has its invertsUnit property set
+    if (invertedUnit && InvertedUnit.isInvertedUnit(invertedUnit) && invertedUnit.invertsUnit) {
+      return { unitName: invertedUnit.invertsUnit.fullName, isInverted: true };
+    }
+
+    return { unitName: input.name, isInverted: false };
+  }
+
+  private checkUnitPropsForConversionSync(input: UnitProps, context: SchemaContext): { unitName: string, isInverted: boolean } {
+    const [schemaName, schemaItemName] = SchemaItem.parseFullName(input.name);
+    const schemaKey = new SchemaKey(schemaName);
+    const schema = context.getSchemaSync(schemaKey);
+
+    if (!schema) {
+      throw new BentleyError(BentleyStatus.ERROR, "Could not obtain schema for unit.", () => {
+        return { name: input.name };
+      });
+    }
+
+    const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
+    const invertedUnit = context.getSchemaItemSync(itemKey, InvertedUnit);
     // Check if we found an item, the item is an inverted unit, and it has its invertsUnit property set
     if (invertedUnit && InvertedUnit.isInvertedUnit(invertedUnit) && invertedUnit.invertsUnit) {
       return { unitName: invertedUnit.invertsUnit.fullName, isInverted: true };
@@ -236,6 +314,37 @@ export class SchemaUnitProvider implements UnitsProvider {
       isValid: true,
       system: unit.unitSystem === undefined ? "" : unit.unitSystem.fullName,
     };
+  }
+
+  /**
+   * Gets the @itwin/core UnitProps for the given Unit.
+   * @param unit The Unit to convert.
+   * @returns UnitProps interface from @itwin/core.
+   */
+  private getUnitsPropsSync(unit: Unit | InvertedUnit): UnitProps {
+    if (Unit.isUnit(unit)) {
+      return {
+        name: unit.fullName,
+        label: unit.label ?? "",
+        phenomenon: unit.phenomenon ? unit.phenomenon.fullName : "",
+        isValid: true,
+        system: unit.unitSystem === undefined ? "" : unit.unitSystem.fullName,
+      };
+    }
+
+    const invertsUnit = unit.invertsUnit;
+    if (!invertsUnit)
+      return new BadUnit();
+    else {
+      const invertsUnitItem = this._context.getSchemaItemSync(invertsUnit.fullName, Unit);
+      return {
+        name: unit.fullName,
+        label: unit.label ?? "",
+        phenomenon: invertsUnitItem?.phenomenon ? invertsUnitItem.phenomenon.fullName : "",
+        isValid: true,
+        system: unit.unitSystem === undefined ? "" : unit.unitSystem.fullName,
+      };
+    }
   }
 
   /**

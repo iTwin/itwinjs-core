@@ -42,17 +42,47 @@ describe("Unit Conversion tests", () => {
     ).to.be.true;
   }
 
-  testData.forEach((test: TestData) => {
-    it(`should convert ${test.from} to ${test.to}`, async () => {
+  function convertAndVerifyTestDataSync(test: TestData, converter: UnitConverter) {
+    const fromFullName = `Units:${test.from}`;
+    const toFullName = `Units:${test.to}`;
+    const map = converter.calculateConversionSync(fromFullName, toFullName);
+    const actual = map.evaluate(test.input);
+    expect(
+      almostEqual(test.expect, actual, tolerance),
+      `${test.input} ${test.from} in ${test.to} should be ${test.expect}
+       and not ${actual} error = ${Math.abs(test.expect - actual)} > ${tolerance}`,
+    ).to.be.true;
+  }
+
+  describe("Async", () =>{
+    testData.forEach((test: TestData) => {
+      it(`should convert ${test.from} to ${test.to}`, async () => {
+        const converter = new UnitConverter(context);
+        await convertAndVerifyTestData(test, converter);
+      });
+    });
+
+    it(`should convert units parallel`, async () => {
       const converter = new UnitConverter(context);
-      await convertAndVerifyTestData(test, converter);
+      await Promise.all(testData.map(async (test: TestData) => {
+        await convertAndVerifyTestData(test, converter);
+      }));
     });
   });
 
-  it(`should convert units parallel`, async () => {
-    const converter = new UnitConverter(context);
-    await Promise.all(testData.map(async (test: TestData) => {
-      await convertAndVerifyTestData(test, converter);
-    }));
+  describe("Sync", () =>{
+    testData.forEach((test: TestData) => {
+      it(`should convert ${test.from} to ${test.to}`, () => {
+        const converter = new UnitConverter(context);
+        convertAndVerifyTestDataSync(test, converter);
+      });
+    });
+
+    it(`should convert units parallel`, () => {
+      const converter = new UnitConverter(context);
+      testData.forEach((test: TestData) => {
+        convertAndVerifyTestDataSync(test, converter);
+      });
+    });
   });
 });
