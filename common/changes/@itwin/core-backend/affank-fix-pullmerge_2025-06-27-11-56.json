@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fix issue related to pullMerge() failure",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
