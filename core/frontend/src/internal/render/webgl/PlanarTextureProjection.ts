@@ -7,6 +7,7 @@
  * @module Rendering
  */
 
+import { expectDefined } from "@itwin/core-bentley";
 import { Frustum, FrustumPlanes, Npc, RenderMode } from "@itwin/core-common";
 import {
   ClipUtilities, ConvexClipPlaneSet, GrowableXYZArray, Map4d, Matrix3d, Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Range1d, Range2d, Range3d,
@@ -57,10 +58,10 @@ export class PlanarTextureProjection {
     let textureY;
     if (textureX.magnitude() < minCrossMagnitude) {
       textureY = viewX.crossProduct(textureZ);
-      textureX = textureY.crossProduct(textureZ).normalize()!;
+      textureX = expectDefined(textureY.crossProduct(textureZ).normalize());
     } else {
       textureX.normalizeInPlace();
-      textureY = textureZ.crossProduct(textureX).normalize()!;
+      textureY = expectDefined(textureZ.crossProduct(textureX).normalize());
     }
 
     const frustumX = textureZ, frustumY = textureX, frustumZ = textureY;
@@ -150,8 +151,8 @@ export class PlanarTextureProjection {
     if (viewState.isCameraOn && viewState.getEyePoint().z > textureRange.low.x && viewZVecZ > 0.09) {
       // NB moved the eyePlane from the center to the bottom of the textureRange to solve problems when the eye was below the eyePlane.
       const eyePlane = Plane3dByOriginAndUnitNormal.create(Point3d.createScale(textureZ, textureRange.low.x), textureZ);  // at bottom of range - parallel to texture.
-      const projectionRay = Ray3d.create(viewState.getEyePoint(), viewZ.crossProduct(textureX).normalize()!);
-      let projectionDistance = projectionRay.intersectionWithPlane(eyePlane!);
+      const projectionRay = Ray3d.create(viewState.getEyePoint(), expectDefined(viewZ.crossProduct(textureX).normalize()));
+      let projectionDistance = projectionRay.intersectionWithPlane(expectDefined(eyePlane));
       const minNearToFarRatio = .01;  // Smaller value allows texture projection to conform tightly to view frustum.
       if (undefined !== projectionDistance) {
         projectionDistance = Math.max(.1, projectionDistance);
@@ -202,7 +203,7 @@ export class PlanarTextureProjection {
       return {};
     }
     const worldToNpc = PlanarTextureProjection._postProjectionMatrixNpc.multiplyMatrixMatrix(frustumMap.transform0);
-    const npcToView = Map4d.createBoxMap(Point3d.create(0, 0, 0), Point3d.create(1, 1, 1), Point3d.create(0, 0, 0), Point3d.create(textureWidth, textureHeight, 1), scratchMap4d)!;
+    const npcToView = expectDefined(Map4d.createBoxMap(Point3d.create(0, 0, 0), Point3d.create(1, 1, 1), Point3d.create(0, 0, 0), Point3d.create(textureWidth, textureHeight, 1), scratchMap4d));
     const npcToWorld = worldToNpc.createInverse(scratchMatrix4d);
     if (undefined === npcToWorld) {
       return {};

@@ -28,7 +28,7 @@ describe("NativeApp storage backend", () => {
       if (item.value instanceof Uint8Array) {
         assert.equal((test1.getData(item.key) as Uint8Array).length, item.value.length);
       } else {
-        assert.equal(test1.getData(item.key), item.value, `${item.key} -> ${item.value} <> ${test1.getData(item.key)}`);
+        assert.equal(test1.getData(item.key), item.value, `${item.key} -> ${item.value} <> ${String(test1.getData(item.key))}`);
       }
     }
     assert.equal(test1.getKeys().length, dataset.length, "Number keys must match");
@@ -49,7 +49,7 @@ describe("NativeApp storage backend", () => {
       if (item.value instanceof Uint8Array) {
         assert.equal((test2.getData(item.key) as Uint8Array).length, item.value.length);
       } else {
-        assert.equal(test2.getData(item.key), item.value, `${item.key} -> ${item.value} <> ${test2.getData(item.key)}`);
+        assert.equal(test2.getData(item.key), item.value, `${item.key} -> ${item.value} <> ${String(test2.getData(item.key))}`);
       }
     }
 

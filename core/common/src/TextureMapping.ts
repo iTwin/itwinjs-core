@@ -8,7 +8,7 @@
 
 import { IndexedPolyfaceVisitor, Matrix3d, Point2d, Point3d, PolyfaceVisitor, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
 import { RenderTexture } from "./RenderTexture";
-import { compareBooleans, compareBooleansOrUndefined, compareNumbers, compareNumbersOrUndefined, comparePossiblyUndefined } from "@itwin/core-bentley";
+import { compareBooleans, compareBooleansOrUndefined, compareNumbers, compareNumbersOrUndefined, comparePossiblyUndefined, expectDefined } from "@itwin/core-bentley";
 
 /** Defines normal map parameters.
  * @beta
@@ -270,7 +270,7 @@ export namespace TextureMapping {
         if (isRelativeUnits || !visitor.tryGetDistanceParameter(i, param)) {
           if (!visitor.tryGetNormalizedParameter(i, param)) {
             // If mesh does not have facetFaceData, we still want to use the texture coordinates if they are present
-            param = visitor.getParam(i)!;
+            param = expectDefined(visitor.getParam(i));
           }
         }
 
@@ -288,7 +288,7 @@ export namespace TextureMapping {
       if (visitor.normal === undefined)
         normal = points.getPoint3dAtUncheckedPointIndex(0).crossProductToPoints(points.getPoint3dAtUncheckedPointIndex(1), points.getPoint3dAtUncheckedPointIndex(2));
       else
-        normal = visitor.normal.getVector3dAtCheckedVectorIndex(0)!;
+        normal = expectDefined(visitor.normal.getVector3dAtCheckedVectorIndex(0));
 
       if (!normal.normalize(normal))
         return undefined;

@@ -99,11 +99,13 @@ export namespace LineStyle {
 
       if ((this.normal === undefined) !== (other.normal === undefined))
         return false;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (this.normal && !this.normal.isAlmostEqual(other.normal!))
         return false;
 
       if ((this.rotation === undefined) !== (other.rotation === undefined))
         return false;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (this.rotation && !this.rotation.isAlmostEqual(other.rotation!))
         return false;
 
@@ -185,6 +187,7 @@ export namespace LineStyle {
         return false;
       if ((this.styleMod === undefined) !== (other.styleMod === undefined))
         return false;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (this.styleMod && !this.styleMod.equals(other.styleMod!))
         return false;
       return true;

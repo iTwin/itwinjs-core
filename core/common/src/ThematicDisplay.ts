@@ -394,7 +394,9 @@ export class ThematicDisplaySensorSettings {
     const json: ThematicDisplaySensorSettingsProps = {};
 
     json.sensors = [];
-    this.sensors.forEach((sensor) => json.sensors!.push(sensor.toJSON()));
+    for (const sensor of this.sensors) {
+      json.sensors.push(sensor.toJSON());
+    }
 
     json.distanceCutoff = this.distanceCutoff;
 

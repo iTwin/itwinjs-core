@@ -32,7 +32,9 @@ export class EmphasizeElements implements FeatureOverrideProvider {
   public addFeatureOverrides(overrides: FeatureSymbology.Overrides, vp: Viewport): void {
     const emphasizedElements = this.getEmphasizedElements(vp);
     if (undefined !== emphasizedElements) {
-      overrides.setDefaultOverrides(this._defaultAppearance!);
+      if (this._defaultAppearance !== undefined) {
+        overrides.setDefaultOverrides(this._defaultAppearance);
+      }
       const appearance = this.wantEmphasis ? this._emphasizedAppearance : FeatureAppearance.defaults;
 
       // Avoid creating a new object per-element inside the loop

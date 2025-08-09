@@ -6,7 +6,7 @@
  * @module Geometry
  */
 
-import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
+import { expectDefined, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
   Angle, AnyGeometryQuery, GeometryQuery, IModelJson as GeomJson, LineSegment3d, LowAndHighXYZ, Matrix3d, Point2d, Point3d, Range3d, Transform, TransformProps,
   Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps,
@@ -527,7 +527,7 @@ class IteratorEntry implements GeometryStreamIteratorEntry {
     this.localToWorld = localToWorld;
   }
 
-  public get primitive() { return this._primitive!; }
+  public get primitive() { return expectDefined(this._primitive); }
   public set primitive(primitive: GeometryStreamPrimitive) { this._primitive = primitive; }
 
   public setGeometryQuery(geometry: AnyGeometryQuery) { this._primitive = { type: "geometryQuery", geometry }; }
@@ -609,7 +609,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
     let transform;
     if (element.placement !== undefined) {
       const origin = Point3d.createFrom(Point2d.fromJSON(element.placement.origin));
-      const matrix = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.fromJSON(element.placement.angle))!;
+      const matrix = expectDefined(Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.fromJSON(element.placement.angle)));
       transform = Transform.createOriginAndMatrix(origin, matrix);
     }
 

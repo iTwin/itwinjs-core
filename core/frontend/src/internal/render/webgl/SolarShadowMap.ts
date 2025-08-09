@@ -7,7 +7,7 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@itwin/core-bentley";
+import { assert, dispose, expectDefined } from "@itwin/core-bentley";
 import { ClipUtilities, ConvexClipPlaneSet, Geometry, GrowableXYZArray, Map4d, Matrix3d, Matrix4d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import {
   Frustum, FrustumPlanes, RenderMode, RenderTexture, SolarShadowSettings, TextureTransparency, ViewFlags,
@@ -146,7 +146,7 @@ class Bundle implements WebGLDisposable {
       return undefined;
 
     const depthTexture = new Texture({ ownership: "external", type: RenderTexture.Type.TileSection, handle: depthTextureHandle, transparency: TextureTransparency.Opaque });
-    const evsmGeom = EVSMGeometry.createGeometry(depthTexture.texture.getHandle()!, shadowMapWidth, shadowMapHeight);
+    const evsmGeom = EVSMGeometry.createGeometry(expectDefined(depthTexture.texture.getHandle()), shadowMapWidth, shadowMapHeight);
     if (undefined === evsmGeom)
       return undefined;
 
@@ -191,6 +191,8 @@ class ShadowMapParams {
   }
 }
 
+// We know that normalize won't fail on this hard-coded vector.
+// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const defaultSunDirection = Vector3d.create(-1, -1, -1).normalize()!;
 const scratchFrustum = new Frustum();
 const scratchFrustumPlanes = FrustumPlanes.createEmpty();
@@ -315,9 +317,9 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
 
     const iModel = view.iModel;
 
-    const worldToMapTransform = Transform.createRefs(Point3d.createZero(), Matrix3d.createRigidHeadsUp(this._params.direction.negate()).inverse()!);
+    const worldToMapTransform = Transform.createRefs(Point3d.createZero(), expectDefined(Matrix3d.createRigidHeadsUp(this._params.direction.negate()).inverse()));
     const worldToMap = Matrix4d.createTransform(worldToMapTransform);
-    const mapToWorld = worldToMap.createInverse()!;
+    const mapToWorld = expectDefined(worldToMap.createInverse());
 
     // Start with entire project.
     const shadowRange = worldToMapTransform.multiplyRange(iModel.projectExtents);
@@ -411,7 +413,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
       this._projectionMatrix = frustumMap.transform0.clone();
 
       const worldToNpc = postProjectionMatrixNpc.multiplyMatrixMatrix(this._projectionMatrix);
-      const npcToView = Map4d.createBoxMap(Point3d.create(0, 0, 0), Point3d.create(1, 1, 1), Point3d.create(0, 0, 0), Point3d.create(shadowMapWidth, shadowMapHeight, 1))!;
+      const npcToView = expectDefined(Map4d.createBoxMap(Point3d.create(0, 0, 0), Point3d.create(1, 1, 1), Point3d.create(0, 0, 0), Point3d.create(shadowMapWidth, shadowMapHeight, 1)));
       const npcToWorld = worldToNpc.createInverse();
       if (undefined === npcToWorld) {
         this.clearGraphics(true);

@@ -521,16 +521,19 @@ export class SnapDetail extends HitDetail {
       const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
       const outline = context.viewport.hilite.color.adjustedForContrast(context.viewport.view.backgroundColor, 50);
       const centerLine = context.viewport.hilite.color.adjustedForContrast(outline, 175);
-      const path = Path.create(this.getCurvePrimitive(singleSegment)!);
+      const curvePrimitive = this.getCurvePrimitive(singleSegment);
+      if (curvePrimitive !== undefined) {
+        const path = Path.create(curvePrimitive);
 
-      builder.setSymbology(outline, outline, 6);
-      builder.addPath(path);
+        builder.setSymbology(outline, outline, 6);
+        builder.addPath(path);
 
-      builder.setSymbology(centerLine, centerLine, 2);
-      builder.addPath(path);
+        builder.setSymbology(centerLine, centerLine, 2);
+        builder.addPath(path);
 
-      context.addDecorationFromBuilder(builder);
-      return;
+        context.addDecorationFromBuilder(builder);
+        return;
+      }
     }
     super.draw(context);
   }
@@ -616,6 +619,8 @@ export class HitList<T extends HitDetail> {
   public setHit(i: number, p: T | undefined): void {
     if (i < 0 || i >= this.length)
       return;
+    // While messy, the following is obviously intentional based on the function comment.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.hits[i] = p!;
   }
 

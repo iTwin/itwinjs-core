@@ -22,6 +22,8 @@ export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: V
     temp = planeNormal.scale(t);
   } else {
     const t = (planeNormal.dotProduct(planePt) - planeNormal.dotProduct(linePt)) / dot;
+    // If lineNormal is undefined, perpendicular will be true, so we can't get here.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     temp = lineNormal!.scale(t);
   }
 

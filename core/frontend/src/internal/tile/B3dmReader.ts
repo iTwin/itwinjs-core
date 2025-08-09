@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { ByteStream, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { ByteStream, expectDefined, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { B3dmHeader, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, TileReadStatus } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
@@ -105,7 +105,7 @@ export class B3dmReader extends GltfReader {
                 instance[key] = value;
             }
             if (parentIds !== undefined) {
-              const thisParents = parentMap![instanceIndex];
+              const thisParents = expectDefined(parentMap)[instanceIndex];
               for (const parentId of thisParents) {
                 if (parentId !== instanceIndex)
                   getProperties(instance, parentId);

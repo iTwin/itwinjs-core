@@ -335,6 +335,7 @@ export class GridFileTransform implements GridFileTransformProps {
     if ((this.fallback === undefined) !== (other.fallback === undefined))
       return false;
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (this.fallback && !this.fallback.equals(other.fallback!))
       return false;
 
@@ -447,26 +448,31 @@ export class GeodeticTransform implements GeodeticTransformProps {
 
     if ((this.sourceEllipsoid === undefined) !== (other.sourceEllipsoid === undefined))
       return false;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (this.sourceEllipsoid && !this.sourceEllipsoid.equals(other.sourceEllipsoid!))
       return false;
 
     if ((this.targetEllipsoid === undefined) !== (other.targetEllipsoid === undefined))
       return false;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (this.targetEllipsoid && !this.targetEllipsoid.equals(other.targetEllipsoid!))
       return false;
 
     if ((this.geocentric === undefined) !== (other.geocentric === undefined))
       return false;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (this.geocentric && !this.geocentric.equals(other.geocentric!))
       return false;
 
     if ((this.positionalVector === undefined) !== (other.positionalVector === undefined))
       return false;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (this.positionalVector && !this.positionalVector.equals(other.positionalVector!))
       return false;
 
     if ((this.gridFile === undefined) !== (other.gridFile === undefined))
       return false;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (this.gridFile && !this.gridFile.equals(other.gridFile!))
       return false;
 
@@ -720,6 +726,7 @@ export class GeodeticDatum implements GeodeticDatumProps {
     if ((this.ellipsoid === undefined) !== (other.ellipsoid === undefined))
       return false;
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (this.ellipsoid && !this.ellipsoid.equals(other.ellipsoid!))
       return false;
 

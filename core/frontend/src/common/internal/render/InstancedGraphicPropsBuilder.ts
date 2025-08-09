@@ -47,6 +47,8 @@ export class InstancedGraphicPropsBuilder {
       const instance = this._instances[i];
       if (featureIds) {
         const feature = typeof instance.feature === "string" ? new Feature(instance.feature) : instance.feature;
+        // featureIds is undefined if featureTable is undefined, non-null assertion is safe.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const featureIndex = featureTable!.insert(feature ?? invalidFeature);
         featureIds[i * 3 + 0] = featureIndex & 0xff;
         featureIds[i * 3 + 1] = (featureIndex & 0xff00) >> 8;

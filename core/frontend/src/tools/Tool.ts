@@ -7,7 +7,7 @@
  */
 
 import { DialogItem, DialogItemValue, DialogProperty, DialogPropertySyncItem } from "@itwin/appui-abstract";
-import { assert } from "@itwin/core-bentley";
+import { assert, expectDefined } from "@itwin/core-bentley";
 import { GeometryStreamProps, IModelError } from "@itwin/core-common";
 import { Point2d, Point3d, PolygonOps, XAndY } from "@itwin/core-geometry";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
@@ -1167,7 +1167,7 @@ export class ToolRegistry {
       this._keyinList = [];
       this.tools.forEach((thisTool) => {
         if (!thisTool.hidden)
-          this._keyinList!.push(thisTool);
+          expectDefined(this._keyinList).push(thisTool);
       });
     }
     return this._keyinList;

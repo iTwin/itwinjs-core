@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModels
  */
-import { Id64String } from "@itwin/core-bentley";
+import { expectDefined, Id64String } from "@itwin/core-bentley";
 import {
   BlobOptions, BlobOptionsBuilder, BlobRange, DbBlobRequest, DbBlobResponse, DbQueryError, DbRequestExecutor, DbRequestKind,
 } from "./ConcurrentQuery";
@@ -49,9 +49,9 @@ export class BlobReader {
       this._options = options;
     }
     this._chunks = new Uint8Chunks();
-    this._lengthToRead = this.range.count!;
+    this._lengthToRead = expectDefined(this.range.count);
   }
-  public get range(): BlobRange { return this._options.range!; }
+  public get range(): BlobRange { return expectDefined(this._options.range); }
   public async step(): Promise<boolean> {
     if (this._lengthToRead === this._chunks.length) {
       return false;

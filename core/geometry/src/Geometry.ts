@@ -1325,11 +1325,11 @@ export class Geometry {
   public static cloneMembers<T extends Cloneable<T>>(array: T[] | undefined): T[] | undefined {
     if (array === undefined)
       return undefined;
-    const clonedArray: T[] = [];
+    const clonedArray: (T | undefined)[] = [];
     for (const element of array) {
-      clonedArray.push(element.clone()!);
+      clonedArray.push(element.clone());
     }
-    return clonedArray;
+    return clonedArray as T[];
   }
   /**
    * Clone an array whose members have the cloneable type `T`.

@@ -6,7 +6,7 @@
  * @module MapLayers
  */
 
-import { compareStrings } from "@itwin/core-bentley";
+import { compareStrings, expectDefined } from "@itwin/core-bentley";
 import {
   BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, ImageMapLayerSettings, MapSubLayerProps,
 } from "@itwin/core-common";
@@ -196,16 +196,24 @@ export class MapLayerSources {
 
   private static getBingMapLayerSource(): MapLayerSource[] {
     const mapLayerSources: MapLayerSource[] = [];
+    // We know these hard-coded sources are valid, so ! is okay here.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street } })!);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Aerial } })!);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!);
     return mapLayerSources;
   }
 
   private static getMapBoxLayerSource(): MapLayerSource[] {
     const mapLayerSources: MapLayerSource[] = [];
+    // We know these hard-coded sources are valid, so ! is okay here.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } })!);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Aerial } })!);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!);
     return mapLayerSources;
   }
@@ -219,7 +227,7 @@ export class MapLayerSources {
 
     let sourceRange = MapCartoRectangle.createMaximum();
     if (iModel) {
-      const projectCenter = iModel.projectExtents.localXYZToWorld(.5, .5, .5)!;
+      const projectCenter = expectDefined(iModel.projectExtents.localXYZToWorld(.5, .5, .5));
       const cartoCenter = iModel.spatialToCartographicFromEcef(projectCenter);
       const globeRange = MapCartoRectangle.createMaximum();
       const nearDelta = Point2d.create(globeRange.xLength() / 100, globeRange.yLength() / 100);
