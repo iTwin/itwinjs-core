@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Changed queryExtents to use ECSqlReader",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
