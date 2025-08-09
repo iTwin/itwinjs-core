@@ -203,9 +203,9 @@ export abstract class BaseSchemaChanges implements ISchemaChanges {
    * @param changeKey The key used to identify the ISchemaChanges in the Map (typically the name of the EC type, ie. SchemaItem.name).
    */
   protected addChangeToMap<V extends ISchemaChanges>(changes: Map<string, V>, changesType: SchemaChangesConstructor, change: ISchemaChange, changeKey: string) {
-    if (changes.has(changeKey)) {
-      const existingChanges = changes.get(changeKey);
-      existingChanges!.addChange(change);
+    const existingChanges = changes.get(changeKey);
+    if (undefined !== existingChanges) {
+      existingChanges.addChange(change);
     } else {
       const newChanges = new changesType(this._schema, changeKey);
       newChanges.addChange(change);
@@ -457,9 +457,9 @@ export class SchemaChanges extends BaseSchemaChanges {
   }
 
   private addChangeToSchemaItemMap(change: ISchemaChange, schemaItem: SchemaItem) {
-    if (this.schemaItemChanges.has(schemaItem.name)) {
-      const existingChanges = this.schemaItemChanges.get(schemaItem.name);
-      existingChanges!.addChange(change);
+    const existingChanges = this.schemaItemChanges.get(schemaItem.name)
+    if (undefined !== existingChanges) {
+      existingChanges.addChange(change);
     } else {
       const newChanges = new SchemaItemChanges(this.schema, schemaItem.name, schemaItem.schemaItemType);
       newChanges.addChange(change);
@@ -468,9 +468,9 @@ export class SchemaChanges extends BaseSchemaChanges {
   }
 
   private addChangeToClassMap(change: ISchemaChange, ecClass: AnyClass) {
-    if (this.classChanges.has(ecClass.name)) {
-      const existingChanges = this.classChanges.get(ecClass.name);
-      existingChanges!.addChange(change);
+    const existingChanges = this.classChanges.get(ecClass.name);
+    if (undefined !== existingChanges) {
+      existingChanges.addChange(change);
     } else {
       const newChanges = new ClassChanges(this.schema, ecClass.name, ecClass.schemaItemType);
       newChanges.addChange(change);
@@ -479,9 +479,9 @@ export class SchemaChanges extends BaseSchemaChanges {
   }
 
   private addChangeToEntityClassMap(change: ISchemaChange, ecClass: EntityClass) {
-    if (this.entityClassChanges.has(ecClass.name)) {
-      const existingChanges = this.entityClassChanges.get(ecClass.name);
-      existingChanges!.addChange(change);
+    const existingChanges = this.entityClassChanges.get(ecClass.name);
+    if (undefined !== existingChanges) {
+      existingChanges.addChange(change);
     } else {
       const newChanges = new EntityClassChanges(this.schema, ecClass.name, ecClass.schemaItemType);
       newChanges.addChange(change);
@@ -490,9 +490,9 @@ export class SchemaChanges extends BaseSchemaChanges {
   }
 
   private addChangeToRelationshipClassMap(change: ISchemaChange, ecClass: RelationshipClass) {
-    if (this.relationshipClassChanges.has(ecClass.name)) {
-      const existingChanges = this.relationshipClassChanges.get(ecClass.name);
-      existingChanges!.addChange(change);
+    const existingChanges = this.relationshipClassChanges.get(ecClass.name);
+    if (undefined !== existingChanges) {
+      existingChanges.addChange(change);
     } else {
       const newChanges = new RelationshipClassChanges(this.schema, ecClass.name, ecClass.schemaItemType);
       newChanges.addChange(change);
@@ -501,9 +501,9 @@ export class SchemaChanges extends BaseSchemaChanges {
   }
 
   private addChangeToEnumerationMap(change: ISchemaChange, enumeration: Enumeration) {
-    if (this.enumerationChanges.has(enumeration.name)) {
-      const existingChanges = this.enumerationChanges.get(enumeration.name);
-      existingChanges!.addChange(change);
+    const existingChanges = this.enumerationChanges.get(enumeration.name);
+    if (undefined !== existingChanges) {
+      existingChanges.addChange(change);
     } else {
       const newChanges = new EnumerationChanges(this.schema, enumeration.name, enumeration.schemaItemType);
       newChanges.addChange(change);
@@ -512,9 +512,9 @@ export class SchemaChanges extends BaseSchemaChanges {
   }
 
   private addChangeToKOQMap(change: ISchemaChange, koq: KindOfQuantity) {
-    if (this.kindOfQuantityChanges.has(koq.name)) {
-      const existingChanges = this.kindOfQuantityChanges.get(koq.name);
-      existingChanges!.addChange(change);
+    const existingChanges = this.kindOfQuantityChanges.get(koq.name);
+    if (undefined !== existingChanges) {
+      existingChanges.addChange(change);
     } else {
       const newChanges = new KindOfQuantityChanges(this.schema, koq.name, koq.schemaItemType);
       newChanges.addChange(change);
@@ -523,9 +523,9 @@ export class SchemaChanges extends BaseSchemaChanges {
   }
 
   private addChangeToFormatMap(change: ISchemaChange, format: Format) {
-    if (this.formatChanges.has(format.name)) {
-      const existingChanges = this.formatChanges.get(format.name);
-      existingChanges!.addChange(change);
+    const existingChanges = this.formatChanges.get(format.name);
+    if (undefined !== existingChanges) {
+      existingChanges.addChange(change);
     } else {
       const newChanges = new FormatChanges(this.schema, format.name, format.schemaItemType);
       newChanges.addChange(change);

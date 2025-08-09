@@ -114,7 +114,7 @@ export async function mergeRelationshipConstraint(context: SchemaMergeContext, c
  */
 export async function mergeRelationshipClassConstraint(context: SchemaMergeContext, change: RelationshipConstraintClassDifference): Promise<void> {
   if(change.changeType !== "add") {
-    throw new Error(`Change type ${change.changeType} is not supported for Relationship constraint classes.`);
+    throw new Error(`Change type ${String(change.changeType)} is not supported for Relationship constraint classes.`);
   }
 
   const item = await locateSchemaItem(context, change.itemName, SchemaItemType.RelationshipClass) as MutableRelationshipClass;

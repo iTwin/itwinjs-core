@@ -103,7 +103,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   public *getReferences(): Iterable<SchemaReferenceProps> {
     if (undefined !== this._rawSchema.references) {
       if (!Array.isArray(this._rawSchema.references))
-        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The schema ${this._rawSchema.name} has an invalid 'references' attribute. It should be of type 'object[]'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The schema ${String(this._rawSchema.name)} has an invalid 'references' attribute. It should be of type 'object[]'.`);
 
       for (const ref of this._rawSchema.references) {
         yield this.checkSchemaReference(ref);
@@ -704,45 +704,45 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     const propName = jsonObj.name;
 
     if (undefined !== jsonObj.label && typeof (jsonObj.label) !== "string")
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'label' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${String(propName)} has an invalid 'label' attribute. It should be of type 'string'.`);
 
     if (undefined !== jsonObj.description && typeof (jsonObj.description) !== "string")
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'description' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${String(propName)} has an invalid 'description' attribute. It should be of type 'string'.`);
 
     if (undefined !== jsonObj.priority && typeof (jsonObj.priority) !== "number")
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'priority' attribute. It should be of type 'number'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${String(propName)} has an invalid 'priority' attribute. It should be of type 'number'.`);
 
     if (undefined !== jsonObj.isReadOnly && typeof (jsonObj.isReadOnly) !== "boolean")
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'isReadOnly' attribute. It should be of type 'boolean'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${String(propName)} has an invalid 'isReadOnly' attribute. It should be of type 'boolean'.`);
 
     if (undefined !== jsonObj.category && typeof (jsonObj.category) !== "string")
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'category' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${String(propName)} has an invalid 'category' attribute. It should be of type 'string'.`);
 
     if (undefined !== jsonObj.kindOfQuantity && typeof (jsonObj.kindOfQuantity) !== "string")
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'kindOfQuantity' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${String(propName)} has an invalid 'kindOfQuantity' attribute. It should be of type 'string'.`);
 
     if (undefined !== jsonObj.inherited && typeof (jsonObj.inherited) !== "boolean")
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'inherited' attribute. It should be of type 'boolean'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${String(propName)} has an invalid 'inherited' attribute. It should be of type 'boolean'.`);
 
     if (undefined !== jsonObj.customAttributes && !Array.isArray(jsonObj.customAttributes))
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${String(propName)} has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
     return (jsonObj as unknown) as PropertyProps;
   }
 
   private checkPropertyTypename(jsonObj: UnknownObject): void {
     const propName = jsonObj.name;
     if (undefined === jsonObj.typeName)
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} is missing the required 'typeName' attribute.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${String(propName)} is missing the required 'typeName' attribute.`);
     if (typeof (jsonObj.typeName) !== "string")
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'typeName' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${String(propName)} has an invalid 'typeName' attribute. It should be of type 'string'.`);
   }
 
   private checkPropertyMinAndMaxOccurs(jsonObj: UnknownObject): void {
     const propName = jsonObj.name;
     if (undefined !== jsonObj.minOccurs && typeof (jsonObj.minOccurs) !== "number")
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'minOccurs' attribute. It should be of type 'number'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${String(propName)} has an invalid 'minOccurs' attribute. It should be of type 'number'.`);
     if (undefined !== jsonObj.maxOccurs && typeof (jsonObj.maxOccurs) !== "number")
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'maxOccurs' attribute. It should be of type 'number'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${String(propName)} has an invalid 'maxOccurs' attribute. It should be of type 'number'.`);
   }
 
   /**
@@ -756,19 +756,19 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     const propName = jsonObj.name;
 
     if (undefined !== jsonObj.minLength && typeof (jsonObj.minLength) !== "number")
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'minLength' attribute. It should be of type 'number'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${String(propName)} has an invalid 'minLength' attribute. It should be of type 'number'.`);
 
     if (undefined !== jsonObj.maxLength && typeof (jsonObj.maxLength) !== "number")
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'maxLength' attribute. It should be of type 'number'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${String(propName)} has an invalid 'maxLength' attribute. It should be of type 'number'.`);
 
     if (undefined !== jsonObj.minValue && typeof (jsonObj.minValue) !== "number")
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'minValue' attribute. It should be of type 'number'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${String(propName)} has an invalid 'minValue' attribute. It should be of type 'number'.`);
 
     if (undefined !== jsonObj.maxValue && typeof (jsonObj.maxValue) !== "number")
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'maxValue' attribute. It should be of type 'number'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${String(propName)} has an invalid 'maxValue' attribute. It should be of type 'number'.`);
 
     if (undefined !== jsonObj.extendedTypeName && typeof (jsonObj.extendedTypeName) !== "string")
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${propName} has an invalid 'extendedTypeName' attribute. It should be of type 'string'.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECProperty ${this._currentItemFullName}.${String(propName)} has an invalid 'extendedTypeName' attribute. It should be of type 'string'.`);
     return (jsonObj as unknown) as PrimitiveOrEnumPropertyBaseProps;
   }
 
@@ -823,7 +823,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
    */
   public parseNavigationProperty(jsonObj: UnknownObject): NavigationPropertyProps {
     this.checkPropertyProps(jsonObj);
-    const fullname = `${this._currentItemFullName}.${jsonObj.name}`;
+    const fullname = `${this._currentItemFullName}.${String(jsonObj.name)}`;
 
     if (undefined === jsonObj.relationshipName)
       throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Navigation Property ${fullname} is missing the required 'relationshipName' property.`);
@@ -847,7 +847,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   }
 
   public getPropertyCustomAttributeProviders(jsonObj: UnknownObject): Iterable<CAProviderTuple> {
-    return this.getCustomAttributeProviders(jsonObj, "ECProperty", `${this._currentItemFullName}.${jsonObj.name}`);
+    return this.getCustomAttributeProviders(jsonObj, "ECProperty", `${this._currentItemFullName}.${String(jsonObj.name)}`);
   }
 
   public getRelationshipConstraintCustomAttributeProviders(jsonObj: UnknownObject): [Iterable<CAProviderTuple> /* source */, Iterable<CAProviderTuple> /* target */] {

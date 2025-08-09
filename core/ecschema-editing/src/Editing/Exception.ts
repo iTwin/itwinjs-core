@@ -253,7 +253,7 @@ export class SchemaItemId implements ISchemaItemIdentifier {
       if (!schemaKey)
         throw new Error("schemaKey if required if the specified schemaItem the name of the schema item.");
 
-      this.schemaKey = schemaKey!;
+      this.schemaKey = schemaKey;
       this.schemaItemKey = new SchemaItemKey(schemaItemKeyOrName, schemaKey);
     } else {
       this.schemaKey = schemaItemKeyOrName.schemaKey;

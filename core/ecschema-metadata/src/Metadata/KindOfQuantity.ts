@@ -6,6 +6,7 @@
  * @module Metadata
  */
 
+import { expectDefined } from "@itwin/core-bentley";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { KindOfQuantityProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
@@ -151,7 +152,7 @@ export class KindOfQuantity extends SchemaItem {
   public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): KindOfQuantityProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.relativeError = this.relativeError;
-    schemaJson.persistenceUnit = this.persistenceUnit!.fullName;
+    schemaJson.persistenceUnit = expectDefined(this.persistenceUnit).fullName;
     if (undefined !== this.presentationFormats && 0 < this.presentationFormats.length)
       schemaJson.presentationUnits = this.presentationFormats.map((format) => format.fullName);
     return schemaJson;

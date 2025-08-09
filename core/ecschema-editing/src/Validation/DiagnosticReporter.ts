@@ -70,6 +70,7 @@ export abstract class SuppressionDiagnosticReporter implements IDiagnosticReport
   public report(diagnostic: AnyDiagnostic) {
     if (this._suppressions && this._suppressions.has(diagnostic.schema.fullName)) {
       const suppressedCodes = this._suppressions.get(diagnostic.schema.fullName);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (suppressedCodes!.includes(diagnostic.code))
         return;
     }
