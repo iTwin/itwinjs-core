@@ -2,6 +2,117 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "5.1.1",
+      "tag": "@itwin/core-backend_v5.1.1",
+      "date": "Fri, 08 Aug 2025 18:06:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.0",
+      "tag": "@itwin/core-backend_v5.1.0",
+      "date": "Fri, 08 Aug 2025 12:51:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add Symbols to prevent duplicate instances of package"
+          },
+          {
+            "comment": "Fix applychangeset issue"
+          },
+          {
+            "comment": "Mark iModel edit API as @preview"
+          },
+          {
+            "comment": "verify changeset id before pushing"
+          },
+          {
+            "comment": "add unit test for concurrent query"
+          },
+          {
+            "comment": "Add release tag to ECChangeUnifierCache namespace"
+          },
+          {
+            "comment": "Fix regression when using performCheckpoint()"
+          },
+          {
+            "comment": "TextAnnotation elements use new BIS property `textAnnotationData`. Introduce `AnnotationTextStyle` class to TypeScript layer. Add new `TextStyleResolver` class to resolve effective text styles from inheritance chain. Drawing scale is accounted for when creating geometry."
+          },
+          {
+            "comment": "Add SheetViewDefinition.create, CreateSheetViewDefinitionArgs"
+          },
+          {
+            "comment": "Fix recipe initialization in TypeDefinitionElement"
+          },
+          {
+            "comment": "optionally return world CRS from getAvailableCoordinateReferenceSystems"
+          },
+          {
+            "comment": "Refactoring the TextAnnotationGeometry and adding support for frames"
+          },
+          {
+            "comment": "Ensuring the order of geometry in FrameGeometry & adding tests"
+          },
+          {
+            "comment": "Added `TabRun`s to `TextBlockLayout`"
+          },
+          {
+            "comment": "Added IModelIncrementalSchemaLocater which is an ISchemaLocater implementation that provides asynchronous incremental loading of EC Schemas from iModels using ECSql queries."
+          },
+          {
+            "comment": "Improve change unifer to handle very large changeset"
+          },
+          {
+            "comment": "Add cache for resolveInstanceKey"
+          },
+          {
+            "comment": "Clear iModelDb Caches on abandonChanges"
+          },
+          {
+            "comment": "Thining iModelPlatform API"
+          },
+          {
+            "comment": "Allow Entity.forEach to support relationship classes"
+          },
+          {
+            "comment": "Add support for RelationshipClasses in Entity.getMetaData"
+          },
+          {
+            "comment": "Updates iModelDb Error Handling"
+          },
+          {
+            "comment": "Reduce Model and Element Cache Size"
+          },
+          {
+            "comment": "Fix IModelDb coordinate conversion results to include `fromCache` and also the point array if input point array was empty."
+          },
+          {
+            "comment": "Fix TextStyle.widthFactor multiplying by height instead of width during text layout."
+          },
+          {
+            "comment": "Add support for text fields."
+          },
+          {
+            "comment": "Added functionality to enable health stats tracking for changesets."
+          },
+          {
+            "comment": "Introducing Text Annotation Leaders"
+          },
+          {
+            "comment": "Snapshot/StandaloneDb.createBlank - set ecefLocation and geographicCoordinateSystem if provided"
+          },
+          {
+            "comment": "Add Beta downloadChangeset and downloadChangesets to BriefcaseManager."
+          },
+          {
+            "comment": "Make IModelHostConfiguration.hubAccess public."
+          },
+          {
+            "comment": "Updated deprecation comments to new template"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.0.5",
       "tag": "@itwin/core-backend_v5.0.5",
       "date": "Wed, 06 Aug 2025 15:34:15 GMT",
