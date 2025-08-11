@@ -163,7 +163,6 @@ export class Voronoi {
       bisector.end.x, bisector.end.y,
       voronoi._idToIndexMap.get(vertex.edgeMate.id), voronoi._idToIndexMap.get(vertex.id),
     );
-    HalfEdgeGraphMerge.clusterAndMergeXYTheta(voronoiDiagram);
     return true;
   }
   private static handleInteriorEdge(
@@ -207,8 +206,6 @@ export class Voronoi {
         voronoi._idToIndexMap.get(seed.edgeMate.id), voronoi._idToIndexMap.get(seed.id),
       );
     }
-    HalfEdgeGraphMerge.splitIntersectingEdges(voronoiDiagram);
-    HalfEdgeGraphMerge.clusterAndMergeXYTheta(voronoiDiagram);
     return true;
   }
   private static addVoronoiBoundary(voronoiDiagram: HalfEdgeGraph, voronoiBoundary: VoronoiBoundary) {
@@ -224,8 +221,6 @@ export class Voronoi {
     voronoiDiagram.addEdgeXY(
       voronoiBoundary.p3.x, voronoiBoundary.p3.y, voronoiBoundary.p0.x, voronoiBoundary.p0.y,
     );
-    HalfEdgeGraphMerge.splitIntersectingEdges(voronoiDiagram);
-    HalfEdgeGraphMerge.clusterAndMergeXYTheta(voronoiDiagram);
   }
   // populate EXTERIOR and BOUNDARY_EDGE masks and remaining face tags
   public static populateMasksAndFaceTags(voronoiDiagram: HalfEdgeGraph): void {
@@ -295,6 +290,8 @@ export class Voronoi {
     if (!isValidVoronoi)
       return undefined; // invalid graph
     Voronoi.addVoronoiBoundary(voronoiDiagram, voronoiBoundary);
+    HalfEdgeGraphMerge.splitIntersectingEdges(voronoiDiagram);
+    HalfEdgeGraphMerge.clusterAndMergeXYTheta(voronoiDiagram);
     Voronoi.populateMasksAndFaceTags(voronoiDiagram);
     return voronoiDiagram;
   }
@@ -359,13 +356,14 @@ export class Voronoi {
           bisector.end.x, bisector.end.y,
           voronoi._idToIndexMap.get(seed.id), voronoi._idToIndexMap.get(seed.edgeMate.id),
         );
-        HalfEdgeGraphMerge.clusterAndMergeXYTheta(voronoiDiagram);
         return true;
       },
     );
     if (!isValidVoronoi)
       return undefined;
     Voronoi.addVoronoiBoundary(voronoiDiagram, voronoiBoundary);
+    HalfEdgeGraphMerge.splitIntersectingEdges(voronoiDiagram);
+    HalfEdgeGraphMerge.clusterAndMergeXYTheta(voronoiDiagram);
     Voronoi.populateMasksAndFaceTags(voronoiDiagram);
     return voronoiDiagram;
   }
