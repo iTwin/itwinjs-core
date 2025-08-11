@@ -298,18 +298,6 @@ export class Triangulator {
         // don't flip triangles if using local coords; an edge of this face can be flipped out of plane if the neighboring triangle is non-coplanar.
         if (!Triangulator.triangulateSingleFace(graph, face, useLocalCoords))
           numFail++;
-        ////////////////////////////// ADDED FOR DEBUG; REMOVE ///////////////////////
-        if (numFail !== 0) {
-          nodes = face.collectAroundFace(
-            (node: HalfEdge) => {
-              console.log(`edge: (${node.getPoint3d().x}, ${node.getPoint3d().y})`);
-              return true;
-            }
-          );
-          numFail = 0; // reset fail count so we can find other failing faces
-          console.log(` `);
-        }
-        ////////////////////////////////////////////////////////////////////////////////
         if (localToWorld && nodes) {
           for (let iNewNode = nodeCount; iNewNode < graph.countNodes(); ++iNewNode)
             nodes.push(graph.allHalfEdges[iNewNode] as any);

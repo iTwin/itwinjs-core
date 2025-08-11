@@ -1221,6 +1221,7 @@ export class ClipUtilities {
     static clipSegmentToCCWTriangleXY(pointA: XAndY, pointB: XAndY, pointC: XAndY, segment0: XAndY, segment1: XAndY, interval: Range1d, absoluteTolerance?: number): void;
     static clipSegmentToLLeftOfLineXY(linePointA: XAndY, linePointB: XAndY, segmentPoint0: XAndY, segmentPoint1: XAndY, interval: Range1d, absoluteTolerance?: number): void;
     static collectClippedCurves(curve: CurvePrimitive, clipper: Clipper): CurvePrimitive[];
+    static createClippersForRegionsClosestToCurvePrimitivesXY(curveChain: CurveChain, strokeOptions?: StrokeOptions, distanceTol?: number): (ConvexClipPlaneSet | UnionOfConvexClipPlaneSets)[] | undefined;
     static createComplementaryClips(clipper: ConvexClipPlaneSet): UnionOfConvexClipPlaneSets;
     // @alpha
     static createXYOffsetClipFromLineString(points: Point3d[] | IndexedXYZCollection, leftOffset: number, rightOffset: number, z0: number, z1: number): UnionOfConvexClipPlaneSets;
@@ -4907,7 +4908,7 @@ export class PolygonOps {
 export class PolylineOps {
     static addClosurePoint(data: Point3d[] | Point3d[][]): void;
     static closestApproach(pointsA: Point3d[] | IndexedXYZCollection, extendA: VariantCurveExtendParameter, pointsB: Point3d[] | IndexedXYZCollection, extendB: VariantCurveExtendParameter, dMax?: number, result?: CurveLocationDetailPair): CurveLocationDetailPair | undefined;
-    static compressByChordError(source: Point3d[], chordTolerance: number): Point3d[];
+    static compressByChordError(source: Point3d[], chordTolerance?: number, keepSeam?: boolean): Point3d[];
     static compressByPerpendicularDistance(source: Point3d[], maxDistance: number, numPass?: number): Point3d[];
     static compressDanglers(source: Point3d[], closed?: boolean, tolerance?: number): Point3d[];
     static compressShortEdges(source: Point3d[] | IndexedXYZCollection, maxEdgeLength: number): Point3d[];

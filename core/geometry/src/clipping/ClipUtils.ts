@@ -8,7 +8,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { Arc3d } from "../curve/Arc3d";
-import { BagOfCurves } from "../curve/CurveCollection";
+import { BagOfCurves, CurveChain } from "../curve/CurveCollection";
 import { CurveFactory } from "../curve/CurveFactory";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
 import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
@@ -18,6 +18,7 @@ import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
 import { Path } from "../curve/Path";
 import { RegionBinaryOpType, RegionOps } from "../curve/RegionOps";
+import { StrokeOptions } from "../curve/StrokeOptions";
 import { UnionRegion } from "../curve/UnionRegion";
 import { Geometry } from "../Geometry";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
@@ -32,6 +33,8 @@ import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 import { Transform } from "../geometry3d/Transform";
 import { XAndY } from "../geometry3d/XYZProps";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
+import { HalfEdgeMask } from "../topology/Graph";
+import { Voronoi } from "../topology/Voronoi";
 import { ClipPlane } from "./ClipPlane";
 import { ClipPrimitive } from "./ClipPrimitive";
 import { ClipVector } from "./ClipVector";
@@ -1116,14 +1119,26 @@ export class ClipUtilities {
    * @param curveChain A curve chain; xy-only (z-coordinate is ignored). Must have at least 2 children.
    * @param strokeOptions Optional stroke options to control the sampling of the curve chain.
    * @param distanceTol Optional distance tolerance to use when comparing points; default is Geometry.smallMetricDistance.
-   * @returns An array of UnionOfConvexClipPlaneSets where each member representing a union of convex regions closest to
-   * the children of a curve chain, or undefined if the input is invalid.
+   * @returns An array of clippers, each of which represents the region closest to the corresponding primitive in the
+   * input chain, or undefined if the input is invalid.
    */
-  // public static createClippersForRegionsClosestToCurvePrimitivesXY(
-  //   curveChain: CurveChain, strokeOptions?: StrokeOptions, distanceTol: number = Geometry.smallMetricDistance,
-  // ): UnionOfConvexClipPlaneSets[] | undefined {
-  //   return Voronoi.createClippersForRegionsClosestToCurvePrimitivesXY(curveChain, strokeOptions, distanceTol);
-  // }
+  public static createClippersForRegionsClosestToCurvePrimitivesXY(
+    curveChain: CurveChain, strokeOptions?: StrokeOptions, distanceTol: number = Geometry.smallMetricDistance,
+  ): (ConvexClipPlaneSet | UnionOfConvexClipPlaneSets)[] | undefined {
+    const voronoi = Voronoi.createFromCurveChain(curveChain, strokeOptions, distanceTol);
+    if (!voronoi)
+      return undefined;
+    const superFaceEdgeMask = voronoi.getVoronoiGraph().grabMask();
+    const superFaceOutsideMask = voronoi.getVoronoiGraph().grabMask();
+    const superFaces = voronoi.getSuperFaces(curveChain.children.length, superFaceEdgeMask);
+    if (superFaces === undefined || superFaces.length === 0)
+      return undefined;
+    voronoi.convexifySuperFaces(superFaceEdgeMask);
+    const clippers = voronoi.generateClippersFromSuperFaces(superFaces, superFaceEdgeMask, superFaceOutsideMask);
+    voronoi.getVoronoiGraph().dropMask(superFaceEdgeMask);
+    voronoi.getVoronoiGraph().dropMask(superFaceOutsideMask);
+    return clippers;
+  }
 }
 function moveFragments(
   fragments: GrowableXYZArray[],
