@@ -4,15 +4,25 @@ import * as fs from "fs";
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { ClipUtilities } from "../../clipping/ClipUtils";
-import { Arc3d, LineSegment3d, LineString3d, StrokeOptions } from "../../core-geometry";
+import { ClipUtilities, PolygonClipper } from "../../clipping/ClipUtils";
+import { Arc3d } from "../../curve/Arc3d";
 import { BagOfCurves } from "../../curve/CurveCollection";
+import { CurveOps } from "../../curve/CurveOps";
 import { AnyCurve } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { LineString3d } from "../../curve/LineString3d";
+import { Loop, SignedLoops } from "../../curve/Loop";
 import { Path } from "../../curve/Path";
 import { RegionOps } from "../../curve/RegionOps";
 import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
+import { StrokeOptions } from "../../curve/StrokeOptions";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Range3d } from "../../geometry3d/Range";
+import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
+import { MomentData } from "../../geometry4d/MomentData";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { Point3dArrayRangeTreeContext } from "../../polyface/RangeTree/Point3dArrayRangeTreeContext";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
@@ -100,56 +110,70 @@ function verifyVoronoi(ck: Checker, graph: HalfEdgeGraph, voronoi: HalfEdgeGraph
 
 // compare the lengths and centroids of the path children to the clipped curves
 function comparePathToClippedCurves(
-  allGeometry: GeometryQuery[], ck: Checker, path: Path, clippedCurves: AnyCurve[][], dy = 10,
+  allGeometry: GeometryQuery[], ck: Checker, path: Path, clippedCurves: AnyCurve[][], dz = 100,
 ): void {
   const clippedCurvesLengths: number[] = [];
   const clippedCurvesCentroids: Point3d[] = [];
+  const clippedCurvesMoments: MomentData[] = [];
   for (const clippedCurve of clippedCurves) {
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedCurve, 0, dy);
-    const curve = Path.create();
-    for (const c of clippedCurve)
-      curve.tryAddChild(c);
-    const momentData = RegionOps.computeXYZWireMomentSums(curve);
-    if (ck.testDefined(momentData)) {
-      const length = momentData.quantitySum;
-      clippedCurvesLengths.push(parseFloat(length.toFixed(4)));
-      const centroid = momentData.origin;
-      clippedCurvesCentroids.push(centroid);
+    const clippedPath = CurveOps.collectChains(clippedCurve);
+    if (ck.testType(clippedPath, Path, "clipped curves successfully assembled into a Path")) {
+      RegionOps.consolidateAdjacentPrimitives(clippedPath);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedPath, 0, 0, dz);
+      const momentData = RegionOps.computeXYZWireMomentSums(clippedPath);
+      if (ck.testDefined(momentData)) {
+        const length = momentData.quantitySum;
+        clippedCurvesLengths.push(length);
+        const centroid = momentData.origin;
+        clippedCurvesCentroids.push(centroid);
+        clippedCurvesMoments.push(momentData);
+      }
     }
   }
   const childrenLengths: number[] = [];
   const childrenCentroids: Point3d[] = [];
+  const childrenMoments: MomentData[] = [];
   for (const child of path.children) {
     const momentData = RegionOps.computeXYZWireMomentSums(child);
     if (ck.testDefined(momentData)) {
       const length = momentData.quantitySum;
-      childrenLengths.push(parseFloat(length.toFixed(4)));
+      childrenLengths.push(length);
       const centroid = momentData.origin;
       childrenCentroids.push(centroid);
+      childrenMoments.push(momentData);
     }
   }
-  const sortedClippedCurvesLengths = [...clippedCurvesLengths].sort((x, y) => x - y);
-  const sortedChildrenLengths = [...childrenLengths].sort((x, y) => x - y);
-  for (let i = 0; i < sortedClippedCurvesLengths.length; i++)
-    console.log(`${i} clippedLength ${sortedClippedCurvesLengths[i]} childLength ${sortedChildrenLengths[i]}`);
-  ck.testTrue(sortedClippedCurvesLengths.every((val, index) => val === sortedChildrenLengths[index]));
+  ck.testNumberArray(clippedCurvesLengths, childrenLengths, "clipped chain yields expected lengths");
+  ck.testPoint3dArray(clippedCurvesCentroids, childrenCentroids, "clipped chain yields expected centroids");
+}
 
-  const sortedClippedCurvesCentroids = [...clippedCurvesCentroids].sort((a, b) => a.x - b.x || a.y - b.y);
-  const sortedChildrenCentroids = [...childrenCentroids].sort((a, b) => a.x - b.x || a.y - b.y);
-  for (let i = 0; i < sortedClippedCurvesCentroids.length; i++)
-    console.log(
-      `${i} clippedCentroid ${sortedClippedCurvesCentroids[i].x},${sortedClippedCurvesCentroids[i].y} ` +
-      `childCentroid ${sortedChildrenCentroids[i].x},${sortedChildrenCentroids[i].y}`
-    );
-  ck.testTrue(
-    sortedClippedCurvesCentroids.every(
-      (val, index) => val.isAlmostEqual(sortedChildrenCentroids[index])
-    )
-  );
+function captureClippers(allGeometry: GeometryQuery[], ck: Checker, clippers: PolygonClipper[], range: Range3d): void {
+  const xyPolygon = range.rectangleXY(0, true, true);
+  if (xyPolygon) {
+    const cache = new GrowableXYZArrayCache();
+    const inside: GrowableXYZArray[] = [];
+    const outside: GrowableXYZArray[] = [];
+    const xyPolygonCarrier = new Point3dArrayCarrier(xyPolygon);
+    for (const clipper of clippers) {
+      clipper.appendPolygonClip(xyPolygonCarrier, inside, outside, cache);
+      const loops: Loop[] = [];
+      for (const polygon of inside)
+        loops.push(Loop.createPolygon(polygon));
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, loops, 0, 0, 100);
+      const components = RegionOps.constructAllXYRegionLoops(loops);
+      // don't count components with just sliver faces
+      const numNegativeAreaFaces = components.reduce((count: number, component: SignedLoops) => count + component.negativeAreaLoops.length, 0);
+      ck.testExactNumber(1, numNegativeAreaFaces, "clipper is a single swept xy-region with no holes");
+      for (const component of components)
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, component.negativeAreaLoops);
+      cache.dropAllToCache(inside);
+      cache.dropAllToCache(outside);
+    }
+  }
 }
 
 describe("Voronoi", () => {
-  it.only("InvalidGraph", () => {
+  it("InvalidGraph", () => {
     const ck = new Checker();
     const graph = new HalfEdgeGraph();
     const node0 = graph.addEdgeXY(-1, -1, 1, -1);
@@ -169,8 +193,8 @@ describe("Voronoi", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.only("ColinearPoints", () => {
-    const ck = new Checker(true, true);
+  it("ColinearPoints", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     let points = [[0, 0], [2, 0]];
@@ -313,8 +337,8 @@ describe("Voronoi", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.only("GraphWith1Triangle", () => {
-    const ck = new Checker(true, true);
+  it("GraphWith1Triangle", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     let graph = new HalfEdgeGraph();
@@ -395,8 +419,8 @@ describe("Voronoi", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.only("GraphWith2Triangles", () => {
-    const ck = new Checker(true, true);
+  it("GraphWith2Triangles", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     let graph = new HalfEdgeGraph();
@@ -512,8 +536,8 @@ describe("Voronoi", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.only("GraphWith3Triangles", () => {
-    const ck = new Checker(true, true);
+  it("GraphWith3Triangles", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     let points = [[-3, -2], [-1, 1], [0, -3], [4, -1], [4, 3]];
@@ -560,8 +584,8 @@ describe("Voronoi", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.only("GraphWith4Triangles", () => {
-    const ck = new Checker(true, true);
+  it("GraphWith4Triangles", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     let points = [[-2, 0], [0, 0], [0, -3], [0, -1], [5, 0]];
@@ -608,8 +632,8 @@ describe("Voronoi", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.only("GraphWithManyTriangles", () => {
-    const ck = new Checker(true, true);
+  it("GraphWithManyTriangles", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     let points = [[-10, 8], [4, 3], [-2, 3], [-1, 2], [2, 0], [-1, -3], [3, -2], [-2, -7], [6, -7], [7, -6]];
@@ -645,8 +669,8 @@ describe("Voronoi", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.only("ColinearCurveChain", () => {
-    const ck = new Checker(true, true);
+  it("ColinearCurveChain", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
     const lineSegment0 = LineSegment3d.createXYXY(-2, 0, 0, 0);
@@ -668,10 +692,9 @@ describe("Voronoi", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.only("CurveChain", () => {
-    const ck = new Checker(true, true);
+  it("CurveChain", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-
     const lineSegment0 = LineSegment3d.createXYXY(-3, 0, 0, 0);
     const lineSegment1 = LineSegment3d.createXYXY(0, 0, 2, 2);
     const arc0 = Arc3d.createCircularStartMiddleEnd(Point3d.create(2, 2), Point3d.create(3, 3), Point3d.create(4, 2));
@@ -684,51 +707,46 @@ describe("Voronoi", () => {
     strokeOptions.maxEdgeLength = 0.5;
     const clippers = Voronoi.createClippersForRegionsClosestToCurvePrimitivesXY(path, strokeOptions)!;
     ck.testCoordinate(clippers.length, path.children.length, "Voronoi should have 5 faces");
+    captureClippers(allGeometry, ck, clippers, path.range());
     const clippedCurves: AnyCurve[][] = [];
     for (const clipperUnions of clippers)
       clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
     comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
-
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "CurveChain");
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.only("PathFromJson0", () => {
-    const ck = new Checker(true, true);
+  it("PathFromJson0", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-
     const path = IModelJson.Reader.parse(
       JSON.parse(fs.readFileSync("./src/test/data/curve/voronoi/path_with_arc_and_linesegment.imjs", "utf8")),
     ) as Path;
     if (ck.testDefined(path, "path successfully parsed"))
-      for (const child of path.children)
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, child);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
     ck.testCoordinate(path.children.length, 7, "path should have 7 children");
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 20;
     const clippers = Voronoi.createClippersForRegionsClosestToCurvePrimitivesXY(path, strokeOptions)!;
     ck.testCoordinate(clippers.length, path.children.length, "Voronoi should have 7 faces");
+    captureClippers(allGeometry, ck, clippers, path.range());
     const clippedCurves: AnyCurve[][] = [];
     for (const clipperUnions of clippers)
       clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
     comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
-
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "PathFromJson0");
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.only("PathFromJson1", () => {
-    const ck = new Checker(true, true);
+  it("PathFromJson1", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-
     const path = IModelJson.Reader.parse(
       JSON.parse(fs.readFileSync("./src/test/data/curve/voronoi/path_with_arc_and_linestring.imjs", "utf8")),
     ) as Path;
     if (ck.testDefined(path, "path successfully parsed"))
-      for (const child of path.children)
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, child);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
     ck.testCoordinate(path.children.length, 18, "path should have 18 children");
-
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 200;
     const clippers = Voronoi.createClippersForRegionsClosestToCurvePrimitivesXY(path, strokeOptions)!;
@@ -737,20 +755,20 @@ describe("Voronoi", () => {
     for (const clipperUnions of clippers)
       clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
     comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
-
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "PathFromJson1");
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.only("PathFromJson2", () => {
-    const ck = new Checker(true, true);
+  it("PathFromJson2", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-
     const path = IModelJson.Reader.parse(
       JSON.parse(fs.readFileSync("./src/test/data/curve/voronoi/path_with_spirals.imjs", "utf8")),
     ) as Path;
-    ck.testDefined(path, "path successfully parsed");
+    if (ck.testDefined(path, "path successfully parsed"))
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
     ck.testCoordinate(path.children.length, 9, "path should have 9 children");
+    // Temp Code: approximate spirals. Remove this after backlog issue 1574 is fixed.
     const approximatedPath: Path = Path.create();
     for (const child of path.children) {
       if (child instanceof IntegratedSpiral3d) {
@@ -759,18 +777,17 @@ describe("Voronoi", () => {
         approximatedPath.children.push(child);
       }
     }
-    for (const child of approximatedPath.children)
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, child);
-
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, approximatedPath);
+    // Temp Code end
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 200;
     const clippers = Voronoi.createClippersForRegionsClosestToCurvePrimitivesXY(approximatedPath, strokeOptions)!;
     ck.testCoordinate(clippers.length, path.children.length, "Voronoi should have 9 faces");
+    captureClippers(allGeometry, ck, clippers, path.range());
     const clippedCurves: AnyCurve[][] = [];
     for (const clipperUnions of clippers)
       clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
     comparePathToClippedCurves(allGeometry, ck, path, clippedCurves, 50);
-
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "PathFromJson2");
     expect(ck.getNumErrors()).toBe(0);
   });
