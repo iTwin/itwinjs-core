@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { assert, BeTimePoint, expectDefined } from "@itwin/core-bentley";
+import { assert, BeTimePoint } from "@itwin/core-bentley";
 import { Angle, Matrix3d, Point2d, Point3d, Vector3d } from "@itwin/core-geometry";
 import { Camera } from "@itwin/core-common";
 import { ViewState, ViewState2d, ViewState3d } from "./ViewState";

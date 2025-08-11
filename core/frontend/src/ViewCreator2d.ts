@@ -12,7 +12,7 @@ API for creating a 2D view from a given modelId and modelType (classFullName).
 Additional options (such as background color) can be passed during view creation.
 */
 
-import { expectDefined, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
+import { Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
   CategorySelectorProps, Code, ColorDef, DisplayStyleProps, IModel, IModelError, ModelSelectorProps, QueryBinder, QueryRowFormat, SheetProps,
   ViewDefinition2dProps, ViewStateProps,

@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module SelectionSet
  */
-import { assert, BeEvent, expectDefined, Id64, Id64Arg, Id64Array, Id64Set, Id64String } from "@itwin/core-bentley";
+import { assert, BeEvent, Id64, Id64Arg, Id64Array, Id64Set, Id64String } from "@itwin/core-bentley";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 
