@@ -9,6 +9,33 @@
 import { DeepReadonlyObject, DeepRequiredObject } from "@itwin/core-bentley";
 import { ColorDef, ColorDefProps } from "../ColorDef";
 
+export enum OrderedListMarker {
+  A = "A",
+  AWithPeriod = "A.",
+  AWithParenthesis = "A)",
+  a = "a",
+  aWithPeriod = "a.",
+  aWithParenthesis = "a)",
+  I = "I",
+  IWithPeriod = "I.",
+  IWithParenthesis = "I)",
+  i = "i",
+  iWithPeriod = "i.",
+  iWithParenthesis = "i)",
+  One = "1",
+  OneWithPeriod = "1.",
+  OneWithParenthesis = "1)",
+}
+
+export enum UnorderedListMarker {
+  Bullet = "•",
+  Circle = "○",
+  Square = "■",
+  Dash = "–",
+}
+
+export type ListMarker = OrderedListMarker | UnorderedListMarker | string;
+
 /** Set of predefined shapes that can be computed and drawn around the margins of a [[TextBlock]]
  * @beta
 */
@@ -177,6 +204,10 @@ export interface TextStyleSettingsProps {
    * Default: 0 meters.
    */
   indentation?: number;
+  /** The marker used to indicate the start of a list item.
+   * Default: "1.".
+   */
+  listMarker?: ListMarker;
 }
 
 function deepFreeze<T>(obj: T) {
@@ -254,6 +285,10 @@ export class TextStyleSettings {
    * In nested runs, this is compounded with the indentations of the parent runs to determine the actual offset.
    */
   public readonly indentation: number;
+  /** The marker used to indicate the start of a list item.
+   * Default: [[OrderedListMarker.OneWithPeriod]].
+   */
+  public readonly listMarker: ListMarker;
   /** The frame settings of the [[TextAnnotation]]. */
   public readonly frame: Readonly<Required<TextFrameStyleProps>>;
 
@@ -282,6 +317,7 @@ export class TextStyleSettings {
     },
     tabInterval: 4,
     indentation: 0,
+    listMarker: OrderedListMarker.OneWithPeriod,
     frame: {
       shape: "none",
       fill: "none",
@@ -322,12 +358,14 @@ export class TextStyleSettings {
     this.leader = Object.freeze(leader) as Readonly<Required<TextLeaderStyleProps>>;
     this.tabInterval = props.tabInterval ?? defaults.tabInterval;
     this.indentation = props.indentation ?? defaults.indentation;
+    this.listMarker = props.listMarker ?? defaults.listMarker;
+
     const frame = {
       shape: props.frame?.shape ?? defaults.frame.shape,
       fill: props.frame?.fill ?? defaults.frame.fill,
       border: props.frame?.border ?? defaults.frame.border,
       borderWeight: props.frame?.borderWeight ?? defaults.frame.borderWeight,
-     };
+    };
     // Cast to indicate to TypeScript that the frame properties are all defined
     this.frame = Object.freeze(frame) as Readonly<Required<TextFrameStyleProps>>;
   }

@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { BaselineShift, FieldRun, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TabRun, TextAnnotationLeader, TextBlock, TextBlockComponent, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, FieldRun, FontId, FontType, FractionRun, LineLayoutResult, ListMarker, OrderedListMarker, Run, RunLayoutResult, TabRun, TextAnnotationLeader, TextBlock, TextBlockComponent, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Geometry, Range2d, WritableXAndY } from "@itwin/core-geometry";
 import { IModelDb } from "../IModelDb";
 import { assert, Id64String, NonFunctionPropertiesOf } from "@itwin/core-bentley";
@@ -234,15 +234,6 @@ export class TextStyleResolver {
       this.blockSettings = this.blockSettings.clone(args.textBlock.styleOverrides);
   }
 
-  private resolveParagraphSettingsImpl(paragraph: Paragraph): TextStyleSettings {
-    let settings = this.blockSettings;
-
-    if (paragraph.overridesStyle)
-      settings = settings.clone(paragraph.styleOverrides);
-
-    return settings;
-  }
-
   /** Looks up an [[AnnotationTextStyle]] by ID. Uses caching. */
   public findTextStyle(id: Id64String): TextStyleSettings {
     let style = this._textStyles.get(id);
@@ -263,19 +254,36 @@ export class TextStyleResolver {
     return applyBlockSettings(settings, this.blockSettings, true);
   }
 
-  /** Resolves the effective style for a [Paragraph]($common). Paragraph should be child of provided TextBlock. */
-  public resolveParagraphSettings(paragraph: Paragraph): TextStyleSettings {
-    return applyBlockSettings(this.resolveParagraphSettingsImpl(paragraph), this.blockSettings);
+  public resolveSettings(component: TextBlockComponent): TextStyleSettings {
+    let settingsProps = component.styleOverrides;
+    let parent: TextBlockComponent | undefined = component;
+
+    while (parent) {
+      settingsProps = { ...parent.styleOverrides, ...settingsProps };
+      parent = parent.parent;
+    }
+
+    const settings = TextStyleSettings.fromJSON(settingsProps);
+    return applyBlockSettings(settings, this.blockSettings);
   }
 
-  /** Resolves the effective style for a [Run]($common). Run should be child of provided Paragraph and TextBlock. */
-  public resolveRunSettings(paragraph: Paragraph, run: Run): TextStyleSettings {
-    let settings = this.resolveParagraphSettingsImpl(paragraph);
+  public static resolveOverrides(component: TextBlockComponent): TextStyleSettingsProps {
+    let settingsProps = component.styleOverrides;
+    let parent: TextBlockComponent | undefined = component;
 
-    if (run.overridesStyle)
-      settings = settings.clone(run.styleOverrides);
+    while (parent) {
+      settingsProps = { ...parent.styleOverrides, ...settingsProps };
+      parent = parent.parent;
+    }
 
-    return applyBlockSettings(settings, this.blockSettings);
+    return settingsProps;
+  }
+
+  public resolveIndentation(component: TextBlockComponent): number {
+    const overrides = this.resolveSettings(component);
+    const indentation = overrides.indentation;
+    const tabInterval = overrides.tabInterval;
+    return indentation + tabInterval * component.depth;
   }
 }
 
@@ -449,7 +457,7 @@ export class RunLayout {
   }
 
   public static create(source: Run, context: LayoutContext): RunLayout {
-    const style = context.textStyleResolver.resolveRunSettings(source.parent as Paragraph, source);
+    const style = context.textStyleResolver.resolveSettings(source);
     const fontId = context.findFontId(style.fontName);
     const charOffset = 0;
     const offsetFromLine = { x: 0, y: 0 };
@@ -570,10 +578,11 @@ export class LineLayout {
   public offsetFromDocument: WritableXAndY;
   public lengthFromLastTab = 0; // Used to track the length from the last tab for tab runs.
   private _runs: RunLayout[] = [];
+  private _marker?: RunLayout;
 
-  public constructor(source: TextBlockComponent) {
+  public constructor(source: TextBlockComponent, context?: LayoutContext) {
     this.source = source;
-    this.offsetFromDocument = { x: source.styleOverrides.indentation ?? 0, y: 0 };
+    this.offsetFromDocument = { x: context?.textStyleResolver.resolveIndentation(source) ?? 0, y: 0 };
   }
 
   /** Compute a string representation, primarily for debugging purposes. */
@@ -588,6 +597,8 @@ export class LineLayout {
     assert(!this.isEmpty);
     return this._runs[this._runs.length - 1];
   }
+  public get marker(): RunLayout | undefined { return this._marker; }
+  public set marker(value: RunLayout | undefined) { this._marker = value; }
 
   public append(run: RunLayout): void {
     this._runs.push(run);
@@ -624,6 +635,21 @@ export class LineLayout {
       } else {
         this.lengthFromLastTab += run.range.xLength();
       }
+    }
+
+    if (this._marker) {
+      const indentation = this.range.low.x;
+      const x = indentation - (this._marker.style.tabInterval / 2) - this._marker.range.xLength();
+      const runHeight = this._marker.range.yLength();
+      const runOffset = {
+        x,
+        y: (lineHeight - runHeight) / 2
+      };
+
+      this._marker.offsetFromLine = runOffset;
+
+      const markerRange = this._marker.range.cloneTranslated(this._marker.offsetFromLine);
+      this.range.extendRange(markerRange);
     }
   }
 
@@ -702,7 +728,7 @@ export class TextBlockLayout {
           break;
         }
 
-        curLine = new LineLayout(children[0]);
+        curLine = new LineLayout(children[0], context);
         children.forEach((child) => curLine = this.populateComponent(child, context, docWidth, curLine));
 
         if (curLine.runs.length > 0) {
@@ -711,8 +737,31 @@ export class TextBlockLayout {
 
         break;
       }
+      case "list": {
+        if (curLine) {
+          curLine = this.flushLine(context, curLine, component.children?.[0]);
+        }
+
+        component.children?.forEach((child, index) => {
+          const styleOverrides = context.textStyleResolver.resolveSettings(component);
+          const content = getMarkerText(styleOverrides.listMarker, index + 1);
+          // I don't like the way I'm tricking the child to think it's a part of the text block. I want to clean this up.
+          const marker = TextRun.create({ styleOverrides, content });
+          marker.parent = component;
+
+          const run = RunLayout.create(marker, context);
+
+          if (curLine) curLine.marker = run;
+          curLine = this.populateComponent(child, context, docWidth, curLine);
+        });
+        if (curLine && component.nextSibling) {
+          curLine = this.flushLine(context, curLine, component.nextSibling);
+        }
+        break;
+      }
+      case "list-item":
       case "paragraph": {
-        component.children?.forEach(child => curLine = this.populateComponent(child, context, docWidth, curLine)) ?? false;
+        component.children?.forEach(child => curLine = this.populateComponent(child, context, docWidth, curLine));
         if (curLine && component.nextSibling) {
           curLine = this.flushLine(context, curLine, component.nextSibling);
         }
@@ -824,13 +873,13 @@ export class TextBlockLayout {
     if (line.runs.length === 0) {
       // If we're empty, there should always be a preceding run, and it should be a line break.
       if (this.lines.length === 0 || this._back.runs.length === 0) {
-        return new LineLayout(next);
+        return new LineLayout(next, context);
       }
 
       const prevRun = this._back.back.source;
       // assert(prevRun.type === "linebreak");
       if (prevRun.type !== "linebreak") {
-        return new LineLayout(next);
+        return new LineLayout(next, context);
       }
 
       const run = prevRun.clone();
@@ -854,7 +903,7 @@ export class TextBlockLayout {
     this.textRange.extendRange(line.range.cloneTranslated(lineOffset));
 
     this.lines.push(line);
-    return new LineLayout(next);
+    return new LineLayout(next, context);
   }
 
   private applyMargins(margins: TextBlockMargins) {
@@ -877,4 +926,64 @@ export class TextBlockLayout {
     this.range.extendXY(xHigh, yHigh);
     this.range.extendXY(xLow, yLow);
   }
+}
+
+function getMarkerText(style: ListMarker, num: number): string {
+  switch (style) {
+    case OrderedListMarker.A:
+      return integerToAlpha(num);
+    case OrderedListMarker.AWithPeriod:
+      return `${integerToAlpha(num)}.`;
+    case OrderedListMarker.AWithParenthesis:
+      return `${integerToAlpha(num)})`;
+    case OrderedListMarker.I:
+      return integerToRoman(num);
+    case OrderedListMarker.IWithPeriod:
+      return `${integerToRoman(num)}.`;
+    case OrderedListMarker.IWithParenthesis:
+      return `${integerToRoman(num)})`;
+    case OrderedListMarker.a:
+      return integerToAlpha(num).toLowerCase();
+    case OrderedListMarker.aWithPeriod:
+      return `${integerToAlpha(num).toLowerCase()}.`;
+    case OrderedListMarker.aWithParenthesis:
+      return `${integerToAlpha(num).toLowerCase()})`;
+    case OrderedListMarker.i:
+      return integerToRoman(num).toLowerCase();
+    case OrderedListMarker.iWithPeriod:
+      return `${integerToRoman(num).toLowerCase()}.`;
+    case OrderedListMarker.iWithParenthesis:
+      return `${integerToRoman(num).toLowerCase()})`;
+    case OrderedListMarker.One:
+      return `${num}`;
+    case OrderedListMarker.OneWithPeriod:
+      return `${num}.`;
+    case OrderedListMarker.OneWithParenthesis:
+      return `${num})`;
+    default:
+      return style;
+  }
+}
+
+function integerToRoman(num: number): string {
+  const values =
+    [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
+  const symbols =
+    ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I'];
+  let roman = '';
+  for (let i = 0; i < values.length; i++) {
+    while (num >= values[i]) {
+      roman += symbols[i];
+      num -= values[i];
+    }
+  }
+
+  return roman;
+}
+
+function integerToAlpha(num: number): string {
+  const letterOffset = (num - 1) % 26
+  const letter = String.fromCharCode(65 + letterOffset);
+  const depth = Math.ceil(num / 26);
+  return letter.repeat(depth);
 }

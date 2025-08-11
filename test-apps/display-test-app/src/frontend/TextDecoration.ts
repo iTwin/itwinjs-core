@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, LeaderTextPointOptions, LineBreakRun, Placement2dProps, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationLeader, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ColorDef, FractionRun, LeaderTextPointOptions, LineBreakRun, OrderedListMarker, Placement2dProps, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationLeader, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps, UnorderedListMarker } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
@@ -91,9 +91,9 @@ class TextEditor implements Decorator {
     this.leaders = [];
   }
 
-  public appendText(content: string): void {
+  public appendText(content: string, overrides?: TextStyleSettingsProps): void {
     this.textBlock.appendRun(TextRun.create({
-      styleOverrides: this.runStyle,
+      styleOverrides: { ...this.runStyle, ...overrides },
       content,
       baselineShift: this.baselineShift,
     }));
@@ -117,6 +117,14 @@ class TextEditor implements Decorator {
     this.textBlock.appendRun(LineBreakRun.create({
       styleOverrides: this.runStyle,
     }));
+  }
+
+  public appendList(overrides?: TextStyleSettingsProps): void {
+    this.textBlock.appendContainer({ type: "list", styleOverrides: { fontName: this.runStyle.fontName, ...overrides } });
+  }
+
+  public appendListItem(overrides?: TextStyleSettingsProps): void {
+    this.textBlock.appendListItem({ type: "list-item", styleOverrides: { ...overrides } });
   }
 
   public appendParagraph(): void {
@@ -240,19 +248,14 @@ export class TextDecorationTool extends Tool {
         await this.parseAndRun("init");
         await this.parseAndRun("center");
         await this.parseAndRun("height", "1"); // Text size (text height)
+        // await this.parseAndRun("width", "60");
         await this.parseAndRun("debug");
 
-        await this.parseAndRun("text", "Anyway the Wind Blows - Hadestown"); // cspell:ignore Hadestown
-        await this.parseAndRun("paragraph");
+        let listMarker = inArgs[1];
 
-        await this.parseAndRun("indent", "2");
-        await this.parseAndRun("text", "People turn on you just like the wind");
-        await this.parseAndRun("break");
-        await this.parseAndRun("text", "Everyone is a cold weather friend");
-        await this.parseAndRun("break");
-        await this.parseAndRun("text", "In the end you're better off alone");
-        await this.parseAndRun("break");
-        await this.parseAndRun("text", "Anyway the wind blows");
+        if (listMarker in OrderedListMarker) listMarker = (OrderedListMarker as any)[listMarker];
+        else if (listMarker in UnorderedListMarker) listMarker = (UnorderedListMarker as any)[listMarker];
+
         break;
       }
       case "clear":
@@ -566,6 +569,19 @@ export class TextDecorationTool extends Tool {
           scaleFactor
         );
 
+        break;
+      }
+      case "list": {
+        let listMarker = inArgs[1];
+
+        if (listMarker in OrderedListMarker) listMarker = (OrderedListMarker as any)[listMarker];
+        else if (listMarker in UnorderedListMarker) listMarker = (UnorderedListMarker as any)[listMarker];
+
+        editor.appendList({ listMarker });
+        break;
+      }
+      case "list-item": {
+        editor.appendListItem();
         break;
       }
       case "leader":

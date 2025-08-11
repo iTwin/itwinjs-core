@@ -150,6 +150,15 @@ export function produceTextBlockGeometry(layout: TextBlockLayout, documentTransf
   const context: GeometryContext = { entries: [] };
   for (const line of layout.lines) {
     const lineTrans = Transform.createTranslationXYZ(line.offsetFromDocument.x, line.offsetFromDocument.y, 0);
+
+    if (line.marker) {
+      const markerTrans = Transform.createTranslationXYZ(line.marker.offsetFromLine.x, line.marker.offsetFromLine.y, 0);
+      lineTrans.multiplyTransformTransform(markerTrans, markerTrans);
+      documentTransform.multiplyTransformTransform(markerTrans, markerTrans);
+
+      processTextRun(line.marker, markerTrans, context);
+    }
+
     for (const run of line.runs) {
       // Skip runs that are solely whitespace
       if (run.source.isWhitespace) {

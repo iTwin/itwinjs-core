@@ -37,6 +37,7 @@ describe("TextStyleSettings", () => {
     },
     tabInterval: 7,
     indentation: 0.33,
+    listMarker: "1)",
   };
 
   it("returns defaults if no props provided", () => {
