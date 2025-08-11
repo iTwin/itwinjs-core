@@ -596,7 +596,7 @@ export class Voronoi {
     );
     return superFace;
   }
-  // set super face masks to the voronoi diagram and return the super faces
+  /** Sets super face masks to the voronoi diagram and returns the super faces. */
   public getSuperFaces(numChildren: number, superFaceEdgeMask: HalfEdgeMask): HalfEdge[][] | undefined {
     const superFaces: HalfEdge[][] = [];
     for (let i = 0; i < numChildren; i++) {
@@ -613,12 +613,12 @@ export class Voronoi {
 
     return superFaces;
   }
-  // modify voronoi graph such that each super face only has convex faces
+  /** Modifies the voronoi graph such that each super face has only convex faces. */
   public convexifySuperFaces(superFaceEdgeMask: HalfEdgeMask) {
     Triangulator.triangulateAllInteriorFaces(this._voronoiGraph);
     HalfEdgeGraphOps.expandConvexFaces(this._voronoiGraph, superFaceEdgeMask);
   }
-  // generate clippers from super faces
+  /** Generates clippers from super faces */
   public generateClippersFromSuperFaces(
     superFaces: HalfEdge[][], superFaceEdgeMask: HalfEdgeMask, superFaceOutsideMask: HalfEdgeMask,
   ): UnionOfConvexClipPlaneSets[] | undefined {
@@ -673,7 +673,7 @@ export class Voronoi {
     }
     return allClippers;
   }
-  // Creates a Polyface from the Voronoi diagram super faces
+  /** Creates a Polyface from the Voronoi diagram super faces */
   public createPolyface(superFaceEdgeMask: HalfEdgeMask): IndexedPolyface {
     return PolyfaceBuilder.graphToPolyface(
       this._voronoiGraph,
@@ -695,9 +695,13 @@ export class Voronoi {
  * large enough to contain the circumcenters of the Delaunay triangles.
  */
 class VoronoiBoundary {
+  /** Bottom-left corner of the boundary. */
   public p0: XAndY;
+  /** Bottom-right corner of the boundary. */
   public p1: XAndY;
+  /** Top-right corner of the boundary. */
   public p2: XAndY;
+  /** Top-left corner of the boundary. */
   public p3: XAndY;
   /**
    * Constructor
@@ -715,10 +719,12 @@ class VoronoiBoundary {
     this.p2 = Point2d.create(delaunayGraphRange.high.x + padX, delaunayGraphRange.high.y + padY);
     this.p3 = Point2d.create(delaunayGraphRange.low.x - padX, delaunayGraphRange.high.y + padY);
   }
+  /** Checks if a point is contained within the boundary. */
   public contains(point: Point3d): boolean {
     return this.p0.x <= point.x && point.x <= this.p1.x &&
       this.p1.y <= point.y && point.y <= this.p2.y;
   }
+  /** Checks if the line intersects the boundary and returns the intersections. */
   public intersect(line: Line): Point3d[] {
     const intersections: Point3d[] = [];
     const fractions: Vector2d = Vector2d.createZero();
