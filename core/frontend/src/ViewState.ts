@@ -2175,13 +2175,14 @@ export abstract class ViewState3d extends ViewState {
     if (undefined !== vp) {
       const viewRay = Ray3d.create(Point3d.create(), vp.rotation.rowZ());
       const xyPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, elevation), Vector3d.create(0, 0, 1));
+      assert(undefined !== xyPlane);
 
       // first determine whether the ground plane is displayed in the view
       const worldFrust = vp.getFrustum();
       for (const point of worldFrust.points) {
         viewRay.origin = point;   // We never modify the reference
         const xyzPoint = Point3d.create();
-        const param = viewRay.intersectionWithPlane(expectDefined(xyPlane), xyzPoint);
+        const param = viewRay.intersectionWithPlane(xyPlane, xyzPoint);
         if (param === undefined)
           return extents;   // View does not show ground plane
       }
@@ -2426,7 +2427,13 @@ export abstract class ViewState2d extends ViewState {
   public allow3dManipulations(): boolean { return false; }
   public getOrigin() { return new Point3d(this.origin.x, this.origin.y, Frustum2d.minimumZExtents.low); }
   public getExtents() { return new Vector3d(this.delta.x, this.delta.y, Frustum2d.minimumZExtents.length()); }
-  public getRotation() { return expectDefined(Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)); }
+
+  public getRotation() {
+    const rot = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle);
+    assert(undefined !== rot, "rotation around unit vector always defined");
+    return rot;
+  }
+
   public setExtents(delta: XAndY) { this.delta.set(delta.x, delta.y); }
   public setOrigin(origin: XAndY) { this.origin.set(origin.x, origin.y); }
   public setRotation(rot: Matrix3d) {
