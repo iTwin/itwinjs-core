@@ -41,11 +41,14 @@ export class PolylineOps {
    * Return a simplified subset of given points.
    * * Points are removed by the Douglas-Puecker algorithm, viz https://en.wikipedia.org/wiki/Ramer–Douglas–Peucker_algorithm
    * * This is a global search, with multiple passes over the data.
-   * @param source
-   * @param chordTolerance
+   * @param source input points.
+   * @param chordTolerance Points less than this distance from a retained edge may be ignored.
+   * Default is [[Geometry.smallMetricDistance]].
+   * @param keepSeam whether to preserve the endpoints of physically closed input.
+   * Default is false, meaning physically closed input points are treated cyclically, allowing removal of the seam.
    */
-  public static compressByChordError(source: Point3d[], chordTolerance: number): Point3d[] {
-    return PolylineCompressionContext.compressPoint3dArrayByChordError(source, chordTolerance);
+  public static compressByChordError(source: Point3d[], chordTolerance: number = Geometry.smallMetricDistance, keepSeam: boolean = false): Point3d[] {
+    return PolylineCompressionContext.compressPoint3dArrayByChordError(source, chordTolerance, keepSeam);
   }
   /**
    * Return a simplified subset of given points, omitting a point if very close to its predecessor.
