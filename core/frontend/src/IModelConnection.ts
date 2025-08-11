@@ -1232,7 +1232,7 @@ export namespace IModelConnection {
       const views: ViewSpec[] = [];
       const viewProps: ViewDefinitionProps[] = await this.queryProps(queryParams);
       viewProps.forEach((viewProp) => {
-        views.push({ id: viewProp.id as string, name: viewProp.code.value ?? "<Unnamed view>", class: viewProp.classFullName });
+        views.push({ id: viewProp.id as string, name: viewProp.code.value ?? "", class: viewProp.classFullName });
       });
 
       return views;
