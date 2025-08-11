@@ -71,10 +71,10 @@ export class FeatureOverrides implements WebGLDisposable {
 
   private updateUniformSymbologyFlags(): void {
     this._uniformSymbologyFlags = EmphasisFlags.None;
-    if (!this.isUniform || !this._lut)
+    if (!this.isUniform || !this._lut?.dataBytes)
       return;
 
-    let flags = expectDefined(this._lut.dataBytes?.[0]);
+    let flags = expectDefined(this._lut.dataBytes[0]);
     if (0 !== (flags & OvrFlags.Flashed))
       this._uniformSymbologyFlags |= EmphasisFlags.Flashed;
 
@@ -84,7 +84,7 @@ export class FeatureOverrides implements WebGLDisposable {
     if (!this._anyHilited)
       return;
 
-    flags = expectDefined(this._lut.dataBytes?.[1]) << 8;
+    flags = expectDefined(this._lut.dataBytes[1]) << 8;
     if (0 !== (flags & OvrFlags.Hilited))
       this._uniformSymbologyFlags |= EmphasisFlags.Hilite;
 
