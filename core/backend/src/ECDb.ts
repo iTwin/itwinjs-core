@@ -399,6 +399,10 @@ export class ECDb implements Disposable {
     return this._nativeDb;
   }
 
+  public async clean() {
+    return await this[_nativeDb].removeUnusedSchemaReferences();
+  }
+
   /** Allow to execute query and read results along with meta data. The result are streamed.
    *
    * See also:

@@ -513,4 +513,82 @@ describe("ECDb", () => {
 
     ecdb.closeDb();
   });
+
+  it("removes unused schema references", async () => {
+    const mainSchemaXml = `<?xml version="1.0" encoding="utf-8"?>
+        <ECSchema schemaName="TestSchema" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECSchemaReference name="RefSchema" version="01.00.00" alias="rs"/>
+          <ECSchemaReference name="UnusedRefSchema" version="01.00.00" alias="urs"/>
+          <ECEntityClass typeName="Apple">
+            <BaseClass>rs:Banana</BaseClass>
+          </ECEntityClass>
+        </ECSchema>`;
+
+    const refSchemaXml = `<?xml version="1.0" encoding="utf-8"?>
+        <ECSchema schemaName="RefSchema" alias="rs" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECEntityClass typeName="Banana"/>
+        </ECSchema>`;
+
+    const unusedRefSchemaXml = `<?xml version="1.0" encoding="utf-8"?>
+        <ECSchema schemaName="UnusedRefSchema" alias="urs" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECEntityClass typeName="UnusedClass"/>
+        </ECSchema>`;
+
+    using ecdb = ECDbTestHelper.createECDb(outDir, "clean-unused-refs.ecdb");
+
+    const refSchemaPath = path.join(outDir, "RefSchema.ecschema.xml");
+    IModelJsFs.writeFileSync(refSchemaPath, refSchemaXml);
+    ecdb.importSchema(refSchemaPath);
+
+    const unusedRefSchemaPath = path.join(outDir, "UnusedRefSchema.ecschema.xml");
+    IModelJsFs.writeFileSync(unusedRefSchemaPath, unusedRefSchemaXml);
+    ecdb.importSchema(unusedRefSchemaPath);
+
+    const mainSchemaPath = path.join(outDir, "TestSchema.ecschema.xml");
+    IModelJsFs.writeFileSync(mainSchemaPath, mainSchemaXml);
+    ecdb.importSchema(mainSchemaPath);
+
+    expect(() => ecdb.getSchemaProps("RefSchema")).to.not.throw();
+    expect(() => ecdb.getSchemaProps("UnusedRefSchema")).to.not.throw();
+
+    const removedCount = await ecdb.clean();
+
+    expect(removedCount).to.equal(1);
+
+    expect(() => ecdb.getSchemaProps("RefSchema")).to.not.throw();
+
+    expect(() => ecdb.getSchemaProps("UnusedRefSchema")).to.throw();
+  });
+
+  it("does nothing when no unused references exist", async () => {
+    const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+        <ECSchema schemaName="TestSchema" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECSchemaReference name="RefSchema" version="01.00.00" alias="rs"/>
+          <ECEntityClass typeName="Apple">
+            <BaseClass>rs:Banana</BaseClass>
+          </ECEntityClass>
+        </ECSchema>`;
+
+    const refSchemaXml = `<?xml version="1.0" encoding="utf-8"?>
+        <ECSchema schemaName="RefSchema" alias="rs" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECEntityClass typeName="Banana"/>
+        </ECSchema>`;
+
+    using ecdb = ECDbTestHelper.createECDb(outDir, "clean-no-unused-refs.ecdb");
+
+    const refSchemaPath = path.join(outDir, "RefSchema2.ecschema.xml");
+    IModelJsFs.writeFileSync(refSchemaPath, refSchemaXml);
+    ecdb.importSchema(refSchemaPath);
+
+    const mainSchemaPath = path.join(outDir, "TestSchema2.ecschema.xml");
+    IModelJsFs.writeFileSync(mainSchemaPath, schemaXml);
+    ecdb.importSchema(mainSchemaPath);
+
+    const removedCount = await ecdb.clean();
+
+    expect(removedCount).to.equal(0);
+
+    expect(() => ecdb.getSchemaProps("RefSchema")).to.not.throw();
+    expect(() => ecdb.getSchemaProps("TestSchema")).to.not.throw();
+  });
 });
