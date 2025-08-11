@@ -72,7 +72,8 @@ export abstract class VertexTableBuilder {
 
   protected advance(nBytes: number) {
     this._curIndex += nBytes;
-    assert(this._curIndex <= (this.data?.length ?? -1));
+    assert(undefined !== this.data);
+    assert(this._curIndex <= this.data.length);
   }
 
   protected append8(val: number) {
