@@ -6,7 +6,7 @@
  * @module IModelConnection
  */
 
-import { BentleyError, BentleyStatus, expectDefined, GuidString, Logger } from "@itwin/core-bentley";
+import { BentleyError, BentleyStatus, expectDefined, Guid, GuidString, Logger } from "@itwin/core-bentley";
 import {
   IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelVersion, RpcManager, RpcNotFoundResponse, RpcOperation,
   RpcRequest, RpcRequestEvent,
@@ -28,9 +28,9 @@ export class CheckpointConnection extends IModelConnection {
   private readonly _fromIpc: boolean;
 
   /** The Guid that identifies the iTwin that owns this iModel. */
-  public override get iTwinId(): GuidString { return super.iTwinId ?? "00000000-0000-0000-0000-000000000000"; }
+  public override get iTwinId(): GuidString { return super.iTwinId ?? Guid.empty; }
   /** The Guid that identifies this iModel. */
-  public override get iModelId(): GuidString { return super.iModelId ?? "00000000-0000-0000-0000-000000000000"; }
+  public override get iModelId(): GuidString { return super.iModelId ?? Guid.empty; }
 
   /** Returns `true` if [[close]] has already been called. */
   public get isClosed(): boolean { return this._isClosed ? true : false; }
