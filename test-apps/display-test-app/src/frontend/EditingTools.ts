@@ -277,19 +277,19 @@ export class MoveElementTool extends Tool {
   /** Executes this tool's run method passing in the elementId and the offset.
    * @see [[run]]
    */
-  public override async parseAndRun(...args: string[]): Promise<boolean> {
-    let x = 0;
-    let y = 0;
-    let z = 0;
+  public override async parseAndRun(...inputs: string[]): Promise<boolean> {
+    const args = parseArgs(inputs);
 
-    if (args.length > 1)
-      x = parseFloat(args[1]);
-    if (args.length > 2)
-      y = parseFloat(args[2]);
-    if (args.length > 3)
-      z = parseFloat(args[3]);
+    const elementId = args.get("e");
+    if (!elementId) {
+      return false;
+    }
 
-    return this.run(args[0], x, y, z);
+    const x = args.getFloat("x") ?? 0;
+    const y = args.getFloat("y") ?? 0;
+    const z = args.getFloat("z") ?? 0;
+
+    return this.run(elementId, x, y, z);
   }
 }
 
