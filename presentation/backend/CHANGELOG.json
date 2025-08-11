@@ -2,6 +2,48 @@
   "name": "@itwin/presentation-backend",
   "entries": [
     {
+      "version": "5.1.1",
+      "tag": "@itwin/presentation-backend_v5.1.1",
+      "date": "Fri, 08 Aug 2025 18:06:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.0",
+      "tag": "@itwin/presentation-backend_v5.1.0",
+      "date": "Fri, 08 Aug 2025 12:51:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add Symbols to prevent duplicate instances of package"
+          },
+          {
+            "comment": "Fixed `PresentationRpcInterface` not returning formatted content when formatting on frontend is not setup."
+          },
+          {
+            "comment": "Fix `getDisplayLabelDefinitions` implementation not taking into account different formats and casings of full class name."
+          },
+          {
+            "comment": "Deprecate `PresentationManagerProps.schemaContextProvider`."
+          },
+          {
+            "comment": "The `PresentationManagerProps.defaultFormats` property has been deprecated in favor of the new `formatsProvider` property."
+          },
+          {
+            "comment": "Fixed `RulesetEmbedder` failling to insert ruleset into iModel if Ruleset schema is present bus CodeSpec for rulesets does not exist."
+          },
+          {
+            "comment": "Updated deprecation comments to new template"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.0.5",
+      "tag": "@itwin/presentation-backend_v5.0.5",
+      "date": "Wed, 06 Aug 2025 15:34:16 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.0.4",
       "tag": "@itwin/presentation-backend_v5.0.4",
       "date": "Wed, 16 Jul 2025 14:59:59 GMT",

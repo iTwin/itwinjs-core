@@ -1,6 +1,24 @@
 # Change Log - @itwin/core-electron
 
-This log was last generated on Wed, 16 Jul 2025 15:01:35 GMT and should not be manually modified.
+This log was last generated on Fri, 08 Aug 2025 18:10:14 GMT and should not be manually modified.
+
+## 5.1.1
+Fri, 08 Aug 2025 18:06:10 GMT
+
+_Version update only_
+
+## 5.1.0
+Fri, 08 Aug 2025 12:51:53 GMT
+
+### Updates
+
+- Add support for Electron 37
+- Add support for Electron 36
+
+## 5.0.5
+Wed, 06 Aug 2025 15:34:15 GMT
+
+_Version update only_
 
 ## 5.0.4
 Wed, 16 Jul 2025 14:59:59 GMT
