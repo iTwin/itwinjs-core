@@ -1341,7 +1341,7 @@ export abstract class GltfReader {
         if (!this.readMeshIndices(mesh, primitive))
           return undefined;
 
-        if (!displayParams.ignoreLighting && !this.readNormals(mesh, primitive.attributes, "NORMAL"))
+        if (!displayParams.ignoreLighting && !this.readMeshNormals(mesh, primitive.attributes, "NORMAL"))
           return undefined;
 
         if (!mesh.uvs) {
@@ -1856,35 +1856,46 @@ export abstract class GltfReader {
     return true;
   }
 
-  protected readNormals(mesh: GltfMeshData, json: { [k: string]: any }, accessorName: string): boolean {
+  protected readMeshNormals(mesh: GltfMeshData, json: { [k: string]: any }, accessorName: string): boolean {
+    const normals = this.readNormals(json, accessorName);
+    if (normals) {
+      mesh.normals = normals;
+      return true;
+    }
+
+    return false;
+  }
+
+  protected readNormals(json: { [k: string]: any }, accessorName: string): Uint16Array | undefined {
     const view = this.getBufferView(json, accessorName);
     if (undefined === view)
-      return false;
+      return undefined;
 
     switch (view.type) {
       case GltfDataType.Float: {
         const data = view.toBufferData(GltfDataType.Float);
         if (undefined === data)
-          return false;
+          return undefined;
 
-        mesh.normals = new Uint16Array(data.count);
+        const normals = new Uint16Array(data.count);
         const scratchNormal = new Vector3d();
         const strideSkip = view.stride - 3;
         for (let i = 0, j = 0; i < data.count; i++, j += strideSkip) {
           scratchNormal.set(data.buffer[j++], data.buffer[j++], data.buffer[j++]);
-          mesh.normals[i] = OctEncodedNormal.encode(scratchNormal);
+          normals[i] = OctEncodedNormal.encode(scratchNormal);
         }
-        return true;
+
+        return normals;
       }
 
       case GltfDataType.SignedByte: {
         const data = view.toBufferData(GltfDataType.SignedByte);
         if (!data) {
-          return false;
+          return undefined;
         }
 
         const normalize = (val: number) => 2 * ((val + 128) / 255) - 1;
-        mesh.normals = new Uint16Array(data.count);
+        const normals = new Uint16Array(data.count);
         const scratchNormal = new Vector3d();
         const strideSkip = view.stride - 3;
         for (let i = 0, j = 0; i < data.count; i++, j += strideSkip) {
@@ -1892,30 +1903,31 @@ export abstract class GltfReader {
           const y = normalize(data.buffer[j++]);
           const z = normalize(data.buffer[j++]);
           scratchNormal.set(x, y, z);
-          mesh.normals[i] = OctEncodedNormal.encode(scratchNormal);
+          normals[i] = OctEncodedNormal.encode(scratchNormal);
         }
 
-        return true;
+        return normals;
       }
 
       // This is weird, why does it assume 8-bit normal vectors are actually 16-bit oct-encoded normals?
       case GltfDataType.UnsignedByte: {
         const data = view.toBufferData(GltfDataType.UnsignedByte);
         if (undefined === data)
-          return false;
+          return undefined;
 
         // ###TODO: we shouldn't have to allocate OctEncodedNormal objects...just use uint16s / numbers...
-        mesh.normals = new Uint16Array(data.count);
+        const normals = new Uint16Array(data.count);
         for (let i = 0; i < data.count; i++) {
           // ###TODO? not clear why ray writes these as pairs of uint8...
           const index = i * view.stride;
           const normal = data.buffer[index] | (data.buffer[index + 1] << 8);
-          mesh.normals[i] = normal;
+          normals[i] = normal;
         }
-        return true;
+
+        return normals;
       }
       default:
-        return false;
+        return undefined;
     }
   }
 
