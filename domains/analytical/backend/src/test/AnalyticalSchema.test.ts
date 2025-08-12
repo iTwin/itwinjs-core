@@ -15,11 +15,11 @@ import {
   CategoryProps, Code, ColorDef, GeometricElement3dProps, IModel, InformationPartitionElementProps, ModelProps, RelatedElement,
   TypeDefinitionElementProps,
 } from "@itwin/core-common";
-import { AnalyticalElement, AnalyticalModel, AnalyticalPartition, AnalyticalSchema } from "../analytical-backend.js";
+import { AnalyticalElement, AnalyticalModel, AnalyticalPartition, AnalyticalSchema } from "../analytical-backend";
 
 class TestAnalyticalSchema extends Schema {
   public static override get schemaName(): string { return "TestAnalytical"; }
-  public static get schemaFilePath(): string { return path.join(import.meta.dirname, "assets", "TestAnalytical.ecschema.xml"); }
+  public static get schemaFilePath(): string { return path.join(__dirname, "assets", "TestAnalytical.ecschema.xml"); }
   public static registerSchema() {
     if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
       Schemas.unregisterSchema(this.schemaName);
@@ -45,11 +45,11 @@ class TestAnalyticalModel extends AnalyticalModel {
 }
 
 describe("AnalyticalSchema", () => {
-  const outputDir = path.join(import.meta.dirname, "output");
-  const assetsDir = path.join(import.meta.dirname, "assets");
+  const outputDir = path.join(__dirname, "output");
+  const assetsDir = path.join(__dirname, "assets");
 
   before(async () => {
-    await IModelHost.startup({ cacheDir: path.join(import.meta.dirname, ".cache") });
+    await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
     AnalyticalSchema.registerSchema();
     TestAnalyticalSchema.registerSchema();
     if (!IModelJsFs.existsSync(outputDir)) {

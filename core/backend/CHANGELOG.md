@@ -1,6 +1,54 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Wed, 16 Jul 2025 15:01:35 GMT and should not be manually modified.
+This log was last generated on Fri, 08 Aug 2025 18:10:14 GMT and should not be manually modified.
+
+## 5.1.1
+Fri, 08 Aug 2025 18:06:10 GMT
+
+_Version update only_
+
+## 5.1.0
+Fri, 08 Aug 2025 12:51:53 GMT
+
+### Updates
+
+- Add Symbols to prevent duplicate instances of package
+- Fix applychangeset issue
+- Mark iModel edit API as @preview
+- verify changeset id before pushing
+- add unit test for concurrent query
+- Add release tag to ECChangeUnifierCache namespace
+- Fix regression when using performCheckpoint()
+- TextAnnotation elements use new BIS property `textAnnotationData`. Introduce `AnnotationTextStyle` class to TypeScript layer. Add new `TextStyleResolver` class to resolve effective text styles from inheritance chain. Drawing scale is accounted for when creating geometry.
+- Add SheetViewDefinition.create, CreateSheetViewDefinitionArgs
+- Fix recipe initialization in TypeDefinitionElement
+- optionally return world CRS from getAvailableCoordinateReferenceSystems
+- Refactoring the TextAnnotationGeometry and adding support for frames
+- Ensuring the order of geometry in FrameGeometry & adding tests
+- Added `TabRun`s to `TextBlockLayout`
+- Added IModelIncrementalSchemaLocater which is an ISchemaLocater implementation that provides asynchronous incremental loading of EC Schemas from iModels using ECSql queries.
+- Improve change unifer to handle very large changeset
+- Add cache for resolveInstanceKey
+- Clear iModelDb Caches on abandonChanges
+- Thining iModelPlatform API
+- Allow Entity.forEach to support relationship classes
+- Add support for RelationshipClasses in Entity.getMetaData
+- Updates iModelDb Error Handling
+- Reduce Model and Element Cache Size
+- Fix IModelDb coordinate conversion results to include `fromCache` and also the point array if input point array was empty.
+- Fix TextStyle.widthFactor multiplying by height instead of width during text layout.
+- Add support for text fields.
+- Added functionality to enable health stats tracking for changesets.
+- Introducing Text Annotation Leaders
+- Snapshot/StandaloneDb.createBlank - set ecefLocation and geographicCoordinateSystem if provided
+- Add Beta downloadChangeset and downloadChangesets to BriefcaseManager.
+- Make IModelHostConfiguration.hubAccess public.
+- Updated deprecation comments to new template
+
+## 5.0.5
+Wed, 06 Aug 2025 15:34:15 GMT
+
+_Version update only_
 
 ## 5.0.4
 Wed, 16 Jul 2025 14:59:59 GMT
