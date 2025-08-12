@@ -31,7 +31,7 @@ import { HalfEdgeGraphSearch } from "./HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge, HalfEdgeGraphOps } from "./Merging";
 import { Triangulator } from "./Triangulation";
 
-interface Line {
+interface Segment2d {
   start: XAndY;
   end: XAndY;
 }
@@ -127,7 +127,7 @@ export class Voronoi {
   // generate bisector of each edge in the Delaunay triangulation and limit it to the voronoi boundary
   private getBisector(
     vertex: HalfEdge, circumcenter: Point3d, voronoiBoundary: VoronoiBoundary,
-  ): Line | undefined {
+  ): Segment2d | undefined {
     const p0 = vertex.getPoint3d();
     const p1 = vertex.faceSuccessor.getPoint3d();
     const p2 = vertex.faceSuccessor.faceSuccessor.getPoint3d();
@@ -144,7 +144,7 @@ export class Voronoi {
     const scale = 100000; // had to pick a large scale to ensure the bisector is long enough to intersect the voronoi boundary
     const bisectorStart = circumcenter;
     const bisectorEnd = Point3d.createAdd2Scaled(bisectorStart, 1, direction, scale);
-    const bisector: Line = { start: bisectorStart, end: bisectorEnd };
+    const bisector: Segment2d = { start: bisectorStart, end: bisectorEnd };
     const intersection = voronoiBoundary.intersect(bisector);
     if (!intersection || intersection.length === 0)
       return undefined; // bisector is outside the voronoi boundary for skinny triangles; skip it
@@ -190,10 +190,10 @@ export class Voronoi {
       return true; // circumcenters are the same, skip this edge
     const center0IsInsideVoronoiBoundary = voronoiBoundary.contains(circumcenter0);
     const center1IsInsideVoronoiBoundary = voronoiBoundary.contains(circumcenter1);
-    const line: Line = { start: circumcenter0, end: circumcenter1 }; // line segment between circumcenters
+    const line: Segment2d = { start: circumcenter0, end: circumcenter1 }; // line segment between circumcenters
     const intersection = voronoiBoundary.intersect(line);
     if (intersection && intersection.length > 0) { // line intersects the voronoi boundary
-      let limitedLine: Line;
+      let limitedLine: Segment2d;
       if (!center0IsInsideVoronoiBoundary && !center1IsInsideVoronoiBoundary) {
         limitedLine = { start: intersection[0], end: intersection[1] }; // limit line to the voronoi boundary
       } else {
@@ -328,14 +328,14 @@ export class Voronoi {
     return colinearGraph;
   }
   // find the bisector of a line segment defined by two points p0 and p1 and limit it to the voronoi boundary
-  private static getLineBisector(p0: Point3d, p1: Point3d, voronoiBoundary: VoronoiBoundary): Line | undefined {
+  private static getLineBisector(p0: Point3d, p1: Point3d, voronoiBoundary: VoronoiBoundary): Segment2d | undefined {
     p0.z = p1.z = 0; // ignore z-coordinate
     const midPoint = Point3d.createAdd2Scaled(p0, 0.5, p1, 0.5);
     const perp = Vector3d.create(p0.y - p1.y, p1.x - p0.x);
     const scale = 10000;
     const bisectorStart = Point3d.createAdd2Scaled(midPoint, 1, perp, -scale);
     const bisectorEnd = Point3d.createAdd2Scaled(midPoint, 1, perp, scale);
-    const bisector: Line = { start: bisectorStart, end: bisectorEnd };
+    const bisector: Segment2d = { start: bisectorStart, end: bisectorEnd };
     const intersections = voronoiBoundary.intersect(bisector);
     if (!intersections || intersections.length <= 1)
       return undefined;
@@ -613,7 +613,7 @@ export class Voronoi {
 
     return superFaces;
   }
-  /** Modifies the voronoi graph such that each super face has only convex faces. */
+  /** Modifies the voronoi graph such that each super face contains only convex faces. */
   public convexifySuperFaces(superFaceEdgeMask: HalfEdgeMask) {
     Triangulator.triangulateAllInteriorFaces(this._voronoiGraph);
     HalfEdgeGraphOps.expandConvexFaces(this._voronoiGraph, superFaceEdgeMask);
@@ -723,7 +723,7 @@ class VoronoiBoundary {
       this.p1.y <= point.y && point.y <= this.p2.y;
   }
   /** Checks if the line intersects the boundary and returns the intersections. */
-  public intersect(line: Line): Point3d[] {
+  public intersect(line: Segment2d): Point3d[] {
     const intersections: Point3d[] = [];
     const fractions: Vector2d = Vector2d.createZero();
     for (const pair of [[this.p0, this.p1], [this.p1, this.p2], [this.p2, this.p3], [this.p3, this.p0]]) {
