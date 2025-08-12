@@ -1390,8 +1390,8 @@ export abstract class GltfReader {
         assert(indices !== undefined);
         assert(visibility.buffer instanceof Uint8Array);
 
-        const silhouetteNormals = this.readBufferData16(ext, "silhouetteNormals");
-        const normalPairs = silhouetteNormals ? new Uint32Array(silhouetteNormals.buffer.buffer, silhouetteNormals.buffer.byteOffset, silhouetteNormals.buffer.byteLength / 4) : undefined;
+        const silhouetteNormals = this.readAndOctEncodeNormals(ext, "silhouetteNormals");
+        const normalPairs = silhouetteNormals ? new Uint32Array(silhouetteNormals.buffer, silhouetteNormals.byteOffset, silhouetteNormals.byteLength / 4) : undefined;
         mesh.primitive.edges = new MeshEdges();
 
         for (const edge of compactEdgeIterator(visibility.buffer, normalPairs, indices.length, (idx) => indices[idx])) {
@@ -1857,7 +1857,7 @@ export abstract class GltfReader {
   }
 
   protected readMeshNormals(mesh: GltfMeshData, json: { [k: string]: any }, accessorName: string): boolean {
-    const normals = this.readNormals(json, accessorName);
+    const normals = this.readAndOctEncodeNormals(json, accessorName);
     if (normals) {
       mesh.normals = normals;
       return true;
@@ -1866,7 +1866,7 @@ export abstract class GltfReader {
     return false;
   }
 
-  protected readNormals(json: { [k: string]: any }, accessorName: string): Uint16Array | undefined {
+  protected readAndOctEncodeNormals(json: { [k: string]: any }, accessorName: string): Uint16Array | undefined {
     const view = this.getBufferView(json, accessorName);
     if (undefined === view)
       return undefined;
