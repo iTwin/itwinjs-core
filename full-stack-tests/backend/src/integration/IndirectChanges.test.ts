@@ -25,7 +25,7 @@ async function assertThrowsAsync<T>(test: () => Promise<T>, contains?: string) {
   throw new Error(`Failed to throw error with message: "${contains}"`);
 }
 
-describe.only("Indirect changes flag on elements", () => {
+describe("Indirect changes flag on elements", () => {
   let iTwinId = "";
   const user1AccessToken = "token 1";
   const user2AccessToken = "token 2";
