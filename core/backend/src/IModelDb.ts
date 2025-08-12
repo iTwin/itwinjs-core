@@ -91,7 +91,9 @@ export interface UpdateModelOptions extends ModelProps {
  * @public
  */
 export interface EditOptions {
-  /** If true, the edit will be marked as an indirect change. */
+  /** If true, the edit will be marked as an indirect change.
+   * @alpha
+   */
   indirect?: boolean;
 }
 
