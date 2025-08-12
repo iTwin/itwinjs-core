@@ -46,83 +46,93 @@ interface Segment2d {
 */
 export class Voronoi {
   private _voronoiGraph: HalfEdgeGraph;
-  private _delaunayGraph: HalfEdgeGraph;
-  private _delaunayGraphIsValid = true;
-  private _circumcenterMap: Map<number, Point3d> = new Map();
-  private _idToIndexMap: Map<number, number> = new Map();
-  private _delaunayGraphRange: Range3d = Range3d.createNull();
-  private _circumcenterRange: Range3d = Range3d.createNull();
-  private constructor(delaunayGraph: HalfEdgeGraph, isColinear = false) {
-    this._delaunayGraph = delaunayGraph;
+  private _delaunayGraph: Readonly<HalfEdgeGraph>;
+  private _delaunayGraphIsValid;
+  private _circumcenterMap: Map<number, Point3d>;
+  private _idToIndexMap: Map<number, number>;
+  private _delaunayGraphRange: Range3d;
+  private _circumcenterRange: Range3d;
+  // Construct an empty Voronoi diagram. Validates the input (use isValid to check result).
+  private constructor(delaunayGraph: Readonly<HalfEdgeGraph>, isColinear = false) {
     this._voronoiGraph = new HalfEdgeGraph();
-    if (!isColinear)
-      this.populateCircumcenters();
-    this.populateIdToIndexMap();
+    this._delaunayGraph = delaunayGraph;
+    this._delaunayGraphIsValid = this._delaunayGraph.allHalfEdges.length >= 6;
     this._delaunayGraphRange = HalfEdgeGraphOps.graphRange(delaunayGraph);
+    this._idToIndexMap = this.populateIdToIndexMap();
+    if (isColinear) {
+      this._circumcenterMap = new Map();
+      this._delaunayGraphIsValid &&= this._idToIndexMap.size > 0;
+    } else {
+      this._circumcenterMap = this.populateCircumcenters() ?? new Map();
+      this._delaunayGraphIsValid &&= (this._idToIndexMap.size > 0 && this._circumcenterMap.size > 0);
+    }
+    this._circumcenterRange = Range3d.create(...Array.from(this._circumcenterMap.values()));
   }
-  public getVoronoiGraph(): HalfEdgeGraph {
+  public get getVoronoiGraph(): HalfEdgeGraph {
     return this._voronoiGraph;
   }
-  public getDelaunayGraph(): HalfEdgeGraph {
+  public get getDelaunayGraph(): Readonly<HalfEdgeGraph> {
     return this._delaunayGraph;
   }
-  // find min id of the triangular face containing this vertex
-  private findFaceMinId(vertex: HalfEdge): number {
-    return Math.min(vertex.id, vertex.faceSuccessor.id, vertex.faceSuccessor.faceSuccessor.id);
+  protected get isValid(): boolean {
+    return this._delaunayGraphIsValid;
   }
-  // collect all centers of circumcircles formed by triangles in the Delaunay triangulation
-  // and store them in a map with the minimum ID of face nodes as key
-  private populateCircumcenters(): void {
+  // return the smallest HalfEdge id in the (triangular) face
+  private getTriangleId(face: HalfEdge): number {
+    return Math.min(face.id, face.faceSuccessor.id, face.faceSuccessor.faceSuccessor.id);
+  }
+  // create a map from a Delaunay triangle's id to its circumcircle
+  private populateCircumcenters(): Map<number, Point3d> | undefined {
+    const circumcenterMap = new Map<number, Point3d>();
+    let isValid = true;
+    const p0 = Point3d.createZero();
+    const p1 = Point3d.createZero();
+    const p2 = Point3d.createZero();
     this._delaunayGraph.announceFaceLoops(
       (_g: HalfEdgeGraph, seed: HalfEdge) => {
         if (seed.isMaskSet(HalfEdgeMask.EXTERIOR))
           return true; // skip exterior faces
-        if (seed.countEdgesAroundFace() !== 3) {
-          this._delaunayGraphIsValid = false;
-          return false;
-        }
+        if (seed.countEdgesAroundFace() !== 3)
+          return isValid = false;
         // find circumcenter of the triangle formed by this face
-        const p0 = seed.getPoint3d();
-        const p1 = seed.faceSuccessor.getPoint3d();
-        const p2 = seed.faceSuccessor.faceSuccessor.getPoint3d();
-        p0.z = p1.z = p2.z = 0; // ignore z-coordinate
+        seed.getPoint3d(p0);
+        seed.faceSuccessor.getPoint3d(p1);
+        seed.faceSuccessor.faceSuccessor.getPoint3d(p2);
+        p0.z = p1.z = p2.z = 0;
         const circumcircle = Arc3d.createCircularStartMiddleEnd(p0, p1, p2);
-        if (!circumcircle || circumcircle instanceof LineString3d) {
-          this._delaunayGraphIsValid = false;
-          return false;
-        }
+        if (circumcircle instanceof LineString3d)
+          return isValid = false;
         const circumcenter = circumcircle.center
-        const minId = this.findFaceMinId(seed);
-        this._circumcenterMap.set(minId, circumcenter);
+        const triangleId = this.getTriangleId(seed);
+        circumcenterMap.set(triangleId, circumcenter);
         return true;
       },
     );
-    this._circumcenterRange = Range3d.create(...Array.from(this._circumcenterMap.values()));
+    return isValid ? circumcenterMap : undefined;
   }
-  // go over all the nodes in the Delaunay graph and create a map of node IDs in a vertex loop to
-  // min index of that vertex loop in graph.allHalfEdges
-  private populateIdToIndexMap(): void {
+  // create a map from a Delaunay HalfEdge's id to the smallest index of the HalfEdges in its vertex loop
+  private populateIdToIndexMap(): Map<number, number> {
+    const idToIndexMap = new Map<number, number>();
     this._delaunayGraph.allHalfEdges.forEach((node, index) => {
-      this._idToIndexMap.set(node.id, index);
+      idToIndexMap.set(node.id, index);
     });
     this._delaunayGraph.announceVertexLoops(
       (_g: HalfEdgeGraph, seed: HalfEdge) => {
         const nodesAroundVertex = seed.collectAroundVertex();
         let minIndex = Number.MAX_SAFE_INTEGER;
         for (const node of nodesAroundVertex) {
-          const index = this._idToIndexMap.get(node.id);
-          if (index === undefined) {
-            this._delaunayGraphIsValid = false;
-            return false;
+          const index = idToIndexMap.get(node.id);
+          if (index !== undefined) { // always defined
+            if (index < minIndex)
+              minIndex = index;
           }
-          if (index < minIndex)
-            minIndex = index;
         }
         for (const node of nodesAroundVertex)
-          this._idToIndexMap.set(node.id, minIndex);
+          idToIndexMap.set(node.id, minIndex);
         return true;
       },
     );
+    return idToIndexMap;
   }
   // generate bisector of each edge in the Delaunay triangulation and limit it to the voronoi boundary
   private getBisector(
@@ -161,8 +171,8 @@ export class Voronoi {
     let vertex = seed;
     if (seedIsExterior)
       vertex = seed.edgeMate;
-    const minId = this.findFaceMinId(vertex);
-    const circumcenter = this._circumcenterMap.get(minId);
+    const triangleId = this.getTriangleId(vertex);
+    const circumcenter = this._circumcenterMap.get(triangleId);
     if (!circumcenter)
       return false; // no circumcenter found for the face containing this edge
     const bisector = this.getBisector(vertex, circumcenter, voronoiBoundary);
@@ -180,10 +190,10 @@ export class Voronoi {
     voronoiBoundary: VoronoiBoundary,
     tol: number,
   ): boolean {
-    const minId0 = this.findFaceMinId(seed);
-    const minId1 = this.findFaceMinId(seed.edgeMate);
-    const circumcenter0 = this._circumcenterMap.get(minId0);
-    const circumcenter1 = this._circumcenterMap.get(minId1);
+    const triangleId0 = this.getTriangleId(seed);
+    const triangleId1 = this.getTriangleId(seed.edgeMate);
+    const circumcenter0 = this._circumcenterMap.get(triangleId0);
+    const circumcenter1 = this._circumcenterMap.get(triangleId1);
     if (!circumcenter0 || !circumcenter1)
       return false; // no circumcenter found for the face containing this edge
     if (circumcenter0.isAlmostEqual(circumcenter1, tol))
@@ -271,17 +281,14 @@ export class Voronoi {
     delaunayGraph: HalfEdgeGraph, tol: number = Geometry.smallMetricDistance,
   ): Voronoi | undefined {
     const voronoi = new Voronoi(delaunayGraph);
-    const graphLength = voronoi.getDelaunayGraph().allHalfEdges.length;
-    if (delaunayGraph === undefined || graphLength < 3)
+    if (!voronoi.isValid)
       return undefined;
     let isValidVoronoi = true;
-    if (!voronoi._delaunayGraphIsValid)
-      return undefined;
     const voronoiBoundary = new VoronoiBoundary(voronoi._delaunayGraphRange, voronoi._circumcenterRange);
     // go over all edges in the Delaunay graph and add bisectors for boundary edges
     // and add line between circumcenters for interior edges
     // if a circumcenter is outside the voronoi boundary, limit the bisector or line to the voronoi boundary
-    voronoi.getDelaunayGraph().announceEdges(
+    voronoi.getDelaunayGraph.announceEdges(
       (_g: HalfEdgeGraph, seed: HalfEdge) => {
         const seedIsExterior = seed.isMaskSet(HalfEdgeMask.EXTERIOR);
         const seedIsBoundary = seed.isMaskSet(HalfEdgeMask.BOUNDARY_EDGE);
@@ -297,7 +304,7 @@ export class Voronoi {
       },
     );
     if (!isValidVoronoi)
-      return undefined; // invalid voronoi graph
+      return undefined;
     voronoi.addVoronoiBoundary(voronoiBoundary);
     HalfEdgeGraphMerge.splitIntersectingEdges(voronoi._voronoiGraph);
     HalfEdgeGraphMerge.clusterAndMergeXYTheta(voronoi._voronoiGraph);
@@ -348,7 +355,7 @@ export class Voronoi {
   // create a Voronoi diagram for a graph with colinear points
   private static createFromColinearGraph(colinearGraph: HalfEdgeGraph): Voronoi | undefined {
     const voronoi = new Voronoi(colinearGraph, true);
-    if (!voronoi._delaunayGraphIsValid)
+    if (!voronoi.isValid)
       return undefined;
     const voronoiBoundary = new VoronoiBoundary(voronoi._delaunayGraphRange, voronoi._circumcenterRange);
     let isValidVoronoi = true;

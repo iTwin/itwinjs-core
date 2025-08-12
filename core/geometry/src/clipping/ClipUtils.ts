@@ -33,7 +33,6 @@ import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 import { Transform } from "../geometry3d/Transform";
 import { XAndY } from "../geometry3d/XYZProps";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { HalfEdgeMask } from "../topology/Graph";
 import { Voronoi } from "../topology/Voronoi";
 import { ClipPlane } from "./ClipPlane";
 import { ClipPrimitive } from "./ClipPrimitive";
@@ -1128,13 +1127,13 @@ export class ClipUtilities {
     const voronoi = Voronoi.createFromCurveChain(curveChain, strokeOptions, distanceTol);
     if (!voronoi)
       return undefined;
-    const superFaceEdgeMask = voronoi.getVoronoiGraph().grabMask();
+    const superFaceEdgeMask = voronoi.getVoronoiGraph.grabMask();
     const superFaces = voronoi.getSuperFaces(curveChain.children.length, superFaceEdgeMask);
     if (superFaces === undefined || superFaces.length === 0)
       return undefined;
     voronoi.convexifySuperFaces(superFaceEdgeMask);
     const clippers = voronoi.generateClippersFromSuperFaces(superFaces, superFaceEdgeMask);
-    voronoi.getVoronoiGraph().dropMask(superFaceEdgeMask);
+    voronoi.getVoronoiGraph.dropMask(superFaceEdgeMask);
     return clippers;
   }
 }

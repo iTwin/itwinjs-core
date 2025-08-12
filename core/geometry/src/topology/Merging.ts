@@ -96,7 +96,7 @@ export class HalfEdgeGraphOps {
   // ---------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------
 
-  public static graphRange(graph: HalfEdgeGraph): Range3d {
+  public static graphRange(graph: Readonly<HalfEdgeGraph>): Range3d {
     const range = Range3d.create();
     for (const node of graph.allHalfEdges) {
       range.extendXYZ(node.x, node.y, node.z);
