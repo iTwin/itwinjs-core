@@ -252,6 +252,10 @@ export namespace Run { // eslint-disable-line @typescript-eslint/no-redeclare
       case "field": return FieldRun.create(props);
     }
   }
+
+  export function isRun(component: TextBlockComponent): component is Run {
+    return component.type === "text" || component.type === "fraction" || component.type === "tab" || component.type === "linebreak" || component.type === "field";
+  }
 }
 
 
@@ -280,6 +284,10 @@ export namespace Container { // eslint-disable-line @typescript-eslint/no-redecl
       case "list": return List.create(props);
       case "list-item": return ListItem.create(props);
     }
+  }
+
+  export function isContainer(component: TextBlockComponent): component is Container {
+    return component.type === "paragraph" || component.type === "list" || component.type === "list-item";
   }
 }
 
