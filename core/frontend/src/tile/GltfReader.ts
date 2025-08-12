@@ -47,7 +47,7 @@ import { compactEdgeIterator } from "../common/imdl/CompactEdges";
 import { MeshPolylineGroup } from "@itwin/core-common/lib/cjs/internal/RenderMesh";
 
 /** @internal */
-export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
+export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array | Int8Array;
 
 /**
  * A chunk of binary data exposed as a typed array.
@@ -75,6 +75,7 @@ export class GltfBufferData {
       switch (expectedType) {
         case GltfDataType.Float:
         case GltfDataType.UnsignedByte:
+        case GltfDataType.SignedByte:
           return undefined;
         case GltfDataType.UnsignedShort:
           if (GltfDataType.UnsignedByte !== actualType)
@@ -97,6 +98,8 @@ export class GltfBufferData {
     switch (actualType) {
       case GltfDataType.UnsignedByte:
         return bytes;
+      case GltfDataType.SignedByte:
+        return new Int8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength);
       case GltfDataType.UnsignedShort:
         return new Uint16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2);
       case GltfDataType.UInt32:
@@ -1013,6 +1016,7 @@ export abstract class GltfReader {
       let dataSize = 0;
       switch (type) {
         case GltfDataType.UnsignedByte:
+        case GltfDataType.SignedByte:
           dataSize = 1;
           break;
         case GltfDataType.UnsignedShort:
@@ -1873,6 +1877,28 @@ export abstract class GltfReader {
         return true;
       }
 
+      case GltfDataType.SignedByte: {
+        const data = view.toBufferData(GltfDataType.SignedByte);
+        if (!data) {
+          return false;
+        }
+
+        const normalize = (val: number) => 2 * ((val + 128) / 255) - 1;
+        mesh.normals = new Uint16Array(data.count);
+        const scratchNormal = new Vector3d();
+        const strideSkip = view.stride - 3;
+        for (let i = 0, j = 0; i < data.count; i++, j += strideSkip) {
+          const x = normalize(data.buffer[j++]);
+          const y = normalize(data.buffer[j++]);
+          const z = normalize(data.buffer[j++]);
+          scratchNormal.set(x, y, z);
+          mesh.normals[i] = OctEncodedNormal.encode(scratchNormal);
+        }
+
+        return true;
+      }
+
+      // This is weird, why does it assume 8-bit normal vectors are actually 16-bit oct-encoded normals?
       case GltfDataType.UnsignedByte: {
         const data = view.toBufferData(GltfDataType.UnsignedByte);
         if (undefined === data)
