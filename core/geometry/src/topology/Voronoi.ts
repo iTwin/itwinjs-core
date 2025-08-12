@@ -620,9 +620,10 @@ export class Voronoi {
   }
   /** Generates clippers from super faces */
   public generateClippersFromSuperFaces(
-    superFaces: HalfEdge[][], superFaceEdgeMask: HalfEdgeMask, superFaceOutsideMask: HalfEdgeMask,
+    superFaces: HalfEdge[][], superFaceEdgeMask: HalfEdgeMask,
   ): (ConvexClipPlaneSet | UnionOfConvexClipPlaneSets)[] | undefined {
     const allClippers: (ConvexClipPlaneSet | UnionOfConvexClipPlaneSets)[] = [];
+    const superFaceOutsideMask = this._voronoiGraph.grabMask();
     for (const superFace of superFaces) {
       superFace[0].announceEdgesInSuperFace(
         (node: HalfEdge) => !node.isMaskSet(superFaceEdgeMask),
@@ -652,6 +653,7 @@ export class Voronoi {
           const normal = Vector3d.unitZ().crossProduct(edgeVector);
           const clipPlane = ClipPlane.createNormalAndPoint(normal, edge.getPoint3d());
           if (!clipPlane) {
+            this._voronoiGraph.dropMask(superFaceOutsideMask);
             return undefined; // failed to create clip plane
           }
           clipPlanesOfConvexFace.push(clipPlane);
@@ -666,6 +668,7 @@ export class Voronoi {
       else
         allClippers.push(UnionOfConvexClipPlaneSets.createConvexSets(clippersOfSuperFace));
     }
+    this._voronoiGraph.dropMask(superFaceOutsideMask);
     return allClippers;
   }
   /** Creates a Polyface from the Voronoi diagram super faces */

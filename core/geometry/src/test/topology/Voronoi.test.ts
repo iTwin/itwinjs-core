@@ -765,15 +765,12 @@ describe("Voronoi", () => {
     if (!voronoi)
       return undefined;
     const superFaceEdgeMask = voronoi.getVoronoiGraph().grabMask();
-    const superFaceOutsideMask = voronoi.getVoronoiGraph().grabMask();
     const superFaces = voronoi.getSuperFaces(path.children.length, superFaceEdgeMask);
     if (!superFaces)
       return undefined;
-    voronoi.convexifySuperFaces(superFaceEdgeMask);
-    const clippers = voronoi.generateClippersFromSuperFaces(superFaces, superFaceEdgeMask, superFaceOutsideMask);
+    const clippers = voronoi.generateClippersFromSuperFaces(superFaces, superFaceEdgeMask);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, voronoi.createPolyface(superFaceEdgeMask));
     voronoi.getVoronoiGraph().dropMask(superFaceEdgeMask);
-    voronoi.getVoronoiGraph().dropMask(superFaceOutsideMask);
     return clippers;
     }
 
