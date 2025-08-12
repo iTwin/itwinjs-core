@@ -54,20 +54,7 @@ export class Unit extends SchemaItem {
    * Returns true if a conversion can be calculated between the input units
    * @alpha
    */
-  public static async areCompatible(unitA: Unit, unitB: Unit): Promise<boolean> {
-    const unitAPhenomenon = await unitA.phenomenon;
-    const unitBPhenomenon = await unitB.phenomenon;
-
-    if (!unitAPhenomenon || !unitBPhenomenon || !unitAPhenomenon.key.matches(unitBPhenomenon.key))
-      return false;
-    return true;
-  }
-
-  /**
-   * Returns true if a conversion can be calculated between the input units
-   * @alpha
-   */
-  public static areCompatibleSync(unitA: Unit, unitB: Unit): boolean {
+  public static areCompatible(unitA: Unit, unitB: Unit): boolean {
     const unitAPhenomenon = unitA.phenomenon;
     const unitBPhenomenon = unitB.phenomenon;
 

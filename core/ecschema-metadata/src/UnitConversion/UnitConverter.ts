@@ -97,7 +97,7 @@ export class UnitConverter {
     if (from.key.matches(to.key))
       return UnitConversion.identity;
 
-    const areCompatible = await Unit.areCompatible(from as Unit, to as Unit);
+    const areCompatible = Unit.areCompatible(from as Unit, to as Unit);
     if (!areCompatible)
       throw new BentleyError(BentleyStatus.ERROR, `Source and target units do not belong to same phenomenon`, () => {
         return { from, to };
@@ -135,7 +135,7 @@ export class UnitConverter {
     if (from.key.matches(to.key))
       return UnitConversion.identity;
 
-    const areCompatible = Unit.areCompatibleSync(from as Unit, to as Unit);
+    const areCompatible = Unit.areCompatible(from as Unit, to as Unit);
     if (!areCompatible)
       throw new BentleyError(BentleyStatus.ERROR, `Source and target units do not belong to same phenomenon`, () => {
         return { from, to };
