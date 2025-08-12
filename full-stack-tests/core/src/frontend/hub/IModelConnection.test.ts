@@ -23,7 +23,7 @@ async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: 
   return rows;
 }
 
-describe.only("IModelConnection (#integration)", () => {
+describe("IModelConnection (#integration)", () => {
   let iModel: IModelConnection;
 
   before(async () => {
