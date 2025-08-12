@@ -108,15 +108,18 @@ function comparePathToClippedCurves(
   const clippedCurvesCentroids: Point3d[] = [];
   for (const clippedCurve of clippedCurves) {
     const clippedPath = CurveOps.collectChains(clippedCurve);
-    if (ck.testType(clippedPath, Path, "clipped curves successfully assembled into a Path")) {
-      RegionOps.consolidateAdjacentPrimitives(clippedPath);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedPath, dx);
-      const momentData = RegionOps.computeXYZWireMomentSums(clippedPath);
-      if (ck.testDefined(momentData)) {
-        const length = momentData.quantitySum;
-        clippedCurvesLengths.push(length);
-        const centroid = momentData.origin;
-        clippedCurvesCentroids.push(centroid);
+    if (ck.testDefined(clippedPath, "clipped curves successfully assembled into chain(s)")) {
+      if (ck.testFalse(clippedPath instanceof BagOfCurves, "clipped curves successfully assembled into ONE chain")) {
+        if (clippedPath instanceof CurveChain)
+          RegionOps.consolidateAdjacentPrimitives(clippedPath);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, clippedPath, dx);
+        const momentData = RegionOps.computeXYZWireMomentSums(clippedPath);
+        if (ck.testDefined(momentData)) {
+          const length = momentData.quantitySum;
+          clippedCurvesLengths.push(length);
+          const centroid = momentData.origin;
+          clippedCurvesCentroids.push(centroid);
+        }
       }
     }
   }
