@@ -2,6 +2,24 @@
   "name": "@itwin/frontend-tiles",
   "entries": [
     {
+      "version": "5.1.1",
+      "tag": "@itwin/frontend-tiles_v5.1.1",
+      "date": "Fri, 08 Aug 2025 18:06:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.0",
+      "tag": "@itwin/frontend-tiles_v5.1.0",
+      "date": "Fri, 08 Aug 2025 12:51:53 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.0.5",
+      "tag": "@itwin/frontend-tiles_v5.0.5",
+      "date": "Wed, 06 Aug 2025 15:34:16 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.0.4",
       "tag": "@itwin/frontend-tiles_v5.0.4",
       "date": "Wed, 16 Jul 2025 14:59:59 GMT",
