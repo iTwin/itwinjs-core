@@ -5,7 +5,8 @@ import * as fs from "fs";
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import { ClipUtilities } from "../../clipping/ClipUtils";
-import { ConvexClipPlaneSet, UnionOfConvexClipPlaneSets } from "../../core-geometry";
+import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
+import { UnionOfConvexClipPlaneSets } from "../../clipping/UnionOfConvexClipPlaneSets";
 import { Arc3d } from "../../curve/Arc3d";
 import { BagOfCurves, CurveChain } from "../../curve/CurveCollection";
 import { CurveOps } from "../../curve/CurveOps";
