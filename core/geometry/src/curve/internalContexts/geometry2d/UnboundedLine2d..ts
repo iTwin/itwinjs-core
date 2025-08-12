@@ -138,6 +138,14 @@ export class UnboundedLine2dByPointAndNormal extends ImplicitCurve2d {
     return this.normal.rotate90CCWXY().normalize();
   }
   /**
+   * * unit vector for the line normal.
+   * @returns the unit vector, or undefined if the normal is zero length.
+   *
+   */
+  public unitNormal(): Vector2d | undefined {
+    return this.normal.normalize ();
+  }
+  /**
    * Drop a perpendicular from spacePoint to the line.   Emit that point to the handler.
    * @param spacePoint
    * @param handler

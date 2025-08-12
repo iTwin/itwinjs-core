@@ -78,6 +78,62 @@ export class TangentConstruction {
     return result;
   }
   /**
+   * Return all (i.e. up to 2 ) unbounded lines perpendicular to a line and tangent to a circle
+   * @param circleA first circle
+   * @param circleB second circle
+   * @returns
+   */
+  public static linesPerpLTangentC(
+    lineA: UnboundedLine2dByPointAndNormal,
+    circleB: UnboundedCircle2dByCenterAndRadius
+  ): ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>[] | undefined {
+    const lineTangent = lineA.unitVectorAlongLine ();
+    const unitNormal = lineA.unitNormal ();
+    const linePoint = lineA.closestPoint (circleB.center);
+    if (linePoint === undefined || lineTangent === undefined || unitNormal === undefined)
+        return undefined;
+    const unitPerp = unitNormal.rotate90CCWXY ()
+    const result = [];
+    for (const r of signedValues (circleB.radius)){
+      const pointA = linePoint.plusScaled (lineTangent, r);
+      const pointB = circleB.center.plusScaled (lineTangent, r);
+      const lineC = UnboundedLine2dByPointAndNormal.createPointNormal(pointA, unitPerp);
+      const taggedLine = new ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>(lineC);
+      taggedLine.data.push(new Point2dImplicitCurve2d(pointA, lineA)); // CLONE!
+      taggedLine.data.push(new Point2dImplicitCurve2d(pointB, circleB)); // CLONE!
+      result.push(taggedLine);
+      }
+    return result;
+  }
+  /**
+   * Return all (i.e. up to 2 ) unbounded lines perpendicular to a line and tangent to a circle
+   * @param circleA first circle
+   * @param circleB second circle
+   * @returns
+   */
+  public static linesPerpLPerpC(
+    lineA: UnboundedLine2dByPointAndNormal,
+    circleB: UnboundedCircle2dByCenterAndRadius
+  ): ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>[] | undefined {
+    const lineTangent = lineA.unitVectorAlongLine ();
+    const unitNormal = lineA.unitNormal ();
+    const linePoint = lineA.closestPoint (circleB.center);
+    if (linePoint === undefined || lineTangent === undefined || unitNormal === undefined)
+        return undefined;
+    const unitPerp = unitNormal.rotate90CCWXY ()
+    const result = [];
+    for (const r of signedValues (circleB.radius)){
+      const pointA = linePoint.clone ()
+      const pointB = circleB.center.plusScaled (unitNormal, r);
+      const lineC = UnboundedLine2dByPointAndNormal.createPointNormal(pointA, unitPerp);
+      const taggedLine = new ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>(lineC);
+      taggedLine.data.push(new Point2dImplicitCurve2d(pointA, lineA)); // CLONE!
+      taggedLine.data.push(new Point2dImplicitCurve2d(pointB, circleB)); // CLONE!
+      result.push(taggedLine);
+      }
+    return result;
+  }
+  /**
    * Return all (i.e. up to 4 ) unbounded lines tangent to 2 circles
    * * There are 4 lines if there is neither intersection nor containment between the circles
    * * There are 2 lines if the circles intersect
