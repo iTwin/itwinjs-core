@@ -116,7 +116,7 @@ describe("ImplicitCircle2d", () => {
   }
   );
   it("LinePerpLinePerpTanC", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker(false, false);
     const allGeometry: GeometryQuery[] = [];
     const lineM = UnboundedLine2dByPointAndNormal.createPointXYPointXY(3, 1, 1, 5);
     const lineN = UnboundedLine2dByPointAndNormal.createPointXYPointXY(3, 1, 5, 6);
