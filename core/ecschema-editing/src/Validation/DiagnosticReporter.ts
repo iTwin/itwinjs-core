@@ -68,12 +68,9 @@ export abstract class SuppressionDiagnosticReporter implements IDiagnosticReport
    * @param diagnostic The diagnostic to report.
    */
   public report(diagnostic: AnyDiagnostic) {
-    if (undefined !== this._suppressions) {
-      const suppressedCodes = this._suppressions.get(diagnostic.schema.fullName);
-      if (undefined !== suppressedCodes && suppressedCodes.includes(diagnostic.code)) {
-        return;
-      }
-    }
+    const suppressedCodes = this._suppressions?.get(diagnostic.schema.fullName);
+    if (suppressedCodes && suppressedCodes.includes(diagnostic.code))
+      return;
 
     this.reportInternal(diagnostic);
   }
