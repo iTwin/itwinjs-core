@@ -27,7 +27,7 @@ import { ExtensionAdmin } from "./extension/ExtensionAdmin";
 import * as displayStyleState from "./DisplayStyleState";
 import * as drawingViewState from "./DrawingViewState";
 import { ElementLocateManager } from "./ElementLocateManager";
-import { EntityState } from "./EntityState";
+import { ElementState, EntityState } from "./EntityState";
 import { FrontendHubAccess } from "./FrontendHubAccess";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import * as modelselector from "./ModelSelectorState";
@@ -394,6 +394,7 @@ export class IModelApp {
     ].forEach((tool) => this.tools.registerModule(tool, toolsNs));
 
     this.registerEntityState(EntityState.classFullName, EntityState);
+    this.registerEntityState(ElementState.classFullName, ElementState);
     [
       modelState,
       sheetState,

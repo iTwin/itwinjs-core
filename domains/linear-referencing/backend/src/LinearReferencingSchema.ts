@@ -8,9 +8,9 @@
 
 import * as path from "node:path";
 import { ClassRegistry, KnownLocations, Schema, Schemas } from "@itwin/core-backend";
-import * as aspectsModule from "./LinearReferencingElementAspects.js";
-import * as elementsModule from "./LinearReferencingElements.js";
-import * as relationshipsModule from "./LinearReferencingRelationships.js";
+import * as aspectsModule from "./LinearReferencingElementAspects";
+import * as elementsModule from "./LinearReferencingElements";
+import * as relationshipsModule from "./LinearReferencingRelationships";
 
 /** Schema for the LinearReferencing domain.
  * [Linear referencing](https://en.wikipedia.org/wiki/Linear_referencing) is the method of storing geographic locations by using relative positions along a measured linear feature.
