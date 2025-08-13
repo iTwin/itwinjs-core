@@ -37,6 +37,7 @@ export * from "./TypedArrayBuilder";
 export * from "./UnexpectedErrors";
 export * from "./UtilityTypes";
 export * from "./YieldManager";
+export * from "./ArrayUtils";
 
 // Temporarily (until 5.0) export top-level internal APIs to avoid breaking callers.
 export * from "./internal/cross-package";
