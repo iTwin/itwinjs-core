@@ -2216,6 +2216,7 @@ export class SchemaReadHelper<T = unknown> {
     // (undocumented)
     static isECSpecVersionNewer(ecSpecVersion?: ECSpecVersion): boolean;
     protected isSchemaItemLoaded(schemaItem: SchemaItem | undefined): boolean;
+    protected isSchemaItemLoadedAndDefined(schemaItem: SchemaItem | undefined): schemaItem is SchemaItem;
     protected loadCustomAttributes(container: AnyCAContainer, caProviders: Iterable<CAProviderTuple>): Promise<void>;
     protected loadSchemaItem(schema: Schema, name: string, itemType: string, schemaItemObject?: Readonly<unknown>): Promise<SchemaItem | undefined>;
     readSchema(schema: Schema, rawSchema: T, addSchemaToCache?: boolean): Promise<Schema>;
