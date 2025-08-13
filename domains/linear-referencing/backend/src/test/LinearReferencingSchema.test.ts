@@ -16,11 +16,11 @@ import {
 import { ILinearElementProps, LinearlyLocatedAttributionProps, LinearlyReferencedFromToLocationProps } from "@itwin/linear-referencing-common";
 import {
   LinearElement, LinearlyLocated, LinearlyLocatedAttribution, LinearlyLocatedSingleFromTo, LinearlyReferencedFromToLocation, LinearReferencingSchema,
-} from "../linear-referencing-backend.js";
+} from "../linear-referencing-backend";
 
 class TestLinearReferencingSchema extends Schema {
   public static override get schemaName(): string { return "TestLinearReferencing"; }
-  public static get schemaFilePath(): string { return path.join(import.meta.dirname, "assets", "TestLinearReferencing.ecschema.xml"); }
+  public static get schemaFilePath(): string { return path.join(__dirname, "assets", "TestLinearReferencing.ecschema.xml"); }
   public static registerSchema() {
     if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
       Schemas.unregisterSchema(this.schemaName);
@@ -65,10 +65,10 @@ class TestLinearlyLocatedAttribution extends LinearlyLocatedAttribution implemen
 }
 
 describe("LinearReferencing Domain", () => {
-  const outputDir = path.join(import.meta.dirname, "output");
+  const outputDir = path.join(__dirname, "output");
 
   before(async () => {
-    await IModelHost.startup({ cacheDir: path.join(import.meta.dirname, ".cache") });
+    await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
     LinearReferencingSchema.registerSchema();
     TestLinearReferencingSchema.registerSchema();
     if (!IModelJsFs.existsSync(outputDir)) {

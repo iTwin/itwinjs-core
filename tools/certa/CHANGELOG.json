@@ -2,6 +2,27 @@
   "name": "@itwin/certa",
   "entries": [
     {
+      "version": "5.1.1",
+      "tag": "@itwin/certa_v5.1.1",
+      "date": "Fri, 08 Aug 2025 18:06:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.0",
+      "tag": "@itwin/certa_v5.1.0",
+      "date": "Fri, 08 Aug 2025 12:51:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for Electron 37"
+          },
+          {
+            "comment": "Add support for Electron 36"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.0.5",
       "tag": "@itwin/certa_v5.0.5",
       "date": "Wed, 06 Aug 2025 15:34:15 GMT",

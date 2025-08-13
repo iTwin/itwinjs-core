@@ -2,6 +2,57 @@
   "name": "@itwin/core-common",
   "entries": [
     {
+      "version": "5.1.1",
+      "tag": "@itwin/core-common_v5.1.1",
+      "date": "Fri, 08 Aug 2025 18:06:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.0",
+      "tag": "@itwin/core-common_v5.1.0",
+      "date": "Fri, 08 Aug 2025 12:51:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Mark iModel edit API as @preview"
+          },
+          {
+            "comment": "remove unused parameters for concurrent query"
+          },
+          {
+            "comment": "TextAnnotation element props use new BIS property `textAnnotationData`. TextAnnotations now use `AnnotationTextStyle`. `TextBlockComponents` no longer propagate styling to children. Styling is implicitly inherited from parents. `Paragraph`s and `Run`s no longer have `styleId` property. Moving frames from `TextAnnotation`s to `TextStyleSettings`. Annotations account for drawing scale when computing transform. Removing `TextStyle` class."
+          },
+          {
+            "comment": "Refactoring the TextAnnotationGeometry and adding support for frames"
+          },
+          {
+            "comment": "Slight typing change of TextAnnotationFrameShape"
+          },
+          {
+            "comment": "Added `TabRun`s to `TextBlock`"
+          },
+          {
+            "comment": "add function to convert Helmert obj to Transform obj"
+          },
+          {
+            "comment": "Thinning iModelPlatform API"
+          },
+          {
+            "comment": "Make CreateEmptyStandaloneIModelProps public"
+          },
+          {
+            "comment": "Add support for text fields."
+          },
+          {
+            "comment": "Introducing Text Annotation Leaders"
+          },
+          {
+            "comment": "Updated deprecation comments to new template"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.0.5",
       "tag": "@itwin/core-common_v5.0.5",
       "date": "Wed, 06 Aug 2025 15:34:15 GMT",

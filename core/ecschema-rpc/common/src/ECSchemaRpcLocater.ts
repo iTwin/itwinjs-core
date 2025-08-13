@@ -59,7 +59,7 @@ export class ECSchemaRpcLocater implements ISchemaLocater {
    * @param _matchType How to match key against candidate schemas
    * @param _context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
    * @throws Error Always throws an error indicating this method is not supported.
-   * @deprecated in 5.0. Use the asynchronous `getSchema` method for schema retrieval.
+   * @deprecated in 5.0 - will not be removed until after 2026-08-08. Use the asynchronous `getSchema` method for schema retrieval.
   */
   public getSchemaSync(_schemaKey: SchemaKey, _matchType: SchemaMatchType, _context: SchemaContext): Schema | undefined {
     throw new Error("getSchemaSync is not supported. Use the asynchronous getSchema method instead.");

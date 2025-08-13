@@ -214,4 +214,11 @@ describe("IModelConnection (#integration)", () => {
     const formattedValue = spec.applyFormatting(5.0);
     assert.equal(formattedValue, "5.0 m");
   });
+
+  it("properly deserializes gcs latitude", async () => {
+      const iTwinId = await TestUtility.getTestITwinId();
+      const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.smallTex);
+      iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
+      assert.notEqual(iModel.geographicCoordinateSystem?.horizontalCRS?.extent?.northEast.latitude, 0);
+    })
 });
