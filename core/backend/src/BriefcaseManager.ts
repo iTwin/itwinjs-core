@@ -336,7 +336,7 @@ export class BriefcaseManager {
       if (IModelJsFs.existsSync(filePath))
         IModelJsFs.unlinkSync(filePath);
     } catch (err) {
-      throw new IModelError(IModelStatus.BadRequest, `cannot delete briefcase file ${err}`);
+      throw new IModelError(IModelStatus.BadRequest, `cannot delete briefcase file ${String(err)}`);
     }
 
     // next, delete all files that start with the briefcase's filePath (e.g. "a.bim-locks", "a.bim-journal", etc.)
@@ -359,7 +359,7 @@ export class BriefcaseManager {
     try {
       IModelJsFs.unlinkSync(pathname);
     } catch (error) {
-      Logger.logError(loggerCategory, `Cannot delete file ${pathname}, ${error}`);
+      Logger.logError(loggerCategory, `Cannot delete file ${pathname}, ${String(error)}`);
       return false;
     }
     return true;

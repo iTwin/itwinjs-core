@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, expectDefined } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
 import {
   ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, QParams2d, QParams3d, QPoint2d, QPoint3dList,
@@ -72,7 +72,8 @@ export abstract class VertexTableBuilder {
 
   protected advance(nBytes: number) {
     this._curIndex += nBytes;
-    assert(this._curIndex <= this.data!.length);
+    assert(undefined !== this.data);
+    assert(this._curIndex <= this.data.length);
   }
 
   protected append8(val: number) {
@@ -80,7 +81,7 @@ export abstract class VertexTableBuilder {
     assert(val <= 0xff);
     assert(val === Math.floor(val));
 
-    this.data![this._curIndex] = val;
+    expectDefined(this.data)[this._curIndex] = val;
     this.advance(1);
   }
   protected append16(val: number) {
@@ -254,8 +255,12 @@ namespace Quantized { // eslint-disable-line @typescript-eslint/no-redeclare
       }
 
       if (isLit)
+        // If isTextured is true, uvParams will always be defined.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return isTextured ? new TexturedLitMeshBuilder(args, uvParams!) : new LitMeshBuilder(args);
       else
+        // If isTextured is true, uvParams will always be defined.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return isTextured ? new TexturedMeshBuilder(args, uvParams!) : new MeshBuilder(args, SurfaceType.Unlit);
     }
   }
@@ -287,7 +292,7 @@ namespace Quantized { // eslint-disable-line @typescript-eslint/no-redeclare
     protected appendNormal(_vertIndex: number): void { this.advance(2); } // no normal for unlit meshes
 
     protected appendUVParams(vertIndex: number) {
-      this._qpoint.init(this.args.textureMapping!.uvParams[vertIndex], this._qparams);
+      this._qpoint.init(expectDefined(this.args.textureMapping).uvParams[vertIndex], this._qparams);
       this.append16(this._qpoint.x);
       this.append16(this._qpoint.y);
     }
@@ -300,7 +305,7 @@ namespace Quantized { // eslint-disable-line @typescript-eslint/no-redeclare
       assert(undefined !== args.normals);
     }
 
-    protected override appendNormal(vertIndex: number) { this.append16(this.args.normals![vertIndex].value); }
+    protected override appendNormal(vertIndex: number) { this.append16(expectDefined(this.args.normals)[vertIndex].value); }
   }
 
   /** 16 bytes. The last 2 bytes are unused; the 2 immediately preceding it hold the oct-encoded normal value. */
@@ -314,7 +319,7 @@ namespace Quantized { // eslint-disable-line @typescript-eslint/no-redeclare
 
     public override appendVertex(vertIndex: number) {
       super.appendVertex(vertIndex);
-      this.append16(this.args.normals![vertIndex].value);
+      this.append16(expectDefined(this.args.normals)[vertIndex].value);
       this.advance(2); // 2 unused bytes
     }
   }
@@ -455,8 +460,12 @@ namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
       }
 
       if (isLit)
+        // If isTextured is true, uvParams will always be defined.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return isTextured ? new TexturedLitMeshBuilder(args, uvParams!) : new LitMeshBuilder(args);
       else
+        // If isTextured is true, uvParams will always be defined.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return isTextured ? new TexturedMeshBuilder(args, uvParams!) : new MeshBuilder(args, SurfaceType.Unlit);
     }
   }
@@ -478,7 +487,7 @@ namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
     public override appendVertex(vertIndex: number) {
       super.appendVertex(vertIndex);
 
-      this._qpoint.init(this.args.textureMapping!.uvParams[vertIndex], this._qparams);
+      this._qpoint.init(expectDefined(this.args.textureMapping).uvParams[vertIndex], this._qparams);
       this.append16(this._qpoint.x);
       this.append16(this._qpoint.y);
     }
@@ -500,7 +509,7 @@ namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
 
     public override appendVertex(vertIndex: number) {
       super.appendVertex(vertIndex);
-      this.append16(this.args.normals![vertIndex].value);
+      this.append16(expectDefined(this.args.normals)[vertIndex].value);
       this.advance(2);
     }
   }
@@ -519,7 +528,7 @@ namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
 
     public override appendVertex(vertIndex: number) {
       super.appendVertex(vertIndex);
-      this.append16(this.args.normals![vertIndex].value);
+      this.append16(expectDefined(this.args.normals)[vertIndex].value);
     }
   }
 }

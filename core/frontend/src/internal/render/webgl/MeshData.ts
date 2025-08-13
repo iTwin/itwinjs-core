@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { dispose } from "@itwin/core-bentley";
+import { dispose, expectDefined } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import { FeatureIndexType, FillFlags, LinePixels } from "@itwin/core-common";
 import { MeshParams } from "../../../common/internal/render/MeshParams";
@@ -104,7 +104,7 @@ export class MeshData implements WebGLDisposable {
   public [Symbol.dispose]() {
     dispose(this.lut);
     if (this._ownsTexture)
-      this.texture![Symbol.dispose]();
+      expectDefined(this.texture)[Symbol.dispose]();
   }
 
   public get isGlyph() { return undefined !== this.texture && this.texture.isGlyph; }
@@ -118,6 +118,6 @@ export class MeshData implements WebGLDisposable {
   public collectStatistics(stats: RenderMemory.Statistics): void {
     stats.addVertexTable(this.lut.bytesUsed);
     if (this._ownsTexture)
-      stats.addTexture(this.texture!.bytesUsed);
+      stats.addTexture(expectDefined(this.texture).bytesUsed);
   }
 }
