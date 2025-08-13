@@ -6,6 +6,7 @@
  * @module Views
  */
 
+import { expectDefined } from "@itwin/core-bentley";
 import { Point2d, Range2d } from "@itwin/core-geometry";
 import { RequestBasicCredentials } from "../../../request/Request";
 import { MapCartoRectangle, WmsUtilities } from "../../../tile/internal";
@@ -321,7 +322,7 @@ export namespace WmtsCapability {
 
     constructor(elem: Element) {
 
-      this.tileMatrixSet = getElementTextContent(elem, "TileMatrixSet", "")!;
+      this.tileMatrixSet = expectDefined(getElementTextContent(elem, "TileMatrixSet", ""));
 
       const tileMatrixLimitsRoot = elem.getElementsByTagName("TileMatrixSetLimits");
       if (tileMatrixLimitsRoot.length > 0) {
@@ -369,7 +370,7 @@ export namespace WmtsCapability {
       else
         throw new Error("No supported CRS found.");
 
-      this.wellKnownScaleSet = getElementTextContent(elem, XmlConstants.WELLKNOWNSCALESET_XMLTAG, "")!;
+      this.wellKnownScaleSet = expectDefined(getElementTextContent(elem, XmlConstants.WELLKNOWNSCALESET_XMLTAG, ""));
 
       // TileMatrix:
       // TileMatrix is mandatory on TileMatrixSet, if it doesn't exists, something is OFF with the capability.

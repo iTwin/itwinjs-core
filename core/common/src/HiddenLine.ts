@@ -139,7 +139,10 @@ export namespace HiddenLine {
         return true;
       else if (this.ovrColor !== other.ovrColor || this.pattern !== other.pattern || this.width !== other.width)
         return false;
+      else if ((undefined === this.color) !== (undefined === other.color))
+        return false;
       else
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         return undefined === this.color || this.color.equals(other.color!);
     }
 
@@ -186,12 +189,12 @@ export namespace HiddenLine {
 
     /** Create a DisplaySettings from its JSON representation. */
     public static fromJSON(json?: SettingsProps): Settings {
-      if (JsonUtils.isEmptyObjectOrUndefined(json))
+      if (!JsonUtils.isNonEmptyObject(json))
         return this.defaults;
       else if (json instanceof Settings)
         return json;
       else
-        return new Settings(json!);
+        return new Settings(json);
     }
 
     public toJSON(): SettingsProps {

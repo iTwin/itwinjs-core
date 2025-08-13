@@ -118,6 +118,8 @@ export class GLTimer {
       throw new IModelError(BentleyStatus.ERROR, "Missing at least one endOperation call");
 
     this._extension.endQuery();
+    // We verified that this._queryStack.length === 1 above, so we can safely pop it.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const root = this._queryStack.pop()!;
     const userCallback = this._resultsCallback;
 

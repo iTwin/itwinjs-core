@@ -139,7 +139,7 @@ export type InterpolationFunction = (v: any, k: number) => number;
  */
 export class Tween {
   private _isPaused = false;
-  private _pauseStart?: number;
+  private _pauseStart = 0;
   private _valuesStart: any = {};
   private _valuesEnd: any = {};
   private _valuesStartRepeat: any = {};
@@ -245,7 +245,7 @@ export class Tween {
       return this;
 
     this._isPaused = true;
-    this._pauseStart = time === undefined ? Date.now() : time;
+    this._pauseStart = time ?? Date.now();
     this._group.remove(this);
     return this;
   }
@@ -255,7 +255,9 @@ export class Tween {
       return this;
 
     this._isPaused = false;
-    this._startTime! += (time === undefined ? Date.now() : time) - this._pauseStart!;
+    // _startTime is always valid when _isPlaying is true.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    this._startTime! += (time === undefined ? Date.now() : time) - this._pauseStart;
     this._pauseStart = 0;
     this._group.add(this);
     return this;

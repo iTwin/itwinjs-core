@@ -4006,6 +4006,10 @@ export abstract class GltfReader {
     protected get _nodes(): GltfDictionary<GltfNode>;
     abstract read(): Promise<GltfReaderResult>;
     // (undocumented)
+    protected readAndOctEncodeNormals(json: {
+        [k: string]: any;
+    }, accessorName: string): Uint16Array | undefined;
+    // (undocumented)
     protected readBatchTable(_mesh: Mesh, _json: GltfMeshPrimitive): void;
     // (undocumented)
     protected readBufferData(json: {
@@ -4048,11 +4052,11 @@ export abstract class GltfReader {
         [k: string]: any;
     }): boolean;
     // (undocumented)
-    protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfPrimitiveData | undefined;
-    // (undocumented)
-    protected readNormals(mesh: GltfMeshData, json: {
+    protected readMeshNormals(mesh: GltfMeshData, json: {
         [k: string]: any;
     }, accessorName: string): boolean;
+    // (undocumented)
+    protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfPrimitiveData | undefined;
     // (undocumented)
     protected readPolylines(polylines: MeshPolylineList, json: {
         [k: string]: any;

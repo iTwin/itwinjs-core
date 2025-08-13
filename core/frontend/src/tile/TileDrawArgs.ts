@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { BeTimePoint } from "@itwin/core-bentley";
+import { BeTimePoint, expectDefined } from "@itwin/core-bentley";
 import { ClipVector, Geometry, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { FeatureAppearanceProvider, FrustumPlanes, HiddenLine, ViewFlagOverrides } from "@itwin/core-common";
 import { FeatureSymbology } from "../render/FeatureSymbology";
@@ -213,7 +213,7 @@ export class TileDrawArgs {
   /** Compute this size of a sphere on screen in pixels */
   public getRangePixelSize(range: Range3d): number {
     const transformedRange = this.location.multiplyRange(range, scratchRange);
-    const center = transformedRange.localXYZToWorld(.5, .5, .5, scratchPoint)!;
+    const center = expectDefined(transformedRange.localXYZToWorld(.5, .5, .5, scratchPoint));
     const radius = transformedRange.diagonal().magnitude();
 
     const viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(center);
