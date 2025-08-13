@@ -120,6 +120,8 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
             const props = overrideEntry[unitSystemKey];
             if (props) {
               if (overrideFormatProps.has(unitSystemKey)) {
+                // We just verified that the overrideFormatProps map has the unitSystemKey
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 overrideFormatProps.get(unitSystemKey)!.set(typeKey, props);
               } else {
                 const newMap = new Map<string, FormatProps>();

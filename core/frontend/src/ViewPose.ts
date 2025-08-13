@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { BeTimePoint } from "@itwin/core-bentley";
+import { assert, BeTimePoint } from "@itwin/core-bentley";
 import { Angle, Matrix3d, Point2d, Point3d, Vector3d } from "@itwin/core-geometry";
 import { Camera } from "@itwin/core-common";
 import { ViewState, ViewState2d, ViewState3d } from "./ViewState";
@@ -173,6 +173,8 @@ export class ViewPose2d extends ViewPose {
   }
   /** See [[ViewPose.rotation]]. */
   public get rotation() {
-    return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!;
+    const rotation = Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle);
+    assert(undefined !== rotation, "rotation around unit vector is always defined");
+    return rotation;
   }
 }

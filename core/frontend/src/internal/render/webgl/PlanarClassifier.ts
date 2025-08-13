@@ -7,7 +7,7 @@
  * @module WebGL
  */
 
-import { BeEvent, dispose } from "@itwin/core-bentley";
+import { BeEvent, dispose, expectDefined } from "@itwin/core-bentley";
 import {
   ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, TextureTransparency,
 } from "@itwin/core-common";
@@ -213,7 +213,7 @@ abstract class CombineTexturesFrameBuffer extends SingleTextureFrameBuffer {
 
 class ClassifierCombinationBuffer extends CombineTexturesFrameBuffer {
   public static create(width: number, height: number, classifierColor: Texture, classifierFeature: Texture): ClassifierAndMaskCombinationBuffer | undefined {
-    const combineGeom = CombineTexturesGeometry.createGeometry(classifierColor.texture.getHandle()!, classifierFeature.texture.getHandle()!);
+    const combineGeom = CombineTexturesGeometry.createGeometry(expectDefined(classifierColor.texture.getHandle()), expectDefined(classifierFeature.texture.getHandle()));
     if (undefined === combineGeom)
       return undefined;
 
@@ -223,7 +223,7 @@ class ClassifierCombinationBuffer extends CombineTexturesFrameBuffer {
 }
 class ClassifierAndMaskCombinationBuffer extends CombineTexturesFrameBuffer {
   public static create(width: number, height: number, classifierColor: Texture, classifierFeature: Texture, mask: Texture): ClassifierAndMaskCombinationBuffer | undefined {
-    const combineGeom = Combine3TexturesGeometry.createGeometry(classifierColor.texture.getHandle()!, classifierFeature.texture.getHandle()!, mask.texture.getHandle()!);
+    const combineGeom = Combine3TexturesGeometry.createGeometry(expectDefined(classifierColor.texture.getHandle()), expectDefined(classifierFeature.texture.getHandle()), expectDefined(mask.texture.getHandle()));
     if (undefined === combineGeom)
       return undefined;
 
@@ -252,7 +252,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _anyOpaque = false;
   private _anyTranslucent = false;
   private _classifier?: ActiveSpatialClassifier;
-  private readonly _plane = Plane3dByOriginAndUnitNormal.create(new Point3d(0, 0, 0), new Vector3d(0, 0, 1))!;    // TBD -- Support other planes - default to X-Y for now.
+  private readonly _plane = expectDefined(Plane3dByOriginAndUnitNormal.create(new Point3d(0, 0, 0), new Vector3d(0, 0, 1)));    // TBD -- Support other planes - default to X-Y for now.
   private readonly _renderState = new RenderState();
   private readonly _renderCommands: RenderCommands;
   private readonly _branchStack = new BranchStack();
@@ -312,7 +312,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   public get isClassifyingPointCloud(): boolean { return true === this._isClassifyingPointCloud; }
 
   public addGraphic(graphic: RenderGraphic) {
-    this._graphics!.push(graphic);
+    expectDefined(this._graphics).push(graphic);
   }
 
   public static create(properties: ActiveSpatialClassifier | undefined, target: Target): PlanarClassifier {
@@ -443,7 +443,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const drawTree = (treeRef: TileTreeReference, graphics: RenderGraphic[]) => {
       this._graphics = graphics;
       const frustumPlanes = this._frustum ? FrustumPlanes.fromFrustum(this._frustum) : FrustumPlanes.createEmpty();
-      const drawArgs = GraphicsCollectorDrawArgs.create(context, this, treeRef, frustumPlanes, projection.worldToViewMap!);
+      const drawArgs = GraphicsCollectorDrawArgs.create(context, this, treeRef, frustumPlanes, expectDefined(projection.worldToViewMap));
       if (undefined !== drawArgs)
         treeRef.draw(drawArgs);
 
@@ -465,14 +465,14 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       builder.setSymbology(ColorDef.green, ColorDef.green, 2);
       builder.addFrustum(context.viewingSpace.getFrustum());
       builder.setSymbology(ColorDef.red, ColorDef.red, 2);
-      builder.addFrustum(this._debugFrustum!);
+      builder.addFrustum(expectDefined(this._debugFrustum));
       builder.setSymbology(ColorDef.blue, ColorDef.blue, 2);
       builder.addFrustum(this._frustum);
 
       builder.setSymbology(ColorDef.from(0, 200, 0, 222), ColorDef.from(0, 200, 0, 222), 2);
       builder.addFrustumSides(context.viewingSpace.getFrustum());
       builder.setSymbology(ColorDef.from(200, 0, 0, 222), ColorDef.from(200, 0, 0, 222), 2);
-      builder.addFrustumSides(this._debugFrustum!);
+      builder.addFrustumSides(expectDefined(this._debugFrustum));
       builder.setSymbology(ColorDef.from(0, 0, 200, 222), ColorDef.from(0, 0, 200, 222), 2);
       builder.addFrustumSides(this._frustum);
       this._debugFrustumGraphic = builder.finish();
