@@ -206,7 +206,7 @@ export class SchemaReadHelper<T = unknown> {
     // Load schema references first
     // Need to figure out if other schemas are present.
     for (const reference of this._parser.getReferences()) {
-      this.loadSchemaReferenceSync(reference);
+      this.loadSchemaReferenceSync(schema, reference);
     }
 
     if (this._visitorHelper)
@@ -259,19 +259,16 @@ export class SchemaReadHelper<T = unknown> {
    * Ensures that the schema references can be located and adds them to the schema.
    * @param ref The object to read the SchemaReference's props from.
    */
-  private loadSchemaReferenceSync(ref: SchemaReferenceProps): void {
+  private loadSchemaReferenceSync(schema: Schema, ref: SchemaReferenceProps): void {
     const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
     const refSchema = this._context.getSchemaSync(schemaKey, SchemaMatchType.LatestWriteCompatible);
-    if (undefined === this._schema) {
-      throw new ECSchemaError(ECSchemaStatus.UnableToLoadSchema, `Schema is not defined when trying to load schema reference ${ref.name}.${ref.version}`);
-    }
     if (!refSchema)
-      throw new ECSchemaError(ECSchemaStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema.schemaKey.name}`);
+      throw new ECSchemaError(ECSchemaStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${schema.schemaKey.name}`);
 
-    (this._schema as MutableSchema).addReferenceSync(refSchema);
+    (schema as MutableSchema).addReferenceSync(refSchema);
 
-    SchemaGraph.generateGraphSync(this._schema).throwIfCycles();
-    const results = this.validateSchemaReferences(this._schema);
+    SchemaGraph.generateGraphSync(schema).throwIfCycles();
+    const results = this.validateSchemaReferences(schema);
 
     let errorMessage: string = "";
     for (const result of results) {
