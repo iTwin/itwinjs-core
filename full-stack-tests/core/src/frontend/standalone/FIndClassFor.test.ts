@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { ElementState, IModelConnection, ModelState } from "@itwin/core-frontend";
+import { ElementState, IModelApp, IModelConnection, ModelState } from "@itwin/core-frontend";
 import { IModelError } from "@itwin/core-common";
 import { IModelStatus } from "@itwin/core-bentley";
 import { TestUtility } from "../TestUtility";
@@ -25,8 +25,10 @@ describe("IModelConnection.findClassFor", () => {
   });
 
   it("should return closes base class if given class name does not have class associated", async () => {
-    const stateClass = await iModel.findClassFor("BisCore:GeometricElement", undefined);
+    const fullClassName = "BisCore:GeometricElement3d";
+    const stateClass = await iModel.findClassFor(fullClassName, undefined);
     expect(stateClass?.name).to.be.equal(ElementState.name);
+    expect(IModelApp.lookupEntityClass(fullClassName)?.name).to.be.equal(ElementState.name);
   });
 
   it("should fallback to provided default class if no class is registered for any of the class names", async () => {
@@ -35,7 +37,7 @@ describe("IModelConnection.findClassFor", () => {
   });
 
   it("should throw an error if class does not exist", async () => {
-    await expect(iModel.findClassFor("BisCore:NonExistentClass", ModelState)).to.be.eventually.rejected.then((error: unknown) => {
+    await expect(iModel.findClassFor("BisCore:NonExistentClass", undefined)).to.be.eventually.rejected.then((error: unknown) => {
       expect(error).to.be.instanceOf(IModelError);
       expect((error as IModelError).errorNumber).to.equal(IModelStatus.NotFound);
     });
