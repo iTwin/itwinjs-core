@@ -302,24 +302,28 @@ export class HorizontalCRS implements HorizontalCRSProps {
     if ((this.datum === undefined) !== (other.datum === undefined))
       return false;
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (this.datum && !this.datum.equals(other.datum!))
       return false;
 
     if ((this.ellipsoid === undefined) !== (other.ellipsoid === undefined))
       return false;
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (this.ellipsoid && !this.ellipsoid.equals(other.ellipsoid!))
       return false;
 
     if ((this.projection === undefined) !== (other.projection === undefined))
       return false;
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (this.projection && !this.projection.equals(other.projection!))
       return false;
 
     if ((this.extent === undefined) !== (other.extent === undefined))
       return false;
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (this.extent && !this.extent.equals(other.extent!))
       return false;
 
