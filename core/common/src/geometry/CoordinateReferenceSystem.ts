@@ -285,7 +285,7 @@ export class HorizontalCRS implements HorizontalCRSProps {
   /** Compares two horizontal CRS, but does not compare descriptions.
    *  Number compares are applied a minuscule tolerance.
    *  @public */
-  public almostEquals(other: HorizontalCRS): boolean {
+  public isEquivalent(other: HorizontalCRS): boolean {
     if (this.id !== other.id ||
       this.source !== other.source ||
       this.deprecated !== other.deprecated ||
