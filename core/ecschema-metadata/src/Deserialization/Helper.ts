@@ -139,17 +139,8 @@ export class SchemaReadHelper<T = unknown> {
    * @param schemaItem The SchemaItem to check.
    * @returns True if the SchemaItem has been fully loaded, false otherwise.
    */
-  protected isSchemaItemLoaded(schemaItem: SchemaItem | undefined): boolean {
+  protected isSchemaItemLoaded(schemaItem: SchemaItem | undefined): schemaItem is SchemaItem {
     return schemaItem !== undefined;
-  }
-
-  /**
-   * Same as isSchemaItemLoaded, but also asserts that the schema item is defined using a type predicate.
-   * @note isSchemaItemLoaded already checks if the item is defined, but updating it to be a type predicate
-   * would break existing code that uses it.
-   */
-  protected isSchemaItemLoadedAndDefined(schemaItem: SchemaItem | undefined): schemaItem is SchemaItem {
-    return this.isSchemaItemLoaded(schemaItem) && schemaItem !== undefined;
   }
 
   /* Finish loading the rest of the schema */
@@ -173,7 +164,7 @@ export class SchemaReadHelper<T = unknown> {
         continue;
 
       const loadedItem = await this.loadSchemaItem(schema, itemName, itemType, rawItem);
-      if (this.isSchemaItemLoadedAndDefined(loadedItem) && this._visitorHelper) {
+      if (this.isSchemaItemLoaded(loadedItem) && this._visitorHelper) {
         await this._visitorHelper.visitSchemaPart(loadedItem);
       }
     }
@@ -215,7 +206,7 @@ export class SchemaReadHelper<T = unknown> {
     // Load all schema items
     for (const [itemName, itemType, rawItem] of this._parser.getItems()) {
       const loadedItem = this.loadSchemaItemSync(schema, itemName, itemType, rawItem);
-      if (this.isSchemaItemLoadedAndDefined(loadedItem) && this._visitorHelper) {
+      if (this.isSchemaItemLoaded(loadedItem) && this._visitorHelper) {
         this._visitorHelper.visitSchemaPartSync(loadedItem);
       }
     }
@@ -536,7 +527,7 @@ export class SchemaReadHelper<T = unknown> {
       if (foundItem) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         schemaItem = await this.loadSchemaItem(this._schema!, ...foundItem);
-        if (!skipVisitor && this.isSchemaItemLoadedAndDefined(schemaItem) && this._visitorHelper) {
+        if (!skipVisitor && this.isSchemaItemLoaded(schemaItem) && this._visitorHelper) {
           await this._visitorHelper.visitSchemaPart(schemaItem);
         }
         if (loadCallBack && schemaItem)
@@ -578,7 +569,7 @@ export class SchemaReadHelper<T = unknown> {
       if (foundItem) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         schemaItem = this.loadSchemaItemSync(this._schema!, ...foundItem);
-        if (!skipVisitor && this.isSchemaItemLoadedAndDefined(schemaItem) && this._visitorHelper) {
+        if (!skipVisitor && this.isSchemaItemLoaded(schemaItem) && this._visitorHelper) {
           this._visitorHelper.visitSchemaPartSync(schemaItem);
         }
         if (loadCallBack && schemaItem)

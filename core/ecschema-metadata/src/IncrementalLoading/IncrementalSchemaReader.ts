@@ -36,7 +36,7 @@ export class IncrementalSchemaReader extends SchemaReadHelper {
    * @param schemaItem The SchemaItem to check.
    * @returns True if the item has been loaded, false if still in progress.
    */
-  protected override isSchemaItemLoaded(schemaItem: SchemaItem | undefined): boolean {
+  protected override isSchemaItemLoaded(schemaItem: SchemaItem | undefined): schemaItem is SchemaItem {
     return schemaItem !== undefined
       && schemaItem.loadingController !== undefined
       && schemaItem.loadingController.isComplete;
