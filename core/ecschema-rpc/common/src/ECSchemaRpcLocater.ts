@@ -36,15 +36,10 @@ export class ECSchemaRpcLocater implements ISchemaLocater {
     * @param matchType The match type to use when locating the schema
     */
   public async getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
-    let schemaJson: SchemaProps;
-    try {
-      schemaJson = await ECSchemaRpcInterface.getClient().getSchemaJSON(this.token, schemaKey.name);
-    } catch(e: any) {
-      if (e.message && e.message === "schema not found")
-        return undefined;
-
-      throw(e);
-    }
+    const schemaJson = await ECSchemaRpcInterface.getClient().getSchemaJSON(this.token, schemaKey.name);
+    if (!schemaJson)
+      return undefined;
+    
     const schemaInfo = await Schema.startLoadingFromJson(schemaJson, context || new SchemaContext());
     if (schemaInfo !== undefined && schemaInfo.schemaKey.matches(schemaKey, matchType)) {
       return schemaInfo;
