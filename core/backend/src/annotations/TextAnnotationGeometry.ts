@@ -148,7 +148,19 @@ function debugRunLayout(builder: ElementGeometry.Builder, layout: TextBlockLayou
     "tab": ColorDef.fromString("aquamarine"),
     "field": ColorDef.fromString("purple"),
     "marker": ColorDef.fromString("pink"),
+    "line": ColorDef.fromString("gray"),
   }
+
+  const changeColor = (newColor: ColorDef, weight?: number) => {
+    // Only change geometry params if the color changes
+    if (lastColor === newColor) return;
+
+    const colorParams = new GeometryParams(Id64.invalid);
+    colorParams.lineColor = newColor;
+    if (weight) colorParams.weight = weight;
+    result = result && builder.appendGeometryParamsChange(colorParams);
+    lastColor = newColor;
+  };
 
   layout.lines.forEach(line => {
     // Apply the line's offset transform
@@ -156,13 +168,7 @@ function debugRunLayout(builder: ElementGeometry.Builder, layout: TextBlockLayou
     documentTransform.multiplyTransformTransform(lineTrans, lineTrans);
 
     if (line.marker) {
-      // Only change geometry params if the color changes
-      if (!lastColor.equals(colors.marker)) {
-        const colorParams = new GeometryParams(Id64.invalid);
-        colorParams.lineColor = colors.marker;
-        result = result && builder.appendGeometryParamsChange(colorParams);
-        lastColor = colors.marker;
-      }
+      changeColor(colors.marker);
 
       // Apply the line's offset to the run's offset
       const runTrans = Transform.createTranslationXYZ(line.marker.offsetFromLine.x, line.marker.offsetFromLine.y, 0);
@@ -178,14 +184,7 @@ function debugRunLayout(builder: ElementGeometry.Builder, layout: TextBlockLayou
       // Determine color for this run type
       color = colors[run.source.type] ?? ColorDef.black;
 
-      // Only change geometry params if the color changes
-      if (!lastColor.equals(color)) {
-        const colorParams = new GeometryParams(Id64.invalid);
-        colorParams.lineColor = color;
-        if (run.source.type === "linebreak") colorParams.weight = 3;
-        result = result && builder.appendGeometryParamsChange(colorParams);
-        lastColor = color;
-      }
+      changeColor(color, run.source.type === "linebreak" ? 3 : undefined);
 
       // Apply the line's offset to the run's offset
       const runTrans = Transform.createTranslationXYZ(run.offsetFromLine.x, run.offsetFromLine.y, 0);
@@ -198,23 +197,12 @@ function debugRunLayout(builder: ElementGeometry.Builder, layout: TextBlockLayou
     });
 
     // TODO: remove during cleanup
-    // // Draw the justification point for the run
-    // if (line.justificationRange) {
-    //   const justificationPoint = line.justificationRange.center;
-    //   const top = justificationPoint.clone();
-    //   top.y = line.justificationRange?.yHigh + 0.25 * line.justificationRange?.yLength();
-    //   const bottom = justificationPoint.clone();
-    //   bottom.y = line.justificationRange?.yLow - 0.25 * line.justificationRange?.yLength();
+    // if (line.range) {
+    //   const points = line.range.corners3d(true);
+    //   lineTrans.multiplyPoint3dArrayInPlace(points);
 
-    //   const points = lineTrans.multiplyPoint2dArray([top, justificationPoint, bottom]);
-    //   const params = new GeometryParams(Id64.invalid);
-    //   params.lineColor = ColorDef.fromString("green");
-    //   params.weight = 3; // We want the dots to be bigger than the frame so we can see them.
-    //   params.fillDisplay = FillDisplay.Always;
-    //   lastColor = params.lineColor;
-
-    //   // result = result && builder.appendGeometryQuery(LineString3d.create(points));
-    //   result = result && builder.appendGeometryParamsChange(params) && builder.appendGeometryQuery(LineString3d.create(points));
+    //   changeColor(colors.line);
+    //   result = result && builder.appendGeometryQuery(LineString3d.create(points));
     // }
   });
 

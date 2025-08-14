@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, LeaderTextPointOptions, LineBreakRun, OrderedListMarker, Placement2dProps, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationLeader, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps, UnorderedListMarker } from "@itwin/core-common";
+import { BaselineShift, ColorDef, FractionRun, LeaderTextPointOptions, LineBreakRun, OrderedListMarker, Placement2dProps, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationLeader, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextBlockProps, TextFrameStyleProps, TextRun, TextStyleSettingsProps, UnorderedListMarker } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
@@ -180,6 +180,10 @@ class TextEditor implements Decorator {
   }
   public setLeaderNearest(leader: TextAnnotationLeader) {
     leader.attachment = { mode: "Nearest" };
+  }
+
+  public setTextBlock(props: TextBlockProps) {
+    this.textBlock = TextBlock.create(props);
   }
 
   /**
@@ -612,6 +616,17 @@ export class TextDecorationTool extends Tool {
         }
         break;
 
+      case "json": {
+        const props = inArgs[1] && (JSON.parse(inArgs[1].replaceAll("'", "\"")) as TextBlockProps);
+
+        if (props) {
+          editor.setTextBlock(props);
+        } else {
+          console.log(JSON.stringify(editor.annotationProps.textBlock).replaceAll("\"", "'"));
+        }
+
+        break;
+      }
       default:
         throw new Error(`unrecognized command ${cmd}`);
     }

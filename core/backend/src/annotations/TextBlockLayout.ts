@@ -383,9 +383,9 @@ class LayoutContext {
     return { layout, numerator, denominator };
   }
 
-  public computeRangeForTabRun(style: TextStyleSettings, source: TabRun, length: number): Range2d {
+  public computeRangeForTabRun(style: TextStyleSettings, source: TabRun, lengthFromLastTab: number): Range2d {
     const interval = source.styleOverrides.tabInterval ?? style.tabInterval;
-    const tabEndX = interval - length % interval;
+    const tabEndX = interval - lengthFromLastTab % interval;
 
     const range = new Range2d(0, 0, 0, style.lineHeight);
     range.extendXY(tabEndX, range.low.y);
@@ -609,6 +609,7 @@ export class LineLayout {
   private computeRanges(): void {
     this.range.low.setZero();
     this.range.high.setZero();
+    this.lengthFromLastTab = 0;
 
     // Some runs (fractions) are taller than others.
     // We want to center each run vertically inside the line.
@@ -767,18 +768,25 @@ export class TextBlockLayout {
         }
         break;
       }
-      case "text":
-      case "fraction":
-      case "tab": {
+      case "text": {
         if (!curLine) return;
 
         const run = component as Run;
         const layout = RunLayout.create(run, context);
+
         if (docWidth > 0) {
           layout.split(context).forEach(r => { if (curLine) curLine = this.populateRun(curLine, r, context, docWidth) });
         } else {
           curLine = this.populateRun(curLine, layout, context, docWidth);
         }
+        break;
+      }
+      case "fraction":
+      case "tab": {
+        if (!curLine) return;
+        const run = component as Run;
+        const layout = RunLayout.create(run, context);
+        curLine = this.populateRun(curLine, layout, context, docWidth);
         break;
       }
       case "linebreak": {
