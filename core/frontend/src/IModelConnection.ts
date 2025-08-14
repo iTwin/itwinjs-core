@@ -188,7 +188,6 @@ export abstract class IModelConnection extends IModel {
       return ctor;
 
     // it's not registered, we need to query its class hierarchy.
-    ctor = defaultClass; // in case we cant find a registered class that handles this class
 
     // wait until we get the full list of base classes from backend
     if (this.isOpen) {
@@ -210,7 +209,7 @@ export abstract class IModelConnection extends IModel {
         return true; // stop
       });
     }
-    return ctor; // either the baseClass handler or defaultClass if we didn't find a registered baseClass
+    return ctor ?? defaultClass; // either the baseClass handler or defaultClass if we didn't find a registered baseClass
   }
 
   /** @internal */
