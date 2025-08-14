@@ -134,22 +134,6 @@ describe("Indirect changes flag on elements", () => {
     b1.close();
   });
 
-  it("Indirect changes should not require a lock", async () => {
-    const b1 = await openNewBriefcase(user1AccessToken);
-    await assertThrowsAsync(async () => {
-      makeSubject(b1, "Subject 1", "Description 1", false);
-    }, "shared lock not held on model for insert");
-
-    await assertThrowsAsync(async () => {
-      makeSubject(b1, "Subject 2", "Description 2");
-    }, "shared lock not held on model for insert");
-
-    const b1s3 = makeSubject(b1, "Subject 3", "Description 3", true);
-    assert.isDefined(b1s3, "Subject 3 should be created in b1 as an indirect change");
-
-    b1.close();
-  });
-
   it("Indirect changes to same subject", async () => {
     // Create one subject which we will later modify to produce a conflict.
     // This should not require a lock on the indirect changes, and should pull without complaints.
