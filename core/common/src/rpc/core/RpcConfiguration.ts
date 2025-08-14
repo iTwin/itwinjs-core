@@ -5,6 +5,7 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
+import { expectDefined } from "@itwin/core-bentley";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcManager } from "../../RpcManager";
 import { RpcControlChannel } from "./RpcControl";
@@ -25,7 +26,7 @@ export interface RpcRoutingMap extends RpcConfigurationSupplier { configurations
 export namespace RpcRoutingMap {
   export function create(): RpcRoutingMap {
     const configurations = new Map();
-    return Object.assign((routing?: RpcRoutingToken) => configurations.get(routing!.id)(), { configurations });
+    return Object.assign((routing?: RpcRoutingToken) => configurations.get(expectDefined(routing).id)(), { configurations });
   }
 }
 
@@ -220,6 +221,6 @@ export class RpcDirectRequest extends RpcRequest {
   }
 
   protected async load() {
-    return this.fulfillment!.result;
+    return expectDefined(this.fulfillment).result;
   }
 }

@@ -69,9 +69,9 @@ export class LogoDecoration implements CanvasDecoration {
    * @see [[CanvasDecoration.drawDecoration]]
    */
   public drawDecoration(ctx: CanvasRenderingContext2D): void {
-    if (this.isLoaded) {
+    if (this.isLoaded && this._sprite?.image !== undefined) {
       // Draw image with an origin at the top left corner
-      ctx.drawImage(this._sprite!.image!, 0, 0);
+      ctx.drawImage(this._sprite.image, 0, 0);
     }
   }
 

@@ -136,10 +136,13 @@ export abstract class RealityTileLoader {
           if (!tile.transformToRoot && rtcCenter)
             xform = Transform.createTranslation(rtcCenter);
           else {
+            if (undefined === tile.transformToRoot) {
+              throw new Error("RealityTileLoader.loadGraphicsFromStream: tile.transformToRoot is undefined");
+            }
             if (rtcCenter)
-              xform = Transform.createOriginAndMatrix(rtcCenter.plus(tile.transformToRoot!.origin), tile.transformToRoot!.matrix);
+              xform = Transform.createOriginAndMatrix(rtcCenter.plus(tile.transformToRoot.origin), tile.transformToRoot.matrix);
             else
-              xform = tile.transformToRoot!;
+              xform = tile.transformToRoot;
           }
           graphic = system.createBranch(transformBranch, xform);
         }
