@@ -166,6 +166,17 @@ export class ECDb implements Disposable {
     }
   }
 
+  /** Drops schemas from an array of schema
+   * @alpha
+   */
+  public dropSchemas(schemaNames: string[]): void {
+    const status: DbResult = this[_nativeDb].dropSchemas(schemaNames, { schemaLockHeld: true });
+    if (status !== DbResult.BE_SQLITE_OK) {
+      Logger.logError(loggerCategory, `Failed to drop schemas`);
+      throw new IModelError(status, `Failed to drop schemas`);
+    }
+  }
+
   /**
    * Returns the full schema for the input name.
    * @param name The name of the schema e.g. 'ECDbMeta'
@@ -397,10 +408,6 @@ export class ECDb implements Disposable {
   public get [_nativeDb](): IModelJsNative.ECDb {
     assert(undefined !== this._nativeDb);
     return this._nativeDb;
-  }
-
-  public async clean() {
-    return await this[_nativeDb].removeUnusedSchemaReferences();
   }
 
   /** Allow to execute query and read results along with meta data. The result are streamed.
