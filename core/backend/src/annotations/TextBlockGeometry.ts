@@ -151,6 +151,7 @@ export function produceTextBlockGeometry(layout: TextBlockLayout, documentTransf
   for (const line of layout.lines) {
     const lineTrans = Transform.createTranslationXYZ(line.offsetFromDocument.x, line.offsetFromDocument.y, 0);
 
+    // Create geometry for list markers if present
     if (line.marker) {
       const markerTrans = Transform.createTranslationXYZ(line.marker.offsetFromLine.x, line.marker.offsetFromLine.y, 0);
       lineTrans.multiplyTransformTransform(markerTrans, markerTrans);
@@ -159,6 +160,7 @@ export function produceTextBlockGeometry(layout: TextBlockLayout, documentTransf
       processTextRun(line.marker, markerTrans, context);
     }
 
+    // Create geometry for runs
     for (const run of line.runs) {
       // Skip runs that are solely whitespace
       if (run.source.isWhitespace) {
