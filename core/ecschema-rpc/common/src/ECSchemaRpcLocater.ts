@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType, SchemaProps } from "@itwin/ecschema-metadata";
+import { ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { IModelRpcProps } from "@itwin/core-common";
 import { ECSchemaRpcInterface } from "./ECSchemaRpcInterface";
 
@@ -39,7 +39,7 @@ export class ECSchemaRpcLocater implements ISchemaLocater {
     const schemaJson = await ECSchemaRpcInterface.getClient().getSchemaJSON(this.token, schemaKey.name);
     if (!schemaJson)
       return undefined;
-    
+
     const schemaInfo = await Schema.startLoadingFromJson(schemaJson, context || new SchemaContext());
     if (schemaInfo !== undefined && schemaInfo.schemaKey.matches(schemaKey, matchType)) {
       return schemaInfo;
