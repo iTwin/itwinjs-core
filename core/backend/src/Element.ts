@@ -206,15 +206,13 @@ export class Element extends Entity {
    * @beta
    */
   protected static onInsert(arg: OnElementPropsArg): void {
-    const { iModel, props, options } = arg;
+    const { iModel, props } = arg;
     const operation = "insert";
     iModel.channels[_verifyChannel](props.model);
-    const isIndirectChange = (options && options.indirect === true);
-    if (!isIndirectChange) {
-      iModel.locks.checkSharedLock(props.model, "model", operation); // inserting requires shared lock on model
-      if (props.parent)   // inserting requires shared lock on parent, if present
-        iModel.locks.checkSharedLock(props.parent.id, "parent", operation);
-    }
+
+    iModel.locks.checkSharedLock(props.model, "model", operation); // inserting requires shared lock on model
+    if (props.parent)   // inserting requires shared lock on parent, if present
+      iModel.locks.checkSharedLock(props.parent.id, "parent", operation);
 
     iModel.codeService?.verifyCode(arg);
   }
