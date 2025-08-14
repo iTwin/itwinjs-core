@@ -2,9 +2,11 @@ import { Id64String } from "@itwin/core-bentley";
 import { TxnManager } from "./TxnManager";
 
 export interface Value {
-  isNull(): boolean;
+  get isNull(): boolean;
+  get isValid(): boolean;
+  get valueType(): "integer" | "null" | "string" | "double" | "binary";
   getId(): Id64String;
-  getInt(): number;
+  getInteger(): number;
   getString(): string;
   getDouble(): number;
   getBinary(): Uint8Array;
@@ -38,7 +40,7 @@ export class ChangeStream implements Iterable<Change> {
 }
 
 export class ChangeTracker {
-  
+
 }
 
 export abstract class TxnTable {
