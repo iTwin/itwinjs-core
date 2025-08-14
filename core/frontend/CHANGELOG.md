@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Fri, 08 Aug 2025 18:06:10 GMT and should not be manually modified.
+This log was last generated on Thu, 14 Aug 2025 19:38:08 GMT and should not be manually modified.
+
+## 5.1.2
+Thu, 14 Aug 2025 19:38:08 GMT
+
+### Updates
+
+- Improve frame rate during interactive editing.
 
 ## 5.1.1
 Fri, 08 Aug 2025 18:06:10 GMT
