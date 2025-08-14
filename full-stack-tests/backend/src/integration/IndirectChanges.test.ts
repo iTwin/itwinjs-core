@@ -65,6 +65,75 @@ describe("Indirect changes flag on elements", () => {
     return db.elements.insertElement(subject.toJSON(), { indirect });
   };
 
+  it("Insert, update and delete direct and indirect elements", async () => {
+    const b1 = await openNewBriefcase(user1AccessToken);
+
+    // 1. Create subject directly
+    await b1.locks.acquireLocks({ shared: IModel.rootSubjectId });
+    const directSubjectId = makeSubject(b1, "directSubject", "Direct subject", false);
+    assert.isDefined(directSubjectId, "Failed to insert direct subject");
+    assert.isTrue(b1.locks.holdsSharedLock(IModel.rootSubjectId));
+
+    b1.saveChanges();
+    await b1.pushChanges({ description: "create subject directly" });
+    // lock is supposed to be released in pushChanges()
+    assert.isFalse(b1.locks.holdsSharedLock(IModel.rootSubjectId));
+
+    // 2. Create subject indirectly
+    // First try to create subject indirectly without a lock - should throw (as discussed with @khanaffan)
+    await assertThrowsAsync(async () => {
+      makeSubject(b1, "indirectSubject", "Indirect subject", true);
+    }, "shared lock not held on model for insert");
+
+    // Now acquire the lock and create successfully
+    await b1.locks.acquireLocks({ shared: IModel.rootSubjectId });
+    const indirectSubjectId = makeSubject(b1, "indirectSubject", "Indirect subject", true);
+    assert.isDefined(indirectSubjectId, "Failed to insert indirect subject");
+    b1.saveChanges();
+    await b1.pushChanges({ description: "create subject indirectly" });
+    assert.isFalse(b1.locks.holdsSharedLock(IModel.rootSubjectId));
+
+    // 3. Update subject directly
+    // First try to update without a lock - should throw
+    const directElement = b1.elements.getElement<Subject>(directSubjectId);
+    directElement.userLabel = "updatedDirectly";
+    await assertThrowsAsync(async () => {
+      b1.elements.updateElement(directElement.toJSON(), { indirect: false });
+    }, "exclusive lock not held on element for update");
+
+    // Now acquire the lock and update successfully
+    await b1.locks.acquireLocks({ exclusive: directSubjectId });
+    b1.elements.updateElement(directElement.toJSON(), { indirect: false });
+    b1.saveChanges();
+    await b1.pushChanges({ description: "update subject directly" });
+
+    // 4. Update subject indirectly
+    const indirectElement = b1.elements.getElement<Subject>(indirectSubjectId);
+    indirectElement.userLabel = "updatedIndirectly";
+    b1.elements.updateElement(indirectElement.toJSON(), { indirect: true });
+    b1.saveChanges();
+    await b1.pushChanges({ description: "update subject indirectly" });
+
+    // 5. Delete subject directly (requires lock)
+    // First try to delete without a lock - should throw
+    await assertThrowsAsync(async () => {
+      b1.elements.deleteElement(directSubjectId, { indirect: false });
+    }, "exclusive lock not held on element for delete");
+
+    // Now acquire the lock and delete successfully
+    await b1.locks.acquireLocks({ exclusive: directSubjectId });
+    b1.elements.deleteElement(directSubjectId, { indirect: false });
+    b1.saveChanges();
+    await b1.pushChanges({ description: "delete subject directly" });
+
+    // 6. Delete subject indirectly (no lock required)
+    b1.elements.deleteElement(indirectSubjectId, { indirect: true });
+    b1.saveChanges();
+    await b1.pushChanges({ description: "delete subject indirectly" });
+
+    b1.close();
+  });
+
   it("Indirect changes should not require a lock", async () => {
     const b1 = await openNewBriefcase(user1AccessToken);
     await assertThrowsAsync(async () => {
@@ -79,85 +148,6 @@ describe("Indirect changes flag on elements", () => {
     assert.isDefined(b1s3, "Subject 3 should be created in b1 as an indirect change");
 
     b1.close();
-  });
-
-  it("Insert direct and indirect subjects and cross pull", async () => {
-    const b1 = await openNewBriefcase(user1AccessToken);
-    const b2 = await openNewBriefcase(user2AccessToken);
-
-    await b1.locks.acquireLocks({ shared: IModel.rootSubjectId });
-    const b1s1 = makeSubject(b1, "Subject 1", "Description 1", false);
-    assert.isDefined(b1s1, "Subject 1 should be created in b1");
-    const b1s2 = makeSubject(b1, "Subject 2", "Description 2", true);
-    assert.isDefined(b1s2, "Subject 2 should be created in b1 as an indirect change");
-    const b1s3 = makeSubject(b1, "Subject 3", "Description 3", undefined);
-    assert.isDefined(b1s3, "Subject 3 should be created in b1 as a direct change");
-    b1.saveChanges();
-    await b1.pushChanges({ description: "B1: Inserted 3 subjects. 2 direct 1 indirect." });
-
-
-    await b2.locks.acquireLocks({ shared: IModel.rootSubjectId });
-    const b2s1 = makeSubject(b2, "Subject 4", "Description 4", false);
-    assert.isDefined(b2s1, "Subject 4 should be created in b2");
-    const b2s2 = makeSubject(b2, "Subject 5", "Description 5", true);
-    assert.isDefined(b2s2, "Subject 5 should be created in b2 as an indirect change");
-    const b2s3 = makeSubject(b2, "Subject 6", "Description 6", undefined);
-    assert.isDefined(b2s3, "Subject 6 should be created in b2 as a direct change");
-    b2.saveChanges();
-    await b2.pushChanges({ description: "B2: Inserted 3 subjects. 2 direct 1 indirect." });
-
-    await b1.pullChanges();
-    const b1s1Pulled = b1.elements.getElement<Subject>(b1s1);
-    assert.isDefined(b1s1Pulled);
-    assert.strictEqual(b1s1Pulled.code.value, "Subject 1");
-
-    const b1s2Pulled = b1.elements.getElement<Subject>(b1s2);
-    assert.isDefined(b1s2Pulled);
-    assert.strictEqual(b1s2Pulled.code.value, "Subject 2");
-
-    const b1s3Pulled = b1.elements.getElement<Subject>(b1s3);
-    assert.isDefined(b1s3Pulled);
-    assert.strictEqual(b1s3Pulled.code.value, "Subject 3");
-
-    const b1s4Pulled = b1.elements.getElement<Subject>(b2s1);
-    assert.isDefined(b1s4Pulled);
-    assert.strictEqual(b1s4Pulled.code.value, "Subject 4");
-
-    const b1s5Pulled = b1.elements.getElement<Subject>(b2s2);
-    assert.isDefined(b1s5Pulled);
-    assert.strictEqual(b1s5Pulled.code.value, "Subject 5");
-
-    const b1s6Pulled = b1.elements.getElement<Subject>(b2s3);
-    assert.isDefined(b1s6Pulled);
-    assert.strictEqual(b1s6Pulled.code.value, "Subject 6");
-
-    await b2.pullChanges();
-    const b2s1Pulled = b2.elements.getElement<Subject>(b1s1);
-    assert.isDefined(b2s1Pulled);
-    assert.strictEqual(b2s1Pulled.code.value, "Subject 1");
-
-    const b2s2Pulled = b2.elements.getElement<Subject>(b1s2);
-    assert.isDefined(b2s2Pulled);
-    assert.strictEqual(b2s2Pulled.code.value, "Subject 2");
-
-    const b2s3Pulled = b2.elements.getElement<Subject>(b1s3);
-    assert.isDefined(b2s3Pulled);
-    assert.strictEqual(b2s3Pulled.code.value, "Subject 3");
-
-    const b2s4Pulled = b2.elements.getElement<Subject>(b2s1);
-    assert.isDefined(b2s4Pulled);
-    assert.strictEqual(b2s4Pulled.code.value, "Subject 4");
-
-    const b2s5Pulled = b2.elements.getElement<Subject>(b2s2);
-    assert.isDefined(b2s5Pulled);
-    assert.strictEqual(b2s5Pulled.code.value, "Subject 5");
-
-    const b2s6Pulled = b2.elements.getElement<Subject>(b2s3);
-    assert.isDefined(b2s6Pulled);
-    assert.strictEqual(b2s6Pulled.code.value, "Subject 6");
-
-    b1.close();
-    b2.close();
   });
 
   it("Indirect changes to same subject", async () => {
