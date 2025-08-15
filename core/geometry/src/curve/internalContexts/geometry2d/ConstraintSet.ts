@@ -21,6 +21,7 @@ import { UnboundedLine2dByPointAndNormal } from "./UnboundedLine2d.";
 export enum ConstriaintType {
   throughPoint,
   radius,
+  perpendicularTo,
   tangentTo,
   curveLength
 }
@@ -40,6 +41,11 @@ export class ConstructionConstraint {
   }
   public static createTangentTo(curve: ImplicitCurve2d): ConstructionConstraint {
     const c = new ConstructionConstraint(ConstriaintType.tangentTo);
+    c.curve = curve.clone();
+    return c;
+  }
+  public static createPerpendicularTo(curve: ImplicitCurve2d): ConstructionConstraint {
+    const c = new ConstructionConstraint(ConstriaintType.perpendicularTo);
     c.curve = curve.clone();
     return c;
   }
@@ -129,8 +135,8 @@ export class ConstraintSet {
       const c = this._constraints[i];
       if (c.constraintType === ConstriaintType.tangentTo
         && c.curve instanceof UnboundedLine2dByPointAndNormal) {
-        const newLine = c.curve.cloneNormalizedFromOrigin ();
-        if (newLine !== undefined){
+        const newLine = c.curve.cloneNormalizedFromOrigin();
+        if (newLine !== undefined) {
           const c1 = ConstructionConstraint.createTangentTo(newLine);
           this._constraints[i] = c1;
         }
@@ -177,14 +183,14 @@ export class ConstraintSet {
 
     const constraints = this.clone();
     constraints.convertThroughPointToZeroRadiusCircles();
-    constraints.normalizeLines ();
+    constraints.normalizeLines();
     ConstraintSet.sortByConstraintTypeAndGeometryType(constraints._constraints);
     // Note that pass-through points are now tangentTo circles with zero radius.
     const numTangent = constraints.countConstraintType(ConstriaintType.tangentTo);
     const numRadius = constraints.countConstraintType(ConstriaintType.radius);
-      const c0 = constraints._constraints[0];
-      const c1 = constraints._constraints[1];
-      const c2 = constraints._constraints[2];
+    const c0 = constraints._constraints[0];
+    const c1 = constraints._constraints[1];
+    const c2 = constraints._constraints[2];
     if (numTangent === 3) {
       // Radius comes first, then Line(s), then circle(s)
       // Once a circle is encountered, the rest must be circles.
@@ -215,7 +221,7 @@ export class ConstraintSet {
         }
       }
     } else if (numRadius === 1 && numTangent === 2
-               && c0.radius !== undefined) {
+      && c0.radius !== undefined) {
       // c0 is the readius
       // c1,c2 can be LINE LINE or LINE CIRCLE or CIRCLE CIRCLE
       if (c1.curve instanceof UnboundedLine2dByPointAndNormal) {
@@ -238,4 +244,55 @@ export class ConstraintSet {
     }
     return undefined;
   }
+  /**
+   * Call constructConstrainedLInes when the ConstraintSet has 2 conditions which determine one or more lines.
+   * @returns 
+   */
+  public constructConstrainedLines(): ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>[] | undefined {
+    if (this._constraints.length !== 2)
+      return undefined;
+
+    const constraints = this.clone();
+    constraints.convertThroughPointToZeroRadiusCircles();
+    constraints.normalizeLines();
+    ConstraintSet.sortByConstraintTypeAndGeometryType(constraints._constraints);
+    // Note that pass-through points are now tangentTo circles with zero radius.
+    const numTangent = constraints.countConstraintType(ConstriaintType.tangentTo);
+    const numPerp = constraints.countConstraintType(ConstriaintType.perpendicularTo);
+    const c0 = constraints._constraints[0];
+    const c1 = constraints._constraints[1];
+    if (numTangent === 2) {
+      if (c0.curve instanceof UnboundedCircle2dByCenterAndRadius) {
+        if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius) {
+          return TangentConstruction.linesTangentCC(
+            c1.curve, c0.curve);
+        }
+      }
+    } else if (numPerp === 2) {
+      if (c0.curve instanceof UnboundedCircle2dByCenterAndRadius) {
+        if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius) {
+          return TangentConstruction.linesPerpCPerpC(
+            c0.curve, c1.curve);
+        }
+      } else if (c0.curve instanceof UnboundedLine2dByPointAndNormal){
+        if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius) {
+          return TangentConstruction.linesPerpLPerpC(
+            c0.curve, c1.curve);
+      }
+      }
+    } else if (numPerp === 1 && numTangent === 1){
+      // !!! The tangent comes second and must be a circle ..
+      if (c1.curve instanceof UnboundedCircle2dByCenterAndRadius) {
+        if (c0.curve instanceof UnboundedCircle2dByCenterAndRadius) {
+          return TangentConstruction.linesPerpCTangentC(
+            c0.curve, c1.curve);
+        } else if (c0.curve instanceof UnboundedLine2dByPointAndNormal) {
+          return TangentConstruction.linesPerpLTangentC(
+            c0.curve, c1.curve);
+        }
+      }
+    }
+    return undefined;
+  }
+
 }
