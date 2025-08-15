@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
@@ -76,7 +77,7 @@ export class PolylineCompressionContext {
     let distanceSquared;
     let s;
     let i;
-    this._source.vectorIndexIndex(i0, i1, PolylineCompressionContext._vector01)!;
+    this._source.vectorIndexIndex(i0, i1, PolylineCompressionContext._vector01);
     const denominator = PolylineCompressionContext._vector01.magnitudeSquared();
     for (let index = index0 + 1; index < index1; index++) {
       i = this._source.cyclicIndex(index);
@@ -146,14 +147,18 @@ export class PolylineCompressionContext {
     dest.clear();
     const n = source.length;
     if (n === 1) {
-      dest.push(source.getPoint3dAtCheckedPointIndex(0)!);
+      const point = source.getPoint3dAtCheckedPointIndex(0);
+      assert(undefined !== point, "PolylineCompressionContext.compressCollectionByChordError: point should be defined");
+      dest.push(point);
       return;
     }
     const context = new PolylineCompressionContext(source, dest, chordTolerance);
     // Do compression on inclusive interval from indexA to indexB, with indices interpreted cyclically if closed
     let indexA = 0;
     let indexB = n - 1;
-    if (n > 2 && source.distanceIndexIndex(0, n - 1)! <= chordTolerance) {
+    const distance = source.distanceIndexIndex(0, n - 1);
+    assert(undefined !== distance, "PolylineCompressionContext.compressCollectionByChordError: distance should be defined");
+    if (n > 2 && distance <= chordTolerance) {
       // cyclic data. It is possible that the wrap point itself has to be seen as an internal point.
       // do the search from point index where there is a large triangle . ..
       const maxCrossProductIndex = context.indexOfMaxCrossProduct(0, n - 1);
@@ -179,7 +184,9 @@ export class PolylineCompressionContext {
     let lastAcceptedIndex = 0;
     // back up from final point ..
     let indexB = n - 1;
-    while (indexB > 0 && data.distanceIndexIndex(indexB - 1, n - 1)! <= maxEdgeLength)
+    const distance = data.distanceIndexIndex(indexB - 1, n - 1);
+    assert(undefined !== distance, "PolylineCompressionContext.compressInPlaceByShortEdgeLength: distance should be defined");
+    while (indexB > 0 && distance <= maxEdgeLength)
       indexB--;
     if (indexB === 0) {
       // Theres only one point there.
@@ -190,8 +197,10 @@ export class PolylineCompressionContext {
     if (indexB < n - 1)
       data.moveIndexToIndex(n - 1, indexB);
     let candidateIndex = lastAcceptedIndex + 1;
+    let d: number | undefined;
     while (candidateIndex <= indexB) {
-      const d = data.distanceIndexIndex(lastAcceptedIndex, candidateIndex)!;
+      d = data.distanceIndexIndex(lastAcceptedIndex, candidateIndex);
+      assert(undefined !== d, "PolylineCompressionContext.compressInPlaceByShortEdgeLength: d should be defined");
       if (d > maxEdgeLength) {
         data.moveIndexToIndex(candidateIndex, lastAcceptedIndex + 1);
         lastAcceptedIndex++;

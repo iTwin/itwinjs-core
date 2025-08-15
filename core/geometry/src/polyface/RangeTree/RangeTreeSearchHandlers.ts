@@ -6,6 +6,7 @@
  * @module RangeSearch
  */
 
+import { assert } from "@itwin/core-bentley";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -212,7 +213,7 @@ export class SingleTreeSearchHandlerForClosestPointOnLineString3d extends Single
   private _workSegment?: LineSegment3d;
   /** Test a segment indexed in the range tree as candidate for "closest" */
   public override processAppData(candidateIndex: number): void {
-    const segment = this._workSegment = this.context.lineString.getIndexedSegment(candidateIndex, this._workSegment)!;
+    const segment = this._workSegment = this.context.lineString.getIndexedSegment(candidateIndex, this._workSegment);
     if (segment) {
       const cld = segment.closestPoint(this.spacePoint, false);
       LineString3d.convertLocalToGlobalDetail(cld, candidateIndex, this.context.lineString.numEdges(), this.context.lineString);
@@ -277,9 +278,11 @@ export class TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach extend
   public override processAppDataPair(indexA: number, indexB: number): void {
     this.contextA.numPointTest++;
     const segA = TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentA =
-      this.contextA.lineString.getIndexedSegment(indexA, TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentA)!;
+      this.contextA.lineString.getIndexedSegment(indexA, TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentA);
+    assert(undefined !== segA, "TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach.getCurrentDistance: segA should be defined");
     const segB = TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentB =
-      this.contextB.lineString.getIndexedSegment(indexB, TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentB)!;
+      this.contextB.lineString.getIndexedSegment(indexB, TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentB);
+    assert(undefined !== segB, "TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach.getCurrentDistance: segB should be defined");
     const cldPair = LineSegment3d.closestApproach(segA, false, segB, false);
     if (cldPair && this.searchState.isNewMinOrTrigger(cldPair.detailA.a)) {
       LineString3d.convertLocalToGlobalDetail(cldPair.detailA, indexA, this.contextA.lineString.numEdges(), this.contextA.lineString);

@@ -919,8 +919,14 @@ export class PolyfaceQuery {
     context: SweepLineStringToFacetContext, visitor: PolyfaceVisitor, announce: AnnounceDrapePanel,
   ): Promise<number> {
     let workCount = 0;
+    let clientPolyface: Polyface | undefined;
     while ((workCount < this.asyncWorkLimit) && visitor.moveToNextFacet()) {
-      workCount += context.projectToPolygon(visitor.point, announce, visitor.clientPolyface()!, visitor.currentReadIndex());
+      clientPolyface = visitor.clientPolyface();
+      assert(
+        undefined !== clientPolyface,
+        "PolyfaceQuery.continueAnnounceSweepLinestringToConvexPolyfaceXY: PolyfaceVisitor.clientPolyface() should be defined",
+      );
+      workCount += context.projectToPolygon(visitor.point, announce, clientPolyface, visitor.currentReadIndex());
     }
     return workCount;
   }
@@ -1587,7 +1593,8 @@ export class PolyfaceQuery {
   public static cloneWithTVertexFixup(polyface: Polyface): IndexedPolyface {
     const oldFacetVisitor = polyface.createVisitor(1); // this is to visit the existing facets
     const newFacetVisitor = polyface.createVisitor(0); // this is to build the new facets
-    const rangeSearcher = XYPointBuckets.create(polyface.data.point, 30)!;
+    const rangeSearcher = XYPointBuckets.create(polyface.data.point, 30);
+    assert(undefined !== rangeSearcher, "PolyfaceQuery.cloneWithTVertexFixup: XYPointBuckets should be created successfully");
     const builder = PolyfaceBuilder.create();
     const edgeRange = Range3d.createNull();
     const point0 = Point3d.create();

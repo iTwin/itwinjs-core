@@ -7,6 +7,7 @@
  * @module Topology
  */
 
+import { assert } from "@itwin/core-bentley";
 import { ClipUtilities } from "../clipping/ClipUtils";
 import { Geometry } from "../Geometry";
 import { FrameBuilder } from "../geometry3d/FrameBuilder";
@@ -120,7 +121,8 @@ export class Triangulator {
    *  *  If revealed to be an improvement, conduct the flip, mark involved nodes as unvisited, and repeat until all nodes are visited
    */
   public static flipTriangles(graph: HalfEdgeGraph): number {
-    const edgeSet = MarkedEdgeSet.create(graph)!;
+    const edgeSet = MarkedEdgeSet.create(graph);
+    assert(undefined !== edgeSet, "Triangulator.flipTriangles: edgeSet creation failed");
     for (const node of graph.allHalfEdges)
       edgeSet.addToSet(node);
     const numFlip = this.flipTrianglesInEdgeSet(graph, edgeSet);
@@ -1082,7 +1084,8 @@ class AssembleXYZXYZChains extends PointStreamXYZXYZHandlerBase {
       this._baseNode = this._nodeC;
       this._nodeB = this._baseNode.faceSuccessor;
     } else {
-      HalfEdge.pinch(this._nodeB!, this._nodeC);
+      assert(undefined !== this._nodeB);
+      HalfEdge.pinch(this._nodeB, this._nodeC);
       this._nodeB = this._nodeC.faceSuccessor;
     }
   }

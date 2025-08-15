@@ -7,6 +7,7 @@
  * @module ArraysAndInterfaces
  */
 
+import { assert } from "@itwin/core-bentley";
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { IndexedReadWriteXYZCollection, IndexedXYZCollection, MultiLineStringDataVariant } from "./IndexedXYZCollection";
@@ -585,7 +586,8 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     const nDouble = this.float64Length;
     if (!matrix.computeCachedInverse(true))
       return false;
-    const coffs = matrix.inverseCoffs!;
+    const coffs = matrix.inverseCoffs;
+    assert(undefined !== coffs, "Matrix3d.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace: coffs should be defined");
     const tol = Geometry.smallFloatingPoint;
     let x = 0;
     let y = 0;
@@ -1046,8 +1048,13 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * @param tolerance
    */
   public static removeClosure(points: IndexedReadWriteXYZCollection, tolerance: number = Geometry.smallMetricDistance) {
-    while (points.length > 1 && points.distanceIndexIndex(0, points.length - 1)! < tolerance)
+    let d = points.distanceIndexIndex(0, points.length - 1);
+    assert(undefined !== d, "GrowableXYZArray.removeClosure: distance should be defined");
+    while (points.length > 1 && d < tolerance) {
       points.pop();
+      d = points.distanceIndexIndex(0, points.length - 1);
+      assert(undefined !== d, "GrowableXYZArray.removeClosure: distance should be defined");
+    }
   }
   /**
    * Compute frame for a triangle formed by three (unchecked!) points identified by index.

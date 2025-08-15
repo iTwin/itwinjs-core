@@ -6,24 +6,26 @@
  * @module Curve
  */
 
-import { TransitionSpiral3d } from "./TransitionSpiral3d";
-import { Segment1d } from "../../geometry3d/Segment1d";
+import { assert } from "@itwin/core-bentley";
+import { AxisOrder, Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { GeometryHandler, IStrokeHandler } from "../../geometry3d/GeometryHandler";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Ray3d } from "../../geometry3d/Ray3d";
+import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
+import { Quadrature } from "../../numerics/Quadrature";
+import { GeometryQuery } from "../GeometryQuery";
 import { LineString3d } from "../LineString3d";
+import { StrokeOptions } from "../StrokeOptions";
 import { NormalizedTransition } from "./NormalizedTransition";
 import { TransitionConditionalProperties } from "./TransitionConditionalProperties";
-import { Quadrature } from "../../numerics/Quadrature";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Angle } from "../../geometry3d/Angle";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { AxisOrder, Geometry } from "../../Geometry";
-import { StrokeOptions } from "../StrokeOptions";
-import { GeometryHandler, IStrokeHandler } from "../../geometry3d/GeometryHandler";
-import { Ray3d } from "../../geometry3d/Ray3d";
-import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
-import { GeometryQuery } from "../GeometryQuery";
+import { TransitionSpiral3d } from "./TransitionSpiral3d";
+
 /**
  * An IntegratedSpiral3d is a curve defined by integrating its curvature.
  * * The first integral of curvature (with respect to distance along the curve) is the bearing angle (in radians)
@@ -226,13 +228,22 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
       return undefined;
     if (fractionInterval === undefined)
       fractionInterval = Segment1d.create(0, 1);
+    const dataBearing0 = data.bearing0;
+    assert(undefined !== dataBearing0, "IntegratedSpiral3d.createFrom4OutOf5: bearing0 should be defined");
+    const dataBearing1 = data.bearing1;
+    assert(undefined !== dataBearing1, "IntegratedSpiral3d.createFrom4OutOf5: bearing1 should be defined");
+    const dataCurveLength = data.curveLength;
+    assert(undefined !== dataCurveLength, "IntegratedSpiral3d.createFrom4OutOf5: curveLength should be defined");
     return new IntegratedSpiral3d(
       spiralType,
       evaluator,
       Segment1d.create(data.radius0, data.radius1),
-      AngleSweep.createStartEnd(data.bearing0!, data.bearing1!),
+      AngleSweep.createStartEnd(dataBearing0, dataBearing1),
       fractionInterval ? fractionInterval.clone() : Segment1d.create(0, 1),
-      localToWorld, data.curveLength!, data1);
+      localToWorld,
+      dataCurveLength,
+      data1,
+    );
   }
   /** Copy all defining data from another spiral. */
   public setFrom(other: IntegratedSpiral3d): IntegratedSpiral3d {
@@ -340,7 +351,8 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
     const targetGlobalFraction = this.activeFractionInterval.fractionToPoint(activeFraction);
     const numStrokes = this._globalStrokes.packedPoints.length - 1;
     if (activeFraction > 1.0) {
-      result = this._globalStrokes.packedPoints.back(result)!;
+      result = this._globalStrokes.packedPoints.back(result);
+      assert(undefined !== result, "IntegratedSpiral3d.fractionToPoint: result should be defined");
       const integrationStep = 1.0 / numStrokes;
       let currentGlobalFraction = 1.0;
       let nextGlobalFraction = currentGlobalFraction + integrationStep;
@@ -351,7 +363,8 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
       }
       this.fullSpiralIncrementalIntegral(result, currentGlobalFraction, targetGlobalFraction, true);
     } else if (activeFraction < 0.0) {
-      result = this._globalStrokes.packedPoints.front(result)!;
+      result = this._globalStrokes.packedPoints.front(result);
+      assert(undefined !== result, "IntegratedSpiral3d.fractionToPoint: result should be defined");
       const integrationStep = 1.0 / numStrokes;
       let currentGlobalFraction = 0.0;
       let nextGlobalFraction = currentGlobalFraction - integrationStep;

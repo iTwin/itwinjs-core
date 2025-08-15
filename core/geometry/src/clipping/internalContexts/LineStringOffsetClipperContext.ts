@@ -9,6 +9,7 @@ import { UnionOfConvexClipPlaneSets } from "../UnionOfConvexClipPlaneSets";
 import { ConvexClipPlaneSet } from "../ConvexClipPlaneSet";
 import { ClipPlane } from "../ClipPlane";
 import { IndexedXYZCollection } from "../../geometry3d/IndexedXYZCollection";
+import { assert } from "@itwin/core-bentley";
 /**
  * Class for building clip sets for offset regions.
  * @internal
@@ -168,7 +169,9 @@ export class LineStringOffsetClipperContext {
     const context = new LineStringOffsetClipperContext(positiveOffsetLeft, positiveOffsetRight);
     const result = UnionOfConvexClipPlaneSets.createEmpty();
     if (points.length > 1) {
-      const closed = Geometry.isSmallMetricDistance(points.distanceIndexIndex(0, points.length - 1)!);
+      const distance = points.distanceIndexIndex(0, points.length - 1);
+      assert(undefined !== distance, "LineStringOffsetClipperContext.createClipBetweenOffsets: distance should be defined");
+      const closed = Geometry.isSmallMetricDistance(distance);
       for (let i = 0; i + 1 < points.length; i++) {
         const unitVectorA = this.createUnit(points, i - 1, closed);
         const unitVectorB = this.createUnit(points, i, closed);

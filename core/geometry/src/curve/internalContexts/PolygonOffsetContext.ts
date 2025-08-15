@@ -6,6 +6,7 @@
  * @module Curve
  */
 
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../../Geometry";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -395,7 +396,8 @@ class Joint {
             Joint.link(jointA.previousJoint, newJoint);
             Joint.link(newJoint, jointC.nextJoint);
             newJoint.annotateJointMode(options);
-            newJoint.previousJoint!.annotateJointMode(options);
+            assert(undefined !== newJoint.previousJoint, "Joint.removeDegeneratePrimitives: previousJoint should be defined");
+            newJoint.previousJoint.annotateJointMode(options);
             if (newJoint.nextJoint)
               newJoint.nextJoint.annotateJointMode(options);
             /*
@@ -409,8 +411,10 @@ class Joint {
             Joint.link(jointA.previousJoint, newJoint);
             Joint.link(newJoint, jointB.nextJoint);
             newJoint.annotateJointMode(options);
-            newJoint.previousJoint!.annotateJointMode(options);
-            newJoint.nextJoint!.annotateJointMode(options);
+            assert(undefined !== newJoint.previousJoint, "Joint.removeDegeneratePrimitives: previousJoint should be defined");
+            newJoint.previousJoint.annotateJointMode(options);
+            assert(undefined !== newJoint.nextJoint, "Joint.removeDegeneratePrimitives: nextJoint should be defined");
+            newJoint.nextJoint.annotateJointMode(options);
             /*
             if (Checker.noisy.PolygonOffset) {
               GeometryCoreTestIO.consoleLog(" NEW JOINT");
@@ -524,7 +528,11 @@ export class PolygonWireOffsetContext {
     Joint.collectStrokesFromChain(joint0, chain, numPoints);  // compute offset corners (by extension/trim)
     const n = chain.packedPoints.length;
     if (n > 1) {
-      if (chain.packedPoints.front()!.isAlmostEqual(chain.packedPoints.back()!))
+      const front = chain.packedPoints.front();
+      assert(undefined !== front, " PolygonWireOffsetContext.constructPolygonWireXYOffset: front should be defined");
+      const back = chain.packedPoints.back();
+      assert(undefined !== back, " PolygonWireOffsetContext.constructPolygonWireXYOffset: back should be defined");
+      if (front.isAlmostEqual(back))
         return Loop.create(chain);
       else
         return Path.create(chain);

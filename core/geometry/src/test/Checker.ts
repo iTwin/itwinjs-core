@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "@itwin/core-bentley";
 import { Arc3d } from "../curve/Arc3d";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { LineString3d } from "../curve/LineString3d";
@@ -554,7 +555,9 @@ export class Checker {
     const range = g.range();
 
     if (!range.isNull && range.maxAbs() <= maxCoordinate) {
-      Checker._cache.push(g.clone()!);
+      const clone = g.clone();
+      assert(clone !== undefined, "Checker.saveTransformed: clone should be defined");
+      Checker._cache.push(clone);
       Checker._cache[Checker._cache.length - 1].tryTransformInPlace(Checker._transform);
     }
   }

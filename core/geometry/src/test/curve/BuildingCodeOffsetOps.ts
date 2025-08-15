@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { assert } from "@itwin/core-bentley";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { LineSegment3d } from "../../curve/LineSegment3d";
@@ -63,8 +64,10 @@ export class BuildingCodeOffsetOps {
         const sine = totalTurn.sin();
         const intersectionRadians = this.pickFromUpperPlaneIntersections(alphaSign * offsetRatio, betaSign * cosine, sine, phiSign);
         if (intersectionRadians !== undefined) {
-          arcVector0 = perpBC.scaleToLength(offsetBC)!;
-          arcVector90 = vectorBC.scaleToLength(offsetBC)!;
+          arcVector0 = perpBC.scaleToLength(offsetBC);
+          assert(undefined !== arcVector0, "BuildingCodeOffsetOps.createJointWithRadiusChange: arcVector0 is undefined");
+          arcVector90 = vectorBC.scaleToLength(offsetBC);
+          assert(undefined !== arcVector90, "BuildingCodeOffsetOps.createJointWithRadiusChange: arcVector90 is undefined");
           arc = Arc3d.create(pointB, arcVector0, arcVector90, AngleSweep.createStartEndRadians(-phiSign * intersectionRadians, 0.0));
         } else {
           const offsetPointAB = this.offsetPointFromSegment(pointA, pointB, -offsetAB, 1.0);
@@ -77,8 +80,10 @@ export class BuildingCodeOffsetOps {
         const sine = totalTurn.sin();
         const intersectionRadians = this.pickFromUpperPlaneIntersections(alphaSign * offsetRatio, betaSign * cosine, sine, phiSign);
         if (intersectionRadians !== undefined) {
-          arcVector0 = perpAB.scaleToLength(offsetAB)!;
-          arcVector90 = vectorAB.scaleToLength(offsetAB)!;
+          arcVector0 = perpAB.scaleToLength(offsetAB);
+          assert(undefined !== arcVector0, "BuildingCodeOffsetOps.createJointWithRadiusChange: arcVector0 is undefined");
+          arcVector90 = vectorAB.scaleToLength(offsetAB);
+          assert(undefined !== arcVector90, "BuildingCodeOffsetOps.createJointWithRadiusChange: arcVector90 is undefined");
           arc = Arc3d.create(pointB, arcVector0, arcVector90, AngleSweep.createStartEndRadians(0, phiSign * intersectionRadians));
         } else {
           const offsetPointAB = this.offsetPointFromSegment(pointA, pointB, -offsetAB, 1.0);

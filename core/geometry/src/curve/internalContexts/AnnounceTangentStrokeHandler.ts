@@ -169,7 +169,7 @@ export class AnnounceTangentStrokeHandler extends NewtonRtoRStrokeHandler implem
     return true;
   }
   private announceRay(fraction: number, data: Ray3d): void {
-    this._functionB = this.evaluateFunction(data)!;
+    this._functionB = this.evaluateFunction(data) as number;
     this._fractionB = fraction;
     if (this._numThisCurve++ > 0) // after the first stroke point, a stroke segment is defined, so we have an interval
       this.searchInterval();

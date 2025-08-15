@@ -6,6 +6,7 @@
  * @module RangeSearch
  */
 
+import { assert } from "@itwin/core-bentley";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { LineString3d } from "../../curve/LineString3d";
 import { Geometry } from "../../Geometry";
@@ -57,9 +58,15 @@ export class LineString3dRangeTreeContext {
   public static createCapture(points: Point3d[] | LineString3d, maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4): LineString3dRangeTreeContext | undefined {
     const linestring = points instanceof LineString3d ? points : LineString3d.createPoints(points);
     const rangeTreeRoot = RangeTreeOps.createByIndexSplits<number>(
-      ((index: number): Range3d => { return Range3d.create(linestring.pointAt(index)!, linestring.pointAt(index + 1)!); }),
+      ((index: number): Range3d => {
+        const p0 = linestring.pointAt(index);
+        assert(undefined !== p0, "LineString3dRangeTreeContext.createCapture: pointAt(index) should be defined");
+        const p1 = linestring.pointAt(index + 1);
+        assert(undefined !== p1, "LineString3dRangeTreeContext.createCapture: pointAt(index + 1) should be defined");
+        return Range3d.create(p0, p1);
+      }),
       ((index: number): number => { return index; }),
-      linestring.numPoints() - 1,   // number of segments
+      linestring.numPoints() - 1, // number of segments
       maxChildPerNode,
       maxAppDataPerLeaf,
     );

@@ -7,6 +7,7 @@
  * @module Curve
  */
 
+import { assert } from "@itwin/core-bentley";
 import { AxisIndex, AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { AngleSweep } from "../geometry3d/AngleSweep";
@@ -156,14 +157,17 @@ export class CurveFactory {
     const n = points.length;
     if (n <= 1)
       return undefined;
-    const pointA = points.getPoint3dAtCheckedPointIndex(0)!;
-    const pointB = points.getPoint3dAtCheckedPointIndex(1)!;
+    const pointA = points.getPoint3dAtCheckedPointIndex(0);
+    assert(undefined !== pointA, "CurveFactory.createFilletsInLineString: pointA should be defined");
+    const pointB = points.getPoint3dAtCheckedPointIndex(1);
+    assert(undefined !== pointB, "CurveFactory.createFilletsInLineString: pointB should be defined");
     // remark: n=2 and n=3 cases should fall out from loop logic
     const blendArray: ArcBlendData[] = [];
     // build one-sided blends at each end . .
     blendArray.push({ fraction10: 0.0, fraction12: 0.0, point: pointA.clone() });
     for (let i = 1; i + 1 < n; i++) {
-      const pointC = points.getPoint3dAtCheckedPointIndex(i + 1)!;
+      const pointC = points.getPoint3dAtCheckedPointIndex(i + 1);
+      assert(undefined !== pointC, "CurveFactory.createFilletsInLineString: pointC should be defined");
       let thisRadius = 0;
       if (Array.isArray(radius)) {
         if (i < radius.length)
@@ -633,16 +637,20 @@ export class CurveFactory {
       const altitudeB = midPlanePerpendicularVector.dotProductStartEnd(startPoint, shoulderPoint);
       const altitudeSpiralEnd = midPlanePerpendicularVector.dotProductStartEnd(startPoint, spiralARefLength.endPoint());
       const scaleFactor = altitudeB / altitudeSpiralEnd;
-      const spiralA = IntegratedSpiral3d.createFrom4OutOf5(spiralType, 0.0, undefined,
-        Angle.createRadians(0), Angle.createRadians(spiralTurnRadians), referenceLength * scaleFactor, undefined, frameA)!;
+      const spiralA = IntegratedSpiral3d.createFrom4OutOf5(
+        spiralType, 0.0, undefined, Angle.createRadians(0), Angle.createRadians(spiralTurnRadians), referenceLength * scaleFactor, undefined, frameA,
+      );
+      assert(undefined !== spiralA, "CurveFactory.createLineSpiralSpiralLine: spiralA should be defined");
       const distanceAB = vectorAB.magnitude();
       const vectorBC = Vector3d.createStartEnd(shoulderPoint, targetPoint);
       vectorBC.scaleToLength(distanceAB, vectorBC);
       const pointC = shoulderPoint.plus(vectorBC);
       const axesC = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createRadians(radiansBC + Math.PI));
       const frameC = Transform.createRefs(pointC, axesC);
-      const spiralC = IntegratedSpiral3d.createFrom4OutOf5(spiralType,
-        0, -spiralA.radius01.x1, Angle.zero(), undefined, spiralA.curveLength(), Segment1d.create(1, 0), frameC)!;
+      const spiralC = IntegratedSpiral3d.createFrom4OutOf5(
+        spiralType, 0, -spiralA.radius01.x1, Angle.zero(), undefined, spiralA.curveLength(), Segment1d.create(1, 0), frameC,
+      );
+      assert(undefined !== spiralC, "CurveFactory.createLineSpiralSpiralLine: spiralC should be defined");
       return [spiralA, spiralC];
     }
     return undefined;
@@ -690,10 +698,9 @@ export class CurveFactory {
         const frameAOrigin = pointA.interpolate(xFractionAB, pointB);
         const frameA = Transform.createRefs(frameAOrigin, axesA);
         const spiralAB = IntegratedSpiral3d.createFrom4OutOf5(
-          spiralType, 0, undefined,
-          Angle.zero(), Angle.createRadians(spiralTurnRadians),
-          spiralLength, undefined, frameA,
-        )!;
+          spiralType, 0, undefined, Angle.zero(), Angle.createRadians(spiralTurnRadians), spiralLength, undefined, frameA,
+        );
+        assert(undefined !== spiralAB, "CurveFactory.createLineSpiralSpiralLineWithSpiralLength: spiralAB should be defined");
         const axesB = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createRadians(radiansCB));
         const frameBOrigin = pointC.interpolate(xFractionCB, pointB);
         const frameB = Transform.createRefs(frameBOrigin, axesB);
@@ -701,7 +708,8 @@ export class CurveFactory {
           spiralType, 0, undefined,
           Angle.zero(), Angle.createRadians(-spiralTurnRadians),
           spiralLength, undefined, frameB,
-        )!;
+        );
+        assert(undefined !== spiralBC, "CurveFactory.createLineSpiralSpiralLineWithSpiralLength: spiralBC should be defined");
         return [spiralAB, spiralBC];
       }
     }
@@ -739,10 +747,14 @@ export class CurveFactory {
     const sideB = - sideA;
     const radiusA = sideA * Math.abs(arcRadius);
     const radiusB = sideB * Math.abs(arcRadius);
-    const spiralA = IntegratedSpiral3d.createFrom4OutOf5(spiralType,
-      0, radiusA, Angle.zero(), undefined, lengthA, undefined, Transform.createIdentity())!;
-    const spiralB = IntegratedSpiral3d.createFrom4OutOf5(spiralType,
-      0, radiusB, Angle.zero(), undefined, lengthB, undefined, Transform.createIdentity())!;
+    const spiralA = IntegratedSpiral3d.createFrom4OutOf5(
+      spiralType, 0, radiusA, Angle.zero(), undefined, lengthA, undefined, Transform.createIdentity(),
+    );
+    assert(undefined !== spiralA, "CurveFactory.createLineSpiralArcSpiralLine: spiralA should be defined");
+    const spiralB = IntegratedSpiral3d.createFrom4OutOf5(
+      spiralType, 0, radiusB, Angle.zero(), undefined, lengthB, undefined, Transform.createIdentity(),
+    );
+    assert(undefined !== spiralB, "CurveFactory.createLineSpiralArcSpiralLine: spiralB should be defined");
     const spiralEndA = spiralA.fractionToPointAndUnitTangent(1.0);
     const spiralEndB = spiralB.fractionToPointAndUnitTangent(1.0);
     // From the end of spiral, step away to arc center (and this is in local coordinates of each spiral)
@@ -770,7 +782,8 @@ export class CurveFactory {
       const sweep = rayA1.direction.angleToXY(rayB0.direction);
       if (radiusA < 0)
         sweep.setRadians(- sweep.radians);
-      const arc = CurveFactory.createArcPointTangentRadius(rayA1.origin, rayA1.direction, radiusA, undefined, sweep)!;
+      const arc = CurveFactory.createArcPointTangentRadius(rayA1.origin, rayA1.direction, radiusA, undefined, sweep);
+      assert(undefined !== arc, "CurveFactory.createLineSpiralArcSpiralLine: arc should be defined");
       return [spiralA, arc, spiralB];
     }
     return undefined;

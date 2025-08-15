@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module Topology
  */
-import { OrderedComparator, PriorityQueue } from "@itwin/core-bentley";
+import { assert, OrderedComparator, PriorityQueue } from "@itwin/core-bentley";
 import { HalfEdge } from "./Graph";
 import { HalfEdgeGraphOps } from "./Merging";
 
@@ -31,8 +31,9 @@ export class HalfEdgePriorityQueueWithPartnerArray {
   public popQueueToArray(): HalfEdge | undefined {
     if (this.priorityQueue.isEmpty)
       return undefined;
-    const x = this.priorityQueue.pop()!;
-    this.activeEdges.push(x);
+    const x = this.priorityQueue.pop();
+    if (x)
+      this.activeEdges.push(x);
     return x;
   }
   /** Pop the last entry and put it back as replacement for current entry at index i.
@@ -43,7 +44,9 @@ export class HalfEdgePriorityQueueWithPartnerArray {
   public popArrayToArrayIndex(i: number) {
     const n = this.activeEdges.length;
     if (i < n) {
-      const x = this.activeEdges.pop()!;
+      const x = this.activeEdges.pop();
+      if (!x)
+        assert(false, "HalfEdgePriorityQueueWithPartnerArray.popArrayToArrayIndex: activeEdges is empty");
       this.activeEdges[i] = x;
     }
   }

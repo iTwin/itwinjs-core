@@ -6,6 +6,7 @@
  * @module CartesianGeometry
  */
 
+import { assert } from "@itwin/core-bentley";
 import { AxisIndex, AxisOrder, BeJSONFunctions, Geometry, StandardViewIndex } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
@@ -554,8 +555,10 @@ export class Matrix3d implements BeJSONFunctions {
         this.coffs[i] = other.coffs[i];
       if (other.inverseState === InverseMatrixState.inverseStored && other.inverseCoffs !== undefined) {
         this.createInverseCoffsWithZeros();
-        for (let i = 0; i < 9; i++)
-          this.inverseCoffs![i] = other.inverseCoffs[i];
+        for (let i = 0; i < 9; i++) {
+          assert(undefined !== this.inverseCoffs, "Matrix3d.setFrom: this.inverseCoffs should be defined");
+          this.inverseCoffs[i] = other.inverseCoffs[i];
+        }
         this.inverseState = InverseMatrixState.inverseStored;
       } else if (other.inverseState !== InverseMatrixState.inverseStored) {
         this.inverseState = other.inverseState;
@@ -1324,7 +1327,9 @@ export class Matrix3d implements BeJSONFunctions {
     } else if (!scaleXIsZero && !scaleYIsZero) { // rank 2
       column[0].scaleInPlace(1 / scale.x);
       column[1].scaleInPlace(1 / scale.y);
-      column[2] = column[0].unitCrossProduct(column[1], column[2])!;
+      const crossProduct = column[0].unitCrossProduct(column[1], column[2]);
+      assert(undefined !== crossProduct, "Matrix3d.factorOrthogonalScaleOrthogonal: crossProduct should be defined");
+      column[2] = crossProduct;
       matrixV.setColumns(column[0], column[1], column[2]);
     } else if (!scaleXIsZero) { // rank 1
       matrixV = Matrix3d.createRigidHeadsUp(column[0], AxisOrder.XYZ, matrixV); // preserve column0
@@ -2094,7 +2099,8 @@ export class Matrix3d implements BeJSONFunctions {
     if (coffA && coffB) {
       this.createInverseCoffsWithZeros();
       this.inverseState = InverseMatrixState.inverseStored;
-      f(coffA, coffB, this.inverseCoffs!); // call function f (which is provided by user) to compute the inverse.
+      assert(undefined !== this.inverseCoffs, "Matrix3d.finishInverseCoffs: this.inverseCoffs should be defined");
+      f(coffA, coffB, this.inverseCoffs); // call function f (which is provided by user) to compute the inverse.
     } else {
       this.inverseState = InverseMatrixState.unknown;
     }
@@ -2130,7 +2136,8 @@ export class Matrix3d implements BeJSONFunctions {
     if (!other.computeCachedInverse(true))
       return undefined;
     result = result ? result : new Matrix3d();
-    PackedMatrix3dOps.multiplyMatrixMatrix(this.coffs, other.inverseCoffs!, Matrix3d._productBuffer);
+    assert(undefined !== other.inverseCoffs, "Matrix3d.multiplyMatrixMatrixInverse: other.inverseCoffs should be defined");
+    PackedMatrix3dOps.multiplyMatrixMatrix(this.coffs, other.inverseCoffs, Matrix3d._productBuffer);
     if (this.inverseState === InverseMatrixState.inverseStored)
       result.finishInverseCoffs((a, b, _result) => PackedMatrix3dOps.multiplyMatrixMatrix(a, b, _result), other.coffs, this.inverseCoffs);
     else
@@ -2146,7 +2153,8 @@ export class Matrix3d implements BeJSONFunctions {
     if (!this.computeCachedInverse(true))
       return undefined;
     result = result ? result : new Matrix3d();
-    PackedMatrix3dOps.multiplyMatrixMatrix(this.inverseCoffs!, other.coffs, Matrix3d._productBuffer);
+    assert(undefined !== this.inverseCoffs, "Matrix3d.multiplyMatrixInverseMatrix: this.inverseCoffs should be defined");
+    PackedMatrix3dOps.multiplyMatrixMatrix(this.inverseCoffs, other.coffs, Matrix3d._productBuffer);
     if (other.inverseState === InverseMatrixState.inverseStored)
       result.finishInverseCoffs((a, b, _result) => PackedMatrix3dOps.multiplyMatrixMatrix(a, b, _result), other.inverseCoffs, this.coffs);
     else
@@ -2257,16 +2265,19 @@ export class Matrix3d implements BeJSONFunctions {
     if (result === this) {
       // swap the contents of this.coffs and this.inverseCoffs
       PackedMatrix3dOps.copy(this.coffs, Matrix3d._productBuffer);
-      PackedMatrix3dOps.copy(this.inverseCoffs!, this.coffs);
-      PackedMatrix3dOps.copy(Matrix3d._productBuffer, this.inverseCoffs!);
+      assert(undefined !== this.inverseCoffs, "Matrix3d.inverse: this.inverseCoffs should be defined");
+      PackedMatrix3dOps.copy(this.inverseCoffs, this.coffs);
+      PackedMatrix3dOps.copy(Matrix3d._productBuffer, this.inverseCoffs);
       return result;
     }
     if (result === undefined) {
       result = Matrix3d.createIdentity();
     }
     result.createInverseCoffsWithZeros();
-    PackedMatrix3dOps.copy(this.coffs, result.inverseCoffs!);
-    PackedMatrix3dOps.copy(this.inverseCoffs!, result.coffs);
+    assert(undefined !== result.inverseCoffs, "Matrix3d.inverse: result.inverseCoffs should be defined");
+    PackedMatrix3dOps.copy(this.coffs, result.inverseCoffs);
+    assert(undefined !== this.inverseCoffs, "Matrix3d.inverse: this.inverseCoffs should be defined");
+    PackedMatrix3dOps.copy(this.inverseCoffs, result.coffs);
     result.inverseState = this.inverseState;
     return result;
   }
@@ -2415,7 +2426,8 @@ export class Matrix3d implements BeJSONFunctions {
     this.inverseState = InverseMatrixState.unknown;
     this.createInverseCoffsWithZeros();
     const coffs = this.coffs;
-    const inverseCoffs = this.inverseCoffs!;
+    const inverseCoffs = this.inverseCoffs;
+    assert(undefined !== inverseCoffs, "Matrix3d.computeCachedInverse: this.inverseCoffs should be defined");
     /**
      * We calculate the inverse using cross products.
      * Math details can be found at docs/learning/matrix/Matrix.md
@@ -2772,7 +2784,7 @@ export class Matrix3d implements BeJSONFunctions {
   /**
    * Test if the matrix is a rigid matrix.
    * * A rigid matrix is a rotation: its columns and rows are unit length and pairwise perpendicular, and its
-   * determinant is +1.
+   * determinant is +1. Also transpose equals inverse.
    * @param allowMirror whether to widen the test to also return true if the matrix is a mirror (determinant is -1).
   */
   public isRigid(allowMirror: boolean = false): boolean {

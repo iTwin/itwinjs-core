@@ -5,6 +5,7 @@
 /** @packageDocumentation
  * @module Curve
  */
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { GeometryHandler, IStrokeHandler } from "../../geometry3d/GeometryHandler";
@@ -105,7 +106,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     strokes.clear();
     strokes.ensureEmptyUVParams();
     strokes.ensureEmptyFractions();
-    const distances = strokes.packedUVParams!;
+    const distances = strokes.packedUVParams;
+    assert(undefined !== distances, "DirectSpiral3d.computeStrokes: packedUVParams should be defined");
     const nominalIntervalLength = Math.abs(fractionB - fractionA) * this._nominalL1;
     for (let i = 0; i <= numInterval; i++) {
       const fraction = Geometry.interpolate(fractionA, i / numInterval, fractionB);
@@ -115,7 +117,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       distances.pushXY(fraction, nominalDistanceAlong); // the second distance will be updated below
     }
     if (applyLocalToWorld)
-      strokes.tryTransformInPlace (this._localToWorld);
+      strokes.tryTransformInPlace(this._localToWorld);
     let fraction0 = distances.getXAtUncheckedPointIndex(0);
     let trueDistance0 = distances.getYAtUncheckedPointIndex(0); // whatever was assigned as start distance is fine
     let trueDistance1, fraction1;
@@ -481,7 +483,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
    * The tangent vector of a true clothoid is length 1 everywhere, so simple proportion of nominalL1 is a good approximation.
    */
   public quickLength() {
-    const distanceData = this._globalStrokes.packedUVParams!;
+    const distanceData = this._globalStrokes.packedUVParams;
+    assert(undefined !== distanceData, "DirectSpiral3d.quickLength: packedUVParams should be defined");
     const n = distanceData.length;
     return distanceData.getYAtUncheckedPointIndex(n - 1);
   }

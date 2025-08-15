@@ -7,6 +7,7 @@
  * @module Curve
  */
 
+import { assert } from "@itwin/core-bentley";
 import { Clipper } from "../clipping/ClipUtils";
 import { Constant } from "../Constant";
 import { AxisOrder, BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
@@ -501,7 +502,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const center = start.plusScaled(vector0, radius);
     // reverse the A-to-center vector and bring it up to scale
     vector0.scaleInPlace(-radius);
-    const vector90 = tangentAtStart.scaleToLength(Math.abs(radius))!; // cannot fail; prior unitCrossProduct would have failed first
+    const vector90 = tangentAtStart.scaleToLength(Math.abs(radius)); // cannot fail; prior unitCrossProduct would have failed first
+    assert(undefined !== vector90, "Arc3d.createCircularStartTangentRadius: vector90 should be defined");
     return Arc3d.create(center, vector0, vector90, AngleSweep.create(sweep));
   }
   /**
@@ -929,7 +931,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       const arcToView = Matrix3d.createColumns(this.matrixRef.getColumn(0), this.matrixRef.getColumn(1), options.vectorToEye);
       centerToLocalPoint = arcToView.multiplyInverse(centerToPoint);
     } else {
-      centerToLocalPoint = this.matrixRef.multiplyInverse(centerToPoint)!;
+      centerToLocalPoint = this.matrixRef.multiplyInverse(centerToPoint);
     }
     if (centerToLocalPoint === undefined)
       return;

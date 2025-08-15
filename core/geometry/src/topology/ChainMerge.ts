@@ -7,6 +7,7 @@
  * @module Topology
  */
 
+import { assert } from "@itwin/core-bentley";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
@@ -154,7 +155,7 @@ export class ChainMergeContext {
     let a0 = points.evaluateUncheckedIndexPlaneAltitude(i0, plane);
     let i1 = addClosure ? 0 : 1;
     let a1;
-    for (; i1 < points.length; i0 = i1++ , a0 = a1) {
+    for (; i1 < points.length; i0 = i1++, a0 = a1) {
       a1 = points.evaluateUncheckedIndexPlaneAltitude(i1, plane);
       if (Geometry.isSmallMetricDistance(a0) && Geometry.isSmallMetricDistance(a1))
         this._graph.createEdgeXYZXYZ(
@@ -173,7 +174,9 @@ export class ChainMergeContext {
   }
   /** Return difference of sortData members as sort comparison */
   private static nodeCompareSortData(nodeA: HalfEdge, nodeB: HalfEdge): number {
-    return nodeA.sortData! - nodeB.sortData!;
+    assert(nodeA.sortData !== undefined, "ChainMergeContext.nodeCompareSortData: nodeA.sortData is undefined");
+    assert(nodeB.sortData !== undefined, "ChainMergeContext.nodeCompareSortData: nodeB.sortData is undefined");
+    return nodeA.sortData - nodeB.sortData;
   }
   /** test if nodeA is a dangling edge end (i.e. edges around vertex equal 1, but detect it without walking all the way around. */
   private static isIsolatedEnd(nodeA: HalfEdge): boolean {
@@ -204,13 +207,15 @@ export class ChainMergeContext {
     const n = sortArray.length;
     for (let i0 = 0; i0 < n; i0++) {
       const node0 = sortArray[i0];
-      const qMin = node0.sortData!;
+      const qMin = node0.sortData;
+      assert(qMin !== undefined, "ChainMergeContext.clusterAndMergeVerticesXYZ: node0.sortData is undefined");
       const qMax = qMin + xyzTolerance;
       if (ChainMergeContext.isIsolatedEnd(node0)) {
         for (let i1 = i0 + 1; i1 < n; i1++) {
           const node1 = sortArray[i1];
           if (ChainMergeContext.isIsolatedEnd(node1)) {
-            if (node1.sortData! > qMax)
+            assert(node1.sortData !== undefined, "ChainMergeContext.clusterAndMergeVerticesXYZ: node1.sortData is undefined");
+            if (node1.sortData > qMax)
               break;
             if (node0.distanceXYZ(node1) <= xyzTolerance) {
               HalfEdge.pinch(node0, node1);

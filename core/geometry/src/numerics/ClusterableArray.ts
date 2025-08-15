@@ -7,6 +7,7 @@
  * @module Numerics
  */
 
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../Geometry";
 import { GrowableBlockedArray } from "../geometry3d/GrowableBlockedArray";
 import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
@@ -346,7 +347,7 @@ export class ClusterableArray extends GrowableBlockedArray {
    */
   public static clusterNumberArray(data: number[], tolerance: number = Geometry.smallMetricDistance): PackedNumbersWithIndex {
     const clusterArray = new ClusterableArray(1, 0, data.length);
-    data.forEach((x: number) => {clusterArray.addDirect(x);});
+    data.forEach((x: number) => { clusterArray.addDirect(x); });
     const order = clusterArray.clusterIndicesLexical(tolerance);
     const result = new PackedNumbersWithIndex(data.length);
     let currentClusterIndex = 0;
@@ -420,8 +421,11 @@ export class ClusterableArray extends GrowableBlockedArray {
         currentClusterIndex++;
         numThisCluster = 0;
       } else {
-        if (numThisCluster === 0) // This is the first encounter with a new cluster
-          result.growablePackedPoints!.pushFromGrowableXYZArray(source, k);
+        if (numThisCluster === 0) { // This is the first encounter with a new cluster
+          const growablePackedPoints = result.growablePackedPoints;
+          assert(undefined !== growablePackedPoints, "ClusterableArray.clusterGrowablePoint3dArray: growablePackedPoints should be defined");
+          growablePackedPoints.pushFromGrowableXYZArray(source, k);
+        }
         result.oldToNew[k] = currentClusterIndex;
         numThisCluster++;
       }
@@ -515,7 +519,7 @@ class PackedPoint2dsWithIndex {
 /**
  * @internal
  */
- class PackedNumbersWithIndex {
+class PackedNumbersWithIndex {
   /** Array of numbers */
   public packedNumbers: number[];
   /** mapping from old point index to new point index. */

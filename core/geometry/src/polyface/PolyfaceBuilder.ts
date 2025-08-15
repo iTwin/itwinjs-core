@@ -7,6 +7,7 @@
  * @module Polyface
  */
 
+import { assert } from "@itwin/core-bentley";
 import { Arc3d } from "../curve/Arc3d";
 import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
 import { CurveChain, CurveCollection } from "../curve/CurveCollection";
@@ -152,10 +153,14 @@ class FacetSector {
       Vector3d.createStartEnd(sectorA.xyz, sectorB.xyz, vectorAB);
       sectorA.sectionDerivative.crossProduct(vectorAB, sectorA.normal);
       sectorB.sectionDerivative.crossProduct(vectorAB, sectorB.normal);
-      sectorA.normal!.normalizeInPlace();
-      sectorB.normal!.normalizeInPlace();
-      FacetSector.suppressSmallUnitVectorComponents(sectorA.normal!);
-      FacetSector.suppressSmallUnitVectorComponents(sectorB.normal!);
+      const normalA = sectorA.normal;
+      const normalB = sectorB.normal;
+      assert(undefined !== normalA, "PolyfaceBuilder.computeNormalsAlongRuleLine: sectorA.normal should be defined");
+      assert(undefined !== normalB, "PolyfaceBuilder.computeNormalsAlongRuleLine: sectorB.normal should be defined");
+      normalA.normalizeInPlace();
+      normalB.normalizeInPlace();
+      FacetSector.suppressSmallUnitVectorComponents(normalA);
+      FacetSector.suppressSmallUnitVectorComponents(normalB);
     }
   }
 }
@@ -293,10 +298,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       if (toggle)
         this.toggleReversedFacetFlag();
       const index0 = this.addPoint(conePoint);
-      let index1 = this.findOrAddPointInLineString(ls, 0)!;
-      let index2 = 0;
+      let index1 = this.findOrAddPointInLineString(ls, 0);
+      assert(undefined !== index1, "PolyfaceBuilder.addTriangleFan: index1 should be defined");
+      let index2: number | undefined = 0;
       for (let i = 1; i < n; i++) {
-        index2 = this.findOrAddPointInLineString(ls, i)!;
+        index2 = this.findOrAddPointInLineString(ls, i);
+        assert(undefined !== index2, "PolyfaceBuilder.addTriangleFan: index2 should be defined");
         this.addIndexedTrianglePointIndexes(index0, index1, index2);
         index1 = index2;
       }
@@ -318,33 +325,42 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       let normal;
       let normalIndex;
       if (this._options.needNormals) {
-        normal = ls.quickUnitNormal(PolyfaceBuilder._workVectorFindOrAdd)!;
+        normal = ls.quickUnitNormal(PolyfaceBuilder._workVectorFindOrAdd);
+        assert(undefined !== normal, "PolyfaceBuilder.addTrianglesInUncheckedConvexPolygon: normal should be defined");
         if (toggle)
           normal.scaleInPlace(-1.0);
         normalIndex = this._polyface.addNormal(normal);
       }
       const needParams = this._options.needParams;
       const packedUV = needParams ? ls.packedUVParams : undefined;
-      let paramIndex0 = -1;
-      let paramIndex1 = -1;
-      let paramIndex2 = -1;
+      let paramIndex0: number | undefined = -1;
+      let paramIndex1: number | undefined = -1;
+      let paramIndex2: number | undefined = -1;
       if (packedUV) {
-        paramIndex0 = this.addParamInGrowableXYArray(packedUV, 0)!;
-        paramIndex1 = this.addParamInGrowableXYArray(packedUV, 1)!;
+        paramIndex0 = this.addParamInGrowableXYArray(packedUV, 0);
+        assert(undefined !== paramIndex0, "PolyfaceBuilder.addTrianglesInUncheckedConvexPolygon: paramIndex0 should be defined");
+        paramIndex1 = this.addParamInGrowableXYArray(packedUV, 1);
+        assert(undefined !== paramIndex1, "PolyfaceBuilder.addTrianglesInUncheckedConvexPolygon: paramIndex1 should be defined");
       }
-      const pointIndex0 = this.findOrAddPointInLineString(ls, 0)!;
-      let pointIndex1 = this.findOrAddPointInLineString(ls, 1)!;
-      let pointIndex2 = 0;
+      const pointIndex0 = this.findOrAddPointInLineString(ls, 0);
+      assert(undefined !== pointIndex0, "PolyfaceBuilder.addTrianglesInUncheckedConvexPolygon: pointIndex0 should be defined");
+      let pointIndex1 = this.findOrAddPointInLineString(ls, 1);
+      assert(undefined !== pointIndex1, "PolyfaceBuilder.addTrianglesInUncheckedConvexPolygon: pointIndex1 should be defined");
+      let pointIndex2: number | undefined = 0;
       let numEdge = n;
       if (ls.isPhysicallyClosed)
         numEdge--;
       for (let i = 2; i < numEdge; i++, pointIndex1 = pointIndex2, paramIndex1 = paramIndex2) {
-        pointIndex2 = this.findOrAddPointInLineString(ls, i)!;
+        pointIndex2 = this.findOrAddPointInLineString(ls, i);
+        assert(undefined !== pointIndex2, "PolyfaceBuilder.addTrianglesInUncheckedConvexPolygon: pointIndex2 should be defined");
         this.addIndexedTrianglePointIndexes(pointIndex0, pointIndex1, pointIndex2, false);
         if (normalIndex !== undefined)
           this.addIndexedTriangleNormalIndexes(normalIndex, normalIndex, normalIndex);
         if (packedUV) {
-          paramIndex2 = this.addParamInGrowableXYArray(packedUV, i)!;
+          paramIndex2 = this.addParamInGrowableXYArray(packedUV, i);
+          assert(undefined !== paramIndex0, "PolyfaceBuilder.addTrianglesInUncheckedConvexPolygon: paramIndex0 should be defined");
+          assert(undefined !== paramIndex1, "PolyfaceBuilder.addTrianglesInUncheckedConvexPolygon: paramIndex1 should be defined");
+          assert(undefined !== paramIndex2, "PolyfaceBuilder.addTrianglesInUncheckedConvexPolygon: paramIndex2 should be defined");
           this.addIndexedTriangleParamIndexes(paramIndex0, paramIndex1, paramIndex2);
         }
         this._polyface.terminateFacet();
@@ -519,9 +535,18 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     const needParams = this.options.needParams;
     const needNormals = this.options.needNormals;
     const needColors = this.options.needColors;
-    let param0: Point2d, param1: Point2d, param2: Point2d, param3: Point2d;
-    let normal0: Vector3d, normal1: Vector3d, normal2: Vector3d, normal3: Vector3d;
-    let color0: number, color1: number, color2: number, color3: number;
+    let param0: Point2d | undefined;
+    let param1: Point2d | undefined;
+    let param2: Point2d | undefined;
+    let param3: Point2d | undefined;
+    let normal0: Vector3d | undefined
+    let normal1: Vector3d | undefined
+    let normal2: Vector3d | undefined
+    let normal3: Vector3d | undefined;
+    let color0: number | undefined
+    let color1: number | undefined
+    let color2: number | undefined
+    let color3: number | undefined;
     if (needParams) {
       if (params !== undefined && params.length > 3) {
         param0 = params[0];
@@ -540,6 +565,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         }
       }
     }
+    assert(undefined !== param0, "PolyfaceBuilder.addQuadFacet: param0 should be defined");
+    assert(undefined !== param1, "PolyfaceBuilder.addQuadFacet: param1 should be defined");
+    assert(undefined !== param2, "PolyfaceBuilder.addQuadFacet: param2 should be defined");
+    assert(undefined !== param3, "PolyfaceBuilder.addQuadFacet: param3 should be defined");
     if (needNormals) {
       if (normals !== undefined && normals.length > 3) {
         normal0 = normals[0];
@@ -553,6 +582,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         normal3 = this.getNormalForTriangularFacet(points[0], points[1], points[2]);
       }
     }
+    assert(undefined !== normal0, "PolyfaceBuilder.addQuadFacet: normal0 should be defined");
+    assert(undefined !== normal1, "PolyfaceBuilder.addQuadFacet: normal1 should be defined");
+    assert(undefined !== normal2, "PolyfaceBuilder.addQuadFacet: normal2 should be defined");
+    assert(undefined !== normal3, "PolyfaceBuilder.addQuadFacet: normal3 should be defined");
     if (needColors) {
       if (colors !== undefined && colors.length > 3) {
         color0 = colors[0];
@@ -561,6 +594,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         color3 = colors[3];
       }
     }
+    assert(undefined !== color0, "PolyfaceBuilder.addQuadFacet: color0 should be defined");
+    assert(undefined !== color1, "PolyfaceBuilder.addQuadFacet: color1 should be defined");
+    assert(undefined !== color2, "PolyfaceBuilder.addQuadFacet: color2 should be defined");
+    assert(undefined !== color3, "PolyfaceBuilder.addQuadFacet: color3 should be defined");
     if (this._options.shouldTriangulate) {
       // add as two triangles, with a diagonal along the shortest distance
       const vectorAC = points[0].vectorTo(points[2]);
@@ -569,28 +606,28 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       if (vectorAC.magnitude() >= vectorBD.magnitude()) {
         this.addTriangleFacet(
           [points[0], points[1], points[2]],
-          needParams ? [param0!, param1!, param2!] : undefined,
-          needNormals ? [normal0!, normal1!, normal2!] : undefined,
-          needColors ? [color0!, color1!, color2!] : undefined,
+          needParams ? [param0, param1, param2] : undefined,
+          needNormals ? [normal0, normal1, normal2] : undefined,
+          needColors ? [color0, color1, color2] : undefined,
         );
         this.addTriangleFacet(
           [points[0], points[2], points[3]],
-          needParams ? [param0!, param2!, param3!] : undefined,
-          needNormals ? [normal0!, normal2!, normal3!] : undefined,
-          needColors ? [color0!, color2!, color3!] : undefined,
+          needParams ? [param0, param2, param3] : undefined,
+          needNormals ? [normal0, normal2, normal3] : undefined,
+          needColors ? [color0, color2, color3] : undefined,
         );
       } else {
         this.addTriangleFacet(
           [points[0], points[1], points[3]],
-          needParams ? [param0!, param1!, param3!] : undefined,
-          needNormals ? [normal0!, normal1!, normal3!] : undefined,
-          needColors ? [color0!, color1!, color3!] : undefined,
+          needParams ? [param0, param1, param3] : undefined,
+          needNormals ? [normal0, normal1, normal3] : undefined,
+          needColors ? [color0, color1, color3] : undefined,
         );
         this.addTriangleFacet(
           [points[1], points[2], points[3]],
-          needParams ? [param1!, param2!, param3!] : undefined,
-          needNormals ? [normal1!, normal2!, normal3!] : undefined,
-          needColors ? [color1!, color2!, color3!] : undefined,
+          needParams ? [param1, param2, param3] : undefined,
+          needNormals ? [normal1, normal2, normal3] : undefined,
+          needColors ? [color1, color2, color3] : undefined,
         );
       }
       return;
@@ -598,26 +635,26 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     let idx0, idx1, idx2, idx3;
     // add params if needed
     if (needParams) {
-      idx0 = this._polyface.addParam(param0!);
-      idx1 = this._polyface.addParam(param1!);
-      idx2 = this._polyface.addParam(param2!);
-      idx3 = this._polyface.addParam(param3!);
+      idx0 = this._polyface.addParam(param0);
+      idx1 = this._polyface.addParam(param1);
+      idx2 = this._polyface.addParam(param2);
+      idx3 = this._polyface.addParam(param3);
       this.addIndexedQuadParamIndexes(idx0, idx1, idx3, idx2);
     }
     // add normals if needed
     if (needNormals) {
-      idx0 = this._polyface.addNormal(normal0!);
-      idx1 = this._polyface.addNormal(normal1!);
-      idx2 = this._polyface.addNormal(normal2!);
-      idx3 = this._polyface.addNormal(normal3!);
+      idx0 = this._polyface.addNormal(normal0);
+      idx1 = this._polyface.addNormal(normal1);
+      idx2 = this._polyface.addNormal(normal2);
+      idx3 = this._polyface.addNormal(normal3);
       this.addIndexedQuadNormalIndexes(idx0, idx1, idx3, idx2);
     }
     // add colors if needed
     if (needColors) {
-      idx0 = this._polyface.addColor(color0!);
-      idx1 = this._polyface.addColor(color1!);
-      idx2 = this._polyface.addColor(color2!);
-      idx3 = this._polyface.addColor(color3!);
+      idx0 = this._polyface.addColor(color0);
+      idx1 = this._polyface.addColor(color1);
+      idx2 = this._polyface.addColor(color2);
+      idx3 = this._polyface.addColor(color3);
       this.addIndexedQuadColorIndexes(idx0, idx1, idx3, idx2);
     }
     // add point and point indexes last (terminates the facet)
@@ -712,14 +749,17 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     let idx2: number;
     let point0, point1, point2;
     if (points instanceof GrowableXYZArray) {
-      point0 = points.getPoint3dAtCheckedPointIndex(0)!;
-      point1 = points.getPoint3dAtCheckedPointIndex(1)!;
-      point2 = points.getPoint3dAtCheckedPointIndex(2)!;
+      point0 = points.getPoint3dAtCheckedPointIndex(0);
+      point1 = points.getPoint3dAtCheckedPointIndex(1);
+      point2 = points.getPoint3dAtCheckedPointIndex(2);
     } else {
       point0 = points[0];
       point1 = points[1];
       point2 = points[2];
     }
+    assert(undefined !== point0, "PolyfaceBuilder.addTriangleFacet: point0 should be defined");
+    assert(undefined !== point1, "PolyfaceBuilder.addTriangleFacet: point1 should be defined");
+    assert(undefined !== point2, "PolyfaceBuilder.addTriangleFacet: point2 should be defined");
     // add params if needed
     if (this._options.needParams) {
       if (params && params.length >= 3) { // params were given
@@ -912,8 +952,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * * Indices of points, normals, and uv parameters are pre-stored in the linestrings.
    */
   public addBetweenLineStringsWithStoredIndices(lineStringA: LineString3d, lineStringB: LineString3d): void {
-    const pointA = lineStringA.pointIndices!;
-    const pointB = lineStringB.pointIndices!;
+    const pointA = lineStringA.pointIndices;
+    const pointB = lineStringB.pointIndices;
+    assert(undefined !== pointA, "PolyfaceBuilder.addBetweenLineStringsWithStoredIndices: pointA should be defined");
+    assert(undefined !== pointB, "PolyfaceBuilder.addBetweenLineStringsWithStoredIndices: pointB should be defined");
     let normalA: GrowableFloat64Array | undefined = lineStringA.normalIndices;
     let normalB: GrowableFloat64Array | undefined = lineStringB.normalIndices;
     if (!this._options.needNormals) {
@@ -989,15 +1031,22 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     if (curves instanceof LineString3d) {
       const pointA = curves.points;
       const numPoints = pointA.length;
-      let indexA0 = this.findOrAddPointInLineString(curves, 0, transformA)!;
-      let indexB0 = this.findOrAddPointInLineString(curves, 0, transformB)!;
+      let indexA0 = this.findOrAddPointInLineString(curves, 0, transformA);
+      let indexB0 = this.findOrAddPointInLineString(curves, 0, transformB);
+      assert(undefined !== indexA0, "PolyfaceBuilder.addBetweenTransformedLineStrings: indexA0 should be defined");
+      assert(undefined !== indexB0, "PolyfaceBuilder.addBetweenTransformedLineStrings: indexB0 should be defined");
       const indexA00 = indexA0;
       const indexB00 = indexB0;
-      let indexA1 = 0;
-      let indexB1 = 0;
+      let indexA1: number | undefined = 0;
+      let indexB1: number | undefined = 0;
       for (let i = 1; i < numPoints; i++) {
-        indexA1 = this.findOrAddPointInLineString(curves, i, transformA)!;
-        indexB1 = this.findOrAddPointInLineString(curves, i, transformB)!;
+        assert(undefined !== indexA0, "PolyfaceBuilder.addBetweenTransformedLineStrings: indexA0 should be defined");
+        assert(undefined !== indexB0, "PolyfaceBuilder.addBetweenTransformedLineStrings: indexB0 should be defined");
+        indexA1 = this.findOrAddPointInLineString(curves, i, transformA);
+        assert(undefined !== indexA1, "PolyfaceBuilder.addBetweenTransformedLineStrings: indexA1 should be defined");
+        indexB1 = this.findOrAddPointInLineString(curves, i, transformB);
+        assert(undefined !== indexA1, "PolyfaceBuilder.addBetweenTransformedLineStrings: indexA1 should be defined");
+        assert(undefined !== indexB1, "PolyfaceBuilder.addBetweenTransformedLineStrings: indexB1 should be defined");
         this.addIndexedQuadPointIndexes(indexA0, indexA1, indexB0, indexB1);
         indexA0 = indexA1;
         indexB0 = indexB1;
@@ -1080,7 +1129,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     this.addUVGridBody(surface, numU, numV, Segment1d.create(0, sizes.x), Segment1d.create(0, sizes.y));
     this.toggleReversedFacetFlag();
     if (surface.capped && thetaFraction < 1.0) {
-      const centerFrame = surface.getConstructiveFrame()!;
+      const centerFrame = surface.getConstructiveFrame();
+      assert(undefined !== centerFrame, "PolyfaceBuilder.addTorusPipe: centerFrame should be defined");
       const minorRadius = surface.getMinorRadius();
       const majorRadius = surface.getMajorRadius();
       const a = 2 * minorRadius;
@@ -1126,7 +1176,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    */
   public addLinearSweepLineStringsXYZOnly(contour: AnyCurve, vector: Vector3d): void {
     if (contour instanceof LineString3d) {
-      let pointA = Point3d.create();
+      let pointA: Point3d | undefined = Point3d.create();
       let pointB = Point3d.create();
       let indexA0 = 0;
       let indexA1 = 0;
@@ -1134,7 +1184,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       let indexB1 = 0;
       const n = contour.numPoints();
       for (let i = 0; i < n; i++) {
-        pointA = contour.pointAt(i, pointA)!;
+        pointA = contour.pointAt(i, pointA);
+        assert(undefined !== pointA, "PolyfaceBuilder.addLinearSweepLineStringsXYZOnly: pointA should be defined");
         pointB = pointA.plus(vector, pointB);
         indexA1 = this.addPoint(pointA);
         indexB1 = this.addPoint(pointB);
@@ -1228,51 +1279,60 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     const n = ls.numPoints();
     const pointIndices = ls.ensureEmptyPointIndices();
     const index0 = this.findOrAddPointInLineString(ls, 0, transform);
-    pointIndices.push(index0!);
+    assert(undefined !== index0, "PolyfaceBuilder.createIndicesInLineString: index0 should be defined");
+    pointIndices.push(index0);
     if (n > 1) {
       let indexA = index0;
       let indexB: number | undefined;
       for (let i = 1; i + 1 < n; i++) {
         indexB = this.findOrAddPointInLineString(ls, i, transform, indexA);
-        pointIndices.push(indexB!);
+        assert(undefined !== indexB, "PolyfaceBuilder.createIndicesInLineString: indexB should be defined");
+        pointIndices.push(indexB);
         indexA = indexB;
       }
       // assume last point can only repeat back to zero
       indexB = this.findOrAddPointInLineString(ls, n - 1, transform, index0);
-      pointIndices.push(indexB!);
+      assert(undefined !== indexB, "PolyfaceBuilder.createIndicesInLineString: indexB should be defined");
+      pointIndices.push(indexB);
     }
     if (this._options.needNormals && ls.packedSurfaceNormals !== undefined) {
       const normalIndices = ls.ensureEmptyNormalIndices();
       const normalIndex0 = this.findOrAddNormalInLineString(ls, 0, transform);
-      normalIndices.push(normalIndex0!);
+      assert(undefined !== normalIndex0, "PolyfaceBuilder.createIndicesInLineString: normalIndex0 should be defined");
+      normalIndices.push(normalIndex0);
       if (n > 1) {
         let normalIndexA = normalIndex0;
         let normalIndexB: number | undefined;
         for (let i = 1; i + 1 < n; i++) {
           normalIndexB = this.findOrAddNormalInLineString(ls, i, transform, normalIndexA);
-          normalIndices.push(normalIndexB!);
+          assert(undefined !== normalIndexB, "PolyfaceBuilder.createIndicesInLineString: normalIndexB should be defined");
+          normalIndices.push(normalIndexB);
           normalIndexA = normalIndexB;
         }
         // assume last point can only repeat back to zero
         normalIndexB = this.findOrAddNormalInLineString(ls, n - 1, transform, normalIndex0, normalIndexA);
-        normalIndices.push(normalIndexB!);
+        assert(undefined !== normalIndexB, "PolyfaceBuilder.createIndicesInLineString: normalIndexB should be defined");
+        normalIndices.push(normalIndexB);
       }
     }
     if (this._options.needParams && ls.packedUVParams !== undefined) {
       const uvIndices = ls.ensureEmptyUVIndices();
       const uvIndex0 = this.findOrAddParamInLineString(ls, 0, vParam);
-      uvIndices.push(uvIndex0!);
+      assert(undefined !== uvIndex0, "PolyfaceBuilder.createIndicesInLineString: uvIndex0 should be defined");
+      uvIndices.push(uvIndex0);
       if (n > 1) {
         let uvIndexA = uvIndex0;
         let uvIndexB: number | undefined;
         for (let i = 1; i + 1 < n; i++) {
           uvIndexB = this.findOrAddParamInLineString(ls, i, vParam, uvIndexA);
-          uvIndices.push(uvIndexB!);
+          assert(undefined !== uvIndexB, "PolyfaceBuilder.createIndicesInLineString: uvIndexB should be defined");
+          uvIndices.push(uvIndexB);
           uvIndexA = uvIndexB;
         }
         // assume last point can only repeat back to zero
         uvIndexB = this.findOrAddParamInLineString(ls, n - 1, vParam, uvIndexA, uvIndex0);
-        uvIndices.push(uvIndexB!);
+        assert(undefined !== uvIndexB, "PolyfaceBuilder.createIndicesInLineString: uvIndexB should be defined");
+        uvIndices.push(uvIndexB);
       }
     }
   }
@@ -1454,31 +1514,50 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   public addPolygonGrowableXYZArray(points: GrowableXYZArray): void {
     // don't use trailing points that match start point
     let numPointsToUse = points.length;
-    while (numPointsToUse > 2 && Geometry.isSmallMetricDistance(points.distanceIndexIndex(0, numPointsToUse - 1)!))
+    let distance = points.distanceIndexIndex(0, numPointsToUse - 1);
+    assert(undefined !== distance, "PolyfaceBuilder.addPolygonGrowableXYZArray: distance should be defined");
+    while (numPointsToUse > 2 && Geometry.isSmallMetricDistance(distance)) {
       numPointsToUse--;
+      distance = points.distanceIndexIndex(0, numPointsToUse - 1);
+      assert(undefined !== distance, "PolyfaceBuilder.addPolygonGrowableXYZArray: distance should be defined");
+    }
     // strip trailing duplicates
-    while (numPointsToUse > 2 && Geometry.isSmallMetricDistance(points.distanceIndexIndex(numPointsToUse - 2, numPointsToUse - 1)!))
+    distance = points.distanceIndexIndex(numPointsToUse - 2, numPointsToUse - 1);
+    assert(undefined !== distance, "PolyfaceBuilder.addPolygonGrowableXYZArray: distance should be defined");
+    while (numPointsToUse > 2 && Geometry.isSmallMetricDistance(distance)) {
       numPointsToUse--;
+      distance = points.distanceIndexIndex(0, numPointsToUse - 1);
+      assert(undefined !== distance, "PolyfaceBuilder.addPolygonGrowableXYZArray: distance should be defined");
+    }
     // ignore triangles for which the height is less than smallMetricDistance times length.
     // sum of edge lengths is twice the perimeter. If it is flat that's twice the largest base dimension.
     // cross product magnitude is twice the area.
     if (numPointsToUse === 3) {
-      const cross = points.crossProductIndexIndexIndex(0, 1, 2)!;
+      const cross = points.crossProductIndexIndexIndex(0, 1, 2);
+      assert(undefined !== cross, "PolyfaceBuilder.addPolygonGrowableXYZArray: cross should be defined");
       const q = cross.magnitude();
-      const p = points.distanceIndexIndex(0, 1)! + points.distanceIndexIndex(0, 2)! + points.distanceIndexIndex(1, 2)!;
+      const distance01 = points.distanceIndexIndex(0, 1);
+      assert(undefined !== distance01, "PolyfaceBuilder.addPolygonGrowableXYZArray: distance01 should be defined");
+      const distance02 = points.distanceIndexIndex(0, 2);
+      assert(undefined !== distance02, "PolyfaceBuilder.addPolygonGrowableXYZArray: distance02 should be defined");
+      const distance12 = points.distanceIndexIndex(1, 2);
+      assert(undefined !== distance12, "PolyfaceBuilder.addPolygonGrowableXYZArray: distance12 should be defined");
+      const p = distance01 + distance02 + distance12;
       if (q < Geometry.smallMetricDistance * p)
         numPointsToUse = 0;
     }
     if (numPointsToUse > 2) {
-      let index = 0;
+      let index: number | undefined = 0;
       if (!this._reversed) {
         for (let i = 0; i < numPointsToUse; i++) {
-          index = this.findOrAddPointInGrowableXYZArray(points, i)!;
+          index = this.findOrAddPointInGrowableXYZArray(points, i);
+          assert(undefined !== index, "PolyfaceBuilder.addPolygonGrowableXYZArray: index should be defined");
           this._polyface.addPointIndex(index);
         }
       } else {
         for (let i = numPointsToUse; --i >= 0;) {
-          index = this.findOrAddPointInGrowableXYZArray(points, i)!;
+          index = this.findOrAddPointInGrowableXYZArray(points, i);
+          assert(undefined !== index, "PolyfaceBuilder.addPolygonGrowableXYZArray: index should be defined");
           this._polyface.addPointIndex(index);
         }
       }
@@ -1506,9 +1585,14 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   ): void {
     // don't use trailing points that match start point
     let numPointsToUse = points.length;
-    while (numPointsToUse > 1 && Geometry.isSmallMetricDistance(points.distanceIndexIndex(0, numPointsToUse - 1)!))
+    let distance = points.distanceIndexIndex(0, numPointsToUse - 1);
+    assert(undefined !== distance, "PolyfaceBuilder.addPolygonGrowableXYZArray: distance should be defined");
+    while (numPointsToUse > 1 && Geometry.isSmallMetricDistance(distance)) {
       numPointsToUse--;
-    let index = 0;
+      distance = points.distanceIndexIndex(0, numPointsToUse - 1);
+      assert(undefined !== distance, "PolyfaceBuilder.addPolygonGrowableXYZArray: distance should be defined");
+    }
+    let index: number | undefined = 0;
     if (normals && normals.length < numPointsToUse)
       normals = undefined;
     if (params && params.length < numPointsToUse)
@@ -1519,14 +1603,17 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       edgeVisible = undefined;
     if (!this._reversed) {
       for (let i = 0; i < numPointsToUse; i++) {
-        index = this.findOrAddPointInGrowableXYZArray(points, i)!;
+        index = this.findOrAddPointInGrowableXYZArray(points, i);
+        assert(undefined !== index, "PolyfaceBuilder.addPolygonGrowableXYZArray: index should be defined");
         this._polyface.addPointIndex(index, edgeVisible ? edgeVisible[i] : true);
         if (normals) {
-          index = this.findOrAddNormalInGrowableXYZArray(normals, i)!;
+          index = this.findOrAddNormalInGrowableXYZArray(normals, i);
+          assert(undefined !== index, "PolyfaceBuilder.addPolygonGrowableXYZArray: index should be defined");
           this._polyface.addNormalIndex(index);
         }
         if (params) {
-          index = this.addParamInGrowableXYArray(params, i)!;
+          index = this.addParamInGrowableXYArray(params, i);
+          assert(undefined !== index, "PolyfaceBuilder.addPolygonGrowableXYZArray: index should be defined");
           this._polyface.addParamIndex(index);
         }
         if (colors) {
@@ -1536,14 +1623,17 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       }
     } else {
       for (let i = numPointsToUse; --i >= 0;) {
-        index = this.findOrAddPointInGrowableXYZArray(points, i)!;
+        index = this.findOrAddPointInGrowableXYZArray(points, i);
+        assert(undefined !== index, "PolyfaceBuilder.addPolygonGrowableXYZArray: index should be defined");
         this._polyface.addPointIndex(index);
         if (normals) {
-          index = this.findOrAddNormalInGrowableXYZArray(normals, i)!;
+          index = this.findOrAddNormalInGrowableXYZArray(normals, i);
+          assert(undefined !== index, "PolyfaceBuilder.addPolygonGrowableXYZArray: index should be defined");
           this._polyface.addNormalIndex(index);
         }
         if (params) {
-          index = this.addParamInGrowableXYArray(params, i)!;
+          index = this.addParamInGrowableXYArray(params, i);
+          assert(undefined !== index, "PolyfaceBuilder.addPolygonGrowableXYZArray: index should be defined");
           this._polyface.addParamIndex(index);
         }
         if (colors) {
@@ -1768,7 +1858,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     if (!localToWorld)
       localToWorld = FrameBuilder.createFrameWithCCWPolygon(points);
     if (localToWorld) {
-      const localPoints = localToWorld.multiplyInversePoint3dArray(points)!;
+      const localPoints = localToWorld.multiplyInversePoint3dArray(points);
+      assert(undefined !== localPoints, "PolyfaceBuilder.polygonToTriangulatedPolyface: localPoints should be defined");
       const areaXY = PolygonOps.areaXY(localPoints);
       if (areaXY < 0.0)
         localPoints.reverse();
@@ -1846,10 +1937,14 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     for (let v = 0; v <= numV; v++) {
       // evaluate new points
       xyzIndex1.clear();
-      if (needNormals)
-        normalIndex1!.clear();
-      if (needParams)
-        paramIndex1!.clear();
+      if (needNormals) {
+        assert(undefined !== normalIndex1, "PolyfaceBuilder.addUVGridBody: normalIndex1 should be defined");
+        normalIndex1.clear();
+      }
+      if (needParams) {
+        assert(undefined !== paramIndex1, "PolyfaceBuilder.addUVGridBody: paramIndex1 should be defined");
+        paramIndex1.clear();
+      }
       for (let u = 0; u <= numU; u++) {
         const uFrac = u * du;
         const vFrac = v * dv;
@@ -1860,14 +1955,17 @@ export class PolyfaceBuilder extends NullGeometryHandler {
           normal.normalizeInPlace();
           if (reverse)
             normal.scaleInPlace(-1.0);
-          normalIndex1!.push(this._polyface.addNormal(normal));
+          assert(undefined !== normalIndex1, "PolyfaceBuilder.addUVGridBody: normalIndex1 should be defined");
+          normalIndex1.push(this._polyface.addNormal(normal));
         }
-        if (needParams)
-          paramIndex1!.push(
+        if (needParams) {
+          assert(undefined !== paramIndex1, "PolyfaceBuilder.addUVGridBody: paramIndex1 should be defined");
+          paramIndex1.push(
             this._polyface.addParam(
               Point2d.create(uMap ? uMap.fractionToPoint(uFrac) : uFrac, vMap ? vMap.fractionToPoint(vFrac) : vFrac, uv),
             ),
           );
+        }
       }
       if (v > 0) {
         for (let u = 0; u < numU; u++) {
@@ -1877,31 +1975,43 @@ export class PolyfaceBuilder extends NullGeometryHandler {
               xyzIndex1.atUncheckedIndex(u), xyzIndex1.atUncheckedIndex(u + 1),
               false,
             );
-            if (needNormals)
+            if (needNormals) {
+              assert(undefined !== normalIndex0, "PolyfaceBuilder.addUVGridBody: normalIndex0 should be defined");
+              assert(undefined !== normalIndex1, "PolyfaceBuilder.addUVGridBody: normalIndex1 should be defined");
               this.addIndexedQuadNormalIndexes(
-                normalIndex0!.atUncheckedIndex(u), normalIndex0!.atUncheckedIndex(u + 1),
-                normalIndex1!.atUncheckedIndex(u), normalIndex1!.atUncheckedIndex(u + 1),
+                normalIndex0.atUncheckedIndex(u), normalIndex0.atUncheckedIndex(u + 1),
+                normalIndex1.atUncheckedIndex(u), normalIndex1.atUncheckedIndex(u + 1),
               );
-            if (needParams)
+            }
+            if (needParams) {
+              assert(undefined !== paramIndex0, "PolyfaceBuilder.addUVGridBody: paramIndex0 should be defined");
+              assert(undefined !== paramIndex1, "PolyfaceBuilder.addUVGridBody: paramIndex1 should be defined");
               this.addIndexedQuadParamIndexes(
-                paramIndex0!.atUncheckedIndex(u), paramIndex0!.atUncheckedIndex(u + 1),
-                paramIndex1!.atUncheckedIndex(u), paramIndex1!.atUncheckedIndex(u + 1),
+                paramIndex0.atUncheckedIndex(u), paramIndex0.atUncheckedIndex(u + 1),
+                paramIndex1.atUncheckedIndex(u), paramIndex1.atUncheckedIndex(u + 1),
               );
+            }
             this._polyface.terminateFacet();
           } else {
             this.addIndexedTrianglePointIndexes(
               xyzIndex0.atUncheckedIndex(u), xyzIndex0.atUncheckedIndex(u + 1),
               xyzIndex1.atUncheckedIndex(u), false);
-            if (needNormals)
+            if (needNormals) {
+              assert(undefined !== normalIndex0, "PolyfaceBuilder.addUVGridBody: normalIndex0 should be defined");
+              assert(undefined !== normalIndex1, "PolyfaceBuilder.addUVGridBody: normalIndex1 should be defined");
               this.addIndexedTriangleNormalIndexes(
-                normalIndex0!.atUncheckedIndex(u), normalIndex0!.atUncheckedIndex(u + 1),
-                normalIndex1!.atUncheckedIndex(u),
+                normalIndex0.atUncheckedIndex(u), normalIndex0.atUncheckedIndex(u + 1),
+                normalIndex1.atUncheckedIndex(u),
               );
-            if (needParams)
+            }
+            if (needParams) {
+              assert(undefined !== paramIndex0, "PolyfaceBuilder.addUVGridBody: paramIndex0 should be defined");
+              assert(undefined !== paramIndex1, "PolyfaceBuilder.addUVGridBody: paramIndex1 should be defined");
               this.addIndexedTriangleParamIndexes(
-                paramIndex0!.atUncheckedIndex(u), paramIndex0!.atUncheckedIndex(u + 1),
-                paramIndex1!.atUncheckedIndex(u),
+                paramIndex0.atUncheckedIndex(u), paramIndex0.atUncheckedIndex(u + 1),
+                paramIndex1.atUncheckedIndex(u),
               );
+            }
             this._polyface.terminateFacet();
             this.addIndexedTrianglePointIndexes(
               xyzIndex1.atUncheckedIndex(u),
@@ -1909,18 +2019,24 @@ export class PolyfaceBuilder extends NullGeometryHandler {
               xyzIndex1.atUncheckedIndex(u + 1),
               false,
             );
-            if (needNormals)
+            if (needNormals) {
+              assert(undefined !== normalIndex1, "PolyfaceBuilder.addUVGridBody: normalIndex1 should be defined");
+              assert(undefined !== normalIndex0, "PolyfaceBuilder.addUVGridBody: normalIndex0 should be defined");
               this.addIndexedTriangleNormalIndexes(
-                normalIndex1!.atUncheckedIndex(u),
-                normalIndex0!.atUncheckedIndex(u + 1),
-                normalIndex1!.atUncheckedIndex(u + 1),
+                normalIndex1.atUncheckedIndex(u),
+                normalIndex0.atUncheckedIndex(u + 1),
+                normalIndex1.atUncheckedIndex(u + 1),
               );
-            if (needParams)
+            }
+            if (needParams) {
+              assert(undefined !== paramIndex1, "PolyfaceBuilder.addUVGridBody: paramIndex1 should be defined");
+              assert(undefined !== paramIndex0, "PolyfaceBuilder.addUVGridBody: paramIndex0 should be defined");
               this.addIndexedTriangleParamIndexes(
-                paramIndex1!.atUncheckedIndex(u),
-                paramIndex0!.atUncheckedIndex(u + 1),
-                paramIndex1!.atUncheckedIndex(u + 1),
+                paramIndex1.atUncheckedIndex(u),
+                paramIndex0.atUncheckedIndex(u + 1),
+                paramIndex1.atUncheckedIndex(u + 1),
               );
+            }
             this._polyface.terminateFacet();
           }
         }
@@ -2061,7 +2177,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         return false;
       vertices.push(xyz);
       if (undefined !== colors) {
-        const color = this._polyface.data.getColor(this._polyface.data.colorIndex![indices[i]]);
+        const colorIndex = this._polyface.data.colorIndex;
+        assert(undefined !== colorIndex, "PolyfaceBuilder.addSweptFace: colorIndex should be defined");
+        const color = this._polyface.data.getColor(colorIndex[indices[i]]);
         if (undefined === color)
           return false;
         colors.push(color);

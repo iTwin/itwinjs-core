@@ -6,6 +6,7 @@
  * @module Curve
  */
 
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../../Geometry";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d } from "../../geometry3d/Range";
@@ -324,9 +325,12 @@ export class StrokeCountSection {
       for (let pass = 0; ; pass++) {
         if (!callback.startPass(pass))
           break;
-        for (let sectionIndex = 0; sectionIndex < numSection; sectionIndex++)
-          if (!callback.visit(pass, sections[sectionIndex].chains[chainIndex].maps[primitiveIndex].componentData![componentIndex]))
+        for (let sectionIndex = 0; sectionIndex < numSection; sectionIndex++) {
+          const componentData = sections[sectionIndex].chains[chainIndex].maps[primitiveIndex].componentData;
+          assert(undefined !== componentData, "StrokeCountSection.applyMultipassVisitorCallbackNoComponents: componentData should be defined");
+          if (!callback.visit(pass, componentData[componentIndex]))
             return false;
+        }
         if (!callback.endPass(pass))
           return false;
       }

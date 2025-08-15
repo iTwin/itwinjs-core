@@ -31,6 +31,7 @@ export class MaskManager {
    * Create a MaskManager.
    * Typical use: MaskManager.create(0xFFFF0000)
    * * This makes bits 16 through 31 available to be borrowed, with lower bits available for fixed usage.
+   * * Return undefined if no free mask is available.
    */
   public static create(freeMasks: number): MaskManager | undefined {
     // look for first bit up to bit 31

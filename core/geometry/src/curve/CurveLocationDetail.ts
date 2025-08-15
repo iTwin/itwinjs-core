@@ -5,6 +5,7 @@
 /** @packageDocumentation
  * @module Curve
  */
+import { assert } from "@itwin/core-bentley";
 import { Geometry, ICloneable } from "../Geometry";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
@@ -377,7 +378,8 @@ export class CurveLocationDetail {
    * * ASSUME fraction1 defined
    */
   public inverseInterpolateFraction(f: number, defaultFraction: number = 0): number {
-    const a = Geometry.inverseInterpolate01(this.fraction, this.fraction1!, f);
+    assert(undefined !== this.fraction1, "CurveLocationDetail.inverseInterpolateFraction: fraction1 should be defined");
+    const a = Geometry.inverseInterpolate01(this.fraction, this.fraction1, f);
     if (a === undefined)
       return defaultFraction;
     return a;

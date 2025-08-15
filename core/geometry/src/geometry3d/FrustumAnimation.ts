@@ -7,6 +7,7 @@
  * @module Solid
  */
 
+import { assert } from "@itwin/core-bentley";
 import { AxisOrder, Geometry } from "../Geometry";
 import { Angle } from "./Angle";
 import { Matrix3d } from "./Matrix3d";
@@ -78,10 +79,11 @@ export class SmoothTransformBetweenFrusta {
     const rigidA = Transform.createOriginAndMatrix(localToWorldA.origin, Matrix3d.createRigidFromMatrix3d(localToWorldA.matrix, AxisOrder.ZXY));
     const rigidB = Transform.createOriginAndMatrix(localToWorldB.origin, Matrix3d.createRigidFromMatrix3d(localToWorldB.matrix, AxisOrder.ZXY));
     if (rigidA.matrix.computeCachedInverse(true) && rigidB.matrix.computeCachedInverse(true)) {
-      const spinMatrix = rigidB.matrix.multiplyMatrixMatrixInverse(rigidA.matrix)!;
+      const spinMatrix = rigidB.matrix.multiplyMatrixMatrixInverse(rigidA.matrix);
+      assert(undefined !== spinMatrix, "SmoothTransformBetweenFrusta.create: spinMatrix should be defined");
       const spinAxis = spinMatrix.getAxisAndAngleOfRotation();
-      const localCornerA = rigidA.multiplyInversePoint3dArray(cornerA)!;
-      const localCornerB = rigidB.multiplyInversePoint3dArray(cornerB)!;
+      const localCornerA = rigidA.multiplyInversePoint3dArray(cornerA);
+      const localCornerB = rigidB.multiplyInversePoint3dArray(cornerB);
       /** Is this a pure rotation -- i.e. no clip volume resizing for camera or clip changes */
       if (preferSimpleRotation && Point3dArray.isAlmostEqual(localCornerA, localCornerB) && !spinAxis.angle.isAlmostZero) {
         // world vectors
@@ -95,15 +97,19 @@ export class SmoothTransformBetweenFrusta {
             const spinCenter = chordMidPoint.plusScaled(bisector, alpha);
             const rigidA1 = Transform.createOriginAndMatrix(spinCenter, rigidA.matrix);
             const rigidB1 = Transform.createOriginAndMatrix(spinCenter, rigidB.matrix);
-            const localCornerA1 = rigidA1.multiplyInversePoint3dArray(cornerA)!;
-            const localCornerB1 = rigidB1.multiplyInversePoint3dArray(cornerB)!;
-            return new SmoothTransformBetweenFrusta(rigidA1, localCornerA1, rigidB1, localCornerB1,
-              spinAxis.axis, spinAxis.angle);
+            const localCornerA1 = rigidA1.multiplyInversePoint3dArray(cornerA);
+            const localCornerB1 = rigidB1.multiplyInversePoint3dArray(cornerB);
+            assert(undefined !== localCornerA1, "SmoothTransformBetweenFrusta.create: localCornerA1 should be defined");
+            assert(undefined !== localCornerB1, "SmoothTransformBetweenFrusta.create: localCornerB1 should be defined");
+            return new SmoothTransformBetweenFrusta(
+              rigidA1, localCornerA1, rigidB1, localCornerB1, spinAxis.axis, spinAxis.angle,
+            );
           }
         }
       }
-      return new SmoothTransformBetweenFrusta(rigidA, localCornerA, rigidB, localCornerB,
-        spinAxis.axis, spinAxis.angle);
+      assert(undefined !== localCornerA, "SmoothTransformBetweenFrusta.create: localCornerA should be defined");
+      assert(undefined !== localCornerB, "SmoothTransformBetweenFrusta.create: localCornerB should be defined");
+      return new SmoothTransformBetweenFrusta(rigidA, localCornerA, rigidB, localCornerB, spinAxis.axis, spinAxis.angle);
     }
     return undefined;
   }
@@ -124,8 +130,10 @@ export class SmoothTransformBetweenFrusta {
    */
   public fractionToWorldCorners(fraction: number, result?: Point3d[]): Point3d[] {
     const corners = this.interpolateLocalCorners(fraction, result);
-    const fractionalRotation = Matrix3d.createRotationAroundVector(this._rotationAxis,
-      this._rotationAngle.cloneScaled(fraction))!;
+    const fractionalRotation = Matrix3d.createRotationAroundVector(
+      this._rotationAxis, this._rotationAngle.cloneScaled(fraction),
+    );
+    assert(undefined !== fractionalRotation, "SmoothTransformBetweenFrusta.fractionToWorldCorners: fractionalRotation should be defined");
     const axes0 = this._localToWorldA.matrix;
     const fractionalAxes = fractionalRotation.multiplyMatrixMatrix(axes0);
     const fractionalOrigin = this._localToWorldA.getOrigin().interpolate(fraction, this._localToWorldB.origin);

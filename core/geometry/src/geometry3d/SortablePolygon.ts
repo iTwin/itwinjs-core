@@ -7,6 +7,7 @@
  * @module CartesianGeometry
  */
 
+import { assert } from "@itwin/core-bentley";
 import { CurveChain } from "../curve/CurveCollection";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { AnyRegion } from "../curve/CurveTypes";
@@ -117,10 +118,11 @@ class PolygonCarrier extends SimpleRegionCarrier {
   }
   public constructInteriorPointNearEdge(edgeIndex: number, fractionAlong: number): Point3d | undefined {
     if (edgeIndex + 1 < this.data.length) {
-      const ray = Ray3d.createCapture(
-        this.data.interpolateIndexIndex(edgeIndex, fractionAlong, edgeIndex + 1)!,
-        this.data.vectorIndexIndex(edgeIndex, edgeIndex + 1)!
-      );
+      const origin = this.data.interpolateIndexIndex(edgeIndex, fractionAlong, edgeIndex + 1);
+      assert(undefined !== origin, "PolygonCarrier.constructInteriorPointNearEdge: origin should be defined");
+      const direction = this.data.vectorIndexIndex(edgeIndex, edgeIndex + 1);
+      assert(undefined !== direction, "PolygonCarrier.constructInteriorPointNearEdge: direction should be defined");
+      const ray = Ray3d.createCapture(origin, direction);
       return this.constructInteriorPoint(ray);
     }
     return undefined;
@@ -285,11 +287,17 @@ export class SortablePolygon {
         loopData._loopCarrier.reverseForAreaSign(1.0);
         loopData.outputSetIndex = outputSets.length;
         outputSets.push([]);
-        outputSets[loopData.outputSetIndex].push(loopData._loopCarrier.grabPolygon()!);
+        const polygon = loopData._loopCarrier.grabPolygon();
+        assert(undefined !== polygon, "SortablePolygon.assignParentsAndDepth: polygon should be defined");
+        outputSets[loopData.outputSetIndex].push(polygon);
       } else {
         loopData._loopCarrier.reverseForAreaSign(-1.0);
-        const outputSetIndex = loops[parentIndex!].outputSetIndex!;
-        outputSets[outputSetIndex].push(loopData._loopCarrier.grabPolygon()!);
+        assert(undefined !== parentIndex, "SortablePolygon.assignParentsAndDepth: parentIndex should be defined for hole");
+        const outputSetIndex = loops[parentIndex].outputSetIndex;
+        assert(undefined !== outputSetIndex, "SortablePolygon.assignParentsAndDepth: outputSetIndex should be defined");
+        const polygon = loopData._loopCarrier.grabPolygon();
+        assert(undefined !== polygon, "SortablePolygon.assignParentsAndDepth: polygon should be defined");
+        outputSets[outputSetIndex].push(polygon);
       }
     }
     return outputSets;
@@ -307,7 +315,7 @@ export class SortablePolygon {
 
       if (!candidateData.isHole) {
         candidateData._loopCarrier.reverseForAreaSign(1.0);
-        const candidateLoop = candidateData._loopCarrier.grabLoop()!;
+        const candidateLoop = candidateData._loopCarrier.grabLoop();
         let candidateParityRegion: ParityRegion | undefined;
         // find all directly contained children . . .
         for (let childIndex = candidateIndex + 1; childIndex < numLoops; childIndex++) {

@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { assert } from "@itwin/core-bentley";
 import * as g from "../core-geometry";
 
 // GeometryCoreTestIO.consoleLog("=========================");
@@ -38,7 +39,7 @@ export class SimpleFactory {
   // _vector1 has messy  coordinates
   private static _vector2 = [
     g.Vector3d.create(3 / 27, 4 / 27, 5 / 27),
-    g.Vector3d.create(3, 5, 10).normalize()!,
+    g.Vector3d.create(3, 5, 10).normalize(),
     g.Vector3d.create(-2.90089, 0.32481216727, -2.789798787)];
 
   public static createDefaultLineSegment3d(select: number): g.LineSegment3d | undefined {
@@ -96,8 +97,11 @@ export class SimpleFactory {
       return g.Matrix3d.createIdentity();
     if (select === 1)
       return g.Matrix3d.createRowValues(10, 2, 3, -2, 12, 5, 1, -4, 8);
-    if (select === 2)
-      return g.Matrix3d.createRotationAroundVector(SimpleFactory._vector2[0], g.Angle.createDegrees(15.23123122))!;
+    if (select === 2) {
+      const vector20 = SimpleFactory._vector2[0];
+      assert(undefined !== vector20, "SimpleFactory.createDefaultMatrix3d: vector20 is undefined");
+      return g.Matrix3d.createRotationAroundVector(vector20, g.Angle.createDegrees(15.23123122));
+    }
     return undefined;
   }
 
@@ -105,9 +109,12 @@ export class SimpleFactory {
     if (select === 0)
       return g.Plane3dByOriginAndUnitNormal.createXYPlane();
     if (select === 1)
-      return g.Plane3dByOriginAndUnitNormal.create(g.Point3d.create(1, 2, 3), g.Vector3d.create(2, 4, -1))!;
-    if (select === 2)
-      return g.Plane3dByOriginAndUnitNormal.create(SimpleFactory._point2[0], SimpleFactory._vector2[1]);
+      return g.Plane3dByOriginAndUnitNormal.create(g.Point3d.create(1, 2, 3), g.Vector3d.create(2, 4, -1));
+    if (select === 2) {
+      const vector20 = SimpleFactory._vector2[0];
+      assert(undefined !== vector20, "SimpleFactory.createDefaultPlane3dByOriginAndUnitNormal: vector20 is undefined");
+      return g.Plane3dByOriginAndUnitNormal.create(SimpleFactory._point2[0], vector20);
+    }
     return undefined;
   }
 
@@ -116,8 +123,13 @@ export class SimpleFactory {
       return g.Plane3dByOriginAndVectors.createOriginAndVectorsXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0);
     if (select === 1)
       return g.Plane3dByOriginAndVectors.createOriginAndVectors(SimpleFactory._point1[1], SimpleFactory._vector1[0], SimpleFactory._vector1[2]);
-    if (select === 2)
-      return g.Plane3dByOriginAndVectors.createOriginAndVectors(SimpleFactory._point2[1], SimpleFactory._vector2[0], SimpleFactory._vector2[2]);
+    if (select === 2) {
+      const vector20 = SimpleFactory._vector2[0];
+      assert(undefined !== vector20, "SimpleFactory.createDefaultPlane3dByOriginAndVectors: vector20 is undefined");
+      const vector21 = SimpleFactory._vector2[1];
+      assert(undefined !== vector21, "SimpleFactory.createDefaultPlane3dByOriginAndVectors: vector21 is undefined");
+      return g.Plane3dByOriginAndVectors.createOriginAndVectors(SimpleFactory._point2[1], vector20, vector21);
+    }
     return undefined;
   }
 
@@ -156,11 +168,12 @@ export class SimpleFactory {
       return g.Ray3d.createXAxis();
     if (select === 1)
       return g.Ray3d.create(SimpleFactory._point1[0], SimpleFactory._vector1[2]);
-    if (select === 2)
-      return g.Ray3d.create(SimpleFactory._point2[0], SimpleFactory._vector2[2]);
+    if (select === 2) {
+      const vector22 = SimpleFactory._vector2[0];
+      assert(undefined !== vector22, "SimpleFactory.createDefaultRay3d: vector22 is undefined");
+      return g.Ray3d.create(SimpleFactory._point2[0], vector22);
+    }
     return g.Ray3d.createXAxis();
-
-    return undefined;
   }
 
   public static createDefaultTransform(select: number): g.Transform | undefined {
