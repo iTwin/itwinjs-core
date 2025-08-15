@@ -87,24 +87,55 @@ export class TangentConstruction {
     lineA: UnboundedLine2dByPointAndNormal,
     circleB: UnboundedCircle2dByCenterAndRadius
   ): ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>[] | undefined {
-    const lineTangent = lineA.unitVectorAlongLine ();
-    const unitNormal = lineA.unitNormal ();
-    const linePoint = lineA.closestPoint (circleB.center);
+    const lineTangent = lineA.unitVectorAlongLine();
+    const unitNormal = lineA.unitNormal();
+    const linePoint = lineA.closestPoint(circleB.center);
     if (linePoint === undefined || lineTangent === undefined || unitNormal === undefined)
-        return undefined;
-    const unitPerp = unitNormal.rotate90CCWXY ()
+      return undefined;
+    const unitPerp = unitNormal.rotate90CCWXY()
     const result = [];
-    for (const r of signedValues (circleB.radius)){
-      const pointA = linePoint.plusScaled (lineTangent, r);
-      const pointB = circleB.center.plusScaled (lineTangent, r);
+    for (const r of signedValues(circleB.radius)) {
+      const pointA = linePoint.plusScaled(lineTangent, r);
+      const pointB = circleB.center.plusScaled(lineTangent, r);
       const lineC = UnboundedLine2dByPointAndNormal.createPointNormal(pointA, unitPerp);
       const taggedLine = new ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>(lineC);
       taggedLine.data.push(new Point2dImplicitCurve2d(pointA, lineA)); // CLONE!
       taggedLine.data.push(new Point2dImplicitCurve2d(pointB, circleB)); // CLONE!
       result.push(taggedLine);
-      }
+    }
     return result;
   }
+  /**
+   * Return all (i.e. 4) variants of the line between centers, with ends at crossing points
+   * on respective circles.
+   * @param circleA first circle
+   * @param circleB second circle
+   * @returns
+   */
+  public static linesPerpCPerpC(
+    circleA: UnboundedCircle2dByCenterAndRadius,
+    circleB: UnboundedCircle2dByCenterAndRadius
+  ): ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>[] | undefined {
+    const centerToCenter = Vector2d.createStartEnd(circleA.center, circleB.center);
+    const unitCenterToCenter = centerToCenter.normalize();
+    if (unitCenterToCenter === undefined)
+      return undefined;
+    const unitNormal = unitCenterToCenter.rotate90CCWXY();
+    const result = [];
+    for (const rA of signedValues(circleA.radius)) {
+      for (const rB of signedValues(circleB.radius)) {
+        const pointA = circleA.center.plusScaled(unitCenterToCenter, rA);
+        const pointB = circleB.center.plusScaled(unitCenterToCenter, rB);
+        const lineC = UnboundedLine2dByPointAndNormal.createPointNormal(pointA, unitNormal);
+        const taggedLine = new ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>(lineC);
+        taggedLine.data.push(new Point2dImplicitCurve2d(pointA, circleA)); // CLONE!
+        taggedLine.data.push(new Point2dImplicitCurve2d(pointB, circleB)); // CLONE!
+        result.push(taggedLine);
+      }
+    }
+    return result;
+  }
+
   /**
    * Return all (i.e. up to 2 ) unbounded lines perpendicular to a line and tangent to a circle
    * @param circleA first circle
@@ -115,22 +146,61 @@ export class TangentConstruction {
     lineA: UnboundedLine2dByPointAndNormal,
     circleB: UnboundedCircle2dByCenterAndRadius
   ): ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>[] | undefined {
-    const lineTangent = lineA.unitVectorAlongLine ();
-    const unitNormal = lineA.unitNormal ();
-    const linePoint = lineA.closestPoint (circleB.center);
+    const lineTangent = lineA.unitVectorAlongLine();
+    const unitNormal = lineA.unitNormal();
+    const linePoint = lineA.closestPoint(circleB.center);
     if (linePoint === undefined || lineTangent === undefined || unitNormal === undefined)
-        return undefined;
-    const unitPerp = unitNormal.rotate90CCWXY ()
+      return undefined;
+    const unitPerp = unitNormal.rotate90CCWXY()
     const result = [];
-    for (const r of signedValues (circleB.radius)){
-      const pointA = linePoint.clone ()
-      const pointB = circleB.center.plusScaled (unitNormal, r);
+    for (const r of signedValues(circleB.radius)) {
+      const pointA = linePoint.clone()
+      const pointB = circleB.center.plusScaled(unitNormal, r);
       const lineC = UnboundedLine2dByPointAndNormal.createPointNormal(pointA, unitPerp);
       const taggedLine = new ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>(lineC);
       taggedLine.data.push(new Point2dImplicitCurve2d(pointA, lineA)); // CLONE!
       taggedLine.data.push(new Point2dImplicitCurve2d(pointB, circleB)); // CLONE!
       result.push(taggedLine);
+    }
+    return result;
+  }
+  /**
+   * Return all (i.e. up to 4 ) unbounded lines perpendicular to a circle and tangent to a circle
+   * Note that muultiple coliniear lines are returned tagged with diametrally opposing points of
+   *    circleA.
+   * @param circleA first circle (for perpendicular constraint)
+   * @param circleB second circle (for tangent constraint)
+   * @returns
+   */
+  public static linesPerpCTangentC(
+    circleA: UnboundedCircle2dByCenterAndRadius,
+    circleB: UnboundedCircle2dByCenterAndRadius
+  ): ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>[] | undefined {
+    const centerToCenter = Vector2d.createStartEnd(circleA.center, circleB.center);
+    const centerToCenterDistance = centerToCenter.magnitude();
+    const unitCenterToCenter = centerToCenter.normalize();
+    if (unitCenterToCenter === undefined)
+      return undefined;
+    const centerToCenterNormal = unitCenterToCenter.rotate90CCWXY();
+    const sine = Geometry.safeDivideFraction (circleB.radius, centerToCenterDistance, 0.0);
+    if (sine > 1.0)
+      return undefined;
+    const absoluteCosine = Math.sqrt (1.0 - sine * sine);
+    const result = [];
+    for (const rA of signedValues(circleA.radius)) {
+      for (const rB of signedValues(circleB.radius)) {
+        const cosine = rB > 0 ? absoluteCosine : -absoluteCosine;
+        const lineNormal = Vector2d.createAdd2Scaled (unitCenterToCenter, -sine, centerToCenterNormal, cosine);
+        const lineDirection = Vector2d.createAdd2Scaled (unitCenterToCenter, cosine, centerToCenterNormal, sine);
+        const pointA = circleA.center.plusScaled (lineDirection, rA);
+        const pointB = circleB.center.plusScaled (lineNormal, Math.abs(rB));
+        const lineC = UnboundedLine2dByPointAndNormal.createPointNormal(pointA, lineNormal);
+        const taggedLine = new ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>(lineC);
+        taggedLine.data.push(new Point2dImplicitCurve2d(pointA, circleA)); // CLONE!
+        taggedLine.data.push(new Point2dImplicitCurve2d(pointB, circleB)); // CLONE!
+        result.push(taggedLine);
       }
+    }
     return result;
   }
   /**
@@ -779,7 +849,7 @@ export class TangentConstruction {
     if (lineA === undefined)
       return undefined;
     const b = linePoint.distance(circleB.center);
-    const side = lineA.functionValue (circleB.center) > 0 ? 1 : -1;
+    const side = lineA.functionValue(circleB.center) > 0 ? 1 : -1;
     const signedB = b * side;
     const signedRadii = [];
     if (Geometry.isSameCoordinate(circleB.radius, -circleB.radius))
@@ -793,9 +863,9 @@ export class TangentConstruction {
       const vertexDistance = (signedB - r) * 0.5;
       const vertex = lineA.point.plusScaled(lineA.normal, vertexDistance);
       const c = 2 * (signedB + r);
-      const oneOverC = Geometry.conditionalDivideCoordinate (1, c);
+      const oneOverC = Geometry.conditionalDivideCoordinate(1, c);
       if (oneOverC !== undefined) {
-        const vectorV = lineA.normal.clone().scale (oneOverC);
+        const vectorV = lineA.normal.clone().scale(oneOverC);
         const vectorU = lineA.normal.unitPerpendicularXY();
         const parabola = UnboundedParabola2d.createCenterAndAxisVectors(vertex, vectorU, vectorV);
         result.push(parabola);

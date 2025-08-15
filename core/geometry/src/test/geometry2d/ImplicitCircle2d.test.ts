@@ -577,7 +577,7 @@ describe("ImplicitCircle2d", () => {
   });
 
   it("CircleTangentCLR", () => {
-    const ck = new Checker(false, false);
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     const axisX = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(1, 0, 0, 1)!;
     const axisX10 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(2, 10, 0, 1)!;
@@ -702,4 +702,52 @@ export class ImplicitGeometryHelpers {
     }
     return y0;
   }
+  /**
+     *
+     * @param ck checker4
+     * @param allGeometry output capture array
+     * @param x0 output x shift
+     * @param y0 output y shift
+     * @param markup circles to output with lines to tangency
+     * @param inputGeometry additional input geometry to output with each markup batch
+     * @param yStep step to apply to y0 for each output circle and markup batch
+     * @returns updated y0
+     */
+  public static outputLineMarkup(ck: Checker, allGeometry: GeometryQuery[], x0: number, y0: number,
+    markup: ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>[] | undefined,
+    inputGeometry: ImplicitCurve2d[] | undefined = undefined, yStep: number = 0): number {
+    if (markup === undefined) {
+      if (inputGeometry) {
+        for (const g1 of inputGeometry) {
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry,
+            CurveFactory.createCurvePrimitiveFromImplicitCurve(g1, 8), x0, y0);
+        }
+      }
+      return y0;
+    }
+    for (const m of markup) {
+      if (m.curve instanceof UnboundedLine2dByPointAndNormal)
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry,
+          CurveFactory.createCurvePrimitiveFromImplicitCurve(m.curve, 5), x0, y0);
+      for (const g of m.data) {
+        if (inputGeometry) {
+          for (const g1 of inputGeometry) {
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry,
+              CurveFactory.createCurvePrimitiveFromImplicitCurve(g1, 5), x0, y0);
+          }
+        }
+        GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, g.point, 0.1, x0, y0);
+        const fM = m.curve.functionValue(g.point);
+        const fG = g.curve.functionValue(g.point);
+        //        const gradM = m.curve.gradiant(g.point);
+        //        const gradG = g.curve.gradiant(g.point);
+        ck.testCoordinate(fM, 0.0, "function value fM at tangency", m.curve, g.curve);
+        ck.testCoordinate(fG, 0.0, "function value fG at tangency", m.curve, g.curve);
+        // ImplicitGeometryHelpers.testParallelGradiants(ck, gradM, gradG);
+      }
+      y0 += yStep;
+    }
+    return y0;
+  }
+
 }
