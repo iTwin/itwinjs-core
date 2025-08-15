@@ -6,6 +6,7 @@
  * @module CartesianGeometry
  */
 
+import { assert } from "@itwin/core-bentley";
 import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "../curve/CurveExtendMode";
 import { CurveLocationDetailPair } from "../curve/CurveLocationDetail";
 import { LineSegment3d } from "../curve/LineSegment3d";
@@ -242,8 +243,10 @@ export class PolylineOps {
     const bisectorPlanes: Plane3dByOriginAndUnitNormal[] = [];
     const point0 = packedPoints[0];
     const point1 = packedPoints[1];
-    const unit01 = Vector3d.createNormalizedStartEnd(point0, point1)!;
-    const perpendicular0 = Plane3dByOriginAndUnitNormal.create(point0, unit01)!;
+    const unit01 = Vector3d.createNormalizedStartEnd(point0, point1);
+    assert(undefined !== unit01, "PolylineOps.createBisectorPlanesForDistinctPoints: unit01 should be defined");
+    const perpendicular0 = Plane3dByOriginAndUnitNormal.create(point0, unit01);
+    assert(undefined !== perpendicular0, "PolylineOps.createBisectorPlanesForDistinctPoints: perpendicular0 should be defined");
     const perpendicular1 = Plane3dByOriginAndUnitNormal.createXYPlane();
     // FIRST point gets simple perpendicular
     bisectorPlanes.push(perpendicular0.clone());
@@ -260,7 +263,9 @@ export class PolylineOps {
       }
     }
     // LAST point gets simple perpendicular inherited from last pass
-    bisectorPlanes.push(Plane3dByOriginAndUnitNormal.create(packedPoints[packedPoints.length - 1], perpendicular0.getNormalRef())!);
+    const plane = Plane3dByOriginAndUnitNormal.create(packedPoints[packedPoints.length - 1], perpendicular0.getNormalRef())
+    assert(undefined !== plane, "PolylineOps.createBisectorPlanesForDistinctPoints: plane should be defined");
+    bisectorPlanes.push(plane);
     // reset end planes to their average plane, but leave them alone if the closure point is a cusp
     const lastIndex = bisectorPlanes.length - 1;
     if (lastIndex > 0 && wrapIfPhysicallyClosed) {
@@ -271,7 +276,10 @@ export class PolylineOps {
         const newBisectorPlane = Plane3dByOriginAndUnitNormal.create(firstPlane.getOriginRef(), newBisectorNormal);
         if (undefined !== newBisectorPlane) {
           bisectorPlanes[0] = newBisectorPlane;
-          bisectorPlanes[lastIndex] = Plane3dByOriginAndUnitNormal.create(lastPlane.getOriginRef(), newBisectorNormal)!;
+          const p = Plane3dByOriginAndUnitNormal.create(lastPlane.getOriginRef(), newBisectorNormal);
+          assert(undefined !== p, "PolylineOps.createBisectorPlanesForDistinctPoints: plane should be defined");
+          bisectorPlanes[lastIndex] = p;
+
         }
       }
     }

@@ -105,14 +105,16 @@ export class PathFragment {
    * Note that proportional calculation does NOT account for non-uniform parameterization in the child curve.
    */
   public chainDistanceToInterpolatedChildFraction(distance: number): number {
-    return Geometry.inverseInterpolate(
+    const result = Geometry.inverseInterpolate(
       this.childFraction0,
       this.chainDistance0,
       this.childFraction1,
       this.chainDistance1,
       distance,
       this.childFraction0,
-    )!; // the interval must have nonzero length so division should be safe
+    );
+    assert(undefined !== result, "CurveChainWithDistanceIndex.chainDistanceToInterpolatedChildFraction: number should be defined");
+    return result;
   }
   /**
    * Convert the given chainDistance to a fraction along this childCurve using `moveSignedDistanceFromFraction`.
@@ -585,12 +587,13 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    */
   public fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d {
     const distanceAlongPath = fraction * this._totalLength;
-    const fragment = this.chainDistanceToFragment(distanceAlongPath, true)!;
+    const fragment = this.chainDistanceToFragment(distanceAlongPath, true);
+    assert(undefined !== fragment, "CurveChainWithDistanceIndex.fractionToPointAndDerivative: fragment should be defined");
     const childFraction = fragment.chainDistanceToAccurateChildFraction(distanceAlongPath, true);
     result = fragment.childCurve.fractionToPointAndDerivative(childFraction, result);
-    // Recall the standard arclength formula s(t) for the curve C = C(t), with derivative s'(t) = ||C'||.
-    // Define fractional arclength for C by f = f(t) = s(t)/L, where L is the total length of C. Then f' = ||C'||/L.
-    // Denote the inverse of f by t = t(f). Then C = C(t(f)) is a parameterization of C by its fractional arclength f.
+    // Recall the standard arcLength formula s(t) for the curve C = C(t), with derivative s'(t) = ||C'||.
+    // Define fractional arcLength for C by f = f(t) = s(t)/L, where L is the total length of C. Then f' = ||C'||/L.
+    // Denote the inverse of f by t = t(f). Then C = C(t(f)) is a parameterization of C by its fractional arcLength f.
     // Since the derivative of t is t'=1/f'=L/||C'||, the derivative we seek is d/df(C(t(f))) = C' t' = C' L/||C'||.
     // The fragment gives us C', so we're just a scale away.
     // Math details can be found at core/geometry/internaldocs/Curve.md
@@ -610,7 +613,8 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    */
   public override fractionToPointAndUnitTangent(fraction: number, result?: Ray3d): Ray3d {
     const distanceAlongPath = fraction * this._totalLength;
-    const fragment = this.chainDistanceToFragment(distanceAlongPath, true)!;
+    const fragment = this.chainDistanceToFragment(distanceAlongPath, true);
+    assert(undefined !== fragment, "CurveChainWithDistanceIndex.fractionToPointAndUnitTangent: fragment should be defined");
     const childFraction = fragment.chainDistanceToAccurateChildFraction(distanceAlongPath, true);
     result = fragment.childCurve.fractionToPointAndDerivative(childFraction, result);
     result.direction.normalizeInPlace();
@@ -628,7 +632,8 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     fraction: number, result?: Plane3dByOriginAndVectors,
   ): Plane3dByOriginAndVectors | undefined {
     const distanceAlongPath = fraction * this._totalLength;
-    const fragment = this.chainDistanceToFragment(distanceAlongPath, true)!;
+    const fragment = this.chainDistanceToFragment(distanceAlongPath, true);
+    assert(undefined !== fragment, "CurveChainWithDistanceIndex.fractionToPointAnd2Derivatives: fragment should be defined");
     const childFraction = fragment.chainDistanceToAccurateChildFraction(distanceAlongPath, true);
     result = fragment.childCurve.fractionToPointAnd2Derivatives(childFraction, result);
     if (!result)
@@ -695,7 +700,8 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   ): CurveLocationDetail {
     const distanceA = startFraction * this._totalLength;
     const distanceB = distanceA + signedDistance;
-    const fragmentB = this.chainDistanceToFragment(distanceB, true)!;
+    const fragmentB = this.chainDistanceToFragment(distanceB, true);
+    assert(undefined !== fragmentB, "CurveChainWithDistanceIndex.moveSignedDistanceFromFraction: fragmentB should be defined");
     const childDetail = fragmentB.childCurve.moveSignedDistanceFromFraction(
       fragmentB.childFraction0, distanceB - fragmentB.chainDistance0, allowExtension, result?.childDetail,
     ); // local detail related to the child curve

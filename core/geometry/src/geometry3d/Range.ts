@@ -7,6 +7,7 @@
  * @module CartesianGeometry
  */
 
+import { assert } from "@itwin/core-bentley";
 import { AxisIndex, BeJSONFunctions, Geometry } from "../Geometry";
 import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
 import { GrowableXYZArray } from "./GrowableXYZArray";
@@ -430,7 +431,8 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     const origin = transform.origin;
     if (!transform.matrix.computeCachedInverse(true))
       return false;
-    const coffs = transform.matrix.inverseCoffs!;
+    const coffs = transform.matrix.inverseCoffs;
+    assert(undefined !== coffs, "Range.extendInverseTransformedXYZ: coffs should be defined");
     const xx = x - origin.x;
     const yy = y - origin.y;
     const zz = z - origin.z;

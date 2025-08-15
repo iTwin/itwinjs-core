@@ -7,6 +7,7 @@
  * @module CartesianGeometry
  */
 
+import { assert } from "@itwin/core-bentley";
 import { AngleSweep } from "./geometry3d/AngleSweep";
 import { Point2d, Vector2d } from "./geometry3d/Point2dVector2d";
 import { Point3d, Vector3d, XYZ } from "./geometry3d/Point3dVector3d";
@@ -1326,8 +1327,11 @@ export class Geometry {
     if (array === undefined)
       return undefined;
     const clonedArray: T[] = [];
+    let clone: T | undefined;
     for (const element of array) {
-      clonedArray.push(element.clone()!);
+      clone = element.clone();
+      assert(undefined !== clone, "Geometry.cloneMembers: clone should be defined");
+      clonedArray.push(clone);
     }
     return clonedArray;
   }

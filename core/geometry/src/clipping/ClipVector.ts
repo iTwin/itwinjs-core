@@ -243,8 +243,10 @@ export class ClipVector implements Clipper {
           let invTrans = Transform.createIdentity();
 
           if (firstClipShape.transformValid && clip.transformValid) {
-            fwdTrans = clip.transformFromClip!.clone();
-            invTrans = firstClipShape.transformToClip!.clone();
+            assert(undefined !== clip.transformFromClip, "ClipVector.extractBoundaryLoops: clip.transformFromClip should be defined");
+            assert(undefined !== firstClipShape.transformToClip, "ClipVector.extractBoundaryLoops: firstClipShape.transformToClip should be defined");
+            fwdTrans = clip.transformFromClip.clone();
+            invTrans = firstClipShape.transformToClip.clone();
           }
           deltaTrans.setFrom(invTrans.multiplyTransformTransform(fwdTrans));
         }
@@ -257,11 +259,13 @@ export class ClipVector implements Clipper {
 
           if (clip.zHighValid) {
             clipM = clipM | ClipMaskXYZRangePlanes.ZHigh;
-            zFront = clip.zHigh!;
+            assert(undefined !== clip.zHigh, "ClipVector.extractBoundaryLoops: clip.zHigh should be defined");
+            zFront = clip.zHigh;
           }
           if (clip.zLowValid) {
             clipM = clipM | ClipMaskXYZRangePlanes.ZLow;
-            zBack = clip.zLow!;
+            assert(undefined !== clip.zLow, "ClipVector.extractBoundaryLoops: clip.zLow should be defined");
+            zBack = clip.zLow;
           }
 
           for (const point of clip.polygon)
@@ -274,8 +278,10 @@ export class ClipVector implements Clipper {
     retVal.push(clipM);
     retVal.push(zBack);
     retVal.push(zFront);
-    if (transform && firstClipShape)
-      transform.setFrom(firstClipShape.transformFromClip!);
+    if (transform && firstClipShape) {
+      assert(undefined !== firstClipShape.transformFromClip, "ClipVector.extractBoundaryLoops: firstClipShape.transformFromClip should be defined");
+      transform.setFrom(firstClipShape.transformFromClip);
+    }
     return retVal;
   }
   /** Sets this ClipVector and all of its members to the visibility specified. */

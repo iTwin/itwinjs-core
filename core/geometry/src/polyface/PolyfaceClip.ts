@@ -108,7 +108,9 @@ export class PolyfaceClip {
   public static clipPolyfaceClipPlane(source: Polyface | PolyfaceVisitor, clipper: ClipPlane, insideClip: boolean = true, buildClosureFaces: boolean = false): IndexedPolyface {
     const builders = ClippedPolyfaceBuilders.create(insideClip, !insideClip, buildClosureFaces);
     this.clipPolyfaceInsideOutside(source, clipper, builders);
-    return builders.claimPolyface(insideClip ? 0 : 1, true)!;
+    const polyface = builders.claimPolyface(insideClip ? 0 : 1, true);
+    assert(undefined !== polyface, "PolyfaceClip.clipPolyfaceClipPlane: polyface should be defined");
+    return polyface;
   }
 
   /**
@@ -304,9 +306,10 @@ export class PolyfaceClip {
       for (visitor.reset(); visitor.moveToNextFacet();) {
         for (const chainContext of chainContexts) {
           const plane = chainContext.plane;
+          assert(undefined !== plane, "PolyfaceClip.buildClosureFacesForConvexSet: plane should be defined");
           facetPoints.clear();
           facetPoints.pushFrom(visitor.point);
-          IndexedXYZCollectionPolygonOps.clipConvexPolygonInPlace(plane!, facetPoints, workPoints);
+          IndexedXYZCollectionPolygonOps.clipConvexPolygonInPlace(plane, facetPoints, workPoints);
           chainContext.addSegmentsOnPlane(facetPoints, true);
         }
       }
@@ -381,7 +384,8 @@ export class PolyfaceClip {
    */
   private static addClosureFacets(chainContext: ChainMergeContext, destination: ClippedPolyfaceBuilders, cache: GrowableXYZArrayCache): void {
     const clipper = chainContext.convexClipper;
-    const plane = chainContext.plane!;
+    const plane = chainContext.plane;
+    assert(undefined !== plane, "PolyfaceClip.addClosureFacets: plane should be defined");
     const outwardNormal = this.evaluateInwardPlaneNormal(plane, -1.0);
     chainContext.clusterAndMergeVerticesXYZ();
     const loops = chainContext.collectMaximalGrowableXYZArrays();
@@ -563,7 +567,8 @@ export class PolyfaceClip {
     const xyFrustum = ConvexClipPlaneSet.createEmpty();
     const below = new GrowableXYZArray(10);
     const above = new GrowableXYZArray(10);
-    const planeOfFacet = ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, 0)!;
+    const planeOfFacet = ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, 0);
+    assert(undefined !== planeOfFacet, "PolyfaceClip.addClosureFacets: plane should be defined");
     const altitudeRange = Range1d.createNull();
 
     for (visitorB.reset(); visitorB.moveToNextFacet();) {
