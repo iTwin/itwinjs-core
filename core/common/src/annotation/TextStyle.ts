@@ -136,7 +136,12 @@ export interface TextStyleSettingsProps {
    * The distance is computed in meters as lineSpacingFactor * [[lineHeight]].
    * Default: 0.5.
    */
-  lineSpacingFactor?: number;
+  lineSpacingFactor?: number
+  /** Multiplier used to compute the vertical distance between two paragraphs of text.
+   * The distance is computed in meters as paragraphSpacingFactor * [[lineHeight]].
+   * Default: 0.5.
+   */
+  paragraphSpacingFactor?: number;
   /** Specifies whether the content of a [[TextRun]] should be rendered **bold**.
    * Default: false.
    */
@@ -243,6 +248,10 @@ export class TextStyleSettings {
    * The distance is computed in meters as lineSpacingFactor * [[lineHeight]].
    */
   public readonly lineSpacingFactor: number;
+  /** Multiplier used to compute the vertical distance between two paragraphs of text.
+   * The distance is computed in meters as paragraphSpacingFactor * [[lineHeight]].
+   */
+  public readonly paragraphSpacingFactor: number;
   /** Specifies whether the content of a [[TextRun]] should be rendered **bold**. */
   public readonly isBold: boolean;
   /** Specifies whether the content of a [[TextRun]] should be rendered in *italics*. */
@@ -298,6 +307,7 @@ export class TextStyleSettings {
     fontName: "",
     lineHeight: 1,
     lineSpacingFactor: 0.5,
+    paragraphSpacingFactor: 0.5,
     isBold: false,
     isItalic: false,
     isUnderlined: false,
@@ -338,6 +348,7 @@ export class TextStyleSettings {
     this.fontName = props.fontName ?? defaults.fontName;
     this.lineHeight = props.lineHeight ?? defaults.lineHeight;
     this.lineSpacingFactor = props.lineSpacingFactor ?? defaults.lineSpacingFactor;
+    this.paragraphSpacingFactor = props.paragraphSpacingFactor ?? defaults.paragraphSpacingFactor;
     this.isBold = props.isBold ?? defaults.isBold;
     this.isItalic = props.isItalic ?? defaults.isItalic;
     this.isUnderlined = props.isUnderlined ?? defaults.isUnderlined;
@@ -415,7 +426,7 @@ export class TextStyleSettings {
 
   public equals(other: TextStyleSettings): boolean {
     return this.color === other.color && this.fontName === other.fontName
-      && this.lineHeight === other.lineHeight && this.lineSpacingFactor === other.lineSpacingFactor && this.widthFactor === other.widthFactor
+      && this.lineHeight === other.lineHeight && this.lineSpacingFactor === other.lineSpacingFactor && this.paragraphSpacingFactor === other.paragraphSpacingFactor && this.widthFactor === other.widthFactor
       && this.isBold === other.isBold && this.isItalic === other.isItalic && this.isUnderlined === other.isUnderlined
       && this.stackedFractionType === other.stackedFractionType && this.stackedFractionScale === other.stackedFractionScale
       && this.subScriptOffsetFactor === other.subScriptOffsetFactor && this.subScriptScale === other.subScriptScale

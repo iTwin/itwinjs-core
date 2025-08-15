@@ -12,6 +12,7 @@ describe("TextStyleSettings", () => {
     fontName: "customFont",
     lineHeight: 2,
     lineSpacingFactor: 1,
+    paragraphSpacingFactor: 2,
     isBold: true,
     isItalic: true,
     isUnderlined: true,

@@ -740,7 +740,7 @@ export class TextBlockLayout {
       }
       case "list": {
         if (curLine) {
-          curLine = this.flushLine(context, curLine, component.children?.[0]);
+          curLine = this.flushLine(context, curLine, component.children?.[0], true);
         }
 
         component.children?.forEach((child, index) => {
@@ -756,7 +756,7 @@ export class TextBlockLayout {
           curLine = this.populateComponent(child, context, docWidth, curLine);
         });
         if (curLine && component.nextSibling) {
-          curLine = this.flushLine(context, curLine, component.nextSibling);
+          curLine = this.flushLine(context, curLine, component.nextSibling, true);
         }
         break;
       }
@@ -764,7 +764,7 @@ export class TextBlockLayout {
       case "paragraph": {
         component.children?.forEach(child => curLine = this.populateComponent(child, context, docWidth, curLine));
         if (curLine && component.nextSibling) {
-          curLine = this.flushLine(context, curLine, component.nextSibling);
+          curLine = this.flushLine(context, curLine, component.nextSibling, true);
         }
         break;
       }
@@ -874,7 +874,7 @@ export class TextBlockLayout {
     }
   }
 
-  private flushLine(context: LayoutContext, line: LineLayout, next?: TextBlockComponent): LineLayout {
+  private flushLine(context: LayoutContext, line: LineLayout, next?: TextBlockComponent, newParagraph: boolean = false): LineLayout {
     next = next ?? line.source;
 
     // We want to guarantee that each layout line has at least one run.
@@ -897,7 +897,7 @@ export class TextBlockLayout {
 
     // Line origin is its baseline.
     const lineOffset = { ...line.offsetFromDocument }; // Start with the line's original offset, which includes indentation.
-    lineOffset.y = -line.range.yLength(); // Shift down the baseline
+    lineOffset.y -= line.range.yLength(); // Shift down the baseline
 
     // Place it below any existing lines
     if (this.lines.length > 0) {
@@ -911,6 +911,11 @@ export class TextBlockLayout {
     this.textRange.extendRange(line.range.cloneTranslated(lineOffset));
 
     this.lines.push(line);
+    if (newParagraph) {
+      const newLine = new LineLayout(next, context);
+      newLine.offsetFromDocument.y -= context.textStyleResolver.blockSettings.paragraphSpacingFactor * context.textStyleResolver.blockSettings.lineHeight;
+      return newLine;
+    }
     return new LineLayout(next, context);
   }
 
