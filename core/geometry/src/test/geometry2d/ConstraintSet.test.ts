@@ -124,6 +124,52 @@ it("ConstraintSetLines", () => {
     expect(ck.getNumErrors()).toBe(0);
 });
 
+it("ConstraintSetLines", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+
+    const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(1, 0, 0.5);
+    const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius(4, 6, 1);
+    const lineL = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(1, 1, 1, 0.2);
+
+    let x0 = 0;
+    const xStep = 40;
+
+    for (const constraintPair of [
+        [ConstructionConstraint.createTangentTo(circleA), ConstructionConstraint.createTangentTo(circleB)],
+        [ConstructionConstraint.createPerpendicularTo(circleA), ConstructionConstraint.createTangentTo(circleB)],
+        [ConstructionConstraint.createTangentTo(circleA), ConstructionConstraint.createPerpendicularTo(circleB)],
+        [ConstructionConstraint.createPerpendicularTo(circleA), ConstructionConstraint.createPerpendicularTo(circleB)],
+        [ConstructionConstraint.createPerpendicularTo(lineL), ConstructionConstraint.createPerpendicularTo(circleB)],
+        [ConstructionConstraint.createPerpendicularTo(lineL), ConstructionConstraint.createTangentTo(circleB)],
+    ]){
+        const y0 = 0;
+        const constraintSet = ConstraintSet.create ();
+        const curvesToDisplay:ImplicitCurve2d[] = [];
+        for (const c of constraintPair){
+            constraintSet.addConstraint (c);
+            transferCurve(c, curvesToDisplay);
+        }
+        const constraintSetReversed = ConstraintSet.create ();
+        constraintSetReversed.addConstraint(constraintPair[0]);
+        constraintSetReversed.addConstraint(constraintPair[1]);
+
+        const result = constraintSet.constructConstrainedLines ();
+        const resultReversed = constraintSetReversed.constructConstrainedLines ();
+
+        ImplicitGeometryHelpers.outputLineMarkup(ck, allGeometry, x0, y0,
+            result, curvesToDisplay, 0);
+        
+        ck.testExactNumber (
+                    result !== undefined ? result.length : 0,
+                    resultReversed !== undefined ? resultReversed.length : 0,
+                    "Match counts with reversed constraints", constraintPair);
+        x0 += xStep;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "geometry2d", "ConstraintSetLines");
+    expect(ck.getNumErrors()).toBe(0);
+});
+
 it("radiansToParabola", () => {
     const ck = new Checker(false, false);
     const allGeometry: GeometryQuery[] = [];
