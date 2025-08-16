@@ -177,7 +177,7 @@ export class ConstraintSet {
       }
     )
   }
-  public constructTangentCircles(): ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
+  public constructConstrainedCircles(): ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
     if (this._constraints.length !== 3)
       return undefined;
 

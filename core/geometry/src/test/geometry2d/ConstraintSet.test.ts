@@ -67,7 +67,7 @@ it("ConstraintSetCirclesAndLines", () => {
             transferCurve(c, curvesToDisplay);
         }
 
-        const result = constraintSet.constructTangentCircles ();
+        const result = constraintSet.constructConstrainedCircles ();
 
         ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0, y0,
             result, curvesToDisplay, 0);
