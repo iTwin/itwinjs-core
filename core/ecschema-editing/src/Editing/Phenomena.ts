@@ -45,7 +45,7 @@ export class Phenomena extends SchemaItems {
       const newPhenomenon = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createPhenomenon.bind(schema), phenomenonProps);
       return newPhenomenon.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, phenomenonProps.name!, schemaKey), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, phenomenonProps.name ?? "<unknown>", schemaKey), e);
     }
   }
 }

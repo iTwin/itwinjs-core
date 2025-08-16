@@ -3,6 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
+import { expectDefined } from "@itwin/core-bentley";
 import { SchemaContext } from "../Context";
 import { ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps, MixinProps,
   PhenomenonProps, PropertyCategoryProps, RelationshipClassProps, SchemaItemFormatProps, SchemaItemProps, SchemaItemUnitProps, SchemaProps,
@@ -406,7 +407,10 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
         Object.assign(schemaStub, { items: {} });
       }
 
+      // Apparently the compiler does not understand that Object.assign guarantees that the items property is defined.
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const existingItem = schemaStub.items![itemInfo.name] || {};
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       Object.assign(schemaStub.items!, { [itemInfo.name]: Object.assign(existingItem, itemInfo) });
     };
 
@@ -460,7 +464,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
       return undefined;
 
     schema.items = {};
-    await Promise.all([
+    const itemResults = await Promise.all([
       this.getEntities(schemaKey.name, context),
       this.getMixins(schemaKey.name, context),
       this.getStructs(schemaKey.name, context),
@@ -475,12 +479,11 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
       this.getConstants(schemaKey.name, context),
       this.getPhenomenon(schemaKey.name, context),
       this.getFormats(schemaKey.name, context)
-    ]).then((itemResults) => {
-      const flatItemList = itemResults.reduce((acc, item) => acc.concat(item));
-      flatItemList.forEach((schemaItem) => {
-        schema.items![schemaItem.name!] = schemaItem;
-      });
-    });
+    ]);
+    const flatItemList = itemResults.reduce((acc, item) => acc.concat(item));
+    for (const schemaItem of flatItemList) {
+      schema.items[expectDefined(schemaItem.name)] = schemaItem;
+    }
 
     return schema;
   }
@@ -507,8 +510,8 @@ async function parseSchemaItemStubs(schemaName: string, context: SchemaContext, 
       const schemaItem = await SchemaParser.parseItem(currentItem, currentItem.schema, context);
       await addItemsHandler(currentItem.schema, {
         ...schemaItem,
-        name: schemaItem.name!,
-        schemaItemType: parseSchemaItemType(schemaItem.schemaItemType!)!,
+        name: expectDefined(schemaItem.name),
+        schemaItemType: expectDefined(parseSchemaItemType(expectDefined(schemaItem.schemaItemType))),
         baseClass: baseClassName,
       });
     }
@@ -518,8 +521,8 @@ async function parseSchemaItemStubs(schemaName: string, context: SchemaContext, 
     const schemaItem = await SchemaParser.parseItem(itemRow, schemaName, context);
     await addItemsHandler(schemaName, {
       ...schemaItem,
-      name: schemaItem.name!,
-      schemaItemType: parseSchemaItemType(schemaItem.schemaItemType!)!,
+      name: expectDefined(schemaItem.name),
+      schemaItemType: expectDefined(parseSchemaItemType(expectDefined(schemaItem.schemaItemType))),
       mixins: itemRow.mixins
         ? itemRow.mixins.map(mixin => { return `${mixin.schema}.${mixin.name}`; })
         : undefined,
@@ -531,8 +534,8 @@ async function parseSchemaItemStubs(schemaName: string, context: SchemaContext, 
       const mixinItem = await SchemaParser.parseItem(mixinRow, mixinRow.schema, context);
       await addItemsHandler(mixinRow.schema, {
         ...mixinItem,
-        name: mixinItem.name!,
-        schemaItemType: parseSchemaItemType(mixinItem.schemaItemType!)!,
+        name: expectDefined(mixinItem.name),
+        schemaItemType: expectDefined(parseSchemaItemType(expectDefined(mixinItem.schemaItemType))),
       });
       await parseBaseClasses(mixinRow.baseClasses);
     }

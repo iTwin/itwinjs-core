@@ -820,7 +820,7 @@ export class Schema implements CustomAttributeContainerProps {
       if (schemaProps.name.toLowerCase() !== this.name.toLowerCase())
         throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Schema ${this.name} does not match the provided name, '${schemaProps.name}'.`);
       if (this.schemaKey.version.compare(ECVersion.fromString(schemaProps.version)))
-        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Schema ${this.name} has the version '${this.schemaKey.version}' that does not match the provided version '${schemaProps.version}'.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Schema ${this.name} has the version '${this.schemaKey.version.toString()}' that does not match the provided version '${schemaProps.version}'.`);
     }
 
     if (schemaProps.$schema.match(`https://dev\\.bentley\\.com/json_schemas/ec/([0-9]+)/ecschema`) == null && schemaProps.$schema.match(`http://www\\.bentley\\.com/schemas/Bentley\\.ECXML\\.([0-9]+)`) == null)

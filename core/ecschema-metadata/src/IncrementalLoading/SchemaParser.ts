@@ -3,6 +3,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
+import { expectDefined } from "@itwin/core-bentley";
 import { ECSchemaNamespaceUris } from "../Constants";
 import { SchemaContext } from "../Context";
 import { SchemaItemProps, SchemaProps } from "../Deserialization/JsonProps";
@@ -72,7 +73,7 @@ export class SchemaParser {
     const items: { [name: string]: SchemaItemProps } = {};
     for (const itemProps of schemaItemProps) {
       const props = await this.parseItem(itemProps, schemaName, context);
-      items[props.name!] = props;
+      items[expectDefined(props.name)] = props;
       delete (props as any).name;
     }
 

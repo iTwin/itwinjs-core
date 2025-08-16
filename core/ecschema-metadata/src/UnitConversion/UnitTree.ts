@@ -37,8 +37,8 @@ export class GraphUtils {
         t,
       );
     } else {
-      if (baseUnitsMap.has(key)) {
-        const oldExponent = baseUnitsMap.get(key)!;
+      const oldExponent = baseUnitsMap.get(key);
+      if (oldExponent !== undefined) {
         baseUnitsMap.set(key, oldExponent + accumulatedExponent);
       } else {
         baseUnitsMap.set(key, accumulatedExponent);

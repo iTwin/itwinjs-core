@@ -39,7 +39,7 @@ export async function addEnumeration(context: SchemaMergeContext, change: Enumer
 export async function modifyEnumeration(context: SchemaMergeContext, change: EnumerationDifference, itemKey: SchemaItemKey) {
   const enumeration = await context.targetSchema.lookupItem(itemKey) as MutableEnumeration;
   if(change.difference.type !== undefined) {
-    throw new Error(`The Enumeration ${itemKey.name} has an incompatible type. It must be "${primitiveTypeToString(enumeration.type!)}", not "${change.difference.type}".`);
+    throw new Error(`The Enumeration ${itemKey.name} has an incompatible type. It must be "${enumeration.type ? primitiveTypeToString(enumeration.type) : "<unknown>"}", not "${change.difference.type}".`);
   }
   if(change.difference.label !== undefined) {
     await context.editor.enumerations.setDisplayLabel(itemKey, change.difference.label);
