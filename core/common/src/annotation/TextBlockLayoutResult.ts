@@ -17,7 +17,7 @@ import { TextStyleSettingsProps } from "./TextStyle";
  */
 export interface RunLayoutResult {
   /** The index of the Run this RunLayoutResult was generated from in [[Paragraph.runs]]. */
-  sourceRunIndex: number;
+  sourceRunIndex?: number;
   /** The ID of the font for the run. */
   fontId: FontId;
   /**
@@ -47,7 +47,7 @@ export interface RunLayoutResult {
  */
 export interface LineLayoutResult {
   /** The index of the paragraph this LineLayoutResult was generated from in [[TextBlock.paragraphs]]. */
-  sourceParagraphIndex: number;
+  sourceParagraphIndex?: number;
   /** The runs contained in the line. */
   runs: RunLayoutResult[];
   /** The range containing the contents of the line. */

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, LeaderTextPointOptions, LineBreakRun, Placement2dProps, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationLeader, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ColorDef, FractionRun, LeaderTextPointOptions, LineBreakRun, OrderedListMarker, Placement2dProps, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationLeader, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextBlockProps, TextFrameStyleProps, TextRun, TextStyleSettingsProps, UnorderedListMarker } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
@@ -91,9 +91,9 @@ class TextEditor implements Decorator {
     this.leaders = [];
   }
 
-  public appendText(content: string): void {
+  public appendText(content: string, overrides?: TextStyleSettingsProps): void {
     this.textBlock.appendRun(TextRun.create({
-      styleOverrides: this.runStyle,
+      styleOverrides: { ...this.runStyle, ...overrides },
       content,
       baselineShift: this.baselineShift,
     }));
@@ -119,9 +119,29 @@ class TextEditor implements Decorator {
     }));
   }
 
+  public appendList(overrides?: TextStyleSettingsProps): void {
+    this.textBlock.appendContainer({ type: "list", styleOverrides: { fontName: this.runStyle.fontName, ...overrides } });
+  }
+
+  public appendListItem(overrides?: TextStyleSettingsProps): void {
+    this.textBlock.appendListItem({ type: "list-item", styleOverrides: { ...overrides } });
+  }
+
   public appendParagraph(): void {
     this.textBlock.appendParagraph();
   }
+
+  public setIndentation(indentation: number): void {
+    const currentParagraph = this.textBlock.last;
+
+    if (!currentParagraph) return;
+    currentParagraph.styleOverrides = {
+      ...currentParagraph.styleOverrides,
+      indentation,
+    };
+
+    this.runStyle.indentation = indentation;
+  };
 
   public setDocumentWidth(width: number): void {
     this.textBlock.width = width;
@@ -160,6 +180,10 @@ class TextEditor implements Decorator {
   }
   public setLeaderNearest(leader: TextAnnotationLeader) {
     leader.attachment = { mode: "Nearest" };
+  }
+
+  public setTextBlock(props: TextBlockProps) {
+    this.textBlock = TextBlock.create(props);
   }
 
   /**
@@ -224,6 +248,20 @@ export class TextDecorationTool extends Tool {
     const arg = inArgs[1];
 
     switch (cmd) {
+      case "test": { // TODO: temporary test command, remove when done
+        await this.parseAndRun("init");
+        await this.parseAndRun("center");
+        await this.parseAndRun("height", "1"); // Text size (text height)
+        // await this.parseAndRun("width", "60");
+        await this.parseAndRun("debug");
+
+        let listMarker = inArgs[1];
+
+        if (listMarker in OrderedListMarker) listMarker = (OrderedListMarker as any)[listMarker];
+        else if (listMarker in UnorderedListMarker) listMarker = (UnorderedListMarker as any)[listMarker];
+
+        break;
+      }
       case "clear":
         editor.clear();
         return true;
@@ -298,6 +336,11 @@ export class TextDecorationTool extends Tool {
         }
         break;
       }
+      case "indent": {
+        const indentation = Number.parseFloat(arg);
+        editor.setIndentation(indentation);
+        break;
+      }
       case "spacing":
         editor.documentStyle.lineSpacingFactor = Number.parseFloat(arg);
         break;
@@ -325,7 +368,7 @@ export class TextDecorationTool extends Tool {
         }
         break;
       }
-      case "subscriptscale" : {
+      case "subscriptscale": {
         const subScale = Number.parseFloat(arg);
         if (isNaN(subScale)) {
           throw new Error("Expected a number for subscript scale");
@@ -433,7 +476,7 @@ export class TextDecorationTool extends Tool {
         if (!arg) {
           throw new Error("Expected style name");
         }
-        const style: TextStyleSettingsProps = {...editor.documentStyle, ...editor.runStyle };
+        const style: TextStyleSettingsProps = { ...editor.documentStyle, ...editor.runStyle };
         const styleId = await dtaIpc.insertTextStyle(
           vp.iModel.key,
           arg,
@@ -449,7 +492,7 @@ export class TextDecorationTool extends Tool {
         if (!arg) {
           throw new Error("Expected style name");
         }
-        const style: TextStyleSettingsProps = {...editor.documentStyle, ...editor.runStyle };
+        const style: TextStyleSettingsProps = { ...editor.documentStyle, ...editor.runStyle };
         await dtaIpc.updateTextStyle(
           vp.iModel.key,
           arg,
@@ -532,6 +575,19 @@ export class TextDecorationTool extends Tool {
 
         break;
       }
+      case "list": {
+        let listMarker = inArgs[1];
+
+        if (listMarker in OrderedListMarker) listMarker = (OrderedListMarker as any)[listMarker];
+        else if (listMarker in UnorderedListMarker) listMarker = (UnorderedListMarker as any)[listMarker];
+
+        editor.appendList({ listMarker });
+        break;
+      }
+      case "list-item": {
+        editor.appendListItem();
+        break;
+      }
       case "leader":
         const command = inArgs[1];
         const value = inArgs[2];
@@ -560,6 +616,17 @@ export class TextDecorationTool extends Tool {
         }
         break;
 
+      case "json": {
+        const props = inArgs[1] && (JSON.parse(inArgs[1].replaceAll("'", "\"")) as TextBlockProps);
+
+        if (props) {
+          editor.setTextBlock(props);
+        } else {
+          console.log(JSON.stringify(editor.annotationProps.textBlock).replaceAll("\"", "'"));
+        }
+
+        break;
+      }
       default:
         throw new Error(`unrecognized command ${cmd}`);
     }
