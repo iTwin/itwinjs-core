@@ -14,6 +14,7 @@ import { FormatsProvider } from '@itwin/core-quantity';
 import { FormatTraits } from '@itwin/core-quantity';
 import { FormatType } from '@itwin/core-quantity';
 import { FractionalPrecision } from '@itwin/core-quantity';
+import { MutableFormatsProvider } from '@itwin/core-quantity';
 import { ScientificType } from '@itwin/core-quantity';
 import { ShowSignOption } from '@itwin/core-quantity';
 import { UnitConversionProps } from '@itwin/core-quantity';
@@ -806,6 +807,21 @@ export interface FormatSet {
     label: string;
     // (undocumented)
     name: string;
+}
+
+// @beta
+export class FormatSetFormatsProvider implements MutableFormatsProvider {
+    constructor(formatSet: FormatSet, fallbackProvider?: FormatsProvider);
+    // (undocumented)
+    addFormat(name: string, format: FormatDefinition): Promise<void>;
+    // (undocumented)
+    clearFallbackProvider(): void;
+    // (undocumented)
+    getFormat(name: string): Promise<FormatDefinition | undefined>;
+    // (undocumented)
+    onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
+    // (undocumented)
+    removeFormat(name: string): Promise<void>;
 }
 
 // @internal (undocumented)
