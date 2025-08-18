@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { assert, CompressedId64Set, dispose, Id64Array, Id64String } from "@itwin/core-bentley";
+import { assert, CompressedId64Set, dispose, expectDefined, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Angle, ClipShape, ClipVector, Constant, Matrix3d, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
 import {
   AxisAlignedBox3d, ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, HiddenLine, HydrateViewStateRequestProps, HydrateViewStateResponseProps, PackedFeatureTable, Placement2d, SheetProps,
@@ -162,7 +162,7 @@ class ViewAttachmentsInfo {
   }
 
   public toJSON(): Id64Array {
-    return this.isLoaded ? this._props.map((x) => x.id!) : [...this._ids];
+    return this.isLoaded ? this._props.map((x) => expectDefined(x.id)) : [...this._ids];
   }
 
   public clone(iModel: IModelConnection): ViewAttachmentsInfo {
@@ -365,7 +365,7 @@ export class SheetViewState extends ViewState2d {
     const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
 
     // use "new this" so subclasses are correct
-    return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, viewStateData.sheetProps!, viewStateData.sheetAttachments!);
+    return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, expectDefined(viewStateData.sheetProps), expectDefined(viewStateData.sheetAttachments));
   }
 
   public override toProps(): ViewStateProps {
@@ -489,12 +489,12 @@ export class SheetViewState extends ViewState2d {
 
   /** @internal */
   public override get secondaryViewports(): Iterable<Viewport> {
-    const attachments = this._attachments;
-    if (!attachments)
+    if (this._attachments === undefined)
       return super.secondaryViewports;
 
+    const attachments = this._attachments;
     function* iterator() {
-      for (const attachment of attachments!) {
+      for (const attachment of attachments) {
         const vp = attachment.viewport;
         if (vp)
           yield vp;
@@ -724,7 +724,7 @@ class OrthographicAttachment {
     const viewOrgToAttachment = attachmentOrigin.minus(viewOrg);
     origin.addInPlace(viewOrgToAttachment);
     this._toSheet = Transform.createRefs(origin, matrix);
-    this._fromSheet = this._toSheet.inverse()!;
+    this._fromSheet = expectDefined(this._toSheet.inverse());
 
     // If the attached view is a section drawing, it may itself have an attached spatial view with a clip.
     // The clip needs to be transformed into sheet space.

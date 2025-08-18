@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@itwin/core-bentley";
+import { assert, dispose, expectDefined } from "@itwin/core-bentley";
 import { Angle, Point2d, Point3d, Range3d, Vector2d, Vector3d } from "@itwin/core-geometry";
 import { Npc, QParams2d, QParams3d, QPoint2dList, QPoint3dList, RenderMode, RenderTexture } from "@itwin/core-common";
 import { RenderSkyGradientParams, RenderSkySphereParams } from "../RenderSkyBoxParams";
@@ -749,7 +749,7 @@ export class AmbientOcclusionGeometry extends TexturedViewportQuadGeometry {
 
   public get depthAndOrder() { return this._textures[1]; }
   public get depth() { return this._textures[0]; }
-  public get noise() { return System.instance.noiseTexture!.getHandle()!; }
+  public get noise() { return expectDefined(System.instance.noiseTexture?.getHandle()); }
 
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
     super(params, TechniqueId.AmbientOcclusion, textures);
@@ -1055,7 +1055,7 @@ export class ScreenPointsGeometry extends CachedGeometry {
 
     this._numPoints = vertices.length;
 
-    this._positions = QBufferHandle2d.create(vertices.params, vertices.toTypedArray())!;
+    this._positions = expectDefined(QBufferHandle2d.create(vertices.params, vertices.toTypedArray()));
 
     this._origin = new Float32Array(3);
     this._origin[0] = this._positions.params[0];

@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { expectDefined } from "@itwin/core-bentley";
 import { Atmosphere } from "@itwin/core-common";
 import { Matrix3d, Point3d, Transform } from "@itwin/core-geometry";
 import { RenderPlanEllipsoid } from "../RenderPlan";
@@ -167,12 +168,12 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
 
   public bindInverseEarthScaleMatrix(uniform: UniformHandle): void {
     if (!sync(this, uniform))
-      uniform.setMatrix3(Matrix3.fromMatrix3d(this._earthScaleMatrix.inverse()!));
+      uniform.setMatrix3(Matrix3.fromMatrix3d(expectDefined(this._earthScaleMatrix.inverse())));
   }
 
   public bindInverseAtmosphereScaleMatrix(uniform: UniformHandle): void {
     if (!sync(this, uniform))
-      uniform.setMatrix3(Matrix3.fromMatrix3d(this._atmosphereScaleMatrix.inverse()!));
+      uniform.setMatrix3(Matrix3.fromMatrix3d(expectDefined(this._atmosphereScaleMatrix.inverse())));
   }
 
   public get isDisposed(): boolean {
