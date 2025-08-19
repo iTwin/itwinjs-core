@@ -815,14 +815,11 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
         formatSet: FormatSet;
         fallbackProvider?: FormatsProvider;
     });
-    // (undocumented)
     addFormat(name: string, format: FormatDefinition): Promise<void>;
     clearFallbackProvider(): void;
-    // (undocumented)
     getFormat(input: string): Promise<FormatDefinition | undefined>;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
-    // (undocumented)
     removeFormat(name: string): Promise<void>;
 }
 

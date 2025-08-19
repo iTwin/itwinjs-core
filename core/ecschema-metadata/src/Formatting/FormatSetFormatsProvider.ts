@@ -19,6 +19,11 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
     this._fallbackProvider = props.fallbackProvider;
   }
 
+  /**
+   * Adds a format definition to the format set or updates an existing one.
+   * @param name The name of the format to add or update
+   * @param format The format definition to add or update
+   */
   public async addFormat(name: string, format: FormatDefinition): Promise<void> {
     this._formatSet.formats[name] = format;
     this.onFormatsChanged.raiseEvent({ formatsChanged: [name] });
@@ -31,6 +36,9 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
     this._fallbackProvider = undefined;
   }
 
+  /**
+   * Retrieves a format definition by its name from the format set. If not found, it checks the fallback provider to find the format, else returns undefined.
+   */
   public async getFormat(input: string): Promise<FormatDefinition | undefined> {
     // Normalizes any schemaItem names coming from node addon 'schemaName:schemaItemName' -> 'schemaName.schemaItemName'
     const [schemaName, itemName] = SchemaItem.parseFullName(input);
@@ -42,6 +50,10 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
     return undefined;
   }
 
+  /**
+   * Removes a format definition from the format set.
+   * @param name The name of the format to remove
+   */
   public async removeFormat(name: string): Promise<void> {
     delete this._formatSet.formats[name];
     this.onFormatsChanged.raiseEvent({ formatsChanged: [name] });
