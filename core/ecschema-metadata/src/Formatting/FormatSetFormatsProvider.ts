@@ -24,6 +24,9 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
     this.onFormatsChanged.raiseEvent({ formatsChanged: [name] });
   }
 
+  /**
+   * Clears the fallback provider, if one is set.
+   */
   public clearFallbackProvider(): void {
     this._fallbackProvider = undefined;
   }
