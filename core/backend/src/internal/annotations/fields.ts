@@ -36,11 +36,6 @@ type FieldValue = {
   structArray: FieldStructValue[];
 }
 
-// The resolved primitive value of field.
-export interface FieldProperty {
-  value: FieldPrimitiveValue;
-}
-
 export interface UpdateFieldsContext {
   readonly hostElementId: Id64String;
 
