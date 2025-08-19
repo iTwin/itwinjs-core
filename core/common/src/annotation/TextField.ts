@@ -53,6 +53,42 @@ export interface FieldPropertyHost {
   className: string;
 }
 
+export type FieldType = "quantity" | "coordinate" | "string" | "boolean" | "datetime" | "enum";
+
+export type CoordinateComponentSelector = "X" | "Y" | "Z" | "XY" | "XYZ";
+
+export type FieldCase = "as-is" | "upper" | "lower" | "first-capital" | "title";
+
+export interface PrefixAndSuffix {
+  prefix?: string;
+  suffix?: string;
+}
+
+export interface BooleanFieldFormatOptions {
+  trueString?: string;
+  falseString?: string;
+}
+
+export interface CoordinateFieldFormatOptions {
+  components?: CoordinateComponentSelector;
+  componentSeparator?: string;
+}
+
+export interface QuantityFieldFormatOptions {
+  // ###TODO source+target units, FormatProps.
+}
+
+export interface DateTimeFieldFormatOptions {
+  // ###TODO select from a fixed list of possible formats for date and/or time?
+  // ###TODO localization of months and days (long and short versions)
+}
+
+export interface EnumFieldFormatOptions {
+  displayLabels: {
+    [value: number]: string | undefined;
+  },
+}
+
 /** Placeholder type for a description of how to format the raw property value resolved by a [[FieldPropertyPath]] into a [[FieldRun]]'s display string.
  * *** COMING SOON ***
  * @beta
