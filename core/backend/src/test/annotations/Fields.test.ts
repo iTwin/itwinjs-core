@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextRun } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { createUpdateContext, FieldProperty, updateField, updateFields } from "../../internal/annotations/fields";
+import { createUpdateContext, FieldPrimitiveValue, updateField, updateFields } from "../../internal/annotations/fields";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { SpatialCategory } from "../../Category";
 import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
@@ -27,7 +27,7 @@ describe("updateField", () => {
 
   const createMockContext = (elementId: string, propertyValue?: string) => ({
     hostElementId: elementId,
-    getProperty: (field: FieldRun): FieldProperty | undefined => {
+    getProperty: (field: FieldRun): FieldPrimitiveValue | undefined => {
       const propertyPath = field.propertyPath;
       if (
         propertyPath.propertyName === "mockProperty" &&
@@ -35,7 +35,7 @@ describe("updateField", () => {
         propertyPath.accessors?.[1] === "nestedProperty" &&
         propertyValue !== undefined
       ) {
-        return { value: propertyValue };
+        return propertyValue;
       }
       return undefined;
     },
@@ -291,7 +291,7 @@ describe("Field evaluation", () => {
 
       const context = createUpdateContext(propertyHost.elementId, imodel, deletedDependency);
       const actual = context.getProperty(field);
-      expect(actual?.value).to.deep.equal(expected);
+      expect(actual).to.deep.equal(expected);
     }
 
     it("returns a primitive property value", () => {

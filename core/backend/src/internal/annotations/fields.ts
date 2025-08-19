@@ -9,7 +9,7 @@ import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
-import { AnyClass, EntityClass, Property, StructArrayProperty } from "@itwin/ecschema-metadata";
+import { AnyClass, EntityClass, StructArrayProperty } from "@itwin/ecschema-metadata";
 
 // A FieldPropertyPath must ultimately resolve to one of these primitive types.
 export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
@@ -47,11 +47,11 @@ export interface FieldProperty {
 export interface UpdateFieldsContext {
   readonly hostElementId: Id64String;
 
-  getProperty(field: FieldRun): FieldProperty | undefined
+  getProperty(field: FieldRun): FieldPrimitiveValue | undefined
 }
 
 // Resolve the raw primitive value of the property that a field points to.
-function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | undefined {
+function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldPrimitiveValue | undefined {
   const host = field.propertyHost;
   const schemaItem = iModel.schemaContext.getSchemaItemSync(host.schemaName, host.className);
   if (!EntityClass.isEntityClass(schemaItem)) {
@@ -216,15 +216,13 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
     return undefined;
   }
 
-  return {
-    value: curValue.primitive,
-  };
+  return curValue.primitive;
 }
 
 export function createUpdateContext(hostElementId: string, iModel: IModelDb, deleted: boolean): UpdateFieldsContext {
   return {
     hostElementId,
-    getProperty: deleted ? () => undefined : (field) => getFieldProperty(field, iModel),
+    getProperty: deleted ? () => undefined : (field) => getFieldPropertyValue(field, iModel),
   };
 }
 
@@ -236,11 +234,11 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
 
   let newContent: string | undefined;
   try {
-    const prop = context.getProperty(field);
-    if (undefined !== prop) {
+    const propValue = context.getProperty(field);
+    if (undefined !== propValue) {
       // ###TODO formatting etc.
       // eslint-disable-next-line @typescript-eslint/no-base-to-string
-      newContent = prop.value.toString();
+      newContent = propValue.toString();
     }
   } catch (err) {
     Logger.logException(BackendLoggerCategory.IModelDb, err);
