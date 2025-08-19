@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, expectDefined } from "@itwin/core-bentley";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
 import { System } from "./System";
@@ -49,7 +49,7 @@ export class RenderBuffer implements WebGLDisposable {
 
   public [Symbol.dispose](): void {
     if (!this.isDisposed) {
-      System.instance.context.deleteRenderbuffer(this._glBuffer!);
+      System.instance.context.deleteRenderbuffer(expectDefined(this._glBuffer));
       this._glBuffer = undefined;
       this._bytesUsed = 0;
     }
@@ -112,7 +112,7 @@ export class RenderBufferMultiSample implements WebGLDisposable {
 
   public [Symbol.dispose](): void {
     if (!this.isDisposed) {
-      System.instance.context.deleteRenderbuffer(this._glBuffer!);
+      System.instance.context.deleteRenderbuffer(expectDefined(this._glBuffer));
       this._glBuffer = undefined;
     }
   }
