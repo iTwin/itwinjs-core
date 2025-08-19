@@ -126,7 +126,6 @@ export class SchemaFormatsProvider implements FormatsProvider {
     return this.convertToFormatDefinition(defaultProps, kindOfQuantity);
   }
 
-
   /**
    * Retrieves a Format from a SchemaContext. If the format is part of a KindOfQuantity, the first presentation format in the KindOfQuantity that matches the current unit system will be retrieved.
    * If no presentation format matches the current unit system, the persistence unit format will be retrieved if it matches the current unit system.

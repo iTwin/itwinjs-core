@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Add Synchronous Units Provider",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}
