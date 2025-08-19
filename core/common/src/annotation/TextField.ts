@@ -74,7 +74,7 @@ export interface QuantityFieldFormatOptions {
 }
 
 export interface DateTimeFieldFormatOptions {
-  // ###TODO select from a fixed list of possible formats for date and/or time?
+  // ###TODO select from a fixed list of possible formats for date and/or time? Or specify how to combine the various parts of the date-time?
   // ###TODO localization of months and days (long and short versions)
 }
 

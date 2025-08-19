@@ -87,7 +87,11 @@ const formatters: { [type: string]: FieldFormatter | undefined } = {
     return formatString(components, o);
   },
 
-  "datetime": () => { throw new Error("###TODO") },
+  "datetime": (v, o) => {
+    // ###TODO customizable formatting...
+    // ###TODO currently ECSqlValue exposes date-time values as ISO strings...
+    return formatString(v.toString(), o);
+  },
 };
 
 function formatString(s: string | undefined, o?: FieldFormatOptions): string | undefined {
