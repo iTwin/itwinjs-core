@@ -102,7 +102,7 @@ export class RelationshipClasses extends ECClasses {
 
       return newClass.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, relationshipProps.name!, schemaKey), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, relationshipProps.name ?? "<unknown>", schemaKey), e);
     }
   }
 
@@ -116,14 +116,19 @@ export class RelationshipClasses extends ECClasses {
       .catch((e) => {
         throw new SchemaEditingError(ECEditingStatus.SetBaseClass, new ClassId(this.schemaItemType, itemKey), e);
       });
-    const baseClass = relClass?.baseClass;
+
+    if (!relClass) {
+      throw new SchemaEditingError(ECEditingStatus.SetBaseClass, new ClassId(SchemaItemType.RelationshipClass, itemKey), new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new ClassId(this.schemaItemType, itemKey)));
+    }
+
+    const baseClass = relClass.baseClass;
 
     await super.setBaseClass(itemKey, baseClassKey);
 
     try {
-      await this.validate(relClass!);
+      await this.validate(relClass);
     } catch(e: any) {
-      await (relClass! as ECClass as MutableClass).setBaseClass(baseClass);
+      await (relClass as ECClass as MutableClass).setBaseClass(baseClass);
       throw new SchemaEditingError(ECEditingStatus.SetBaseClass, new ClassId(SchemaItemType.RelationshipClass, itemKey), e);
     }
   }

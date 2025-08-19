@@ -60,9 +60,15 @@ export class InvertedUnit extends SchemaItem {
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
    */
   public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): InvertedUnitProps {
+    if (undefined === this.invertsUnit)
+      throw new ECSchemaError(ECSchemaStatus.InvalidType, `InvertedUnit ${this.fullName} has an invalid invertsUnit.`);
+
+    if (undefined === this.unitSystem)
+      throw new ECSchemaError(ECSchemaStatus.InvalidType, `InvertedUnit ${this.fullName} has an invalid unitSystem.`);
+
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
-    schemaJson.invertsUnit = this.invertsUnit!.fullName;
-    schemaJson.unitSystem = this.unitSystem!.fullName;
+    schemaJson.invertsUnit = this.invertsUnit.fullName;
+    schemaJson.unitSystem = this.unitSystem.fullName;
     return schemaJson;
   }
 

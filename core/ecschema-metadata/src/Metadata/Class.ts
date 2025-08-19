@@ -373,7 +373,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
     if (!correctType)
       // eslint-disable-next-line @typescript-eslint/no-base-to-string
-      throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided Struct type, ${String(structType)}, is not a valid StructClass.`);
 
     return correctType;
   }
@@ -395,7 +395,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
     if (!correctType)
       // eslint-disable-next-line @typescript-eslint/no-base-to-string
-      throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided Struct type, ${structType}, is not a valid StructClass.`);
+      throw new ECSchemaError(ECSchemaStatus.InvalidType, `The provided Struct type, ${String(structType)}, is not a valid StructClass.`);
 
     return correctType;
   }

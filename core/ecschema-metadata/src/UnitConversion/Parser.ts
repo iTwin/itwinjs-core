@@ -30,8 +30,8 @@ export function parseDefinition(definition: string): Map<string, DefinitionFragm
       const name = tokens[Tokens.Word];
       const exponent = tokens[Tokens.Exponent] ? Number(tokens[Tokens.Exponent]) : 1;
       const constant = tokens[Tokens.Bracket] !== undefined;
-      if (unitMap.has(name)) {
-        const currentDefinition = unitMap.get(name)!;
+      const currentDefinition = unitMap.get(name);
+      if (currentDefinition !== undefined) {
         currentDefinition.exponent += exponent;
         unitMap.set(name, currentDefinition);
       } else {

@@ -152,6 +152,7 @@ describe("Enumeration", () => {
       expect(testEnum.description).equal("Test description");
       expect(testEnum.label).equal("Test Enumeration");
       expect(testEnum.isStrict).equal(true);
+      expect(testEnum.type).equal(PrimitiveType.String);
     });
 
     it("with enumerators", async () => {

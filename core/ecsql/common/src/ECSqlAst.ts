@@ -825,7 +825,7 @@ export class QualifiedJoinExpr extends ClassRefExpr {
       writer.appendKeyword("INNER").appendSpace();
       writer.appendKeyword("JOIN").appendSpace();
     } else {
-      throw new Error(`not supported join type ${this.joinType}`);
+      throw new Error(`not supported join type ${String(this.joinType)}`);
     }
     writer.appendExp(this.to);
     if (this.spec) {

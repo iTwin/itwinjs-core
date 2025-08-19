@@ -139,7 +139,10 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
     // to fetch the whole schema json.
     if (!await this.supportPartialSchemaLoading(schemaContext)) {
       const schemaJson = await this.getSchemaJson(schemaInfo.schemaKey, schemaContext);
-      return Schema.fromJson(schemaJson!, schemaContext);
+      if (!schemaJson)
+        throw new ECSchemaError(ECSchemaStatus.UnableToLocateSchema, `Could not locate the schema, ${schemaInfo.schemaKey.name}.${schemaInfo.schemaKey.version.toString()}`);
+
+      return Schema.fromJson(schemaJson, schemaContext);
     }
 
     // Fetches the schema partials for the given schema key. The first item in the array is the
@@ -186,9 +189,9 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
     if (!schemaProps.references)
       throw new Error(`Schema references is undefined for the Schema ${schemaInfo.schemaKey.name}`);
 
-    schemaInfo.references.forEach((ref) => {
-      schemaProps.references!.push({ name: ref.schemaKey.name, version: ref.schemaKey.version.toString() });
-    });
+    for (const ref of schemaInfo.references) {
+      schemaProps.references.push({ name: ref.schemaKey.name, version: ref.schemaKey.version.toString() });
+    }
 
     return schemaProps;
   }

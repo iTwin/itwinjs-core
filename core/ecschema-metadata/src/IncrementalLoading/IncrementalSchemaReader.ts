@@ -2,6 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+import { assert } from "@itwin/core-bentley";
 import { SchemaContext } from "../Context";
 import { SchemaReadHelper } from "../Deserialization/Helper";
 import { JsonParser } from "../Deserialization/JsonParser";
@@ -35,7 +36,7 @@ export class IncrementalSchemaReader extends SchemaReadHelper {
    * @param schemaItem The SchemaItem to check.
    * @returns True if the item has been loaded, false if still in progress.
    */
-  protected override isSchemaItemLoaded(schemaItem: SchemaItem | undefined): boolean {
+  protected override isSchemaItemLoaded(schemaItem: SchemaItem | undefined): schemaItem is SchemaItem {
     return schemaItem !== undefined
       && schemaItem.loadingController !== undefined
       && schemaItem.loadingController.isComplete;
@@ -74,13 +75,14 @@ export class IncrementalSchemaReader extends SchemaReadHelper {
     if (schemaItem.loadingController === undefined) {
       const controller = new SchemaLoadingController();
       schemaItem.setLoadingController(controller);
+      assert(undefined !== schemaItem.loadingController);
     }
 
     if (ECClass.isECClass(schemaItem)
       || schemaItem.schemaItemType === SchemaItemType.KindOfQuantity
       || schemaItem.schemaItemType === SchemaItemType.Format)
-      schemaItem.loadingController!.isComplete = !this._incremental;
+      schemaItem.loadingController.isComplete = !this._incremental;
     else
-      schemaItem.loadingController!.isComplete = true;
+      schemaItem.loadingController.isComplete = true;
   }
 }

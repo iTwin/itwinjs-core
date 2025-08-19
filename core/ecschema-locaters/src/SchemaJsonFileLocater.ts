@@ -75,16 +75,12 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     const schemaPath = maxCandidate.fileName;
 
     // Load the file
-    if (!await this.fileExists(schemaPath))
-      return undefined;
-
-    const schemaText = await this.readUtf8FileToString(schemaPath);
-    if (!schemaText)
+    if (!await this.fileExists(schemaPath) || !maxCandidate.schemaText)
       return undefined;
 
     this.addSchemaSearchPaths([path.dirname(schemaPath)]);
 
-    return Schema.startLoadingFromJson(schemaText, context);
+    return Schema.startLoadingFromJson(maxCandidate.schemaText, context);
   }
 
   /**
@@ -103,17 +99,12 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 
-    // Load the file
-    if (!fs.existsSync(schemaPath))
-      return undefined;
-
-    const schemaText = fs.readFileSync(schemaPath, "utf-8");
-    if (!schemaText)
+    if (!fs.existsSync(schemaPath) || !maxCandidate.schemaText)
       return undefined;
 
     this.addSchemaSearchPaths([path.dirname(schemaPath)]);
 
-    const schema = Schema.fromJsonSync(schemaText, context);
+    const schema = Schema.fromJsonSync(maxCandidate.schemaText, context);
     return schema;
   }
 }

@@ -149,9 +149,12 @@ export class KindOfQuantity extends SchemaItem {
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
    */
   public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): KindOfQuantityProps {
+    if (undefined === this.persistenceUnit)
+      throw new ECSchemaError(ECSchemaStatus.InvalidType, `KindOfQuantity ${this.fullName} has an invalid persistenceUnit.`);
+
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.relativeError = this.relativeError;
-    schemaJson.persistenceUnit = this.persistenceUnit!.fullName;
+    schemaJson.persistenceUnit = this.persistenceUnit.fullName;
     if (undefined !== this.presentationFormats && 0 < this.presentationFormats.length)
       schemaJson.presentationUnits = this.presentationFormats.map((format) => format.fullName);
     return schemaJson;

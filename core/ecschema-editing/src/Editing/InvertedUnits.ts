@@ -51,7 +51,7 @@ export class InvertedUnits extends SchemaItems {
       const newUnit = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createInvertedUnit.bind(schema), invertedUnitProps);
       return newUnit.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, invertedUnitProps.name!, schemaKey), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, invertedUnitProps.name ?? "<unknown>", schemaKey), e);
     }
   }
 
