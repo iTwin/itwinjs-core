@@ -52,6 +52,7 @@ const formatters: { [type: string]: FieldFormatter | undefined } = {
 
     return formatString(v ? opts.trueString : opts.falseString, o);
   },
+
   "quantity": (v, o) => formatString(formatQuantity(v, o?.quantity)),
 
   "coordinate": (v, o) => {
