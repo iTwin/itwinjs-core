@@ -121,7 +121,7 @@ export class RelationshipClasses extends ECClasses {
       throw new SchemaEditingError(ECEditingStatus.SetBaseClass, new ClassId(SchemaItemType.RelationshipClass, itemKey), new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new ClassId(this.schemaItemType, itemKey)));
     }
 
-    const baseClass = relClass?.baseClass;
+    const baseClass = relClass.baseClass;
 
     await super.setBaseClass(itemKey, baseClassKey);
 
