@@ -22,7 +22,7 @@ describe("ECDb", () => {
       const schemaProps = ecdb.getSchemaProps("Test");
       expect(schemaProps.name).to.equal("Test");
 
-      ecdb.dropSchemas(["Test"]);
+      ecdb.dropSchema(["Test"]);
       expect(() => ecdb.getSchemaProps("Test")).to.throw();
     });
   });
