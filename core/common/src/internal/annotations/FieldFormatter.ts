@@ -84,7 +84,7 @@ const formatters: { [type: string]: FieldFormatter | undefined } = {
       return undefined;
     }
 
-    const components = parts.join(o?.coordinate?.componentSeparator ?? "");
+    const components = parts.join(o?.coordinate?.componentSeparator ?? ",");
     return formatString(components, o);
   },
 
