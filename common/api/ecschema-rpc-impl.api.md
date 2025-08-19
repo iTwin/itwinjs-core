@@ -12,7 +12,7 @@ import { SchemaProps } from '@itwin/ecschema-metadata';
 
 // @internal
 export class ECSchemaRpcImpl extends RpcInterface implements ECSchemaRpcInterface {
-    getSchemaJSON(tokenProps: IModelRpcProps, schemaName: string): Promise<SchemaProps>;
+    getSchemaJSON(tokenProps: IModelRpcProps, schemaName: string): Promise<SchemaProps | undefined>;
     getSchemaKeys(tokenProps: IModelRpcProps): Promise<SchemaKeyProps[]>;
     static register(): void;
 }

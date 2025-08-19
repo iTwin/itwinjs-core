@@ -6,6 +6,7 @@
  * @module WebGL
  */
 
+import { expectDefined } from "@itwin/core-bentley";
 import { Matrix4d } from "@itwin/core-geometry";
 import { ColorDef, RgbColor } from "@itwin/core-common";
 import { FloatRgba } from "./FloatRGBA";
@@ -51,7 +52,7 @@ export class ShadowUniforms {
     if (!map.isEnabled)
       return;
 
-    const settings = map.settings!;
+    const settings = expectDefined(map.settings);
 
     if (this._bias !== settings.bias) {
       desync(this);

@@ -225,8 +225,12 @@ export class EnvironmentDecorations {
 
 
           const params = new RenderTextureParams(key, RenderTexture.Type.SkyBox);
+          // Note: idToImage is populated with all 6 directions. If any are missing, we return false,
+          // preventing us from getting here. That makes the following non-null assertions safe.
           const txImgs = [
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             idToImage.get(sky.images.front)!, idToImage.get(sky.images.back)!, idToImage.get(sky.images.top)!,
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             idToImage.get(sky.images.bottom)!, idToImage.get(sky.images.right)!, idToImage.get(sky.images.left)!,
           ];
 

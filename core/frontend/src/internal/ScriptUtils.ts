@@ -102,6 +102,7 @@ function isTimelineEntryEqual(a: RenderSchedule.ElementTimeline, b: RenderSchedu
       if ((c1 === undefined) !== (c2 === undefined))
         return false;
 
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (c1 !== undefined && !c1.equals(c2!))
         return false;
 

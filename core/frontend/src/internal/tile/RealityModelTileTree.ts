@@ -8,7 +8,7 @@
 
 import {
   assert, compareBooleans, compareNumbers, comparePossiblyUndefined, compareStrings,
-  compareStringsOrUndefined, CompressedId64Set, Id64, Id64String,
+  compareStringsOrUndefined, CompressedId64Set, expectDefined, Id64, Id64String,
 } from "@itwin/core-bentley";
 import {
   BaseLayerSettings,
@@ -177,7 +177,7 @@ export class RealityTileRegion {
       corners = new Array<Point3d>(8);
       const chordTolerance = (1 - Math.cos(maxAngle / 2)) * Constant.earthRadiusWGS84.polar;
       const addEllipsoidCorner = ((long: number, lat: number, index: number) => {
-        const ray = earthEllipsoid.radiansToUnitNormalRay(long, lat, scratchRay)!;
+        const ray = expectDefined(earthEllipsoid.radiansToUnitNormalRay(long, lat, scratchRay));
         corners[index] = ray.fractionToPoint(this.minHeight - chordTolerance);
         corners[index + 4] = ray.fractionToPoint(this.maxHeight + chordTolerance);
       });
@@ -769,7 +769,7 @@ export namespace RealityModelTileTree {
     let rootTransform = iModel.ecefLocation ? iModel.getMapEcefToDb(0) : Transform.createIdentity();
     const geoConverter = iModel.noGcsDefined ? undefined : iModel.geoServices.getConverter("WGS84");
     if (geoConverter !== undefined) {
-      let realityTileRange = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume)!.range;
+      let realityTileRange = expectDefined(RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume)).range;
       if (json.root.transform) {
         const realityToEcef = RealityModelTileUtils.transformFromJson(json.root.transform);
         realityTileRange = realityToEcef.multiplyRange(realityTileRange);
@@ -783,7 +783,7 @@ export namespace RealityModelTileTree {
         // The publishing was modified to calculate the ecef transform at the reality model range center and at the same time the "iModelPublishVersion"
         // member was added to the root object.  In order to continue to locate reality models published from older versions at the
         // project extents center we look for Tileset version 0.0 and no root.iModelVersion.
-        const ecefOrigin = realityTileRange.localXYZToWorld(.5, .5, .5)!;
+        const ecefOrigin = expectDefined(realityTileRange.localXYZToWorld(.5, .5, .5));
         const dbOrigin = rootTransform.multiplyPoint3d(ecefOrigin);
         const realityOriginToProjectDistance = iModel.projectExtents.distanceToPoint(dbOrigin);
         const maxProjectDistance = 1E5;     // Only use the project GCS projection if within 100KM of the project.   Don't attempt to use GCS if global reality model or in another locale - Results will be unreliable.

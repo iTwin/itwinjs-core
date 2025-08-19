@@ -96,10 +96,10 @@ function createElemProps(className: string, _iModelName: IModelDb, modId: Id64St
     d: 0.1 + index,
     s: `str${index}`,
     j: `{"${String.fromCharCode(65 + index)}": ${index}}`,
-    dt: index%2 === 0? "2017-01-01T00:00:00.000" : "2010-01-01T11:11:11.000",
-    bin: index%2 === 0 ? new Uint8Array([1, 2, 3]) : new Uint8Array([11, 21, 31, 34, 53, 21, 14, 14, 55, 22]),
-    p2d: index%2 === 0 ? new Point2d(1.034, 2.034) : new Point2d(1111.11, 2222.22),
-    p3d: index%2 === 0 ? new Point3d(-1.0, 2.3, 3.0001) : new Point3d(-111.11, -222.22, -333.33),
+    dt: index % 2 === 0 ? "2017-01-01T00:00:00.000" : "2010-01-01T11:11:11.000",
+    bin: index % 2 === 0 ? new Uint8Array([1, 2, 3]) : new Uint8Array([11, 21, 31, 34, 53, 21, 14, 14, 55, 22]),
+    p2d: index % 2 === 0 ? new Point2d(1.034, 2.034) : new Point2d(1111.11, 2222.22),
+    p3d: index % 2 === 0 ? new Point3d(-1.0, 2.3, 3.0001) : new Point3d(-111.11, -222.22, -333.33),
     b: true,
     // eslint-disable-next-line @typescript-eslint/naming-convention
     array_b: [true, false, true],
@@ -114,11 +114,11 @@ function createElemProps(className: string, _iModelName: IModelDb, modId: Id64St
     // eslint-disable-next-line @typescript-eslint/naming-convention
     array_dt: ["2017-01-01T00:00:00.000", "2010-01-01T11:11:11.000"],
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    array_p2d: [new Point2d(1.034, 2.034) , new Point2d(1111.11, 2222.22)],
+    array_p2d: [new Point2d(1.034, 2.034), new Point2d(1111.11, 2222.22)],
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    array_p3d: [new Point3d(-1.0, 2.3, 3.0001) , new Point3d(-111.11, -222.22, -333.33)],
+    array_p3d: [new Point3d(-1.0, 2.3, 3.0001), new Point3d(-111.11, -222.22, -333.33)],
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    array_bin: [new Uint8Array([1, 2, 3]) , new Uint8Array([11, 21, 31, 34, 53, 21, 14, 14, 55, 22])],
+    array_bin: [new Uint8Array([1, 2, 3]), new Uint8Array([11, 21, 31, 34, 53, 21, 14, 14, 55, 22])],
     directStr: `str${index}`,
     directLong: 1000 + index,
     directDouble: 0.1 + index,
@@ -194,10 +194,16 @@ export class ECSqlDatasets {
     }
 
     // Add two instances of feature class instance with a navigation property
-    const elementWithNavProp = iModel.elements.createElement(createElemWithNavProp("TestFeature", iModel, newModelId, spatialCategoryId, ++index, elementIds.pop()!));
+    const poppedId1 = elementIds.pop();
+    if (poppedId1 === undefined)
+      assert.fail("Expected at least 1 element id");
+    const elementWithNavProp = iModel.elements.createElement(createElemWithNavProp("TestFeature", iModel, newModelId, spatialCategoryId, ++index, poppedId1));
     assert.isTrue(Id64.isValidId64(iModel.elements.insertElement(elementWithNavProp.toJSON())), "element with nav props insert failed");
 
-    const anotherElementWithNavProp = iModel.elements.createElement(createElemWithNavProp("TestFeature", iModel, newModelId, spatialCategoryId, ++index, elementIds.pop()!));
+    const poppedId2 = elementIds.pop();
+    if (poppedId2 === undefined)
+      assert.fail("Expected another element id");
+    const anotherElementWithNavProp = iModel.elements.createElement(createElemWithNavProp("TestFeature", iModel, newModelId, spatialCategoryId, ++index, poppedId2));
     assert.isTrue(Id64.isValidId64(iModel.elements.insertElement(anotherElementWithNavProp.toJSON())), "element with nav props insert failed");
 
     iModel.saveChanges();

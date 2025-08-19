@@ -586,6 +586,12 @@ export abstract class ErrorCategory extends StatusCategory {
     error: boolean;
 }
 
+// @internal
+export function expectDefined<T>(value: T | undefined, message?: string): T;
+
+// @internal
+export function expectNotNull<T>(value: T | null, message?: string): T;
+
 // @public
 export enum GeoServiceStatus {
     // (undocumented)

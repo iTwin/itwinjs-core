@@ -75,7 +75,11 @@ export class TileUserIdSets extends SortedArray<TileUserIdSet> {
         return diff;
 
       for (let i = 0; i < lhs.length; i++) {
+        // Looping through i means lhs.get(i) will always be defined.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const lhId = lhs.get(i)!;
+        // rhs.length is same as lhs.length, so rhs.get(i) will always be defined.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const rhId = rhs.get(i)!;
         diff = lhId - rhId;
         if (0 !== diff)

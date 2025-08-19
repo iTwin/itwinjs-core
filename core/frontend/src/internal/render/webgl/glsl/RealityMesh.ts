@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, expectDefined } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
 import { Matrix4d } from "@itwin/core-geometry";
 import { AttributeMap } from "../AttributeMap";
@@ -52,7 +52,7 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
   builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", computeTexCoord);
   builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
-      const realityMesh = params.geometry.asRealityMesh!;
+      const realityMesh = expectDefined(params.geometry.asRealityMesh);
       if (undefined !== realityMesh.uvQParams) {
         uniform.setUniform4fv(realityMesh.uvQParams);
       }
@@ -61,7 +61,7 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
 
   builder.frag.addUniform("u_texturesPresent", VariableType.Boolean, (program) => {
     program.addGraphicUniform("u_texturesPresent", (uniform, params) => {
-      uniform.setUniform1i(params.geometry.asRealityMesh!.hasTextures ? 1 : 0);
+      uniform.setUniform1i(expectDefined(params.geometry.asRealityMesh).hasTextures ? 1 : 0);
     });
   });
 
@@ -70,7 +70,7 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
     builder.frag.addUniform(textureLabel, VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform(textureLabel, (uniform, params) => {
         const textureUnits = [TextureUnit.RealityMesh0, TextureUnit.RealityMesh1, params.target.drawForReadPixels ? TextureUnit.ShadowMap : TextureUnit.PickDepthAndOrder, TextureUnit.RealityMesh3, TextureUnit.RealityMesh4, TextureUnit.RealityMesh5];
-        const realityMesh = params.geometry.asRealityMesh!;
+        const realityMesh = expectDefined(params.geometry.asRealityMesh);
         const realityTexture = realityMesh.textureParams ? realityMesh.textureParams.params[i].texture : undefined;
         if (realityTexture !== undefined) {
           const texture = realityTexture as Texture;
@@ -83,23 +83,23 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
     const paramsLabel = `u_texParams${i}`, matrixLabel = `u_texMatrix${i}`;
     builder.frag.addUniform(matrixLabel, VariableType.Mat4, (prog) => {
       prog.addGraphicUniform(matrixLabel, (uniform, params) => {
-        const realityMesh = params.geometry.asRealityMesh!;
+        const realityMesh = expectDefined(params.geometry.asRealityMesh);
         const textureParam = realityMesh.textureParams?.params[i];
         assert(undefined !== textureParam);
         if (undefined !== textureParam) {
           const projectionMatrix = textureParam.getProjectionMatrix();
           if (projectionMatrix) {
-            const eyeToModel = Matrix4d.createTransform(params.target.uniforms.frustum.viewMatrix.inverse()!, scratchMatrix4d1);
+            const eyeToModel = Matrix4d.createTransform(expectDefined(params.target.uniforms.frustum.viewMatrix.inverse()), scratchMatrix4d1);
             const eyeToTexture = projectionMatrix.multiplyMatrixMatrix(eyeToModel, scratchMatrix4d2);
             uniform.setMatrix4(Matrix4.fromMatrix4d(eyeToTexture, scratchMatrix));
           } else
-            uniform.setMatrix4(textureParam.getTerrainMatrix()!);
+            uniform.setMatrix4(expectDefined(textureParam.getTerrainMatrix()));
         }
       });
     });
     builder.frag.addUniform(paramsLabel, VariableType.Mat4, (prog) => {
       prog.addGraphicUniform(paramsLabel, (uniform, params) => {
-        const realityMesh = params.geometry.asRealityMesh!;
+        const realityMesh = expectDefined(params.geometry.asRealityMesh);
         const textureParam = realityMesh.textureParams?.params[i];
         assert(undefined !== textureParam);
         if (undefined !== textureParam) {
@@ -238,7 +238,7 @@ export function createRealityMeshBuilder(flags: TechniqueFlags): ProgramBuilder 
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeFragmentBaseColor);
   builder.frag.addUniform("u_baseColor", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_baseColor", (uniform, params) => {
-      const realityMesh = params.geometry.asRealityMesh!;
+      const realityMesh = expectDefined(params.geometry.asRealityMesh);
       const baseColor = (realityMesh.baseColor ? realityMesh.baseColor : ColorDef.create(0xff000000)).colors;
       uniform.setUniform4fv([baseColor.r / 255, baseColor.g / 255, baseColor.b / 255, 1 - baseColor.t / 255]);
     });

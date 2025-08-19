@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, Id64, Id64String, UintArray,
+  assert, expectDefined, Id64, Id64String, UintArray,
 } from "@itwin/core-bentley";
 import { BatchType, ComputeNodeId, Feature, FeatureTable, ModelFeature, PackedFeature, PackedFeatureWithIndex, RenderFeatureTable } from "../FeatureTable";
 import { GeometryClass } from "../GeometryParams";
@@ -78,7 +78,7 @@ export class PackedFeatureTable implements RenderFeatureTable {
       const feature = iv.value;
       const index = iv.index * 3;
 
-      let subCategoryIndex = subcategories.get(feature.subCategoryId)!;
+      let subCategoryIndex = expectDefined(subcategories.get(feature.subCategoryId));
       assert(undefined !== subCategoryIndex); // we inserted it above...
       subCategoryIndex |= (feature.geometryClass << 24);
 

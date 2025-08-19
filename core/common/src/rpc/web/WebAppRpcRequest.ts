@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus } from "@itwin/core-bentley";
+import { BentleyStatus, expectNotNull } from "@itwin/core-bentley";
 import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcContentType, RpcProtocolEvent, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
@@ -158,7 +158,7 @@ export class WebAppRpcRequest extends RpcRequest {
         if (responseType === RpcContentType.Binary) {
           resolve(await this.loadBinary(response));
         } else if (responseType === RpcContentType.Multipart) {
-          resolve(await this.loadMultipart(response, contentType!));
+          resolve(await this.loadMultipart(response, expectNotNull(contentType)));
         } else {
           resolve(await this.loadText(response));
         }

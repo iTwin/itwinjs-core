@@ -6,7 +6,7 @@
  * @module Geometry
  */
 
-import { IModelStatus } from "@itwin/core-bentley";
+import { expectDefined, IModelStatus } from "@itwin/core-bentley";
 import {
   Angle, Constant, Matrix3d, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
@@ -122,7 +122,7 @@ export class Placement3d implements Placement3dProps {
 export class Placement2d implements Placement2dProps {
   public constructor(public origin: Point2d, public angle: Angle, public bbox: ElementAlignedBox2d) { }
   /** Get the rotation from local coordinates of this placement to world coordinates. */
-  public get rotation(): Matrix3d { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
+  public get rotation(): Matrix3d { return expectDefined(Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)); }
   /** Get the transform from local coordinates of this placement to world coordinates. */
   public get transform(): Transform { return Transform.createOriginAndMatrix(Point3d.createFrom(this.origin), this.rotation); }
   /** Create a new Placement2d from a Placement2dProps. */

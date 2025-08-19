@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { JsonUtils, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
+import { expectDefined, JsonUtils, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
 import { Cartographic, EcefLocation } from "@itwin/core-common";
 import { Matrix3d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { FrontendLoggerCategory } from "../../common/FrontendLoggerCategory";
@@ -56,13 +56,13 @@ export class ThreeDTileFormatInterpreter  {
         location = cartoCenter;
         const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter);
         // iModelDb.setEcefLocation(ecefLocation);
-        const ecefToWorld = ecefLocation.getTransform().inverse()!;
+        const ecefToWorld = expectDefined(ecefLocation.getTransform().inverse());
         worldRange.extendRange(Range3d.fromJSON(ecefToWorld.multiplyRange(ecefRange)));
       } else {
         let worldToEcefTransform = ThreeDTileFormatInterpreter.transformFromJson(json.root.transform);
 
         Logger.logTrace(loggerCategory, "RealityData json.root.transform", () => ({ ...worldToEcefTransform }));
-        const range = ThreeDTileFormatInterpreter.rangeFromBoundingVolume(json.root.boundingVolume)!;
+        const range = expectDefined(ThreeDTileFormatInterpreter.rangeFromBoundingVolume(json.root.boundingVolume));
         if (undefined === worldToEcefTransform)
           worldToEcefTransform = Transform.createIdentity();
 
@@ -93,7 +93,7 @@ export class ThreeDTileFormatInterpreter  {
           location = ecefLocation;
           Logger.logTrace(loggerCategory, "RealityData is worldToEcefTransform.matrix.isIdentity", () => ({ isIdentity: worldToEcefTransform.matrix.isIdentity }));
           // iModelDb.setEcefLocation(ecefLocation);
-          const ecefToWorld = ecefLocation.getTransform().inverse()!;
+          const ecefToWorld = expectDefined(ecefLocation.getTransform().inverse());
           worldRange.extendRange(Range3d.fromJSON(ecefToWorld.multiplyRange(ecefRange)));
           Logger.logTrace(loggerCategory, "RealityData ecefToWorld", () => ({ ...ecefToWorld }));
         }

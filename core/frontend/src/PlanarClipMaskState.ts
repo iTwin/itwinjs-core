@@ -111,16 +111,16 @@ export class PlanarClipMaskState {
     // Add overrides to turn things on or off based on the subcategories or elements in the mask settings.
     switch (this.settings.mode) {
       case PlanarClipMaskMode.IncludeElements: {
-        overrides.setAlwaysDrawnSet(this.settings.subCategoryOrElementIds!, true);
+        overrides.setAlwaysDrawnSet(this.settings.subCategoryOrElementIds ?? [], true);
         return overrides;
       }
       case PlanarClipMaskMode.ExcludeElements: {
         overrides.ignoreSubCategory = true;
-        overrides.setNeverDrawnSet(this.settings.subCategoryOrElementIds!);
+        overrides.setNeverDrawnSet(this.settings.subCategoryOrElementIds ?? []);
         return overrides;
       }
       case PlanarClipMaskMode.IncludeSubCategories: {
-        for (const subCategoryId of this.settings.subCategoryOrElementIds!)
+        for (const subCategoryId of this.settings.subCategoryOrElementIds ?? [])
           overrides.setVisibleSubCategory(subCategoryId);
         return overrides;
       }

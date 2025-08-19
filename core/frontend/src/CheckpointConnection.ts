@@ -6,7 +6,7 @@
  * @module IModelConnection
  */
 
-import { BentleyError, BentleyStatus, GuidString, Logger } from "@itwin/core-bentley";
+import { BentleyError, BentleyStatus, expectDefined, Guid, GuidString, Logger } from "@itwin/core-bentley";
 import {
   IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelVersion, RpcManager, RpcNotFoundResponse, RpcOperation,
   RpcRequest, RpcRequestEvent,
@@ -28,9 +28,9 @@ export class CheckpointConnection extends IModelConnection {
   private readonly _fromIpc: boolean;
 
   /** The Guid that identifies the iTwin that owns this iModel. */
-  public override get iTwinId(): GuidString { return super.iTwinId!; }
+  public override get iTwinId(): GuidString { return super.iTwinId ?? Guid.empty; }
   /** The Guid that identifies this iModel. */
-  public override get iModelId(): GuidString { return super.iModelId!; }
+  public override get iModelId(): GuidString { return super.iModelId ?? Guid.empty; }
 
   /** Returns `true` if [[close]] has already been called. */
   public get isClosed(): boolean { return this._isClosed ? true : false; }
@@ -131,7 +131,7 @@ export class CheckpointConnection extends IModelConnection {
       const openResponse = await CheckpointConnection.callOpen(iModelRpcProps, this.routingContext);
       // The new/reopened connection may have a new rpcKey and/or changesetId, but the other IModelRpcTokenProps should be the same
       this._fileKey = openResponse.key;
-      this.changeset = openResponse.changeset!;
+      this.changeset = expectDefined(openResponse.changeset);
 
     } catch (error) {
       reject(BentleyError.getErrorMessage(error));

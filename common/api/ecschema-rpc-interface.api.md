@@ -21,7 +21,7 @@ import { SchemaProps } from '@itwin/ecschema-metadata';
 // @internal
 export abstract class ECSchemaRpcInterface extends RpcInterface {
     static getClient(): ECSchemaRpcInterface;
-    getSchemaJSON(_tokenProps: IModelRpcProps, _schemaName: string): Promise<SchemaProps>;
+    getSchemaJSON(_tokenProps: IModelRpcProps, _schemaName: string): Promise<SchemaProps | undefined>;
     getSchemaKeys(_tokenProps: IModelRpcProps): Promise<SchemaKeyProps[]>;
     // (undocumented)
     static readonly interfaceName = "ECSchemaRpcInterface";

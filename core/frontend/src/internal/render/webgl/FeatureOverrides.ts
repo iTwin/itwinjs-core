@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose, Id64 } from "@itwin/core-bentley";
+import { assert, dispose, expectDefined, Id64 } from "@itwin/core-bentley";
 import { PackedFeature, RenderFeatureTable } from "@itwin/core-common";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
 import { WebGLDisposable } from "./Disposable";
@@ -71,10 +71,10 @@ export class FeatureOverrides implements WebGLDisposable {
 
   private updateUniformSymbologyFlags(): void {
     this._uniformSymbologyFlags = EmphasisFlags.None;
-    if (!this.isUniform || !this._lut)
+    if (!this.isUniform || !this._lut?.dataBytes)
       return;
 
-    let flags = this._lut.dataBytes![0];
+    let flags = expectDefined(this._lut.dataBytes[0]);
     if (0 !== (flags & OvrFlags.Flashed))
       this._uniformSymbologyFlags |= EmphasisFlags.Flashed;
 
@@ -84,7 +84,7 @@ export class FeatureOverrides implements WebGLDisposable {
     if (!this._anyHilited)
       return;
 
-    flags = this._lut.dataBytes![1] << 8;
+    flags = expectDefined(this._lut.dataBytes[1]) << 8;
     if (0 !== (flags & OvrFlags.Hilited))
       this._uniformSymbologyFlags |= EmphasisFlags.Hilite;
 
@@ -117,7 +117,7 @@ export class FeatureOverrides implements WebGLDisposable {
   }
 
   private _update(map: RenderFeatureTable, lut: Texture2DHandle, pickExcludes: Id64.Uint32Set | undefined, flashed?: Id64.Uint32Pair, hilites?: Hilites, ovrs?: FeatureSymbology.Overrides) {
-    const updater = new Texture2DDataUpdater(lut.dataBytes!);
+    const updater = new Texture2DDataUpdater(expectDefined(lut.dataBytes));
 
     if (undefined === ovrs) {
       this.updateFlashedAndHilited(updater, map, pickExcludes, flashed, hilites);

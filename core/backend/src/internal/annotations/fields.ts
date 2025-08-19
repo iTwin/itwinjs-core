@@ -5,7 +5,7 @@
 
 import { ECSqlValueType, FieldRun, RelationshipProps, TextBlock } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
-import { assert, DbResult, Id64String, Logger } from "@itwin/core-bentley";
+import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
@@ -108,7 +108,8 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
       case ECSqlValueType.String:
         return { primitive: rootValue.getString() };
       case ECSqlValueType.Struct: {
-        assert(ecProp!.isStruct());
+        ecProp = expectDefined(ecProp);
+        assert(ecProp.isStruct());
         ecClass = ecProp.structClass;
         return { struct: rootValue.getStruct() };
       }

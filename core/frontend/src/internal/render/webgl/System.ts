@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@itwin/core-bentley";
+import { assert, BentleyStatus, Dictionary, dispose, expectDefined, Id64, Id64String } from "@itwin/core-bentley";
 import { ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, RenderFeatureTable, RenderMaterial, RenderMaterialParams, RenderTexture, RenderTextureParams, RgbColorProps, TextureMapping, TextureTransparency } from "@itwin/core-common";
 import { ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
@@ -841,7 +841,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   // Ensure *something* is bound to suppress 'no texture assigned to unit x' warnings.
   public ensureSamplerBound(uniform: UniformHandle, unit: TextureUnit): void {
-    this.lineCodeTexture!.bindSampler(uniform, unit);
+    expectDefined(this.lineCodeTexture).bindSampler(uniform, unit);
   }
 
   public override get maxRealityImageryLayers() {
