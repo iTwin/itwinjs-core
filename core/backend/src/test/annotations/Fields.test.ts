@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextRun } from "@itwin/core-common";
+import { Code, ElementAspectProps, FieldPrimitiveValue, FieldPropertyHost, FieldPropertyPath, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextRun } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { createUpdateContext, FieldPrimitiveValue, updateField, updateFields } from "../../internal/annotations/fields";
+import { createUpdateContext, updateField, updateFields } from "../../internal/annotations/fields";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { SpatialCategory } from "../../Category";
 import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";

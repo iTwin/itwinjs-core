@@ -3,16 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECSqlValueType, FieldRun, RelationshipProps, TextBlock } from "@itwin/core-common";
+import { ECSqlValueType, FieldPrimitiveValue, FieldRun, RelationshipProps, TextBlock } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, StructArrayProperty } from "@itwin/ecschema-metadata";
-
-// A FieldPropertyPath must ultimately resolve to one of these primitive types.
-export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
 
 interface FieldStructValue { [key: string]: any }
 
