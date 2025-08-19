@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the repository root for full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "@itwin/core-bentley";
 import { flatbuffers } from "flatbuffers";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/explicit-member-accessibility */
 /* eslint-disable @itwin/prefer-get */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 // cspell:word flatbuffers, Akima
 
 /**
@@ -74,24 +74,21 @@ export namespace BGFBAccessors {
      * @returns number
      */
     x(): number {
-      assert(null !== this.bb, "BGFBAccessors.DPoint3d.x(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos);
+      return this.bb!.readFloat64(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     y(): number {
-      assert(null !== this.bb, "BGFBAccessors.DPoint3d.y(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 8);
+      return this.bb!.readFloat64(this.bb_pos + 8);
     }
 
     /**
      * @returns number
      */
     z(): number {
-      assert(null !== this.bb, "BGFBAccessors.DPoint3d.z(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 16);
+      return this.bb!.readFloat64(this.bb_pos + 16);
     }
 
     /**
@@ -132,48 +129,42 @@ export namespace BGFBAccessors {
      * @returns number
      */
     x(): number {
-      assert(null !== this.bb, "BGFBAccessors.DRay3d.x(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos);
+      return this.bb!.readFloat64(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     y(): number {
-      assert(null !== this.bb, "BGFBAccessors.DRay3d.y(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 8);
+      return this.bb!.readFloat64(this.bb_pos + 8);
     }
 
     /**
      * @returns number
      */
     z(): number {
-      assert(null !== this.bb, "BGFBAccessors.DRay3d.z(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 16);
+      return this.bb!.readFloat64(this.bb_pos + 16);
     }
 
     /**
      * @returns number
      */
     ux(): number {
-      assert(null !== this.bb, "BGFBAccessors.DRay3d.ux(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 24);
+      return this.bb!.readFloat64(this.bb_pos + 24);
     }
 
     /**
      * @returns number
      */
     uy(): number {
-      assert(null !== this.bb, "BGFBAccessors.DRay3d.uy(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 32);
+      return this.bb!.readFloat64(this.bb_pos + 32);
     }
 
     /**
      * @returns number
      */
     uz(): number {
-      assert(null !== this.bb, "BGFBAccessors.DRay3d.uz(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 40);
+      return this.bb!.readFloat64(this.bb_pos + 40);
     }
 
     /**
@@ -220,16 +211,14 @@ export namespace BGFBAccessors {
      * @returns number
      */
     x(): number {
-      assert(null !== this.bb, "BGFBAccessors.DPoint2d.x(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos);
+      return this.bb!.readFloat64(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     y(): number {
-      assert(null !== this.bb, "BGFBAccessors.DPoint2d.y(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 8);
+      return this.bb!.readFloat64(this.bb_pos + 8);
     }
 
     /**
@@ -268,24 +257,21 @@ export namespace BGFBAccessors {
      * @returns number
      */
     x(): number {
-      assert(null !== this.bb, "BGFBAccessors.DVector3d.x(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos);
+      return this.bb!.readFloat64(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     y(): number {
-      assert(null !== this.bb, "BGFBAccessors.DVector3d.y(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 8);
+      return this.bb!.readFloat64(this.bb_pos + 8);
     }
 
     /**
      * @returns number
      */
     z(): number {
-      assert(null !== this.bb, "BGFBAccessors.DVector3d.z(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 16);
+      return this.bb!.readFloat64(this.bb_pos + 16);
     }
 
     /**
@@ -302,6 +288,7 @@ export namespace BGFBAccessors {
       builder.writeFloat64(x);
       return builder.offset();
     }
+
   }
   /**
    * @constructor
@@ -325,8 +312,7 @@ export namespace BGFBAccessors {
      * @returns number
      */
     degrees(): number {
-      assert(null !== this.bb, "BGFBAccessors.Angle.degrees(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos);
+      return this.bb!.readFloat64(this.bb_pos);
     }
 
     /**
@@ -363,88 +349,77 @@ export namespace BGFBAccessors {
      * @returns number
      */
     centerX(): number {
-      assert(null !== this.bb, "BGFBAccessors.DEllipse3d.centerX(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos);
+      return this.bb!.readFloat64(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     centerY(): number {
-      assert(null !== this.bb, "BGFBAccessors.DEllipse3d.centerY(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 8);
+      return this.bb!.readFloat64(this.bb_pos + 8);
     }
 
     /**
      * @returns number
      */
     centerZ(): number {
-      assert(null !== this.bb, "BGFBAccessors.DEllipse3d.centerZ(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 16);
+      return this.bb!.readFloat64(this.bb_pos + 16);
     }
 
     /**
      * @returns number
      */
     vector0X(): number {
-      assert(null !== this.bb, "BGFBAccessors.DEllipse3d.vector0X(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 24);
+      return this.bb!.readFloat64(this.bb_pos + 24);
     }
 
     /**
      * @returns number
      */
     vector0Y(): number {
-      assert(null !== this.bb, "BGFBAccessors.DEllipse3d.vector0Y(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 32);
+      return this.bb!.readFloat64(this.bb_pos + 32);
     }
 
     /**
      * @returns number
      */
     vector0Z(): number {
-      assert(null !== this.bb, "BGFBAccessors.DEllipse3d.vector0Z(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 40);
+      return this.bb!.readFloat64(this.bb_pos + 40);
     }
 
     /**
      * @returns number
      */
     vector90X(): number {
-      assert(null !== this.bb, "BGFBAccessors.DEllipse3d.vector90X(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 48);
+      return this.bb!.readFloat64(this.bb_pos + 48);
     }
 
     /**
      * @returns number
      */
     vector90Y(): number {
-      assert(null !== this.bb, "BGFBAccessors.DEllipse3d.vector90Y(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 56);
+      return this.bb!.readFloat64(this.bb_pos + 56);
     }
 
     /**
      * @returns number
      */
     vector90Z(): number {
-      assert(null !== this.bb, "BGFBAccessors.DEllipse3d.vector90Z(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 64);
+      return this.bb!.readFloat64(this.bb_pos + 64);
     }
 
     /**
      * @returns number
      */
     startRadians(): number {
-      assert(null !== this.bb, "BGFBAccessors.DEllipse3d.startRadians(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 72);
+      return this.bb!.readFloat64(this.bb_pos + 72);
     }
 
     /**
      * @returns number
      */
     sweepRadians(): number {
-      assert(null !== this.bb, "BGFBAccessors.DEllipse3d.sweepRadians(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 80);
+      return this.bb!.readFloat64(this.bb_pos + 80);
     }
 
     /**
@@ -501,48 +476,42 @@ export namespace BGFBAccessors {
      * @returns number
      */
     point0X(): number {
-      assert(null !== this.bb, "BGFBAccessors.DSegment3d.point0X(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos);
+      return this.bb!.readFloat64(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     point0Y(): number {
-      assert(null !== this.bb, "BGFBAccessors.DSegment3d.point0Y(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 8);
+      return this.bb!.readFloat64(this.bb_pos + 8);
     }
 
     /**
      * @returns number
      */
     point0Z(): number {
-      assert(null !== this.bb, "BGFBAccessors.DSegment3d.point0Z(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 16);
+      return this.bb!.readFloat64(this.bb_pos + 16);
     }
 
     /**
      * @returns number
      */
     point1X(): number {
-      assert(null !== this.bb, "BGFBAccessors.DSegment3d.point1X(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 24);
+      return this.bb!.readFloat64(this.bb_pos + 24);
     }
 
     /**
      * @returns number
      */
     point1Y(): number {
-      assert(null !== this.bb, "BGFBAccessors.DSegment3d.point1Y(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 32);
+      return this.bb!.readFloat64(this.bb_pos + 32);
     }
 
     /**
      * @returns number
      */
     point1Z(): number {
-      assert(null !== this.bb, "BGFBAccessors.DSegment3d.point1Z(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 40);
+      return this.bb!.readFloat64(this.bb_pos + 40);
     }
 
     /**
@@ -589,96 +558,84 @@ export namespace BGFBAccessors {
      * @returns number
      */
     axx(): number {
-      assert(null !== this.bb, "BGFBAccessors.DTransform3d.axx(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos);
+      return this.bb!.readFloat64(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     axy(): number {
-      assert(null !== this.bb, "BGFBAccessors.DTransform3d.axy(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 8);
+      return this.bb!.readFloat64(this.bb_pos + 8);
     }
 
     /**
      * @returns number
      */
     axz(): number {
-      assert(null !== this.bb, "BGFBAccessors.DTransform3d.axz(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 16);
+      return this.bb!.readFloat64(this.bb_pos + 16);
     }
 
     /**
      * @returns number
      */
     axw(): number {
-      assert(null !== this.bb, "BGFBAccessors.DTransform3d.axw(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 24);
+      return this.bb!.readFloat64(this.bb_pos + 24);
     }
 
     /**
      * @returns number
      */
     ayx(): number {
-      assert(null !== this.bb, "BGFBAccessors.DTransform3d.ayx(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 32);
+      return this.bb!.readFloat64(this.bb_pos + 32);
     }
 
     /**
      * @returns number
      */
     ayy(): number {
-      assert(null !== this.bb, "BGFBAccessors.DTransform3d.ayy(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 40);
+      return this.bb!.readFloat64(this.bb_pos + 40);
     }
 
     /**
      * @returns number
      */
     ayz(): number {
-      assert(null !== this.bb, "BGFBAccessors.DTransform3d.ayz(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 48);
+      return this.bb!.readFloat64(this.bb_pos + 48);
     }
 
     /**
      * @returns number
      */
     ayw(): number {
-      assert(null !== this.bb, "BGFBAccessors.DTransform3d.ayw(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 56);
+      return this.bb!.readFloat64(this.bb_pos + 56);
     }
 
     /**
      * @returns number
      */
     azx(): number {
-      assert(null !== this.bb, "BGFBAccessors.DTransform3d.azx(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 64);
+      return this.bb!.readFloat64(this.bb_pos + 64);
     }
 
     /**
      * @returns number
      */
     azy(): number {
-      assert(null !== this.bb, "BGFBAccessors.DTransform3d.azy(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 72);
+      return this.bb!.readFloat64(this.bb_pos + 72);
     }
 
     /**
      * @returns number
      */
     azz(): number {
-      assert(null !== this.bb, "BGFBAccessors.DTransform3d.azz(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 80);
+      return this.bb!.readFloat64(this.bb_pos + 80);
     }
 
     /**
      * @returns number
      */
     azw(): number {
-      assert(null !== this.bb, "BGFBAccessors.DTransform3d.azw(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 88);
+      return this.bb!.readFloat64(this.bb_pos + 88);
     }
 
     /**
@@ -737,136 +694,119 @@ export namespace BGFBAccessors {
      * @returns number
      */
     baseOriginX(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnBoxDetail.baseOriginX(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos);
+      return this.bb!.readFloat64(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     baseOriginY(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnBoxDetail.baseOriginY(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 8);
+      return this.bb!.readFloat64(this.bb_pos + 8);
     }
 
     /**
      * @returns number
      */
     baseOriginZ(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnBoxDetail.baseOriginZ(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 16);
+      return this.bb!.readFloat64(this.bb_pos + 16);
     }
 
     /**
      * @returns number
      */
     topOriginX(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnBoxDetail.topOriginX(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 24);
+      return this.bb!.readFloat64(this.bb_pos + 24);
     }
 
     /**
      * @returns number
      */
     topOriginY(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnBoxDetail.topOriginY(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 32);
+      return this.bb!.readFloat64(this.bb_pos + 32);
     }
 
     /**
      * @returns number
      */
     topOriginZ(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnBoxDetail.topOriginZ(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 40);
+      return this.bb!.readFloat64(this.bb_pos + 40);
     }
 
     /**
      * @returns number
      */
     vectorXX(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnBoxDetail.vectorXX(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 48);
+      return this.bb!.readFloat64(this.bb_pos + 48);
     }
 
     /**
      * @returns number
      */
     vectorXY(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnBoxDetail.vectorXY(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 56);
+      return this.bb!.readFloat64(this.bb_pos + 56);
     }
 
     /**
      * @returns number
      */
     vectorXZ(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnBoxDetail.vectorXZ(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 64);
+      return this.bb!.readFloat64(this.bb_pos + 64);
     }
 
     /**
      * @returns number
      */
     vectorYX(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnBoxDetail.vectorYX(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 72);
+      return this.bb!.readFloat64(this.bb_pos + 72);
     }
 
     /**
      * @returns number
      */
     vectorYY(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnBoxDetail.vectorYY(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 80);
+      return this.bb!.readFloat64(this.bb_pos + 80);
     }
 
     /**
      * @returns number
      */
     vectorYZ(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnBoxDetail.vectorYZ(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 88);
+      return this.bb!.readFloat64(this.bb_pos + 88);
     }
 
     /**
      * @returns number
      */
     baseX(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnBoxDetail.baseX(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 96);
+      return this.bb!.readFloat64(this.bb_pos + 96);
     }
 
     /**
      * @returns number
      */
     baseY(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnBoxDetail.baseY(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 104);
+      return this.bb!.readFloat64(this.bb_pos + 104);
     }
 
     /**
      * @returns number
      */
     topX(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnBoxDetail.topX(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 112);
+      return this.bb!.readFloat64(this.bb_pos + 112);
     }
 
     /**
      * @returns number
      */
     topY(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnBoxDetail.topY(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 120);
+      return this.bb!.readFloat64(this.bb_pos + 120);
     }
 
     /**
      * @returns boolean
      */
     capped(): boolean {
-      assert(null !== this.bb, "BGFBAccessors.DgnBoxDetail.capped(): this.bb should be defined");
-      return !!this.bb.readInt8(this.bb_pos + 128);
+      return !!this.bb!.readInt8(this.bb_pos + 128);
     }
 
     /**
@@ -937,32 +877,28 @@ export namespace BGFBAccessors {
      * @returns DTransform3d|null
      */
     localToWorld(obj?: DTransform3d): DTransform3d | null {
-      assert(null !== this.bb, "BGFBAccessors.DgnSphereDetail.localToWorld(): this.bb should be defined");
-      return (obj || new DTransform3d()).__init(this.bb_pos, this.bb);
+      return (obj || new DTransform3d()).__init(this.bb_pos, this.bb!);
     }
 
     /**
      * @returns number
      */
     startLatitudeRadians(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnSphereDetail.startLatitudeRadians(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 96);
+      return this.bb!.readFloat64(this.bb_pos + 96);
     }
 
     /**
      * @returns number
      */
     latitudeSweepRadians(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnSphereDetail.latitudeSweepRadians(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 104);
+      return this.bb!.readFloat64(this.bb_pos + 104);
     }
 
     /**
      * @returns boolean
      */
     capped(): boolean {
-      assert(null !== this.bb, "BGFBAccessors.DgnSphereDetail.capped(): this.bb should be defined");
-      return !!this.bb.readInt8(this.bb_pos + 112);
+      return !!this.bb!.readInt8(this.bb_pos + 112);
     }
 
     /**
@@ -1029,120 +965,105 @@ export namespace BGFBAccessors {
      * @returns number
      */
     centerAX(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnConeDetail.centerAX(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos);
+      return this.bb!.readFloat64(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     centerAY(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnConeDetail.centerAY(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 8);
+      return this.bb!.readFloat64(this.bb_pos + 8);
     }
 
     /**
      * @returns number
      */
     centerAZ(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnConeDetail.centerAZ(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 16);
+      return this.bb!.readFloat64(this.bb_pos + 16);
     }
 
     /**
      * @returns number
      */
     centerBX(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnConeDetail.centerBX(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 24);
+      return this.bb!.readFloat64(this.bb_pos + 24);
     }
 
     /**
      * @returns number
      */
     centerBY(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnConeDetail.centerBY(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 32);
+      return this.bb!.readFloat64(this.bb_pos + 32);
     }
 
     /**
      * @returns number
      */
     centerBZ(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnConeDetail.centerBZ(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 40);
+      return this.bb!.readFloat64(this.bb_pos + 40);
     }
 
     /**
      * @returns number
      */
     vector0X(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnConeDetail.vector0X(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 48);
+      return this.bb!.readFloat64(this.bb_pos + 48);
     }
 
     /**
      * @returns number
      */
     vector0Y(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnConeDetail.vector0Y(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 56);
+      return this.bb!.readFloat64(this.bb_pos + 56);
     }
 
     /**
      * @returns number
      */
     vector0Z(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnConeDetail.vector0Z(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 64);
+      return this.bb!.readFloat64(this.bb_pos + 64);
     }
 
     /**
      * @returns number
      */
     vector90X(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnConeDetail.vector90X(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 72);
+      return this.bb!.readFloat64(this.bb_pos + 72);
     }
 
     /**
      * @returns number
      */
     vector90Y(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnConeDetail.vector90Y(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 80);
+      return this.bb!.readFloat64(this.bb_pos + 80);
     }
 
     /**
      * @returns number
      */
     vector90Z(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnConeDetail.vector90Z(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 88);
+      return this.bb!.readFloat64(this.bb_pos + 88);
     }
 
     /**
      * @returns number
      */
     radiusA(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnConeDetail.radiusA(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 96);
+      return this.bb!.readFloat64(this.bb_pos + 96);
     }
 
     /**
      * @returns number
      */
     radiusB(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnConeDetail.radiusB(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 104);
+      return this.bb!.readFloat64(this.bb_pos + 104);
     }
 
     /**
      * @returns boolean
      */
     capped(): boolean {
-      assert(null !== this.bb, "BGFBAccessors.DgnConeDetail.capped(): this.bb should be defined");
-      return !!this.bb.readInt8(this.bb_pos + 112);
+      return !!this.bb!.readInt8(this.bb_pos + 112);
     }
 
     /**
@@ -1208,104 +1129,91 @@ export namespace BGFBAccessors {
      * @returns number
      */
     centerX(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnTorusPipeDetail.centerX(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos);
+      return this.bb!.readFloat64(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     centerY(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnTorusPipeDetail.centerY(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 8);
+      return this.bb!.readFloat64(this.bb_pos + 8);
     }
 
     /**
      * @returns number
      */
     centerZ(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnTorusPipeDetail.centerZ(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 16);
+      return this.bb!.readFloat64(this.bb_pos + 16);
     }
 
     /**
      * @returns number
      */
     vectorXX(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnTorusPipeDetail.vectorXX(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 24);
+      return this.bb!.readFloat64(this.bb_pos + 24);
     }
 
     /**
      * @returns number
      */
     vectorXY(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnTorusPipeDetail.vectorXY(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 32);
+      return this.bb!.readFloat64(this.bb_pos + 32);
     }
 
     /**
      * @returns number
      */
     vectorXZ(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnTorusPipeDetail.vectorXZ(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 40);
+      return this.bb!.readFloat64(this.bb_pos + 40);
     }
 
     /**
      * @returns number
      */
     vectorYX(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnTorusPipeDetail.vectorYX(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 48);
+      return this.bb!.readFloat64(this.bb_pos + 48);
     }
 
     /**
      * @returns number
      */
     vectorYY(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnTorusPipeDetail.vectorYY(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 56);
+      return this.bb!.readFloat64(this.bb_pos + 56);
     }
 
     /**
      * @returns number
      */
     vectorYZ(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnTorusPipeDetail.vectorYZ(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 64);
+      return this.bb!.readFloat64(this.bb_pos + 64);
     }
 
     /**
      * @returns number
      */
     majorRadius(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnTorusPipeDetail.majorRadius(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 72);
+      return this.bb!.readFloat64(this.bb_pos + 72);
     }
 
     /**
      * @returns number
      */
     minorRadius(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnTorusPipeDetail.minorRadius(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 80);
+      return this.bb!.readFloat64(this.bb_pos + 80);
     }
 
     /**
      * @returns number
      */
     sweepRadians(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnTorusPipeDetail.sweepRadians(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 88);
+      return this.bb!.readFloat64(this.bb_pos + 88);
     }
 
     /**
      * @returns boolean
      */
     capped(): boolean {
-      assert(null !== this.bb, "BGFBAccessors.DgnTorusPipeDetail.capped(): this.bb should be defined");
-      return !!this.bb.readInt8(this.bb_pos + 96);
+      return !!this.bb!.readInt8(this.bb_pos + 96);
     }
 
     /**
@@ -1387,9 +1295,8 @@ export namespace BGFBAccessors {
      * @returns DSegment3d|null
      */
     segment(obj?: DSegment3d): DSegment3d | null {
-      assert(null !== this.bb, "BGFBAccessors.LineSegment.segment(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? (obj || new DSegment3d()).__init(this.bb_pos + offset, this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? (obj || new DSegment3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -1464,27 +1371,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     points(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.LineString.points(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
      * @returns number
      */
     pointsLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.LineString.pointsLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Float64Array
      */
     pointsArray(): Float64Array | null {
-      assert(null !== this.bb, "BGFBAccessors.LineString.pointsArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -1580,27 +1484,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     points(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.PointString.points(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
      * @returns number
      */
     pointsLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.PointString.pointsLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Float64Array
      */
     pointsArray(): Float64Array | null {
-      assert(null !== this.bb, "BGFBAccessors.PointString.pointsArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -1696,9 +1597,8 @@ export namespace BGFBAccessors {
      * @returns DEllipse3d|null
      */
     arc(obj?: DEllipse3d): DEllipse3d | null {
-      assert(null !== this.bb, "BGFBAccessors.EllipticArc.arc(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? (obj || new DEllipse3d()).__init(this.bb_pos + offset, this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? (obj || new DEllipse3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -1772,18 +1672,16 @@ export namespace BGFBAccessors {
      * @returns number
      */
     order(): number {
-      assert(null !== this.bb, "BGFBAccessors.BsplineCurve.order(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns boolean
      */
     closed(): boolean {
-      assert(null !== this.bb, "BGFBAccessors.BsplineCurve.closed(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? !!this.bb.readInt8(this.bb_pos + offset) : false;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
     }
 
     /**
@@ -1791,27 +1689,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     poles(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.BsplineCurve.poles(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 8);
-      return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 8);
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
      * @returns number
      */
     polesLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.BsplineCurve.polesLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 8);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 8);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Float64Array
      */
     polesArray(): Float64Array | null {
-      assert(null !== this.bb, "BGFBAccessors.BsplineCurve.polesArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 8);
-      return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 8);
+      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -1819,27 +1714,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     weights(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.BsplineCurve.weights(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 10);
-      return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 10);
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
      * @returns number
      */
     weightsLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.BsplineCurve.weightsLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 10);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 10);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Float64Array
      */
     weightsArray(): Float64Array | null {
-      assert(null !== this.bb, "BGFBAccessors.BsplineCurve.weightsArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 10);
-      return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 10);
+      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -1847,27 +1739,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     knots(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.BsplineCurve.knots(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 12);
-      return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 12);
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
      * @returns number
      */
     knotsLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.BsplineCurve.knotsLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 12);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 12);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Float64Array
      */
     knotsArray(): Float64Array | null {
-      assert(null !== this.bb, "BGFBAccessors.BsplineCurve.knotsArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 12);
-      return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 12);
+      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -2040,54 +1929,48 @@ export namespace BGFBAccessors {
      * @returns number
      */
     order(): number {
-      assert(null !== this.bb, "BGFBAccessors.InterpolationCurve.order(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns boolean
      */
     closed(): boolean {
-      assert(null !== this.bb, "BGFBAccessors.InterpolationCurve.closed(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? !!this.bb.readInt8(this.bb_pos + offset) : false;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
     }
 
     /**
      * @returns number
      */
     isChordLenKnots(): number {
-      assert(null !== this.bb, "BGFBAccessors.InterpolationCurve.isChordLenKnots(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 8);
-      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 8);
+      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     isColinearTangents(): number {
-      assert(null !== this.bb, "BGFBAccessors.InterpolationCurve.isColinearTangents(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 10);
-      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 10);
+      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     isChordLenTangents(): number {
-      assert(null !== this.bb, "BGFBAccessors.InterpolationCurve.isChordLenTangents(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 12);
-      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 12);
+      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     isNaturalTangents(): number {
-      assert(null !== this.bb, "BGFBAccessors.InterpolationCurve.isNaturalTangents(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 14);
-      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 14);
+      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
@@ -2095,9 +1978,8 @@ export namespace BGFBAccessors {
      * @returns DVector3d|null
      */
     startTangent(obj?: DVector3d): DVector3d | null {
-      assert(null !== this.bb, "BGFBAccessors.InterpolationCurve.startTangent(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 16);
-      return offset ? (obj || new DVector3d()).__init(this.bb_pos + offset, this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 16);
+      return offset ? (obj || new DVector3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -2105,9 +1987,8 @@ export namespace BGFBAccessors {
      * @returns DVector3d|null
      */
     endTangent(obj?: DVector3d): DVector3d | null {
-      assert(null !== this.bb, "BGFBAccessors.InterpolationCurve.endTangent(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 18);
-      return offset ? (obj || new DVector3d()).__init(this.bb_pos + offset, this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 18);
+      return offset ? (obj || new DVector3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -2115,27 +1996,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     fitPoints(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.InterpolationCurve.fitPoints(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 20);
-      return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 20);
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
      * @returns number
      */
     fitPointsLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.InterpolationCurve.fitPointsLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 20);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 20);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Float64Array
      */
     fitPointsArray(): Float64Array | null {
-      assert(null !== this.bb, "BGFBAccessors.InterpolationCurve.fitPointsArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 20);
-      return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 20);
+      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -2143,27 +2021,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     knots(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.InterpolationCurve.knots(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 22);
-      return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 22);
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
      * @returns number
      */
     knotsLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.InterpolationCurve.knotsLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 22);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 22);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Float64Array
      */
     knotsArray(): Float64Array | null {
-      assert(null !== this.bb, "BGFBAccessors.InterpolationCurve.fitPointsArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 22);
-      return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 22);
+      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -2361,27 +2236,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     points(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.AkimaCurve.points(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
      * @returns number
      */
     pointsLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.AkimaCurve.pointsLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Float64Array
      */
     pointsArray(): Float64Array | null {
-      assert(null !== this.bb, "BGFBAccessors.AkimaCurve.pointsArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -2476,9 +2348,8 @@ export namespace BGFBAccessors {
      * @returns number
      */
     a(): number {
-      assert(null !== this.bb, "BGFBAccessors.CatenaryCurve.a(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
@@ -2486,9 +2357,8 @@ export namespace BGFBAccessors {
      * @returns DPoint3d|null
      */
     origin(obj?: DPoint3d): DPoint3d | null {
-      assert(null !== this.bb, "BGFBAccessors.CatenaryCurve.origin(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -2496,9 +2366,8 @@ export namespace BGFBAccessors {
      * @returns DVector3d|null
      */
     vectorU(obj?: DVector3d): DVector3d | null {
-      assert(null !== this.bb, "BGFBAccessors.CatenaryCurve.vectorU(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 8);
-      return offset ? (obj || new DVector3d()).__init(this.bb_pos + offset, this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 8);
+      return offset ? (obj || new DVector3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -2506,27 +2375,24 @@ export namespace BGFBAccessors {
      * @returns DVector3d|null
      */
     vectorV(obj?: DVector3d): DVector3d | null {
-      assert(null !== this.bb, "BGFBAccessors.CatenaryCurve.vectorV(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 10);
-      return offset ? (obj || new DVector3d()).__init(this.bb_pos + offset, this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 10);
+      return offset ? (obj || new DVector3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
      * @returns number
      */
     x0(): number {
-      assert(null !== this.bb, "BGFBAccessors.CatenaryCurve.x0(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 12);
-      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+      const offset = this.bb!.__offset(this.bb_pos, 12);
+      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     x1(): number {
-      assert(null !== this.bb, "BGFBAccessors.CatenaryCurve.x1(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 14);
-      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+      const offset = this.bb!.__offset(this.bb_pos, 14);
+      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
@@ -2645,18 +2511,16 @@ export namespace BGFBAccessors {
      * @returns number
      */
     fraction0(): number {
-      assert(null !== this.bb, "BGFBAccessors.PartialCurve.fraction0(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     fraction1(): number {
-      assert(null !== this.bb, "BGFBAccessors.PartialCurve.fraction1(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
@@ -2664,9 +2528,8 @@ export namespace BGFBAccessors {
      * @returns VariantGeometry|null
      */
     target(obj?: VariantGeometry): VariantGeometry | null {
-      assert(null !== this.bb, "BGFBAccessors.PartialCurve.target(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 8);
-      return offset ? (obj || new VariantGeometry()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 8);
+      return offset ? (obj || new VariantGeometry()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
     }
 
     /**
@@ -2758,27 +2621,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     type(): number {
-      assert(null !== this.bb, "BGFBAccessors.CurvePrimitiveId.type(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.readInt16(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.readInt16(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     geomIndex(): number {
-      assert(null !== this.bb, "BGFBAccessors.CurvePrimitiveId.geomIndex(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? this.bb.readInt16(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? this.bb!.readInt16(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     partIndex(): number {
-      assert(null !== this.bb, "BGFBAccessors.CurvePrimitiveId.partIndex(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 8);
-      return offset ? this.bb.readInt16(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 8);
+      return offset ? this.bb!.readInt16(this.bb_pos + offset) : 0;
     }
 
     /**
@@ -2786,27 +2646,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     bytes(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.CurvePrimitiveId.bytes(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 10);
-      return offset ? this.bb.readUint8(this.bb.__vector(this.bb_pos + offset) + index) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 10);
+      return offset ? this.bb!.readUint8(this.bb!.__vector(this.bb_pos + offset) + index) : 0;
     }
 
     /**
      * @returns number
      */
     bytesLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.CurvePrimitiveId.bytesLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 10);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 10);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Uint8Array
      */
     bytesArray(): Uint8Array | null {
-      assert(null !== this.bb, "BGFBAccessors.CurvePrimitiveId.bytesArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 10);
-      return offset ? new Uint8Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 10);
+      return offset ? new Uint8Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -2928,9 +2785,8 @@ export namespace BGFBAccessors {
      * @returns number
      */
     type(): number {
-      assert(null !== this.bb, "BGFBAccessors.CurveVector.type(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
@@ -2939,18 +2795,16 @@ export namespace BGFBAccessors {
      * @returns VariantGeometry
      */
     curves(index: number, obj?: VariantGeometry): VariantGeometry | null {
-      assert(null !== this.bb, "BGFBAccessors.CurveVector.curves(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? (obj || new VariantGeometry()).__init(this.bb.__indirect(this.bb.__vector(this.bb_pos + offset) + index * 4), this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? (obj || new VariantGeometry()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
     }
 
     /**
      * @returns number
      */
     curvesLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.CurveVector.curvesLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
@@ -3056,18 +2910,16 @@ export namespace BGFBAccessors {
      * @returns VariantGeometry
      */
     members(index: number, obj?: VariantGeometry): VariantGeometry | null {
-      assert(null !== this.bb, "BGFBAccessors.VectorOfVariantGeometry.members(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? (obj || new VariantGeometry()).__init(this.bb.__indirect(this.bb.__vector(this.bb_pos + offset) + index * 4), this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? (obj || new VariantGeometry()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
     }
 
     /**
      * @returns number
      */
     membersLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.VectorOfVariantGeometry.membersLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
@@ -3163,27 +3015,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     poles(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.BsplineSurface.poles(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
      * @returns number
      */
     polesLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.BsplineSurface.polesLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Float64Array
      */
     polesArray(): Float64Array | null {
-      assert(null !== this.bb, "BGFBAccessors.BsplineSurface.polesArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -3191,27 +3040,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     weights(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.BsplineSurface.weights(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
      * @returns number
      */
     weightsLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.BsplineSurface.weightsLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Float64Array
      */
     weightsArray(): Float64Array | null {
-      assert(null !== this.bb, "BGFBAccessors.BsplineSurface.weightsArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -3219,27 +3065,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     knotsU(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.BsplineSurface.knotsU(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 8);
-      return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 8);
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
      * @returns number
      */
     knotsULength(): number {
-      assert(null !== this.bb, "BGFBAccessors.BsplineSurface.knotsULength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 8);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 8);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Float64Array
      */
     knotsUArray(): Float64Array | null {
-      assert(null !== this.bb, "BGFBAccessors.BsplineSurface.knotsUArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 8);
-      return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 8);
+      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -3247,90 +3090,80 @@ export namespace BGFBAccessors {
      * @returns number
      */
     knotsV(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.BsplineSurface.knotsV(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 10);
-      return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 10);
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
      * @returns number
      */
     knotsVLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.BsplineSurface.knotsVLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 10);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 10);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Float64Array
      */
     knotsVArray(): Float64Array | null {
-      assert(null !== this.bb, "BGFBAccessors.BsplineSurface.knotsVArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 10);
-      return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 10);
+      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
      * @returns number
      */
     numPolesU(): number {
-      assert(null !== this.bb, "BGFBAccessors.BsplineSurface.numPolesU(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 12);
-      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 12);
+      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     numPolesV(): number {
-      assert(null !== this.bb, "BGFBAccessors.BsplineSurface.numPolesV(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 14);
-      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 14);
+      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     orderU(): number {
-      assert(null !== this.bb, "BGFBAccessors.BsplineSurface.orderU(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 16);
-      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 16);
+      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     orderV(): number {
-      assert(null !== this.bb, "BGFBAccessors.BsplineSurface.orderV(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 18);
-      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 18);
+      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     numRulesU(): number {
-      assert(null !== this.bb, "BGFBAccessors.BsplineSurface.numRulesU(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 20);
-      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 20);
+      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     numRulesV(): number {
-      assert(null !== this.bb, "BGFBAccessors.BsplineSurface.numRulesV(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 22);
-      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 22);
+      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     holeOrigin(): number {
-      assert(null !== this.bb, "BGFBAccessors.BsplineSurface.holeOrigin(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 24);
-      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 24);
+      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
@@ -3338,27 +3171,24 @@ export namespace BGFBAccessors {
      * @returns CurveVector|null
      */
     boundaries(obj?: CurveVector): CurveVector | null {
-      assert(null !== this.bb, "BGFBAccessors.BsplineSurface.boundaries(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 26);
-      return offset ? (obj || new CurveVector()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 26);
+      return offset ? (obj || new CurveVector()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
     }
 
     /**
      * @returns boolean
      */
     closedU(): boolean {
-      assert(null !== this.bb, "BGFBAccessors.BsplineSurface.closedU(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 28);
-      return offset ? !!this.bb.readInt8(this.bb_pos + offset) : false;
+      const offset = this.bb!.__offset(this.bb_pos, 28);
+      return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
     }
 
     /**
      * @returns boolean
      */
     closedV(): boolean {
-      assert(null !== this.bb, "BGFBAccessors.BsplineSurface.closedV(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 30);
-      return offset ? !!this.bb.readInt8(this.bb_pos + offset) : false;
+      const offset = this.bb!.__offset(this.bb_pos, 30);
+      return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
     }
 
     /**
@@ -3634,9 +3464,8 @@ export namespace BGFBAccessors {
      * @returns DgnBoxDetail|null
      */
     detail(obj?: DgnBoxDetail): DgnBoxDetail | null {
-      assert(null !== this.bb, "BGFBAccessors.DgnBox.detail(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? (obj || new DgnBoxDetail()).__init(this.bb_pos + offset, this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? (obj || new DgnBoxDetail()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -3711,9 +3540,8 @@ export namespace BGFBAccessors {
      * @returns DgnSphereDetail|null
      */
     detail(obj?: DgnSphereDetail): DgnSphereDetail | null {
-      assert(null !== this.bb, "BGFBAccessors.DgnSphere.detail(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? (obj || new DgnSphereDetail()).__init(this.bb_pos + offset, this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? (obj || new DgnSphereDetail()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -3788,9 +3616,8 @@ export namespace BGFBAccessors {
      * @returns DgnConeDetail|null
      */
     detail(obj?: DgnConeDetail): DgnConeDetail | null {
-      assert(null !== this.bb, "BGFBAccessors.DgnCone.detail(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? (obj || new DgnConeDetail()).__init(this.bb_pos + offset, this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? (obj || new DgnConeDetail()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -3865,9 +3692,8 @@ export namespace BGFBAccessors {
      * @returns DgnTorusPipeDetail|null
      */
     detail(obj?: DgnTorusPipeDetail): DgnTorusPipeDetail | null {
-      assert(null !== this.bb, "BGFBAccessors.DgnTorusPipe.detail(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? (obj || new DgnTorusPipeDetail()).__init(this.bb_pos + offset, this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? (obj || new DgnTorusPipeDetail()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -3942,9 +3768,8 @@ export namespace BGFBAccessors {
      * @returns CurveVector|null
      */
     baseCurve(obj?: CurveVector): CurveVector | null {
-      assert(null !== this.bb, "BGFBAccessors.DgnExtrusion.baseCurve(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? (obj || new CurveVector()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? (obj || new CurveVector()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
     }
 
     /**
@@ -3952,18 +3777,16 @@ export namespace BGFBAccessors {
      * @returns DVector3d|null
      */
     extrusionVector(obj?: DVector3d): DVector3d | null {
-      assert(null !== this.bb, "BGFBAccessors.DgnExtrusion.extrusionVector(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? (obj || new DVector3d()).__init(this.bb_pos + offset, this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? (obj || new DVector3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
      * @returns boolean
      */
     capped(): boolean {
-      assert(null !== this.bb, "BGFBAccessors.DgnExtrusion.capped(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 8);
-      return offset ? !!this.bb.readInt8(this.bb_pos + offset) : false;
+      const offset = this.bb!.__offset(this.bb_pos, 8);
+      return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
     }
 
     /**
@@ -4056,9 +3879,8 @@ export namespace BGFBAccessors {
      * @returns CurveVector|null
      */
     baseCurve(obj?: CurveVector): CurveVector | null {
-      assert(null !== this.bb, "BGFBAccessors.DgnRotationalSweep.baseCurve(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? (obj || new CurveVector()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? (obj || new CurveVector()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
     }
 
     /**
@@ -4066,36 +3888,32 @@ export namespace BGFBAccessors {
      * @returns DRay3d|null
      */
     axis(obj?: DRay3d): DRay3d | null {
-      assert(null !== this.bb, "BGFBAccessors.DgnRotationalSweep.axis(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? (obj || new DRay3d()).__init(this.bb_pos + offset, this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? (obj || new DRay3d()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
      * @returns number
      */
     sweepRadians(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnRotationalSweep.sweepRadians(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 8);
-      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+      const offset = this.bb!.__offset(this.bb_pos, 8);
+      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
      * @returns number
      */
     numVRules(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnRotationalSweep.numVRules(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 10);
-      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 10);
+      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns boolean
      */
     capped(): boolean {
-      assert(null !== this.bb, "BGFBAccessors.DgnRotationalSweep.capped(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 12);
-      return offset ? !!this.bb.readInt8(this.bb_pos + offset) : false;
+      const offset = this.bb!.__offset(this.bb_pos, 12);
+      return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
     }
 
     /**
@@ -4207,27 +4025,24 @@ export namespace BGFBAccessors {
      * @returns CurveVector
      */
     curves(index: number, obj?: CurveVector): CurveVector | null {
-      assert(null !== this.bb, "BGFBAccessors.DgnRuledSweep.curves(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? (obj || new CurveVector()).__init(this.bb.__indirect(this.bb.__vector(this.bb_pos + offset) + index * 4), this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? (obj || new CurveVector()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
     }
 
     /**
      * @returns number
      */
     curvesLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.DgnRuledSweep.curvesLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns boolean
      */
     capped(): boolean {
-      assert(null !== this.bb, "BGFBAccessors.DgnRuledSweep.capped(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? !!this.bb.readInt8(this.bb_pos + offset) : false;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
     }
 
     /**
@@ -4331,9 +4146,8 @@ export namespace BGFBAccessors {
      * @returns number
      */
     input(): number {
-      assert(null !== this.bb, "BGFBAccessors.PolyfaceAuxChannelData.input(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.readFloat64(this.bb_pos + offset) : 0.0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
     }
 
     /**
@@ -4341,27 +4155,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     values(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.PolyfaceAuxChannelData.values(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
      * @returns number
      */
     valuesLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.PolyfaceAuxChannelData.valuesLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Float64Array
      */
     valuesArray(): Float64Array | null {
-      assert(null !== this.bb, "BGFBAccessors.PolyfaceAuxChannelData.valuesArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -4465,9 +4276,8 @@ export namespace BGFBAccessors {
      * @returns number
      */
     dataType(): number {
-      assert(null !== this.bb, "BGFBAccessors.PolyfaceAuxChannel.dataType(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
@@ -4477,9 +4287,8 @@ export namespace BGFBAccessors {
     name(): string | null;
     name(optionalEncoding: flatbuffers.Encoding): string | Uint8Array | null;
     name(optionalEncoding?: any): string | Uint8Array | null {
-      assert(null !== this.bb, "BGFBAccessors.PolyfaceAuxChannel.name(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? this.bb.__string(this.bb_pos + offset, optionalEncoding) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
     }
 
     /**
@@ -4489,9 +4298,8 @@ export namespace BGFBAccessors {
     inputName(): string | null;
     inputName(optionalEncoding: flatbuffers.Encoding): string | Uint8Array | null;
     inputName(optionalEncoding?: any): string | Uint8Array | null {
-      assert(null !== this.bb, "BGFBAccessors.PolyfaceAuxChannel.inputName(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 8);
-      return offset ? this.bb.__string(this.bb_pos + offset, optionalEncoding) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 8);
+      return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
     }
 
     /**
@@ -4500,18 +4308,16 @@ export namespace BGFBAccessors {
      * @returns PolyfaceAuxChannelData
      */
     data(index: number, obj?: PolyfaceAuxChannelData): PolyfaceAuxChannelData | null {
-      assert(null !== this.bb, "BGFBAccessors.PolyfaceAuxChannel.data(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 10);
-      return offset ? (obj || new PolyfaceAuxChannelData()).__init(this.bb.__indirect(this.bb.__vector(this.bb_pos + offset) + index * 4), this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 10);
+      return offset ? (obj || new PolyfaceAuxChannelData()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
     }
 
     /**
      * @returns number
      */
     dataLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.PolyfaceAuxChannel.dataLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 10);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 10);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
@@ -4634,27 +4440,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     indices(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.PolyfaceAuxData.indices(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
      * @returns number
      */
     indicesLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.PolyfaceAuxData.indicesLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Int32Array
      */
     indicesArray(): Int32Array | null {
-      assert(null !== this.bb, "BGFBAccessors.PolyfaceAuxData.indicesArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -4663,18 +4466,16 @@ export namespace BGFBAccessors {
      * @returns PolyfaceAuxChannel
      */
     channels(index: number, obj?: PolyfaceAuxChannel): PolyfaceAuxChannel | null {
-      assert(null !== this.bb, "BGFBAccessors.PolyfaceAuxData.channels(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? (obj || new PolyfaceAuxChannel()).__init(this.bb.__indirect(this.bb.__vector(this.bb_pos + offset) + index * 4), this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? (obj || new PolyfaceAuxChannel()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
     }
 
     /**
      * @returns number
      */
     channelsLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.PolyfaceAuxData.channelsLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
@@ -4799,18 +4600,16 @@ export namespace BGFBAccessors {
      * @returns number
      */
     tagA(): number {
-      assert(null !== this.bb, "BGFBAccessors.TaggedNumericData.tagA(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     tagB(): number {
-      assert(null !== this.bb, "BGFBAccessors.TaggedNumericData.tagB(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
@@ -4818,27 +4617,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     intData(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.TaggedNumericData.intData(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 8);
-      return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 8);
+      return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
      * @returns number
      */
     intDataLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.TaggedNumericData.intDataLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 8);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 8);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Int32Array
      */
     intDataArray(): Int32Array | null {
-      assert(null !== this.bb, "BGFBAccessors.TaggedNumericData.intDataArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 8);
-      return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 8);
+      return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -4846,27 +4642,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     doubleData(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.TaggedNumericData.doubleData(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 10);
-      return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 10);
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
      * @returns number
      */
     doubleDataLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.TaggedNumericData.doubleDataLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 10);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 10);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Float64Array
      */
     doubleDataArray(): Float64Array | null {
-      assert(null !== this.bb, "BGFBAccessors.TaggedNumericData.doubleDataArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 10);
-      return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 10);
+      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -5010,27 +4803,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     point(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.point(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
      * @returns number
      */
     pointLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.pointLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Float64Array
      */
     pointArray(): Float64Array | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.pointArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -5038,27 +4828,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     param(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.param(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
      * @returns number
      */
     paramLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.paramLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Float64Array
      */
     paramArray(): Float64Array | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.paramArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -5066,27 +4853,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     normal(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.normal(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 8);
-      return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 8);
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
      * @returns number
      */
     normalLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.normalLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 8);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 8);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Float64Array
      */
     normalArray(): Float64Array | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.normalArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 8);
-      return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 8);
+      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -5094,27 +4878,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     doubleColor(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.doubleColor(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 10);
-      return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 10);
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
      * @returns number
      */
     doubleColorLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.doubleColorLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 10);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 10);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Float64Array
      */
     doubleColorArray(): Float64Array | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.doubleColorArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 10);
-      return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 10);
+      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -5122,27 +4903,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     intColor(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.intColor(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 12);
-      return offset ? this.bb.readUint32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 12);
+      return offset ? this.bb!.readUint32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
      * @returns number
      */
     intColorLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.intColorLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 12);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 12);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Uint32Array
      */
     intColorArray(): Uint32Array | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.intColorArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 12);
-      return offset ? new Uint32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 12);
+      return offset ? new Uint32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -5150,27 +4928,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     pointIndex(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.pointIndex(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 14);
-      return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 14);
+      return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
      * @returns number
      */
     pointIndexLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.pointIndexLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 14);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 14);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Int32Array
      */
     pointIndexArray(): Int32Array | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.pointIndexArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 14);
-      return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 14);
+      return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -5178,27 +4953,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     paramIndex(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.paramIndex(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 16);
-      return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 16);
+      return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
      * @returns number
      */
     paramIndexLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.paramIndexLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 16);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 16);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Int32Array
      */
     paramIndexArray(): Int32Array | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.paramIndexArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 16);
-      return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 16);
+      return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -5206,27 +4978,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     normalIndex(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.normalIndex(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 18);
-      return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 18);
+      return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
      * @returns number
      */
     normalIndexLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.normalIndexLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 18);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 18);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Int32Array
      */
     normalIndexArray(): Int32Array | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.normalIndexArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 18);
-      return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 18);
+      return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -5234,27 +5003,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     colorIndex(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.colorIndex(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 20);
-      return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 20);
+      return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
      * @returns number
      */
     colorIndexLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.colorIndexLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 20);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 20);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Int32Array
      */
     colorIndexArray(): Int32Array | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.colorIndexArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 20);
-      return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 20);
+      return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -5262,63 +5028,56 @@ export namespace BGFBAccessors {
      * @returns number
      */
     colorTable(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.colorTable(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 22);
-      return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 22);
+      return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
      * @returns number
      */
     colorTableLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.colorTableLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 22);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 22);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Int32Array
      */
     colorTableArray(): Int32Array | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.colorTableArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 22);
-      return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 22);
+      return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
      * @returns number
      */
     numPerFace(): number {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.numPerFace(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 24);
-      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 24);
+      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     numPerRow(): number {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.numPerRow(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 26);
-      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 26);
+      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns number
      */
     meshStyle(): number {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.meshStyle(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 28);
-      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 28);
+      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns boolean
      */
     twoSided(): boolean {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.twoSided(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 30);
-      return offset ? !!this.bb.readInt8(this.bb_pos + offset) : false;
+      const offset = this.bb!.__offset(this.bb_pos, 30);
+      return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
     }
 
     /**
@@ -5326,27 +5085,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     faceIndex(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.faceIndex(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 32);
-      return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 32);
+      return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
      * @returns number
      */
     faceIndexLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.faceIndexLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 32);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 32);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Int32Array
      */
     faceIndexArray(): Int32Array | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.faceIndexArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 32);
-      return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 32);
+      return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -5354,27 +5110,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     faceData(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.faceData(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 34);
-      return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 34);
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
      * @returns number
      */
     faceDataLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.faceDataLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 34);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 34);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Float64Array
      */
     faceDataArray(): Float64Array | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.faceDataArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 34);
-      return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 34);
+      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -5382,18 +5135,16 @@ export namespace BGFBAccessors {
      * @returns PolyfaceAuxData|null
      */
     auxData(obj?: PolyfaceAuxData): PolyfaceAuxData | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.auxData(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 36);
-      return offset ? (obj || new PolyfaceAuxData()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 36);
+      return offset ? (obj || new PolyfaceAuxData()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
     }
 
     /**
      * @returns number
      */
     expectedClosure(): number {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.expectedClosure(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 38);
-      return offset ? this.bb.readInt32(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 38);
+      return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
     }
 
     /**
@@ -5401,9 +5152,8 @@ export namespace BGFBAccessors {
      * @returns TaggedNumericData|null
      */
     taggedNumericData(obj?: TaggedNumericData): TaggedNumericData | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.taggedNumericData(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 40);
-      return offset ? (obj || new TaggedNumericData()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 40);
+      return offset ? (obj || new TaggedNumericData()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
     }
 
     /**
@@ -5411,27 +5161,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     edgeMateIndex(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.edgeMateIndex(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 42);
-      return offset ? this.bb.readInt32(this.bb.__vector(this.bb_pos + offset) + index * 4) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 42);
+      return offset ? this.bb!.readInt32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
     }
 
     /**
      * @returns number
      */
     edgeMateIndexLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.edgeMateIndexLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 42);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 42);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Int32Array
      */
     edgeMateIndexArray(): Int32Array | null {
-      assert(null !== this.bb, "BGFBAccessors.Polyface.edgeMateIndexArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 42);
-      return offset ? new Int32Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 42);
+      return offset ? new Int32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -5931,72 +5678,63 @@ export namespace BGFBAccessors {
      * @returns DTransform3d|null
      */
     transform(obj?: DTransform3d): DTransform3d | null {
-      assert(null !== this.bb, "BGFBAccessors.TransitionSpiralDetail.transform(): this.bb should be defined");
-      return (obj || new DTransform3d()).__init(this.bb_pos, this.bb);
+      return (obj || new DTransform3d()).__init(this.bb_pos, this.bb!);
     }
 
     /**
      * @returns number
      */
     fractionA(): number {
-      assert(null !== this.bb, "BGFBAccessors.TransitionSpiralDetail.fractionA(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 96);
+      return this.bb!.readFloat64(this.bb_pos + 96);
     }
 
     /**
      * @returns number
      */
     fractionB(): number {
-      assert(null !== this.bb, "BGFBAccessors.TransitionSpiralDetail.fractionB(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 104);
+      return this.bb!.readFloat64(this.bb_pos + 104);
     }
 
     /**
      * @returns number
      */
     bearing0Radians(): number {
-      assert(null !== this.bb, "BGFBAccessors.TransitionSpiralDetail.bearing0Radians(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 112);
+      return this.bb!.readFloat64(this.bb_pos + 112);
     }
 
     /**
      * @returns number
      */
     bearing1Radians(): number {
-      assert(null !== this.bb, "BGFBAccessors.TransitionSpiralDetail.bearing1Radians(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 120);
+      return this.bb!.readFloat64(this.bb_pos + 120);
     }
 
     /**
      * @returns number
      */
     curvature0(): number {
-      assert(null !== this.bb, "BGFBAccessors.TransitionSpiralDetail.curvature0(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 128);
+      return this.bb!.readFloat64(this.bb_pos + 128);
     }
 
     /**
      * @returns number
      */
     curvature1(): number {
-      assert(null !== this.bb, "BGFBAccessors.TransitionSpiralDetail.curvature1(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 136);
+      return this.bb!.readFloat64(this.bb_pos + 136);
     }
 
     /**
      * @returns number
      */
     spiralType(): number {
-      assert(null !== this.bb, "BGFBAccessors.TransitionSpiralDetail.spiralType(): this.bb should be defined");
-      return this.bb.readInt32(this.bb_pos + 144);
+      return this.bb!.readInt32(this.bb_pos + 144);
     }
 
     /**
      * @returns number
      */
     constructionHint(): number {
-      assert(null !== this.bb, "BGFBAccessors.TransitionSpiralDetail.constructionHint(): this.bb should be defined");
-      return this.bb.readInt32(this.bb_pos + 148);
+      return this.bb!.readInt32(this.bb_pos + 148);
     }
 
     /**
@@ -6072,48 +5810,42 @@ export namespace BGFBAccessors {
      * @returns number
      */
     nominalLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.DirectSpiralDetail.nominalLength(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos);
+      return this.bb!.readFloat64(this.bb_pos);
     }
 
     /**
      * @returns number
      */
     trueLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.DirectSpiralDetail.trueLength(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 8);
+      return this.bb!.readFloat64(this.bb_pos + 8);
     }
 
     /**
      * @returns number
      */
     doubleTag0(): number {
-      assert(null !== this.bb, "BGFBAccessors.DirectSpiralDetail.doubleTag0(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 16);
+      return this.bb!.readFloat64(this.bb_pos + 16);
     }
 
     /**
      * @returns number
      */
     doubleTag1(): number {
-      assert(null !== this.bb, "BGFBAccessors.DirectSpiralDetail.doubleTag1(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 24);
+      return this.bb!.readFloat64(this.bb_pos + 24);
     }
 
     /**
      * @returns number
      */
     intTag0(): number {
-      assert(null !== this.bb, "BGFBAccessors.DirectSpiralDetail.intTag0(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 32);
+      return this.bb!.readFloat64(this.bb_pos + 32);
     }
 
     /**
      * @returns number
      */
     intTag1(): number {
-      assert(null !== this.bb, "BGFBAccessors.DirectSpiralDetail.intTag1(): this.bb should be defined");
-      return this.bb.readFloat64(this.bb_pos + 40);
+      return this.bb!.readFloat64(this.bb_pos + 40);
     }
 
     /**
@@ -6180,9 +5912,8 @@ export namespace BGFBAccessors {
      * @returns TransitionSpiralDetail|null
      */
     detail(obj?: TransitionSpiralDetail): TransitionSpiralDetail | null {
-      assert(null !== this.bb, "BGFBAccessors.TransitionSpiral.detail(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? (obj || new TransitionSpiralDetail()).__init(this.bb_pos + offset, this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? (obj || new TransitionSpiralDetail()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -6190,27 +5921,24 @@ export namespace BGFBAccessors {
      * @returns number
      */
     extraData(index: number): number | null {
-      assert(null !== this.bb, "BGFBAccessors.TransitionSpiral.extraData(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? this.bb.readFloat64(this.bb.__vector(this.bb_pos + offset) + index * 8) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
     }
 
     /**
      * @returns number
      */
     extraDataLength(): number {
-      assert(null !== this.bb, "BGFBAccessors.TransitionSpiral.extraDataLength(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? this.bb.__vector_len(this.bb_pos + offset) : 0;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
     }
 
     /**
      * @returns Float64Array
      */
     extraDataArray(): Float64Array | null {
-      assert(null !== this.bb, "BGFBAccessors.TransitionSpiral.extraDataArray(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? new Float64Array(this.bb.bytes().buffer, this.bb.bytes().byteOffset + this.bb.__vector(this.bb_pos + offset), this.bb.__vector_len(this.bb_pos + offset)) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
     }
 
     /**
@@ -6218,9 +5946,8 @@ export namespace BGFBAccessors {
      * @returns DirectSpiralDetail|null
      */
     directDetail(obj?: DirectSpiralDetail): DirectSpiralDetail | null {
-      assert(null !== this.bb, "BGFBAccessors.TransitionSpiral.directDetail(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 8);
-      return offset ? (obj || new DirectSpiralDetail()).__init(this.bb_pos + offset, this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 8);
+      return offset ? (obj || new DirectSpiralDetail()).__init(this.bb_pos + offset, this.bb!) : null;
     }
 
     /**
@@ -6333,9 +6060,8 @@ export namespace BGFBAccessors {
      * @returns VariantGeometryUnion
      */
     geometryType(): VariantGeometryUnion {
-      assert(null !== this.bb, "BGFBAccessors.VariantGeometry.geometryType(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 4);
-      return offset ? /**  */ (this.bb.readUint8(this.bb_pos + offset)) : VariantGeometryUnion.tagNONE;
+      const offset = this.bb!.__offset(this.bb_pos, 4);
+      return offset ? /**  */ (this.bb!.readUint8(this.bb_pos + offset)) : VariantGeometryUnion.tagNONE;
     }
 
     /**
@@ -6343,9 +6069,8 @@ export namespace BGFBAccessors {
      * @returns ?flatbuffers.Table
      */
     geometry<T extends flatbuffers.Table>(obj: T): T | null {
-      assert(null !== this.bb, "BGFBAccessors.VariantGeometry.geometry(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 6);
-      return offset ? this.bb.__union(obj, this.bb_pos + offset) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 6);
+      return offset ? this.bb!.__union(obj, this.bb_pos + offset) : null;
     }
 
     /**
@@ -6353,9 +6078,8 @@ export namespace BGFBAccessors {
      * @returns CurvePrimitiveId|null
      */
     tag(obj?: CurvePrimitiveId): CurvePrimitiveId | null {
-      assert(null !== this.bb, "BGFBAccessors.VariantGeometry.tag(): this.bb should be defined");
-      const offset = this.bb.__offset(this.bb_pos, 8);
-      return offset ? (obj || new CurvePrimitiveId()).__init(this.bb.__indirect(this.bb_pos + offset), this.bb) : null;
+      const offset = this.bb!.__offset(this.bb_pos, 8);
+      return offset ? (obj || new CurvePrimitiveId()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
     }
 
     /**
