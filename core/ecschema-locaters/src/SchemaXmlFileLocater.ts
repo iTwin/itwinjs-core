@@ -52,15 +52,11 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     const schemaPath = maxCandidate.fileName;
 
     // Load the file
-    if (undefined === await this.fileExists(schemaPath))
-      return undefined;
-
-    const schemaText = await this.readUtf8FileToString(schemaPath);
-    if (undefined === schemaText)
+    if (undefined === await this.fileExists(schemaPath) || !maxCandidate.schemaText)
       return undefined;
 
     const parser = new DOMParser();
-    const document = parser.parseFromString(schemaText);
+    const document = parser.parseFromString(maxCandidate.schemaText);
 
     this.addSchemaSearchPaths([path.dirname(schemaPath)]);
     const reader = new SchemaReadHelper(XmlParser, context);
@@ -86,15 +82,11 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     const schemaPath = maxCandidate.fileName;
 
     // Load the file
-    if (!this.fileExistsSync(schemaPath))
-      return undefined;
-
-    const schemaText = this.readUtf8FileToStringSync(schemaPath);
-    if (!schemaText)
+    if (!this.fileExistsSync(schemaPath) || !maxCandidate.schemaText)
       return undefined;
 
     const parser = new DOMParser();
-    const document = parser.parseFromString(schemaText);
+    const document = parser.parseFromString(maxCandidate.schemaText);
 
     this.addSchemaSearchPaths([path.dirname(schemaPath)]);
     const reader = new SchemaReadHelper(XmlParser, context);

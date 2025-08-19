@@ -308,15 +308,11 @@ export async function* incompatibleValueTypePropertyOverride(property: AnyProper
   if (!property.class.baseClass)
     return;
 
-  const primitiveTypeOrUndefined = getPrimitiveType(property);
-  if (undefined === primitiveTypeOrUndefined)
+  const primitiveType = getPrimitiveType(property);
+  if (undefined === primitiveType)
     return;
 
-  // For some reason, even though the compiler KNOWS that primitiveTypeOrUndefined is defined here,
-  // if we use it directly in callback below it reverts to thinking it might be undefined. Adding
-  // a second variable fixes the apparent compiler bug.
-  const primitiveType = primitiveTypeOrUndefined;
-  async function callback(baseClass: ECClass): Promise<PropertyDiagnostic<any[]> | undefined> {
+  async function callback(baseClass: ECClass, childType: PrimitiveType): Promise<PropertyDiagnostic<any[]> | undefined> {
     const baseProperty = await baseClass.getProperty(property.name, true);
     if (!baseProperty)
       return;
@@ -329,14 +325,14 @@ export async function* incompatibleValueTypePropertyOverride(property: AnyProper
     const baseType = getPrimitiveType(baseProperty);
 
     // Return if rule passed
-    if (!baseType || primitiveType === baseType)
+    if (!baseType || childType === baseType)
       return;
 
-    return new Diagnostics.IncompatibleValueTypePropertyOverride(property, [property.class.fullName, property.name, baseClass.fullName, primitiveTypeToString(baseType), primitiveTypeToString(primitiveType)]);
+    return new Diagnostics.IncompatibleValueTypePropertyOverride(property, [property.class.fullName, property.name, baseClass.fullName, primitiveTypeToString(baseType), primitiveTypeToString(childType)]);
   }
 
   for await (const baseClass of property.class.getAllBaseClasses()) {
-    const result = await callback(baseClass);
+    const result = await callback(baseClass, primitiveType);
     if (result)
       yield result;
   }

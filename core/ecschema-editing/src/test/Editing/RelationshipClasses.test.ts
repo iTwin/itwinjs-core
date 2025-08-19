@@ -792,6 +792,16 @@ describe("Relationship tests from an existing schema", () => {
     });
   });
 
+  it("try adding relationship base class to non-relationship class, returns error", async () => {
+    const entityClassRes = await testEditor.entities.create(testKey, "testEntityClass", ECClassModifier.None);
+    const baseClassRes = await testEditor.relationships.create(testKey, "testRelationship", ECClassModifier.None, StrengthType.Holding, StrengthDirection.Forward);
+    await expect(testEditor.relationships.setBaseClass(entityClassRes, baseClassRes)).to.be.eventually.rejected.then(function (error) {
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
+      expect(error).to.have.nested.property("innerError.message", `RelationshipClass ${entityClassRes.fullName} could not be found in the schema context.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
+    });
+  });
+
   it("try adding base class to a relationship class where the base class cannot be located, returns error", async () => {
     const baseClassKey = new SchemaItemKey("testBaseClass", testKey);
     const relRes = await testEditor.relationships.create(testKey, "testRelationship", ECClassModifier.None, StrengthType.Referencing, StrengthDirection.Forward);
