@@ -7,7 +7,6 @@ import { ECSqlValueType, FieldPrimitiveValue, FieldRun, formatFieldValue, Relati
 import { IModelDb } from "../../IModelDb";
 import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
-import { XAndY, XYAndZ } from "@itwin/core-geometry";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, StructArrayProperty } from "@itwin/ecschema-metadata";
 

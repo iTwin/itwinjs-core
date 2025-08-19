@@ -11,6 +11,13 @@ export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYA
 
 type FieldFormatter = (value: FieldPrimitiveValue, options: FieldFormatOptions | undefined) => string | undefined;
 
+type Coordinate = { x: number, y: number, z: number | undefined };
+
+function isCoordinate(v: FieldPrimitiveValue): v is Coordinate {
+  const obj = typeof v === "object" ? v as any : undefined;
+  return undefined !== obj && typeof obj.x === "number" && typeof obj.y === "number" && (undefined === obj.z || typeof obj.z === "number");
+}
+
 const formatters: { [type: string]: FieldFormatter | undefined } = {
   "string": (v, o) => formatString(v.toString(), o),
 
@@ -46,7 +53,40 @@ const formatters: { [type: string]: FieldFormatter | undefined } = {
     return formatString(v ? opts.trueString : opts.falseString, o);
   },
   "quantity": (v, o) => formatString(formatQuantity(v, o?.quantity)),
-  "coordinate": () => { throw new Error("###TODO") },
+
+  "coordinate": (v, o) => {
+    if (!isCoordinate(v)) {
+      return undefined;
+    }
+
+    const parts: string[] = [];
+    const formatComponent = (component: number) => {
+      const str = formatQuantity(component, o?.quantity);
+      if (undefined === str) {
+        return false;
+      }
+
+      parts.push(str);
+      return true;
+    };
+
+    const selector = o?.coordinate?.components ?? "XYZ";
+    if ((selector === "XYZ" || selector == "XY" || selector === "X") && !formatComponent(v.x)) {
+      return undefined;
+    }
+
+    if ((selector === "XYZ" || selector === "XY" || selector === "Y") && !formatComponent(v.y)) {
+      return undefined;
+    }
+
+    if (selector === "XYZ" && undefined !== v.z && !formatComponent(v.z)) {
+      return undefined;
+    }
+
+    const components = parts.join(o?.coordinate?.componentSeparator ?? "");
+    return formatString(components, o);
+  },
+
   "datetime": () => { throw new Error("###TODO") },
 };
 
