@@ -10,23 +10,32 @@ import type { FieldFormatOptions, FieldPropertyType } from "../../annotation/Tex
 describe("Field formatting", () => {
   describe("string", () => {
     it("adds prefix and/or suffix", () => {
-      const options: FieldFormatOptions = { prefix: "[", suffix: "]" };
-      expect(formatFieldValue("foo", "string", options)).toBe("[foo]");
+      expect(formatFieldValue("foo", "string", { prefix: "[" })).toBe("[foo");
+      expect(formatFieldValue("foo", "string", { suffix: "]" })).toBe("foo]");
+      expect(formatFieldValue("foo", "string", { prefix: "[", suffix: "]" })).toBe("[foo]");
+      expect(formatFieldValue("foo", "string", { suffix: ">" })).toBe("foo>");
+      expect(formatFieldValue("foo", "string", { prefix: "<" })).toBe("<foo");
     });
 
-    it("applies case rules", () => {
-      expect(formatFieldValue("foo", "string", { case: "upper" })).toBe("FOO");
-      expect(formatFieldValue("FOO", "string", { case: "lower" })).toBe("foo");
+    it("applies all case rules", () => {
+      expect(formatFieldValue("fuzzy WUZZY wAS A BeAr", "string", { case: "upper" })).toBe("FUZZY WUZZY WAS A BEAR");
+      expect(formatFieldValue("fuzzy WUZZY wAS A BeAr", "string", { case: "lower" })).toBe("fuzzy wuzzy was a bear");
+      expect(formatFieldValue("fuzzy WUZZY wAS A BeAr", "string", { case: "as-is" })).toBe("fuzzy WUZZY wAS A BeAr");
+      expect(formatFieldValue("fuzzy WUZZY wAS A BeAr", "string", { case: "first-capital" })).toBe("Fuzzy wuzzy was a bear");
+      expect(formatFieldValue("fuzzy WUZZY wAS A BeAr", "string", { case: "title" })).toBe("Fuzzy Wuzzy Was A Bear");
     });
 
     it("does not apply case rules to prefix and suffix", () => {
-      const options: FieldFormatOptions = { prefix: "[", suffix: "]", case: "upper" };
-      expect(formatFieldValue("foo", "string", options)).toBe("[FOO]");
+      const options: FieldFormatOptions = { prefix: "aBCdEf", suffix: "GhiJkL", case: "upper" };
+      expect(formatFieldValue("foo", "string", options)).toBe("aBCdEfFOOGhiJkL");
     });
 
     it("converts property value to default string representation", () => {
       expect(formatFieldValue(123, "string", undefined)).toBe("123");
       expect(formatFieldValue(true, "string", undefined)).toBe("true");
+      expect(formatFieldValue(false, "string", undefined)).toBe("false");
+      expect(formatFieldValue(null as any, "string", undefined)).toBe("null");
+      expect(formatFieldValue(undefined as any, "string", undefined)).toBe("undefined");
     });
 
     it("formats empty string", () => {
@@ -40,23 +49,35 @@ describe("Field formatting", () => {
       const options: FieldFormatOptions = { boolean: { trueString: "Yes", falseString: "No" } };
       expect(formatFieldValue("notbool", "boolean", options)).toBeUndefined();
       expect(formatFieldValue(1, "boolean", options)).toBeUndefined();
+      expect(formatFieldValue(null as any, "boolean", options)).toBeUndefined();
+      expect(formatFieldValue(undefined as any, "boolean", options)).toBeUndefined();
     });
 
-    it("converts boolean to display label", () => {
+    it("converts boolean to display label (all string options)", () => {
       const options: FieldFormatOptions = { boolean: { trueString: "Yes", falseString: "No" } };
       expect(formatFieldValue(true, "boolean", options)).toBe("Yes");
       expect(formatFieldValue(false, "boolean", options)).toBe("No");
+      expect(formatFieldValue(true, "boolean", { boolean: { trueString: "T", falseString: "F" } })).toBe("T");
+      expect(formatFieldValue(false, "boolean", { boolean: { trueString: "T", falseString: "F" } })).toBe("F");
     });
 
     it("fails if display label is not specified", () => {
       expect(formatFieldValue(true, "boolean", undefined)).toBeUndefined();
       expect(formatFieldValue(false, "boolean", {})).toBeUndefined();
+      expect(formatFieldValue(true, "boolean", { boolean: {} })).toBeUndefined();
     });
 
-    it("applies string formatting options", () => {
-      const options: FieldFormatOptions = { boolean: { trueString: "yes", falseString: "no" }, prefix: "[", suffix: "]", case: "upper" };
-      expect(formatFieldValue(true, "boolean", options)).toBe("[YES]");
-      expect(formatFieldValue(false, "boolean", options)).toBe("[NO]");
+    it("applies all string formatting options", () => {
+      const base: FieldFormatOptions = { boolean: { trueString: "yes", falseString: "no" } };
+      expect(formatFieldValue(true, "boolean", { ...base, prefix: "<" })).toBe("<yes");
+      expect(formatFieldValue(false, "boolean", { ...base, suffix: ">" })).toBe("no>");
+      expect(formatFieldValue(true, "boolean", { ...base, prefix: "<", suffix: ">" })).toBe("<yes>");
+      expect(formatFieldValue(true, "boolean", { ...base, case: "upper" })).toBe("YES");
+      expect(formatFieldValue(false, "boolean", { ...base, case: "upper" })).toBe("NO");
+      expect(formatFieldValue(true, "boolean", { ...base, case: "lower" })).toBe("yes");
+      expect(formatFieldValue(true, "boolean", { ...base, case: "as-is" })).toBe("yes");
+      expect(formatFieldValue(true, "boolean", { ...base, case: "first-capital" })).toBe("yes");
+      expect(formatFieldValue(true, "boolean", { ...base, case: "title" })).toBe("yes");
     });
   });
 
@@ -68,38 +89,56 @@ describe("Field formatting", () => {
     it("fails if property value is not integer", () => {
       expect(formatFieldValue("notint", "enum", enumOptions)).toBeUndefined();
       expect(formatFieldValue(1.5, "enum", enumOptions)).toBeUndefined();
+      expect(formatFieldValue(null as any, "enum", enumOptions)).toBeUndefined();
+      expect(formatFieldValue(undefined as any, "enum", enumOptions)).toBeUndefined();
     });
 
-    it("converts integer to display label", () => {
+    it("converts integer to display label (all label options)", () => {
       expect(formatFieldValue(1, "enum", enumOptions)).toBe("One");
       expect(formatFieldValue(2, "enum", enumOptions)).toBe("Two");
+      const options: FieldFormatOptions = { enum: { labels: [{ value: 5, label: "FIVE" }] } };
+      expect(formatFieldValue(5, "enum", options)).toBe("FIVE");
     });
 
     it("fails if display label is not specified", () => {
       expect(formatFieldValue(3, "enum", enumOptions)).toBeUndefined();
       expect(formatFieldValue(1, "enum", undefined)).toBeUndefined();
       expect(formatFieldValue(1, "enum", {})).toBeUndefined();
+      expect(formatFieldValue(1, "enum", { enum: { labels: [] } })).toBeUndefined();
     });
 
-    it("applies string formatting options", () => {
-      const options: FieldFormatOptions = {
-        enum: { labels: [{ value: 1, label: "one" }] },
-        prefix: "<", suffix: ">", case: "upper"
-      };
-      expect(formatFieldValue(1, "enum", options)).toBe("<ONE>");
+    it("applies all string formatting options", () => {
+      const base: FieldFormatOptions = { enum: { labels: [{ value: 1, label: "one" }] } };
+      expect(formatFieldValue(1, "enum", { ...base, prefix: "<" })).toBe("<one");
+      expect(formatFieldValue(1, "enum", { ...base, suffix: ">" })).toBe("one>");
+      expect(formatFieldValue(1, "enum", { ...base, prefix: "<", suffix: ">" })).toBe("<one>");
+      expect(formatFieldValue(1, "enum", { ...base, case: "upper" })).toBe("ONE");
+      expect(formatFieldValue(1, "enum", { ...base, case: "lower" })).toBe("one");
+      expect(formatFieldValue(1, "enum", { ...base, case: "as-is" })).toBe("one");
+      expect(formatFieldValue(1, "enum", { ...base, case: "first-capital" })).toBe("one");
+      expect(formatFieldValue(1, "enum", { ...base, case: "title" })).toBe("one");
     });
   });
 
   describe("quantity", () => {
     it("formats number as string", () => {
       expect(formatFieldValue(42, "quantity", undefined)).toBe("42");
+      expect(formatFieldValue(-1, "quantity", undefined)).toBe("-1");
+      expect(formatFieldValue(0, "quantity", undefined)).toBe("0");
     });
 
     it("returns undefined if not a number", () => {
       expect(formatFieldValue("notnum", "quantity", undefined)).toBeUndefined();
+      expect(formatFieldValue(true, "quantity", undefined)).toBeUndefined();
+      expect(formatFieldValue(null as any, "quantity", undefined)).toBeUndefined();
+      expect(formatFieldValue(undefined as any, "quantity", undefined)).toBeUndefined();
     });
 
-    // ###TODO
+    it("applies string formatting options", () => {
+      expect(formatFieldValue(42, "quantity", { prefix: "[", suffix: "]" })).toBe("[42]");
+      expect(formatFieldValue(42, "quantity", { case: "upper" })).toBe("42");
+      expect(formatFieldValue(42, "quantity", { case: "lower" })).toBe("42");
+    });
   });
 
   describe("coordinate", () => {
@@ -109,6 +148,8 @@ describe("Field formatting", () => {
       expect(formatFieldValue("notcoord", "coordinate", undefined)).toBeUndefined();
       expect(formatFieldValue({ x: 1 } as any, "coordinate", undefined)).toBeUndefined();
       expect(formatFieldValue({ x: "1", y: "2", z: "3" } as any, "coordinate", undefined)).toBeUndefined();
+      expect(formatFieldValue(null as any, "coordinate", undefined)).toBeUndefined();
+      expect(formatFieldValue(undefined as any, "coordinate", undefined)).toBeUndefined();
     });
 
     it("converts coordinates to string", () => {
@@ -125,20 +166,29 @@ describe("Field formatting", () => {
 
     it("separates components with separator string", () => {
       expect(formatFieldValue(coord, "coordinate", { coordinate: { componentSeparator: "|" } })).toBe("1|2|3");
+      expect(formatFieldValue(coord, "coordinate", { coordinate: { components: "XY", componentSeparator: ":" } })).toBe("1:2");
     });
 
-    it("applies string formatting options", () => {
-      const options: FieldFormatOptions = { coordinate: {}, prefix: "(", suffix: ")", case: "upper" };
-      expect(formatFieldValue(coord, "coordinate", options)).toBe("(1,2,3)");
+    it("applies all string formatting options", () => {
+      const base: FieldFormatOptions = { coordinate: {} };
+      expect(formatFieldValue(coord, "coordinate", { ...base, prefix: "(", suffix: ")" })).toBe("(1,2,3)");
+      expect(formatFieldValue(coord, "coordinate", { ...base, case: "upper" })).toBe("1,2,3");
+      expect(formatFieldValue(coord, "coordinate", { ...base, case: "lower" })).toBe("1,2,3");
+      expect(formatFieldValue(coord, "coordinate", { ...base, case: "as-is" })).toBe("1,2,3");
+      expect(formatFieldValue(coord, "coordinate", { ...base, case: "first-capital" })).toBe("1,2,3");
+      expect(formatFieldValue(coord, "coordinate", { ...base, case: "title" })).toBe("1,2,3");
     });
 
-    it("applies quantity formatting options", () => {
-      // Not implemented, but should still format as string
+    it("applies quantity formatting options (noop)", () => {
       const options: FieldFormatOptions = { coordinate: {}, quantity: {} };
       expect(formatFieldValue(coord, "coordinate", options)).toBe("1,2,3");
     });
 
     it("omits z if not present regardless of component selector", () => {
+      const c = { x: 1, y: 2 };
+      expect(formatFieldValue(c as any, "coordinate", { coordinate: { components: "XYZ" } })).toBe("1,2");
+      expect(formatFieldValue(c as any, "coordinate", { coordinate: { components: "XY" } })).toBe("1,2");
+      expect(formatFieldValue(c as any, "coordinate", { coordinate: { components: "X" } })).toBe("1");
     });
   });
 
@@ -148,7 +198,17 @@ describe("Field formatting", () => {
       expect(formatFieldValue(date, "datetime", undefined)).toBe(date.toString());
     });
 
-    // ###TODO
+    it("applies all string formatting options", () => {
+      const date = new Date("2023-01-01T12:34:56Z");
+      expect(formatFieldValue(date, "datetime", { prefix: "[" })).toBe("[" + date.toString());
+      expect(formatFieldValue(date, "datetime", { suffix: "]" })).toBe(date.toString() + "]");
+      expect(formatFieldValue(date, "datetime", { prefix: "[", suffix: "]" })).toBe("[" + date.toString() + "]");
+      expect(formatFieldValue(date, "datetime", { case: "upper" })).toBe(date.toString().toUpperCase());
+      expect(formatFieldValue(date, "datetime", { case: "lower" })).toBe(date.toString().toLowerCase());
+      expect(formatFieldValue(date, "datetime", { case: "as-is" })).toBe(date.toString());
+      expect(formatFieldValue(date, "datetime", { case: "first-capital" })).toBe(date.toString());
+      expect(formatFieldValue(date, "datetime", { case: "title" })).toBe(date.toString());
+    });
   });
 });
 
