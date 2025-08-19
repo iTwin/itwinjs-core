@@ -22,8 +22,24 @@ export interface ClearTextStyleOptions {
 /** The different types of [[TextBlockComponent]].
  * @beta
  */
-export type TextBlockComponentType = "paragraph" | "text" | "field" | "fraction" | "linebreak" | "list" | "list-item" | "tab" | "textBlock";
+export enum RunComponentType {
+  Text = "text",
+  Field = "field",
+  Fraction = "fraction",
+  LineBreak = "linebreak",
+  Tab = "tab",
+}
 
+export enum ContainerComponentType {
+  // eslint-disable-next-line @typescript-eslint/no-shadow
+  Paragraph = "paragraph",
+  // eslint-disable-next-line @typescript-eslint/no-shadow
+  List = "list",
+  // eslint-disable-next-line @typescript-eslint/no-shadow
+  ListItem = "list-item",
+  // eslint-disable-next-line @typescript-eslint/no-shadow
+  TextBlock = "textBlock",
+}
 /** The JSON representation of a [[TextBlockComponent]].
  * @beta
  */
@@ -34,7 +50,7 @@ export interface TextBlockComponentProps {
   styleOverrides?: TextStyleSettingsProps;
   /** TODO */
   children?: TextBlockComponentProps[];
-  type?: TextBlockComponentType; // Discriminator field for the type of [[TextBlockComponent]].
+  type?: RunComponentType | ContainerComponentType; // Discriminator field for the type of [[TextBlockComponent]].
 }
 
 /** Options supplied to [[TextBlockComponent.stringify]] to control how the content is formatted.
@@ -68,7 +84,7 @@ export abstract class TextBlockComponent {
   private _parent?: TextBlockComponent;
   private _children?: TextBlockComponent[];
 
-  public readonly abstract type: TextBlockComponentType;
+  public readonly abstract type: RunComponentType | ContainerComponentType;
 
   /** @internal */
   protected constructor(props?: TextBlockComponentProps) {
@@ -194,7 +210,7 @@ export abstract class TextBlockComponent {
     return {
       styleOverrides: TextStyleSettings.cloneProps(this.styleOverrides),
       children: this.children?.map((child) => child.toJSON()) ?? [],
-      type: "textBlock",
+      type: ContainerComponentType.TextBlock,
     };
   }
 
@@ -245,16 +261,31 @@ export namespace Run { // eslint-disable-line @typescript-eslint/no-redeclare
    */
   export function fromJSON(props: RunProps): Run {
     switch (props.type) {
-      case "text": return TextRun.create(props);
-      case "fraction": return FractionRun.create(props);
-      case "tab": return TabRun.create(props);
-      case "linebreak": return LineBreakRun.create(props);
-      case "field": return FieldRun.create(props);
+      case RunComponentType.Field: return FieldRun.create(props);
+      case RunComponentType.Fraction: return FractionRun.create(props);
+      case RunComponentType.LineBreak: return LineBreakRun.create(props);
+      case RunComponentType.Tab: return TabRun.create(props);
+      case RunComponentType.Text: return TextRun.create(props);
     }
   }
 
+  function isKindOf(type: RunComponentType | ContainerComponentType): type is RunComponentType {
+    return (
+      type === RunComponentType.Field ||
+      type === RunComponentType.Fraction ||
+      type === RunComponentType.LineBreak ||
+      type === RunComponentType.Tab ||
+      type === RunComponentType.Text
+    );
+  }
+
   export function isRun(component: TextBlockComponent): component is Run {
-    return component.type === "text" || component.type === "fraction" || component.type === "tab" || component.type === "linebreak" || component.type === "field";
+    return isKindOf(component.type);
+  }
+
+  export function isRunProps(component: TextBlockComponentProps): component is RunProps {
+    if (!component.type) return false;
+    return isKindOf(component.type);
   }
 }
 
@@ -280,14 +311,27 @@ export namespace Container { // eslint-disable-line @typescript-eslint/no-redecl
    */
   export function fromJSON(props: ContainerProps): Container {
     switch (props.type) {
-      case "paragraph": return Paragraph.create(props);
-      case "list": return List.create(props);
-      case "list-item": return ListItem.create(props);
+      case ContainerComponentType.List: return List.create(props);
+      case ContainerComponentType.ListItem: return ListItem.create(props);
+      case ContainerComponentType.Paragraph: return Paragraph.create(props);
     }
   }
 
+  function isKindOf(type: RunComponentType | ContainerComponentType): type is ContainerComponentType {
+    return (
+      type === ContainerComponentType.List ||
+      type === ContainerComponentType.ListItem ||
+      type === ContainerComponentType.Paragraph
+    );
+  }
+
   export function isContainer(component: TextBlockComponent): component is Container {
-    return component.type === "paragraph" || component.type === "list" || component.type === "list-item";
+    return isKindOf(component.type);
+  }
+
+  export function isContainerProps(component: TextBlockComponentProps): component is ContainerProps {
+    if (!component.type) return false;
+    return isKindOf(component.type);
   }
 }
 
@@ -303,7 +347,7 @@ export type BaselineShift = "subscript" | "superscript" | "none";
  */
 export interface TextRunProps extends TextBlockComponentProps {
   /** Discriminator field for the [[RunProps]] union. */
-  readonly type: "text";
+  readonly type: RunComponentType.Text;
   /** The characters displayed by the run.
    * Default: an empty string.
    */
@@ -319,7 +363,7 @@ export interface TextRunProps extends TextBlockComponentProps {
  */
 export class TextRun extends TextBlockComponent {
   /** Discriminator field for the [[Run]] union. */
-  public readonly type = "text";
+  public readonly type = RunComponentType.Text;
   /** The sequence of characters to be displayed by the run. */
   public content: string;
   /** Whether to display [[content]] as a subscript, superscript, or normally. */
@@ -338,7 +382,7 @@ export class TextRun extends TextBlockComponent {
   public override toJSON(): TextRunProps {
     return {
       ...super.toJSON(),
-      type: "text",
+      type: RunComponentType.Text,
       content: this.content,
       baselineShift: this.baselineShift,
     };
@@ -363,7 +407,7 @@ export class TextRun extends TextBlockComponent {
  */
 export interface FractionRunProps extends TextBlockComponentProps {
   /** Discriminator field for the [[RunProps]] union. */
-  readonly type: "fraction";
+  readonly type: RunComponentType.Fraction;
   /** The text displayed before or above the fraction separator, depending on [[TextStyleSettings.stackedFractionType]]. Default: an empty string. */
   numerator?: string;
   /** The text displayed after or below the fraction separator, depending on [[TextStyleSettings.stackedFractionType]]. Default: an empty string. */
@@ -376,7 +420,7 @@ export interface FractionRunProps extends TextBlockComponentProps {
  */
 export class FractionRun extends TextBlockComponent {
   /** Discriminator field for the [[Run]] union. */
-  public readonly type = "fraction";
+  public readonly type = RunComponentType.Fraction;
   /** The fraction's numerator. */
   public numerator: string;
   /** The fraction's denominator. */
@@ -391,7 +435,7 @@ export class FractionRun extends TextBlockComponent {
   public override toJSON(): FractionRunProps {
     return {
       ...super.toJSON(),
-      type: "fraction",
+      type: RunComponentType.Fraction,
       numerator: this.numerator,
       denominator: this.denominator,
     };
@@ -421,7 +465,7 @@ export class FractionRun extends TextBlockComponent {
  */
 export interface LineBreakRunProps extends TextBlockComponentProps {
   /** Discriminator field for the [[RunProps]] union. */
-  readonly type: "linebreak";
+  readonly type: RunComponentType.LineBreak;
 }
 
 /** A [[Run]] that represents the end of a line of text within a [[Paragraph]]. It contains no content of its own - it simply causes subsequent content to display on a new line.
@@ -429,7 +473,7 @@ export interface LineBreakRunProps extends TextBlockComponentProps {
  */
 export class LineBreakRun extends TextBlockComponent {
   /** Discriminator field for the [[Run]] union. */
-  public readonly type = "linebreak";
+  public readonly type = RunComponentType.LineBreak;
 
   private constructor(props?: Omit<TextBlockComponentProps, "type">) {
     super(props);
@@ -438,7 +482,7 @@ export class LineBreakRun extends TextBlockComponent {
   public override toJSON(): LineBreakRunProps {
     return {
       ...super.toJSON(),
-      type: "linebreak",
+      type: RunComponentType.LineBreak,
     };
   }
 
@@ -465,7 +509,7 @@ export class LineBreakRun extends TextBlockComponent {
  */
 export interface TabRunProps extends TextBlockComponentProps {
   /** Discriminator field for the [[RunProps]] union. */
-  readonly type: "tab";
+  readonly type: RunComponentType.Tab;
 }
 
 /** A [[TabRun]] is used to shift the next tab stop.
@@ -474,12 +518,12 @@ export interface TabRunProps extends TextBlockComponentProps {
  */
 export class TabRun extends TextBlockComponent {
   /** Discriminator field for the [[Run]] union. */
-  public readonly type = "tab";
+  public readonly type = RunComponentType.Tab;
 
   public override toJSON(): TabRunProps {
     return {
       ...super.toJSON(),
-      type: "tab",
+      type: RunComponentType.Tab,
     };
   }
 
@@ -565,7 +609,7 @@ export interface FieldFormatter { [k: string]: any }
  */
 export interface FieldRunProps extends TextBlockComponentProps {
   /** Discriminator field for the [[RunProps]] union. */
-  readonly type: "field";
+  readonly type: RunComponentType.Field;
   /** The element and BIS class containing the property described by [[propertyPath]]. */
   propertyHost: FieldPropertyHost;
   /** Describes how to obtain the property value from [[propertyHost]]. */
@@ -590,7 +634,7 @@ export class FieldRun extends TextBlockComponent {
   public static invalidContentIndicator = "####";
 
   /** Discriminator field for the [[Run]] union. */
-  public readonly type = "field";
+  public readonly type = RunComponentType.Field;
   /** The element and BIS class containing the property described by [[propertyPath]]. */
   public readonly propertyHost: Readonly<FieldPropertyHost>;
   /** Describes how to obtain the property value from [[propertyHost]]. */
@@ -632,7 +676,7 @@ export class FieldRun extends TextBlockComponent {
   public override toJSON(): FieldRunProps {
     const json: FieldRunProps = {
       ...super.toJSON(),
-      type: "field",
+      type: RunComponentType.Field,
       propertyHost: { ...this.propertyHost },
       propertyPath: structuredClone(this.propertyPath),
     };
@@ -710,7 +754,7 @@ export class FieldRun extends TextBlockComponent {
  * @beta
  */
 export interface ParagraphProps extends TextBlockComponentProps {
-  type: "paragraph"; // Discriminator field for the type of [[TextBlockComponent]].
+  type: ContainerComponentType.Paragraph; // Discriminator field for the type of [[TextBlockComponent]].
   children?: TextBlockComponentProps[]; // The runs within the paragraph
 }
 
@@ -718,14 +762,14 @@ export interface ParagraphProps extends TextBlockComponentProps {
  * @beta
  */
 export class Paragraph extends TextBlockComponent {
-  public readonly type = "paragraph";
+  public readonly type = ContainerComponentType.Paragraph;
 
   protected constructor(props: Omit<ParagraphProps, "type">) {
     super(props);
 
     props.children?.forEach((run) => {
-      if (run as RunProps) {
-        this.appendChild(Run.fromJSON(run as RunProps));
+      if (Run.isRunProps(run)) {
+        this.appendChild(Run.fromJSON(run));
       }
     });
   }
@@ -733,7 +777,7 @@ export class Paragraph extends TextBlockComponent {
   public override toJSON(): ParagraphProps {
     return {
       ...super.toJSON(),
-      type: "paragraph",
+      type: ContainerComponentType.Paragraph,
       children: this.children?.map((run) => run.toJSON()),
     };
   }
@@ -766,7 +810,7 @@ export class Paragraph extends TextBlockComponent {
  * @beta
  */
 export interface ListItemProps extends TextBlockComponentProps {
-  type: "list-item"; // Discriminator field for the type of [[TextBlockComponent]].
+  type: ContainerComponentType.ListItem; // Discriminator field for the type of [[TextBlockComponent]].
   children?: TextBlockComponentProps[]; // The runs within the list
 }
 
@@ -774,13 +818,18 @@ export interface ListItemProps extends TextBlockComponentProps {
  * @beta
  */
 export class ListItem extends TextBlockComponent {
-  public readonly type = "list-item";
+  public readonly type = ContainerComponentType.ListItem;
 
   protected constructor(props: Omit<ListItemProps, "type">) {
     super(props);
 
     props.children?.forEach((run) => {
-      const child = run.type === "list" || run.type === "list-item" || run.type === "paragraph" ? Container.fromJSON(run as ContainerProps) : Run.fromJSON(run as RunProps);
+      const child = Container.isContainerProps(run)
+        ? Container.fromJSON(run)
+        : Run.isRunProps(run)
+          ? Run.fromJSON(run)
+          : undefined;
+
       if (child) {
         this.appendChild(child);
       }
@@ -812,7 +861,7 @@ export class ListItem extends TextBlockComponent {
   public override toJSON(): ListItemProps {
     return {
       ...super.toJSON(),
-      type: "list-item",
+      type: ContainerComponentType.ListItem,
       children: this.children?.map((run) => run.toJSON()),
     };
   }
@@ -835,7 +884,7 @@ export class ListItem extends TextBlockComponent {
  * @beta
  */
 export interface ListProps extends TextBlockComponentProps {
-  type: "list"; // Discriminator field for the type of [[TextBlockComponent]].
+  type: ContainerComponentType.List; // Discriminator field for the type of [[TextBlockComponent]].
   children?: ListItemProps[]; // The runs within the list
 }
 
@@ -843,7 +892,7 @@ export interface ListProps extends TextBlockComponentProps {
  * @beta
  */
 export class List extends TextBlockComponent {
-  public readonly type = "list";
+  public readonly type = ContainerComponentType.List;
 
   protected constructor(props: Omit<ListProps, "type">) {
     super(props);
@@ -865,7 +914,7 @@ export class List extends TextBlockComponent {
   public override toJSON(): ListProps {
     return {
       ...super.toJSON(),
-      type: "list",
+      type: ContainerComponentType.List,
       children: this.children?.map((run) => (run as ListItem)?.toJSON()),
     };
   }
@@ -934,7 +983,7 @@ export interface TextBlockProps extends TextBlockComponentProps {
  * @beta
  */
 export class TextBlock extends TextBlockComponent {
-  public readonly type = "textBlock";
+  public readonly type = ContainerComponentType.TextBlock;
 
   /** The ID of the [AnnotationTextStyle]($backend) that provides the base formatting for the contents of this TextBlock.
    * @note Assigning to this property retains all style overrides on the TextBlock and its child components.
@@ -966,12 +1015,13 @@ export class TextBlock extends TextBlockComponent {
     };
 
     this.children = [];
-    props.children?.forEach((x) => { if (x as ListProps || x as ParagraphProps) this.appendContainer(x as ListProps || x as ParagraphProps) });
+    props.children?.forEach((x) => { if (Container.isContainerProps(x)) this.appendContainer(x) });
   }
 
-  public override toJSON(): Omit<TextBlockProps, "type"> {
+  public override toJSON(): TextBlockProps {
     return {
       ...super.toJSON(),
+      type: ContainerComponentType.TextBlock,
       styleId: this.styleId,
       width: this.width,
       justification: this.justification,

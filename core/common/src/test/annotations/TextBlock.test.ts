@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { beforeEach, describe, expect, it } from "vitest";
-import { FieldRun, FractionRun, FractionRunProps, List, ListItem, ListItemProps, ListProps, Paragraph, ParagraphProps, RunProps, TextBlock, TextBlockComponent, TextBlockComponentProps, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps } from "../../core-common";
+import { ContainerComponentType, FieldRun, FractionRun, FractionRunProps, List, ListItem, ListItemProps, ListProps, Paragraph, ParagraphProps, RunComponentType, RunProps, TextBlock, TextBlockComponent, TextBlockComponentProps, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps } from "../../core-common";
 
 function makeTextRun(content?: string, styleOverrides?: TextStyleSettingsProps): TextRunProps {
   return {
-    type: "text",
+    type: RunComponentType.Text,
     content,
     styleOverrides,
   };
@@ -15,7 +15,7 @@ function makeTextRun(content?: string, styleOverrides?: TextStyleSettingsProps):
 
 function makeFractionRun(numerator?: string, denominator?: string, styleOverrides?: TextStyleSettingsProps): FractionRunProps {
   return {
-    type: "fraction",
+    type: RunComponentType.Fraction,
     numerator,
     denominator,
     styleOverrides,
@@ -24,7 +24,7 @@ function makeFractionRun(numerator?: string, denominator?: string, styleOverride
 
 function makeParagraph(children?: RunProps[], styleOverrides?: TextStyleSettingsProps): ParagraphProps {
   return {
-    type: "paragraph",
+    type: ContainerComponentType.Paragraph,
     styleOverrides,
     children,
   };
@@ -32,7 +32,7 @@ function makeParagraph(children?: RunProps[], styleOverrides?: TextStyleSettings
 
 function makeListItem(children?: TextBlockComponentProps[], styleOverrides?: TextStyleSettingsProps): ListItemProps {
   return {
-    type: "list-item",
+    type: ContainerComponentType.ListItem,
     styleOverrides,
     children,
   };
@@ -40,7 +40,7 @@ function makeListItem(children?: TextBlockComponentProps[], styleOverrides?: Tex
 
 function makeList(children?: ListItemProps[], styleOverrides?: TextStyleSettingsProps): ListProps {
   return {
-    type: "list",
+    type: ContainerComponentType.List,
     styleOverrides,
     children,
   };
@@ -61,7 +61,7 @@ describe("TextBlockComponent", () => {
 
     beforeEach(() => {
       block = TextBlock.create({ styleId: "0x42", styleOverrides: { widthFactor: 1234 }});
-      paragraph = block.appendContainer({ type: "paragraph", styleOverrides: { lineHeight: 42 } });
+      paragraph = block.appendContainer({ type: ContainerComponentType.Paragraph, styleOverrides: { lineHeight: 42 } });
       paragraph.appendChild(TextRun.create({ styleOverrides: { fontName: "Consolas" } }));
     });
 
@@ -145,15 +145,15 @@ describe("TextBlockComponent", () => {
         makeParagraph([
           makeFractionRun("1", "π"),
           makeTextRun(" def   ghi"),
-          { type: "linebreak" },
+          { type: RunComponentType.LineBreak },
           makeTextRun("j k l"),
         ]),
         makeParagraph(),
         makeParagraph([makeTextRun()]),
-        makeParagraph([{ type: "linebreak" }]),
+        makeParagraph([{ type: RunComponentType.LineBreak }]),
         makeParagraph([makeFractionRun()]),
         makeParagraph([makeTextRun("mno")]),
-        makeParagraph([{ type: "linebreak" }, { type: "linebreak" }]),
+        makeParagraph([{ type: RunComponentType.LineBreak }, { type: RunComponentType.LineBreak }]),
       ],
     };
 
@@ -182,8 +182,8 @@ describe("TextBlockComponent", () => {
         makeParagraph([
           makeFractionRun("1", "π"),
           makeTextRun(" def   ghi"),
-          { type: "linebreak" },
-          { type: "tab" }
+          { type: RunComponentType.LineBreak },
+          { type: RunComponentType.Tab }
         ]),
         makeList([
           makeListItem([makeParagraph([makeTextRun("item 1"), makeFractionRun("1", "π")])]),

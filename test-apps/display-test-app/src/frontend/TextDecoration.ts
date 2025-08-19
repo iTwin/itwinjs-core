@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, LeaderTextPointOptions, LineBreakRun, OrderedListMarker, Placement2dProps, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationLeader, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextBlockProps, TextFrameStyleProps, TextRun, TextStyleSettingsProps, UnorderedListMarker } from "@itwin/core-common";
+import { BaselineShift, ColorDef, ContainerComponentType, FractionRun, LeaderTextPointOptions, LineBreakRun, OrderedListMarker, Placement2dProps, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationLeader, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextBlockProps, TextFrameStyleProps, TextRun, TextStyleSettingsProps, UnorderedListMarker } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
@@ -120,11 +120,11 @@ class TextEditor implements Decorator {
   }
 
   public appendList(overrides?: TextStyleSettingsProps): void {
-    this.textBlock.appendContainer({ type: "list", styleOverrides: { fontName: this.runStyle.fontName, ...overrides } });
+    this.textBlock.appendContainer({ type: ContainerComponentType.List, styleOverrides: { fontName: this.runStyle.fontName, ...overrides } });
   }
 
   public appendListItem(overrides?: TextStyleSettingsProps): void {
-    this.textBlock.appendListItem({ type: "list-item", styleOverrides: { ...overrides } });
+    this.textBlock.appendListItem({ type: ContainerComponentType.ListItem, styleOverrides: { ...overrides } });
   }
 
   public appendParagraph(): void {
