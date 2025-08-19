@@ -811,13 +811,16 @@ export interface FormatSet {
 
 // @beta
 export class FormatSetFormatsProvider implements MutableFormatsProvider {
-    constructor(formatSet: FormatSet, fallbackProvider?: FormatsProvider);
+    constructor(props: {
+        formatSet: FormatSet;
+        fallbackProvider?: FormatsProvider;
+    });
     // (undocumented)
     addFormat(name: string, format: FormatDefinition): Promise<void>;
     // (undocumented)
     clearFallbackProvider(): void;
     // (undocumented)
-    getFormat(name: string): Promise<FormatDefinition | undefined>;
+    getFormat(input: string): Promise<FormatDefinition | undefined>;
     // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
     // (undocumented)

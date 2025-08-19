@@ -54,7 +54,7 @@ describe("FormatSetFormatsProvider", () => {
         testFormat: sampleFormat,
       },
     };
-    provider = new FormatSetFormatsProvider(formatSet);
+    provider = new FormatSetFormatsProvider({ formatSet });
   });
 
   describe("constructor", () => {
@@ -67,7 +67,7 @@ describe("FormatSetFormatsProvider", () => {
         getFormat: async (name: string) => name === "FallbackFormat" ? sampleFormat : undefined,
         onFormatsChanged: new BeEvent<(args: { formatsChanged: "all" | string[] }) => void>(),
       };
-      const providerWithFallback = new FormatSetFormatsProvider(formatSet, fallbackProvider);
+      const providerWithFallback = new FormatSetFormatsProvider({ formatSet, fallbackProvider });
       expect(providerWithFallback).to.be.instanceOf(FormatSetFormatsProvider);
     });
   });
@@ -83,12 +83,42 @@ describe("FormatSetFormatsProvider", () => {
       expect(format).to.be.undefined;
     });
 
+    it("should resolve colon-separated format names to dot-separated names", async () => {
+      // Add a format with dot-separated name to the format set
+      formatSet.formats["Format.Format1"] = anotherFormat;
+
+      // Request with colon-separated name should resolve to dot-separated
+      const format = await provider.getFormat("Format:Format1");
+      expect(format).to.deep.equal(anotherFormat);
+    });
+
+    it("should work with dot-separated format names directly", async () => {
+      // Add a format with dot-separated name to the format set
+      formatSet.formats["Schema.KindOfQuantity"] = anotherFormat;
+
+      // Request with dot-separated name should work directly
+      const format = await provider.getFormat("Schema.KindOfQuantity");
+      expect(format).to.deep.equal(anotherFormat);
+    });
+
+    it("should normalize format names when checking fallback provider", async () => {
+      const fallbackProvider: FormatsProvider = {
+        getFormat: async (name: string) => name === "Schema.Format1" ? anotherFormat : undefined,
+        onFormatsChanged: new BeEvent<(args: { formatsChanged: "all" | string[] }) => void>(),
+      };
+      const providerWithFallback = new FormatSetFormatsProvider({ formatSet, fallbackProvider });
+
+      // Request with colon-separated name should be normalized and found in fallback
+      const format = await providerWithFallback.getFormat("Schema:Format1");
+      expect(format).to.deep.equal(anotherFormat);
+    });
+
     it("should return format from fallback provider when not found in format set", async () => {
       const fallbackProvider: FormatsProvider = {
         getFormat: async (name: string) => name === "FallbackFormat" ? anotherFormat : undefined,
         onFormatsChanged: new BeEvent<(args: { formatsChanged: "all" | string[] }) => void>(),
       };
-      const providerWithFallback = new FormatSetFormatsProvider(formatSet, fallbackProvider);
+      const providerWithFallback = new FormatSetFormatsProvider({ formatSet, fallbackProvider });
 
       const format = await providerWithFallback.getFormat("FallbackFormat");
       expect(format).to.deep.equal(anotherFormat);
@@ -99,7 +129,7 @@ describe("FormatSetFormatsProvider", () => {
         getFormat: async () => anotherFormat,
         onFormatsChanged: new BeEvent<(args: { formatsChanged: "all" | string[] }) => void>(),
       };
-      const providerWithFallback = new FormatSetFormatsProvider(formatSet, fallbackProvider);
+      const providerWithFallback = new FormatSetFormatsProvider({ formatSet, fallbackProvider });
 
       const format = await providerWithFallback.getFormat("testFormat");
       expect(format).to.deep.equal(sampleFormat);
@@ -110,7 +140,7 @@ describe("FormatSetFormatsProvider", () => {
         getFormat: async () => undefined,
         onFormatsChanged: new BeEvent<(args: { formatsChanged: "all" | string[] }) => void>(),
       };
-      const providerWithFallback = new FormatSetFormatsProvider(formatSet, fallbackProvider);
+      const providerWithFallback = new FormatSetFormatsProvider({ formatSet, fallbackProvider });
 
       const format = await providerWithFallback.getFormat("NonExistentFormat");
       expect(format).to.be.undefined;
@@ -123,7 +153,7 @@ describe("FormatSetFormatsProvider", () => {
         },
         onFormatsChanged: new BeEvent<(args: { formatsChanged: "all" | string[] }) => void>(),
       };
-      const providerWithFallback = new FormatSetFormatsProvider(formatSet, fallbackProvider);
+      const providerWithFallback = new FormatSetFormatsProvider({ formatSet, fallbackProvider });
 
       await expect(providerWithFallback.getFormat("TestFormat2")).to.be.rejectedWith("Fallback provider error");
     });
@@ -201,7 +231,7 @@ describe("FormatSetFormatsProvider", () => {
         getFormat: async () => anotherFormat,
         onFormatsChanged: new BeEvent<(args: { formatsChanged: "all" | string[] }) => void>(),
       };
-      const providerWithFallback = new FormatSetFormatsProvider(formatSet, fallbackProvider);
+      const providerWithFallback = new FormatSetFormatsProvider({ formatSet, fallbackProvider });
 
       // Verify fallback works initially
       let format = await providerWithFallback.getFormat("FallbackFormat");
@@ -265,7 +295,7 @@ describe("FormatSetFormatsProvider", () => {
         getFormat: async (name: string) => name === "FallbackOnly" ? anotherFormat : undefined,
         onFormatsChanged: new BeEvent<(args: { formatsChanged: "all" | string[] }) => void>(),
       };
-      const complexProvider = new FormatSetFormatsProvider(formatSet, fallbackProvider);
+      const complexProvider = new FormatSetFormatsProvider({ formatSet, fallbackProvider });
 
       // Add a new format
       await complexProvider.addFormat("NewFormat", anotherFormat);

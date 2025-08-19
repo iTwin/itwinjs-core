@@ -1,6 +1,7 @@
 import { BeEvent } from "@itwin/core-bentley";
 import { FormatDefinition, FormatsChangedArgs, FormatsProvider, MutableFormatsProvider } from "@itwin/core-quantity";
 import { FormatSet } from "../Deserialization/JsonProps";
+import { SchemaItem } from "../Metadata/SchemaItem";
 
 /**
  * A mutable format provider that manages format definitions within a format set.
@@ -13,9 +14,9 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
   private _formatSet: FormatSet;
   private _fallbackProvider?: FormatsProvider;
 
-  public constructor(formatSet: FormatSet, fallbackProvider?: FormatsProvider) {
-    this._formatSet = formatSet;
-    this._fallbackProvider = fallbackProvider;
+  public constructor(props: {formatSet: FormatSet, fallbackProvider?: FormatsProvider}) {
+    this._formatSet = props.formatSet;
+    this._fallbackProvider = props.fallbackProvider;
   }
 
   public async addFormat(name: string, format: FormatDefinition): Promise<void> {
@@ -27,7 +28,11 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
     this._fallbackProvider = undefined;
   }
 
-  public async getFormat(name: string): Promise<FormatDefinition | undefined> {
+  public async getFormat(input: string): Promise<FormatDefinition | undefined> {
+    // Normalizes any schemaItem names coming from node addon 'schemaName:schemaItemName' -> 'schemaName.schemaItemName'
+    const [schemaName, itemName] = SchemaItem.parseFullName(input);
+
+    const name = (schemaName === "") ? itemName : `${schemaName}.${itemName}`;
     const format = this._formatSet.formats[name];
     if (format) return format;
     if (this._fallbackProvider) return this._fallbackProvider.getFormat(name);
