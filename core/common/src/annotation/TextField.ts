@@ -79,9 +79,7 @@ export interface DateTimeFieldFormatOptions {
 }
 
 export interface EnumFieldFormatOptions {
-  displayLabels: {
-    [value: number]: string | undefined;
-  },
+  labels: Array<{ value: number, label: string }>;
 }
 
 /** Placeholder type for a description of how to format the raw property value resolved by a [[FieldPropertyPath]] into a [[FieldRun]]'s display string.
@@ -96,6 +94,7 @@ export interface FieldFormatOptions {
   coordinate?: CoordinateFieldFormatOptions;
   quantity?: QuantityFieldFormatOptions;
   dateTime?: DateTimeFieldFormatOptions;
+  enum?: EnumFieldFormatOptions;
 }
 
 

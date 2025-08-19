@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECSqlValueType, FieldPrimitiveValue, FieldRun, RelationshipProps, TextBlock } from "@itwin/core-common";
+import { ECSqlValueType, FieldPrimitiveValue, FieldRun, formatFieldValue, RelationshipProps, TextBlock } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
@@ -235,7 +235,7 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
     if (undefined !== propValue) {
       // ###TODO formatting etc.
       // eslint-disable-next-line @typescript-eslint/no-base-to-string
-      newContent = propValue.toString();
+      newContent = formatFieldValue(propValue, field.propertyType, field.formatOptions);
     }
   } catch (err) {
     Logger.logException(BackendLoggerCategory.IModelDb, err);

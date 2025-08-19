@@ -13,11 +13,45 @@ type FieldFormatter = (value: FieldPrimitiveValue, options: FieldFormatOptions |
 
 const formatters: { [type: string]: FieldFormatter | undefined } = {
   "string": (v, o) => formatString(v.toString(), o),
-  // ###TODO
+
+  "enum": (v, o) => {
+    const labels = o?.enum?.labels;
+    if (!labels) {
+      // Need to be able to map enum value to display label.
+      return undefined;
+    }
+
+    const n = typeof v === "number" ? v : undefined;
+    if (undefined === n || Math.floor(n) !== n) {
+      // enum values must be integers.
+      return undefined;
+    }
+
+    for (const entry of labels) {
+      if (entry.value === n) {
+        return formatString(entry.label, o);
+      }
+    }
+
+    // value doesn't match any of the labels.
+    return undefined;
+  },
+
+  "boolean": (v, o) => {
+    const opts = o?.boolean;
+    if (typeof v !== "boolean" || !opts) {
+      return undefined;
+    }
+
+    return formatString(v ? opts.trueString : opts.falseString, o);
+  },
+  "quantity": () => { throw new Error("###TODO") },
+  "coordinate": () => { throw new Error("###TODO") },
+  "datetime": () => { throw new Error("###TODO") },
 };
 
-function formatString(s: string, o?: FieldFormatOptions): string {
-  if (!o) {
+function formatString(s: string | undefined, o?: FieldFormatOptions): string | undefined {
+  if (undefined === s || !o) {
     return s;
   }
 
