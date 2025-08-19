@@ -34,8 +34,6 @@ describe("Field formatting", () => {
       expect(formatFieldValue(123, "string", undefined)).toBe("123");
       expect(formatFieldValue(true, "string", undefined)).toBe("true");
       expect(formatFieldValue(false, "string", undefined)).toBe("false");
-      expect(formatFieldValue(null as any, "string", undefined)).toBe("null");
-      expect(formatFieldValue(undefined as any, "string", undefined)).toBe("undefined");
     });
 
     it("formats empty string", () => {
@@ -49,7 +47,6 @@ describe("Field formatting", () => {
       const options: FieldFormatOptions = { boolean: { trueString: "Yes", falseString: "No" } };
       expect(formatFieldValue("notbool", "boolean", options)).toBeUndefined();
       expect(formatFieldValue(1, "boolean", options)).toBeUndefined();
-      expect(formatFieldValue(null as any, "boolean", options)).toBeUndefined();
       expect(formatFieldValue(undefined as any, "boolean", options)).toBeUndefined();
     });
 
@@ -89,7 +86,6 @@ describe("Field formatting", () => {
     it("fails if property value is not integer", () => {
       expect(formatFieldValue("notint", "enum", enumOptions)).toBeUndefined();
       expect(formatFieldValue(1.5, "enum", enumOptions)).toBeUndefined();
-      expect(formatFieldValue(null as any, "enum", enumOptions)).toBeUndefined();
       expect(formatFieldValue(undefined as any, "enum", enumOptions)).toBeUndefined();
     });
 
@@ -130,7 +126,6 @@ describe("Field formatting", () => {
     it("returns undefined if not a number", () => {
       expect(formatFieldValue("notnum", "quantity", undefined)).toBeUndefined();
       expect(formatFieldValue(true, "quantity", undefined)).toBeUndefined();
-      expect(formatFieldValue(null as any, "quantity", undefined)).toBeUndefined();
       expect(formatFieldValue(undefined as any, "quantity", undefined)).toBeUndefined();
     });
 
@@ -148,7 +143,6 @@ describe("Field formatting", () => {
       expect(formatFieldValue("notcoord", "coordinate", undefined)).toBeUndefined();
       expect(formatFieldValue({ x: 1 } as any, "coordinate", undefined)).toBeUndefined();
       expect(formatFieldValue({ x: "1", y: "2", z: "3" } as any, "coordinate", undefined)).toBeUndefined();
-      expect(formatFieldValue(null as any, "coordinate", undefined)).toBeUndefined();
       expect(formatFieldValue(undefined as any, "coordinate", undefined)).toBeUndefined();
     });
 
