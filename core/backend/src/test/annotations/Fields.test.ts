@@ -35,7 +35,7 @@ describe("updateField", () => {
         propertyPath.accessors?.[1] === "nestedProperty" &&
         propertyValue !== undefined
       ) {
-        return { value: propertyValue, metadata: {} as any };
+        return { value: propertyValue };
       }
       return undefined;
     },

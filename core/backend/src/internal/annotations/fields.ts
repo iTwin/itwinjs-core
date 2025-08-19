@@ -39,18 +39,9 @@ type FieldValue = {
   structArray: FieldStructValue[];
 }
 
-// Metadata associated with a FieldProperty, providing info needed for formatting like kind-of-quantity, extended type, etc.
-// That information can be obtained from the EC Property. For JSON fields, we will need to allow the user to specify it explicitly
-// (TBD because formatting is not yet implemented).
-export interface FieldPropertyMetadata {
-  readonly property: Property;
-  // ###TODO probably want to know if it's a JSON property.
-}
-
-// The resolved primitive value of a field with metadata.
+// The resolved primitive value of field.
 export interface FieldProperty {
   value: FieldPrimitiveValue;
-  metadata: FieldPropertyMetadata;
 }
 
 export interface UpdateFieldsContext {
@@ -227,7 +218,6 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
 
   return {
     value: curValue.primitive,
-    metadata: { property: ecProp },
   };
 }
 
