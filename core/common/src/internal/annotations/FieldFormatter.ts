@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
-import { FieldFormatOptions, FieldPropertyType } from "../../core-common";
+import { FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../core-common";
 
 // A FieldPropertyPath must ultimately resolve to one of these primitive types.
 export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
@@ -45,7 +45,7 @@ const formatters: { [type: string]: FieldFormatter | undefined } = {
 
     return formatString(v ? opts.trueString : opts.falseString, o);
   },
-  "quantity": () => { throw new Error("###TODO") },
+  "quantity": (v, o) => formatString(formatQuantity(v, o?.quantity)),
   "coordinate": () => { throw new Error("###TODO") },
   "datetime": () => { throw new Error("###TODO") },
 };
@@ -73,6 +73,15 @@ function formatString(s: string | undefined, o?: FieldFormatOptions): string | u
   }
 
   return s;
+}
+
+function formatQuantity(v: FieldPrimitiveValue, _o?: QuantityFieldFormatOptions): string | undefined {
+  if (typeof v !== "number") {
+    return undefined;
+  }
+
+  // ###TODO apply quantity formatting...
+  return v.toString();
 }
 
 export function formatFieldValue(value: FieldPrimitiveValue, type: FieldPropertyType, options: FieldFormatOptions | undefined): string | undefined {
