@@ -236,21 +236,19 @@ describe("FieldRun", () => {
     });
 
     it("deeply clones formatter", () => {
-      const formatter = { formatType: "currency", precision: 2, options: { locale: "en-US", style: "decimal" } };
+      const formatter = { prefix: "abc", boolean: { trueString: "yay!", falseString: "boo!" } };
 
       const fieldRun = FieldRun.create({
         propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
         propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
-        formatter,
+        formatOptions: formatter,
       });
 
       // Modify the original formatter to ensure the FieldRun's copy is unaffected
-      formatter.formatType = "percentage";
-      formatter.precision = 3;
-      formatter.options.locale = "fr-FR";
-      formatter.options.style = "percent";
+      formatter.prefix = "cba";
+      formatter.boolean.trueString = "woohoo!";
 
-      expect(fieldRun.formatter).to.deep.equal({ formatType: "currency", precision: 2, options: { locale: "en-US", style: "decimal" } });
+      expect(fieldRun.formatOptions).to.deep.equal({ formatType: "currency", precision: 2, options: { locale: "en-US", style: "decimal" } });
     });
 
     it("deeply clones propertyHost", () => {

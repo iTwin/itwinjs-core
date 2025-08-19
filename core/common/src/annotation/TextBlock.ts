@@ -386,7 +386,7 @@ export interface FieldRunProps extends TextBlockComponentProps {
   /** Describes how to obtain the property value from [[propertyHost]]. */
   propertyPath: FieldPropertyPath;
   /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]]. */
-  formatter?: FieldFormatOptions;
+  formatOptions?: FieldFormatOptions;
   /** The field's most recently evaluated display string. */
   cachedContent?: string;
 }
@@ -411,7 +411,7 @@ export class FieldRun extends TextBlockComponent {
   /** Describes how to obtain the property value from [[propertyHost]]. */
   public readonly propertyPath: Readonly<FieldPropertyPath>;
   /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]]. */
-  public readonly formatter?: FieldFormatOptions;
+  public readonly formatOptions?: FieldFormatOptions;
   private _cachedContent: string;
 
   /** The field's most recently evaluated display string. */
@@ -430,7 +430,7 @@ export class FieldRun extends TextBlockComponent {
     this._cachedContent = props.cachedContent ?? FieldRun.invalidContentIndicator;
     this.propertyHost = props.propertyHost
     this.propertyPath = props.propertyPath;
-    this.formatter = props.formatter;
+    this.formatOptions = props.formatOptions;
   }
 
   /** Create a FieldRun from its JSON representation. */
@@ -439,7 +439,7 @@ export class FieldRun extends TextBlockComponent {
       ...props,
       propertyHost: { ...props.propertyHost },
       propertyPath: structuredClone(props.propertyPath),
-      formatter: structuredClone(props.formatter),
+      formatOptions: structuredClone(props.formatOptions),
     });
   }
 
@@ -456,8 +456,8 @@ export class FieldRun extends TextBlockComponent {
       json.cachedContent = this.cachedContent;
     }
 
-    if (this.formatter) {
-      json.formatter = structuredClone(this.formatter);
+    if (this.formatOptions) {
+      json.formatOptions = structuredClone(this.formatOptions);
     }
 
     return json;
@@ -508,12 +508,12 @@ export class FieldRun extends TextBlockComponent {
       return false;
     }
 
-    if (this.formatter && other.formatter) {
-      // ###TODO better comparison of formatter objects.
-      if (JSON.stringify(this.formatter) !== JSON.stringify(other.formatter)) {
+    if (this.formatOptions && other.formatOptions) {
+      // ###TODO better comparison of formatOptions objects.
+      if (JSON.stringify(this.formatOptions) !== JSON.stringify(other.formatOptions)) {
         return false;
       }
-    } else if (this.formatter || other.formatter) {
+    } else if (this.formatOptions || other.formatOptions) {
       return false;
     }
 

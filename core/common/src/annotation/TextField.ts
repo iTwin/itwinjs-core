@@ -53,16 +53,11 @@ export interface FieldPropertyHost {
   className: string;
 }
 
-export type FieldType = "quantity" | "coordinate" | "string" | "boolean" | "datetime" | "enum";
+export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean" | "datetime" | "enum";
 
 export type CoordinateComponentSelector = "X" | "Y" | "Z" | "XY" | "XYZ";
 
 export type FieldCase = "as-is" | "upper" | "lower" | "first-capital" | "title";
-
-export interface PrefixAndSuffix {
-  prefix?: string;
-  suffix?: string;
-}
 
 export interface BooleanFieldFormatOptions {
   trueString?: string;
@@ -93,6 +88,14 @@ export interface EnumFieldFormatOptions {
  * *** COMING SOON ***
  * @beta
  */
-export interface FieldFormatOptions { [k: string]: any }
+export interface FieldFormatOptions {
+  prefix?: string;
+  suffix?: string;
+  case?: FieldCase;
+  boolean?: BooleanFieldFormatOptions;
+  coordinate?: CoordinateFieldFormatOptions;
+  quantity?: QuantityFieldFormatOptions;
+  dateTime?: DateTimeFieldFormatOptions;
+}
 
 
