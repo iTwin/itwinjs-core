@@ -93,6 +93,6 @@ export interface EnumFieldFormatOptions {
  * *** COMING SOON ***
  * @beta
  */
-export interface FieldFormatter { [k: string]: any }
+export interface FieldFormatOptions { [k: string]: any }
 
 

@@ -8,7 +8,7 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { TextStyleSettings, TextStyleSettingsProps } from "./TextStyle";
-import { FieldFormatter, FieldPropertyHost, FieldPropertyPath } from "./TextField";
+import { FieldFormatOptions, FieldPropertyHost, FieldPropertyPath } from "./TextField";
 
 /** Options supplied to [[TextBlockComponent.clearStyleOverrides]] to control how the style overrides are cleared on the component and its child components.
  * @beta
@@ -386,7 +386,7 @@ export interface FieldRunProps extends TextBlockComponentProps {
   /** Describes how to obtain the property value from [[propertyHost]]. */
   propertyPath: FieldPropertyPath;
   /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]]. */
-  formatter?: FieldFormatter;
+  formatter?: FieldFormatOptions;
   /** The field's most recently evaluated display string. */
   cachedContent?: string;
 }
@@ -411,7 +411,7 @@ export class FieldRun extends TextBlockComponent {
   /** Describes how to obtain the property value from [[propertyHost]]. */
   public readonly propertyPath: Readonly<FieldPropertyPath>;
   /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]]. */
-  public readonly formatter?: FieldFormatter;
+  public readonly formatter?: FieldFormatOptions;
   private _cachedContent: string;
 
   /** The field's most recently evaluated display string. */
