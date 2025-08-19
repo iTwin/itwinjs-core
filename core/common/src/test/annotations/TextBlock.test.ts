@@ -248,7 +248,7 @@ describe("FieldRun", () => {
       formatter.prefix = "cba";
       formatter.boolean.trueString = "woohoo!";
 
-      expect(fieldRun.formatOptions).to.deep.equal({ formatType: "currency", precision: 2, options: { locale: "en-US", style: "decimal" } });
+      expect(fieldRun.formatOptions).to.deep.equal({ prefix: "abc", boolean: { trueString: "yay!", falseString: "boo!" } });
     });
 
     it("deeply clones propertyHost", () => {
