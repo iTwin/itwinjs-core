@@ -8,7 +8,7 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { TextStyleSettings, TextStyleSettingsProps } from "./TextStyle";
-import { FieldFormatOptions, FieldPropertyHost, FieldPropertyPath } from "./TextField";
+import { FieldFormatOptions, FieldPropertyHost, FieldPropertyPath, FieldPropertyType } from "./TextField";
 
 /** Options supplied to [[TextBlockComponent.clearStyleOverrides]] to control how the style overrides are cleared on the component and its child components.
  * @beta
@@ -385,7 +385,15 @@ export interface FieldRunProps extends TextBlockComponentProps {
   propertyHost: FieldPropertyHost;
   /** Describes how to obtain the property value from [[propertyHost]]. */
   propertyPath: FieldPropertyPath;
-  /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]]. */
+  /** The type of the value of the property specified by [[propertyPath]], which determines how the display string is formatted.
+   * Defaults to "string".
+   * If the value of the property cannot be converted to the specified type, then evaluation of the field's display string will fail.
+   * @see [[formatOptions]] to customize the formatting more granularly.
+   */
+  propertyType?: FieldPropertyType;
+  /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]].
+   * The specific options used depend upon the field's [[propertyType]].
+   */
   formatOptions?: FieldFormatOptions;
   /** The field's most recently evaluated display string. */
   cachedContent?: string;
@@ -410,7 +418,15 @@ export class FieldRun extends TextBlockComponent {
   public readonly propertyHost: Readonly<FieldPropertyHost>;
   /** Describes how to obtain the property value from [[propertyHost]]. */
   public readonly propertyPath: Readonly<FieldPropertyPath>;
-  /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]]. */
+  /** The type of the value of the property specified by [[propertyPath]], which determines how the display string is formatted.
+   * Defaults to "string".
+   * If the value of the property cannot be converted to the specified type, then evaluation of the field's display string will fail.
+   * @see [[formatOptions]] to customize the formatting more granularly.
+   */
+  public readonly propertyType: FieldPropertyType;
+  /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]].
+   * The specific options used depend upon the field's [[propertyType]].
+   */
   public readonly formatOptions?: FieldFormatOptions;
   private _cachedContent: string;
 
@@ -431,6 +447,7 @@ export class FieldRun extends TextBlockComponent {
     this.propertyHost = props.propertyHost
     this.propertyPath = props.propertyPath;
     this.formatOptions = props.formatOptions;
+    this.propertyType = props.propertyType ?? "string";
   }
 
   /** Create a FieldRun from its JSON representation. */
@@ -460,6 +477,10 @@ export class FieldRun extends TextBlockComponent {
       json.formatOptions = structuredClone(this.formatOptions);
     }
 
+    if (this.propertyType !== "string") {
+      json.propertyType = this.propertyType;
+    }
+
     return json;
   }
 
@@ -476,6 +497,10 @@ export class FieldRun extends TextBlockComponent {
   /** Returns true if `this` is equivalent to `other`. */
   public override equals(other: TextBlockComponent): boolean {
     if (!(other instanceof FieldRun) || !super.equals(other)) {
+      return false;
+    }
+
+    if (this.propertyType !== other.propertyType) {
       return false;
     }
 
