@@ -6,7 +6,6 @@
  * @module Metadata
  */
 
-import { expectDefined } from "@itwin/core-bentley";
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import { SchemaItemUnitProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
@@ -82,9 +81,15 @@ export class Unit extends SchemaItem {
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
    */
   public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): SchemaItemUnitProps {
+    if (undefined === this.phenomenon)
+      throw new ECSchemaError(ECSchemaStatus.InvalidType, `Unit ${this.fullName} has an invalid phenomenon.`);
+
+    if (undefined === this.unitSystem)
+      throw new ECSchemaError(ECSchemaStatus.InvalidType, `Unit ${this.fullName} has an invalid unitSystem.`);
+
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
-    schemaJson.phenomenon = expectDefined(this.phenomenon).fullName;
-    schemaJson.unitSystem = expectDefined(this.unitSystem).fullName;
+    schemaJson.phenomenon = this.phenomenon.fullName;
+    schemaJson.unitSystem = this.unitSystem.fullName;
     schemaJson.definition = this.definition;
     if (this.hasNumerator)
       schemaJson.numerator = this.numerator;

@@ -2,7 +2,6 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expectDefined } from "@itwin/core-bentley";
 import { ECSchemaNamespaceUris } from "../Constants";
 import { ISchemaLocater, SchemaContext } from "../Context";
 import { SchemaProps } from "../Deserialization/JsonProps";
@@ -140,7 +139,10 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
     // to fetch the whole schema json.
     if (!await this.supportPartialSchemaLoading(schemaContext)) {
       const schemaJson = await this.getSchemaJson(schemaInfo.schemaKey, schemaContext);
-      return Schema.fromJson(expectDefined(schemaJson), schemaContext);
+      if (!schemaJson)
+        throw new ECSchemaError(ECSchemaStatus.UnableToLocateSchema, `Could not locate the schema, ${schemaInfo.schemaKey.name}.${schemaInfo.schemaKey.version.toString()}`);
+
+      return Schema.fromJson(schemaJson, schemaContext);
     }
 
     // Fetches the schema partials for the given schema key. The first item in the array is the

@@ -110,12 +110,14 @@ export class SchemaFormatsProvider implements FormatsProvider {
 
     // If no matching presentation format was found, use persistence unit format if it matches unit system.
     const persistenceUnit = await kindOfQuantity.persistenceUnit;
-    const persistenceUnitSystem = await persistenceUnit?.unitSystem;
+    if (!persistenceUnit)
+      throw Error(`KindOfQuantity ${kindOfQuantity.fullName} has an invalid persistenceUnit.`);
+
+    const persistenceUnitSystem = await persistenceUnit.unitSystem;
     if (persistenceUnitSystem && unitSystemMatchers.some((matcher) => matcher(persistenceUnitSystem))) {
       this._formatsRetrieved.add(itemKey.fullName);
       // It is only possible to get here if persistenceUnit is defined.
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      const props = getPersistenceUnitFormatProps(persistenceUnit!);
+      const props = getPersistenceUnitFormatProps(persistenceUnit);
       return this.convertToFormatDefinition(props, kindOfQuantity);
     }
 
