@@ -306,7 +306,6 @@ export interface FormatsChangedArgs {
 export interface FormatsProvider {
     // (undocumented)
     getFormat(name: string): Promise<FormatDefinition | undefined>;
-    // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
 
@@ -415,9 +414,7 @@ export const isCustomFormatProps: (item: FormatProps) => item is CustomFormatPro
 
 // @beta
 export interface MutableFormatsProvider extends FormatsProvider {
-    // (undocumented)
     addFormat(name: string, format: FormatDefinition): Promise<void>;
-    // (undocumented)
     removeFormat(name: string): Promise<void>;
 }
 
