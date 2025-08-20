@@ -500,5 +500,42 @@ export class Format extends BaseFormat {
   }
 }
 
-// async function resolveFormatProps(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<ResolvedFormatProps> {
-//}
+async function resolveCompositeUnit(provider: UnitsProvider, name: string, label?: string): Promise<UnitProps> {
+  if (typeof name !== "string" || (undefined !== label && typeof label !== "string")) {
+    throw new QuantityError(QuantityStatus.InvalidJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
+  }
+
+  return resolveUnit(provider, name);
+}
+
+async function resolveUnit(provider: UnitsProvider, name: string): Promise<UnitProps> {
+  const unit = await provider.findUnitByName(name);
+  if (!unit || !unit.isValid) {
+    throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${name}'.`);
+  }
+
+  return unit;
+}
+
+async function resolveFormatProps(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<ResolvedFormatProps> {
+  let units: Array<{ unit: UnitProps, label?: string }> | undefined;
+  if (undefined !== jsonObj.composite?.units) {
+    units = await Promise.all(jsonObj.composite.units.map(async (entry) => {
+      const unit = await resolveUnit(unitsProvider, entry.name);
+      return { unit, label: entry.label };
+    }));
+  }
+
+  const azimuthBaseUnit = undefined !== jsonObj.azimuthBaseUnit ? await resolveUnit(unitsProvider, jsonObj.azimuthBaseUnit) : undefined;
+  const revolutionUnit = undefined !== jsonObj.revolutionUnit ? await resolveUnit(unitsProvider, jsonObj.revolutionUnit) : undefined;
+
+  return {
+    ...jsonObj,
+    azimuthBaseUnit,
+    revolutionUnit,
+    composite: units ? {
+      ...jsonObj.composite,
+      units,
+    } : undefined,
+  };
+}
