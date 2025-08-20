@@ -15,7 +15,7 @@ import {
   RatioType, ScientificType,
   ShowSignOption,
 } from "./FormatEnums";
-import { CloneOptions, FormatProps, isCustomFormatProps, ResolvedFormatProps } from "./Interfaces";
+import { CloneOptions, FormatProps, ResolvedFormatProps } from "./Interfaces";
 
 // cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses
 // cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative
@@ -140,7 +140,7 @@ export class BaseFormat {
     return (this._formatTraits & formatTrait) === formatTrait;
   }
 
-  public loadFormatProperties(formatProps: FormatProps) {
+  public loadFormatProperties(formatProps: Omit<FormatProps, "composite" | "azimuthBaseUnit" | "revolutionUnit">) {
     this._type = parseFormatType(formatProps.type, this.name);
 
     if (formatProps.precision !== undefined) {
@@ -277,20 +277,6 @@ export class Format extends BaseFormat {
     return formatTraits.find((traitEntry) => traitStr === traitEntry) ? true : false;
   }
 
-  private async createUnit(unitsProvider: UnitsProvider, name: string, label?: string): Promise<void> {
-    if (name === undefined || typeof (name) !== "string" || (label !== undefined && typeof (label) !== "string")) // throws if name is undefined or name isn't a string or if label is defined and isn't a string
-      throw new QuantityError(QuantityStatus.InvalidJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
-    for (const unit of this.units!) {
-      const unitObj = unit[0].name;
-      if (unitObj.toLowerCase() === name.toLowerCase()) // duplicate names are not allowed
-        throw new QuantityError(QuantityStatus.InvalidJson, `The unit ${unitObj} has a duplicate name.`);
-    }
-    const newUnit: UnitProps = await unitsProvider.findUnitByName(name);
-    if (!newUnit || !newUnit.isValid)
-      throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${name}'.`);
-    this.units!.push([newUnit, label]);
-  }
-
   /**
    *  Clone Format
    */
@@ -355,10 +341,14 @@ export class Format extends BaseFormat {
    * Populates this Format with the values from the provided.
    */
   public async fromJSON(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void> {
-    this.loadFormatProperties(jsonObj);
+    const json = await resolveFormatProps(unitsProvider, jsonObj);
+    return this.fromFullyResolvedJSON(json);
+  }
 
-    if (isCustomFormatProps(jsonObj))
-      this._customProps = jsonObj.custom;
+  /** @alpha */
+  public async fromFullyResolvedJSON(jsonObj: ResolvedFormatProps): Promise<void> {
+    this.loadFormatProperties(jsonObj);
+    this._customProps = jsonObj.custom;
 
     if (undefined !== jsonObj.composite) { // optional
       this._units = new Array<[UnitProps, string | undefined]>();
@@ -379,15 +369,21 @@ export class Format extends BaseFormat {
           throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'units' attribute. It must be of type 'array'`);
         }
         if (jsonObj.composite.units.length > 0 && jsonObj.composite.units.length <= 4) { // Composite requires 1-4 units
-          try {
-            const createUnitPromises: Array<Promise<void>> = [];
-            for (const unit of jsonObj.composite.units) {
-              createUnitPromises.push(this.createUnit(unitsProvider, unit.name, unit.label));
+          for (const nextUnit of jsonObj.composite.units) {
+            if (this._units) {
+              for (const existingUnit of this._units) {
+                const unitObj = existingUnit[0].name;
+                if (unitObj.toLowerCase() === nextUnit.unit.name.toLowerCase()) {
+                  throw new QuantityError(QuantityStatus.InvalidJson, `The unit ${unitObj} has a duplicate name.`);
+                }
+              }
             }
 
-            await Promise.all(createUnitPromises);
-          } catch (e) {
-            throw e;
+            if (undefined === this._units) {
+              this._units = [];
+            }
+
+            this._units.push([nextUnit.unit, nextUnit.label]);
           }
         }
       }
@@ -396,29 +392,8 @@ export class Format extends BaseFormat {
     }
 
     if(this.type === FormatType.Azimuth || this.type === FormatType.Bearing) {
-      // these units cannot be loaded from loadFormatProperties() because they require an async call, and the method signature is already public
-
-      if (undefined !== jsonObj.azimuthBaseUnit) {
-        if (typeof (jsonObj.azimuthBaseUnit) !== "string")
-          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'azimuthBaseUnit' attribute. It should be of type 'string'.`);
-
-        const baseUnit: UnitProps = await unitsProvider.findUnitByName(jsonObj.azimuthBaseUnit);
-        if (!baseUnit || !baseUnit.isValid)
-          throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${jsonObj.azimuthBaseUnit}' for azimuthBaseUnit in Format '${this.name}'.`);
-
-        this._azimuthBaseUnit = baseUnit;
-      }
-
-      if (undefined !== jsonObj.revolutionUnit) {
-        if (typeof (jsonObj.revolutionUnit) !== "string")
-          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'revolutionUnit' attribute. It should be of type 'string'.`);
-
-        const revolutionUnit: UnitProps = await unitsProvider.findUnitByName(jsonObj.revolutionUnit);
-        if (!revolutionUnit || !revolutionUnit.isValid)
-          throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${jsonObj.revolutionUnit}' for revolutionUnit in Format '${this.name}'.`);
-
-        this._revolutionUnit = revolutionUnit;
-      }
+      this._azimuthBaseUnit = jsonObj.azimuthBaseUnit;
+      this._revolutionUnit = jsonObj.revolutionUnit;
 
       if (this._revolutionUnit === undefined)
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Azimuth' or 'Bearing' type therefore the attribute 'revolutionUnit' is required.`);
@@ -431,6 +406,13 @@ export class Format extends BaseFormat {
   public static async createFromJSON(name: string, unitsProvider: UnitsProvider, formatProps: FormatProps) {
     const actualFormat = new Format(name);
     await actualFormat.fromJSON(unitsProvider, formatProps);
+    return actualFormat;
+  }
+
+  /** @alpha */
+  public static createFromFullyResolvedJSON(name: string, formatProps: ResolvedFormatProps) {
+    const actualFormat = new Format(name);
+    actualFormat.fromFullyResolvedJSON(formatProps);
     return actualFormat;
   }
 
@@ -521,7 +503,7 @@ async function resolveFormatProps(unitsProvider: UnitsProvider, jsonObj: FormatP
   let units: Array<{ unit: UnitProps, label?: string }> | undefined;
   if (undefined !== jsonObj.composite?.units) {
     units = await Promise.all(jsonObj.composite.units.map(async (entry) => {
-      const unit = await resolveUnit(unitsProvider, entry.name);
+      const unit = await resolveCompositeUnit(unitsProvider, entry.name);
       return { unit, label: entry.label };
     }));
   }
