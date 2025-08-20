@@ -53,7 +53,8 @@ const formatters: { [type: string]: FieldFormatter | undefined } = {
 
     return formatString(v ? opts.trueString : opts.falseString, o);
   },
-  "quantity": (v, o) => formatString(formatQuantity(v, o?.quantity)),
+
+  "quantity": (v, o) => formatString(formatQuantity(v, o?.quantity), o),
 
   "coordinate": (v, o) => {
     if (!isCoordinate(v)) {
@@ -84,7 +85,7 @@ const formatters: { [type: string]: FieldFormatter | undefined } = {
       return undefined;
     }
 
-    const components = parts.join(o?.coordinate?.componentSeparator ?? "");
+    const components = parts.join(o?.coordinate?.componentSeparator ?? ",");
     return formatString(components, o);
   },
 
