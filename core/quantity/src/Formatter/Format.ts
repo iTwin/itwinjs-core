@@ -140,7 +140,7 @@ export class BaseFormat {
     return (this._formatTraits & formatTrait) === formatTrait;
   }
 
-  public loadFormatProperties(formatProps: Omit<FormatProps, "composite" | "azimuthBaseUnit" | "revolutionUnit">) {
+  public loadFormatProperties(formatProps: FormatProps | ResolvedFormatProps) {
     this._type = parseFormatType(formatProps.type, this.name);
 
     if (formatProps.precision !== undefined) {
@@ -345,7 +345,6 @@ export class Format extends BaseFormat {
     return this.fromFullyResolvedJSON(json);
   }
 
-  /** @alpha */
   public async fromFullyResolvedJSON(jsonObj: ResolvedFormatProps): Promise<void> {
     this.loadFormatProperties(jsonObj);
     this._customProps = jsonObj.custom;
@@ -409,7 +408,6 @@ export class Format extends BaseFormat {
     return actualFormat;
   }
 
-  /** @alpha */
   public static createFromFullyResolvedJSON(name: string, formatProps: ResolvedFormatProps) {
     const actualFormat = new Format(name);
     actualFormat.fromFullyResolvedJSON(formatProps);
@@ -434,7 +432,6 @@ export class Format extends BaseFormat {
     }
   }
 
-  /** @alpha */
   public toFullyResolvedJSON(): ResolvedFormatProps {
     let composite;
     if (this.units) {

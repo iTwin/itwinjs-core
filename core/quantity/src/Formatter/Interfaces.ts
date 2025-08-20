@@ -81,7 +81,7 @@ export const isCustomFormatProps = (item: FormatProps): item is CustomFormatProp
 };
 
 /** A [[FormatCompositeProps]] with unit names replaced with JSON representations of those units.
- * @alpha
+ * @beta
  */
 export type ResolvedFormatCompositeProps = Omit<FormatCompositeProps, "units"> & {
   readonly units: Array<{
@@ -91,7 +91,7 @@ export type ResolvedFormatCompositeProps = Omit<FormatCompositeProps, "units"> &
 }
 
 /** A [[FormatProps]] with all the references to units replaced with JSON representations of those units.
- * @alpha
+ * @beta
  */
 export type ResolvedFormatProps = Omit<FormatProps, "azimuthBaseUnit" | "revolutionUnit" | "composite"> & {
   readonly azimuthBaseUnit?: UnitProps;
