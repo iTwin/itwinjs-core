@@ -72,10 +72,10 @@ export interface CoordinateFieldFormatOptions {
 
 export interface QuantityFieldFormatOptions {
   // ###TODO source+target units, FormatProps.
-  sourceUnit: UnitProps;
+  sourceUnit?: UnitProps;
   targetUnit?: UnitProps;
   unitConversions?: UnitConversionSpec[];
-  formatProps: ResolvedFormatProps;
+  formatProps?: ResolvedFormatProps;
 }
 
 export interface DateTimeFieldFormatOptions {

@@ -73,7 +73,7 @@ const formatters: { [type: string]: FieldFormatter | undefined } = {
     };
 
     const selector = o?.coordinate?.components ?? "XYZ";
-    if ((selector === "XYZ" || selector == "XY" || selector === "X") && !formatComponent(v.x)) {
+    if ((selector === "XYZ" || selector === "XY" || selector === "X") && !formatComponent(v.x)) {
       return undefined;
     }
 
@@ -127,14 +127,13 @@ function formatQuantity(v: FieldPrimitiveValue, _o?: QuantityFieldFormatOptions)
   }
 
   // ###TODO apply quantity formatting...
-  if (_o){
+  if (_o && _o.formatProps){
     const formatName = _o.formatProps.name ?? "defaultFormat";
     const format = Format.createFromFullyResolvedJSON(formatName, _o.formatProps);
-
     const formatterSpec = new FormatterSpec(format.name, format, _o?.unitConversions, _o?.sourceUnit);
     return formatterSpec.applyFormatting(v);
   }else
-    return undefined;
+    return v.toString();
 }
 
 export function formatFieldValue(value: FieldPrimitiveValue, type: FieldPropertyType, options: FieldFormatOptions | undefined): string | undefined {
