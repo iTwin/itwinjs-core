@@ -54,7 +54,7 @@ export interface FieldPropertyHost {
   className: string;
 }
 
-export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean" | "datetime" | "enum";
+export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean" | "datetime" | "int-enum" | "string-enum";
 
 export type CoordinateComponentSelector = "X" | "Y" | "Z" | "XY" | "XYZ";
 
@@ -83,12 +83,13 @@ export interface DateTimeFieldFormatOptions {
   // ###TODO localization of months and days (long and short versions)
 }
 
-export interface EnumFieldFormatOptions {
-  labels: Array<{ value: number, label: string }>;
+export interface EnumFieldFormatOptions<T extends number| string> {
+  labels: Array<{ value: T, label: string }>;
+  fallbackLabel?: string;
 }
 
 /** Placeholder type for a description of how to format the raw property value resolved by a [[FieldPropertyPath]] into a [[FieldRun]]'s display string.
- * *** COMING SOON ***
+ * The exact options used depend upon the [[FieldPropertyType]].
  * @beta
  */
 export interface FieldFormatOptions {
@@ -99,7 +100,7 @@ export interface FieldFormatOptions {
   coordinate?: CoordinateFieldFormatOptions;
   quantity?: QuantityFieldFormatOptions;
   dateTime?: DateTimeFieldFormatOptions;
-  enum?: EnumFieldFormatOptions;
+  enum?: EnumFieldFormatOptions<number> | EnumFieldFormatOptions<string>;
 }
 
 

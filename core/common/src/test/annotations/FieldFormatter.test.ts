@@ -83,41 +83,52 @@ describe("Field formatting", () => {
     });
   });
 
-  describe("enum", () => {
+  describe("int-enum", () => {
     const enumOptions: FieldFormatOptions = {
       enum: { labels: [{ value: 1, label: "One" }, { value: 2, label: "Two" }] }
     };
 
     it("fails if property value is not integer", () => {
-      expect(formatFieldValue("notint", "enum", enumOptions)).toBeUndefined();
-      expect(formatFieldValue(1.5, "enum", enumOptions)).toBeUndefined();
-      expect(formatFieldValue(undefined as any, "enum", enumOptions)).toBeUndefined();
+      expect(formatFieldValue("notint", "int-enum", enumOptions)).toBeUndefined();
+      expect(formatFieldValue(1.5, "int-enum", enumOptions)).toBeUndefined();
+      expect(formatFieldValue(undefined as any, "int-enum", enumOptions)).toBeUndefined();
     });
 
     it("converts integer to display label (all label options)", () => {
-      expect(formatFieldValue(1, "enum", enumOptions)).toBe("One");
-      expect(formatFieldValue(2, "enum", enumOptions)).toBe("Two");
+      expect(formatFieldValue(1, "int-enum", enumOptions)).toBe("One");
+      expect(formatFieldValue(2, "int-enum", enumOptions)).toBe("Two");
       const options: FieldFormatOptions = { enum: { labels: [{ value: 5, label: "FIVE" }] } };
-      expect(formatFieldValue(5, "enum", options)).toBe("FIVE");
+      expect(formatFieldValue(5, "int-enum", options)).toBe("FIVE");
     });
 
-    it("fails if display label is not specified", () => {
-      expect(formatFieldValue(3, "enum", enumOptions)).toBeUndefined();
-      expect(formatFieldValue(1, "enum", undefined)).toBeUndefined();
-      expect(formatFieldValue(1, "enum", {})).toBeUndefined();
-      expect(formatFieldValue(1, "enum", { enum: { labels: [] } })).toBeUndefined();
+    it("fails if display label is not specified and no fallback label is provided", () => {
+      expect(formatFieldValue(3, "int-enum", enumOptions)).toBeUndefined();
+      expect(formatFieldValue(1, "int-enum", undefined)).toBeUndefined();
+      expect(formatFieldValue(1, "int-enum", {})).toBeUndefined();
+      expect(formatFieldValue(1, "int-enum", { enum: { labels: [] } })).toBeUndefined();
+    });
+
+    it("uses fallback label if value is not in display labels", () => {
+      const optsWithFallback: FieldFormatOptions = {
+        enum: {
+          fallbackLabel: "fallback",
+          labels: [{ value: 1, label: "One" }, { value: 2, label: "Two" }],
+        },
+      };
+
+      expect(formatFieldValue(3, "int-enum", optsWithFallback)).toBe("fallback");
     });
 
     it("applies all string formatting options", () => {
       const base: FieldFormatOptions = { enum: { labels: [{ value: 1, label: "one" }] } };
-      expect(formatFieldValue(1, "enum", { ...base, prefix: "<" })).toBe("<one");
-      expect(formatFieldValue(1, "enum", { ...base, suffix: ">" })).toBe("one>");
-      expect(formatFieldValue(1, "enum", { ...base, prefix: "<", suffix: ">" })).toBe("<one>");
-      expect(formatFieldValue(1, "enum", { ...base, case: "upper" })).toBe("ONE");
-      expect(formatFieldValue(1, "enum", { ...base, case: "lower" })).toBe("one");
-      expect(formatFieldValue(1, "enum", { ...base, case: "as-is" })).toBe("one");
-      expect(formatFieldValue(1, "enum", { ...base, case: "first-capital" })).toBe("one");
-      expect(formatFieldValue(1, "enum", { ...base, case: "title" })).toBe("one");
+      expect(formatFieldValue(1, "int-enum", { ...base, prefix: "<" })).toBe("<one");
+      expect(formatFieldValue(1, "int-enum", { ...base, suffix: ">" })).toBe("one>");
+      expect(formatFieldValue(1, "int-enum", { ...base, prefix: "<", suffix: ">" })).toBe("<one>");
+      expect(formatFieldValue(1, "int-enum", { ...base, case: "upper" })).toBe("ONE");
+      expect(formatFieldValue(1, "int-enum", { ...base, case: "lower" })).toBe("one");
+      expect(formatFieldValue(1, "int-enum", { ...base, case: "as-is" })).toBe("one");
+      expect(formatFieldValue(1, "int-enum", { ...base, case: "first-capital" })).toBe("one");
+      expect(formatFieldValue(1, "int-enum", { ...base, case: "title" })).toBe("one");
     });
   });
 

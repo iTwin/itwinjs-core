@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
-import { FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../annotation/TextField";
+import { EnumFieldFormatOptions, FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../annotation/TextField";
 import { Format, FormatterSpec } from "@itwin/core-quantity";
 
 // A FieldPropertyPath must ultimately resolve to one of these primitive types.
@@ -22,27 +22,21 @@ function isCoordinate(v: FieldPrimitiveValue): v is Coordinate {
 const formatters: { [type: string]: FieldFormatter | undefined } = {
   "string": (v, o) => formatString(v.toString(), o),
 
-  "enum": (v, o) => {
-    const labels = o?.enum?.labels;
-    if (!labels) {
-      // Need to be able to map enum value to display label.
-      return undefined;
-    }
-
+  "int-enum": (v, o) => {
     const n = typeof v === "number" ? v : undefined;
     if (undefined === n || Math.floor(n) !== n) {
-      // enum values must be integers.
       return undefined;
     }
 
-    for (const entry of labels) {
-      if (entry.value === n) {
-        return formatString(entry.label, o);
-      }
+    return formatString(formatEnum<number>(n, o?.enum), o);
+  },
+
+  "string-enum": (v, o) => {
+    if (typeof v !== "string") {
+      return undefined;
     }
 
-    // value doesn't match any of the labels.
-    return undefined;
+    return formatString(formatEnum<string>(v, o?.enum), o);
   },
 
   "boolean": (v, o) => {
@@ -119,6 +113,22 @@ function formatString(s: string | undefined, o?: FieldFormatOptions): string | u
   }
 
   return s;
+}
+
+function formatEnum<T extends number | string>(v: T, o: EnumFieldFormatOptions<number | string> | undefined): string | undefined {
+  const fallback = o?.fallbackLabel;
+  const labels = o?.labels;
+  if (!labels) {
+    return fallback;
+  }
+
+  for (const entry of labels) {
+    if (entry.value === v) {
+      return entry.label;
+    }
+  }
+
+  return fallback;
 }
 
 function formatQuantity(v: FieldPrimitiveValue, _o?: QuantityFieldFormatOptions): string | undefined {

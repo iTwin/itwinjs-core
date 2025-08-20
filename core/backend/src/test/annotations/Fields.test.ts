@@ -123,6 +123,11 @@ const fieldsSchemaXml = `
 <ECSchema schemaName="Fields" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
   <ECSchemaReference name="BisCore" version="01.00.04" alias="bis"/>
 
+  <ECEnumeration typeName="IntEnum" backingTypeName="int">
+    <ECEnumerator name="one" displayLabel="One" value="1" />
+    <ECEnumerator name="two" displayLabel="Two" value="2"/>
+  </ECEnumeration>
+
   <ECStructClass typeName="InnerStruct" modifier="None">
     <ECProperty propertyName="bool" typeName="boolean"/>
     <ECArrayProperty propertyName="doubles" typeName="double" minOccurs="0" maxOccurs="unbounded"/>
@@ -141,6 +146,7 @@ const fieldsSchemaXml = `
     <ECArrayProperty propertyName="strings" typeName="string" minOccurs="0" maxOccurs="unbounded"/>
     <ECStructProperty propertyName="outerStruct" typeName="OuterStruct"/>
     <ECStructArrayProperty propertyName="outerStructs" typeName="OuterStruct" minOccurs="0" maxOccurs="unbounded"/>
+    <ECProperty propertyName="intEnum" typeName="IntEnum"/>
   </ECEntityClass>
 
   <ECEntityClass typeName="TestAspect" modifier="None">
@@ -167,6 +173,7 @@ interface TestElementProps extends PhysicalElementProps {
   strings: string[];
   outerStruct: OuterStruct;
   outerStructs: OuterStruct[];
+  intEnum?: number;
 }
 
 class TestElement extends PhysicalElement {
@@ -204,7 +211,7 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
   iModel.saveChanges();
 }
 
-describe("Field evaluation", () => {
+describe.only("Field evaluation", () => {
   let imodel: StandaloneDb;
   let model: Id64String;
   let category: Id64String;
@@ -238,6 +245,7 @@ describe("Field evaluation", () => {
       intProp: 100,
       point: { x: 1, y: 2, z: 3 },
       strings: ["a", "b", `"name": "c"`],
+      intEnum: 1,
       outerStruct: {
         innerStruct: { bool: false, doubles: [1, 2, 3] },
         innerStructs: [{ bool: true, doubles: [] }, { bool: false, doubles: [5, 4, 3, 2, 1] }],
@@ -296,6 +304,10 @@ describe("Field evaluation", () => {
 
     it("returns a primitive property value", () => {
       expectValue(100, { propertyName: "intProp" }, sourceElementId);
+    });
+
+    it.only("returns an integer enum property value", () => {
+      expectValue(1, { propertyName: "intEnum" }, sourceElementId);
     });
 
     it("treats points as primitive values", () => {
