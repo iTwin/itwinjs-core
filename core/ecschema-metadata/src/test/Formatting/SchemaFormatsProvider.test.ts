@@ -5,10 +5,10 @@
 import * as fs from "fs";
 import * as path from "path";
 import { expect } from "chai";
-import { SchemaContext } from "../Context";
-import { SchemaFormatsProvider } from "../SchemaFormatsProvider";
-import { deserializeXmlSync } from "./TestUtils/DeserializationHelpers";
-import { SchemaItemFormatProps } from "../Deserialization/JsonProps";
+import { SchemaContext } from "../../Context";
+import { SchemaFormatsProvider } from "../../Formatting/SchemaFormatsProvider";
+import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
+import { SchemaItemFormatProps } from "../../Deserialization/JsonProps";
 
 describe("SchemaFormatsProvider", () => {
   let context: SchemaContext;
@@ -17,45 +17,45 @@ describe("SchemaFormatsProvider", () => {
   before(() => {
     context = new SchemaContext();
 
-    const unitSchemaFile = path.join(__dirname, "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
+    const unitSchemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
     const unitSchemaXml = fs.readFileSync(unitSchemaFile, "utf-8");
     deserializeXmlSync(unitSchemaXml, context);
 
-    const siSchemaFile = path.join(__dirname, "assets", "SIUnits.ecschema.xml");
+    const siSchemaFile = path.join(__dirname, "..", "assets", "SIUnits.ecschema.xml");
     const siSchemaXml = fs.readFileSync(siSchemaFile, "utf-8");
     deserializeXmlSync(siSchemaXml, context);
 
-    const metricSchemaFile = path.join(__dirname, "assets", "MetricUnits.ecschema.xml");
+    const metricSchemaFile = path.join(__dirname, "..", "assets", "MetricUnits.ecschema.xml");
     const metricSchemaXml = fs.readFileSync(metricSchemaFile, "utf-8");
     deserializeXmlSync(metricSchemaXml, context);
 
-    const usSchemaFile = path.join(__dirname, "assets", "USUnits.ecschema.xml");
+    const usSchemaFile = path.join(__dirname, "..", "assets", "USUnits.ecschema.xml");
     const usSchemaXml = fs.readFileSync(usSchemaFile, "utf-8");
     deserializeXmlSync(usSchemaXml, context);
 
-    const bisCustomAttributeSchemaFile = path.join(__dirname, "..", "..", "..", "node_modules", "@bentley", "bis-custom-attributes-schema", "BisCustomAttributes.ecschema.xml");
+    const bisCustomAttributeSchemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "bis-custom-attributes-schema", "BisCustomAttributes.ecschema.xml");
     const bisCustomAttributeSchemaXml = fs.readFileSync(bisCustomAttributeSchemaFile, "utf-8");
     deserializeXmlSync(bisCustomAttributeSchemaXml, context);
 
-    const coreCustomAttributeSchemaFile = path.join(__dirname, "..", "..", "..", "node_modules", "@bentley", "core-custom-attributes-schema", "CoreCustomAttributes.ecschema.xml");
+    const coreCustomAttributeSchemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "core-custom-attributes-schema", "CoreCustomAttributes.ecschema.xml");
     const coreCustomAttributeSchemaXml = fs.readFileSync(coreCustomAttributeSchemaFile, "utf-8");
     deserializeXmlSync(coreCustomAttributeSchemaXml, context);
 
 
 
-    const schemaFile = path.join(__dirname, "..", "..", "..", "node_modules", "@bentley", "formats-schema", "Formats.ecschema.xml");
+    const schemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "formats-schema", "Formats.ecschema.xml");
     const schemaXml = fs.readFileSync(schemaFile, "utf-8");
     deserializeXmlSync(schemaXml, context);
 
-    const aecSchemaFile = path.join(__dirname, "..", "..", "..", "node_modules", "@bentley", "aec-units-schema", "AecUnits.ecschema.xml");
+    const aecSchemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "aec-units-schema", "AecUnits.ecschema.xml");
     const aecSchemaXml = fs.readFileSync(aecSchemaFile, "utf-8");
     deserializeXmlSync(aecSchemaXml, context);
 
-    const roadRailSchemaFile = path.join(__dirname, "..", "..", "..", "node_modules", "@bentley", "road-rail-units-schema", "RoadRailUnits.ecschema.xml");
+    const roadRailSchemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "road-rail-units-schema", "RoadRailUnits.ecschema.xml");
     const roadRailSchemaXml = fs.readFileSync(roadRailSchemaFile, "utf-8");
     deserializeXmlSync(roadRailSchemaXml, context);
 
-    const cifUnitsSchemaFile = path.join(__dirname, "..", "..", "..", "node_modules", "@bentley", "cif-units-schema", "CifUnits.ecschema.xml");
+    const cifUnitsSchemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "cif-units-schema", "CifUnits.ecschema.xml");
     const cifUnitsSchemaXml = fs.readFileSync(cifUnitsSchemaFile, "utf-8");
     deserializeXmlSync(cifUnitsSchemaXml, context);
   });
