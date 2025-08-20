@@ -10,6 +10,19 @@ import { BeEvent } from "@itwin/core-bentley";
 import { UnitProps } from "../Interfaces";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision } from "./FormatEnums";
 
+/** [[FormatProps.composite]] lacks documentation, please add a description here of what this represents.
+ * @beta
+ */
+export interface FormatCompositeProps {
+  /** separates values when formatting composite strings */
+  readonly spacer?: string;
+  readonly includeZero?: boolean;
+  readonly units: Array<{
+    readonly name: string;
+    readonly label?: string;
+  }>;
+}
+
 /** This interface defines the persistence format for describing the formatting of quantity values.
  * @beta
  */
@@ -50,15 +63,7 @@ export interface FormatProps {
   readonly revolutionUnit?: string;
 
   readonly allowMathematicOperations?: boolean;
-  readonly composite?: {
-    /** separates values when formatting composite strings */
-    readonly spacer?: string;
-    readonly includeZero?: boolean;
-    readonly units: Array<{
-      readonly name: string;
-      readonly label?: string;
-    }>;
-  };
+  readonly composite?: FormatCompositeProps;
 }
 
 /** This interface is used when supporting Custom Formatters that need more than the standard set of properties.
@@ -75,20 +80,23 @@ export const isCustomFormatProps = (item: FormatProps): item is CustomFormatProp
   return (item as CustomFormatProps).custom !== undefined;
 };
 
+/** A [[FormatCompositeProps]] with unit names replaced with JSON representations of those units.
+ * @alpha
+ */
+export type ResolvedFormatCompositeProps = Omit<FormatCompositeProps, "units"> & {
+  readonly units: Array<{
+    readonly unit: UnitProps;
+    readonly label?: string;
+  }>;
+}
+
 /** A [[FormatProps]] with all the references to units replaced with JSON representations of those units.
  * @alpha
  */
 export type ResolvedFormatProps = Omit<FormatProps, "azimuthBaseUnit" | "revolutionUnit" | "composite"> & {
   readonly azimuthBaseUnit?: UnitProps;
   readonly revolutionUnit?: UnitProps;
-  readonly composite?: {
-    readonly spacer?: string;
-    readonly includeZero?: boolean;
-    readonly units: Array<{
-      readonly unit: UnitProps;
-      readonly label?: string;
-    }>;
-  };
+  readonly composite?: ResolvedFormatCompositeProps;
   readonly custom?: any;
 }
 

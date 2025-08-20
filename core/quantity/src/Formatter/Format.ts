@@ -15,7 +15,7 @@ import {
   RatioType, ScientificType,
   ShowSignOption,
 } from "./FormatEnums";
-import { CloneOptions, CustomFormatProps, FormatProps, isCustomFormatProps, ResolvedFormatProps } from "./Interfaces";
+import { CloneOptions, FormatProps, isCustomFormatProps, ResolvedFormatProps } from "./Interfaces";
 
 // cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses
 // cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative
@@ -499,3 +499,6 @@ export class Format extends BaseFormat {
     return baseFormatProps;
   }
 }
+
+// async function resolveFormatProps(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<ResolvedFormatProps> {
+//}
