@@ -12,12 +12,12 @@ import {
 } from "@itwin/core-bentley";
 import { EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseDb, StandaloneDb } from "./IModelDb";
+import { BriefcaseDb, SaveChangesArgs, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
-import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs, TxnArgs } from "./internal/ChangesetConflictArgs";
+import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 
 /** A string that identifies a Txn.
  * @public @preview
@@ -295,17 +295,83 @@ interface IConflictHandler {
 }
 
 /**
- * @internal
- * Manages conflict resolution during a merge operation.
+ * @alpha
+ */
+export interface TxnProps {
+    id: TxnIdString;
+    nextId?: TxnIdString;
+    prevId?: TxnIdString;
+    props: SaveChangesArgs;
+    type: "Data" | "EcSchema" | "Ddl";
+    reversed: boolean;
+    grouped: boolean;
+    timestamp: string;
+}
+
+/**
+ * @alpha
+ * Manages conflict resolution & rebase during a merge operation.
 */
 export class ChangeMergeManager {
   private _conflictHandlers?: IConflictHandler;
+  private _rebaseHandler?: RebaseHandler;
   public constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
-  public resume() {
-    this._iModel[_nativeDb].pullMergeResume();
+  public getTxnProps(id: TxnIdString) : TxnProps | undefined{
+    return this._iModel[_nativeDb].getTxnProps(id);
+  }
+  public getLastTxnSaved() : TxnProps | undefined {
+    return this.getTxnProps(this._iModel.txns.queryPreviousTxnId(this._iModel.txns.getCurrentTxnId()));
+  }
+  public async resume() {
+    try {
+        const nativeDb = this._iModel[_nativeDb];
+        const txns = this._iModel.txns;
+        // Rebase local changes
+        for(const txnId of nativeDb.pullMergeRebaseBegin()) {
+          const txnProps = this.getTxnProps(txnId);
+          if (!txnProps) {
+            throw new Error(`Transaction ${txnId} not found`);
+          }
+
+          txns.onRebaseTxnBegin.raiseEvent(txnProps);
+          Logger.logInfo(BackendLoggerCategory.IModelDb, `Rebasing local changes for transaction ${txnId}`);
+          const shouldReinstate = this._rebaseHandler ? this._rebaseHandler.shouldReinstate(txnProps) : true;
+          if (shouldReinstate) {
+            nativeDb.pullMergeReinstateTxn(txnId);
+            Logger.logInfo(BackendLoggerCategory.IModelDb, `Reinstated local changes for transaction ${txnId}`);
+
+          if (this._rebaseHandler) {
+            await this._rebaseHandler.recompute(txnProps);
+          }
+
+          nativeDb.pullMergeSaveRebasedTxn(txnId);
+          txns.onRebaseTxnEnd.raiseEvent(txnProps);
+        }
+      }
+
+      nativeDb.pullMergeRebaseEnd();
+      if (!nativeDb.isReadonly) {
+        nativeDb.saveChanges("Merge.");
+      }
+    } catch (err) {
+      this._iModel.abandonChanges();
+      throw err;
+    }
+  }
+  public setRebaseHandler(handler: RebaseHandler) {
+    if (this._rebaseHandler) {
+      throw new IModelError(IModelStatus.BadArg, "Rebase handler already set");
+    }
+    this._rebaseHandler = handler;
   }
   public inProgress() {
-    return this._iModel[_nativeDb].pullMergeInProgress();
+    return this._iModel[_nativeDb].pullMergeGetStage() !== "None";
+  }
+  public get isRebasing() {
+    return this._iModel[_nativeDb].pullMergeGetStage() === "Rebasing";
+  }
+  public get isMerging() {
+    return this._iModel[_nativeDb].pullMergeGetStage() === "Merging";
   }
   public onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined {
     let curr = this._conflictHandlers;
@@ -485,14 +551,6 @@ export class TxnManager {
     IpcHost.notifyTxns(this._iModel, "notifyAfterUndoRedo", isUndo);
   }
 
-  private _onRebaseTxnBegin(txn: TxnArgs) {
-    this.onRebaseTxnBegin.raiseEvent(txn);
-  }
-
-  private _onRebaseTxnEnd(txn: TxnArgs) {
-    this.onRebaseTxnEnd.raiseEvent(txn);
-  }
-
   private _onRebaseLocalTxnConflict(internalArg: DbRebaseChangesetConflictArgs): DbConflictResolution {
     const args = new RebaseChangesetConflictArgs(internalArg, this._iModel);
 
@@ -627,11 +685,11 @@ export class TxnManager {
   public readonly onReplayedExternalTxns = new BeEvent<() => void>();
 
   /** @internal */
-  public readonly onRebaseTxnBegin = new BeEvent<(txn: TxnArgs) => void>();
+  public readonly onRebaseTxnBegin = new BeEvent<(txn: TxnProps) => void>();
   /** @internal */
-  public readonly onRebaseTxnEnd = new BeEvent<(txn: TxnArgs) => void>();
+  public readonly onRebaseTxnEnd = new BeEvent<(txn: TxnProps) => void>();
   /**
-   * if handler is set and it does not return undefiend then default handler will not be called
+   * if handler is set and it does not return undefined then default handler will not be called
    * @internal
    * */
   public appCustomConflictHandler?: (args: DbRebaseChangesetConflictArgs) => DbConflictResolution | undefined;
@@ -648,7 +706,7 @@ export class TxnManager {
   }
 
   /** Determine whether current txn is propagating indirect changes or not. */
-  public get isIndirectChanges(): boolean { return this._nativeDb.isIndirectChanges(); }
+  public get isIndirectChanges(): boolean { return this.getMode() === "indirect"}
 
   /** Determine if there are currently any reversible (undoable) changes from this editing session. */
   public get isUndoPossible(): boolean { return this._nativeDb.isUndoPossible(); }
@@ -780,5 +838,41 @@ export class TxnManager {
   public getChangeTrackingMemoryUsed(): number {
     return this._iModel[_nativeDb].getChangeTrackingMemoryUsed();
   }
+
+  /**
+   * Get the current transaction mode.
+   * @returns The current transaction mode, either "direct" or "indirect".
+   */
+  public getMode(): "direct" | "indirect" {
+    return this._nativeDb.getTxnMode();
+  }
+
+  /**
+   * Execute a series of changes in an indirect transaction.
+   * @param callback The function containing the changes to make.
+   */
+  public withIndirectTxnMode(callback: ()=>void): void {
+    this._nativeDb.setTxnMode("indirect");
+    try {
+    callback();
+    } finally {
+      this._nativeDb.setTxnMode("direct");
+    }
+  }
 }
 
+/**
+ * Interface for handling rebase operations on transactions.
+ */
+export interface RebaseHandler {
+  /**
+   * Determine whether a transaction should be reinstated during a rebase operation.
+   * @param txn The transaction to check.
+   */
+  shouldReinstate(txn: TxnProps): boolean;
+  /**
+   * Recompute the changes for a given transaction.
+   * @param txn The transaction to recompute.
+   */
+  recompute(txn: TxnProps): Promise<void>;
+}
