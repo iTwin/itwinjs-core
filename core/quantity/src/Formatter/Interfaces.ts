@@ -75,6 +75,23 @@ export const isCustomFormatProps = (item: FormatProps): item is CustomFormatProp
   return (item as CustomFormatProps).custom !== undefined;
 };
 
+/** A [[FormatProps]] with all the references to units replaced with JSON representations of those units.
+ * @alpha
+ */
+export type ResolvedFormatProps = Omit<FormatProps, "azimuthBaseUnit" | "revolutionUnit" | "composite"> & {
+  readonly azimuthBaseUnit?: UnitProps;
+  readonly revolutionUnit?: UnitProps;
+  readonly composite?: {
+    readonly spacer?: string;
+    readonly includeZero?: boolean;
+    readonly units: Array<{
+      readonly unit: UnitProps;
+      readonly label?: string;
+    }>;
+  };
+  readonly custom?: any;
+}
+
 /** CloneFormat defines unit and label specification if primary unit is to be set during clone.
  * @beta
  */

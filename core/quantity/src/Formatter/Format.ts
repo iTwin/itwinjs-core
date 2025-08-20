@@ -15,7 +15,7 @@ import {
   RatioType, ScientificType,
   ShowSignOption,
 } from "./FormatEnums";
-import { CloneOptions, CustomFormatProps, FormatProps, isCustomFormatProps } from "./Interfaces";
+import { CloneOptions, CustomFormatProps, FormatProps, isCustomFormatProps, ResolvedFormatProps } from "./Interfaces";
 
 // cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses
 // cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative
@@ -438,13 +438,29 @@ export class Format extends BaseFormat {
    * Returns a JSON object that contain the specification for this Format.
    */
   public toJSON(): FormatProps {
+    const json = this.toFullyResolvedJSON();
+    return {
+      ...json,
+      azimuthBaseUnit: json.azimuthBaseUnit?.name,
+      revolutionUnit: json.revolutionUnit?.name,
+      composite: json.composite ? {
+        ...json.composite,
+        units: json.composite.units.map((unit) => {
+          return undefined !== unit.label ? { name: unit.unit.name, label: unit.label } : { name: unit.unit.name };
+        }),
+      } : undefined,
+    }
+  }
+
+  /** @alpha */
+  public toFullyResolvedJSON(): ResolvedFormatProps {
     let composite;
     if (this.units) {
       const units = this.units.map((value) => {
         if (undefined !== value[1])
-          return { name: value[0].name, label: value[1] };
+          return { unit: value[0], label: value[1] };
         else
-          return { name: value[0].name };
+          return { unit: value[0] };
       });
 
       composite = {
@@ -454,10 +470,10 @@ export class Format extends BaseFormat {
       };
     }
 
-    const azimuthBaseUnit = this.azimuthBaseUnit ? this.azimuthBaseUnit.name : undefined;
-    const revolutionUnit = this.revolutionUnit ? this.revolutionUnit.name : undefined;
+    const azimuthBaseUnit = this.azimuthBaseUnit;
+    const revolutionUnit = this.revolutionUnit;
 
-    const baseFormatProps: FormatProps = {
+    const baseFormatProps: ResolvedFormatProps = {
       type: this.type,
       precision: this.precision,
       roundFactor: this.roundFactor,
@@ -477,13 +493,8 @@ export class Format extends BaseFormat {
       azimuthCounterClockwise: this.azimuthCounterClockwise,
       revolutionUnit,
       composite,
+      custom: this.customProps,
     };
-
-    if (this.customProps)
-      return {
-        ...baseFormatProps,
-        custom: this.customProps,
-      } as CustomFormatProps;
 
     return baseFormatProps;
   }
