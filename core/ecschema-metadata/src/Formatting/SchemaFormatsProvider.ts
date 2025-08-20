@@ -6,19 +6,19 @@
  * @module Metadata
  */
 
-import { ISchemaLocater, SchemaContext } from "./Context";
-import { SchemaItemKey, SchemaKey } from "./SchemaKey";
-import { SchemaItem } from "./Metadata/SchemaItem";
-import { Format } from "./Metadata/Format";
-import { SchemaItemFormatProps } from "./Deserialization/JsonProps";
+import { ISchemaLocater, SchemaContext } from "../Context";
+import { SchemaItemKey, SchemaKey } from "../SchemaKey";
+import { SchemaItem } from "../Metadata/SchemaItem";
+import { Format } from "../Metadata/Format";
+import { SchemaItemFormatProps } from "../Deserialization/JsonProps";
 import { BeEvent, Logger } from "@itwin/core-bentley";
-import { KindOfQuantity } from "./Metadata/KindOfQuantity";
-import { getFormatProps } from "./Metadata/OverrideFormat";
+import { KindOfQuantity } from "../Metadata/KindOfQuantity";
+import { getFormatProps } from "../Metadata/OverrideFormat";
 import { FormatDefinition, FormatProps, FormatsChangedArgs, FormatsProvider, UnitSystemKey } from "@itwin/core-quantity";
-import { Unit } from "./Metadata/Unit";
-import { InvertedUnit } from "./Metadata/InvertedUnit";
-import { Schema } from "./Metadata/Schema";
-import { UnitSystem } from "./Metadata/UnitSystem";
+import { Unit } from "../Metadata/Unit";
+import { InvertedUnit } from "../Metadata/InvertedUnit";
+import { Schema } from "../Metadata/Schema";
+import { UnitSystem } from "../Metadata/UnitSystem";
 const loggerCategory = "SchemaFormatsProvider";
 /**
  * Provides default formats and kind of quantities from a given SchemaContext or SchemaLocater.
