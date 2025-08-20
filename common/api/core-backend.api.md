@@ -828,7 +828,7 @@ export interface ChangeInstanceKey {
     id: Id64String;
 }
 
-// @internal
+// @alpha
 export class ChangeMergeManager {
     constructor(_iModel: BriefcaseDb | StandaloneDb);
     // (undocumented)
@@ -837,13 +837,23 @@ export class ChangeMergeManager {
         handler: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     }): void;
     // (undocumented)
+    getLastTxnSaved(): TxnProps | undefined;
+    // (undocumented)
+    getTxnProps(id: TxnIdString): TxnProps | undefined;
+    // (undocumented)
     inProgress(): boolean;
+    // (undocumented)
+    get isMerging(): boolean;
+    // (undocumented)
+    get isRebasing(): boolean;
     // (undocumented)
     onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
     // (undocumented)
     removeConflictHandler(id: string): void;
     // (undocumented)
-    resume(): void;
+    resume(): Promise<void>;
+    // (undocumented)
+    setRebaseHandler(handler: RebaseHandler): void;
 }
 
 // @beta
@@ -3682,7 +3692,7 @@ export abstract class IModelDb extends IModel {
     restartTxnSession(): void;
     // @internal @deprecated (undocumented)
     reverseTxns(numOperations: number): IModelStatus;
-    saveChanges(description?: string): void;
+    saveChanges(description?: string | SaveChangesArgs): void;
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     // @beta
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
@@ -5168,6 +5178,12 @@ export type QueryWorkspaceResourcesCallback = (resources: Iterable<{
     db: WorkspaceDb;
 }>) => void;
 
+// @alpha
+export interface RebaseHandler {
+    recompute(txn: TxnProps): Promise<void>;
+    shouldReinstate(txn: TxnProps): boolean;
+}
+
 // @beta
 export abstract class RecipeDefinitionElement extends DefinitionElement {
     protected constructor(props: ElementProps, iModel: IModelDb);
@@ -5373,6 +5389,15 @@ export class RunLayout {
     style: TextStyleSettings;
     // (undocumented)
     toResult(paragraph: Paragraph): RunLayoutResult;
+}
+
+// @public
+export interface SaveChangesArgs {
+    appData?: {
+        [key: string]: any;
+    };
+    description?: string;
+    source?: string;
 }
 
 // @public
@@ -6559,6 +6584,7 @@ export class TxnManager {
     endMultiTxnOperation(): DbResult;
     getChangeTrackingMemoryUsed(): number;
     getCurrentTxnId(): TxnIdString;
+    getMode(): "direct" | "indirect";
     getMultiTxnOperationDepth(): number;
     getRedoString(): string;
     getTxnDescription(txnId: TxnIdString): string;
@@ -6610,9 +6636,9 @@ export class TxnManager {
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
     // @internal (undocumented)
-    readonly onRebaseTxnBegin: BeEvent<(txn: TxnArgs) => void>;
+    readonly onRebaseTxnBegin: BeEvent<(txn: TxnProps) => void>;
     // @internal (undocumented)
-    readonly onRebaseTxnEnd: BeEvent<(txn: TxnArgs) => void>;
+    readonly onRebaseTxnEnd: BeEvent<(txn: TxnProps) => void>;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onReplayedExternalTxns(): void;
@@ -6636,6 +6662,27 @@ export class TxnManager {
     // @internal
     touchWatchFile(): void;
     readonly validationErrors: ValidationError[];
+    withIndirectTxnMode(callback: () => void): void;
+}
+
+// @alpha (undocumented)
+export interface TxnProps {
+    // (undocumented)
+    grouped: boolean;
+    // (undocumented)
+    id: TxnIdString;
+    // (undocumented)
+    nextId?: TxnIdString;
+    // (undocumented)
+    prevId?: TxnIdString;
+    // (undocumented)
+    props: SaveChangesArgs;
+    // (undocumented)
+    reversed: boolean;
+    // (undocumented)
+    timestamp: string;
+    // (undocumented)
+    type: "Data" | "EcSchema" | "Ddl";
 }
 
 // @public @preview
