@@ -58,7 +58,7 @@ export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean"
 
 export type CoordinateComponentSelector = "X" | "Y" | "Z" | "XY" | "XYZ";
 
-export type FieldCase = "as-is" | "upper" | "lower" | "first-capital" | "title";
+export type FieldCase = "as-is" | "upper" | "lower";
 
 export interface BooleanFieldFormatOptions {
   trueString?: string;
@@ -79,8 +79,14 @@ export interface QuantityFieldFormatOptions {
 }
 
 export interface DateTimeFieldFormatOptions {
-  // ###TODO select from a fixed list of possible formats for date and/or time? Or specify how to combine the various parts of the date-time?
-  // ###TODO localization of months and days (long and short versions)
+  // ###TODO this should probably specify a list of "date-time parts" mixed in with other strings like commas and other separators like "of" or whatever.
+  // Examples of parts:
+  //  - Date: day of week (long or short name, or number), month (long or short name, or number), year (full or only last 2 digits)
+  //  - Time: hour (using 12- or 24-hour clock), minute, second, milliseconds, AM/PM
+  // Days, months, AM/PM, etc are subject to localization so this options object would need to include any localized strings that might
+  // be needed for the parts it specifies in its formatting.
+  // People might also want to ask that the date be translated to a specific time zone before formatting is applied.
+  // For now we simply spit out the full Date as a string in ISO8601 format.
 }
 
 export interface EnumFieldFormatOptions<T extends number| string> {

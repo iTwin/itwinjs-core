@@ -26,8 +26,6 @@ describe("Field formatting", () => {
       expect(formatFieldValue("fuzzy WUZZY wAS A BeAr", "string", { case: "upper" })).toBe("FUZZY WUZZY WAS A BEAR");
       expect(formatFieldValue("fuzzy WUZZY wAS A BeAr", "string", { case: "lower" })).toBe("fuzzy wuzzy was a bear");
       expect(formatFieldValue("fuzzy WUZZY wAS A BeAr", "string", { case: "as-is" })).toBe("fuzzy WUZZY wAS A BeAr");
-      expect(formatFieldValue("fuzzy WUZZY wAS A BeAr", "string", { case: "first-capital" })).toBe("Fuzzy wuzzy was a bear");
-      expect(formatFieldValue("fuzzy WUZZY wAS A BeAr", "string", { case: "title" })).toBe("Fuzzy Wuzzy Was A Bear");
     });
 
     it("does not apply case rules to prefix and suffix", () => {
@@ -78,8 +76,6 @@ describe("Field formatting", () => {
       expect(formatFieldValue(false, "boolean", { ...base, case: "upper" })).toBe("NO");
       expect(formatFieldValue(true, "boolean", { ...base, case: "lower" })).toBe("yes");
       expect(formatFieldValue(true, "boolean", { ...base, case: "as-is" })).toBe("yes");
-      expect(formatFieldValue(true, "boolean", { ...base, case: "first-capital" })).toBe("yes");
-      expect(formatFieldValue(true, "boolean", { ...base, case: "title" })).toBe("yes");
     });
   });
 
@@ -127,8 +123,6 @@ describe("Field formatting", () => {
       expect(formatFieldValue(1, "int-enum", { ...base, case: "upper" })).toBe("ONE");
       expect(formatFieldValue(1, "int-enum", { ...base, case: "lower" })).toBe("one");
       expect(formatFieldValue(1, "int-enum", { ...base, case: "as-is" })).toBe("one");
-      expect(formatFieldValue(1, "int-enum", { ...base, case: "first-capital" })).toBe("one");
-      expect(formatFieldValue(1, "int-enum", { ...base, case: "title" })).toBe("one");
     });
   });
 
@@ -293,8 +287,6 @@ describe("Field formatting", () => {
       expect(formatFieldValue(coord, "coordinate", { ...base, case: "upper" })).toBe("1,2,3");
       expect(formatFieldValue(coord, "coordinate", { ...base, case: "lower" })).toBe("1,2,3");
       expect(formatFieldValue(coord, "coordinate", { ...base, case: "as-is" })).toBe("1,2,3");
-      expect(formatFieldValue(coord, "coordinate", { ...base, case: "first-capital" })).toBe("1,2,3");
-      expect(formatFieldValue(coord, "coordinate", { ...base, case: "title" })).toBe("1,2,3");
     });
 
     it("applies quantity formatting options (noop)", () => {
@@ -324,8 +316,6 @@ describe("Field formatting", () => {
       expect(formatFieldValue(date, "datetime", { case: "upper" })).toBe(date.toString().toUpperCase());
       expect(formatFieldValue(date, "datetime", { case: "lower" })).toBe(date.toString().toLowerCase());
       expect(formatFieldValue(date, "datetime", { case: "as-is" })).toBe(date.toString());
-      expect(formatFieldValue(date, "datetime", { case: "first-capital" })).toBe(date.toString());
-      expect(formatFieldValue(date, "datetime", { case: "title" })).toBe(date.toString());
     });
   });
 });
