@@ -362,6 +362,7 @@ export class PolylineOps {
   }
   /**
    * Checks if all points are colinear.
+   * * This test does not take point order into account.
    * @param points array of points to check.
    * @param distanceTol tolerance for co-linearity check, default is Geometry.smallMetricDistance.
    * @param xyOnly if true, only XY coordinates are used for the check, ignoring z coordinate.

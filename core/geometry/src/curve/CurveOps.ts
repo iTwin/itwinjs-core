@@ -220,6 +220,7 @@ export class CurveOps {
   }
   /**
    * Check whether or not the curves lie in a straight line, and if so, return a colinear ray.
+   * * This test does not take curve traversal or point order into account.
    * @param curves input geometry: curves or points.
    * @param xyOnly whether to ignore z-coordinates of input geometry.
    * @param tolerance optional maximum allowable linear deviation, default [[Geometry.smallMetricDistance]].
