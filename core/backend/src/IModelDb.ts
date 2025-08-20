@@ -76,6 +76,25 @@ import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
+/**
+ * Arguments for saving changes to the iModel.
+ * @public
+ */
+export interface SaveChangesArgs {
+  /**
+   * Optional description of the changes being saved.
+   */
+  description?: string;
+  /**
+   * Optional source of the changes being saved.
+   */
+  source?: string;
+  /**
+   * Optional application-specific data to include with the changes.
+   */
+  appData?: { [key: string]: any };
+}
+
 /** Options for [[IModelDb.Models.updateModel]]
  * @note To mark *only* the geometry as changed, use [[IModelDb.Models.updateGeometryGuid]] instead.
  * @public
@@ -807,17 +826,22 @@ export abstract class IModelDb extends IModel {
 
   /** Commit unsaved changes in memory as a Txn to this iModelDb.
    * @param description Optional description of the changes
-   * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
+   * @throws [[IModelError]] if there is a problem saving changes or if tshould invokeCallbacks through parentshere are pending, un-processed lock or code requests.
    * @note This will not push changes to the iModelHub.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
    */
-  public saveChanges(description?: string): void {
+  public saveChanges(description?: string | SaveChangesArgs): void {
     if (this.openMode === OpenMode.Readonly)
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only");
 
-    const stat = this[_nativeDb].saveChanges(description);
+    if (!this[_nativeDb].hasUnsavedChanges()) {
+      Logger.logWarning(loggerCategory, "there are no unsaved changes", () => description);
+    }
+
+    const args = typeof description === "string" ? { description } : description;
+    const stat = this[_nativeDb].saveChanges(args ? JSON.stringify(args): undefined);
     if (DbResult.BE_SQLITE_OK !== stat)
-      throw new IModelError(stat, `Could not save changes (${description})`);
+      throw new IModelError(stat, `Could not save changes (${args?.description})`);
   }
 
   /** Abandon changes in memory that have not been saved as a Txn to this iModelDb.
@@ -878,6 +902,15 @@ export abstract class IModelDb extends IModel {
     if (schemaFileNames.length === 0)
       return;
 
+    if (this instanceof BriefcaseDb) {
+      if (this.txns.changeMergeManager.isRebasing) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
+      }
+      if (this.txns.isIndirectChanges) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change transaction");
+      }
+    }
+
     const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
     if (this[_nativeDb].schemaSyncEnabled()) {
 
@@ -932,6 +965,15 @@ export abstract class IModelDb extends IModel {
   public async importSchemaStrings(serializedXmlSchemas: string[]): Promise<void> {
     if (serializedXmlSchemas.length === 0)
       return;
+
+    if (this instanceof BriefcaseDb) {
+      if (this.txns.changeMergeManager.isRebasing) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
+      }
+      if (this.txns.isIndirectChanges) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change transaction");
+      }
+    }
 
     if (this[_nativeDb].schemaSyncEnabled()) {
       await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schemaSync" }, async (syncAccess) => {
