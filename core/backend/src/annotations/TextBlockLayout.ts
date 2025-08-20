@@ -755,15 +755,18 @@ export class TextBlockLayout {
           if (curLine) curLine.marker = run;
           curLine = this.populateComponent(child, context, docWidth, curLine);
         });
-        if (curLine && component.nextSibling) {
-          curLine = this.flushLine(context, curLine, component.nextSibling, true);
+
+        const nextSibling = component.parent?.children?.[component.index + 1];
+        if (curLine && nextSibling) {
+          curLine = this.flushLine(context, curLine, nextSibling, true);
         }
         break;
       }
       case "paragraph": {
         component.children?.forEach(child => curLine = this.populateComponent(child, context, docWidth, curLine));
-        if (curLine && component.nextSibling) {
-          curLine = this.flushLine(context, curLine, component.nextSibling, true);
+        const nextSibling = component.parent?.children?.[component.index + 1];
+        if (curLine && nextSibling) {
+          curLine = this.flushLine(context, curLine, nextSibling, true);
         }
         break;
       }

@@ -6,7 +6,7 @@
  * @module Annotation
  */
 
-import { assert, Id64String } from "@itwin/core-bentley";
+import { Id64String } from "@itwin/core-bentley";
 import { TextStyleSettings, TextStyleSettingsProps } from "./TextStyle";
 
 /** Options supplied to [[TextBlockComponent.clearStyleOverrides]] to control how the style overrides are cleared on the component and its child components.
@@ -81,6 +81,7 @@ export abstract class TextBlockComponent {
   private _styleOverrides: TextStyleSettingsProps;
   private _parent?: TextBlockComponent;
   private _children?: TextBlockComponent[];
+  private _index: number = 0;
 
   public readonly abstract type: RunComponentType | ContainerComponentType;
 
@@ -126,7 +127,10 @@ export abstract class TextBlockComponent {
   }
 
   public set children(children: TextBlockComponent[] | undefined) {
-    children?.forEach((child) => { child.parent = this; }); // Ensure each child has its parent set
+    children?.forEach((child, index) => {
+      child.parent = this;
+      child.index = index;
+    }); // Ensure each child has its parent set
     this._children = children;
   }
 
@@ -134,20 +138,12 @@ export abstract class TextBlockComponent {
     return this._children?.[this._children.length - 1];
   }
 
-  public get previousSibling(): TextBlockComponent | undefined {
-    if (!this.parent) return undefined;
-    const siblings = this.parent.children;
-    assert(siblings !== undefined, "TextBlockComponent must have a parent with children");
-    const index = siblings?.indexOf(this);
-    return index !== undefined && index > 0 ? siblings[index - 1] : undefined;
+  public get index(): number {
+    return this._index;
   }
 
-  public get nextSibling(): TextBlockComponent | undefined {
-    if (!this.parent) return undefined;
-    const siblings = this.parent.children;
-    assert(siblings !== undefined, "TextBlockComponent must have a parent with children");
-    const index = siblings?.indexOf(this);
-    return index !== undefined && index < siblings.length - 1 ? siblings[index + 1] : undefined;
+  public set index(value: number) {
+    this._index = value;
   }
 
   /** Deviations in individual properties of the [[TextStyle]] specified by [[styleName]].
@@ -234,6 +230,7 @@ export abstract class TextBlockComponent {
     if (!this.children) this.children = [];
     this.children.push(child);
     child.parent = this;
+    child.index = this.children.length - 1; // Update the index of the new child
   }
 }
 

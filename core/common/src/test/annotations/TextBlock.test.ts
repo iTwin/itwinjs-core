@@ -158,9 +158,7 @@ describe("TextBlockComponent", () => {
   });
 
   it("adds parents to runs and children", () => {
-    function expectToHaveParentAndRoot(root: TextBlock, parent: TextBlockComponent, current: TextBlockComponent, prev?: TextBlockComponent, next?: TextBlockComponent) {
-      expect(current.previousSibling).to.equal(prev);
-      expect(current.nextSibling).to.equal(next);
+    function expectToHaveParentAndRoot(root: TextBlock, parent: TextBlockComponent, current: TextBlockComponent) {
       expect(current.parent).to.equal(parent);
       expect(current.root).to.equal(root);
     }
@@ -194,9 +192,9 @@ describe("TextBlockComponent", () => {
     const p1 = tb.children![1] as Paragraph;
     const p2 = tb.children![2] as List;
 
-    expectToHaveParentAndRoot(tb, tb, p0, undefined, p1);
-    expectToHaveParentAndRoot(tb, tb, p1, p0, p2);
-    expectToHaveParentAndRoot(tb, tb, p2, p1, undefined);
+    expectToHaveParentAndRoot(tb, tb, p0);
+    expectToHaveParentAndRoot(tb, tb, p1);
+    expectToHaveParentAndRoot(tb, tb, p2);
 
     expect(p0.children).toBeDefined();
     expect(p1.children).toBeDefined();
@@ -204,14 +202,14 @@ describe("TextBlockComponent", () => {
 
     const p0Children = p0.children!;
     expect(p0Children.length).to.equal(1);
-    p0Children.forEach((run, index) => {
-      expectToHaveParentAndRoot(tb, p0, run, p0Children[index - 1], p0Children[index + 1]);
+    p0Children.forEach((run) => {
+      expectToHaveParentAndRoot(tb, p0, run);
     });
 
     const p1Children = p1.children!;
     expect(p1Children.length).to.equal(4);
-    p1Children.forEach((run, index) => {
-      expectToHaveParentAndRoot(tb, p1, run, p1Children[index - 1], p1Children[index + 1]);
+    p1Children.forEach((run) => {
+      expectToHaveParentAndRoot(tb, p1, run);
     });
 
     const p2Children = p2.children!;
@@ -221,9 +219,9 @@ describe("TextBlockComponent", () => {
     const p2Item1 = p2Children[1] as Paragraph;
     const p2Item2 = p2Children[2] as Paragraph;
 
-    expectToHaveParentAndRoot(tb, p2, p2Item0, undefined, p2Item1);
-    expectToHaveParentAndRoot(tb, p2, p2Item1, p2Item0, p2Item2);
-    expectToHaveParentAndRoot(tb, p2, p2Item2, p2Item1, undefined);
+    expectToHaveParentAndRoot(tb, p2, p2Item0);
+    expectToHaveParentAndRoot(tb, p2, p2Item1);
+    expectToHaveParentAndRoot(tb, p2, p2Item2);
 
     expect(p2Item0.children?.length).toBe(1);
     expect(p2Item1.children?.length).toBe(1);
