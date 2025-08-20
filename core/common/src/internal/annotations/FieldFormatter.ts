@@ -5,6 +5,7 @@
 
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
 import { FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../core-common";
+import { Format, FormatterSpec } from "@itwin/core-quantity";
 
 // A FieldPropertyPath must ultimately resolve to one of these primitive types.
 export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
@@ -125,7 +126,12 @@ function formatQuantity(v: FieldPrimitiveValue, _o?: QuantityFieldFormatOptions)
   }
 
   // ###TODO apply quantity formatting...
-  return v.toString();
+  if (_o){
+    const formatterSpec = new FormatterSpec(v.toString(),_o!.format, _o?.unitConversions, _o?.sourceUnit);
+    return formatterSpec.applyFormatting(v);
+  }else
+    return undefined;
+
 }
 
 export function formatFieldValue(value: FieldPrimitiveValue, type: FieldPropertyType, options: FieldFormatOptions | undefined): string | undefined {
