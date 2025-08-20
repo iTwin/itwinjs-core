@@ -16,7 +16,7 @@ import {
 } from "@itwin/core-common";
 import { ClipVector, LowAndHighXYZProps, Range3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow, Entity } from "./Entity";
-import { EditOptions, IModelDb, InsertElementOptions } from "./IModelDb";
+import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
@@ -39,9 +39,6 @@ export interface OnElementPropsArg extends OnElementArg {
    * @note the properties may be modified. If so the modified values will be inserted/updated.
    */
   props: ElementProps;
-
-  /** Additional options provided to the import call */
-  options?: InsertElementOptions;
 }
 
 /** Argument for the `Element.onXxx` static methods that notify of operations to an existing Element supplying its Id, ModelId and FederationGuid.
@@ -54,9 +51,6 @@ export interface OnElementIdArg extends OnElementArg {
   model: Id64String;
   /** The federationGuid of the element affected by this method */
   federationGuid: GuidString;
-
-  /** Additional options for the edit operation, such as whether the change is indirect */
-  options?: EditOptions;
 }
 
 /** Argument for the `Element.onChildXxx` static methods
@@ -208,12 +202,10 @@ export class Element extends Entity {
   protected static onInsert(arg: OnElementPropsArg): void {
     const { iModel, props } = arg;
     const operation = "insert";
-    iModel.channels[_verifyChannel](props.model);
-
+    iModel.channels[_verifyChannel](arg.props.model);
     iModel.locks.checkSharedLock(props.model, "model", operation); // inserting requires shared lock on model
     if (props.parent)   // inserting requires shared lock on parent, if present
       iModel.locks.checkSharedLock(props.parent.id, "parent", operation);
-
     iModel.codeService?.verifyCode(arg);
   }
 
@@ -236,12 +228,9 @@ export class Element extends Entity {
    * @beta
    */
   protected static onUpdate(arg: OnElementPropsArg): void {
-    const { iModel, props, options } = arg;
+    const { iModel, props } = arg;
     iModel.channels[_verifyChannel](props.model);
-    const isIndirectChange = (options && options.indirect === true);
-    if (!isIndirectChange) {
-      iModel.locks.checkExclusiveLock(props.id!, "element", "update"); // eslint-disable-line @typescript-eslint/no-non-null-assertion
-    }
+    iModel.locks.checkExclusiveLock(props.id!, "element", "update"); // eslint-disable-line @typescript-eslint/no-non-null-assertion
     iModel.codeService?.verifyCode(arg);
   }
 
@@ -262,13 +251,8 @@ export class Element extends Entity {
    * @beta
    */
   protected static onDelete(arg: OnElementIdArg): void {
-    const { iModel, id, model, options } = arg;
-    iModel.channels[_verifyChannel](model);
-
-    // If the element is NOT an indirect change, it must hold an exclusive lock.
-    if (!options?.indirect) {
-      iModel.locks.checkExclusiveLock(id, "element", "delete");
-    }
+    arg.iModel.channels[_verifyChannel](arg.model);
+    arg.iModel.locks.checkExclusiveLock(arg.id, "element", "delete");
   }
 
   /** Called after an Element was deleted.
