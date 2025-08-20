@@ -1,6 +1,53 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Wed, 16 Jul 2025 15:01:35 GMT and should not be manually modified.
+This log was last generated on Wed, 20 Aug 2025 14:01:20 GMT and should not be manually modified.
+
+## 5.1.3
+Wed, 20 Aug 2025 13:57:10 GMT
+
+_Version update only_
+
+## 5.1.2
+Thu, 14 Aug 2025 19:38:08 GMT
+
+### Updates
+
+- Improve frame rate during interactive editing.
+
+## 5.1.1
+Fri, 08 Aug 2025 18:06:10 GMT
+
+_Version update only_
+
+## 5.1.0
+Fri, 08 Aug 2025 12:51:53 GMT
+
+### Updates
+
+- Add support for EXT_mesh_primitive_edge_visibility glTF extension.
+- Made QuadIdProps public
+- Fix issue with WMTS server using ResourceURL
+- Added new `MapLayerSessionManager` API.  Minor additions to `MapCartoRectangle` and `QuadId` classes.
+- Support Contour Line on Section Drawing
+- Support Google Photorealistic 3D Tiles.
+- Changed IModelReadRpcInterface.getAllCodeSpecs to use ECSqlReader. Added CodeSpecs tests.
+- Add support for new KindOfQuantity for coordinate length
+- Add `@itwin/ecschema-metadata`, `@itwin/ecschema-rpcinterface-common` peer dependencies. Make iModel-specific `SchemaContext` available on `IModelConnection` through the new `schemaContext` getter.
+- Deprecate `quantityType` getters for subclasses of `FormattedQuantityDescription` and allow passing in `kindOfQuantityName` to constructor
+- Add `formatsProvider` property to `IModelApp` and `IModelAppOptions`, new `QuantityFormatter` helper methods to help consumers supply their own format specifications for formatting numeric values.
+- Add support for glTF EXT_mesh_primitive_restart extension.
+- Add Viewport.backgroundMapTileTreeReference
+- Honor maximumScreenSpaceError specified in tileset.
+- Added TileAdmin.Options.disablePolyfaceDecimation.
+- HitDetail and Viewport.readPixels include contour line information.
+- schedule script editing mode
+- new reprojectGeometry option available when creating a geometry tile tree reference.
+- Updated deprecation comments to new template
+
+## 5.0.5
+Wed, 06 Aug 2025 15:34:15 GMT
+
+_Version update only_
 
 ## 5.0.4
 Wed, 16 Jul 2025 14:59:59 GMT

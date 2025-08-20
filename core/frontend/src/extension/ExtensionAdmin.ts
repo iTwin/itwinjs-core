@@ -80,7 +80,7 @@ export class ExtensionAdmin {
       if (manifest.activationEvents.includes("onStartup"))
         provider.execute(); // eslint-disable-line @typescript-eslint/no-floating-promises
     } catch (e) {
-      throw new Error(`Failed to get extension manifest ${provider.hostname ? `at ${provider.hostname}` : ""}: ${e}`);
+      throw new Error(`Failed to get extension manifest ${provider.hostname ? `at ${provider.hostname}` : ""}: ${String(e)}`);
     }
   }
 
@@ -143,7 +143,7 @@ export class ExtensionAdmin {
     try {
       await extension.provider.execute();
     } catch (e) {
-      Logger.logError(FrontendLoggerCategory.Extensions, `Error executing extension ${extension.manifest.name}: ${e}`);
+      Logger.logError(FrontendLoggerCategory.Extensions, `Error executing extension ${extension.manifest.name}: ${String(e)}`);
     }
   }
 }

@@ -5,7 +5,7 @@
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { ByteStream } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
-import { ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, MeshEdge, OctEncodedNormal, OctEncodedNormalPair, QPoint3dList } from "@itwin/core-common";
+import { ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, MeshEdge, MeshPolyline, OctEncodedNormal, OctEncodedNormalPair, QPoint3dList } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { MeshArgsEdges } from "../../../common/internal/render/MeshPrimitives";
 import { VertexIndices } from "../../../common/internal/render/VertexIndices";
@@ -27,7 +27,13 @@ function createMeshArgs(opts?: { is2d?: boolean }): MeshArgs {
   edges.edges.edges = [new MeshEdge(0, 1), new MeshEdge(1, 3), new MeshEdge(3, 4)];
   edges.silhouettes.edges = [new MeshEdge(1, 2), new MeshEdge(2, 3)];
   edges.silhouettes.normals = [makeNormalPair(0, 0xffff), makeNormalPair(0x1234, 0xfedc)];
-  edges.polylines.lines = [[0, 2, 4], [2, 4, 3, 1], [1, 0]];
+  edges.polylines.groups = [{
+    polylines: [
+      new MeshPolyline([0, 2, 4]),
+      new MeshPolyline([2, 4, 3, 1]),
+      new MeshPolyline([1, 0]),
+    ],
+  }];
 
   return {
     points: QPoint3dList.fromPoints([new Point3d(0, 0, 0), new Point3d(1, 1, 0), new Point3d(2, 0, 0), new Point3d(3, 1, 0), new Point3d(4, 0, 0)]),
@@ -104,7 +110,7 @@ describe("IndexedEdgeParams", () => {
       expect(edges).toBeDefined();
       expect(edges.segments).toBeDefined();
       expect(edges.silhouettes).toBeDefined();
-      expect(edges.polylines).toBeUndefined(); // converted to segments
+      expect(edges.polylineGroups).toBeUndefined(); // converted to segments
       expect(edges.indexed).toBeUndefined();
     });
   });
@@ -130,7 +136,7 @@ describe("IndexedEdgeParams", () => {
 
       const edges = makeEdgeParams(args)!;
       expect(edges).toBeDefined();
-      expect(edges.polylines).toBeDefined();
+      expect(edges.polylineGroups?.length).toEqual(1);
       expect(edges.indexed).toBeDefined();
       expect(edges.silhouettes).toBeUndefined();
       expect(edges.segments).toBeUndefined();
@@ -143,7 +149,7 @@ describe("IndexedEdgeParams", () => {
 
       const edges = makeEdgeParams(args)!;
       expect(edges).toBeDefined();
-      expect(edges.polylines).toBeDefined();
+      expect(edges.polylineGroups?.length).toEqual(1);
       expect(edges.indexed).toBeDefined();
       expect(edges.silhouettes).toBeUndefined();
       expect(edges.segments).toBeUndefined();
@@ -154,7 +160,7 @@ describe("IndexedEdgeParams", () => {
       const edges = makeEdgeParams(args)!;
       expect(edges).toBeDefined();
       expect(edges.indexed).toBeDefined();
-      expect(edges.polylines).toBeUndefined();
+      expect(edges.polylineGroups).toBeUndefined();
       expect(edges.silhouettes).toBeUndefined();
       expect(edges.segments).toBeUndefined();
 

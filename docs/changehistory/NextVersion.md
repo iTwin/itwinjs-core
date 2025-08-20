@@ -1,52 +1,10 @@
 ---
 publish: false
 ---
-
 # NextVersion
 
-Table of contents:
+## @itwin/core-ecschema-metadata
 
-- [Electron 36 and 37 support](#electron-36-and-37-support)
-- [Google Photorealistic 3D Tiles support](#google-photorealistic-3d-tiles-support)
-- [API deprecations](#api-deprecations)
-  - [@itwin/presentation-common](#itwinpresentation-common)
-  - [@itwin/presentation-backend](#itwinpresentation-backend)
-  - [@itwin/presentation-frontend](#itwinpresentation-frontend)
+### Additions
 
-## Electron 36 and 37 support
-
-In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 36](https://www.electronjs.org/blog/electron-36-0) and [Electron 37](https://www.electronjs.org/blog/electron-37-0).
-
-## Google Photorealistic 3D Tiles support
-
-iTwin.js now supports displaying Google Photorealistic 3D Tiles via the new `Google3dTilesProvider`. See [this article](../learning/frontend/GooglePhotorealistic3dTiles.md) for more details.
-
-![Google Photorealistic 3D Tiles - Exton](../learning/frontend/google-photorealistic-3d-tiles-1.jpg "Google Photorealistic 3D Tiles - Exton")
-
-![Google Photorealistic 3D Tiles - Philadelphia](../learning/frontend/google-photorealistic-3d-tiles-2.jpg "Google Photorealistic 3D Tiles - Philadelphia")
-
-## API deprecations
-
-### @itwin/presentation-common
-
-- `UnitSystemFormat`, `FormatsMap` and `KoqPropertyValueFormatter` constructor using the latter type have been deprecated. Instead, the constructor overload with "props" object should be used. The props object allows passing an optional `FormatsProvider` to use for finding formatting props for different types of values. When not specified, the `SchemaFormatsProvider` is used by default, so the behavior stays the same as before. Ideally, it's expected that frontend apps will pass `IModelApp.formatsProvider` for this prop.
-
-### @itwin/presentation-backend
-
-- The `PresentationManagerProps.schemaContextProvider` property has been deprecated. Starting with `5.0` release, `SchemaContext` is always available on [IModelDb]($core-backend), so this prop is no longer needed. If supplied, it will still be preferred over the iModel's schema context, until the property is removed completely in a future release.
-- The `PresentationManagerProps.defaultFormats` property has been deprecated in favor of the new `formatsProvider` property.
-
-### @itwin/presentation-frontend
-
-- The `PresentationManagerProps.schemaContextProvider` property has been deprecated. Starting with `5.0` release, `SchemaContext` is always available on [IModelConnection]($core-frontend), so this prop is no longer needed. If supplied, it will still be preferred over the iModel's schema context, until the property is removed completely in a future release.
-- The `PresentationManagerProps.defaultFormats` property has been deprecated in favor of the `FormatsProvider` now being available on [IModelApp.formatsProvider]($core-frontend).
-
-## Schedule Script Editing Mode
-
-[DisplayStyle3dState]($frontend) now offers an interactive editing mode for [RenderSchedule.Script]($common)s, allowing interactive, dynamic modification of the style's schedule script with immediate visual feedback. Previously, every modification of the script would trigger a refresh of all of the graphics; the new mode instead draws temporary graphics just for the elements affected by the script changes.
-
-Use [DisplayStyle3dState.setScheduleEditing]($frontend) to enter this mode, or to update the script again after entering the mode. Once all edits are complete, call [DisplayStyle3dState.commitScheduleEditing]($frontend) to finalize the changes a trigger a full refresh of the graphics. Example:
-
-```ts
-[[include:ScheduleScript_editingMode]]
-```
+- Added [FormatSetFormatsProvider]($ecschema-metadata) class that implements [MutableFormatsProvider]($quantity) to manage format definitions within a format set. This provider supports adding and removing formats at runtime and automatically updates the underlying format set when changes are made.

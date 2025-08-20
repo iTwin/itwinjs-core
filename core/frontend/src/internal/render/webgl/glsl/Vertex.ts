@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, expectDefined } from "@itwin/core-bentley";
 import { DrawParams } from "../DrawCommand";
 import { UniformHandle } from "../UniformHandle";
 import { Matrix4 } from "../Matrix";
@@ -129,7 +129,7 @@ export function addInstancedRtcMatrix(vert: VertexShaderBuilder): void {
   assert(undefined !== vert.find("g_modelMatrixRTC")); // set up in VertexShaderBuilder constructor...
   vert.addUniform("u_instanced_rtc", VariableType.Mat4, (prog) => {
     prog.addGraphicUniform("u_instanced_rtc", (uniform, params) => {
-      const modelt = params.geometry.asInstanced!.getRtcOnlyTransform();
+      const modelt = expectDefined(params.geometry.asInstanced).getRtcOnlyTransform();
       uniform.setMatrix4(Matrix4.fromTransform(modelt));
     });
   });
@@ -228,7 +228,7 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
 
   vert.addUniform("u_vertLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_vertLUT", (uniform, params) => {
-      (params.geometry.asLUT!).lut.texture.bindSampler(uniform, TextureUnit.VertexLUT);
+      expectDefined(params.geometry.asLUT).lut.texture.bindSampler(uniform, TextureUnit.VertexLUT);
     });
   });
 

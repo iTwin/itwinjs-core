@@ -13,6 +13,7 @@ import { ViewRect } from "../common/ViewRect";
  */
 export function expectColors(viewport: ScreenViewport, expected: ColorDef[], rect?: ViewRect): void {
   viewport.renderFrame();
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const buf = viewport.readImageBuffer({ rect })!;
   expect(buf).toBeDefined();
 
@@ -36,6 +37,7 @@ export function expectColors(viewport: ScreenViewport, expected: ColorDef[], rec
  */
 export function expectNotTheseColors(viewport: ScreenViewport, expected: ColorDef[], rect?: ViewRect): void {
   viewport.renderFrame();
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const buf = viewport.readImageBuffer({ rect })!;
   expect(buf).toBeDefined();
 

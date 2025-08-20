@@ -7,7 +7,7 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@itwin/core-bentley";
+import { assert, dispose, expectDefined } from "@itwin/core-bentley";
 import { RenderMemory } from "../../../render/RenderMemory";
 import { EDLCalcBasicGeometry, EDLCalcFullGeometry, EDLFilterGeometry, EDLMixGeometry } from "./CachedGeometry";
 import { WebGLDisposable } from "./Disposable";
@@ -227,32 +227,32 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
       fbStack.execute(this._edlFinalFbo, true, useMsBuffers, () => {
         if (bundle.edlCalcBasicGeom === undefined) {
           const ct1 = edlParams.inputTex;
-          const ctd = this._depth!.getHandle()!;
-          bundle.edlCalcBasicGeom = EDLCalcBasicGeometry.createGeometry(ct1.getHandle()!, ctd, ct1.width, ct1.height);
+          const ctd = expectDefined(this._depth?.getHandle());
+          bundle.edlCalcBasicGeom = EDLCalcBasicGeometry.createGeometry(expectDefined(ct1.getHandle()), ctd, ct1.width, ct1.height);
         }
-        const params = getDrawParams(this._target, bundle.edlCalcBasicGeom!);
+        const params = getDrawParams(this._target, expectDefined(bundle.edlCalcBasicGeom));
         this._target.techniques.draw(params);
       });
     } else { // EDLMode.Full
       // draw with full method based on original paper using full, 1/2, and 1/4 sizes
-      const edlCalc2FB: FrameBuffer[] = [bundle.edlCalcFbo1!, bundle.edlCalcFbo2!, bundle.edlCalcFbo4!];
+      const edlCalc2FB: FrameBuffer[] = [expectDefined(bundle.edlCalcFbo1), expectDefined(bundle.edlCalcFbo2), expectDefined(bundle.edlCalcFbo4)];
       if (bundle.edlCalcFullGeom === undefined) {
         const ct1 = edlParams.inputTex;
         const ct2 = bundle.edlCalcTex2;
         const ct4 = bundle.edlCalcTex4;
-        const ctd = this._depth.getHandle()!;
-        bundle.edlCalcFullGeom = [EDLCalcFullGeometry.createGeometry(ct1.getHandle()!, ctd, 1, ct1.width, ct1.height),
-        EDLCalcFullGeometry.createGeometry(ct1.getHandle()!, ctd, 2, ct2!.width, ct2!.height),
-        EDLCalcFullGeometry.createGeometry(ct1.getHandle()!, ctd, 4, ct4!.width, ct4!.height)];
+        const ctd = expectDefined(this._depth?.getHandle());
+        bundle.edlCalcFullGeom = [EDLCalcFullGeometry.createGeometry(expectDefined(ct1.getHandle()), ctd, 1, ct1.width, ct1.height),
+        EDLCalcFullGeometry.createGeometry(expectDefined(ct1.getHandle()), ctd, 2, expectDefined(ct2?.width), expectDefined(ct2?.height)),
+        EDLCalcFullGeometry.createGeometry(expectDefined(ct1.getHandle()), ctd, 4, expectDefined(ct4?.width), expectDefined(ct4?.height))];
       }
 
-      const edlFiltFbos: FrameBuffer[] = [bundle.edlFiltFbo2!, bundle.edlFiltFbo4!];
+      const edlFiltFbos: FrameBuffer[] = [expectDefined(bundle.edlFiltFbo2), expectDefined(bundle.edlFiltFbo4)];
       if (bundle.edlFiltGeom === undefined) {
         const ft2 = bundle.edlCalcTex2;
         const ft4 = bundle.edlCalcTex4;
-        const ftd = this._depth.getHandle()!;
-        bundle.edlFiltGeom = [EDLFilterGeometry.createGeometry(ft2!.getHandle()!, ftd, 2, ft2!.width, ft2!.height),
-        EDLFilterGeometry.createGeometry(ft4!.getHandle()!, ftd, 4, ft4!.width, ft4!.height)];
+        const ftd = expectDefined(this._depth?.getHandle());
+        bundle.edlFiltGeom = [EDLFilterGeometry.createGeometry(expectDefined(ft2?.getHandle()), ftd, 2, expectDefined(ft2?.width), expectDefined(ft2?.height)),
+        EDLFilterGeometry.createGeometry(expectDefined(ft4?.getHandle()), ftd, 4, expectDefined(ft4?.width), expectDefined(ft4?.height))];
       }
 
       const gl = System.instance.context;
@@ -261,13 +261,13 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
         fbStack.execute(edlCalc2FB[i], true, false, () => {
           const colTex = edlCalc2FB[i].getColor(0);
           gl.viewport(0, 0, colTex.width, colTex.height); // have to set viewport to current texture size
-          const params = getDrawParams(this._target, bundle.edlCalcFullGeom![i]!);
+          const params = getDrawParams(this._target, expectDefined(bundle.edlCalcFullGeom?.[i]));
           this._target.techniques.draw(params);
         });
 
         if (edlParams.edlFilter && i > 0) {
           fbStack.execute(edlFiltFbos[i - 1], true, false, () => {
-            const params = getDrawParams(this._target, bundle.edlFiltGeom![i - 1]!);
+            const params = getDrawParams(this._target, expectDefined(bundle.edlFiltGeom?.[i - 1]));
             this._target.techniques.draw(params);
           });
         }
@@ -275,19 +275,19 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
       gl.viewport(0, 0, this._width, this._height); // Restore viewport
 
       // Now combine the 3 results and output
-      const tex1 = bundle.edlCalcTex1!.getHandle();
-      const tex2 = edlParams.edlFilter ? bundle.edlFiltTex2!.getHandle() : bundle.edlCalcTex2!.getHandle();
-      const tex4 = edlParams.edlFilter ? bundle.edlFiltTex4!.getHandle() : bundle.edlCalcTex4!.getHandle();
+      const tex1 = expectDefined(bundle.edlCalcTex1?.getHandle());
+      const tex2 = expectDefined(edlParams.edlFilter ? bundle.edlFiltTex2?.getHandle() : bundle.edlCalcTex2?.getHandle());
+      const tex4 = expectDefined(edlParams.edlFilter ? bundle.edlFiltTex4?.getHandle() : bundle.edlCalcTex4?.getHandle());
       fbStack.execute(this._edlFinalFbo, true, useMsBuffers, () => {
         if (bundle.edlMixGeom === undefined) {
-          bundle.edlMixGeom = EDLMixGeometry.createGeometry(tex1!, tex2!, tex4!);
+          bundle.edlMixGeom = EDLMixGeometry.createGeometry(tex1, tex2, tex4);
         } else {
           if (bundle.edlMixGeom.colorTexture1 !== tex1 || bundle.edlMixGeom.colorTexture2 !== tex2 || bundle.edlMixGeom.colorTexture4 !== tex4) {
             dispose(bundle.edlMixGeom);
-            bundle.edlMixGeom = EDLMixGeometry.createGeometry(tex1!, tex2!, tex4!);
+            bundle.edlMixGeom = EDLMixGeometry.createGeometry(tex1, tex2, tex4);
           }
         }
-        const params = getDrawParams(this._target, bundle.edlMixGeom!);
+        const params = getDrawParams(this._target, expectDefined(bundle.edlMixGeom));
         this._target.techniques.draw(params);
       });
     }

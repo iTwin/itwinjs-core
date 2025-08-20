@@ -14,6 +14,7 @@ import { FormatsProvider } from '@itwin/core-quantity';
 import { FormatTraits } from '@itwin/core-quantity';
 import { FormatType } from '@itwin/core-quantity';
 import { FractionalPrecision } from '@itwin/core-quantity';
+import { MutableFormatsProvider } from '@itwin/core-quantity';
 import { ScientificType } from '@itwin/core-quantity';
 import { ShowSignOption } from '@itwin/core-quantity';
 import { UnitConversionProps } from '@itwin/core-quantity';
@@ -333,6 +334,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     // @internal (undocumented)
     static isECClass(object: any): object is ECClass;
     isSync(targetClass: ECClass): boolean;
+    // (undocumented)
+    isSync(targetClass: string, schemaName: string): boolean;
     // @internal (undocumented)
     protected loadPrimitiveType(primitiveType: string | PrimitiveType | Enumeration | undefined, schema: Schema): Promise<PrimitiveType | Enumeration>;
     // @internal (undocumented)
@@ -760,6 +763,8 @@ export class Format extends SchemaItem {
     // @internal (undocumented)
     protected setSpacer(spacer: string): void;
     // @internal (undocumented)
+    protected setStationBaseFactor(stationBaseFactor: number): void;
+    // @internal (undocumented)
     protected setStationOffsetSize(stationOffsetSize: number): void;
     // @internal (undocumented)
     protected setStationSeparator(separator: string): void;
@@ -773,6 +778,8 @@ export class Format extends SchemaItem {
     get showSignOption(): ShowSignOption;
     // (undocumented)
     get spacer(): string | undefined;
+    // (undocumented)
+    get stationBaseFactor(): number | undefined;
     // (undocumented)
     get stationOffsetSize(): number | undefined;
     // (undocumented)
@@ -800,6 +807,20 @@ export interface FormatSet {
     label: string;
     // (undocumented)
     name: string;
+}
+
+// @beta
+export class FormatSetFormatsProvider implements MutableFormatsProvider {
+    constructor(props: {
+        formatSet: FormatSet;
+        fallbackProvider?: FormatsProvider;
+    });
+    addFormat(name: string, format: FormatDefinition): Promise<void>;
+    clearFallbackProvider(): void;
+    getFormat(input: string): Promise<FormatDefinition | undefined>;
+    // (undocumented)
+    onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
+    removeFormat(name: string): Promise<void>;
 }
 
 // @internal (undocumented)
