@@ -161,15 +161,24 @@ describe("change merge manager", function (this: Suite) {
       expectedUpdatedEl.set(elId, { id: elId, isIndirect: false });
     };
 
-    // const updateIndirectEl = (b: BriefcaseDb, elId: Id64String) => {
-    //   const elProps = b.elements.getElementProps(elId);
-    //   b.elements.updateElement({ ...elProps, prop1: `${b.briefcaseId}` } as any);
-    //   expectedUpdatedEl.set(elId, { id: elId, isIndirect: true });
-    // };
+    const updateIndirectEl = (b: BriefcaseDb, elId: Id64String) => {
+      const elProps = b.elements.getElementProps(elId);
+      b.elements.updateElement({ ...elProps, prop1: `${b.briefcaseId}` } as any);
+      expectedUpdatedEl.set(elId, { id: elId, isIndirect: true });
+    };
 
     let isRecomputedInvoked = false;
     let isShouldReinstateInvoked = false;
     await updateDirectEl(b2, expectedInsertedEl.keys().next().value!);
+    
+    // should not require any locks
+    b2.txns.withIndirectTxnMode(() => {
+      expectedInsertedEl.forEach((el) => {
+        if (el.isIndirect) {
+          updateIndirectEl(b2, el.id);
+        }
+      });
+    });
     b2.saveChanges("update element 1 direct");
     b2.txns.changeMergeManager.setRebaseHandler({
       shouldReinstate(_txn: TxnProps) {
