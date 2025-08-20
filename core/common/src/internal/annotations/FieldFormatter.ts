@@ -101,10 +101,6 @@ function formatString(s: string | undefined, o?: FieldFormatOptions): string | u
     case "lower":
       s = s.toLowerCase();
       break;
-    case "first-capital":
-    case "title":
-      // ###TODO
-      break;
   }
 
   if (o.prefix || o.suffix) {

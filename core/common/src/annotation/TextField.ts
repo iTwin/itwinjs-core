@@ -57,7 +57,7 @@ export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean"
 
 export type CoordinateComponentSelector = "X" | "Y" | "Z" | "XY" | "XYZ";
 
-export type FieldCase = "as-is" | "upper" | "lower" | "first-capital" | "title";
+export type FieldCase = "as-is" | "upper" | "lower";
 
 export interface BooleanFieldFormatOptions {
   trueString?: string;
