@@ -84,19 +84,19 @@ it("MedialCurveCL", () => {
   for (const line of allLines) {
     let x0 = 0;
     for (const circle of allCircles) {
-          const curves = TangentConstruction.medialCurveLineCircle(line, circle);
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry,
-              CurveFactory.createCurvePrimitiveFromImplicitCurve(line, 10), x0, y0);
+      const curves = TangentConstruction.medialCurveLineCircle(line, circle);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry,
+        CurveFactory.createCurvePrimitiveFromImplicitCurve(line, 10), x0, y0);
 
-             GeometryCoreTestIO.captureCloneGeometry(allGeometry,
-            CurveFactory.createCurvePrimitiveFromImplicitCurve(circle), x0, y0);
-          if (curves)
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry,
-              CurveFactory.createCurvePrimitiveFromImplicitCurve(curves), x0, y0);
-          x0 += xStepA;
-        }
-      y0 += xStepB;
-      }
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry,
+        CurveFactory.createCurvePrimitiveFromImplicitCurve(circle), x0, y0);
+      if (curves)
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry,
+          CurveFactory.createCurvePrimitiveFromImplicitCurve(curves), x0, y0);
+      x0 += xStepA;
+    }
+    y0 += xStepB;
+  }
 
   GeometryCoreTestIO.saveGeometry(allGeometry, "geometry2d", "medialCurveCL");
   expect(ck.getNumErrors()).toBe(0);
@@ -166,7 +166,7 @@ it("UnboundedHyperbola2dA", () => {
             LineSegment3d.createXYXY(xy.x, xy.y, curvePoint.x, curvePoint.y), x0, 0);
           // GeometryCoreTestIO.consoleLog({onCurve: curvePoint.toJSON()});
           ck.testCoordinate(0, curve.functionValue(curvePoint), "point projects to hyperbola");
-          const gradF = curve.gradiant(curvePoint);
+          const gradF = curve.gradient(curvePoint);
           GeometryCoreTestIO.captureCloneGeometry(allGeometry,
             [Point3d.createFrom(curvePoint), Point3d.createFrom(curvePoint.plusScaled(gradF, 0.2))],
             x0, 0);

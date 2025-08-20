@@ -692,8 +692,8 @@ export class ImplicitGeometryHelpers {
           x0, y0);
         const fM = m.curve.functionValue(g.point);
         const fG = g.curve.functionValue(g.point);
-        const gradM = m.curve.gradiant(g.point);
-        const gradG = g.curve.gradiant(g.point);
+        const gradM = m.curve.gradient(g.point);
+        const gradG = g.curve.gradient(g.point);
         ck.testCoordinate(fM, 0.0, "function value fM at tangency", m.curve, g.curve);
         ck.testCoordinate(fG, 0.0, "function value fG at tangency", m.curve, g.curve);
         ImplicitGeometryHelpers.testParallelGradiants(ck, gradM, gradG);

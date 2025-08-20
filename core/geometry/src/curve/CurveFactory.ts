@@ -605,15 +605,16 @@ export class CurveFactory {
   ): Arc3d | undefined {
     return Arc3d.createCircularStartTangentRadius(start, tangentAtStart, radius, upVector, sweep);
   }
-
-  public static createCurvePrimitiveFromImplicitCurve(source: ImplicitCurve2d | ImplicitCurve2d[],
-    sizeHint: number = 100): CurvePrimitive | CurvePrimitive[] | undefined {
+  /** Create a curve primitive from an implicit curve. */
+  public static createCurvePrimitiveFromImplicitCurve(
+    source: ImplicitCurve2d | ImplicitCurve2d[], sizeHint: number = 100,
+  ): CurvePrimitive | CurvePrimitive[] | undefined {
     if (Array.isArray(source)) {
       const result: CurvePrimitive[] = [];
       for (const s of source) {
         const c = this.createCurvePrimitiveFromImplicitCurve(s);
         if (c === undefined) {
-          // ignore it!
+          // ignore it
         } else if (c instanceof CurvePrimitive) {
           result.push(c);
         } else if (Array.isArray(c)) {
@@ -623,33 +624,34 @@ export class CurveFactory {
       }
       return result;
     }
-    // source is a single curve . .
+    // source is a single curve
     if (source instanceof UnboundedCircle2dByCenterAndRadius) {
       return Arc3d.createXY(Point3d.createFrom(source.center), source.radius);
     } else if (source instanceof UnboundedLine2dByPointAndNormal) {
       const vectorAlong = source.vectorAlongLine();
       return LineSegment3d.createXYXY(
         source.point.x - sizeHint * vectorAlong.x, source.point.y - sizeHint * vectorAlong.y,
-        source.point.x + sizeHint * vectorAlong.x, source.point.y + sizeHint * vectorAlong.y);
+        source.point.x + sizeHint * vectorAlong.x, source.point.y + sizeHint * vectorAlong.y,
+      );
     } else if (source instanceof UnboundedHyperbola2d) {
       const result: CurvePrimitive[] = [];
       /* COMMENTED CODE FOR LINESTRING APPROXIMATION
-    const degreeStep = 10.0;
-    const degreeLimit = 80.0;
-    for (const signX of [1,-1]){
+      const degreeStep = 10.0;
+      const degreeLimit = 80.0;
+      for (const signX of [1, -1]) {
         const strokes = [];
-        for (const theta = Angle.createDegrees (-degreeLimit);
+        for (const theta = Angle.createDegrees(-degreeLimit);
           theta.degrees < degreeLimit + 1;
-          theta.setDegrees(theta.degrees +  degreeStep)){
+          theta.setDegrees(theta.degrees + degreeStep)) {
           const c = signX * theta.cos();
           const s = theta.sin();
-          const xy = Point3d.createFrom (source.pointA.plus2Scaled (source.vectorU, 1.0 / c, source.vectorV, s/c));
-          strokes.push (Point3d.createFrom (xy));
-          }
-        result.push (LineString3d.create (strokes));
+          const xy = Point3d.createFrom(source.pointA.plus2Scaled(source.vectorU, 1.0 / c, source.vectorV, s / c));
+          strokes.push(Point3d.createFrom(xy));
         }
-    */
-      // The bezier branches open on plus and minus u axes, with asymptontes at 45 degree angles in local space
+        result.push(LineString3d.create(strokes));
+      }
+      */
+      // The bezier branches open on plus and minus u axes, with asymptotes at 45 degree angles in local space
       // Construct a bezier for 180 degrees of unit circle from negative y to plus 1 with (c,s,w)
       // Reverse c and w so its normalized form is (sec, tan, 1)
       // Map those so bezier 0 maps to U-V asymptote, bezier 1 maps to U+v, and bezier 0.5 maps to A
@@ -673,10 +675,11 @@ export class CurveFactory {
       return Arc3d.create(
         Point3d.createFrom(source.pointA),
         Vector3d.createFrom(source.vectorU),
-        Vector3d.createFrom(source.vectorV));
+        Vector3d.createFrom(source.vectorV),
+      );
     } else if (source instanceof UnboundedParabola2d) {
-      /* 
-      const halfParabolapoles = [
+      /*
+      const halfParabolaPoles = [
         Point4d.create (2 * source.pointA.x, 2 *source.pointA.y, 0, 2),
         Point4d.create (source.vectorU.x, source.vectorU.y, 0, 0),
         Point4d.create (2 * source.vectorV.x, 2 * source.vectorV.y, 0, 0),

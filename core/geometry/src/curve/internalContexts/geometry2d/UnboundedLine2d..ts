@@ -117,7 +117,7 @@ export class UnboundedLine2dByPointAndNormal extends ImplicitCurve2d {
    * @param xy space paoint
    * @returns unnit normal of the line.
    */
-  public override gradiant(_xy: XAndY): Vector2d {
+  public override gradient(_xy: XAndY): Vector2d {
     const unit = this.normal.normalize();
     if (unit !== undefined)
       return unit;
@@ -143,7 +143,7 @@ export class UnboundedLine2dByPointAndNormal extends ImplicitCurve2d {
    *
    */
   public unitNormal(): Vector2d | undefined {
-    return this.normal.normalize ();
+    return this.normal.normalize();
   }
   /**
    * Drop a perpendicular from spacePoint to the line.   Emit that point to the handler.
@@ -186,7 +186,7 @@ export class UnboundedLine2dByPointAndNormal extends ImplicitCurve2d {
     if (unitNormal === undefined)
       return undefined;
     if (newOrigin === undefined)
-        return new UnboundedLine2dByPointAndNormal (this.point, unitNormal);
+      return new UnboundedLine2dByPointAndNormal(this.point, unitNormal);
     return new UnboundedLine2dByPointAndNormal(
       Point2d.create(newOrigin.x, newOrigin.y),
       Vector2d.create(unitNormal.x, unitNormal.y));
