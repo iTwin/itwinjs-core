@@ -18,7 +18,8 @@ import {
   DictionaryModel,
   IModelHost,
   SpatialCategory,
-  SqliteChangesetReader
+  SqliteChangesetReader,
+  TxnProps
 } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { RebaseChangesetConflictArgs, TxnArgs } from "../../internal/ChangesetConflictArgs";
@@ -114,7 +115,7 @@ describe("Change merge method", () => {
      * Fastforward will not trigger rebase events as rebase was not required to merge changes.
      * In this test we will test rebase events when noFastForward is set to true. Which mean rebase is required to merge changes.
      */
-    const events = new Map<number, { args: TxnArgs, event: "onRebaseTxnBegin" | "onRebaseTxnEnd" }[]>();
+    const events = new Map<number, { args: TxnProps, event: "onRebaseTxnBegin" | "onRebaseTxnEnd" }[]>();
 
     const b1 = await ctx.openB1();
     events.set(b1.briefcaseId, []);
@@ -162,12 +163,12 @@ describe("Change merge method", () => {
     assert.equal(events.get(b2.briefcaseId)?.length, 4);
     assert.equal(events.get(b2.briefcaseId)?.[0].event, "onRebaseTxnBegin");
     assert.equal(events.get(b2.briefcaseId)?.[0].args.id, "0x100000000");
-    assert.equal(events.get(b2.briefcaseId)?.[0].args.descr, "inserted physical object [id=0x40000000001]");
+    assert.equal(events.get(b2.briefcaseId)?.[0].args.props?.description, "inserted physical object [id=0x40000000001]");
     assert.equal(events.get(b2.briefcaseId)?.[0].args.type, "Data");
 
     assert.equal(events.get(b2.briefcaseId)?.[3].event, "onRebaseTxnEnd");
     assert.equal(events.get(b2.briefcaseId)?.[3].args.id, "0x100000001");
-    assert.equal(events.get(b2.briefcaseId)?.[3].args.descr, "inserted physical object [id=0x40000000002]");
+    assert.equal(events.get(b2.briefcaseId)?.[3].args.props?.description, "inserted physical object [id=0x40000000002]");
     assert.equal(events.get(b2.briefcaseId)?.[3].args.type, "Data");
 
 
@@ -185,12 +186,12 @@ describe("Change merge method", () => {
     assert.equal(events.get(b1.briefcaseId)?.length, 4);
     assert.equal(events.get(b1.briefcaseId)?.[0].event, "onRebaseTxnBegin");
     assert.equal(events.get(b1.briefcaseId)?.[0].args.id, "0x100000000");
-    assert.equal(events.get(b1.briefcaseId)?.[0].args.descr, "inserted physical object [id=0x30000000003]");
+    assert.equal(events.get(b1.briefcaseId)?.[0].args.props?.description, "inserted physical object [id=0x30000000003]");
     assert.equal(events.get(b1.briefcaseId)?.[0].args.type, "Data");
 
     assert.equal(events.get(b1.briefcaseId)?.[3].event, "onRebaseTxnEnd");
     assert.equal(events.get(b1.briefcaseId)?.[3].args.id, "0x100000001");
-    assert.equal(events.get(b1.briefcaseId)?.[3].args.descr, "inserted physical object [id=0x30000000004]");
+    assert.equal(events.get(b1.briefcaseId)?.[3].args.props?.description, "inserted physical object [id=0x30000000004]");
     assert.equal(events.get(b1.briefcaseId)?.[3].args.type, "Data");
 
 
@@ -232,22 +233,22 @@ describe("Change merge method", () => {
     assert.equal(events.get(b2.briefcaseId)?.length, 8);
     assert.equal(events.get(b2.briefcaseId)?.[0].event, "onRebaseTxnBegin");
     assert.equal(events.get(b2.briefcaseId)?.[0].args.id, "0x100000000");
-    assert.equal(events.get(b2.briefcaseId)?.[0].args.descr, "update physical object [id=0x30000000001]");
+    assert.equal(events.get(b2.briefcaseId)?.[0].args.props?.description, "update physical object [id=0x30000000001]");
     assert.equal(events.get(b2.briefcaseId)?.[0].args.type, "Data");
 
     assert.equal(events.get(b2.briefcaseId)?.[2].event, "onRebaseTxnBegin");
     assert.equal(events.get(b2.briefcaseId)?.[2].args.id, "0x100000001");
-    assert.equal(events.get(b2.briefcaseId)?.[2].args.descr, "update physical object [id=0x30000000002]");
+    assert.equal(events.get(b2.briefcaseId)?.[2].args.props?.description, "update physical object [id=0x30000000002]");
     assert.equal(events.get(b2.briefcaseId)?.[2].args.type, "Data");
 
     assert.equal(events.get(b2.briefcaseId)?.[4].event, "onRebaseTxnBegin");
     assert.equal(events.get(b2.briefcaseId)?.[4].args.id, "0x100000002");
-    assert.equal(events.get(b2.briefcaseId)?.[4].args.descr, "update physical object [id=0x30000000003]");
+    assert.equal(events.get(b2.briefcaseId)?.[4].args.props?.description, "update physical object [id=0x30000000003]");
     assert.equal(events.get(b2.briefcaseId)?.[4].args.type, "Data");
 
     assert.equal(events.get(b2.briefcaseId)?.[6].event, "onRebaseTxnBegin");
     assert.equal(events.get(b2.briefcaseId)?.[6].args.id, "0x100000003");
-    assert.equal(events.get(b2.briefcaseId)?.[6].args.descr, "update physical object [id=0x30000000004]");
+    assert.equal(events.get(b2.briefcaseId)?.[6].args.props?.description, "update physical object [id=0x30000000004]");
     assert.equal(events.get(b2.briefcaseId)?.[6].args.type, "Data");
 
     assert.isDefined(b1.elements.getElement(e1).federationGuid);
@@ -272,7 +273,7 @@ describe("Change merge method", () => {
      * Fastforward will not trigger rebase events as rebase was not required to merge changes.
      * In this test we will test rebase events when noFastForward is set to false. Which mean rebase is not required to merge changes.
      */
-    const events = new Map<number, { args: TxnArgs, event: "onRebaseTxnBegin" | "onRebaseTxnEnd" }[]>();
+    const events = new Map<number, { args: TxnProps, event: "onRebaseTxnBegin" | "onRebaseTxnEnd" }[]>();
 
     const b1 = await ctx.openB1();
     events.set(b1.briefcaseId, []);
@@ -420,7 +421,7 @@ describe("Change merge method", () => {
               const localChangedVal = args.getValueText(5, "New");
               const tipValue = b2.queryFilePropertyString({ namespace: "test", name: "test" });
               b2.saveFileProperty({ namespace: "test", name: "test" }, `${tipValue} + ${localChangedVal}`);
-              return DbConflictResolution.Skip; // skip incomming value and continue
+              return DbConflictResolution.Skip; // skip incoming value and continue
             }
           }
         }

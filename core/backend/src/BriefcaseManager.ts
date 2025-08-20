@@ -574,7 +574,12 @@ export class BriefcaseManager {
     }
 
     if (appliedChangesets < changesets.length - 1) {
-      db[_nativeDb].pullMergeBegin();
+      const nativeDb = db[_nativeDb];
+      const txns = db instanceof BriefcaseDb ? db.txns : undefined;
+      const reversedTxns = nativeDb.pullMergeReverseLocalChanges();
+      Logger.logInfo(loggerCategory, `Reversed ${reversedTxns.length} local changes`);
+
+      // apply incoming changes
       for (const changeset of changesets.filter((_, index) => index > appliedChangesets)) {
         const stopwatch = new StopWatch(`[${changeset.id}]`, true);
         Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
@@ -586,19 +591,29 @@ export class BriefcaseManager {
             Logger.logError(loggerCategory, `Error applying changeset with id ${stopwatch.description}: ${err.message}`);
           }
           db.abandonChanges();
-          db[_nativeDb].pullMergeEnd();
           throw err;
         }
       }
-      db[_nativeDb].pullMergeEnd();
-      if (!db.isReadonly) {
-        db.saveChanges("Merge.");
+      if (txns) {
+        await txns.changeMergeManager.resume();
+      } else {
+        // Only Briefcase has change management. Following is
+        // for test related to standalone db with txn enabled.
+        for(const txnId of nativeDb.pullMergeRebaseBegin()) {
+          nativeDb.pullMergeReinstateTxn(txnId);
+          nativeDb.pullMergeSaveRebasedTxn(txnId);
+        }
+        nativeDb.pullMergeRebaseEnd();
+        if (!nativeDb.isReadonly) {
+          nativeDb.saveChanges("Merge.");
+        }
       }
     }
 
     // notify listeners
     db.notifyChangesetApplied();
   }
+
   /** create a changeset from the current changes, and push it to iModelHub */
   private static async pushChanges(db: BriefcaseDb, arg: PushChangesArgs): Promise<void> {
     const changesetProps = db[_nativeDb].startCreateChangeset() as ChangesetFileProps;
