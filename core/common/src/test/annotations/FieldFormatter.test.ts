@@ -252,6 +252,298 @@ describe("Field formatting", () => {
       expect(result).to.equal("50.0 m");
     });
 
+    it("should format length with custom precision", async () => {
+      const unitsProvider = new SchemaUnitProvider(schemaContext);
+      const formatsProvider = new SchemaFormatsProvider(schemaContext, "metric");
+
+      const persistenceUnit = await unitsProvider.findUnitByName("Units.M");
+      let formatProps = await formatsProvider.getFormat("AecUnits.LENGTH");
+
+      if (!formatProps)
+        throw new Error("formatProps is undefined");
+
+      // Modify format to have 3 decimal places
+      formatProps = {
+        ...formatProps,
+        precision: 3,
+      };
+
+      const format = await Format.createFromJSON("test format", unitsProvider, formatProps);
+      const unitConversions = await FormatterSpec.getUnitConversions(format, unitsProvider, persistenceUnit);
+      const resolvedProps = format.toFullyResolvedJSON();
+
+      const quantityOptions: QuantityFieldFormatOptions = {
+        formatProps: resolvedProps,
+        unitConversions,
+        sourceUnit: persistenceUnit
+      };
+
+      const fieldOptions: FieldFormatOptions = {
+        quantity: quantityOptions
+      };
+
+      const result = formatFieldValue(50.12345, "quantity", fieldOptions);
+      expect(result).to.equal("50.123 m");
+    });
+
+    it("should format imperial length", async () => {
+      const unitsProvider = new SchemaUnitProvider(schemaContext);
+      const formatsProvider = new SchemaFormatsProvider(schemaContext, "imperial");
+
+      const persistenceUnit = await unitsProvider.findUnitByName("Units.M");
+      const formatProps = await formatsProvider.getFormat("AecUnits.LENGTH_LONG");
+
+      if (!formatProps)
+        throw new Error("formatProps is undefined");
+
+      const format = await Format.createFromJSON("test format", unitsProvider, formatProps);
+      const unitConversions = await FormatterSpec.getUnitConversions(format, unitsProvider, persistenceUnit);
+      const resolvedProps = format.toFullyResolvedJSON();
+
+      const quantityOptions: QuantityFieldFormatOptions = {
+        formatProps: resolvedProps,
+        unitConversions,
+        sourceUnit: persistenceUnit
+      };
+
+      const fieldOptions: FieldFormatOptions = {
+        quantity: quantityOptions
+      };
+
+      // Test formatting 50 meters to imperial units
+      const result = formatFieldValue(50, "quantity", fieldOptions);
+      expect(result).to.not.be.undefined;
+      expect(result).to.be.a("string");
+      expect(result).to.include("164"); // Should contain feet value
+    });
+
+    it("should format area units", async () => {
+      const unitsProvider = new SchemaUnitProvider(schemaContext);
+      const formatsProvider = new SchemaFormatsProvider(schemaContext, "metric");
+
+      const persistenceUnit = await unitsProvider.findUnitByName("Units.SQ_M");
+      const formatProps = await formatsProvider.getFormat("AecUnits.AREA");
+
+      if (!formatProps)
+        throw new Error("formatProps is undefined");
+
+      const format = await Format.createFromJSON("test format", unitsProvider, formatProps);
+      const unitConversions = await FormatterSpec.getUnitConversions(format, unitsProvider, persistenceUnit);
+      const resolvedProps = format.toFullyResolvedJSON();
+
+      const quantityOptions: QuantityFieldFormatOptions = {
+        formatProps: resolvedProps,
+        unitConversions,
+        sourceUnit: persistenceUnit
+      };
+
+      const fieldOptions: FieldFormatOptions = {
+        quantity: quantityOptions
+      };
+
+      const result = formatFieldValue(100, "quantity", fieldOptions);
+      expect(result).to.not.be.undefined;
+      expect(result).to.be.a("string");
+      expect(result).to.include("100"); // Should contain the numeric value
+      expect(result).to.include("m²"); // Should contain area unit
+    });
+
+    it("should format volume units", async () => {
+      const unitsProvider = new SchemaUnitProvider(schemaContext);
+      const formatsProvider = new SchemaFormatsProvider(schemaContext, "metric");
+
+      const persistenceUnit = await unitsProvider.findUnitByName("Units.CUB_M");
+      const formatProps = await formatsProvider.getFormat("AecUnits.VOLUME");
+
+      if (!formatProps)
+        throw new Error("formatProps is undefined");
+
+      const format = await Format.createFromJSON("test format", unitsProvider, formatProps);
+      const unitConversions = await FormatterSpec.getUnitConversions(format, unitsProvider, persistenceUnit);
+      const resolvedProps = format.toFullyResolvedJSON();
+
+      const quantityOptions: QuantityFieldFormatOptions = {
+        formatProps: resolvedProps,
+        unitConversions,
+        sourceUnit: persistenceUnit
+      };
+
+      const fieldOptions: FieldFormatOptions = {
+        quantity: quantityOptions
+      };
+
+      const result = formatFieldValue(25.5, "quantity", fieldOptions);
+      expect(result).to.not.be.undefined;
+      expect(result).to.be.a("string");
+      expect(result).to.include("25.5"); // Should contain the numeric value
+      expect(result).to.include("m³"); // Should contain volume unit
+    });
+
+    it("should format with prefix and suffix", async () => {
+      const unitsProvider = new SchemaUnitProvider(schemaContext);
+      const formatsProvider = new SchemaFormatsProvider(schemaContext, "metric");
+
+      const persistenceUnit = await unitsProvider.findUnitByName("Units.M");
+      const formatProps = await formatsProvider.getFormat("AecUnits.LENGTH");
+
+      if (!formatProps)
+        throw new Error("formatProps is undefined");
+
+      const format = await Format.createFromJSON("test format", unitsProvider, formatProps);
+      const unitConversions = await FormatterSpec.getUnitConversions(format, unitsProvider, persistenceUnit);
+      const resolvedProps = format.toFullyResolvedJSON();
+
+      const quantityOptions: QuantityFieldFormatOptions = {
+        formatProps: resolvedProps,
+        unitConversions,
+        sourceUnit: persistenceUnit
+      };
+
+      const fieldOptions: FieldFormatOptions = {
+        quantity: quantityOptions,
+        prefix: "Length: ",
+        suffix: " total"
+      };
+
+      const result = formatFieldValue(75, "quantity", fieldOptions);
+      expect(result).to.equal("Length: 75.0 m total");
+    });
+
+    it("should format zero values", async () => {
+      const unitsProvider = new SchemaUnitProvider(schemaContext);
+      const formatsProvider = new SchemaFormatsProvider(schemaContext, "metric");
+
+      const persistenceUnit = await unitsProvider.findUnitByName("Units.M");
+      const formatProps = await formatsProvider.getFormat("AecUnits.LENGTH");
+
+      if (!formatProps)
+        throw new Error("formatProps is undefined");
+
+      const format = await Format.createFromJSON("test format", unitsProvider, formatProps);
+      const unitConversions = await FormatterSpec.getUnitConversions(format, unitsProvider, persistenceUnit);
+      const resolvedProps = format.toFullyResolvedJSON();
+
+      const quantityOptions: QuantityFieldFormatOptions = {
+        formatProps: resolvedProps,
+        unitConversions,
+        sourceUnit: persistenceUnit
+      };
+
+      const fieldOptions: FieldFormatOptions = {
+        quantity: quantityOptions
+      };
+
+      const result = formatFieldValue(0, "quantity", fieldOptions);
+      expect(result).to.equal("0.0 m");
+    });
+
+    it("should format negative values", async () => {
+      const unitsProvider = new SchemaUnitProvider(schemaContext);
+      const formatsProvider = new SchemaFormatsProvider(schemaContext, "metric");
+
+      const persistenceUnit = await unitsProvider.findUnitByName("Units.M");
+      const formatProps = await formatsProvider.getFormat("AecUnits.LENGTH");
+
+      if (!formatProps)
+        throw new Error("formatProps is undefined");
+
+      const format = await Format.createFromJSON("test format", unitsProvider, formatProps);
+      const unitConversions = await FormatterSpec.getUnitConversions(format, unitsProvider, persistenceUnit);
+      const resolvedProps = format.toFullyResolvedJSON();
+
+      const quantityOptions: QuantityFieldFormatOptions = {
+        formatProps: resolvedProps,
+        unitConversions,
+        sourceUnit: persistenceUnit
+      };
+
+      const fieldOptions: FieldFormatOptions = {
+        quantity: quantityOptions
+      };
+
+      const result = formatFieldValue(-25.5, "quantity", fieldOptions);
+      expect(result).to.equal("-25.5 m");
+    });
+
+    it("should format very small values", async () => {
+      const unitsProvider = new SchemaUnitProvider(schemaContext);
+      const formatsProvider = new SchemaFormatsProvider(schemaContext, "metric");
+
+      const persistenceUnit = await unitsProvider.findUnitByName("Units.M");
+      let formatProps = await formatsProvider.getFormat("AecUnits.LENGTH");
+
+      if (!formatProps)
+        throw new Error("formatProps is undefined");
+
+      // Set higher precision for small values
+      formatProps = {
+        ...formatProps,
+        precision: 6,
+      };
+
+      const format = await Format.createFromJSON("test format", unitsProvider, formatProps);
+      const unitConversions = await FormatterSpec.getUnitConversions(format, unitsProvider, persistenceUnit);
+      const resolvedProps = format.toFullyResolvedJSON();
+
+      const quantityOptions: QuantityFieldFormatOptions = {
+        formatProps: resolvedProps,
+        unitConversions,
+        sourceUnit: persistenceUnit
+      };
+
+      const fieldOptions: FieldFormatOptions = {
+        quantity: quantityOptions
+      };
+
+      const result = formatFieldValue(0.000123, "quantity", fieldOptions);
+      expect(result).to.equal("0.000123 m");
+    });
+
+    it("should handle invalid quantity options gracefully", () => {
+      const fieldOptions: FieldFormatOptions = {
+        quantity: {} as any // Invalid/empty quantity options
+      };
+
+      const result = formatFieldValue(50, "quantity", fieldOptions);
+      expect(result).to.equal("50"); // Should fall back to basic string conversion
+    });
+
+    it("should format scientific notation values", async () => {
+      const unitsProvider = new SchemaUnitProvider(schemaContext);
+      const formatsProvider = new SchemaFormatsProvider(schemaContext, "metric");
+
+      const persistenceUnit = await unitsProvider.findUnitByName("Units.M");
+      let formatProps = await formatsProvider.getFormat("AecUnits.LENGTH");
+
+      if (!formatProps)
+        throw new Error("formatProps is undefined");
+
+      formatProps = {
+        ...formatProps,
+        type: "scientific",
+        precision: 2,
+        scientificType: "normalized",
+      };
+
+      const format = await Format.createFromJSON("test format", unitsProvider, formatProps);
+      const unitConversions = await FormatterSpec.getUnitConversions(format, unitsProvider, persistenceUnit);
+      const resolvedProps = format.toFullyResolvedJSON();
+
+      const quantityOptions: QuantityFieldFormatOptions = {
+        formatProps: resolvedProps,
+        unitConversions,
+        sourceUnit: persistenceUnit
+      };
+
+      const fieldOptions: FieldFormatOptions = {
+        quantity: quantityOptions
+      };
+
+      const result = formatFieldValue(1234567, "quantity", fieldOptions);
+      expect(result).to.not.be.undefined;
+      expect(result).to.be.a("string");
+      expect(result).to.include("1.23e6"); // Scientific notation
+    });
   });
 
   describe("coordinate", () => {
