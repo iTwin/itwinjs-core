@@ -36,8 +36,6 @@ export enum ContainerComponentType {
   // eslint-disable-next-line @typescript-eslint/no-shadow
   List = "list",
   // eslint-disable-next-line @typescript-eslint/no-shadow
-  ListItem = "list-item",
-  // eslint-disable-next-line @typescript-eslint/no-shadow
   TextBlock = "textBlock",
 }
 /** The JSON representation of a [[TextBlockComponent]].
@@ -293,13 +291,13 @@ export namespace Run { // eslint-disable-line @typescript-eslint/no-redeclare
 /** [[TextBlockComponent]]s contained within a [[Paragraph]].
  * @beta
  */
-export type Container = Paragraph | List | ListItem;
+export type Container = Paragraph | List;
 
 /** The JSON representation of a [[Run]].
  * Use the `type` field to discriminate between the different kinds of runs.
  * @beta
  */
-export type ContainerProps = ParagraphProps | ListProps | ListItemProps;
+export type ContainerProps = ParagraphProps | ListProps;
 
 
 /** A container for [[Run]] elements.
@@ -312,7 +310,6 @@ export namespace Container { // eslint-disable-line @typescript-eslint/no-redecl
   export function fromJSON(props: ContainerProps): Container {
     switch (props.type) {
       case ContainerComponentType.List: return List.create(props);
-      case ContainerComponentType.ListItem: return ListItem.create(props);
       case ContainerComponentType.Paragraph: return Paragraph.create(props);
     }
   }
@@ -320,7 +317,6 @@ export namespace Container { // eslint-disable-line @typescript-eslint/no-redecl
   function isKindOf(type: RunComponentType | ContainerComponentType): type is ContainerComponentType {
     return (
       type === ContainerComponentType.List ||
-      type === ContainerComponentType.ListItem ||
       type === ContainerComponentType.Paragraph
     );
   }
@@ -768,62 +764,6 @@ export class Paragraph extends TextBlockComponent {
     super(props);
 
     props.children?.forEach((run) => {
-      if (Run.isRunProps(run)) {
-        this.appendChild(Run.fromJSON(run));
-      }
-    });
-  }
-
-  public override toJSON(): ParagraphProps {
-    return {
-      ...super.toJSON(),
-      type: ContainerComponentType.Paragraph,
-      children: this.children?.map((run) => run.toJSON()),
-    };
-  }
-
-  /** Create a paragraph from its JSON representation. */
-  public static create(props: Omit<ParagraphProps, "type">): Paragraph {
-    return new Paragraph(props);
-  }
-
-  public override clone(): Paragraph {
-    return new Paragraph(this.toJSON());
-  }
-
-
-  /** Compute a string representation of this paragraph by concatenating the string representations of all of its [[runs]]. */
-  public override stringify(options?: TextBlockStringifyOptions): string {
-    return this.children?.map((x) => x.stringify(options)).join("") ?? "";
-  }
-
-  public override equals(other: TextBlockComponent): boolean {
-    if (!(other instanceof Paragraph) || !super.equals(other)) {
-      return false;
-    }
-
-    return this.children?.every((child, index) => other.children && child.equals(other.children[index])) ?? false;
-  }
-}
-
-/** JSON representation of a [[List]].
- * @beta
- */
-export interface ListItemProps extends TextBlockComponentProps {
-  type: ContainerComponentType.ListItem; // Discriminator field for the type of [[TextBlockComponent]].
-  children?: TextBlockComponentProps[]; // The runs within the list
-}
-
-/** A collection of [[Run]]s within a [[TextBlock]]. Each list item within a text block is laid out on a separate line.
- * @beta
- */
-export class ListItem extends TextBlockComponent {
-  public readonly type = ContainerComponentType.ListItem;
-
-  protected constructor(props: Omit<ListItemProps, "type">) {
-    super(props);
-
-    props.children?.forEach((run) => {
       const child = Container.isContainerProps(run)
         ? Container.fromJSON(run)
         : Run.isRunProps(run)
@@ -844,24 +784,24 @@ export class ListItem extends TextBlockComponent {
     let depth = 1;
     while (current.parent) {
       current = current.parent;
-      if (current.type === "list-item") depth++;
+      if (current.type === ContainerComponentType.Paragraph) depth++;
     }
     return depth;
   }
 
-  /** Create a list item from its JSON representation. */
-  public static create(props: Omit<ListItemProps, "type">): ListItem {
-    return new ListItem(props);
+  /** Create a paragraph from its JSON representation. */
+  public static create(props: Omit<ParagraphProps, "type">): Paragraph {
+    return new Paragraph(props);
   }
 
-  public override clone(): ListItem {
-    return new ListItem(this.toJSON());
+  public override clone(): Paragraph {
+    return new Paragraph(this.toJSON());
   }
 
-  public override toJSON(): ListItemProps {
+  public override toJSON(): ParagraphProps {
     return {
       ...super.toJSON(),
-      type: ContainerComponentType.ListItem,
+      type: ContainerComponentType.Paragraph,
       children: this.children?.map((run) => run.toJSON()),
     };
   }
@@ -872,7 +812,7 @@ export class ListItem extends TextBlockComponent {
   }
 
   public override equals(other: TextBlockComponent): boolean {
-    if (!(other instanceof ListItem) || !super.equals(other)) {
+    if (!(other instanceof Paragraph) || !super.equals(other)) {
       return false;
     }
 
@@ -885,7 +825,7 @@ export class ListItem extends TextBlockComponent {
  */
 export interface ListProps extends TextBlockComponentProps {
   type: ContainerComponentType.List; // Discriminator field for the type of [[TextBlockComponent]].
-  children?: ListItemProps[]; // The runs within the list
+  children?: ParagraphProps[]; // The runs within the list
 }
 
 /** A collection of [[Run]]s within a [[TextBlock]]. Each list item within a text block is laid out on a separate line.
@@ -898,7 +838,7 @@ export class List extends TextBlockComponent {
     super(props);
 
     props.children?.forEach((run) => {
-      this.appendChild(ListItem.create(run));
+      this.appendChild(Paragraph.create(run));
     });
   }
 
@@ -915,7 +855,7 @@ export class List extends TextBlockComponent {
     return {
       ...super.toJSON(),
       type: ContainerComponentType.List,
-      children: this.children?.map((run) => (run as ListItem)?.toJSON()),
+      children: this.children?.map((run) => (run as Paragraph)?.toJSON()),
     };
   }
 
@@ -933,8 +873,8 @@ export class List extends TextBlockComponent {
   }
 
   public appendToListItem(run: Run, itemIndex?: number): void {
-    if (!this.children || this.children.length === 0) this.appendChild(ListItem.create({}));
-    const listItem = this.children?.[itemIndex ?? this.children.length - 1] as ListItem;
+    if (!this.children || this.children.length === 0) this.appendChild(Paragraph.create({}));
+    const listItem = this.children?.[itemIndex ?? this.children.length - 1] as Paragraph;
     listItem.appendChild(run);
   }
 }
@@ -1058,7 +998,7 @@ export class TextBlock extends TextBlockComponent {
    * By default, the paragraph will be created with no [[styleOverrides]], so that it inherits the style of this block.
    * @param seedFromLast If true and [[paragraphs]] is not empty, the new paragraph will inherit the style overrides of the last [[Paragraph]] in this block.
    */
-  public appendContainer(props?: ContainerProps, seedFromLast: boolean = false): Paragraph | List | ListItem {
+  public appendContainer(props?: ContainerProps, seedFromLast: boolean = false): Paragraph | List {
     let styleOverrides: TextStyleSettingsProps = {};
 
     if (!this.children) {
@@ -1074,11 +1014,9 @@ export class TextBlock extends TextBlockComponent {
       type: "paragraph",
       styleOverrides
     };
-    const container = containerProps.type === "list"
+    const container = containerProps.type === ContainerComponentType.List
       ? List.create(containerProps)
-      : containerProps.type === "list-item"
-        ? ListItem.create(containerProps)
-        : Paragraph.create(containerProps);
+      : Paragraph.create(containerProps);
     this.appendChild(container);
     return container;
   }
@@ -1106,12 +1044,12 @@ export class TextBlock extends TextBlockComponent {
    * By default, the paragraph will be created with no [[styleOverrides]], so that it inherits the style of this block.
    * @param seedFromLast If true and [[paragraphs]] is not empty, the new paragraph will inherit the style overrides of the last [[Paragraph]] in this block.
    */
-  public appendListItem(props?: ListItemProps, seedFromLast: boolean = false): ListItem | undefined {
+  public appendListItem(props?: Omit<ParagraphProps, "type">, seedFromLast: boolean = false): Paragraph | undefined {
     const last = this.last;
 
     const overrides = seedFromLast && last ? { ...last?.styleOverrides } : {};
     if (last instanceof List) {
-      const listItem = ListItem.create({ ...overrides, ...props });
+      const listItem = Paragraph.create({ ...overrides, ...props });
       last.appendChild(listItem);
       return listItem;
     }

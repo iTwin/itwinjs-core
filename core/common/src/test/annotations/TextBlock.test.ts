@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { beforeEach, describe, expect, it } from "vitest";
-import { ContainerComponentType, FieldRun, FractionRun, FractionRunProps, List, ListItem, ListItemProps, ListProps, Paragraph, ParagraphProps, RunComponentType, RunProps, TextBlock, TextBlockComponent, TextBlockComponentProps, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps } from "../../core-common";
+import { ContainerComponentType, FieldRun, FractionRun, FractionRunProps, List, ListProps, Paragraph, ParagraphProps, RunComponentType, RunProps, TextBlock, TextBlockComponent, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps } from "../../core-common";
 
 function makeTextRun(content?: string, styleOverrides?: TextStyleSettingsProps): TextRunProps {
   return {
@@ -30,15 +30,7 @@ function makeParagraph(children?: RunProps[], styleOverrides?: TextStyleSettings
   };
 }
 
-function makeListItem(children?: TextBlockComponentProps[], styleOverrides?: TextStyleSettingsProps): ListItemProps {
-  return {
-    type: ContainerComponentType.ListItem,
-    styleOverrides,
-    children,
-  };
-}
-
-function makeList(children?: ListItemProps[], styleOverrides?: TextStyleSettingsProps): ListProps {
+function makeList(children?: ParagraphProps[], styleOverrides?: TextStyleSettingsProps): ListProps {
   return {
     type: ContainerComponentType.List,
     styleOverrides,
@@ -57,7 +49,7 @@ function getOverrides(block: TextBlock) {
 describe("TextBlockComponent", () => {
   describe("setStyle", () => {
     let block: TextBlock;
-    let paragraph: Paragraph | List | ListItem;
+    let paragraph: Paragraph | List;
 
     beforeEach(() => {
       block = TextBlock.create({ styleId: "0x42", styleOverrides: { widthFactor: 1234 }});
@@ -186,9 +178,9 @@ describe("TextBlockComponent", () => {
           { type: RunComponentType.Tab }
         ]),
         makeList([
-          makeListItem([makeParagraph([makeTextRun("item 1"), makeFractionRun("1", "π")])]),
-          makeListItem([makeTextRun("item 2")]),
-          makeListItem([makeTextRun("item 3")]),
+          makeParagraph([makeTextRun("item 1"), makeFractionRun("1", "π")]),
+          makeParagraph([makeTextRun("item 2")]),
+          makeParagraph([makeTextRun("item 3")]),
         ]),
       ],
     };
@@ -225,9 +217,9 @@ describe("TextBlockComponent", () => {
     const p2Children = p2.children!;
     expect(p2Children.length).to.equal(3);
 
-    const p2Item0 = p2Children[0] as ListItem;
-    const p2Item1 = p2Children[1] as ListItem;
-    const p2Item2 = p2Children[2] as ListItem;
+    const p2Item0 = p2Children[0] as Paragraph;
+    const p2Item1 = p2Children[1] as Paragraph;
+    const p2Item2 = p2Children[2] as Paragraph;
 
     expectToHaveParentAndRoot(tb, p2, p2Item0, undefined, p2Item1);
     expectToHaveParentAndRoot(tb, p2, p2Item1, p2Item0, p2Item2);

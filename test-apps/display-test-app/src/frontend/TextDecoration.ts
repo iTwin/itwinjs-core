@@ -124,7 +124,7 @@ class TextEditor implements Decorator {
   }
 
   public appendListItem(overrides?: TextStyleSettingsProps): void {
-    this.textBlock.appendListItem({ type: ContainerComponentType.ListItem, styleOverrides: { ...overrides } });
+    this.textBlock.appendListItem({ styleOverrides: { ...overrides } });
   }
 
   public appendParagraph(): void {
@@ -622,6 +622,7 @@ export class TextDecorationTool extends Tool {
         if (props) {
           editor.setTextBlock(props);
         } else {
+          // eslint-disable-next-line no-console
           console.log(JSON.stringify(editor.annotationProps.textBlock).replaceAll("\"", "'"));
         }
 

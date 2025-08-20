@@ -760,7 +760,6 @@ export class TextBlockLayout {
         }
         break;
       }
-      case "list-item":
       case "paragraph": {
         component.children?.forEach(child => curLine = this.populateComponent(child, context, docWidth, curLine));
         if (curLine && component.nextSibling) {
