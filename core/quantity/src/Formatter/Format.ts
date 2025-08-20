@@ -341,7 +341,7 @@ export class Format extends BaseFormat {
    * Populates this Format with the values from the provided.
    */
   public async fromJSON(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void> {
-    const json = await resolveFormatProps(unitsProvider, jsonObj);
+    const json = await resolveFormatProps(this.name, unitsProvider, jsonObj);
     return this.fromFullyResolvedJSON(json);
   }
 
@@ -487,10 +487,6 @@ async function resolveCompositeUnit(provider: UnitsProvider, name: string, label
     throw new QuantityError(QuantityStatus.InvalidJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
   }
 
-  return resolveUnit(provider, name);
-}
-
-async function resolveUnit(provider: UnitsProvider, name: string): Promise<UnitProps> {
   const unit = await provider.findUnitByName(name);
   if (!unit || !unit.isValid) {
     throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${name}'.`);
@@ -499,7 +495,25 @@ async function resolveUnit(provider: UnitsProvider, name: string): Promise<UnitP
   return unit;
 }
 
-async function resolveFormatProps(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<ResolvedFormatProps> {
+async function resolveAzimuthBearingUnit(formatName: string, jsonObj: FormatProps, key: "revolutionUnit" | "azimuthBaseUnit", provider: UnitsProvider): Promise<UnitProps | undefined> {
+  const unitName = jsonObj[key];
+  if (undefined !== unitName) {
+    if (typeof unitName !== "string") {
+      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid '${key}' attribute. It should be of type 'string'.`);
+    }
+
+    const unit = await provider.findUnitByName(unitName);
+    if (!unit || !unit.isValid) {
+      throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${unitName}' for ${key} in Format '${formatName}'.`);
+    }
+
+    return unit;
+  }
+
+  return undefined;
+}
+
+async function resolveFormatProps(formatName: string, unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<ResolvedFormatProps> {
   let units: Array<{ unit: UnitProps, label?: string }> | undefined;
   if (undefined !== jsonObj.composite?.units) {
     units = await Promise.all(jsonObj.composite.units.map(async (entry) => {
@@ -508,8 +522,20 @@ async function resolveFormatProps(unitsProvider: UnitsProvider, jsonObj: FormatP
     }));
   }
 
-  const azimuthBaseUnit = undefined !== jsonObj.azimuthBaseUnit ? await resolveUnit(unitsProvider, jsonObj.azimuthBaseUnit) : undefined;
-  const revolutionUnit = undefined !== jsonObj.revolutionUnit ? await resolveUnit(unitsProvider, jsonObj.revolutionUnit) : undefined;
+  let azimuthBaseUnit, revolutionUnit;
+  const type = parseFormatType(jsonObj.type, formatName);
+  if (type === FormatType.Azimuth || type === FormatType.Bearing) {
+    azimuthBaseUnit = await resolveAzimuthBearingUnit(formatName, jsonObj, "azimuthBaseUnit", unitsProvider);
+    revolutionUnit = await resolveAzimuthBearingUnit(formatName, jsonObj, "revolutionUnit", unitsProvider);
+
+    if (!revolutionUnit) {
+      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} is 'Azimuth' or 'Bearing' type therefore the attribute 'revolutionUnit' is required.`);
+    }
+
+    if (jsonObj.azimuthBase !== undefined && !azimuthBaseUnit) {
+      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an 'azimuthBase' attribute therefore the attribute 'azimuthBaseUnit' is required.`);
+    }
+  }
 
   return {
     ...jsonObj,
