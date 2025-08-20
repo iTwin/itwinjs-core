@@ -2385,12 +2385,6 @@ export interface EditableWorkspaceDb extends WorkspaceDb {
     updateString(rscName: WorkspaceResourceName, val: string): void;
 }
 
-// @public
-export interface EditOptions {
-    // @alpha
-    indirect?: boolean;
-}
-
 // @public @preview
 class Element_2 extends Entity {
     protected constructor(props: ElementProps, iModel: IModelDb);
@@ -3738,7 +3732,7 @@ export namespace IModelDb {
         deleteAspect(aspectInstanceIds: Id64Arg): void;
         // @beta
         deleteDefinitionElements(definitionElementIds: Id64Array): Id64Set;
-        deleteElement(ids: Id64Arg, options?: EditOptions): void;
+        deleteElement(ids: Id64Arg): void;
         getAspect(aspectInstanceId: Id64String): ElementAspect;
         getAspects(elementId: Id64String, aspectClassFullName?: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         getElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T;
@@ -3760,7 +3754,7 @@ export namespace IModelDb {
         tryGetElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T | undefined;
         tryGetElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T | undefined;
         updateAspect(aspectProps: ElementAspectProps): void;
-        updateElement<T extends ElementProps>(elProps: Partial<T>, options?: EditOptions): void;
+        updateElement<T extends ElementProps>(elProps: Partial<T>): void;
     }
     // (undocumented)
     export interface GuidMapper {
@@ -4151,7 +4145,7 @@ export interface InlineGeometryPartsResult {
 }
 
 // @public
-export interface InsertElementOptions extends EditOptions {
+export interface InsertElementOptions {
     // @beta
     forceUseId?: boolean;
 }
@@ -4873,7 +4867,6 @@ export interface OnElementIdArg extends OnElementArg {
     federationGuid: GuidString;
     id: Id64String;
     model: Id64String;
-    options?: EditOptions;
 }
 
 // @beta
@@ -4888,7 +4881,6 @@ export interface OnElementInModelPropsArg extends OnModelIdArg {
 
 // @beta
 export interface OnElementPropsArg extends OnElementArg {
-    options?: InsertElementOptions;
     props: ElementProps;
 }
 

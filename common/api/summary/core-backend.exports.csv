@@ -180,7 +180,6 @@ public;class;ECSqlWriteStatement
 beta;interface;EditableCatalogDb
 beta;interface;EditableWorkspaceContainer
 beta;interface;EditableWorkspaceDb
-public;interface;EditOptions
 public;class;ElementAspect
 preview;class;ElementAspect
 beta;class;ElementDrivesElement
