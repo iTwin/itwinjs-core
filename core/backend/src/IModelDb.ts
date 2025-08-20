@@ -78,6 +78,7 @@ const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /**
  * Arguments for saving changes to the iModel.
+ * @public
  */
 export interface SaveChangesArgs {
   /**
@@ -822,6 +823,10 @@ export abstract class IModelDb extends IModel {
   public saveChanges(description?: string | SaveChangesArgs): void {
     if (this.openMode === OpenMode.Readonly)
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only");
+
+    if (!this[_nativeDb].hasUnsavedChanges()) {
+      Logger.logWarning(loggerCategory, "there are no unsaved changes", () => description);
+    }
 
     const args = typeof description === "string" ? { description } : description;
     const stat = this[_nativeDb].saveChanges(args ? JSON.stringify(args): undefined);
