@@ -22,7 +22,7 @@ import {
   TxnProps
 } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
-import { RebaseChangesetConflictArgs, TxnArgs } from "../../internal/ChangesetConflictArgs";
+import { RebaseChangesetConflictArgs } from "../../internal/ChangesetConflictArgs";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 chai.use(chaiAsPromised);
 
@@ -430,7 +430,7 @@ describe("Change merge method", () => {
     });
 
     // resume rebase see if it resolve the conflict
-    b2.txns.changeMergeManager.resume();
+    await b2.txns.changeMergeManager.resume();
 
     // use changeset api to read txn directly
     const reader = SqliteChangesetReader.openTxn({ db: b2, txnId: "0x100000000" });
