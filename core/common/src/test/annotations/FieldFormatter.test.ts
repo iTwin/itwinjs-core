@@ -5,7 +5,7 @@
 
 import { beforeAll, describe, expect, it } from "vitest";
 import { formatFieldValue } from "../../internal/annotations/FieldFormatter";
-import type { FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../annotation/TextField";
+import type { FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../core-common";
 import { Format, FormatterSpec, ResolvedFormatProps } from "@itwin/core-quantity";
 import { SchemaContext, SchemaFormatsProvider, SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
