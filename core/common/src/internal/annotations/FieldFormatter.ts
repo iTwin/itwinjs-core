@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
-import { FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../core-common";
+import { FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../annotation/TextField";
 import { Format, FormatterSpec } from "@itwin/core-quantity";
 
 // A FieldPropertyPath must ultimately resolve to one of these primitive types.
@@ -12,7 +12,7 @@ export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYA
 
 type FieldFormatter = (value: FieldPrimitiveValue, options: FieldFormatOptions | undefined) => string | undefined;
 
-type Coordinate = { x: number, y: number, z: number | undefined };
+interface Coordinate { x: number, y: number, z: number | undefined }
 
 function isCoordinate(v: FieldPrimitiveValue): v is Coordinate {
   const obj = typeof v === "object" ? v as any : undefined;
@@ -128,7 +128,7 @@ function formatQuantity(v: FieldPrimitiveValue, _o?: QuantityFieldFormatOptions)
 
   // ###TODO apply quantity formatting...
   if (_o){
-    const formatterSpec = new FormatterSpec(v.toString(),_o!.format, _o?.unitConversions, _o?.sourceUnit);
+    const formatterSpec = new FormatterSpec(_o.format.name, _o.format, _o?.unitConversions, _o?.sourceUnit);
     return formatterSpec.applyFormatting(v);
   }else
     return undefined;

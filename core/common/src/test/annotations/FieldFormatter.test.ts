@@ -5,7 +5,9 @@
 
 import { beforeEach, describe, expect, it } from "vitest";
 import { formatFieldValue } from "../../internal/annotations/FieldFormatter";
-import type { FieldFormatOptions, FieldPropertyType } from "../../annotation/TextField";
+import type { FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../annotation/TextField";
+import { Format, FormatterSpec } from "@itwin/core-quantity";
+import { SchemaFormatsProvider, SchemaUnitProvider } from "@itwin/ecschema-metadata";
 
 describe("Field formatting", () => {
   describe("string", () => {
@@ -134,6 +136,41 @@ describe("Field formatting", () => {
       expect(formatFieldValue(42, "quantity", { case: "upper" })).toBe("42");
       expect(formatFieldValue(42, "quantity", { case: "lower" })).toBe("42");
     });
+
+   it("should format length", async () => {
+    // Set up the formatting components
+    const unitsProvider = new SchemaUnitProvider(schemaContext);
+    const formatsProvider = new SchemaFormatsProvider(schemaContext, "metric");
+
+    const persistenceUnit = await unitsProvider.findUnitByName("Units.M");
+    const formatProps = await formatsProvider.getFormat("AecUnits.LENGTH");
+    const format = await Format.createFromJSON("testFormat", unitsProvider, formatProps);
+    const formatterSpec = await FormatterSpec.create("TestSpec", format, unitsProvider, persistenceUnit);
+
+    // Create quantity field format options
+    const quantityOptions: QuantityFieldFormatOptions = {
+      format,
+      unitConversions: formatterSpec.unitConversions,
+      sourceUnit: persistenceUnit
+    };
+
+    const fieldOptions: FieldFormatOptions = {
+      quantity: quantityOptions
+    };
+
+    // Test formatting a length value (50 meters)
+    const result = formatFieldValue(50, "quantity", fieldOptions);
+
+    // The result should be formatted according to the AecUnits.LENGTH format
+    expect(result).to.not.be.undefined;
+    expect(result).to.be.a("string");
+    expect(result).to.include("50"); // Should contain the numeric value
+    expect(result).to.include("m"); // Should contain the unit label
+
+    // More specific assertion based on expected format
+    expect(result).to.equal("50.0 m");
+  });
+
   });
 
   describe("coordinate", () => {
@@ -194,9 +231,9 @@ describe("Field formatting", () => {
 
     it("applies all string formatting options", () => {
       const date = new Date("2023-01-01T12:34:56Z");
-      expect(formatFieldValue(date, "datetime", { prefix: "[" })).toBe("[" + date.toString());
-      expect(formatFieldValue(date, "datetime", { suffix: "]" })).toBe(date.toString() + "]");
-      expect(formatFieldValue(date, "datetime", { prefix: "[", suffix: "]" })).toBe("[" + date.toString() + "]");
+      expect(formatFieldValue(date, "datetime", { prefix: "[" })).toBe(`[${  date.toString()}`);
+      expect(formatFieldValue(date, "datetime", { suffix: "]" })).toBe(`${date.toString()  }]`);
+      expect(formatFieldValue(date, "datetime", { prefix: "[", suffix: "]" })).toBe(`[${  date.toString()  }]`);
       expect(formatFieldValue(date, "datetime", { case: "upper" })).toBe(date.toString().toUpperCase());
       expect(formatFieldValue(date, "datetime", { case: "lower" })).toBe(date.toString().toLowerCase());
       expect(formatFieldValue(date, "datetime", { case: "as-is" })).toBe(date.toString());

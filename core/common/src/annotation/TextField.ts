@@ -73,8 +73,8 @@ export interface CoordinateFieldFormatOptions {
 export interface QuantityFieldFormatOptions {
   // ###TODO source+target units, FormatProps.
   sourceUnit: UnitProps;
-  targetUnit: UnitProps;
-  unitConversions: UnitConversionSpec[];
+  targetUnit?: UnitProps;
+  unitConversions?: UnitConversionSpec[];
   format: Format;
 }
 

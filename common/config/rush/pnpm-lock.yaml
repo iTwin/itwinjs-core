@@ -232,6 +232,12 @@ importers:
       '@itwin/core-geometry':
         specifier: workspace:*
         version: link:../geometry
+      '@itwin/core-quantity':
+        specifier: workspace:*
+        version: link:../quantity
+      '@itwin/ecschema-metadata':
+        specifier: workspace:*
+        version: link:../ecschema-metadata
       '@itwin/eslint-plugin':
         specifier: 5.2.2-dev.2
         version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
