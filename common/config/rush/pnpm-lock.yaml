@@ -235,6 +235,9 @@ importers:
       '@itwin/core-quantity':
         specifier: workspace:*
         version: link:../quantity
+      '@itwin/ecschema-locaters':
+        specifier: workspace:*
+        version: link:../ecschema-locaters
       '@itwin/ecschema-metadata':
         specifier: workspace:*
         version: link:../ecschema-metadata

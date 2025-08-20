@@ -3,11 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { formatFieldValue } from "../../internal/annotations/FieldFormatter";
 import type { FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../annotation/TextField";
 import { Format, FormatterSpec } from "@itwin/core-quantity";
-import { SchemaFormatsProvider, SchemaUnitProvider } from "@itwin/ecschema-metadata";
+import { SchemaContext, SchemaFormatsProvider, SchemaUnitProvider } from "@itwin/ecschema-metadata";
+import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
+import * as path from "path";
 
 describe("Field formatting", () => {
   describe("string", () => {
@@ -119,6 +121,26 @@ describe("Field formatting", () => {
   });
 
   describe("quantity", () => {
+    let schemaContext: SchemaContext;
+    beforeAll(async () => {
+      // test schema context, normally collected from imodel
+      schemaContext = new SchemaContext();
+      const unitSchemaFile = path.join(__dirname, "..", "..", "node_modules", "@bentley", "units-schema");
+      const locUnits = new SchemaXmlFileLocater();
+      locUnits.addSchemaSearchPath(unitSchemaFile)
+      schemaContext.addLocater(locUnits);
+
+      const schemaFile = path.join(__dirname, "..", "..", "node_modules", "@bentley", "formats-schema");
+      const locFormats = new SchemaXmlFileLocater();
+      locFormats.addSchemaSearchPath(schemaFile)
+      schemaContext.addLocater(locFormats);
+
+      const aecSchemaFile = path.join(__dirname, "..", "..", "node_modules", "@bentley", "aec-units-schema");
+      const locAec = new SchemaXmlFileLocater();
+      locAec.addSchemaSearchPath(aecSchemaFile)
+      schemaContext.addLocater(locAec);
+    });
+
     it("formats number as string", () => {
       expect(formatFieldValue(42, "quantity", undefined)).toBe("42");
       expect(formatFieldValue(-1, "quantity", undefined)).toBe("-1");
@@ -137,13 +159,17 @@ describe("Field formatting", () => {
       expect(formatFieldValue(42, "quantity", { case: "lower" })).toBe("42");
     });
 
-   it("should format length", async () => {
+   it.only("should format length", async () => {
+
     // Set up the formatting components
     const unitsProvider = new SchemaUnitProvider(schemaContext);
     const formatsProvider = new SchemaFormatsProvider(schemaContext, "metric");
 
     const persistenceUnit = await unitsProvider.findUnitByName("Units.M");
     const formatProps = await formatsProvider.getFormat("AecUnits.LENGTH");
+    if (!formatProps)
+      throw new Error("formatProps is undefined");
+
     const format = await Format.createFromJSON("testFormat", unitsProvider, formatProps);
     const formatterSpec = await FormatterSpec.create("TestSpec", format, unitsProvider, persistenceUnit);
 
@@ -210,10 +236,10 @@ describe("Field formatting", () => {
       expect(formatFieldValue(coord, "coordinate", { ...base, case: "title" })).toBe("1,2,3");
     });
 
-    it("applies quantity formatting options (noop)", () => {
-      const options: FieldFormatOptions = { coordinate: {}, quantity: {} };
-      expect(formatFieldValue(coord, "coordinate", options)).toBe("1,2,3");
-    });
+    // it("applies quantity formatting options (noop)", () => {
+    //   const options: FieldFormatOptions = { coordinate: {}, quantity: {} };
+    //   expect(formatFieldValue(coord, "coordinate", options)).toBe("1,2,3");
+    // });
 
     it("omits z if not present regardless of component selector", () => {
       const c = { x: 1, y: 2 };

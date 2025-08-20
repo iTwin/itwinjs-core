@@ -5,7 +5,7 @@
 
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
 import { FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../annotation/TextField";
-import { Format, FormatterSpec } from "@itwin/core-quantity";
+import { FormatterSpec } from "@itwin/core-quantity";
 
 // A FieldPropertyPath must ultimately resolve to one of these primitive types.
 export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;

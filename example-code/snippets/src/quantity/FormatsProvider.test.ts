@@ -34,17 +34,17 @@ describe("FormatsProvider examples", () => {
 
   before(() => {
     schemaContext = new SchemaContext();
-    const unitSchemaFile = path.join(__dirname, "..", "..", "node_modules", "@bentley", "units-schema");
+    const unitSchemaFile = path.join(__dirname,  "..", "..", "..", "..", "..", "example-code", "snippets", "node_modules", "@bentley", "units-schema");
     const locUnits = new SchemaXmlFileLocater();
     locUnits.addSchemaSearchPath(unitSchemaFile)
     schemaContext.addLocater(locUnits);
 
-    const schemaFile = path.join(__dirname, "..", "..", "node_modules", "@bentley", "formats-schema");
+    const schemaFile = path.join(__dirname, "..", "..", "..", "..", "..", "example-code", "snippets", "node_modules", "@bentley", "formats-schema");
     const locFormats = new SchemaXmlFileLocater();
     locFormats.addSchemaSearchPath(schemaFile)
     schemaContext.addLocater(locFormats);
 
-    const aecSchemaFile = path.join(__dirname, "..", "..", "node_modules", "@bentley", "aec-units-schema");
+    const aecSchemaFile = path.join(__dirname, "..", "..", "..", "..", "..", "example-code", "snippets", "node_modules", "@bentley", "aec-units-schema");
     const locAec = new SchemaXmlFileLocater();
     locAec.addSchemaSearchPath(aecSchemaFile)
     schemaContext.addLocater(locAec);
