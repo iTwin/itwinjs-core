@@ -93,7 +93,7 @@ export type ResolvedFormatCompositeProps = Omit<FormatCompositeProps, "units"> &
 /** A [[FormatProps]] with all the references to units replaced with JSON representations of those units.
  * @beta
  */
-export type ResolvedFormatProps = Omit<FormatProps, "azimuthBaseUnit" | "revolutionUnit" | "composite"> & {
+export type ResolvedFormatProps = Omit<FormatDefinition, "azimuthBaseUnit" | "revolutionUnit" | "composite"> & {
   readonly azimuthBaseUnit?: UnitProps;
   readonly revolutionUnit?: UnitProps;
   readonly composite?: ResolvedFormatCompositeProps;

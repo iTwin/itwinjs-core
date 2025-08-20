@@ -345,7 +345,7 @@ export class Format extends BaseFormat {
     return this.fromFullyResolvedJSON(json);
   }
 
-  public async fromFullyResolvedJSON(jsonObj: ResolvedFormatProps): Promise<void> {
+  public fromFullyResolvedJSON(jsonObj: ResolvedFormatProps): void {
     this.loadFormatProperties(jsonObj);
     this._customProps = jsonObj.custom;
 

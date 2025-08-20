@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { Format, FormatDefinition, UnitConversionProps, UnitConversionSpec, UnitProps } from "@itwin/core-quantity";
+import { Format, FormatDefinition, ResolvedFormatProps, UnitConversionProps, UnitConversionSpec, UnitProps } from "@itwin/core-quantity";
 
 /** A chain of property accesses that resolves to a primitive value that forms the basis of the displayed content
  * of a [[FieldRun]].
@@ -75,7 +75,7 @@ export interface QuantityFieldFormatOptions {
   sourceUnit: UnitProps;
   targetUnit?: UnitProps;
   unitConversions?: UnitConversionSpec[];
-  format: Format;
+  formatProps: ResolvedFormatProps;
 }
 
 export interface DateTimeFieldFormatOptions {

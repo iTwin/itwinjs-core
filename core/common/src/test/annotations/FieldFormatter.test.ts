@@ -6,10 +6,11 @@
 import { beforeAll, describe, expect, it } from "vitest";
 import { formatFieldValue } from "../../internal/annotations/FieldFormatter";
 import type { FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../annotation/TextField";
-import { Format, FormatterSpec } from "@itwin/core-quantity";
+import { Format, FormatterSpec, ResolvedFormatProps } from "@itwin/core-quantity";
 import { SchemaContext, SchemaFormatsProvider, SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
 import * as path from "path";
+import * as fs from "fs";
 
 describe("Field formatting", () => {
   describe("string", () => {
@@ -125,17 +126,18 @@ describe("Field formatting", () => {
     beforeAll(async () => {
       // test schema context, normally collected from imodel
       schemaContext = new SchemaContext();
-      const unitSchemaFile = path.join(__dirname, "..", "..", "node_modules", "@bentley", "units-schema");
+      const unitSchemaFile = path.join(__dirname, "..","..", "..", "..", "..", "example-code", "snippets", "node_modules", "@bentley", "units-schema");
       const locUnits = new SchemaXmlFileLocater();
       locUnits.addSchemaSearchPath(unitSchemaFile)
       schemaContext.addLocater(locUnits);
 
-      const schemaFile = path.join(__dirname, "..", "..", "node_modules", "@bentley", "formats-schema");
+      const schemaFile = path.join(__dirname, "..", "..", "..", "..", "..", "example-code", "snippets", "node_modules", "@bentley", "formats-schema");
       const locFormats = new SchemaXmlFileLocater();
       locFormats.addSchemaSearchPath(schemaFile)
       schemaContext.addLocater(locFormats);
 
-      const aecSchemaFile = path.join(__dirname, "..", "..", "node_modules", "@bentley", "aec-units-schema");
+      const aecSchemaFile = path.join(__dirname, "..", "..", "..", "..", "..", "example-code", "snippets", "node_modules", "@bentley", "aec-units-schema");
+      expect(fs.existsSync(aecSchemaFile), `AEC schema file not found at: ${aecSchemaFile}`).toBe(true);
       const locAec = new SchemaXmlFileLocater();
       locAec.addSchemaSearchPath(aecSchemaFile)
       schemaContext.addLocater(locAec);
@@ -167,16 +169,20 @@ describe("Field formatting", () => {
 
     const persistenceUnit = await unitsProvider.findUnitByName("Units.M");
     const formatProps = await formatsProvider.getFormat("AecUnits.LENGTH");
+
     if (!formatProps)
       throw new Error("formatProps is undefined");
 
-    const format = await Format.createFromJSON("testFormat", unitsProvider, formatProps);
-    const formatterSpec = await FormatterSpec.create("TestSpec", format, unitsProvider, persistenceUnit);
+    const format = await Format.createFromJSON("test format", unitsProvider, formatProps);
+
+    const unitConversions = await FormatterSpec.getUnitConversions(format, unitsProvider, persistenceUnit);
+
+    const resolvedProps = format.toFullyResolvedJSON();
 
     // Create quantity field format options
     const quantityOptions: QuantityFieldFormatOptions = {
-      format,
-      unitConversions: formatterSpec.unitConversions,
+      formatProps: resolvedProps,
+      unitConversions,
       sourceUnit: persistenceUnit
     };
 
