@@ -18,8 +18,6 @@ importers:
   ../../core/backend:
     dependencies:
       '@bentley/imodeljs-native':
-        specifier: 5.1.69-dev.1
-        version: 5.1.69-dev.1
         specifier: 5.1.70
         version: 5.1.70
       '@itwin/cloud-agnostic-core':
