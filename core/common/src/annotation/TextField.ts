@@ -79,11 +79,12 @@ export interface DateTimeFieldFormatOptions {
 }
 
 export interface EnumFieldFormatOptions {
-  labels: Array<{ value: number, label: string }>;
+  labels: Array<{ value: number | string, label: string }>;
+  fallbackLabel?: string;
 }
 
 /** Placeholder type for a description of how to format the raw property value resolved by a [[FieldPropertyPath]] into a [[FieldRun]]'s display string.
- * *** COMING SOON ***
+ * The exact options used depend upon the [[FieldPropertyType]].
  * @beta
  */
 export interface FieldFormatOptions {
