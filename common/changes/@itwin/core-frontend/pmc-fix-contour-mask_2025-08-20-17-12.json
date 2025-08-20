@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "A model drawn as only contour lines will only mask the background map where the contour lines draw.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
