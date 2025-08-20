@@ -863,16 +863,21 @@ export class TxnManager {
 
 /**
  * Interface for handling rebase operations on transactions.
+ * @alpha
  */
 export interface RebaseHandler {
   /**
    * Determine whether a transaction should be reinstated during a rebase operation.
    * @param txn The transaction to check.
+   *
+   * @alpha
    */
   shouldReinstate(txn: TxnProps): boolean;
   /**
    * Recompute the changes for a given transaction.
    * @param txn The transaction to recompute.
+   *
+   * @alpha
    */
   recompute(txn: TxnProps): Promise<void>;
 }
