@@ -467,13 +467,13 @@ export function getMeshPrimitives(mesh: GltfMesh | undefined): GltfMeshPrimitive
 
     for (const primitiveIndex of group.primitives) {
       const thisPrimitive = primitives[primitiveIndex];
-      
+
       // Spec: all primitives must use indexed geometry and a given primitive may appear in at most one group.
       // Spec: all primitives must have same topology.
       if (undefined === thisPrimitive?.indices || thisPrimitive.mode !== primitive.mode) {
         return meshPrimitives;
       }
-      
+
       primitives[primitiveIndex] = undefined;
     }
 
@@ -2001,8 +2001,11 @@ export abstract class GltfReader {
       return;
 
     try {
+      const dracolib = await import("draco3d");
+      const loadersGlCore = await import('@loaders.gl/core')
       const dracoLoader = (await import("@loaders.gl/draco")).DracoLoader;
-      await Promise.all(dracoMeshes.map(async (x) => this.decodeDracoMesh(x, dracoLoader)));
+
+      await Promise.all(dracoMeshes.map(async (x) => this.decodeDracoMesh(x, dracoLoader, loadersGlCore, dracolib)));
     } catch (err) {
       Logger.logWarning(FrontendLoggerCategory.Render, "Failed to decode draco-encoded glTF mesh");
       Logger.logException(FrontendLoggerCategory.Render, err);
@@ -2031,7 +2034,7 @@ export abstract class GltfReader {
     } catch { }
   }
 
-  private async decodeDracoMesh(ext: DracoMeshCompression, loader: typeof DracoLoader): Promise<void> {
+  private async decodeDracoMesh(ext: DracoMeshCompression, loader: typeof DracoLoader, _loadersGlCore: any, draco3d: any): Promise<void> {
     const bv = this._bufferViews[ext.bufferView];
     if (!bv || !bv.byteLength)
       return;
@@ -2042,7 +2045,8 @@ export abstract class GltfReader {
 
     const offset = bv.byteOffset ?? 0;
     buf = buf.subarray(offset, offset + bv.byteLength);
-    const mesh = await loader.parse(buf, { }); // NB: `options` argument declared optional but will produce exception if not supplied.
+
+    const mesh = await loader.parse(buf, { modules: { draco3d } }); // NB: `options` argument declared optional but will produce exception if not supplied. Regardless, we are specifying our own bundled draco3d module to avoid CDN requests.
     if (mesh)
       this._dracoMeshes.set(ext, mesh);
   }
