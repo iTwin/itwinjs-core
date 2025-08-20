@@ -42,7 +42,8 @@
   },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:*",
-    "@itwin/core-geometry": "workspace:*"
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/core-quantity": "workspace:*"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",

@@ -172,7 +172,7 @@ describe("Field formatting", () => {
       expect(formatFieldValue(42, "quantity", { case: "lower" })).toBe("42");
     });
 
-    it.only("should format m to km", async () => {
+    it("should format m to km", async () => {
 
       // Set up the formatting components
       const unitsProvider = new SchemaUnitProvider(schemaContext);
@@ -216,7 +216,7 @@ describe("Field formatting", () => {
       expect(result).to.equal("5.0 km");
     });
 
-    it.only("should format length", async () => {
+    it("should format length", async () => {
 
       // Set up the formatting components
       const unitsProvider = new SchemaUnitProvider(schemaContext);
