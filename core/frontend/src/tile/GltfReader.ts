@@ -2123,6 +2123,11 @@ export abstract class GltfReader {
       return;
 
     try {
+      // refuse to continue decoding if using Internet Explorer or old Microsoft Edge (lifted from checkbrowser.js).
+      if (!!(document as any).documentMode || !!(window as any).StyleMedia) {
+        return;
+      }
+
       const dracolib = await import("draco3d");
       const dracoLoader = (await import("@loaders.gl/draco")).DracoLoader;
 
