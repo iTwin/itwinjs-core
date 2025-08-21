@@ -87,19 +87,6 @@ export abstract class TextBlockComponent {
     this._styleOverrides = TextStyleSettings.cloneProps(props?.styleOverrides ?? {});
   }
 
-  public get depth(): number {
-    let current: TextBlockComponent | undefined = this.parent;
-
-    if (!current) return 0;
-
-    let depth = 0;
-    while (current.parent) {
-      current = current.parent;
-      depth++;
-    }
-    return depth;
-  }
-
   public get root(): TextBlockComponent {
     let current: TextBlockComponent | undefined = this.parent;
 
@@ -845,19 +832,6 @@ export class Paragraph extends ContainerComponent<Container | Run> {
         this.appendChild(child);
       }
     });
-  }
-
-  public override get depth(): number {
-    let current: TextBlockComponent | undefined = this.parent;
-
-    if (!current) return 0;
-
-    let depth = 1;
-    while (current.parent) {
-      current = current.parent;
-      if (current.type === ContainerComponentType.Paragraph) depth++;
-    }
-    return depth;
   }
 
   /** Create a paragraph from its JSON representation. */
