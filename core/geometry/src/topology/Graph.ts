@@ -91,7 +91,7 @@ export type NodeToNumberFunction = (node: HalfEdge) => number;
  */
 export type HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean;
 /**
- * Function signature for function of a node and a mask, returning a number.
+ * Function signature for function of a node and a mask, returning a boolean.
  * @internal
  */
 export type HalfEdgeAndMaskToBooleanFunction = (node: HalfEdge, mask: HalfEdgeMask) => boolean;
@@ -1139,6 +1139,17 @@ export class HalfEdge implements HalfEdgeUserData {
       node = node.vertexSuccessor;
     } while (node !== this);
     return nodes;
+  }
+  /**
+   * Announce edges in the vertex loop, starting with the instance and proceeding in a `vertexSuccessor` traversal.
+   * @param announceEdge function to call at each edge
+   */
+  public announceEdgesAroundVertex(announceEdge: NodeFunction): void {
+    let node: HalfEdge = this;
+    do {
+      announceEdge(node);
+      node = node.vertexSuccessor;
+    } while (node !== this);
   }
   /**
    * Evaluate `f(node)` at each node around `this` node's face loop. Sum the function values.

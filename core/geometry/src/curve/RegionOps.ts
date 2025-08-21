@@ -380,8 +380,10 @@ export class RegionOps {
   /**
    * Return areas defined by a boolean operation.
    * @note For best results, input regions should have correctly oriented loops. See [[sortOuterAndHoleLoopsXY]].
-   * @note A common use case of this method is to convert a region with overlapping children into one with
-   * non-overlapping children: `regionOut = RegionOps.regionBooleanXY(regionIn, undefined, RegionBinaryOpType.Union)`.
+   * @note A common use case of this method is to split (a region with) overlapping loops into a `UnionRegion` with
+   * adjacent `Loop`s: `regionOut = RegionOps.regionBooleanXY(regionIn, undefined, RegionBinaryOpType.Union)`.
+   * @note The Union operation does not currently attempt to return a region with minimal loops. This may change with
+   * future development.
    * @param loopsA first set of loops (treated as a union)
    * @param loopsB second set of loops (treated as a union)
    * @param operation indicates Union, Intersection, Parity, AMinusB, or BMinusA
