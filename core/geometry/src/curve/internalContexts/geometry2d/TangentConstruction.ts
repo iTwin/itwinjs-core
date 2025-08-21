@@ -24,7 +24,7 @@ import { UnboundedParabola2d } from "./UnboundedParabola";
  */
 export class TangentConstruction {
   /**
-   * Return all (i.e. up to 4) circles that are tangent to 3 given lines.
+   * Return all (i.e., up to 4) circles that are tangent to 3 given lines.
    * @param lineA first line
    * @param lineB second line
    * @param lineC third line
@@ -37,7 +37,7 @@ export class TangentConstruction {
     /*--------------------------------------------------------------------------------------
     (X-A).normalA = a*r
     (X-B).normalB = b*r
-    (X-B).normalC = c*r
+    (X-C).normalC = c*r
     Typical expansion is
     x*mx + y*my - a*r = A.normalA
     Where a,b,c are combinations of {+1,-1}
@@ -79,34 +79,34 @@ export class TangentConstruction {
     return result;
   }
   /**
-   * Return all (i.e. up to 2 ) unbounded lines perpendicular to a line and tangent to a circle
-   * @param circleA first circle
-   * @param circleB second circle
+   * Return all (i.e., up to 2) unbounded lines perpendicular to a line and tangent to a circle.
+   * @param line the line
+   * @param circle the circle
    */
   public static linesPerpLTangentC(
-    lineA: UnboundedLine2dByPointAndNormal, circleB: UnboundedCircle2dByCenterAndRadius,
+    line: UnboundedLine2dByPointAndNormal, circle: UnboundedCircle2dByCenterAndRadius,
   ): ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>[] | undefined {
-    const lineTangent = lineA.unitVectorAlongLine();
-    const unitNormal = lineA.unitNormal();
-    const linePoint = lineA.closestPoint(circleB.center);
+    const lineTangent = line.unitVectorAlongLine();
+    const unitNormal = line.unitNormal();
+    const linePoint = line.closestPoint(circle.center);
     if (linePoint === undefined || lineTangent === undefined || unitNormal === undefined)
       return undefined;
     const unitPerp = unitNormal.rotate90CCWXY()
     const result = [];
-    for (const r of signedValues(circleB.radius)) {
+    for (const r of signedValues(circle.radius)) {
       const pointA = linePoint.plusScaled(lineTangent, r);
-      const pointB = circleB.center.plusScaled(lineTangent, r);
+      const pointB = circle.center.plusScaled(lineTangent, r);
       const lineC = UnboundedLine2dByPointAndNormal.createPointNormal(pointA, unitPerp);
       const taggedLine = new ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>(lineC);
-      taggedLine.data.push(new Point2dImplicitCurve2d(pointA, lineA)); // CLONE
-      taggedLine.data.push(new Point2dImplicitCurve2d(pointB, circleB)); // CLONE
+      taggedLine.data.push(new Point2dImplicitCurve2d(pointA, line)); // CLONE
+      taggedLine.data.push(new Point2dImplicitCurve2d(pointB, circle)); // CLONE
       result.push(taggedLine);
     }
     return result;
   }
   /**
-   * Return all (i.e. 4) variants of the line between centers, with ends at crossing points
-   * on respective circles.
+   * Return all (i.e., 4) variants of the line perpendicular to 2 circles (line between centers, with ends at crossing
+   * points on respective circles).
    * @param circleA first circle
    * @param circleB second circle
    */
@@ -133,33 +133,33 @@ export class TangentConstruction {
     return result;
   }
   /**
-   * Return all (i.e. up to 2 ) unbounded lines perpendicular to a line and tangent to a circle
-   * @param circleA first circle
-   * @param circleB second circle
+   * Return all (i.e., up to 2) unbounded lines perpendicular to a line and a circle.
+   * @param line the line
+   * @param circle the circle
    */
   public static linesPerpLPerpC(
-    lineA: UnboundedLine2dByPointAndNormal, circleB: UnboundedCircle2dByCenterAndRadius,
+    line: UnboundedLine2dByPointAndNormal, circle: UnboundedCircle2dByCenterAndRadius,
   ): ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>[] | undefined {
-    const lineTangent = lineA.unitVectorAlongLine();
-    const unitNormal = lineA.unitNormal();
-    const linePoint = lineA.closestPoint(circleB.center);
+    const lineTangent = line.unitVectorAlongLine();
+    const unitNormal = line.unitNormal();
+    const linePoint = line.closestPoint(circle.center);
     if (linePoint === undefined || lineTangent === undefined || unitNormal === undefined)
       return undefined;
     const unitPerp = unitNormal.rotate90CCWXY()
     const result = [];
-    for (const r of signedValues(circleB.radius)) {
+    for (const r of signedValues(circle.radius)) {
       const pointA = linePoint.clone()
-      const pointB = circleB.center.plusScaled(unitNormal, r);
+      const pointB = circle.center.plusScaled(unitNormal, r);
       const lineC = UnboundedLine2dByPointAndNormal.createPointNormal(pointA, unitPerp);
       const taggedLine = new ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>(lineC);
-      taggedLine.data.push(new Point2dImplicitCurve2d(pointA, lineA)); // CLONE!
-      taggedLine.data.push(new Point2dImplicitCurve2d(pointB, circleB)); // CLONE!
+      taggedLine.data.push(new Point2dImplicitCurve2d(pointA, line)); // CLONE!
+      taggedLine.data.push(new Point2dImplicitCurve2d(pointB, circle)); // CLONE!
       result.push(taggedLine);
     }
     return result;
   }
   /**
-   * Return all (i.e. up to 4 ) unbounded lines perpendicular to a circle and tangent to a circle.
+   * Return all (i.e., up to 4) unbounded lines perpendicular to a circle and tangent to a circle.
    * Note that multiple colinear lines are returned tagged with diametrically opposing points of circleA.
    * @param circleA first circle (for perpendicular constraint)
    * @param circleB second circle (for tangent constraint)
@@ -195,7 +195,7 @@ export class TangentConstruction {
     return result;
   }
   /**
-   * Return all (i.e. up to 4 ) unbounded lines tangent to 2 circles
+   * Return all (i.e., up to 4) unbounded lines tangent to 2 circles.
    * * There are 4 lines if there is neither intersection nor containment between the circles
    * * There are 2 lines if the circles intersect
    * * THere are no lines if the one circle is entirely inside the other.
@@ -232,8 +232,8 @@ export class TangentConstruction {
             }
             const lineA = UnboundedLine2dByPointAndNormal.createPointPoint(pointA, pointB);
             const taggedLine = new ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>(lineA);
-            taggedLine.data.push(new Point2dImplicitCurve2d(pointA, circleA)); // CLONE!
-            taggedLine.data.push(new Point2dImplicitCurve2d(pointB, circleB)); // CLONE!
+            taggedLine.data.push(new Point2dImplicitCurve2d(pointA, circleA)); // CLONE
+            taggedLine.data.push(new Point2dImplicitCurve2d(pointB, circleB)); // CLONE
             result.push(taggedLine);
           }
         }
@@ -242,7 +242,7 @@ export class TangentConstruction {
     return result;
   }
     /**
-    * Return all (i.e. up to 8) circles tangent to two lines and a circle.
+    * Return all (i.e., up to 8) circles tangent to two lines and a circle.
     * * There are 8 circles if the circle contains the intersection of the lines.
     * * There are 2 circles if the circle is completely contained in one quadrant bounded by the two lines.
     * * There are 2 circles if the circle intersects one ray outward from the intersection.
@@ -250,20 +250,20 @@ export class TangentConstruction {
     */ public static circlesTangentLLC(
     lineA: UnboundedLine2dByPointAndNormal,
     lineB: UnboundedLine2dByPointAndNormal,
-    circleC: UnboundedCircle2dByCenterAndRadius):
-    ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
+    circle: UnboundedCircle2dByCenterAndRadius,
+  ): ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
     /*--------------------------------------------------------------------------------------
     Put origin at circle center.
     A,B are line points.
     M,N are line normals.
     (X).(X) = (a +- r)^2 = 0
-    (X-A).M     = +-r
-    (X-B).N     = +-r
+    (X-A).M = +-r
+    (X-B).N = +-r
     Need to consider 4 combinations of signs: (+++) (++-) (-++) (-+-) The other 4 are negations.
     Write the linear part as
-    [M N]^ * X = [M.A N.B]^ + r Ei       where Ei is one of E0=[1 1]^   or  E1=[1 -1]^
-    Multiply by inverse of matrix
-       X = F + r G
+    [M N]^ * X = [M.A N.B]^ + r Ei
+    where Ei is one of E0=[1 1]^   or  E1=[1 -1]^
+    Multiply by inverse of matrix X = F + r G
     The quadratic part is
     (F + rG).(F + rG) = (a +- r)^2
     (F + rG).(F + rG) = a^2 +- 2ar + r^2
@@ -272,23 +272,23 @@ export class TangentConstruction {
     Solve with positive, negative branch.  Each generates 2 solutions to go back through Ei.
     ----------------------------------------------------------------------------------------*/
     // lines with unit vector and point coordinates from circle center
-    const lineA1 = lineA.cloneNormalizedFromOrigin(circleC.center);
-    const lineB1 = lineB.cloneNormalizedFromOrigin(circleC.center);
+    const lineA1 = lineA.cloneNormalizedFromOrigin(circle.center);
+    const lineB1 = lineB.cloneNormalizedFromOrigin(circle.center);
     if (lineA1 === undefined || lineB1 === undefined)
       return undefined;
     // perpendicular distance from each line to center of circle
     const dotMA = lineA1.normal.dotProduct(lineA1.point);
     const dotMB = lineB1.normal.dotProduct(lineB1.point);
 
-    const a = circleC.radius;
+    const a = circle.radius;
     const vectorF = Vector2d.create(); // vector from circle center to intersection of the lines
     if (lineA1.normal.isParallelTo(lineB1.normal)
       || !SmallSystem.linearSystem2d(
         lineA1.normal.x, lineA1.normal.y,
         lineB1.normal.x, lineB1.normal.y,
         dotMA, dotMB, vectorF)) {
-      // SPECIAL CASE:  PARALLEL LINES
-      // Lines are parallel.
+      // SPECIAL CASE: PARALLEL LINES
+      // Lines are parallel
       // Make a midline. Half of line separation is the tangent circle radius.
       const midLinePoint = lineA1.point.interpolate(0.5, lineB1.point);
       const lineDirection = lineA1.normal.rotate90CCWXY();
@@ -299,25 +299,21 @@ export class TangentConstruction {
       const coffConstant = Geometry.hypotenuseSquaredXY(midLinePoint.x, midLinePoint.y);
       const targetRadius = [];
       // special case zero radius
-      if (!Geometry.isSmallMetricDistance(circleC.radius)) {
-        targetRadius.push(circleC.radius + a1);
-        targetRadius.push(circleC.radius - a1);
+      if (!Geometry.isSmallMetricDistance(circle.radius)) {
+        targetRadius.push(circle.radius + a1);
+        targetRadius.push(circle.radius - a1);
       } else {
         // circle is just a point -- the quadratic solver only has to happen once
-        targetRadius.push(circleC.radius + a1);
-        //  But if the center is ON one of the lines, construct by projecting to the other.
+        targetRadius.push(circle.radius + a1);
+        // But if the center is ON one of the lines, construct by projecting to the other.
         // REMARK: In C++ code this pointOnLine test was done with messy
         // tolerance relative to the various line points' distance to origin.
-        // Here we trust metric distance condition
+        // Here we trust metric distance condition.
         let center;
-        if (Geometry.isSmallMetricDistance(dotMA)) {
-          // Tangency is on lineA.  Move towards line B
-          center = circleC.center.plusScaled(lineA1.normal, dotMB > 0.0 ? -a1 : a1);
-        }
-        else if (Geometry.isSmallMetricDistance(dotMB)) {
-          // Tangency is on lineB.  Move towards line A
-          center = circleC.center.plusScaled(lineB1.normal, dotMA > 0.0 ? a1 : -a1);
-        }
+        if (Geometry.isSmallMetricDistance(dotMA)) // tangency is on lineA; move towards line B
+          center = circle.center.plusScaled(lineA1.normal, dotMB > 0.0 ? -a1 : a1);
+        else if (Geometry.isSmallMetricDistance(dotMB)) // tangency is on lineB; move towards line A
+          center = circle.center.plusScaled(lineB1.normal, dotMA > 0.0 ? a1 : -a1);
         if (center !== undefined) {
           const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius(center, a1);
           const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
@@ -329,10 +325,10 @@ export class TangentConstruction {
         const roots = Degree2PowerPolynomial.solveQuadratic(coffSine2, coffSine, coffConstant - radius * radius);
         if (roots) {
           for (const alpha of roots) {
-            const center = circleC.center.plus2Scaled(midLinePoint, 1.0, lineDirection, alpha);
+            const center = circle.center.plus2Scaled(midLinePoint, 1.0, lineDirection, alpha);
             const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius(center, a1);
             const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
-            markup.closePointsOfGeometry(newCircle.center, newCircle.center, newCircle.radius, [lineA, lineB, circleC]);
+            markup.closePointsOfGeometry(newCircle.center, newCircle.center, newCircle.radius, [lineA, lineB, circle]);
             resultA.push(markup);
           }
         }
@@ -352,13 +348,13 @@ export class TangentConstruction {
           const roots = Degree2PowerPolynomial.solveQuadratic(coffA, coffB, coffC);
           if (roots !== undefined) {
             for (const r of roots) {
-              const center = circleC.center.plus2Scaled(vectorF, 1.0, vectorG, r);
+              const center = circle.center.plus2Scaled(vectorF, 1.0, vectorG, r);
               const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius(center, r);
               if (!isThisCirclePresent(result, newCircle)) {
                 const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
                 markup.appendClosePoint(newCircle.center, lineA, newCircle.center, newCircle.radius);
                 markup.appendClosePoint(newCircle.center, lineB, newCircle.center, newCircle.radius);
-                markup.appendClosePoint(newCircle.center, circleC, newCircle.center, newCircle.radius);
+                markup.appendClosePoint(newCircle.center, circle, newCircle.center, newCircle.radius);
                 result.push(markup);
               }
             }
@@ -369,44 +365,44 @@ export class TangentConstruction {
     return result;
   }
   /**
-   * Return all (i.e. up to 4) circles tangent to 2 circles and a line.
+   * Return all (i.e., up to 4) circles tangent to 2 circles and a line.
    * @param circleA first circle
    * @param circleB second circle
-   * @param lineC the line
+   * @param line the line
    */
   public static circlesTangentCCL(
     circleA: UnboundedCircle2dByCenterAndRadius,
     circleB: UnboundedCircle2dByCenterAndRadius,
-    lineC: UnboundedLine2dByPointAndNormal,
+    line: UnboundedLine2dByPointAndNormal,
   ): ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
     /*--------------------------------------------------------------------------------------
-  (x-xA)^2 + (y-y0)^2 - (r + r0)^2 = 0
-  (x-xB)^2 + (y-y1)^2 - (r + r1)^2 = 0
-      y = r       NOTE: Cannot arbitrarily change sign of r as is done in 3-circle case.
-  -------------------------------------------
-  x^2 -2 xA x + xA^2 -2 y0 y + y0^2 - 2 r0 y - r0^2 = 0
-  x^2 -2 xB x + xB^2 -2 y1 y + y1^2 - 2 r1 y - r1^2 = 0
-  -------------------------------------------
-  x^2 -2 xA x + -2 (y0 + r0) y + a0= 0          a0 = xA^2 + y0^2 - r0^2
-  x^2 -2 xB x + -2 (y1 + r1) y + a1= 0          a1 = xB^2 + y1^2 - r1^2
-  -------------------------------------------
-  (A0) x^2 + b0 x + c0 y + a0= 0          b0 = -2x0    c0 = -2 (y0 + r0)
-  (A1) x^2 + b1 x + c1 y + a1= 0          b1 = -2x1    c1 = -2 (y1 + r1)
-  -------------------------------------------
-  c1 x^2             c1 c0 y + c1 a0= 0
-  c0 x^2 + c0 b1 x + c0 c1 y + c0 a1= 0
-  ---------------------------------------
-  Subtract first from second.
-  (c0 - c1) x^2 + (c0 b1 - c1 b0) x + (c0 a1 - c1 a0) = 0.
-  Solve for two x values.  Substitute in with largest c0, c1.
-  ----------------------------------------------------------------------------------------*/
-    const lineUnitNormal = lineC.normal.normalize();
+    (x-xA)^2 + (y-y0)^2 - (r + r0)^2 = 0
+    (x-xB)^2 + (y-y1)^2 - (r + r1)^2 = 0
+        y = r       NOTE: Cannot arbitrarily change sign of r as is done in 3-circle case.
+    -------------------------------------------
+    x^2 -2 xA x + xA^2 -2 y0 y + y0^2 - 2 r0 y - r0^2 = 0
+    x^2 -2 xB x + xB^2 -2 y1 y + y1^2 - 2 r1 y - r1^2 = 0
+    -------------------------------------------
+    x^2 -2 xA x + -2 (y0 + r0) y + a0= 0          a0 = xA^2 + y0^2 - r0^2
+    x^2 -2 xB x + -2 (y1 + r1) y + a1= 0          a1 = xB^2 + y1^2 - r1^2
+    -------------------------------------------
+    (A0) x^2 + b0 x + c0 y + a0= 0          b0 = -2x0    c0 = -2 (y0 + r0)
+    (A1) x^2 + b1 x + c1 y + a1= 0          b1 = -2x1    c1 = -2 (y1 + r1)
+    -------------------------------------------
+    c1 x^2             c1 c0 y + c1 a0= 0
+    c0 x^2 + c0 b1 x + c0 c1 y + c0 a1= 0
+    ---------------------------------------
+    Subtract first from second.
+    (c0 - c1) x^2 + (c0 b1 - c1 b0) x + (c0 a1 - c1 a0) = 0.
+    Solve for two x values.  Substitute in with largest c0, c1.
+    ----------------------------------------------------------------------------------------*/
+    const lineUnitNormal = line.normal.normalize();
     if (lineUnitNormal === undefined)
       return undefined;
     const lineUnitAlong = lineUnitNormal.rotate90CCWXY();
     const circleGlobalOffsets = [
-      Vector2d.createStartEnd(lineC.point, circleA.center),
-      Vector2d.createStartEnd(lineC.point, circleB.center),
+      Vector2d.createStartEnd(line.point, circleA.center),
+      Vector2d.createStartEnd(line.point, circleB.center),
     ];
     const circleLocalOffset = [];
     for (const i of [0, 1]) {
@@ -438,20 +434,19 @@ export class TangentConstruction {
         const qa = coffC[0] - coffC[1];
         const qb = coffC[0] * coffB[1] - coffC[1] * coffB[0];
         const qc = coffC[0] * coffA[1] - coffC[1] * coffA[0];
-
         const xRoot = Degree2PowerPolynomial.solveQuadratic(qa, qb, qc);
         if (xRoot !== undefined) {
           for (const x of xRoot) {
             const y = Geometry.conditionalDivideCoordinate(x * x + coffB[k] * x + coffA[k], -coffC[k]);
             if (y !== undefined) {
               const r = Math.abs(y);
-              const center = lineC.point.plus2Scaled(lineUnitAlong, x, lineUnitNormal, y);
+              const center = line.point.plus2Scaled(lineUnitAlong, x, lineUnitNormal, y);
               const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius(center, r);
               if (!isThisCirclePresent(result, newCircle)) {
                 const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
                 markup.appendClosePoint(newCircle.center, circleA, newCircle.center, r);
                 markup.appendClosePoint(newCircle.center, circleB, newCircle.center, r);
-                markup.appendClosePoint(newCircle.center, lineC, newCircle.center, r);
+                markup.appendClosePoint(newCircle.center, line, newCircle.center, r);
                 result.push(markup);
               }
             }
@@ -462,7 +457,7 @@ export class TangentConstruction {
     return result;
   }
   /**
-   * special case CCC tangent construction when inputs are colinear.
+   * Special case CCC tangent construction when inputs are colinear.
    * @param circleA first input circle
    * @param circleB second input circle
    * @param circleC third input circle
@@ -479,7 +474,7 @@ export class TangentConstruction {
     rB: number,
     rC: number,
     result: ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[],
-  ) {
+  ): void {
     const vectorAB = Vector2d.createStartEnd(circleA.center, circleB.center);
     const vectorAC = Vector2d.createStartEnd(circleA.center, circleC.center);
     const xB = vectorAB.magnitude();
@@ -488,7 +483,7 @@ export class TangentConstruction {
       xC = -xC;
     const unitAB = vectorAB.normalize();
     if (unitAB === undefined)
-      return; // there are circle-in-circle cases with common centers.....
+      return; // there are circle-in-circle cases with common centers
     const unitPerp = unitAB.rotate90CCWXY();
     /*
     Measuring from center A in rotated system:
@@ -542,7 +537,7 @@ export class TangentConstruction {
     }
   }
   /**
-   * Return all (i.e. up to 8) circles tangent to 3 circles.
+   * Return all (i.e., up to 8) circles tangent to 3 circles.
    * @param circles the three input circles
    */
   private static circlesTangentCCCThisOrder(
@@ -555,8 +550,8 @@ export class TangentConstruction {
     const determinant = vector01.crossProduct(vector02);
     const determinantTol = 1.0e-8;
     const oneOverDeterminant = Geometry.conditionalDivideFraction(1.0, determinant);
-    // Messy tolerance test ported. Why not just a parallel test on the vectors?
-    // Maybe having 1/determinant is worth it?
+    // messy tolerance test ported. Why not just a parallel test on the vectors?
+    // maybe having 1/determinant is worth it?
     if (oneOverDeterminant === undefined
       || Math.abs(determinant) <= determinantTol * Math.abs(dot12)
       || oneOverDeterminant === undefined) {
@@ -573,7 +568,6 @@ export class TangentConstruction {
       return result.length > 0 ? result : undefined;
     }
     const r0 = circles[0].radius;
-
     const inverseMatrix = Matrix3d.createRowValues(
       vector02.y * oneOverDeterminant, -vector01.y * oneOverDeterminant, 0.0,
       -vector02.x * oneOverDeterminant, vector01.x * oneOverDeterminant, 0.0,
@@ -614,11 +608,10 @@ export class TangentConstruction {
     return result;
   }
   /**
-   * Return all (i.e. up to 8) circles tangent to 3 circles.
+   * Return all (i.e., up to 8) circles tangent to 3 circles.
    * @param circleA first circle
    * @param circleB second circle
    * @param circleC third circle
-
    */
   public static circlesTangentCCC(
     circleA: UnboundedCircle2dByCenterAndRadius,
@@ -655,7 +648,7 @@ export class TangentConstruction {
   public static circlesTangentLLR(
     lineA: UnboundedLine2dByPointAndNormal,
     lineB: UnboundedLine2dByPointAndNormal,
-    radius: number
+    radius: number,
   ): ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
     if (Geometry.isSmallMetricDistance(radius))
       return undefined;
@@ -733,7 +726,7 @@ export class TangentConstruction {
    * @returns array of circles with annotated tangencies
    */
   public static circlesTangentCCR(
-    circleA: UnboundedCircle2dByCenterAndRadius, circleB: UnboundedCircle2dByCenterAndRadius, radius: number
+    circleA: UnboundedCircle2dByCenterAndRadius, circleB: UnboundedCircle2dByCenterAndRadius, radius: number,
   ): ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
     if (Geometry.isSmallMetricDistance(radius))
       return undefined;
@@ -773,7 +766,7 @@ export class TangentConstruction {
    * @param circleB second circle
    */
   public static medialCurveCircleCircle(
-    circleA: UnboundedCircle2dByCenterAndRadius, circleB: UnboundedCircle2dByCenterAndRadius
+    circleA: UnboundedCircle2dByCenterAndRadius, circleB: UnboundedCircle2dByCenterAndRadius,
   ): ImplicitCurve2d | undefined {
     const d = circleA.center.distance(circleB.center);
     const origin = circleA.center.interpolate(0.5, circleB.center);
@@ -802,27 +795,27 @@ export class TangentConstruction {
    *            X = center + vectorU * sec(theta) + vectorV * tan(theta)
    * * If the curve is an ellipse, the equation is
    *            X = center + vectorU * cos(theta) + vectorV * sin(theta)
-   * @param circleA first circle
-   * @param circleB second circle
+   * @param line the line
+   * @param circle the circle
    */
   public static medialCurveLineCircle(
-    line: UnboundedLine2dByPointAndNormal, circleB: UnboundedCircle2dByCenterAndRadius
+    line: UnboundedLine2dByPointAndNormal, circle: UnboundedCircle2dByCenterAndRadius,
   ): ImplicitCurve2d[] | undefined {
-    const linePoint = line.closestPoint(circleB.center);
+    const linePoint = line.closestPoint(circle.center);
     if (linePoint === undefined)
       return undefined;
     const lineA = line.cloneNormalizedWithOrigin(linePoint);
     if (lineA === undefined)
       return undefined;
-    const b = linePoint.distance(circleB.center);
-    const side = lineA.functionValue(circleB.center) > 0 ? 1 : -1;
+    const b = linePoint.distance(circle.center);
+    const side = lineA.functionValue(circle.center) > 0 ? 1 : -1;
     const signedB = b * side;
     const signedRadii = [];
-    if (Geometry.isSameCoordinate(circleB.radius, -circleB.radius))
+    if (Geometry.isSameCoordinate(circle.radius, -circle.radius))
       signedRadii.push(0);
     else {
-      signedRadii.push(circleB.radius);
-      signedRadii.push(-circleB.radius);
+      signedRadii.push(circle.radius);
+      signedRadii.push(-circle.radius);
     }
     const result = [];
     for (const r of signedRadii) {
@@ -855,8 +848,9 @@ function signedValues(distance: number, value?: number): number[] {
   return values;
 }
 /** Search an array of circles to see if a particular new circle is already present. */
-function isThisCirclePresent(circles: ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[],
-  circle: UnboundedCircle2dByCenterAndRadius): boolean {
+function isThisCirclePresent(
+  circles: ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[], circle: UnboundedCircle2dByCenterAndRadius,
+): boolean {
   for (const c of circles) {
     if (circle.isSameCircle(c.curve, true))
       return true;
