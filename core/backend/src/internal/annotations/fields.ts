@@ -228,7 +228,6 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
     const propValue = context.getProperty(field);
     if (undefined !== propValue) {
       // ###TODO formatting etc.
-      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       newContent = formatFieldValue(propValue, field.propertyType, field.formatOptions);
     }
   } catch (err) {

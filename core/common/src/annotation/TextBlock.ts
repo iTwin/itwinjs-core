@@ -390,7 +390,8 @@ export interface FieldRunProps extends TextBlockComponentProps {
    * If the value of the property cannot be converted to the specified type, then evaluation of the field's display string will fail.
    * @see [[formatOptions]] to customize the formatting more granularly.
    */
-  propertyType?: FieldPropertyType;
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  propertyType?: FieldPropertyType | string;
   /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]].
    * The specific options used depend upon the field's [[propertyType]].
    */
@@ -423,7 +424,8 @@ export class FieldRun extends TextBlockComponent {
    * If the value of the property cannot be converted to the specified type, then evaluation of the field's display string will fail.
    * @see [[formatOptions]] to customize the formatting more granularly.
    */
-  public readonly propertyType: FieldPropertyType;
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  public readonly propertyType: FieldPropertyType | string;
   /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]].
    * The specific options used depend upon the field's [[propertyType]].
    */

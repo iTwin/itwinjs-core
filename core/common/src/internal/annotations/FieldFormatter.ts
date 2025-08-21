@@ -142,7 +142,8 @@ function formatQuantity(v: FieldPrimitiveValue, _o?: QuantityFieldFormatOptions)
     return v.toString();
 }
 
-export function formatFieldValue(value: FieldPrimitiveValue, type: FieldPropertyType, options: FieldFormatOptions | undefined): string | undefined {
+// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+export function formatFieldValue(value: FieldPrimitiveValue, type: FieldPropertyType | string, options: FieldFormatOptions | undefined): string | undefined {
   const formatter = formatters[type];
   return formatter ? formatter(value, options) : undefined;
 }
