@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { beforeEach, describe, expect, it } from "vitest";
-import { ContainerComponent, ContainerComponentType, FieldRun, FractionRun, FractionRunProps, List, ListProps, Paragraph, ParagraphProps, RunComponentType, RunProps, TextBlock, TextBlockComponent, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps } from "../../core-common";
+import { ContainerComponent, ContainerComponentType, FieldRun, FractionRun, FractionRunProps, List, ListProps, Paragraph, ParagraphProps, RunComponentType, RunProps, TextBlock, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps } from "../../core-common";
 
 function makeTextRun(content?: string, styleOverrides?: TextStyleSettingsProps): TextRunProps {
   return {
@@ -159,12 +159,7 @@ describe("TextBlockComponent", () => {
     expect(tb.stringify({ paragraphBreak, lineBreak, fractionSeparator })).to.equal("abcP1Fπ def   ghiLj k lPPPLPFPmnoPLL");
   });
 
-  it("adds parents to runs and children", () => {
-    function expectToHaveParentAndRoot(root: TextBlock, parent: TextBlockComponent, current: TextBlockComponent) {
-      expect(current.parent).to.equal(parent);
-      expect(current.root).to.equal(root);
-    }
-
+  it("adds items to list", () => {
     const props: TextBlockProps = {
       styleId: "0x42",
       children: [
@@ -186,17 +181,11 @@ describe("TextBlockComponent", () => {
     };
 
     const tb = TextBlock.create(props);
-
-    expect(tb.root).to.equal(tb);
     expect(tb.children?.length).to.equal(3);
 
     const p0 = tb.children[0] as Paragraph;
     const p1 = tb.children[1] as Paragraph;
     const p2 = tb.children[2] as List;
-
-    expectToHaveParentAndRoot(tb, tb, p0);
-    expectToHaveParentAndRoot(tb, tb, p1);
-    expectToHaveParentAndRoot(tb, tb, p2);
 
     expect(p0.children).toBeDefined();
     expect(p1.children).toBeDefined();
@@ -204,15 +193,6 @@ describe("TextBlockComponent", () => {
 
     const p0Children = p0.children;
     expect(p0Children.length).to.equal(1);
-    p0Children.forEach((run) => {
-      expectToHaveParentAndRoot(tb, p0, run);
-    });
-
-    const p1Children = p1.children;
-    expect(p1Children.length).to.equal(4);
-    p1Children.forEach((run) => {
-      expectToHaveParentAndRoot(tb, p1, run);
-    });
 
     const p2Children = p2.children;
     expect(p2Children.length).to.equal(3);
@@ -220,10 +200,6 @@ describe("TextBlockComponent", () => {
     const p2Item0 = p2Children[0];
     const p2Item1 = p2Children[1];
     const p2Item2 = p2Children[2];
-
-    expectToHaveParentAndRoot(tb, p2, p2Item0);
-    expectToHaveParentAndRoot(tb, p2, p2Item1);
-    expectToHaveParentAndRoot(tb, p2, p2Item2);
 
     expect(p2Item0.children.length).toBe(1);
     expect(p2Item1.children.length).toBe(1);

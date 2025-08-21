@@ -87,25 +87,6 @@ export abstract class TextBlockComponent {
     this._styleOverrides = TextStyleSettings.cloneProps(props?.styleOverrides ?? {});
   }
 
-  public get root(): TextBlockComponent {
-    let current: TextBlockComponent | undefined = this.parent;
-
-    if (!current) return this;
-
-    while (current.parent) {
-      current = current.parent;
-    }
-    return current;
-  }
-
-  public get parent(): TextBlockComponent | undefined {
-    return this._parent;
-  }
-
-  public set parent(parent: TextBlockComponent | undefined) {
-    this._parent = parent;
-  }
-
   public get index(): number {
     return this._index;
   }
@@ -270,7 +251,6 @@ export abstract class ContainerComponent<T extends TextBlockComponent = TextBloc
 
   public appendChild(child: T): void {
     this.children.push(child);
-    child.parent = this;
     child.index = this.children.length - 1; // Update the index of the new child
   }
 }

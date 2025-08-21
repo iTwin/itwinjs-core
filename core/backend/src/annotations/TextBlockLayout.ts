@@ -90,7 +90,7 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
   const findFontId = args.findFontId ?? ((name, type) => args.iModel.fonts.findId({ name, type }) ?? 0);
   const computeTextRange = args.computeTextRange ?? ((x) => args.iModel.computeRangesForText(x));
 
-  const textBlock = args.source as TextBlock;
+  const textBlock: TextBlock = args.textStyleResolver.resolveAndMendStyle(args.source as TextBlock);
   return new TextBlockLayout(textBlock, new LayoutContext(args.textStyleResolver, computeTextRange, findFontId));
 }
 
@@ -255,28 +255,8 @@ export class TextStyleResolver {
   }
 
   public resolveSettings(component: TextBlockComponent): TextStyleSettings {
-    let settingsProps = component.styleOverrides;
-    let parent: TextBlockComponent | undefined = component;
-
-    while (parent) {
-      settingsProps = { ...parent.styleOverrides, ...settingsProps };
-      parent = parent.parent;
-    }
-
-    const settings = TextStyleSettings.fromJSON(settingsProps);
+    const settings = TextStyleSettings.fromJSON({ ...component.styleOverrides });
     return applyBlockSettings(settings, this.blockSettings);
-  }
-
-  public static resolveOverrides(component: TextBlockComponent): TextStyleSettingsProps {
-    let settingsProps = component.styleOverrides;
-    let parent: TextBlockComponent | undefined = component;
-
-    while (parent) {
-      settingsProps = { ...parent.styleOverrides, ...settingsProps };
-      parent = parent.parent;
-    }
-
-    return settingsProps;
   }
 
   public resolveIndentation(component: TextBlockComponent, depth: number): number {
@@ -284,6 +264,27 @@ export class TextStyleResolver {
     const indentation = overrides.indentation;
     const tabInterval = overrides.tabInterval;
     return indentation + tabInterval * depth;
+  }
+
+  public resolveAndMendStyle(component: TextBlock): TextBlock {
+    const block = component.clone();
+    this.mendSettings(block);
+    return block;
+  }
+
+  public mendSettings(component: TextBlockComponent): TextBlockComponent {
+    const block = component.clone();
+
+    if (component instanceof ContainerComponent) {
+      component.children.forEach(child => {
+        child.styleOverrides = { ...component.styleOverrides, ...child.styleOverrides };
+        if (child instanceof TextBlockComponent) {
+          this.mendSettings(child);
+        }
+      });
+    }
+
+    return block;
   }
 }
 
@@ -753,7 +754,6 @@ export class TextBlockLayout {
           const content = getMarkerText(styleOverrides.listMarker, index + 1);
           // I don't like the way I'm tricking the child to think it's a part of the text block. I want to clean this up.
           const marker = TextRun.create({ styleOverrides, content });
-          marker.parent = component;
 
           const run = RunLayout.create(marker, context);
 
@@ -900,7 +900,6 @@ export class TextBlockLayout {
       }
 
       const run = prevRun.clone();
-      run.parent = prevRun.parent; // todo: this might be problematic, so let me test it.
       line.append(RunLayout.create(run, context));
     }
 
