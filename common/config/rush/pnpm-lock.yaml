@@ -858,6 +858,9 @@ importers:
       '@loaders.gl/draco':
         specifier: ^3.1.6
         version: 3.1.6
+      draco3d:
+        specifier: ^1.5.1
+        version: 1.5.1
       fuse.js:
         specifier: ^3.3.0
         version: 3.3.0
@@ -898,6 +901,9 @@ importers:
       '@types/chai-as-promised':
         specifier: ^7
         version: 7.1.0
+      '@types/draco3d':
+        specifier: ^1.4.10
+        version: 1.4.10
       '@types/sinon':
         specifier: ^17.0.2
         version: 17.0.2
@@ -5746,6 +5752,9 @@ packages:
   '@types/detect-port@1.1.0':
     resolution: {integrity: sha512-hN/DSlHo2R1LQtle6dPyprULgn2P0sEZsuCwwOkW6apfExwEEGsGRj59C3VPnmTgi83CN2IxpuxvnyAMPYe8cg==}
 
+  '@types/draco3d@1.4.10':
+    resolution: {integrity: sha512-AX22jp8Y7wwaBgAixaSvkoG4M/+PlAcm3Qs4OW8yT9DM4xUpWKeFhLueTAyZF39pviAdcDdeJoACapiAceqNcw==}
+
   '@types/eslint-scope@3.7.7':
     resolution: {integrity: sha512-MzMFlSLBqNF2gcHWO0G1vP/YQyfvrxZ0bF+u7mzUdZ1/xK4A4sru+nraZz5i3iEIk1l1uyicaDVTB4QbbEkAYg==}
 
@@ -7074,6 +7083,9 @@ packages:
 
   draco3d@1.4.1:
     resolution: {integrity: sha512-9Rxonc70xiovBC+Bq1h57SNZIHzWTibU1VfIGp5z3Xx8dPtv4yT5uGhiH7P5uvJRR2jkrvHafRxR7bTANkvfpg==}
+
+  draco3d@1.5.1:
+    resolution: {integrity: sha512-CxorIEl3kFWQvSdCAkGdcZoPKzkjuLKL1C78f509LZEdm8UPMySZjz1CXFOayF+yvJl3UPRpBC1V27uDPJkFSw==}
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -12069,6 +12081,8 @@ snapshots:
 
   '@types/detect-port@1.1.0': {}
 
+  '@types/draco3d@1.4.10': {}
+
   '@types/eslint-scope@3.7.7':
     dependencies:
       '@types/eslint': 9.6.1
@@ -13623,6 +13637,8 @@ snapshots:
   dottie@2.0.6: {}
 
   draco3d@1.4.1: {}
+
+  draco3d@1.5.1: {}
 
   dunder-proto@1.0.1:
     dependencies:
