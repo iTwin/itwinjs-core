@@ -281,7 +281,7 @@ describe.only("Field evaluation", () => {
       element: new ElementOwnsUniqueAspect(id),
     };
     imodel.elements.insertAspect(aspectProps);
-    
+
     imodel.saveChanges();
     return id;
   }
@@ -483,7 +483,7 @@ describe.only("Field evaluation", () => {
       const annotation = TextAnnotation.fromJSON({ textBlock: textBlock.toJSON() });
       elem.setAnnotation(annotation);
     }
-    
+
     return elem.insert();
   }
 
@@ -500,7 +500,7 @@ describe.only("Field evaluation", () => {
 
     it("can be inserted", () => {
       expectNumRelationships(0);
-      
+
       const targetId = insertAnnotationElement(undefined);
       expect(targetId).not.to.equal(Id64.invalid);
 
@@ -591,7 +591,7 @@ describe.only("Field evaluation", () => {
         target.setAnnotation(anno);
         target.update();
         imodel.saveChanges();
-        
+
         expectNumRelationships(1, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).to.be.undefined;
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).not.to.be.undefined;
@@ -632,7 +632,7 @@ describe.only("Field evaluation", () => {
         expectNumRelationships(1, targetId);
       });
     });
-    
+
     function expectText(expected: string, elemId: Id64String): void {
       const elem = imodel.elements.getElement<TextAnnotation3d>(elemId);
       const anno = elem.getAnnotation()!;
@@ -644,13 +644,13 @@ describe.only("Field evaluation", () => {
       const sourceId = insertTestElement();
       const block = TextBlock.create({ styleId: "0x123" });
       block.appendRun(createField(sourceId, "old value"));;
-      
+
       const targetId = insertAnnotationElement(block);
       imodel.saveChanges();
 
       const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
       expect(target.getAnnotation()).not.to.be.undefined;
-      
+
       expectText("100", targetId);
 
       let source = imodel.elements.getElement<TestElement>(sourceId);
@@ -740,6 +740,98 @@ describe.only("Field evaluation", () => {
       source.update();
       imodel.saveChanges();
       expectText("12.5parrot", targetId);
+    });
+  });
+
+  describe("Format Validation", () => {
+    it("validates formatting options for string property type", () => {
+      // Create a FieldRun with string property type and some format options
+      const fieldRun = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "strings", accessors: [0] },
+        propertyType: "string",
+        cachedContent: "oldValue",
+        formatOptions: {
+          case: "upper",
+          prefix: "Value: ",
+          suffix: "!"
+        }
+      });
+
+      // Context returns a string value for the property
+      const context = {
+        hostElementId: sourceElementId,
+        getProperty: () => "abc"
+      };
+
+      // Update the field and check the result
+      const updated = updateField(fieldRun, context);
+
+      // The formatted value should be uppercased and have prefix/suffix applied
+      expect(updated).to.be.true;
+      expect(fieldRun.cachedContent).to.equal("Value: ABC!");
+    });
+
+    it.only("validates formatting options for quantity property type", async () => {
+      const fieldRun = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "intProp" },
+        propertyType: "quantity",
+        cachedContent: "oldValue",
+        formatOptions: {
+          quantity: {
+            formatProps: {
+              type: "decimal",
+              precision: 2,
+              name: "test-format",
+              formatTraits: [ 'KeepSingleZero', 'KeepDecimalPoint', 'ShowUnitLabel' ],
+              composite: {
+                spacer: " ",
+                includeZero: true,
+                units: [
+                  {
+                    unit: {
+                      name: "Units.M",
+                      label: "m",
+                      phenomenon: "Units.LENGTH",
+                      isValid: true,
+                      system: "Units.SI"
+                    }
+                  }
+                ]
+              }
+            },
+            unitConversions: [
+              {
+                name: 'Units.M',
+                label: 'm',
+                conversion: { factor: 1, offset: 0 },
+                system: 'Units.SI'
+              }
+            ],
+            sourceUnit: {
+              name: "Units.M",
+              label: "m",
+              system: 'Units.SI',
+              phenomenon: "Units.LENGTH",
+              isValid: true
+            }
+          }
+        }
+      });
+
+      // Context returns a numeric value for the property
+      const context = {
+        hostElementId: sourceElementId,
+        getProperty: () => 123.456
+      };
+
+      // Update the field and check the result
+      const updated = updateField(fieldRun, context);
+
+      // The formatted value should have 2 decimal places
+      expect(updated).to.be.true;
+      expect(fieldRun.cachedContent).to.equal("123.46 m");
     });
   });
 });
