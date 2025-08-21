@@ -1,5 +1,3 @@
-
-
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -19,9 +17,6 @@ import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
 import { UnboundedParabola2d } from "../../curve/internalContexts/geometry2d/UnboundedParabola";
 import { Geometry } from "../../Geometry";
 import { LineSegment3d } from "../../curve/LineSegment3d";
-
-
-
 
 function transferCurve(source: ConstructionConstraint, dest: ImplicitCurve2d[]) {
     if (source.curve)

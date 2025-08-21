@@ -26,11 +26,10 @@ export abstract class ImplicitCurve2d {
    * @param xy point for evaluation.
    */
   public abstract gradient(xy: XAndY): Vector2d;
-
   /** Map a gradient vector (du,dv) from its local frame to global. */
   public static gradientLocalToGlobal(du: number, dv: number, vectorU: Vector2d, vectorV: Vector2d): Vector2d {
     const result = Vector2d.create();
-    // Use INVERSE of TRANSPOSE of [UV] matrix to map gradient terms
+    // use INVERSE of TRANSPOSE of [UV] matrix to map gradient terms
     if (SmallSystem.linearSystem2d(vectorU.x, vectorU.y, vectorV.x, vectorV.y, du, dv, result))
       return result;
     return Vector2d.create(0, 0);
@@ -78,7 +77,7 @@ export abstract class ImplicitCurve2d {
     return undefined;
   }
   /**
-   * OPTIONAL method to return a tangent at given radians value.
+   * OPTIONAL method to return the tangent at given radians value.
    * * The default implementation returns undefined.
    * * Concrete classes that can be expressed as a function of radians should implement this.
    */

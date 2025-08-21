@@ -333,7 +333,7 @@ export class GeometryCoreTestIO {
           this.createAndCaptureXYMarker(collection, markerId, c, a, dx, dy, dz);
       return;
     }
-    const myCenter = clone3d (center);
+    const myCenter = clone3d(center);
     const x = myCenter.x + dx;
     const y = myCenter.y + dy;
     const z = myCenter.z + dz;
@@ -390,8 +390,12 @@ export class GeometryCoreTestIO {
         const corners = range.corners();
         if (placement)
           placement.multiplyPoint3dArrayInPlace(corners);
-        if (!Geometry.isSameCoordinate(range.high.z, range.low.z)){
-          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0, 4, 5, 1, 5, 7,3,7,6,2,6,4]), dx, dy, dz);
+        if (!Geometry.isSameCoordinate(range.high.z, range.low.z)) {
+          this.captureGeometry(
+            collection,
+            LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0, 4, 5, 1, 5, 7, 3, 7, 6, 2, 6, 4]),
+            dx, dy, dz,
+          );
         } else
           this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0]), dx, dy, dz);
       } else if (range instanceof Range2d) {
@@ -542,8 +546,8 @@ export class GeometryCoreTestIO {
     return undefined;
   }
 }
-function clone3d (point: Point2d | Point3d): Point3d{
+function clone3d(point: Point2d | Point3d): Point3d {
   if (point instanceof Point3d)
     return point.clone()
-  return Point3d.create (point.x, point.y, 0);
+  return Point3d.create(point.x, point.y, 0);
 }

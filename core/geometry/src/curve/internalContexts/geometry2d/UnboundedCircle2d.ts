@@ -6,7 +6,6 @@
  * @module CartesianGeometry
  */
 
-
 import { Geometry } from "../../../Geometry";
 import { Point2d, Vector2d } from "../../../geometry3d/Point2dVector2d";
 import { XAndY } from "../../../geometry3d/XYZProps";
@@ -28,22 +27,18 @@ export class UnboundedCircle2dByCenterAndRadius extends ImplicitCurve2d {
     this.center = center;
     this.radius = radius;
   }
-  /**
-   * Return a clone of this circle.
-   */
+  /** Return a clone of this circle. */
   public clone(): UnboundedCircle2dByCenterAndRadius {
-    // (The create method clones the inputs . . .)
+    // the create method clones the inputs
     return UnboundedCircle2dByCenterAndRadius.createPointRadius(this.center, this.radius);
   }
-  /**
-   * Return a clone of this circle, with radius negated
-   */
+  /** Return a clone of this circle, with radius negated. */
   public cloneNegateRadius(): UnboundedCircle2dByCenterAndRadius {
-    // (The create method clones the inputs . . .)
+    // the create method clones the inputs
     return UnboundedCircle2dByCenterAndRadius.createPointRadius(this.center, -this.radius);
   }
   /**
-   * Create an ImplicitCircle2d from XY parts of its center and its radius
+   * Create an ImplicitCircle2d from XY parts of its center and its radius.
    * @param centerX x coordinate of center
    * @param centerY y coordinate of center
    * @param radius circle radius
@@ -52,7 +47,6 @@ export class UnboundedCircle2dByCenterAndRadius extends ImplicitCurve2d {
   public static createXYRadius(centerX: number, centerY: number, radius: number): UnboundedCircle2dByCenterAndRadius {
     return new UnboundedCircle2dByCenterAndRadius(Point2d.create(centerX, centerY), radius);
   }
-
   /**
    * Create an ImplicitCircle2d from an xy object and a radius.
    * * Zero radius is valid.
@@ -65,41 +59,37 @@ export class UnboundedCircle2dByCenterAndRadius extends ImplicitCurve2d {
     return new UnboundedCircle2dByCenterAndRadius(Point2d.create(center.x, center.y), radius);
   }
   /**
-   *
-   * @param xy space paoint
-   * @returns squared distance to center minus squared radius
+   * Returns gradient of the implicit function.
+   * @param xy space point
+   * @returns squared distance to center minus squared radius.
    */
   public override functionValue(xy: XAndY): number {
     return Geometry.distanceSquaredXYXY(xy.x, xy.y, this.center.x, this.center.y) - this.radius * this.radius;
   }
   /**
-   *
-   * @param xy space paoint
-   * @returns gradient of the implicit function.
+   * Returns gradient of the implicit function.
+   * @param xy space point
    */
   public override gradient(xy: XAndY): Vector2d {
     return Vector2d.create(2 * (xy.x - this.center.x), 2 * (xy.y - this.center.y));
   }
-
   /**
    * Emit circle points for which a vector to the space point is perpendicular to the circle.
-   * * For a non-zero radius circle, there are two perpendiculars.  The one on the side of the space point is emitted first.
-   * * For a zero radius circle, the vector from center to the space point is the only perpendicular
-   * @param spacePoint
+   * * For a non-zero radius circle, there are two perpendiculars. The one on the side of the space point is emitted first.
+   * * For a zero radius circle, the vector from center to the space point is the only perpendicular.
+   * @param spacePoint the space point.
    * @param handler
    */
-  public override emitPerpendiculars(spacePoint: Point2d,
-    handler: (curvePoint: Point2d, radians: number | undefined) => any): any {
+  public override emitPerpendiculars(
+    spacePoint: Point2d, handler: (curvePoint: Point2d, radians: number | undefined) => any,
+  ): any {
     const radialVector = Vector2d.createStartEnd(this.center, spacePoint).scaleToLength(this.radius);
     if (radialVector !== undefined) {
       handler(this.center.plus(radialVector), undefined);
       handler(this.center.minus(radialVector), undefined);
     }
   }
-
-  /**
-   * @returns true if the circle radius is near zero.
-   */
+  /** Returns true if the circle radius is near zero. */
   // eslint-disable-next-line @itwin/prefer-get
   public override isDegenerate(): boolean {
     return Geometry.isSameCoordinate(this.radius, 0);
@@ -117,7 +107,7 @@ export class UnboundedCircle2dByCenterAndRadius extends ImplicitCurve2d {
       && Geometry.isSamePoint2d(this.center, other.center);
   }
   /**
-   * Compute intersectionsn with another circle.
+   * Compute intersections with another circle.
    * @param other second circle
    * @return array of 0, 1, or 2 points of intersection
    */
@@ -129,33 +119,38 @@ export class UnboundedCircle2dByCenterAndRadius extends ImplicitCurve2d {
     const d = vectorAB.magnitude();
     const rA2 = Geometry.square(this.radius);
     const rB2 = Geometry.square(other.radius);
-    const b = Geometry.conditionalDivideCoordinate(rA2 - rB2 - d * d, -2 * d);
+    // if intersection points are called i1 and i2 and the mid point of the line connecting i1 and i2 is called m
+    // then we can form 2 triangles:  <this.center, m, i1> and <other.center, m, i2>
+    // now if a is distance from this.center to m and h is distance from m to i1, we get rA2 = a^2 + h^2
+    // similarly we get rB2 = (d-a)^2 + h^2 and from those 2 equations we can solve for a and h
+    const a = Geometry.conditionalDivideCoordinate(rA2 - rB2 + d * d, 2 * d);
     const points = [];
-    if (b !== undefined) {
-      const c2 = rB2 - b * b;
-      if (Math.abs(c2) < Geometry.smallMetricDistanceSquared)
-        points.push(other.center.plusScaled(unitAB, - b));
-      else if (c2 > 0) {
-        const c = Math.sqrt(c2);
-        points.push(other.center.addForwardLeft(-b, c, unitAB));
-        points.push(other.center.addForwardLeft(-b, -c, unitAB));
+    if (a !== undefined) {
+      const h2 = rA2 - a * a;
+      if (Math.abs(h2) < Geometry.smallMetricDistanceSquared)
+        points.push(this.center.plusScaled(unitAB, a));
+      else if (h2 > 0) {
+        const h = Math.sqrt(h2);
+        points.push(this.center.addForwardLeft(a, h, unitAB));
+        points.push(this.center.addForwardLeft(a, -h, unitAB));
       }
     }
     return points;
   }
   /**
-   * Compute intersectionsn with a line
+   * Compute intersections with a line
    * @param line the line.
    * @return array of 0, 1, or 2 points of intersection
    */
   public intersectLine(line: UnboundedLine2dByPointAndNormal): Point2d[] {
+    // a point on line is X = P + frac*U where P is line.point and U is the vector along line
+    // vector from X to center is X-C = (P-C) + frac*U
+    // now defined P-C = V to get X-C = V + frac*U
+    // when distance squared from X to center is equal to this.radius squared, we have intersection:
+    // (V + frac*U) dot (V + frac*U) = r^2
+    // (U.U)*frac^2 + (2U.V)*frac + (V.V-r^2) = 0
+    // now solve for frac
     const vectorU = line.vectorAlongLine();
-    // Point on line is X = P + alpha * U
-    //   where P is line.point and U is the vector along line.
-    // Vector from X to center is (X-C) = ((P-C) + alpha* U)
-    // Match distance squared to center with this.radius squared
-    // (define P-C = V)
-    //       (V + alpha U) dot (V + alpha U) = r^2
     const vectorV = Vector2d.createStartEnd(this.center, line.point);
     const uDotV = vectorU.dotProduct(vectorV);
     const vDotV = vectorV.dotProduct(vectorV);

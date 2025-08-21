@@ -423,7 +423,7 @@ export class Checker {
     return this.announceError("Expect parallel", dataA, dataB, params);
   }
   /** Return true if dataA is strictly before dataB as a signed toleranced coordinate value.. */
-  public testParallelOrAntiParllel2d(dataA: Vector2d, dataB: Vector2d, ...params: any[]): boolean {
+  public testParallelOrAntiParallel2d(dataA: Vector2d, dataB: Vector2d, ...params: any[]): boolean {
     if (dataA.isParallelTo(dataB, true))
       return this.announceOK();
     return this.announceError("Expect parallel", dataA, dataB, params);

@@ -203,9 +203,9 @@ export class Point2d extends XY implements BeJSONFunctions {
    */
   public static createInterpolated(xyA: XAndY, fraction: number, xyB: XAndY): Point2d {
     return new Point2d(
-      Geometry.interpolate (xyA.x, fraction, xyB.x),
+      Geometry.interpolate(xyA.x, fraction, xyB.x),
       Geometry.interpolate(xyA.y, fraction, xyB.y),
-      );
+    );
   }
 
   /**
@@ -436,12 +436,13 @@ export class Vector2d extends XY implements BeJSONFunctions {
   public static createStartEnd(point0: XAndY, point1: XAndY, result?: Vector2d): Vector2d {
     return Vector2d.create(point1.x - point0.x, point1.y - point0.y, result);
   }
-  /** Return a new Vector2d which is a linear combintion of 2 inputs */
+  /** Return a new Vector2d which is a linear combination of 2 inputs */
   public static createAdd2Scaled(vectorA: XAndY, scaleA: number, vectorB: XAndY, scaleB: number, result?: Vector2d): Vector2d {
     return Vector2d.create(
       vectorA.x * scaleA + vectorB.x * scaleB,
       vectorA.y * scaleA + vectorB.y * scaleB,
-      result);
+      result,
+    );
   }
 
   /**

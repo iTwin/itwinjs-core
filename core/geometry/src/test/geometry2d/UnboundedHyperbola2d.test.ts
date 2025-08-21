@@ -128,7 +128,7 @@ it("UnboundedHyperbola2dA", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry,
       CurveFactory.createCurvePrimitiveFromImplicitCurve(curve), x0, y0);
 
-    GeometryCoreTestIO.consoleLog(" new curve", { a: curve.pointA, u: curve.vectorU, v: curve.vectorV });
+    GeometryCoreTestIO.consoleLog(" new curve", { a: curve.center, u: curve.vectorU, v: curve.vectorV });
     /*
           for (const radians of [0.0, 0.1, 0.2, 0.3]){
     const perpFunction = curve.radiansToPerpFunction (radians);

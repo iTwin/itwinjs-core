@@ -1240,7 +1240,7 @@ export class TrigPolynomial {
     }
     const maxCoff = Math.max(Math.abs(axx), Math.abs(ayy), Math.abs(axy), Math.abs(ax), Math.abs(ay), Math.abs(a));
     const b = this.solveAngles(coffs, degree, maxCoff, radians);
-/**
+    /**
     for (const theta of radians) {
       const c = Math.cos(theta)
       const s = Math.sin(theta)
@@ -1250,10 +1250,9 @@ export class TrigPolynomial {
         f: axx * c * c + axy * c * s + ayy * s * s + ax * c + ay * s + a,
       });
     }
-      */
+    */
     return b;
   }
-
   /**
    * Compute intersections of unit circle x^2 + y 2 = 1 with the ellipse
    *         (x,y) = (cx + ux Math.Cos + vx sin, cy + uy Math.Cos + vy sin)

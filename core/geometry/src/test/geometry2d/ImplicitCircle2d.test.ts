@@ -486,7 +486,7 @@ describe("ImplicitCircle2d", () => {
     }
 
     for (const linePair of [[lineX, lineY], [lineY, lineQ], [lineQ, lineX], [lineQ, lineR], [lineR, lineX]]) {
-      const point = linePair[0].interesectUnboundedLine2dByPointAndNormalWithOffsets(linePair[1]);
+      const point = linePair[0].intersectUnboundedLine2dByPointAndNormalWithOffsets(linePair[1]);
       if (ck.testType(point, Point2d, "expect intersectioni")) {
         GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 3, point, 0.08, x0, y0);
       }
@@ -499,7 +499,7 @@ describe("ImplicitCircle2d", () => {
 
     for (const offsetA of [1, 2, 3, 0, -1, -2, -3]) {
       for (const offsetB of [1, 2, 3, 0, -1, -2, -3]) {
-        const p = lineQ.interesectUnboundedLine2dByPointAndNormalWithOffsets(lineR, offsetA, offsetB);
+        const p = lineQ.intersectUnboundedLine2dByPointAndNormalWithOffsets(lineR, offsetA, offsetB);
         if (ck.testType(p, Point2d, "expect intersectioni")) {
           GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 3, p, 0.04, x0, y0);
           ck.testCoordinate(offsetA, lineQ.functionValue(p), "on offset lineQ", p);
@@ -648,7 +648,7 @@ export class ImplicitGeometryHelpers {
   public static testParallelGradiants(ck: Checker, vectorA: Vector2d, vectorB: Vector2d) {
     if (Geometry.isSmallMetricDistance(vectorA.magnitude()) || Geometry.isSmallMetricDistance(vectorB.magnitude()))
       return;
-    ck.testParallelOrAntiParllel2d(vectorA, vectorB, "expect parallelGradiants");
+    ck.testParallelOrAntiParallel2d(vectorA, vectorB, "expect parallelGradiants");
   }
 
   /**

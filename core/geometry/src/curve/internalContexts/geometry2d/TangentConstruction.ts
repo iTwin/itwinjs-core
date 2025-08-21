@@ -35,9 +35,9 @@ export class TangentConstruction {
     lineC: UnboundedLine2dByPointAndNormal,
   ): ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
     /*--------------------------------------------------------------------------------------
-    (X-A).normalA     = a*r
-    (X-B).normalB     = b*r
-    (X-B).normalC     = c*r
+    (X-A).normalA = a*r
+    (X-B).normalB = b*r
+    (X-B).normalC = c*r
     Typical expansion is
     x*mx + y*my - a*r = A.normalA
     Where a,b,c are combinations of {+1,-1}
@@ -670,7 +670,7 @@ export class TangentConstruction {
     const result = [];
     for (const offsetA of offsetsA) {
       for (const offsetB of offsetsB) {
-        const p = offsetA?.interesectUnboundedLine2dByPointAndNormalWithOffsets(offsetB);
+        const p = offsetA?.intersectUnboundedLine2dByPointAndNormalWithOffsets(offsetB);
         if (p !== undefined) {
           const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius(p, radius);
           if (!isThisCirclePresent(result, newCircle)) {

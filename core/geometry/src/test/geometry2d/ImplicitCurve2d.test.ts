@@ -84,7 +84,7 @@ it("ImplicitCurve", () => {
             [curvePoint, curvePoint.plusScaled(gradF, 0.2)],
             x0, 0);
           const vectorW = Vector2d.createStartEnd(xy, curvePoint);
-          ck.testParallelOrAntiParllel2d(gradF, vectorW, "grad parallel space vector");
+          ck.testParallelOrAntiParallel2d(gradF, vectorW, "grad parallel space vector");
           if (radians !== undefined) {
             const tangent = curve.radiansToTangentVector2d(radians);
             if (tangent !== undefined) {

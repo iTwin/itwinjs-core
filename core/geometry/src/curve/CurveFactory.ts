@@ -661,7 +661,7 @@ export class CurveFactory {
       for (const signU of [1, -1]) {
         const poles = [
           Point4d.create(signU * source.vectorU.x + source.vectorV.x, signU * source.vectorU.y + source.vectorV.y, 0, 0),
-          Point4d.create(source.pointA.x, source.pointA.y, 0, 1),
+          Point4d.create(source.center.x, source.center.y, 0, 1),
           Point4d.create(signU * source.vectorU.x - source.vectorV.x, signU * source.vectorU.y - source.vectorV.y, 0, 0),
         ];
         const fullBezier = BezierCurve3dH.create(poles);
@@ -673,7 +673,7 @@ export class CurveFactory {
       return result;
     } else if (source instanceof UnboundedEllipse2d) {
       return Arc3d.create(
-        Point3d.createFrom(source.pointA),
+        Point3d.createFrom(source.center),
         Vector3d.createFrom(source.vectorU),
         Vector3d.createFrom(source.vectorV),
       );
@@ -685,9 +685,9 @@ export class CurveFactory {
         Point4d.create (2 * source.vectorV.x, 2 * source.vectorV.y, 0, 0),
       ];
       */
-      const point0 = source.pointA.plus2Scaled(source.vectorU, 1, source.vectorV, 1);
-      const point1 = source.pointA.minus(source.vectorV);
-      const point2 = source.pointA.plus2Scaled(source.vectorU, -1, source.vectorV, 1);
+      const point0 = source.center.plus2Scaled(source.vectorU, 1, source.vectorV, 1);
+      const point1 = source.center.minus(source.vectorV);
+      const point2 = source.center.plus2Scaled(source.vectorU, -1, source.vectorV, 1);
       const poles = [
         Point4d.create(point0.x, point0.y, 0, 1),
         Point4d.create(point1.x, point1.y, 0, 1),
