@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges, TextStyleResolver } from "../../annotations/TextBlockLayout";
 import { Geometry, Range2d } from "@itwin/core-geometry";
-import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, ContainerComponent, FontType, FractionRun, LineBreakRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Id64String, ProcessDetector } from "@itwin/core-bentley";
@@ -235,7 +235,7 @@ describe("layoutTextBlock", () => {
       const originalLine: LineLayout = textBlockLayout.lines[i];
 
       // Source paragraph index matches
-      expect(resultLine.sourceParagraphIndex).to.equal(textBlock.children?.indexOf(originalLine.source));
+      expect(resultLine.sourceParagraphIndex).to.equal(textBlock.children?.indexOf(originalLine.source as ContainerComponent));
       // Ranges match
       expect(resultLine.range).to.deep.equal(originalLine.range.toJSON());
       expect(resultLine.justificationRange).to.deep.equal(originalLine.justificationRange.toJSON());

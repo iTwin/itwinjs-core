@@ -46,8 +46,6 @@ export interface TextBlockComponentProps {
    * This permits you to, e.g., create a [[TextBlock]] using "Arial" font and override one of its [[TextRun]]s to use "Comic Sans" instead.
    */
   styleOverrides?: TextStyleSettingsProps;
-  /** TODO */
-  children?: TextBlockComponentProps[];
   type?: RunComponentType | ContainerComponentType; // Discriminator field for the type of [[TextBlockComponent]].
 }
 
@@ -80,7 +78,6 @@ export interface TextBlockStringifyOptions {
 export abstract class TextBlockComponent {
   private _styleOverrides: TextStyleSettingsProps;
   private _parent?: TextBlockComponent;
-  private _children?: TextBlockComponent[];
   private _index: number = 0;
 
   public readonly abstract type: RunComponentType | ContainerComponentType;
@@ -122,22 +119,6 @@ export abstract class TextBlockComponent {
     this._parent = parent;
   }
 
-  public get children(): TextBlockComponent[] | undefined {
-    return this._children;
-  }
-
-  public set children(children: TextBlockComponent[] | undefined) {
-    children?.forEach((child, index) => {
-      child.parent = this;
-      child.index = index;
-    }); // Ensure each child has its parent set
-    this._children = children;
-  }
-
-  public get last(): TextBlockComponent | undefined {
-    return this._children?.[this._children.length - 1];
-  }
-
   public get index(): number {
     return this._index;
   }
@@ -162,15 +143,8 @@ export abstract class TextBlockComponent {
    * Clears any [[styleOverrides]] applied to this Paragraph.
    * Will also clear [[styleOverrides]] from all child components unless [[ClearTextStyleOptions.preserveChildrenOverrides]] is `true`.
    */
-  public clearStyleOverrides(options?: ClearTextStyleOptions): void {
+  public clearStyleOverrides(_options?: ClearTextStyleOptions): void {
     this.styleOverrides = {};
-
-    if (options?.preserveChildrenOverrides || !this.children)
-      return;
-
-    for (const child of this.children) {
-      child.clearStyleOverrides();
-    }
   }
 
   /** Returns true if [[styleOverrides]] specifies any deviations from the [[TextBlock]]'s [AnnotationTextStyle]($backend). */
@@ -187,9 +161,7 @@ export abstract class TextBlockComponent {
   /**
   * Returns true if this component has no children.
   */
-  public get isEmpty(): boolean {
-    return this._children?.length === 0;
-  };
+  public abstract get isEmpty(): boolean;
 
   /**
   * Returns true if the string representation of this component consists only of whitespace characters.
@@ -203,7 +175,6 @@ export abstract class TextBlockComponent {
   public toJSON(): TextBlockComponentProps {
     return {
       styleOverrides: TextStyleSettings.cloneProps(this.styleOverrides),
-      children: this.children?.map((child) => child.toJSON()) ?? [],
       type: ContainerComponentType.TextBlock,
     };
   }
@@ -225,9 +196,92 @@ export abstract class TextBlockComponent {
 
     return true;
   }
+}
 
-  public appendChild(child: TextBlockComponent): void {
-    if (!this.children) this.children = [];
+/** The JSON representation of a [[TextBlockComponent]].
+ * @beta
+ */
+export interface ContainerComponentProps extends TextBlockComponentProps {
+  /** TODO */
+  children?: TextBlockComponentProps[];
+  type?: ContainerComponentType; // Discriminator field for the type of [[TextBlockComponent]].
+}
+
+
+/** Abstract representation of any of the building blocks that make up a [[TextBlock]] document - namely [[Run]]s, [[Paragraph]]s, and [[TextBlock]] itself.
+ * The [[TextBlock]] can specify an [AnnotationTextStyle]($backend) that formats its contents. Each component can specify an optional [[styleOverrides]] to customize that formatting.
+ * @beta
+ */
+export abstract class ContainerComponent<T extends TextBlockComponent = TextBlockComponent> extends TextBlockComponent {
+  private readonly _children: T[] = [];
+  public abstract override readonly type: ContainerComponentType;
+
+  /** @internal */
+  // protected constructor(props?: ContainerComponentProps) {
+  //   super(props);
+
+  //   // const children = props?.children.map(child => {
+  //   //   if (Container.isContainerProps(child)) return Container.fromJSON(child);
+  //   //   if (Run.isRunProps(child)) return Run.fromJSON(child);
+
+  //   //   return;
+  //   // })
+
+  //   // children?.forEach((child) => {
+  //   //   if (child) this.appendChild(child);
+  //   // });
+  // }
+
+  public get children(): T[] {
+    return this._children;
+  }
+
+  public get last(): T | undefined {
+    return this._children?.[this._children.length - 1];
+  }
+
+  /**
+   * Clears any [[styleOverrides]] applied to this Paragraph.
+   * Will also clear [[styleOverrides]] from all child components unless [[ClearTextStyleOptions.preserveChildrenOverrides]] is `true`.
+   */
+  public override clearStyleOverrides(options?: ClearTextStyleOptions): void {
+    super.clearStyleOverrides(options);
+
+    if (options?.preserveChildrenOverrides || !this.children)
+      return;
+
+    for (const child of this.children) {
+      child.clearStyleOverrides();
+    }
+  }
+
+  /**
+  * Returns true if this component has no children.
+  */
+  public get isEmpty(): boolean {
+    return this._children?.length === 0;
+  };
+
+
+  /** Convert this component to its JSON representation. */
+  public override toJSON(): ContainerComponentProps {
+    return {
+      ...super.toJSON(),
+      children: this.children.map((child) => child.toJSON()) ?? [],
+      type: ContainerComponentType.TextBlock,
+    };
+  }
+
+  /** Returns true if `this` is equivalent to `other`. */
+  public override equals(other: TextBlockComponent): boolean {
+    if (!(other instanceof ContainerComponent)) return false;
+
+    return super.equals(other)
+      && this.children?.length === other.children?.length
+      && this.children?.every((child, index) => child.equals(other.children?.[index])) === true;
+  }
+
+  public appendChild(child: T): void {
     this.children.push(child);
     child.parent = this;
     child.index = this.children.length - 1; // Update the index of the new child
@@ -385,6 +439,10 @@ export class TextRun extends TextBlockComponent {
     return new TextRun(props);
   }
 
+  public override get isEmpty(): boolean {
+    return this.stringify().length === 0;
+  }
+
   /** Simply returns [[content]]. */
   public override stringify(): string {
     return this.content;
@@ -442,6 +500,10 @@ export class FractionRun extends TextBlockComponent {
     return new FractionRun(props);
   }
 
+  public override get isEmpty(): boolean {
+    return this.stringify().length === 0;
+  }
+
   /** Formats the fraction as a string with the [[numerator]] and [[denominator]] separated by [[TextBlockStringifyOptions.fractionSeparator]]. */
   public override stringify(options?: TextBlockStringifyOptions): string {
     const sep = options?.fractionSeparator ?? "/";
@@ -487,6 +549,10 @@ export class LineBreakRun extends TextBlockComponent {
     return new LineBreakRun(this.toJSON());
   }
 
+  public override get isEmpty(): boolean {
+    return this.stringify().length === 0;
+  }
+
   /** Simply returns [[TextBlockStringifyOptions.lineBreak]]. */
   public override stringify(options?: TextBlockStringifyOptions): string {
     return options?.lineBreak ?? " ";
@@ -526,6 +592,10 @@ export class TabRun extends TextBlockComponent {
 
   public static create(props?: Omit<TabRunProps, "type">): TabRun {
     return new TabRun(props);
+  }
+
+  public override get isEmpty(): boolean {
+    return this.stringify().length === 0;
   }
 
   /**
@@ -690,6 +760,10 @@ export class FieldRun extends TextBlockComponent {
     return new FieldRun(this.toJSON());
   }
 
+  public override get isEmpty(): boolean {
+    return this.stringify().length === 0;
+  }
+
   /** Convert this FieldRun to a simple string representation. */
   public override stringify(): string {
     return this.cachedContent;
@@ -746,21 +820,21 @@ export class FieldRun extends TextBlockComponent {
 /** JSON representation of a [[Paragraph]].
  * @beta
  */
-export interface ParagraphProps extends TextBlockComponentProps {
+export interface ParagraphProps extends ContainerComponentProps {
   type: ContainerComponentType.Paragraph; // Discriminator field for the type of [[TextBlockComponent]].
-  children?: TextBlockComponentProps[]; // The runs within the paragraph
+  children?: (ContainerProps | RunProps)[]; // The runs within the paragraph
 }
 
 /** A collection of [[Run]]s within a [[TextBlock]]. Each paragraph within a text block is laid out on a separate line.
  * @beta
  */
-export class Paragraph extends TextBlockComponent {
+export class Paragraph extends ContainerComponent<Container | Run> {
   public readonly type = ContainerComponentType.Paragraph;
 
-  protected constructor(props: Omit<ParagraphProps, "type">) {
+  protected constructor(props?: Omit<ParagraphProps, "type">) {
     super(props);
 
-    props.children?.forEach((run) => {
+    props?.children?.forEach((run) => {
       const child = Container.isContainerProps(run)
         ? Container.fromJSON(run)
         : Run.isRunProps(run)
@@ -787,7 +861,7 @@ export class Paragraph extends TextBlockComponent {
   }
 
   /** Create a paragraph from its JSON representation. */
-  public static create(props: Omit<ParagraphProps, "type">): Paragraph {
+  public static create(props?: Omit<ParagraphProps, "type">): Paragraph {
     return new Paragraph(props);
   }
 
@@ -799,7 +873,7 @@ export class Paragraph extends TextBlockComponent {
     return {
       ...super.toJSON(),
       type: ContainerComponentType.Paragraph,
-      children: this.children?.map((run) => run.toJSON()),
+      children: this.children.map((run) => run.toJSON()),
     };
   }
 
@@ -820,7 +894,7 @@ export class Paragraph extends TextBlockComponent {
 /** JSON representation of a [[List]].
  * @beta
  */
-export interface ListProps extends TextBlockComponentProps {
+export interface ListProps extends ContainerComponentProps {
   type: ContainerComponentType.List; // Discriminator field for the type of [[TextBlockComponent]].
   children?: ParagraphProps[]; // The runs within the list
 }
@@ -828,19 +902,19 @@ export interface ListProps extends TextBlockComponentProps {
 /** A collection of [[Run]]s within a [[TextBlock]]. Each list item within a text block is laid out on a separate line.
  * @beta
  */
-export class List extends TextBlockComponent {
+export class List extends ContainerComponent<Paragraph> {
   public readonly type = ContainerComponentType.List;
 
-  protected constructor(props: Omit<ListProps, "type">) {
+  protected constructor(props?: Omit<ListProps, "type">) {
     super(props);
 
-    props.children?.forEach((run) => {
+    props?.children?.forEach((run) => {
       this.appendChild(Paragraph.create(run));
     });
   }
 
   /** Create a list from its JSON representation. */
-  public static create(props: Omit<ListProps, "type">): List {
+  public static create(props?: Omit<ListProps, "type">): List {
     return new List(props);
   }
 
@@ -852,13 +926,13 @@ export class List extends TextBlockComponent {
     return {
       ...super.toJSON(),
       type: ContainerComponentType.List,
-      children: this.children?.map((run) => (run as Paragraph)?.toJSON()),
+      children: this.children.map((run) => run.toJSON()),
     };
   }
 
   /** Compute a string representation of this paragraph by concatenating the string representations of all of its [[runs]]. */
   public override stringify(options?: TextBlockStringifyOptions): string {
-    return this.children?.map((x) => x.stringify(options)).join("") ?? "";
+    return this.children.map((x) => x.stringify(options)).join("") ?? "";
   }
 
   public override equals(other: TextBlockComponent): boolean {
@@ -866,12 +940,12 @@ export class List extends TextBlockComponent {
       return false;
     }
 
-    return this.children?.every((child, index) => other.children && child.equals(other.children[index])) ?? false;
+    return this.children.every((child, index) => other.children && child.equals(other.children[index])) ?? false;
   }
 
   public appendToListItem(run: Run, itemIndex?: number): void {
-    if (!this.children || this.children.length === 0) this.appendChild(Paragraph.create({}));
-    const listItem = this.children?.[itemIndex ?? this.children.length - 1] as Paragraph;
+    if (!this.children || this.children.length === 0) this.appendChild(Paragraph.create());
+    const listItem = this.children[itemIndex ?? this.children.length - 1];
     listItem.appendChild(run);
   }
 }
@@ -899,7 +973,7 @@ export interface TextBlockMargins {
 /** JSON representation of a [[TextBlock]].
  * @beta
  */
-export interface TextBlockProps extends TextBlockComponentProps {
+export interface TextBlockProps extends ContainerComponentProps {
   /** The ID of an [AnnotationTextStyle]($backend) stored in the iModel from which the base [[TextStyleSettings]] applied to the [[TextBlock]] originates. */
   styleId: Id64String;
   /** The width of the document in meters. Lines that would exceed this width are instead wrapped around to the next line if possible.
@@ -919,7 +993,7 @@ export interface TextBlockProps extends TextBlockComponentProps {
  * @see [[TextAnnotation]] to position a text block as an annotation in 2d or 3d space.
  * @beta
  */
-export class TextBlock extends TextBlockComponent {
+export class TextBlock extends ContainerComponent<ContainerComponent> {
   public readonly type = ContainerComponentType.TextBlock;
 
   /** The ID of the [AnnotationTextStyle]($backend) that provides the base formatting for the contents of this TextBlock.
@@ -951,7 +1025,6 @@ export class TextBlock extends TextBlockComponent {
       bottom: props.margins?.bottom ?? 0,
     };
 
-    this.children = [];
     props.children?.forEach((x) => { if (Container.isContainerProps(x)) this.appendContainer(x) });
   }
 
@@ -997,10 +1070,6 @@ export class TextBlock extends TextBlockComponent {
    */
   public appendContainer(props?: ContainerProps, seedFromLast: boolean = false): Paragraph | List {
     let styleOverrides: TextStyleSettingsProps = {};
-
-    if (!this.children) {
-      this.children = [];
-    }
 
     if (seedFromLast && this.children.length > 0) {
       const seed = this.children[this.children.length - 1];

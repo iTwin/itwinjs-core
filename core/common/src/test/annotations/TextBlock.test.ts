@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { beforeEach, describe, expect, it } from "vitest";
-import { ContainerComponentType, FieldRun, FractionRun, FractionRunProps, List, ListProps, Paragraph, ParagraphProps, RunComponentType, RunProps, TextBlock, TextBlockComponent, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps } from "../../core-common";
+import { ContainerComponent, ContainerComponentType, FieldRun, FractionRun, FractionRunProps, List, ListProps, Paragraph, ParagraphProps, RunComponentType, RunProps, TextBlock, TextBlockComponent, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps } from "../../core-common";
 
 function makeTextRun(content?: string, styleOverrides?: TextStyleSettingsProps): TextRunProps {
   return {
@@ -39,10 +39,12 @@ function makeList(children?: ParagraphProps[], styleOverrides?: TextStyleSetting
 }
 
 function getOverrides(block: TextBlock) {
+  const paragraph = block.children[0];
+  const run = paragraph?.children[0];
   return {
     block: block.styleOverrides,
-    paragraph: block.children?.[0]?.styleOverrides,
-    run: block.children?.[0]?.children?.[0]?.styleOverrides,
+    paragraph: paragraph?.styleOverrides,
+    run: run?.styleOverrides,
   };
 }
 
@@ -53,7 +55,7 @@ describe("TextBlockComponent", () => {
 
     beforeEach(() => {
       block = TextBlock.create({ styleId: "0x42", styleOverrides: { widthFactor: 1234 }});
-      paragraph = block.appendContainer({ type: ContainerComponentType.Paragraph, styleOverrides: { lineHeight: 42 } });
+      paragraph = block.appendParagraph({ type: ContainerComponentType.Paragraph, styleOverrides: { lineHeight: 42 } });
       paragraph.appendChild(TextRun.create({ styleOverrides: { fontName: "Consolas" } }));
     });
 
@@ -188,9 +190,9 @@ describe("TextBlockComponent", () => {
     expect(tb.root).to.equal(tb);
     expect(tb.children?.length).to.equal(3);
 
-    const p0 = tb.children![0] as Paragraph;
-    const p1 = tb.children![1] as Paragraph;
-    const p2 = tb.children![2] as List;
+    const p0 = tb.children[0] as Paragraph;
+    const p1 = tb.children[1] as Paragraph;
+    const p2 = tb.children[2] as List;
 
     expectToHaveParentAndRoot(tb, tb, p0);
     expectToHaveParentAndRoot(tb, tb, p1);
@@ -200,44 +202,46 @@ describe("TextBlockComponent", () => {
     expect(p1.children).toBeDefined();
     expect(p2.children).toBeDefined();
 
-    const p0Children = p0.children!;
+    const p0Children = p0.children;
     expect(p0Children.length).to.equal(1);
     p0Children.forEach((run) => {
       expectToHaveParentAndRoot(tb, p0, run);
     });
 
-    const p1Children = p1.children!;
+    const p1Children = p1.children;
     expect(p1Children.length).to.equal(4);
     p1Children.forEach((run) => {
       expectToHaveParentAndRoot(tb, p1, run);
     });
 
-    const p2Children = p2.children!;
+    const p2Children = p2.children;
     expect(p2Children.length).to.equal(3);
 
-    const p2Item0 = p2Children[0] as Paragraph;
-    const p2Item1 = p2Children[1] as Paragraph;
-    const p2Item2 = p2Children[2] as Paragraph;
+    const p2Item0 = p2Children[0];
+    const p2Item1 = p2Children[1];
+    const p2Item2 = p2Children[2];
 
     expectToHaveParentAndRoot(tb, p2, p2Item0);
     expectToHaveParentAndRoot(tb, p2, p2Item1);
     expectToHaveParentAndRoot(tb, p2, p2Item2);
 
-    expect(p2Item0.children?.length).toBe(1);
-    expect(p2Item1.children?.length).toBe(1);
-    expect(p2Item2.children?.length).toBe(1);
+    expect(p2Item0.children.length).toBe(1);
+    expect(p2Item1.children.length).toBe(1);
+    expect(p2Item2.children.length).toBe(1);
 
-    expect(p2Item0.children?.[0] instanceof Paragraph).toBeTruthy();
-    expect(p2Item1.children?.[0] instanceof TextRun).toBeTruthy();
-    expect(p2Item2.children?.[0] instanceof TextRun).toBeTruthy();
+    expect(p2Item0.children[0] instanceof Paragraph).toBeTruthy();
+    expect(p2Item1.children[0] instanceof TextRun).toBeTruthy();
+    expect(p2Item2.children[0] instanceof TextRun).toBeTruthy();
 
-    expect(p2Item0.children?.[0].stringify()).toBe("item 11/π");
-    expect(p2Item1.children?.[0].stringify()).toBe("item 2");
-    expect(p2Item2.children?.[0].stringify()).toBe("item 3");
+    expect(p2Item0.children[0].stringify()).toBe("item 11/π");
+    expect(p2Item1.children[0].stringify()).toBe("item 2");
+    expect(p2Item2.children[0].stringify()).toBe("item 3");
 
-    expect(p2Item0.children?.[0].children?.length).toBe(2);
-    expect(p2Item0.children?.[0].children?.[0] instanceof TextRun).toBeTruthy();
-    expect(p2Item0.children?.[0].children?.[1] instanceof FractionRun).toBeTruthy();
+    expect(p2Item0.children[0] instanceof ContainerComponent).toBeTruthy();
+    const listParagraph0 = p2Item0.children[0] as ContainerComponent;
+    expect(listParagraph0?.children.length).toBe(2);
+    expect(listParagraph0?.children[0] instanceof TextRun).toBeTruthy();
+    expect(listParagraph0?.children[1] instanceof FractionRun).toBeTruthy();
   });
 });
 
@@ -277,11 +281,11 @@ describe("TextBlock", () => {
 
       tb.appendRun(TextRun.create());
       expect(tb.children?.length).to.equal(1);
-      expect(tb.children![0].children?.length).to.equal(1);
+      expect(tb.children[0].children?.length).to.equal(1);
 
       tb.appendRun(TextRun.create());
       expect(tb.children?.length).to.equal(1);
-      expect(tb.children![0].children?.length).to.equal(2);
+      expect(tb.children[0].children?.length).to.equal(2);
     });
   });
 });

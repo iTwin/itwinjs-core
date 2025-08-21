@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { BaselineShift, FieldRun, FontId, FontType, FractionRun, LineLayoutResult, ListMarker, OrderedListMarker, Run, RunLayoutResult, TabRun, TextAnnotationLeader, TextBlock, TextBlockComponent, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ContainerComponent, FieldRun, FontId, FontType, FractionRun, LineLayoutResult, ListMarker, OrderedListMarker, Run, RunLayoutResult, TabRun, TextAnnotationLeader, TextBlock, TextBlockComponent, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Geometry, Range2d, WritableXAndY } from "@itwin/core-geometry";
 import { IModelDb } from "../IModelDb";
 import { assert, Id64String, NonFunctionPropertiesOf } from "@itwin/core-bentley";
@@ -540,7 +540,7 @@ export class RunLayout {
 
   public toResult(component: TextBlockComponent): RunLayoutResult {
     const result: RunLayoutResult = {
-      sourceRunIndex: component.children?.indexOf(this.source),
+      sourceRunIndex: (component as ContainerComponent).children?.indexOf(this.source),
       fontId: this.fontId,
       characterOffset: this.charOffset,
       characterCount: this.numChars,
@@ -656,7 +656,7 @@ export class LineLayout {
 
   public toResult(textBlock: TextBlock): LineLayoutResult {
     return {
-      sourceParagraphIndex: textBlock.children?.indexOf(this.source),
+      sourceParagraphIndex: textBlock.children?.indexOf(this.source as ContainerComponent),
       runs: this.runs.map((x) => x.toResult(this.source)),
       range: this.range.toJSON(),
       justificationRange: this.justificationRange.toJSON(),
@@ -724,6 +724,7 @@ export class TextBlockLayout {
   private populateComponent(component: TextBlockComponent, context: LayoutContext, docWidth: number = 0, curLine?: LineLayout): LineLayout | undefined {
     switch (component.type) {
       case "textBlock": {
+        if (!(component instanceof ContainerComponent)) break;
         const children = component.children;
         if (!children || children.length === 0) {
           break;
@@ -739,6 +740,8 @@ export class TextBlockLayout {
         break;
       }
       case "list": {
+        if (!(component instanceof ContainerComponent)) break;
+
         if (curLine) {
           curLine = this.flushLine(context, curLine, component.children?.[0], true);
         }
@@ -756,15 +759,17 @@ export class TextBlockLayout {
           curLine = this.populateComponent(child, context, docWidth, curLine);
         });
 
-        const nextSibling = component.parent?.children?.[component.index + 1];
+        const nextSibling = (component.parent as ContainerComponent)?.children?.[component.index + 1];
         if (curLine && nextSibling) {
           curLine = this.flushLine(context, curLine, nextSibling, true);
         }
         break;
       }
       case "paragraph": {
+        if (!(component instanceof ContainerComponent)) break;
+
         component.children?.forEach(child => curLine = this.populateComponent(child, context, docWidth, curLine));
-        const nextSibling = component.parent?.children?.[component.index + 1];
+        const nextSibling = (component.parent as ContainerComponent)?.children?.[component.index + 1];
         if (curLine && nextSibling) {
           curLine = this.flushLine(context, curLine, nextSibling, true);
         }
