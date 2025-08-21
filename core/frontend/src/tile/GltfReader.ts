@@ -2125,7 +2125,7 @@ export abstract class GltfReader {
     try {
       // refuse to continue decoding if using Internet Explorer or old Microsoft Edge (lifted from checkbrowser.js).
       if (!!(document as any).documentMode || !!(window as any).StyleMedia) {
-        return;
+        throw new Error("Unsupported browser for Draco decoding");
       }
 
       const dracolib = await import("draco3d");
