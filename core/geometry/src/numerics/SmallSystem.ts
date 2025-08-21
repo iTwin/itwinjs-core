@@ -54,7 +54,7 @@ export class SmallSystem {
    * fraction on line B.
    */
   public static lineSegment2dXYTransverseIntersectionUnbounded(
-    a0: Point2d, a1: Point2d, b0: Point2d, b1: Point2d, result: Vector2d,
+    a0: XAndY, a1: XAndY, b0: XAndY, b1: XAndY, result: Vector2d,
   ): boolean {
     const ux = a1.x - a0.x;
     const uy = a1.y - a0.y;

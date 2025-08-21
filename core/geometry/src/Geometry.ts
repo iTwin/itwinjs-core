@@ -7,6 +7,7 @@
  * @module CartesianGeometry
  */
 
+import { CloneFunction, OrderedComparator } from "@itwin/core-bentley";
 import { AngleSweep } from "./geometry3d/AngleSweep";
 import { Point2d, Vector2d } from "./geometry3d/Point2dVector2d";
 import { Point3d, Vector3d, XYZ } from "./geometry3d/Point3dVector3d";
@@ -488,6 +489,41 @@ export class Geometry {
       return 1;
     return 0;
   }
+  /**
+   * Constructor for a lexical comparison with tolerance (x then y then z).
+   * @param distanceTol tolerance for comparing points. Default value is [[Geometry.smallMetricDistance]].
+   * @param xyOnly whether to ignore z in comparisons. Default value is `false`.
+   * @returns comparison function useful for ordered map callbacks.
+   */
+  public static compareXYZ(distanceTol: number = Geometry.smallMetricDistance, xyOnly: boolean = false): OrderedComparator<XYAndZ> {
+    return (p0: XYAndZ, p1: XYAndZ): -1 | 0 | 1 => {
+      if (XYAndZ.almostEqual(p0, p1, distanceTol))
+        return 0;
+      if (!Geometry.isAlmostEqualNumber(p0.x, p1.x, distanceTol)) {
+        if (p0.x < p1.x)
+          return -1;
+        if (p0.x > p1.x)
+          return 1;
+      }
+      if (!Geometry.isAlmostEqualNumber(p0.y, p1.y, distanceTol)) {
+        if (p0.y < p1.y)
+          return -1;
+        if (p0.y > p1.y)
+          return 1;
+      }
+      if (!xyOnly && !Geometry.isAlmostEqualNumber(p0.z, p1.z, distanceTol)) {
+        if (p0.z < p1.z)
+          return -1;
+        if (p0.z > p1.z)
+          return 1;
+      }
+      return 0;
+    };
+  }
+  // callback for maps
+  public static clonePoint3d(): CloneFunction<Point3d> {
+    return (p: Point3d) => p.clone();
+  };
   /**
    * Test if `value` is at most [[smallFraction]] in absolute value.
    * * This is appropriate if `value` is known to be a fraction.

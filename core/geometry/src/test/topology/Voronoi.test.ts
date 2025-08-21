@@ -155,7 +155,7 @@ describe("Voronoi", () => {
     HalfEdge.pinch(node3, node4);
     HalfEdge.pinch(node5, node6);
     HalfEdge.pinch(node7, node0);
-    ck.testUndefined(Voronoi.createFromDelaunay(graph), "expect undefined for a graph with a non-triangle face");
+    ck.testUndefined(Voronoi.createFromDelaunayGraph(graph), "expect undefined for a graph with a non-triangle face");
 
     expect(ck.getNumErrors()).toBe(0);
   });
@@ -333,7 +333,7 @@ describe("Voronoi", () => {
     node1.setMaskAroundFace(HalfEdgeMask.EXTERIOR);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph));
 
-    let voronoi = Voronoi.createFromDelaunay(delaunayGraph);
+    let voronoi = Voronoi.createFromDelaunayGraph(delaunayGraph);
     if (ck.testDefined(voronoi)) {
       voronoiGraph = voronoi.getVoronoiGraph;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph));
@@ -360,7 +360,7 @@ describe("Voronoi", () => {
     delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts);
     if (ck.testDefined(delaunayGraph)) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
-      voronoi = Voronoi.createFromDelaunay(delaunayGraph);
+      voronoi = Voronoi.createFromDelaunayGraph(delaunayGraph);
       if (ck.testDefined(voronoi)) {
         voronoiGraph = voronoi.getVoronoiGraph;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
@@ -377,7 +377,7 @@ describe("Voronoi", () => {
     delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts);
     if (ck.testDefined(delaunayGraph)) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
-      voronoi = Voronoi.createFromDelaunay(delaunayGraph);
+      voronoi = Voronoi.createFromDelaunayGraph(delaunayGraph);
       if (ck.testDefined(voronoi)) {
         voronoiGraph = voronoi.getVoronoiGraph;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
@@ -394,7 +394,7 @@ describe("Voronoi", () => {
     delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts);
     if (ck.testDefined(delaunayGraph)) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
-      voronoi = Voronoi.createFromDelaunay(delaunayGraph);
+      voronoi = Voronoi.createFromDelaunayGraph(delaunayGraph);
       if (ck.testDefined(voronoi)) {
         voronoiGraph = voronoi.getVoronoiGraph;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
@@ -436,7 +436,7 @@ describe("Voronoi", () => {
     node1.setMaskAroundFace(HalfEdgeMask.EXTERIOR);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph));
 
-    let voronoi = Voronoi.createFromDelaunay(delaunayGraph);
+    let voronoi = Voronoi.createFromDelaunayGraph(delaunayGraph);
     if (ck.testDefined(voronoi)) {
       voronoiGraph = voronoi.getVoronoiGraph;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph));
@@ -463,7 +463,7 @@ describe("Voronoi", () => {
     delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts);
     if (ck.testDefined(delaunayGraph)) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
-      voronoi = Voronoi.createFromDelaunay(delaunayGraph);
+      voronoi = Voronoi.createFromDelaunayGraph(delaunayGraph);
       if (ck.testDefined(voronoi)) {
         voronoiGraph = voronoi.getVoronoiGraph;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
@@ -479,7 +479,7 @@ describe("Voronoi", () => {
     delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts);
     if (ck.testDefined(delaunayGraph)) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
-      voronoi = Voronoi.createFromDelaunay(delaunayGraph);
+      voronoi = Voronoi.createFromDelaunayGraph(delaunayGraph);
       if (ck.testDefined(voronoi)) {
         voronoiGraph = voronoi.getVoronoiGraph;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
@@ -496,7 +496,7 @@ describe("Voronoi", () => {
     delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts);
     if (ck.testDefined(delaunayGraph)) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
-      voronoi = Voronoi.createFromDelaunay(delaunayGraph);
+      voronoi = Voronoi.createFromDelaunayGraph(delaunayGraph);
       if (ck.testDefined(voronoi)) {
         voronoiGraph = voronoi.getVoronoiGraph;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
@@ -513,7 +513,7 @@ describe("Voronoi", () => {
     delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts);
     if (ck.testDefined(delaunayGraph)) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
-      voronoi = Voronoi.createFromDelaunay(delaunayGraph);
+      voronoi = Voronoi.createFromDelaunayGraph(delaunayGraph);
       if (ck.testDefined(voronoi)) {
         voronoiGraph = voronoi.getVoronoiGraph;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
@@ -530,7 +530,7 @@ describe("Voronoi", () => {
     delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts);
     if (ck.testDefined(delaunayGraph)) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
-      voronoi = Voronoi.createFromDelaunay(delaunayGraph);
+      voronoi = Voronoi.createFromDelaunayGraph(delaunayGraph);
       if (ck.testDefined(voronoi)) {
         voronoiGraph = voronoi.getVoronoiGraph;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
@@ -556,7 +556,7 @@ describe("Voronoi", () => {
     delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts);
     if (ck.testDefined(delaunayGraph)) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph));
-      voronoi = Voronoi.createFromDelaunay(delaunayGraph);
+      voronoi = Voronoi.createFromDelaunayGraph(delaunayGraph);
       if (ck.testDefined(voronoi)) {
         voronoiGraph = voronoi.getVoronoiGraph;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph));
@@ -573,7 +573,7 @@ describe("Voronoi", () => {
     delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts);
     if (ck.testDefined(delaunayGraph)) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
-      voronoi = Voronoi.createFromDelaunay(delaunayGraph);
+      voronoi = Voronoi.createFromDelaunayGraph(delaunayGraph);
       if (ck.testDefined(voronoi)) {
         voronoiGraph = voronoi.getVoronoiGraph;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
@@ -590,7 +590,7 @@ describe("Voronoi", () => {
     delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts);
     if (ck.testDefined(delaunayGraph)) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
-      voronoi = Voronoi.createFromDelaunay(delaunayGraph);
+      voronoi = Voronoi.createFromDelaunayGraph(delaunayGraph);
       if (ck.testDefined(voronoi)) {
         voronoiGraph = voronoi.getVoronoiGraph;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
@@ -616,7 +616,7 @@ describe("Voronoi", () => {
     delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts);
     if (ck.testDefined(delaunayGraph)) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph));
-      voronoi = Voronoi.createFromDelaunay(delaunayGraph);
+      voronoi = Voronoi.createFromDelaunayGraph(delaunayGraph);
       if (ck.testDefined(voronoi)) {
         voronoiGraph = voronoi.getVoronoiGraph;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph));
@@ -633,7 +633,7 @@ describe("Voronoi", () => {
     delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts);
     if (ck.testDefined(delaunayGraph)) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
-      voronoi = Voronoi.createFromDelaunay(delaunayGraph);
+      voronoi = Voronoi.createFromDelaunayGraph(delaunayGraph);
       if (ck.testDefined(voronoi)) {
         voronoiGraph = voronoi.getVoronoiGraph;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
@@ -650,7 +650,7 @@ describe("Voronoi", () => {
     delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts);
     if (ck.testDefined(delaunayGraph)) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
-      voronoi = Voronoi.createFromDelaunay(delaunayGraph);
+      voronoi = Voronoi.createFromDelaunayGraph(delaunayGraph);
       if (ck.testDefined(voronoi)) {
         voronoiGraph = voronoi.getVoronoiGraph;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
@@ -676,7 +676,7 @@ describe("Voronoi", () => {
     delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts);
     if (ck.testDefined(delaunayGraph)) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph));
-      voronoi = Voronoi.createFromDelaunay(delaunayGraph);
+      voronoi = Voronoi.createFromDelaunayGraph(delaunayGraph);
       if (ck.testDefined(voronoi)) {
         voronoiGraph = voronoi.getVoronoiGraph;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph));
@@ -696,7 +696,7 @@ describe("Voronoi", () => {
     delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(pts);
     if (ck.testDefined(delaunayGraph)) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(delaunayGraph), dx);
-      voronoi = Voronoi.createFromDelaunay(delaunayGraph);
+      voronoi = Voronoi.createFromDelaunayGraph(delaunayGraph);
       if (ck.testDefined(voronoi)) {
         voronoiGraph = voronoi.getVoronoiGraph;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, createBagOfCurves(voronoiGraph), dx);
