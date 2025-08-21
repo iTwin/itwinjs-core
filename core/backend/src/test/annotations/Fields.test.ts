@@ -743,7 +743,7 @@ describe.only("Field evaluation", () => {
     });
   });
 
-  describe("Format Validation", () => {
+  describe.only("Format Validation", () => {
     it("validates formatting options for string property type", () => {
       // Create a FieldRun with string property type and some format options
       const fieldRun = FieldRun.create({
@@ -772,7 +772,7 @@ describe.only("Field evaluation", () => {
       expect(fieldRun.cachedContent).to.equal("Value: ABC!");
     });
 
-    it.only("validates formatting options for quantity property type", async () => {
+    it("validates formatting options for quantity property type", async () => {
       const fieldRun = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "intProp" },
@@ -833,7 +833,218 @@ describe.only("Field evaluation", () => {
       expect(updated).to.be.true;
       expect(fieldRun.cachedContent).to.equal("123.46 m");
     });
+
+    it("validates formatting options for coordinate property type", () => {
+      // Create a FieldRun with coordinate property type and some format options
+      const fieldRun = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "point" },
+        propertyType: "coordinate",
+        cachedContent: "oldValue",
+        formatOptions: {
+          coordinate: {
+            components: "XYZ",
+            componentSeparator: ","
+          }
+        }
+      });
+
+      // Context returns a coordinate value for the property
+      const context = {
+        hostElementId: sourceElementId,
+        getProperty: () => ({ x: 1, y: 2, z: 3 })
+      };
+
+      // Update the field and check the result
+      const updated = updateField(fieldRun, context);
+
+      // The formatted value should be "1,2,3"
+      expect(updated).to.be.true;
+      expect(fieldRun.cachedContent).to.equal("1,2,3");
+    });
+
+    it("validates formatting options for boolean property type", () => {
+      // Create a FieldRun with boolean property type and some format options
+      const fieldRun = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "outerStruct", accessors: ["innerStruct", "bool"] },
+        propertyType: "boolean",
+        cachedContent: "oldValue",
+        formatOptions: {
+          boolean: {
+            trueString: "YES",
+            falseString: "NO"
+          }
+        }
+      });
+
+      // Context returns a boolean value for the property
+      const context = {
+        hostElementId: sourceElementId,
+        getProperty: () => false
+      };
+
+      // Update the field and check the result
+      const updated = updateField(fieldRun, context);
+
+      // The formatted value should be "NO"
+      expect(updated).to.be.true;
+      expect(fieldRun.cachedContent).to.equal("NO");
+    });
+
+    it("validates formatting options for int-enum property type", () => {
+      // Create a FieldRun with int-enum property type and some format options
+      const fieldRun = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "intEnum" },
+        propertyType: "int-enum",
+        cachedContent: "oldValue",
+        formatOptions: {
+          enum: {
+            labels: [
+              { value: 1, label: "One" },
+              { value: 2, label: "Two" }
+            ],
+            fallbackLabel: "Unknown"
+          }
+        }
+      });
+
+      // Context returns an int-enum value for the property
+      const context = {
+        hostElementId: sourceElementId,
+        getProperty: () => 1
+      };
+
+      // Update the field and check the result
+      const updated = updateField(fieldRun, context);
+
+      // The formatted value should be "One"
+      expect(updated).to.be.true;
+      expect(fieldRun.cachedContent).to.equal("One");
+    });
+
+    it("validates formatting options for string-enum property type", () => {
+      // Create a FieldRun with string-enum property type and some format options
+      const fieldRun = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "jsonProperties", jsonAccessors: ["zoo", "birds", 0, "name"] },
+        propertyType: "string-enum",
+        cachedContent: "oldValue",
+        formatOptions: {
+          enum: {
+            labels: [
+              { value: "duck", label: "Duck" },
+              { value: "hawk", label: "Hawk" }
+            ],
+            fallbackLabel: "Unknown"
+          }
+        }
+      });
+
+      // Context returns a string-enum value for the property
+      const context = {
+        hostElementId: sourceElementId,
+        getProperty: () => "duck"
+      };
+
+      // Update the field and check the result
+      const updated = updateField(fieldRun, context);
+
+      // The formatted value should be "Duck"
+      expect(updated).to.be.true;
+      expect(fieldRun.cachedContent).to.equal("Duck");
+    });
+
+    it("validates formatting options for string property type from jsonProp", () => {
+      // Create a FieldRun with string property type and some format options
+      const fieldRun = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "jsonProperties", jsonAccessors: ["stringProp"] },
+        propertyType: "string",
+        cachedContent: "oldValue",
+        formatOptions: {
+          case: "upper",
+          prefix: "Value: ",
+          suffix: "!"
+        }
+      });
+
+      // Context returns a string value for the property
+      const context = {
+        hostElementId: sourceElementId,
+        getProperty: () => "abc"
+      };
+
+      // Update the field and check the result
+      const updated = updateField(fieldRun, context);
+
+      // The formatted value should be uppercased and have prefix/suffix applied
+      expect(updated).to.be.true;
+      expect(fieldRun.cachedContent).to.equal("Value: ABC!");
+    });
+
+    it("validates formatting options for quantity property type from jsonProp", () => {
+      // Create a FieldRun with quantity property type and some format options
+      const fieldRun = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "jsonProperties", jsonAccessors: ["ints", 1] }, // Gets value 11 from the test element
+        propertyType: "quantity",
+        cachedContent: "oldValue",
+        formatOptions: {
+          quantity: {
+            formatProps: {
+              type: "decimal",
+              precision: 2,
+              name: "test-format",
+              formatTraits: [ 'TrailZeroes', 'KeepDecimalPoint', 'ShowUnitLabel' ],
+              composite: {
+                spacer: " ",
+                includeZero: true,
+                units: [
+                  {
+                    unit: {
+                      name: "Units.M",
+                      label: "m",
+                      phenomenon: "Units.LENGTH",
+                      isValid: true,
+                      system: "Units.SI"
+                    }
+                  }
+                ]
+              }
+            },
+            unitConversions: [
+              {
+                name: 'Units.M',
+                label: 'm',
+                conversion: { factor: 1, offset: 0 },
+                system: 'Units.SI'
+              }
+            ],
+            sourceUnit: {
+              name: "Units.M",
+              label: "m",
+              system: 'Units.SI',
+              phenomenon: "Units.LENGTH",
+              isValid: true
+            }
+          }
+        }
+      });
+
+      // Context returns a numeric value for the property from JSON
+      const context = {
+        hostElementId: sourceElementId,
+        getProperty: () => 11 // This matches jsonProperties.ints[1] in the test element
+      };
+
+      // Update the field and check the result
+      const updated = updateField(fieldRun, context);
+
+      // The formatted value should have 2 decimal places and show the unit label
+      expect(updated).to.be.true;
+      expect(fieldRun.cachedContent).to.equal("11.00 m");
+    });
   });
 });
-
-
