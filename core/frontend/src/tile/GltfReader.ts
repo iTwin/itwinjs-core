@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, expectDefined, JsonUtils, Logger, utf8ToString,
+  assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, expectDefined, JsonUtils, Logger, ProcessDetector, utf8ToString,
 } from "@itwin/core-bentley";
 import {
   Angle, IndexedPolyface, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform, Vector3d,
@@ -2123,8 +2123,8 @@ export abstract class GltfReader {
       return;
 
     try {
-      // refuse to continue decoding if using Internet Explorer or old Microsoft Edge (lifted from checkbrowser.js).
-      if (!!(document as any).documentMode || !!(window as any).StyleMedia) {
+      // Refuse to continue decoding if using Internet Explorer or old Microsoft Edge. We do not want to trigger any legacy decoding fallbacks within draco3d.
+      if (ProcessDetector.isIEBrowser) {
         throw new Error("Unsupported browser for Draco decoding");
       }
 
