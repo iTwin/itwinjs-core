@@ -24,7 +24,7 @@ function transferCurve(source: ConstructionConstraint, dest: ImplicitCurve2d[]) 
 }
 
 it("ConstraintSetCirclesAndLines", () => {
-	const ck = new Checker(false, false);
+	const ck = new Checker(true, true);
 	const allGeometry: GeometryQuery[] = [];
 
 	const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(1, 0, 1);
@@ -66,12 +66,12 @@ it("ConstraintSetCirclesAndLines", () => {
 });
 
 it("ConstraintSetLines", () => {
-	const ck = new Checker(false, false);
+	const ck = new Checker(true, true);
 	const allGeometry: GeometryQuery[] = [];
 
 	const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(1, 0, 0.5);
 	const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius(4, 6, 1);
-	const lineL = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(1, 1, 1, 0.2);
+	const line = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(1, 1, 1, 0.2);
 	let x0 = 0;
 	const xStep = 40;
 	for (const constraintPair of [
@@ -79,8 +79,8 @@ it("ConstraintSetLines", () => {
 		[ConstructionConstraint.createPerpendicularTo(circleA), ConstructionConstraint.createTangentTo(circleB)],
 		[ConstructionConstraint.createTangentTo(circleA), ConstructionConstraint.createPerpendicularTo(circleB)],
 		[ConstructionConstraint.createPerpendicularTo(circleA), ConstructionConstraint.createPerpendicularTo(circleB)],
-		[ConstructionConstraint.createPerpendicularTo(lineL), ConstructionConstraint.createPerpendicularTo(circleB)],
-		[ConstructionConstraint.createPerpendicularTo(lineL), ConstructionConstraint.createTangentTo(circleB)],
+		[ConstructionConstraint.createPerpendicularTo(line), ConstructionConstraint.createPerpendicularTo(circleB)],
+		[ConstructionConstraint.createPerpendicularTo(line), ConstructionConstraint.createTangentTo(circleB)],
 	]) {
 		const y0 = 0;
 		const constraintSet = ConstraintSet.create();
@@ -107,50 +107,8 @@ it("ConstraintSetLines", () => {
 	expect(ck.getNumErrors()).toBe(0);
 });
 
-it("ConstraintSetLines", () => {
-	const ck = new Checker(true, true);
-	const allGeometry: GeometryQuery[] = [];
-
-	const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(1, 0, 0.5);
-	const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius(4, 6, 1);
-	const lineL = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(1, 1, 1, 0.2);
-	let x0 = 0;
-	const xStep = 40;
-	for (const constraintPair of [
-		[ConstructionConstraint.createTangentTo(circleA), ConstructionConstraint.createTangentTo(circleB)],
-		[ConstructionConstraint.createPerpendicularTo(circleA), ConstructionConstraint.createTangentTo(circleB)],
-		[ConstructionConstraint.createTangentTo(circleA), ConstructionConstraint.createPerpendicularTo(circleB)],
-		[ConstructionConstraint.createPerpendicularTo(circleA), ConstructionConstraint.createPerpendicularTo(circleB)],
-		[ConstructionConstraint.createPerpendicularTo(lineL), ConstructionConstraint.createPerpendicularTo(circleB)],
-		[ConstructionConstraint.createPerpendicularTo(lineL), ConstructionConstraint.createTangentTo(circleB)],
-	]) {
-		const y0 = 0;
-		const constraintSet = ConstraintSet.create();
-		const curvesToDisplay: ImplicitCurve2d[] = [];
-		for (const c of constraintPair) {
-			constraintSet.addConstraint(c);
-			transferCurve(c, curvesToDisplay);
-		}
-		const constraintSetReversed = ConstraintSet.create();
-		constraintSetReversed.addConstraint(constraintPair[0]);
-		constraintSetReversed.addConstraint(constraintPair[1]);
-		const result = constraintSet.constructConstrainedLines();
-		const resultReversed = constraintSetReversed.constructConstrainedLines();
-		ImplicitGeometryHelpers.outputLineMarkup(ck, allGeometry, x0, y0, result, curvesToDisplay, 0);
-		ck.testExactNumber(
-			result !== undefined ? result.length : 0,
-			resultReversed !== undefined ? resultReversed.length : 0,
-			"Match counts with reversed constraints",
-			constraintPair
-		);
-		x0 += xStep;
-	}
-	GeometryCoreTestIO.saveGeometry(allGeometry, "geometry2d", "ConstraintSetLines");
-	expect(ck.getNumErrors()).toBe(0);
-});
-
 it("radiansToParabola", () => {
-	const ck = new Checker(false, false);
+	const ck = new Checker(true, true);
 	const allGeometry: GeometryQuery[] = [];
 
 	const curve = UnboundedParabola2d.createCenterAndAxisVectors(
@@ -164,7 +122,6 @@ it("radiansToParabola", () => {
 		const theta = Geometry.interpolate(-radiansLimit, i / n, radiansLimit);
 		const c = Math.cos(theta);
 		const s = Math.sin(theta);
-		// console.log ({c,s,x,y,q});
 		pointsB.push(curve.radiansToPoint2d(theta)!);
 		arcPoints.push(Point3d.create(c, s));
 	}
@@ -181,22 +138,26 @@ it("radiansToParabola", () => {
 		Point2d.create(4, 5),
 		Point2d.create(8, 5),
 		Point2d.create(8, -1),
-		Point2d.create(2, 0.01)
+		Point2d.create(2, 0.01),
 	]) {
 		GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, xy, 0.05, x0, y0);
-		curve.emitPerpendiculars(xy,
+		curve.emitPerpendiculars(
+			xy,
 			(curvePoint: Point2d, _radians: number | undefined) => {
-				GeometryCoreTestIO.captureCloneGeometry(allGeometry,
-					LineSegment3d.createXYXY(xy.x, xy.y, curvePoint.x, curvePoint.y), x0, 0);
-				// GeometryCoreTestIO.consoleLog({onCurve: curvePoint.toJSON()});
+				GeometryCoreTestIO.captureCloneGeometry(
+					allGeometry, LineSegment3d.createXYXY(xy.x, xy.y, curvePoint.x, curvePoint.y), x0, 0,
+				);
+				// GeometryCoreTestIO.consoleLog({ onCurve: curvePoint.toJSON() });
 				ck.testCoordinate(0, curve.functionValue(curvePoint), "point projects to parabola");
 				const gradF = curve.gradient(curvePoint);
-				GeometryCoreTestIO.captureCloneGeometry(allGeometry,
+				GeometryCoreTestIO.captureCloneGeometry(
+					allGeometry,
 					[Point3d.createFrom(curvePoint), Point3d.createFrom(curvePoint.plusScaled(gradF, 0.2))],
-					x0, y0);
+					x0, y0,
+				);
 				const vectorW = Vector2d.createStartEnd(xy, curvePoint);
 				const cross = gradF.crossProduct(vectorW);
-				// GeometryCoreTestIO.consoleLog ({cross, curvePoint, xy, vectorW, gradF});
+				// GeometryCoreTestIO.consoleLog({ cross, curvePoint, xy, vectorW, gradF });
 				ck.testCoordinate(0, cross, "point to curve is perpendicular");
 			}
 		);

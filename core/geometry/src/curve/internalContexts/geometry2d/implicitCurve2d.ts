@@ -108,7 +108,7 @@ export class ImplicitGeometryMarkup<GeometryType extends ImplicitCurve2d> {
   public curve: GeometryType;
   public data: Point2dImplicitCurve2d[];
   /**
-   * Construct a new carrier.  The data array is created empty.
+   * Construct a new carrier. The data array is created empty.
    * @param curve curve to CAPTURE
    */
   public constructor(curve: GeometryType) {
