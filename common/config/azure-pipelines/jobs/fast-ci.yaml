@@ -84,28 +84,3 @@ jobs:
       #     nodeVersion: 22.x
       # The publish script identifies any new packages not previously published and tags the build
       - template: ../templates/publish.yaml
-
-  - job: PostResult
-    dependsOn:
-      - CheckLinkedPR
-      - Build
-    condition: and(succeeded(), eq(dependencies.CheckLinkedPR.outputs['checkForPr.POST_STATUS'], 'true'), eq(variables['Build.Reason'], 'PullRequest'))
-    displayName: Post Success
-    pool:
-      vmImage: ubuntu-latest
-
-    steps:
-      - bash: |
-          branch=$(System.PullRequest.SourceBranch)
-          sha=$(gh pr view $branch --json "headRefOid" -q ".headRefOid")
-          echo "Posting 'success' status to current PR"
-          gh api \
-            --method POST \
-            -H "Accept: application/vnd.github+json" \
-            /repos/$(Build.Repository.Name)/statuses/$sha \
-            -f state='success' \
-            -f target_url='$(BUILD_URL)' \
-            -f context='itwinjs-core PR validation' \
-            -f description='No native PR was linked'
-        env:
-          GITHUB_TOKEN: $(GH_TOKEN)
