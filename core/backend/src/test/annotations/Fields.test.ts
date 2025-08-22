@@ -744,6 +744,33 @@ describe.only("Field evaluation", () => {
   });
 
   describe.only("Format Validation", () => {
+    it("should evaluate to invalid string",() => {
+      const fieldRun = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "string", accessors: [0] },
+        propertyType: "superString",
+        cachedContent: "oldValue",
+        formatOptions: {
+          case: "upper",
+          prefix: "Value: ",
+          suffix: "!"
+        }
+      });
+
+      // Context returns a string value for the property
+      const context = {
+        hostElementId: sourceElementId,
+        getProperty: () => "superString"
+      };
+
+      // Update the field and check the result
+      const updated = updateField(fieldRun, context);
+
+      // The formatted value should be uppercased and have prefix/suffix applied
+      expect(updated).to.be.true;
+      expect(fieldRun.cachedContent).to.equal(FieldRun.invalidContentIndicator);
+    });
+
     it("validates formatting options for string property type", () => {
       // Create a FieldRun with string property type and some format options
       const fieldRun = FieldRun.create({
