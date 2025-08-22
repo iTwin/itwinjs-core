@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Wed, 20 Aug 2025 13:57:10 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Aug 2025 14:22:33 GMT and should not be manually modified.
+
+## 5.1.4
+Fri, 22 Aug 2025 14:22:33 GMT
+
+### Updates
+
+- A model drawn as only contour lines will only mask the background map where the contour lines draw.
 
 ## 5.1.3
 Wed, 20 Aug 2025 13:57:10 GMT
