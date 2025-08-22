@@ -760,7 +760,7 @@ describe.only("Field evaluation", () => {
       // Context returns a string value for the property
       const context = {
         hostElementId: sourceElementId,
-        getProperty: () => "superString"
+        getProperty: () => "newValue"
       };
 
       // Update the field and check the result

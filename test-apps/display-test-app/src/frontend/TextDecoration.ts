@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, LeaderTextPointOptions, LineBreakRun, Placement2dProps, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationLeader, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ColorDef, FieldRun, FractionRun, LeaderTextPointOptions, LineBreakRun, Placement2dProps, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationLeader, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
@@ -118,6 +118,12 @@ class TextEditor implements Decorator {
       styleOverrides: this.runStyle,
     }));
   }
+
+  // public appendFieldRun(content: string): void {
+  //   this.textBlock.appendRun(FieldRun.create({
+
+  //   }));
+  // }
 
   public appendParagraph(): void {
     this.textBlock.appendParagraph();
