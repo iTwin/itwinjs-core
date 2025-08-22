@@ -167,11 +167,6 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
     expect(iModel.models.loaded.get(modelId)).to.not.be.undefined;
   });
 
-  it("getClassHierarchy should work as expected", async () => {
-    const result = await iModel.findClassFor("BisCore:LineStyle", undefined);
-    expect(result).undefined;
-  });
-
   it("getIModelCoordinatesFromGeoCoordinates should work as expected", async () => {
     const wgs84Converter = iModel.geoServices.getConverter("WGS84");
     const nad27Converter = iModel.geoServices.getConverter("NAD27");

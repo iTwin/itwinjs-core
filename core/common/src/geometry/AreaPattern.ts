@@ -142,65 +142,78 @@ export namespace AreaPattern {
 
       if ((this.color === undefined) !== (other.color === undefined))
         return false;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (this.color && !this.color.equals(other.color!))
         return false;
 
       if ((this.angle1 === undefined) !== (other.angle1 === undefined))
         return false;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (this.angle1 && !this.angle1.isAlmostEqualNoPeriodShift(other.angle1!))
         return false;
 
       if ((this.angle2 === undefined) !== (other.angle2 === undefined))
         return false;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (this.angle2 && !this.angle2.isAlmostEqualNoPeriodShift(other.angle2!))
         return false;
 
       if ((this.origin === undefined) !== (other.origin === undefined))
         return false;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (this.origin && !this.origin.isAlmostEqual(other.origin!))
         return false;
 
       if ((this.rotation === undefined) !== (other.rotation === undefined))
         return false;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (this.rotation && !this.rotation.isAlmostEqual(other.rotation!))
         return false;
 
       if ((this.symbolId === undefined) !== (other.symbolId === undefined))
         return false;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (this.symbolId && !(this.symbolId === other.symbolId!))
         return false;
 
       if ((this.defLines === undefined) !== (other.defLines === undefined))
         return false;
       if (this.defLines) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         if (this.defLines.length !== other.defLines!.length)
           return false;
 
         for (let i = 0; i < this.defLines.length; ++i) {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           const otherLine = other.defLines![i];
           const thisLine = this.defLines[i];
 
           if ((thisLine.angle === undefined) !== (otherLine.angle === undefined))
             return false;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           if (thisLine.angle && !thisLine.angle.isAlmostEqualNoPeriodShift(otherLine.angle!))
             return false;
 
           if ((thisLine.through === undefined) !== (otherLine.through === undefined))
             return false;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           if (thisLine.through && !thisLine.through.isAlmostEqual(otherLine.through!))
             return false;
 
           if ((thisLine.offset === undefined) !== (otherLine.offset === undefined))
             return false;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           if (thisLine.offset && !thisLine.offset.isAlmostEqual(otherLine.offset!))
             return false;
 
           if ((thisLine.dashes === undefined) !== (otherLine.dashes === undefined))
             return false;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           if (thisLine.dashes && thisLine.dashes.length !== otherLine.dashes!.length)
             return false;
           if (thisLine.dashes) {
             for (let dash = 0; dash < thisLine.dashes.length; ++dash) {
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
               if (!Geometry.isSameCoordinate(thisLine.dashes[dash], otherLine.dashes![dash]))
                 return false;
             }

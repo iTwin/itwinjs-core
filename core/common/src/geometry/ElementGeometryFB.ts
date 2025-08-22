@@ -8,6 +8,7 @@
 import { flatbuffers } from "flatbuffers";
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/explicit-member-accessibility */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable @itwin/prefer-get */
 /* eslint-disable no-var */
 // cspell:word flatbuffers

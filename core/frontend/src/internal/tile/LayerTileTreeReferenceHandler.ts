@@ -6,6 +6,7 @@
  * @module Tiles
  */
 
+import { expectDefined } from "@itwin/core-bentley";
 import { BaseLayerSettings, ColorDef, MapImagerySettings, MapLayerSettings } from "@itwin/core-common";
 import { SceneContext } from "../../ViewContext";
 import { compareMapLayer, createMapLayerTreeReference, DisclosedTileTreeSet, ImageryMapLayerTreeReference, ImageryMapTileTree, MapLayerTileTreeReference, ModelMapLayerTileTreeReference, TileTreeLoadStatus, TileTreeOwner } from "../../tile/internal";
@@ -196,7 +197,7 @@ export class LayerTileTreeReferenceHandler {
     for (let i = 0; i < layerSettings.length; i++) {
       const treeIndex = i + baseLayerIndex;
       if (treeIndex >= this._layerTrees.length || !this._layerTrees[treeIndex]?.layerSettings.displayMatches(layerSettings[i]))
-        this._layerTrees[treeIndex] = createMapLayerTreeReference(layerSettings[i], treeIndex, this._ref.iModel)!;
+        this._layerTrees[treeIndex] = expectDefined(createMapLayerTreeReference(layerSettings[i], treeIndex, this._ref.iModel));
     }
     this.clearLayers();
   }
