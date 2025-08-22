@@ -1379,22 +1379,20 @@ export class Range1d extends RangeBase {
       this.high + delta, true);
   }
   /**
-   * Clip this range to a linear half space condition
-   * * if `limitA > limitB` the limit space is empty
-   *   * make this range null
-   *   * return false;
-   * * otherwise (i.e `limitA <= limitB`)
-   *   * solve `a + u * f = limitA' and `a + u * f = limitA`
-   *   * if unable to solve (i.e. u near zero), `a` alone determines whether to (a) leave this interval unchanged or
-   * (b) reduce to nothing.
-   *   * the `f` values are an interval in the space of this `Range1d`
-   *   * restrict the range to that interval (i.e intersect existing (low,high) with the fraction interval.
-   *   * return true if the range is non-null after the clip.
+   * Clip this range to a linear half space condition.
+   * * If `limitA > limitB` the limit space is empty:
+   *   * Make this range null.
+   *   * Return `false`.
+   * * Otherwise for `limitA <= limitB`:
+   *   * Solve `a + u * fA = limitA` and `a + u * fB = limitB`.
+   *   * If unable to solve (i.e. u near zero), `a` alone determines whether to leave this interval unchanged or reduce to null.
+   *   * Form an interval from the solution `{fA, fB}`.
+   *   * Clip this instance to the solution interval.
+   *   * Return `true` if the range is non-null after the clip.
    * @param a constant of linear map
    * @param u coefficient of linear map
    * @param limitA crossing value, assumed in range relation with limitB
    * @param limitB crossing value, assumed in range relation with limitB
-   * @param limitIsHigh true if the limit is an upper limit on mapped values.
    */
   public clipLinearMapToInterval(a: number, u: number, limitA: number, limitB: number): boolean {
     // f = (limit - a) / u
