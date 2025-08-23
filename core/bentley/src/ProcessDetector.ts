@@ -27,6 +27,9 @@ export class ProcessDetector {
   /** Is this process the backend of an Electron app? */
   public static get isElectronAppBackend() { return typeof process === "object" && process.versions.hasOwnProperty("electron"); }
 
+  /** Is this process running in an Internet Explorer or old Microsoft Edge browser? */
+  public static get isIEBrowser() { return !!(document as any).documentMode || !!(window as any).StyleMedia; }
+
   /** Is this process running in a browser on an iPad?
    * @note This method will return `true` for any frontend running on an iPad, whether it is a user-launched web browser (e.g. Safari) or the frontend of a mobile app.
    */
