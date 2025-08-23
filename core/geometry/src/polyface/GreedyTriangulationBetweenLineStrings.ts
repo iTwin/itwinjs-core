@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { BarycentricTriangle } from "../geometry3d/BarycentricTriangle";
@@ -277,7 +278,9 @@ function resolveToNoDuplicates(data: IndexedXYZCollection, tolerance = Geometry.
   let hasDuplicates = false;
   const n = data.length;
   for (let i = 0; i + 1 < n; i++) {
-    if (data.distanceIndexIndex(i, i + 1)! <= tolerance) {
+    const d = data.distanceIndexIndex(i, i + 1);
+    assert(undefined !== d, "GreedyTriangulationBetweenLineStrings.resolveToNoDuplicates: distance should be defined");
+    if (d <= tolerance) {
       hasDuplicates = true;
       break;
     }
@@ -288,13 +291,17 @@ function resolveToNoDuplicates(data: IndexedXYZCollection, tolerance = Geometry.
   result.pushXYZ(data.getXAtUncheckedPointIndex(0), data.getYAtUncheckedPointIndex(0), data.getZAtUncheckedPointIndex(0));
   let i0 = 0;
   for (let i = 1; i < n; i++) {
-    if (data.distanceIndexIndex(i0, i)! > tolerance) {
+    const d = data.distanceIndexIndex(i0, i);
+    assert(undefined !== d, "GreedyTriangulationBetweenLineStrings.resolveToNoDuplicates: distance should be defined");
+    if (d > tolerance) {
       result.pushXYZ(data.getXAtUncheckedPointIndex(i), data.getYAtUncheckedPointIndex(i), data.getZAtUncheckedPointIndex(i));
       i0 = i;
     }
   }
   /** enforce exact closure if original was closed. */
-  if (data.distanceIndexIndex(0, n - 1)! <= tolerance) {
+  const distance = data.distanceIndexIndex(0, n - 1);
+  assert(undefined !== distance, "GreedyTriangulationBetweenLineStrings.resolveToNoDuplicates: distance should be defined");
+  if (distance <= tolerance) {
     result.pop();
     result.pushFromGrowableXYZArray(result, 0);
   }

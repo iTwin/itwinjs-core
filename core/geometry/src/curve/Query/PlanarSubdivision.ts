@@ -116,9 +116,12 @@ export class PlanarSubdivision {
       const details = entry[1].reduce((accumulator: CurveLocationDetailPair[], detailPair) => {
         if (!detailPair.detailA.hasFraction1)
           return [...accumulator, detailPair];
-        const detail = getDetailOnCurve(detailPair, p)!;
+        const detail = getDetailOnCurve(detailPair, p);
+        assert(undefined !== detail, "PlanarSubdivision.assembleHalfEdgeGraph: detail should be defined");
+        assert(undefined !== detail.fraction1, "PlanarSubdivision.assembleHalfEdgeGraph: detail.fraction1 should be defined");
+        assert(undefined !== detail.point1, "PlanarSubdivision.assembleHalfEdgeGraph: detail.point1 should be defined");
         const detail0 = CurveLocationDetail.createCurveFractionPoint(p, detail.fraction, detail.point);
-        const detail1 = CurveLocationDetail.createCurveFractionPoint(p, detail.fraction1!, detail.point1!);
+        const detail1 = CurveLocationDetail.createCurveFractionPoint(p, detail.fraction1, detail.point1);
         return [
           ...accumulator,
           CurveLocationDetailPair.createCapture(detail0, detail0),
@@ -127,19 +130,28 @@ export class PlanarSubdivision {
       }, []);
       // lexical sort on p intersection fraction
       details.sort((pairA: CurveLocationDetailPair, pairB: CurveLocationDetailPair) => {
-        const fractionA = getFractionOnCurve(pairA, p)!;
-        const fractionB = getFractionOnCurve(pairB, p)!;
+        const fractionA = getFractionOnCurve(pairA, p);
+        const fractionB = getFractionOnCurve(pairB, p);
+        assert(undefined !== fractionA, "PlanarSubdivision.assembleHalfEdgeGraph: fractionA should be defined");
+        assert(undefined !== fractionB, "PlanarSubdivision.assembleHalfEdgeGraph: fractionB should be defined");
         return fractionA - fractionB;
       });
       let last = { point: p.startPoint(), fraction: 0.0 };
       for (const detailPair of details) {
-        const detail = getDetailOnCurve(detailPair, p)!;
+        const detail = getDetailOnCurve(detailPair, p);
+        assert(undefined !== detail, "PlanarSubdivision.assembleHalfEdgeGraph: detail.fraction should be defined");
         const detailFraction = Geometry.restrictToInterval(detail.fraction, 0, 1); // truncate fraction, but don't snap point; clustering happens later
         last = this.addHalfEdge(graph, p, last.point, last.fraction, detail.point, detailFraction, mergeTolerance);
       }
       this.addHalfEdge(graph, p, last.point, last.fraction, p.endPoint(), 1.0, mergeTolerance);
     }
-    HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph, (he: HalfEdge) => he.sortAngle!);
+    HalfEdgeGraphMerge.clusterAndMergeXYTheta(
+      graph,
+      (he: HalfEdge) => {
+        assert(undefined !== he.sortAngle, "PlanarSubdivision.assembleHalfEdgeGraph: sortAngle should be defined");
+        return he.sortAngle;
+      },
+    );
     return graph;
   }
   /**
@@ -215,10 +227,10 @@ export class PlanarSubdivision {
   /** Create the geometry for a topological edge. */
   private static createCurveInEdge(edge: HalfEdge): CurvePrimitive | undefined {
     const info = this.extractGeometryFromEdge(edge);
-    if (info) {
+    if (info && undefined !== info.detail.curve && undefined !== info.detail.fraction1 && undefined !== info.detail.fraction) {
       if (info.reversed)
-        return info.detail.curve!.clonePartialCurve(info.detail.fraction1!, info.detail.fraction);
-      return info.detail.curve!.clonePartialCurve(info.detail.fraction, info.detail.fraction1!);
+        return info.detail.curve.clonePartialCurve(info.detail.fraction1, info.detail.fraction);
+      return info.detail.curve.clonePartialCurve(info.detail.fraction, info.detail.fraction1);
     }
     return undefined;
   }
@@ -266,7 +278,9 @@ export class PlanarSubdivision {
     if (face.isSplitWasherFace(bridgeMask)) {
       const loops: Loop[] = [];
       const loopEdges: HalfEdge[] = [];
-      const bridgeStack: HalfEdge[] = [face.findMaskAroundFace(bridgeMask, true)!];
+      const node = face.findMaskAroundFace(bridgeMask, true);
+      assert(undefined !== node, "createLoopOrParityRegionInFace: node should be defined");
+      const bridgeStack: HalfEdge[] = [node];
       const announceEdge = (he: HalfEdge) => { he.setMask(visitMask); loopEdges.push(he); };
       const announceBridge = (he: HalfEdge) => { if (!he.isMaskSet(visitMask)) bridgeStack.push(he); };
       face.clearMaskAroundFace(visitMask);

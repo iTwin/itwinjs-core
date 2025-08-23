@@ -9,6 +9,7 @@
 
 // import { Geometry, Angle, AngleSweep } from "../Geometry";
 
+import { assert } from "@itwin/core-bentley";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { Angle } from "../geometry3d/Angle";
@@ -41,7 +42,8 @@ export class RegionMomentsXY extends NullGeometryHandler {
    * * The triangle with vertices: origin, arc start, arc end.
    */
   public override handleArc3d(arc: Arc3d): void {
-    const momentData = this._activeMomentData!;
+    const momentData = this._activeMomentData;
+    assert(undefined !== momentData, "RegionMomentsXY.handleArc3d: momentData should be defined");
     const sweepRadians = arc.sweep.sweepRadians;
     const alphaRadians = sweepRadians * 0.5;
     let s = Math.sin(alphaRadians);
@@ -74,12 +76,14 @@ export class RegionMomentsXY extends NullGeometryHandler {
   }
   /** Accumulate integrals over the (triangular) areas from the origin to each line segment. */
   public override handleLineString3d(ls: LineString3d): void {
-    const momentData = this._activeMomentData!;
+    const momentData = this._activeMomentData;
+    assert(undefined !== momentData, "RegionMomentsXY.handleLineString3d: momentData should be defined");
     momentData.accumulateTriangleToLineStringMomentsXY(undefined, ls.packedPoints);
   }
   /** Accumulate integrals over the (triangular) area from the origin to this line segment. */
   public override handleLineSegment3d(segment: LineSegment3d): void {
-    const momentData = this._activeMomentData!;
+    const momentData = this._activeMomentData;
+    assert(undefined !== momentData, "RegionMomentsXY.handleLineSegment3d: momentData should be defined");
     segment.startPoint(this._point0);
     segment.endPoint(this._point1);
     momentData.accumulateTriangleMomentsXY(undefined, this._point0, this._point1);

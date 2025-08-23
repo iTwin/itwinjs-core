@@ -7,6 +7,7 @@
  * @module Solid
  */
 
+import { assert } from "@itwin/core-bentley";
 import { Arc3d } from "../curve/Arc3d";
 import { CurveCollection } from "../curve/CurveCollection";
 import { GeometryQuery } from "../curve/GeometryQuery";
@@ -262,8 +263,10 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
   }
   /** Extend `rangeToExtend` so it includes this `Cone` instance. */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
-    const arc0 = this.constantVSection(0.0)!;
-    const arc1 = this.constantVSection(1.0)!;
+    const arc0 = this.constantVSection(0.0);
+    assert(arc0 !== undefined, "Cone.extendRange: arc0 should be defined");
+    const arc1 = this.constantVSection(1.0);
+    assert(arc1 !== undefined, "Cone.extendRange: arc1 should be defined");
     arc0.extendRange(rangeToExtend, transform);
     arc1.extendRange(rangeToExtend, transform);
   }
@@ -313,7 +316,8 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     const vectorY = this._localToWorld.matrix.columnY();
     const columnZ = this._localToWorld.matrix.columnZ();
 
-    const xyNormal = vectorX.unitCrossProduct(vectorY)!;
+    const xyNormal = vectorX.unitCrossProduct(vectorY);
+    assert(undefined !== xyNormal, "Cone.maxIsoParametricDistance: xyNormal should be defined");
     const hZ = xyNormal.dotProduct(columnZ);
     const zSkewVector = columnZ.plusScaled(xyNormal, hZ);
     const zSkewDistance = zSkewVector.magnitudeXY();
