@@ -306,7 +306,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
   /**
    * Add triangles from the first point of the linestring to the subsequent edges of the linestring.
-   * * No checks are made for polygon convexity or edge collinearity, conditions which would ensure positive area triangles.
+   * * No checks are made for polygon convexity or edge colinearity, conditions which would ensure positive area triangles.
    * @param ls linestring with point coordinates.
    * @param reverse if `true`, wrap the triangle creation in toggleReversedFacetFlag.
    */

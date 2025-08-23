@@ -80,8 +80,7 @@ export abstract class SingleTreeSearchHandler<AppDataType> {
    * * Default implementation returns false so query runs to completion.
    * * Search processes check this after range tests and child processing.
    */
-  // eslint-disable-next-line @itwin/prefer-get
-  public isAborted(): boolean { return false; }
+  public getIsAborted(): boolean { return false; }
 }
 /**
  * Abstract class for handler objects called during traversal of two range trees.
@@ -102,8 +101,9 @@ export abstract class TwoTreeSearchHandler<AppDataType> {
    * * Default implementation returns false so query runs to completion.
    * * Search processes check this after range tests and child processing.
    */
-  // eslint-disable-next-line @itwin/prefer-get
-  public isAborted(): boolean { return false; }
+  public getIsAborted(): boolean { return false; }
+  /** Whether to ignore z-coordinates in distance computations. */
+  public getXYOnly(): boolean { return false; }
 }
 /**
  * This class refines the TwoTreeSearchHandler with an implementation of `isRangePairActive` appropriate for computing the minimum distance between trees.
@@ -126,11 +126,8 @@ export abstract class TwoTreeDistanceMinimizationSearchHandler<AppDataType> exte
    */
   public override isRangePairActive(leftRange: Range3d, rightRange: Range3d): boolean {
     const currentDistance = this.getCurrentDistance();
-    const distanceBetweenRanges = leftRange.distanceToRange(rightRange);
-    if (distanceBetweenRanges <= currentDistance) {
-      return true;
-    }
-    return false;
+    const distanceBetweenRanges = this.getXYOnly() ? leftRange.distanceToRangeXY(rightRange) : leftRange.distanceToRange(rightRange);
+    return distanceBetweenRanges <= currentDistance;
   }
 }
 
@@ -276,7 +273,7 @@ export class RangeTreeNode<AppDataType> {
       for (let i = 0; undefined !== (itemToProcess = this.getAppDataByIndex(i)); i++) {
         // console.log(itemToProcess);
         handler.processAppData(itemToProcess);
-        if (handler.isAborted())
+        if (handler.getIsAborted())
           return;
       }
       let child: RangeTreeNode<AppDataType> | undefined;
@@ -311,7 +308,7 @@ export class RangeTreeNode<AppDataType> {
               handler.processAppDataPair(leftItem, rightItem);
             else
               handler.processAppDataPair(rightItem, leftItem);
-            if (handler.isAborted())
+            if (handler.getIsAborted())
               return;
           }
         }
@@ -341,7 +338,7 @@ export class RangeTreeNode<AppDataType> {
             handler.processAppDataPair(leftItem, rightItem);
           else
             handler.processAppDataPair(rightItem, leftItem);
-          if (handler.isAborted())
+          if (handler.getIsAborted())
             return;
         }
       }

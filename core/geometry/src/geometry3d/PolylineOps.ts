@@ -8,6 +8,7 @@
 
 import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "../curve/CurveExtendMode";
 import { CurveLocationDetailPair } from "../curve/CurveLocationDetail";
+import { CurveOps } from "../curve/CurveOps";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
 import { Geometry } from "../Geometry";
@@ -355,5 +356,18 @@ export class PolylineOps {
       }
     }
     return foundMin ? result : undefined;
+  }
+  /**
+   * Checks if all points are colinear.
+   * @param points array of points to check.
+   * @param distanceTol tolerance for co-linearity check, default is Geometry.smallMetricDistance.
+   * @param xyOnly if true, only XY coordinates are used for the check, ignoring z coordinate.
+   */
+  public static isColinear(
+    points: Point3d[], distanceTol: number = Geometry.smallMetricDistance, xyOnly: boolean = false,
+  ): boolean {
+    if (points.length < 3)
+      return true;
+    return undefined !== CurveOps.isColinear(points, { maxDeviation: distanceTol, xyColinear: xyOnly });
   }
 }
