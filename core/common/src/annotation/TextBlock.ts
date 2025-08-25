@@ -289,48 +289,17 @@ export namespace Run { // eslint-disable-line @typescript-eslint/no-redeclare
 }
 
 
-/** [[TextBlockComponent]]s contained within a [[Paragraph]].
- * @beta
- */
-export type Container = Paragraph | List;
+// /** [[TextBlockComponent]]s contained within a [[Paragraph]].
+//  * @beta
+//  */
+// export type (Paragraph | List) = Paragraph | List;
 
-/** The JSON representation of a [[Run]].
- * Use the `type` field to discriminate between the different kinds of runs.
- * @beta
- */
-export type ContainerProps = ParagraphProps | ListProps;
+// /** The JSON representation of a [[Run]].
+//  * Use the `type` field to discriminate between the different kinds of runs.
+//  * @beta
+//  */
+// export type (ParagraphProps | ListProps) = ParagraphProps | ListProps;
 
-
-/** A container for [[Run]] elements.
- * @beta
- */
-export namespace Container { // eslint-disable-line @typescript-eslint/no-redeclare
-  /** Create a run from its JSON representation.
-   * @see [[TextRun.create]], [[FractionRun.create]], and [[LineBreakRun.create]] to create a run directly.
-   */
-  export function fromJSON(props: ContainerProps): Container {
-    switch (props.type) {
-      case ContainerComponentType.List: return List.create(props);
-      case ContainerComponentType.Paragraph: return Paragraph.create(props);
-    }
-  }
-
-  function isKindOf(type: RunComponentType | ContainerComponentType): type is ContainerComponentType {
-    return (
-      type === ContainerComponentType.List ||
-      type === ContainerComponentType.Paragraph
-    );
-  }
-
-  export function isContainer(component: TextBlockComponent): component is Container {
-    return isKindOf(component.type);
-  }
-
-  export function isContainerProps(component: TextBlockComponentProps): component is ContainerProps {
-    if (!component.type) return false;
-    return isKindOf(component.type);
-  }
-}
 
 /** Describes whether the characters of a [[TextRun]] should be displayed normally, in subscript, or in superscript.
  * [[TextStyleSettings.superScriptScale]], [[TextStyleSettings.subScriptScale]], [[TextStyleSettings.superScriptOffsetFactor]], and [[TextStyleSettings.subScriptOffsetFactor]]
@@ -772,21 +741,23 @@ export class FieldRun extends TextBlockComponent {
  */
 export interface ParagraphProps extends ContainerComponentProps {
   type: ContainerComponentType.Paragraph; // Discriminator field for the type of [[TextBlockComponent]].
-  children?: (ContainerProps | RunProps)[]; // The runs within the paragraph
+  children?: ((ParagraphProps | ListProps) | RunProps)[]; // The runs within the paragraph
 }
 
 /** A collection of [[Run]]s within a [[TextBlock]]. Each paragraph within a text block is laid out on a separate line.
  * @beta
  */
-export class Paragraph extends ContainerComponent<Container | Run> {
+export class Paragraph extends ContainerComponent<(Paragraph | List) | Run> {
   public readonly type = ContainerComponentType.Paragraph;
 
   protected constructor(props?: Omit<ParagraphProps, "type">) {
     super(props);
 
     props?.children?.forEach((run) => {
-      const child = Container.isContainerProps(run)
-        ? Container.fromJSON(run)
+      const child = run.type === ContainerComponentType.List
+        ? List.create(run)
+        : run.type === ContainerComponentType.Paragraph
+          ? Paragraph.create(run)
         : Run.isRunProps(run)
           ? Run.fromJSON(run)
           : undefined;
@@ -905,6 +876,7 @@ export interface TextBlockMargins {
 export interface TextBlockProps extends ContainerComponentProps {
   /** The ID of an [AnnotationTextStyle]($backend) stored in the iModel from which the base [[TextStyleSettings]] applied to the [[TextBlock]] originates. */
   styleId: Id64String;
+  children?: (ParagraphProps | ListProps)[];
   /** The width of the document in meters. Lines that would exceed this width are instead wrapped around to the next line if possible.
    * A value less than or equal to zero indicates no wrapping is to be applied.
    * Default: 0
@@ -922,7 +894,7 @@ export interface TextBlockProps extends ContainerComponentProps {
  * @see [[TextAnnotation]] to position a text block as an annotation in 2d or 3d space.
  * @beta
  */
-export class TextBlock extends ContainerComponent<ContainerComponent> {
+export class TextBlock extends ContainerComponent<(Paragraph | List)> {
   public readonly type = ContainerComponentType.TextBlock;
 
   /** The ID of the [AnnotationTextStyle]($backend) that provides the base formatting for the contents of this TextBlock.
@@ -954,7 +926,10 @@ export class TextBlock extends ContainerComponent<ContainerComponent> {
       bottom: props.margins?.bottom ?? 0,
     };
 
-    props.children?.forEach((x) => { if (Container.isContainerProps(x)) this.appendContainer(x) });
+    props.children?.forEach((child) => {
+      if (child.type === ContainerComponentType.Paragraph || child.type === ContainerComponentType.List)
+        this.appendContainer(child)
+    });
   }
 
   public override toJSON(): TextBlockProps {
@@ -997,7 +972,7 @@ export class TextBlock extends ContainerComponent<ContainerComponent> {
    * By default, the paragraph will be created with no [[styleOverrides]], so that it inherits the style of this block.
    * @param seedFromLast If true and [[paragraphs]] is not empty, the new paragraph will inherit the style overrides of the last [[Paragraph]] in this block.
    */
-  public appendContainer(props?: ContainerProps, seedFromLast: boolean = false): Paragraph | List {
+  public appendContainer(props?: (ParagraphProps | ListProps), seedFromLast: boolean = false): Paragraph | List {
     let styleOverrides: TextStyleSettingsProps = {};
 
     if (seedFromLast && this.children.length > 0) {

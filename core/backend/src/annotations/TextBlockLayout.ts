@@ -136,7 +136,7 @@ export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2
   const findFontId = args.findFontId ?? ((name, type) => iModel.fonts.findId({ name, type }) ?? 0);
   const computeTextRange = args.computeTextRange ?? ((x) => iModel.computeRangesForText(x));
 
-  if (source.type !== "text" || runLayoutResult.characterCount === 0) {
+  if (!(source instanceof TextRun) || runLayoutResult.characterCount === 0) {
     return [];
   }
 
@@ -147,7 +147,7 @@ export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2
 
   graphemeCharIndexes.forEach((_, index) => {
     const nextGraphemeCharIndex = graphemeCharIndexes[index + 1] ?? runLayoutResult.characterCount;
-    graphemeRanges.push(layoutContext.computeRangeForTextRun(style, source as TextRun, runLayoutResult.characterOffset, nextGraphemeCharIndex).layout);
+    graphemeRanges.push(layoutContext.computeRangeForTextRun(style, source, runLayoutResult.characterOffset, nextGraphemeCharIndex).layout);
   });
   return graphemeRanges;
 }
@@ -547,9 +547,9 @@ export class RunLayout {
     });
   }
 
-  public toResult(component: TextBlockComponent): RunLayoutResult {
+  public toResult(): RunLayoutResult {
     const result: RunLayoutResult = {
-      sourceRunIndex: (component as ContainerComponent).children?.indexOf(this.source),
+      sourceRunIndex: this.source.index,
       fontId: this.fontId,
       characterOffset: this.charOffset,
       characterCount: this.numChars,
@@ -665,10 +665,10 @@ export class LineLayout {
     }
   }
 
-  public toResult(textBlock: TextBlock): LineLayoutResult {
+  public toResult(): LineLayoutResult {
     return {
-      sourceParagraphIndex: textBlock.children?.indexOf(this.source as ContainerComponent),
-      runs: this.runs.map((x) => x.toResult(this.source)),
+      sourceParagraphIndex: this.source.index,
+      runs: this.runs.map((x) => x.toResult()),
       range: this.range.toJSON(),
       justificationRange: this.justificationRange.toJSON(),
       offsetFromDocument: this.offsetFromDocument,
@@ -709,7 +709,7 @@ export class TextBlockLayout {
 
   public toResult(): TextBlockLayoutResult {
     return {
-      lines: this.lines.map((x) => x.toResult(this.source)),
+      lines: this.lines.map((x) => x.toResult()),
       range: this.range.toJSON(),
     };
   }
