@@ -230,10 +230,11 @@ When bug fixes or critical changes need to be applied to release branches (e.g.,
 
 **Best Practices:**
 
+- **Master First Approach**: Changes should always go into `master` first, then be backported to release branches if required for future releases. Avoid backporting from release branches to `master` whenever possible to maintain clean commit history and reduce conflicts
 - **PR Naming Convention**: Always wrap the target branch name in square brackets in your PR title
   - Example: `[release/5.1.x] Fix critical bug in geometry calculations`
 - **Use @Mergifyio**: For backporting PRs from `master` to release branches, we recommend using @Mergifyio to automate the process
-  - Comment `@Mergifyio backport release/5.1.x` on the original PR to create an automatic backport
+  - Comment `@Mergifyio backport release/X.X.x` on the original PR to create an automatic backport. Use the release branch you want to target
   - Note: @Mergifyio automatically cherry-picks commits, but may encounter merge conflicts. If conflicts occur, you must resolve them manually and then remove the 'conflicts' tag from your PR to proceed
 - **Cherry-pick Carefully**: When manually backporting, ensure all dependencies and related changes are included
 - **Minimal Changes**: Keep backports focused and avoid unnecessary refactoring or feature additions
