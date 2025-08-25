@@ -120,7 +120,7 @@ export interface WorkspaceDbQueryResourcesArgs {
   */
 export interface WorkspaceDbManifest {
   /** The name of the [[WorkspaceDb]] to be shown in user interfaces. Organizations should attempt to make this name informative enough
-   * so that uses may refer to this name in conversations. It should also be unique enough that there's no confusion when it appears in
+   * so that users may refer to this name in conversations. It should also be unique enough that there's no confusion when it appears in
    * lists of WorkspaceDbs.
    * @note it is possible and valid to change the workspaceName between new version of a WorkspaceDb (e.g. incorporating a date).
    */
