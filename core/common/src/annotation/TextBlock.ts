@@ -77,7 +77,6 @@ export interface TextBlockStringifyOptions {
  */
 export abstract class TextBlockComponent {
   private _styleOverrides: TextStyleSettingsProps;
-  private _parent?: TextBlockComponent;
   private _index: number = 0;
 
   public readonly abstract type: RunComponentType | ContainerComponentType;
