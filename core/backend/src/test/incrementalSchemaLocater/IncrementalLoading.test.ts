@@ -99,9 +99,7 @@ describe("Incremental Schema Loading", function () {
       for (const checkStub of testSchemaConfiguration.checkStubs) {
         const item = await schema.lookupItem(checkStub.item);
         expect(item).to.be.not.undefined;
-        const props = item!.schemaItemType === SchemaItemType.KindOfQuantity
-          ? SchemaItem.prototype.toJSON.call(item)
-          : item!.toJSON();
+        const props = item!.toJSON();
         for (const [propertyName, propertyValue] of Object.entries(checkStub.properties)) {
           expect(props).to.have.property(propertyName).deep.equalInAnyOrder(propertyValue);
         }

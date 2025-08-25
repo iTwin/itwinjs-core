@@ -37,7 +37,7 @@ export interface SchemaLocaterOptions {
  */
 export abstract class IncrementalSchemaLocater implements ISchemaLocater {
   private readonly _options: SchemaLocaterOptions;
-  private readonly _schemaInfoCache: SchemaInfoCache;
+  protected readonly _schemaInfoCache: SchemaInfoCache;
 
   /**
    * Initializes a new instance of the IncrementalSchemaLocater class.
