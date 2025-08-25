@@ -189,7 +189,7 @@ export abstract class ContainerComponent<T extends TextBlockComponent = TextBloc
   }
 
   public get last(): T | undefined {
-    return this._children?.[this._children.length - 1];
+    return this._children[this._children.length - 1];
   }
 
   /**
@@ -211,7 +211,7 @@ export abstract class ContainerComponent<T extends TextBlockComponent = TextBloc
   * Returns true if this component has no children.
   */
   public get isEmpty(): boolean {
-    return this._children?.length === 0;
+    return this._children.length === 0;
   };
 
 
@@ -229,8 +229,8 @@ export abstract class ContainerComponent<T extends TextBlockComponent = TextBloc
     if (!(other instanceof ContainerComponent)) return false;
 
     return super.equals(other)
-      && this.children?.length === other.children?.length
-      && this.children?.every((child, index) => child.equals(other.children?.[index])) === true;
+      && this.children.length === other.children.length
+      && this.children.every((child, index) => child.equals(other.children[index])) === true;
   }
 
   public appendChild(child: T): void {
@@ -817,15 +817,11 @@ export class Paragraph extends ContainerComponent<Container | Run> {
 
   /** Compute a string representation of this paragraph by concatenating the string representations of all of its [[runs]]. */
   public override stringify(options?: TextBlockStringifyOptions): string {
-    return this.children?.map((x) => x.stringify(options)).join("") ?? "";
+    return this.children.map((x) => x.stringify(options)).join("") ?? "";
   }
 
   public override equals(other: TextBlockComponent): boolean {
-    if (!(other instanceof Paragraph) || !super.equals(other)) {
-      return false;
-    }
-
-    return this.children?.every((child, index) => other.children && child.equals(other.children[index])) ?? false;
+    return (other instanceof Paragraph) && super.equals(other);
   }
 }
 
@@ -874,11 +870,7 @@ export class List extends ContainerComponent<Paragraph> {
   }
 
   public override equals(other: TextBlockComponent): boolean {
-    if (!(other instanceof List) || !super.equals(other)) {
-      return false;
-    }
-
-    return this.children.every((child, index) => other.children && child.equals(other.children[index])) ?? false;
+    return (other instanceof List) && super.equals(other);
   }
 
   public appendToListItem(run: Run, itemIndex?: number): void {
@@ -974,7 +966,7 @@ export class TextBlock extends ContainerComponent<ContainerComponent> {
       width: this.width,
       justification: this.justification,
       margins: this.margins,
-      children: this.children?.map((x) => x.toJSON()),
+      children: this.children.map((x) => x.toJSON()),
     };
   }
 
@@ -999,7 +991,7 @@ export class TextBlock extends ContainerComponent<ContainerComponent> {
 
   /** Compute a string representation of the document's contents by concatenating the string representations of each of its [[paragraphs]], separated by [[TextBlockStringifyOptions.paragraphBreak]]. */
   public stringify(options?: TextBlockStringifyOptions): string {
-    return this.children?.map((x) => x.stringify(options)).join(options?.paragraphBreak ?? " ") || "";
+    return this.children.map((x) => x.stringify(options)).join(options?.paragraphBreak ?? " ") || "";
   }
 
   /** Add and return a new paragraph.
