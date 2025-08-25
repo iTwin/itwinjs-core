@@ -184,22 +184,6 @@ export abstract class ContainerComponent<T extends TextBlockComponent = TextBloc
   private readonly _children: T[] = [];
   public abstract override readonly type: ContainerComponentType;
 
-  /** @internal */
-  // protected constructor(props?: ContainerComponentProps) {
-  //   super(props);
-
-  //   // const children = props?.children.map(child => {
-  //   //   if (Container.isContainerProps(child)) return Container.fromJSON(child);
-  //   //   if (Run.isRunProps(child)) return Run.fromJSON(child);
-
-  //   //   return;
-  //   // })
-
-  //   // children?.forEach((child) => {
-  //   //   if (child) this.appendChild(child);
-  //   // });
-  // }
-
   public get children(): T[] {
     return this._children;
   }
