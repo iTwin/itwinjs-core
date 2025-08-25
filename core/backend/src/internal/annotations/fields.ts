@@ -269,6 +269,7 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
 // of fields whose display strings changed as a result.
 export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext): number {
   let numUpdated = 0;
+  // TODO: iterate through nested objects
   if (textBlock.children) {
     for (const paragraph of textBlock.children) {
       if (paragraph.children) {

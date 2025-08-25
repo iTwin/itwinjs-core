@@ -109,6 +109,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     const sourceToRelationship = new Map<Id64String, Id64String | null>();
     const blocks = annotationElement.getTextBlocks();
     for (const block of blocks) {
+      // TODO: iterate through nested objects
       if (block.textBlock.children)
         for (const paragraph of block.textBlock.children) {
           if (paragraph.children)

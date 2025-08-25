@@ -957,6 +957,7 @@ export class TextBlockLayout {
   }
 }
 
+// TODO: do the following methods live here, in TextStyle, or in some utility method?
 function getMarkerText(style: ListMarker, num: number): string {
   switch (style) {
     case OrderedListMarker.A:
