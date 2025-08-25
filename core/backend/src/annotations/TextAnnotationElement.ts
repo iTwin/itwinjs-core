@@ -27,7 +27,7 @@ function getElementGeometryBuilderParams(iModel: IModelDb, modelId: Id64String, 
   const annotationProps = parseTextAnnotationData(stringifiedAnnotationProps);
   const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
   const textStyleResolver = new TextStyleResolver({textBlock, iModel, modelId});
-  const layout = layoutTextBlock({ iModel, source: textBlock, textStyleResolver });
+  const layout = layoutTextBlock({ iModel, textBlock, textStyleResolver });
   const builder = new ElementGeometry.Builder();
   appendTextAnnotationGeometry({ layout, textStyleResolver, annotationProps: annotationProps ?? {}, builder, categoryId })
 

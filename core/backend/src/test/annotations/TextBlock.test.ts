@@ -1167,7 +1167,7 @@ describe("layoutTextBlock", () => {
         const textBlock = TextBlock.create({ styleId: "" });
         textBlock.appendRun(TextRun.create({ styleOverrides: { fontName } }));
         const textStyleResolver = new TextStyleResolver({textBlock, iModel});
-        const layout = layoutTextBlock({ source: textBlock, iModel, textStyleResolver });
+        const layout = layoutTextBlock({ textBlock, iModel, textStyleResolver });
         const run = layout.lines[0].runs[0];
         expect(run).not.to.be.undefined;
         expect(run.fontId).to.equal(expectedFontId);
@@ -1200,7 +1200,7 @@ describe("layoutTextBlock", () => {
       }));
 
       const textStyleResolver = new TextStyleResolver({textBlock, iModel});
-      const range = layoutTextBlock({ source: textBlock, iModel, textStyleResolver }).range;
+      const range = layoutTextBlock({ textBlock, iModel, textStyleResolver }).range;
       return { x: range.high.x - range.low.x, y: range.high.y - range.low.y };
     }
 

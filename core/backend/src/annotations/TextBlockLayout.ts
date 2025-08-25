@@ -64,9 +64,7 @@ function createFindTextStyleImpl(iModel: IModelDb): FindTextStyle {
  * Arguments supplied to [[computeLayoutTextBlockResult]].
  * @beta
  */
-export interface LayoutTextBlockArgs {
-  /** The text block whose extents are to be computed. */
-  source: TextBlockComponent;
+export interface LayoutStyleArgs {
   /** The iModel from which to obtain fonts and [[AnnotationTextStyle]]s when laying out glyphs. */
   iModel: IModelDb;
   /** The text style resolver used to resolve effective text styles during layout. */
@@ -75,6 +73,15 @@ export interface LayoutTextBlockArgs {
   computeTextRange?: ComputeRangesForTextLayout;
   /** @internal chiefly for tests, by default uses IModelDb.fontMap. */
   findFontId?: FindFontId;
+}
+
+/**
+ * Arguments supplied to [[computeLayoutTextBlockResult]].
+ * @beta
+ */
+export interface LayoutTextBlockArgs extends LayoutStyleArgs {
+  /** The text block whose extents are to be computed. */
+  textBlock: TextBlock;
 }
 
 /**
@@ -90,7 +97,7 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
   const findFontId = args.findFontId ?? ((name, type) => args.iModel.fonts.findId({ name, type }) ?? 0);
   const computeTextRange = args.computeTextRange ?? ((x) => args.iModel.computeRangesForText(x));
 
-  const textBlock: TextBlock = args.textStyleResolver.resolveAndMendStyle(args.source as TextBlock);
+  const textBlock: TextBlock = args.textStyleResolver.resolveAndMendStyle(args.textBlock);
   return new TextBlockLayout(textBlock, new LayoutContext(args.textStyleResolver, computeTextRange, findFontId));
 }
 
@@ -109,7 +116,8 @@ export function computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlo
  * Arguments supplied to [[computeGraphemeOffsets]].
  * @beta
  */
-export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
+export interface ComputeGraphemeOffsetsArgs extends LayoutStyleArgs {
+  source: TextBlockComponent;
   /** The run layout result for which grapheme ranges will be computed. */
   runLayoutResult: RunLayoutResult;
   /** An array of starting character indexes for each grapheme. Each entry represents the index of the first character in a grapheme. */
