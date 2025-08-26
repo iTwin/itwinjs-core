@@ -234,8 +234,6 @@ describe("layoutTextBlock", () => {
       const resultLine: LineLayoutResult = result.lines[i];
       const originalLine: LineLayout = textBlockLayout.lines[i];
 
-      // Source paragraph index matches
-      // expect(resultLine.sourceParagraphIndex).to.equal(textBlock.children?.indexOf(originalLine.source));
       // Ranges match
       expect(resultLine.range).to.deep.equal(originalLine.range.toJSON());
       expect(resultLine.justificationRange).to.deep.equal(originalLine.justificationRange.toJSON());
@@ -246,8 +244,6 @@ describe("layoutTextBlock", () => {
         const resultRun: RunLayoutResult = resultLine.runs[j];
         const originalRun: RunLayout = originalLine.runs[j];
 
-        // Source run index matches
-        // expect(resultRun.sourceRunIndex).to.equal(textBlock.children ? [resultLine.sourceParagraphIndex].children.indexOf(originalRun.source));
         // FontId matches
         expect(resultRun.fontId).to.equal(originalRun.fontId);
         // Offsets match
@@ -1034,7 +1030,6 @@ describe("layoutTextBlock", () => {
         textStyleResolver,
         findFontId: () => 0,
         computeTextRange: computeTextRangeAsStringLength,
-        // paragraphIndex: result.lines[0].sourceParagraphIndex,
         runLayoutResult: result.lines[0].runs[0],
         graphemeCharIndexes: [0],
       };
@@ -1056,7 +1051,6 @@ describe("layoutTextBlock", () => {
         textStyleResolver,
         findFontId: () => 0,
         computeTextRange: computeTextRangeAsStringLength,
-        // paragraphIndex: result.lines[0].sourceParagraphIndex,
         runLayoutResult: result.lines[0].runs[0],
         graphemeCharIndexes: [0], // Supply a grapheme index even though there is no text
       };
@@ -1078,7 +1072,6 @@ describe("layoutTextBlock", () => {
         textStyleResolver,
         findFontId: () => 0,
         computeTextRange: computeTextRangeAsStringLength,
-        // paragraphIndex: result.lines[0].sourceParagraphIndex,
         runLayoutResult: result.lines[0].runs[0],
         graphemeCharIndexes: [0, 1, 2, 3, 4],
       };
@@ -1103,7 +1096,6 @@ describe("layoutTextBlock", () => {
         textStyleResolver,
         findFontId: () => 0,
         computeTextRange: computeTextRangeAsStringLength,
-        // paragraphIndex: result.lines[0].sourceParagraphIndex,
         runLayoutResult: result.lines[0].runs[0],
         graphemeCharIndexes: [0, 1, 3, 7],
       };
@@ -1129,7 +1121,6 @@ describe("layoutTextBlock", () => {
         textStyleResolver,
         findFontId: () => 0,
         computeTextRange: computeTextRangeAsStringLength,
-        // paragraphIndex: result.lines[0].sourceParagraphIndex,
         runLayoutResult: result.lines[0].runs[0],
         graphemeCharIndexes: [0],
       };

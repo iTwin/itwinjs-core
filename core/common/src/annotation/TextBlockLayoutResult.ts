@@ -16,8 +16,6 @@ import { TextStyleSettingsProps } from "./TextStyle";
  * @beta
  */
 export interface RunLayoutResult {
-  /** TODO: remove, not intelligible in nested blocks? The index of the Run this RunLayoutResult was generated from in [[Paragraph.runs]]. */
-  sourceRunIndex?: number;
   /** The ID of the font for the run. */
   fontId: FontId;
   /**
@@ -46,8 +44,6 @@ export interface RunLayoutResult {
  * @beta
  */
 export interface LineLayoutResult {
-  /** TODO: remove, not intelligible in nested blocks? The index of the paragraph this LineLayoutResult was generated from in [[TextBlock.paragraphs]]. */
-  sourceParagraphIndex?: number;
   /** The runs contained in the line. */
   runs: RunLayoutResult[];
   /** The range containing the contents of the line. */

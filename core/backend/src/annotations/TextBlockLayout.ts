@@ -549,7 +549,6 @@ export class RunLayout {
 
   public toResult(): RunLayoutResult {
     const result: RunLayoutResult = {
-      sourceRunIndex: this.source.index,
       fontId: this.fontId,
       characterOffset: this.charOffset,
       characterCount: this.numChars,
@@ -667,7 +666,6 @@ export class LineLayout {
 
   public toResult(): LineLayoutResult {
     return {
-      sourceParagraphIndex: this.source.index,
       runs: this.runs.map((x) => x.toResult()),
       range: this.range.toJSON(),
       justificationRange: this.justificationRange.toJSON(),
