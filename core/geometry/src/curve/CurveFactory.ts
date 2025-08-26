@@ -38,7 +38,7 @@ import { UnboundedEllipse2d } from "./internalContexts/geometry2d/UnboundedEllip
 import { ImplicitCurve2d } from "./internalContexts/geometry2d/implicitCurve2d";
 import { UnboundedCircle2dByCenterAndRadius } from "./internalContexts/geometry2d/UnboundedCircle2d";
 import { UnboundedHyperbola2d } from "./internalContexts/geometry2d/UnboundedHyperbola2d";
-import { UnboundedLine2dByPointAndNormal } from "./internalContexts/geometry2d/UnboundedLine2d.";
+import { UnboundedLine2dByPointAndNormal } from "./internalContexts/geometry2d/UnboundedLine2d";
 import { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
 import { Loop } from "./Loop";

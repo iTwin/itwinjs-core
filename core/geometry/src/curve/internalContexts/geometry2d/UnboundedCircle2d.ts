@@ -11,7 +11,7 @@ import { Point2d, Vector2d } from "../../../geometry3d/Point2dVector2d";
 import { XAndY } from "../../../geometry3d/XYZProps";
 import { Degree2PowerPolynomial } from "../../../numerics/Polynomials";
 import { ImplicitCurve2d } from "./implicitCurve2d";
-import { UnboundedLine2dByPointAndNormal } from "./UnboundedLine2d.";
+import { UnboundedLine2dByPointAndNormal } from "./UnboundedLine2d";
 
 /**
  * Internal class for a complete circle in the xy plane, with center and radius stored.
@@ -78,7 +78,7 @@ export class UnboundedCircle2dByCenterAndRadius extends ImplicitCurve2d {
    * * For a non-zero radius circle, there are two perpendiculars. The one on the side of the space point is emitted first.
    * * For a zero radius circle, the vector from center to the space point is the only perpendicular.
    * @param spacePoint the space point.
-   * @param handler
+   * @handler the handler to receive all the points on the curve and radians where perpendicular happens.
    */
   public override emitPerpendiculars(
     spacePoint: Point2d, handler: (curvePoint: Point2d, radians: number | undefined) => any,

@@ -13,14 +13,14 @@ import { Geometry } from "../../../Geometry";
 import { Degree2PowerPolynomial } from "../../../numerics/Polynomials";
 import { ImplicitCurve2d, ImplicitGeometryMarkup } from "./implicitCurve2d";
 import { Point2dImplicitCurve2d, UnboundedCircle2dByCenterAndRadius } from "./UnboundedCircle2d";
-import { UnboundedLine2dByPointAndNormal } from "./UnboundedLine2d.";
+import { UnboundedLine2dByPointAndNormal } from "./UnboundedLine2d";
 import { XAndY } from "../../../geometry3d/XYZProps";
 import { UnboundedHyperbola2d } from "./UnboundedHyperbola2d";
 import { UnboundedEllipse2d } from "./UnboundedEllipse2d";
 import { UnboundedParabola2d } from "./UnboundedParabola";
 
 /**
- * Static methods for special case circle constructions.
+ * Static methods for special case circle and line tangent constructions.
  */
 export class TangentConstruction {
   /**

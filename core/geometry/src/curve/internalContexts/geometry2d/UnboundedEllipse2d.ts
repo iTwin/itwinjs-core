@@ -107,8 +107,8 @@ export class UnboundedEllipse2d extends ImplicitCurve2d {
    * Find points that are on the ellipse at foot of perpendiculars to the space point.
    * Pass each point to the handler.
    * * 0 to 4 handler calls are possible.
-   * @param spacePoint point to project to the ellipse
-   * @param handler function to receive curve points.
+   * @param spacePoint the space point.
+   * @handler the handler to receive all the points on the curve and radians where perpendicular happens.
    */
   public override emitPerpendiculars(spacePoint: Point2d,
     handler: (curvePoint: Point2d, radians: number | undefined) => void): void {

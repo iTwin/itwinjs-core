@@ -134,8 +134,8 @@ export class UnboundedHyperbola2d extends ImplicitCurve2d {
   /**
    * Solve for parametric radians at hyperbola points which are perpendicular projections of spacePoint.
    * * Up to 4 solutions are possible.
-   * @param spacePoint
-   * @param handler
+   * @param spacePoint the space point.
+   * @handler the handler to receive all the points on the curve and radians where perpendicular happens.
    */
   public override emitPerpendiculars(
     spacePoint: Point2d, handler: (curvePoint: Point2d, radians: number | undefined) => any,

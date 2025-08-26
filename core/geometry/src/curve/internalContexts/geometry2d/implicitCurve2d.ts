@@ -38,6 +38,7 @@ export abstract class ImplicitCurve2d {
    * Find all perpendiculars from space point to the curve.
    * Pass each in turn to the handler.
    * @param spacePoint the space point.
+   * @handler the handler to receive all the points on the curve and radians where perpendicular happens.
    */
   public abstract emitPerpendiculars(
     spacePoint: Point2d, handler: (curvePoint: Point2d, radians: number | undefined) => any,

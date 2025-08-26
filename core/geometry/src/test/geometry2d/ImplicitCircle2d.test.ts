@@ -12,7 +12,7 @@ import { GeometryQuery } from "../../curve/GeometryQuery";
 import { ImplicitCurve2d, ImplicitGeometryMarkup } from "../../curve/internalContexts/geometry2d/implicitCurve2d";
 import { TangentConstruction } from "../../curve/internalContexts/geometry2d/TangentConstruction";
 import { UnboundedCircle2dByCenterAndRadius } from "../../curve/internalContexts/geometry2d/UnboundedCircle2d";
-import { UnboundedLine2dByPointAndNormal } from "../../curve/internalContexts/geometry2d/UnboundedLine2d.";
+import { UnboundedLine2dByPointAndNormal } from "../../curve/internalContexts/geometry2d/UnboundedLine2d";
 import { PointToCurveTangentHandler } from "../../curve/internalContexts/PointToCurveTangentHandler";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Geometry } from "../../Geometry";
@@ -613,7 +613,7 @@ describe("ImplicitCircle2d", () => {
       }
       x0 += xStep;
     }
-    
+
     GeometryCoreTestIO.saveGeometry(allGeometry, "geometry2d", "circleTangentCCR");
     expect(ck.getNumErrors()).toBe(0);
   });
