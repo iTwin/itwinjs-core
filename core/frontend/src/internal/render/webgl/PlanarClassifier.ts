@@ -556,7 +556,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     const prevProjMatrix = target.uniforms.frustum.projectionMatrix;
     target.uniforms.frustum.changeProjectionMatrix(PlanarClassifier._postProjectionMatrix.multiplyMatrixMatrix(prevProjMatrix));
-    target.uniforms.branch.changeRenderPlan(vf, target.plan.is3d, target.plan.hline);
+    target.uniforms.branch.changeRenderPlan(vf, target.plan.is3d, target.plan.hline, target.plan.contours);
 
     const addCmds = (oldCmds: DrawCommands, newCmds: DrawCommands) => {
       if (undefined === newCmds)
