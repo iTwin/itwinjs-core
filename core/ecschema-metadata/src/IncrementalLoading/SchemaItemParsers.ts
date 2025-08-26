@@ -22,14 +22,14 @@ type MutableSchemaItemProps = {
  */
 export class SchemaItemParser {
   protected _schema: string;
-  protected _schemaInfos?: Iterable<SchemaInfo>;
+  protected _schemaInfos: Iterable<SchemaInfo>;
 
   /**
    * Initializes a new SchemaItemParser.
    * @param schemaName The name the Schema containing the SchemaItems.
    * @param context The SchemaContext containing the Schema.
    */
-  public constructor(schemaName: string, schemaInfos?: Iterable<SchemaInfo>) {
+  public constructor(schemaName: string, schemaInfos: Iterable<SchemaInfo>) {
     this._schema = schemaName;
     this._schemaInfos = schemaInfos;
   }
@@ -74,11 +74,9 @@ export class SchemaItemParser {
   }
 
   private resolveNameFromAlias(alias: string): string | undefined {
-    if (this._schemaInfos !== undefined) {
-      for (const schemaInfo of this._schemaInfos) {
-        if (schemaInfo.alias === alias)
-          return schemaInfo.schemaKey.name;
-      }
+    for (const schemaInfo of this._schemaInfos) {
+      if (schemaInfo.alias === alias)
+        return schemaInfo.schemaKey.name;
     }
     return undefined;
   }

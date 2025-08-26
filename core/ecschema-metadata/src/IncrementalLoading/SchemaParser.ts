@@ -34,7 +34,7 @@ export class SchemaParser {
    * @param context The SchemaContext that will contain the schema and it's references.
    * @returns The corrected SchemaProps JSON.
    */
-  public static async parse(schema: SchemaProps, schemaInfos?: Iterable<SchemaInfo>): Promise<SchemaProps> {
+  public static async parse(schema: SchemaProps, schemaInfos: Iterable<SchemaInfo>): Promise<SchemaProps> {
     const props = schema as MutableSchemaProps;
     props.$schema = ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       props.customAttributes = props.customAttributes ? props.customAttributes.map((attr: any) => { return parseCustomAttribute(attr); }) : undefined;
@@ -58,7 +58,7 @@ export class SchemaParser {
    * @param context The SchemaContext containing the Schema.
    * @returns The corrected SchemaItemProps.
    */
-  public static async parseSchemaItems(schemaItems: readonly SchemaItemProps[], schemaName: string, schemaInfos?: Iterable<SchemaInfo>): Promise<SchemaItemProps[] | undefined> {
+  public static async parseSchemaItems(schemaItems: readonly SchemaItemProps[], schemaName: string, schemaInfos: Iterable<SchemaInfo>): Promise<SchemaItemProps[] | undefined> {
     const items: SchemaItemProps[] = [];
     for (const item of schemaItems) {
       const props = await this.parseItem(item, schemaName, schemaInfos);
@@ -68,7 +68,7 @@ export class SchemaParser {
     return items.length > 0 ? items : undefined;
   }
 
-  private static async parseItems(schemaItemProps: readonly SchemaItemProps[], schemaName: string, schemaInfos?: Iterable<SchemaInfo>): Promise<{ [name: string]: SchemaItemProps } | undefined> {
+  private static async parseItems(schemaItemProps: readonly SchemaItemProps[], schemaName: string, schemaInfos: Iterable<SchemaInfo>): Promise<{ [name: string]: SchemaItemProps } | undefined> {
     const items: { [name: string]: SchemaItemProps } = {};
     for (const itemProps of schemaItemProps) {
       const props = await this.parseItem(itemProps, schemaName, schemaInfos);
@@ -79,7 +79,7 @@ export class SchemaParser {
     return Object.keys(items).length > 0 ? items : undefined;
   }
 
-  public static async parseItem(props: SchemaItemProps, schemaName: string, schemaInfos?: Iterable<SchemaInfo>): Promise<SchemaItemProps> {
+  public static async parseItem(props: SchemaItemProps, schemaName: string, schemaInfos: Iterable<SchemaInfo>): Promise<SchemaItemProps> {
     const schemaItem = "string" === typeof (props) ? JSON.parse(props) : props;
     const type = parseSchemaItemType(schemaItem.schemaItemType);
     switch (type) {

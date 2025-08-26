@@ -204,24 +204,7 @@ export class KindOfQuantity extends SchemaItem {
   }
 
   public override async fromJSON(kindOfQuantityProps: KindOfQuantityProps): Promise<void> {
-    await super.fromJSON(kindOfQuantityProps);
-    this._relativeError = kindOfQuantityProps.relativeError;
-
-    const persistenceUnit = await this.schema.lookupItem(kindOfQuantityProps.persistenceUnit);
-    if (undefined === persistenceUnit)
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Unit ${kindOfQuantityProps.persistenceUnit} does not exist.`);
-
-    if (!Unit.isUnit(persistenceUnit) && !InvertedUnit.isInvertedUnit(persistenceUnit))
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The item ${kindOfQuantityProps.persistenceUnit} is not a Unit or InvertedUnit.`);
-
-    if (Unit.isUnit(persistenceUnit))
-      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
-    else
-      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
-
-
-    if (undefined !== kindOfQuantityProps.presentationUnits)
-      await this.processPresentationUnits(kindOfQuantityProps.presentationUnits);
+    this.fromJSONSync(kindOfQuantityProps);
   }
 
   /**

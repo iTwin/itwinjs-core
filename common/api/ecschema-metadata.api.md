@@ -846,6 +846,8 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
     loadSchema(schemaInfo: SchemaInfo, schemaContext: SchemaContext): Promise<Schema>;
     abstract loadSchemaInfos(context: SchemaContext): Promise<Iterable<SchemaInfo>>;
     protected get options(): SchemaLocaterOptions;
+    // (undocumented)
+    protected readonly _schemaInfoCache: SchemaInfoCache;
     protected abstract supportPartialSchemaLoading(context: SchemaContext): Promise<boolean>;
 }
 
@@ -1519,7 +1521,7 @@ export enum PropertyType {
 }
 
 // @internal (undocumented)
-export function propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty";
+export function propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "PrimitiveArrayProperty" | "StructArrayProperty" | "NavigationProperty";
 
 // @internal (undocumented)
 export namespace PropertyTypeUtils {

@@ -175,7 +175,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
       return undefined;
 
     const schema = JSON.parse(schemaRow.schema) as SchemaProps;
-    const schemaInfos = await this._schemaInfoCache.getSchemasByContext(context);
+    const schemaInfos = await this._schemaInfoCache.getSchemasByContext(context) ?? [];
     return SchemaParser.parse(schema, schemaInfos);
   }
 
@@ -422,7 +422,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
 
     await addSchema(schemaKey);
 
-    const schemaInfos = await this._schemaInfoCache.getSchemasByContext(context);
+    const schemaInfos = await this._schemaInfoCache.getSchemasByContext(context) ?? [];
     await parseSchemaItemStubs(schemaKey.name, JSON.parse(schemaRow.items, reviver), addItems, schemaInfos);
 
     return schemaPartials;
@@ -440,7 +440,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
       return "string" === typeof itemRow.item ? JSON.parse(itemRow.item) : itemRow.item;
     });
 
-    const schemaInfos = await this._schemaInfoCache.getSchemasByContext(context);
+    const schemaInfos = await this._schemaInfoCache.getSchemasByContext(context) ?? [];
     return await SchemaParser.parseSchemaItems(items, schemaName, schemaInfos) as Array<TRow> ?? []
   }
 
@@ -456,7 +456,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
       (schema as any).items = (schema.items as any).map((itemRow: SchemaItemRow) => { return itemRow.item; });
     }
 
-    const schemaInfos = await this._schemaInfoCache.getSchemasByContext(context);
+    const schemaInfos = await this._schemaInfoCache.getSchemasByContext(context) ?? [];
     return SchemaParser.parse(schema, schemaInfos);
   }
 
@@ -496,7 +496,7 @@ function parseSchemaReference(referenceName: string): WithSchemaKey {
   return { schemaKey: SchemaKey.parseString(referenceName) };
 }
 
-async function parseSchemaItemStubs(schemaName: string, itemRows: Array<SchemaItemStubRow>, addItemsHandler: AddSchemaItemHandler, schemaInfos?: Iterable<SchemaInfo>) {
+async function parseSchemaItemStubs(schemaName: string, itemRows: Array<SchemaItemStubRow>, addItemsHandler: AddSchemaItemHandler, schemaInfos: Iterable<SchemaInfo>) {
   if (!itemRows || itemRows.length === 0) {
     return;
   }

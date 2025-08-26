@@ -56,7 +56,7 @@ export class IncrementalSchemaReader extends SchemaReadHelper {
     // The fromJSON method of the actual class instances may complain about missing properties in the props, so
     // calling the fromJSON on the ECClass ensures only the bare minimum is loaded.
     if (this._incremental && schemaItemObject && schemaItem) {
-        schemaItem.fromJSONSync(schemaItemObject);
+      await schemaItem.fromJSON(schemaItemObject);
     }
 
     this.schemaItemLoading(schemaItem);
