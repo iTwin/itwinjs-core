@@ -491,11 +491,10 @@ export class Geometry {
   }
   /**
    * Constructor for a lexical comparison with tolerance (x then y then z).
-   * @param distanceTol tolerance for comparing points. Default value is [[Geometry.smallMetricDistance]].
-   * @param xyOnly whether to ignore z in comparisons. Default value is `false`.
+   * @param distanceTol tolerance for comparing coordinates. Default value is [[Geometry.smallMetricDistance]].
    * @returns comparison function useful for ordered map callbacks.
    */
-  public static compareXYZ(distanceTol: number = Geometry.smallMetricDistance, xyOnly: boolean = false): OrderedComparator<XYAndZ> {
+  public static compareXYZ(distanceTol: number = Geometry.smallMetricDistance): OrderedComparator<XYAndZ> {
     return (p0: XYAndZ, p1: XYAndZ): -1 | 0 | 1 => {
       if (XYAndZ.almostEqual(p0, p1, distanceTol))
         return 0;
@@ -511,7 +510,7 @@ export class Geometry {
         if (p0.y > p1.y)
           return 1;
       }
-      if (!xyOnly && !Geometry.isAlmostEqualNumber(p0.z, p1.z, distanceTol)) {
+      if (!Geometry.isAlmostEqualNumber(p0.z, p1.z, distanceTol)) {
         if (p0.z < p1.z)
           return -1;
         if (p0.z > p1.z)
@@ -520,9 +519,37 @@ export class Geometry {
       return 0;
     };
   }
-  // callback for maps
+  /**
+   * Constructor for a lexical comparison with tolerance (x then y).
+   * @param distanceTol tolerance for comparing coordinates. Default value is [[Geometry.smallMetricDistance]].
+   * @returns comparison function useful for ordered map callbacks.
+   */
+  public static compareXY(distanceTol: number = Geometry.smallMetricDistance): OrderedComparator<XAndY> {
+    return (p0: XAndY, p1: XAndY): -1 | 0 | 1 => {
+      if (XAndY.almostEqual(p0, p1, distanceTol))
+        return 0;
+      if (!Geometry.isAlmostEqualNumber(p0.x, p1.x, distanceTol)) {
+        if (p0.x < p1.x)
+          return -1;
+        if (p0.x > p1.x)
+          return 1;
+      }
+      if (!Geometry.isAlmostEqualNumber(p0.y, p1.y, distanceTol)) {
+        if (p0.y < p1.y)
+          return -1;
+        if (p0.y > p1.y)
+          return 1;
+      }
+      return 0;
+    };
+  }
+  /** Callback for maps with xyz keys. */
   public static clonePoint3d(): CloneFunction<Point3d> {
     return (p: Point3d) => p.clone();
+  };
+  /** Callback for maps with xy keys. */
+  public static clonePoint2d(): CloneFunction<Point2d> {
+    return (p: Point2d) => p.clone();
   };
   /**
    * Test if `value` is at most [[smallFraction]] in absolute value.
@@ -866,6 +893,13 @@ export class Geometry {
       ux * vy - uy * vx,
       result,
     );
+  }
+  /**
+   * 2D cross product of vectors with the vectors presented with common origin point, and two target points.
+   * @see crossProductXYXY for interpretations of the result.
+   */
+  public static crossProductToPointsXY(origin: XAndY, target0: XAndY, target1: XAndY): number {
+   return this.crossProductXYXY(target0.x - origin.x, target0.y - origin.y, target1.x - origin.x, target1.y - origin.y);
   }
   /** Magnitude of 3D cross product of vectors with the vectors presented as numbers. */
   public static crossProductMagnitude(
