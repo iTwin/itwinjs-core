@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECSqlValueType, FieldPrimitiveValue, FieldRun, formatFieldValue, RelationshipProps, TextBlock } from "@itwin/core-common";
+import { ECSqlValueType, FieldPrimitiveValue, FieldPropertyType, FieldRun, formatFieldValue, RelationshipProps, TextBlock } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
-import { AnyClass, EntityClass, StructArrayProperty } from "@itwin/ecschema-metadata";
+import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, StructArrayProperty } from "@itwin/ecschema-metadata";
 
 interface FieldStructValue { [key: string]: any }
 
@@ -207,6 +207,10 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldPrimitiv
     return undefined;
   }
 
+  if (field.propertyType !== computeFieldPropertyType(ecProp)){
+    return undefined
+  }
+
   return curValue.primitive;
 }
 
@@ -278,5 +282,74 @@ export function updateElementFields(props: RelationshipProps, iModel: IModelDb, 
   } catch (err) {
     Logger.logException(BackendLoggerCategory.IModelDb, err);
   }
+}
+
+export function computeFieldPropertyType(property: Property): FieldPropertyType | undefined {
+
+  if (property.isStruct())
+    return undefined;
+
+  if (property.isArray()) {
+    switch (property.propertyType) {
+      case PropertyType.Boolean_Array:
+        return "boolean";
+      case PropertyType.DateTime_Array:
+        return "datetime";
+      case PropertyType.Double_Array:
+      case PropertyType.Long_Array:
+      case PropertyType.Integer_Array:
+        return "quantity";
+      case PropertyType.String_Array:
+        return "string";
+      case PropertyType.Point2d_Array:
+      case PropertyType.Point3d_Array:
+        return "coordinate";
+      case PropertyType.Integer_Enumeration_Array:
+        return "int-enum";
+      case PropertyType.String_Enumeration_Array:
+        return "string-enum"
+      default:
+        undefined
+    }
+  }
+
+  if (property.isEnumeration()){
+    if (property.propertyType === PropertyType.Integer_Enumeration)
+      return "int-enum";
+    if  (property.propertyType === PropertyType.String_Enumeration)
+      return "string-enum";
+    else
+      return undefined;
+  }
+
+  if (property.isPrimitive()) {
+    switch (property.primitiveType) {
+      case PrimitiveType.Boolean:
+        return "boolean";
+      case PrimitiveType.String:
+        if (property.extendedTypeName === "DateTime")
+          return "datetime";
+        return "string";
+      case PrimitiveType.DateTime:
+        return "datetime";
+      case PrimitiveType.Double:
+      case PrimitiveType.Integer:
+      case PrimitiveType.Long:
+        if (property.extendedTypeName === "Point2d" || property.extendedTypeName === "Point3d")
+          return "coordinate";
+        return "quantity";
+      case PrimitiveType.Point2d:
+      case PrimitiveType.Point3d:
+        return "coordinate";
+      case PrimitiveType.Binary:
+        if (property.extendedTypeName === "Guid")
+          return "string";
+        else
+          return undefined;
+      default:
+        return undefined;
+    }
+  }
+  return undefined;
 }
 
