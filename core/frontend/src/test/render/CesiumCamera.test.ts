@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import { Code, EcefLocation, IModel } from "@itwin/core-common";
-import { createCesiumCamera } from "../../internal/render/CesiumView";
+import { createCesiumCamera } from "../../internal/render/CesiumCamera";
 
 // Saved view data and ecef location are required to create the Cesium camera
 // These values come from saved views created in DTA for Metrostation.bim
