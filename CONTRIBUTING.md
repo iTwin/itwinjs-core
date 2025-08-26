@@ -21,6 +21,7 @@ The goal of this document is to provide a high-level overview of how you can get
     - [Branch Naming Policy](#branch-naming-policy)
     - [Contributor License Agreement (CLA)](#contributor-license-agreement-cla)
     - [Pull Requests](#pull-requests)
+      - [Backporting to Release Branches](#backporting-to-release-branches)
     - [Types of Contributions](#types-of-contributions)
   - [Frequently Asked Questions](#frequently-asked-questions)
     - [Rush commands take too long, is there a way to speed up my contribution workflow?](#rush-commands-take-too-long-is-there-a-way-to-speed-up-my-contribution-workflow)
@@ -105,6 +106,7 @@ Add a `.only` to a `describe()` or `it()` test function. Afterwards, run the cus
   });
 
 ```
+
 </details>
 
 <details>
@@ -137,9 +139,11 @@ export default defineConfig({
   ...
 })
 ```
+
 </details>
 
 To distinguish whether a package is using vitest or mocha, look at the `package.json` `devDependencies`.
+
 ## Asking Questions
 
 Have a question?
@@ -205,7 +209,7 @@ There are just a few guidelines you need to follow.
 
 ### Branch Naming Policy
 
-We recommend putting your github username, followed by a succinct branch name that reflects the changes you want to make. Eg. ` git checkout -b "<gh_username>/cleanup-docs"`
+We recommend putting your github username, followed by a succinct branch name that reflects the changes you want to make. Eg. `git checkout -b "<gh_username>/cleanup-docs"`
 
 Branch names should be all lowercase to avoid potential issues with non-case-sensitive systems and words should be separated by a dash. Eg: `my-itwin-changes`
 
@@ -219,6 +223,29 @@ You can read more about [Contributor License Agreements](https://en.wikipedia.or
 All submissions go through a review process.
 We use GitHub pull requests for this purpose.
 Consult [GitHub Help](https://help.github.com/articles/about-pull-requests/) for more information on using pull requests.
+
+#### Backporting to Release Branches
+
+When bug fixes or critical changes need to be applied to release branches (e.g., `release/5.1.x`), follow these best practices for backporting:
+
+**Best Practices:**
+
+- **Master First Approach**: Changes should always go into `master` first, then be backported to release branches if required for future releases. Avoid backporting from release branches to `master` whenever possible to maintain clean commit history and reduce conflicts
+- **PR Naming Convention**: Always wrap the target branch name in square brackets in your PR title
+  - Example: `[release/5.1.x] Fix critical bug in geometry calculations`
+- **Use @Mergifyio**: For backporting PRs from `master` to release branches, we recommend using `@Mergifyio` to automate the process
+  - Comment `@Mergifyio backport release/X.X.x` on the original PR to create an automatic backport. Use the release branch you want to target
+  - Note: `@Mergifyio` automatically cherry-picks commits, but may encounter merge conflicts. If conflicts occur, you must resolve them manually and then remove the `conflicts` label from your PR to proceed
+- **Cherry-pick Carefully**: When manually backporting, ensure all dependencies and related changes are included
+- **Minimal Changes**: Keep backports focused and avoid unnecessary refactoring or feature additions
+
+**Example Workflow:**
+
+1. Identify the commits that need to be backported from `master`
+2. Create a new branch from the target release branch (e.g., `release/5.1.x`)
+3. Cherry-pick or manually apply the necessary changes
+4. Create a PR with the branch name in square brackets in the title
+5. Ensure all tests pass and the change is compatible with the release version
 
 ### Types of Contributions
 
@@ -243,16 +270,19 @@ If your source code change only impacts the subdirectory you are working on, you
 Eg. I add a new method within `core/frontend`, also adding a relevant unit test in that folder's `src/test`. I can navigate to the root of that subdirectory, and run `rushx build`, followed by `rushx test` or `rushx cover`.
 
 ### Do I have to rebuild all packages in the repo, even those I didn't work on?
+
 No. For incremental builds, the `rush build` command can be used to only build packages that have changes versus `rush rebuild` which always rebuilds all packages.
 
 > It is a good idea to `rush install` after each `git pull` as dependencies may have changed.
->
+
 ### A subdirectory can not find a node_modules file or directory
+
 If you get an error similar to the following:
 
-```
+```bash
 [Error: ENOENT: no such file or directory, stat '/.../itwinjs-core/test-apps/display-test-app/node_modules/@bentley/react-scripts']
 ```
+
 This means that the repo has stopped making use of an npm package that was used in the past:
 
 To fix this build error, you should completely remove the node_modules directory and reinstall your dependencies. `rush update --purge` is a one-line solution for the above.
