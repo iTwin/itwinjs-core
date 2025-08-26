@@ -82,7 +82,7 @@ describe("TextBlockComponent", () => {
     it("clears children's overrides by default when clearing paragraph overrides", () => {
       block.styleId = "0x99";
 
-      block.children?.[0].clearStyleOverrides();
+      block.children[0].clearStyleOverrides();
       const overrides = getOverrides(block);
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
       expect(overrides.paragraph).to.deep.equal({});
@@ -102,7 +102,7 @@ describe("TextBlockComponent", () => {
     it("does not clear children's overrides when clearing paragraph overrides if preserveChildrenStyles is true", () => {
       block.styleId = "0x99";
 
-      block.children?.[0].clearStyleOverrides({ preserveChildrenOverrides: true });
+      block.children[0].clearStyleOverrides({ preserveChildrenOverrides: true });
       const overrides = getOverrides(block);
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
       expect(overrides.paragraph).to.deep.equal({});
@@ -181,7 +181,7 @@ describe("TextBlockComponent", () => {
     };
 
     const tb = TextBlock.create(props);
-    expect(tb.children?.length).to.equal(3);
+    expect(tb.children.length).to.equal(3);
 
     const p0 = tb.children[0] as Paragraph;
     const p1 = tb.children[1] as Paragraph;
@@ -231,7 +231,7 @@ describe("TextBlock", () => {
       const p2 = tb.appendContainer();
       expect(p2.styleOverrides).to.deep.equal({});
 
-      expect(tb.children?.length).to.equal(2);
+      expect(tb.children.length).to.equal(2);
     });
 
     it("uses the overrides of the last paragraph if one exists and seedFromLast is true", () => {
@@ -253,15 +253,15 @@ describe("TextBlock", () => {
   describe("appendRun", () => {
     it("appends a paragraph IFF the text block is empty", () => {
       const tb = TextBlock.create({ styleId: "0x42" });
-      expect(tb.children?.length).to.equal(0);
+      expect(tb.children.length).to.equal(0);
 
       tb.appendRun(TextRun.create());
-      expect(tb.children?.length).to.equal(1);
-      expect(tb.children[0].children?.length).to.equal(1);
+      expect(tb.children.length).to.equal(1);
+      expect(tb.children[0].children.length).to.equal(1);
 
       tb.appendRun(TextRun.create());
-      expect(tb.children?.length).to.equal(1);
-      expect(tb.children[0].children?.length).to.equal(2);
+      expect(tb.children.length).to.equal(1);
+      expect(tb.children[0].children.length).to.equal(2);
     });
   });
 });
