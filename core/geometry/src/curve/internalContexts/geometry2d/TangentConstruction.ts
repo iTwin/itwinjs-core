@@ -643,7 +643,7 @@ export class TangentConstruction {
    * @param lineA first line
    * @param lineB second line
    * @param radius radius of tangent circles
-   * @returns array of circles with annotated tangencies
+   * @returns array of circles with annotated tangencies. returns undefined if lines are parallel.
    */
   public static circlesTangentLLR(
     lineA: UnboundedLine2dByPointAndNormal,

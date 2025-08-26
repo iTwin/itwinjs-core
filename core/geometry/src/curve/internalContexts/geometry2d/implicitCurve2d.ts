@@ -17,7 +17,7 @@ import { SmallSystem } from "../../../numerics/SmallSystem";
  */
 export abstract class ImplicitCurve2d {
   /**
-   * Return the implicit function value at xy.
+   * Return the implicit function value at xy, i.e, f(x,y).
    * @param xy point for evaluation.
    */
   public abstract functionValue(xy: XAndY): number;

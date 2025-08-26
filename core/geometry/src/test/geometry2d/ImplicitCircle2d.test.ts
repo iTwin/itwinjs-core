@@ -6,24 +6,23 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { Geometry } from "../../Geometry";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Checker } from "../Checker";
-import { UnboundedCircle2dByCenterAndRadius } from "../../curve/internalContexts/geometry2d/UnboundedCircle2d";
-import { TangentConstruction } from "../../curve/internalContexts/geometry2d/TangentConstruction";
+import { CurveFactory, CurvePrimitive } from "../../core-geometry";
 import { Arc3d } from "../../curve/Arc3d";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Range3d } from "../../geometry3d/Range";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { LineSegment3d } from "../../curve/LineSegment3d";
-import { CurveFactory, CurvePrimitive, LineString3d } from "../../core-geometry";
-import { UnboundedLine2dByPointAndNormal } from "../../curve/internalContexts/geometry2d/UnboundedLine2d.";
+import { GeometryQuery } from "../../curve/GeometryQuery";
 import { ImplicitCurve2d, ImplicitGeometryMarkup } from "../../curve/internalContexts/geometry2d/implicitCurve2d";
+import { TangentConstruction } from "../../curve/internalContexts/geometry2d/TangentConstruction";
+import { UnboundedCircle2dByCenterAndRadius } from "../../curve/internalContexts/geometry2d/UnboundedCircle2d";
+import { UnboundedLine2dByPointAndNormal } from "../../curve/internalContexts/geometry2d/UnboundedLine2d.";
 import { PointToCurveTangentHandler } from "../../curve/internalContexts/PointToCurveTangentHandler";
-
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { Geometry } from "../../Geometry";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Range3d } from "../../geometry3d/Range";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 describe("ImplicitCircle2d", () => {
   it("CircleTangentLLL", () => {
@@ -247,15 +246,16 @@ describe("ImplicitCircle2d", () => {
   it("CircleTangentCCC", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
+
+    // A,B,C
     const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(0, 0, 1);
     const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius(5, 0, 2);
     const circleC = UnboundedCircle2dByCenterAndRadius.createXYRadius(0, 5, 3);
-
+    // D,E,F
     const circleD = UnboundedCircle2dByCenterAndRadius.createXYRadius(1, 5, 1);
     const circleE = UnboundedCircle2dByCenterAndRadius.createXYRadius(-4, 2, 2);
     const circleF = UnboundedCircle2dByCenterAndRadius.createXYRadius(3, -2, 3);
-
-    // 3 points  !!!
+    // 3 points
     const circleG0 = UnboundedCircle2dByCenterAndRadius.createXYRadius(1, 5, 0);
     const circleG1 = UnboundedCircle2dByCenterAndRadius.createXYRadius(8, 5, 0);
     const circleG2 = UnboundedCircle2dByCenterAndRadius.createXYRadius(4, -2, 0);
@@ -265,8 +265,6 @@ describe("ImplicitCircle2d", () => {
       [circleG0, circleG1, circleG2],
       [circleG1, circleA, circleB]
     ];
-
-
     let x0 = 0;
     let y0 = 0;
     const yStep = 100;
@@ -275,23 +273,12 @@ describe("ImplicitCircle2d", () => {
       const circle0 = inputCircles[0];
       const circle1 = inputCircles[1];
       const circle2 = inputCircles[2];
-      for (const circle of inputCircles) {
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry,
-          CurveFactory.createCurvePrimitiveFromImplicitCurve(circle), x0, y0);
-      }
-      y0 += yStep;
       const circles = TangentConstruction.circlesTangentCCC(circle0, circle1, circle2);
       ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0, y0, circles, inputCircles, yStep);
-      /*
-            if (circles){
-              for(const c of circles){
-                GeometryCoreTestIO.captureCloneGeometry (allGeometry,
-                  CurveFactory.createCurvePrimitiveFromImplicitCurve (c.curve), x0, y0);
-              }
-            }
-      */
+      y0 += yStep;
       x0 += 200;
     }
+
     GeometryCoreTestIO.saveGeometry(allGeometry, "geometry2d", "circleTangentCCC");
     expect(ck.getNumErrors()).toBe(0);
   });
@@ -299,47 +286,46 @@ describe("ImplicitCircle2d", () => {
   it("LineTangentPointCircle", () => {
     const _ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
+
     const circleA = Arc3d.createXYZXYZXYZ(0, 0, 0, 1, 0, 0, 0, 2, 0);
-    // const arcB = Arc3d.createXYZXYZXYZ (1,2,0, 3,1,0, 0.5,4,0);
-    const _arcC = Arc3d.createXYZXYZXYZ(1, 2, 0, 3, 1, 2, 0.5, 4, 2);
-    const vectorToEye = Vector3d.create(1, -1, 1);
+    const circleB = Arc3d.createXYZXYZXYZ(1, 2, 0, 3, 1, 0, 0.5, 4, 0);
+    const circleC = Arc3d.createXYZXYZXYZ(1, 2, 0, 3, 1, 2, 0.5, 4, 2);
+    const vectorToEye = Vector3d.create(1, -1, 1); // right-isometric view
     const isoViewToWorld = Matrix3d.createRigidViewAxesZTowardsEye(vectorToEye.x, vectorToEye.y, vectorToEye.z);
     const worldToIsoView = isoViewToWorld.transpose();
     const zP = 5.0;
     const pointP1 = Point3d.create(4, 0, zP);
     const pointP2 = Point3d.create(6, 4, zP);
     const pointP3 = Point3d.create(8, 0, zP);
-    const pointQ1 = pointP1.clone(); pointQ1.z = 0;
-    const pointQ2 = pointP2.clone(); pointQ2.z = 0;
-    const pointQ3 = pointP3.clone(); pointQ3.z = 0;
+    const pointQ1 = pointP1.clone();
+    pointQ1.z = 0;
+    const pointQ2 = pointP2.clone();
+    pointQ2.z = 0;
+    const pointQ3 = pointP3.clone();
+    pointQ3.z = 0;
     let x0 = 0;
     let y0 = 0;
     const a = 4.0;
-
     const handler = (spacePoint: Point3d, g: CurvePrimitive, f: number) => {
       GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 4, spacePoint, 0.25, x0, y0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [spacePoint, g.fractionToPoint(f)], x0, y0);
     };
-
-    const collector1 = new PointToCurveTangentHandler(Point3d.create(), handler, true, worldToIsoView);
     const collector0 = new PointToCurveTangentHandler(Point3d.create(), handler, true, undefined);
-    for (const collector of [collector1, collector0]) {
-      for (const g of [circleA]) {
-        y0 = 0;
+    const collector1 = new PointToCurveTangentHandler(Point3d.create(), handler, true, worldToIsoView);
+    for (const collector of [collector0, collector1]) {
+      y0 = 0;
+      for (const g of [circleA, circleB, circleC]) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, g, x0, y0);
-        GeometryCoreTestIO.captureRangeEdges(allGeometry,
-          Range3d.createXYZXYZ(-a, -a, -a, a, a, a), x0, y0);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [
-          g.center.plus(g.matrixRef.multiplyXYZ(0, 0, 4)),
-          g.center, g.fractionToPoint(0), g.fractionToPoint(0.25), g.center], x0, y0);
+        GeometryCoreTestIO.captureRangeEdges(allGeometry, Range3d.createXYZXYZ(-a, -a, -a, a, a, a), x0, y0);
         for (const point of [pointP1, pointQ1, pointP2, pointQ2, pointP3, pointQ3]) {
           collector0.spacePoint = point.clone();
           collector1.spacePoint = point.clone();
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [point, point.plus(vectorToEye)], x0, y0);
+          // GeometryCoreTestIO.captureCloneGeometry(allGeometry, [point, point.plus(vectorToEye)], x0, y0);
           g.dispatchToGeometryHandler(collector);
         }
-        x0 += 20;
+        y0 += 20;
       }
+      x0 += 20;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "geometry2d", "LineTangentPointCircle");
   });
@@ -347,25 +333,23 @@ describe("ImplicitCircle2d", () => {
   it("LineTangentPointArc", () => {
     const _ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
-    const sweep1 = AngleSweep.createStartEndDegrees(-40, 90);
-    const sweep2 = AngleSweep.createStartEndDegrees(125, 210);
-    const sweep3 = AngleSweep.createStartEndDegrees(215, 400);
-    const sweep4 = AngleSweep.createStartEndDegrees(185, 20);
 
+    const sweep0 = AngleSweep.createStartEndDegrees();
+    const sweep1 = AngleSweep.createStartEndDegrees(215, 400);
+    const sweep2 = AngleSweep.createStartEndDegrees(185, 20);
+    const sweep3 = AngleSweep.createStartEndDegrees(125, 210);
+    const sweep4 = AngleSweep.createStartEndDegrees(-40, 90);
     const arc0 = Arc3d.createXYZXYZXYZ(1, 2, 0, 3, 1, 0, 0.5, 4, 0);
     const arcs = [];
-    for (const sweep of [sweep1, sweep2, sweep3, sweep4]) {
+    for (const sweep of [sweep0, sweep1, sweep2, sweep3, sweep4]) {
       const arc = arc0.clone();
       arc.sweep = sweep;
       arcs.push(arc);
     }
     let x0 = 0;
-
     const handler = (spacePoint: Point3d, g: CurvePrimitive, f: number) => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [spacePoint, g.fractionToPoint(f)], x0, y0);
     };
-
-
     const y0 = 0;
     const arc1 = Arc3d.createXYZXYZXYZ(0, 0, 0, 15, 0, 0, 0, 8, 0);
     const collector = new PointToCurveTangentHandler(Point3d.create(0, 0, 0), handler, false, undefined);
@@ -378,29 +362,30 @@ describe("ImplicitCircle2d", () => {
       }
       x0 += 40;
     }
+
     GeometryCoreTestIO.saveGeometry(allGeometry, "geometry2d", "LineTangentPointArc");
   });
 
   it("CircleTangentCCCColinear", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
+
+    // A,B,C
     const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(-1, 2, 1);
     const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius(5, 2, 2);
     const circleC = UnboundedCircle2dByCenterAndRadius.createXYRadius(9, 2, 1);
-
+    // D,E,F
     const circleD = UnboundedCircle2dByCenterAndRadius.createXYRadius(1, 5, 1);
     const circleE = UnboundedCircle2dByCenterAndRadius.createXYRadius(-1, 1, 2);
     const circleF = UnboundedCircle2dByCenterAndRadius.createXYRadius(5, 13, 1.5);
-
+    // G,H,I
     const circleG = UnboundedCircle2dByCenterAndRadius.createXYRadius(1, 5, 1);
     const circleH = UnboundedCircle2dByCenterAndRadius.createXYRadius(-1, 1, 2);
     const circleI = UnboundedCircle2dByCenterAndRadius.createXYRadius(5, 13, 5.5);
-
-    // two points and a circle between ..
+    // two points and a circle between
     const circleK = UnboundedCircle2dByCenterAndRadius.createXYRadius(1, 5, 0);
     const circleL = UnboundedCircle2dByCenterAndRadius.createXYRadius(-1, 1, 2);
     const circleM = UnboundedCircle2dByCenterAndRadius.createXYRadius(5, 13, 0);
-
     const allCircleTriples = [
       [circleA, circleB, circleC],
       [circleD, circleE, circleF],
@@ -409,8 +394,6 @@ describe("ImplicitCircle2d", () => {
       [circleM, circleK, circleL],
       [circleL, circleM, circleK]
     ];
-
-
     let x0 = 0;
     let y0 = 0;
     for (const inputCircles of allCircleTriples) {
@@ -420,16 +403,9 @@ describe("ImplicitCircle2d", () => {
       const circle2 = inputCircles[2];
       const circles = TangentConstruction.circlesTangentCCC(circle0, circle1, circle2);
       ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0, y0, circles, inputCircles, 100);
-      /*
-          if (circles){
-            for(const c of circles){
-              GeometryCoreTestIO.captureCloneGeometry (allGeometry,
-                CurveFactory.createCurvePrimitiveFromImplicitCurve (c.curve), x0, y0);
-            }
-          }
-      */
       x0 += 200;
     }
+
     GeometryCoreTestIO.saveGeometry(allGeometry, "geometry2d", "circleTangentCCCColinear");
     expect(ck.getNumErrors()).toBe(0);
   });
@@ -437,81 +413,81 @@ describe("ImplicitCircle2d", () => {
   it("CircleCircleIntersection", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
+
     const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(0, 0, 1);
     const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius(2, 0, 2);
     const circleC = UnboundedCircle2dByCenterAndRadius.createXYRadius(4, 5, 4);
     const circleD = UnboundedCircle2dByCenterAndRadius.createXYRadius(5, 7, 3);
-    const circleZ = UnboundedCircle2dByCenterAndRadius.createXYRadius(14, 5, 4);
-
-    const pointsAB = circleA.intersectCircle(circleB);
-    ck.testExactNumber(pointsAB.length, 2);
-
-    const pointsCZ = circleC.intersectCircle(circleZ);
-    ck.testExactNumber(pointsCZ.length, 0);
-
-    const x0 = 0;
-    const y0 = 0;
-    for (const circles of [
-      [circleA, circleB], [circleB, circleC],
-      [circleC, circleD]]) {
+    const circleE = UnboundedCircle2dByCenterAndRadius.createXYRadius(14, 5, 4);
+    for (const circles of [[circleA, circleB], [circleB, circleC], [circleC, circleD]]) {
       const points = circles[0].intersectCircle(circles[1]);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(circles[0]), x0, y0);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(circles[1]), x0, y0);
-      if (points.length === 2)
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry,
-          [Point3d.createFrom(points[0]), Point3d.createFrom(points[1])],
-          x0, y0);
-      else
-        for (const p of points)
-          GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 4, p, 0.08, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(circles[0]));
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(circles[1]));
+      for (const p of points)
+        GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 3, p, 0.1);
+      ck.testExactNumber(points.length, 2);
     }
+    const pointsAE = circleA.intersectCircle(circleE);
+    ck.testExactNumber(pointsAE.length, 0);
+    const pointsBE = circleB.intersectCircle(circleE);
+    ck.testExactNumber(pointsBE.length, 0);
+    const pointsCE = circleC.intersectCircle(circleE);
+    ck.testExactNumber(pointsCE.length, 0);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "geometry2d", "CircleCircleIntersection");
     expect(ck.getNumErrors()).toBe(0);
   });
 
 
-  it("LineLIneIntersection", () => {
+  it("LineLineIntersection", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
+
     const lineX = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(0, 0, 1, 0);
     const lineY = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(0, 0, 0, 1);
     const lineQ = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(1, 1, 1, -2);
     const lineR = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(-1, 1, 2, 2);
     lineQ.normal.normalize(lineQ.normal);
     lineR.normal.normalize(lineR.normal);
-
-
     let x0 = 0;
-    const y0 = 0;
-
-    for (const line of [lineX, lineY, lineQ, lineR]) {
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry,
-        CurveFactory.createCurvePrimitiveFromImplicitCurve(line), x0, y0);
-    }
-
+    const sizeHint = 10;
     for (const linePair of [[lineX, lineY], [lineY, lineQ], [lineQ, lineX], [lineQ, lineR], [lineR, lineX]]) {
+      GeometryCoreTestIO.captureCloneGeometry(
+        allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(linePair[0], sizeHint), x0,
+      );
+      GeometryCoreTestIO.captureCloneGeometry(
+        allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(linePair[1], sizeHint), x0,
+      );
       const point = linePair[0].intersectUnboundedLine2dByPointAndNormalWithOffsets(linePair[1]);
-      if (ck.testType(point, Point2d, "expect intersectioni")) {
-        GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 3, point, 0.08, x0, y0);
+      if (ck.testType(point, Point2d, "expect intersection")) {
+        GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 3, point, 0.1, x0);
+        ck.testCoordinate(0, linePair[0].functionValue(point), "on linePair[0]", point);
+        ck.testCoordinate(0, linePair[1].functionValue(point), "on linePair[1]", point);
       }
+      x0 += 20;
     }
-    x0 += 10;
-    for (const line of [lineQ, lineR]) {
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry,
-        CurveFactory.createCurvePrimitiveFromImplicitCurve(line), x0, y0);
-    }
-
+    x0 = 0;
+    const y0 = 20;
+    GeometryCoreTestIO.captureCloneGeometry(
+      allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(lineQ, sizeHint), x0, y0,
+    );
+    GeometryCoreTestIO.captureCloneGeometry(
+      allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(lineR, sizeHint), x0, y0,
+    );
     for (const offsetA of [1, 2, 3, 0, -1, -2, -3]) {
       for (const offsetB of [1, 2, 3, 0, -1, -2, -3]) {
         const p = lineQ.intersectUnboundedLine2dByPointAndNormalWithOffsets(lineR, offsetA, offsetB);
-        if (ck.testType(p, Point2d, "expect intersectioni")) {
-          GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 3, p, 0.04, x0, y0);
+        if (ck.testType(p, Point2d, "expect intersection")) {
+          GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 3, p, 0.1, x0, y0);
+          // functionValue returns dot product of 2 vectors: the line normal and the vector from the line's point
+          // to the intersection. These 2 vectors are parallel so dot product would be the product of their lengths.
+          // length of line normal is 1 and length of second vector is equal to the offset.
           ck.testCoordinate(offsetA, lineQ.functionValue(p), "on offset lineQ", p);
           ck.testCoordinate(offsetB, lineR.functionValue(p), "on offset lineR", p);
         }
       }
     }
+
     GeometryCoreTestIO.saveGeometry(allGeometry, "geometry2d", "LineLineIntersection");
     expect(ck.getNumErrors()).toBe(0);
   });
@@ -519,6 +495,7 @@ describe("ImplicitCircle2d", () => {
   it("LineCircleIntersection", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
+
     const lineX = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(0, 0, 1, 0);
     const lineY = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(0, 0, 0, 1);
     const lineQ = UnboundedLine2dByPointAndNormal.createPointXYDirectionXY(1, 1, 1, -2);
@@ -526,25 +503,19 @@ describe("ImplicitCircle2d", () => {
     const circleU = UnboundedCircle2dByCenterAndRadius.createXYRadius(0, 0, 1.0);
     const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(2, 3, 2.5);
     const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius(2, 3, 3);
-
-
     let x0 = 0;
-    const y0 = 0;
-
+    const sizeHint = 10;
     for (const line of [lineX, lineY, lineQ, lineR]) {
       for (const circle of [circleU, circleA, circleB]) {
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry,
-          CurveFactory.createCurvePrimitiveFromImplicitCurve(line), x0, y0);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry,
-          CurveFactory.createCurvePrimitiveFromImplicitCurve(circle), x0, y0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(line, sizeHint), x0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(circle, sizeHint), x0);
         const points = circle.intersectLine(line);
         for (const p of points) {
           ck.testCoordinate(0, circle.functionValue(p), "on circle", p);
           ck.testCoordinate(0, line.functionValue(p), "on line", p);
         }
-        GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 3, points, 0.08, x0, y0);
-
-        x0 += 10;
+        GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 3, points, 0.1, x0);
+        x0 += 22;
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "geometry2d", "LineCircleIntersection");
@@ -554,29 +525,31 @@ describe("ImplicitCircle2d", () => {
   it("CircleTangentLLR", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
+
     const axisX = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(1, 0, 0, 1)!;
-    const axisX10 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(2, 10, 0, 1)!;
     const axisY = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(0, 1, 1, 0)!;
-    const line3 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(1, 0, -1, 4)!;
-    const line4 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(-3, 1, 3, 3)!;
-
-    const allLines = [axisX, axisY, axisX10, line3, line4];
-
+    const axisX10 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(2, 10, 0, 1)!;
+    const line1 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(1, 0, -1, 4)!;
+    const line2 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(-3, 1, 3, 3)!;
+    const allLines = [axisX, axisY, axisX10, line1, line2];
     let x0 = 0;
     let y0 = 0;
-    const xStep = 100;
-    const yStep = 100;
+    const xStep = 250;
+    const yStep = 250;
     for (let i = 0; i < allLines.length; i++) {
       y0 = 0;
       for (let j = i + 1; j < allLines.length; j++) {
         for (const radius of [1, 5]) {
           const circles = TangentConstruction.circlesTangentLLR(allLines[i], allLines[j], radius);
           ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0, y0, circles, [allLines[i], allLines[j]], 0);
+          if (circles !== undefined)
+            ck.testCoordinate(4, circles.length, "Expect 4 circles");
         }
         y0 += yStep;
       }
       x0 += xStep;
     }
+
     GeometryCoreTestIO.saveGeometry(allGeometry, "geometry2d", "circleTangentLLR");
     expect(ck.getNumErrors()).toBe(0);
   });
@@ -584,28 +557,26 @@ describe("ImplicitCircle2d", () => {
   it("CircleTangentCLR", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
-    const axisX = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(1, 0, 0, 1)!;
-    const axisX10 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(2, 10, 0, 1)!;
-    const axisY = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(0, 1, 1, 0)!;
-    const line3 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(1, 0, -1, 4)!;
-    const line4 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(-3, 1, 3, 3)!;
 
+    const axisX = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(1, 0, 0, 1)!;
+    const axisY = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(0, 1, 1, 0)!;
+    const axisX10 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(2, 10, 0, 1)!;
+    const line1 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(1, 0, -1, 4)!;
+    const line2 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(-3, 1, 3, 3)!;
     const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(0, 0, 1);
     const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius(2, 3, 1);
     const circleC = UnboundedCircle2dByCenterAndRadius.createXYRadius(2, -1, 0.2);
     const circleD = UnboundedCircle2dByCenterAndRadius.createXYRadius(2, -1, 4);
-
-    const allLines = [axisX, axisY, axisX10, line3, line4];
+    const allLines = [axisX, axisY, axisX10, line1, line2];
     const allCircles = [circleA, circleB, circleC, circleD];
-
     let x0 = 0;
     let y0 = 0;
-    const xStep = 100;
-    const yStep = 100;
+    const xStep = 250;
+    const yStep = 250;
     for (const circle of allCircles) {
       y0 = 0;
       for (const line of allLines) {
-        for (const radius of [1]) {
+        for (const radius of [1, 2]) {
           const circles = TangentConstruction.circlesTangentCLR(circle, line, radius);
           ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0, y0, circles, [circle, line], 0);
         }
@@ -613,6 +584,7 @@ describe("ImplicitCircle2d", () => {
       }
       x0 += xStep;
     }
+
     GeometryCoreTestIO.saveGeometry(allGeometry, "geometry2d", "circleTangentCLR");
     expect(ck.getNumErrors()).toBe(0);
   });
@@ -625,9 +597,7 @@ describe("ImplicitCircle2d", () => {
     const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius(2, 3, 1);
     const circleC = UnboundedCircle2dByCenterAndRadius.createXYRadius(2, -1, 0.2);
     const circleD = UnboundedCircle2dByCenterAndRadius.createXYRadius(2, -1, 4);
-
     const allCircles = [circleA, circleB, circleC, circleD];
-
     let x0 = 0;
     let y0 = 0;
     const xStep = 40;
@@ -643,6 +613,7 @@ describe("ImplicitCircle2d", () => {
       }
       x0 += xStep;
     }
+    
     GeometryCoreTestIO.saveGeometry(allGeometry, "geometry2d", "circleTangentCCR");
     expect(ck.getNumErrors()).toBe(0);
   });
@@ -656,7 +627,7 @@ export class ImplicitGeometryHelpers {
   }
   /**
    * Draw visuals of input geometry and circle markup.
-   * * If input is a point (circle with radius 0), draw a small square.
+   * * If input is a point (circle with radius 0), draw a small triangle.
    * @param ck checker4
    * @param allGeometry output capture array
    * @param x0 output x shift
@@ -694,7 +665,7 @@ export class ImplicitGeometryHelpers {
         if (inputGeometry) {
           for (const g1 of inputGeometry) {
             if (g1 instanceof UnboundedCircle2dByCenterAndRadius && g1.radius === 0)
-              GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 4, g1.center, 0.1, x0, y0);
+              GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 3, g1.center, 0.1, x0, y0);
             else
               GeometryCoreTestIO.captureCloneGeometry(
                 allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(g1), x0, y0,

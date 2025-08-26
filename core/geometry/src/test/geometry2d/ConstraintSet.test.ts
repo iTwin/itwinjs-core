@@ -5,18 +5,18 @@
 
 import { expect, it } from "vitest";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Checker } from "../Checker";
-import { UnboundedCircle2dByCenterAndRadius } from "../../curve/internalContexts/geometry2d/UnboundedCircle2d";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { UnboundedLine2dByPointAndNormal } from "../../curve/internalContexts/geometry2d/UnboundedLine2d.";
-import { ImplicitCurve2d } from "../../curve/internalContexts/geometry2d/implicitCurve2d";
 import { ConstraintSet, ConstructionConstraint } from "../../curve/internalContexts/geometry2d/ConstraintSet";
-import { ImplicitGeometryHelpers } from "./ImplicitCircle2d.test";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
+import { ImplicitCurve2d } from "../../curve/internalContexts/geometry2d/implicitCurve2d";
+import { UnboundedCircle2dByCenterAndRadius } from "../../curve/internalContexts/geometry2d/UnboundedCircle2d";
+import { UnboundedLine2dByPointAndNormal } from "../../curve/internalContexts/geometry2d/UnboundedLine2d.";
 import { UnboundedParabola2d } from "../../curve/internalContexts/geometry2d/UnboundedParabola";
-import { Geometry } from "../../Geometry";
 import { LineSegment3d } from "../../curve/LineSegment3d";
+import { Geometry } from "../../Geometry";
+import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { ImplicitGeometryHelpers } from "./ImplicitCircle2d.test";
 
 function transferCurve(source: ConstructionConstraint, dest: ImplicitCurve2d[]) {
 	if (source.curve)
