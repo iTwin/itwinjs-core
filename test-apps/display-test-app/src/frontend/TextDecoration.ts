@@ -121,7 +121,11 @@ class TextEditor implements Decorator {
 
   // public appendFieldRun(content: string): void {
   //   this.textBlock.appendRun(FieldRun.create({
-
+  //      propertyHost: this.propHost,
+  //      propertyPath: this.propPath,
+  //      propertyType: this.propType,
+  //      cachedContent: content,
+  //      formatOptions: this.formatOpts,
   //   }));
   // }
 

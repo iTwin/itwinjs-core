@@ -8,6 +8,7 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { Format, FormatDefinition, ResolvedFormatProps, UnitConversionProps, UnitConversionSpec, UnitProps } from "@itwin/core-quantity";
+import { KindOfQuantity } from "@itwin/ecschema-metadata";
 
 /** A chain of property accesses that resolves to a primitive value that forms the basis of the displayed content
  * of a [[FieldRun]].
@@ -72,6 +73,7 @@ export interface CoordinateFieldFormatOptions {
 
 export interface QuantityFieldFormatOptions {
   // ###TODO source+target units, FormatProps.
+  koqName?: string;
   sourceUnit?: UnitProps;
   targetUnit?: UnitProps;
   unitConversions?: UnitConversionSpec[];

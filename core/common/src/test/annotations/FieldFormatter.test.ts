@@ -7,7 +7,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { formatFieldValue } from "../../internal/annotations/FieldFormatter";
 import type { FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../core-common";
 import { Format, FormatterSpec, ResolvedFormatProps } from "@itwin/core-quantity";
-import { SchemaContext, SchemaFormatsProvider, SchemaUnitProvider } from "@itwin/ecschema-metadata";
+import { KindOfQuantity, SchemaContext, SchemaFormatsProvider, SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
 import * as path from "path";
 import * as fs from "fs";
@@ -326,12 +326,13 @@ describe("Field formatting", () => {
 
       if (!formatProps)
         throw new Error("formatProps is undefined");
-
       const format = await Format.createFromJSON("test format", unitsProvider, formatProps);
       const unitConversions = await FormatterSpec.getUnitConversions(format, unitsProvider, persistenceUnit);
       const resolvedProps = format.toFullyResolvedJSON();
 
+      const koq = await schemaContext.getSchemaItem("AecUnits.ANGLE", KindOfQuantity);
       const quantityOptions: QuantityFieldFormatOptions = {
+        koqName: koq?.fullName,
         formatProps: resolvedProps,
         unitConversions,
         sourceUnit: persistenceUnit
