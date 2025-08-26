@@ -205,9 +205,13 @@ function addPlanarClassifierCommon(builder: ProgramBuilder) {
   const vert = builder.vert;
   vert.addUniform("u_pClassProj", VariableType.Mat4, (prog) => {
     prog.addGraphicUniform("u_pClassProj", (uniform, params) => {
+<<<<<<< HEAD
       const source = params.target.currentPlanarClassifierOrDrape!;
+=======
+      const source = params.target.currentPlanarClassifierOrDrape;
+>>>>>>> 0b681ef61c (Fix expectDefined thematic display/classifier bugs (#8460))
       assert(undefined !== source || undefined !== params.target.activeVolumeClassifierTexture);
-      if (undefined !== params.target.currentPlanarClassifierOrDrape) {
+      if (undefined !== source) {
         source.projectionMatrix.multiplyMatrixMatrix(Matrix4d.createTransform(params.target.currentTransform, scratchModel), scratchModelProjection);
         scratchMatrix.initFromMatrix4d(scratchModelProjection);
       } else

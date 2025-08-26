@@ -421,7 +421,16 @@ class FrameBuffers implements WebGLDisposable {
       return;
 
     if (undefined === this.stencilSet) {
+<<<<<<< HEAD
+=======
+      if (undefined === textures.volClassBlend) {
+        throw new Error("Volume classifier blend texture is not defined.");
+      }
+>>>>>>> 0b681ef61c (Fix expectDefined thematic display/classifier bugs (#8460))
       if (undefined !== depthMS) { // if multisampling use the multisampled depth everywhere
+        if (undefined === textures.volClassBlendMsBuff) {
+          throw new Error("Volume classifier blend multisample buffer is not defined.");
+        }
         this.stencilSet = FrameBuffer.create([], depth, [], [], depthMS);
         this.altZOnly = FrameBuffer.create([], volClassDepth, [], [], volClassDepthMS);
         this.volClassCreateBlend = FrameBuffer.create([textures.volClassBlend!], depth, [textures.volClassBlendMsBuff!], [GL.MultiSampling.Filter.Nearest], depthMS);
