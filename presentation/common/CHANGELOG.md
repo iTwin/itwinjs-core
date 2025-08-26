@@ -1,6 +1,41 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Wed, 16 Jul 2025 15:01:35 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Aug 2025 14:26:46 GMT and should not be manually modified.
+
+## 5.1.4
+Fri, 22 Aug 2025 14:22:33 GMT
+
+_Version update only_
+
+## 5.1.3
+Wed, 20 Aug 2025 13:57:10 GMT
+
+_Version update only_
+
+## 5.1.2
+Thu, 14 Aug 2025 19:38:08 GMT
+
+_Version update only_
+
+## 5.1.1
+Fri, 08 Aug 2025 18:06:10 GMT
+
+_Version update only_
+
+## 5.1.0
+Fri, 08 Aug 2025 12:51:53 GMT
+
+### Updates
+
+- Export `Ruleset.schema.json` through exports field
+- Fix `InstanceKey.compare` implementation not taking into account different formats and casings of full class name.
+- `UnitSystemFormat`, `FormatsMap` and `KoqPropertyValueFormatter` constructor using the latter type have been deprecated. Instead, the constructor overload with "props" object should be used. The props object allows passing an optional `FormatsProvider` to use for finding formatting props for different types of values. When not specified, the `SchemaFormatsProvider` is used by default, so the behavior stays the same as before. Ideally, it's expected that frontend apps will pass `IModelApp.formatsProvider` for this prop.
+- Updated deprecation comments to new template
+
+## 5.0.5
+Wed, 06 Aug 2025 15:34:16 GMT
+
+_Version update only_
 
 ## 5.0.4
 Wed, 16 Jul 2025 14:59:59 GMT

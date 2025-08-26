@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, expectDefined } from "@itwin/core-bentley";
 import { AnalysisStyleDisplacement, AnalysisStyleThematic, ThematicGradientSettings } from "@itwin/core-common";
 import { DrawParams } from "../DrawCommand";
 import { TextureUnit } from "../RenderFlags";
@@ -132,6 +132,8 @@ const scratchAnimParams = [
 ];
 
 function getAnimParams(size: 2 | 3, initialValue?: number): Float32Array {
+  // Elements 2 and 3 are guaranteed to be defined.
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const array = scratchAnimParams[size]!;
   if (undefined !== initialValue)
     for (let i = 0; i < array.length; i++)
@@ -191,7 +193,7 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean): voi
 
   vert.addUniform("u_animLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_animLUT", (uniform, params) => {
-      const channels = (params.geometry.asLUT!).lut.auxChannels!;
+      const channels = expectDefined(params.geometry.asLUT?.lut.auxChannels);
       assert(undefined !== channels);
       channels.texture.bindSampler(uniform, TextureUnit.AuxChannelLUT);
     });
@@ -199,7 +201,7 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean): voi
 
   vert.addUniform("u_animLUTParams", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_animLUTParams", (uniform, params) => {
-      const geom = params.geometry.asLUT!;
+      const geom = expectDefined(params.geometry.asLUT);
       assert(undefined !== geom && undefined !== geom.lut.auxChannels);
       const tex = geom.lut.auxChannels.texture;
       const array = getAnimParams(3);

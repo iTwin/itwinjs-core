@@ -8,9 +8,9 @@
 
 import * as path from "node:path";
 import { ClassRegistry, KnownLocations, Schema, Schemas } from "@itwin/core-backend";
-import * as elementsModule from "./AnalyticalElements.js";
-import * as modelsModule from "./AnalyticalModels.js";
-import * as relationshipsModule from "./AnalyticalRelationships.js";
+import * as elementsModule from "./AnalyticalElements";
+import * as modelsModule from "./AnalyticalModels";
+import * as relationshipsModule from "./AnalyticalRelationships";
 
 /** Schema class for the Analytical domain.
  * @beta

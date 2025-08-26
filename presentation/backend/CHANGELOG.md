@@ -1,6 +1,44 @@
 # Change Log - @itwin/presentation-backend
 
-This log was last generated on Wed, 16 Jul 2025 15:01:35 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Aug 2025 14:26:46 GMT and should not be manually modified.
+
+## 5.1.4
+Fri, 22 Aug 2025 14:22:33 GMT
+
+_Version update only_
+
+## 5.1.3
+Wed, 20 Aug 2025 13:57:10 GMT
+
+_Version update only_
+
+## 5.1.2
+Thu, 14 Aug 2025 19:38:08 GMT
+
+_Version update only_
+
+## 5.1.1
+Fri, 08 Aug 2025 18:06:10 GMT
+
+_Version update only_
+
+## 5.1.0
+Fri, 08 Aug 2025 12:51:53 GMT
+
+### Updates
+
+- Add Symbols to prevent duplicate instances of package
+- Fixed `PresentationRpcInterface` not returning formatted content when formatting on frontend is not setup.
+- Fix `getDisplayLabelDefinitions` implementation not taking into account different formats and casings of full class name.
+- Deprecate `PresentationManagerProps.schemaContextProvider`.
+- The `PresentationManagerProps.defaultFormats` property has been deprecated in favor of the new `formatsProvider` property.
+- Fixed `RulesetEmbedder` failling to insert ruleset into iModel if Ruleset schema is present bus CodeSpec for rulesets does not exist.
+- Updated deprecation comments to new template
+
+## 5.0.5
+Wed, 06 Aug 2025 15:34:16 GMT
+
+_Version update only_
 
 ## 5.0.4
 Wed, 16 Jul 2025 14:59:59 GMT

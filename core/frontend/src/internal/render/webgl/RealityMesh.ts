@@ -7,7 +7,7 @@
  * @module WebGL
  */
 
-import { assert, dispose, UintArray } from "@itwin/core-bentley";
+import { assert, dispose, expectDefined, UintArray } from "@itwin/core-bentley";
 import { CartographicRange, ColorDef, Quantization } from "@itwin/core-common";
 import { Range2d, Range3d, Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import { GraphicBranch } from "../../../render/GraphicBranch";
@@ -286,7 +286,7 @@ export class RealityMeshGeometry extends IndexedGeometry implements RenderGeomet
     for (const mesh of meshes) {
       const primitive = Primitive.create(mesh);
       if (featureTable) {
-        branch.add(system.createBatch(primitive!, featureTable, mesh.getRange(), { tileId }));
+        branch.add(system.createBatch(expectDefined(primitive), featureTable, mesh.getRange(), { tileId }));
       }
     }
 

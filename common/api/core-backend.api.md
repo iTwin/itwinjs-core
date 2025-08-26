@@ -73,6 +73,7 @@ import { EcefLocation } from '@itwin/core-common';
 import { ECSchemaProps } from '@itwin/core-common';
 import { ECSqlReader } from '@itwin/core-common';
 import { ECSqlValueType } from '@itwin/core-common';
+import { ECVersion } from '@itwin/ecschema-metadata';
 import { EditingScopeNotifications } from '@itwin/core-common';
 import { ElementAlignedBox3d } from '@itwin/core-common';
 import { ElementAspectProps } from '@itwin/core-common';
@@ -96,6 +97,7 @@ import { ExternalSourceAspectProps } from '@itwin/core-common';
 import { ExternalSourceAttachmentProps } from '@itwin/core-common';
 import { ExternalSourceAttachmentRole } from '@itwin/core-common';
 import { ExternalSourceProps } from '@itwin/core-common';
+import { FieldRun } from '@itwin/core-common';
 import { FilePropertyProps } from '@itwin/core-common';
 import { FontFace as FontFace_2 } from '@itwin/core-common';
 import { FontFamilyDescriptor } from '@itwin/core-common';
@@ -1051,6 +1053,8 @@ export namespace CloudSqlite {
         readonly activeClients?: number;
         readonly attachedContainers?: number;
         readonly lockedCacheslots: number;
+        readonly memoryHighwater?: number;
+        readonly memoryUsed?: number;
         readonly ongoingPrefetches?: number;
         readonly populatedCacheslots: number;
         readonly totalCacheslots: number;
@@ -2521,6 +2525,18 @@ export interface ElementDrivesElementProps extends RelationshipProps {
     status: number;
 }
 
+// @beta
+export class ElementDrivesTextAnnotation extends ElementDrivesElement {
+    // (undocumented)
+    static get className(): string;
+    static isSupportedForIModel(iModel: IModelDb): boolean;
+    // @internal (undocumented)
+    static onDeletedDependency(props: RelationshipProps, iModel: IModelDb): void;
+    // @internal (undocumented)
+    static onRootChanged(props: RelationshipProps, iModel: IModelDb): void;
+    static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void;
+}
+
 // @public
 export class ElementEncapsulatesElements extends ElementOwnsChildElements {
     constructor(parentId: Id64String, relClassName?: string);
@@ -2706,6 +2722,8 @@ export class Entity {
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     // @preview
     getMetaData(): Promise<EntityClass | RelationshipClass>;
+    // @internal (undocumented)
+    getMetaDataSync(): EntityClass | RelationshipClass;
     // @beta
     getReferenceIds(): EntityReferenceSet;
     id: Id64String;
@@ -3648,6 +3666,7 @@ export abstract class IModelDb extends IModel {
     queryFilePropertyString(prop: FilePropertyProps): string | undefined;
     queryNextAvailableFileProperty(prop: FilePropertyProps): number;
     querySchemaVersion(schemaName: string): string | undefined;
+    querySchemaVersionNumbers(schemaName: string): ECVersion | undefined;
     // @internal
     querySubCategories(categoryIds: Iterable<Id64String>): Promise<SubCategoryResultRow[]>;
     // @alpha
@@ -4186,6 +4205,15 @@ export interface IpcHostOpts {
             noStack?: boolean;
         };
     };
+}
+
+// @beta
+export function isITextAnnotation(element: Element_2): element is ITextAnnotation & Element_2;
+
+// @beta
+export interface ITextAnnotation {
+    getTextBlocks(): Iterable<TextBlockAndId>;
+    updateTextBlocks(textBlocks: TextBlockAndId[]): void;
 }
 
 // @public
@@ -6350,13 +6378,21 @@ export class TextAnnotation2d extends AnnotationElement2d {
     static create(iModelDb: IModelDb, category: Id64String, model: Id64String, placement: Placement2dProps, textAnnotationData?: TextAnnotationProps, code?: CodeProps): TextAnnotation2d;
     static fromJSON(props: TextAnnotation2dProps, iModel: IModelDb): TextAnnotation2d;
     getAnnotation(): TextAnnotation | undefined;
+    // @internal (undocumented)
+    getTextBlocks(): Iterable<TextBlockAndId>;
     // @beta
     protected static onInsert(arg: OnElementPropsArg): void;
+    // @internal (undocumented)
+    static onInserted(arg: OnElementIdArg): void;
     // @beta
     protected static onUpdate(arg: OnElementPropsArg): void;
+    // @internal (undocumented)
+    static onUpdated(arg: OnElementIdArg): void;
     setAnnotation(annotation: TextAnnotation): void;
     toJSON(): TextAnnotation2dProps;
     protected static updateGeometry(iModelDb: IModelDb, props: TextAnnotation2dProps): void;
+    // @internal (undocumented)
+    updateTextBlocks(textBlocks: TextBlockAndId[]): void;
 }
 
 // @public @preview
@@ -6368,13 +6404,27 @@ export class TextAnnotation3d extends GraphicalElement3d {
     static create(iModelDb: IModelDb, category: Id64String, model: Id64String, placement: Placement3dProps, textAnnotationData?: TextAnnotationProps, code?: CodeProps): TextAnnotation3d;
     static fromJSON(props: TextAnnotation3dProps, iModel: IModelDb): TextAnnotation3d;
     getAnnotation(): TextAnnotation | undefined;
+    // @internal (undocumented)
+    getTextBlocks(): Iterable<TextBlockAndId>;
     // @beta
     protected static onInsert(arg: OnElementPropsArg): void;
+    // @internal (undocumented)
+    static onInserted(arg: OnElementIdArg): void;
     // @beta
     protected static onUpdate(arg: OnElementPropsArg): void;
+    // @internal (undocumented)
+    static onUpdated(arg: OnElementIdArg): void;
     setAnnotation(annotation: TextAnnotation): void;
     toJSON(): TextAnnotation3dProps;
     protected static updateGeometry(iModelDb: IModelDb, props: TextAnnotation3dProps): void;
+    // @internal (undocumented)
+    updateTextBlocks(textBlocks: TextBlockAndId[]): void;
+}
+
+// @beta
+export interface TextBlockAndId {
+    readonly id: unknown;
+    readonly textBlock: TextBlock;
 }
 
 // @beta

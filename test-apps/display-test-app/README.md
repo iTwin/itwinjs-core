@@ -21,7 +21,7 @@ The application contained within this directory provides a test environment for 
 
 The application may be run as an Electron app, Mobile app or within a browser. The following steps outline the procedure for successfully building the application as part of a larger monorepo, and then starting the application via npm scripts.
 
-* To get started, follow the instructions to setup the entire repository, located [here](../../README.md#Build\ Instructions).
+* To get started, follow the instructions to setup the entire repository, located [here](../../README.md#developer-quick-start). This automatically builds all test apps.
 
 * Before starting display-test-app, there are optional environment variables that may be set to be recognized by the application upon startup. For a full list, [see below](#environment-variables).
 
@@ -344,7 +344,7 @@ display-test-app has access to all key-ins defined in the `@itwin/editor-fronten
 
 * `dta edit` - begin a new editing scope, or end the current editing scope. The title of the window or browser tab will update to reflect the current state: "[R/W]" indicating no current editing scope, or "[EDIT]" indicating an active editing scope.
 * `dta place line string` - start placing a line string. Each data point defines another point in the string; a reset (right mouse button) finishes. The element is placed into the first spatial model and spatial category in the viewport's model and category selectors.
-* `dta move element *elementId* *x* *y* *z*` - Move an element, given an element Id and an x y z offset (in world space, relative to its current). If Y and/or Z are not specified they will default to 0.
+* `dta move element e=*elementId* x=*x* y=*y* z=*z*` - Move an element, given an element Id and an x y z offset (in world space, relative to its current). If X, Y and/or Z are not specified they will default to 0. If element Id is not specified, all currently-selected elements will be moved. You must specify at least one argument.
 * `dta push` - push local changes to iModelHub. A description of the changes must be supplied. It should be enclosed in double quotes if it contains whitespace characters.
 * `dta pull` - pull and merge changes from iModelHub into the local briefcase. You must be signed in.
 * `dta create section drawing *drawingName*` - insert a spatial view matching the active viewport's current view and a section drawing referencing that view, then switch to a non-persistent drawing view to visualize the spatial view in a 2d context. Requires the camera to be turned off.

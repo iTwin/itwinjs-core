@@ -124,6 +124,10 @@ export class BaseFormat {
     protected _spacer: string;
     // (undocumented)
     get spacerOrDefault(): string;
+    get stationBaseFactor(): number | undefined;
+    set stationBaseFactor(stationBaseFactor: number | undefined);
+    // (undocumented)
+    protected _stationBaseFactor?: number;
     // (undocumented)
     get stationOffsetSize(): number | undefined;
     set stationOffsetSize(stationOffsetSize: number | undefined);
@@ -281,6 +285,7 @@ export interface FormatProps {
     readonly scientificType?: string;
     // (undocumented)
     readonly showSignOption?: string;
+    readonly stationBaseFactor?: number;
     readonly stationOffsetSize?: number;
     // (undocumented)
     readonly stationSeparator?: string;
@@ -301,7 +306,6 @@ export interface FormatsChangedArgs {
 export interface FormatsProvider {
     // (undocumented)
     getFormat(name: string): Promise<FormatDefinition | undefined>;
-    // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
 
@@ -410,9 +414,7 @@ export const isCustomFormatProps: (item: FormatProps) => item is CustomFormatPro
 
 // @beta
 export interface MutableFormatsProvider extends FormatsProvider {
-    // (undocumented)
     addFormat(name: string, format: FormatDefinition): Promise<void>;
-    // (undocumented)
     removeFormat(name: string): Promise<void>;
 }
 

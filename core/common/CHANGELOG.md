@@ -1,6 +1,51 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Wed, 16 Jul 2025 15:01:35 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Aug 2025 14:26:46 GMT and should not be manually modified.
+
+## 5.1.4
+Fri, 22 Aug 2025 14:22:33 GMT
+
+_Version update only_
+
+## 5.1.3
+Wed, 20 Aug 2025 13:57:10 GMT
+
+_Version update only_
+
+## 5.1.2
+Thu, 14 Aug 2025 19:38:08 GMT
+
+### Updates
+
+- fix bug where iModel crs extent latitude would always be 0 on desktop
+
+## 5.1.1
+Fri, 08 Aug 2025 18:06:10 GMT
+
+_Version update only_
+
+## 5.1.0
+Fri, 08 Aug 2025 12:51:53 GMT
+
+### Updates
+
+- Mark iModel edit API as @preview
+- remove unused parameters for concurrent query
+- TextAnnotation element props use new BIS property `textAnnotationData`. TextAnnotations now use `AnnotationTextStyle`. `TextBlockComponents` no longer propagate styling to children. Styling is implicitly inherited from parents. `Paragraph`s and `Run`s no longer have `styleId` property. Moving frames from `TextAnnotation`s to `TextStyleSettings`. Annotations account for drawing scale when computing transform. Removing `TextStyle` class.
+- Refactoring the TextAnnotationGeometry and adding support for frames
+- Slight typing change of TextAnnotationFrameShape
+- Added `TabRun`s to `TextBlock`
+- add function to convert Helmert obj to Transform obj
+- Thinning iModelPlatform API
+- Make CreateEmptyStandaloneIModelProps public
+- Add support for text fields.
+- Introducing Text Annotation Leaders
+- Updated deprecation comments to new template
+
+## 5.0.5
+Wed, 06 Aug 2025 15:34:15 GMT
+
+_Version update only_
 
 ## 5.0.4
 Wed, 16 Jul 2025 14:59:59 GMT

@@ -176,7 +176,7 @@ export interface PresentationManagerProps {
    * Callback that provides [SchemaContext]($ecschema-metadata) for supplied [IModelConnection]($core-frontend).
    * [SchemaContext]($ecschema-metadata) is used for getting metadata required for values formatting.
    *
-   * @deprecated in 5.1. By default [IModelConnection.schemaContext]($core-frontend) is now used instead.
+   * @deprecated in 5.1 - will not be removed until after 2026-08-08. By default [IModelConnection.schemaContext]($core-frontend) is now used instead.
    */
   schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
 
@@ -186,7 +186,7 @@ export interface PresentationManagerProps {
    *
    * @note Only has effect when frontend value formatting is enabled by supplying the `schemaContextProvider` prop.
    *
-   * @deprecated in 5.1. All formats' logic is now handled by [IModelApp.formatsProvider]($core-frontend). Until the prop is removed, when
+   * @deprecated in 5.1 - will not be removed until after 2026-08-08. All formats' logic is now handled by [IModelApp.formatsProvider]($core-frontend). Until the prop is removed, when
    * supplied, this map will be used as a fallback if IModelApp's formats provider doesn't return anything for requested format.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
