@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECSqlValueType, FieldRun, RelationshipProps, TextBlock } from "@itwin/core-common";
+import { ContainerComponent, ECSqlValueType, FieldRun, RelationshipProps, TextBlock, TextBlockComponent } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
@@ -265,22 +265,31 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
   return true;
 }
 
+// TODO: I have this duplicated in `ElementDrivesTextAnnotation`, should I just have this in one place
+function collectFieldRuns(component: TextBlockComponent, runs: FieldRun[] = []): FieldRun[] {
+  if (component.type === "field") {
+    runs.push(component as FieldRun);
+  }
+
+  // If component.type is either "paragraph" or "list" recurse through
+  if (component instanceof ContainerComponent && component.children.length > 0) {
+    component.children.forEach(child => collectFieldRuns(child, runs));
+  }
+
+  return runs;
+}
+
 // Re-evaluates the display strings for all fields that target the element specified by `context` and returns the number
 // of fields whose display strings changed as a result.
 export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext): number {
   let numUpdated = 0;
-  // TODO: iterate through nested objects
-  if (textBlock.children) {
-    for (const paragraph of textBlock.children) {
-      if (paragraph.children) {
-        for (const run of paragraph.children) {
-          if (run.type === "field" && updateField(run as FieldRun, context)) {
-            ++numUpdated;
-          }
-        }
-      }
+  // TODO: iterate through nested objects - also need to test these
+  const runs = collectFieldRuns(textBlock);
+  runs.forEach(run => {
+    if (run.type === "field" && updateField(run, context)) {
+      ++numUpdated;
     }
-  }
+  });
 
   return numUpdated;
 }

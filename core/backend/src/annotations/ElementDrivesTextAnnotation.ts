@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { FieldRun, RelationshipProps, TextBlock } from "@itwin/core-common";
+import { ContainerComponent, FieldRun, RelationshipProps, TextBlock, TextBlockComponent } from "@itwin/core-common";
 import { ElementDrivesElement } from "../Relationship";
 import { IModelDb } from "../IModelDb";
 import { Element } from "../Element";
@@ -79,6 +79,19 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     return undefined !== bisCoreVersion && bisCoreVersion.compare(minBisCoreVersion) >= 0;
   }
 
+  private static collectFieldRuns(component: TextBlockComponent, runs: FieldRun[] = []): FieldRun[] {
+    if (component.type === "field") {
+      runs.push(component as FieldRun);
+    }
+
+    // If component.type is either "paragraph" or "list" recurse through
+    if (component instanceof ContainerComponent && component.children.length > 0) {
+      component.children.forEach(child => this.collectFieldRuns(child, runs));
+    }
+
+    return runs;
+  }
+
   /** Examines all of the [FieldRun]($common)s within the specified [[ITextAnnotation]] and ensures that the appropriate
    * `ElementDrivesTextAnnotation` relationships exist between the fields' source elements and this target element.
    * It also deletes any stale relationships left over from fields that were deleted or whose source elements changed.
@@ -108,17 +121,14 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
     const sourceToRelationship = new Map<Id64String, Id64String | null>();
     const blocks = annotationElement.getTextBlocks();
+
     for (const block of blocks) {
-      // TODO: iterate through nested objects
-      if (block.textBlock.children)
-        for (const paragraph of block.textBlock.children) {
-          if (paragraph.children)
-            for (const run of paragraph.children) {
-              if (run.type === "field" && isValidSourceId((run as FieldRun).propertyHost.elementId)) {
-                sourceToRelationship.set((run as FieldRun).propertyHost.elementId, null);
-              }
-            }
+      const fieldRuns = this.collectFieldRuns(block.textBlock);
+      fieldRuns.forEach(run => {
+        if (isValidSourceId(run.propertyHost.elementId)) {
+          sourceToRelationship.set(run.propertyHost.elementId, null);
         }
+      });
     }
 
     const staleRelationships = new Set<Id64String>();
