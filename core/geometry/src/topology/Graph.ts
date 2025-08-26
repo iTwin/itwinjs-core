@@ -190,8 +190,13 @@ export class HalfEdge implements HalfEdgeUserData {
     return this._edgeMate;
   }
   private static _totalNodesCreated = 0;
+  private static getNextId(): number {
+    if (!Number.isSafeInteger(this._totalNodesCreated))
+      this._totalNodesCreated = 0;
+    return this._totalNodesCreated++;
+  }
   public constructor(x: number = 0, y: number = 0, z: number = 0, i: number = 0) {
-    this._id = HalfEdge._totalNodesCreated++;
+    this._id = HalfEdge.getNextId();
     this.i = i;
     this.maskBits = 0x00000000;
     this.x = x;
@@ -707,21 +712,17 @@ export class HalfEdge implements HalfEdgeUserData {
   }
   /**
    * Create an edge with initial id,x,y at each end.
-   * @param id0 id for first node.
    * @param x0 x coordinate for first node.
    * @param y0 y coordinate for first node.
-   * @param id1 id for second node.
    * @param x1 x coordinate for second node.
    * @param y1 y coordinate for second node.
    * @returns the reference to the new node at (x0,y0).
    */
-  public static createEdgeXYXY(id0: number, x0: number, y0: number, id1: number, x1: number, y1: number): HalfEdge {
+  public static createEdgeXYXY(x0: number, y0: number, x1: number, y1: number): HalfEdge {
     const node0 = new HalfEdge(x0, y0);
     const node1 = new HalfEdge(x1, y1);
     node0._faceSuccessor = node0._facePredecessor = node0._edgeMate = node1;
     node1._faceSuccessor = node1._facePredecessor = node1._edgeMate = node0;
-    node0._id = id0;
-    node1._id = id1;
     return node0;
   }
   /**
@@ -1448,7 +1449,6 @@ export class HalfEdgeGraph {
   /** Simple array with pointers to all the half edges in the graph. */
   public allHalfEdges: HalfEdge[];
   private _maskManager: MaskManager;
-  private _numNodesCreated = 0;
   public constructor() {
     this.allHalfEdges = [];
     this._maskManager = MaskManager.create(HalfEdgeMask.ALL_GRAB_DROP_MASKS)!;
@@ -1595,17 +1595,20 @@ export class HalfEdgeGraph {
    * @param y0 y-coordinate of the start node.
    * @param x1 x-coordinate of the end node.
    * @param y1 y-coordinate of the end node.
-   * @param startFaceTag (optional) face tag for the start node.
-   * @param endFaceTag (optional) face tag for the end node.
+   * @param edgeTag0 (optional) edge tag for the start node.
+   * @param edgeTag1 (optional) edge tag for the end node.
+   * @param faceTag0 (optional) face tag for the start node.
+   * @param faceTag1 (optional) face tag for the end node.
    * @returns the reference to the new node at (x0,y0).
    */
-  public addEdgeXY(x0: number, y0: number, x1: number, y1: number, startFaceTag?: number, endFaceTag?: number): HalfEdge {
-    const baseNode = HalfEdge.createEdgeXYXY(this._numNodesCreated, x0, y0, this._numNodesCreated + 1, x1, y1);
-    baseNode.faceTag = startFaceTag;
-    baseNode.faceSuccessor.faceTag = endFaceTag;
-    this._numNodesCreated += 2;
-    this.allHalfEdges.push(baseNode);
-    this.allHalfEdges.push(baseNode.faceSuccessor);
+  public addEdgeXY(x0: number, y0: number, x1: number, y1: number, edgeTag0?: number, edgeTag1?: number, faceTag0?: number, faceTag1?: number): HalfEdge {
+    const baseNode = HalfEdge.createEdgeXYXY(x0, y0, x1, y1);
+    const farNode = baseNode.faceSuccessor;
+    baseNode.edgeTag = edgeTag0;
+    baseNode.faceTag = faceTag0;
+    farNode.edgeTag = edgeTag1;
+    farNode.faceTag = faceTag1;
+    this.allHalfEdges.push(baseNode, farNode);
     return baseNode;
   }
   /** Clear selected `mask` bits in all nodes of the graph. */
@@ -1620,9 +1623,8 @@ export class HalfEdgeGraph {
   }
   /** Toggle selected `mask` bits in all nodes of the graph. */
   public reverseMask(mask: HalfEdgeMask) {
-    for (const node of this.allHalfEdges) {
+    for (const node of this.allHalfEdges)
       node.maskBits ^= mask;
-    }
   }
   /**
    * Return the number of nodes that have a specified mask bit set.
