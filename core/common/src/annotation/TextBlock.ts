@@ -741,13 +741,13 @@ export class FieldRun extends TextBlockComponent {
  */
 export interface ParagraphProps extends ContainerComponentProps {
   type: ContainerComponentType.Paragraph; // Discriminator field for the type of [[TextBlockComponent]].
-  children?: ((ParagraphProps | ListProps) | RunProps)[]; // The runs within the paragraph
+  children?: (ListProps | RunProps)[]; // The runs within the paragraph
 }
 
 /** A collection of [[Run]]s within a [[TextBlock]]. Each paragraph within a text block is laid out on a separate line.
  * @beta
  */
-export class Paragraph extends ContainerComponent<(Paragraph | List) | Run> {
+export class Paragraph extends ContainerComponent<List | Run> {
   public readonly type = ContainerComponentType.Paragraph;
 
   protected constructor(props?: Omit<ParagraphProps, "type">) {
@@ -756,8 +756,6 @@ export class Paragraph extends ContainerComponent<(Paragraph | List) | Run> {
     props?.children?.forEach((run) => {
       const child = run.type === ContainerComponentType.List
         ? List.create(run)
-        : run.type === ContainerComponentType.Paragraph
-          ? Paragraph.create(run)
         : Run.isRunProps(run)
           ? Run.fromJSON(run)
           : undefined;
