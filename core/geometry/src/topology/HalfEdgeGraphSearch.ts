@@ -264,7 +264,7 @@ export class HalfEdgeGraphSearch {
    * Note that if `ignoreMask` is set on both sides of an edge, both adjacent faces will be ignored; thus it
    * is generally more useful if set on only one side of an edge.
    * @param maxFaceCount (optional) maximum number of faces to search in the component. If nonpositive or
-   * note supplied, `Infinity` is used.
+   * `undefined`, `Infinity` is used.
    * @param result optional array to append with HalfEdges and return as the `faces` array. This array is not
    * emptied first, so callers can send it into a subsequent call to continue searching the component at `nextSeed`.
    * @returns `faces` consists of one edge per face of the component; `nextSeed` is the seed at which to start
