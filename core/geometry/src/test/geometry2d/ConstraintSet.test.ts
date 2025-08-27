@@ -5,7 +5,7 @@
 
 import { expect, it } from "vitest";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { ConstraintConstruction, ConstraintSet } from "../../curve/internalContexts/geometry2d/ConstraintConstruction";
+import { ConstraintConstruction, ConstraintSet } from "../../curve/internalContexts/geometry2d/ConstraintSet";
 import { ImplicitCurve2d } from "../../curve/internalContexts/geometry2d/implicitCurve2d";
 import { UnboundedCircle2dByCenterAndRadius } from "../../curve/internalContexts/geometry2d/UnboundedCircle2d";
 import { UnboundedLine2dByPointAndNormal } from "../../curve/internalContexts/geometry2d/UnboundedLine2d";
