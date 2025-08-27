@@ -439,6 +439,16 @@ export class HalfEdge implements HalfEdgeUserData {
   public clearMask(mask: HalfEdgeMask): void {
     this.maskBits &= ~mask;
   }
+  /** Set or clear mask bits from this HalfEdge.
+   * @param mask mask bits
+   * @param clear whether to clear the mask. Default is false (set the mask).
+   */
+  public applyMask(mask: HalfEdgeMask, clear: boolean = false): void {
+    if (clear)
+      this.clearMask(mask);
+    else
+      this.setMask(mask);
+  }
   /**
    * Set a mask at all nodes around a vertex.
    * @param mask mask to apply to the half edges around this HalfEdge's vertex loop.
