@@ -90,8 +90,8 @@ it("ConstraintSetLines", () => {
 			transferCurve(c, curvesToDisplay);
 		}
 		const constraintSetReversed = ConstraintSet.create();
-		constraintSetReversed.addConstraint(constraintPair[0]);
 		constraintSetReversed.addConstraint(constraintPair[1]);
+		constraintSetReversed.addConstraint(constraintPair[0]);
 		const result = constraintSet.constructConstrainedLines();
 		const resultReversed = constraintSetReversed.constructConstrainedLines();
 		ImplicitGeometryHelpers.outputLineMarkup(ck, allGeometry, x0, y0, result, curvesToDisplay, 0);

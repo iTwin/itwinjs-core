@@ -150,7 +150,7 @@ export class ConstraintSet {
    *   * 0 otherwise
    * @param c the constraint.
    */
-  public static tangentGeometryLineCircleType(c: ConstraintConstruction): number {
+  private static tangentGeometryLineCircleType(c: ConstraintConstruction): number {
     if (c.curve instanceof UnboundedCircle2dByCenterAndRadius)
       return 2;
     if (c.curve instanceof UnboundedLine2dByPointAndNormal)

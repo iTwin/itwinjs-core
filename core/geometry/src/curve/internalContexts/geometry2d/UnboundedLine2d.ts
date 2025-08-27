@@ -135,8 +135,8 @@ export class UnboundedLine2dByPointAndNormal extends ImplicitCurve2d {
   }
   /**
    * Drop a perpendicular from spacePoint to the line. Emit that point to the handler.
-   * @param spacePoint the space point.
-   * @handler the handler to receive all the points on the curve and radians where perpendicular happens.
+   * @param spacePoint the space point to be projected.
+   * @handler the handler to receive the projection point.
    */
   public override emitPerpendiculars(
     spacePoint: Point2d,
