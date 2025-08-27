@@ -395,6 +395,8 @@ export class TangentConstruction {
     Subtract first from second.
     (c0 - c1) x^2 + (c0 b1 - c1 b0) x + (c0 a1 - c1 a0) = 0.
     Solve for two x values.  Substitute in with largest c0, c1.
+    ---------------------------------------
+    Repeat with signed combinations of the circle radii.
     ----------------------------------------------------------------------------------------*/
     const lineUnitNormal = line.normal.normalize();
     if (lineUnitNormal === undefined)
@@ -543,6 +545,26 @@ export class TangentConstruction {
   private static circlesTangentCCCThisOrder(
     circles: UnboundedCircle2dByCenterAndRadius[],
   ): ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
+    // Call the circle centers and raddii
+    //    (ax, ay, ar)
+    //    (bx, by, br)
+    //    (cx, cy, cr)
+    // For a tangent circle with center (x,y) and radius r,
+    //   (x-ax)^2 + (y-ay)^2 = (r+ar)^2
+    //   (x-bx)^2 + (y-by)^2 = (r+br)^2
+    //   (x-cx)^2 + (y-cy)^2 = (r+cr)^2
+    // This has squares of all the unknowns x,y,r
+    // BUT !!! all coefficients of squares are 1.
+    // Subtract the first from the second and third equations.
+    // All the squares go away in the shifted equations.
+    // What's left is 2 linear equations with x,y,r as unknowns.
+    // Move the r and constant parts to the right side.
+    // Solve for x and y as a linear function of r.
+    // Substitute those linear forms back into the x and y of the first equation.
+    // A quadratic in r is left!
+    // Solve it for r, and then the linear forms give x and  y.
+    // Do the whole process with every combination of signed br and cr.
+    // (No need to treat negated ar because negating all of them is redundant)
     const result: ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] = [];
     const vector01 = Vector2d.createStartEnd(circles[0].center, circles[1].center);
     const vector02 = Vector2d.createStartEnd(circles[0].center, circles[2].center);
@@ -650,6 +672,9 @@ export class TangentConstruction {
     lineB: UnboundedLine2dByPointAndNormal,
     radius: number,
   ): ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
+    // Construct lines offset by (positive and negative) radiis.
+    // For each of the 4 combinations of offset lines, the intersection of offsets is the 
+    // center of the tangent circle.
     if (Geometry.isSmallMetricDistance(radius))
       return undefined;
     const offsetsA = [
@@ -689,6 +714,10 @@ export class TangentConstruction {
   public static circlesTangentCLR(
     circleA: UnboundedCircle2dByCenterAndRadius, lineB: UnboundedLine2dByPointAndNormal, radius: number,
   ): ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
+    // From circleA, construct circles offset by positive and negative radii.
+    // From lineB, construct lines offset by positive and negative radii.
+    // Each combination of [offsetCircle, offsetLine] can have 2 intersections.
+    // Each such intersection is the center of a tangent circle.
     if (Geometry.isSmallMetricDistance(radius))
       return undefined;
     const offsetsA = [
@@ -728,6 +757,10 @@ export class TangentConstruction {
   public static circlesTangentCCR(
     circleA: UnboundedCircle2dByCenterAndRadius, circleB: UnboundedCircle2dByCenterAndRadius, radius: number,
   ): ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
+    // From circleA, construct circles offset by positive and negative radii.
+    // From circleB, construct circles offset by positive and negative radii.
+    // Each combination of [offsetA, offsetsB] can have 2 intersections.
+    // Each such intersection is the center of a tangent circle.
     if (Geometry.isSmallMetricDistance(radius))
       return undefined;
     const offsetsA = [
