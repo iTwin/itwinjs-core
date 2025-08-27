@@ -286,6 +286,18 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     return undefined;
   }
   /**
+   * Variant of [[createEdgeXY]] that computes the plane using the edge midpoint instead of its start point.
+   * * This is more stable for creating a pair of clip planes from a long edge and its reversal, as is commonly found
+   * in a [[UnionOfConvexClipPlaneSets]].
+   */
+  public static createMidPointEdgeXY(point0: XYAndZ, point1: XYAndZ, result?: ClipPlane): ClipPlane | undefined {
+    return ClipPlane.createNormalAndPointXYZXYZ(
+      point0.y - point1.y, point1.x - point0.x, 0,
+      0.5 * (point0.x + point1.x), 0.5 * (point0.y + point1.y), 0,
+      false, false, result,
+    );
+  }
+  /**
    * Return the Plane3d form of the plane.
    * * The plane origin is the point `distance * inwardNormal`
    * * The plane normal is the inward normal of the ClipPlane.

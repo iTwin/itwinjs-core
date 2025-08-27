@@ -617,7 +617,7 @@ export class Voronoi {
         const clipPlanes: ClipPlane[] = [];
         face.announceEdgesInFace((edge: HalfEdge) => {
           if (!edge.isMaskSet(HalfEdgeMask.BOUNDARY_EDGE)) {
-            const clipPlane = ClipPlane.createEdgeXY(edge, edge.faceSuccessor);
+            const clipPlane = ClipPlane.createMidPointEdgeXY(edge, edge.faceSuccessor);
             if (clipPlane)
               clipPlanes.push(clipPlane);
           }
