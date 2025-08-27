@@ -284,6 +284,7 @@ export function updateElementFields(props: RelationshipProps, iModel: IModelDb, 
   }
 }
 
+// ### TODO: support extended types and custom attributes
 export function computeFieldPropertyType(property: Property): FieldPropertyType | undefined {
 
   if (property.isStruct())
@@ -335,14 +336,12 @@ export function computeFieldPropertyType(property: Property): FieldPropertyType 
       case PrimitiveType.Double:
       case PrimitiveType.Integer:
       case PrimitiveType.Long:
-        if (property.extendedTypeName === "Point2d" || property.extendedTypeName === "Point3d")
-          return "coordinate";
         return "quantity";
       case PrimitiveType.Point2d:
       case PrimitiveType.Point3d:
         return "coordinate";
       case PrimitiveType.Binary:
-        if (property.extendedTypeName === "Guid")
+        if (property.extendedTypeName === "BeGuid")
           return "string";
         else
           return undefined;
