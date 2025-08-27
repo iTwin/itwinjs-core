@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, ContainerComponentType, FractionRun, LeaderTextPointOptions, LineBreakRun, OrderedListMarker, Placement2dProps, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationLeader, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextBlockProps, TextFrameStyleProps, TextRun, TextStyleSettingsProps, UnorderedListMarker } from "@itwin/core-common";
+import { BaselineShift, ColorDef, ContainerComponent, ContainerComponentType, FractionRun, LeaderTextPointOptions, LineBreakRun, List, OrderedListMarker, Paragraph, Placement2dProps, Run, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationLeader, TextAnnotationProps, TextBlock, TextBlockComponent, TextBlockJustification, TextBlockMargins, TextBlockProps, TextFrameStyleProps, TextRun, TextStyleSettingsProps, UnorderedListMarker } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
@@ -58,6 +58,28 @@ class TextEditor implements Decorator {
     }
   }
 
+  private pathToLastChild(): TextBlockComponent[] {
+    const pathToChild: TextBlockComponent[] = [];
+    let current: TextBlockComponent | undefined = this.textBlock;
+    while (current) {
+      pathToChild.push(current);
+      current = (current as ContainerComponent)?.last;
+    }
+    return pathToChild;
+  }
+
+  private appendRunToLastChild(run: Run) {
+    const pathToChild = this.pathToLastChild();
+    const last = pathToChild[pathToChild.length - 1];
+    if (Run.isRun(last)) {
+      const container = pathToChild[pathToChild.length - 2] as ContainerComponent;
+      container?.appendChild(run);
+    } else {
+      (last as ContainerComponent)?.appendChild(run);
+    }
+    return last;
+  }
+
   // Properties to be applied to the next run
   public runStyle: Omit<TextStyleSettingsProps, "lineHeight" | "widthFactor" | "lineSpacingFactor"> = { fontName: "Arial" };
   public baselineShift: BaselineShift = "none";
@@ -92,7 +114,7 @@ class TextEditor implements Decorator {
   }
 
   public appendText(content: string, overrides?: TextStyleSettingsProps): void {
-    this.textBlock.appendRun(TextRun.create({
+    this.appendRunToLastChild(TextRun.create({
       styleOverrides: { ...this.runStyle, ...overrides },
       content,
       baselineShift: this.baselineShift,
@@ -100,7 +122,7 @@ class TextEditor implements Decorator {
   }
 
   public appendFraction(numerator: string, denominator: string): void {
-    this.textBlock.appendRun(FractionRun.create({
+    this.appendRunToLastChild(FractionRun.create({
       styleOverrides: this.runStyle,
       numerator,
       denominator,
@@ -108,23 +130,39 @@ class TextEditor implements Decorator {
   }
 
   public appendTab(spaces?: number): void {
-    this.textBlock.appendRun(TabRun.create({
+    this.appendRunToLastChild(TabRun.create({
       styleOverrides: { ... this.runStyle, tabInterval: spaces },
     }));
   }
 
   public appendBreak(): void {
-    this.textBlock.appendRun(LineBreakRun.create({
+    this.appendRunToLastChild(LineBreakRun.create({
       styleOverrides: this.runStyle,
     }));
   }
 
-  public appendList(overrides?: TextStyleSettingsProps): void {
-    this.textBlock.appendContainer({ type: ContainerComponentType.List, styleOverrides: { fontName: this.runStyle.fontName, ...overrides } });
+  public appendList(overrides?: TextStyleSettingsProps, index?: number): void {
+    if (undefined === index) {
+      this.textBlock.appendContainer({ type: ContainerComponentType.List, styleOverrides: { fontName: this.runStyle.fontName, ...overrides } });
+      return;
+    }
+
+    const paragraphs = this.pathToLastChild().filter(component => component.type === ContainerComponentType.Paragraph);
+    const child = paragraphs[index] as Paragraph;
+    const list = List.create({ styleOverrides: { fontName: this.runStyle.fontName, ...overrides } });
+    child?.appendChild(list);
   }
 
-  public appendListItem(overrides?: TextStyleSettingsProps): void {
-    this.textBlock.appendListItem({ styleOverrides: { ...overrides } });
+  public appendListItem(overrides?: TextStyleSettingsProps, index?: number): void {
+    if (undefined === index) {
+      this.textBlock.appendListItem({ styleOverrides: { ...overrides } });
+      return;
+    }
+
+    const lists = this.pathToLastChild().filter(component => component.type === ContainerComponentType.List);
+    const child = lists[index] as List;
+    const list = Paragraph.create({ styleOverrides: { fontName: this.runStyle.fontName, ...overrides } });
+    child?.appendChild(list);
   }
 
   public appendParagraph(): void {
@@ -576,16 +614,18 @@ export class TextDecorationTool extends Tool {
         break;
       }
       case "list": {
+        const index = inArgs[2] !== undefined ? parseInt(inArgs[2], 10) : undefined;
         let listMarker = inArgs[1];
 
         if (listMarker in OrderedListMarker) listMarker = (OrderedListMarker as any)[listMarker];
         else if (listMarker in UnorderedListMarker) listMarker = (UnorderedListMarker as any)[listMarker];
 
-        editor.appendList({ listMarker });
+        editor.appendList({ listMarker }, index);
         break;
       }
       case "list-item": {
-        editor.appendListItem();
+        const index = inArgs[1] !== undefined ? parseInt(inArgs[1], 10) : undefined;
+        editor.appendListItem(undefined, index);
         break;
       }
       case "leader":
