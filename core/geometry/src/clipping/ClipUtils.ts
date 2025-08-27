@@ -1128,13 +1128,13 @@ export class ClipUtilities {
     const voronoi = Voronoi.createFromCurveChain(curveChain, strokeOptions, distanceTol);
     if (!voronoi)
       return undefined;
-    const superFaceEdgeMask = voronoi.getVoronoiGraph.grabMask();
-    const superFaces = voronoi.collectVoronoiSuperFaces(curveChain.children.length, superFaceEdgeMask);
+    const superFaceMask = voronoi.getVoronoiGraph.grabMask();
+    const superFaces = voronoi.collectVoronoiSuperFaces(curveChain.children.length, superFaceMask);
     if (superFaces === undefined || superFaces.length !== curveChain.children.length)
       return undefined;
-    voronoi.convexifySuperFaces(superFaceEdgeMask);
-    const clippers = voronoi.generateClippersFromSuperFaces(superFaces, superFaceEdgeMask);
-    voronoi.getVoronoiGraph.dropMask(superFaceEdgeMask);
+    voronoi.convexifySuperFaces(superFaceMask);
+    const clippers = voronoi.generateClippersFromSuperFaces(superFaces, superFaceMask);
+    voronoi.getVoronoiGraph.dropMask(superFaceMask);
     return clippers;
   }
 }

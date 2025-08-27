@@ -765,7 +765,7 @@ describe("Voronoi", () => {
     if (!voronoi)
       return undefined;
     const superFaceEdgeMask = voronoi.getVoronoiGraph.grabMask();
-    const superFaces = voronoi.getSuperFaces(path.children.length, superFaceEdgeMask);
+    const superFaces = voronoi.collectVoronoiSuperFaces(path.children.length, superFaceEdgeMask);
     if (!superFaces)
       return undefined;
     const clippers = voronoi.generateClippersFromSuperFaces(superFaces, superFaceEdgeMask);
