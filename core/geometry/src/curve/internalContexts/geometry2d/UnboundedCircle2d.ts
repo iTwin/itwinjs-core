@@ -82,7 +82,9 @@ export class UnboundedCircle2dByCenterAndRadius extends ImplicitCurve2d {
    */
   public override emitPerpendiculars(
     spacePoint: Point2d, handler: (curvePoint: Point2d, radians: number | undefined) => any,
-  ): any {
+  ) {
+    // Make a vector from center to space point, scaled so length equals radius.
+    // Add and subtract it to/from center to get to circumference point.
     const radialVector = Vector2d.createStartEnd(this.center, spacePoint).scaleToLength(this.radius);
     if (radialVector !== undefined) {
       handler(this.center.plus(radialVector), undefined);

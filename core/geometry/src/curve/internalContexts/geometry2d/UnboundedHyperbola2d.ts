@@ -142,6 +142,15 @@ export class UnboundedHyperbola2d extends ImplicitCurve2d {
   ): any {
     const centerToSpacePoint = Vector2d.createStartEnd(spacePoint, this.center);
     // coefficients of C and S where C and S are the unit circle points parameterized by theta.
+    // Hyperbola point at theta is X = A + U sec + V tan
+    // tangent is T = U sec tan + V sec^2
+    // vector W = spacePOint - this.center
+    // perpendicular condition for vector V from space point is 
+    //     0 = T dot (spacePoint - X) = T dot (W - U sec - V tan)
+    // multiply through by cos^4 and there are various appearances of sine and cosine
+    //    in the numerator.   There are constant term, terms with one trig, and terms with product
+    //    of 2 trigs.   This fits the call list for solving "intersection" of a quadric with unit circle.
+    // 
     const coffSC = centerToSpacePoint.dotProduct(this.vectorU);
     const coffC = centerToSpacePoint.dotProduct(this.vectorV);
     const coffS = this.vectorU.dotProduct(this.vectorU) + this.vectorV.dotProduct(this.vectorV);

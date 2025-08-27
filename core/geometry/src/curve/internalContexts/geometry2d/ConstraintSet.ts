@@ -176,6 +176,13 @@ export class ConstraintSet {
       }
     )
   }
+  /**
+   * Given an array of constraint requests (e.g. tangent to circle, tangnet to line, etc),
+   * construct all circles that satisfy the conditions.
+   * * Circles are defined by 3 conditions, so there is null output for inputs with other than 3 constraints.
+   * * Returns undefined if no solver is available for the requested constraints.
+   * @returns Array of circles with markup about how or where the constraints are satisfied.
+   */
   public constructConstrainedCircles(): ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
     if (this._constraints.length !== 3)
       return undefined;
@@ -226,7 +233,7 @@ export class ConstraintSet {
   }
   /**
    * Call constructConstrainedLines when the ConstraintSet has 2 conditions which determine one or more lines.
-   * @returns
+   * @returns Array of lines with markup about how or where the constraints are satisfied.
    */
   public constructConstrainedLines(): ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>[] | undefined {
     if (this._constraints.length !== 2)
