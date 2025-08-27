@@ -1115,10 +1115,11 @@ export class ClipUtilities {
   }
   /**
    * Creates clippers for regions closest to the children of a curve chain.
+   * * For best results, each child should have length larger than `distanceTol`.
    * @param curveChain A curve chain; xy-only (z-coordinate is ignored). Must have at least 2 children.
    * @param strokeOptions Optional stroke options to control the sampling of the curve chain.
    * @param distanceTol Optional distance tolerance to use when comparing points; default is Geometry.smallMetricDistance.
-   * @returns An array of clippers, each of which represents the region closest to the corresponding primitive in the
+   * @returns An ordered array of clippers, each of which represents the region closest to the corresponding primitive in the
    * input chain, or undefined if the input is invalid.
    */
   public static createClippersForRegionsClosestToCurvePrimitivesXY(
@@ -1128,8 +1129,8 @@ export class ClipUtilities {
     if (!voronoi)
       return undefined;
     const superFaceEdgeMask = voronoi.getVoronoiGraph.grabMask();
-    const superFaces = voronoi.getSuperFaces(curveChain.children.length, superFaceEdgeMask);
-    if (superFaces === undefined || superFaces.length === 0)
+    const superFaces = voronoi.collectVoronoiSuperFaces(curveChain.children.length, superFaceEdgeMask);
+    if (superFaces === undefined || superFaces.length !== curveChain.children.length)
       return undefined;
     voronoi.convexifySuperFaces(superFaceEdgeMask);
     const clippers = voronoi.generateClippersFromSuperFaces(superFaces, superFaceEdgeMask);
