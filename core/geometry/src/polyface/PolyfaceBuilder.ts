@@ -1733,10 +1733,11 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /**
    * Create a polyface containing the faces of a HalfEdgeGraph, with test functions to filter faces and hide edges.
    * * This is a static wrapper of [[addGraph]].
+   * * Default callbacks assume graph is appropriately masked with HalfEdgeMask.EXTERIOR.
    * @param graph faces to add as facets.
    * @param options (optional) options for the polyface.
-   * @param acceptFaceFunction optional test for whether to add a given face. Default: ignore exterior faces.
-   * @param isEdgeVisibleFunction optional test for whether to hide an edge. Default: hide interior edges.
+   * @param acceptFaceFunction optional test for whether to add a given face. Default: accept only interior faces.
+   * @param isEdgeVisibleFunction optional test for whether to hide an edge. Default: only boundary edges are visible.
    * @internal
    */
   public static graphToPolyface(
