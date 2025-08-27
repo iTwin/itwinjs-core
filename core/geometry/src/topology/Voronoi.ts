@@ -19,31 +19,36 @@ import { LineString3d } from "../curve/LineString3d";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry } from "../Geometry";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 import { PolylineOps } from "../geometry3d/PolylineOps";
 import { Range2d } from "../geometry3d/Range";
 import { Ray2d } from "../geometry3d/Ray2d";
 import { XAndY } from "../geometry3d/XYZProps";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction } from "./Graph";
 import { HalfEdgeGraphSearch } from "./HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge, HalfEdgeGraphOps } from "./Merging";
 import { Triangulator } from "./Triangulation";
 
+/**
+ * An interface to represent a 2D line segment.
+ * @internal
+ */
 interface Segment2d {
   start: XAndY;
   end: XAndY;
 }
 
 /**
- * A class to represent a Voronoi diagram.
- * * A Voronoi diagram is a partitioning of a plane into regions based on the distance to a specific set of points.
- * We construct the Voronoi diagram using Delaunay triangulation via the circumcircle algorithm.
+ * A class to represent a Voronoi diagram in the xy-plane.
+ * * A Voronoi diagram is a partitioning of the plane into regions of points closest to a given generating point or curve.
+ * * It is constructed from the circumcenters of its dual Delaunay triangulation.
+ * * Static construction methods take Delaunay, points, and CurveChain input.
  * * More info can be found here: https://en.wikipedia.org/wiki/Voronoi_diagram and
  * https://en.wikipedia.org/wiki/Delaunay_triangulation
  * @internal
-*/
+ */
 export class Voronoi {
   private _voronoiGraph: HalfEdgeGraph;
   private _inputGraph: Readonly<HalfEdgeGraph>;
@@ -52,8 +57,10 @@ export class Voronoi {
   private _idToIndexMap: Map<number, number>;
   private _circumcenterMap: Map<number, XAndY>;
   private _circumcenterRange: Range2d;
+  private _isCurveBased: boolean;
+  private _superFaceMask: HalfEdgeMask;
   private static _workArc = Arc3d.createUnitCircle();
-  // Construct an empty Voronoi diagram and minimally validate input (use `isValid` to check)
+  /** Construct an empty Voronoi graph and minimally validate input (use [[isValid]] to check). */
   private constructor(inputGraph: Readonly<HalfEdgeGraph>, isColinear = false) {
     this._voronoiGraph = new HalfEdgeGraph();
     this._inputGraph = inputGraph;
@@ -62,13 +69,22 @@ export class Voronoi {
     this._circumcenterMap = new Map<number, XAndY>();
     this._inputGraphIsTriangulation = isColinear ? false : this.populateCircumcenters(this._circumcenterMap);
     this._circumcenterRange = Range2d.createArray(Array.from(this._circumcenterMap.values()));
+    this._isCurveBased = false;
+    this._superFaceMask = HalfEdgeMask.NULL_MASK;
   }
-  public get getVoronoiGraph(): HalfEdgeGraph {
-    return this._voronoiGraph;
-  }
-  /** The input graph is either a triangulation (assumed Delaunay) or a graph with no interior faces (assumed colinear path). */
+  /**
+   * Accessor for the read-only graph passed into the private constructor.
+   * * It is either a triangulation (assumed Delaunay) or a graph with no interior faces (assumed colinear path).
+   */
   public get getInputGraph(): Readonly<HalfEdgeGraph> {
     return this._inputGraph;
+  }
+  /**
+   * Accessor for the Voronoi graph constructed from the input graph.
+   * * The Voronoi graph is typically constructed by static createFromXXX methods.
+   */
+  public get getVoronoiGraph(): HalfEdgeGraph {
+    return this._voronoiGraph;
   }
   /** Whether the constructor has created a minimally valid instance. */
   protected get isValid(): boolean {
@@ -491,66 +507,65 @@ export class Voronoi {
     const pointsWithIndices = Voronoi.createStrokePointsWithIndices(curveChain, strokeOptions);
     if (!pointsWithIndices)
       return undefined; // no points created from the curve chain
-    const result = Voronoi.createGraphFromPointsWithIndices(pointsWithIndices, distanceTol);
-    if (!result)
+    const inputGraph = Voronoi.createGraphFromPointsWithIndices(pointsWithIndices, distanceTol);
+    if (!inputGraph)
       return undefined; // no graph created from points
-    if (result.isTriangulation)
-      return Voronoi.createFromDelaunayGraph(result.graph, distanceTol);
-    return Voronoi.createFromColinearGraph(result.graph);
+    const instance = inputGraph.isTriangulation ?
+      Voronoi.createFromDelaunayGraph(inputGraph.graph, distanceTol) :
+      Voronoi.createFromColinearGraph(inputGraph.graph);
+    if (instance)
+      instance._isCurveBased = true;
+    return instance;
   }
   /**
-   * Test whether the edge is part of a Voronoi super face.
-   * @param edge edge to test
-   * @param curveIndex optional identifier to check if edge is part of a specific Voronoi super face.
-   */
-  private isEdgeInVoronoiSuperFace(edge: HalfEdge, curveIndex?: number): boolean {
-    const edgeTag = this._inputGraph.allHalfEdges[edge.faceTag].edgeTag;
-    const mateTag = this._inputGraph.allHalfEdges[edge.edgeMate.faceTag].edgeTag;
-    if (curveIndex !== undefined)
-      return edgeTag === curveIndex && mateTag !== curveIndex;
-    if (edge.edgeMate.isMaskSet(HalfEdgeMask.EXTERIOR))
-      return true; // edge is part of an unbounded Voronoi super face (clipped by a bounding box)
-    if (edgeTag !== mateTag)
-      return true; // edge is part of a bounded Voronoi super face
-    return false;
-  }
-  /** Find an edge of a Voronoi super face that hasn't been masked yet. */
-  private findNextVoronoiSuperFaceStart(superFaceMask: HalfEdgeMask): HalfEdge | undefined {
-    let start: HalfEdge | undefined;
-    this._voronoiGraph.announceEdges((_g, edge: HalfEdge) => {
-      if (edge.isMaskSet(HalfEdgeMask.EXTERIOR) || edge.isMaskSet(superFaceMask))
-        return true; // skip exterior face or previously visited super face
-      if (!this.isEdgeInVoronoiSuperFace(edge))
-        return true; // keep searching
-      start = edge;
-      return false; // found unvisited super face
-    });
-    return start;
-  }
-  /** Collect the HalfEdges in the Voronoi super face containing the given edge. */
-  private collectVoronoiSuperFace(edge: HalfEdge, superFaceMask: HalfEdgeMask): HalfEdge[] | undefined {
-    const childIndex = this._inputGraph.allHalfEdges[edge.faceTag].edgeTag;
-    const superFace: HalfEdge[] = [];
-    const foundSuperFace = edge.announceEdgesInSuperFace(
-      (e: HalfEdge) => !this.isEdgeInVoronoiSuperFace(e, childIndex), // skipEdge
-      (e: HalfEdge) => { superFace.push(e); e.setMask(superFaceMask); }, // announceEdge
-    );
-    return foundSuperFace ? superFace : undefined;
-  }
-  /**
-   * Collect and mask Voronoi super faces.
+   * Collect super faces of a curve-based Voronoi diagram.
+   * * The instance must have been constructed with [[createFromCurveChain]].
    * @param numSuperFaces maximum number of super faces to return.
-   * @param superFaceMask mask to set on the edges of each super face loop found.
-   * @returns up to `numSuperFaces` super faces sorted by curve index. Each super face is an array of HalfEdges that
-   * form a loop. Returns `undefined` if the Voronoi graph is invalid.
+   * @returns up to `numSuperFaces` Voronoi super faces, sorted by curve index, or `undefined` if invalid input.
+   * Each super face is an array of HalfEdges that form a loop.
    */
-  public collectVoronoiSuperFaces(numSuperFaces: number, superFaceMask: HalfEdgeMask): HalfEdge[][] | undefined {
+  public collectVoronoiSuperFaces(numSuperFaces: number): HalfEdge[][] | undefined {
     const superFaces: HalfEdge[][] = [];
+    if (!this._isCurveBased || numSuperFaces < 1)
+      return superFaces;
+    const superFaceMask = this._voronoiGraph.grabMask();
+    const isEdgeInVoronoiSuperFace = (edge: HalfEdge, childIndex?: number): boolean => {
+      const edgeTag = this._inputGraph.allHalfEdges[edge.faceTag].edgeTag;
+      const mateTag = this._inputGraph.allHalfEdges[edge.edgeMate.faceTag].edgeTag;
+      if (childIndex !== undefined)
+        return edgeTag === childIndex && mateTag !== childIndex;
+      if (edge.edgeMate.isMaskSet(HalfEdgeMask.EXTERIOR))
+        return true; // edge is part of an unbounded Voronoi super face (clipped by a bounding box)
+      if (edgeTag !== mateTag)
+        return true; // edge is part of a bounded Voronoi super face
+      return false;
+    }
+    const findNextVoronoiSuperFaceStart = (): HalfEdge | undefined => {
+      let start: HalfEdge | undefined;
+      this._voronoiGraph.announceEdges((_g, edge: HalfEdge) => {
+        if (edge.isMaskSet(HalfEdgeMask.EXTERIOR) || edge.isMaskSet(superFaceMask))
+          return true; // skip exterior face or previously visited super face
+        if (!isEdgeInVoronoiSuperFace(edge))
+          return true; // keep searching
+        start = edge;
+        return false; // found unvisited super face
+      });
+      return start;
+    }
+    const collectVoronoiSuperFace = (edge: HalfEdge): HalfEdge[] | undefined => {
+      const superFace: HalfEdge[] = [];
+      const childIndex = this._inputGraph.allHalfEdges[edge.faceTag].edgeTag;
+      const foundSuperFace = edge.announceEdgesInSuperFace(
+        (e: HalfEdge) => !isEdgeInVoronoiSuperFace(e, childIndex), // skipEdge
+        (e: HalfEdge) => { superFace.push(e); e.setMask(superFaceMask); }, // announceEdge
+      );
+      return foundSuperFace ? superFace : undefined;
+    }
     for (let i = 0; i < numSuperFaces; i++) {
-      const start = this.findNextVoronoiSuperFaceStart(superFaceMask);
+      const start = findNextVoronoiSuperFaceStart();
       if (!start)
         break; // no more super faces to find
-      const superFace = this.collectVoronoiSuperFace(start, superFaceMask);
+      const superFace = collectVoronoiSuperFace(start);
       if (!superFace)
         return undefined; // invalid Voronoi graph
       superFaces.push(superFace);
@@ -560,46 +575,43 @@ export class Voronoi {
       const tagB = this._inputGraph.allHalfEdges[b[0].faceTag].edgeTag;
       return tagA - tagB;
     });
+    if (superFaces.length === 0)
+      return undefined;
+    this._superFaceMask = superFaceMask;
     return superFaces;
-  }
-  /**
-   * Split each Voronoi super face into convex faces.
-   *  * This operation adds and removes edges in the Voronoi graph.
-   * @param superFaceMask mask preset on the edges of each super face loop.
-   */
-  public convexifySuperFaces(superFaceMask: HalfEdgeMask): void {
-    Triangulator.triangulateAllInteriorFaces(this._voronoiGraph);
-    HalfEdgeGraphOps.expandConvexFaces(this._voronoiGraph, superFaceMask);
   }
   /**
    * Construct a clipper for each Voronoi super face in the input array.
    * @param superFaces array returned by [[collectVoronoiSuperFaces]].
-   * @param superFaceMask mask to set on the edges of each super face loop found.
+   * @param superFaceMask mask preset on the edges of each super face loop.
    * @returns array of clippers; the i_th clipper corresponds to the i_th input super face.
-   * Returns `undefined` if `superFaces` is invalid, or if a clipper construction failed.
+   * Returns `undefined` if input is invalid, or if a clipper construction failed.
    */
-  public generateClippersFromSuperFaces(
-    superFaces: HalfEdge[][], superFaceMask: HalfEdgeMask,
-  ): (ConvexClipPlaneSet | UnionOfConvexClipPlaneSets)[] | undefined {
+  public generateClippersFromVoronoiSuperFaces(superFaces: HalfEdge[][]): (ConvexClipPlaneSet | UnionOfConvexClipPlaneSets)[] | undefined {
+    if (!this._isCurveBased || this._superFaceMask === HalfEdgeMask.NULL_MASK)
+      return undefined;
     const allClippers: (ConvexClipPlaneSet | UnionOfConvexClipPlaneSets)[] = [];
     const superFaceOutsideMask = this._voronoiGraph.grabMask();
     const maskOutsideOfSuperFace = (startEdge: HalfEdge, clearMask: boolean): boolean => {
       return startEdge.announceEdgesInSuperFace(
-        (e: HalfEdge) => !e.isMaskSet(superFaceMask),
+        (e: HalfEdge) => !e.isMaskSet(this._superFaceMask),
         (e: HalfEdge) => e.edgeMate.applyMask(superFaceOutsideMask, clearMask),
       );
     };
+    // Step 0: split each super face into convex faces (clipper prerequisite)
+    Triangulator.triangulateAllInteriorFaces(this._voronoiGraph);
+    HalfEdgeGraphOps.expandConvexFaces(this._voronoiGraph, this._superFaceMask);
     for (const superFace of superFaces) {
       if (superFace.length < 3)
         return undefined; // invalid Voronoi graph
-      // Step 1: collect faces comprising this super face
+      // Step 1: collect the convex faces for this super face
       const convexFaces: HalfEdge[] = [];
       if (!maskOutsideOfSuperFace(superFace[0], false))
         return undefined; // invalid Voronoi graph
       this._voronoiGraph.clearMask(HalfEdgeMask.VISITED);
       HalfEdgeGraphSearch.exploreComponent(superFace[0], HalfEdgeMask.VISITED, superFaceOutsideMask, undefined, convexFaces);
       maskOutsideOfSuperFace(superFace[0], true);
-      // Step 2: generate a clipper for each face (assumed to be convex)
+      // Step 2: generate a clipper for each convex face
       const clippers: ConvexClipPlaneSet[] = [];
       for (const face of convexFaces) {
         const clipPlanes: ClipPlane[] = [];
@@ -613,7 +625,7 @@ export class Voronoi {
         if (clipPlanes.length === face.countMaskAroundFace(HalfEdgeMask.BOUNDARY_EDGE, false))
           clippers.push(ConvexClipPlaneSet.createPlanes(clipPlanes));
       }
-      // Step 3: assemble clippers for this super face
+      // Step 3: assemble the clippers for this super face
       if (clippers.length === convexFaces.length) {
         if (clippers.length === 1)
           allClippers.push(clippers[0]);
@@ -625,11 +637,14 @@ export class Voronoi {
     return allClippers.length === superFaces.length ? allClippers : undefined;
   }
   /**
-   * Construct a [[Polyface]] whose facets are the Voronoi super faces.
-   * @param superFaceMask mask preset on the edges of each super face loop.
-  */
-  public createPolyface(superFaceMask: HalfEdgeMask): IndexedPolyface {
-    return PolyfaceBuilder.graphToPolyface(this._voronoiGraph, undefined, undefined, (e: HalfEdge) => e.isMaskSet(superFaceMask));
+   * Construct facets from the faces of the Voronoi graph.
+   * @param useSuperFaces whether facets are super faces (if marked). Default is `false`: facets are faces.
+   */
+  public constructPolyfaceFromVoronoiGraph(useSuperFaces: boolean = false): IndexedPolyface {
+    let isEdgeVisible: HalfEdgeToBooleanFunction = () => true;
+    if (useSuperFaces && this._superFaceMask !== HalfEdgeMask.NULL_MASK)
+      isEdgeVisible = (e: HalfEdge) => e.isMaskSet(this._superFaceMask);
+    return PolyfaceBuilder.graphToPolyface(this._voronoiGraph, undefined, undefined, isEdgeVisible);
   }
 }
 
@@ -638,6 +653,7 @@ export class Voronoi {
  * * A Voronoi diagram is unbounded, so we create a large rectangle around the diagram to limit it.
  * * To avoid clipping bounded Voronoi cells, this boundary should be large enough to contain the
  * circumcenters of the Delaunay triangles.
+ * @internal
  */
 class VoronoiBoundary {
   public bbox: Range2d;

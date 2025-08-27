@@ -764,13 +764,11 @@ describe("Voronoi", () => {
     const voronoi = Voronoi.createFromCurveChain(path, strokeOptions);
     if (!voronoi)
       return undefined;
-    const superFaceEdgeMask = voronoi.getVoronoiGraph.grabMask();
-    const superFaces = voronoi.collectVoronoiSuperFaces(path.children.length, superFaceEdgeMask);
-    if (!superFaces)
+    const superFaces = voronoi.collectVoronoiSuperFaces(path.children.length);
+    if (!superFaces || superFaces.length !== path.children.length)
       return undefined;
-    const clippers = voronoi.generateClippersFromSuperFaces(superFaces, superFaceEdgeMask);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, voronoi.createPolyface(superFaceEdgeMask));
-    voronoi.getVoronoiGraph.dropMask(superFaceEdgeMask);
+    const clippers = voronoi.generateClippersFromVoronoiSuperFaces(superFaces);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, voronoi.constructPolyfaceFromVoronoiGraph(true));
     return clippers;
   }
 
@@ -778,7 +776,7 @@ describe("Voronoi", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const path = IModelJson.Reader.parse(
-      JSON.parse(fs.readFileSync("./src/test/data/curve/voronoi/path_with_arc_and_linesegment.imjs", "utf8")),
+      JSON.parse(fs.readFileSync("./src/test/data/curve/voronoi/path_with_arc_and_line_segment.imjs", "utf8")),
     ) as Path;
     if (ck.testDefined(path, "path successfully parsed"))
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
@@ -801,7 +799,7 @@ describe("Voronoi", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const path = IModelJson.Reader.parse(
-      JSON.parse(fs.readFileSync("./src/test/data/curve/voronoi/path_with_arc_and_linestring.imjs", "utf8")),
+      JSON.parse(fs.readFileSync("./src/test/data/curve/voronoi/path_with_arc_and_line_string.imjs", "utf8")),
     ) as Path;
     if (ck.testDefined(path, "path successfully parsed"))
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
