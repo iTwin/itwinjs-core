@@ -7,7 +7,7 @@
  * @module Topology
  */
 
-import { OrderedSet } from "@itwin/core-bentley";
+import { assert, OrderedSet } from "@itwin/core-bentley";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
@@ -1089,6 +1089,7 @@ export class HalfEdge implements HalfEdgeUserData {
       if (!node)
         return false;
     } while (node !== firstNode && iter++ < maxIter);
+    assert(iter < maxIter, "Infinite loop detected in HalfEdge.announceEdgesInSuperFace");
     return iter < maxIter;
   }
   /**
