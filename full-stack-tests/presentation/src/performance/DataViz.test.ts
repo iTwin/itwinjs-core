@@ -361,7 +361,7 @@ describe("#performance DataViz requests", () => {
               // eslint-disable-next-line @typescript-eslint/no-base-to-string
               filter += " IS NULL";
             } else {
-              // eslint-disable-next-line @typescript-eslint/no-base-to-string
+              // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions
               filter += ` = ${filteredProperty.type.toLowerCase() === "string" ? `'${rawValue}'` : rawValue}`;
             }
             return filter;
@@ -382,7 +382,7 @@ describe("#performance DataViz requests", () => {
           ) => {
             for (const distinctValuesEntry of distinctValues) {
               const [displayValue, rawValues] = distinctValuesEntry;
-              // eslint-disable-next-line @typescript-eslint/no-base-to-string
+              // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions
               const filteredClassesQuery = `${queryBase}${createWhereClause(propertyClassAlias, filteredProperty, [...rawValues])}`;
               for await (const { classId } of iModel.createQueryReader(filteredClassesQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
                 pushValues(displayValueEntries, displayValue, [
@@ -465,7 +465,7 @@ describe("#performance DataViz requests", () => {
                           if (rawValue === undefined || rawValue === null) {
                             filter += "NULL";
                           } else if (filteredProperty.type.toLowerCase() === "string") {
-                            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                            // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions
                             filter += `"${rawValue}"`;
                           } else {
                             // eslint-disable-next-line @typescript-eslint/no-base-to-string
