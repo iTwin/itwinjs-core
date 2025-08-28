@@ -858,6 +858,7 @@ describe("PresentationManager", () => {
       );
     }
 
+    /* eslint-disable @typescript-eslint/no-deprecated */
     describe("getNodes", () => {
       it("returns root nodes", async () => {
         // what the addon receives
@@ -1317,6 +1318,7 @@ describe("PresentationManager", () => {
         nativePlatformMock.verify(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
       });
     });
+    /* eslint-enable @typescript-eslint/no-deprecated */
 
     describe("getContentSources", () => {
       it("returns content sources", async () => {
@@ -3389,6 +3391,7 @@ describe("PresentationManager", () => {
 
     it("throws on invalid addon response", async () => {
       nativePlatformMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined)).returns(() => undefined as any);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const options: HierarchyRequestOptions<IModelDb, NodeKey> = {
         imodel: imodelMock.object,
         rulesetOrId: testData.rulesetOrId,
@@ -3410,6 +3413,7 @@ describe("PresentationManager", () => {
           }),
         );
         // what the addon returns
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const addonResponse: HierarchyLevel = {
           nodes: [
             {
@@ -3425,6 +3429,7 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const options: Paged<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,

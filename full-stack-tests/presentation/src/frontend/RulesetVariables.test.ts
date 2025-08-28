@@ -231,6 +231,7 @@ describe("Ruleset Variables", async () => {
           ruleType: RuleTypes.RootNodes,
           specifications: [
             {
+              // eslint-disable-next-line @typescript-eslint/no-deprecated
               specType: ChildNodeSpecificationTypes.CustomNode,
               type: "root",
               label: "root",

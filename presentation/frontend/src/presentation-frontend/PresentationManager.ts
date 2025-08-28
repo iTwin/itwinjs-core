@@ -77,6 +77,7 @@ export interface IModelHierarchyChangeEventArgs {
   /** Id of ruleset that was used to create hierarchy. */
   rulesetId: string;
   /** Hierarchy changes info. */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   updateInfo: HierarchyUpdateInfo;
   /** Key of iModel that was used to create hierarchy. It matches [[IModelConnection.key]] property. */
   imodelKey: string;
@@ -310,7 +311,9 @@ export class PresentationManager implements Disposable {
         if (updateInfo.content) {
           this.onIModelContentChanged.raiseEvent({ rulesetId, updateInfo: updateInfo.content, imodelKey });
         }
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         if (updateInfo.hierarchy) {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           this.onIModelHierarchyChanged.raiseEvent({ rulesetId, updateInfo: updateInfo.hierarchy, imodelKey });
         }
       }
@@ -404,6 +407,8 @@ export class PresentationManager implements Disposable {
     return { ...options, rulesetOrId: foundRulesetOrId, rulesetVariables: variables };
   }
 
+  /* eslint-disable @typescript-eslint/no-deprecated */
+
   /** Returns an iterator that polls nodes asynchronously. */
   public async getNodesIterator(
     requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions,
@@ -494,6 +499,8 @@ export class PresentationManager implements Disposable {
     const result = await this._requestsHandler.getFilteredNodePaths(this.toRpcTokenOptions(options));
     return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
+
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
   /**
    * Get information about the sources of content when building it for specific ECClasses. Sources involve classes of the primary select instance,

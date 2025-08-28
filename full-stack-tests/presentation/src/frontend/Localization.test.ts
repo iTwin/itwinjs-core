@@ -331,6 +331,7 @@ const CUSTOM_NODES_RULESET: Ruleset = {
       ruleType: RuleTypes.RootNodes,
       specifications: [
         {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           specType: ChildNodeSpecificationTypes.CustomNode,
           type: "root",
           label: "@Test:string@",

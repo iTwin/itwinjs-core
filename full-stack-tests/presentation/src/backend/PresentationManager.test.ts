@@ -204,6 +204,7 @@ describe("PresentationManager", () => {
               ruleType: RuleTypes.RootNodes,
               specifications: [
                 {
+                  // eslint-disable-next-line @typescript-eslint/no-deprecated
                   specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
                   classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
                 },

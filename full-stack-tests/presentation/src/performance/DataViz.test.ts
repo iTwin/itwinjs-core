@@ -436,6 +436,7 @@ describe("#performance DataViz requests", () => {
                     ruleType: RuleTypes.RootNodes,
                     specifications: [
                       {
+                        // eslint-disable-next-line @typescript-eslint/no-deprecated
                         specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
                         classes: { schemaName: contentClassInfo.schemaName, classNames: [contentClassInfo.name], arePolymorphic: false },
                         relatedInstances:
@@ -497,9 +498,11 @@ describe("#performance DataViz requests", () => {
         };
         const idEntries = new Map<string, { elementIds: Id64String[]; childIds: Id64String[] }>();
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         async function getNodeKeys(ruleset: Ruleset, node: Node) {
           const keys: InstanceKey[] = [];
           const key = node.key;
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           if (NodeKey.isInstancesNodeKey(key)) {
             pushToArrayNoSpread(keys, key.instanceKeys);
           }
@@ -509,6 +512,7 @@ describe("#performance DataViz requests", () => {
           return keys;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         async function loadHierarchy(ruleset: Ruleset, parentKey?: NodeKey): Promise<InstanceKey[]> {
           ++requestsCount.elementIds;
           const { items } = await Presentation.presentation.getNodesIterator({

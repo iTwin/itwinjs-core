@@ -427,6 +427,8 @@ export class PresentationManager {
     return this._detail.getRulesetId(rulesetOrId);
   }
 
+  /* eslint-disable @typescript-eslint/no-deprecated */
+
   /**
    * Retrieves nodes
    * @public
@@ -484,6 +486,8 @@ export class PresentationManager {
     const result = await this._detail.getFilteredNodePaths(requestOptions);
     return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
+
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
   /**
    * Get information about the sources of content when building it for specific ECClasses. Sources involve classes of the primary select instance,
@@ -758,6 +762,7 @@ export class PresentationManager {
    * Compares two hierarchies specified in the request options
    * @public
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public async compareHierarchies(requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo> {
     if (!requestOptions.prev.rulesetOrId && !requestOptions.prev.rulesetVariables) {
       return { changes: [] };

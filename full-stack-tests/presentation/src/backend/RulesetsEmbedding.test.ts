@@ -19,6 +19,7 @@ const RULESET_1: Ruleset = {
       ruleType: RuleTypes.RootNodes,
       specifications: [
         {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           specType: ChildNodeSpecificationTypes.CustomNode,
           type: "test 1",
           label: "label 1",

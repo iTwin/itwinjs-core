@@ -135,6 +135,8 @@ export class PresentationManagerDetail implements Disposable {
     return this._nativePlatform!;
   }
 
+  /* eslint-disable @typescript-eslint/no-deprecated */
+
   public async getNodes(
     requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute,
   ): Promise<string> {
@@ -200,6 +202,8 @@ export class PresentationManagerDetail implements Disposable {
     const paths: NodePathElement[] = deepReplaceNullsToUndefined(JSON.parse(await this.request(params)));
     return paths;
   }
+
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
   public async getContentDescriptor(requestOptions: WithCancelEvent<Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet>>>): Promise<string> {
     const { rulesetOrId, contentFlags, ...strippedOptions } = requestOptions;
@@ -452,6 +456,7 @@ export function getKeysForContentRequest(
   };
   const classInstancesMap = new Map<string, Set<string>>();
   keys.forEach((key) => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     if (Key.isNodeKey(key)) {
       result.nodeKeys.push(key);
     }

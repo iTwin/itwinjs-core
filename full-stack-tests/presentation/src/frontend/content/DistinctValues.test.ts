@@ -299,6 +299,7 @@ describeContentTestSuite("Distinct Values", ({ getDefaultSuiteIModel }) => {
           ruleType: RuleTypes.RootNodes,
           specifications: [
             {
+              // eslint-disable-next-line @typescript-eslint/no-deprecated
               specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
               classes: [
                 {
@@ -317,6 +318,7 @@ describeContentTestSuite("Distinct Values", ({ getDefaultSuiteIModel }) => {
           condition: `ParentNode.IsOfClass("Model", "BisCore")`,
           specifications: [
             {
+              // eslint-disable-next-line @typescript-eslint/no-deprecated
               specType: ChildNodeSpecificationTypes.RelatedInstanceNodes,
               relationshipPaths: [
                 {

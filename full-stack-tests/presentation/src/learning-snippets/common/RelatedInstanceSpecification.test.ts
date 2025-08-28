@@ -234,9 +234,11 @@ describe("Learning Snippets", () => {
       });
       expect(total).to.eq(18);
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       async function testSchemaNode(schemaNode: Node) {
         expect(schemaNode).to.containSubset({
           key: {
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
             type: StandardNodeTypes.ECPropertyGroupingNode,
             className: "ECDbMeta:ECSchemaDef",
             propertyName: "Name",
