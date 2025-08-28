@@ -94,6 +94,6 @@ export class WebEditServer extends IModelJsExpressServer {
 
   constructor(protocol: WebAppRpcProtocol, config = IModelJsExpressServer.defaults) {
     super(protocol, config);
-    enableWs(this._app);
+    enableWs(this._app as any);
   }
 }
