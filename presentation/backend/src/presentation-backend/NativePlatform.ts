@@ -135,6 +135,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
   return class implements NativePlatformDefinition {
     private _nativeAddon: IModelJsNative.ECPresentationManager;
     public constructor() {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const cacheConfig = props.cacheConfig ?? { mode: HierarchyCacheMode.Disk, directory: "" };
       const defaultFormats = props.defaultFormats ? this.getSerializedDefaultFormatsMap(props.defaultFormats) : {};
       this._nativeAddon = new IModelNative.platform.ECPresentationManager({ ...props, cacheConfig, defaultFormats });

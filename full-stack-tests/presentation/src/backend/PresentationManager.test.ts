@@ -195,6 +195,7 @@ describe("PresentationManager", () => {
     it("cancels 'getNodes' request", async () => {
       using manager = new PresentationManager();
       const cancelEvent = new BeEvent<() => void>();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const promise = manager.getNodes({
         imodel,
         rulesetOrId: {

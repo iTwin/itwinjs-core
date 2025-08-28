@@ -520,6 +520,7 @@ function createNativePlatform(
     id,
     taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: workerThreadsCount },
     updateCallback,
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     cacheConfig: createCacheConfig(caching?.hierarchies),
     contentCacheSize: caching?.content?.size,
     workerConnectionCacheSize: caching?.workerConnectionCacheSize,
@@ -527,6 +528,7 @@ function createNativePlatform(
     useMmap,
   }))();
 
+  /* eslint-disable @typescript-eslint/no-deprecated */
   function createCacheConfig(config?: HierarchyCacheConfig): IModelJsNative.ECPresentationHierarchyCacheConfig {
     switch (config?.mode) {
       case HierarchyCacheMode.Disk:
@@ -545,6 +547,7 @@ function createNativePlatform(
         return { mode: HierarchyCacheMode.Disk, directory: "" };
     }
   }
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
   function normalizeDirectory(directory?: string): string {
     return directory ? path.resolve(directory) : "";

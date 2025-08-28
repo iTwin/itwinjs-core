@@ -69,6 +69,7 @@ describe("ReadWrite", () => {
             </ECEntityClass>
         </ECSchema>`;
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const nodesRequest = manager.getNodes({
         imodel,
         rulesetOrId: ruleset,
