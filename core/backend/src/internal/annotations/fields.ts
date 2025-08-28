@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ContainerComponent, ECSqlValueType, FieldRun, RelationshipProps, TextBlock, TextBlockComponent } from "@itwin/core-common";
+import { ECSqlValueType, FieldRun, RelationshipProps, TextBlock } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
-import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
+import { collectFieldRuns, isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, Property, StructArrayProperty } from "@itwin/ecschema-metadata";
 
 // A FieldPropertyPath must ultimately resolve to one of these primitive types.
@@ -265,26 +265,12 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
   return true;
 }
 
-// TODO: I have this duplicated in `ElementDrivesTextAnnotation`, should I just have this in one place
-function collectFieldRuns(component: TextBlockComponent, runs: FieldRun[] = []): FieldRun[] {
-  if (component.type === "field") {
-    runs.push(component as FieldRun);
-  }
-
-  // If component.type is either "paragraph" or "list" recurse through
-  if (component instanceof ContainerComponent && component.children.length > 0) {
-    component.children.forEach(child => collectFieldRuns(child, runs));
-  }
-
-  return runs;
-}
-
 // Re-evaluates the display strings for all fields that target the element specified by `context` and returns the number
 // of fields whose display strings changed as a result.
 export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext): number {
-  let numUpdated = 0;
-  // TODO: iterate through nested objects - also need to test these
   const runs = collectFieldRuns(textBlock);
+  let numUpdated = 0;
+  
   runs.forEach(run => {
     if (run.type === "field" && updateField(run, context)) {
       ++numUpdated;

@@ -49,6 +49,31 @@ export function isITextAnnotation(element: Element): element is ITextAnnotation 
   return ["getTextBlocks", "updateTextBlocks"].every((x) => x in element && typeof (element as any)[x] === "function");
 }
 
+
+/**
+ * Recursively collects all FieldRun components from a given TextBlockComponent tree.
+ *
+ * Traverses the provided component and its children, returning an array of all FieldRun instances found.
+ * Useful for extracting all field runs from nested text structures such as paragraphs and lists.
+ *
+ * @param component The root TextBlockComponent to search for FieldRuns.
+ * @param runs (optional) An array to accumulate results; used for recursion.
+ * @returns An array of FieldRun instances found within the component tree.
+ * @beta
+ */
+export function collectFieldRuns(component: TextBlockComponent, runs: FieldRun[] = []): FieldRun[] {
+  if (component.type === "field") {
+    runs.push(component as FieldRun);
+  }
+
+  // If component.type is either "paragraph" or "list" recurse through
+  if (component instanceof ContainerComponent && component.children.length > 0) {
+    component.children.forEach(child => collectFieldRuns(child, runs));
+  }
+
+  return runs;
+}
+
 /** A relationship in which the source element hosts one or more properties that are displayed by a target [[ITextAnnotation]] element.
  * This relationship is used to automatically update the [FieldRun]($common)s contained in the target element when the source element is modified.
  * An [[ITextAnnotation]] element should invoke [[updateFieldDependencies]] from its [[Element.onInserted]] and [[Element.onUpdated]] functions to
@@ -77,19 +102,6 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
   public static isSupportedForIModel(iModel: IModelDb): boolean {
     const bisCoreVersion = iModel.querySchemaVersionNumbers("BisCore");
     return undefined !== bisCoreVersion && bisCoreVersion.compare(minBisCoreVersion) >= 0;
-  }
-
-  private static collectFieldRuns(component: TextBlockComponent, runs: FieldRun[] = []): FieldRun[] {
-    if (component.type === "field") {
-      runs.push(component as FieldRun);
-    }
-
-    // If component.type is either "paragraph" or "list" recurse through
-    if (component instanceof ContainerComponent && component.children.length > 0) {
-      component.children.forEach(child => this.collectFieldRuns(child, runs));
-    }
-
-    return runs;
   }
 
   /** Examines all of the [FieldRun]($common)s within the specified [[ITextAnnotation]] and ensures that the appropriate
@@ -123,7 +135,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     const blocks = annotationElement.getTextBlocks();
 
     for (const block of blocks) {
-      const fieldRuns = this.collectFieldRuns(block.textBlock);
+      const fieldRuns = collectFieldRuns(block.textBlock);
       fieldRuns.forEach(run => {
         if (isValidSourceId(run.propertyHost.elementId)) {
           sourceToRelationship.set(run.propertyHost.elementId, null);
