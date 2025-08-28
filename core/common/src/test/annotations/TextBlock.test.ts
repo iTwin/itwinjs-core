@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { beforeEach, describe, expect, it } from "vitest";
-import { ContainerComponent, ContainerComponentType, FieldRun, FractionRun, FractionRunProps, List, ListProps, Paragraph, ParagraphProps, RunComponentType, RunProps, TextBlock, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps } from "../../core-common";
+import { ContainerComponentType, FieldRun, FractionRunProps, List, ListProps, Paragraph, ParagraphProps, RunComponentType, RunProps, TextBlock, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps } from "../../core-common";
 
 function makeTextRun(content?: string, styleOverrides?: TextStyleSettingsProps): TextRunProps {
   return {
@@ -158,67 +158,6 @@ describe("TextBlockComponent", () => {
     const fractionSeparator = "F";
     expect(tb.stringify({ paragraphBreak, lineBreak, fractionSeparator })).to.equal("abcP1Fπ def   ghiLj k lPPPLPFPmnoPLL");
   });
-
-  it("adds items to list", () => {
-    const props: TextBlockProps = {
-      styleId: "0x42",
-      children: [
-        makeParagraph([
-          makeTextRun("abc"),
-        ]),
-        makeParagraph([
-          makeFractionRun("1", "π"),
-          makeTextRun(" def   ghi"),
-          { type: RunComponentType.LineBreak },
-          { type: RunComponentType.Tab }
-        ]),
-        makeList([
-          makeParagraph([makeTextRun("item 1"), makeFractionRun("1", "π")]),
-          makeParagraph([makeTextRun("item 2")]),
-          makeParagraph([makeTextRun("item 3")]),
-        ]),
-      ],
-    };
-
-    const tb = TextBlock.create(props);
-    expect(tb.children.length).to.equal(3);
-
-    const p0 = tb.children[0] as Paragraph;
-    const p1 = tb.children[1] as Paragraph;
-    const p2 = tb.children[2] as List;
-
-    expect(p0.children).toBeDefined();
-    expect(p1.children).toBeDefined();
-    expect(p2.children).toBeDefined();
-
-    const p0Children = p0.children;
-    expect(p0Children.length).to.equal(1);
-
-    const p2Children = p2.children;
-    expect(p2Children.length).to.equal(3);
-
-    const p2Item0 = p2Children[0];
-    const p2Item1 = p2Children[1];
-    const p2Item2 = p2Children[2];
-
-    expect(p2Item0.children.length).toBe(1);
-    expect(p2Item1.children.length).toBe(1);
-    expect(p2Item2.children.length).toBe(1);
-
-    expect(p2Item0.children[0] instanceof Paragraph).toBeTruthy();
-    expect(p2Item1.children[0] instanceof TextRun).toBeTruthy();
-    expect(p2Item2.children[0] instanceof TextRun).toBeTruthy();
-
-    expect(p2Item0.children[0].stringify()).toBe("item 11/π");
-    expect(p2Item1.children[0].stringify()).toBe("item 2");
-    expect(p2Item2.children[0].stringify()).toBe("item 3");
-
-    expect(p2Item0.children[0] instanceof ContainerComponent).toBeTruthy();
-    const listParagraph0 = p2Item0.children[0] as ContainerComponent;
-    expect(listParagraph0?.children.length).toBe(2);
-    expect(listParagraph0?.children[0] instanceof TextRun).toBeTruthy();
-    expect(listParagraph0?.children[1] instanceof FractionRun).toBeTruthy();
-  });
 });
 
 describe("TextBlock", () => {
@@ -264,9 +203,44 @@ describe("TextBlock", () => {
       expect(tb.children[0].children.length).to.equal(2);
     });
   });
+
+  it("adds items to list", () => {
+    const props: TextBlockProps = {
+      styleId: "0x42",
+      children: [
+        makeList([
+          makeParagraph([makeTextRun("item 1"), makeFractionRun("1", "π")]),
+          makeParagraph([makeTextRun("item 2")]),
+          makeParagraph([makeTextRun("item 3")]),
+        ]),
+      ],
+    };
+
+    const tb = TextBlock.create(props);
+    expect(tb.children.length).to.equal(1);
+    const list = tb.children[0] as List;
+    expect(list.children).toBeDefined();
+    expect(list.children.length).to.equal(3);
+
+    const listItem0 = list.children[0];
+    const listItem1 = list.children[1];
+    const listItem2 = list.children[2];
+
+    expect(listItem0.type).toBe("paragraph");
+    expect(listItem0.children.length).toBe(2);
+    expect(listItem0.stringify()).toBe("item 11/π");
+
+    expect(listItem1.type).toBe("paragraph");
+    expect(listItem1.children.length).toBe(1);
+    expect(listItem1.stringify()).toBe("item 2");
+
+    expect(listItem2.type).toBe("paragraph");
+    expect(listItem2.children.length).toBe(1);
+    expect(listItem2.stringify()).toBe("item 3");
+  });
 });
 
-describe.skip("FieldRun", () => {
+describe("FieldRun", () => {
   describe("create", () => {
     it("initializes fields", () => {
       const fieldRun = FieldRun.create({

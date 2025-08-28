@@ -293,19 +293,6 @@ export namespace Run { // eslint-disable-line @typescript-eslint/no-redeclare
   }
 }
 
-
-// /** [[TextBlockComponent]]s contained within a [[Paragraph]].
-//  * @beta
-//  */
-// export type (Paragraph | List) = Paragraph | List;
-
-// /** The JSON representation of a [[Run]].
-//  * Use the `type` field to discriminate between the different kinds of runs.
-//  * @beta
-//  */
-// export type (ParagraphProps | ListProps) = ParagraphProps | ListProps;
-
-
 /** Describes whether the characters of a [[TextRun]] should be displayed normally, in subscript, or in superscript.
  * [[TextStyleSettings.superScriptScale]], [[TextStyleSettings.subScriptScale]], [[TextStyleSettings.superScriptOffsetFactor]], and [[TextStyleSettings.subScriptOffsetFactor]]
  * affect how the content is rendered.
