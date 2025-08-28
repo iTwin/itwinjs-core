@@ -167,7 +167,7 @@ export interface GeometricElement3dProps extends GeometricElementProps {
  * @public @preview
  * @extensions
  */
-export interface TextAnnotation3dProps extends GeometricElement3dProps {
+export interface TextAnnotation3dProps extends GeometricElement3dProps, ITextAnnotationProps {
   /** The stringified JSON representation of the text annotation.
    * @see [[TextAnnotationProps]] for the JSON representation.
    * @note Don't set this property directly - use [TextAnnotation3d.setAnnotation]($backend) instead.
@@ -250,11 +250,20 @@ export interface GeometricElement2dProps extends GeometricElementProps {
   typeDefinition?: RelatedElementProps;
 }
 
+/**
+ * Properties of an ITextAnnotation.
+ * @beta
+ */
+export interface ITextAnnotationProps {
+  /** The default [[AnnotationTextStyle]] used by the annotation. */
+  defaultTextStyle: RelatedElementProps;
+}
+
 /** Properties that define a [TextAnnotation2d]($backend).
  * @public @preview
  * @extensions
  */
-export interface TextAnnotation2dProps extends GeometricElement2dProps {
+export interface TextAnnotation2dProps extends GeometricElement2dProps, ITextAnnotationProps {
   /** The stringified JSON representation of the text annotation.
    * @see [[TextAnnotationProps]] for the JSON representation.
    * @note Don't set this property directly - use [TextAnnotation2d.setAnnotation]($backend) instead.

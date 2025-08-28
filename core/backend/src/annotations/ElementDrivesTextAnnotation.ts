@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { RelationshipProps, TextBlock } from "@itwin/core-common";
+import { RelatedElement, RelationshipProps, TextBlock } from "@itwin/core-common";
 import { ElementDrivesElement } from "../Relationship";
 import { IModelDb } from "../IModelDb";
 import { Element } from "../Element";
@@ -59,7 +59,7 @@ export function isITextAnnotation(element: Element): element is ITextAnnotation 
  */
 export class ElementDrivesTextAnnotation extends ElementDrivesElement {
   public static override get className(): string { return "ElementDrivesTextAnnotation"; }
-  
+
   /** @internal */
   public static override onRootChanged(props: RelationshipProps, iModel: IModelDb): void {
     updateElementFields(props, iModel, false);
@@ -142,5 +142,15 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
       const props = annotationElement.iModel.relationships.getInstanceProps("BisCore.ElementDrivesTextAnnotation", relationshipId);
       annotationElement.iModel.relationships.deleteInstance(props);
     }
+  }
+}
+
+/** Relationship indicating that the [[AnnotationTextStyle]] is being used as the default style for the [[ITextAnnotation]].
+ * @beta
+ */
+export class TextAnnotationUsesTextStyle extends RelatedElement {
+  public static classFullName = "BisCore:TextAnnotationUsesTextStyle";
+  public constructor(annotationTextStyleId: Id64String, relClassName: string = TextAnnotationUsesTextStyle.classFullName) {
+    super({ id: annotationTextStyleId, relClassName });
   }
 }

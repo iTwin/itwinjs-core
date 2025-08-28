@@ -14,7 +14,7 @@ import { Schema, Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
 import { PhysicalElement } from "../../Element";
 import { ElementOwnsUniqueAspect, ElementUniqueAspect, FontFile, TextAnnotation3d } from "../../core-backend";
-import { ElementDrivesTextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
+import { ElementDrivesTextAnnotation, TextAnnotationUsesTextStyle } from "../../annotations/ElementDrivesTextAnnotation";
 
 describe("updateField", () => {
   const mockElementId = "0x1";
@@ -273,7 +273,7 @@ describe("Field evaluation", () => {
       element: new ElementOwnsUniqueAspect(id),
     };
     imodel.elements.insertAspect(aspectProps);
-    
+
     imodel.saveChanges();
     return id;
   }
@@ -396,7 +396,7 @@ describe("Field evaluation", () => {
 
   describe("updateFields", () => {
     it("recomputes cached content", () => {
-      const textBlock = TextBlock.create({ styleId: "0x123" });
+      const textBlock = TextBlock.create();
       const fieldRun = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "intProp" },
@@ -413,7 +413,7 @@ describe("Field evaluation", () => {
     });
 
     it("does not update a field if recomputed content matches cached content", () => {
-      const textBlock = TextBlock.create({ styleId: "0x123" });
+      const textBlock = TextBlock.create();
       const fieldRun = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "intProp" },
@@ -430,7 +430,7 @@ describe("Field evaluation", () => {
     });
 
     it("returns the number of fields updated", () => {
-      const textBlock = TextBlock.create({ styleId: "0x123" });
+      const textBlock = TextBlock.create();
       const fieldRun1 = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "intProp" },
@@ -465,13 +465,14 @@ describe("Field evaluation", () => {
         angles: YawPitchRollAngles.createDegrees(0, 0, 0).toJSON(),
       },
       classFullName: TextAnnotation3d.classFullName,
+      defaultTextStyle: new TextAnnotationUsesTextStyle("0x123").toJSON(),
     }, imodel);
 
     if (textBlock) {
       const annotation = TextAnnotation.fromJSON({ textBlock: textBlock.toJSON() });
       elem.setAnnotation(annotation);
     }
-    
+
     return elem.insert();
   }
 
@@ -488,7 +489,7 @@ describe("Field evaluation", () => {
 
     it("can be inserted", () => {
       expectNumRelationships(0);
-      
+
       const targetId = insertAnnotationElement(undefined);
       expect(targetId).not.to.equal(Id64.invalid);
 
@@ -526,7 +527,7 @@ describe("Field evaluation", () => {
     describe("updateFieldDependencies", () => {
       it("creates exactly one relationship for each unique source element on insert and update", () => {
         const source1 = insertTestElement();
-        const block = TextBlock.create({ styleId: "0x123" });
+        const block = TextBlock.create();
         block.appendRun(createField(source1, "1"));
         const targetId = insertAnnotationElement(block);
         imodel.saveChanges();
@@ -563,7 +564,7 @@ describe("Field evaluation", () => {
         const sourceA = insertTestElement();
         const sourceB = insertTestElement();
 
-        const block = TextBlock.create({ styleId: "0x123" });
+        const block = TextBlock.create();
         block.appendRun(createField(sourceA, "A"));
         block.appendRun(createField(sourceB, "B"));
         const targetId = insertAnnotationElement(block);
@@ -579,7 +580,7 @@ describe("Field evaluation", () => {
         target.setAnnotation(anno);
         target.update();
         imodel.saveChanges();
-        
+
         expectNumRelationships(1, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).to.be.undefined;
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).not.to.be.undefined;
@@ -610,7 +611,7 @@ describe("Field evaluation", () => {
 
       it("ignores invalid source element Ids", () => {
         const source = insertTestElement();
-        const block = TextBlock.create({ styleId: "0x123" });
+        const block = TextBlock.create();
         block.appendRun(createField(Id64.invalid, "invalid"));
         block.appendRun(createField("0xbaadf00d", "non-existent"));
         block.appendRun(createField(source, "valid"));
@@ -620,7 +621,7 @@ describe("Field evaluation", () => {
         expectNumRelationships(1, targetId);
       });
     });
-    
+
     function expectText(expected: string, elemId: Id64String): void {
       const elem = imodel.elements.getElement<TextAnnotation3d>(elemId);
       const anno = elem.getAnnotation()!;
@@ -630,15 +631,15 @@ describe("Field evaluation", () => {
 
     it("updates fields when source element is modified or deleted", () => {
       const sourceId = insertTestElement();
-      const block = TextBlock.create({ styleId: "0x123" });
+      const block = TextBlock.create();
       block.appendRun(createField(sourceId, "old value"));;
-      
+
       const targetId = insertAnnotationElement(block);
       imodel.saveChanges();
 
       const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
       expect(target.getAnnotation()).not.to.be.undefined;
-      
+
       expectText("100", targetId);
 
       let source = imodel.elements.getElement<TestElement>(sourceId);
@@ -663,7 +664,7 @@ describe("Field evaluation", () => {
 
     it("updates fields when source element aspect is modified, deleted, or recreated", () => {
       const sourceId = insertTestElement();
-      const block = TextBlock.create({ styleId: "0x123" });
+      const block = TextBlock.create();
       block.appendRun(createField({ elementId: sourceId, schemaName: "Fields", className: "TestAspect" }, "", "aspectProp"));
 
       const targetId = insertAnnotationElement(block);
@@ -697,7 +698,7 @@ describe("Field evaluation", () => {
     it("updates only fields for specific modified element", () => {
       const sourceA = insertTestElement();
       const sourceB = insertTestElement();
-      const block = TextBlock.create({ styleId: "0x123" });
+      const block = TextBlock.create();
       block.appendRun(createField(sourceA, "A"));
       block.appendRun(createField(sourceB, "B"));
 
@@ -715,7 +716,7 @@ describe("Field evaluation", () => {
 
     it("supports complex property paths", () => {
       const sourceId = insertTestElement();
-      const block = TextBlock.create({ styleId: "0x123" });
+      const block = TextBlock.create();
       block.appendRun(createField(sourceId, "", "outerStruct", ["innerStructs", 1, "doubles", -2]));
       block.appendRun(createField(sourceId, "", "jsonProperties", undefined, ["zoo", "birds", 0, "name"]));
       const targetId = insertAnnotationElement(block);
