@@ -807,7 +807,7 @@ export interface FormatSet {
     label: string;
     // (undocumented)
     name: string;
-    unitSystem: string;
+    unitSystem: UnitSystemKey;
 }
 
 // @beta
