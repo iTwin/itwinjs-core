@@ -74,9 +74,9 @@ describe("Learning Snippets", () => {
           })
           .then(async (x) => collect(x!.items));
         expect(items).to.be.lengthOf(4);
-        expect(items[0]).to.containSubset({ label: { displayValue: "-45.00 x -35.26" } });
-        expect(items[1]).to.containSubset({ label: { displayValue: "-90.00 x 0.00" } });
-        expect(items[2]).to.containSubset({ label: { displayValue: "-107.42 x -160.99" } });
+        expect(items[0]).to.containSubset({ label: { displayValue: "-107.42 x -160.99" } });
+        expect(items[1]).to.containSubset({ label: { displayValue: "-45.00 x -35.26" } });
+        expect(items[2]).to.containSubset({ label: { displayValue: "-90.00 x 0.00" } });
         expect(items[3]).to.containSubset({ label: { displayValue: "0.00 x 90.00" } });
       });
     });
