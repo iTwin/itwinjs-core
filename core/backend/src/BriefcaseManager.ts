@@ -550,7 +550,6 @@ export class BriefcaseManager {
     if (reverse)
       changesets.reverse();
 
-
     let appliedChangesets = -1;
     if (db[_nativeDb].hasPendingTxns() && !reverse && !arg.noFastForward) {
       // attempt to perform fast forward
@@ -599,9 +598,12 @@ export class BriefcaseManager {
       } else {
         // Only Briefcase has change management. Following is
         // for test related to standalone db with txn enabled.
-        for(const txnId of nativeDb.pullMergeRebaseBegin()) {
-          nativeDb.pullMergeReinstateTxn(txnId);
-          nativeDb.pullMergeSaveRebasedTxn(txnId);
+        nativeDb.pullMergeRebaseBegin();
+        let txnId= nativeDb.pullMergeRebaseNext();
+        while(txnId) {
+          nativeDb.pullMergeRebaseReinstateTxn();
+          nativeDb.pullMergeRebaseUpdateTxn();
+          txnId = nativeDb.pullMergeRebaseNext();
         }
         nativeDb.pullMergeRebaseEnd();
         if (!nativeDb.isReadonly) {
