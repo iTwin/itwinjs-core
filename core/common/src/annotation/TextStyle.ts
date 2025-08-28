@@ -291,7 +291,7 @@ export class TextStyleSettings {
   public readonly leader: Readonly<Required<TextLeaderStyleProps>>;
   /** The size (in meters) used to calculate the tab stops in a run.
    * These are equally spaced from the left edge of the TextBlock.
-   * [[tabInterval]] is also used in lists to compute . Default is 4 the offset of children.
+   * [[tabInterval]] is also used in lists to compute the offset of children.
    * This is computed by [[indentation]] + ([[tabInterval]] * depth).
    */
   public readonly tabInterval: number;
