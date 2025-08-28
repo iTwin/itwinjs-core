@@ -175,7 +175,8 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
       return undefined;
 
     const schema = JSON.parse(schemaRow.schema) as SchemaProps;
-    return SchemaParser.parse(schema, context);
+    const schemaInfos = await this._schemaInfoCache.getSchemasByContext(context) ?? [];
+    return SchemaParser.parse(schema, schemaInfos);
   }
 
   /**
@@ -372,10 +373,12 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
    * @internal
    */
   public async getSchemaPartials(schemaKey: SchemaKey, context: SchemaContext): Promise<ReadonlyArray<SchemaProps> | undefined> {
+    const start = Date.now();
     const [schemaRow] = await this.executeQuery<SchemaStubRow>(ecsqlQueries.schemaStubQuery, {
        parameters: { schemaName: schemaKey.name },
        limit: 1
     });
+    this.options.performanceLogger?.logSchemaItem(start, schemaKey.name, 'SchemaPartials', 1);
 
     if (!schemaRow)
       return undefined;
@@ -419,7 +422,8 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
 
     await addSchema(schemaKey);
 
-    await parseSchemaItemStubs(schemaKey.name, context, JSON.parse(schemaRow.items, reviver), addItems);
+    const schemaInfos = await this._schemaInfoCache.getSchemasByContext(context) ?? [];
+    await parseSchemaItemStubs(schemaKey.name, JSON.parse(schemaRow.items, reviver), addItems, schemaInfos);
 
     return schemaPartials;
   }
@@ -436,7 +440,8 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
       return "string" === typeof itemRow.item ? JSON.parse(itemRow.item) : itemRow.item;
     });
 
-    return await SchemaParser.parseSchemaItems(items, schemaName, context) as Array<TRow> ?? []
+    const schemaInfos = await this._schemaInfoCache.getSchemasByContext(context) ?? [];
+    return await SchemaParser.parseSchemaItems(items, schemaName, schemaInfos) as Array<TRow> ?? []
   }
 
   private async getFullSchema(schemaKey: SchemaKey, context: SchemaContext): Promise<SchemaProps | undefined> {
@@ -451,7 +456,8 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
       (schema as any).items = (schema.items as any).map((itemRow: SchemaItemRow) => { return itemRow.item; });
     }
 
-    return SchemaParser.parse(schema, context);
+    const schemaInfos = await this._schemaInfoCache.getSchemasByContext(context) ?? [];
+    return SchemaParser.parse(schema, schemaInfos);
   }
 
   private async getFullSchemaMultipleQueries(schemaKey: SchemaKey, context: SchemaContext): Promise<SchemaProps | undefined> {
@@ -490,7 +496,7 @@ function parseSchemaReference(referenceName: string): WithSchemaKey {
   return { schemaKey: SchemaKey.parseString(referenceName) };
 }
 
-async function parseSchemaItemStubs(schemaName: string, context: SchemaContext, itemRows: Array<SchemaItemStubRow>, addItemsHandler: AddSchemaItemHandler) {
+async function parseSchemaItemStubs(schemaName: string, itemRows: Array<SchemaItemStubRow>, addItemsHandler: AddSchemaItemHandler, schemaInfos: Iterable<SchemaInfo>) {
   if (!itemRows || itemRows.length === 0) {
     return;
   }
@@ -504,7 +510,7 @@ async function parseSchemaItemStubs(schemaName: string, context: SchemaContext, 
       const baseClassItem = baseClasses[index];
       const baseClassName = baseClassItem ? `${baseClassItem.schema}.${baseClassItem.name}` : undefined;
 
-      const schemaItem = await SchemaParser.parseItem(currentItem, currentItem.schema, context);
+      const schemaItem = await SchemaParser.parseItem(currentItem, currentItem.schema, schemaInfos);
       await addItemsHandler(currentItem.schema, {
         ...schemaItem,
         name: schemaItem.name!,
@@ -515,7 +521,7 @@ async function parseSchemaItemStubs(schemaName: string, context: SchemaContext, 
   };
 
   for (const itemRow of itemRows) {
-    const schemaItem = await SchemaParser.parseItem(itemRow, schemaName, context);
+    const schemaItem = await SchemaParser.parseItem(itemRow, schemaName, schemaInfos);
     await addItemsHandler(schemaName, {
       ...schemaItem,
       name: schemaItem.name!,
@@ -528,7 +534,7 @@ async function parseSchemaItemStubs(schemaName: string, context: SchemaContext, 
     await parseBaseClasses(itemRow.baseClasses);
 
     for (const mixinRow of itemRow.mixins || []) {
-      const mixinItem = await SchemaParser.parseItem(mixinRow, mixinRow.schema, context);
+      const mixinItem = await SchemaParser.parseItem(mixinRow, mixinRow.schema, schemaInfos);
       await addItemsHandler(mixinRow.schema, {
         ...mixinItem,
         name: mixinItem.name!,
