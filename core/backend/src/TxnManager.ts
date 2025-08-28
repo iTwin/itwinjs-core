@@ -323,11 +323,12 @@ export class ChangeMergeManager {
     return this.getTxnProps(this._iModel.txns.queryPreviousTxnId(this._iModel.txns.getCurrentTxnId()));
   }
   public async resume() {
+    const nativeDb = this._iModel[_nativeDb];
+    const txns = this._iModel.txns;
     try {
-        const nativeDb = this._iModel[_nativeDb];
-        const txns = this._iModel.txns;
-        // Rebase local changes
-        for(const txnId of nativeDb.pullMergeRebaseBegin()) {
+        nativeDb.pullMergeRebaseBegin();
+        let txnId =  nativeDb.pullMergeRebaseNext();
+        while(txnId) {
           const txnProps = this.getTxnProps(txnId);
           if (!txnProps) {
             throw new Error(`Transaction ${txnId} not found`);
@@ -337,24 +338,26 @@ export class ChangeMergeManager {
           Logger.logInfo(BackendLoggerCategory.IModelDb, `Rebasing local changes for transaction ${txnId}`);
           const shouldReinstate = this._rebaseHandler ? this._rebaseHandler.shouldReinstate(txnProps) : true;
           if (shouldReinstate) {
-            nativeDb.pullMergeReinstateTxn(txnId);
+            nativeDb.pullMergeRebaseReinstateTxn();
             Logger.logInfo(BackendLoggerCategory.IModelDb, `Reinstated local changes for transaction ${txnId}`);
+          }
 
           if (this._rebaseHandler) {
             await this._rebaseHandler.recompute(txnProps);
           }
 
-          nativeDb.pullMergeSaveRebasedTxn(txnId);
+          nativeDb.pullMergeRebaseUpdateTxn();
           txns.onRebaseTxnEnd.raiseEvent(txnProps);
+
+          txnId = nativeDb.pullMergeRebaseNext();
         }
-      }
 
       nativeDb.pullMergeRebaseEnd();
       if (!nativeDb.isReadonly) {
         nativeDb.saveChanges("Merge.");
       }
     } catch (err) {
-      this._iModel.abandonChanges();
+      nativeDb.pullMergeRebaseAbortTxn();
       throw err;
     }
   }
