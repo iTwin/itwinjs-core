@@ -24,7 +24,7 @@ describe("change merge manager", function (this: Suite) {
 
     const iModelId = await HubMock.createNewIModel({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelName: "Test", description: "TestSubject" });
 
-    const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId});
+    const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     b1.saveChanges();
 
@@ -71,11 +71,11 @@ describe("change merge manager", function (this: Suite) {
 
     await b1.pushChanges({ description: "init" });
 
-    const b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user2", iTwinId: HubMock.iTwinId, iModelId});
+    const b2 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user2", iTwinId: HubMock.iTwinId, iModelId });
     b2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     b2.saveChanges();
 
-    const b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user2", iTwinId: HubMock.iTwinId, iModelId});
+    const b3 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user2", iTwinId: HubMock.iTwinId, iModelId });
     b3.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     b3.saveChanges();
     //-----------------------------------------------------
@@ -88,7 +88,7 @@ describe("change merge manager", function (this: Suite) {
     };
 
     const expectedInsertedEl = new Map<Id64String, { id: Id64String, isIndirect: boolean }>();
-     const insertDirectEl = (b: BriefcaseDb) => {
+    const insertDirectEl = (b: BriefcaseDb) => {
       const id = b.elements.insertElement({ ...baseProps, prop1: `${b.briefcaseId}` } as any);
       expectedInsertedEl.set(id, { id, isIndirect: false });
     }
@@ -144,18 +144,25 @@ describe("change merge manager", function (this: Suite) {
     await b2.pullChanges();
     await b3.pullChanges();
 
+
+    const directEls = Array.from(expectedInsertedEl.values()).filter(v => !v.isIndirect).map(v => v.id);
+    const indirectEls = Array.from(expectedInsertedEl.values()).filter(v => v.isIndirect).map(v => v.id);
+
     //-----------------------------------------------------
     await b1.locks.acquireLocks({ shared: [IModel.repositoryModelId, drawingCategoryId, drawingModelId] });
     insertDirectEl(b1)
+    b1.txns.withIndirectTxnMode(()=>{
+      b1.elements.deleteElement(indirectEls[0])
+    });
     b1.saveChanges("inserted new element");
-    await b1.pushChanges({description: "insert element"});
+    await b1.pushChanges({ description: "insert element" });
     //-----------------------------------------------------
 
     await b2.locks.acquireLocks({ shared: [IModel.repositoryModelId, drawingCategoryId, drawingModelId] });
 
     const expectedUpdatedEl = new Map<Id64String, { id: Id64String, isIndirect: boolean }>();
     const updateDirectEl = async (b: BriefcaseDb, elId: Id64String) => {
-      await b.locks.acquireLocks({exclusive: [elId]});
+      await b.locks.acquireLocks({ exclusive: [elId] });
       const elProps = b.elements.getElementProps(elId);
       b.elements.updateElement({ ...elProps, prop1: `${b.briefcaseId}` } as any);
       expectedUpdatedEl.set(elId, { id: elId, isIndirect: false });
@@ -167,31 +174,54 @@ describe("change merge manager", function (this: Suite) {
       expectedUpdatedEl.set(elId, { id: elId, isIndirect: true });
     };
 
-    let isRecomputedInvoked = false;
-    let isShouldReinstateInvoked = false;
-    await updateDirectEl(b2, expectedInsertedEl.keys().next().value!);
-    
+
+    // txn 1 ----------------------------
+    await updateDirectEl(b2, directEls[0]);
+
+    // should not require any locks
+    b2.txns.withIndirectTxnMode(()=>{
+      b2.elements.deleteElement(indirectEls[0])
+    });
+    b2.saveChanges("update element 1");
+
+    // txn 2 ----------------------------
+    await updateDirectEl(b2, directEls[1]);
+
     // should not require any locks
     b2.txns.withIndirectTxnMode(() => {
-      expectedInsertedEl.forEach((el) => {
-        if (el.isIndirect) {
-          updateIndirectEl(b2, el.id);
-        }
-      });
+      updateIndirectEl(b2, indirectEls[1]);
     });
-    b2.saveChanges("update element 1 direct");
+    b2.saveChanges("update element 2");
+
+    // txn 3 ----------------------------
+    await updateDirectEl(b2, directEls[2]);
+
+    // should not require any locks
+    b2.txns.withIndirectTxnMode(() => {
+      updateIndirectEl(b2, indirectEls[2]);
+    });
+    b2.saveChanges("update element 3");
+
+    // rebase ---------------------------
+    let isRecomputedInvoked = 0;
+    let isShouldReinstateInvoked = 0;
     b2.txns.changeMergeManager.setRebaseHandler({
       shouldReinstate(_txn: TxnProps) {
-        isShouldReinstateInvoked = true;
+        isShouldReinstateInvoked++;
         return true;
       },
       async recompute(_txn: TxnProps): Promise<void> {
-        isRecomputedInvoked = true;
+        isRecomputedInvoked++;
       }
     });
-    await b2.pullChanges({noFastForward: true});
-    chai.assert.isTrue(isShouldReinstateInvoked);
-    chai.assert.isTrue(isRecomputedInvoked);
+
+    await b2.pullChanges();
+    chai.assert.isTrue(isShouldReinstateInvoked === 3);
+    chai.assert.isTrue(isRecomputedInvoked === 3);
+    // txn 4 ----------------------------
+    insertDirectEl(b2)
+    b2.saveChanges("update element 3");
+
 
     b2.close();
     b3.close();

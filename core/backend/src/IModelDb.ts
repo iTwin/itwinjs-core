@@ -816,7 +816,7 @@ export abstract class IModelDb extends IModel {
 
   /** Commit unsaved changes in memory as a Txn to this iModelDb.
    * @param description Optional description of the changes
-   * @throws [[IModelError]] if there is a problem saving changes or if tshould invokeCallbacks through parentshere are pending, un-processed lock or code requests.
+   * @throws [[IModelError]] if there is a problem saving changes or if should invokeCallbacks through parentshere are pending, un-processed lock or code requests.
    * @note This will not push changes to the iModelHub.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
    */
@@ -824,11 +824,11 @@ export abstract class IModelDb extends IModel {
     if (this.openMode === OpenMode.Readonly)
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only");
 
+    const args = typeof description === "string" ? { description } : description;
     if (!this[_nativeDb].hasUnsavedChanges()) {
-      Logger.logWarning(loggerCategory, "there are no unsaved changes", () => description);
+      Logger.logWarning(loggerCategory, "there are no unsaved changes", () => args);
     }
 
-    const args = typeof description === "string" ? { description } : description;
     const stat = this[_nativeDb].saveChanges(args ? JSON.stringify(args): undefined);
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, `Could not save changes (${args?.description})`);
