@@ -515,6 +515,7 @@ describe("#performance DataViz requests", () => {
         // eslint-disable-next-line @typescript-eslint/no-deprecated
         async function loadHierarchy(ruleset: Ruleset, parentKey?: NodeKey): Promise<InstanceKey[]> {
           ++requestsCount.elementIds;
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           const { items } = await Presentation.presentation.getNodesIterator({
             imodel: iModel,
             rulesetOrId: ruleset,

@@ -72,6 +72,8 @@ import { StreamedResponseGenerator } from "./StreamedResponseGenerator.js";
 /**
  * Data structure that describes IModel hierarchy change event arguments.
  * @public
+ * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface IModelHierarchyChangeEventArgs {
   /** Id of ruleset that was used to create hierarchy. */
@@ -118,6 +120,8 @@ export type MultipleValuesRequestOptions = Paged<{
 /**
  * Options for requests that retrieve nodes.
  * @public
+ * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export type GetNodesRequestOptions = HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute;
 
@@ -219,8 +223,12 @@ export class PresentationManager implements Disposable {
   private _ipcRequestsHandler?: IpcRequestsHandler;
 
   /**
-   * An event raised when hierarchies created using specific ruleset change
+   * An event raised when hierarchies created using specific ruleset change.
+   *
+   * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public onIModelHierarchyChanged = new BeEvent<(args: IModelHierarchyChangeEventArgs) => void>();
 
   /**
@@ -409,7 +417,11 @@ export class PresentationManager implements Disposable {
 
   /* eslint-disable @typescript-eslint/no-deprecated */
 
-  /** Returns an iterator that polls nodes asynchronously. */
+  /**
+   * Returns an iterator that polls nodes asynchronously.
+   * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
+   */
   public async getNodesIterator(
     requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions,
   ): Promise<{ total: number; items: AsyncIterableIterator<Node> }> {
@@ -432,7 +444,7 @@ export class PresentationManager implements Disposable {
   }
 
   /**
-   * Retrieves nodes
+   * Retrieves nodes.
    * @deprecated in 4.5 - will not be removed until after 2026-06-13. Use [[getNodesIterator]] instead.
    */
   public async getNodes(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<Node[]> {
@@ -440,7 +452,11 @@ export class PresentationManager implements Disposable {
     return collect(result.items);
   }
 
-  /** Retrieves nodes count. */
+  /**
+   * Retrieves nodes count.
+   * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
+   */
   public async getNodesCount(requestOptions: GetNodesRequestOptions): Promise<number> {
     startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
@@ -463,6 +479,8 @@ export class PresentationManager implements Disposable {
   /**
    * Retrieves hierarchy level descriptor.
    * @public
+   * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
    */
   public async getNodesDescriptor(
     requestOptions: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute,
@@ -479,7 +497,11 @@ export class PresentationManager implements Disposable {
     }
   }
 
-  /** Retrieves paths from root nodes to children nodes according to specified keys. Intersecting paths will be merged. */
+  /**
+   * Retrieves paths from root nodes to children nodes according to specified keys. Intersecting paths will be merged.
+   * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
+   */
   public async getNodePaths(
     requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<NodePathElement[]> {
@@ -490,7 +512,11 @@ export class PresentationManager implements Disposable {
     return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
 
-  /** Retrieves paths from root nodes to nodes containing filter text in their label. */
+  /**
+   * Retrieves paths from root nodes to nodes containing filter text in their label.
+   * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
+   */
   public async getFilteredNodePaths(
     requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<NodePathElement[]> {
