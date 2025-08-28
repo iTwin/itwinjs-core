@@ -51,14 +51,14 @@ export function isITextAnnotation(element: Element): element is ITextAnnotation 
 
 
 /**
- * Recursively collects all FieldRun components from a given TextBlockComponent tree.
+ * Recursively collects all [FieldRun]($common) components from a given [TextBlockComponent]($common).
  *
- * Traverses the provided component and its children, returning an array of all FieldRun instances found.
- * Useful for extracting all field runs from nested text structures such as paragraphs and lists.
+ * Traverses the provided component and its children, returning an array of all [FieldRun]($common) instances found.
+ * Useful for extracting all field runs from nested text structures such as [Paragraph]($common)s and [List]($common)s.
  *
- * @param component The root TextBlockComponent to search for FieldRuns.
+ * @param component The root [TextBlockComponent]($common) to search for [FieldRun]($common)s.
  * @param runs (optional) An array to accumulate results; used for recursion.
- * @returns An array of FieldRun instances found within the component tree.
+ * @returns An array of [FieldRun]($common) instances found within the component tree.
  * @beta
  */
 export function collectFieldRuns(component: TextBlockComponent, runs: FieldRun[] = []): FieldRun[] {
