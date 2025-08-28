@@ -138,7 +138,12 @@ export class UnboundedParabola2d extends ImplicitCurve2d {
     spacePoint: Point2d, handler: (curvePoint: Point2d, radians: number | undefined) => any,
   ): void {
     const vectorW = Vector2d.createStartEnd(spacePoint, this.center);
-    // coefficients of c and s in the parameterization
+    // vectorW is from space point to curve origin.
+    // vector to curve at an angle theta is vectorW + (s/(1=c)) U + ((1-c)/(1-s)) V
+    // where c and s are cosine and sine of the parameterization angle.
+    // The dot product of the curve tangent vector with the vector from spacePoint to curve
+    //    has trig terms appearing at highest degree 2, hence is solved by the function
+    // solveUnitCircleImplicitQuadricIntersection.
     const dotWU = vectorW.dotProduct(this.vectorU);
     const dotWV = vectorW.dotProduct(this.vectorV);
     const dotUU = this.vectorU.dotProduct(this.vectorU);

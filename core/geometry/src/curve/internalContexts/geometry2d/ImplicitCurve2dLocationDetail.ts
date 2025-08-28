@@ -12,15 +12,25 @@ import { Point2d, Vector2d } from "../../../geometry3d/Point2dVector2d";
 import { ImplicitCurve2d } from "./implicitCurve2d";
 
 /**
- * ImplicitCurve2dLocationDetail carries a curve reference and further details about a point on the curve.
+ * ImplicitCurve2dLocationDetail carries a curve and a point of interest.
+ * This is typically produced by calculations such as tangent circle contruction to report 
+ * where tangencies or other events occur.   Particular meanings of various fields are
+ * specific to the code that produces the structure.
  * The "further information" optionally includes a Point2d, an Angle, and an additional Vector2d,
  */
-export class ImplicitCurve2dLocationDetail {
+export class ImplicitCurve2dPointnDetail {
+    // A curve which is being referenced by this detail.   Externally accessed via properties.
     private _curve: ImplicitCurve2d;
+    // An angular parameter.   Externally accessed via properties.
     private _angle?: Angle | undefined;
+    // The point of interest.  Typically on the curve, but since the curve's implicit function
+    // is defined over the entire 2D plane the point may be elsewhere.
     private _point?: Point2d;
+    // (Typically) the curve's tangent vector at the point.
     private _tangentVector?: Vector2d;
+    // (Typically) the gradient vector for the curve's implicit function
     private _gradientVector?: Vector2d;
+    // (Typically) the curve's implicit function value at the point.
     private _functionValue?: number;
     /** point getter -- returns a CLONE of the point in the detail. */
     public get point(): Point2d | undefined {
@@ -76,8 +86,8 @@ export class ImplicitCurve2dLocationDetail {
      */
     public static createDetail(
         curve: ImplicitCurve2d, point: Point2d | undefined, angle: Angle | undefined,
-    ): ImplicitCurve2dLocationDetail {
-        return new ImplicitCurve2dLocationDetail(curve, point, angle);
+    ): ImplicitCurve2dPointnDetail {
+        return new ImplicitCurve2dPointnDetail(curve, point, angle);
     }
     /** Evaluate the curve at given angle and aave the angle and point. */
     public evaluateCurvePoint(angle: Angle): void {
