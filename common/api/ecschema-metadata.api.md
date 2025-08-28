@@ -797,7 +797,7 @@ export class Format extends SchemaItem {
     get uomSeparator(): string;
 }
 
-// @beta
+// @public @preview
 export interface FormatSet {
     // (undocumented)
     formats: {
@@ -807,6 +807,7 @@ export interface FormatSet {
     label: string;
     // (undocumented)
     name: string;
+    unitSystem: string;
 }
 
 // @beta
