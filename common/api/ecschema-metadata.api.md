@@ -799,13 +799,10 @@ export class Format extends SchemaItem {
 
 // @public @preview
 export interface FormatSet {
-    // (undocumented)
     formats: {
         [kindOfQuantityId: string]: SchemaItemFormatProps;
     };
-    // (undocumented)
     label: string;
-    // (undocumented)
     name: string;
     unitSystem: UnitSystemKey;
 }

@@ -293,10 +293,13 @@ export type SchemaItemFormatProps = SchemaItemProps & FormatProps;
  * @public @preview
  */
 export interface FormatSet {
+  /** The unique name identifier for this format set. */
   name: string;
+  /** The display label for this format set. */
   label: string;
   /** A [UnitSystemKey]($quantity) that determines the unit system for this format set. */
   unitSystem: UnitSystemKey;
+  /** A mapping of kind of quantity identifiers to their corresponding format properties. */
   formats: { [kindOfQuantityId: string]: SchemaItemFormatProps };
 }
 
