@@ -180,11 +180,16 @@ export interface ContainerComponentProps extends TextBlockComponentProps {
  * @beta
  */
 export abstract class ContainerComponent<T extends TextBlockComponent = TextBlockComponent> extends TextBlockComponent {
-  private readonly _children: T[] = [];
+  private _children: T[] = [];
   public abstract override readonly type: ContainerComponentType;
 
   public get children(): T[] {
     return this._children;
+  }
+
+  public set children(children: T[]) {
+    this._children = children;
+    this._children.forEach((child, index) => child.index = index);
   }
 
   public get last(): T | undefined {

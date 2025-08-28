@@ -195,6 +195,8 @@ export interface TextStyleSettingsProps {
   leader?: TextLeaderStyleProps;
   /** The size (in meters) used to calculate the tab stops in a run.
    * These are equally spaced from the left edge of the TextBlock.
+   * [[tabInterval]] is also used in lists to compute the offset of children.
+   * This is computed by [[indentation]] + ([[tabInterval]] * depth).
    * Default: 4 meters.
    */
   tabInterval?: number;
@@ -205,7 +207,8 @@ export interface TextStyleSettingsProps {
    */
   frame?: TextFrameStyleProps;
   /** The offset (in meters) from the left edge of the text block to the start of the line of text.
-   * In nested runs, this is compounded with the indentations of the parent runs to determine the actual offset.
+   * In lists, the indentation is added to offset of list items.
+   * This is computed by [[indentation]] + ([[tabInterval]] * depth)
    * Default: 0 meters.
    */
   indentation?: number;
@@ -287,11 +290,14 @@ export class TextStyleSettings {
    */
   public readonly leader: Readonly<Required<TextLeaderStyleProps>>;
   /** The size (in meters) used to calculate the tab stops in a run.
-   * These are equally spaced from the left edge of the TextBlock. Default is 4 meters.
+   * These are equally spaced from the left edge of the TextBlock.
+   * [[tabInterval]] is also used in lists to compute . Default is 4 the offset of children.
+   * This is computed by [[indentation]] + ([[tabInterval]] * depth).
    */
   public readonly tabInterval: number;
   /** The offset (in meters) from the left edge of the text block to the start of the line of text.
-   * In nested runs, this is compounded with the indentations of the parent runs to determine the actual offset.
+   * In lists, the indentation is added to offset of list items.
+   * This is computed by [[indentation]] + ([[tabInterval]] * depth)
    */
   public readonly indentation: number;
   /** The marker used to indicate the start of a list item.
@@ -432,6 +438,7 @@ export class TextStyleSettings {
       && this.subScriptOffsetFactor === other.subScriptOffsetFactor && this.subScriptScale === other.subScriptScale
       && this.superScriptOffsetFactor === other.superScriptOffsetFactor && this.superScriptScale === other.superScriptScale
       && this.tabInterval === other.tabInterval && this.indentation === other.indentation
+      && this.listMarker === other.listMarker
       && this.leaderEquals(other.leader)
       && this.frameEquals(other.frame)
   }
