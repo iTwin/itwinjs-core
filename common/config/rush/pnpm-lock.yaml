@@ -18,8 +18,8 @@ importers:
   ../../core/backend:
     dependencies:
       '@bentley/imodeljs-native':
-        specifier: 5.1.66
-        version: 5.1.66
+        specifier: 5.2.9
+        version: 5.2.9
       '@itwin/cloud-agnostic-core':
         specifier: ^2.2.4
         version: 2.2.4(inversify@6.0.1)(reflect-metadata@0.1.13)
@@ -1478,9 +1478,6 @@ importers:
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
-      internal-tools:
-        specifier: workspace:*
-        version: link:../../../tools/internal
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -1535,9 +1532,6 @@ importers:
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
-      internal-tools:
-        specifier: workspace:*
-        version: link:../../../tools/internal
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -1568,9 +1562,6 @@ importers:
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
-      internal-tools:
-        specifier: workspace:*
-        version: link:../../../tools/internal
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -1610,9 +1601,6 @@ importers:
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
-      internal-tools:
-        specifier: workspace:*
-        version: link:../../../tools/internal
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -2826,8 +2814,8 @@ importers:
         specifier: ^4.4.1
         version: 4.4.1
       global-jsdom:
-        specifier: ^25.0.0
-        version: 25.0.0(jsdom@26.0.0)
+        specifier: ^26.0.0
+        version: 26.0.0(jsdom@26.0.0)
       i18next-http-backend:
         specifier: ^3.0.2
         version: 3.0.2
@@ -4709,8 +4697,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.1.66':
-    resolution: {integrity: sha512-Vp4SOuL7R9GRDoXgDfpbmYW3lNYUEqRBi9z90+qO4XrxkUDn5fxAJpA0SEKfK+SobAw0FedqO3wBxMOVqvSbOQ==}
+  '@bentley/imodeljs-native@5.2.9':
+    resolution: {integrity: sha512-ChKsU0o39N50+mRcUzpqYtwvrPqUzh9k83/woQJAJO5mlpLR6Krggyy0Qc/dz2OkLlN6dpnUrUKwYY/ZM6Et9A==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -7753,11 +7741,11 @@ packages:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
     deprecated: Glob versions prior to v9 are no longer supported
 
-  global-jsdom@25.0.0:
-    resolution: {integrity: sha512-Y8dUX6R5Aw5/cutvBY8ofSs2TJyHC3WVGAQGIhCeWlIpKjYcydh3APbxQaeKSfrawVO/YUQ0MAFJfjQDOPVY8Q==}
+  global-jsdom@26.0.0:
+    resolution: {integrity: sha512-BqXpTNZFjP40N+s4k8Bk9HS8GFVPJB/+TKtwcShM84wLv6C5dH9o1dydI3pL6potanhfDiIAVDbaaGj/uSdRSA==}
     engines: {node: '>=18'}
     peerDependencies:
-      jsdom: '>=25 <26'
+      jsdom: '>=26 <27'
 
   globals@11.12.0:
     resolution: {integrity: sha512-WOBp/EEGUiIsJSp7wcv/y6MO+lV9UoncWqxuFfm8eBwzWNgyfBd6Gz+IeKQ9jCmyhoH99g15M3T+QaVHFjizVA==}
@@ -11061,7 +11049,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.1.66': {}
+  '@bentley/imodeljs-native@5.2.9': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
@@ -14504,7 +14492,7 @@ snapshots:
       once: 1.4.0
       path-is-absolute: 1.0.1
 
-  global-jsdom@25.0.0(jsdom@26.0.0):
+  global-jsdom@26.0.0(jsdom@26.0.0):
     dependencies:
       jsdom: 26.0.0
 

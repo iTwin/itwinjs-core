@@ -256,18 +256,19 @@ export async function transformElements(imodel: BriefcaseConnection, ids: string
 /** This tool moves an element relative to its current position. */
 export class MoveElementTool extends Tool {
   public static override toolId = "MoveElement";
-  public static override get minArgs() { return 2; }
+  public static override get minArgs() { return 1; }
   public static override get maxArgs() { return 4; }
 
-  public override async run(elementId: string, x: number, y: number, z: number): Promise<boolean> {
+  public override async run(elementId: string | undefined, x: number, y: number, z: number): Promise<boolean> {
 
     if (!IModelApp.viewManager.selectedView) {
       return false;
     }
     const imodel = IModelApp.viewManager.selectedView.iModel;
 
+    const elementIds = elementId ? [elementId] : Array.from(imodel.selectionSet.elements);
     if (imodel.isBriefcaseConnection()) {
-      await transformElements(imodel, [elementId], Transform.createTranslationXYZ(x, y, z));
+      await transformElements(imodel, elementIds, Transform.createTranslationXYZ(x, y, z));
       await imodel.saveChanges();
     }
 
@@ -277,19 +278,15 @@ export class MoveElementTool extends Tool {
   /** Executes this tool's run method passing in the elementId and the offset.
    * @see [[run]]
    */
-  public override async parseAndRun(...args: string[]): Promise<boolean> {
-    let x = 0;
-    let y = 0;
-    let z = 0;
+  public override async parseAndRun(...inputs: string[]): Promise<boolean> {
+    const args = parseArgs(inputs);
 
-    if (args.length > 1)
-      x = parseFloat(args[1]);
-    if (args.length > 2)
-      y = parseFloat(args[2]);
-    if (args.length > 3)
-      z = parseFloat(args[3]);
+    const elementId = args.get("e");
+    const x = args.getFloat("x") ?? 0;
+    const y = args.getFloat("y") ?? 0;
+    const z = args.getFloat("z") ?? 0;
 
-    return this.run(args[0], x, y, z);
+    return this.run(elementId, x, y, z);
   }
 }
 

@@ -298,6 +298,14 @@ describe("CloudSqlite", () => {
     // totalCacheslots is the number of entries allowed in the cachefile.
     expect(stats.totalCacheslots).to.equal(tenGb / blockSize);
 
+    // memoryUsed is the amount of memory used by sqlite.
+    expect(stats.memoryUsed).to.not.be.undefined;
+    assert(stats.memoryUsed !== undefined);
+    // memoryHighwater is the high water amount for sqlite memory usage.
+    expect(stats.memoryHighwater).to.not.be.undefined;
+    assert(stats.memoryHighwater !== undefined);
+    expect(stats.memoryHighwater).to.be.greaterThanOrEqual(stats.memoryUsed);
+
     const dbs = container.queryDatabases();
     expect(dbs.length).to.be.greaterThanOrEqual(1);
     let db = container.queryDatabase(dbs[0]);
@@ -313,6 +321,13 @@ describe("CloudSqlite", () => {
     expect(stats.lockedCacheslots).to.equal(0);
     expect(stats.populatedCacheslots).to.equal(db!.totalBlocks);
     expect(stats.totalCacheslots).to.equal(tenGb / blockSize);
+    // memoryUsed is the amount of memory used by sqlite.
+    expect(stats.memoryUsed).to.not.be.undefined;
+    assert(stats.memoryUsed !== undefined);
+    // memoryHighwater is the high water amount for sqlite memory usage.
+    expect(stats.memoryHighwater).to.not.be.undefined;
+    assert(stats.memoryHighwater !== undefined);
+    expect(stats.memoryHighwater).to.be.greaterThanOrEqual(stats.memoryUsed);
     container.disconnect({ detach: true });
   });
 

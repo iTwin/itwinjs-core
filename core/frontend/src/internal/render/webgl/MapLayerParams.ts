@@ -13,7 +13,7 @@ import { PlanarClassifier } from "./PlanarClassifier";
 import { TerrainTexture } from "../RenderTerrain";
 import { Matrix4 } from "./Matrix";
 import { ModelMapLayerDrapeTarget, ModelMapLayerSettings, RenderTexture } from "@itwin/core-common";
-import { assert, dispose, disposeArray } from "@itwin/core-bentley";
+import { assert, dispose, disposeArray, expectDefined } from "@itwin/core-bentley";
 import { MeshMapLayerGraphicParams } from "../MeshMapLayerGraphicParams";
 import { System } from "./System";
 import { ViewState } from "../../../ViewState";
@@ -77,8 +77,8 @@ class LayerTextureParam implements Disposable {
       const points = [];
       const meshParams = projectedTexture.meshParams;
       // Calculate range in the tiles local coordinates.
-      const low = meshParams.tileRectangle.worldToLocal(projectedTexture.targetRectangle.low, scratchRange2d.low)!;
-      const high = meshParams.tileRectangle.worldToLocal(projectedTexture.targetRectangle.high, scratchRange2d.high)!;
+      const low = expectDefined(meshParams.tileRectangle.worldToLocal(projectedTexture.targetRectangle.low, scratchRange2d.low));
+      const high = expectDefined(meshParams.tileRectangle.worldToLocal(projectedTexture.targetRectangle.high, scratchRange2d.high));
       points.push(meshParams.projection.getGlobalPoint(low.x, low.y, 0));
       points.push(meshParams.projection.getGlobalPoint(high.x, low.y, 0));
       points.push(meshParams.projection.getGlobalPoint(high.x, high.y, 0));

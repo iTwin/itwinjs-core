@@ -217,6 +217,11 @@ async function testWindowSizeSettings() {
   window.setSize(width, height);
   await BeDuration.wait(250); // wait for new size to be saved to settings file
   sizeAndPos = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
+  for (let i = 0; i < 20 && (sizeAndPos?.width !== width || sizeAndPos?.height !== height); ++i) {
+    // Sometimes 250ms isn't enough, so keep trying for an additional 1 second (50ms * 20)
+    await BeDuration.wait(50);
+    sizeAndPos = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
+  }
   assert(sizeAndPos?.width === width);
   assert(sizeAndPos?.height === height);
 
@@ -225,6 +230,11 @@ async function testWindowSizeSettings() {
   window.setPosition(x, y);
   await BeDuration.wait(250); // wait for new position to be saved to settings file
   sizeAndPos = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
+  for (let i = 0; i < 20 && (sizeAndPos?.x !== x || sizeAndPos?.y !== y); ++i) {
+    // Sometimes 250ms isn't enough, so keep trying for an additional 1 second (50ms * 20)
+    await BeDuration.wait(50);
+    sizeAndPos = ElectronHost.getWindowSizeAndPositionSetting(storeWindowName);
+  }
   assert(sizeAndPos?.x === x);
   assert(sizeAndPos?.y === y);
 }

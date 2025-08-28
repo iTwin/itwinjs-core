@@ -14,6 +14,7 @@ import { FormatsProvider } from '@itwin/core-quantity';
 import { FormatTraits } from '@itwin/core-quantity';
 import { FormatType } from '@itwin/core-quantity';
 import { FractionalPrecision } from '@itwin/core-quantity';
+import { MutableFormatsProvider } from '@itwin/core-quantity';
 import { ScientificType } from '@itwin/core-quantity';
 import { ShowSignOption } from '@itwin/core-quantity';
 import { UnitConversionProps } from '@itwin/core-quantity';
@@ -808,6 +809,20 @@ export interface FormatSet {
     name: string;
 }
 
+// @beta
+export class FormatSetFormatsProvider implements MutableFormatsProvider {
+    constructor(props: {
+        formatSet: FormatSet;
+        fallbackProvider?: FormatsProvider;
+    });
+    addFormat(name: string, format: FormatDefinition): Promise<void>;
+    clearFallbackProvider(): void;
+    getFormat(input: string): Promise<FormatDefinition | undefined>;
+    // (undocumented)
+    onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
+    removeFormat(name: string): Promise<void>;
+}
+
 // @internal (undocumented)
 export function getFormatProps(format: Format | OverrideFormat): FormatProps;
 
@@ -831,6 +846,8 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
     loadSchema(schemaInfo: SchemaInfo, schemaContext: SchemaContext): Promise<Schema>;
     abstract loadSchemaInfos(context: SchemaContext): Promise<Iterable<SchemaInfo>>;
     protected get options(): SchemaLocaterOptions;
+    // (undocumented)
+    protected readonly _schemaInfoCache: SchemaInfoCache;
     protected abstract supportPartialSchemaLoading(context: SchemaContext): Promise<boolean>;
 }
 

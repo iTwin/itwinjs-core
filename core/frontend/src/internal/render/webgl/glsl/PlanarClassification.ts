@@ -7,7 +7,7 @@
  * @module WebGL
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, expectDefined } from "@itwin/core-bentley";
 import { Matrix4d } from "@itwin/core-geometry";
 import { SpatialClassifierInsideDisplay } from "@itwin/core-common";
 import { Matrix4 } from "../Matrix";
@@ -205,9 +205,9 @@ function addPlanarClassifierCommon(builder: ProgramBuilder) {
   const vert = builder.vert;
   vert.addUniform("u_pClassProj", VariableType.Mat4, (prog) => {
     prog.addGraphicUniform("u_pClassProj", (uniform, params) => {
-      const source = params.target.currentPlanarClassifierOrDrape!;
+      const source = params.target.currentPlanarClassifierOrDrape;
       assert(undefined !== source || undefined !== params.target.activeVolumeClassifierTexture);
-      if (undefined !== params.target.currentPlanarClassifierOrDrape) {
+      if (undefined !== source) {
         source.projectionMatrix.multiplyMatrixMatrix(Matrix4d.createTransform(params.target.currentTransform, scratchModel), scratchModelProjection);
         scratchMatrix.initFromMatrix4d(scratchModelProjection);
       } else
@@ -251,7 +251,7 @@ export function addColorPlanarClassifier(builder: ProgramBuilder, translucent: b
         assert(undefined !== source.texture);
         source.texture.texture.bindSampler(uniform, TextureUnit.PlanarClassification);
       } else
-        Texture2DHandle.bindSampler(uniform, volClass!, TextureUnit.PlanarClassification);
+        Texture2DHandle.bindSampler(uniform, expectDefined(volClass), TextureUnit.PlanarClassification);
     });
   });
 
@@ -324,7 +324,7 @@ export function addHilitePlanarClassifier(builder: ProgramBuilder, supportTextur
   const frag = builder.frag;
   frag.addUniform("s_pClassHiliteSampler", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_pClassHiliteSampler", (uniform, params) => {
-      const classifier = params.target.currentPlanarClassifier!;
+      const classifier = expectDefined(params.target.currentPlanarClassifier);
       assert(undefined !== classifier && undefined !== classifier.hiliteTexture);
       classifier.hiliteTexture.texture.bindSampler(uniform, TextureUnit.PlanarClassificationHilite);
     });
