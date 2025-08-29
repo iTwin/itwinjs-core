@@ -189,14 +189,12 @@ export class HalfEdge implements HalfEdgeUserData {
   public get edgeMate(): HalfEdge {
     return this._edgeMate;
   }
+  /** HalfEdge ids are sequentially assigned per session (not per graph!). */
   private static _totalNodesCreated = 0;
-  private static getNextId(): number {
-    if (!Number.isSafeInteger(this._totalNodesCreated))
-      this._totalNodesCreated = 0;
-    return this._totalNodesCreated++;
-  }
-  public constructor(x: number = 0, y: number = 0, z: number = 0, i: number = 0) {
-    this._id = HalfEdge.getNextId();
+  private constructor(x: number = 0, y: number = 0, z: number = 0, i: number = 0) {
+    this._id = HalfEdge._totalNodesCreated++;
+    if (!Number.isSafeInteger(HalfEdge._totalNodesCreated))
+      HalfEdge._totalNodesCreated = 0;
     this.i = i;
     this.maskBits = 0x00000000;
     this.x = x;
