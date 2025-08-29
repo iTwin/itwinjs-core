@@ -791,6 +791,10 @@
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
+      "name": "rolldown-vite",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "rollup-plugin-copy",
       "allowedCategories": [ "internal" ]
     },
