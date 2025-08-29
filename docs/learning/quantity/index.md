@@ -294,37 +294,10 @@ When retrieving a format from a schema, users might want to ensure the format th
 When working with formats, developers often need to retrieve a format and determine the appropriate persistence unit. When you only have a KindOfQuantity name, you can utilize a SchemaContext to find the schema item for that KindOfQuantity and then access its persistence unit:
 
 <details>
-  <summary>Using a SchemaContext to get KindOfQuantity and persistence unit</summary>
+  <summary>Using a SchemaContext to get KindOfQuantity and a persistence unit<summary>
 
 ```ts
-  // ... schemaContext defined somewhere
-
-  const koqName = "AecUnits.LENGTH";
-  // Get the format definition
-  const formatDef = await formatsProvider.getFormat(koqName);
-  if (!formatDef)
-    throw new Error(`Format not found for ${koqName}`);
-
-  const koq = await schemaContext.getItem(koqName, KindOfQuantity);
-  if (!koq)
-    throw new Error(`KindOfQuantity ${itemName} not found in schema ${schemaName}`);
-
-  // Get the persistence unit from the KindOfQuantity
-  const persistenceUnit = koq.persistenceUnit;
-  if (!persistenceUnit)
-    throw new Error("Persistence unit not defined in KindOfQuantity");
-
-  // Create formatter spec using the schema-defined persistence unit
-  const formatterSpec = await FormatterSpec.create(
-    formatDef.name,
-    formatDef,
-    new SchemaUnitsProvider(schemaContext), // Use a schema units provider
-    persistenceUnit
-  );
-
-  const formattedValue = formatterSpec.applyFormatting(value);
-  console.log(`Formatted value: ${formattedValue}`);
-}
+[[include:Quantity_Formatting.KindOfQuantityPersistenceUnitFormatting]]
 ```
 
 </details>

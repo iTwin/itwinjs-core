@@ -795,7 +795,7 @@ export class Format extends SchemaItem {
     get uomSeparator(): string;
 }
 
-// @public @preview
+// @beta
 export interface FormatSet {
     formats: {
         [kindOfQuantityId: string]: SchemaItemFormatProps;

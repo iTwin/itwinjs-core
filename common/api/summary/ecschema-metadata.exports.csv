@@ -88,8 +88,7 @@ public;interface;EnumeratorProps
 preview;interface;EnumeratorProps
 public;class;Format
 preview;class;Format
-public;interface;FormatSet
-preview;interface;FormatSet
+beta;interface;FormatSet
 beta;class;FormatSetFormatsProvider
 internal;function;getFormatProps
 public;interface;HasMixins

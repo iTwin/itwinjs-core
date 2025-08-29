@@ -290,7 +290,7 @@ export type SchemaItemFormatProps = SchemaItemProps & FormatProps;
 
 /**
  * This interface defines properties necessary to support persistence of a set of formats.
- * @public @preview
+ * @beta
  */
 export interface FormatSet {
   /** The unique name identifier for this format set. */
