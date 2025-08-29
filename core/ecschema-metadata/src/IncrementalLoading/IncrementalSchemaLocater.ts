@@ -116,7 +116,7 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
    * @param context   The schema context to load the schema infos for.
    * @returns         A promise that resolves to an iterable of schema infos.
    */
-  public abstract loadSchemaInfos(context: SchemaContext): Promise<Iterable<SchemaInfo>>;
+  protected abstract loadSchemaInfos(context: SchemaContext): Promise<Iterable<SchemaInfo>>;
 
   /**
    * Checks if the context contains the right schemas to support incremental schema loading.
@@ -133,7 +133,7 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
    * @param schemaInfo    The schema info of the schema to load.
    * @param schemaContext The schema context to load the schema into.
    */
-  public async loadSchema(schemaInfo: SchemaInfo, schemaContext: SchemaContext): Promise<Schema> {
+  protected async loadSchema(schemaInfo: SchemaInfo, schemaContext: SchemaContext): Promise<Schema> {
     // If the meta schema is an earlier version than 4.0.3, we can't use the ECSql query interface to get the schema
     // information required to load the schema entirely. In this case, we fallback to use the ECSchema RPC interface
     // to fetch the whole schema json.
