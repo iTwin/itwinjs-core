@@ -2,7 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-
+import { Logger } from "@itwin/core-bentley";
 import { SchemaContext } from "../Context";
 import { ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps, MixinProps,
   PhenomenonProps, PropertyCategoryProps, RelationshipClassProps, SchemaItemFormatProps, SchemaItemProps, SchemaItemUnitProps, SchemaProps,
@@ -12,7 +12,6 @@ import { SchemaInfo, WithSchemaKey } from "../Interfaces";
 import { SchemaKey } from "../SchemaKey";
 import { FullSchemaQueries } from "./FullSchemaQueries";
 import { IncrementalSchemaLocater, SchemaLocaterOptions } from "./IncrementalSchemaLocater";
-import { PerformanceLogger } from "./PerformanceLogger";
 import { SchemaItemQueries } from "./SchemaItemQueries";
 import { SchemaParser } from "./SchemaParser";
 import { ecsqlQueries } from "./SchemaStubQueries";
@@ -78,6 +77,8 @@ interface QueryParameters {
   [parameterName: string]: string | number;
 }
 
+const LOGGER_CATEGORY = "IncrementalSchemaLoading.Performance";
+
 /**
  * Query options used by the ECSqlSchemaLocater.
  * @internal
@@ -95,8 +96,6 @@ export interface ECSqlQueryOptions {
 export interface ECSqlSchemaLocaterOptions extends SchemaLocaterOptions {
   /** Query for Schemas using multiple queries. Defaults to false. */
   readonly useMultipleQueries?: boolean;
-  /** Collects query execution performance data. Defaults to false. */
-  readonly performanceLogger?: PerformanceLogger;
 }
 
 /**
@@ -148,12 +147,17 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
     if (!await this.supportPartialSchemaLoading(context))
       return this.getSchemaProps(schemaKey);
 
-    const start = Date.now();
+    const queryStart = Date.now();
     const schemaProps = this.options.useMultipleQueries
       ? await this.getFullSchemaMultipleQueries(schemaKey, context)
       : await this.getFullSchema(schemaKey, context);
 
-    this.options.performanceLogger?.logSchema(start, schemaKey.name);
+    const queryDuration = Date.now() - queryStart;
+    Logger.logTrace(LOGGER_CATEGORY, `Recieved SchemaProps for ${schemaKey.name} in ${queryDuration}ms`, {
+      schemaName: schemaKey.name,
+      queryMode: this.options.useMultipleQueries ? "parallel" : "single",
+      duration: queryDuration,
+    });
 
     return schemaProps;
   };
@@ -370,12 +374,17 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
    * @internal
    */
   protected async getSchemaPartials(schemaKey: SchemaKey, context: SchemaContext): Promise<ReadonlyArray<SchemaProps> | undefined> {
-    const start = Date.now();
+    const queryStart = Date.now();
     const [schemaRow] = await this.executeQuery<SchemaStubRow>(ecsqlQueries.schemaStubQuery, {
        parameters: { schemaName: schemaKey.name },
        limit: 1
     });
-    this.options.performanceLogger?.logSchemaItem(start, schemaKey.name, 'SchemaPartials', 1);
+
+    const queryDuration = Date.now() - queryStart;
+    Logger.logTrace(LOGGER_CATEGORY, `Recieved PartialSchema for ${schemaKey.name} in ${queryDuration}ms`, {
+      schemaName: schemaKey.name,
+      duration: queryDuration,
+    });
 
     if (!schemaRow)
       return undefined;
@@ -429,7 +438,14 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
   private async querySchemaItem<TRow extends SchemaItemProps>(context: SchemaContext, schemaName: string, query: string, schemaType: string): Promise<Array<TRow>> {
     const start = Date.now();
     const itemRows = await this.executeQuery<SchemaItemRow>(query, { parameters: { schemaName } });
-    this.options.performanceLogger?.logSchemaItem(start, schemaName, schemaType, itemRows.length);
+
+    const queryDuration = Date.now() - start;
+    Logger.logTrace(LOGGER_CATEGORY, `Recieved rows of ${schemaType} items for ${schemaName} in ${queryDuration}ms`, {
+      schemaName,
+      itemCount: itemRows.length,
+      itemType: schemaType,
+      duration: queryDuration,
+    });
 
     if (itemRows.length === 0)
       return [];
