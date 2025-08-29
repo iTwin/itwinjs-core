@@ -1,46 +1,87 @@
 import { constructSettingsSchemas } from "../internal/workspace/SettingsSchemasImpl";
 import { SettingGroupSchema, SettingsSchemas } from "./SettingsSchemas";
 
-// FormatSet interface structure (mirrors @itwin/core-ecschema-metadata FormatSet)
-// This demonstrates the structure of the actual FormatSet interface that we're validating against
+// The Format schema uses EXTERNAL REFERENCE to the official BIS schema definition:
+// https://github.com/iTwin/bis-schemas/blob/main/System/json_schema/ec32/ecschema-item.schema.json#L397
+//
+// JSON Schema Features Demonstrated:
+// - $id: Unique identifiers for schema components
+// - $ref: References to reusable schema definitions
+// - External references: Direct linking to external schema files (BIS Format schema)
+// - Schema composition: Using allOf for extending schemas
+// - Structured organization: Better maintainability and reusability
+// - Standards compliance: Using official iTwin.js Format specification
+//
+// FormatSets Hierarchy (arrays for multiple format sets at each level):
+// - defaults: Base format sets available to all users
+// - organization: Organization-specific format sets (override defaults)
+// - project: Project-specific format sets (override organization)
+// - iModel: iModel-specific format sets (override project)
+// - user: User-customized format sets (highest priority)
 
 
 // Define the schema for your product settings API response
 const productSettingsSchema: SettingGroupSchema = {
   schemaPrefix: "productSettings",
   description: "Product settings validation from external API",
-
+  version: "1.0.0", // Unfortunately, version doesn't exist in SettingGroupSchema interface.
   settingDefs: {
     "formatSets": {
       type: "object",
       properties: {
+        // Default format sets - base level
+        defaults: {
+          type: "array",
+          items: {
+            type: "object",
+            "$ref": "#/typeDefs/formatSet"
+          },
+          description: "Default format sets available to all users"
+        },
         // Organization-specific format sets
         organization: {
-          type: "object",
-          additionalProperties: { "$ref": "#/typeDefs/formatSet" }
+          type: "array",
+          items: {
+            type: "object",
+            "$ref": "#/typeDefs/formatSet"
+          },
+          description: "Format sets specific to the organization"
         },
-        // Default format sets
-        defaults: {
-          type: "object",
-          additionalProperties: { "$ref": "#/typeDefs/formatSet" }
+        // Project-specific format sets
+        project: {
+          type: "array",
+          items: {
+            type: "object",
+            "$ref": "#/typeDefs/formatSet"
+          },
+          description: "Format sets specific to the project"
+        },
+        // iModel-specific format sets
+        iModel: {
+          type: "array",
+          items: {
+            type: "object",
+            "$ref": "#/typeDefs/formatSet"
+          },
+          description: "Format sets specific to the iModel"
+        },
+        // User-specific format sets
+        user: {
+          type: "array",
+          items: {
+            type: "object",
+            "$ref": "#/typeDefs/formatSet"
+          },
+          description: "Format sets customized by individual users"
         }
       }
     },
-
-    "userPreferences": {
-      // fictional, could be anything.
-      type: "object",
-      properties: {
-        theme: { type: "string", enum: ["light", "dark", "auto"] },
-        language: { type: "string", pattern: "^[a-z]{2}-[A-Z]{2}$" },
-        notifications: { type: "boolean" }
-      }
-    }
   },
 
   typeDefs: {
     "formatSet": {
       type: "object",
+      $id: "#formatSet",
       properties: {
         name: {
           type: "string",
@@ -61,21 +102,32 @@ const productSettingsSchema: SettingGroupSchema = {
           description: "A mapping of kind of quantity identifiers to their corresponding format properties",
           additionalProperties: {
             type: "object",
-            properties: {
-              type: { type: "string" },
-              precision: { type: "number", minimum: 0 },
-              // Add more format properties as needed
-              minWidth: { type: "number", minimum: 1 },
-              showSignOption: { type: "string", enum: ["noSign", "onlyNegative", "signAlways", "negativeParentheses"] },
-              decimalSeparator: { type: "string" },
-              thousandSeparator: { type: "string" },
-              uomSeparator: { type: "string" }
-            },
-            required: ["type"]
+            // Direct reference to the official BIS Format schema
+            $ref: "https://raw.githubusercontent.com/iTwin/bis-schemas/master/System/json_schema/ec32/ecschema-item.schema.json#/definitions/Format"
           }
         }
       },
       required: ["name", "label", "unitSystem", "formats"]
+    },
+
+    "formatDefinition": {
+      type: "object",
+      $id: "#formatDefinition",
+      title: "EC Format Definition",
+      description: "Format definition, which extends from an externally referenced BIS schema",
+      // Direct reference to official BIS Format schema instead of duplicating. Can be extended via allOf.
+      allOf: [
+        {
+          $ref: "https://raw.githubusercontent.com/iTwin/bis-schemas/master/System/json_schema/ec32/ecschema-item.schema.json#/definitions/Format"
+        }
+      ]
+    },
+
+    "unitSystemKey": {
+      type: "string",
+      $id: "#unitSystemKey",
+      enum: ["metric", "imperial", "usSurvey", "usCustomary"],
+      description: "A UnitSystemKey that determines the unit system for this format set"
     }
   }
 };
@@ -141,57 +193,128 @@ class APIValidationClient {
 export async function demonstrateFormatSetValidation(): Promise<void> {
   const client = new APIValidationClient();
 
-  // Sample FormatSet data that matches the actual FormatSet interface
+  // Sample FormatSet data that matches the new array structure
   const sampleFormatSets = {
-    organization: {
-      "engineering": {
-        name: "engineering",
-        label: "Engineering Format Set",
-        unitSystem: "metric" as const,
-        formats: {
-          length: {
-            type: "decimal",
-            precision: 3,
-            minWidth: 1,
-            showSignOption: "onlyNegative",
-            decimalSeparator: ".",
-            thousandSeparator: ",",
-            uomSeparator: " "
-          },
-          area: {
-            type: "decimal",
-            precision: 2,
-            minWidth: 1,
-            showSignOption: "onlyNegative"
-          }
-        }
-      },
-      "surveying": {
-        name: "surveying",
-        label: "Surveying Format Set",
-        unitSystem: "usSurvey" as const,
-        formats: {
-          length: {
-            type: "fractional",
-            precision: 4,
-            minWidth: 1
-          }
-        }
-      }
-    },
-    defaults: {
-      "standard": {
+    defaults: [
+      {
         name: "standard",
         label: "Standard Format Set",
         unitSystem: "imperial" as const,
         formats: {
           length: {
+            name: "length",
+            label: "Length Format",
             type: "decimal",
-            precision: 2
+            precision: 2,
+            roundFactor: 0.01,
+            formatTraits: "applyRounding,showUnitLabel"
           }
         }
       }
-    }
+    ],
+    organization: [
+      {
+        name: "engineering",
+        label: "Engineering Format Set",
+        unitSystem: "metric" as const,
+        formats: {
+          length: {
+            name: "length",
+            label: "Engineering Length Format",
+            type: "decimal",
+            precision: 3,
+            minWidth: 1,
+            showSignOption: "onlyNegative",
+            formatTraits: "showUnitLabel,use1000Separator",
+            decimalSeparator: ".",
+            thousandSeparator: ",",
+            uomSeparator: " "
+          },
+          area: {
+            name: "area",
+            label: "Engineering Area Format",
+            type: "decimal",
+            precision: 2,
+            minWidth: 1,
+            showSignOption: "onlyNegative",
+            formatTraits: "keepDecimalPoint,showUnitLabel"
+          },
+          volume: {
+            name: "volume",
+            label: "Engineering Volume Format",
+            type: "scientific",
+            precision: 4,
+            scientificType: "normalized",
+            formatTraits: "showUnitLabel"
+          }
+        }
+      }
+    ],
+    project: [
+      {
+        name: "projectSpecific",
+        label: "Project Specific Format Set",
+        unitSystem: "metric" as const,
+        formats: {
+          length: {
+            name: "length",
+            label: "Project Length Format",
+            type: "decimal",
+            precision: 4,
+            formatTraits: "showUnitLabel"
+          }
+        }
+      }
+    ],
+    iModel: [
+      {
+        name: "surveying",
+        label: "Surveying Format Set",
+        unitSystem: "usSurvey" as const,
+        formats: {
+          length: {
+            name: "length",
+            label: "Surveying Length Format",
+            type: "fractional",
+            precision: 4,
+            minWidth: 1,
+            formatTraits: "fractionDash,showUnitLabel"
+          },
+          station: {
+            name: "station",
+            label: "Station Format",
+            type: "station",
+            precision: 2,
+            stationOffsetSize: 100,
+            stationSeparator: "+",
+            formatTraits: "showUnitLabel"
+          }
+        }
+      }
+    ],
+    user: [
+      {
+        name: "userCustom",
+        label: "User Custom Format Set",
+        unitSystem: "imperial" as const,
+        formats: {
+          composite: {
+            name: "composite",
+            label: "Feet and Inches Composite Format",
+            type: "decimal",
+            precision: 0,
+            composite: {
+              spacer: " ",
+              includeZero: true,
+              units: [
+                { name: "ft", label: "feet" },
+                { name: "in", label: "inches" }
+              ]
+            }
+          }
+        }
+      }
+    ]
   };
 
   try {
@@ -203,7 +326,8 @@ export async function demonstrateFormatSetValidation(): Promise<void> {
 
     // If we get here, the data is valid according to our FormatSet schema
     // In a real application, you could now safely use this data
-    const _engineeringFormats = validatedData.organization.engineering;
+    const _organizationFormats = validatedData.organization[0]; // First organization format set
+    const _userFormats = validatedData.user; // All user format sets
     // Use the validated FormatSet data...
 
   } catch (error) {
