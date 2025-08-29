@@ -598,7 +598,7 @@ export class Geometry {
     return this.isAlmostEqualNumber(a, b, tolerance) || this.isAlmostEqualNumber(a, c, tolerance);
   }
   /**
-   * Toleranced test for equality to any of `count` numbers supplied by `iterator`.
+   * Toleranced test for equality to any value in `values`.
    * @param a value to test
    * @param values array of values to test against, or an object that provides the i_th value, where 0 <= i < length.
    * @param tolerance relative tolerance. Default value is [[smallAngleRadians]].
