@@ -1,5 +1,13 @@
+import { FormatSet } from "@itwin/ecschema-metadata";
 import { constructSettingsSchemas } from "../internal/workspace/SettingsSchemasImpl";
 import { SettingGroupSchema, SettingsSchemas } from "./SettingsSchemas";
+
+// Interface for fetch and validation arguments
+interface FetchArgs<T> {
+  url: string;
+  settingName: string;
+  transformFn?: (data: any) => T;
+}
 
 // The Format schema uses EXTERNAL REFERENCE to the official BIS schema definition:
 // https://github.com/iTwin/bis-schemas/blob/main/System/json_schema/ec32/ecschema-item.schema.json#L397
@@ -12,73 +20,91 @@ import { SettingGroupSchema, SettingsSchemas } from "./SettingsSchemas";
 // - Structured organization: Better maintainability and reusability
 // - Standards compliance: Using official iTwin.js Format specification
 //
-// FormatSets Hierarchy (arrays for multiple format sets at each level):
-// - defaults: Base format sets available to all users
+// FormatSets Hierarchy (separate settingDefs for each level):
+// - defaults: Base format sets available to all users (within an application? Supplied by Bentley for all apps?)
 // - organization: Organization-specific format sets (override defaults)
 // - project: Project-specific format sets (override organization)
 // - iModel: iModel-specific format sets (override project)
 // - user: User-customized format sets (highest priority)
+//
+// Each level has its own settingDef that references the formatSets typeDef
+// This allows for separate API endpoints and validation for each level
 
 
 // Define the schema for your product settings API response
 const productSettingsSchema: SettingGroupSchema = {
   schemaPrefix: "productSettings",
   description: "Product settings validation from external API",
-  version: "1.0.0", // Unfortunately, version doesn't exist in SettingGroupSchema interface.
+
   settingDefs: {
-    "formatSets": {
+    // Default format sets - base level
+    "defaults": {
       type: "object",
-      properties: {
-        // Default format sets - base level
-        defaults: {
-          type: "array",
-          items: {
-            type: "object",
-            "$ref": "#/typeDefs/formatSet"
-          },
-          description: "Default format sets available to all users"
-        },
-        // Organization-specific format sets
-        organization: {
-          type: "array",
-          items: {
-            type: "object",
-            "$ref": "#/typeDefs/formatSet"
-          },
-          description: "Format sets specific to the organization"
-        },
-        // Project-specific format sets
-        project: {
-          type: "array",
-          items: {
-            type: "object",
-            "$ref": "#/typeDefs/formatSet"
-          },
-          description: "Format sets specific to the project"
-        },
-        // iModel-specific format sets
-        iModel: {
-          type: "array",
-          items: {
-            type: "object",
-            "$ref": "#/typeDefs/formatSet"
-          },
-          description: "Format sets specific to the iModel"
-        },
-        // User-specific format sets
-        user: {
-          type: "array",
-          items: {
-            type: "object",
-            "$ref": "#/typeDefs/formatSet"
-          },
-          description: "Format sets customized by individual users"
+      allOf: [
+        {
+          "$ref": "#/typeDefs/formatSets"
         }
-      }
+      ]
     },
+
+    // Organization-specific format sets
+    "organization": {
+      type: "object",
+      allOf: [
+        {
+          "$ref": "#/typeDefs/formatSets"
+        }
+      ]
+    },
+
+    // Project-specific format sets
+    "project": {
+      type: "object",
+      allOf: [
+        {
+          "$ref": "#/typeDefs/formatSets"
+        }
+      ]
+    },
+
+    // iModel-specific format sets
+    "iModel": {
+      type: "object",
+      allOf: [
+        {
+          "$ref": "#/typeDefs/formatSets"
+        }
+      ]
+    },
+
+    // User-specific format sets
+    "user": {
+      type: "object",
+      allOf: [
+        {
+          "$ref": "#/typeDefs/formatSets"
+        }
+      ]
+    }
   },
 
   typeDefs: {
+    "formatSets": {
+      type: "object",
+      $id: "#formatSets",
+      properties: {
+        formatSets: {
+          type: "array",
+          items: {
+            type: "object",
+            "$ref": "#/typeDefs/formatSet"
+          },
+          description: "Array of format sets"
+        }
+      },
+      required: ["formatSets"]
+    },
+
     "formatSet": {
       type: "object",
       $id: "#formatSet",
@@ -141,7 +167,7 @@ class APIValidationClient {
     if (!this._initialized) {
       // constructSettingsSchemas should not be part of internal. Or maybe we need a new implementation that's more generic
       // Current impl is very locally file-based. Could do something new.
-      // Could make an Impl that centers around querying PSS..?
+      // Could make an Impl that centers around querying an external settings service?
       this._settingSchemas = constructSettingsSchemas();
       this._settingSchemas.addGroup(productSettingsSchema); // Need to dive deeper into how group is used during validation. ASK COPILOT
       this._initialized = true;
@@ -149,15 +175,13 @@ class APIValidationClient {
   }
 
   public async validateAndFetch<T>(
-    url: string,
-    settingName: string,
-    transformFn?: (data: any) => T
+    args: FetchArgs<T>
   ): Promise<T> {
     await this.initialize();
 
     try {
       // Fetch from external API
-      const response = await fetch(url);
+      const response = await fetch(args.url);
       if (!response.ok) {
         throw new Error(`API request failed: ${response.status}`);
       }
@@ -165,12 +189,13 @@ class APIValidationClient {
       const rawData = await response.json();
 
       // Optional transformation before validation
-      const dataToValidate = transformFn ? transformFn(rawData) : rawData;
+      const dataToValidate = args.transformFn ? args.transformFn(rawData) : rawData;
 
       // Validate using registered schema
+      // NOTE: MIGHT NEED MORE IMPLEMENTATION?
       const validatedData = this._settingSchemas.validateSetting(
         dataToValidate,
-        settingName
+        args.settingName
       );
 
       return validatedData as T;
@@ -189,20 +214,63 @@ class APIValidationClient {
   }
 }
 
-// Demonstration function showing FormatSet validation
+// Demonstration function showing FormatSet validation with separate API calls
 export async function demonstrateFormatSetValidation(): Promise<void> {
   const client = new APIValidationClient();
 
-  // Sample FormatSet data that matches the new array structure
-  const sampleFormatSets = {
-    defaults: [
+  try {
+    // 1. Validate defaults from API
+    const defaultsResponse = await client.validateAndFetch<{formatSets: any[]}>({
+      url: "https://example.com/api/settings/defaults",
+      settingName: "productSettings/defaults"
+    });
+    // Successfully validated defaults with formatSets
+
+    // 2. Validate organization settings from API
+    const organizationResponse = await client.validateAndFetch<{formatSets: any[]}>({
+      url: "https://example.com/api/settings/organization/acme-corp",
+      settingName: "productSettings/organization"
+    });
+    // Successfully validated organization with formatSets
+
+    // 3. Validate user settings from API
+    const userResponse = await client.validateAndFetch<{formatSets: any[]}>({
+      url: "https://example.com/api/settings/user/john.doe",
+      settingName: "productSettings/user"
+    });
+    // Successfully validated user with formatSets
+
+    // 4. Validate iModel settings from API
+    const iModelResponse = await client.validateAndFetch<{formatSets: any[]}>({
+      url: "https://example.com/api/settings/imodel/site-survey-2024",
+      settingName: "productSettings/iModel"
+    });
+    // Successfully validated iModel with formatSets
+
+    // All validations passed - data is ready to use
+    const _allResponses = [defaultsResponse, organizationResponse, userResponse, iModelResponse];
+
+  } catch (error) {
+    // Handle validation errors - data doesn't match FormatSet interface requirements
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`FormatSet validation failed: ${errorMessage}`);
+  }
+}
+
+// Sample data demonstration function using local data
+export async function demonstrateLocalFormatSetValidation(): Promise<void> {
+  const client = new APIValidationClient();
+
+  // Sample data for each level
+  const defaultsData = {
+    formatSets: [
       {
         name: "standard",
-        label: "Standard Format Set",
+        label: "Standard Format Set from Design Review",
         unitSystem: "imperial" as const,
         formats: {
           length: {
-            name: "length",
+            name: "AecUnits.LENGTH",
             label: "Length Format",
             type: "decimal",
             precision: 2,
@@ -211,16 +279,20 @@ export async function demonstrateFormatSetValidation(): Promise<void> {
           }
         }
       }
-    ],
-    organization: [
+    ]
+  };
+
+  const organizationData = {
+    formatSets: [
       {
-        name: "engineering",
-        label: "Engineering Format Set",
+        name: "CivilFormatSet",
+        label: "Civil Department Format Set",
+        description: "Format sets used by the Civil department",
         unitSystem: "metric" as const,
         formats: {
           length: {
-            name: "length",
-            label: "Engineering Length Format",
+            name: "AecUnits.LENGTH",
+            label: "Length",
             type: "decimal",
             precision: 3,
             minWidth: 1,
@@ -231,49 +303,122 @@ export async function demonstrateFormatSetValidation(): Promise<void> {
             uomSeparator: " "
           },
           area: {
-            name: "area",
-            label: "Engineering Area Format",
+            name: "AecUnits.AREA",
+            label: "Area",
             type: "decimal",
             precision: 2,
             minWidth: 1,
             showSignOption: "onlyNegative",
             formatTraits: "keepDecimalPoint,showUnitLabel"
-          },
-          volume: {
-            name: "volume",
-            label: "Engineering Volume Format",
-            type: "scientific",
-            precision: 4,
-            scientificType: "normalized",
-            formatTraits: "showUnitLabel"
           }
         }
       }
-    ],
-    project: [
+    ]
+  };
+
+  const userData = {
+    formatSets: [
       {
-        name: "projectSpecific",
-        label: "Project Specific Format Set",
-        unitSystem: "metric" as const,
+        name: "my own set",
+        label: "My own format set",
+        unitSystem: "imperial" as const,
         formats: {
           length: {
-            name: "length",
-            label: "Project Length Format",
+            name: "AecUnits.LENGTH",
+            label: "Length",
             type: "decimal",
-            precision: 4,
-            formatTraits: "showUnitLabel"
+            precision: 0,
+            composite: {
+              spacer: " ",
+              includeZero: true,
+              units: [
+                { name: "ft", label: "feet" },
+                { name: "in", label: "inches" }
+              ]
+            }
           }
         }
       }
-    ],
-    iModel: [
+    ]
+  };
+
+  const projectData = {
+    formatSets: [
+      {
+        name: "HighwayProjectHI200F",
+        label: "Format Set for Highway Project HI200F",
+        unitSystem: "metric" as const,
+        formats: {
+          "AecUnits.LENGTH": {
+            name: "AecUnits.LENGTH",
+            label: "Length Format",
+            type: "decimal",
+            precision: 3,
+            minWidth: 1,
+            showSignOption: "onlyNegative",
+            formatTraits: "showUnitLabel,use1000Separator",
+            decimalSeparator: ".",
+            thousandSeparator: ",",
+            uomSeparator: " "
+          },
+          "AecUnits.AREA": {
+            name: "AecUnits.AREA",
+            label: "Area Format",
+            type: "decimal",
+            precision: 1,
+            minWidth: 1,
+            showSignOption: "onlyNegative",
+            formatTraits: "keepDecimalPoint,showUnitLabel"
+          },
+          "AecUnits.VOLUME": {
+            name: "AecUnits.VOLUME",
+            label: "Volume Format",
+            type: "decimal",
+            precision: 2,
+            minWidth: 1,
+            showSignOption: "onlyNegative",
+            formatTraits: "showUnitLabel,use1000Separator"
+          }
+        }
+      },
+      {
+        name: "HighwayProjectHI200FBridge",
+        label: "Format Set for Highway Project HI200F, Bridge Portion",
+        unitSystem: "metric" as const,
+        formats: {
+          "AecUnits.LENGTH": {
+            name: "AecUnits.LENGTH",
+            label: "Length",
+            type: "decimal",
+            precision: 1,
+            minWidth: 1,
+            showSignOption: "onlyNegative",
+            formatTraits: "showUnitLabel,keepDecimalPoint"
+          },
+          "AecUnits.FORCE": {
+            name: "AecUnits.FORCE",
+            label: "Force",
+            type: "scientific",
+            precision: 3,
+            minWidth: 1,
+            showSignOption: "onlyNegative",
+            formatTraits: "showUnitLabel",
+            scientificType: "normalized"
+          }
+        }
+      }
+    ]
+  };
+
+  const iModelData = {
+    formatSets: [
       {
         name: "surveying",
         label: "Surveying Format Set",
         unitSystem: "usSurvey" as const,
         formats: {
           length: {
-            name: "length",
+            name: "AecUnits.LENGTH",
             label: "Surveying Length Format",
             type: "fractional",
             precision: 4,
@@ -291,48 +436,24 @@ export async function demonstrateFormatSetValidation(): Promise<void> {
           }
         }
       }
-    ],
-    user: [
-      {
-        name: "userCustom",
-        label: "User Custom Format Set",
-        unitSystem: "imperial" as const,
-        formats: {
-          composite: {
-            name: "composite",
-            label: "Feet and Inches Composite Format",
-            type: "decimal",
-            precision: 0,
-            composite: {
-              spacer: " ",
-              includeZero: true,
-              units: [
-                { name: "ft", label: "feet" },
-                { name: "in", label: "inches" }
-              ]
-            }
-          }
-        }
-      }
     ]
   };
 
   try {
-    // Validate the FormatSet data against the schema
-    const validatedData = await client.validateData<typeof sampleFormatSets>(
-      sampleFormatSets,
-      "productSettings/formatSets"
-    );
+    // The idea is to retrieve these defaultData, organizationData, user
 
-    // If we get here, the data is valid according to our FormatSet schema
-    // In a real application, you could now safely use this data
-    const _organizationFormats = validatedData.organization[0]; // First organization format set
-    const _userFormats = validatedData.user; // All user format sets
-    // Use the validated FormatSet data...
+    // Validate each level separately
+    const _validatedDefaults = await client.validateData<FormatSet[]>(defaultsData, "productSettings/defaults");
+    const _validatedOrganization = await client.validateData<FormatSet[]>(organizationData, "productSettings/organization");
+    const _validatedProject = await client.validateData<FormatSet[]>(projectData, "productSettings/project");
+    const _validatedUser = await client.validateData<FormatSet[]>(userData, "productSettings/user");
+    const _validatedIModel = await client.validateData<FormatSet[]>(iModelData, "productSettings/iModel");
+
+    // All local validations completed successfully
 
   } catch (error) {
     // Handle validation errors - data doesn't match FormatSet interface requirements
     const errorMessage = error instanceof Error ? error.message : String(error);
-    throw new Error(`FormatSet validation failed: ${errorMessage}`);
+    throw new Error(`Local FormatSet validation failed: ${errorMessage}`);
   }
 }
