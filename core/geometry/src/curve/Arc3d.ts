@@ -1136,7 +1136,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const matrix = Matrix3d.createScale(radius, radius, 1.0, result?.matrixRef);
     if (result)
       return result.set(center, matrix, sweep);
-    return Arc3d.createRefs(center, matrix, sweep);
+    return Arc3d.createRefs(center.clone(), matrix, sweep?.clone());
   }
   /**
    * Create a new arc which is parallel to the xy plane, with given center and x,y radii, and optional angle sweep
