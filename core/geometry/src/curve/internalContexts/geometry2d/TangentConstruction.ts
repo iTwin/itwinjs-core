@@ -822,12 +822,10 @@ export class TangentConstruction {
     return undefined;
   }
   /**
-   * Construct basis vectors for hyperbola or ellipse whose points are equidistant from tangencies with
+   * Construct parabolas whose points are equidistant from tangencies with
    * circleA and circleB.
-   * * If the curve is a hyperbola, the equation is
-   *            X = center + vectorU * sec(theta) + vectorV * tan(theta)
-   * * If the curve is an ellipse, the equation is
-   *            X = center + vectorU * cos(theta) + vectorV * sin(theta)
+   * * Note that if th e circle has non-zero radius there are two parabolas based on
+   *     tangencies on near or far side of the circle.
    * @param line the line
    * @param circle the circle
    */
