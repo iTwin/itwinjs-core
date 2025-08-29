@@ -567,6 +567,22 @@ export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
   getModelsNotInMask(maskModels: OrderedId64Iterable | undefined, useVisible: boolean): Id64String[] | undefined;
 }
 
+/** @internal */
+export function collectMaskRefs(view: SpatialViewState, modelIds: OrderedId64Iterable, excludedModelIds: Set<Id64String> | undefined, maskTreeRefs: TileTreeReference[], maskRange: Range3d): void {
+  for (const modelId of modelIds) {
+    if (!excludedModelIds?.has(modelId)) {
+      const model = view.iModel.models.getLoaded(modelId);
+      assert(model !== undefined);   // Models should be loaded by RealityModelTileTree
+      if (model?.asGeometricModel) {
+        const treeRef = createMaskTreeReference(view, model.asGeometricModel);
+        maskTreeRefs.push(treeRef);
+        const range = treeRef.computeWorldContentRange();
+        maskRange.extendRange(range);
+      }
+    }
+  }
+}
+
 /** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]] and
  * not present in the optionally-supplied exclusion list.
  * @internal
@@ -733,18 +749,7 @@ class SpatialRefs implements SpatialTileTreeReferences {
    * @param maskRange range to extend for the maskRefs
    */
   public collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[], maskRange: Range3d): void {
-    for (const modelId of modelIds) {
-      if (!this._excludedModels?.has(modelId)) {
-        const model = this._view.iModel.models.getLoaded(modelId);
-        assert(model !== undefined);   // Models should be loaded by RealityModelTileTree
-        if (model?.asGeometricModel) {
-          const treeRef = createMaskTreeReference(this._view, model.asGeometricModel);
-          maskTreeRefs.push(treeRef);
-          const range = treeRef.computeWorldContentRange();
-          maskRange.extendRange(range);
-        }
-      }
-    }
+    collectMaskRefs(this._view, modelIds, this._excludedModels, maskTreeRefs, maskRange);
   }
 
   /** For getting a list of modelIds which do not participate in masking, for planar classification.
