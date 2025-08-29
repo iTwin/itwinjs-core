@@ -508,7 +508,6 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
 
 // @internal
 export interface ECSqlSchemaLocaterOptions extends SchemaLocaterOptions {
-    readonly performanceLogger?: PerformanceLogger;
     readonly useMultipleQueries?: boolean;
 }
 
