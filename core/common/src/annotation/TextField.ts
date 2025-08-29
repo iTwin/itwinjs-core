@@ -61,6 +61,12 @@ export type CoordinateComponentSelector = "X" | "Y" | "Z" | "XY" | "XYZ";
 
 export type FieldCase = "as-is" | "upper" | "lower";
 
+export type TimePart = "24hr" | "12hr" | "GMT";
+
+export type DayPart = "date" | "day" | "daydate";
+
+export type MonthPart = "month" | "date" | "monthdate";
+
 export interface BooleanFieldFormatOptions {
   trueString?: string;
   falseString?: string;
@@ -89,6 +95,10 @@ export interface DateTimeFieldFormatOptions {
   // be needed for the parts it specifies in its formatting.
   // People might also want to ask that the date be translated to a specific time zone before formatting is applied.
   // For now we simply spit out the full Date as a string in ISO8601 format.
+  day?: DayPart;
+  month?: MonthPart;
+  time?: TimePart;
+  separator?: string;
 }
 
 export interface EnumFieldFormatOptions<T extends number| string> {
