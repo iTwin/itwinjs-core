@@ -7,7 +7,7 @@ import { SchemaContext } from "../Context";
 import { ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps, MixinProps,
   PhenomenonProps, PropertyCategoryProps, RelationshipClassProps, SchemaItemFormatProps, SchemaItemProps, SchemaItemUnitProps, SchemaProps,
   StructClassProps, UnitSystemProps } from "../Deserialization/JsonProps";
-import { parseSchemaItemType, SchemaItemType, SchemaMatchType } from "../ECObjects";
+import { SchemaItemType, SchemaMatchType } from "../ECObjects";
 import { SchemaInfo, WithSchemaKey } from "../Interfaces";
 import { SchemaKey } from "../SchemaKey";
 import { FullSchemaQueries } from "./FullSchemaQueries";
@@ -71,7 +71,7 @@ interface SchemaItemRow {
 type AddSchemaItemHandler = <T extends SchemaItemInfo>(schemaName: string, itemStub: T) => Promise<void>;
 
 type MutableSchemaProps = {
-  -readonly [K in keyof SchemaProps]: SchemaProps[K]
+  -readonly [K in keyof SchemaProps]: SchemaProps[K];
 };
 
 interface QueryParameters {
@@ -158,9 +158,6 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
     return schemaProps;
   };
 
-  /**
-   * Gets the [[SchemaProps]] without schemaItems.
-   */
   /**
    * Gets the [[SchemaProps]] without schemaItems for the given schema name.
    * @param schemaName The name of the Schema.
@@ -405,12 +402,13 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
         schemaStub = await addSchema(SchemaKey.parseString(`${schemaName}.0.0.0`));
       }
 
-      if (!schemaStub.items) {
-        Object.assign(schemaStub, { items: {} });
+      let items = schemaStub.items;
+      if (!items) {
+        Object.assign(schemaStub, items = { items: {} });
       }
 
-      const existingItem = schemaStub.items![itemInfo.name] || {};
-      Object.assign(schemaStub.items!, { [itemInfo.name]: Object.assign(existingItem, itemInfo) });
+      const existingItem = items[itemInfo.name] || {};
+      Object.assign(items, { [itemInfo.name]: Object.assign(existingItem, itemInfo) });
     };
 
     const reviver = (_key: string, value: any) => {
@@ -465,7 +463,7 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
     if (!schema)
       return undefined;
 
-    schema.items = {};
+    const items = schema.items || (schema.items = {});
     await Promise.all([
       this.getEntities(schemaKey.name, context),
       this.getMixins(schemaKey.name, context),
@@ -482,9 +480,14 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
       this.getPhenomenon(schemaKey.name, context),
       this.getFormats(schemaKey.name, context)
     ]).then((itemResults) => {
-      const flatItemList = itemResults.reduce((acc, item) => acc.concat(item));
+      const flatItemList = itemResults.reduce((acc, result) => acc.concat(result));
       flatItemList.forEach((schemaItem) => {
-        schema.items![schemaItem.name!] = schemaItem;
+        if(!schemaItem.name) {
+          // This should never be happen, as we query the schema items by name from the database, but since the SchemaProps
+          // have name optional, we need the check here to make the compiler happy.
+          throw new Error(`SchemaItem with no name encountered in schema ${schemaKey.name}`);
+        }
+        items[schemaItem.name] = schemaItem;
       });
     });
 
@@ -513,8 +516,8 @@ async function parseSchemaItemStubs(schemaName: string, itemRows: Array<SchemaIt
       const schemaItem = await SchemaParser.parseItem(currentItem, currentItem.schema, schemaInfos);
       await addItemsHandler(currentItem.schema, {
         ...schemaItem,
-        name: schemaItem.name!,
-        schemaItemType: parseSchemaItemType(schemaItem.schemaItemType!)!,
+        name: schemaItem.name,
+        schemaItemType: schemaItem.schemaItemType,
         baseClass: baseClassName,
       });
     }
@@ -524,8 +527,8 @@ async function parseSchemaItemStubs(schemaName: string, itemRows: Array<SchemaIt
     const schemaItem = await SchemaParser.parseItem(itemRow, schemaName, schemaInfos);
     await addItemsHandler(schemaName, {
       ...schemaItem,
-      name: schemaItem.name!,
-      schemaItemType: parseSchemaItemType(schemaItem.schemaItemType!)!,
+      name: schemaItem.name,
+      schemaItemType: schemaItem.schemaItemType,
       mixins: itemRow.mixins
         ? itemRow.mixins.map(mixin => { return `${mixin.schema}.${mixin.name}`; })
         : undefined,
@@ -537,8 +540,8 @@ async function parseSchemaItemStubs(schemaName: string, itemRows: Array<SchemaIt
       const mixinItem = await SchemaParser.parseItem(mixinRow, mixinRow.schema, schemaInfos);
       await addItemsHandler(mixinRow.schema, {
         ...mixinItem,
-        name: mixinItem.name!,
-        schemaItemType: parseSchemaItemType(mixinItem.schemaItemType!)!,
+        name: mixinItem.name,
+        schemaItemType: mixinItem.schemaItemType,
       });
       await parseBaseClasses(mixinRow.baseClasses);
     }

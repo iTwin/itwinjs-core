@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { ECSchemaNamespaceUris } from "../Constants";
 import { ISchemaLocater, SchemaContext } from "../Context";
-import { SchemaProps } from "../Deserialization/JsonProps";
+import { SchemaProps, SchemaReferenceProps } from "../Deserialization/JsonProps";
 import { SchemaGraphUtil } from "../Deserialization/SchemaGraphUtil";
 import { SchemaMatchType } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
@@ -139,7 +139,10 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
     // to fetch the whole schema json.
     if (!await this.supportPartialSchemaLoading(schemaContext)) {
       const schemaJson = await this.getSchemaJson(schemaInfo.schemaKey, schemaContext);
-      return Schema.fromJson(schemaJson!, schemaContext);
+      if(schemaJson === undefined)
+        throw new ECSchemaError(ECSchemaStatus.UnableToLocateSchema, `Could not locate the schema, ${schemaInfo.schemaKey.name}.${schemaInfo.schemaKey.version.toString()}`);
+
+      return Schema.fromJson(schemaJson, schemaContext);
     }
 
     // Fetches the schema partials for the given schema key. The first item in the array is the
@@ -174,20 +177,19 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
     const schemaInfo = await schemaContext.getSchemaInfo(schemaKey, SchemaMatchType.Latest);
     if (!schemaInfo)
       throw new Error(`Schema ${schemaKey.name} could not be found.`);
+
+    const schemaReferences: Array<SchemaReferenceProps> = [];
     const schemaProps: SchemaProps = {
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: schemaKey.name,
       alias: schemaInfo.alias,
       version: schemaInfo.schemaKey.version.toString(),
-      references: [],
+      references: schemaReferences,
       items: {}
     };
 
-    if (!schemaProps.references)
-      throw new Error(`Schema references is undefined for the Schema ${schemaInfo.schemaKey.name}`);
-
     schemaInfo.references.forEach((ref) => {
-      schemaProps.references!.push({ name: ref.schemaKey.name, version: ref.schemaKey.version.toString() });
+      schemaReferences.push({ name: ref.schemaKey.name, version: ref.schemaKey.version.toString() });
     });
 
     return schemaProps;
