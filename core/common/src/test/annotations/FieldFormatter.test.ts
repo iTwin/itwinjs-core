@@ -330,7 +330,7 @@ describe("Field formatting", () => {
       const unitConversions = await FormatterSpec.getUnitConversions(format, unitsProvider, persistenceUnit);
       const resolvedProps = format.toFullyResolvedJSON();
 
-      const koq = await schemaContext.getSchemaItem("AecUnits.ANGLE", KindOfQuantity);
+      const koq = await schemaContext.getSchemaItem("AecUnits.AREA", KindOfQuantity);
       const quantityOptions: QuantityFieldFormatOptions = {
         koqName: koq?.fullName,
         formatProps: resolvedProps,

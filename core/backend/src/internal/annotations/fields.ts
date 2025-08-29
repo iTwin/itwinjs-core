@@ -341,7 +341,7 @@ export function computeFieldPropertyType(property: Property): FieldPropertyType 
       case PrimitiveType.Point3d:
         return "coordinate";
       case PrimitiveType.Binary:
-        if (property.extendedTypeName === "BeGuid")
+        if (property.extendedTypeName === "Guid")
           return "string";
         else
           return undefined;
