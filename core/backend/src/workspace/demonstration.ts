@@ -35,7 +35,7 @@ interface FetchArgs<T> {
 const productSettingsSchema: SettingGroupSchema = {
   schemaPrefix: "productSettings",
   description: "Product settings validation from external API",
-
+  version: "0.1.0", // There is no version property in SettingGroupSchema however. We may have to extend the schema.
   settingDefs: {
     // Default format sets - base level
     "defaults": {
