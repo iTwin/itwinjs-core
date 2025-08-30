@@ -8,6 +8,7 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { TextStyleSettings, TextStyleSettingsProps } from "./TextStyle";
+import { FieldFormatOptions, fieldFormatOptionsDeepEquals, FieldPropertyHost, FieldPropertyPath, FieldPropertyType } from "./TextField";
 
 /** Options supplied to [[TextBlockComponent.clearStyleOverrides]] to control how the style overrides are cleared on the component and its child components.
  * @beta
@@ -374,57 +375,6 @@ export class TabRun extends TextBlockComponent {
   }
 }
 
-/** A chain of property accesses that resolves to a primitive value that forms the basis of the displayed content
- * of a [[FieldRun]].
-   * The simplest property paths consist of a [[propertyName]] and nothing else, where `propertyName` identifies
-   * a primitive property.
-   * If `propertyName` identifies a struct or array property, then additional [[accessors]] are required to identify the specific value.
-   * If `propertyName` (including any [[accessors]]) resolves to a JSON property, then additional [[jsonAccessors]] are required to identify a specific value within the JSON.
-   * Some examples:
-   * ```
-   * | Access String | propertyName | accessors | jsonAccessors |
-   * | ------------- | ------------ | --------- | ------------- |
-   * | name          | "name"       | undefined | undefined     |
-   * | spouse.name   | "spouse"     | [name]    | undefined     |
-   * | colors[2]     | "colors"     | [2]       | undefined     |
-   * | spouse.favoriteRestaurants[1].address | "spouse" | ["favoriteRestaurants", 1, "address"] | undefined |
-   * | jsonProperties.contactInfo.email | "jsonProperties" | undefined | ["contactInfo", "email"] |
-   * | spouse.jsonProperties.contactInfo.phoneNumbers[0].areaCode | "spouse" | ["jsonProperties"] | ["contactInfo", "phoneNumbers", 0, "areaCode"] |
-   * ```
- * @beta
- */
-export interface FieldPropertyPath {
-  /** The name of the BIS property of the [[FieldPropertyHost]] that serves as the root of the path. */
-  propertyName: string;
-  /** Property names and/or array indices describing the path from [[propertyName]] to the ultimate BIS property. */
-  accessors?: Array<string | number>;
-  /** If [[propertyName]] and [[accessors]] (if defined) resolve to a BIS property of extended type `Json`, property names and/or
-   * array indices for selecting a primitive value within the JSON.
-   */
-  jsonAccessors?: Array<string | number>;
-}
-
-/** Describes the source of the property value against which a [[FieldPropertyPath]] is evaluated.
- * A field property is always hosted by an [Element]($backend). It may be a property of the element's BIS class itself,
- * or that of one of its [ElementAspect]($backend)s.
- * The [[schemaName]] and [[className]] should always identify the exact class that contains [[FieldPropertyPath.propertyName]] - not a subclass thereof.
- * @beta
- */
-export interface FieldPropertyHost {
-  /** The Id of the [Element]($backend) that hosts the property. */
-  elementId: Id64String;
-  /** The name of the schema containing the class identified by [[className]]. */
-  schemaName: string;
-  /** The name of the exact class (not a subclass) containing the property identified by [[FieldPropertyPath.propertyName]]. */
-  className: string;
-}
-
-/** Placeholder type for a description of how to format the raw property value resolved by a [[FieldPropertyPath]] into a [[FieldRun]]'s display string.
- * *** COMING SOON ***
- * @beta
- */
-export interface FieldFormatter { [k: string]: any }
-
 /** JSON representation of a [[FieldRun]].
  * @beta
  */
@@ -435,8 +385,17 @@ export interface FieldRunProps extends TextBlockComponentProps {
   propertyHost: FieldPropertyHost;
   /** Describes how to obtain the property value from [[propertyHost]]. */
   propertyPath: FieldPropertyPath;
-  /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]]. */
-  formatter?: FieldFormatter;
+  /** The type of the value of the property specified by [[propertyPath]], which determines how the display string is formatted.
+   * Defaults to "string".
+   * If the value of the property cannot be converted to the specified type, then evaluation of the field's display string will fail.
+   * @see [[formatOptions]] to customize the formatting more granularly.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  propertyType?: FieldPropertyType | string;
+  /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]].
+   * The specific options used depend upon the field's [[propertyType]].
+   */
+  formatOptions?: FieldFormatOptions;
   /** The field's most recently evaluated display string. */
   cachedContent?: string;
 }
@@ -460,8 +419,17 @@ export class FieldRun extends TextBlockComponent {
   public readonly propertyHost: Readonly<FieldPropertyHost>;
   /** Describes how to obtain the property value from [[propertyHost]]. */
   public readonly propertyPath: Readonly<FieldPropertyPath>;
-  /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]]. */
-  public readonly formatter?: FieldFormatter;
+  /** The type of the value of the property specified by [[propertyPath]], which determines how the display string is formatted.
+   * Defaults to "string".
+   * If the value of the property cannot be converted to the specified type, then evaluation of the field's display string will fail.
+   * @see [[formatOptions]] to customize the formatting more granularly.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  public readonly propertyType: FieldPropertyType | string;
+  /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]].
+   * The specific options used depend upon the field's [[propertyType]].
+   */
+  public readonly formatOptions?: FieldFormatOptions;
   private _cachedContent: string;
 
   /** The field's most recently evaluated display string. */
@@ -480,7 +448,8 @@ export class FieldRun extends TextBlockComponent {
     this._cachedContent = props.cachedContent ?? FieldRun.invalidContentIndicator;
     this.propertyHost = props.propertyHost
     this.propertyPath = props.propertyPath;
-    this.formatter = props.formatter;
+    this.formatOptions = props.formatOptions;
+    this.propertyType = props.propertyType ?? "string";
   }
 
   /** Create a FieldRun from its JSON representation. */
@@ -489,7 +458,7 @@ export class FieldRun extends TextBlockComponent {
       ...props,
       propertyHost: { ...props.propertyHost },
       propertyPath: structuredClone(props.propertyPath),
-      formatter: structuredClone(props.formatter),
+      formatOptions: structuredClone(props.formatOptions),
     });
   }
 
@@ -506,8 +475,12 @@ export class FieldRun extends TextBlockComponent {
       json.cachedContent = this.cachedContent;
     }
 
-    if (this.formatter) {
-      json.formatter = structuredClone(this.formatter);
+    if (this.formatOptions) {
+      json.formatOptions = structuredClone(this.formatOptions);
+    }
+
+    if (this.propertyType !== "string") {
+      json.propertyType = this.propertyType;
     }
 
     return json;
@@ -526,6 +499,10 @@ export class FieldRun extends TextBlockComponent {
   /** Returns true if `this` is equivalent to `other`. */
   public override equals(other: TextBlockComponent): boolean {
     if (!(other instanceof FieldRun) || !super.equals(other)) {
+      return false;
+    }
+
+    if (this.propertyType !== other.propertyType) {
       return false;
     }
 
@@ -558,12 +535,12 @@ export class FieldRun extends TextBlockComponent {
       return false;
     }
 
-    if (this.formatter && other.formatter) {
-      // ###TODO better comparison of formatter objects.
-      if (JSON.stringify(this.formatter) !== JSON.stringify(other.formatter)) {
+    if (this.formatOptions && other.formatOptions) {
+      // ###TODO better comparison of formatOptions objects.
+      if(!fieldFormatOptionsDeepEquals(this.formatOptions, other.formatOptions)){
         return false;
       }
-    } else if (this.formatter || other.formatter) {
+    } else if (this.formatOptions || other.formatOptions) {
       return false;
     }
 
