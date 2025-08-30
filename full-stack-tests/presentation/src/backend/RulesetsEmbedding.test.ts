@@ -19,6 +19,7 @@ const RULESET_1: Ruleset = {
       ruleType: RuleTypes.RootNodes,
       specifications: [
         {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           specType: ChildNodeSpecificationTypes.CustomNode,
           type: "test 1",
           label: "label 1",
@@ -137,6 +138,7 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId)).true;
 
     // Try getting root node to confirm embedded ruleset is being located
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const rootNodes = await Presentation.getManager().getNodes({ imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
   });
@@ -147,6 +149,7 @@ describe("RulesEmbedding", () => {
     expect(Id64.isValid(insertId)).true;
 
     // Try getting root node to confirm embedded ruleset is being located
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     let rootNodes = await Presentation.getManager().getNodes({ imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
 
@@ -154,6 +157,7 @@ describe("RulesEmbedding", () => {
     rulesetElement.setJsonProperty("id", "some value");
     imodel.elements.updateElement(rulesetElement.toJSON());
 
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     rootNodes = await Presentation.getManager().getNodes({ imodel, rulesetOrId: RULESET_1.id });
     expect(rootNodes.length).to.be.equal(1);
   });

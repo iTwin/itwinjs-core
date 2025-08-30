@@ -26,7 +26,9 @@ export class SelectionHelper {
   public static getKeysForSelection(keys: Readonly<Keys>): Key[] {
     const result = new Array<Key>();
     keys.forEach((key: Key) => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       if (Key.isNodeKey(key)) {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         if (NodeKey.isInstancesNodeKey(key)) {
           result.push(...key.instanceKeys);
         } else {

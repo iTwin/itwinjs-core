@@ -32,6 +32,7 @@ describe("PresentationRpcInterface tests", () => {
     Presentation.terminate();
   });
 
+  /* eslint-disable @typescript-eslint/no-deprecated */
   it("getNodes works as expected", async () => {
     const rootNodes = await Presentation.presentation.getNodesIterator({
       imodel,
@@ -66,6 +67,7 @@ describe("PresentationRpcInterface tests", () => {
     });
     expect(result).to.not.be.undefined;
   });
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
   it("getContentSources works as expected", async () => {
     const result = await Presentation.presentation.getContentSources({
@@ -168,6 +170,7 @@ describe("PresentationRpcInterface tests", () => {
   });
 });
 
+/* eslint-disable @typescript-eslint/no-deprecated */
 const createNodesRuleset = (): Ruleset => ({
   id: "nodes",
   rules: [
@@ -186,6 +189,7 @@ const createNodesRuleset = (): Ruleset => ({
     },
   ],
 });
+/* eslint-enable @typescript-eslint/no-deprecated */
 
 const createContentRuleset = (): Ruleset => ({
   id: "content",

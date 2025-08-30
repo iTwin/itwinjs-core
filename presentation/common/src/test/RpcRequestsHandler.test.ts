@@ -2,6 +2,8 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
+
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
@@ -223,7 +225,7 @@ describe("RpcRequestsHandler", () => {
       };
       const result = 123;
       rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
+
         .setup(async (x) => x.getNodesCount(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -244,7 +246,7 @@ describe("RpcRequestsHandler", () => {
       };
       const result = 123;
       rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
+
         .setup(async (x) => x.getNodesCount(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -267,7 +269,7 @@ describe("RpcRequestsHandler", () => {
       };
       const result = { items: [createTestECInstancesNode()], total: 1 };
       rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
+
         .setup(async (x) => x.getPagedNodes(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -294,7 +296,7 @@ describe("RpcRequestsHandler", () => {
       it("when descriptor is sent as serialized JSON string", async () => {
         const { handlerOptions, rpcOptions, result } = createTestData();
         rpcInterfaceMock
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
+
           .setup(async (x) => x.getNodesDescriptor(token, rpcOptions))
           .returns(async () => successResponse(JSON.stringify(result)))
           .verifiable();
@@ -305,7 +307,7 @@ describe("RpcRequestsHandler", () => {
       it("when descriptor is sent as JSON", async () => {
         const { handlerOptions, rpcOptions, result } = createTestData();
         rpcInterfaceMock
-          // eslint-disable-next-line @typescript-eslint/no-deprecated
+
           .setup(async (x) => x.getNodesDescriptor(token, rpcOptions))
           .returns(async () => successResponse(result))
           .verifiable();
@@ -328,7 +330,7 @@ describe("RpcRequestsHandler", () => {
       };
       const result = [createTestNodePathElement()];
       rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
+
         .setup(async (x) => x.getFilteredNodePaths(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -353,7 +355,7 @@ describe("RpcRequestsHandler", () => {
       };
       const result = [createTestNodePathElement()];
       rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
+
         .setup(async (x) => x.getNodePaths(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -387,7 +389,7 @@ describe("RpcRequestsHandler", () => {
         },
       };
       rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
+
         .setup(async (x) => x.getContentSources(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -415,7 +417,7 @@ describe("RpcRequestsHandler", () => {
       };
       const result = createTestContentDescriptor({ fields: [] }).toJSON();
       rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
+
         .setup(async (x) => x.getContentDescriptor(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -440,7 +442,7 @@ describe("RpcRequestsHandler", () => {
         keys,
       };
       rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
+
         .setup(async (x) => x.getContentSetSize(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -473,7 +475,7 @@ describe("RpcRequestsHandler", () => {
         paging: { start: 1, size: 2 },
       };
       rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
+
         .setup(async (x) => x.getPagedContent(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -503,7 +505,7 @@ describe("RpcRequestsHandler", () => {
         paging: { start: 1, size: 2 },
       };
       rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
+
         .setup(async (x) => x.getPagedContentSet(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -546,7 +548,7 @@ describe("RpcRequestsHandler", () => {
         ],
       };
       rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
+
         .setup(async (x) => x.getPagedDistinctValues(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -581,7 +583,7 @@ describe("RpcRequestsHandler", () => {
         ]).toJSON(),
       };
       rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
+
         .setup(async (x) => x.getContentInstanceKeys(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -601,7 +603,7 @@ describe("RpcRequestsHandler", () => {
       };
       const result = createTestLabelDefinition();
       rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
+
         .setup(async (x) => x.getDisplayLabelDefinition(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -624,7 +626,7 @@ describe("RpcRequestsHandler", () => {
         items: [createTestLabelDefinition(), createTestLabelDefinition()],
       };
       rpcInterfaceMock
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
+
         .setup(async (x) => x.getPagedDisplayLabelDefinitions(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();

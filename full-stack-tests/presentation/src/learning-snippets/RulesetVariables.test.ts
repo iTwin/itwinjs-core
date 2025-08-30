@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection } from "@itwin/core-frontend";
-import { Ruleset } from "@itwin/presentation-common";
+import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests.js";
 import { printRuleset } from "./Utils.js";
@@ -27,27 +27,27 @@ describe("Learning Snippets", () => {
   describe("Ruleset Variables", () => {
     it("uses ruleset variable in rule condition", async () => {
       // __PUBLISH_EXTRACT_START__ Presentation.RulesetVariables.InRuleCondition.Ruleset
-      // The ruleset has two root node rules - one for models and one for elements. The one actually used
-      // depends on the value of `TREE_TYPE` ruleset variable, which can be changed without modifying the ruleset itself.
+      // The ruleset has two content rules - one for models and one for elements. The one actually used
+      // depends on the value of `CONTENT_TYPE` ruleset variable, which can be changed without modifying the ruleset itself.
       const ruleset: Ruleset = {
         id: "test",
         rules: [
           {
-            ruleType: "RootNodes",
-            condition: `GetVariableStringValue("TREE_TYPE") = "models"`,
+            ruleType: "Content",
+            condition: `GetVariableStringValue("CONTENT_TYPE") = "models"`,
             specifications: [
               {
-                specType: "InstanceNodesOfSpecificClasses",
+                specType: "ContentInstancesOfSpecificClasses",
                 classes: { schemaName: "BisCore", classNames: ["Model"], arePolymorphic: true },
               },
             ],
           },
           {
-            ruleType: "RootNodes",
-            condition: `GetVariableStringValue("TREE_TYPE") = "elements"`,
+            ruleType: "Content",
+            condition: `GetVariableStringValue("CONTENT_TYPE") = "elements"`,
             specifications: [
               {
-                specType: "InstanceNodesOfSpecificClasses",
+                specType: "ContentInstancesOfSpecificClasses",
                 classes: { schemaName: "BisCore", classNames: ["Element"], arePolymorphic: true },
               },
             ],
@@ -57,114 +57,52 @@ describe("Learning Snippets", () => {
       // __PUBLISH_EXTRACT_END__
       printRuleset(ruleset);
 
-      // No variable set - the request should return 0 nodes
-      const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
-      expect(nodes.length).to.eq(0);
+      // No variable set - the request should return no content
+      const contentNoVariable = await Presentation.presentation.getContentIterator({ imodel, rulesetOrId: ruleset, keys: new KeySet(), descriptor: {} });
+      expect(contentNoVariable).to.be.undefined;
 
-      // Set variable to "models" and ensure we get model grouping nodes
+      // Set variable to "models" and ensure we get model items
       // __PUBLISH_EXTRACT_START__ Presentation.RulesetVariables.InRuleCondition.SetToModels
-      await Presentation.presentation.vars(ruleset.id).setString("TREE_TYPE", "models");
+      await Presentation.presentation.vars(ruleset.id).setString("CONTENT_TYPE", "models");
       // __PUBLISH_EXTRACT_END__
-      const modelNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
-      expect(modelNodes).to.containSubset([
-        {
-          label: { displayValue: "Definition Model" },
-        },
-        {
-          label: { displayValue: "Dictionary Model" },
-        },
-        {
-          label: { displayValue: "Document List" },
-        },
-        {
-          label: { displayValue: "Group Model" },
-        },
-        {
-          label: { displayValue: "Link Model" },
-        },
-        {
-          label: { displayValue: "Physical Model" },
-        },
-        {
-          label: { displayValue: "Repository Model" },
-        },
-      ]);
+      const modelItems = await Presentation.presentation
+        .getContentIterator({ imodel, rulesetOrId: ruleset, keys: new KeySet(), descriptor: {} })
+        .then(async (x) => collect(x!.items));
+      expect(modelItems).to.have.lengthOf(8);
+      modelItems.forEach((item) =>
+        expect(item.classInfo!.name).to.be.oneOf([
+          "BisCore:LinkModel",
+          "BisCore:DictionaryModel",
+          "Generic:GroupModel",
+          "BisCore:DocumentListModel",
+          "BisCore:DefinitionModel",
+          "BisCore:PhysicalModel",
+          "BisCore:RepositoryModel",
+        ]),
+      );
 
-      // Set variable to "elements" and ensure we get element grouping nodes
+      // Set variable to "elements" and ensure we get element items
       // __PUBLISH_EXTRACT_START__ Presentation.RulesetVariables.InRuleCondition.SetToElements
-      await Presentation.presentation.vars(ruleset.id).setString("TREE_TYPE", "elements");
+      await Presentation.presentation.vars(ruleset.id).setString("CONTENT_TYPE", "elements");
       // __PUBLISH_EXTRACT_END__
-      const elementNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
-      expect(elementNodes).to.containSubset([
-        {
-          label: { displayValue: "3D Display Style" },
-        },
-        {
-          label: { displayValue: "Category Selector" },
-        },
-        {
-          label: { displayValue: "Definition Partition" },
-        },
-        {
-          label: { displayValue: "Document Partition" },
-        },
-        {
-          label: { displayValue: "Drawing Category" },
-        },
-        {
-          label: { displayValue: "Group Information Partition" },
-        },
-        {
-          label: { displayValue: "Line Style" },
-        },
-        {
-          label: { displayValue: "Link Partition" },
-        },
-        {
-          label: { displayValue: "Model Selector" },
-        },
-        {
-          label: { displayValue: "Physical Object" },
-        },
-        {
-          label: { displayValue: "Physical Partition" },
-        },
-        {
-          label: { displayValue: "Repository Link" },
-        },
-        {
-          label: { displayValue: "Spatial Auxiliary Coordinate System" },
-        },
-        {
-          label: { displayValue: "Spatial Category" },
-        },
-        {
-          label: { displayValue: "Spatial View Definition" },
-        },
-        {
-          label: { displayValue: "Sub-Category" },
-        },
-        {
-          label: { displayValue: "Subject" },
-        },
-        {
-          label: { displayValue: "TestClass" },
-        },
-      ]);
+      const elementItems = await Presentation.presentation
+        .getContentIterator({ imodel, rulesetOrId: ruleset, keys: new KeySet(), descriptor: {} })
+        .then(async (x) => collect(x!.items));
+      expect(elementItems).to.have.lengthOf(104);
     });
 
     it("uses ruleset variable in instance filter", async () => {
       // __PUBLISH_EXTRACT_START__ Presentation.RulesetVariables.InInstanceFilter.Ruleset
-      // The ruleset has a root node rule which loads all bis.Element instances, optionally filtered
+      // The ruleset has a content node rule which loads all `bis.Element` instances, optionally filtered
       // by ECInstanceId. The filter is controlled through `ELEMENT_IDS` ruleset variable.
       const ruleset: Ruleset = {
         id: "test",
         rules: [
           {
-            ruleType: "RootNodes",
+            ruleType: "Content",
             specifications: [
               {
-                specType: "InstanceNodesOfSpecificClasses",
+                specType: "ContentInstancesOfSpecificClasses",
                 classes: { schemaName: "BisCore", classNames: ["Element"], arePolymorphic: true },
                 instanceFilter: `NOT HasVariable("ELEMENT_IDS") OR GetVariableIntValues("ELEMENT_IDS").AnyMatch(id => id = this.ECInstanceId)`,
               },
@@ -175,91 +113,42 @@ describe("Learning Snippets", () => {
       // __PUBLISH_EXTRACT_END__
       printRuleset(ruleset);
 
-      // No variable set - the request should return grouping nodes of all elements
-      let nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
-      expect(nodes).to.containSubset([
-        {
-          label: { displayValue: "3D Display Style" },
-        },
-        {
-          label: { displayValue: "Category Selector" },
-        },
-        {
-          label: { displayValue: "Definition Partition" },
-        },
-        {
-          label: { displayValue: "Document Partition" },
-        },
-        {
-          label: { displayValue: "Drawing Category" },
-        },
-        {
-          label: { displayValue: "Group Information Partition" },
-        },
-        {
-          label: { displayValue: "Line Style" },
-        },
-        {
-          label: { displayValue: "Link Partition" },
-        },
-        {
-          label: { displayValue: "Model Selector" },
-        },
-        {
-          label: { displayValue: "Physical Object" },
-        },
-        {
-          label: { displayValue: "Physical Partition" },
-        },
-        {
-          label: { displayValue: "Repository Link" },
-        },
-        {
-          label: { displayValue: "Spatial Auxiliary Coordinate System" },
-        },
-        {
-          label: { displayValue: "Spatial Category" },
-        },
-        {
-          label: { displayValue: "Spatial View Definition" },
-        },
-        {
-          label: { displayValue: "Sub-Category" },
-        },
-        {
-          label: { displayValue: "Subject" },
-        },
-        {
-          label: { displayValue: "TestClass" },
-        },
-      ]);
+      // No variable set - the request should return content for all elements
+      let items = await Presentation.presentation
+        .getContentIterator({ imodel, rulesetOrId: ruleset, keys: new KeySet(), descriptor: {} })
+        .then(async (x) => collect(x!.items));
+      expect(items).to.have.lengthOf(104);
 
-      // Set the value to several element IDs and ensure we get their class grouping nodes
+      // Set the value to several element IDs and ensure we get their content
       // __PUBLISH_EXTRACT_START__ Presentation.RulesetVariables.InInstanceFilter.SetIds
       await Presentation.presentation.vars(ruleset.id).setId64s("ELEMENT_IDS", ["0x1", "0x74", "0x40"]);
       // __PUBLISH_EXTRACT_END__
-      nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
-      expect(nodes).to.containSubset([
+      items = await Presentation.presentation
+        .getContentIterator({ imodel, rulesetOrId: ruleset, keys: new KeySet(), descriptor: {} })
+        .then(async (x) => collect(x!.items));
+      expect(items).to.containSubset([
         {
-          label: { displayValue: "Physical Object" },
+          primaryKeys: [{ id: "0x1" }],
         },
         {
-          label: { displayValue: "Subject" },
+          primaryKeys: [{ id: "0x74" }],
         },
         {
-          label: { displayValue: "TestClass" },
+          primaryKeys: [{ id: "0x40" }],
         },
       ]);
 
-      // Set the value to different element IDs and ensure we get their class grouping nodes
+      // Set the value to different element IDs and ensure we get their content
       await Presentation.presentation.vars(ruleset.id).setId64s("ELEMENT_IDS", ["0x17", "0x16"]);
-      nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
-      expect(nodes).to.containSubset([
+      items = await Presentation.presentation
+        .getContentIterator({ imodel, rulesetOrId: ruleset, keys: new KeySet(), descriptor: {} })
+        .then(async (x) => collect(x!.items));
+      expect(items).to.containSubset([
         {
-          label: { displayValue: "Definition Partition" },
+          primaryKeys: [{ id: "0x17" }],
         },
         {
-          label: { displayValue: "Spatial Category" },
+          primaryKeys: [{ id: "0x16" }],
         },
       ]);
 
@@ -267,92 +156,35 @@ describe("Learning Snippets", () => {
       // __PUBLISH_EXTRACT_START__ Presentation.RulesetVariables.InInstanceFilter.Unset
       await Presentation.presentation.vars(ruleset.id).unset("ELEMENT_IDS");
       // __PUBLISH_EXTRACT_END__
-      nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
-      expect(nodes).to.containSubset([
-        {
-          label: { displayValue: "3D Display Style" },
-        },
-        {
-          label: { displayValue: "Category Selector" },
-        },
-        {
-          label: { displayValue: "Definition Partition" },
-        },
-        {
-          label: { displayValue: "Document Partition" },
-        },
-        {
-          label: { displayValue: "Drawing Category" },
-        },
-        {
-          label: { displayValue: "Group Information Partition" },
-        },
-        {
-          label: { displayValue: "Line Style" },
-        },
-        {
-          label: { displayValue: "Link Partition" },
-        },
-        {
-          label: { displayValue: "Model Selector" },
-        },
-        {
-          label: { displayValue: "Physical Object" },
-        },
-        {
-          label: { displayValue: "Physical Partition" },
-        },
-        {
-          label: { displayValue: "Repository Link" },
-        },
-        {
-          label: { displayValue: "Spatial Auxiliary Coordinate System" },
-        },
-        {
-          label: { displayValue: "Spatial Category" },
-        },
-        {
-          label: { displayValue: "Spatial View Definition" },
-        },
-        {
-          label: { displayValue: "Sub-Category" },
-        },
-        {
-          label: { displayValue: "Subject" },
-        },
-        {
-          label: { displayValue: "TestClass" },
-        },
-      ]);
+      items = await Presentation.presentation
+        .getContentIterator({ imodel, rulesetOrId: ruleset, keys: new KeySet(), descriptor: {} })
+        .then(async (x) => collect(x!.items));
+      expect(items).to.have.lengthOf(104);
     });
 
     it("uses ruleset variable in customization rule value expression", async () => {
       // __PUBLISH_EXTRACT_START__ Presentation.RulesetVariables.InCustomizationRuleValueExpression.Ruleset
-      // The ruleset has a root node rule which loads all `bis.SpatialViewDefinition` instances. There's
-      // also an extended data customization rule which assigns the ruleset variable value to nodes. The value
-      // is available on each node and requestor can use it to, for example, display a prefix in front of the label.
-      // The prefix is controlled through the `PREFIX` ruleset variable.
+      // The ruleset has a content rule which loads all `bis.SpatialViewDefinition` instances. There's
+      // also an extended data customization rule which assigns the ruleset variable value to each content item. The value
+      // can be used to, for example, display a prefix in front of the label. The prefix is controlled through the `PREFIX` ruleset variable.
       const ruleset: Ruleset = {
         id: "test",
         rules: [
           {
-            ruleType: "RootNodes",
+            ruleType: "Content",
             specifications: [
               {
-                specType: "InstanceNodesOfSpecificClasses",
+                specType: "ContentInstancesOfSpecificClasses",
                 classes: { schemaName: "BisCore", classNames: ["SpatialViewDefinition"], arePolymorphic: true },
-                groupByClass: false,
-                groupByLabel: false,
               },
             ],
-            customizationRules: [
-              {
-                ruleType: "ExtendedData",
-                items: {
-                  labelPrefix: `IIF(HasVariable("PREFIX"), GetVariableStringValue("PREFIX"), "")`,
-                },
-              },
-            ],
+          },
+          {
+            ruleType: "ExtendedData",
+            condition: `this.IsOfClass("SpatialViewDefinition", "BisCore")`,
+            items: {
+              labelPrefix: `IIF(HasVariable("PREFIX"), GetVariableStringValue("PREFIX"), "")`,
+            },
           },
         ],
       };
@@ -360,8 +192,10 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // No variable set - the request should return nodes without any prefix
-      let nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
-      expect(nodes).to.containSubset([
+      let items = await Presentation.presentation
+        .getContentIterator({ imodel, rulesetOrId: ruleset, keys: new KeySet(), descriptor: {} })
+        .then(async (x) => collect(x!.items));
+      expect(items).to.containSubset([
         {
           extendedData: { labelPrefix: "" },
         },
@@ -380,8 +214,10 @@ describe("Learning Snippets", () => {
       // __PUBLISH_EXTRACT_START__ Presentation.RulesetVariables.InCustomizationRuleValueExpression.SetValue
       await Presentation.presentation.vars(ruleset.id).setString("PREFIX", "test");
       // __PUBLISH_EXTRACT_END__
-      nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
-      expect(nodes).to.containSubset([
+      items = await Presentation.presentation
+        .getContentIterator({ imodel, rulesetOrId: ruleset, keys: new KeySet(), descriptor: {} })
+        .then(async (x) => collect(x!.items));
+      expect(items).to.containSubset([
         {
           extendedData: { labelPrefix: "test" },
         },

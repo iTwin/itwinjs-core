@@ -27,6 +27,7 @@ describe("Localization", async () => {
     await terminate();
   });
 
+  /* eslint-disable @typescript-eslint/no-deprecated */
   it("localizes nodes", async () => {
     const nodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: CUSTOM_NODES_RULESET }).then(async (x) => collect(x.items));
     expect(nodes.length).to.eq(1);
@@ -130,6 +131,7 @@ describe("Localization", async () => {
     });
     expect(paths[0].node.label.displayValue).to.eq("_test_ string");
   });
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
   it("localizes content descriptor", async () => {
     const descriptor = await Presentation.presentation.getContentDescriptor({
@@ -310,6 +312,7 @@ describe("Localization", async () => {
       await Promise.all(
         Array.from({ length: 100 }).map(async () => {
           const [en, test] = await Promise.all(
+            // eslint-disable-next-line @typescript-eslint/no-deprecated
             frontends.map(async (frontend) => frontend.getNodesIterator({ imodel, rulesetOrId: CUSTOM_NODES_RULESET }).then(async (x) => collect(x.items))),
           );
 
@@ -331,6 +334,7 @@ const CUSTOM_NODES_RULESET: Ruleset = {
       ruleType: RuleTypes.RootNodes,
       specifications: [
         {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           specType: ChildNodeSpecificationTypes.CustomNode,
           type: "root",
           label: "@Test:string@",

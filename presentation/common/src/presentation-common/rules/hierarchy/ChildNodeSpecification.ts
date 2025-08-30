@@ -2,6 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module PresentationRules
  */
@@ -16,6 +17,8 @@ import { RelatedInstanceNodesSpecification } from "./RelatedInstanceNodesSpecifi
 /**
  * Used for serializing array of [[ChildNodeSpecification]]
  * @public
+ * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export enum ChildNodeSpecificationTypes {
   RelatedInstanceNodes = "RelatedInstanceNodes",
@@ -29,6 +32,8 @@ export enum ChildNodeSpecificationTypes {
  *
  * @see [Child node specifications reference documentation section]($docs/presentation/hierarchies/ChildNodeRule.md#attribute-specifications)
  * @public
+ * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface ChildNodeSpecificationBase {
   /**
@@ -99,6 +104,8 @@ export interface ChildNodeSpecificationBase {
  * default grouping. Not meant to be used directly, see [[ChildNodeSpecification]].
  *
  * @public
+ * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface DefaultGroupingPropertiesContainer {
   /** Controls whether returned instances should be grouped by ECClass. Defaults to `true`. */
@@ -113,6 +120,8 @@ export interface DefaultGroupingPropertiesContainer {
  *
  * @see [Child node specifications reference documentation section]($docs/presentation/hierarchies/ChildNodeRule.md#attribute-specifications)
  * @public
+ * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export type ChildNodeSpecification =
   | CustomNodeSpecification

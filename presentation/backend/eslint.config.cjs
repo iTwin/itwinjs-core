@@ -9,10 +9,11 @@ module.exports = [
   },
   ...eslintBaseConfig,
   {
-    files: ["**/*.{ts,tsx}"],
+    files: ["**/*.ts"],
     rules: {
       ...prettierConfig.rules,
       curly: ["error", "all"],
+      "@typescript-eslint/no-non-null-assertion": "off",
     },
   },
 ];

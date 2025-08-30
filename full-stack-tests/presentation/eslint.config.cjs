@@ -7,13 +7,13 @@ module.exports = [
     files: ["**/*.ts"],
     ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
   },
+  ...eslintBaseConfig,
   {
-    files: ["**/*.{ts,tsx}"],
+    files: ["**/*.ts"],
     rules: {
       ...prettierConfig.rules,
       curly: ["error", "all"],
-      "@typescript-eslint/no-non-null-assertion": "off"
+      "@typescript-eslint/no-non-null-assertion": "off",
     },
   },
-  ...eslintBaseConfig
 ];
