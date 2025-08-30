@@ -1,5 +1,7 @@
 # Type Definitions
 
+## Fundamentals
+
 If we consider some primary Entity modeled by a primary `Element`, the `Element`'s ECEntityClass tells us what kind of Entity it is, and can add new ECProperties to for modeling the Entity. We can further classify instances into subsets where each subset has a shared set of property values. Each of these distinct sets of property values is a "type" of the primary Entity (characterized by having all of those property values in common). The properties are defined in a subclass of `TypeDefinitionElement`, which defines the properties whose values are said to vary by "type".
 
 A `TypeDefinitionElement` is similar to a [IfcTypeObject](https://standards.buildingsmart.org/IFC/RELEASE/IFC4/ADD2_TC1/HTML/schema/ifckernel/lexical/ifctypeobject.htm).
@@ -22,6 +24,39 @@ The following diagram shows both the class hierarchy for a `PhysicalElement` mod
 ![PhysicalTypes](../media/physical-types.png)
 
 Though we describe types here in terms of PhysicalElements, this pattern can be applied to other kinds of Elements. The relationships `GeometricElement2dHasTypeDefinition` and `GeometricElement3dHasTypeDefinition` make the pattern usable for geometric elements, but new relationships classes could be added to support a "type-system" for other kinds of Elements.
+
+## Template Recipes
+
+In authoring workflows (when a BIS Repository is the main storage of an Editing Application), a `TypeDefinition` instance may refer to a `RecipeDefinitionElement` subclass (aka _Template Recipe_), which captures any data needed during the creation of (aka _Placement of_) `GeometricElement` instances associated with a `TypeDefinition`. Such data may include any of the following:
+
+- Template geometry with associations to default Categories and SubCategories.
+- Business data, in the form of first-class or ElementAspect properties, representing default values for them.
+- Additional helper elements needed during Placement. E.g. Instances that enforce domain contrains, rules, or capture design-intent.
+
+A _Template Recipe_ captures all of its associated details in a _Template Model_ that breaks it down. That is, subclasses of the `RecipeDefinitionElement` base class mix-in the `ISubModeledElement` interface, advertising that there is a `Model` that models each one of them at a finer granularity. A _Template Model_ is an instance of a `Model` subclass with its _IsTemplate_ property set to **True**.
+
+Each `RecipeDefinitionElement` subclass advertises the type of `Model` breaking it down via a corresponding `ModelModelsElement` relationship subclass. The following table depicts such correspondence.
+
+| `RecipeDefinitionElement` subclass | Associated break-down relationship |
+|---|---|
+| `TemplateRecipe2d` | `DrawingModelBreaksDownTemplateRecipe2d` |
+| `TemplateRecipe3d` | `PhysicalModelBreaksDownTemplateRecipe3d` |
+| `TemplateRecipe3dInPlan` | `SpatialLocationModelBreaksDownTemplateRecipe3dInPlan` - with _IsPlanProjection_ set to **True** |
+| `TemplateRecipeAnalytical` | `AnalyticalModelBreaksDownTemplateRecipe` |
+
+## Considerations with Multiple Modeling Perspectives
+
+Editing applications that need to support multiple modeling perspectives shall follow the same patterns described above for each perspective, with the following consideration:
+
+Since the Physical modeling perspective is considered the backbone of a BIS Repository, any non-Physical `TypeDefinitionElement` is considered to be a representation of a `PhysicalType`. Thus, the appropriate _RepresentsTypeDefinition_ relationship needs to be used accordingly, targeting the corresponding `PhysicalType` instance.
+
+For example:
+- Plan-Projection representation: `bis:SpatialLocationTypeRepresentsTypeDefinition`.
+- Analytical representation: a subclass of `anlyt:AnalyticalTypeRepresentsTypeDefinition`.
+
+The following instance-diagram presents an example based on an instance of a `PipeType` (Physical modeling-perspective) with associated Plan-Projection and Hydraulic-Analysis representations. Each one of them references a _RecipeDefinition_ element that leads to a corresponding _Template Model_ containing _Template Elements_ to be used during placement (i.e. default-geometry, values and/or helper elements). See [Instance-diagram Conventions](../references/instance-diagram-conventions.md) for details about the conventions used.
+
+![TypeDefinitions across Modeling Perspectives](../media/type-definitions-and-perspectives.png)
 
 ---
 | Next: [Categories](./categories.md)
