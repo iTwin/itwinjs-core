@@ -1,5 +1,5 @@
-import { AnnotationTextStyle, BriefcaseDb, Drawing, IModelDb, TextAnnotation2d } from "@itwin/core-backend";
-import { Id64String } from "@itwin/core-bentley";
+import { AnnotationTextStyle, BriefcaseDb, Drawing, IModelDb, TextAnnotation2d, TextAnnotationUsesTextStyle } from "@itwin/core-backend";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { Placement2d, Placement2dProps, TextAnnotation, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 
 /**
@@ -89,7 +89,7 @@ export async function deleteTextStyle(iModelKey: string, name: string): Promise<
  * @returns The Id of the inserted annotation.
  * @throws If insertion fails, abandons changes and rethrows the error.
  */
-export async function insertText(iModelKey: string, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, textAnnotationData?: TextAnnotationProps): Promise<Id64String> {
+export async function insertText(iModelKey: string, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, defaultTextStyleId: Id64String, textAnnotationData?: TextAnnotationProps): Promise<Id64String> {
   const iModel = BriefcaseDb.findByKey(iModelKey);
 
   try {
@@ -98,6 +98,7 @@ export async function insertText(iModelKey: string, categoryId: Id64String, mode
       categoryId,
       modelId,
       placement,
+      defaultTextStyleId,
       textAnnotationData
     );
 
@@ -118,10 +119,11 @@ export async function insertText(iModelKey: string, categoryId: Id64String, mode
  * @param elementId - Id of the annotation element to update.
  * @param categoryId - Optional new category Id.
  * @param placement - Optional new placement properties.
+ * @param defaultTextStyleId - Optional new default text style Id.
  * @param textAnnotationProps - Optional new text annotation properties.
  * @throws If update fails, abandons changes and rethrows the error.
  */
-export async function updateText(iModelKey: string, elementId: Id64String, categoryId?: Id64String, placement?: Placement2dProps, textAnnotationProps?: TextAnnotationProps): Promise<void> {
+export async function updateText(iModelKey: string, elementId: Id64String, categoryId?: Id64String, placement?: Placement2dProps, defaultTextStyleId?: Id64String, textAnnotationProps?: TextAnnotationProps): Promise<void> {
   const iModel = BriefcaseDb.findByKey(iModelKey);
 
   try {
@@ -135,6 +137,10 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
 
     if (textAnnotationProps)
       text.setAnnotation(TextAnnotation.fromJSON(textAnnotationProps));
+
+    if (defaultTextStyleId && Id64.isValid(defaultTextStyleId)) {
+      text.defaultTextStyle = new TextAnnotationUsesTextStyle(defaultTextStyleId);
+    }
 
     await iModel.locks.acquireLocks({ shared: [text.model], exclusive: [elementId] });
     text.update();
