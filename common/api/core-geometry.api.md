@@ -1221,6 +1221,7 @@ export class ClipUtilities {
     static clipSegmentToCCWTriangleXY(pointA: XAndY, pointB: XAndY, pointC: XAndY, segment0: XAndY, segment1: XAndY, interval: Range1d, absoluteTolerance?: number): void;
     static clipSegmentToLLeftOfLineXY(linePointA: XAndY, linePointB: XAndY, segmentPoint0: XAndY, segmentPoint1: XAndY, interval: Range1d, absoluteTolerance?: number): void;
     static collectClippedCurves(curve: CurvePrimitive, clipper: Clipper): CurvePrimitive[];
+    static createClippersForRegionsClosestToCurvePrimitivesXY(curveChain: CurveChain, strokeOptions?: StrokeOptions, distanceTol?: number): UnionOfConvexClipPlaneSets[] | undefined;
     static createComplementaryClips(clipper: ConvexClipPlaneSet): UnionOfConvexClipPlaneSets;
     // @alpha
     static createXYOffsetClipFromLineString(points: Point3d[] | IndexedXYZCollection, leftOffset: number, rightOffset: number, z0: number, z1: number): UnionOfConvexClipPlaneSets;
@@ -1685,10 +1686,10 @@ export class CurveLocationDetail {
     static createCurveEvaluatedFraction(curve: CurvePrimitive, fraction: number, result?: CurveLocationDetail): CurveLocationDetail;
     static createCurveEvaluatedFractionFraction(curve: CurvePrimitive, fraction0: number, fraction1: number, result?: CurveLocationDetail): CurveLocationDetail;
     static createCurveEvaluatedFractionPointAndDerivative(curve: CurvePrimitive, fraction: number, result?: CurveLocationDetail): CurveLocationDetail;
-    static createCurveFractionPoint(curve: CurvePrimitive | undefined, fraction: number, point: Point3d, result?: CurveLocationDetail): CurveLocationDetail;
-    static createCurveFractionPointDistance(curve: CurvePrimitive, fraction: number, point: Point3d, a: number, result?: CurveLocationDetail): CurveLocationDetail;
-    static createCurveFractionPointDistanceCurveSearchStatus(curve: CurvePrimitive | undefined, fraction: number, point: Point3d, distance: number, status: CurveSearchStatus, result?: CurveLocationDetail): CurveLocationDetail;
-    static createRayFractionPoint(ray: Ray3d, fraction: number, point: Point3d, result?: CurveLocationDetail): CurveLocationDetail;
+    static createCurveFractionPoint(curve: CurvePrimitive | undefined, fraction: number, point: XYAndZ, result?: CurveLocationDetail): CurveLocationDetail;
+    static createCurveFractionPointDistance(curve: CurvePrimitive, fraction: number, point: XYAndZ, a: number, result?: CurveLocationDetail): CurveLocationDetail;
+    static createCurveFractionPointDistanceCurveSearchStatus(curve: CurvePrimitive | undefined, fraction: number, point: XYAndZ, distance: number, status: CurveSearchStatus, result?: CurveLocationDetail): CurveLocationDetail;
+    static createRayFractionPoint(ray: Ray3d, fraction: number, point: XYAndZ, result?: CurveLocationDetail): CurveLocationDetail;
     curve?: CurvePrimitive;
     curveSearchStatus?: CurveSearchStatus;
     fraction: number;
@@ -1707,13 +1708,13 @@ export class CurveLocationDetail {
     pointQ: Point3d;
     ray?: Ray3d;
     setCurve(curve: CurvePrimitive): void;
-    setDistanceTo(point: Point3d): void;
-    setFP(fraction: number, point: Point3d, vector?: Vector3d, a?: number): void;
+    setDistanceTo(point: XYAndZ): void;
+    setFP(fraction: number, point: XYAndZ, vector?: Vector3d, a?: number): void;
     setFR(fraction: number, ray: Ray3d, a?: number): void;
     setIntervalRole(value: CurveIntervalRole): void;
     swapFractionsAndPoints(): void;
     tryTransformInPlace(transform: Transform): boolean;
-    updateIfCloserCurveFractionPointDistance(curve: CurvePrimitive, fraction: number, point: Point3d, a: number): boolean;
+    updateIfCloserCurveFractionPointDistance(curve: CurvePrimitive, fraction: number, point: XYAndZ, a: number): boolean;
     vectorInCurveLocationDetail?: Vector3d;
 }
 
@@ -1749,9 +1750,12 @@ export class CurveOps {
         outsideOffsets: AnyCurve[];
         chains?: AnyChain;
     };
+    static computeLocalRange(curves: AnyCurve | MultiLineStringDataVariant, localRange: Range3d, localToWorld?: Transform): boolean;
     static constructCurveXYOffset(curves: Path | Loop, offsetDistanceOrOptions: number | OffsetOptions): CurveCollection | undefined;
     static createSingleOffsetPrimitiveXY(curve: CurvePrimitive, offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
-    static extendRange(range: Range3d, curves: AnyCurve | AnyCurve[]): Range3d;
+    static extendRange(range: Range3d, curves: AnyCurve | AnyCurve[], transform?: Transform): Range3d;
+    static isColinear(curves: AnyCurve | MultiLineStringDataVariant, options?: PlanarColinearOptions): Ray3d | undefined;
+    static isPlanar(curves: AnyCurve | MultiLineStringDataVariant, options?: PlanarColinearOptions): Transform | undefined;
     static sumLengths(curves: AnyCurve | AnyCurve[]): number;
 }
 
@@ -2085,7 +2089,7 @@ export type FractionMapper = (f: number) => number;
 export class FrameBuilder {
     constructor();
     announce(data: any): void;
-    announcePoint(point: Point3d): number;
+    announcePoint(point: XYAndZ): number;
     announceVector(vector: Vector3d): number;
     applyDefaultUpVector(vector?: Vector3d): void;
     clear(): void;
@@ -4102,6 +4106,15 @@ export interface PerpParallelOptions {
 }
 
 // @public
+export interface PlanarColinearOptions {
+    colinearRay?: Ray3d;
+    localToWorld?: Transform;
+    maxDeviation?: number;
+    radianTolerance?: number;
+    xyColinear?: boolean;
+}
+
+// @public
 export abstract class Plane3d implements PlaneAltitudeEvaluator {
     abstract altitude(spacePoint: Point3d): number;
     abstract altitudeXYZ(x: number, y: number, z: number): number;
@@ -4390,14 +4403,15 @@ export class Point3dArrayPolygonOps {
 
 // @public
 export class Point3dArrayRangeTreeContext {
-    static createCapture(points: Point3d[], maxChildPerNode?: number, maxAppDataPerLeaf?: number): Point3dArrayRangeTreeContext | undefined;
+    static createCapture(points: XYAndZ[], maxChildPerNode?: number, maxAppDataPerLeaf?: number, xyOnly?: boolean): Point3dArrayRangeTreeContext | undefined;
     numPointTest: number;
     numRangeTestFalse: number;
     numRangeTestTrue: number;
     numSearch: number;
-    points: Point3d[];
+    points: XYAndZ[];
     static searchForClosestApproach(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext, maxDist?: number): CurveLocationDetailPair | CurveLocationDetailPair[] | undefined;
-    searchForClosestPoint(spacePoint: Point3d, maxDist?: number): CurveLocationDetail | CurveLocationDetail[] | undefined;
+    searchForClosestPoint(spacePoint: XAndY | XYAndZ, maxDist?: number): CurveLocationDetail | CurveLocationDetail[] | undefined;
+    xyOnly?: boolean;
 }
 
 // @public
@@ -4909,6 +4923,7 @@ export class PolylineOps {
     static compressSmallTriangles(source: Point3d[], maxTriangleArea: number): Point3d[];
     static createBisectorPlanesForDistinctPoints(centerline: IndexedXYZCollection | Point3d[], wrapIfPhysicallyClosed?: boolean): Plane3dByOriginAndUnitNormal[] | undefined;
     static edgeLengthRange(points: Point3d[]): Range1d;
+    static isColinear(points: Point3d[], distanceTol?: number, xyOnly?: boolean): boolean;
     static removeClosurePoint(data: Point3d[] | Point3d[][]): void;
 }
 
@@ -5041,7 +5056,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     containsRange(other: LowAndHighXY): boolean;
     containsXY(x: number, y: number): boolean;
     corners3d(asLoop?: boolean, z?: number): Point3d[];
-    static createArray<T extends Range2d>(points: Point2d[], result?: T): T;
+    static createArray<T extends Range2d>(points: XAndY[], result?: T): T;
     static createFrom<T extends Range2d>(other: LowAndHighXY, result?: T): T;
     static createNull<T extends Range2d>(result?: T): T;
     static createXY<T extends Range2d>(x: number, y: number, result?: T): T;
@@ -5082,7 +5097,7 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     toFloat64Array(): Float64Array;
     toJSON(): Range2dProps;
     union(other: LowAndHighXY, result?: Range2d): Range2d;
-    worldToLocal(point: Point2d, result?: Point2d): Point2d | undefined;
+    worldToLocal(point: XAndY, result?: Point2d): Point2d | undefined;
     get xHigh(): number;
     xLength(): number;
     get xLow(): number;
@@ -5100,39 +5115,41 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     get center(): Point3d;
     clone(result?: this): this;
     cloneTranslated(shift: XYAndZ, result?: this): this;
-    containsPoint(point: Point3d): boolean;
-    containsPointXY(point: Point3d): boolean;
+    containsPoint(point: XYAndZ): boolean;
+    containsPointXY(point: XYAndZ): boolean;
     containsRange(other: Range3d): boolean;
     containsXY(x: number, y: number): boolean;
     containsXYZ(x: number, y: number, z: number): boolean;
     corners(result?: Point3d[]): Point3d[];
-    static create(...point: Point3d[]): Range3d;
-    static createArray<T extends Range3d>(points: Point3d[], result?: T): T;
+    static create(...point: XYAndZ[]): Range3d;
+    static createArray<T extends Range3d>(points: XYAndZ[], result?: T): T;
     static createFrom<T extends Range3d>(other: Range3d, result?: T): T;
-    static createFromVariantData(data: MultiLineStringDataVariant): Range3d;
-    static createInverseTransformedArray<T extends Range3d>(transform: Transform, points: Point3d[] | GrowableXYZArray): T;
+    static createFromVariantData(data: MultiLineStringDataVariant, transform?: Transform, result?: Range3d): Range3d;
+    static createInverseTransformedArray<T extends Range3d>(transform: Transform, points: XYAndZ[] | GrowableXYZArray): T;
     static createNull<T extends Range3d>(result?: T): T;
     static createRange2d<T extends Range3d>(range: Range2d, z?: number, result?: T): T;
-    static createTransformed<T extends Range3d>(transform: Transform, ...point: Point3d[]): T;
-    static createTransformedArray<T extends Range3d>(transform: Transform, points: Point3d[] | GrowableXYZArray): T;
+    static createTransformed<T extends Range3d>(transform: Transform, ...point: XYAndZ[]): T;
+    static createTransformedArray<T extends Range3d>(transform: Transform, points: XYAndZ[] | GrowableXYZArray): T;
     static createXYZ<T extends Range3d>(x: number, y: number, z: number, result?: T): T;
     static createXYZXYZ<T extends Range3d>(xA: number, yA: number, zA: number, xB: number, yB: number, zB: number, result?: T): T;
     static createXYZXYZOrCorrectToNull<T extends Range3d>(xA: number, yA: number, zA: number, xB: number, yB: number, zB: number, result?: T): T;
     diagonal(result?: Vector3d): Vector3d;
     diagonalFractionToPoint(fraction: number, result?: Point3d): Point3d;
     distanceToPoint(point: XYAndZ): number;
+    distanceToPointXY(point: XAndY): number;
     distanceToRange(other: Range3d): number;
+    distanceToRangeXY(other: Range3d): number;
     ensureMinLengths(min?: number): void;
     expandInPlace(delta: number): void;
-    extend(...point: Point3d[]): void;
-    extendArray(points: Point3d[] | GrowableXYZArray, transform?: Transform): void;
-    extendInterpolated(xyz0: Point3d, fraction: number, xyz1: Point3d): void;
-    extendInverseTransformedArray(points: Point3d[] | GrowableXYZArray, transform: Transform): void;
+    extend(...point: XYAndZ[]): void;
+    extendArray(points: XYAndZ[] | GrowableXYZArray, transform?: Transform): void;
+    extendInterpolated(xyz0: XYAndZ, fraction: number, xyz1: XYAndZ): void;
+    extendInverseTransformedArray(points: XYAndZ[] | GrowableXYZArray, transform: Transform): void;
     extendInverseTransformedXYZ(transform: Transform, x: number, y: number, z: number): boolean;
-    extendPoint(point: Point3d, transform?: Transform): void;
+    extendPoint(point: XYAndZ, transform?: Transform): void;
     extendRange(other: LowAndHighXYZ): void;
     extendSingleAxis(a: number, axisIndex: AxisIndex): void;
-    extendTransformedPoint(transform: Transform, point: Point3d): void;
+    extendTransformedPoint(transform: Transform, point: XYAndZ): void;
     extendTransformedXYZ(transform: Transform, x: number, y: number, z: number): void;
     extendTransformedXYZW(transform: Transform, x: number, y: number, z: number, w: number): void;
     extendTransformTransformedXYZ(transformA: Transform, transformB: Transform, x: number, y: number, z: number): void;
@@ -5177,7 +5194,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     toFloat64Array(): Float64Array;
     toJSON(): Range3dProps;
     union(other: Range3d, result?: Range3d): Range3d;
-    worldToLocal(point: Point3d, result?: Point3d): Point3d | undefined;
+    worldToLocal(point: XYAndZ, result?: Point3d): Point3d | undefined;
     worldToLocalArrayInPlace(point: Point3d[]): boolean;
     get xHigh(): number;
     xLength(): number;
@@ -5198,8 +5215,8 @@ export abstract class RangeBase {
     static coordinateToRangeAbsoluteDistance(x: number, low: number, high: number): number;
     protected static readonly _EXTREME_NEGATIVE: number;
     protected static readonly _EXTREME_POSITIVE: number;
-    static isExtremePoint2d(xy: Point2d): boolean;
-    static isExtremePoint3d(xyz: Point3d): boolean;
+    static isExtremePoint2d(xy: XAndY): boolean;
+    static isExtremePoint3d(xyz: XYAndZ): boolean;
     static isExtremeValue(x: number): boolean;
     static multiplyIfPositive(q: number, factor: number, defaultValue?: number): number;
     protected static npcScaleFactor(low: number, high: number): number;
@@ -6084,7 +6101,7 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
     abstract clone(): TransitionSpiral3d;
     clonePartialCurve(fractionA: number, fractionB: number): TransitionSpiral3d;
     cloneTransformed(transform: Transform): TransitionSpiral3d;
-    constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
+    constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): BSplineCurve3d | undefined;
     static curvatureToRadius(curvature: number): number;
     get designProperties(): TransitionConditionalProperties | undefined;
     protected _designProperties: TransitionConditionalProperties | undefined;

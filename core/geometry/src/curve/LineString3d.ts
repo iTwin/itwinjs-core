@@ -876,9 +876,9 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    * Compute and normalize cross product among 3 points on the linestring.
    * * Essentially 3 random points are used to form the cross product.
    * * This is appropriate for a polygon known to be convex.
-   * * No test for convexity or collinearity is performed.
+   * * No test for convexity or colinearity is performed.
    * * If the polygon is not convex, the returned normal may be reversed.
-   * * If the random points used in the cross product are collinear, undefined is returned.
+   * * If the random points used in the cross product are colinear, undefined is returned.
    * @param result pre-allocated object to populate and return
    * @returns unit normal, or undefined if normalization failed
    */

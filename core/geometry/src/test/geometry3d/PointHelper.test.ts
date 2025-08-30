@@ -366,9 +366,9 @@ describe("PolygonOps", () => {
         const xB = Math.max(p0.x, p1.x) + delta;
         const expected = Math.abs(p1.x - p0.x) === dxHigh ? 1 : -1;
         ck.testExactNumber(expected, PolygonOps.classifyPointInPolygon(xA, p.y, points)!, "xA point", xA, p0.y);
-        ck.testExactNumber(expected, HalfEdgeGraphSearch.pointInOrOnFaceXY(faceSeed, xA, p.y)!, "xA point", xA, p0.y);
+        ck.testExactNumber(expected, HalfEdgeGraphSearch.pointInOrOnFaceXY(faceSeed, xA, p.y), "xA point", xA, p0.y);
         ck.testExactNumber(expected, PolygonOps.classifyPointInPolygon(xB, p.y, points)!, "xB point", xB, p0.y);
-        ck.testExactNumber(expected, HalfEdgeGraphSearch.pointInOrOnFaceXY(faceSeed, xB, p.y)!, "xB point", xB, p0.y);
+        ck.testExactNumber(expected, HalfEdgeGraphSearch.pointInOrOnFaceXY(faceSeed, xB, p.y), "xB point", xB, p0.y);
       } else if (p0.x === p1.x) {
         const yA = Math.min(p0.y, p1.y);
         const yB = Math.max(p0.y, p1.y);
@@ -385,7 +385,7 @@ describe("PolygonOps", () => {
       for (const v of perpendicularSign) {
         const point = node0.fractionAlongAndPerpendicularToPoint2d(0.3, v * perpendicularFraction);
         const c0 = PolygonOps.classifyPointInPolygon(point.x, point.y, points)!;
-        const c1 = HalfEdgeGraphSearch.pointInOrOnFaceXY(faceSeed, point.x, point.y)!;
+        const c1 = HalfEdgeGraphSearch.pointInOrOnFaceXY(faceSeed, point.x, point.y);
         ck.testExactNumber(v, c0, "in/out in point array");
         ck.testExactNumber(v, c1, "in/out in graph face");
       }
@@ -414,7 +414,7 @@ describe("PolygonOps", () => {
       for (const v of perpendicularSign) {
         const point = node0.fractionAlongAndPerpendicularToPoint2d(0.3, v * perpendicularFraction);
         const c0 = PolygonOps.classifyPointInPolygon(point.x, point.y, points)!;
-        const c1 = HalfEdgeGraphSearch.pointInOrOnFaceXY(faceSeed, point.x, point.y)!;
+        const c1 = HalfEdgeGraphSearch.pointInOrOnFaceXY(faceSeed, point.x, point.y);
         ck.testExactNumber(v, c0, "in/out in point array");
         ck.testExactNumber(v, c1, "in/out in graph face");
       }

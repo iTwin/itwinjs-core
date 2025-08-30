@@ -1961,20 +1961,16 @@ export class PolyfaceQuery {
   public static convertToHalfEdgeGraph(mesh: IndexedPolyface): HalfEdgeGraph {
     const builder = new HalfEdgeGraphFromIndexedLoopsContext();
     const visitor = mesh.createVisitor(0);
-    for (visitor.reset(); visitor.moveToNextFacet();) {
-      builder.insertLoop(visitor.pointIndex);
-    }
-    const graph = builder.graph;
     const xyz = Point3d.create();
-    graph.announceNodes(
-      (_graph: HalfEdgeGraph, halfEdge: HalfEdge) => {
-        const vertexIndex = halfEdge.i;
-        mesh.data.getPoint(vertexIndex, xyz);
-        halfEdge.setXYZ(xyz);
-        return true;
-      },
-    );
-    return graph;
+    for (visitor.reset(); visitor.moveToNextFacet();) {
+      builder.insertLoop(visitor.pointIndex, (edge: HalfEdge) => {
+        mesh.data.getPoint(edge.i, xyz);
+        edge.setXYZ(xyz);
+        mesh.data.getPoint(edge.edgeMate.i, xyz);
+        edge.edgeMate.setXYZ(xyz);
+      });
+    }
+    return builder.graph;
   }
   /** Examine adjacent facet orientations throughout the mesh. If possible, reverse a subset to achieve proper pairing. */
   public static reorientVertexOrderAroundFacetsForConsistentOrientation(mesh: IndexedPolyface): boolean {
