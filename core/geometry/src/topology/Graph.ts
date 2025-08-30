@@ -1069,7 +1069,7 @@ export class HalfEdge implements HalfEdgeUserData {
    * @param skipEdge mask preset on edges to skip, or a function that is called to decide whether to skip an edge.
    * @param announceEdge function that is called at each edge that is not skipped.
    * @param announceSkipped optional function that is called at each edge that is skipped.
-   * @return whether a super face was found. Specifically, if a vertex loop has all edges with `skipMask` set, the return value is `false`.
+   * @return whether a super face was found, or `false` if the traversal fails to return to the instance vertex.
    */
   public announceEdgesInSuperFace(
     skipEdge: HalfEdgeMask | HalfEdgeToBooleanFunction, announceEdge: NodeFunction, announceSkipped?: NodeFunction,
