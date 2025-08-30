@@ -86,6 +86,9 @@ export class TangentConstruction {
   public static linesPerpLTangentC(
     line: UnboundedLine2dByPointAndNormal, circle: UnboundedCircle2dByCenterAndRadius,
   ): ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>[] | undefined {
+    // Project the circle center to the line.
+    // The endpoints of the perpendicular line are the circle center and that line point shifted
+    // by positive and negative radius in the direction of the line.
     const lineTangent = line.unitVectorAlongLine();
     const unitNormal = line.unitNormal();
     const linePoint = line.closestPoint(circle.center);
@@ -113,6 +116,8 @@ export class TangentConstruction {
   public static linesPerpCPerpC(
     circleA: UnboundedCircle2dByCenterAndRadius, circleB: UnboundedCircle2dByCenterAndRadius,
   ): ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>[] | undefined {
+    // There infinite line containing the circle centers is the only line perp to both circles.
+    // The endpoints for the 4 line segmnets are the centers shifted by the respective radii along the infinite line.
     const centerToCenter = Vector2d.createStartEnd(circleA.center, circleB.center);
     const unitCenterToCenter = centerToCenter.normalize();
     if (unitCenterToCenter === undefined)
@@ -140,6 +145,10 @@ export class TangentConstruction {
   public static linesPerpLPerpC(
     line: UnboundedLine2dByPointAndNormal, circle: UnboundedCircle2dByCenterAndRadius,
   ): ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>[] | undefined {
+    // The infinite line through the circle center and in the direction of the line normal is the containing line.
+    // Make segments from its intersection with the line to the near and far intersections with the circle.
+    // (these are the centers shifted by radius along the line)
+
     const lineTangent = line.unitVectorAlongLine();
     const unitNormal = line.unitNormal();
     const linePoint = line.closestPoint(circle.center);
@@ -167,6 +176,9 @@ export class TangentConstruction {
   public static linesPerpCTangentC(
     circleA: UnboundedCircle2dByCenterAndRadius, circleB: UnboundedCircle2dByCenterAndRadius
   ): ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>[] | undefined {
+    // The solution lines are through the perp circle center and tangent to the tangent circle.
+    // Hence this is the two infinite lines "through first circle center, tangent to second circle",
+    // Bounded line segments go from the tangent circle points to the near and far intersections with the perp circle.
     const centerToCenter = Vector2d.createStartEnd(circleA.center, circleB.center);
     const centerToCenterDistance = centerToCenter.magnitude();
     const unitCenterToCenter = centerToCenter.normalize();
@@ -205,6 +217,13 @@ export class TangentConstruction {
   public static linesTangentCC(
     circleA: UnboundedCircle2dByCenterAndRadius, circleB: UnboundedCircle2dByCenterAndRadius
   ): ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>[] | undefined {
+    // draw a line tangent to both circles.   This may have both circles on the same side,
+    // or one circle on each side.
+    // draw radii from both centers to the tangencies.   (These are parallel to each other)
+    // the (sum or difference  of the radii) and the (distance between centers) are side and hypotenuse of
+    // // a right triangle, with the tangent-to-tangent segment as the other side.
+    // The lengths give sine and cosine of angles in the triangle, and those give vectors 
+    // from cener to tangency points.
     const distanceAB = circleA.center.distance(circleB.center);
     if (distanceAB + Math.abs(circleB.radius) <= Math.abs(circleA.radius))
       return undefined;
@@ -317,6 +336,7 @@ export class TangentConstruction {
         if (center !== undefined) {
           const newCircle = UnboundedCircle2dByCenterAndRadius.createPointRadius(center, a1);
           const markup = new ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>(newCircle);
+          markup.closePointsOfGeometry(newCircle.center, newCircle.center, newCircle.radius, [lineA, lineB, circle]);
           return [markup];
         }
       }
