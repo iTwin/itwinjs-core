@@ -7,6 +7,7 @@
  * @module CartesianGeometry
  */
 
+import { assert } from "@itwin/core-bentley";
 import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Matrix3d } from "./Matrix3d";
@@ -605,14 +606,15 @@ export class Transform implements BeJSONFunctions {
       return result;
     }
     result = [];
-    for (const point of points)
-      result.push(
-        this._matrix.multiplyInverseXYZAsPoint3d(
-          point.x - originX,
-          point.y - originY,
-          point.z - originZ,
-        )!,
+    for (const point of points) {
+      const pt = this._matrix.multiplyInverseXYZAsPoint3d(
+        point.x - originX,
+        point.y - originY,
+        point.z - originZ,
       );
+      assert(undefined !== pt, "Transform.multiplyInversePoint3dArray: pt should be defined");
+      result.push(pt);
+    }
     return result;
   }
   /**

@@ -6,6 +6,7 @@
 /** @packageDocumentation
  * @module Serialization
  */
+import { assert } from "@itwin/core-bentley";
 import { BSplineWrapMode, KnotVector } from "../bspline/KnotVector";
 import { NumberArray } from "../geometry3d/PointHelpers";
 
@@ -222,8 +223,11 @@ export namespace SerializationHelpers {
   function convertBSplineCurveDataArrays(data: BSplineCurveData, options?: BSplineDataOptions) {
     if (undefined !== options?.jsonPoles) {
       const packedPoles = data.poles instanceof Float64Array;
-      if (options.jsonPoles && packedPoles)
-        data.poles = NumberArray.unpack2d(data.poles as Float64Array, data.dim)!;
+      if (options.jsonPoles && packedPoles) {
+        const unpack2d = NumberArray.unpack2d(data.poles as Float64Array, data.dim);
+        assert(unpack2d !== undefined, "SerializationHelpers.convertBSplineCurveDataArrays: unpack2d should be defined");
+        data.poles = unpack2d;
+      }
       else if (!options.jsonPoles && !packedPoles)
         data.poles = NumberArray.pack(data.poles as number[][]);
 
@@ -248,8 +252,11 @@ export namespace SerializationHelpers {
   function convertBSplineSurfaceDataArrays(data: BSplineSurfaceData, options?: BSplineDataOptions) {
     if (undefined !== options?.jsonPoles) {
       const packedPoles = data.poles instanceof Float64Array;
-      if (options.jsonPoles && packedPoles)
-        data.poles = NumberArray.unpack3d(data.poles as Float64Array, data.uParams.numPoles, data.dim)!;
+      if (options.jsonPoles && packedPoles) {
+        const unpack3d = NumberArray.unpack3d(data.poles as Float64Array, data.uParams.numPoles, data.dim);
+        assert(unpack3d !== undefined, "SerializationHelpers.convertBSplineSurfaceDataArrays: unpack3d should be defined");
+        data.poles = unpack3d;
+      }
       else if (!options.jsonPoles && !packedPoles)
         data.poles = NumberArray.pack(data.poles as number[][][]);
 

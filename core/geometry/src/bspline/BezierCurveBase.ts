@@ -6,6 +6,7 @@
  * @module Bspline
  */
 
+import { assert } from "@itwin/core-bentley";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { CurveOffsetXYHandler } from "../curve/internalContexts/CurveOffsetXYHandler";
 import { PlaneAltitudeRangeContext } from "../curve/internalContexts/PlaneAltitudeRangeContext";
@@ -141,12 +142,14 @@ export abstract class BezierCurveBase extends CurvePrimitive {
   }
   /** Return the start point.  (first control point) */
   public override startPoint(): Point3d {
-    const result = this.getPolePoint3d(0)!;   // ASSUME non-trivial pole set -- if null comes back, it bubbles out
+    const result = this.getPolePoint3d(0);   // ASSUME non-trivial pole set -- if null comes back, it bubbles out
+    assert(undefined !== result, "BezierCurveBase.startPoint: result should be defined");
     return result;
   }
   /** Return the end point.  (last control point) */
   public override endPoint(): Point3d {
-    const result = this.getPolePoint3d(this.order - 1)!;    // ASSUME non-trivial pole set
+    const result = this.getPolePoint3d(this.order - 1);    // ASSUME non-trivial pole set
+    assert(undefined !== result, "BezierCurveBase.endPoint: result should be defined");
     return result;
   }
   /** Return the control polygon length as a quick length estimate. */

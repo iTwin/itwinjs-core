@@ -55,7 +55,9 @@ export class InsertAndRetriangulateContext {
 
   private constructor(graph: HalfEdgeGraph, tolerance: number) {
     this._graph = graph;
-    this._edgeSet = MarkedEdgeSet.create(graph)!;
+    const halfEdgeMarkSet = MarkedEdgeSet.create(graph);
+    assert(undefined !== halfEdgeMarkSet, "InsertAndRetriangulateContext: MarkedEdgeSet.create(graph) failed");
+    this._edgeSet = halfEdgeMarkSet;
     this._searcher = HalfEdgePositionDetail.create();
     this._tolerance = tolerance;
   }
@@ -107,21 +109,26 @@ export class InsertAndRetriangulateContext {
       if (fractionC !== undefined) {
         if (fractionC > 1.0) {
           distanceC = xyz.distanceXY(nodeB);
-          if (distanceC < position.getDTag()!) {
+          const dTag = position.getDTag();
+          assert(dTag !== undefined, "InsertAndRetriangulateContext.searchForNearestEdgeOrVertex: dTag should be defined");
+          if (distanceC < dTag) {
             position.resetAsVertex(nodeB);
             position.setDTag(distanceC);
           }
         } else if (fractionC < 0.0) {
           distanceC = xyz.distanceXY(nodeA);
-          if (distanceC < position.getDTag()!) {
+          const dTag = position.getDTag();
+          assert(dTag !== undefined, "InsertAndRetriangulateContext.searchForNearestEdgeOrVertex: dTag should be defined");
+          if (distanceC < dTag) {
             position.resetAsVertex(nodeA);
             position.setDTag(distanceC);
           }
         } else {
           nodeA.fractionToPoint3d(fractionC, xyzC);
-
           distanceC = xyz.distanceXY(xyzC);
-          if (distanceC < position.getDTag()!) {
+          const dTag = position.getDTag();
+          assert(dTag !== undefined, "InsertAndRetriangulateContext.searchForNearestEdgeOrVertex: dTag should be defined");
+          if (distanceC < dTag) {
             position.resetAtEdgeAndFraction(nodeA, fractionC);
           }
         }
@@ -136,7 +143,9 @@ export class InsertAndRetriangulateContext {
     let distanceA;
     for (const nodeA of this._graph.allHalfEdges) {
       distanceA = xyz.distanceXY(nodeA);
-      if (distanceA < position.getDTag()!) {
+      const dTag = position.getDTag();
+      assert(dTag !== undefined, "InsertAndRetriangulateContext.searchForNearestVertex: dTag should be defined");
+      if (distanceA < dTag) {
         position.resetAsVertex(nodeA);
         position.setDTag(distanceA);
       }
@@ -245,9 +254,10 @@ export class InsertAndRetriangulateContext {
       }
     } else if (this._searcher.isEdge) {
       // insert point into the graph by splitting its containing edge
-      const newA = this._graph.splitEdgeAtFraction(this._searcher.node, this._searcher.edgeFraction!);
+      assert(this._searcher.edgeFraction !== undefined, "InsertAndRetriangulateContext.insertAndRetriangulate: edgeFraction should be defined");
+      const newA = this._graph.splitEdgeAtFraction(this._searcher.node, this._searcher.edgeFraction);
       const newB = newA.vertexPredecessor;
-      this.updateZAroundVertex(newA, point, InsertedVertexZOptions.Replace);  // always replace
+      this.updateZAroundVertex(newA, point, InsertedVertexZOptions.Replace); // always replace
       this.retriangulateFromBaseVertex(newA);
       this.retriangulateFromBaseVertex(newB);
       Triangulator.flipTrianglesInEdgeSet(this._graph, this._edgeSet);
@@ -290,7 +300,9 @@ export class InsertAndRetriangulateContext {
       } else if (movingPosition.isFace) {
         const lastBefore = HalfEdgePositionDetail.create();
         const firstAfter = HalfEdgePositionDetail.create();
-        const rc = psc.reAimAroundFace(movingPosition.node!, ray, ray.a!, lastBefore, firstAfter);
+        assert(movingPosition.node !== undefined, "InsertAndRetriangulateContext.moveToPoint: movingPosition.node should be defined");
+        assert(ray.a !== undefined, "InsertAndRetriangulateContext.moveToPoint: ray.a should be defined");
+        const rc = psc.reAimAroundFace(movingPosition.node, ray, ray.a, lastBefore, firstAfter);
         // reAimAroundFace returns lots of cases in `lastBefore`
         switch (rc) {
           case RayClassification.NoHits: {
@@ -330,11 +342,13 @@ export class InsertAndRetriangulateContext {
           }
         }
       } else if (movingPosition.isEdge) {
-        psc.reAimFromEdge(movingPosition, ray, ray.a!);
+        assert(ray.a !== undefined, "InsertAndRetriangulateContext.moveToPoint: ray.a should be defined");
+        psc.reAimFromEdge(movingPosition, ray, ray.a);
         if (movingPosition.isUnclassified)
           break;
       } else if (movingPosition.isVertex) {
-        psc.reAimFromVertex(movingPosition, ray, ray.a!);
+        assert(ray.a !== undefined, "InsertAndRetriangulateContext.moveToPoint: ray.a should be defined");
+        psc.reAimFromVertex(movingPosition, ray, ray.a);
         if (movingPosition.isUnclassified)
           break;
       }

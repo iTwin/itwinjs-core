@@ -9,6 +9,7 @@
 
 // cspell:word internaldocs
 
+import { assert } from "@itwin/core-bentley";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
@@ -289,7 +290,8 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
     if (undefined !== this.data.normal && undefined !== source.data.normal && undefined !== source.data.normalIndex) {
       const startOfNewNormals = this.data.normal.length;
       for (let i = 0; i < source.data.normal.length; i++) {
-        const sourceNormal = source.data.normal.getVector3dAtCheckedVectorIndex(i)!;
+        const sourceNormal = source.data.normal.getVector3dAtCheckedVectorIndex(i);
+        assert(undefined !== sourceNormal, "IndexedPolyface.addIndexedPolyface: sourceNormal should be defined");
         if (transform)
           transform.multiplyVector(sourceNormal, sourceNormal);
         if (reversed)
@@ -427,7 +429,11 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   public addNormal(normal: Vector3d, priorIndexA?: number, priorIndexB?: number): number {
     // check if `normal` is duplicate of `dataNormal` at index `i`
     const normalIsDuplicate = (i: number) => {
-      const distance = this.data.normal!.distanceIndexToPoint(i, normal);
+      const dataNormal = this.data.normal;
+      assert(undefined !== dataNormal, "IndexedPolyface.addNormal: dataNormal should be defined");
+      let distance: number | undefined;
+      if (undefined !== dataNormal)
+        distance = dataNormal.distanceIndexToPoint(i, normal);
       return distance !== undefined && Geometry.isSmallMetricDistance(distance);
     };
     if (this.data.normal !== undefined) {
@@ -673,7 +679,9 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
       if (setParamRange && visitor.param !== undefined)
         visitor.param.extendRange(faceData.paramRange);
     } while (visitor.moveToNextFacet() && visitor.currentReadIndex() < endFacetIndex);
-    if (paramDefined && !(this.data.param!.length === 0) && faceData.paramDistanceRange.isNull)
+    const param = this.data.param;
+    assert(undefined !== param, "IndexedPolyface.setNewFaceData: param should be defined");
+    if (paramDefined && param && !(param.length === 0) && faceData.paramDistanceRange.isNull)
       faceData.setParamDistanceRangeFromNewFaceData(this, facetStart, endFacetIndex);
     this.data.face.push(faceData);
     const faceDataIndex = this.data.face.length - 1;

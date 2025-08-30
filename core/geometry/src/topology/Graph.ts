@@ -7,7 +7,7 @@
  * @module Topology
  */
 
-import { OrderedSet } from "@itwin/core-bentley";
+import { assert, OrderedSet } from "@itwin/core-bentley";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
@@ -1437,7 +1437,9 @@ export class HalfEdgeGraph {
   private _numNodesCreated = 0;
   public constructor() {
     this.allHalfEdges = [];
-    this._maskManager = MaskManager.create(HalfEdgeMask.ALL_GRAB_DROP_MASKS)!;
+    const maskManager = MaskManager.create(HalfEdgeMask.ALL_GRAB_DROP_MASKS);
+    assert(maskManager !== undefined, "HalfEdgeGraph: maskManager cannot be created");
+    this._maskManager = maskManager;
   }
   /**
    * Ask for a mask (from the graph's free pool) for caller's use.

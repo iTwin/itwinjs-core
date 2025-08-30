@@ -12,6 +12,7 @@ import { IndexedPolyface } from "../Polyface";
 import { Geometry } from "../../Geometry";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Angle } from "../../geometry3d/Angle";
+import { assert } from "@itwin/core-bentley";
 
 /**
  * Normal vector with area (or other numeric) and source index
@@ -153,7 +154,8 @@ export class BuildAverageNormalsContext {
     }
     // emplace the indices
     for (const sector of sectors) {
-      polyface.data.normalIndex.push(sector.sectorClusterData!.index);
+      assert(sector.sectorClusterData !== undefined, "BuildAverageNormalsContext.buildFastAverageNormals: sector.sectorClusterData should be defined");
+      polyface.data.normalIndex.push(sector.sectorClusterData.index);
     }
   }
   /**
