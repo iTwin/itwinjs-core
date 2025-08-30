@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { RelationshipProps, TextBlock } from "@itwin/core-common";
+import { ContainerComponent, FieldRun, RelationshipProps, TextBlock, TextBlockComponent } from "@itwin/core-common";
 import { ElementDrivesElement } from "../Relationship";
 import { IModelDb } from "../IModelDb";
 import { Element } from "../Element";
@@ -49,6 +49,31 @@ export function isITextAnnotation(element: Element): element is ITextAnnotation 
   return ["getTextBlocks", "updateTextBlocks"].every((x) => x in element && typeof (element as any)[x] === "function");
 }
 
+
+/**
+ * Recursively collects all [FieldRun]($common) components from a given [TextBlockComponent]($common).
+ *
+ * Traverses the provided component and its children, returning an array of all [FieldRun]($common) instances found.
+ * Useful for extracting all field runs from nested text structures such as [Paragraph]($common)s and [List]($common)s.
+ *
+ * @param component The root [TextBlockComponent]($common) to search for [FieldRun]($common)s.
+ * @param runs (optional) An array to accumulate results; used for recursion.
+ * @returns An array of [FieldRun]($common) instances found within the component tree.
+ * @beta
+ */
+export function collectFieldRuns(component: TextBlockComponent, runs: FieldRun[] = []): FieldRun[] {
+  if (component.type === "field") {
+    runs.push(component as FieldRun);
+  }
+
+  // If component.type is either "paragraph" or "list" recurse through
+  if (component instanceof ContainerComponent && component.children.length > 0) {
+    component.children.forEach(child => collectFieldRuns(child, runs));
+  }
+
+  return runs;
+}
+
 /** A relationship in which the source element hosts one or more properties that are displayed by a target [[ITextAnnotation]] element.
  * This relationship is used to automatically update the [FieldRun]($common)s contained in the target element when the source element is modified.
  * An [[ITextAnnotation]] element should invoke [[updateFieldDependencies]] from its [[Element.onInserted]] and [[Element.onUpdated]] functions to
@@ -59,7 +84,7 @@ export function isITextAnnotation(element: Element): element is ITextAnnotation 
  */
 export class ElementDrivesTextAnnotation extends ElementDrivesElement {
   public static override get className(): string { return "ElementDrivesTextAnnotation"; }
-  
+
   /** @internal */
   public static override onRootChanged(props: RelationshipProps, iModel: IModelDb): void {
     updateElementFields(props, iModel, false);
@@ -108,14 +133,14 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
     const sourceToRelationship = new Map<Id64String, Id64String | null>();
     const blocks = annotationElement.getTextBlocks();
+
     for (const block of blocks) {
-      for (const paragraph of block.textBlock.paragraphs) {
-        for (const run of paragraph.runs) {
-          if (run.type === "field" && isValidSourceId(run.propertyHost.elementId)) {
-            sourceToRelationship.set(run.propertyHost.elementId, null);
-          }
+      const fieldRuns = collectFieldRuns(block.textBlock);
+      fieldRuns.forEach(run => {
+        if (isValidSourceId(run.propertyHost.elementId)) {
+          sourceToRelationship.set(run.propertyHost.elementId, null);
         }
-      }
+      });
     }
 
     const staleRelationships = new Set<Id64String>();

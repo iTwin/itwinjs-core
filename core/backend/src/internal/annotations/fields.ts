@@ -8,7 +8,7 @@ import { IModelDb } from "../../IModelDb";
 import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
-import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
+import { collectFieldRuns, isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, Property, StructArrayProperty } from "@itwin/ecschema-metadata";
 
 // A FieldPropertyPath must ultimately resolve to one of these primitive types.
@@ -268,14 +268,14 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
 // Re-evaluates the display strings for all fields that target the element specified by `context` and returns the number
 // of fields whose display strings changed as a result.
 export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext): number {
+  const runs = collectFieldRuns(textBlock);
   let numUpdated = 0;
-  for (const paragraph of textBlock.paragraphs) {
-    for (const run of paragraph.runs) {
-      if (run.type === "field" && updateField(run, context)) {
-        ++numUpdated;
-      }
+  
+  runs.forEach(run => {
+    if (run.type === "field" && updateField(run, context)) {
+      ++numUpdated;
     }
-  }
+  });
 
   return numUpdated;
 }

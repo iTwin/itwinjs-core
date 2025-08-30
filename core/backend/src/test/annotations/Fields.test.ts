@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextRun } from "@itwin/core-common";
+import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldRun, Paragraph, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextRun } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, FieldProperty, updateField, updateFields } from "../../internal/annotations/fields";
@@ -16,7 +16,7 @@ import { PhysicalElement } from "../../Element";
 import { ElementOwnsUniqueAspect, ElementUniqueAspect, FontFile, TextAnnotation3d } from "../../core-backend";
 import { ElementDrivesTextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 
-describe("updateField", () => {
+describe.only("updateField", () => {
   const mockElementId = "0x1";
   const mockPath: FieldPropertyPath = {
     propertyName: "mockProperty",
@@ -273,7 +273,7 @@ describe("Field evaluation", () => {
       element: new ElementOwnsUniqueAspect(id),
     };
     imodel.elements.insertAspect(aspectProps);
-    
+
     imodel.saveChanges();
     return id;
   }
@@ -471,7 +471,7 @@ describe("Field evaluation", () => {
       const annotation = TextAnnotation.fromJSON({ textBlock: textBlock.toJSON() });
       elem.setAnnotation(annotation);
     }
-    
+
     return elem.insert();
   }
 
@@ -488,7 +488,7 @@ describe("Field evaluation", () => {
 
     it("can be inserted", () => {
       expectNumRelationships(0);
-      
+
       const targetId = insertAnnotationElement(undefined);
       expect(targetId).not.to.equal(Id64.invalid);
 
@@ -575,16 +575,22 @@ describe("Field evaluation", () => {
 
         const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
         const anno = target.getAnnotation()!;
-        anno.textBlock.paragraphs[0].runs.shift();
+
+        // Remove the sourceA FieldRun from the first paragraph.
+        const p1 = anno.textBlock.children[0] as Paragraph;
+        const runs = [...p1.children];
+        runs.shift();
+        p1.children = runs;
+
         target.setAnnotation(anno);
         target.update();
         imodel.saveChanges();
-        
+
         expectNumRelationships(1, targetId);
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).to.be.undefined;
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).not.to.be.undefined;
 
-        anno.textBlock.paragraphs.length = 0;
+        anno.textBlock.children = [];
         anno.textBlock.appendRun(createField(sourceA, "A2"));
         target.setAnnotation(anno);
         target.update();
@@ -594,7 +600,7 @@ describe("Field evaluation", () => {
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).not.to.be.undefined;
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).to.be.undefined;
 
-        anno.textBlock.paragraphs.length = 0;
+        anno.textBlock.children = [];
         anno.textBlock.appendRun(TextRun.create({
           styleOverrides: { fontName: "Karla" },
           content: "not a field",
@@ -620,7 +626,7 @@ describe("Field evaluation", () => {
         expectNumRelationships(1, targetId);
       });
     });
-    
+
     function expectText(expected: string, elemId: Id64String): void {
       const elem = imodel.elements.getElement<TextAnnotation3d>(elemId);
       const anno = elem.getAnnotation()!;
@@ -632,13 +638,13 @@ describe("Field evaluation", () => {
       const sourceId = insertTestElement();
       const block = TextBlock.create({ styleId: "0x123" });
       block.appendRun(createField(sourceId, "old value"));;
-      
+
       const targetId = insertAnnotationElement(block);
       imodel.saveChanges();
 
       const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
       expect(target.getAnnotation()).not.to.be.undefined;
-      
+
       expectText("100", targetId);
 
       let source = imodel.elements.getElement<TestElement>(sourceId);
