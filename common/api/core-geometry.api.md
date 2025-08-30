@@ -1649,6 +1649,7 @@ export class CurveFactory {
     static createArcFromSectionData(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, sectionData: number | XAndY | Arc3d): Arc3d | undefined;
     static createArcPointTangentPoint(start: Point3d, tangentAtStart: Vector3d, end: Point3d): Arc3d | undefined;
     static createArcPointTangentRadius(start: Point3d, tangentAtStart: Vector3d, radius: number, upVector?: Vector3d, sweep?: Angle | AngleSweep): Arc3d | undefined;
+    static createCurvePrimitiveFromImplicitCurve(source: ImplicitCurve2d | ImplicitCurve2d[], sizeHint?: number): CurvePrimitive | CurvePrimitive[] | undefined;
     static createFilletsInLineString(points: LineString3d | IndexedXYZCollection | Point3d[], radius: number | number[], allowBackupAlongEdge?: boolean): Path | undefined;
     static createLineSpiralArcSpiralLine(spiralType: IntegratedSpiralTypeName, pointA: Point3d, pointB: Point3d, pointC: Point3d, lengthA: number, lengthB: number, arcRadius: number): GeometryQuery[] | undefined;
     static createLineSpiralSpiralLine(spiralType: IntegratedSpiralTypeName, startPoint: Point3d, shoulderPoint: Point3d, targetPoint: Point3d): GeometryQuery[] | undefined;
@@ -2172,6 +2173,7 @@ export class Geometry {
     static dotProductXYZXYZ(ux: number, uy: number, uz: number, vx: number, vy: number, vz: number): number;
     static equalStringNoCase(string1: string, string2: string): boolean;
     static exactEqualNumberArrays(a: number[] | undefined, b: number[] | undefined): boolean;
+    static fractionOfProjectionToVectorXYXY(ux: number, uy: number, vx: number, vy: number, defaultFraction?: number): number;
     static readonly fullCircleRadiansMinusSmallAngle: number;
     // @deprecated
     static readonly hugeCoordinate = 1000000000000;
@@ -4241,6 +4243,7 @@ export class Point2d extends XY implements BeJSONFunctions {
     clone(result?: Point2d): Point2d;
     static create(x?: number, y?: number, result?: Point2d): Point2d;
     static createFrom(xy: XAndY | undefined, result?: Point2d): Point2d;
+    static createInterpolated(xyA: XAndY, fraction: number, xyB: XAndY): Point2d;
     static createZero(result?: Point2d): Point2d;
     crossProductToPoints(target1: XAndY, target2: XAndY): number;
     dotVectorsToTargets(targetA: XAndY, targetB: XAndY): number;
@@ -6282,6 +6285,7 @@ export class Vector2d extends XY implements BeJSONFunctions {
     angleTo(vectorB: XAndY): Angle;
     clone(result?: Vector2d): Vector2d;
     static create(x?: number, y?: number, result?: Vector2d): Vector2d;
+    static createAdd2Scaled(vectorA: XAndY, scaleA: number, vectorB: XAndY, scaleB: number, result?: Vector2d): Vector2d;
     static createFrom(data: XAndY | Float64Array, result?: Vector2d): Vector2d;
     static createOffsetBisector(unitPerpA: Vector2d, unitPerpB: Vector2d, offset: number): Vector2d | undefined;
     static createPolar(r: number, theta: Angle): Vector2d;
