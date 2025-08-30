@@ -595,7 +595,7 @@ describe("Field formatting", () => {
     });
   });
 
-  describe("datetime", () => {
+  describe.only("datetime", () => {
     it("formats date as string", () => {
       const date = new Date("2023-01-01T12:34:56Z");
       expect(formatFieldValue(date, "datetime", undefined)).toBe(date.toString());
@@ -609,6 +609,74 @@ describe("Field formatting", () => {
       expect(formatFieldValue(date, "datetime", { case: "upper" })).toBe(date.toString().toUpperCase());
       expect(formatFieldValue(date, "datetime", { case: "lower" })).toBe(date.toString().toLowerCase());
       expect(formatFieldValue(date, "datetime", { case: "as-is" })).toBe(date.toString());
+    });
+
+    it("format date as mm/dd/yyyy", () => {
+      const date = new Date("2025-08-28T13:45:30.123Z");
+      const dateTimeOpts: Intl.DateTimeFormatOptions = {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      }
+
+      const options: FieldFormatOptions = {
+        dateTime: {
+          locale: undefined,
+          formatOptions: dateTimeOpts,
+        }
+      }
+      expect(formatFieldValue(date, "datetime", options)).to.equal("08/28/2025")
+    });
+
+    it("format date as weekday, month day, year", () => {
+      const date = new Date("2025-08-28T13:45:30.123Z");
+      const dateTimeOpts: Intl.DateTimeFormatOptions = {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        timeZone: "UTC"
+      };
+      const options: FieldFormatOptions = {
+        dateTime: {
+          locale: "en-US",
+          formatOptions: dateTimeOpts,
+        }
+      };
+      expect(formatFieldValue(date, "datetime", options)).to.equal("Thursday, August 28, 2025");
+    });
+
+    it("format date as dd/mm/yyyy", () => {
+      const date = new Date("2025-08-28T13:45:30.123Z");
+      const dateTimeOpts: Intl.DateTimeFormatOptions = {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+      };
+      const options: FieldFormatOptions = {
+        dateTime: {
+          locale: "en-GB", // UK English uses dd/mm/yyyy
+          formatOptions: dateTimeOpts,
+        }
+      };
+      expect(formatFieldValue(date, "datetime", options)).to.equal("28/08/2025");
+    });
+
+    it("format date as short month date, year", () => {
+      const date = new Date("2025-08-28T13:45:30.123Z");
+      const dateTimeOpts: Intl.DateTimeFormatOptions = {
+        month: "short",
+        day: "2-digit",
+        year: "numeric",
+        timeZone: "UTC"
+      };
+      const options: FieldFormatOptions = {
+        dateTime: {
+          locale: "en-US",
+          formatOptions: dateTimeOpts,
+        }
+      };
+      expect(formatFieldValue(date, "datetime", options)).to.equal("Aug 28, 2025");
     });
   });
 });

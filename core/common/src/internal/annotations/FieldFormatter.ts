@@ -83,28 +83,7 @@ const formatters: { [type: string]: FieldFormatter | undefined } = {
     return formatString(components, o);
   },
 
-  "datetime": (v, o) => {
-    // ###TODO customizable formatting...
-    // ###TODO currently ECSqlValue exposes date-time values as ISO strings...
-    if (!(v instanceof Date))
-      return undefined
-
-    const DAYS_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const DAYS_LONG = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-
-    const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const MONTHS_LONG = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-    const date = v.getDate();
-    const month = v.getMonth();
-    const year = v.getFullYear();
-    const day = v.getDay();
-    const time = v.toTimeString();
-
-    // if (o?.dateTime?.day === "date" )
-
-    return formatString(v.toString(), o);
-  },
+  "datetime": (v, o) => formatString(formatDateTime(v, o?.dateTime), o),
 };
 
 function formatString(s: string | undefined, o?: FieldFormatOptions): string | undefined {
@@ -160,9 +139,13 @@ function formatQuantity(v: FieldPrimitiveValue, _o?: QuantityFieldFormatOptions)
 }
 
 function formatDateTime(v: FieldPrimitiveValue, _o?: DateTimeFieldFormatOptions): string | undefined {
+  if (!(v instanceof Date))
+    return undefined;
 
-  if (_o && _o.day)
-
+  if (_o && _o.formatOptions){
+    const formatter = new Intl.DateTimeFormat(_o.locale, _o.formatOptions);
+    return formatter.format(v);
+  }
   return v.toString();
 }
 
