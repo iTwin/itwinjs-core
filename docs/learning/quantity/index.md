@@ -20,6 +20,7 @@
     - [Composite Format](#composite-format)
     - [Parsing Values](#parsing-values)
     - [Using a FormatsProvider](#using-a-formatsprovider)
+    - [Retrieving a FormatProp, and a PersistenceUnit with only a KindOfQuantity Name and through schemas](#retrieving-a-formatprop-and-a-persistenceunit-with-only-a-kindofquantity-name-and-through-schemas)
     - [Using a MutableFormatsProvider](#using-a-mutableformatsprovider)
     - [Using a FormatSetFormatsProvider](#using-a-formatsetformatsprovider)
     - [Registering a SchemaFormatsProvider on IModelConnection open](#registering-a-schemaformatsprovider-on-imodelconnection-open)
@@ -115,7 +116,9 @@ We expose APIs and interfaces to support persistence of formats. Different from 
 
 [FormatSet]($ecschema-metadata) defines properties necessary to support persistence of a set of `Formats`.
 
-Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../../bis/ec/ec-name.md) for a [KindOfQuantity](../../bis/ec/kindofquantity.md). During an application's runtime, the `Format` associated to a `KindofQuantity` within a `FormatSet` would take precedence and be used over the default presentation formats of that `KindOfQuantity`.
+> Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../../bis/ec/ec-name.md) for a [KindOfQuantity](../../bis/ec/kindofquantity.md). During an application's runtime, the `Format` associated to a `KindofQuantity` within a `FormatSet` would take precedence and be used over the default presentation formats of that `KindOfQuantity`.
+
+- The `unitSystem` property uses a [UnitSystemKey]($quantity) to specify the unit system for the format set. This provides better type safety and leads to less dependency on `activeUnitSystem` in `IModelApp.quantityFormatter`. Tools using the new formatting API can then listen to only the `onFormatsChanged` event from `IModelApp.formatsProvider` instead of `IModelApp.quantityFormatter.onActiveUnitSystemChanged`.
 
 > The naming convention for a valid format within a FormatSet is <full-schema-name>:<koq-name>
 .
@@ -126,6 +129,7 @@ Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../
 {
   "name": "metric",
   "label": "Metric",
+  "unitSystem": "metric",
   "formats": {
     "AecUnits.LENGTH": {
       "composite": {
@@ -163,6 +167,7 @@ Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../
 {
   "name": "imperial",
   "label": "Imperial",
+  "unitSystem": "imperial",
   "formats": {
     "AecUnits.LENGTH": {
       "composite": {
@@ -284,6 +289,19 @@ When retrieving a format from a schema, users might want to ensure the format th
 
 </details>
 
+### Retrieving a FormatProp, and a PersistenceUnit with only a KindOfQuantity Name and through schemas
+
+When working with formats, developers often need to retrieve a format and determine the appropriate persistence unit. When you only have a KindOfQuantity name, you can utilize a SchemaContext to find the schema item for that KindOfQuantity and then access its persistence unit:
+
+<details>
+  <summary>Using a SchemaContext to get KindOfQuantity and a persistence unit<summary>
+
+```ts
+[[include:Quantity_Formatting.KindOfQuantityPersistenceUnitFormatting]]
+```
+
+</details>
+
 ### Using a MutableFormatsProvider
 
 The example below is of a `MutableFormatsProvider` that lets you add/remove formats during runtime.
@@ -316,6 +334,7 @@ import { FormatDefinition } from "@itwin/core-quantity";
 const formatSet = {
   name: "MyFormatSet",
   label: "My Custom Formats",
+  unitSystem: "metric",
   formats: {
     "AecUnits.LENGTH": {
       composite: {
