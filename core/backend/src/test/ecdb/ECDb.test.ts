@@ -513,4 +513,31 @@ describe("ECDb", () => {
 
     ecdb.closeDb();
   });
+
+  it("deleteSchemaItems should remove only the specified schema items", () => {
+    using testECDb = ECDbTestHelper.createECDb(outDir, "delete-schema-items.ecdb",
+      `<ECSchema schemaName="DelTest" alias="dt" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECEntityClass typeName="Person" modifier="Sealed">
+          <ECProperty propertyName="Name" typeName="string"/>
+        </ECEntityClass>
+        <ECEntityClass typeName="Building" modifier="Sealed">
+          <ECProperty propertyName="Code" typeName="string"/>
+        </ECEntityClass>
+      </ECSchema>`);
+
+    const before = testECDb.getSchemaProps("DelTest");
+    expect(before.items, "items should exist before delete").not.to.be.undefined;
+    expect(before.items!.Person, "Person exists before delete").to.not.be.undefined;
+    expect(before.items!.Building, "Building exists before delete").to.not.be.undefined;
+
+    testECDb.deleteSchemaItems("DelTest", ["Person", "Building"]);
+
+    const after = testECDb.getSchemaProps("DelTest");
+    expect(after.items?.Person, "Person should be removed").to.be.undefined;
+    expect(after.items?.Building, "Building should be removed").to.be.undefined;
+    if (after.items) {
+      expect(Object.keys(after.items)).to.not.include("Person");
+      expect(Object.keys(after.items)).to.not.include("Building");
+    }
+  });
 });
