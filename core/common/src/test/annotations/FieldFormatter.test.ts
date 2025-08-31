@@ -597,12 +597,12 @@ describe("Field formatting", () => {
 
   describe.only("datetime", () => {
     it("formats date as string", () => {
-      const date = new Date("2023-01-01T12:34:56Z");
+      const date = "2023-01-01T12:34:56Z";
       expect(formatFieldValue(date, "datetime", undefined)).toBe(date.toString());
     });
 
     it("applies all string formatting options", () => {
-      const date = new Date("2023-01-01T12:34:56Z");
+      const date = "2023-01-01T12:34:56Z";
       expect(formatFieldValue(date, "datetime", { prefix: "[" })).toBe(`[${  date.toString()}`);
       expect(formatFieldValue(date, "datetime", { suffix: "]" })).toBe(`${date.toString()  }]`);
       expect(formatFieldValue(date, "datetime", { prefix: "[", suffix: "]" })).toBe(`[${  date.toString()  }]`);
@@ -612,7 +612,7 @@ describe("Field formatting", () => {
     });
 
     it("format date as mm/dd/yyyy", () => {
-      const date = new Date("2025-08-28T13:45:30.123Z");
+      const date = "2025-08-28T13:45:30.123Z";
       const dateTimeOpts: Intl.DateTimeFormatOptions = {
         year: "numeric",
         month: "2-digit",
@@ -629,7 +629,7 @@ describe("Field formatting", () => {
     });
 
     it("format date as weekday, month day, year", () => {
-      const date = new Date("2025-08-28T13:45:30.123Z");
+      const date = "2025-08-28T13:45:30.123Z";
       const dateTimeOpts: Intl.DateTimeFormatOptions = {
         weekday: "long",
         year: "numeric",
@@ -647,7 +647,7 @@ describe("Field formatting", () => {
     });
 
     it("format date as dd/mm/yyyy", () => {
-      const date = new Date("2025-08-28T13:45:30.123Z");
+      const date = "2025-08-28T13:45:30.123Z";
       const dateTimeOpts: Intl.DateTimeFormatOptions = {
         year: "numeric",
         month: "2-digit",
@@ -663,7 +663,7 @@ describe("Field formatting", () => {
     });
 
     it("format date as short month date, year", () => {
-      const date = new Date("2025-08-28T13:45:30.123Z");
+      const date = "2025-08-28T13:45:30.123Z";
       const dateTimeOpts: Intl.DateTimeFormatOptions = {
         month: "short",
         day: "2-digit",

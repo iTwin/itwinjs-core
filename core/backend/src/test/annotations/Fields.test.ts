@@ -144,6 +144,7 @@ const fieldsSchemaXml = `
     <ECProperty propertyName="intProp" typeName="int"/>
     <ECProperty propertyName="point" typeName="point3d"/>
     <ECProperty propertyName="maybeNull" typeName="int"/>
+    <ECProperty propertyName="datetime" typeName="dateTime"/>
     <ECArrayProperty propertyName="strings" typeName="string" minOccurs="0" maxOccurs="unbounded"/>
     <ECStructProperty propertyName="outerStruct" typeName="OuterStruct"/>
     <ECStructArrayProperty propertyName="outerStructs" typeName="OuterStruct" minOccurs="0" maxOccurs="unbounded"/>
@@ -172,6 +173,7 @@ interface TestElementProps extends PhysicalElementProps {
   point: XYAndZ;
   maybeNull?: number;
   strings: string[];
+  datetime: Date;
   outerStruct: OuterStruct;
   outerStructs: OuterStruct[];
   intEnum?: number;
@@ -183,6 +185,7 @@ class TestElement extends PhysicalElement {
   declare public point: XYAndZ;
   declare public maybeNull?: number;
   declare public strings: string[];
+  declare public datetime: Date;
   declare public outerStruct: OuterStruct;
   declare public outerStructs: OuterStruct[];
 }
@@ -246,6 +249,7 @@ describe.only("Field evaluation", () => {
       intProp: 100,
       point: { x: 1, y: 2, z: 3 },
       strings: ["a", "b", `"name": "c"`],
+      datetime: new Date("2025-08-28T13:45:30.123Z"),
       intEnum: 1,
       outerStruct: {
         innerStruct: { bool: false, doubles: [1, 2, 3] },
@@ -1131,6 +1135,34 @@ describe.only("Field evaluation", () => {
       // The formatted value should have 2 decimal places and show the unit label
       expect(updated).to.be.true;
       expect(fieldRun.cachedContent).to.equal("11.00 m");
+    });
+
+    it.only("validates formatting options for datetime objects", () => {
+      const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
+      const propertyType = getPropertyType(propertyHost, "datetime");
+      const fieldRun = FieldRun.create({
+        propertyHost,
+        propertyPath: { propertyName: "datetime"},
+        propertyType,
+        cachedContent: "oldval",
+        formatOptions: {
+          dateTime: {
+            formatOptions:{
+              month: "short",
+              day: "2-digit",
+              year: "numeric",
+              timeZone: "UTC"
+            },
+            locale: "en-US",
+         },
+        },
+      });
+
+      const context = createUpdateContext(sourceElementId, imodel, false);
+      const updated = updateField(fieldRun, context);
+
+      expect(updated).to.be.true;
+      expect(fieldRun.cachedContent).to.equal("Aug 28, 2025");
     });
   });
 });
