@@ -639,9 +639,9 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     return curve;
   }
   /** Evaluate the curve at a fractional position within a given span. */
-  public evaluatePointInSpan(spanIndex: number, spanFraction: number): Point3d {
+  public evaluatePointInSpan(spanIndex: number, spanFraction: number, result?: Point3d): Point3d {
     this._bcurve.evaluateBuffersInSpan(spanIndex, spanFraction);
-    return Point3d.createFrom(this._bcurve.poleBuffer);
+    return Point3d.createFrom(this._bcurve.poleBuffer, result);
   }
   /**
    * Evaluate the curve and derivative at a fractional position within a given span.
