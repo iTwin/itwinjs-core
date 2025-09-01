@@ -591,6 +591,35 @@ export class CurveFactory {
     }
     return sectionData;
   }
+
+  /**
+   * Return an implicit curve for the XY parts of the given curve3d.
+   * * z components of the input curve are completely ignored
+   * * input Arc3d can convert to UnboundedEllipse2d or circle
+   * * Returned curves are untrimmed, i.e. lines do not record endpoints and arcs have no angle range.
+   * @param curve3d curve to convert
+   */
+  public static createImplicitCurve2dFromCurvePrimitiveXY(curve3d: CurvePrimitive):
+    ImplicitCurve2d | ImplicitCurve2d[] | undefined {
+    if (curve3d instanceof LineSegment3d) {
+      const pointA = curve3d.startPoint();
+      const pointB = curve3d.endPoint();
+      return UnboundedLine2dByPointAndNormal.createPointXYPointXY(
+        pointA.x, pointA.y, pointB.x, pointB.y);
+    } else if (curve3d instanceof Arc3d) {
+      const center = curve3d.center;
+      const columnX = curve3d.matrixRef.columnX()
+      const columnY = curve3d.matrixRef.columnY()
+      if (curve3d.isCircularXY) {
+        return UnboundedCircle2dByCenterAndRadius.createXYRadius(
+          center.x, center.y, columnX.magnitudeXY());
+      } else {
+        return UnboundedEllipse2d.createCenterAndAxisVectors(center,
+          Vector2d.createFrom(columnX), Vector2d.createFrom(columnY));
+      }
+    }
+    return undefined;
+  }
   /**
    * Create a circular arc from start point, tangent at start, radius, optional plane normal, arc sweep.
    * * The vector from start point to center is in the direction of upVector crossed with tangentA.
