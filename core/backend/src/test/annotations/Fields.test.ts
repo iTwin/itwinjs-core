@@ -1137,7 +1137,7 @@ describe.only("Field evaluation", () => {
       expect(fieldRun.cachedContent).to.equal("11.00 m");
     });
 
-    it.only("validates formatting options for datetime objects", () => {
+    it("validates formatting options for datetime objects", () => {
       const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
       const propertyType = getPropertyType(propertyHost, "datetime");
       const fieldRun = FieldRun.create({
