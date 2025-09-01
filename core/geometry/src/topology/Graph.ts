@@ -1654,15 +1654,9 @@ export class HalfEdgeGraph {
    */
   public collectSegments(): LineSegment3d[] {
     const segments: LineSegment3d[] = [];
-    for (const node of this.allHalfEdges) {
+    for (const node of this.allHalfEdges)
       if (node.id < node.edgeMate.id)
-        segments.push(
-          LineSegment3d.create(
-            Point3d.create(node.x, node.y),
-            Point3d.create(node.faceSuccessor.x, node.faceSuccessor.y),
-          ),
-        );
-    }
+        segments.push(LineSegment3d.createXYXY(node.x, node.y, node.faceSuccessor.x, node.faceSuccessor.y));
     return segments;
   }
   /** Returns the number of vertex loops in a graph structure. */
