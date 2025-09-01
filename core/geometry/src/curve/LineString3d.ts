@@ -679,10 +679,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     return Transform.createTranslation(origin, result);
   }
   /** Evaluate the start point of the linestring. */
-  public override startPoint() {
+  public override startPoint(result?: Point3d) {
     if (this._points.length === 0)
-      return Point3d.createZero();
-    return this._points.getPoint3dAtUncheckedPointIndex(0);
+      return Point3d.createZero(result);
+    return this._points.getPoint3dAtUncheckedPointIndex(0, result);
   }
   /** If i is a valid index, return that point. */
   public pointAt(i: number, result?: Point3d): Point3d | undefined {
@@ -715,10 +715,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     return this._points.length > 0 ? this._points.length - 1 : 0;
   }
   /** Evaluate the end point of the linestring. */
-  public override endPoint() {
+  public override endPoint(result?: Point3d) {
     if (this._points.length === 0)
-      return Point3d.createZero();
-    return this._points.getPoint3dAtUncheckedPointIndex(this._points.length - 1);
+      return Point3d.createZero(result);
+    return this._points.getPoint3dAtUncheckedPointIndex(this._points.length - 1, result);
   }
   /** Reverse the points within the linestring. */
   public reverseInPlace(): void {

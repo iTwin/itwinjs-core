@@ -206,12 +206,12 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     return result;
   }
   /** Return the start point of the curve. */
-  public override startPoint(): Point3d {
-    return this.evaluatePointInSpan(0, 0.0);
+  public override startPoint(result?: Point3d): Point3d {
+    return this.evaluatePointInSpan(0, 0.0, result);
   }
   /** Return the end point of the curve. */
-  public override endPoint(): Point3d {
-    return this.evaluatePointInSpan(this.numSpan - 1, 1.0);
+  public override endPoint(result?: Point3d): Point3d {
+    return this.evaluatePointInSpan(this.numSpan - 1, 1.0, result);
   }
   /**
    * Reverse the curve in place.
