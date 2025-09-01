@@ -795,7 +795,7 @@ export class RegionOps {
    * default value for `addBridges` is `true`.)
    * @param curvesAndRegions Any collection of curves. Each [[AnyRegion]] contributes its children _stripped of
    * parity context_.
-   * @param tolerance optional distance tolerance for coincidence.
+   * @param tolerance optional distance tolerance for coincidence. Default is [[Geometry.smallMetricDistance]].
    * @param addBridges whether to add line segments to connect nested input [[Loop]]s (default is `true`). When `false`,
    * no line segments are added to the input curves, but the number of output components may be greater than expected.
    * @returns array of [[SignedLoops]], each entry of which describes the areas bounded by a single connected component:
