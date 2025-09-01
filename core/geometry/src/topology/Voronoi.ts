@@ -51,7 +51,7 @@ interface Segment2d {
  */
 export class Voronoi {
   private _voronoiGraph: HalfEdgeGraph;
-  private _inputGraph: Readonly<HalfEdgeGraph>;
+  private _inputGraph: HalfEdgeGraph;
   private _inputGraphIsTriangulation;
   private _inputGraphRange: Range2d;
   private _idToIndexMap: Map<number, number>;
@@ -61,7 +61,7 @@ export class Voronoi {
   private _superFaceMask: HalfEdgeMask;
   private static _workArc = Arc3d.createUnitCircle();
   /** Construct an empty Voronoi graph and minimally validate input (use [[isValid]] to check). */
-  private constructor(inputGraph: Readonly<HalfEdgeGraph>, isColinear = false) {
+  private constructor(inputGraph: HalfEdgeGraph, isColinear = false) {
     this._voronoiGraph = new HalfEdgeGraph();
     this._inputGraph = inputGraph;
     this._inputGraphRange = HalfEdgeGraphOps.graphRangeXY(inputGraph);
@@ -73,10 +73,10 @@ export class Voronoi {
     this._superFaceMask = HalfEdgeMask.NULL_MASK;
   }
   /**
-   * Accessor for the read-only graph passed into the private constructor.
+   * Accessor for the graph passed into the private constructor.
    * * It is either a triangulation (assumed Delaunay) or a graph with no interior faces (assumed colinear path).
    */
-  public get getInputGraph(): Readonly<HalfEdgeGraph> {
+  public get getInputGraph(): HalfEdgeGraph {
     return this._inputGraph;
   }
   /**
@@ -133,7 +133,7 @@ export class Voronoi {
         p0.z = p1.z = p2.z = 0;
         const circumcircle = Arc3d.createCircularStartMiddleEnd(p0, p1, p2, Voronoi._workArc);
         if (circumcircle instanceof Arc3d)
-          circumcenterMap.set(this.getTriangleId(face), circumcircle.center);
+          circumcenterMap.set(this.getTriangleId(face), circumcircle.center); // getter clones center
         return true;
       },
     );
@@ -374,12 +374,15 @@ export class Voronoi {
     const numChildren = children.length;
     if (numChildren < 2)
       return undefined;
+    strokeOptions = strokeOptions?.clone() ?? StrokeOptions.createForCurves();
+    if (!strokeOptions.minStrokesPerPrimitive || strokeOptions.minStrokesPerPrimitive < 2)
+      strokeOptions.minStrokesPerPrimitive = 2; // ensure at least one interior point per primitive
     const workPoint = Point3d.createZero();
     const workCircleXY = Arc3d.createUnitCircle(Voronoi._workArc);
     const workSegment0 = LineSegment3d.createXYXY(0, 0, 0, 0);
     const workSegment1 = LineSegment3d.createXYXY(0, 0, 0, 0);
     const pointToIndex = new Dictionary<Point3d, number>(Geometry.compareXY(distanceTol), Geometry.clonePoint3d());
-    const strokeInteriorAndPush = (curve: CurvePrimitive, index: number): void => {
+    const pushInteriorStrokePoints = (curve: CurvePrimitive, index: number): void => {
       const strokes = LineString3d.create();
       curve.emitStrokes(strokes, strokeOptions);
       for (let i = 1; i < strokes.numPoints() - 1; ++i) { // skip first and last point
@@ -400,17 +403,17 @@ export class Voronoi {
       pointToIndex.insert(intersections[0].detailB.point, index);
       return true;
     };
-    const addSymmetricPointOnAdjacentCurves = (curve0: CurvePrimitive, curve1: CurvePrimitive, index0: number, index1: number): boolean => {
-      const length0 = curve0.curveLength();
-      const length1 = curve1.curveLength();
-      // HEURISTIC: hopefully radius is small enough to produce the last/first stroke point for curve0/1
+    const pushSymmetricPointPairAtJoint = (prevCurve: CurvePrimitive, nextCurve: CurvePrimitive, prevIndex: number, nextIndex: number): boolean => {
+      const length0 = prevCurve.curveLength();
+      const length1 = nextCurve.curveLength();
+      // HEURISTIC: hopefully radius is small enough to produce the last/first stroke point for prev/nextCurve. See Step 3 below.
       let radius = Math.min(length0, length1) / 100;
       if (strokeOptions && strokeOptions.maxEdgeLength && radius > strokeOptions.maxEdgeLength)
         radius = strokeOptions.maxEdgeLength / 2;
-      curve1.startPoint(workCircleXY.center);
+      nextCurve.startPoint(workCircleXY.centerRef); // circle centered at joint
       workCircleXY.matrixRef.setAt(0, 0, radius);
       workCircleXY.matrixRef.setAt(1, 1, radius);
-      return pushCircleIntersection(workCircleXY, curve0, index0, false) && pushCircleIntersection(workCircleXY, curve1, index1, true);
+      return pushCircleIntersection(workCircleXY, prevCurve, prevIndex, false) && pushCircleIntersection(workCircleXY, nextCurve, nextIndex, true);
     }
     // Step 1: add open chain start/end point
     const isClosedChain = curveChain.isPhysicallyClosedCurve(distanceTol, true);
@@ -420,6 +423,17 @@ export class Voronoi {
       if (curveChain.endPoint(workPoint))
         pointToIndex.insert(workPoint, numChildren - 1);
     }
+    // TODO: refactor to remove heuristic:
+    // 0. set prevPt = undefined, prevCurve = undefined
+    // 1. loop over each prim in chain:
+    //  a. if linestring is colinear, simplify to a line segment
+    //  b. create curves = [non-linestring prim] or [...segments of linestring prim]
+    //  c. loop over currCurve of curves:
+    //    i. stroke interior points, save firstPt and lastPt XAndY.
+    //    ii. add symmetric points on prevCurve/currCurve if prevPt and prevCurve are defined
+    //      * radius = fixed fraction of smaller dist of lastPt and firstPt to start of prim/seg
+    //    iii. set prevPt = lastPt, prevCurve = currCurve
+
     // Step 2: add interior stroke points for each chain primitive and linestring segment
     // * Do not add a stroke point at the chain joints and linestring vertices; otherwise they don't end up on Voronoi edges.
     for (let i = 0; i < numChildren; i++) {
@@ -427,10 +441,10 @@ export class Voronoi {
       if (child instanceof LineString3d) {
         for (let j = 0; j < child.numEdges(); j++) {
           if (child.getIndexedSegment(j, workSegment0))
-            strokeInteriorAndPush(workSegment0, i); // each segment is associated to the linestring index
+            pushInteriorStrokePoints(workSegment0, i); // each segment is associated to the linestring index
         }
       } else {
-        strokeInteriorAndPush(child, i);
+        pushInteriorStrokePoints(child, i);
       }
     }
     // Step 3: add the stroke points nearest to each chain joint and linestring interior joint.
@@ -442,7 +456,7 @@ export class Voronoi {
       if (child instanceof LineString3d) { // process open linestring interior joints (always open b/c numChildren > 1)
         for (let j = 1; j < child.numEdges(); j++) {
           if (child.getIndexedSegment(j - 1, workSegment0) && child.getIndexedSegment(j, workSegment1)) {
-            if (!addSymmetricPointOnAdjacentCurves(workSegment0, workSegment1, i, i)) // associate to the linestring index
+            if (!pushSymmetricPointPairAtJoint(workSegment0, workSegment1, i, i)) // associate to the linestring index
               return undefined;
           }
         }
@@ -455,7 +469,7 @@ export class Voronoi {
         prevChild = workSegment0; // use the last segment of the previous linestring
       if (child instanceof LineString3d && child.getIndexedSegment(0, workSegment1))
         child = workSegment1; // use the first segment of this linestring
-      if (!addSymmetricPointOnAdjacentCurves(prevChild, child, iPrev, i))
+      if (!pushSymmetricPointPairAtJoint(prevChild, child, iPrev, i))
         return undefined;
     }
     return pointToIndex;
@@ -495,6 +509,8 @@ export class Voronoi {
    *   * represented in the Voronoi graph by a _super face_, a loop of edges from multiple adjacent faces
    *   * not necessarily convex
    * * The generating curve with chain index `i` for the returned Voronoi super face `R` is encoded thusly:
+   *   * Each Voronoi edge has `faceTag` set as per [[createFromDelaunayGraph]], referring to its generating Delaunay vertex.
+   *   * Each Delaunay edge has `edgeTag` set to the index in `curveChain` of its generating curve.
    *   * For each [[HalfEdge]] `e` in the super face loop of `R`, `delaunayGraph.allHalfEdges[e.faceTag].edgeTag === i`.
    * @param curveChain A curve chain consisting of at least two [[CurvePrimitive]]s. Z-coordinates are ignored.
    * @param strokeOptions Optional stroke options to control the sampling of the curve chain.
@@ -518,6 +534,56 @@ export class Voronoi {
     return instance;
   }
   /**
+   * Test whether the edge is part of a curve-based Voronoi graph super face.
+   * @param curveIndex optional test for a _specific_ super face associated with the curve with the given index.
+   */
+  private isEdgeInVoronoiSuperFace(edge: HalfEdge, curveIndex?: number): boolean {
+    if (!this._isCurveBased || edge.faceTag === undefined)
+      return false;
+    const edgeIndex = this._inputGraph.allHalfEdges[edge.faceTag].edgeTag;
+    if (edge.edgeMate.isMaskSet(HalfEdgeMask.EXTERIOR)) // edge is part of an unbounded Voronoi super face clipped by the bounding box
+      return curveIndex === undefined ? true : curveIndex === edgeIndex;
+    if (edge.edgeMate.faceTag === undefined)
+      return false;
+    const mateIndex = this._inputGraph.allHalfEdges[edge.edgeMate.faceTag].edgeTag;
+    if (curveIndex !== undefined)
+      return edgeIndex === curveIndex && mateIndex !== curveIndex; // edge is in a specific super face
+    return edgeIndex !== mateIndex; // edge is part of a bounded Voronoi super face
+  }
+  /** Examine all edges in the curve-based Voronoi graph and return the first edge in an unvisited Voronoi super face. */
+  private findNextVoronoiSuperFaceStart(): HalfEdge | undefined {
+    if (!this._isCurveBased)
+      return undefined;
+    let start: HalfEdge | undefined;
+    this._voronoiGraph.announceEdges((_g, edge: HalfEdge) => {
+      if (edge.isMaskSet(HalfEdgeMask.EXTERIOR))
+        return true; // skip exterior face
+      if (edge.isMaskSet(this._superFaceMask))
+        return true; // skip previously visited super face
+      if (!this.isEdgeInVoronoiSuperFace(edge))
+        return true; // skip edge; keep searching
+      assert(() => edge.faceTag !== undefined, "Voronoi super face edges must have a faceTag");
+      start = edge;
+      return false; // stop search; we found an unvisited super face
+    });
+    return start;
+  }
+  /**
+   * Traverse the curve-based Voronoi graph and collect the edges comprising the Voronoi super face that starts with
+   * the given seed edge.
+   */
+  private collectVoronoiSuperFace(seed: HalfEdge): HalfEdge[] | undefined {
+    if (!this._isCurveBased || seed.faceTag === undefined)
+      return undefined;
+    const superFace: HalfEdge[] = [];
+    const curveIndex = this._inputGraph.allHalfEdges[seed.faceTag].edgeTag;
+    const foundSuperFace = seed.announceEdgesInSuperFace(
+      (e: HalfEdge) => !this.isEdgeInVoronoiSuperFace(e, curveIndex), // skipEdge
+      (e: HalfEdge) => { superFace.push(e); e.setMask(this._superFaceMask); }, // announceEdge
+    );
+    return (foundSuperFace && superFace.length > 2) ? superFace : undefined;
+  }
+  /**
    * Collect super faces of a curve-based Voronoi diagram.
    * * The instance must have been constructed with [[createFromCurveChain]].
    * @param numSuperFaces maximum number of super faces to return.
@@ -525,47 +591,17 @@ export class Voronoi {
    * Each super face is an array of HalfEdges that form a loop.
    */
   public collectVoronoiSuperFaces(numSuperFaces: number): HalfEdge[][] | undefined {
-    const superFaces: HalfEdge[][] = [];
     if (!this._isCurveBased || numSuperFaces < 1)
-      return superFaces;
-    const superFaceMask = this._voronoiGraph.grabMask();
-    const isEdgeInVoronoiSuperFace = (edge: HalfEdge, childIndex?: number): boolean => {
-      const edgeTag = this._inputGraph.allHalfEdges[edge.faceTag].edgeTag;
-      const mateTag = this._inputGraph.allHalfEdges[edge.edgeMate.faceTag].edgeTag;
-      if (childIndex !== undefined)
-        return edgeTag === childIndex && mateTag !== childIndex;
-      if (edge.edgeMate.isMaskSet(HalfEdgeMask.EXTERIOR))
-        return true; // edge is part of an unbounded Voronoi super face (clipped by a bounding box)
-      if (edgeTag !== mateTag)
-        return true; // edge is part of a bounded Voronoi super face
-      return false;
-    }
-    const findNextVoronoiSuperFaceStart = (): HalfEdge | undefined => {
-      let start: HalfEdge | undefined;
-      this._voronoiGraph.announceEdges((_g, edge: HalfEdge) => {
-        if (edge.isMaskSet(HalfEdgeMask.EXTERIOR) || edge.isMaskSet(superFaceMask))
-          return true; // skip exterior face or previously visited super face
-        if (!isEdgeInVoronoiSuperFace(edge))
-          return true; // keep searching
-        start = edge;
-        return false; // found unvisited super face
-      });
-      return start;
-    }
-    const collectVoronoiSuperFace = (edge: HalfEdge): HalfEdge[] | undefined => {
-      const superFace: HalfEdge[] = [];
-      const childIndex = this._inputGraph.allHalfEdges[edge.faceTag].edgeTag;
-      const foundSuperFace = edge.announceEdgesInSuperFace(
-        (e: HalfEdge) => !isEdgeInVoronoiSuperFace(e, childIndex), // skipEdge
-        (e: HalfEdge) => { superFace.push(e); e.setMask(superFaceMask); }, // announceEdge
-      );
-      return foundSuperFace ? superFace : undefined;
-    }
+      return undefined;
+    const superFaces: HalfEdge[][] = [];
+    if (this._superFaceMask === HalfEdgeMask.NULL_MASK)
+      this._superFaceMask = this._voronoiGraph.grabMask(false);
+    this._voronoiGraph.clearMask(this._superFaceMask);
     for (let i = 0; i < numSuperFaces; i++) {
-      const start = findNextVoronoiSuperFaceStart();
+      const start = this.findNextVoronoiSuperFaceStart();
       if (!start)
         break; // no more super faces to find
-      const superFace = collectVoronoiSuperFace(start);
+      const superFace = this.collectVoronoiSuperFace(start);
       if (!superFace)
         return undefined; // invalid Voronoi graph
       superFaces.push(superFace);
@@ -575,22 +611,18 @@ export class Voronoi {
       const tagB = this._inputGraph.allHalfEdges[b[0].faceTag].edgeTag;
       return tagA - tagB;
     });
-    if (superFaces.length === 0)
-      return undefined;
-    this._superFaceMask = superFaceMask;
-    return superFaces;
+    return (superFaces.length > 0) ? superFaces : undefined;
   }
   /**
-   * Construct a clipper for each Voronoi super face in the input array.
+   * Construct a clipper for each curve-based Voronoi super face in the input array.
    * @param superFaces array returned by [[collectVoronoiSuperFaces]].
-   * @param superFaceMask mask preset on the edges of each super face loop.
    * @returns array of clippers; the i_th clipper corresponds to the i_th input super face.
    * Returns `undefined` if input is invalid, or if a clipper construction failed.
    */
-  public generateClippersFromVoronoiSuperFaces(superFaces: HalfEdge[][]): (ConvexClipPlaneSet | UnionOfConvexClipPlaneSets)[] | undefined {
+  public generateClippersFromVoronoiSuperFaces(superFaces: HalfEdge[][]): UnionOfConvexClipPlaneSets[] | undefined {
     if (!this._isCurveBased || this._superFaceMask === HalfEdgeMask.NULL_MASK)
       return undefined;
-    const allClippers: (ConvexClipPlaneSet | UnionOfConvexClipPlaneSets)[] = [];
+    const allClippers: UnionOfConvexClipPlaneSets[] = [];
     const superFaceOutsideMask = this._voronoiGraph.grabMask();
     const maskOutsideOfSuperFace = (startEdge: HalfEdge, clearMask: boolean): boolean => {
       return startEdge.announceEdgesInSuperFace(
@@ -602,12 +634,16 @@ export class Voronoi {
     Triangulator.triangulateAllInteriorFaces(this._voronoiGraph);
     HalfEdgeGraphOps.expandConvexFaces(this._voronoiGraph, this._superFaceMask);
     for (const superFace of superFaces) {
-      if (superFace.length < 3)
-        return undefined; // invalid Voronoi graph
+      if (superFace.length < 3) {
+        allClippers.length = 0;
+        break; // invalid Voronoi graph
+      }
       // Step 1: collect the convex faces for this super face
       const convexFaces: HalfEdge[] = [];
-      if (!maskOutsideOfSuperFace(superFace[0], false))
-        return undefined; // invalid Voronoi graph
+      if (!maskOutsideOfSuperFace(superFace[0], false)) {
+        allClippers.length = 0;
+        break; // invalid Voronoi graph
+      }
       this._voronoiGraph.clearMask(HalfEdgeMask.VISITED);
       HalfEdgeGraphSearch.exploreComponent(superFace[0], HalfEdgeMask.VISITED, superFaceOutsideMask, undefined, convexFaces);
       maskOutsideOfSuperFace(superFace[0], true);
@@ -626,23 +662,20 @@ export class Voronoi {
           clippers.push(ConvexClipPlaneSet.createPlanes(clipPlanes));
       }
       // Step 3: assemble the clippers for this super face
-      if (clippers.length === convexFaces.length) {
-        if (clippers.length === 1)
-          allClippers.push(clippers[0]);
-        else
-          allClippers.push(UnionOfConvexClipPlaneSets.createConvexSets(clippers));
-      }
+      if (clippers.length === convexFaces.length)
+        allClippers.push(UnionOfConvexClipPlaneSets.createConvexSets(clippers));
     }
     this._voronoiGraph.dropMask(superFaceOutsideMask);
     return allClippers.length === superFaces.length ? allClippers : undefined;
   }
   /**
    * Construct facets from the faces of the Voronoi graph.
-   * @param useSuperFaces whether facets are super faces (if marked). Default is `false`: facets are faces.
+   * @param showSuperFacesOnly whether to hide edges of a curve-based Voronoi diagram that are not in super face loops.
+   * Default is `false`: all edges are visible.
    */
-  public constructPolyfaceFromVoronoiGraph(useSuperFaces: boolean = false): IndexedPolyface {
+  public constructPolyfaceFromVoronoiGraph(showSuperFacesOnly: boolean = false): IndexedPolyface {
     let isEdgeVisible: HalfEdgeToBooleanFunction = () => true;
-    if (useSuperFaces && this._superFaceMask !== HalfEdgeMask.NULL_MASK)
+    if (showSuperFacesOnly && this._isCurveBased && this._superFaceMask !== HalfEdgeMask.NULL_MASK)
       isEdgeVisible = (e: HalfEdge) => e.isMaskSet(this._superFaceMask);
     return PolyfaceBuilder.graphToPolyface(this._voronoiGraph, undefined, undefined, isEdgeVisible);
   }

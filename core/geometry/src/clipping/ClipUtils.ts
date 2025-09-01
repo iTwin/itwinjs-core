@@ -1124,7 +1124,7 @@ export class ClipUtilities {
    */
   public static createClippersForRegionsClosestToCurvePrimitivesXY(
     curveChain: CurveChain, strokeOptions?: StrokeOptions, distanceTol: number = Geometry.smallMetricDistance,
-  ): (ConvexClipPlaneSet | UnionOfConvexClipPlaneSets)[] | undefined {
+  ): UnionOfConvexClipPlaneSets[] | undefined {
     const voronoi = Voronoi.createFromCurveChain(curveChain, strokeOptions, distanceTol);
     if (!voronoi)
       return undefined;
