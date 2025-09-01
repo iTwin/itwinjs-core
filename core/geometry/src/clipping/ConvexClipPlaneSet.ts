@@ -619,17 +619,18 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * the polygon.
    * @param input polygon, usually convex.
    * @param output output polygon
-   * @param work work array.
+   * @param work optional work array.
    * @param containingPlane if this plane is found in the convex set, it is NOT applied.
    */
   public polygonClip(
-    input: GrowableXYZArray | Point3d[], output: GrowableXYZArray, work: GrowableXYZArray, planeToSkip?: ClipPlane,
+    input: GrowableXYZArray | Point3d[], output: GrowableXYZArray, work?: GrowableXYZArray, planeToSkip?: ClipPlane,
   ): void {
     if (input instanceof GrowableXYZArray)
       input.clone(output);
     else
       GrowableXYZArray.create(input, output);
-
+    if (!work)
+      work = new GrowableXYZArray();
     for (const plane of this._planes) {
       if (planeToSkip === plane)
         continue;

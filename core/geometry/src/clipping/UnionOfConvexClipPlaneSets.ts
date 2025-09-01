@@ -206,11 +206,12 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
    * Clip a polygon using this ClipPlaneSet, returning new polygon boundaries. Note that each polygon may lie
    * next to the previous, or be disconnected.
    */
-  public polygonClip(input: GrowableXYZArray | Point3d[], output: GrowableXYZArray[]) {
+  public polygonClip(input: GrowableXYZArray | Point3d[], output: GrowableXYZArray[], work?: GrowableXYZArray) {
     output.length = 0;
     if (Array.isArray(input))
       input = GrowableXYZArray.create(input);
-    const work = new GrowableXYZArray();
+    if (!work)
+      work = new GrowableXYZArray();
     for (const convexSet of this._convexSets) {
       const convexSetOutput = new GrowableXYZArray();
       convexSet.polygonClip(input, convexSetOutput, work);
