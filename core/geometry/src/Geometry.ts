@@ -498,19 +498,19 @@ export class Geometry {
     return (p0: XYAndZ, p1: XYAndZ): -1 | 0 | 1 => {
       if (XYAndZ.almostEqual(p0, p1, distanceTol))
         return 0;
-      if (!Geometry.isAlmostEqualNumber(p0.x, p1.x, distanceTol)) {
+      if (!Geometry.isSameCoordinate(p0.x, p1.x, distanceTol)) {
         if (p0.x < p1.x)
           return -1;
         if (p0.x > p1.x)
           return 1;
       }
-      if (!Geometry.isAlmostEqualNumber(p0.y, p1.y, distanceTol)) {
+      if (!Geometry.isSameCoordinate(p0.y, p1.y, distanceTol)) {
         if (p0.y < p1.y)
           return -1;
         if (p0.y > p1.y)
           return 1;
       }
-      if (!Geometry.isAlmostEqualNumber(p0.z, p1.z, distanceTol)) {
+      if (!Geometry.isSameCoordinate(p0.z, p1.z, distanceTol)) {
         if (p0.z < p1.z)
           return -1;
         if (p0.z > p1.z)
@@ -528,13 +528,13 @@ export class Geometry {
     return (p0: XAndY, p1: XAndY): -1 | 0 | 1 => {
       if (XAndY.almostEqual(p0, p1, distanceTol))
         return 0;
-      if (!Geometry.isAlmostEqualNumber(p0.x, p1.x, distanceTol)) {
+      if (!Geometry.isSameCoordinate(p0.x, p1.x, distanceTol)) {
         if (p0.x < p1.x)
           return -1;
         if (p0.x > p1.x)
           return 1;
       }
-      if (!Geometry.isAlmostEqualNumber(p0.y, p1.y, distanceTol)) {
+      if (!Geometry.isSameCoordinate(p0.y, p1.y, distanceTol)) {
         if (p0.y < p1.y)
           return -1;
         if (p0.y > p1.y)
@@ -582,7 +582,7 @@ export class Geometry {
   }
   /**
    * Toleranced equality test.
-   * @param tolerance relative tolerance. Default value is [[smallAngleRadians]].
+   * @param tolerance _relative_ tolerance. Default value is [[smallAngleRadians]].
    * @returns true if and only if `a` and `b` are almost equal.
    */
   public static isAlmostEqualNumber(a: number, b: number, tolerance: number = Geometry.smallAngleRadians): boolean {
@@ -591,7 +591,7 @@ export class Geometry {
   }
   /**
    * Toleranced test for equality to at least one of two numbers.
-   * @param tolerance relative tolerance. Default value is [[smallAngleRadians]].
+   * @param tolerance _relative_ tolerance. Default value is [[smallAngleRadians]].
    * @returns true if and only if `a` and `b` are almost equal, or `a` and `c` are almost equal.
    */
   public static isAlmostEqualEitherNumber(a: number, b: number, c: number, tolerance: number = Geometry.smallAngleRadians): boolean {
@@ -601,7 +601,7 @@ export class Geometry {
    * Toleranced test for equality to any value in `values`.
    * @param a value to test
    * @param values array of values to test against, or an object that provides the i_th value, where 0 <= i < length.
-   * @param tolerance relative tolerance. Default value is [[smallAngleRadians]].
+   * @param tolerance _relative_ tolerance. Default value is [[smallAngleRadians]].
    * @returns true if and only if `a` is almost equal to at least one value supplied by `iterator`.
    */
   public static isAlmostEqualAnyNumber(a: number, values: number[] | { iter: (i: number) => number, length: number }, tolerance: number = Geometry.smallAngleRadians): boolean {
@@ -612,25 +612,27 @@ export class Geometry {
     return false;
   }
   /**
-   * Toleranced equality test using tolerance `tolerance * ( 1 + abs(a.x) + abs(a.y) + abs(b.x) + abs(b.y) )`.
-   * * [[smallAngleRadians]] is used if tolerance is `undefined`.
+   * Toleranced equality test for xy points.
+   * @param a first point
+   * @param b second point
+   * @param tolerance _relative_ coordinate tolerance. Default value is [[smallAngleRadians]].
    */
   public static isAlmostEqualXAndY(a: XAndY, b: XAndY, tolerance: number = Geometry.smallAngleRadians): boolean {
     const tol = tolerance * (1.0 + Math.abs(a.x) + Math.abs(b.x) + Math.abs(a.y) + Math.abs(b.y));
     return (Math.abs(a.x - b.x) <= tol) && (Math.abs(a.y - b.y) <= tol);
   }
   /**
-   * Toleranced equality test using caller-supplied `tolerance`.
-   * * [[smallMetricDistance]] is used if tolerance is `undefined`.
+   * Test if a distance is smaller than `tolerance` (or equal).
+   * @param tolerance distance tolerance. Default value is [[smallMetricDistance]].
    */
   public static isDistanceWithinTol(distance: number, tolerance: number = Geometry.smallMetricDistance): boolean {
     return Math.abs(distance) <= tolerance;
   }
-  /** Toleranced equality test using [[smallMetricDistance]] tolerance. */
+  /** Test if a distance is smaller than [[smallMetricDistance]] (or equal). */
   public static isSmallMetricDistance(distance: number): boolean {
     return Math.abs(distance) <= Geometry.smallMetricDistance;
   }
-  /** Toleranced equality test using [[smallMetricDistanceSquared]] tolerance. */
+  /** Test if a squared distance is smaller than [[smallMetricDistanceSquared]] (or equal). */
   public static isSmallMetricDistanceSquared(distanceSquared: number): boolean {
     return Math.abs(distanceSquared) <= Geometry.smallMetricDistanceSquared;
   }
