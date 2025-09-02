@@ -8,7 +8,7 @@
 
 import { Point3d, Range2d, Transform, XYZProps, YawPitchRollAngles, YawPitchRollProps } from "@itwin/core-geometry";
 import { TextBlock, TextBlockProps } from "./TextBlock";
-import { TextStyleColor, TextStyleSettingsProps } from "./TextStyle";
+import { TextStyleSettingsProps } from "./TextStyle";
 
 /** Describes how to compute the "anchor point" for a [[TextAnnotation]].
  * The anchor point is a point on or inside of the 2d bounding box enclosing the contents of the annotation's [[TextBlock]].
@@ -34,39 +34,6 @@ export interface TextAnnotationAnchor {
    * "right" aligns the anchor point with right side of the text's bounding box.
    */
   horizontal: "left" | "center" | "right";
-}
-
-/** Set of predefined shapes that can be computed and drawn around the margins of a [[TextBlock]]
- * @beta
-*/
-export const textAnnotationFrameShapes = ["none", "line", "rectangle", "circle", "equilateralTriangle", "diamond", "square", "pentagon", "hexagon", "octagon", "capsule", "roundedRectangle"] as const;
-
-/** Describes a predefined shape that can be computed and drawn around the margins of a [[TextBlock]]
- * @beta
-*/
-export type TextAnnotationFrameShape = typeof textAnnotationFrameShapes[number];
-
-/**
- * Describes what color to use when filling the frame around a [[TextBlock]].
- * If `background` is specified, [[GeometryParams.BackgroundFill]] will be set to `BackgroundFill.Outline`.
- * @beta
- */
-export type TextAnnotationFillColor = TextStyleColor | "background";
-
-/**
- * Describes how to draw the frame around a [[TextBlock]].
- * The frame can be a simple line, a filled shape, or both.
- * @beta
- */
-export interface TextFrameStyleProps {
-  /** Shape of the frame. Default: "rectangle" */
-  shape?: TextAnnotationFrameShape;
-  /** The color to fill the shape of the text frame. This fill will is applied using [[FillDisplay.Blanking]]. Default: no fill */
-  fill?: TextAnnotationFillColor;
-  /** The color of the text frame's outline. Default: black */
-  border?: TextStyleColor;
-  /** This will be used to set the [[GeometryParams.weight]] property of the frame (in pixels). Default: 1px */
-  borderWeight?: number;
 }
 
 /**
@@ -132,8 +99,6 @@ export interface TextAnnotationLeaderProps {
 }
 
 /**
-
-/**
  * JSON representation of a [[TextAnnotation]].
  * @beta
  */
@@ -146,8 +111,6 @@ export interface TextAnnotationProps {
   textBlock?: TextBlockProps;
   /** See [[TextAnnotation.anchor]]. Default: top-left. */
   anchor?: TextAnnotationAnchor;
-  /** See [[TextAnnotation.frame]]. Default: no frame */
-  frame?: TextFrameStyleProps;
   /** See [[TextAnnotation.leader]]. Default: an empty leader array  */
   leaders?: TextAnnotationLeaderProps[];
 }
@@ -164,8 +127,6 @@ export interface TextAnnotationCreateArgs {
   textBlock?: TextBlock;
   /** See [[TextAnnotation.anchor]]. Default: top-left. */
   anchor?: TextAnnotationAnchor;
-  /** See [[TextAnnotation.frame]]. Default: no frame */
-  frame?: TextFrameStyleProps;
   /** See [[TextAnnotation.leader]]. Default: an empty leader array  */
   leaders?: TextAnnotationLeader[];
 }
@@ -194,17 +155,14 @@ export class TextAnnotation {
   public anchor: TextAnnotationAnchor;
   /** An offset applied to the anchor point that can be used to position annotations within the same geometry stream relative to one another. */
   public offset: Point3d;
-  /** The frame settings of the text annotation. */
-  public frame?: TextFrameStyleProps;
   /** The leaders of the text annotation. */
   public leaders?: TextAnnotationLeader[];
 
-  private constructor(offset: Point3d, angles: YawPitchRollAngles, textBlock: TextBlock, anchor: TextAnnotationAnchor, frame?: TextFrameStyleProps, leaders?: TextAnnotationLeader[]) {
+  private constructor(offset: Point3d, angles: YawPitchRollAngles, textBlock: TextBlock, anchor: TextAnnotationAnchor, leaders?: TextAnnotationLeader[]) {
     this.offset = offset;
     this.orientation = angles;
     this.textBlock = textBlock;
     this.anchor = anchor;
-    this.frame = frame;
     this.leaders = leaders;
   }
 
@@ -214,11 +172,8 @@ export class TextAnnotation {
     const angles = args?.orientation ?? new YawPitchRollAngles();
     const textBlock = args?.textBlock ?? TextBlock.createEmpty();
     const anchor = args?.anchor ?? { vertical: "top", horizontal: "left" };
-    // If the user supplies a frame, but doesn't supply a shape, default the shape to "rectangle"
-    const shape: TextAnnotationFrameShape = args?.frame?.shape ?? "rectangle";
-    const frame = args?.frame ? { shape, ...args.frame } : undefined;
     const leaders = args?.leaders ?? undefined;
-    return new TextAnnotation(offset, angles, textBlock, anchor, frame, leaders);
+    return new TextAnnotation(offset, angles, textBlock, anchor, leaders);
   }
 
   /**
@@ -230,7 +185,6 @@ export class TextAnnotation {
       orientation: props?.orientation ? YawPitchRollAngles.fromJSON(props.orientation) : undefined,
       textBlock: props?.textBlock ? TextBlock.create(props.textBlock) : undefined,
       anchor: props?.anchor ? { ...props.anchor } : undefined,
-      frame: props?.frame ? { shape: "rectangle", ...props.frame } : undefined,
       leaders: props?.leaders ? props.leaders.map((leader) => ({
         startPoint: Point3d.fromJSON(leader.startPoint),
         attachment: leader.attachment,
@@ -246,7 +200,7 @@ export class TextAnnotation {
   public toJSON(): TextAnnotationProps {
     const props: TextAnnotationProps = {};
 
-    // Even if the text block is empty, we want to record its style name and overrides, e.g.,
+    // Even if the text block is empty, we want to record its style ID and overrides, e.g.,
     // so the user can pick up where they left off editing it next time.
     props.textBlock = this.textBlock.toJSON();
 
@@ -261,9 +215,6 @@ export class TextAnnotation {
     if (this.anchor.vertical !== "top" || this.anchor.horizontal !== "left") {
       props.anchor = { ...this.anchor };
     }
-
-    // Default frame to "none"
-    props.frame = this.frame ? { ...this.frame } : undefined;
 
     props.leaders = this.leaders?.map((leader) => ({
       startPoint: leader.startPoint.toJSON(),
@@ -280,18 +231,24 @@ export class TextAnnotation {
    * at the bottom left, then the transform will be relative to the bottom-left corner of `textBlockExtents`.
    * The text block will be rotated around the fixed anchor point according to [[orientation]], then translated by [[offset]].
    * The anchor point will coincide with (0, 0, 0) unless an [[offset]] is present.
+   * If a scale factor is specified, the transform will also scale the annotation by that factor. Usually, this should come from the [[Drawing]] containing the annotation.
    * @param boundingBox A box fully containing the [[textBlock]]. This range should include the margins.
+   * @param scaleFactor A factor by which to scale the annotation. Default: 1 (no scaling).
    * @see [[computeAnchorPoint]] to compute the transform's anchor point.
    * @see [computeLayoutTextBlockResult]($backend) to lay out a `TextBlock`.
    */
-  public computeTransform(boundingBox: Range2d): Transform {
+  public computeTransform(boundingBox: Range2d, scaleFactor: number = 1): Transform {
     const anchorPt = this.computeAnchorPoint(boundingBox);
     const matrix = this.orientation.toMatrix3d();
 
-    const rotation = Transform.createFixedPointAndMatrix(anchorPt, matrix);
+    const transform = Transform.createIdentity();
     const translation = Transform.createTranslation(this.offset.minus(anchorPt));
-
-    return translation.multiplyTransformTransform(rotation, rotation);
+    const scaleTransform = Transform.createScaleAboutPoint(anchorPt, scaleFactor);
+    const rotation = Transform.createFixedPointAndMatrix(anchorPt, matrix);
+    transform.multiplyTransformTransform(translation, transform);
+    transform.multiplyTransformTransform(scaleTransform, transform);
+    transform.multiplyTransformTransform(rotation, transform);
+    return transform;
   }
 
   /** Compute the anchor point of this annotation as specified by [[anchor]].
@@ -353,14 +310,6 @@ export class TextAnnotation {
       !this.orientation.isAlmostEqual(other.orientation) ||
       !this.offset.isAlmostEqual(other.offset) ||
       !this.textBlock.equals(other.textBlock))
-      return false;
-
-    const framesMatch = this.frame?.shape === other.frame?.shape
-      && this.frame?.fill === other.frame?.fill
-      && this.frame?.border === other.frame?.border
-      && this.frame?.borderWeight === other.frame?.borderWeight;
-
-    if (!framesMatch)
       return false;
 
     return this.areLeadersEqual(this.leaders, other.leaders);

@@ -79,6 +79,7 @@ import { EasingFunction } from '@itwin/core-common';
 import { EcefLocation } from '@itwin/core-common';
 import { EcefLocationProps } from '@itwin/core-common';
 import { ECSqlReader } from '@itwin/core-common';
+import { EdgeAppearanceOverrides } from '@itwin/core-common';
 import { EdgeArgs } from '@itwin/core-common';
 import { EdgeOptions } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
@@ -2776,6 +2777,7 @@ export class DynamicsContext extends RenderContext {
     // @internal (undocumented)
     add(graphic: RenderGraphic, isOverlay: boolean): void;
     addGraphic(graphic: RenderGraphic): void;
+    addOverlay(graphic: RenderGraphic): void;
     // @internal (undocumented)
     changeDynamics(): void;
     createGraphic(options: Omit<ViewportGraphicBuilderOptions, "viewport">): GraphicBuilder;
@@ -3741,6 +3743,14 @@ export abstract class GeometricModelState extends ModelState implements Geometri
 // @public
 export interface GeometryTileTreeReference extends TileTreeReference {
     collectTileGeometry: (collector: TileGeometryCollector) => void;
+    // @internal
+    reprojectGeometry?: boolean;
+}
+
+// @public
+export interface GeometryTileTreeReferenceOptions {
+    // @beta
+    reprojectGeometry?: boolean;
 }
 
 // @public
@@ -3916,6 +3926,15 @@ export interface GltfMeshPrimitive extends GltfProperty {
         CESIUM_primitive_outline?: {
             indices?: GltfId;
         };
+        EXT_mesh_primitive_edge_visibility?: {
+            visibility: GltfId;
+            silhouetteNormals?: GltfId;
+            material?: GltfId;
+            lineStrings?: Array<{
+                indices: GltfId;
+                material?: GltfId;
+            }>;
+        };
         KHR_draco_mesh_compression?: DracoMeshCompression;
         EXT_mesh_features?: MeshFeatures;
     };
@@ -3988,6 +4007,10 @@ export abstract class GltfReader {
     protected get _nodes(): GltfDictionary<GltfNode>;
     abstract read(): Promise<GltfReaderResult>;
     // (undocumented)
+    protected readAndOctEncodeNormals(json: {
+        [k: string]: any;
+    }, accessorName: string): Uint16Array | undefined;
+    // (undocumented)
     protected readBatchTable(_mesh: Mesh, _json: GltfMeshPrimitive): void;
     // (undocumented)
     protected readBufferData(json: {
@@ -4030,11 +4053,11 @@ export abstract class GltfReader {
         [k: string]: any;
     }): boolean;
     // (undocumented)
-    protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfPrimitiveData | undefined;
-    // (undocumented)
-    protected readNormals(mesh: GltfMeshData, json: {
+    protected readMeshNormals(mesh: GltfMeshData, json: {
         [k: string]: any;
     }, accessorName: string): boolean;
+    // (undocumented)
+    protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfPrimitiveData | undefined;
     // (undocumented)
     protected readPolylines(polylines: MeshPolylineList, json: {
         [k: string]: any;
@@ -4304,6 +4327,8 @@ export interface GraphicBranchOptions {
     // @internal (undocumented)
     classifierOrDrape?: RenderPlanarClassifier | RenderTextureDrape;
     clipVolume?: RenderClipVolume;
+    // @internal (undocumented)
+    contours?: ContourDisplay;
     disableClipStyle?: true;
     // @internal (undocumented)
     frustum?: GraphicBranchFrustum;
@@ -6975,15 +7000,18 @@ export interface MeshArgs {
     isVolumeClassifier?: boolean;
     material?: RenderMaterial;
     normals?: OctEncodedNormal[];
-    points: QPoint3dList | (Array<Point3d> & {
-        range: Range3d;
-    });
+    points: MeshArgsPositions;
     textureMapping?: {
         texture: RenderTexture;
         uvParams: Point2d[];
     };
     vertIndices: number[];
 }
+
+// @public
+export type MeshArgsPositions = QPoint3dList | (Array<Point3d> & {
+    range: Range3d;
+});
 
 // @public
 export enum MessageBoxIconType {
@@ -8353,6 +8381,8 @@ export class RealityTile extends Tile {
     // @internal (undocumented)
     reproject(rootReprojection: Transform): void;
     // @internal (undocumented)
+    get reprojectionTransform(): Transform | undefined;
+    // @internal (undocumented)
     protected _reprojectionTransform?: Transform;
     // @internal (undocumented)
     requestContent(isCanceled: () => boolean): Promise<TileRequest.Response>;
@@ -8369,6 +8399,8 @@ export class RealityTile extends Tile {
     // @internal (undocumented)
     readonly transformToRoot?: Transform;
     // @internal (undocumented)
+    readonly tree: RealityTileTree;
+    // @internal (undocumented)
     get unprojectedGraphic(): RenderGraphic | undefined;
 }
 
@@ -8379,7 +8411,7 @@ export interface RealityTileGeometry {
 
 // @internal
 export abstract class RealityTileLoader {
-    constructor(_produceGeometry?: boolean | undefined);
+    constructor(_produceGeometry?: ProduceGeometryOption | undefined);
     // (undocumented)
     protected get _batchType(): BatchType;
     // (undocumented)
@@ -8480,6 +8512,8 @@ export class RealityTileTree extends TileTree {
     reportTileVisibility(_args: TileDrawArgs, _selected: RealityTile[]): void;
     // @internal (undocumented)
     reprojectAndResolveChildren(parent: Tile, children: Tile[], resolve: (children: Tile[] | undefined) => void): void;
+    // @internal
+    reprojectGeometry?: boolean;
     // @internal (undocumented)
     get rootTile(): RealityTile;
     // @internal (undocumented)
@@ -10247,6 +10281,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // (undocumented)
     get currentBranch(): BranchState;
     // (undocumented)
+    get currentContours(): ContourDisplay | undefined;
+    // (undocumented)
     get currentEdgeSettings(): EdgeSettings;
     // (undocumented)
     get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides;
@@ -11420,8 +11456,8 @@ export abstract class TileTreeReference {
     createDrawArgs(context: SceneContext): TileDrawArgs | undefined;
     // @beta
     static createFromRenderGraphic(args: RenderGraphicTileTreeArgs): TileTreeReference;
-    createGeometryTreeReference(): GeometryTileTreeReference | undefined;
-    protected _createGeometryTreeReference(): GeometryTileTreeReference | undefined;
+    createGeometryTreeReference(options?: GeometryTileTreeReferenceOptions): GeometryTileTreeReference | undefined;
+    protected _createGeometryTreeReference(_options?: GeometryTileTreeReferenceOptions): GeometryTileTreeReference | undefined;
     decorate(_context: DecorateContext): void;
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     draw(args: TileDrawArgs): void;
@@ -11448,6 +11484,8 @@ export abstract class TileTreeReference {
     protected get _isLoadingComplete(): boolean;
     // @beta
     get planarClipMaskPriority(): number;
+    // @internal
+    reprojectGeometry?: boolean;
     // @internal
     resetTreeOwner(): void;
     abstract get treeOwner(): TileTreeOwner;

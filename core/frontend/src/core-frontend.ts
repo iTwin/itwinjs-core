@@ -123,6 +123,7 @@ export {
   type TiledGraphicsProvider,
   type TileDrawArgParams, TileDrawArgs,
   type CollectTileStatus, type TileGeometryCollectorOptions, TileGeometryCollector, type GeometryTileTreeReference,
+  type GeometryTileTreeReferenceOptions,
   type TileParams,
   TileRequestChannels,
   type TileContentDecodingStatistics, TileRequestChannelStatistics, TileRequestChannel,

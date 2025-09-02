@@ -62,6 +62,9 @@ internal;namespace;ECSchemaNamespaceUris
 public;enum;ECSchemaStatus
 preview;enum;ECSchemaStatus
 internal;interface;ECSpecVersion
+internal;interface;ECSqlQueryOptions
+internal;class;ECSqlSchemaLocater
+internal;interface;ECSqlSchemaLocaterOptions
 internal;class;ECStringConstants
 public;class;ECVersion
 preview;class;ECVersion
@@ -86,9 +89,11 @@ preview;interface;EnumeratorProps
 public;class;Format
 preview;class;Format
 beta;interface;FormatSet
+beta;class;FormatSetFormatsProvider
 internal;function;getFormatProps
 public;interface;HasMixins
 preview;interface;HasMixins
+internal;class;IncrementalSchemaLocater
 public;class;InvertedUnit
 preview;class;InvertedUnit
 public;interface;InvertedUnitProps
@@ -232,6 +237,7 @@ preview;class;SchemaKey
 public;interface;SchemaKeyProps
 preview;interface;SchemaKeyProps
 beta;class;SchemaLoader
+beta;interface;SchemaLocaterOptions
 public;enum;SchemaMatchType
 preview;enum;SchemaMatchType
 public;class;SchemaPartVisitorDelegate

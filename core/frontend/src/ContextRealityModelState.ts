@@ -56,7 +56,7 @@ export class ContextRealityModelState extends ContextRealityModel {
       }) :
       createOrbitGtTileTreeReference({
         iModel,
-        orbitGtBlob: props.orbitGtBlob!,
+        orbitGtBlob: props.orbitGtBlob,
         rdSourceKey: this.rdSourceKey,
         name: props.name,
         classifiers: this.classifiers,

@@ -6,6 +6,7 @@
  * @module Tiles
  */
 
+import { expectDefined } from "@itwin/core-bentley";
 import { Angle, Matrix3d, Point2d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
@@ -197,7 +198,7 @@ export abstract class MapTilingScheme {
 
   /** @alpha */
   public computeMercatorFractionToDb(ecefToDb: Transform, bimElevationOffset: number, iModel: IModelConnection, applyTerrain: boolean) {
-    const dbToEcef = ecefToDb.inverse()!;
+    const dbToEcef = expectDefined(ecefToDb.inverse());
 
     const projectCenter = Point3d.create(iModel.projectExtents.center.x, iModel.projectExtents.center.y, bimElevationOffset);
     const projectEast = projectCenter.plusXYZ(1, 0, 0);

@@ -120,7 +120,7 @@ export interface WorkspaceDbQueryResourcesArgs {
   */
 export interface WorkspaceDbManifest {
   /** The name of the [[WorkspaceDb]] to be shown in user interfaces. Organizations should attempt to make this name informative enough
-   * so that uses may refer to this name in conversations. It should also be unique enough that there's no confusion when it appears in
+   * so that users may refer to this name in conversations. It should also be unique enough that there's no confusion when it appears in
    * lists of WorkspaceDbs.
    * @note it is possible and valid to change the workspaceName between new version of a WorkspaceDb (e.g. incorporating a date).
    */
@@ -180,7 +180,6 @@ export type WorkspaceResourceName = string;
 
 /** A SQLite database in a [[Workspace]] containing named resources that the application is configured to use.
  * Resources are referred to by their [[WorkspaceResourceName]]s and can represent any number of things, including:
- * - Fonts and [TextStyle]($common)s used when placing [TextAnnotation]($common)s.
  * - [GeographicCRS]($common)es used to define the coordinate reference system of an iTwin.
  * - [[SettingsDictionary]]'s that contribute to the [[Workspace.settings]].
  * - Files that can be extracted temporarily to the local file system to be accessed by programs directly from disk.

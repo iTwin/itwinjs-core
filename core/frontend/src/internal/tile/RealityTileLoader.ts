@@ -15,8 +15,8 @@ import { RenderSystem } from "../../render/RenderSystem";
 import { ScreenViewport, Viewport } from "../../Viewport";
 import { GltfWrapMode } from "../../common/gltf/GltfSchema";
 import {
-  B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfGraphicsReader, GltfReader, GltfReaderProps, I3dmReader, ImdlReader, readPointCloudTileContent,
-  RealityTile, RealityTileContent, RealityTileTree, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,
+  B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfGraphicsReader, GltfReader, GltfReaderProps, I3dmReader, ImdlReader, ProduceGeometryOption, readPointCloudTileContent,
+  RealityTile, RealityTileContent, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,
 } from "../../tile/internal";
 import { LayerTileData } from "../render/webgl/MapLayerParams";
 
@@ -33,7 +33,7 @@ export abstract class RealityTileLoader {
   public readonly preloadRealityParentDepth: number;
   public readonly preloadRealityParentSkip: number;
 
-  public constructor(private _produceGeometry?: boolean) {
+  public constructor(private _produceGeometry?: ProduceGeometryOption) {
     this.preloadRealityParentDepth = IModelApp.tileAdmin.contextPreloadParentDepth;
     this.preloadRealityParentSkip = IModelApp.tileAdmin.contextPreloadParentSkip;
   }
@@ -67,7 +67,7 @@ export abstract class RealityTileLoader {
     const blob = data;
     const streamBuffer = ByteStream.fromUint8Array(blob);
     const realityTile = tile as RealityTile;
-    return this._produceGeometry ? this.loadGeometryFromStream(realityTile, streamBuffer, system) : this.loadGraphicsFromStream(realityTile, streamBuffer, system, isCanceled);
+    return (this._produceGeometry && this._produceGeometry !== "no") ? this.loadGeometryFromStream(realityTile, streamBuffer, system) : this.loadGraphicsFromStream(realityTile, streamBuffer, system, isCanceled);
   }
 
   private _getFormat(streamBuffer: ByteStream) {
@@ -88,7 +88,14 @@ export abstract class RealityTileLoader {
     if (reader)
       reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
 
-    return { geometry: reader?.readGltfAndCreateGeometry(tile.tree.iModelTransform) };
+    const geom = reader?.readGltfAndCreateGeometry(tile.tree.iModelTransform);
+    const xForm = tile.reprojectionTransform;
+    if (tile.tree.reprojectGeometry && geom?.polyfaces && xForm) {
+      const polyfaces = geom.polyfaces.map((pf) => pf.cloneTransformed(xForm));
+      return { geometry: { polyfaces } };
+    } else {
+      return { geometry: geom };
+    }
   }
 
   private async loadGraphicsFromStream(tile: RealityTile, streamBuffer: ByteStream, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
@@ -129,10 +136,13 @@ export abstract class RealityTileLoader {
           if (!tile.transformToRoot && rtcCenter)
             xform = Transform.createTranslation(rtcCenter);
           else {
+            if (undefined === tile.transformToRoot) {
+              throw new Error("RealityTileLoader.loadGraphicsFromStream: tile.transformToRoot is undefined");
+            }
             if (rtcCenter)
-              xform = Transform.createOriginAndMatrix(rtcCenter.plus(tile.transformToRoot!.origin), tile.transformToRoot!.matrix);
+              xform = Transform.createOriginAndMatrix(rtcCenter.plus(tile.transformToRoot.origin), tile.transformToRoot.matrix);
             else
-              xform = tile.transformToRoot!;
+              xform = tile.transformToRoot;
           }
           graphic = system.createBranch(transformBranch, xform);
         }
@@ -152,7 +162,7 @@ export abstract class RealityTileLoader {
         reader = I3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, isCanceled, undefined, this.wantDeduplicatedVertices, tileData);
         break;
       case TileFormat.Gltf:
-        const tree = tile.tree as RealityTileTree;
+        const tree = tile.tree;
         const baseUrl = tree.baseUrl;
         const props = createReaderPropsWithBaseUrl(streamBuffer, yAxisUp, baseUrl);
         if (props) {

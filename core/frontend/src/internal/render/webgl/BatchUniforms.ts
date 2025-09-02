@@ -62,7 +62,7 @@ export class BatchUniforms {
 
     let sensors: ThematicSensors | undefined;
     if (undefined !== batch && this._target.wantThematicSensors) {
-      const distanceCutoff = this._target.plan.thematic!.sensorSettings.distanceCutoff;
+      const distanceCutoff = this._target.plan.thematic?.sensorSettings.distanceCutoff ?? 0;
       if (distanceCutoff > 0) // if we have a distance cutoff, we want to create per-batch sensor textures
         sensors = batch.getThematicSensors(this._target);
     }
@@ -95,7 +95,7 @@ export class BatchUniforms {
   }
 
   public get wantContourLines(): boolean {
-    const contours = this._target.plan.contours;
+    const contours = this._target.currentBranch.contourLine;
     return undefined !== contours && contours.displayContours && contours.groups.length > 0;
   }
 
