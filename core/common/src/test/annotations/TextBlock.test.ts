@@ -160,6 +160,20 @@ describe("TextBlockComponent", () => {
   });
 });
 
+describe("ContainerComponent", () => {
+  it("sets indexes", () => {
+    // TODO: implement tests for children
+  });
+
+  it("clears overrides", () => {
+    // TODO
+  });
+
+  it("appends child", () => {
+    // TODO
+  });
+});
+
 describe("TextBlock", () => {
   describe("appendParagraph", () => {
     it("creates a paragraph with no overrides by default", () => {
