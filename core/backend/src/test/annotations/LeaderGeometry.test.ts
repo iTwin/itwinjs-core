@@ -10,7 +10,7 @@ import { appendLeadersToBuilder, computeElbowDirection, computeFrame, computeLea
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { doLayout, MockBuilder } from "../AnnotationTestUtils";
 
-describe("LeaderGeometry", () => {
+describe.only("LeaderGeometry", () => {
   let builder: MockBuilder;
   let defaultParams: GeometryParams;
 

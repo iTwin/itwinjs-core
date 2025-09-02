@@ -1096,3 +1096,21 @@ export class TextBlock extends ContainerComponent<(Paragraph | List)> {
     return true;
   }
 }
+
+/**
+ * Recursively traverses a tree of TextBlockComponent objects, yielding each component along with its parent container.
+ * This generator enables depth-first iteration over all components in a text block structure, including paragraphs, lists, and runs.
+ *
+ * @param block The root TextBlockComponent to start traversal from.
+ * @param parent (Optional) The parent ContainerComponent of the current block. For the root, this is undefined.
+ * @returns An IterableIterator yielding objects with the current component and its parent container.
+ */
+export function* getTextBlockGenerator(block: TextBlockComponent, parent?: ContainerComponent): IterableIterator<{parent?: ContainerComponent, current: TextBlockComponent}> {
+  yield { parent, current: block };
+
+  if (block instanceof ContainerComponent) {
+    for (const child of block.children) {
+      yield* getTextBlockGenerator(child, block);
+    }
+  }
+}

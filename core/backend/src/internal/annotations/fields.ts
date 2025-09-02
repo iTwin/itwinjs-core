@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECSqlValueType, FieldRun, RelationshipProps, TextBlock } from "@itwin/core-common";
+import { ECSqlValueType, FieldRun, getTextBlockGenerator, RelationshipProps, RunComponentType, TextBlock } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
-import { collectFieldRuns, isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
+import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, Property, StructArrayProperty } from "@itwin/ecschema-metadata";
 
 // A FieldPropertyPath must ultimately resolve to one of these primitive types.
@@ -268,14 +268,18 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
 // Re-evaluates the display strings for all fields that target the element specified by `context` and returns the number
 // of fields whose display strings changed as a result.
 export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext): number {
-  const runs = collectFieldRuns(textBlock);
+  const iterator = getTextBlockGenerator(textBlock);
+
+  let result = iterator.next();
   let numUpdated = 0;
-  
-  runs.forEach(run => {
-    if (run.type === "field" && updateField(run, context)) {
+
+  while (!result.done) {
+    const current = result.value.current;
+    if (current.type === RunComponentType.Field && current instanceof FieldRun && updateField(current, context)) {
       ++numUpdated;
     }
-  });
+    result = iterator.next();
+  }
 
   return numUpdated;
 }

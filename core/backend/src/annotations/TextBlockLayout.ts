@@ -271,9 +271,13 @@ export class TextStyleResolver {
    * @param component The TextBlockComponent whose style settings are to be resolved.
    * @returns The resolved TextStyleSettings for the component.
    */
-  public resolveSettings(component: TextBlockComponent): TextStyleSettings {
-    const settings = TextStyleSettings.fromJSON({ ...component.styleOverrides });
-    return applyBlockSettings(settings, this.blockSettings);
+  public resolveSettings(overrides: TextStyleSettingsProps, isLeader: boolean = false): TextStyleSettings {
+    let settings = this.blockSettings;
+
+    if (overrides)
+      settings = settings.clone(overrides);
+
+    return applyBlockSettings(settings, this.blockSettings, isLeader);
   }
 
   /**
@@ -283,7 +287,7 @@ export class TextStyleResolver {
    * @returns The computed indentation value.
    */
   public resolveIndentation(component: TextBlockComponent, depth: number): number {
-    const overrides = this.resolveSettings(component);
+    const overrides = this.resolveSettings(component.styleOverrides);
     const indentation = overrides.indentation;
     const tabInterval = overrides.tabInterval;
     return indentation + tabInterval * depth;
@@ -492,7 +496,7 @@ export class RunLayout {
 
   // todo; maybe pass settings in
   public static create(source: Run, context: LayoutContext): RunLayout {
-    const style = context.textStyleResolver.resolveSettings(source);
+    const style = context.textStyleResolver.resolveSettings(source.styleOverrides);
     const fontId = context.findFontId(style.fontName);
     const charOffset = 0;
     const offsetFromLine = { x: 0, y: 0 };
@@ -787,7 +791,7 @@ export class TextBlockLayout {
         }
 
         component.children?.forEach((child, index) => {
-          const styleOverrides = context.textStyleResolver.resolveSettings(component);
+          const styleOverrides = context.textStyleResolver.resolveSettings(component.styleOverrides);
           const content = getMarkerText(styleOverrides.listMarker, index + 1);
           // I don't like the way I'm tricking the child to think it's a part of the text block. I want to clean this up.
           const marker = TextRun.create({ styleOverrides, content });

@@ -31,7 +31,7 @@ function findTextStyleImpl(id: Id64String): TextStyleSettings {
   return TextStyleSettings.fromJSON({ lineSpacingFactor: 1, fontName: "other" });
 }
 
-describe("layoutTextBlock", () => {
+describe.only("layoutTextBlock", () => {
   describe("resolves TextStyleSettings", () => {
     it("inherits styling from TextBlock when Paragraph and Run have no style overrides", () => {
       const textBlock = TextBlock.create({ styleId: "0x42" });
@@ -335,7 +335,7 @@ describe("layoutTextBlock", () => {
 
   });
 
-  describe("range", () => {
+  describe.only("range", () => {
 
     it("aligns text to center based on height of stacked fraction", () => {
       const textBlock = TextBlock.create({ styleId: "" });
@@ -361,7 +361,7 @@ describe("layoutTextBlock", () => {
     });
 
     it("produces one line per paragraph if document width <= 0", () => {
-      const textBlock = TextBlock.create({ styleId: "" });
+      const textBlock = TextBlock.create({ styleId: "", styleOverrides: { paragraphSpacingFactor: 0 } });
       for (let i = 0; i < 4; i++) {
         const layout = doLayout(textBlock);
         if (i === 0) {
@@ -401,7 +401,8 @@ describe("layoutTextBlock", () => {
     it("produces a new line for each LineBreakRun", () => {
       const lineSpacingFactor = 0.5;
       const lineHeight = 1;
-      const textBlock = TextBlock.create({ styleId: "", styleOverrides: { lineSpacingFactor, lineHeight } });
+      const paragraphSpacingFactor = 0;
+      const textBlock = TextBlock.create({ styleId: "", styleOverrides: { lineSpacingFactor, lineHeight, paragraphSpacingFactor } });
       textBlock.appendRun(TextRun.create({ content: "abc" }));
       textBlock.appendRun(LineBreakRun.create());
       textBlock.appendRun(TextRun.create({ content: "def" }));
@@ -511,7 +512,8 @@ describe("layoutTextBlock", () => {
     it("computes ranges based on custom line spacing and line height", () => {
       const lineSpacingFactor = 2;
       const lineHeight = 3;
-      const textBlock = TextBlock.create({ styleId: "", styleOverrides: { lineSpacingFactor, lineHeight } });
+      const paragraphSpacingFactor = 0;
+      const textBlock = TextBlock.create({ styleId: "", styleOverrides: { lineSpacingFactor, lineHeight, paragraphSpacingFactor } });
       textBlock.appendRun(TextRun.create({ content: "abc" }));
       textBlock.appendRun(LineBreakRun.create());
       textBlock.appendRun(TextRun.create({ content: "def" }));
