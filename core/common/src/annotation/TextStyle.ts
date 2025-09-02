@@ -151,7 +151,7 @@ export interface TextStyleSettingsProps {
    * The distance is computed in meters as lineSpacingFactor * [[lineHeight]].
    * Default: 0.5.
    */
-  lineSpacingFactor?: number
+  lineSpacingFactor?: number;
   /** Multiplier used to compute the vertical distance between two paragraphs of text.
    * The distance is computed in meters as paragraphSpacingFactor * [[lineHeight]].
    * Default: 0.5.
