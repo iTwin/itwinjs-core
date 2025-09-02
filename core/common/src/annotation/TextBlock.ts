@@ -32,6 +32,7 @@ export enum RunComponentType {
 
 /**
  * The different types of [[ContainerComponent]]s.
+ * @beta
  */
 export enum ContainerComponentType {
   // eslint-disable-next-line @typescript-eslint/no-shadow
