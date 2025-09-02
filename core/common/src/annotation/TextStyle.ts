@@ -9,6 +9,11 @@
 import { DeepReadonlyObject, DeepRequiredObject } from "@itwin/core-bentley";
 import { ColorDef, ColorDefProps } from "../ColorDef";
 
+/** Predefined markers for ordered list items in text annotations.
+ * These values control the appearance of list item markers (e.g., numbers, letters, roman numerals) in ordered lists.
+ *
+ * @beta
+ */
 export enum OrderedListMarker {
   A = "A",
   AWithPeriod = "A.",
@@ -27,6 +32,11 @@ export enum OrderedListMarker {
   OneWithParenthesis = "1)",
 }
 
+/** Predefined markers for unordered list items in text annotations.
+ * These values control the appearance of list item markers (e.g., bullet, circle, square, dash) in unordered lists.
+ *
+ * @beta
+ */
 export enum UnorderedListMarker {
   Bullet = "•",
   Circle = "○",
@@ -34,6 +44,11 @@ export enum UnorderedListMarker {
   Dash = "–",
 }
 
+/** A string used to mark the start of a list item in a [[List]].
+ * This can be either one of the predefined markers in [[OrderedListMarker]] or [[UnorderedListMarker]], or any arbitrary string.
+ * If an arbitrary string is supplied, it will be used in an unordered list fashion.
+ * @beta
+ */
 export type ListMarker = OrderedListMarker | UnorderedListMarker | string;
 
 /** Set of predefined shapes that can be computed and drawn around the margins of a [[TextBlock]]
