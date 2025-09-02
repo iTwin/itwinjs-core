@@ -14,6 +14,8 @@ import { RuleBase } from "../Rule.js";
  *
  * @see [Node artifacts rule reference documentation page]($docs/presentation/hierarchies/NodeArtifactsRule.md)
  * @public
+ * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface NodeArtifactsRule extends RuleBase {
   /** Used for serializing to JSON. */
