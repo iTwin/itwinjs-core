@@ -351,7 +351,7 @@ export class Voronoi {
   public static createFromPoints(
     points: Point3d[], distanceTol: number = Geometry.smallMetricDistance,
   ): Voronoi | undefined {
-    const sortedPoints = new SortedArray<Point3d>(Geometry.compareXY(distanceTol), DuplicatePolicy.Retain, Geometry.clonePoint3d());
+    const sortedPoints = new SortedArray<Point3d>(Geometry.compareXY(distanceTol), DuplicatePolicy.Retain, (p: Point3d) => p.clone());
     points.forEach((pt: Point3d) => sortedPoints.insert(pt));
     const uniquePoints = sortedPoints.extractArray();
     if (uniquePoints.length < 2)
@@ -381,7 +381,7 @@ export class Voronoi {
     const workCircleXY = Arc3d.createUnitCircle(Voronoi._workArc);
     const workSegment0 = LineSegment3d.createXYXY(0, 0, 0, 0);
     const workSegment1 = LineSegment3d.createXYXY(0, 0, 0, 0);
-    const pointToIndex = new Dictionary<Point3d, number>(Geometry.compareXY(distanceTol), Geometry.clonePoint3d());
+    const pointToIndex = new Dictionary<Point3d, number>(Geometry.compareXY(distanceTol), (p: Point3d) => p.clone());
     const pushInteriorStrokePoints = (curve: CurvePrimitive, index: number): void => {
       const strokes = LineString3d.create();
       curve.emitStrokes(strokes, strokeOptions);

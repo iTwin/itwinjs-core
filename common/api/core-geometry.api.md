@@ -4,7 +4,6 @@
 
 ```ts
 
-import { CloneFunction } from '@itwin/core-bentley';
 import { OrderedComparator } from '@itwin/core-bentley';
 
 // @public
@@ -2162,8 +2161,6 @@ export class Geometry {
     static cloneArray<T extends ICloneable<T>>(array: T[] | undefined): T[] | undefined;
     // @deprecated
     static cloneMembers<T extends Cloneable<T>>(array: T[] | undefined): T[] | undefined;
-    static clonePoint2d(): CloneFunction<Point2d>;
-    static clonePoint3d(): CloneFunction<Point3d>;
     static compareXY(distanceTol?: number): OrderedComparator<XAndY>;
     static compareXYZ(distanceTol?: number): OrderedComparator<XYAndZ>;
     static conditionalDivideCoordinate(numerator: number, denominator: number, largestResult?: number): number | undefined;

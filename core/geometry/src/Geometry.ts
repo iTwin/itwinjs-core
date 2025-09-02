@@ -543,14 +543,6 @@ export class Geometry {
       return 0;
     };
   }
-  /** Callback for maps with xyz keys. */
-  public static clonePoint3d(): CloneFunction<Point3d> {
-    return (p: Point3d) => p.clone();
-  };
-  /** Callback for maps with xy keys. */
-  public static clonePoint2d(): CloneFunction<Point2d> {
-    return (p: Point2d) => p.clone();
-  };
   /**
    * Test if `value` is at most [[smallFraction]] in absolute value.
    * * This is appropriate if `value` is known to be a fraction.
