@@ -113,7 +113,13 @@ export class UnboundedEllipse2d extends ImplicitCurve2d {
   public override emitPerpendiculars(spacePoint: Point2d,
     handler: (curvePoint: Point2d, radians: number | undefined) => void): void {
     const vectorW = Vector2d.createStartEnd(spacePoint, this.center);
-    // coefficients of C and S where C and S are the unit circle points parameterized by theta.
+    // vector from space point to point on ellipse is 
+    //    R = center + U*c + V * s - spacePoint
+    //      = W + Uc * Vs           where W = center - spacePOInt                 
+    // curve tangent is X' = (-U*s + V * c)
+    // dot product R and X' is
+    //    0 = (W + Uc + Vs ) dot (-Us + Vc) 
+    // coefficients of c and s and combinations are ...
     const coffC = vectorW.dotProduct(this.vectorV);
     const coffS = -vectorW.dotProduct(this.vectorU);
     const coff1 = 0;
