@@ -286,20 +286,6 @@ export class TextDecorationTool extends Tool {
     const arg = inArgs[1];
 
     switch (cmd) {
-      case "test": { // TODO: temporary test command, remove when done
-        await this.parseAndRun("init");
-        await this.parseAndRun("center");
-        await this.parseAndRun("height", "1"); // Text size (text height)
-        // await this.parseAndRun("width", "60");
-        await this.parseAndRun("debug");
-
-        let listMarker = inArgs[1];
-
-        if (listMarker in OrderedListMarker) listMarker = (OrderedListMarker as any)[listMarker];
-        else if (listMarker in UnorderedListMarker) listMarker = (UnorderedListMarker as any)[listMarker];
-
-        break;
-      }
       case "clear":
         editor.clear();
         return true;

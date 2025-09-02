@@ -19,7 +19,7 @@ export interface ClearTextStyleOptions {
   preserveChildrenOverrides?: boolean;
 }
 
-/** The different types of [[TextBlockComponent]].
+/** The different types of [[Run]]s.
  * @beta
  */
 export enum RunComponentType {
@@ -30,6 +30,9 @@ export enum RunComponentType {
   Tab = "tab",
 }
 
+/**
+ * The different types of [[ContainerComponent]]s.
+ */
 export enum ContainerComponentType {
   // eslint-disable-next-line @typescript-eslint/no-shadow
   Paragraph = "paragraph",
@@ -73,7 +76,7 @@ export interface TextBlockStringifyOptions {
 }
 
 /**
- * Abstract representation of any of the building blocks that make up a [[TextBlock]] document - namely [[Run]]s and [[ContainerComponents]].
+ * Abstract representation of any of the building blocks that make up a [[TextBlock]] document - namely [[Run]]s and [[ContainerComponent]]s.
  * The [[TextBlock]] can specify an [AnnotationTextStyle]($backend) that formats its contents.
  * Each component can specify an optional [[styleOverrides]] to customize that formatting.
  * @beta
@@ -99,7 +102,7 @@ export abstract class TextBlockComponent {
     this._index = value;
   }
 
-  /** Deviations in individual properties of the [[TextStyle]] specified by [[styleName]].
+  /** Deviations in individual properties of the [[TextStyleSettings]] in the [AnnotationTextStyle]($backend) specified by `styleId` on the [[TextBlock]].
    * For example, if the style uses the "Arial" font, you can override that by settings `styleOverrides.fontName` to "Comic Sans".
    * @see [[clearStyleOverrides]] to reset this to an empty object.
    */
@@ -111,10 +114,7 @@ export abstract class TextBlockComponent {
     this._styleOverrides = TextStyleSettings.cloneProps(overrides);
   }
 
-  /**
-   * Clears any [[styleOverrides]] applied to this Paragraph.
-   * Will also clear [[styleOverrides]] from all child components unless [[ClearTextStyleOptions.preserveChildrenOverrides]] is `true`.
-   */
+  /** Reset any [[styleOverrides]] applied to this component. */
   public clearStyleOverrides(_options?: ClearTextStyleOptions): void {
     this.styleOverrides = {};
   }
@@ -130,9 +130,7 @@ export abstract class TextBlockComponent {
   /** Compute a string representation of the contents of this component and all of its sub-components. */
   public abstract stringify(options?: TextBlockStringifyOptions): string;
 
-  /**
-  * Returns true if this component has no content or children.
-  */
+  /** Returns true if this component has no content or children. */
   public abstract get isEmpty(): boolean;
 
   /**
@@ -288,9 +286,7 @@ export namespace Run { // eslint-disable-line @typescript-eslint/no-redeclare
     }
   }
 
-  /**
-   * @returns True if the component's type is one of the [[RunComponentType]] values.
-   */
+  /** @returns True if the component's type is one of the [[RunComponentType]] values. */
   function isKindOf(type: RunComponentType | ContainerComponentType): type is RunComponentType {
     return (
       type === RunComponentType.Field ||
@@ -775,7 +771,7 @@ export interface ParagraphProps extends ContainerComponentProps {
 export class Paragraph extends ContainerComponent<List | Run> {
   public readonly type = ContainerComponentType.Paragraph;
 
-  protected constructor(props?: Omit<ParagraphProps, "type">) {
+  private constructor(props?: Omit<ParagraphProps, "type">) {
     super(props);
 
     props?.children?.forEach((run) => {
@@ -914,7 +910,7 @@ export interface TextBlockProps extends ContainerComponentProps {
 }
 
 /** Represents a formatted text document consisting of a series of [[Paragraph]]s and [[List]]s, each laid out on a separate line and containing their own content.
- * [[Paragraph]]s and [[List]]s act as branches, and can nest more [[Paragraph]]s and [[List]]s or leaf nodes in the form of [[Run]]s.
+ * [[Paragraph]]s and [[List]]s act as branches and can contain [[Paragraph]]s, [[List]]s, or leaf nodes in the form of [[Run]]s.
  * To modify the children, you can either directly set the [[TextBlock.children]] property or use the provided methods to append new elements.
  * No word-wrapping is applied to the document unless a [[width]] greater than zero is specified.
  * @see [[TextAnnotation]] to position a text block as an annotation in 2d or 3d space.
