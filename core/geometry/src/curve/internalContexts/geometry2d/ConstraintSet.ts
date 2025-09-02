@@ -177,7 +177,7 @@ export class ConstraintSet {
     )
   }
   /**
-   * Given an array of constraint requests (e.g. tangent to circle, tangnet to line, etc),
+   * Given an array of constraint requests (e.g. tangent to circle, tangent to line, etc),
    * construct all circles that satisfy the conditions.
    * * Circles are defined by 3 conditions, so there is null output for inputs with other than 3 constraints.
    * * Returns undefined if no solver is available for the requested constraints.
@@ -232,7 +232,10 @@ export class ConstraintSet {
     return undefined;
   }
   /**
-   * Call constructConstrainedLines when the ConstraintSet has 2 conditions which determine one or more lines.
+   * Given an array of constraint requests (e.g. tangent to circle, tangent to line, etc),
+   * construct all lines that satisfy the conditions.
+   * * Lines are defined by 2 conditions, so there is null output for inputs with other than 2 constraints.
+   * * Returns undefined if no solver is available for the requested constraints.
    * @returns Array of lines with markup about how or where the constraints are satisfied.
    */
   public constructConstrainedLines(): ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>[] | undefined {

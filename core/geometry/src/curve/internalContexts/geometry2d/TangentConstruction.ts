@@ -545,7 +545,7 @@ export class TangentConstruction {
   private static circlesTangentCCCThisOrder(
     circles: UnboundedCircle2dByCenterAndRadius[],
   ): ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
-    // Call the circle centers and raddii
+    // Call the circle centers and radii
     //    (ax, ay, ar)
     //    (bx, by, br)
     //    (cx, cy, cr)
@@ -672,8 +672,8 @@ export class TangentConstruction {
     lineB: UnboundedLine2dByPointAndNormal,
     radius: number,
   ): ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined {
-    // Construct lines offset by (positive and negative) radiis.
-    // For each of the 4 combinations of offset lines, the intersection of offsets is the 
+    // Construct lines offset by (positive and negative) radii.
+    // For each of the 4 combinations of offset lines, the intersection of offsets is the
     // center of the tangent circle.
     if (Geometry.isSmallMetricDistance(radius))
       return undefined;
