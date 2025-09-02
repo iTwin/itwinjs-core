@@ -250,6 +250,8 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
       });
   }
 
+  /* eslint-disable @typescript-eslint/no-deprecated */
+
   public override async getNodesCount(token: IModelRpcProps, requestOptions: HierarchyRpcRequestOptions): PresentationRpcResponse<number> {
     return this.makeRequest(token, "getNodesCount", requestOptions, async (options) => {
       return this.getManager(requestOptions.clientId).getNodesCount(options);
@@ -297,6 +299,8 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements Dis
       return this.getManager(requestOptions.clientId)[_presentation_manager_detail].getFilteredNodePaths(options);
     });
   }
+
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
   public override async getContentSources(
     token: IModelRpcProps,

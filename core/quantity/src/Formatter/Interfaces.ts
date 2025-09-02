@@ -128,6 +128,10 @@ export interface FormatsProvider {
    */
   getFormat(name: string): Promise<FormatDefinition | undefined>;
 
+  /**
+   * Fired when formats are added, removed, or changed.
+   * If all formats are changed, a single string "all" is emitted. Else, an array of changed format names is emitted.
+   */
   onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
 
@@ -135,6 +139,13 @@ export interface FormatsProvider {
  * @beta
  */
 export interface MutableFormatsProvider extends FormatsProvider {
+  /**
+   * Adds a new format or updates an existing format associated with the specified name.
+   */
   addFormat(name: string, format: FormatDefinition): Promise<void>;
+  /**
+   * Removes the format associated with the specified name.
+   * @param name The name of the format to remove.
+   */
   removeFormat(name: string): Promise<void>;
 }

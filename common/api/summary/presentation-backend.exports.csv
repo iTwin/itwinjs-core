@@ -5,10 +5,15 @@ public;type;BackendDiagnosticsHandler
 public;interface;BackendDiagnosticsOptions
 public;interface;ContentCacheConfig
 public;interface;DiskHierarchyCacheConfig
+deprecated;interface;DiskHierarchyCacheConfig
 public;type;HierarchyCacheConfig
+deprecated;type;HierarchyCacheConfig
 public;enum;HierarchyCacheMode
+deprecated;enum;HierarchyCacheMode
 public;interface;HybridCacheConfig
+deprecated;interface;HybridCacheConfig
 public;interface;MemoryHierarchyCacheConfig
+deprecated;interface;MemoryHierarchyCacheConfig
 public;interface;MultiElementPropertiesResponse
 public;type;MultiManagerPresentationProps
 deprecated;type;MultiManagerPresentationProps

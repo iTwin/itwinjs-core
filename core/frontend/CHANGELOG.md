@@ -1,6 +1,25 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Fri, 08 Aug 2025 18:10:14 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Aug 2025 14:26:46 GMT and should not be manually modified.
+
+## 5.1.4
+Fri, 22 Aug 2025 14:22:33 GMT
+
+### Updates
+
+- A model drawn as only contour lines will only mask the background map where the contour lines draw.
+
+## 5.1.3
+Wed, 20 Aug 2025 13:57:10 GMT
+
+_Version update only_
+
+## 5.1.2
+Thu, 14 Aug 2025 19:38:08 GMT
+
+### Updates
+
+- Improve frame rate during interactive editing.
 
 ## 5.1.1
 Fri, 08 Aug 2025 18:06:10 GMT
