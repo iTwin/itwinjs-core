@@ -61,7 +61,7 @@ function createFindTextStyleImpl(iModel: IModelDb): FindTextStyle {
 }
 
 /**
- * Arguments supplied to [[computeLayoutTextBlockResult]].
+ * Base interface for arguments supplied to [[computeLayoutTextBlockResult]] and [[computeGraphemeOffsets]].
  * @beta
  */
 export interface LayoutStyleArgs {
@@ -97,6 +97,7 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
   const findFontId = args.findFontId ?? ((name, type) => args.iModel.fonts.findId({ name, type }) ?? 0);
   const computeTextRange = args.computeTextRange ?? ((x) => args.iModel.computeRangesForText(x));
 
+  // Reduce style overrides recursively applying style overrides from a container component to its children so that we don't have to later.
   const textBlock: TextBlock = args.textStyleResolver.resolveAndMendStyle(args.textBlock);
   return new TextBlockLayout(textBlock, new LayoutContext(args.textStyleResolver, computeTextRange, findFontId));
 }
@@ -262,11 +263,22 @@ export class TextStyleResolver {
     return applyBlockSettings(settings, this.blockSettings, true);
   }
 
+  /**
+   * Resolves the effective text style settings for a given TextBlockComponent, applying block-level overrides.
+   * @param component The TextBlockComponent whose style settings are to be resolved.
+   * @returns The resolved TextStyleSettings for the component.
+   */
   public resolveSettings(component: TextBlockComponent): TextStyleSettings {
     const settings = TextStyleSettings.fromJSON({ ...component.styleOverrides });
     return applyBlockSettings(settings, this.blockSettings);
   }
 
+  /**
+   * Computes the indentation for a TextBlockComponent based on its style and nesting depth.
+   * @param component The TextBlockComponent for which to compute indentation.
+   * @param depth The nesting depth of the component.
+   * @returns The computed indentation value.
+   */
   public resolveIndentation(component: TextBlockComponent, depth: number): number {
     const overrides = this.resolveSettings(component);
     const indentation = overrides.indentation;
@@ -274,12 +286,22 @@ export class TextStyleResolver {
     return indentation + tabInterval * depth;
   }
 
+  /**
+   * Resolves and applies style overrides to a TextBlock, ensuring all child components are updated.
+   * @param component The TextBlock to resolve and mend styles for.
+   * @returns A cloned TextBlock with resolved and mended styles.
+   */
   public resolveAndMendStyle(component: TextBlock): TextBlock {
     const block = component.clone();
     this.mendSettings(block);
     return block;
   }
 
+  /**
+   * Recursively applies style overrides from a container component to its children, ensuring all styles are properly inherited.
+   * @param component The TextBlockComponent to mend styles for.
+   * @returns A cloned TextBlockComponent with updated style overrides for all children.
+   */
   public mendSettings(component: TextBlockComponent): TextBlockComponent {
     const block = component.clone();
 
@@ -956,9 +978,17 @@ export class TextBlockLayout {
   }
 }
 
-// TODO: do the following methods live here, in TextStyle, or in some utility method?
-function getMarkerText(style: ListMarker, num: number): string {
-  switch (style) {
+// TODO: do the following methods live here, in TextStyle, or in some utility location?
+
+/**
+ * Returns the formatted marker text for a list item based on the marker type and item number.
+ * Supports ordered and unordered list markers, including alphabetic, Roman numeral, and numeric formats.
+ * @param marker The type of list marker to use.
+ * @param num The item number in the list.
+ * @returns The formatted marker string for the list item.
+ */
+function getMarkerText(marker: ListMarker, num: number): string {
+  switch (marker) {
     case OrderedListMarker.A:
       return integerToAlpha(num);
     case OrderedListMarker.AWithPeriod:
@@ -989,11 +1019,17 @@ function getMarkerText(style: ListMarker, num: number): string {
       return `${num}.`;
     case OrderedListMarker.OneWithParenthesis:
       return `${num})`;
-    default:
-      return style;
+    default: // Return marker as-is in an unordered fashion
+      return marker;
   }
 }
 
+/**
+ * Converts an integer to its Roman numeral representation.
+ * Supports numbers from 1 and above.
+ * @param num The integer to convert.
+ * @returns The Roman numeral string.
+ */
 function integerToRoman(num: number): string {
   const values =
     [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
@@ -1010,6 +1046,12 @@ function integerToRoman(num: number): string {
   return roman;
 }
 
+/**
+ * Converts an integer to its alphabetic representation (A-Z, AA-ZZ, etc.).
+ * Used for ordered list markers with alphabetic styles.
+ * @param num The integer to convert (1-based).
+ * @returns The alphabetic string for the given number.
+ */
 function integerToAlpha(num: number): string {
   const letterOffset = (num - 1) % 26
   const letter = String.fromCharCode(65 + letterOffset);
