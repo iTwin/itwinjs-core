@@ -20,6 +20,10 @@ importers:
         specifier: 5.2.9
         version: 5.2.9
       "@itwin/cloud-agnostic-core":
+      '@bentley/imodeljs-native':
+        specifier: 5.2.10
+        version: 5.2.10
+      '@itwin/cloud-agnostic-core':
         specifier: ^2.2.4
         version: 2.2.4(inversify@6.0.1)(reflect-metadata@0.1.13)
       "@itwin/object-storage-azure":
