@@ -24,6 +24,7 @@ publish: false
 ### Changes
 
 - Added  `unitSystem` property to [FormatSet]($ecschema-metadata) interface, using [UnitSystemKey]($quantity) type. This will help move APIs away from relying on `activeUnitSystem` in `quantityFormatter`, as they move to the new formatting APIs using `IModelApp.formatsProvider`. Looking ahead, tools and components that use formatting APIs can then listen to just the `onFormatsChanged` event from `IModelApp.formatsProvider` instead of `IModelApp.quantityFormatter.onActiveUnitSystemChanged`.
+- Changed interface for formats in `FormatSet` from [SchemaItemFormatProps]($ecschema-metadata) to [FormatDefinition]($quantity). FormatSet just uses the `name`, `label`, `description` field from `SchemaItemFormatProps`, which `FormatDefinition` already has.
 ## Presentation
 
 ### Deprecation of hierarchy-related APIs
