@@ -117,7 +117,7 @@ export class TangentConstruction {
     circleA: UnboundedCircle2dByCenterAndRadius, circleB: UnboundedCircle2dByCenterAndRadius,
   ): ImplicitGeometryMarkup<UnboundedLine2dByPointAndNormal>[] | undefined {
     // There infinite line containing the circle centers is the only line perp to both circles.
-    // The endpoints for the 4 line segmnets are the centers shifted by the respective radii along the infinite line.
+    // The endpoints for the 4 line segments are the centers shifted by the respective radii along the infinite line.
     const centerToCenter = Vector2d.createStartEnd(circleA.center, circleB.center);
     const unitCenterToCenter = centerToCenter.normalize();
     if (unitCenterToCenter === undefined)
@@ -148,7 +148,6 @@ export class TangentConstruction {
     // The infinite line through the circle center and in the direction of the line normal is the containing line.
     // Make segments from its intersection with the line to the near and far intersections with the circle.
     // (these are the centers shifted by radius along the line)
-
     const lineTangent = line.unitVectorAlongLine();
     const unitNormal = line.unitNormal();
     const linePoint = line.closestPoint(circle.center);
@@ -222,8 +221,8 @@ export class TangentConstruction {
     // draw radii from both centers to the tangencies.   (These are parallel to each other)
     // the (sum or difference  of the radii) and the (distance between centers) are side and hypotenuse of
     // // a right triangle, with the tangent-to-tangent segment as the other side.
-    // The lengths give sine and cosine of angles in the triangle, and those give vectors 
-    // from cener to tangency points.
+    // The lengths give sine and cosine of angles in the triangle, and those give vectors
+    // from center to tangency points.
     const distanceAB = circleA.center.distance(circleB.center);
     if (distanceAB + Math.abs(circleB.radius) <= Math.abs(circleA.radius))
       return undefined;
