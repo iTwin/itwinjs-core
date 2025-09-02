@@ -7,7 +7,7 @@
  * @module CartesianGeometry
  */
 
-import { CloneFunction, OrderedComparator } from "@itwin/core-bentley";
+import { OrderedComparator } from "@itwin/core-bentley";
 import { AngleSweep } from "./geometry3d/AngleSweep";
 import { Point2d, Vector2d } from "./geometry3d/Point2dVector2d";
 import { Point3d, Vector3d, XYZ } from "./geometry3d/Point3dVector3d";

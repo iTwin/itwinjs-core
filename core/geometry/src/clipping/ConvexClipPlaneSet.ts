@@ -40,10 +40,6 @@ export type ConvexClipPlaneSetProps = ClipPlaneProps[];
 export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
   /** Value acting as "at infinity" for coordinates along a ray. */
   public static readonly hugeVal = 1e37;
-  /** Return the (reference to the) array of `ClipPlane` */
-  public get planes(): ClipPlane[] {
-    return this._planes;
-  }
   /** Planes that define the convex set. */
   private _planes: ClipPlane[];
   // private _parity: number;   <--- Not yet used
@@ -52,6 +48,10 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
   private constructor(planes?: ClipPlane[]) {
     // this._parity = 1;
     this._planes = planes ? planes : [];
+  }
+  /** Return the (reference to the) array of `ClipPlane`. */
+  public get planes(): ClipPlane[] {
+    return this._planes;
   }
   /**
    * Return an array containing all the planes of the convex set.
