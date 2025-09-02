@@ -97,8 +97,10 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
   const findFontId = args.findFontId ?? ((name, type) => args.iModel.fonts.findId({ name, type }) ?? 0);
   const computeTextRange = args.computeTextRange ?? ((x) => args.iModel.computeRangesForText(x));
 
-  // Reduce style overrides recursively applying style overrides from a container component to its children so that we don't have to later.
-  const textBlock: TextBlock = args.textStyleResolver.resolveAndMendStyle(args.textBlock);
+  // Reduce style overrides by recursively applying style overrides from a container component to its children.
+  // This ensures that each branch and leaf will have all of the necessary style override information.
+  // This way we don't have to reverse lookup later for each branch/leaf.
+  const textBlock = args.textStyleResolver.resolveAndMendStyle(args.textBlock);
   return new TextBlockLayout(textBlock, new LayoutContext(args.textStyleResolver, computeTextRange, findFontId));
 }
 
@@ -118,6 +120,7 @@ export function computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlo
  * @beta
  */
 export interface ComputeGraphemeOffsetsArgs extends LayoutStyleArgs {
+  /** The TextBlockComponent for which to compute grapheme offsets. */
   source: TextBlockComponent;
   /** The run layout result for which grapheme ranges will be computed. */
   runLayoutResult: RunLayoutResult;
@@ -298,7 +301,7 @@ export class TextStyleResolver {
   }
 
   /**
-   * Recursively applies style overrides from a container component to its children, ensuring all styles are properly inherited.
+   * Recursively applies style overrides from a container component to its children, ensuring all children have all the necessary information of its style overrides.
    * @param component The TextBlockComponent to mend styles for.
    * @returns A cloned TextBlockComponent with updated style overrides for all children.
    */
@@ -624,12 +627,16 @@ export class LineLayout {
     return `${runs.join("")}`;
   }
 
+  /** Gets the array of RunLayout objects contained in this line. */
   public get runs(): ReadonlyArray<RunLayout> { return this._runs; }
+  /** Indicates whether this line contains any runs. */
   public get isEmpty() { return this._runs.length === 0; }
+  /** Gets the last RunLayout in this line. */
   public get back(): RunLayout {
     assert(!this.isEmpty);
     return this._runs[this._runs.length - 1];
   }
+  /** Gets or sets the marker RunLayout for this line, used for list item markers. */
   public get marker(): RunLayout | undefined { return this._marker; }
   public set marker(value: RunLayout | undefined) { this._marker = value; }
 
@@ -673,11 +680,12 @@ export class LineLayout {
 
     if (this._marker) {
       const indentation = this.range.low.x;
+      // TODO: this logic doesn't match what's in TextStyle
       const x = indentation - (this._marker.style.tabInterval / 2) - this._marker.range.xLength();
       const runHeight = this._marker.range.yLength();
       const runOffset = {
         x,
-        y: (lineHeight - runHeight) / 2
+        y: (lineHeight - runHeight) / 2 // Center the marker vertically in the line.
       };
 
       this._marker.offsetFromLine = runOffset;
