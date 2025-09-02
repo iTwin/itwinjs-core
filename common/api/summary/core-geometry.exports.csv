@@ -308,6 +308,7 @@ public;interface;WritableXAndY
 public;interface;WritableXYAndZ
 public;interface;WriteableHasZ
 public;type;XAndY
+public;namespace;XAndY
 public;class;XY
 public;type;XYAndZ
 public;namespace;XYAndZ
