@@ -797,14 +797,12 @@ export class Format extends SchemaItem {
 
 // @beta
 export interface FormatSet {
-    // (undocumented)
     formats: {
-        [kindOfQuantityId: string]: SchemaItemFormatProps;
+        [kindOfQuantityId: string]: FormatDefinition;
     };
-    // (undocumented)
     label: string;
-    // (undocumented)
     name: string;
+    unitSystem: UnitSystemKey;
 }
 
 // @beta
