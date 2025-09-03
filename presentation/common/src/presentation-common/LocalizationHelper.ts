@@ -35,8 +35,17 @@ export class LocalizationHelper {
     return text.replace(KEY_PATTERN, (key) => this._getLocalizedString(key.replace(/^@|@$/g, "")));
   }
 
+  /* eslint-disable @typescript-eslint/no-deprecated */
   public getLocalizedNodes(nodes: Node[]): Node[] {
     return nodes.map((n) => this.getLocalizedNode(n));
+  }
+
+  public getLocalizedNode(node: Node): Node {
+    return {
+      ...node,
+      label: this.getLocalizedLabelDefinition(node.label),
+      ...(node.description ? { description: this.getLocalizedString(node.description) } : undefined),
+    };
   }
 
   public getLocalizedNodePathElement(npe: NodePathElement): NodePathElement {
@@ -46,6 +55,7 @@ export class LocalizationHelper {
       children: npe.children.map((c) => this.getLocalizedNodePathElement(c)),
     };
   }
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
   public getLocalizedDisplayValueGroup(group: DisplayValueGroup): DisplayValueGroup {
     return {
@@ -156,14 +166,6 @@ export class LocalizationHelper {
     category.label = this.getLocalizedString(category.label);
     category.description = this.getLocalizedString(category.description);
     return category;
-  }
-
-  public getLocalizedNode(node: Node): Node {
-    return {
-      ...node,
-      label: this.getLocalizedLabelDefinition(node.label),
-      ...(node.description ? { description: this.getLocalizedString(node.description) } : undefined),
-    };
   }
 
   private getLocalizedDisplayValue(value: DisplayValue): DisplayValue {
