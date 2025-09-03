@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Geometry } from "../../Geometry";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { UnionOfConvexClipPlaneSets } from "../UnionOfConvexClipPlaneSets";
-import { ConvexClipPlaneSet } from "../ConvexClipPlaneSet";
-import { ClipPlane } from "../ClipPlane";
 import { IndexedXYZCollection } from "../../geometry3d/IndexedXYZCollection";
-import { assert } from "@itwin/core-bentley";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { ClipPlane } from "../ClipPlane";
+import { ConvexClipPlaneSet } from "../ConvexClipPlaneSet";
+import { UnionOfConvexClipPlaneSets } from "../UnionOfConvexClipPlaneSets";
+
 /**
  * Class for building clip sets for offset regions.
  * @internal
@@ -170,7 +170,8 @@ export class LineStringOffsetClipperContext {
     const result = UnionOfConvexClipPlaneSets.createEmpty();
     if (points.length > 1) {
       const distance = points.distanceIndexIndex(0, points.length - 1);
-      assert(undefined !== distance, "LineStringOffsetClipperContext.createClipBetweenOffsets: distance should be defined");
+      if (undefined === distance)
+        return result;
       const closed = Geometry.isSmallMetricDistance(distance);
       for (let i = 0; i + 1 < points.length; i++) {
         const unitVectorA = this.createUnit(points, i - 1, closed);

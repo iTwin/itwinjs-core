@@ -7,7 +7,6 @@
  * @module CartesianGeometry
  */
 
-import { assert } from "@itwin/core-bentley";
 import { Arc3d } from "../curve/Arc3d";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { LineSegment3d } from "../curve/LineSegment3d";
@@ -230,21 +229,18 @@ export class ClipVector implements Clipper {
     let zFront = Number.MAX_VALUE;
     const retVal: number[] = [];
     let nLoops = 0;
-
     if (this._clips.length === 0)
-      return retVal;
+      return [];
     let firstClipShape: ClipShape | undefined;
     const deltaTrans = Transform.createIdentity();
-
     for (const clip of this._clips) {
       if (clip instanceof ClipShape) {
-        if (firstClipShape !== undefined && clip !== firstClipShape) {      // Is not the first iteration
+        if (firstClipShape !== undefined && clip !== firstClipShape) { // is not the first iteration
           let fwdTrans = Transform.createIdentity();
           let invTrans = Transform.createIdentity();
-
           if (firstClipShape.transformValid && clip.transformValid) {
-            assert(undefined !== clip.transformFromClip, "ClipVector.extractBoundaryLoops: clip.transformFromClip should be defined");
-            assert(undefined !== firstClipShape.transformToClip, "ClipVector.extractBoundaryLoops: firstClipShape.transformToClip should be defined");
+            if (undefined === clip.transformFromClip || undefined === firstClipShape.transformToClip)
+              return [];
             fwdTrans = clip.transformFromClip.clone();
             invTrans = firstClipShape.transformToClip.clone();
           }
@@ -257,17 +253,14 @@ export class ClipVector implements Clipper {
         if (clip.polygon !== undefined) {
           clipM = ClipMaskXYZRangePlanes.XAndY;
 
-          if (clip.zHighValid) {
+          if (clip.zHighValid && undefined !== clip.zHigh) {
             clipM = clipM | ClipMaskXYZRangePlanes.ZHigh;
-            assert(undefined !== clip.zHigh, "ClipVector.extractBoundaryLoops: clip.zHigh should be defined");
             zFront = clip.zHigh;
           }
-          if (clip.zLowValid) {
+          if (clip.zLowValid && undefined !== clip.zLow) {
             clipM = clipM | ClipMaskXYZRangePlanes.ZLow;
-            assert(undefined !== clip.zLow, "ClipVector.extractBoundaryLoops: clip.zLow should be defined");
             zBack = clip.zLow;
           }
-
           for (const point of clip.polygon)
             loopPoints[nLoops].push(point.clone());
           deltaTrans.multiplyPoint3dArray(loopPoints[nLoops], loopPoints[nLoops]);
@@ -278,8 +271,7 @@ export class ClipVector implements Clipper {
     retVal.push(clipM);
     retVal.push(zBack);
     retVal.push(zFront);
-    if (transform && firstClipShape) {
-      assert(undefined !== firstClipShape.transformFromClip, "ClipVector.extractBoundaryLoops: firstClipShape.transformFromClip should be defined");
+    if (transform && firstClipShape && undefined !== firstClipShape.transformFromClip) {
       transform.setFrom(firstClipShape.transformFromClip);
     }
     return retVal;
@@ -381,12 +373,10 @@ export class ClipVector implements Clipper {
    */
   public isLineStringCompletelyContained(points: Point3d[]): boolean {
     const clipIntervals: Segment1d[] = [];
-
     for (let i = 0; i + 1 < points.length; i++) {
       const segment = LineSegment3d.create(points[i], points[i + 1]);
       let fractionSum = 0.0;
       let index0 = 0;
-
       for (const clip of this._clips) {
         const clipPlaneSet = clip.fetchClipPlanesRef();
         if (clipPlaneSet !== undefined) {
@@ -433,9 +423,8 @@ export class ClipVector implements Clipper {
     function formatVector3d(vec: Vector3d) {
       return `${formatNumber(vec.x)}${formatNumber(vec.y)}${formatNumber(vec.z)}`;
     }
-    function formatFlags(flags: number) {
+    function formatFlags(flags: number): string {
       const f = flags.toString();
-      assert(1 === f.length);
       return f;
     }
     function formatPlane(plane: ClipPlane) {
@@ -453,8 +442,6 @@ export class ClipVector implements Clipper {
     function formatPrimitive(prim: ClipPrimitive) {
       const flags = prim.invisible ? 1 : 0;
       let str = flags.toString();
-      assert(1 === str.length);
-
       const union = prim.fetchClipPlanesRef();
       if (union) {
         for (const s of union.convexSets)
@@ -484,7 +471,8 @@ export type StringifiedClipVector = ClipVector & { readonly clipString: string }
  * @alpha
  */
 export namespace StringifiedClipVector { // eslint-disable-line @typescript-eslint/no-redeclare
-  /** Create from a ClipVector.
+  /**
+   * Create from a ClipVector.
    * @param clip The ClipVector to stringify.
    * @returns The input ClipVector with its compact string representation, or undefined if the input is undefined or empty.
    * @note The string representation is computed once; the ClipVector is assumed not to be subsequently modified.
@@ -492,13 +480,10 @@ export namespace StringifiedClipVector { // eslint-disable-line @typescript-esli
   export function fromClipVector(clip?: ClipVector): StringifiedClipVector | undefined {
     if (!clip || !clip.isValid)
       return undefined;
-
     const ret = clip as any;
     if (undefined === ret.clipString)
       ret.clipString = clip.toCompactString();
-
     const stringified = ret as StringifiedClipVector;
-    assert(undefined !== stringified.clipString);
     return stringified;
   }
 }

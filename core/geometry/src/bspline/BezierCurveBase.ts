@@ -6,7 +6,6 @@
  * @module Bspline
  */
 
-import { assert } from "@itwin/core-bentley";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { CurveOffsetXYHandler } from "../curve/internalContexts/CurveOffsetXYHandler";
 import { PlaneAltitudeRangeContext } from "../curve/internalContexts/PlaneAltitudeRangeContext";
@@ -39,12 +38,11 @@ import { KnotVector } from "./KnotVector";
 export abstract class BezierCurveBase extends CurvePrimitive {
   /** String name for schema properties */
   public readonly curvePrimitiveType = "bezierCurve";
-
   /** Control points */
   protected _polygon: Bezier1dNd;
-  /** scratch data blocks accessible by concrete class.   Initialized to correct blockSize in constructor. */
+  /** Scratch data blocks accessible by concrete class. Initialized to correct blockSize in constructor. */
   protected _workData0: Float64Array;
-  /** scratch data blocks accessible by concrete class.   Initialized to correct blockSize in constructor. */
+  /** Scratch data blocks accessible by concrete class. Initialized to correct blockSize in constructor. */
   protected _workData1: Float64Array;
   /** Scratch xyz point accessible by derived classes. */
   protected _workPoint0: Point3d;
@@ -58,11 +56,12 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     this._workPoint1 = Point3d.create();
     this._workData0 = new Float64Array(blockSize);
     this._workData1 = new Float64Array(blockSize);
-
   }
-  /** reverse the poles in place */
-  public reverseInPlace(): void { this._polygon.reverseInPlace(); }
-  /** saturate the pole in place, using knot intervals from `spanIndex` of the `knotVector` */
+  /** Reverse the poles in place. */
+  public reverseInPlace(): void {
+    this._polygon.reverseInPlace();
+  }
+  /** Saturate the pole in place, using knot intervals from `spanIndex` of the `knotVector`. */
   public saturateInPlace(knotVector: KnotVector, spanIndex: number): boolean {
     const boolStat = this._polygon.saturateInPlace(knotVector, spanIndex);
     if (boolStat) {
@@ -72,33 +71,46 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     }
     return boolStat;
   }
-  /** (property accessor) Return the polynomial degree (one less than order) */
+  /** (property accessor) Return the polynomial degree (one less than order). */
   public get degree(): number {
     return this._polygon.order - 1;
   }
   /** (property accessor) Return the polynomial order */
-  public get order(): number { return this._polygon.order; }
+  public get order(): number {
+
+    return this._polygon.order;
+  }
   /** (property accessor) Return the number of poles (aka control points) */
-  public get numPoles(): number { return this._polygon.order; }
-  /** Get pole `i` as a Point3d.
+  public get numPoles(): number {
+    return this._polygon.order;
+  }
+  /**
+   * Get pole `i` as a Point3d.
    * * For 3d curve, this is simple a pole access, and only fails (return `undefined`) for invalid index
    * * For 4d curve, this deweights the homogeneous pole and can fail due to 0 weight.
    */
   public abstract getPolePoint3d(i: number, point?: Point3d): Point3d | undefined;
-
-  /** Get pole `i` as a Point4d.
+  /**
+   * Get pole `i` as a Point4d.
    * * For 3d curve, this accesses the simple pole and returns with weight 1.
    * * For 4d curve, this accesses the (weighted) pole.
    */
   public abstract getPolePoint4d(i: number, point?: Point4d): Point4d | undefined;
-  /** Set mapping to parent curve (e.g. if this bezier is a span extracted from a bspline, this is the knot interval of the span) */
-  public setInterval(a: number, b: number) { this._polygon.setInterval(a, b); }
-  /** map `fraction` from this Bezier curves inherent 0..1 range to the (a,b) range of parent
-   * * ( The parent range should have been previously defined with `setInterval`)
+  /**
+   * Set mapping to parent curve (e.g. if this bezier is a span extracted from a bspline, this is the knot interval
+   * of the span).
    */
-  public fractionToParentFraction(fraction: number): number { return this._polygon.fractionToParentFraction(fraction); }
-
-  /** append stroke points to a linestring, based on `strokeCount` and `fractionToPoint` from derived class*/
+  public setInterval(a: number, b: number) {
+    this._polygon.setInterval(a, b);
+  }
+  /**
+   * Map `fraction` from this Bezier curves inherent 0..1 range to the (a,b) range of parent.
+   * * The parent range should have been previously defined with `setInterval`.
+   */
+  public fractionToParentFraction(fraction: number): number {
+    return this._polygon.fractionToParentFraction(fraction);
+  }
+  /** Append stroke points to a linestring, based on `strokeCount` and `fractionToPoint` from derived class. */
   public emitStrokes(dest: LineString3d, options?: StrokeOptions): void {
     const numPerSpan = this.computeStrokeCountForOptions(options);
     const fractionStep = 1.0 / numPerSpan;
@@ -108,15 +120,16 @@ export abstract class BezierCurveBase extends CurvePrimitive {
       dest.appendStrokePoint(this._workPoint0);
     }
   }
-  /** announce intervals with stroke counts */
+  /** Announce intervals with stroke counts. */
   public emitStrokableParts(handler: IStrokeHandler, _options?: StrokeOptions): void {
     const numPerSpan = this.computeStrokeCountForOptions(_options);
     handler.announceIntervalForUniformStepStrokes(this, numPerSpan, 0.0, 1.0);
   }
   /** Return a simple array of arrays with the control points as `[[x,y,z],[x,y,z],..]` */
-  public copyPolesAsJsonArray(): any[] { return this._polygon.unpackToJsonArrays(); }
-
-  /** return true if all poles are on a plane. */
+  public copyPolesAsJsonArray(): any[] {
+    return this._polygon.unpackToJsonArrays();
+  }
+  /** Return true if all poles are on a plane. */
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
     let point: Point3d | undefined = this._workPoint0;
     for (let i = 0; ; i++) {
@@ -140,59 +153,70 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     }
     return sum;
   }
-  /** Return the start point.  (first control point) */
+  /**
+   * Return the start point (first control point).
+   * @returns the start point as a Point3d. If insufficiently many control points exist, returns (0,0,0).
+   */
   public override startPoint(): Point3d {
-    const result = this.getPolePoint3d(0);   // ASSUME non-trivial pole set -- if null comes back, it bubbles out
-    assert(undefined !== result, "BezierCurveBase.startPoint: result should be defined");
-    return result;
+    const result = this.getPolePoint3d(0);
+    return result || Point3d.create();
   }
-  /** Return the end point.  (last control point) */
+  /**
+   * Return the end point (last control point).
+   * @returns the end point as a Point3d. If insufficiently many control points exist, returns (0,0,0).
+   */
   public override endPoint(): Point3d {
-    const result = this.getPolePoint3d(this.order - 1);    // ASSUME non-trivial pole set
-    assert(undefined !== result, "BezierCurveBase.endPoint: result should be defined");
-    return result;
+    const result = this.getPolePoint3d(this.order - 1);
+    return result || Point3d.create();
   }
   /** Return the control polygon length as a quick length estimate. */
-  public quickLength(): number { return this.polygonLength(); }
-  /** Concrete classes must implement extendRange . . .  */
+  public quickLength(): number {
+    return this.polygonLength();
+  }
+  /** Concrete classes must implement extendRange.  */
   public abstract override extendRange(rangeToExtend: Range3d, transform?: Transform): void;
   /**
    * 1D bezier coefficients for use in range computations.
    * @internal
    */
-  protected _workBezier?: UnivariateBezier; // available for bezier logic within a method
+  protected workBezier?: UnivariateBezier; // available for bezier logic within a method
   /** scratch array for use by derived classes, using allocateAndZeroBezierWorkData for sizing. */
-  protected _workCoffsA?: Float64Array;
+  protected workCoffsA?: Float64Array;
   /** scratch array for use by derived classes, using allocateAndZeroBezierWorkData for sizing. */
-  protected _workCoffsB?: Float64Array;
-
+  protected workCoffsB?: Float64Array;
   /**
-   * set up the _workBezier members with specific order.
+   * Set up the workBezier members with specific order.
    * * Try to reuse existing members if their sizes match.
    * * Ignore members corresponding to args that are 0 or negative.
+   * * The function's type guard specifically applies to the arrays specified by the caller.
    * @param primaryBezierOrder order of expected bezier
-   * @param orderA length of _workCoffsA (simple array)
-   * @param orderB length of _workCoffsB (simple array)
+   * @param orderA length of workCoffsA (simple array)
+   * @param orderB length of workCoffsB (simple array)
    */
-  protected allocateAndZeroBezierWorkData(primaryBezierOrder: number, orderA: number, orderB: number) {
+  protected allocateAndZeroBezierWorkData(
+    primaryBezierOrder: number, orderA: number, orderB: number,
+  ): this is { workBezier: UnivariateBezier, workCoffsA: Float64Array, workCoffsB: Float64Array } {
+    if (primaryBezierOrder <= 0 && orderA <= 0 && orderB <= 0)
+      return false;
     if (primaryBezierOrder > 0) {
-      if (this._workBezier !== undefined && this._workBezier.order === primaryBezierOrder) {
-        this._workBezier.zero();
+      if (this.workBezier !== undefined && this.workBezier.order === primaryBezierOrder) {
+        this.workBezier.zero();
       } else
-        this._workBezier = new UnivariateBezier(primaryBezierOrder);
+        this.workBezier = new UnivariateBezier(primaryBezierOrder);
     }
     if (orderA > 0) {
-      if (this._workCoffsA !== undefined && this._workCoffsA.length === orderA)
-        this._workCoffsA.fill(0);
+      if (this.workCoffsA !== undefined && this.workCoffsA.length === orderA)
+        this.workCoffsA.fill(0);
       else
-        this._workCoffsA = new Float64Array(orderA);
+        this.workCoffsA = new Float64Array(orderA);
     }
     if (orderB > 0) {
-      if (this._workCoffsB !== undefined && this._workCoffsB.length === orderB)
-        this._workCoffsB.fill(0);
+      if (this.workCoffsB !== undefined && this.workCoffsB.length === orderB)
+        this.workCoffsB.fill(0);
       else
-        this._workCoffsB = new Float64Array(orderB);
+        this.workCoffsB = new Float64Array(orderB);
     }
+    return true;
   }
   /**
    * Assess length and turn to determine a stroke count.
@@ -202,7 +226,6 @@ export abstract class BezierCurveBase extends CurvePrimitive {
    * @param options stroke options structure.
    */
   public computeStrokeCountForOptions(options?: StrokeOptions): number {
-
     this.getPolePoint3d(0, this._workPoint0);
     this.getPolePoint3d(1, this._workPoint1);
     let numStrokes = 1;
@@ -249,17 +272,14 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     }
     return numStrokes;
   }
-
   /** Return a deep clone. */
   public abstract override clone(): BezierCurveBase;
-
   /** Return a transformed deep clone. */
   public override cloneTransformed(transform: Transform): BezierCurveBase {
     const curve1 = this.clone();
     curve1.tryTransformInPlace(transform);
     return curve1;
   }
-
   /**
    * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).
    * * No attempt is made to join the offsets of smaller constituent primitives. To construct a fully joined offset
@@ -272,8 +292,8 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     this.emitStrokableParts(handler, options.strokeOptions);
     return handler.claimResult();
   }
-
-  /** Return a curve primitive which is a portion of this curve.
+  /**
+   * Return a curve primitive which is a portion of this curve.
    * @param fractionA [in] start fraction
    * @param fractionB [in] end fraction
    */
@@ -282,8 +302,8 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     partialCurve._polygon.subdivideToIntervalInPlace(fractionA, fractionB);
     return partialCurve;
   }
-
-  /** Project instance geometry (via dispatch) onto the given ray, and return the extreme fractional parameters of projection.
+  /**
+   * Project instance geometry (via dispatch) onto the given ray, and return the extreme fractional parameters of projection.
    * @param ray ray onto which the instance is projected. A `Vector3d` is treated as a `Ray3d` with zero origin.
    * @param lowHigh optional receiver for output
    * @returns range of fractional projection parameters onto the ray, where 0.0 is start of the ray and 1.0 is the end of the ray.

@@ -220,57 +220,60 @@ export class BezierCurve3dH extends BezierCurveBase {
    * * This assumes this bezier is saturated.
    * @param spacePoint point being projected
    * @param detail pre-allocated detail to record (evolving) closest point.
-   * @returns true if an updated occurred, false if either (a) no perpendicular projections or (b) perpendiculars were not closer.
+   * @returns true if an updated occurred, false if either (a) no perpendicular projections or (b) perpendiculars
+   * were not closer.
    */
-  public updateClosestPointByTruePerpendicular(spacePoint: Point3d, detail: CurveLocationDetail,
-    testAt0: boolean = false,
-    testAt1: boolean = false): boolean {
+  public updateClosestPointByTruePerpendicular(
+    spacePoint: Point3d, detail: CurveLocationDetail, testAt0: boolean = false, testAt1: boolean = false,
+  ): boolean {
     let numUpdates = 0;
     let roots: number[] | undefined;
-    if (this.isUnitWeight()) {
-      // unweighted !!!
+    if (this.isUnitWeight()) { // unweighted
       const productOrder = 2 * this.order - 2;
-      this.allocateAndZeroBezierWorkData(productOrder, 0, 0);
-      const bezier = this._workBezier;
-      assert(undefined !== bezier, "BezierCurve3dH.updateClosestPointByTruePerpendicular: bezier should be defined");
-      // closestPoint condition is:
-      //   (spacePoint - curvePoint) DOT curveTangent = 0;
-      // Each product (x,y,z) of the DOT is the product of two bezier polynomials
-      BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(bezier.coffs, this._polygon.packedData, 4, this.order, 1.0, 0, -spacePoint.x, 0);
-      BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(bezier.coffs, this._polygon.packedData, 4, this.order, 1.0, 1, -spacePoint.y, 1);
-      BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(bezier.coffs, this._polygon.packedData, 4, this.order, 1.0, 2, -spacePoint.z, 2);
-      roots = bezier.roots(0.0, true);
+      if (this.allocateAndZeroBezierWorkData(productOrder, 0, 0)) {
+        const bezier = this.workBezier;
+        // closestPoint condition is:
+        //   (spacePoint - curvePoint) DOT curveTangent = 0;
+        // Each product (x,y,z) of the DOT is the product of two bezier polynomials
+        BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(bezier.coffs, this._polygon.packedData, 4, this.order, 1.0, 0, -spacePoint.x, 0);
+        BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(bezier.coffs, this._polygon.packedData, 4, this.order, 1.0, 1, -spacePoint.y, 1);
+        BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(bezier.coffs, this._polygon.packedData, 4, this.order, 1.0, 2, -spacePoint.z, 2);
+        roots = bezier.roots(0.0, true);
+      }
     } else {
       // This bezier has weights.
-      // The pure cartesian closest point condition is
+      // The pure cartesian closest point condition is:
       //   (spacePoint - X/w) DOT (X' w - w' X)/ w^2 = 0
-      // ignoring denominator and using bezier coefficient differences for the derivative, making the numerator 0 is
+      // ignoring denominator and using bezier coefficient differences for the derivative, making the numerator 0 is:
       //   (w * spacePoint - X) DOT ( DELTA X * w - DELTA w * X) = 0
       const orderA = this.order;
       const orderB = 2 * this.order - 2; // products of component and component difference.
       const productOrder = orderA + orderB - 1;
-      this.allocateAndZeroBezierWorkData(productOrder, orderA, orderB);
-      const bezier = this._workBezier;
-      assert(undefined !== bezier, "BezierCurve3dH.updateClosestPointByTruePerpendicular: bezier should be defined");
-      const workA = this._workCoffsA;
-      assert(undefined !== workA, "BezierCurve3dH.updateClosestPointByTruePerpendicular: workA should be defined");
-      const workB = this._workCoffsB;
-      assert(undefined !== workB, "BezierCurve3dH.updateClosestPointByTruePerpendicular: workB should be defined");
-      const packedData = this._polygon.packedData;
-      for (let i = 0; i < 3; i++) {
-        // x representing loop pass:   (w * spacePoint.x - curve.x(s)) * (curveDelta.x(s) * curve.w(s) - curve.x(s) * curveDelta.w(s))
-        // (and p.w is always 1)
-        for (let k = 0; k < workA.length; k++)
-          workA[k] = 0;
-        for (let k = 0; k < workB.length; k++)
-          workB[k] = 0;
-        BezierPolynomialAlgebra.scaledComponentSum(workA, packedData, 4, orderA, 3, spacePoint.at(i), // w * spacePoint.x
-          i, -1.0); // curve.x(s) * 1.0
-        BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(workB, packedData, 4, orderA, 1.0, 3, 0.0, i);
-        BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(workB, packedData, 4, orderA, -1.0, i, 0.0, 3);
-        BezierPolynomialAlgebra.accumulateProduct(bezier.coffs, workA, workB);
+      if (this.allocateAndZeroBezierWorkData(productOrder, orderA, orderB)) {
+        const bezier = this.workBezier;
+        const workA = this.workCoffsA;
+        const workB = this.workCoffsB;
+        const packedData = this._polygon.packedData;
+        for (let i = 0; i < 3; i++) {
+          // x representing loop pass:
+          // (w * spacePoint.x - curve.x(s)) * (curveDelta.x(s) * curve.w(s) - curve.x(s) * curveDelta.w(s))
+          // (and p.w is always 1)
+          for (let k = 0; k < workA.length; k++)
+            workA[k] = 0;
+          for (let k = 0; k < workB.length; k++)
+            workB[k] = 0;
+          BezierPolynomialAlgebra.scaledComponentSum(
+            workA, packedData,
+            4, orderA,
+            3, spacePoint.at(i), // w * spacePoint.x
+            i, -1.0, // curve.x(s) * 1.0
+          );
+          BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(workB, packedData, 4, orderA, 1.0, 3, 0.0, i);
+          BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(workB, packedData, 4, orderA, -1.0, i, 0.0, 3);
+          BezierPolynomialAlgebra.accumulateProduct(bezier.coffs, workA, workB);
+        }
+        roots = bezier.roots(0.0, true);
       }
-      roots = bezier.roots(0.0, true);
     }
     if (roots) {
       for (const fraction of roots) {
@@ -298,7 +301,7 @@ export class BezierCurve3dH extends BezierCurveBase {
     const order = this.order;
     if (!transform) {
       this.allocateAndZeroBezierWorkData(order * 2 - 2, 0, 0);
-      const bezier = this._workBezier;
+      const bezier = this.workBezier;
       assert(undefined !== bezier, "BezierCurve3dH.extendRange: bezier should be defined");
       const data = this._polygon.packedData;
       this.getPolePoint3d(0, this._workPoint0);
@@ -337,11 +340,11 @@ export class BezierCurve3dH extends BezierCurveBase {
       }
     } else {
       this.allocateAndZeroBezierWorkData(order * 2 - 2, order, order);
-      const componentCoffs = this._workCoffsA; // to hold transformed copy of x,y,z in turn.
+      const componentCoffs = this.workCoffsA; // to hold transformed copy of x,y,z in turn.
       assert(undefined !== componentCoffs, "BezierCurve3dH.extendRange: componentCoffs should be defined");
-      const weightCoffs = this._workCoffsB; // to hold weights
+      const weightCoffs = this.workCoffsB; // to hold weights
       assert(undefined !== weightCoffs, "BezierCurve3dH.extendRange: weightCoffs should be defined");
-      const bezier = this._workBezier;
+      const bezier = this.workBezier;
       assert(undefined !== bezier, "BezierCurve3dH.extendRange: bezier should be defined");
 
       this.getPolePoint3d(0, this._workPoint0);

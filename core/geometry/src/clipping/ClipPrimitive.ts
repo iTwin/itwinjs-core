@@ -7,26 +7,26 @@
  * @module CartesianGeometry
  */
 
+import { Arc3d } from "../curve/Arc3d";
+import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { Geometry } from "../Geometry";
 import { Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Point3dArray } from "../geometry3d/PointHelpers";
 import { PolygonOps } from "../geometry3d/PolygonOps";
-import { TransformProps, XYZProps } from "../geometry3d/XYZProps";
+import { PolylineOps } from "../geometry3d/PolylineOps";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
+import { TransformProps, XYZProps } from "../geometry3d/XYZProps";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../topology/Graph";
 import { Triangulator } from "../topology/Triangulation";
+import { AlternatingCCTreeNode } from "./AlternatingConvexClipTree";
 import { ClipPlane } from "./ClipPlane";
 import { Clipper, ClipPlaneContainment } from "./ClipUtils";
 import { ConvexClipPlaneSet } from "./ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets, UnionOfConvexClipPlaneSetsProps } from "./UnionOfConvexClipPlaneSets";
-import { AlternatingCCTreeNode } from "./AlternatingConvexClipTree";
-import { Point3dArray } from "../geometry3d/PointHelpers";
-import { PolylineOps } from "../geometry3d/PolylineOps";
-import { Arc3d } from "../curve/Arc3d";
-import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
-import { assert } from "@itwin/core-bentley";
+
 // cspell:word zlow
 // cspell:word zhigh
 /**
@@ -272,7 +272,8 @@ export class ClipPrimitive implements Clipper {
   public containsZClip(): boolean {
     if (this.fetchClipPlanesRef() !== undefined) {
       const clipPlanes = this._clipPlanes;
-      assert(undefined !== clipPlanes, "ClipPrimitive.containsZClip: this._clipPlanes should be defined");
+      if (!clipPlanes)
+        return false;
       for (const convexSet of clipPlanes.convexSets)
         for (const plane of convexSet.planes)
           if (Math.abs(plane.inwardNormalRef.z) > 1.0e-6 && Math.abs(plane.distance) !== Number.MAX_VALUE)
@@ -566,8 +567,9 @@ export class ClipShape extends ClipPrimitive {
       invisible,
       result,
     );
-    assert(undefined !== shape, "ClipPrimitive.createBlock: shape should be defined");
-    return shape;
+    // ClipShape.createShape only returns undefined if blockPoints.length < 3 which is not the case here
+    // so we shape is always defined and we never return the empty ClipShape
+    return shape || ClipShape.createEmpty();
   }
   /** Creates a new ClipShape with undefined members and a polygon points array of zero length. */
   public static createEmpty(
@@ -631,40 +633,55 @@ export class ClipShape extends ClipPrimitive {
     const convexSet = ConvexClipPlaneSet.createEmpty();
     if (cameraFocalLength === undefined) {
       const perpendicular = Vector2d.create(-normal.y, normal.x);
-      let clipPlane = ClipPlane.createNormalAndPoint(Vector3d.create(normal.x, normal.y), Point3d.createFrom(start), this._invisible);
-      assert(undefined !== clipPlane, "ClipPrimitive.parseLinearPlanes: clip plane should be defined");
+      let clipPlane = ClipPlane.createNormalAndPoint(
+        Vector3d.create(normal.x, normal.y), Point3d.createFrom(start), this._invisible,
+      );
+      if (undefined === clipPlane)
+        return false;
       convexSet.planes.push(clipPlane);
-      clipPlane = ClipPlane.createNormalAndPoint(Vector3d.create(-normal.x, -normal.y), Point3d.createFrom(end), this._invisible);
-      assert(undefined !== clipPlane, "ClipPrimitive.parseLinearPlanes: clip plane should be defined");
+      clipPlane = ClipPlane.createNormalAndPoint(
+        Vector3d.create(-normal.x, -normal.y), Point3d.createFrom(end), this._invisible,
+      );
+      if (undefined === clipPlane)
+        return false;
       convexSet.planes.push(clipPlane);
-      clipPlane = ClipPlane.createNormalAndPoint(Vector3d.create(perpendicular.x, perpendicular.y), Point3d.createFrom(start), this._invisible);
-      assert(undefined !== clipPlane, "ClipPrimitive.parseLinearPlanes: clip plane should be defined");
+      clipPlane = ClipPlane.createNormalAndPoint(
+        Vector3d.create(perpendicular.x, perpendicular.y), Point3d.createFrom(start), this._invisible,
+      );
+      if (undefined === clipPlane)
+        return false;
       convexSet.planes.push(clipPlane);
-      clipPlane = ClipPlane.createNormalAndPoint(Vector3d.create(-perpendicular.x, -perpendicular.y), Point3d.createFrom(start), this._invisible);
-      assert(undefined !== clipPlane, "ClipPrimitive.parseLinearPlanes: clip plane should be defined");
+      clipPlane = ClipPlane.createNormalAndPoint(
+        Vector3d.create(-perpendicular.x, -perpendicular.y), Point3d.createFrom(start), this._invisible,
+      );
+      if (undefined === clipPlane)
+        return false;
       convexSet.planes.push(clipPlane);
     } else {
       const start3d = Point3d.create(start.x, start.y, -cameraFocalLength);
       const end3d = Point3d.create(end.x, end.y, -cameraFocalLength);
       const vecEnd3d = Vector3d.createFrom(end3d);
       const perpendicular = vecEnd3d.crossProduct(Vector3d.createFrom(start3d)).normalize();
-      assert(undefined !== perpendicular, "ClipPrimitive.parseLinearPlanes: perpendicular should be defined");
+      if (undefined === perpendicular)
+        return false;
       let endNormal = Vector3d.createFrom(start3d).crossProduct(perpendicular).normalize();
-      assert(undefined !== endNormal, "ClipPrimitive.parseLinearPlanes: endNormal should be defined");
       let cp = ClipPlane.createNormalAndDistance(perpendicular, 0.0, this._invisible);
-      assert(undefined !== cp, "ClipPrimitive.parseLinearPlanes: clip plane should be defined");
+      if (undefined === cp || undefined === endNormal)
+        return false;
       convexSet.planes.push(cp);
       cp = ClipPlane.createNormalAndDistance(endNormal, 0.0, this._invisible);
-      assert(undefined !== cp, "ClipPrimitive.parseLinearPlanes: clip plane should be defined");
+      if (undefined === cp)
+        return false;
       convexSet.planes.push(cp);
       perpendicular.negate();
       endNormal = vecEnd3d.crossProduct(perpendicular).normalize();
-      assert(undefined !== endNormal, "ClipPrimitive.parseLinearPlanes: endNormal should be defined");
       cp = ClipPlane.createNormalAndDistance(perpendicular, 0.0, this._invisible);
-      assert(undefined !== cp, "ClipPrimitive.parseLinearPlanes: clip plane should be defined");
+      if (undefined === cp || undefined === endNormal)
+        return false;
       convexSet.planes.push(cp);
       cp = ClipPlane.createNormalAndDistance(endNormal, 0.0, this._invisible);
-      assert(undefined !== cp, "ClipPrimitive.parseLinearPlanes: clip plane should be defined");
+      if (undefined === cp)
+        return false;
       convexSet.planes.push(cp);
     }
     convexSet.addZClipPlanes(this._invisible, this._zLow, this._zHigh);
@@ -713,15 +730,18 @@ export class ClipShape extends ClipPrimitive {
         // with only two planes for edge, but cannot then designate the "interior" status of the edges accurately.
         if (previousPerpendicular) {
           cp = ClipPlane.createNormalAndPoint(previousPerpendicular, edge.pointA, this._invisible, true);
-          assert(undefined !== cp, "ClipPrimitive.parseConvexPolygonPlanes: clip plane should be defined");
+          if (undefined === cp)
+            return false;
           convexSet.planes.push(cp);
         }
         cp = ClipPlane.createNormalAndPoint(edge.normal, edge.pointB, this._invisible, false);
-        assert(undefined !== cp, "ClipPrimitive.parseConvexPolygonPlanes: clip plane should be defined");
+        if (undefined === cp)
+          return false;
         convexSet.planes.push(cp);
         if (nextPerpendicular) {
           cp = ClipPlane.createNormalAndPoint(nextPerpendicular, nextEdge.pointA, this._invisible, true);
-          assert(undefined !== cp, "ClipPrimitive.parseConvexPolygonPlanes: clip plane should be defined");
+          if (undefined === cp)
+            return false;
           convexSet.planes.push(cp);
         }
         set.addConvexSet(convexSet);
@@ -732,7 +752,8 @@ export class ClipShape extends ClipPrimitive {
       if (cameraFocalLength === undefined) {
         for (const edge of edges) {
           cp = ClipPlane.createNormalAndPoint(Vector3d.create(edge.normal.x, edge.normal.y), edge.pointA);
-          assert(undefined !== cp, "ClipPrimitive.parseConvexPolygonPlanes: clip plane should be defined");
+          if (undefined === cp)
+            return false;
           convexSet.planes.push(cp);
         }
       } else {
@@ -740,17 +761,21 @@ export class ClipShape extends ClipPrimitive {
         if (reverse)
           for (const edge of edges) {
             crossProduct = Vector3d.createFrom(edge.pointA).crossProduct(Vector3d.createFrom(edge.pointB)).normalize();
-            assert(undefined !== crossProduct, "ClipPrimitive.parseConvexPolygonPlanes: cross product should be defined");
+            if (undefined === crossProduct)
+              return false;
             cp = ClipPlane.createNormalAndDistance(crossProduct, 0.0);
-            assert(undefined !== cp, "ClipPrimitive.parseConvexPolygonPlanes: clip plane should be defined");
+            if (undefined === cp)
+              return false;
             convexSet.planes.push(cp);
           }
         else
           for (const edge of edges) {
             crossProduct = Vector3d.createFrom(edge.pointB).crossProduct(Vector3d.createFrom(edge.pointA)).normalize();
-            assert(undefined !== crossProduct, "ClipPrimitive.parseConvexPolygonPlanes: cross product should be defined");
+            if (undefined === crossProduct)
+              return false;
             cp = ClipPlane.createNormalAndDistance(crossProduct, 0.0);
-            assert(undefined !== cp, "ClipPrimitive.parseConvexPolygonPlanes: clip plane should be defined");
+            if (undefined === cp)
+              return false;
             convexSet.planes.push(cp);
           }
       }

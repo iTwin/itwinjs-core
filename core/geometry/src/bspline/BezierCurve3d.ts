@@ -6,7 +6,6 @@
  * @module Bspline
  */
 
-import { assert } from "@itwin/core-bentley";
 import { LineString3d } from "../curve/LineString3d";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
@@ -18,7 +17,6 @@ import { Transform } from "../geometry3d/Transform";
 import { Point4d } from "../geometry4d/Point4d";
 import { BezierPolynomialAlgebra } from "../numerics/BezierPolynomials";
 import { BezierCurveBase } from "./BezierCurveBase";
-
 
 /**
  * 3d Bezier curve class.
@@ -68,11 +66,9 @@ export class BezierCurve3d extends BezierCurveBase {
   /** Return poles as a linestring */
   public copyPointsAsLineString(): LineString3d {
     const result = LineString3d.create();
-    let point: Point3d | undefined;
+    const point = Point3d.createZero();
     for (let i = 0; i < this._polygon.order; i++) {
-      point = this.getPolePoint3d(i);
-      assert(undefined !== point, "BezierCurve3d.copyPointsAsLineString: point should be defined");
-      if (point)
+      if (this.getPolePoint3d(i, point))
         result.addPoint(point);
     }
     return result;
@@ -165,49 +161,46 @@ export class BezierCurve3d extends BezierCurveBase {
    */
   public extendRange(rangeToExtend: Range3d, transform?: Transform) {
     const order = this.order;
-    if (!transform) {
-      this.allocateAndZeroBezierWorkData(order - 1, 0, 0);
-      const bezier = this._workBezier;
-      assert(undefined !== bezier, "BezierCurve3d.extendRange: bezier should be defined");
-      this.getPolePoint3d(0, this._workPoint0);
-      rangeToExtend.extend(this._workPoint0);
-      this.getPolePoint3d(order - 1, this._workPoint0);
-      rangeToExtend.extend(this._workPoint0);
-      for (let axisIndex = 0; axisIndex < 3; axisIndex++) {
-        BezierPolynomialAlgebra.componentDifference(bezier.coffs, this._polygon.packedData, 3, order, axisIndex);
-        const roots = bezier.roots(0.0, true);
-        if (roots) {
-          for (const r of roots) {
-            this.fractionToPoint(r, this._workPoint0);
-            rangeToExtend.extend(this._workPoint0);
+    if (this.allocateAndZeroBezierWorkData(order - 1, 0, 0)) {
+      if (!transform) {
+        const bezier = this.workBezier;
+        this.getPolePoint3d(0, this._workPoint0);
+        rangeToExtend.extend(this._workPoint0);
+        this.getPolePoint3d(order - 1, this._workPoint0);
+        rangeToExtend.extend(this._workPoint0);
+        for (let axisIndex = 0; axisIndex < 3; axisIndex++) {
+          BezierPolynomialAlgebra.componentDifference(bezier.coffs, this._polygon.packedData, 3, order, axisIndex);
+          const roots = bezier.roots(0.0, true);
+          if (roots) {
+            for (const r of roots) {
+              this.fractionToPoint(r, this._workPoint0);
+              rangeToExtend.extend(this._workPoint0);
+            }
+          }
+        }
+      } else {
+        this.allocateAndZeroBezierWorkData(order - 1, order, 0);
+        const bezier = this.workBezier;
+        const componentCoffs = this.workCoffsA;   // to hold transformed copy of x,y,z in turn.
+        this.getPolePoint3d(0, this._workPoint0);
+        rangeToExtend.extendTransformedPoint(transform, this._workPoint0);
+        this.getPolePoint3d(order - 1, this._workPoint0);
+        rangeToExtend.extendTransformedPoint(transform, this._workPoint0);
+        const data = this._polygon.packedData;
+        for (let axisIndex = 0; axisIndex < 3; axisIndex++) {
+          // apply one row of the transform to get the transformed coff by itself
+          for (let i = 0, k = 0; i < order; i++, k += 3)
+            componentCoffs[i] = transform.multiplyComponentXYZ(axisIndex, data[k], data[k + 1], data[k + 2]);
+          BezierPolynomialAlgebra.univariateDifference(componentCoffs, bezier.coffs);
+          const roots = bezier.roots(0.0, true);
+          if (roots && roots.length > 0) {
+            for (const r of roots) {
+              this.fractionToPoint(r, this._workPoint0);
+              rangeToExtend.extendTransformedPoint(transform, this._workPoint0);
+            }
           }
         }
       }
-    } else {
-      this.allocateAndZeroBezierWorkData(order - 1, order, 0);
-      const bezier = this._workBezier;
-      assert(undefined !== bezier, "BezierCurve3d.extendRange: bezier should be defined");
-      const componentCoffs = this._workCoffsA;   // to hold transformed copy of x,y,z in turn.
-      assert(undefined !== componentCoffs, "BezierCurve3d.extendRange: componentCoffs should be defined");
-      this.getPolePoint3d(0, this._workPoint0);
-      rangeToExtend.extendTransformedPoint(transform, this._workPoint0);
-      this.getPolePoint3d(order - 1, this._workPoint0);
-      rangeToExtend.extendTransformedPoint(transform, this._workPoint0);
-      const data = this._polygon.packedData;
-      for (let axisIndex = 0; axisIndex < 3; axisIndex++) {
-        // apply one row of the transform to get the transformed coff by itself
-        for (let i = 0, k = 0; i < order; i++, k += 3)
-          componentCoffs[i] = transform.multiplyComponentXYZ(axisIndex, data[k], data[k + 1], data[k + 2]);
-        BezierPolynomialAlgebra.univariateDifference(componentCoffs, bezier.coffs);
-        const roots = bezier.roots(0.0, true);
-        if (roots && roots.length > 0) {
-          for (const r of roots) {
-            this.fractionToPoint(r, this._workPoint0);
-            rangeToExtend.extendTransformedPoint(transform, this._workPoint0);
-          }
-        }
-      }
-
     }
   }
 }
