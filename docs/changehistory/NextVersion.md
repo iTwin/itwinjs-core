@@ -4,14 +4,16 @@ publish: false
 
 # NextVersion
 
-- [@itwin/core-ecschema-metadata](#itwincore-ecschema-metadata)
-  - [Additions](#additions)
-- [Presentation](#presentation)
-  - [Deprecation of hierarchy-related APIs](#deprecation-of-hierarchy-related-apis)
-- [API deprecations](#api-deprecations)
-  - [@itwin/presentation-common](#itwinpresentation-common)
-  - [@itwin/presentation-backend](#itwinpresentation-backend)
-  - [@itwin/presentation-frontend](#itwinpresentation-frontend)
+- [NextVersion](#nextversion)
+  - [@itwin/core-ecschema-metadata](#itwincore-ecschema-metadata)
+    - [Additions](#additions)
+    - [Changes](#changes)
+  - [Presentation](#presentation)
+    - [Deprecation of hierarchy-related APIs](#deprecation-of-hierarchy-related-apis)
+  - [API deprecations](#api-deprecations)
+    - [@itwin/presentation-common](#itwinpresentation-common)
+    - [@itwin/presentation-backend](#itwinpresentation-backend)
+    - [@itwin/presentation-frontend](#itwinpresentation-frontend)
 
 ## @itwin/core-ecschema-metadata
 
@@ -19,6 +21,10 @@ publish: false
 
 - Added [FormatSetFormatsProvider]($ecschema-metadata) class that implements [MutableFormatsProvider]($quantity) to manage format definitions within a format set. This provider supports adding and removing formats at runtime and automatically updates the underlying format set when changes are made.
 
+### Changes
+
+- Added  `unitSystem` property to [FormatSet]($ecschema-metadata) interface, using [UnitSystemKey]($quantity) type. This will help move APIs away from relying on `activeUnitSystem` in `quantityFormatter`, as they move to the new formatting APIs using `IModelApp.formatsProvider`. Looking ahead, tools and components that use formatting APIs can then listen to just the `onFormatsChanged` event from `IModelApp.formatsProvider` instead of `IModelApp.quantityFormatter.onActiveUnitSystemChanged`.
+- Changed interface for formats in `FormatSet` from [SchemaItemFormatProps]($ecschema-metadata) to [FormatDefinition]($quantity). FormatSet just uses the `name`, `label`, `description` field from `SchemaItemFormatProps`, which `FormatDefinition` already has.
 ## Presentation
 
 ### Deprecation of hierarchy-related APIs
