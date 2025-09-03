@@ -183,7 +183,7 @@ describe("ImplicitCircle2d", () => {
     const axisY = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(0, 1, 1, 0)!;
     const line1 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(1, 0, -1, 4)!;
     const line2 = UnboundedLine2dByPointAndNormal.createPointXYNormalXY(-3, 1, 3, 3)!;
-    const allCircles = [point, circleA, circleB, point];
+    const allCircles = [point, circleA, circleB];
     const allLinePairs = [
       [axisX, axisY],
       [axisX, axisX4],
