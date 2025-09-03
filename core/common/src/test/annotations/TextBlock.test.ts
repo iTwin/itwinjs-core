@@ -172,6 +172,10 @@ describe("ContainerComponent", () => {
   it("appends child", () => {
     // TODO
   });
+
+  it("stringifies", () => {
+
+  });
 });
 
 describe("TextBlock", () => {

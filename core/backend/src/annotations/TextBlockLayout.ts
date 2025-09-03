@@ -762,20 +762,14 @@ export class TextBlockLayout {
     if (!doc.children || doc.children.length === 0) {
       return;
     }
-    this.populateComponent(doc, context, doc.width);
+    this.populateComponent(doc, context, doc.width, new LineLayout(doc.children[0]));
   }
 
-  private populateComponent(component: TextBlockComponent, context: LayoutContext, docWidth: number = 0, curLine?: LineLayout, parent?: ContainerComponent, depth: number = 0): LineLayout | undefined {
+  private populateComponent(component: TextBlockComponent, context: LayoutContext, docWidth: number, curLine: LineLayout, parent?: ContainerComponent, depth: number = 0): LineLayout {
     switch (component.type) {
       case "textBlock": {
-        if (!(component instanceof ContainerComponent)) break;
-        const children = component.children;
-        if (!children || children.length === 0) {
-          break;
-        }
-
-        curLine = new LineLayout(children[0]);
-        children.forEach((child) => curLine = this.populateComponent(child, context, docWidth, curLine, component, depth));
+        const block = component as ContainerComponent;
+        block.children.forEach((child) => curLine = this.populateComponent(child, context, docWidth, curLine, block, depth));
 
         if (curLine.runs.length > 0) {
           curLine = this.flushLine(context, curLine);
@@ -784,34 +778,27 @@ export class TextBlockLayout {
         break;
       }
       case "list": {
-        if (!(component instanceof ContainerComponent)) break;
+        const list = component as ContainerComponent;
 
-        if (curLine) {
-          curLine = this.flushLine(context, curLine, component.children?.[0], true, depth);
-        }
+        curLine = this.flushLine(context, curLine, list.children[0], true, depth);
+        list.children.forEach((child, index) => {
+          const styleOverrides = context.textStyleResolver.resolveSettings(list.styleOverrides);
+          const markerContent = getMarkerText(styleOverrides.listMarker, index + 1);
+          const marker = RunLayout.create(TextRun.create({ styleOverrides, content: markerContent }), context);
 
-        component.children?.forEach((child, index) => {
-          const styleOverrides = context.textStyleResolver.resolveSettings(component.styleOverrides);
-          const content = getMarkerText(styleOverrides.listMarker, index + 1);
-          // I don't like the way I'm tricking the child to think it's a part of the text block. I want to clean this up.
-          const marker = TextRun.create({ styleOverrides, content });
-
-          const run = RunLayout.create(marker, context);
-
-          if (curLine) curLine.marker = run;
-          curLine = this.populateComponent(child, context, docWidth, curLine, component, depth);
+          curLine.marker = marker;
+          curLine = this.populateComponent(child, context, docWidth, curLine, list, depth);
         });
 
-        const nextSibling = parent?.children[component.index + 1];
+        const nextSibling = parent?.children[list.index + 1];
         if (curLine && nextSibling) {
           curLine = this.flushLine(context, curLine, nextSibling, true, depth);
         }
         break;
       }
       case "paragraph": {
-        if (!(component instanceof ContainerComponent)) break;
-
-        component.children?.forEach(child => curLine = this.populateComponent(child, context, docWidth, curLine, component, depth + 1));
+        const paragraph = component as ContainerComponent;
+        paragraph.children.forEach(child => curLine = this.populateComponent(child, context, docWidth, curLine, paragraph, depth + 1));
         const nextSibling = parent?.children[component.index + 1];
         if (curLine && nextSibling) {
           curLine = this.flushLine(context, curLine, nextSibling, true, depth);
@@ -819,13 +806,11 @@ export class TextBlockLayout {
         break;
       }
       case "text": {
-        if (!curLine) return;
-
         const run = component as Run;
         const layout = RunLayout.create(run, context);
 
         if (docWidth > 0) {
-          layout.split(context).forEach(r => { if (curLine) curLine = this.populateRun(curLine, r, context, docWidth) });
+          layout.split(context).forEach(r => { curLine = this.populateRun(curLine, r, context, docWidth) });
         } else {
           curLine = this.populateRun(curLine, layout, context, docWidth);
         }
@@ -833,15 +818,12 @@ export class TextBlockLayout {
       }
       case "fraction":
       case "tab": {
-        if (!curLine) return;
         const run = component as Run;
         const layout = RunLayout.create(run, context);
         curLine = this.populateRun(curLine, layout, context, docWidth);
         break;
       }
       case "linebreak": {
-        if (!curLine) return;
-
         const run = component as Run;
         const layout = RunLayout.create(run, context);
 
@@ -849,7 +831,7 @@ export class TextBlockLayout {
         curLine = this.flushLine(context, curLine, undefined, undefined, depth);
         break;
       }
-      default: return;
+      default: break;
     }
 
     return curLine;
@@ -924,11 +906,11 @@ export class TextBlockLayout {
     }
   }
 
-  private flushLine(context: LayoutContext, line: LineLayout, next?: TextBlockComponent, newParagraph: boolean = false, depth: number = 0): LineLayout {
-    next = next ?? line.source;
+  private flushLine(context: LayoutContext, curLine: LineLayout, next?: TextBlockComponent, newParagraph: boolean = false, depth: number = 0): LineLayout {
+    next = next ?? curLine.source;
 
     // We want to guarantee that each layout line has at least one run.
-    if (line.runs.length === 0) {
+    if (curLine.runs.length === 0) {
       // If we're empty, there should always be a preceding run, and it should be a line break.
       if (this.lines.length === 0 || this._back.runs.length === 0) {
         return new LineLayout(next, context, depth);
@@ -937,16 +919,18 @@ export class TextBlockLayout {
       const prevRun = this._back.back.source;
       // assert(prevRun.type === "linebreak");
       if (prevRun.type !== "linebreak") {
-        return new LineLayout(next, context, depth);
+        const newLine = new LineLayout(next, context, depth);
+        newLine.offsetFromDocument.y -= context.textStyleResolver.blockSettings.paragraphSpacingFactor * context.textStyleResolver.blockSettings.lineHeight;
+        return newLine;
       }
 
       const run = prevRun.clone();
-      line.append(RunLayout.create(run, context));
+      curLine.append(RunLayout.create(run, context));
     }
 
     // Line origin is its baseline.
-    const lineOffset = { ...line.offsetFromDocument }; // Start with the line's original offset, which includes indentation.
-    lineOffset.y -= line.range.yLength(); // Shift down the baseline
+    const lineOffset = { ...curLine.offsetFromDocument }; // Start with the line's original offset, which includes indentation.
+    lineOffset.y -= curLine.range.yLength(); // Shift down the baseline
 
     // Place it below any existing lines
     if (this.lines.length > 0) {
@@ -954,12 +938,12 @@ export class TextBlockLayout {
       lineOffset.y -= context.textStyleResolver.blockSettings.lineSpacingFactor * context.textStyleResolver.blockSettings.lineHeight;
     }
 
-    line.offsetFromDocument = lineOffset;
+    curLine.offsetFromDocument = lineOffset;
 
     // Update document range from computed line range and position
-    this.textRange.extendRange(line.range.cloneTranslated(lineOffset));
+    this.textRange.extendRange(curLine.range.cloneTranslated(lineOffset));
 
-    this.lines.push(line);
+    this.lines.push(curLine);
     if (newParagraph) {
       const newLine = new LineLayout(next, context, depth);
       newLine.offsetFromDocument.y -= context.textStyleResolver.blockSettings.paragraphSpacingFactor * context.textStyleResolver.blockSettings.lineHeight;
