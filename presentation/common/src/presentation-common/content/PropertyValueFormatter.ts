@@ -96,7 +96,11 @@ export class ContentFormatter {
     const displayValues: DisplayValuesMap = {};
     await Promise.all(
       field.memberFields.map(async (memberField) => {
-        displayValues[memberField.name] = await this.formatPropertyValue(memberValues[memberField.name], memberField);
+        const memberValue = memberValues[memberField.name];
+        if (memberValue === undefined) {
+          return;
+        }
+        displayValues[memberField.name] = await this.formatPropertyValue(memberValue, memberField);
       }),
     );
     return displayValues;
