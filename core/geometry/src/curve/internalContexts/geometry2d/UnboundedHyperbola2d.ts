@@ -89,11 +89,13 @@ export class UnboundedHyperbola2d extends ImplicitCurve2d {
       return undefined;
     return this.center.plus2Scaled(this.vectorU, 1.0 / c, this.vectorV, s / c);
   }
-  /**
+  /** 
    * Returns the tangent at given radians value.
    * @param radians parametric angle on the hyperbola
    */
   public override radiansToTangentVector2d(radians: number): Vector2d | undefined {
+    // The curve is parameterized as     X = A + U * sec(theta) + V * tan(theta)
+    // Its tangent vector (derivative) is X' = U * sec(theta) * tan(theta + V * tan^2(theta))
     const c = Math.cos(radians);
     const s = Math.sin(radians);
     const cc = c * c;
