@@ -63,7 +63,7 @@ describe("Drop schemas", function (this: Suite) {
 
     await b1.pushChanges({ description: "pushed TestSchema1" });
 
-    b1[_nativeDb].dropSchema("TestSchema1");
+    b1[_nativeDb].dropSchemas(["TestSchema1"]);
     b1.saveChanges();
     await b1.pushChanges({ description: "drop TestSchema1" });
 
