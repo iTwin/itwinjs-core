@@ -526,7 +526,7 @@ describe("ECDb", () => {
       const schemaProps = ecdb.getSchemaProps("Test");
       expect(schemaProps.name).to.equal("Test");
 
-      ecdb.dropSchema(["Test"]);
+      ecdb.dropSchemas(["Test"]);
       expect(() => ecdb.getSchemaProps("Test")).to.throw();
     });
   });
@@ -565,12 +565,12 @@ describe("ECDb", () => {
     const schema2Props = ecdb.getSchemaProps("TestSchema2");
     expect(schema2Props.name).to.equal("TestSchema2");
 
-    expect(() => ecdb.dropSchema(["TestSchema1"])).to.throw();
+    expect(() => ecdb.dropSchemas(["TestSchema1"])).to.throw();
 
     const stillExistsSchema1 = ecdb.getSchemaProps("TestSchema1");
     expect(stillExistsSchema1.name).to.equal("TestSchema1");
 
-    ecdb.dropSchema(["TestSchema2", "TestSchema1"]);
+    ecdb.dropSchemas(["TestSchema2", "TestSchema1"]);
 
     expect(() => ecdb.getSchemaProps("TestSchema2")).to.throw();
     expect(() => ecdb.getSchemaProps("TestSchema1")).to.throw();

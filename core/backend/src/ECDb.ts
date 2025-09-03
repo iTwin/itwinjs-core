@@ -169,9 +169,9 @@ export class ECDb implements Disposable {
   /** Drops schemas from an array of schema
    * @alpha
    */
-  public dropSchema(schemaNames: string[]): void {
+  public dropSchemas(schemaNames: string[]): void {
     try {
-      this[_nativeDb].dropSchema(schemaNames, { schemaLockHeld: true });
+      this[_nativeDb].dropSchemas(schemaNames);
     } catch (error) {
       Logger.logError(loggerCategory, `Failed to drop schemas: ${error}`);
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Failed to drop schemas: ${error}`);
