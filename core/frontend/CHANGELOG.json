@@ -2,6 +2,18 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "5.1.4",
+      "tag": "@itwin/core-frontend_v5.1.4",
+      "date": "Fri, 22 Aug 2025 14:22:33 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "A model drawn as only contour lines will only mask the background map where the contour lines draw."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.1.3",
       "tag": "@itwin/core-frontend_v5.1.3",
       "date": "Wed, 20 Aug 2025 13:57:10 GMT",

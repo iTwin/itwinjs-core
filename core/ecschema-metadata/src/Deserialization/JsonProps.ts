@@ -6,7 +6,7 @@
  * @module Metadata
  */
 
-import { FormatProps } from "@itwin/core-quantity";
+import { FormatDefinition, FormatProps, UnitSystemKey } from "@itwin/core-quantity";
 
 /**
  * @public @preview
@@ -293,9 +293,14 @@ export type SchemaItemFormatProps = SchemaItemProps & FormatProps;
  * @beta
  */
 export interface FormatSet {
+  /** The unique name identifier for this format set. */
   name: string;
+  /** The display label for this format set. */
   label: string;
-  formats: { [kindOfQuantityId: string]: SchemaItemFormatProps };
+  /** A [UnitSystemKey]($quantity) that determines the unit system for this format set. */
+  unitSystem: UnitSystemKey;
+  /** A mapping of kind of quantity identifiers to their corresponding format properties. */
+  formats: { [kindOfQuantityId: string]: FormatDefinition };
 }
 
 /**

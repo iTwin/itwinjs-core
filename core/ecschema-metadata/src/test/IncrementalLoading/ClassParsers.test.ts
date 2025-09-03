@@ -60,7 +60,7 @@ describe("ClassParser Tests", function () {
     (fromDBProps as any).customAttributes = [attributeData];
     (fromDBProps.properties![0] as any).customAttributes = [attributeData];
 
-    const classParser = new ClassParser(schema.name, schema.context);
+    const classParser = new ClassParser(schema.name, schema.context.getKnownSchemas());
     const props = await classParser.parse(fromDBProps);
     expect(props).to.deep.equal(ecClass.toJSON());
   });
@@ -71,7 +71,7 @@ describe("ClassParser Tests", function () {
     ecClass.setAppliesTo(new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(entityClass.key, async () => entityClass));
 
     const fromDBProps = ecClass.toJSON();
-    const parser = new MixinParser(schema.name, schema.context);
+    const parser = new MixinParser(schema.name, schema.context.getKnownSchemas());
     const props = await parser.parse(fromDBProps);
 
     expect(props.customAttributes).to.be.undefined;
@@ -85,7 +85,7 @@ describe("ClassParser Tests", function () {
     ecClass.setAppliesTo(new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(entityClass.key, async () => entityClass));
     const fromDBProps = ecClass.toJSON();
 
-    const parser = new MixinParser(schema.name, schema.context);
+    const parser = new MixinParser(schema.name, schema.context.getKnownSchemas());
     const props = await parser.parse(fromDBProps);
 
     expect(props.customAttributes).to.be.undefined;
@@ -108,7 +108,7 @@ describe("ClassParser Tests", function () {
     const fromDBProps = ecClass.toJSON();
     (fromDBProps as any).customAttributes = [testAttribute];
 
-    const parser = new MixinParser(schema.name, schema.context);
+    const parser = new MixinParser(schema.name, schema.context.getKnownSchemas());
     const props = await parser.parse(fromDBProps);
 
     expect(props.customAttributes?.length).to.equal(1);
@@ -124,7 +124,7 @@ describe("ClassParser Tests", function () {
     // Coming from database, appliesTo is a number, so force a reset here.
     (fromDBProps as any).appliesTo = CustomAttributeContainerType.Schema | CustomAttributeContainerType.AnyClass;
 
-    const parser = new CustomAttributeClassParser(schema.name, schema.context);
+    const parser = new CustomAttributeClassParser(schema.name, schema.context.getKnownSchemas());
     const props = await parser.parse(fromDBProps);
 
     expect(props.appliesTo).to.equal("Schema, AnyClass");
