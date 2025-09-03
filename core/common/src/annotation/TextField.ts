@@ -60,13 +60,6 @@ export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean"
 export type CoordinateComponentSelector = "X" | "Y" | "Z" | "XY" | "XYZ";
 
 export type FieldCase = "as-is" | "upper" | "lower";
-
-export type TimePart = "24hr" | "12hr" | "GMT";
-
-export type DayPart = "date" | "day" | "daydate";
-
-export type MonthPart = "month" | "date" | "monthdate";
-
 export interface BooleanFieldFormatOptions {
   trueString?: string;
   falseString?: string;
