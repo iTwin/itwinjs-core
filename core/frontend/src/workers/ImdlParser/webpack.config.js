@@ -29,9 +29,6 @@ module.exports = [{
       path: false, // Set 'path' to false to prevent Webpack from trying to polyfill it
     }
   },
-  experiments: {
-    futureDefaults: true,
-  },
   module: {
     rules: [
       {
