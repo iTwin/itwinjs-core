@@ -166,7 +166,7 @@ export class ECDb implements Disposable {
     }
   }
 
-  /** Drops schemas from an array of schema
+  /** Drops schemas of array of schema
    * @param schemaNames Array of schema names to drop
    * @alpha
    */
