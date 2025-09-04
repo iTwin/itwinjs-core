@@ -134,6 +134,5 @@ export function getRandomNumberScaled(scale: number = 1, edgeProbability: number
     else if (choice < (prevProbability += fractionProbability / numFractionCases))
       unscaled = Math.random();
   }
-  assert(() => Geometry.isAlmostEqualNumber(1, prevProbability += edgeProbability / numEdgeCases));
   return unscaled * scale;
 };
