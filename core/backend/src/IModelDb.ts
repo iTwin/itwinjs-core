@@ -861,10 +861,15 @@ export abstract class IModelDb extends IModel {
     if (this[_nativeDb].getITwinId() !== Guid.empty) {
       await this.acquireSchemaLock();
     }
+    if (this[_nativeDb].hasUnsavedChanges()) {
+      throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot drop schemas with unsaved changes");
+    }
     try {
       await this[_nativeDb].dropSchemas(schemaNames);
+      this.saveChanges(`dropped schemas`);
     } catch (error) {
       Logger.logError(loggerCategory, `Failed to drop schemas: ${error}`);
+      this.abandonChanges();
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Failed to drop schemas: ${error}`);
     }
   }
