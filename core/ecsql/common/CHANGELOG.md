@@ -1,6 +1,11 @@
 # Change Log - @itwin/ecsql-common
 
-This log was last generated on Fri, 22 Aug 2025 14:22:33 GMT and should not be manually modified.
+This log was last generated on Thu, 04 Sep 2025 13:51:09 GMT and should not be manually modified.
+
+## 5.1.5
+Thu, 04 Sep 2025 13:51:09 GMT
+
+_Version update only_
 
 ## 5.1.4
 Fri, 22 Aug 2025 14:22:33 GMT

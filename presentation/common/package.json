@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-common",
-  "version": "5.1.4",
+  "version": "5.1.5",
   "description": "Common pieces for iModel.js presentation packages",
   "license": "MIT",
   "repository": {
