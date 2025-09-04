@@ -391,6 +391,45 @@ export class Voronoi {
       return delaunayGraph ? Voronoi.createFromDelaunayGraph(delaunayGraph, distanceTol, boundingBox) : undefined;
     }
   }
+  /** Stroke the curve interior, and associate the stroke points to the given index. */
+  private static pushInteriorStrokePoints(pointToIndex: Dictionary<Point3d, number>, curve: CurvePrimitive, index: number, strokeOptions?: StrokeOptions, workPoint?: Point3d): void {
+    const strokes = LineString3d.create();
+    curve.emitStrokes(strokes, strokeOptions);
+    let pt: Point3d | undefined;
+    for (let i = 1; i < strokes.numPoints() - 1; ++i) { // skip first and last point
+      if (pt = strokes.pointAt(i, workPoint))
+        pointToIndex.insert(pt, index);
+    }
+  }
+  /** Intersect the circle with the curve, and associate the intersection closest to the desired curve endpoint to the given index. */
+  private static pushCircleIntersection(pointToIndex: Dictionary<Point3d, number>, circle: Arc3d, curve: CurvePrimitive, index: number, atStart: boolean, distanceTol?: number): boolean {
+    const intersections = CurveCurve.intersectionProjectedXYPairs(undefined, circle, false, curve, false, distanceTol);
+    if (!intersections.length)
+      return false;
+    if (intersections.length > 1) { // detailB has the info for curve
+      if (atStart)
+        intersections.sort((a, b) => a.detailB.fraction - b.detailB.fraction); // first intersection is closest to curve start
+      else
+        intersections.sort((a, b) => b.detailB.fraction - a.detailB.fraction); // first intersection is closest to curve end
+    }
+    pointToIndex.insert(intersections[0].detailB.point, index);
+    return true;
+  };
+  /** Intersect two consecutive curves with a tiny circle centered at their joint, and associate the intersection on each curve with its respective index. */
+  private static pushSymmetricPointPairAtJoint = (pointToIndex: Dictionary<Point3d, number>, prevCurve: CurvePrimitive, nextCurve: CurvePrimitive, prevIndex: number, nextIndex: number, strokeOptions?: StrokeOptions, distanceTol?: number, workArc?: Arc3d): boolean => {
+    const length0 = prevCurve.curveLength();
+    const length1 = nextCurve.curveLength();
+    // HEURISTIC: hopefully radius is small enough to produce the last/first stroke point for prev/nextCurve. See Step 3 below.
+    let radius = Math.min(length0, length1) / 100;
+    if (strokeOptions && strokeOptions.maxEdgeLength && radius > strokeOptions.maxEdgeLength)
+      radius = strokeOptions.maxEdgeLength / 2;
+    const circle = Arc3d.createUnitCircle(workArc);
+    nextCurve.startPoint(circle.centerRef); // circle centered at joint
+    circle.matrixRef.setAt(0, 0, radius);
+    circle.matrixRef.setAt(1, 1, radius);
+    return this.pushCircleIntersection(pointToIndex, circle, prevCurve, prevIndex, false, distanceTol)
+      && this.pushCircleIntersection(pointToIndex, circle, nextCurve, nextIndex, true, distanceTol);
+  }
   /** Stroke each curve in the chain and associate each point with the index of its generating curve in the chain. */
   private static createStrokePointsWithIndices(
     curveChain: CurveChain, strokeOptions?: StrokeOptions, distanceTol: number = Geometry.smallMetricDistance
@@ -405,43 +444,10 @@ export class Voronoi {
     if (!strokeOptions.minStrokesPerPrimitive || strokeOptions.minStrokesPerPrimitive < 2)
       strokeOptions.minStrokesPerPrimitive = 2; // ensure at least one interior point per primitive
     const workPoint = Point3d.createZero();
-    const workCircleXY = Arc3d.createUnitCircle(Voronoi._workArc);
+    const workCircle = Arc3d.createUnitCircle(Voronoi._workArc);
     const workSegment0 = LineSegment3d.createXYXY(0, 0, 0, 0);
     const workSegment1 = LineSegment3d.createXYXY(0, 0, 0, 0);
     const pointToIndex = new Dictionary<Point3d, number>(Geometry.compareXY(distanceTol), (p: Point3d) => p.clone());
-    const pushInteriorStrokePoints = (curve: CurvePrimitive, index: number): void => {
-      const strokes = LineString3d.create();
-      curve.emitStrokes(strokes, strokeOptions);
-      for (let i = 1; i < strokes.numPoints() - 1; ++i) { // skip first and last point
-        if (strokes.pointAt(i, workPoint))
-          pointToIndex.insert(workPoint, index);
-      }
-    };
-    const pushCircleIntersection = (circle: Arc3d, curve: CurvePrimitive, index: number, atStart: boolean) => {
-      const intersections = CurveCurve.intersectionProjectedXYPairs(undefined, circle, false, curve, false, distanceTol);
-      if (!intersections.length)
-        return false;
-      if (intersections.length > 1) { // detailB has the info for curve
-        if (atStart)
-          intersections.sort((a, b) => a.detailB.fraction - b.detailB.fraction); // first intersection is closest to child start
-        else
-          intersections.sort((a, b) => b.detailB.fraction - a.detailB.fraction); // first intersection is closest to child end
-      }
-      pointToIndex.insert(intersections[0].detailB.point, index);
-      return true;
-    };
-    const pushSymmetricPointPairAtJoint = (prevCurve: CurvePrimitive, nextCurve: CurvePrimitive, prevIndex: number, nextIndex: number): boolean => {
-      const length0 = prevCurve.curveLength();
-      const length1 = nextCurve.curveLength();
-      // HEURISTIC: hopefully radius is small enough to produce the last/first stroke point for prev/nextCurve. See Step 3 below.
-      let radius = Math.min(length0, length1) / 100;
-      if (strokeOptions && strokeOptions.maxEdgeLength && radius > strokeOptions.maxEdgeLength)
-        radius = strokeOptions.maxEdgeLength / 2;
-      nextCurve.startPoint(workCircleXY.centerRef); // circle centered at joint
-      workCircleXY.matrixRef.setAt(0, 0, radius);
-      workCircleXY.matrixRef.setAt(1, 1, radius);
-      return pushCircleIntersection(workCircleXY, prevCurve, prevIndex, false) && pushCircleIntersection(workCircleXY, nextCurve, nextIndex, true);
-    }
     // Step 1: add open chain start/end point
     const isClosedChain = curveChain.isPhysicallyClosedCurve(distanceTol, true);
     if (!isClosedChain) {
@@ -450,7 +456,7 @@ export class Voronoi {
       if (curveChain.endPoint(workPoint))
         pointToIndex.insert(workPoint, numChildren - 1);
     }
-    // TODO: refactor to remove heuristic:
+    // TODO: refactor Steps 2 and 3 to remove the HEURISTIC in pushSymmetricPointPairAtJoint:
     // 0. set prevPt = undefined, prevCurve = undefined
     // 1. loop over each prim in chain:
     //  a. if linestring is colinear, simplify to a line segment
@@ -468,10 +474,10 @@ export class Voronoi {
       if (child instanceof LineString3d) {
         for (let j = 0; j < child.numEdges(); j++) {
           if (child.getIndexedSegment(j, workSegment0))
-            pushInteriorStrokePoints(workSegment0, i); // each segment is associated to the linestring index
+            this.pushInteriorStrokePoints(pointToIndex, workSegment0, i, strokeOptions, workPoint); // each segment is associated to the linestring index
         }
       } else {
-        pushInteriorStrokePoints(child, i);
+        this.pushInteriorStrokePoints(pointToIndex, child, i, strokeOptions, workPoint);
       }
     }
     // Step 3: add the stroke points nearest to each chain joint and linestring interior joint.
@@ -483,7 +489,8 @@ export class Voronoi {
       if (child instanceof LineString3d) { // process open linestring interior joints (always open b/c numChildren > 1)
         for (let j = 1; j < child.numEdges(); j++) {
           if (child.getIndexedSegment(j - 1, workSegment0) && child.getIndexedSegment(j, workSegment1)) {
-            if (!pushSymmetricPointPairAtJoint(workSegment0, workSegment1, i, i)) // associate to the linestring index
+            // associate both intersections to the linestring index
+            if (!this.pushSymmetricPointPairAtJoint(pointToIndex, workSegment0, workSegment1, i, i, strokeOptions, distanceTol, workCircle))
               return undefined;
           }
         }
@@ -496,7 +503,7 @@ export class Voronoi {
         prevChild = workSegment0; // use the last segment of the previous linestring
       if (child instanceof LineString3d && child.getIndexedSegment(0, workSegment1))
         child = workSegment1; // use the first segment of this linestring
-      if (!pushSymmetricPointPairAtJoint(prevChild, child, iPrev, i))
+      if (!this.pushSymmetricPointPairAtJoint(pointToIndex, prevChild, child, iPrev, i, strokeOptions, distanceTol, workCircle))
         return undefined;
     }
     return pointToIndex;
