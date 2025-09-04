@@ -853,6 +853,22 @@ export abstract class IModelDb extends IModel {
     return this[_nativeDb].restartTxnSession();
   }
 
+  /** Drops schemas from an array of schema
+* @param schemaNames Array of schema names to drop
+* @alpha
+*/
+  public async dropSchemas(schemaNames: string[]): Promise<void> {
+    if (this[_nativeDb].getITwinId() !== Guid.empty) {
+      await this.acquireSchemaLock();
+    }
+    try {
+      await this[_nativeDb].dropSchemas(schemaNames);
+    } catch (error) {
+      Logger.logError(loggerCategory, `Failed to drop schemas: ${error}`);
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Failed to drop schemas: ${error}`);
+    }
+  }
+
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
@@ -1684,19 +1700,6 @@ export abstract class IModelDb extends IModel {
       layout: Range2d.fromJSON(props.layout),
       justification: Range2d.fromJSON(props.justification),
     };
-  }
-
-  /** Drops schemas from an array of schema
-  * @param schemaNames Array of schema names to drop
-  * @alpha
-  */
-  public dropSchemas(schemaNames: string[]): void {
-    try {
-      this[_nativeDb].dropSchemas(schemaNames);
-    } catch (error) {
-      Logger.logError(loggerCategory, `Failed to drop schemas: ${error}`);
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Failed to drop schemas: ${error}`);
-    }
   }
 
   /** Writes the contents of a single ECSchema to a file on the local file system.
