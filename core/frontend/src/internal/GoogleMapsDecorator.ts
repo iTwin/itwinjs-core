@@ -98,8 +98,8 @@ export class GoogleMapsDecorator implements Decorator {
   public async activate(mapType: GoogleMapsMapTypes): Promise<boolean> {
     // Pick the logo that is the most visible on the background map
     const imageName = mapType === "roadmap" ?
-    "google_on_white" :
-    "google_on_non_white";
+    "GoogleMaps_Logo_WithLightOutline_1x" :
+    "GoogleMaps_Logo_WithDarkOutline_1x";
 
     // We need to move the logo right after the 'i.js' button
     this.logo.offset = new Point3d(45, 10);
