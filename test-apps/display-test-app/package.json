@@ -78,7 +78,7 @@
     "@itwin/webgl-compatibility": "workspace:*",
     "body-parser": "^1.20.3",
     "vhacd-js": "^0.0.1",
-    "cesium": "1.131.0"
+    "cesium": "1.133.0"
   },
   "devDependencies": {
     "@bentley/formats-schema": "^1.0.0",
