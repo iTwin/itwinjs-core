@@ -7,16 +7,17 @@ import { Cartographic, EcefLocation, ViewDefinition3dProps } from "@itwin/core-c
 import { Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 
 interface CesiumFrustum {
-  fov?: number;
   near: number;
   far: number;
+  fov?: number;
+  width?: number;
 }
 
 interface CesiumCamera {
-  frustum: CesiumFrustum;
-  up: Vector3d;
-  direction: Vector3d;
   position: Point3d;
+  direction: Vector3d;
+  up: Vector3d;
+  frustum: CesiumFrustum;
 }
 
 // Returns position, orientation (direction, up), and frustum needed to create/modify a Cesium camera
@@ -42,6 +43,7 @@ export function createCesiumCamera(viewDefinition: ViewDefinition3dProps, ecefLo
   viewExtents.setFromJSON(viewDefinition.extents);
 
   let fov;
+  let width;
   let position = new Point3d();
   if (viewDefinition.cameraOn) {
     position = Point3d.fromJSON(viewDefinition.camera.eye);
@@ -52,6 +54,7 @@ export function createCesiumCamera(viewDefinition: ViewDefinition3dProps, ecefLo
     position.addScaledInPlace(viewExtents, 0.5);
     position = rotation.multiplyInverseXYZAsPoint3d(position.x, position.y, position.z) ?? position;
     position.addScaledInPlace(direction, -viewExtents.z);
+    width = viewExtents.x;
   }
 
   const transformedPosition = ecefLocation.getTransform().multiplyPoint3d(position);
@@ -61,7 +64,8 @@ export function createCesiumCamera(viewDefinition: ViewDefinition3dProps, ecefLo
   const frustum: CesiumFrustum = {
     near: 0.01,
     far: 1000000,
-    fov
+    fov,
+    width
   };
   const cesiumCamera: CesiumCamera = {
     position: transformedPosition,
