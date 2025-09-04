@@ -29,6 +29,15 @@ export class Ray2d {
     this._origin.setFrom(origin);
     this._direction.setFrom(direction);
   }
+  /** Create a ray with all zeros. */
+  public static createZero(result?: Ray2d): Ray2d {
+    if (result) {
+      result.origin.setZero();
+      result.direction.setZero();
+      return result;
+    }
+    return new Ray2d(Point2d.createZero(), Vector2d.createZero());
+  }
   /**
    * Create from `origin` and `target` points.
    * @param origin ray origin, cloned
