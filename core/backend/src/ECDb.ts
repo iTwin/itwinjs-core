@@ -171,10 +171,17 @@ export class ECDb implements Disposable {
    * @alpha
    */
   public dropSchemas(schemaNames: string[]): void {
+    if (schemaNames.length === 0)
+      return;
+    if (this[_nativeDb].schemaSyncEnabled())
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cannot drop schemas when schema sync is enabled");
+
     try {
       this[_nativeDb].dropSchemas(schemaNames);
+      this.saveChanges('dropped unused schemas');
     } catch (error) {
       Logger.logError(loggerCategory, `Failed to drop schemas: ${error}`);
+      this.abandonChanges();
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Failed to drop schemas: ${error}`);
     }
   }

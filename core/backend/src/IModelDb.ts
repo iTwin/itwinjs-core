@@ -858,20 +858,24 @@ export abstract class IModelDb extends IModel {
 * @alpha
 */
   public async dropSchemas(schemaNames: string[]): Promise<void> {
-    if (this[_nativeDb].getITwinId() !== Guid.empty) {
-      await this.acquireSchemaLock();
-    }
-    if (this[_nativeDb].hasUnsavedChanges()) {
+    if (schemaNames.length === 0)
+      return;
+    if (this[_nativeDb].schemaSyncEnabled())
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cannot drop schemas when schema sync is enabled");
+    if (this[_nativeDb].hasUnsavedChanges())
       throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot drop schemas with unsaved changes");
-    }
+    if (this[_nativeDb].getITwinId() !== Guid.empty)
+      await this.acquireSchemaLock();
+
     try {
       await this[_nativeDb].dropSchemas(schemaNames);
-      this.saveChanges(`dropped schemas`);
+      this.saveChanges(`dropped unused schemas`);
     } catch (error) {
       Logger.logError(loggerCategory, `Failed to drop schemas: ${error}`);
       this.abandonChanges();
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Failed to drop schemas: ${error}`);
     }
+    this.clearCaches();
   }
 
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
