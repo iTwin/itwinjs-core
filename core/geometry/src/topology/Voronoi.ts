@@ -23,7 +23,7 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 import { PolylineOps } from "../geometry3d/PolylineOps";
 import { Range2d } from "../geometry3d/Range";
 import { Ray2d } from "../geometry3d/Ray2d";
-import { XAndY } from "../geometry3d/XYZProps";
+import { LowAndHighXY, XAndY } from "../geometry3d/XYZProps";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction } from "./Graph";
@@ -59,6 +59,9 @@ export class Voronoi {
   private _circumcenterRange: Range2d;
   private _isCurveBased: boolean;
   private _superFaceMask: HalfEdgeMask;
+  private static _workXY0 = Point2d.createZero();
+  private static _workXY1 = Point2d.createZero();
+  private static _workRay = Ray2d.createZero();
   private static _workArc = Arc3d.createUnitCircle();
   /** Construct an empty Voronoi graph and minimally validate input (use [[isValid]] to check). */
   private constructor(inputGraph: HalfEdgeGraph, isColinear = false) {
@@ -126,13 +129,12 @@ export class Voronoi {
           return true;
         if (face.countEdgesAroundFace() !== 3)
           return isValid = false;
-        // find circumcenter of this triangle (ignore it if degenerate)
         face.getPoint3d(p0);
         face.faceSuccessor.getPoint3d(p1);
         face.facePredecessor.getPoint3d(p2);
         p0.z = p1.z = p2.z = 0;
         const circumcircle = Arc3d.createCircularStartMiddleEnd(p0, p1, p2, Voronoi._workArc);
-        if (circumcircle instanceof Arc3d)
+        if (circumcircle instanceof Arc3d) // ignore a degenerate triangle
           circumcenterMap.set(this.getTriangleId(face), circumcircle.center); // getter clones center
         return true;
       },
@@ -165,7 +167,8 @@ export class Voronoi {
    * Return a segment along the bisector of the given triangle edge with the following properties:
    * * start point is the triangle's circumcenter
    * * end point is on the Voronoi boundary
-   * * direction vector has positive dot product with the vector from triangle centroid to edge midpoint.
+   * * direction vector has positive dot product with the vector from triangle centroid to edge midpoint
+   * @returns bisector segment, or undefined if the triangle circumcenter lies outside the Voronoi boundary
    */
   private getTriangleEdgeBisector(edge: HalfEdge, circumcenter: XAndY, box: VoronoiBoundary): Segment2d | undefined {
     const v0 = edge;
@@ -177,11 +180,14 @@ export class Voronoi {
     const direction = Vector2d.createStartEnd(circumcenter, midPoint);
     if (midPoint.dotVectorsToTargets(circumcenter, centroid) < 0)
       direction.negate(direction); // ensure direction points away from triangle
-    const bisector = Ray2d.createOriginAndDirectionCapture(Point2d.createFrom(circumcenter), direction);
+    const bisector = Ray2d.createOriginAndDirectionCapture(Point2d.createFrom(circumcenter), direction, Voronoi._workRay);
     const fractions = box.intersect(bisector);
-    const haveIntersections = undefined !== fractions && fractions.length > 1 && fractions[0] < 0 && fractions[1] > 0;
-    assert(haveIntersections, "Circumcenters should be strictly inside bounding box");
-    return haveIntersections ? { start: circumcenter, end: bisector.fractionToPoint(fractions[1]) } : undefined;
+    const haveTwoIntersections = undefined !== fractions && fractions.length === 2;
+    if (!haveTwoIntersections || (fractions[0] <= 0 && fractions[1] <= 0) || (fractions[0] >= 1 && fractions[1] >= 1))
+      return undefined; // bisector ray lies outside box
+    const start = bisector.fractionToPoint(Geometry.clamp(fractions[0], 0, 1), Voronoi._workXY0);
+    const end = bisector.fractionToPoint(fractions[1], Voronoi._workXY1);
+    return {start, end};
   }
   /** Add the edge of an unbounded Voronoi region that corresponds to a Delaunay boundary edge; clip it at the boundary. */
   private addVoronoiEdgeForDelaunayBoundaryEdge(edge: HalfEdge, box: VoronoiBoundary): boolean {
@@ -190,10 +196,10 @@ export class Voronoi {
       return false; // invalid graph (not a triangulation)
     const circumcenter = this._circumcenterMap.get(triangleId);
     if (!circumcenter)
-      return false; // invalid graph (degenerate boundary triangle)
+      return true; // skip Delaunay edge (degenerate boundary triangle)
     const bisector = this.getTriangleEdgeBisector(edge, circumcenter, box);
     if (!bisector)
-      return false; // circumcenter outside box (shouldn't happen)
+      return true; // skip Delaunay edge (bisector ray outside box)
     const faceTag0 = this._idToIndexMap.get(edge.edgeMate.id);
     const faceTag1 = this._idToIndexMap.get(edge.id);
     Voronoi.addEdgeWithFaceTags(this._voronoiGraph, bisector.start, bisector.end, faceTag0, faceTag1);
@@ -207,14 +213,28 @@ export class Voronoi {
       return false; // invalid graph (not a triangulation)
     const circumcenter0 = this._circumcenterMap.get(triangleId0);
     const circumcenter1 = this._circumcenterMap.get(triangleId1);
-    if (!circumcenter0 || !circumcenter1)
-      return false; // invalid graph (degenerate interior triangle)
+    if (!circumcenter0 && !circumcenter1)
+      return true; // skip Delaunay edge between degenerate triangles
+    if (!circumcenter0 || !circumcenter1) {
+      // only one triangle is degenerate; if it is a boundary triangle, treat the opposite edge as a boundary
+      if (!circumcenter0 && edge.findMaskAroundFace(HalfEdgeMask.BOUNDARY_EDGE))
+        return this.addVoronoiEdgeForDelaunayBoundaryEdge(edge.edgeMate, box);
+      if (!circumcenter1 && edge.edgeMate.findMaskAroundFace(HalfEdgeMask.BOUNDARY_EDGE))
+        return this.addVoronoiEdgeForDelaunayBoundaryEdge(edge, box);
+      return false; // invalid graph (interior degenerate triangle)
+    }
     if (XAndY.almostEqual(circumcenter0, circumcenter1, distanceTol))
-      return true; // skip edge (it will vanish during clustering)
-    assert(() => box.contains(circumcenter0) && box.contains(circumcenter1), "Circumcenters are supposed to be strictly inside bounding box");
+      return true; // skip trivial Voronoi edge (it will collapse during clustering)
+    const segment = Ray2d.createOriginAndTarget(circumcenter0, circumcenter1, Voronoi._workRay);
+    const fractions = box.intersect(segment);
+    const haveTwoIntersections = undefined !== fractions && fractions.length === 2;
+    if (!haveTwoIntersections || (fractions[0] <= 0 && fractions[1] <= 0) || (fractions[0] >= 1 && fractions[1] >= 1))
+      return true; // skip Delaunay edge whose Voronoi segment is outside box
+    const pt0 = segment.fractionToPoint(Geometry.clamp(fractions[0], 0, 1), Voronoi._workXY0);
+    const pt1 = segment.fractionToPoint(Geometry.clamp(fractions[1], 0, 1), Voronoi._workXY1);
     const faceTag0 = this._idToIndexMap.get(edge.edgeMate.id);
     const faceTag1 = this._idToIndexMap.get(edge.id);
-    Voronoi.addEdgeWithFaceTags(this._voronoiGraph, circumcenter0, circumcenter1, faceTag0, faceTag1);
+    Voronoi.addEdgeWithFaceTags(this._voronoiGraph, pt0, pt1, faceTag0, faceTag1);
     return true;
   }
   /** Mask the exterior face, and set missing interior face tags */
@@ -249,17 +269,20 @@ export class Voronoi {
    *   * The input graph should not contain any triangle altitude smaller than `distanceTol` (this is a degenerate triangle).
    * @param delaunayGraph A HalfEdgeGraph representing a Delaunay triangulation. Z-coordinates are ignored.
    * @param distanceTol Optional distance tolerance to use when comparing points; default is `Geometry.smallMetricDistance`.
+   * @param boundingBox Optional nominal xy-bounding box for the Voronoi diagram. Default uses the Delaunay circumcenter range so
+   * that interior Voronoi regions are maximal.
    * @returns a new instance containing the Voronoi diagram derived from the input graph, or `undefined` if invalid input.
    */
   public static createFromDelaunayGraph(
     delaunayGraph: HalfEdgeGraph,
     distanceTol: number = Geometry.smallMetricDistance,
+    boundingBox?: LowAndHighXY,
   ): Voronoi | undefined {
     const instance = new Voronoi(delaunayGraph);
     if (!instance.isValid)
       return undefined;
     let isValidVoronoi = true;
-    const box = new VoronoiBoundary(instance._inputGraphRange, instance._circumcenterRange);
+    const box = new VoronoiBoundary(instance._inputGraphRange, boundingBox ? boundingBox : instance._circumcenterRange);
     // iterate Delaunay edges and add Voronoi edges:
     // * for each boundary edge, add a bisector separating unbounded Voronoi cells
     // * for each interior edge, add a segment joining the adjacent triangles' circumcenters
@@ -317,12 +340,13 @@ export class Voronoi {
   private static createFromColinearGraph(
     colinearGraph: HalfEdgeGraph,
     distanceTol: number = Geometry.smallMetricDistance,
+    boundingBox?: LowAndHighXY,
   ): Voronoi | undefined {
     const instance = new Voronoi(colinearGraph, true);
     if (!instance.isValid)
       return undefined;
     let isValidVoronoi = true;
-    const box = new VoronoiBoundary(instance._inputGraphRange);
+    const box = new VoronoiBoundary(instance._inputGraphRange, boundingBox);
     instance._inputGraph.announceEdges(
       (_g, edge: HalfEdge) => {
         const bisector = Voronoi.getEdgeBisector(edge, box);
@@ -346,10 +370,13 @@ export class Voronoi {
    * Construct a Voronoi instance from a set of points.
    * @param points An array of points. Z-coordinates are ignored. Points can be colinear.
    * @param distanceTol Optional distance tolerance to use when comparing points; default is [[Geometry.smallMetricDistance]].
+   * @param boundingBox Optional nominal xy-bounding box for the Voronoi diagram. If unspecified, interior Voronoi cells are maximal.
    * @returns a new instance containing the Voronoi diagram derived from the input points, or `undefined` if invalid input.
    */
   public static createFromPoints(
-    points: Point3d[], distanceTol: number = Geometry.smallMetricDistance,
+    points: Point3d[],
+    distanceTol: number = Geometry.smallMetricDistance,
+    boundingBox?: LowAndHighXY,
   ): Voronoi | undefined {
     const sortedPoints = new SortedArray<Point3d>(Geometry.compareXY(distanceTol), DuplicatePolicy.Retain, (p: Point3d) => p.clone());
     points.forEach((pt: Point3d) => sortedPoints.insert(pt));
@@ -358,10 +385,10 @@ export class Voronoi {
       return undefined;
     if (PolylineOps.isColinear(uniquePoints, distanceTol, true)) {
       const colinearGraph = Voronoi.createColinearXYGraph(uniquePoints);
-      return colinearGraph ? Voronoi.createFromColinearGraph(colinearGraph) : undefined;
+      return colinearGraph ? Voronoi.createFromColinearGraph(colinearGraph, distanceTol, boundingBox) : undefined;
     } else {
       const delaunayGraph = Triangulator.createTriangulatedGraphFromPoints(uniquePoints, undefined, distanceTol);
-      return delaunayGraph ? Voronoi.createFromDelaunayGraph(delaunayGraph) : undefined;
+      return delaunayGraph ? Voronoi.createFromDelaunayGraph(delaunayGraph, distanceTol, boundingBox) : undefined;
     }
   }
   /** Stroke each curve in the chain and associate each point with the index of its generating curve in the chain. */
@@ -391,7 +418,7 @@ export class Voronoi {
       }
     };
     const pushCircleIntersection = (circle: Arc3d, curve: CurvePrimitive, index: number, atStart: boolean) => {
-      const intersections = CurveCurve.intersectionProjectedXYPairs(undefined, circle, false, curve, false);
+      const intersections = CurveCurve.intersectionProjectedXYPairs(undefined, circle, false, curve, false, distanceTol);
       if (!intersections.length)
         return false;
       if (intersections.length > 1) { // detailB has the info for curve
@@ -474,7 +501,7 @@ export class Voronoi {
     }
     return pointToIndex;
   }
-  /** Construct a graph from xy points. */
+  /** Construct a graph from unique xy points. */
   private static createGraphFromPointsWithIndices(
     pointToIndex: Dictionary<Point3d, number>, distanceTol: number,
   ): { graph: HalfEdgeGraph, isTriangulation: boolean } | undefined {
@@ -486,17 +513,22 @@ export class Voronoi {
     const points = Array.from(pointToIndex.keys());
     if (PolylineOps.isColinear(points, distanceTol, true)) {
       graph = Voronoi.createColinearXYGraph(pointToIndex);
-    } else if (graph = Triangulator.createTriangulatedGraphFromPoints(points, undefined, distanceTol)) {
-      isTriangulation = true;
-      let index: number | undefined;
-      // decorate every edge of the Delaunay graph with the index associated to its start vertex
-      graph.announceVertexLoops(
-        (_g, vertex: HalfEdge): boolean => {
-          if (vertex.getPoint3d(workPoint) && undefined !== (index = pointToIndex.get(workPoint)))
-            vertex.announceEdgesAroundVertex((edge: HalfEdge) => { edge.edgeTag = index; });
-          return true;
-        }
-      );
+      isTriangulation = false;
+    } else {
+      // tighter triangulation tolerance to reduce vertex consolidation that might result in dictionary misses
+      graph = Triangulator.createTriangulatedGraphFromPoints(points, undefined, 0.1 * distanceTol);
+      if (isTriangulation = (graph !== undefined)) {
+        // tag every edge of the Delaunay graph with the index associated to its start vertex
+        graph.announceVertexLoops(
+          (_g, vertex: HalfEdge): boolean => {
+            const index = pointToIndex.get(vertex.getPoint3d(workPoint));
+            assert(index !== undefined, "Delaunay vertex must know its generating curve");
+            if (index !== undefined)
+              vertex.announceEdgesAroundVertex((edge: HalfEdge) => edge.edgeTag = index);
+            return true;
+          }
+        );
+      }
     }
     return graph ? { graph, isTriangulation } : undefined;
   }
@@ -513,12 +545,17 @@ export class Voronoi {
    *   * Each Delaunay edge has `edgeTag` set to the index in `curveChain` of its generating curve.
    *   * For each [[HalfEdge]] `e` in the super face loop of `R`, `delaunayGraph.allHalfEdges[e.faceTag].edgeTag === i`.
    * @param curveChain A curve chain consisting of at least two [[CurvePrimitive]]s. Z-coordinates are ignored.
+   * The length of each child should exceed `distanceTol`.
    * @param strokeOptions Optional stroke options to control the sampling of the curve chain.
    * @param distanceTol Optional distance tolerance to use when comparing points; default is [[Geometry.smallMetricDistance]].
+   * @param boundingBox Optional nominal xy-bounding box for the Voronoi diagram. If unspecified, interior Voronoi cells are maximal.
    * @returns a new instance, or `undefined` for invalid input.
    */
   public static createFromCurveChain(
-    curveChain: CurveChain, strokeOptions?: StrokeOptions, distanceTol: number = Geometry.smallMetricDistance,
+    curveChain: CurveChain,
+    strokeOptions?: StrokeOptions,
+    distanceTol: number = Geometry.smallMetricDistance,
+    boundingBox?: LowAndHighXY,
   ): Voronoi | undefined {
     const pointsWithIndices = Voronoi.createStrokePointsWithIndices(curveChain, strokeOptions);
     if (!pointsWithIndices)
@@ -527,8 +564,8 @@ export class Voronoi {
     if (!inputGraph)
       return undefined; // no graph created from points
     const instance = inputGraph.isTriangulation ?
-      Voronoi.createFromDelaunayGraph(inputGraph.graph, distanceTol) :
-      Voronoi.createFromColinearGraph(inputGraph.graph);
+      Voronoi.createFromDelaunayGraph(inputGraph.graph, distanceTol, boundingBox) :
+      Voronoi.createFromColinearGraph(inputGraph.graph, distanceTol, boundingBox);
     if (instance)
       instance._isCurveBased = true;
     return instance;
@@ -562,7 +599,8 @@ export class Voronoi {
         return true; // skip previously visited super face
       if (!this.isEdgeInVoronoiSuperFace(edge))
         return true; // skip edge; keep searching
-      assert(() => edge.faceTag !== undefined, "Voronoi super face edges must have a faceTag");
+      assert(() => edge.faceTag !== undefined, "Voronoi edge must know its generating Delaunay vertex");
+      assert(() => this._inputGraph.allHalfEdges[edge.faceTag].edgeTag !== undefined, "Delaunay vertex must know its generating curve");
       start = edge;
       return false; // stop search; we found an unvisited super face
     });
@@ -694,10 +732,12 @@ class VoronoiBoundary {
    * Constructor that takes up to two ranges to union and expand by a margin.
    * * For example, Delaunay graph range and circumcenter range.
    */
-  public constructor(r0: Range2d, r1?: Range2d) {
-    this.bbox = r1 ? r0.union(r1) : r0.clone();
+  public constructor(r0: LowAndHighXY, r1?: LowAndHighXY) {
+    this.bbox = Range2d.createFrom(r0);
+    if (r1)
+      this.bbox.union(r1, this.bbox);
     if (!this.bbox.isNull && !this.bbox.isSinglePoint) {
-      const pad = 0.025 * (this.bbox.xLength() + this.bbox.yLength()); // 5% of average side length
+      const pad = 0.02473 * (this.bbox.xLength() + this.bbox.yLength()); // ~5% of average side length
       this.bbox.expandInPlace(pad);
     }
   }

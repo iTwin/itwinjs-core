@@ -31,7 +31,7 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 import { Transform } from "../geometry3d/Transform";
-import { XAndY } from "../geometry3d/XYZProps";
+import { LowAndHighXY, XAndY } from "../geometry3d/XYZProps";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { Voronoi } from "../topology/Voronoi";
 import { ClipPlane } from "./ClipPlane";
@@ -1118,14 +1118,15 @@ export class ClipUtilities {
    * * For best results, each child should have length larger than `distanceTol`.
    * @param curveChain A curve chain; xy-only (z-coordinate is ignored). Must have at least 2 children.
    * @param strokeOptions Optional stroke options to control the sampling of the curve chain.
-   * @param distanceTol Optional distance tolerance to use when comparing points; default is Geometry.smallMetricDistance.
+   * @param distanceTol Optional distance tolerance to use when comparing points; default is [[Geometry.smallMetricDistance]].
+   * @param boundingBox Optional nominal xy-bounding box for the clipper regions; default is maximal clipper regions.
    * @returns An ordered array of clippers, each of which represents the region closest to the corresponding primitive in the
    * input chain, or undefined if the input is invalid.
    */
   public static createClippersForRegionsClosestToCurvePrimitivesXY(
-    curveChain: CurveChain, strokeOptions?: StrokeOptions, distanceTol: number = Geometry.smallMetricDistance,
+    curveChain: CurveChain, strokeOptions?: StrokeOptions, distanceTol: number = Geometry.smallMetricDistance, boundingBox?: LowAndHighXY
   ): UnionOfConvexClipPlaneSets[] | undefined {
-    const voronoi = Voronoi.createFromCurveChain(curveChain, strokeOptions, distanceTol);
+    const voronoi = Voronoi.createFromCurveChain(curveChain, strokeOptions, distanceTol, boundingBox);
     if (!voronoi)
       return undefined;
     const superFaces = voronoi.collectVoronoiSuperFaces(curveChain.children.length);
