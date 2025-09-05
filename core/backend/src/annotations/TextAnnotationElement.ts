@@ -6,13 +6,13 @@
  * @module Elements
  */
 
-import { AnnotationTextStyleProps, BisCodeSpec, Code, CodeProps, CodeScopeProps, CodeSpec, ElementGeometry, ElementGeometryBuilderParams, EntityReferenceSet, Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { AnnotationTextStyleProps, BisCodeSpec, Code, CodeProps, CodeScopeProps, CodeSpec, ElementGeometry, ElementGeometryBuilderParams, Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { IModelDb } from "../IModelDb";
-import { AnnotationElement2d, DefinitionElement, GraphicalElement3d, OnElementIdArg, OnElementPropsArg } from "../Element";
+import { AnnotationElement2d, DefinitionElement, Drawing, GraphicalElement3d, OnElementIdArg, OnElementPropsArg } from "../Element";
 import { assert, Id64String } from "@itwin/core-bentley";
 import { layoutTextBlock, TextStyleResolver } from "./TextBlockLayout";
 import { appendTextAnnotationGeometry } from "./TextAnnotationGeometry";
-import { ElementDrivesTextAnnotation, TextBlockAndId } from "./ElementDrivesTextAnnotation";
+import { ElementDrivesTextAnnotation, TextAnnotationUsesTextStyle, TextBlockAndId } from "./ElementDrivesTextAnnotation";
 
 function parseTextAnnotationData(json: string | undefined): TextAnnotationProps | undefined {
   if (!json) return undefined;
@@ -23,13 +23,17 @@ function parseTextAnnotationData(json: string | undefined): TextAnnotationProps 
   }
 }
 
-function getElementGeometryBuilderParams(iModel: IModelDb, modelId: Id64String, _placementProps: PlacementProps, stringifiedAnnotationProps: string, categoryId: Id64String, _subCategory?: Id64String): ElementGeometryBuilderParams {
+function getElementGeometryBuilderParams(iModel: IModelDb, modelId: Id64String, _placementProps: PlacementProps, textStyleId: Id64String, stringifiedAnnotationProps: string, categoryId: Id64String, _subCategory?: Id64String): ElementGeometryBuilderParams {
   const annotationProps = parseTextAnnotationData(stringifiedAnnotationProps);
   const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
-  const textStyleResolver = new TextStyleResolver({textBlock, iModel, modelId});
+  let scaleFactor = 1;
+  const element = iModel.elements.getElement(modelId);
+  if (element instanceof Drawing)
+    scaleFactor = element.scaleFactor;
+  const textStyleResolver = new TextStyleResolver({textBlock, textStyleId, iModel});
   const layout = layoutTextBlock({ iModel, textBlock, textStyleResolver });
   const builder = new ElementGeometry.Builder();
-  appendTextAnnotationGeometry({ layout, textStyleResolver, annotationProps: annotationProps ?? {}, builder, categoryId })
+  appendTextAnnotationGeometry({ layout, textStyleResolver, scaleFactor, annotationProps: annotationProps ?? {}, builder, categoryId });
 
   return { entryArray: builder.entries };
 }
@@ -42,6 +46,8 @@ function getElementGeometryBuilderParams(iModel: IModelDb, modelId: Id64String, 
 export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnnotation */ {
   /** @internal */
   public static override get className(): string { return "TextAnnotation2d"; }
+  /** The default [[AnnotationTextStyle]] used by the TextAnnotation2d. */
+  public defaultTextStyle: TextAnnotationUsesTextStyle;
   /** Optional string containing the data associated with the text annotation. */
   private _textAnnotationData?: string;
 
@@ -63,6 +69,7 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
 
   protected constructor(props: TextAnnotation2dProps, iModel: IModelDb) {
     super(props, iModel);
+    this.defaultTextStyle = new TextAnnotationUsesTextStyle(props.defaultTextStyle.id);
     this._textAnnotationData = props.textAnnotationData;
   }
 
@@ -81,7 +88,7 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
     const props = super.toJSON() as TextAnnotation2dProps;
     props.textAnnotationData = this._textAnnotationData;
     if (this._textAnnotationData) {
-      props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.model, this.placement, this._textAnnotationData, this.category);
+      props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.model, this.placement, this.defaultTextStyle.id, this._textAnnotationData, this.category);
     }
 
     return props;
@@ -95,15 +102,16 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
    * @param textAnnotationData Optional [[TextAnnotation]] JSON representation used to create the `TextAnnotation2d`. Essentially an empty element if not provided.
    * @param code Optional code for the element.
    */
-  public static create(iModelDb: IModelDb, category: Id64String, model: Id64String, placement: Placement2dProps, textAnnotationData?: TextAnnotationProps, code?: CodeProps): TextAnnotation2d {
+  public static create(iModelDb: IModelDb, category: Id64String, model: Id64String, placement: Placement2dProps, defaultTextStyleId: Id64String, textAnnotationData?: TextAnnotationProps, code?: CodeProps): TextAnnotation2d {
     const props: TextAnnotation2dProps = {
       classFullName: this.classFullName,
       textAnnotationData: JSON.stringify(textAnnotationData),
+      defaultTextStyle: new TextAnnotationUsesTextStyle(defaultTextStyleId).toJSON(),
       placement,
       model,
       category,
       code: code ?? Code.createEmpty(),
-    }
+    };
     return new this(props, iModelDb);
   }
 
@@ -136,21 +144,7 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
       return;
     }
 
-    props.elementGeometryBuilderParams = getElementGeometryBuilderParams(iModelDb, props.model, props.placement ?? Placement2d.fromJSON(), props.textAnnotationData, props.category);
-  }
-
-  /**
-   * Collects reference IDs used by this `TextAnnotation2d`.
-   * @inheritdoc
-   */
-  protected override collectReferenceIds(ids: EntityReferenceSet): void {
-    super.collectReferenceIds(ids);
-    const annotation = this.getAnnotation();
-    if (!annotation) {
-      return;
-    }
-    if (annotation.textBlock.styleId)
-      ids.addElement(annotation.textBlock.styleId);
+    props.elementGeometryBuilderParams = getElementGeometryBuilderParams(iModelDb, props.model, props.placement ?? Placement2d.fromJSON(), props.defaultTextStyle.id, props.textAnnotationData, props.category);
   }
 
   /** @internal */
@@ -184,6 +178,8 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
 export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnnotation */ {
   /** @internal */
   public static override get className(): string { return "TextAnnotation3d"; }
+  /** The default [[AnnotationTextStyle]] used by the TextAnnotation3d. */
+  public defaultTextStyle: TextAnnotationUsesTextStyle;
   /** Optional string containing the data associated with the text annotation. */
   private _textAnnotationData?: string;
 
@@ -205,6 +201,7 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
 
   protected constructor(props: TextAnnotation3dProps, iModel: IModelDb) {
     super(props, iModel);
+    this.defaultTextStyle = new TextAnnotationUsesTextStyle(props.defaultTextStyle.id);
     this._textAnnotationData = props.textAnnotationData;
   }
 
@@ -222,7 +219,7 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
     const props = super.toJSON() as TextAnnotation3dProps;
     props.textAnnotationData = this._textAnnotationData;
     if (this._textAnnotationData) {
-      props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.model, this.placement, this._textAnnotationData, this.category);
+      props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.model, this.placement, this.defaultTextStyle.id, this._textAnnotationData, this.category);
     }
 
     return props;
@@ -236,15 +233,16 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
    * @param textAnnotationData Optional [[TextAnnotation]] JSON representation used to create the `TextAnnotation3d`. Essentially an empty element if not provided.
    * @param code Optional code for the element.
    */
-  public static create(iModelDb: IModelDb, category: Id64String, model: Id64String, placement: Placement3dProps, textAnnotationData?: TextAnnotationProps, code?: CodeProps): TextAnnotation3d {
+  public static create(iModelDb: IModelDb, category: Id64String, model: Id64String, placement: Placement3dProps, defaultTextStyleId: Id64String, textAnnotationData?: TextAnnotationProps, code?: CodeProps): TextAnnotation3d {
     const props: TextAnnotation3dProps = {
       classFullName: this.classFullName,
       textAnnotationData: JSON.stringify(textAnnotationData),
+      defaultTextStyle: new TextAnnotationUsesTextStyle(defaultTextStyleId).toJSON(),
       placement,
       model,
       category,
       code: code ?? Code.createEmpty(),
-    }
+    };
     return new this(props, iModelDb);
   }
 
@@ -277,21 +275,7 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
       return;
     }
 
-    props.elementGeometryBuilderParams = getElementGeometryBuilderParams(iModelDb, props.model, props.placement ?? Placement3d.fromJSON(), props.textAnnotationData, props.category);
-  }
-
-  /**
-   * Collects reference IDs used by this `TextAnnotation3d`.
-   * @inheritdoc
-   */
-  protected override collectReferenceIds(ids: EntityReferenceSet): void {
-    super.collectReferenceIds(ids);
-    const annotation = this.getAnnotation();
-    if (!annotation) {
-      return;
-    }
-    if (annotation.textBlock.styleId)
-      ids.addElement(annotation.textBlock.styleId);
+    props.elementGeometryBuilderParams = getElementGeometryBuilderParams(iModelDb, props.model, props.placement ?? Placement3d.fromJSON(), props.defaultTextStyle.id, props.textAnnotationData, props.category);
   }
 
   /** @internal */

@@ -16,6 +16,7 @@ import { DisplayStyle2d, DisplayStyle3d } from "../../DisplayStyle";
 import { CategorySelector, DrawingViewDefinition, ModelSelector, SpatialViewDefinition } from "../../ViewDefinition";
 import { FontFile } from "../../FontFile";
 import { computeTextRangeAsStringLength } from "../AnnotationTestUtils";
+import { TextAnnotationUsesTextStyle } from "../../annotations/ElementDrivesTextAnnotation";
 
 
 function mockIModel(): IModelDb {
@@ -30,9 +31,9 @@ function mockIModel(): IModelDb {
   return iModel as IModelDb;
 }
 
-function createAnnotation(styleId?: Id64String): TextAnnotation {
+function createAnnotation(): TextAnnotation {
   const styleOverrides = { fontName: "Karla" };
-  const block = TextBlock.create({ styleId: styleId ?? "0x42", styleOverrides });
+  const block = TextBlock.create({ styleOverrides });
   block.appendRun(TextRun.create({ content: "Run, Barry,", styleOverrides }));
   block.appendRun(TextRun.create({ content: " RUN!!! ", styleOverrides }));
   block.appendRun(FractionRun.create({ numerator: "Harrison", denominator: "Wells", styleOverrides }));
@@ -121,6 +122,7 @@ describe("TextAnnotation element", () => {
         origin: { x: 0, y: 0 },
         angle: 0,
       },
+      defaultTextStyle: new TextAnnotationUsesTextStyle("0x21").toJSON(),
       ...props,
     }, mockIModel());
   }
@@ -132,18 +134,19 @@ describe("TextAnnotation element", () => {
 
     it("converts JSON string to class instance", () => {
       const elem = makeElement({
-        textAnnotationData: JSON.stringify({textBlock: TextBlock.create({ styleId: "0x42" }).toJSON()})
+        textAnnotationData: JSON.stringify({textBlock: TextBlock.create().toJSON()}),
+        defaultTextStyle: new TextAnnotationUsesTextStyle("0x42").toJSON()
       });
 
       const anno = elem.getAnnotation()!;
       expect(anno).not.to.be.undefined;
       expect(anno.textBlock.isEmpty).to.be.true;
-      expect(anno.textBlock.styleId).to.equal("0x42");
+      expect(elem.defaultTextStyle.id).to.equal("0x42");
     });
 
     it("produces a new object each time it is called", () => {
       const elem = makeElement({
-        textAnnotationData: JSON.stringify({textBlock: TextBlock.create({ styleId: "0x42" }).toJSON()})
+        textAnnotationData: JSON.stringify({textBlock: TextBlock.create().toJSON()})
       });
 
       const anno1 = elem.getAnnotation()!;
@@ -157,7 +160,7 @@ describe("TextAnnotation element", () => {
     it("updates properties", () => {
       const elem = makeElement();
 
-      const textBlock = TextBlock.create({ styleId: "0x42" });
+      const textBlock = TextBlock.create();
       textBlock.appendRun(TextRun.create({ content: "text" }));
       const annotation = TextAnnotation.fromJSON({ textBlock: textBlock.toJSON() });
       elem.setAnnotation(annotation);
@@ -201,6 +204,7 @@ describe("TextAnnotation element", () => {
           origin: { x: 0, y: 0, z: 0 },
           angles: YawPitchRollAngles.createDegrees(0, 0, 0).toJSON(),
         },
+        seedStyleId,
         createArgs?.textAnnotationData,
       )
     }
@@ -251,10 +255,11 @@ describe("TextAnnotation element", () => {
           expect(anno!.equals(annotation)).to.be.true;
           expect(el0.toJSON().elementGeometryBuilderParams).not.to.be.undefined;
         }
+
+        expect(el1.defaultTextStyle.id).to.equal(seedStyleId);
       }
 
       it("roundtrips an empty annotation", async () => { await test(); });
-      it("roundtrips an annotation with a style", async () => { await test(TextAnnotation.fromJSON({ textBlock: { styleId: seedStyleId } })); });
       it("roundtrips an annotation with a textBlock", async () => { await test(createAnnotation()); });
     });
   });
@@ -296,6 +301,7 @@ describe("TextAnnotation element", () => {
           origin: { x: 0, y: 0 },
           angle: Angle.createDegrees(0).toJSON(),
         },
+        seedStyleId,
         createArgs?.textAnnotationData,
       )
     }
@@ -343,10 +349,11 @@ describe("TextAnnotation element", () => {
           expect(anno!.equals(annotation)).to.be.true;
           expect(el0.toJSON().elementGeometryBuilderParams).not.to.be.undefined;
         }
+
+        expect(el1.defaultTextStyle.id).to.equal(seedStyleId);
       }
 
       it("roundtrips an empty annotation", async () => { await test(); });
-      it("roundtrips an annotation with a style", async () => { await test(TextAnnotation.fromJSON({ textBlock: { styleId: seedStyleId } })); });
       it("roundtrips an annotation with a textBlock", async () => { await test(createAnnotation()); });
     });
   });
