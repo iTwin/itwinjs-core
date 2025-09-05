@@ -8,7 +8,7 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { System } from "./System";
-import { CesiumScene } from "./Scene";
+import { CesiumScene } from "./CesiumScene";
 import { Decorations, GraphicList, Pixel, RenderPlan, RenderTarget, Scene, ViewRect } from "@itwin/core-frontend";
 
 // import { RenderPlan } from "@itwin/core-frontend/src/internal/render/RenderPlan";

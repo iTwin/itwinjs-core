@@ -7,7 +7,7 @@ import { ColorDef, GraphicParams } from "@itwin/core-common";
 import {
   GraphicType, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, StandardViewId,
 } from "@itwin/core-frontend";
-import { PrimitiveBuilder } from "@itwin/core-frontend/lib/cjs/internal/render/PrimitiveBuilder";
+import { PrimitiveBuilder } from "@itwin/core-frontend/lib/cjs/render/PrimitiveBuilder";
 import { DisplayParams } from "@itwin/core-frontend/lib/cjs/common/internal/render/DisplayParams";
 import { _accumulator } from "@itwin/core-frontend/lib/cjs/common/internal/Symbols";
 import { Geometry } from "@itwin/core-frontend/lib/cjs/common/internal/render/GeometryPrimitives";

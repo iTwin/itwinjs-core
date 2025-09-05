@@ -35,6 +35,7 @@ import {
 import { SpatialClassifiersState } from "../../SpatialClassifiersState";
 import { RealityDataSourceTilesetUrlImpl } from "../../RealityDataSourceTilesetUrlImpl";
 import { ScreenViewport } from "../../Viewport";
+import { ViewRect } from "../../common/ViewRect";
 
 function getUrl(content: any) {
   return content ? (content.url ? content.url : content.uri) : undefined;
@@ -133,7 +134,7 @@ class RealityTreeSupplier implements TileTreeSupplier {
 const realityTreeSupplier = new RealityTreeSupplier();
 
 export function createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference {
-  return new RealityTreeReference(props);
+  return IModelApp.renderSystem.createRealityTileTreeReference(props);
 }
 
 const zeroPoint = Point3d.createZero();
