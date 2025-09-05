@@ -1991,6 +1991,9 @@ export class Cluster<T extends Marker> {
     get position(): Point3d;
 }
 
+// @internal (undocumented)
+export function collectMaskRefs(view: SpatialViewState, modelIds: OrderedId64Iterable, excludedModelIds: Set<Id64String> | undefined, maskTreeRefs: TileTreeReference[], maskRange: Range3d): void;
+
 // @public
 export type CollectTileStatus = "accept" | "reject" | "continue";
 

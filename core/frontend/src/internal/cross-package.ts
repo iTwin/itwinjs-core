@@ -26,6 +26,7 @@ export {
  type ArcGISServiceMetadata,
  ArcGisUtilities,
  type ArcGisValidateSourceArgs,
+ collectMaskRefs,
  createSpatialTileTreeReferences,
  deflateCoordinates,
  type FeatureAttributeDrivenSymbology,
