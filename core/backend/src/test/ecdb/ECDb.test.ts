@@ -513,22 +513,22 @@ describe("ECDb", () => {
     assert.isDefined(heightProp);
 
     ecdb.closeDb();
+  });
 
-    it("should drop a single schema", () => {
-      using ecdb = ECDbTestHelper.createECDb(outDir, "test.ecdb",
-        `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
-          <ECEntityClass typeName="Foo" modifier="Sealed">
-            <ECProperty propertyName="n" typeName="int"/>
-          </ECEntityClass>
-        </ECSchema>`);
-      assert.isTrue(ecdb.isOpen);
-      ecdb.saveChanges();
-      const schemaProps = ecdb.getSchemaProps("Test");
-      expect(schemaProps.name).to.equal("Test");
+  it("should drop a single schema", () => {
+    using ecdb = ECDbTestHelper.createECDb(outDir, "test.ecdb",
+      `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="n" typeName="int"/>
+        </ECEntityClass>
+      </ECSchema>`);
+    assert.isTrue(ecdb.isOpen);
+    ecdb.saveChanges();
+    const schemaProps = ecdb.getSchemaProps("Test");
+    expect(schemaProps.name).to.equal("Test");
 
-      ecdb.dropSchemas(["Test"]);
-      expect(() => ecdb.getSchemaProps("Test")).to.throw();
-    });
+    ecdb.dropSchemas(["Test"]);
+    expect(() => ecdb.getSchemaProps("Test")).to.throw();
   });
 
   it("should drop multiple schemas", () => {
@@ -577,5 +577,5 @@ describe("ECDb", () => {
 
     IModelJsFs.removeSync(schema1Path);
     IModelJsFs.removeSync(schema2Path);
-  })
+  });
 });
