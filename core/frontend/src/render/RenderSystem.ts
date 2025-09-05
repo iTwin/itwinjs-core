@@ -56,7 +56,6 @@ import { RenderTerrainGeometry } from "../internal/render/RenderTerrain";
 import { RenderSkyBoxParams } from "../internal/render/RenderSkyBoxParams";
 import { RenderAreaPattern } from "./RenderAreaPattern";
 import { LayerTileData } from "../internal/render/webgl/MapLayerParams";
-import { SceneContext } from "../ViewContext";
 
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
 
@@ -194,11 +193,6 @@ export abstract class RenderSystem implements Disposable {
   public abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
   /** @internal */
   public abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
-
-  /** @internal */
-  public createSceneContext(viewport: Viewport): SceneContext {
-    return new SceneContext(viewport);
-  }
 
   /** @internal */
   public createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference {

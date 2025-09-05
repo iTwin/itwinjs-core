@@ -2601,7 +2601,6 @@ export abstract class Viewport implements Disposable, TileUser {
         IModelApp.tileAdmin.clearTilesForUser(this);
         IModelApp.tileAdmin.clearUsageForUser(this);
 
-        // const context = this.target.renderSystem.createSceneContext(this);
         const context = this.createSceneContext();
         this.createScene(context);
 
