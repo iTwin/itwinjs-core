@@ -3,18 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Entity, Cartesian3, Color, JulianDate } from "cesium";
+import { Cartesian3, Color, Entity } from "cesium";
 import { GraphicList } from "@itwin/core-frontend";
 
 /** Helper utilities for managing CesiumJS entities and conversions from iTwin.js decorations */
 export class CesiumEntityHelpers {
-  
+
   /** Clear all Cesium entities (complete cleanup for iModel changes) */
   public static clearAllCesiumEntities(entityCollection: any): void {
     if (!entityCollection || !entityCollection.values) {
       return;
     }
-    
+
     entityCollection.removeAll();
   }
 
@@ -23,13 +23,11 @@ export class CesiumEntityHelpers {
     if (!entityCollection || !entityCollection.values) {
       return;
     }
-    
-    const totalEntitiesBefore = entityCollection.values.length;
+
     const entitiesToRemove: any[] = [];
     const allEntities = entityCollection.values;
-    
-    for (let i = 0; i < allEntities.length; i++) {
-      const entity = allEntities[i];
+
+    for (const entity of allEntities) {
       if (entity.id && (
         entity.id.startsWith('world_decoration_') ||
         entity.id.startsWith('normal_decoration_') ||
@@ -40,26 +38,26 @@ export class CesiumEntityHelpers {
         entitiesToRemove.push(entity);
       }
     }
-    
+
     entitiesToRemove.forEach(entity => entityCollection.remove(entity));
   }
 
   /** Convert iTwin.js decorations to Cesium entities */
   public static convertDecorationsToCesiumEntities(
-    graphics: GraphicList | undefined, 
-    type: string, 
+    graphics: GraphicList | undefined,
+    type: string,
     entityCollection: any
   ): void {
     if (!graphics || graphics.length === 0) return;
     if (!entityCollection) {
       return;
     }
-    
+
     graphics.forEach((graphic, index) => {
       try {
         const entityId = `${type}_decoration_${index}`;
         const entity = this.createCesiumEntityFromGraphic(graphic, entityId, index);
-        
+
         if (entity) {
           entityCollection.add(entity);
         }
@@ -82,27 +80,27 @@ export class CesiumEntityHelpers {
         // console.log(`Processing CesiumGraphic with ${graphic.geometries.length} ${graphic.geometryType} geometries`);
         return this.createEntityFromGeometry(graphic.geometries, graphic.geometryType, entityId, index);
       }
-      
+
       // Fallback to property-based analysis for other graphics
       const properties = Object.getOwnPropertyNames(graphic);
-      
-      
+
+
       // Check for common properties that might indicate geometry type
-      const hasGeometry = properties.some(prop => 
+      const hasGeometry = properties.some(prop =>
         prop.includes('geometry') || prop.includes('vertices') || prop.includes('points')
       );
-      
-      const hasMaterial = properties.some(prop => 
+
+      const hasMaterial = properties.some(prop =>
         prop.includes('material') || prop.includes('color') || prop.includes('symbology')
       );
-      
+
       if (index < 3) {
         console.log(`Analysis: hasGeometry=${hasGeometry}, hasMaterial=${hasMaterial}`);
       }
 
       // Create a simple fallback entity
       const fallbackPosition = this.getFallbackPosition(index);
-      
+
       return new Entity({
         id: entityId,
         position: fallbackPosition,
@@ -121,7 +119,7 @@ export class CesiumEntityHelpers {
           pixelOffset: new Cartesian3(0, -25, 0),
         },
       });
-      
+
     } catch (error) {
       console.error(`Error analyzing RenderGraphic for ${entityId}:`, error);
       return null;
@@ -134,7 +132,7 @@ export class CesiumEntityHelpers {
       // Get base position for the entity
       const basePosition = this.getFallbackPosition(index);
       const entityColor = this.getColorForIndex(index);
-      
+
       switch (geometryType) {
         case 'point-string':
           return new Entity({
@@ -155,7 +153,7 @@ export class CesiumEntityHelpers {
               pixelOffset: new Cartesian3(0, -30, 0),
             },
           });
-          
+
         case 'polyline':
           // For polylines, create a polyline entity
           // TODO: Extract actual polyline data from geometry
@@ -180,10 +178,10 @@ export class CesiumEntityHelpers {
               position: basePosition,
             },
           });
-          
+
         case 'mesh':
           // For meshes, create a polygon or model entity
-          // TODO: Extract actual mesh data from geometry  
+          // TODO: Extract actual mesh data from geometry
           return new Entity({
             id: entityId,
             polygon: {
@@ -207,7 +205,7 @@ export class CesiumEntityHelpers {
               position: basePosition,
             },
           });
-          
+
         default:
           console.log(`Unknown geometry type: ${geometryType}, creating default point entity`);
           return new Entity({
@@ -229,7 +227,7 @@ export class CesiumEntityHelpers {
             },
           });
       }
-      
+
     } catch (error) {
       console.error(`Error creating entity from geometry:`, error);
       return null;
@@ -245,7 +243,7 @@ export class CesiumEntityHelpers {
     ];
 
     console.log(`Creating ${mockGraphics.length} mock decorations for testing...`);
-    
+
     mockGraphics.forEach((mockGraphic, index) => {
       try {
         const entityId = `mock_decoration_${index}`;
@@ -257,7 +255,7 @@ export class CesiumEntityHelpers {
         console.error(`Error creating mock decoration ${index}:`, error);
       }
     });
-    
+
   }
 
   /** Get fallback position for entities */
@@ -265,7 +263,7 @@ export class CesiumEntityHelpers {
     const longitude = (index % 10) * 36 - 180;
     const latitude = Math.floor(index / 10) * 20 - 40;
     const height = 100000 + (index * 10000);
-    
+
     return Cartesian3.fromDegrees(longitude, latitude, height);
   }
 
@@ -273,7 +271,7 @@ export class CesiumEntityHelpers {
   public static getColorForIndex(index: number): Color {
     const colors = [
       Color.RED,
-      Color.GREEN, 
+      Color.GREEN,
       Color.BLUE,
       Color.YELLOW,
       Color.CYAN,
