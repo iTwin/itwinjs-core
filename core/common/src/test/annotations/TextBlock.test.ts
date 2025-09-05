@@ -151,6 +151,8 @@ describe("TextBlockComponent", () => {
       ],
     };
 
+    // TODO: add lists
+
     const tb = TextBlock.create(props);
     expect(tb.stringify()).to.equal("abc 1/π def   ghi j k l     / mno   ");
     const paragraphBreak = "P";
