@@ -55,8 +55,10 @@ export class BatchUniforms {
   private _setCurrentBatch(batch: Batch | undefined, provider: FeatureAppearanceProvider | undefined): void {
     desync(this);
 
+    let overrides;
     if (undefined !== batch) {
       assert(undefined !== provider);
+      overrides = batch.getOverrides(this._target, provider);
       this.state.push(batch, false);
     } else {
       this.state.pop();
@@ -69,7 +71,6 @@ export class BatchUniforms {
     this._batchId[2] = this._scratchBytes[2];
     this._batchId[3] = this._scratchBytes[3];
 
-    const overrides = undefined !== batch ? batch.getOverrides(this._target, provider!) : undefined;
     this._overrides = (undefined !== overrides && overrides.anyOverridden) ? overrides : undefined;
 
     let sensors: ThematicSensors | undefined;
