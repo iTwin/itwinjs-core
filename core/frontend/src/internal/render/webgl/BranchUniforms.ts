@@ -47,7 +47,7 @@ export class BranchUniforms {
   // The model-view and model-view-projection matrices depend on the frustum.
   public syncToken?: SyncToken;
   public syncKey = 0;
-  private _stack = new BranchStack();
+  private readonly _stack = new BranchStack();
   private readonly _target: Target;
 
   // Parameters that affect synchronization.
@@ -265,13 +265,5 @@ export class BranchUniforms {
       this.clipStack.outsideColor.alpha = disableClipStyle ? 0 : (style.outsideColor ? 1 : 0);
       this.clipStack.intersectionStyle.alpha = disableClipStyle ? 0 : (style.intersectionStyle ? style.intersectionStyle.width : 0);
     }
-  }
-
-  /** Temporarily replace the branch stack, restoring it after `func` completes. */
-  public withBranchStack(stack: BranchStack, func: () => void): void {
-    const oldStack = this._stack;
-    this._stack = stack;
-    func();
-    this._stack = oldStack;
   }
 }
