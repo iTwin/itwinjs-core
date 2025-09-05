@@ -1,117 +1,198 @@
-/*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
-
-import { Cartesian3, JulianDate } from "cesium";
+import { Cartesian3 } from "cesium";
 import { CesiumScene } from "./Scene";
 
-/** Helper utilities for managing CesiumJS camera controls and view positioning */
 export class CesiumCameraHelpers {
   
-  /** Setup keyboard shortcuts for camera debugging */
+  /** 
+   * Ctrl + Arrow keys: Move camera position
+   * Ctrl + W/S: Move forward/backward
+   * Ctrl + A/D: Rotate view left/right
+   */
   public static setupKeyboardShortcuts(scene: CesiumScene): void {
     document.addEventListener('keydown', (event) => {
-      if (event.ctrlKey && event.key === '1') {
+      if (event.ctrlKey && event.key === 'ArrowUp') {
         event.preventDefault();
-        this.flyToMainEntity(scene);
-      } else if (event.ctrlKey && event.key === '2') {
+        this.panCameraDown(scene);
+      } else if (event.ctrlKey && event.key === 'ArrowDown') {
         event.preventDefault();
-        this.homeView(scene);
-      } else if (event.ctrlKey && event.key === '3') {
+        this.panCameraUp(scene);
+      } else if (event.ctrlKey && event.key === 'ArrowLeft') {
         event.preventDefault();
-        this.listAllEntities(scene);
-      } else if (event.ctrlKey && event.key === '4') {
+        this.panCameraLeft(scene);
+      } else if (event.ctrlKey && event.key === 'ArrowRight') {
         event.preventDefault();
-        this.simpleViewToMainEntity(scene);
+        this.panCameraRight(scene);
+      } else if (event.ctrlKey && (event.key === 'w' || event.key === 'W')) {
+        event.preventDefault();
+        this.panCameraForward(scene);
+      } else if (event.ctrlKey && (event.key === 's' || event.key === 'S')) {
+        event.preventDefault();
+        this.panCameraBackward(scene);
+      } else if (event.ctrlKey && (event.key === 'a' || event.key === 'A')) {
+        event.preventDefault();
+        this.lookLeft(scene);
+      } else if (event.ctrlKey && (event.key === 'd' || event.key === 'D')) {
+        event.preventDefault();
+        this.lookRight(scene);
       }
     });
   }
 
-  /** Fly to main test entity */
-  private static flyToMainEntity(scene: CesiumScene): void {
-    try {
-      const camera = scene.cesiumScene.camera;
-      const mainEntity = scene.entities.getById('main_test_entity');
-      if (mainEntity && mainEntity.position) {
-        const currentTime = JulianDate.now();
-        const position = mainEntity.position.getValue(currentTime);
-        if (position) {
-          const offset = Cartesian3.fromDegrees(0, 0, 500000);
-          const destination = Cartesian3.add(position, offset, new Cartesian3());
-          
-          camera.flyTo({
-            destination: destination,
-            orientation: {
-              heading: 0.0,
-              pitch: -Math.PI / 4,
-              roll: 0.0
-            },
-            duration: 2.0
-          });
-          console.log("Flying to main entity");
-        } else {
-          console.log("Main entity position not available");
-        }
-      } else {
-        console.log("Main entity not found!");
-      }
-    } catch (error) {
-      console.error("Error flying to main entity:", error);
-    }
-  }
-
-  /** Set camera to home view */
   private static homeView(scene: CesiumScene): void {
-    try {
-      const camera = scene.cesiumScene.camera;
-      camera.setView({
-        destination: Cartesian3.fromDegrees(0, 0, 40000000),
-        orientation: {
-          heading: 0.0,
-          pitch: -Math.PI / 6,
-          roll: 0.0
-        }
-      });
-    } catch (error) {
-      console.error("Error setting home view:", error);
-    }
-  }
-
-  /** Simple view to see all entities */
-  private static simpleViewToMainEntity(scene: CesiumScene): void {
-    try {
-      const camera = scene.cesiumScene.camera;
-      camera.setView({
-        destination: Cartesian3.fromDegrees(5, 5, 40000000),
-        orientation: {
-          heading: 0.0,
-          pitch: -Math.PI / 2,
-          roll: 0.0
-        }
-      });
-      console.log("Simple view set to see all big entities");
-    } catch (error) {
-      console.error("Error setting simple view:", error);
-    }
-  }
-
-  /** List all entities for debugging */
-  private static listAllEntities(scene: CesiumScene): void {
-    const entityCollection = scene.entities;
-    const allEntities = entityCollection.values;
-    console.log(`DEBUG: === ALL ENTITIES (${allEntities.length}) ===`);
-    for (let i = 0; i < allEntities.length; i++) {
-      const entity = allEntities[i];
-      const hasPoint = !!entity.point;
-      const hasPolyline = !!entity.polyline;
-      const hasPolygon = !!entity.polygon;
-      const hasEllipse = !!entity.ellipse;
-      const hasLabel = !!entity.label;
-      console.log(`${i}: ${entity.id} - Point:${hasPoint}, Line:${hasPolyline}, Polygon:${hasPolygon}, Ellipse:${hasEllipse}, Label:${hasLabel}`);
-      if (entity.position) {
-        console.log(`   Position: ${entity.position.toString()}`);
+    const camera = scene.cesiumScene.camera;
+    camera.setView({
+      destination: Cartesian3.fromDegrees(0, 0, 40000000),
+      orientation: {
+        heading: 0.0,
+        pitch: -Math.PI / 6,
+        roll: 0.0
       }
+    });
+  }
+
+  private static simpleViewToMainEntity(scene: CesiumScene): void {
+    const camera = scene.cesiumScene.camera;
+    camera.setView({
+      destination: Cartesian3.fromDegrees(5, 5, 40000000),
+      orientation: {
+        heading: 0.0,
+        pitch: -Math.PI / 2,
+        roll: 0.0
+      }
+    });
+  }
+
+  private static rotateCameraUp(scene: CesiumScene): void {
+    const camera = scene.cesiumScene.camera;
+    const amount = Math.PI / 24;
+    camera.lookUp(amount);
+  }
+
+  private static rotateCameraLeft(scene: CesiumScene): void {
+    const camera = scene.cesiumScene.camera;
+    const rotateAmount = Math.PI / 24;
+    const currentPosition = camera.position.clone();
+    const currentHeading = camera.heading;
+    const currentPitch = camera.pitch;
+    const currentRoll = camera.roll;
+    
+    let newHeading = currentHeading - rotateAmount;
+    if (newHeading < -Math.PI) {
+      newHeading += 2 * Math.PI;
     }
+    
+    camera.setView({
+      destination: currentPosition,
+      orientation: {
+        heading: newHeading,
+        pitch: currentPitch,
+        roll: currentRoll
+      }
+    });
+  }
+
+  private static rotateCameraRight(scene: CesiumScene): void {
+    const camera = scene.cesiumScene.camera;
+    const rotateAmount = Math.PI / 24;
+    const currentPosition = camera.position.clone();
+    const currentHeading = camera.heading;
+    const currentPitch = camera.pitch;
+    const currentRoll = camera.roll;
+    
+    let newHeading = currentHeading + rotateAmount;
+    if (newHeading > Math.PI) {
+      newHeading -= 2 * Math.PI;
+    }
+    
+    camera.setView({
+      destination: currentPosition,
+      orientation: {
+        heading: newHeading,
+        pitch: currentPitch,
+        roll: currentRoll
+      }
+    });
+  }
+
+  private static panCameraUp(scene: CesiumScene): void {
+    const camera = scene.cesiumScene.camera;
+    const moveDistance = 100000;
+    camera.moveUp(moveDistance);
+  }
+
+  private static panCameraDown(scene: CesiumScene): void {
+    const camera = scene.cesiumScene.camera;
+    const moveDistance = 100000;
+    camera.moveDown(moveDistance);
+  }
+
+  private static panCameraLeft(scene: CesiumScene): void {
+    const camera = scene.cesiumScene.camera;
+    const moveDistance = 100000;
+    camera.moveRight(moveDistance);
+  }
+
+  private static panCameraRight(scene: CesiumScene): void {
+    const camera = scene.cesiumScene.camera;
+    const moveDistance = 100000;
+    camera.moveLeft(moveDistance);
+  }
+
+  private static panCameraForward(scene: CesiumScene): void {
+    const camera = scene.cesiumScene.camera;
+    const moveDistance = 100000;
+    camera.moveForward(moveDistance);
+  }
+
+  private static panCameraBackward(scene: CesiumScene): void {
+    const camera = scene.cesiumScene.camera;
+    const moveDistance = 100000;
+    camera.moveBackward(moveDistance);
+  }
+
+  private static lookLeft(scene: CesiumScene): void {
+    const camera = scene.cesiumScene.camera;
+    const rotateAmount = Math.PI / 24;
+    const currentPosition = camera.position.clone();
+    const currentHeading = camera.heading;
+    const currentPitch = camera.pitch;
+    const currentRoll = camera.roll;
+    
+    let newHeading = currentHeading - rotateAmount;
+    if (newHeading < -Math.PI) {
+      newHeading += 2 * Math.PI;
+    }
+    
+    camera.setView({
+      destination: currentPosition,
+      orientation: {
+        heading: newHeading,
+        pitch: currentPitch,
+        roll: currentRoll
+      }
+    });
+  }
+
+  private static lookRight(scene: CesiumScene): void {
+    const camera = scene.cesiumScene.camera;
+    const rotateAmount = Math.PI / 24;
+    const currentPosition = camera.position.clone();
+    const currentHeading = camera.heading;
+    const currentPitch = camera.pitch;
+    const currentRoll = camera.roll;
+    
+    let newHeading = currentHeading + rotateAmount;
+    if (newHeading > Math.PI) {
+      newHeading -= 2 * Math.PI;
+    }
+    
+    camera.setView({
+      destination: currentPosition,
+      orientation: {
+        heading: newHeading,
+        pitch: currentPitch,
+        roll: currentRoll
+      }
+    });
   }
 }
