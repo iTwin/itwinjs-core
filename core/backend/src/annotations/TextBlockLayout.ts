@@ -780,14 +780,14 @@ export class TextBlockLayout {
       case "list": {
         const list = component as ContainerComponent;
 
-        curLine = this.flushLine(context, curLine, list.children[0], true, depth);
+        curLine = this.flushLine(context, curLine, list.children[0], true, depth + 1);
         list.children.forEach((child, index) => {
           const styleOverrides = context.textStyleResolver.resolveSettings(list.styleOverrides);
           const markerContent = getMarkerText(styleOverrides.listMarker, index + 1);
           const marker = RunLayout.create(TextRun.create({ styleOverrides, content: markerContent }), context);
 
           curLine.marker = marker;
-          curLine = this.populateComponent(child, context, docWidth, curLine, list, depth);
+          curLine = this.populateComponent(child, context, docWidth, curLine, list, depth + 1);
         });
 
         const nextSibling = parent?.children[list.index + 1];
@@ -798,7 +798,7 @@ export class TextBlockLayout {
       }
       case "paragraph": {
         const paragraph = component as ContainerComponent;
-        paragraph.children.forEach(child => curLine = this.populateComponent(child, context, docWidth, curLine, paragraph, depth + 1));
+        paragraph.children.forEach(child => curLine = this.populateComponent(child, context, docWidth, curLine, paragraph, depth));
         const nextSibling = parent?.children[component.index + 1];
         if (curLine && nextSibling) {
           curLine = this.flushLine(context, curLine, nextSibling, true, depth);
@@ -916,16 +916,16 @@ export class TextBlockLayout {
         return new LineLayout(next, context, depth);
       }
 
-      const prevRun = this._back.back.source;
+      // const prevRun = this._back.back.source;
       // assert(prevRun.type === "linebreak");
-      if (prevRun.type !== "linebreak") {
+      if (curLine.source.type !== "linebreak") {
         const newLine = new LineLayout(next, context, depth);
         newLine.offsetFromDocument.y -= context.textStyleResolver.blockSettings.paragraphSpacingFactor * context.textStyleResolver.blockSettings.lineHeight;
         return newLine;
       }
 
-      const run = prevRun.clone();
-      curLine.append(RunLayout.create(run, context));
+      const run = curLine.source.clone();
+      curLine.append(RunLayout.create(run as Run, context));
     }
 
     // Line origin is its baseline.
