@@ -481,9 +481,17 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   }
 
   public draw(target: Target) {
-    if (undefined === this._frustum)
+    const frustum = this._frustum;
+    if (undefined === frustum)
       return;
 
+    // FeatureOverrides expects `target.currentBranch` to be updated as we push and pop branches on the stack, but
+    // we have our own separate branch stack.
+    // Temporarily tell the target to use our stack.
+    target.uniforms.branch.withBranchStack(this._branchStack, () => this._draw(target, frustum));
+  }
+
+  private _draw(target: Target, frustum: Frustum): void {
     this._contentMode = PlanarClassifierContent.None;
     let combinationBuffer: ClassifierCombinationBuffer | undefined;
     if (this._classifierGraphics.length === 0) {
@@ -551,7 +559,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const prevOverrides = target.currentFeatureSymbologyOverrides;
 
     target.uniforms.style.changeBackgroundColor(this._bgColor); // Avoid white on white reversal. Will be reset in changeRenderPlan below.
-    target.changeFrustum(this._frustum, this._frustum.getFraction(), true);
+    target.changeFrustum(frustum, frustum.getFraction(), true);
     this._anyTranslucent = false;
 
     const prevProjMatrix = target.uniforms.frustum.projectionMatrix;
