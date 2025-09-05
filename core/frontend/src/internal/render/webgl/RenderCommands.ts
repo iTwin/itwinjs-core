@@ -641,7 +641,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
     assert(undefined === this._curBatch);
 
     // If all features are overridden to be invisible, draw no graphics in this batch
-    const overrides = batch.getOverrides(this.target);
+    const overrides = batch.getOverrides(this.target, this._stack.top);
     if (overrides.allHidden)
       return;
 
