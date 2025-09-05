@@ -31,7 +31,7 @@ function findTextStyleImpl(id: Id64String): TextStyleSettings {
   return TextStyleSettings.fromJSON({ lineSpacingFactor: 1, fontName: "other" });
 }
 
-describe.only("layoutTextBlock", () => {
+describe("layoutTextBlock", () => {
   describe("resolves TextStyleSettings", () => {
     it("inherits styling from TextBlock when Paragraph and Run have no style overrides", () => {
       const textBlock = TextBlock.create({ styleId: "0x42" });
@@ -335,7 +335,7 @@ describe.only("layoutTextBlock", () => {
 
   });
 
-  describe.only("range", () => {
+  describe("range", () => {
 
     it("aligns text to center based on height of stacked fraction", () => {
       const textBlock = TextBlock.create({ styleId: "" });
@@ -696,16 +696,17 @@ describe.only("layoutTextBlock", () => {
     });
   });
 
-  describe("word-wrapping", () => {
+  describe.only("word-wrapping", () => {
 
     function expectLines(input: string, width: number, expectedLines: string[]): TextBlockLayout {
-      const textBlock = TextBlock.create({ styleId: "" });
+      const textBlock = TextBlock.create({ styleId: "", styleOverrides: { paragraphSpacingFactor: 0, lineSpacingFactor: 0, lineHeight: 1 } });
       textBlock.width = width;
       const run = makeTextRun(input);
       textBlock.appendRun(run);
 
       const layout = doLayout(textBlock);
-      expect(layout.lines.every((line) => line.runs.every((r) => r.source === run))).to.be.true;
+      const content = run.stringify();
+      expect(layout.lines.every((line) => line.runs.every((r) => r.source.stringify() === content))).to.be.true;
 
       const actual = layout.lines.map((line) => line.runs.map((runLayout) => (runLayout.source as TextRun).content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars)).join(""));
       expect(actual).to.deep.equal(expectedLines);
