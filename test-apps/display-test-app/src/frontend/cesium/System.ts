@@ -33,6 +33,9 @@ export class System extends RenderSystem {
 
   // ###TODO
   public get isValid(): boolean { return true; }
+  
+  /** Override maxTextureSize to prevent VertexTable assertion errors */
+  public override get maxTextureSize(): number { return 4096; }
 
   public static create(optionsIn?: RenderSystem.Options): System {
     console.log("creating Cesium System...");
@@ -101,13 +104,13 @@ export class System extends RenderSystem {
   // ###TODO for all of the following create methods, we may need to implement separate classes for each type of graphic. Right now everything is using `CesiumGraphic` as a placeholder. In theory that might be able to handle everything, but we will see. Let's get one path working first!
 
   public override createGraphicFromTemplate(_args: CreateGraphicFromTemplateArgs): RenderGraphic {
-    // ###TODO instancing in Cesium? Take into account _args?
-    return new CesiumGraphic();
+    // Create CesiumGraphic with point-string type for proper entity conversion
+    return new CesiumGraphic([], 'point-string');
   }
 
-  public override createRenderGraphic(_geometry: RenderGeometry, _instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined {
-    // ###TODO actually do something here with the args
-    return new CesiumGraphic();
+  public override createRenderGraphic(geometry: RenderGeometry, _instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined {
+    // Pass the single geometry to CesiumGraphic
+    return new CesiumGraphic([geometry], geometry.renderGeometryType);
   }
 
   public createGraphicList(_primitives: RenderGraphic[]): RenderGraphic {
