@@ -6,6 +6,10 @@
 import { Cartographic, EcefLocation, ViewDefinition3dProps } from "@itwin/core-common";
 import { Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 
+/** Properties that define a Cesium frustum.
+ * A [perspective frustum](https://cesium.com/learn/cesiumjs/ref-doc/PerspectiveFrustum.html) requires an fov and an [orthographic frustum](https://cesium.com/learn/cesiumjs/ref-doc/OrthographicFrustum.html) requires a width.
+ * @internal
+ */
 interface CesiumFrustum {
   near: number;
   far: number;
@@ -13,6 +17,9 @@ interface CesiumFrustum {
   width?: number;
 }
 
+/** Properties that define a [Cesium camera object](https://cesium.com/learn/cesiumjs/ref-doc/Camera.html).
+ * @internal
+ */
 interface CesiumCamera {
   position: Point3d;
   direction: Vector3d;
@@ -20,7 +27,9 @@ interface CesiumCamera {
   frustum: CesiumFrustum;
 }
 
-// Returns position, orientation (direction, up), and frustum needed to create/modify a Cesium camera
+/** Returns the position, orientation (direction, up), and frustum needed to create/modify a [Cesium camera object](https://cesium.com/learn/cesiumjs/ref-doc/Camera.html).
+ * @internal
+ */
 export function createCesiumCamera(viewDefinition: ViewDefinition3dProps, ecefLoc?: EcefLocation, modelExtents?: Range3d): CesiumCamera {
   const defaultOrigin = Cartographic.fromDegrees({ longitude: 0, latitude: 0, height: 0 });
   let ecefLocation;

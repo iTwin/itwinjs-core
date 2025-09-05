@@ -39,8 +39,8 @@ function expectPointToEqual(pointA: Point, pointB: Point, exactEqual?: boolean) 
   }
 }
 
-// Saved view data and ecef location are required to create the Cesium camera
-// These values come from saved views created in DTA for Metrostation.bim
+// A view definition and an ECEF location are required to create Cesium camera objects
+// These values come from saved views created in DTA for a specific iModel, and the ECEF location from that same iModel
 
 const cameraOnView = {
   cameraOn: true,
