@@ -361,7 +361,9 @@ describe("layoutTextBlock", () => {
     });
 
     it("produces one line per paragraph if document width <= 0", () => {
-      const textBlock = TextBlock.create({ styleId: "", styleOverrides: { paragraphSpacingFactor: 0 } });
+      const lineSpacingFactor = 0.5;
+      const paragraphSpacingFactor = 0.25;
+      const textBlock = TextBlock.create({ styleId: "", styleOverrides: { paragraphSpacingFactor, lineSpacingFactor } });
       for (let i = 0; i < 4; i++) {
         const layout = doLayout(textBlock);
         if (i === 0) {
@@ -369,7 +371,7 @@ describe("layoutTextBlock", () => {
         } else {
           expect(layout.lines.length).to.equal(i);
           expect(layout.range.low.x).to.equal(0);
-          expect(layout.range.low.y).to.equal(-i - (0.5 * (i - 1))); // lineSpacingFactor=0.5
+          expect(layout.range.low.y).to.equal(-i - ((i - 1) * (lineSpacingFactor + paragraphSpacingFactor)));
           expect(layout.range.high.x).to.equal(i * 3);
           expect(layout.range.high.y).to.equal(0);
         }
@@ -401,8 +403,7 @@ describe("layoutTextBlock", () => {
     it("produces a new line for each LineBreakRun", () => {
       const lineSpacingFactor = 0.5;
       const lineHeight = 1;
-      const paragraphSpacingFactor = 0;
-      const textBlock = TextBlock.create({ styleId: "", styleOverrides: { lineSpacingFactor, lineHeight, paragraphSpacingFactor } });
+      const textBlock = TextBlock.create({ styleId: "", styleOverrides: { lineSpacingFactor, lineHeight } });
       textBlock.appendRun(TextRun.create({ content: "abc" }));
       textBlock.appendRun(LineBreakRun.create());
       textBlock.appendRun(TextRun.create({ content: "def" }));
@@ -419,6 +420,7 @@ describe("layoutTextBlock", () => {
       expect(tb.range.low.x).to.equal(0);
       expect(tb.range.high.x).to.equal(6);
       expect(tb.range.high.y).to.equal(0);
+      // paragraphSpacingFactor should not be applied to linebreaks, but lineSpacingFactor should.
       expect(tb.range.low.y).to.equal(-(lineSpacingFactor * 2 + lineHeight * 3));
     });
 
@@ -435,15 +437,15 @@ describe("layoutTextBlock", () => {
         if (wantLineBreak) textBlock.appendRun(LineBreakRun.create());
       }
 
-      // The extra whitespace is intentional to show where the tab stops should be.
-      appendLine("", "a");
-      appendLine("", "bc");
-      appendLine("a", "a");
-      appendLine("bc", "bc");
-      appendLine("cde", "cde");
-      appendLine("cdefg", "cde"); // this one is the max tab distance before needing to move to the next tab stop
-      appendLine("cdefgh", "cde"); // This one should push to the next tab stop.
-      appendLine("cdefghi", "cde", false); // This one should push to the next tab stop.
+      // The extra comments are intentional to show where the tab stops should be.
+      appendLine("", /*______*/ "a");
+      appendLine("", /*______*/ "bc");
+      appendLine("a", /*_____*/ "a");
+      appendLine("bc", /*____*/ "bc");
+      appendLine("cde", /*___*/ "cde");
+      appendLine("cdefg", /*_*/ "cde"); // this one is the max tab distance before needing to move to the next tab stop
+      appendLine("cdefgh", /*______*/ "cde"); // This one should push to the next tab stop.
+      appendLine("cdefghi", /*_____*/ "cde", false); // This one should push to the next tab stop.
 
       const tb = doLayout(textBlock);
       tb.lines.forEach((line, index) => {
@@ -512,6 +514,7 @@ describe("layoutTextBlock", () => {
     it("computes ranges based on custom line spacing and line height", () => {
       const lineSpacingFactor = 2;
       const lineHeight = 3;
+      // TODO: set this to some value
       const paragraphSpacingFactor = 0;
       const textBlock = TextBlock.create({ styleId: "", styleOverrides: { lineSpacingFactor, lineHeight, paragraphSpacingFactor } });
       textBlock.appendRun(TextRun.create({ content: "abc" }));
@@ -598,6 +601,10 @@ describe("layoutTextBlock", () => {
 
       block.width = 10;
       expectBlockRange(10, 2);
+    });
+
+    it("computes range for list markers and list items based on indentation", function () {
+      // TODO
     });
 
     it("justifies lines", function () {
@@ -696,7 +703,7 @@ describe("layoutTextBlock", () => {
     });
   });
 
-  describe.only("word-wrapping", () => {
+  describe("word-wrapping", () => {
 
     function expectLines(input: string, width: number, expectedLines: string[]): TextBlockLayout {
       const textBlock = TextBlock.create({ styleId: "", styleOverrides: { paragraphSpacingFactor: 0, lineSpacingFactor: 0, lineHeight: 1 } });
@@ -1005,6 +1012,10 @@ describe("layoutTextBlock", () => {
       const layout2 = doLayout(block);
       expect(layout2.range.yLength()).to.equal(1);
     })
+
+    it("wraps list items", function () {
+      // TODO
+    });
   });
 
   describe("grapheme offsets", () => {
@@ -1365,6 +1376,10 @@ describe("produceTextBlockGeometry", () => {
       "text",
       "text",
     ]);
+  });
+
+  it("produces entries for list markers", () => {
+    // TODO
   });
 
   it("offsets geometry entries by margins", () => {
