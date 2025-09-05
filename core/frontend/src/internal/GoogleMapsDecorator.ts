@@ -97,9 +97,9 @@ export class GoogleMapsDecorator implements Decorator {
   /** Activate the logo based on the given map type. */
   public async activate(mapType: GoogleMapsMapTypes): Promise<boolean> {
     // Pick the logo that is the most visible on the background map
-    const imageName = mapType === "roadmap" ?
-    "GoogleMaps_Logo_WithLightOutline_1x" :
-    "GoogleMaps_Logo_WithDarkOutline_1x";
+    const imageName = mapType === "satellite" ?
+    "GoogleMaps_Logo_WithDarkOutline_1x" :
+    "GoogleMaps_Logo_WithLightOutline_1x";
 
     // We need to move the logo right after the 'i.js' button
     this.logo.offset = new Point3d(45, 10);
@@ -131,8 +131,8 @@ export class GoogleMapsDecorator implements Decorator {
     elem.style.fontSize = "11px";
     elem.style.textWrap = "wrap";
     elem.style.position = "absolute";
-    elem.style.bottom = "10px";
-    elem.style.left = "107px";
+    elem.style.bottom = "14px";
+    elem.style.left = "155px";
 
     context.addHtmlDecoration(elem);
   };

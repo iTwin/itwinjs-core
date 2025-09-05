@@ -220,7 +220,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     return IModelApp.tileAdmin.getTilesForUser(vp)?.selected
   }
 
-  public override async addAttributions (cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
+  public override async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
     let copyrightMsg = "";
     const tiles = this.getSelectedTiles(vp);
     if (tiles) {
@@ -228,7 +228,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
         const attrList = await this.fetchAttributions(tiles);
         for (const attr of attrList) {
           attr.split(",").forEach((line) => {
-            copyrightMsg += `${copyrightMsg.length===0 ? "": "<br"}${line}`;
+            copyrightMsg += `${copyrightMsg.length === 0 ? "": "<br"}${line}`;
         });
         }
       }
@@ -237,8 +237,12 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
       }
     }
 
+    const iconSrc = document.createElement("img");
+    iconSrc.src = `${IModelApp.publicPath}images/GoogleMaps_Logo_Gray_1x.png`;
+    iconSrc.style.padding = "10px 10px 5px 10px";
+
     cards.appendChild(IModelApp.makeLogoCard({
-      iconSrc: `${IModelApp.publicPath}images/google_on_white_hdpi.png`,
+      iconSrc,
       heading: "Google Maps",
       notice: copyrightMsg }));
   }
