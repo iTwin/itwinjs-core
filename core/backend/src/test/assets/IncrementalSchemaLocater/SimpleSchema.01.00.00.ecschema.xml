@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ECSchema schemaName="SimpleSchema" alias="t" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+<ECSchema schemaName="SimpleSchema" alias="t" version="01.00.00" description="A simple test schema" displayLabel="Simple Schema" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
     <ECSchemaReference name="BisCore" version="01.00.16" alias="bis"/>
     <ECSchemaReference name="CoreCustomAttributes" version="01.00.04" alias="CoreCA"/>
     <ECSchemaReference name="Formats" version="01.00.00" alias="f"/>

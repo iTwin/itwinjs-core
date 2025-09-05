@@ -5,6 +5,8 @@ export default {
   "schemas": [
     {
       "name": "SimpleSchema",
+      "description": "A simple test schema",
+      "label": "Simple Schema",
       "references": [
         "BisCore",
         "CoreCustomAttributes",
