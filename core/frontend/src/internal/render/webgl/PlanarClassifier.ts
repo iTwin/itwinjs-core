@@ -260,7 +260,6 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _planarClipMask?: PlanarClipMaskState;
   private _classifierTreeRef?: SpatialClassifierTileTreeReference;
   private _planarClipMaskOverrides?: FeatureSymbology.Overrides;
-  private _overridesDirty = true;
   private _contentMode: PlanarClassifierContent = PlanarClassifierContent.None;
   private _removeMe?: () => void;
   private _featureSymbologySource: FeatureSymbology.Source = {
@@ -430,17 +429,13 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._projectionMatrix = projection.projectionMatrix;
     this._frustum = projection.textureFrustum;
     this._debugFrustum = projection.debugFrustum;
-    if (this._overridesDirty) {
-      this._overridesDirty = false;
-      this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides(context, this._featureSymbologySource);
-    }
-
+    this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides(context, this._featureSymbologySource);
     if (!this._planarClipMask?.usingViewportOverrides && this._removeMe) {
       this._removeMe();
       this._removeMe = undefined;
     } else if (this._planarClipMask?.usingViewportOverrides && !this._removeMe) {
       this._removeMe = context.viewport.onFeatureOverridesChanged.addListener(() => {
-        this._overridesDirty = true;
+        this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides(context, this._featureSymbologySource);
         context.viewport.requestRedraw();
       });
     }
