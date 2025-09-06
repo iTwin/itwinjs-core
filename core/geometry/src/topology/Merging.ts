@@ -13,7 +13,7 @@ import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
-import { Range3d } from "../geometry3d/Range";
+import { Range2d, Range3d } from "../geometry3d/Range";
 import { XAndY } from "../geometry3d/XYZProps";
 import { ClusterableArray } from "../numerics/ClusterableArray";
 import { SmallSystem } from "../numerics/SmallSystem";
@@ -93,16 +93,23 @@ export class HalfEdgeGraphOps {
     return Geometry.crossProductXYXY(targetA.x - base.x, targetA.y - base.y, targetB.x - base.x, targetB.y - base.y);
   }
 
-  // ---------------------------------------------------------------------------------------------------------------------
-  // ----------------------------------------------------------------------------------------------------------------------
-
-  public static graphRange(graph: HalfEdgeGraph): Range3d {
+  /** Compute the range of the graph's vertices. */
+  public static graphRange(graph: Readonly<HalfEdgeGraph>): Range3d {
     const range = Range3d.create();
     for (const node of graph.allHalfEdges) {
       range.extendXYZ(node.x, node.y, node.z);
     }
     return range;
   }
+  /** Compute the xy-range of the graph's vertices. */
+  public static graphRangeXY(graph: Readonly<HalfEdgeGraph>): Range2d {
+    const range = Range2d.createNull();
+    for (const node of graph.allHalfEdges) {
+      range.extendXY(node.x, node.y);
+    }
+    return range;
+  }
+
   /** Returns an array of all nodes (both ends) of edges created from segments. */
   public static segmentArrayToGraphEdges(segments: LineSegment3d[], returnGraph: HalfEdgeGraph, mask: HalfEdgeMask): HalfEdge[] {
     const result = [];
@@ -356,7 +363,11 @@ export class HalfEdgeGraphMerge {
    * * If there are edge crossings, the graph can be a (highly complicated) Klein bottle topology.
    * * Mask.NULL_FACE is cleared throughout and applied within null faces.
    */
-  public static clusterAndMergeXYTheta(graph: HalfEdgeGraph, outboundRadiansFunction?: (he: HalfEdge) => number) {
+  public static clusterAndMergeXYTheta(
+    graph: HalfEdgeGraph,
+    outboundRadiansFunction?: (he: HalfEdge) => number,
+    clusterTol: number = Geometry.smallMetricDistance,
+  ) {
     const allNodes = graph.allHalfEdges;
     const numNodes = allNodes.length;
     graph.clearMask(HalfEdgeMask.NULL_FACE);
@@ -368,7 +379,6 @@ export class HalfEdgeGraphMerge {
       HalfEdge.pinch(nodeA, nodeA.vertexSuccessor);  // pull it out of its current vertex loop.
       clusters.addDirect(xA, yA, 0.0, i);
     }
-    const clusterTol = Geometry.smallMetricDistance;
     const order = clusters.clusterIndicesLexical(clusterTol);
     let k0 = 0;
     const numK = order.length;
@@ -532,30 +542,29 @@ export class HalfEdgeGraphMerge {
    * * This is a large operation.
    * @param graph
    */
-  public static splitIntersectingEdges(graph: HalfEdgeGraph): GraphSplitData {
+  public static splitIntersectingEdges(graph: HalfEdgeGraph, distanceTol: number = Geometry.smallMetricDistance, fractionTol: number = 1.0e-8): GraphSplitData {
     const data = new GraphSplitData();
     const sweepHeap = this.buildVerticalSweepPriorityQueue(graph);
     let nodeA0, nodeB1;
-    const smallFraction = 1.0e-8;
+    const smallFraction = fractionTol;
     const largeFraction = 1.0 - smallFraction;
     let i;
     let nodeB0;
-    const distTol = Geometry.smallMetricDistance;
     while (undefined !== (nodeA0 = sweepHeap.priorityQueue.pop())) {
       data.numUpEdge++;
       const n0 = sweepHeap.activeEdges.length;
-      sweepHeap.removeArrayMembersWithY1Below(nodeA0.y - distTol);
+      sweepHeap.removeArrayMembersWithY1Below(nodeA0.y - distanceTol);
       data.numPopOut += n0 - sweepHeap.activeEdges.length;
       for (i = 0; i < sweepHeap.activeEdges.length; i++) {
         nodeB0 = sweepHeap.activeEdges[i];
         nodeB1 = nodeB0.faceSuccessor;
-        if (Geometry.isSameCoordinateXY(nodeA0.x, nodeA0.y, nodeB0.x, nodeB0.y, distTol)) {
+        if (Geometry.isSameCoordinateXY(nodeA0.x, nodeA0.y, nodeB0.x, nodeB0.y, distanceTol)) {
           data.numA0B0++;
-        } else if (Geometry.isSameCoordinateXY(nodeB1.x, nodeB1.y, nodeA0.x, nodeA0.y, distTol)) {
+        } else if (Geometry.isSameCoordinateXY(nodeB1.x, nodeB1.y, nodeA0.x, nodeA0.y, distanceTol)) {
           data.numA0B1++;
         } else {
           data.numIntersectionTest++;
-          const fractions = this.computeIntersectionFractionsOnEdges(nodeA0, nodeB0, distTol);
+          const fractions = this.computeIntersectionFractionsOnEdges(nodeA0, nodeB0, distanceTol);
           if (fractions) {
             const splitAndPush = (node: HalfEdge, fraction?: number): void => {
               if (fraction !== undefined && fraction > smallFraction && fraction < largeFraction) {

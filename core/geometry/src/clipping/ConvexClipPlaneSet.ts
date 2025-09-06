@@ -49,6 +49,10 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     // this._parity = 1;
     this._planes = planes ? planes : [];
   }
+  /** Return the (reference to the) array of `ClipPlane`. */
+  public get planes(): ClipPlane[] {
+    return this._planes;
+  }
   /**
    * Return an array containing all the planes of the convex set.
    * * Note that this has no leading keyword identifying it as a ConvexClipPlaneSet.
@@ -265,10 +269,6 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     for (const plane of this._planes)
       result._planes.push(plane.clone());
     return result;
-  }
-  /** Return the (reference to the) array of `ClipPlane` */
-  public get planes(): ClipPlane[] {
-    return this._planes;
   }
   /**
    * Test if there is any intersection with a ray defined by origin and direction.
@@ -619,17 +619,18 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * the polygon.
    * @param input polygon, usually convex.
    * @param output output polygon
-   * @param work work array.
+   * @param work optional work array.
    * @param containingPlane if this plane is found in the convex set, it is NOT applied.
    */
   public polygonClip(
-    input: GrowableXYZArray | Point3d[], output: GrowableXYZArray, work: GrowableXYZArray, planeToSkip?: ClipPlane,
+    input: GrowableXYZArray | Point3d[], output: GrowableXYZArray, work?: GrowableXYZArray, planeToSkip?: ClipPlane,
   ): void {
     if (input instanceof GrowableXYZArray)
       input.clone(output);
     else
       GrowableXYZArray.create(input, output);
-
+    if (!work)
+      work = new GrowableXYZArray();
     for (const plane of this._planes) {
       if (planeToSkip === plane)
         continue;
@@ -800,7 +801,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     const plane = Plane3dByOriginAndUnitNormal.createXYPlane();
     const visitor = convexMesh instanceof Polyface ? convexMesh.createVisitor(0) : convexMesh;
     visitor.setNumWrap(0);
-    for (visitor.reset(); visitor.moveToNextFacet(); ) {
+    for (visitor.reset(); visitor.moveToNextFacet();) {
       if (undefined !== PolygonOps.areaNormalGo(visitor.point, normal)) {
         normal.scaleInPlace(scale);
         if (undefined !== Plane3dByOriginAndUnitNormal.create(visitor.point.front()!, normal, plane))

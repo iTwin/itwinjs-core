@@ -306,7 +306,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
   /**
    * Add triangles from the first point of the linestring to the subsequent edges of the linestring.
-   * * No checks are made for polygon convexity or edge collinearity, conditions which would ensure positive area triangles.
+   * * No checks are made for polygon convexity or edge colinearity, conditions which would ensure positive area triangles.
    * @param ls linestring with point coordinates.
    * @param reverse if `true`, wrap the triangle creation in toggleReversedFacetFlag.
    */
@@ -1733,10 +1733,11 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /**
    * Create a polyface containing the faces of a HalfEdgeGraph, with test functions to filter faces and hide edges.
    * * This is a static wrapper of [[addGraph]].
+   * * Default callbacks assume graph is appropriately masked with HalfEdgeMask.EXTERIOR.
    * @param graph faces to add as facets.
    * @param options (optional) options for the polyface.
-   * @param acceptFaceFunction optional test for whether to add a given face. Default: ignore exterior faces.
-   * @param isEdgeVisibleFunction optional test for whether to hide an edge. Default: hide interior edges.
+   * @param acceptFaceFunction optional test for whether to add a given face. Default: accept only interior faces.
+   * @param isEdgeVisibleFunction optional test for whether to hide an edge. Default: only boundary edges are visible.
    * @internal
    */
   public static graphToPolyface(

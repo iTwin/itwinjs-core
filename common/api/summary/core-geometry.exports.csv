@@ -203,6 +203,7 @@ internal;class;PascalCoefficients
 public;class;Path
 public;class;PathFragment
 public;interface;PerpParallelOptions
+public;interface;PlanarColinearOptions
 public;class;Plane3d
 public;class;Plane3dByOriginAndUnitNormal
 public;class;Plane3dByOriginAndVectors
@@ -309,6 +310,7 @@ public;interface;WritableXAndY
 public;interface;WritableXYAndZ
 public;interface;WriteableHasZ
 public;type;XAndY
+public;namespace;XAndY
 public;class;XY
 public;type;XYAndZ
 public;namespace;XYAndZ

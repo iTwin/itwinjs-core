@@ -363,11 +363,9 @@ export class Ray3d implements BeJSONFunctions {
     if (range.isNull)
       return Range1d.createNull(result);
     const interval = Range1d.createXX(-Geometry.largeCoordinateResult, Geometry.largeCoordinateResult, result);
-    if (interval.clipLinearMapToInterval(this.origin.x, this.direction.x, range.low.x, range.high.x)
-      && interval.clipLinearMapToInterval(this.origin.y, this.direction.y, range.low.y, range.high.y)
-      && interval.clipLinearMapToInterval(this.origin.z, this.direction.z, range.low.z, range.high.z)
-    )
-      return interval;
+    interval.clipLinearMapToInterval(this.origin.x, this.direction.x, range.low.x, range.high.x);
+    interval.clipLinearMapToInterval(this.origin.y, this.direction.y, range.low.y, range.high.y);
+    interval.clipLinearMapToInterval(this.origin.z, this.direction.z, range.low.z, range.high.z);
     return interval;
   }
   /**
