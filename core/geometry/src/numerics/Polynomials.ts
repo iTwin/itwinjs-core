@@ -1240,15 +1240,17 @@ export class TrigPolynomial {
     }
     const maxCoff = Math.max(Math.abs(axx), Math.abs(ayy), Math.abs(axy), Math.abs(ax), Math.abs(ay), Math.abs(a));
     const b = this.solveAngles(coffs, degree, maxCoff, radians);
-    /*
-    for (const theta of angles) {
-      const c = theta.cos();
-      const s = theta.sin();
-      GeometryCoreTestIO.consoleLog({
+    /**
+    for (const theta of radians) {
+      const c = Math.cos(theta)
+      const s = Math.sin(theta)
+
+      console.log({
         angle: theta, co: c, si: s,
         f: axx * c * c + axy * c * s + ayy * s * s + ax * c + ay * s + a,
       });
-    } */
+    }
+    */
     return b;
   }
   /**
