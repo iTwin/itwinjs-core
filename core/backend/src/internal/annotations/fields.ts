@@ -3,16 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECSqlValueType, FieldRun, RelationshipProps, TextBlock } from "@itwin/core-common";
+import { ECSqlValueType, FieldPrimitiveValue, FieldPropertyType, FieldRun, formatFieldValue, RelationshipProps, TextBlock } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
-import { XAndY, XYAndZ } from "@itwin/core-geometry";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
-import { AnyClass, EntityClass, Property, StructArrayProperty } from "@itwin/ecschema-metadata";
-
-// A FieldPropertyPath must ultimately resolve to one of these primitive types.
-export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
+import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, StructArrayProperty } from "@itwin/ecschema-metadata";
 
 interface FieldStructValue { [key: string]: any }
 
@@ -39,28 +35,14 @@ type FieldValue = {
   structArray: FieldStructValue[];
 }
 
-// Metadata associated with a FieldProperty, providing info needed for formatting like kind-of-quantity, extended type, etc.
-// That information can be obtained from the EC Property. For JSON fields, we will need to allow the user to specify it explicitly
-// (TBD because formatting is not yet implemented).
-export interface FieldPropertyMetadata {
-  readonly property: Property;
-  // ###TODO probably want to know if it's a JSON property.
-}
-
-// The resolved primitive value of a field with metadata.
-export interface FieldProperty {
-  value: FieldPrimitiveValue;
-  metadata: FieldPropertyMetadata;
-}
-
 export interface UpdateFieldsContext {
   readonly hostElementId: Id64String;
 
-  getProperty(field: FieldRun): FieldProperty | undefined
+  getProperty(field: FieldRun): FieldPrimitiveValue | undefined
 }
 
 // Resolve the raw primitive value of the property that a field points to.
-function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | undefined {
+function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldPrimitiveValue | undefined {
   const host = field.propertyHost;
   const schemaItem = iModel.schemaContext.getSchemaItemSync(host.schemaName, host.className);
   if (!EntityClass.isEntityClass(schemaItem)) {
@@ -225,16 +207,17 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
     return undefined;
   }
 
-  return {
-    value: curValue.primitive,
-    metadata: { property: ecProp },
-  };
+  if (field.propertyType !== computeFieldPropertyType(ecProp)){
+    return undefined
+  }
+
+  return curValue.primitive;
 }
 
 export function createUpdateContext(hostElementId: string, iModel: IModelDb, deleted: boolean): UpdateFieldsContext {
   return {
     hostElementId,
-    getProperty: deleted ? () => undefined : (field) => getFieldProperty(field, iModel),
+    getProperty: deleted ? () => undefined : (field) => getFieldPropertyValue(field, iModel),
   };
 }
 
@@ -246,11 +229,10 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
 
   let newContent: string | undefined;
   try {
-    const prop = context.getProperty(field);
-    if (undefined !== prop) {
+    const propValue = context.getProperty(field);
+    if (undefined !== propValue) {
       // ###TODO formatting etc.
-      // eslint-disable-next-line @typescript-eslint/no-base-to-string
-      newContent = prop.value.toString();
+      newContent = formatFieldValue(propValue, field.propertyType, field.formatOptions);
     }
   } catch (err) {
     Logger.logException(BackendLoggerCategory.IModelDb, err);
@@ -300,5 +282,73 @@ export function updateElementFields(props: RelationshipProps, iModel: IModelDb, 
   } catch (err) {
     Logger.logException(BackendLoggerCategory.IModelDb, err);
   }
+}
+
+// ### TODO: support extended types and custom attributes
+export function computeFieldPropertyType(property: Property): FieldPropertyType | undefined {
+
+  if (property.isStruct())
+    return undefined;
+
+  if (property.isArray()) {
+    switch (property.propertyType) {
+      case PropertyType.Boolean_Array:
+        return "boolean";
+      case PropertyType.DateTime_Array:
+        return "datetime";
+      case PropertyType.Double_Array:
+      case PropertyType.Long_Array:
+      case PropertyType.Integer_Array:
+        return "quantity";
+      case PropertyType.String_Array:
+        return "string";
+      case PropertyType.Point2d_Array:
+      case PropertyType.Point3d_Array:
+        return "coordinate";
+      case PropertyType.Integer_Enumeration_Array:
+        return "int-enum";
+      case PropertyType.String_Enumeration_Array:
+        return "string-enum"
+      default:
+        undefined
+    }
+  }
+
+  if (property.isEnumeration()){
+    if (property.propertyType === PropertyType.Integer_Enumeration)
+      return "int-enum";
+    if  (property.propertyType === PropertyType.String_Enumeration)
+      return "string-enum";
+    else
+      return undefined;
+  }
+
+  if (property.isPrimitive()) {
+    switch (property.primitiveType) {
+      case PrimitiveType.Boolean:
+        return "boolean";
+      case PrimitiveType.String:
+        if (property.extendedTypeName === "DateTime")
+          return "datetime";
+        return "string";
+      case PrimitiveType.DateTime:
+        return "datetime";
+      case PrimitiveType.Double:
+      case PrimitiveType.Integer:
+      case PrimitiveType.Long:
+        return "quantity";
+      case PrimitiveType.Point2d:
+      case PrimitiveType.Point3d:
+        return "coordinate";
+      case PrimitiveType.Binary:
+        if (property.extendedTypeName === "Guid")
+          return "string";
+        else
+          return undefined;
+      default:
+        return undefined;
+    }
+  }
+  return undefined;
 }
 
