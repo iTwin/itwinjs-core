@@ -575,6 +575,9 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const getDrawCommands = (graphics: RenderGraphic[]) => {
       this._batchState.reset();
       renderCommands.reset(target, this._branchStack, this._batchState);
+      if (this._planarClipMask?.overridesModelVisibility) {
+        renderCommands.appearanceProvider = target.currentBranch;
+      }
       renderCommands.collectGraphicsForPlanarProjection(graphics);
 
       // Draw the classifiers into our attachments.
@@ -605,8 +608,11 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
         this._classifierBuffers.drawHilite(hiliteCommands, target);
     }
     if (this._maskGraphics.length > 0 && this._maskBuffer) {
-      if (this._planarClipMaskOverrides)
+      if (this._planarClipMaskOverrides) {
         target.overrideFeatureSymbology(this._planarClipMaskOverrides);
+        this._branchStack.setSymbologyOverrides(this._planarClipMaskOverrides);
+      }
+
       if (this._planarClipMask && this._planarClipMask.settings.transparency !== undefined && this._planarClipMask.settings.transparency > 0.0)
         this._anyTranslucent = true;
 
