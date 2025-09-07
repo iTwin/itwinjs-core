@@ -260,6 +260,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _planarClipMask?: PlanarClipMaskState;
   private _classifierTreeRef?: SpatialClassifierTileTreeReference;
   private _planarClipMaskOverrides?: FeatureSymbology.Overrides;
+  private _overridesDirty = true;
   private _contentMode: PlanarClassifierContent = PlanarClassifierContent.None;
   private _removeMe?: () => void;
   private _featureSymbologySource: FeatureSymbology.Source = {
@@ -429,13 +430,17 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._projectionMatrix = projection.projectionMatrix;
     this._frustum = projection.textureFrustum;
     this._debugFrustum = projection.debugFrustum;
-    this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides(context, this._featureSymbologySource);
+    if (this._overridesDirty) {
+      this._overridesDirty = false;
+      this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides(context, this._featureSymbologySource);
+    }
+
     if (!this._planarClipMask?.usingViewportOverrides && this._removeMe) {
       this._removeMe();
       this._removeMe = undefined;
     } else if (this._planarClipMask?.usingViewportOverrides && !this._removeMe) {
       this._removeMe = context.viewport.onFeatureOverridesChanged.addListener(() => {
-        this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides(context, this._featureSymbologySource);
+        this._overridesDirty = true;
         context.viewport.requestRedraw();
       });
     }
@@ -576,8 +581,16 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       this._batchState.reset();
       renderCommands.reset(target, this._branchStack, this._batchState);
       if (this._planarClipMask?.overridesModelVisibility) {
+        // We're using batched tiles and the mask is overriding which models are visible versus those visible in the view.
+        // We don't want the BatchedTileTreeReference to hide models that belong in the mask.
+        // The target's root branch's symbology overrides are set up correctly for the mask, and we never push branches to the target
+        // (we have a separate branch stack), so just use the root branch as the appearance provider instead of the branch stack.
+        // NOTE: this doesn't work if we're inside a GraphicalEditingScope displaying temporary graphics for some elements, because those
+        // elements are hidden in the tiles by a FeatureAppearanceProvider. But we'll never use a GraphicalEditingScope with batched tiles,
+        // and non-batched tiles never hide models using symbology overrides.
         renderCommands.appearanceProvider = target.currentBranch;
       }
+
       renderCommands.collectGraphicsForPlanarProjection(graphics);
 
       // Draw the classifiers into our attachments.
