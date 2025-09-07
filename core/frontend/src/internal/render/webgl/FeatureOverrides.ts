@@ -6,8 +6,13 @@
  * @module WebGL
  */
 
+<<<<<<< HEAD
 import { assert, dispose, Id64 } from "@itwin/core-bentley";
 import { PackedFeature, RenderFeatureTable } from "@itwin/core-common";
+=======
+import { assert, dispose, expectDefined, Id64 } from "@itwin/core-bentley";
+import { FeatureAppearanceProvider, PackedFeature, RenderFeatureTable } from "@itwin/core-common";
+>>>>>>> 80f210b120 (Fix 'ghost' elements when using GraphicalEditingScope with map mask (#8487))
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
 import { WebGLDisposable } from "./Disposable";
 import { LineCode } from "./LineCode";
@@ -99,7 +104,7 @@ export class FeatureOverrides implements WebGLDisposable {
     return this._lut.dataBytes;
   }
 
-  private _initialize(map: RenderFeatureTable, ovrs: FeatureSymbology.Overrides, pickExcludes: Id64.Uint32Set, hilite: Hilites, flashed?: Id64.Uint32Pair): Texture2DHandle | undefined {
+  private _initialize(provider: FeatureAppearanceProvider, map: RenderFeatureTable, ovrs: FeatureSymbology.Overrides, pickExcludes: Id64.Uint32Set, hilite: Hilites, flashed?: Id64.Uint32Pair): Texture2DHandle | undefined {
     const nFeatures = map.numFeatures;
     const dims = computeDimensions(nFeatures, 3, 0, System.instance.maxTextureSize);
     const width = dims.width;
@@ -111,19 +116,24 @@ export class FeatureOverrides implements WebGLDisposable {
 
     const data = new Uint8Array(width * height * 4);
     const creator = new Texture2DDataUpdater(data);
-    this.buildLookupTable(creator, map, ovrs, pickExcludes, flashed, hilite);
+    this.buildLookupTable(provider, creator, map, ovrs, pickExcludes, flashed, hilite);
 
     return TextureHandle.createForData(width, height, data, true, GL.Texture.WrapMode.ClampToEdge);
   }
 
+<<<<<<< HEAD
   private _update(map: RenderFeatureTable, lut: Texture2DHandle, pickExcludes: Id64.Uint32Set | undefined, flashed?: Id64.Uint32Pair, hilites?: Hilites, ovrs?: FeatureSymbology.Overrides) {
     const updater = new Texture2DDataUpdater(lut.dataBytes!);
+=======
+  private _update(provider: FeatureAppearanceProvider, map: RenderFeatureTable, lut: Texture2DHandle, pickExcludes: Id64.Uint32Set | undefined, flashed?: Id64.Uint32Pair, hilites?: Hilites, ovrs?: FeatureSymbology.Overrides) {
+    const updater = new Texture2DDataUpdater(expectDefined(lut.dataBytes));
+>>>>>>> 80f210b120 (Fix 'ghost' elements when using GraphicalEditingScope with map mask (#8487))
 
     if (undefined === ovrs) {
       this.updateFlashedAndHilited(updater, map, pickExcludes, flashed, hilites);
     } else {
       assert(undefined !== hilites);
-      this.buildLookupTable(updater, map, ovrs, pickExcludes, flashed, hilites);
+      this.buildLookupTable(provider, updater, map, ovrs, pickExcludes, flashed, hilites);
     }
 
     lut.update(updater);
@@ -150,7 +160,15 @@ export class FeatureOverrides implements WebGLDisposable {
     return curFlags;
   }
 
-  private buildLookupTable(data: Texture2DDataUpdater, map: RenderFeatureTable, ovr: FeatureSymbology.Overrides, pickExclude: Id64.Uint32Set | undefined, flashedIdParts: Id64.Uint32Pair | undefined, hilites: Hilites) {
+  private buildLookupTable(
+    provider: FeatureAppearanceProvider,
+    data: Texture2DDataUpdater,
+    map: RenderFeatureTable,
+    ovr: FeatureSymbology.Overrides,
+    pickExclude: Id64.Uint32Set | undefined,
+    flashedIdParts: Id64.Uint32Pair | undefined,
+    hilites: Hilites
+  ) {
     const allowHilite = true !== this._options.noHilite;
     const allowFlash = true !== this._options.noFlash;
     const allowEmphasis = true !== this._options.noEmphasis;
@@ -184,7 +202,7 @@ export class FeatureOverrides implements WebGLDisposable {
         isModelHilited = allowHilite && hilites.models.hasPair(feature.modelId);
       }
 
-      const app = this.target.currentBranch.getFeatureAppearance(
+      const app = provider.getFeatureAppearance(
         ovr,
         feature.elementId.lower, feature.elementId.upper,
         feature.subCategoryId.lower, feature.subCategoryId.upper,
@@ -386,7 +404,7 @@ export class FeatureOverrides implements WebGLDisposable {
     }
   }
 
-  public initFromMap(map: RenderFeatureTable) {
+  public initFromMap(map: RenderFeatureTable, provider: FeatureAppearanceProvider) {
     const nFeatures = map.numFeatures;
     assert(0 < nFeatures);
 
@@ -395,13 +413,13 @@ export class FeatureOverrides implements WebGLDisposable {
     const ovrs: FeatureSymbology.Overrides = this.target.currentFeatureSymbologyOverrides;
     this._mostRecentSymbologyOverrides = ovrs;
     const hilite = this.target.hilites;
-    this._lut = this._initialize(map, ovrs, this.target.pickExclusions, hilite, this.target.flashed);
+    this._lut = this._initialize(provider, map, ovrs, this.target.pickExclusions, hilite, this.target.flashed);
     this._lastFlashId = Id64.invalid;
     this._hiliteSyncObserver = {};
     this._pickExclusionsSyncObserver = {};
   }
 
-  public update(features: RenderFeatureTable) {
+  public update(features: RenderFeatureTable, provider: FeatureAppearanceProvider) {
     let ovrs: FeatureSymbology.Overrides | undefined = this.target.currentFeatureSymbologyOverrides;
     const ovrsUpdated = ovrs !== this._mostRecentSymbologyOverrides;
     if (ovrsUpdated)
@@ -419,6 +437,7 @@ export class FeatureOverrides implements WebGLDisposable {
       // _lut can be undefined if context was lost, (gl.createTexture returns null)
       if (this._lut) {
         this._update(
+          provider,
           features,
           this._lut,
           undefined !== ovrs || pickExcludesUpdated ? this.target.pickExclusions : undefined,
