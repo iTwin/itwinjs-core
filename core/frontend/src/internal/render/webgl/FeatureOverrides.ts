@@ -6,13 +6,8 @@
  * @module WebGL
  */
 
-<<<<<<< HEAD
 import { assert, dispose, Id64 } from "@itwin/core-bentley";
-import { PackedFeature, RenderFeatureTable } from "@itwin/core-common";
-=======
-import { assert, dispose, expectDefined, Id64 } from "@itwin/core-bentley";
 import { FeatureAppearanceProvider, PackedFeature, RenderFeatureTable } from "@itwin/core-common";
->>>>>>> 80f210b120 (Fix 'ghost' elements when using GraphicalEditingScope with map mask (#8487))
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
 import { WebGLDisposable } from "./Disposable";
 import { LineCode } from "./LineCode";
@@ -121,13 +116,8 @@ export class FeatureOverrides implements WebGLDisposable {
     return TextureHandle.createForData(width, height, data, true, GL.Texture.WrapMode.ClampToEdge);
   }
 
-<<<<<<< HEAD
-  private _update(map: RenderFeatureTable, lut: Texture2DHandle, pickExcludes: Id64.Uint32Set | undefined, flashed?: Id64.Uint32Pair, hilites?: Hilites, ovrs?: FeatureSymbology.Overrides) {
-    const updater = new Texture2DDataUpdater(lut.dataBytes!);
-=======
   private _update(provider: FeatureAppearanceProvider, map: RenderFeatureTable, lut: Texture2DHandle, pickExcludes: Id64.Uint32Set | undefined, flashed?: Id64.Uint32Pair, hilites?: Hilites, ovrs?: FeatureSymbology.Overrides) {
-    const updater = new Texture2DDataUpdater(expectDefined(lut.dataBytes));
->>>>>>> 80f210b120 (Fix 'ghost' elements when using GraphicalEditingScope with map mask (#8487))
+    const updater = new Texture2DDataUpdater(lut.dataBytes!);
 
     if (undefined === ovrs) {
       this.updateFlashedAndHilited(updater, map, pickExcludes, flashed, hilites);
