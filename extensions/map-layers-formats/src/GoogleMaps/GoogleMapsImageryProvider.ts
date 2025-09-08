@@ -227,7 +227,10 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
         const attrList = await this.fetchAttributions(tiles);
         for (const attr of attrList) {
           attr.split(",").forEach((line) => {
-            copyrightMsg += `${copyrightMsg.length === 0 ? "": "<br>"}${line}`;
+            // Attempt to reduce duplicates, since if there are multiple zoom levels sometimes the same info is returned
+            if (!copyrightMsg.includes(line)) {
+              copyrightMsg += `${copyrightMsg.length === 0 ? "": "<br>"}${line}`;
+            }
           });
         }
       }
