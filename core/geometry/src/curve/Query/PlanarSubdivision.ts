@@ -139,7 +139,8 @@ export class PlanarSubdivision {
       }
       this.addHalfEdge(graph, p, last.point, last.fraction, p.endPoint(), 1.0, mergeTolerance);
     }
-    HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph, (he: HalfEdge) => he.sortAngle!);
+    // every edge got its sortAngle defined by addHalfEdge
+    HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph, (he: HalfEdge) => he.sortAngle ?? 0, mergeTolerance);
     return graph;
   }
   /**
