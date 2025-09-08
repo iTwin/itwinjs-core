@@ -875,6 +875,7 @@ export abstract class IModelDb extends IModel {
       this.abandonChanges();
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Failed to drop schemas: ${error}`);
     }
+    await this.locks.releaseAllLocks();
     this.clearCaches();
   }
 
