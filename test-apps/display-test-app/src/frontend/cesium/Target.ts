@@ -72,6 +72,7 @@ export class OnScreenTarget extends RenderTarget {
     // Start test decorator if not already started
     this.startDecorator();
     
+    
     // Only log when decoration count changes
     const currentCount = (decorations.world?.length || 0) + (decorations.normal?.length || 0) + 
                         (decorations.worldOverlay?.length || 0) + (decorations.viewOverlay?.length || 0);
@@ -87,11 +88,12 @@ export class OnScreenTarget extends RenderTarget {
     // Only clear decoration entities, not test entities
     CesiumEntityHelpers.clearDecorationEntities(entityCollection);
     
-    // Phase 2: Start with basic conversion
-    CesiumEntityHelpers.convertDecorationsToCesiumEntities(decorations.world, 'world', entityCollection);
-    CesiumEntityHelpers.convertDecorationsToCesiumEntities(decorations.normal, 'normal', entityCollection);
-    CesiumEntityHelpers.convertDecorationsToCesiumEntities(decorations.worldOverlay, 'worldOverlay', entityCollection);
-    CesiumEntityHelpers.convertDecorationsToCesiumEntities(decorations.viewOverlay, 'viewOverlay', entityCollection);
+    // Phase 2: Start with basic conversion (now with iModel for real coordinate conversion)
+    const currentIModel = IModelApp.viewManager.selectedView?.iModel;
+    CesiumEntityHelpers.convertDecorationsToCesiumEntities(decorations.world, 'world', entityCollection, currentIModel);
+    CesiumEntityHelpers.convertDecorationsToCesiumEntities(decorations.normal, 'normal', entityCollection, currentIModel);
+    CesiumEntityHelpers.convertDecorationsToCesiumEntities(decorations.worldOverlay, 'worldOverlay', entityCollection, currentIModel);
+    CesiumEntityHelpers.convertDecorationsToCesiumEntities(decorations.viewOverlay, 'viewOverlay', entityCollection, currentIModel);
     
     // WORKAROUND: Create mock decorations for testing when no real decorations exist
     const totalDecorations = (decorations.world?.length || 0) + (decorations.normal?.length || 0) + 
@@ -102,9 +104,11 @@ export class OnScreenTarget extends RenderTarget {
       entity.id && entity.id.startsWith('mock_decoration_')
     ).length;
     
-    if (totalDecorations === 0 && this._decorator && currentMockEntities === 0) {
-      console.log('No real decorations and no mock entities found - creating mock decorations for testing');
+    if (totalDecorations === 0 && !this._decorator && currentMockEntities === 0) {
+      console.log('No real decorations and no decorator found - creating mock decorations for testing');
       CesiumEntityHelpers.createMockDecorations(entityCollection);
+    } else if (this._decorator && totalDecorations === 0) {
+      console.log(`Decorator exists but no decorations detected yet - skipping mock decorations`);
     } else if (currentMockEntities > 0) {
       console.log(`Found ${currentMockEntities} existing mock decoration entities`);
     }

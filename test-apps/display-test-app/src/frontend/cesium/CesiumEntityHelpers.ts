@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Cartesian3, Color, Entity } from "cesium";
-import { GraphicList } from "@itwin/core-frontend";
+import { GraphicList, IModelConnection, RenderGeometry } from "@itwin/core-frontend";
+import { Point3d } from "@itwin/core-geometry";
+import { CesiumCoordinateConverter } from "./CesiumCoordinateConverter";
 
-/** Helper utilities for managing CesiumJS entities and conversions from iTwin.js decorations */
 export class CesiumEntityHelpers {
 
-  /** Clear all Cesium entities (complete cleanup for iModel changes) */
   public static clearAllCesiumEntities(entityCollection: any): void {
     if (!entityCollection || !entityCollection.values) {
       return;
@@ -18,7 +18,6 @@ export class CesiumEntityHelpers {
     entityCollection.removeAll();
   }
 
-  /** Clear only decoration entities, preserve test entities */
   public static clearDecorationEntities(entityCollection: any): void {
     if (!entityCollection || !entityCollection.values) {
       return;
@@ -42,11 +41,11 @@ export class CesiumEntityHelpers {
     entitiesToRemove.forEach(entity => entityCollection.remove(entity));
   }
 
-  /** Convert iTwin.js decorations to Cesium entities */
   public static convertDecorationsToCesiumEntities(
     graphics: GraphicList | undefined,
     type: string,
-    entityCollection: any
+    entityCollection: any,
+    iModel?: IModelConnection
   ): void {
     if (!graphics || graphics.length === 0) return;
     if (!entityCollection) {
@@ -56,7 +55,10 @@ export class CesiumEntityHelpers {
     graphics.forEach((graphic, index) => {
       try {
         const entityId = `${type}_decoration_${index}`;
-        const entity = this.createCesiumEntityFromGraphic(graphic, entityId, index);
+        
+        const originalPointStrings = (graphic as any)._originalPointStrings as Point3d[][] | undefined;
+        
+        const entity = this.createCesiumEntityFromGraphic(graphic, entityId, index, iModel, originalPointStrings);
 
         if (entity) {
           entityCollection.add(entity);
@@ -67,38 +69,17 @@ export class CesiumEntityHelpers {
     });
   }
 
-  /** Create a Cesium entity from an iTwin.js RenderGraphic */
-  public static createCesiumEntityFromGraphic(graphic: any, entityId: string, index: number): Entity | null {
+  public static createCesiumEntityFromGraphic(graphic: any, entityId: string, index: number, iModel?: IModelConnection, originalPointStrings?: Point3d[][]): Entity | null {
     if (!graphic) {
       console.warn(`Null graphic for ${entityId}`);
       return null;
     }
 
     try {
-      // Check if this is our enhanced CesiumGraphic with geometry data
       if (graphic.geometries && graphic.geometryType) {
-        // console.log(`Processing CesiumGraphic with ${graphic.geometries.length} ${graphic.geometryType} geometries`);
-        return this.createEntityFromGeometry(graphic.geometries, graphic.geometryType, entityId, index);
+        return this.createEntityFromGeometry(graphic.geometries, graphic.geometryType, entityId, index, iModel, originalPointStrings);
       }
 
-      // Fallback to property-based analysis for other graphics
-      const properties = Object.getOwnPropertyNames(graphic);
-
-
-      // Check for common properties that might indicate geometry type
-      const hasGeometry = properties.some(prop =>
-        prop.includes('geometry') || prop.includes('vertices') || prop.includes('points')
-      );
-
-      const hasMaterial = properties.some(prop =>
-        prop.includes('material') || prop.includes('color') || prop.includes('symbology')
-      );
-
-      if (index < 3) {
-        console.log(`Analysis: hasGeometry=${hasGeometry}, hasMaterial=${hasMaterial}`);
-      }
-
-      // Create a simple fallback entity
       const fallbackPosition = this.getFallbackPosition(index);
 
       return new Entity({
@@ -126,21 +107,52 @@ export class CesiumEntityHelpers {
     }
   }
 
-  /** Create a Cesium entity from real iTwin.js geometry data */
-  private static createEntityFromGeometry(geometries: any[], geometryType: string, entityId: string, index: number): Entity | null {
+  private static createEntityFromGeometry(geometries: any[], geometryType: string, entityId: string, index: number, iModel?: IModelConnection, originalPointStrings?: Point3d[][]): Entity | null {
     try {
-      // Get base position for the entity
-      const basePosition = this.getFallbackPosition(index);
+      let entityPosition: Cartesian3;
+      let realSpatialPoint: Point3d | null = null;
+      
+      if (originalPointStrings && originalPointStrings.length > 0) {
+        const firstPointString = originalPointStrings[0];
+        if (firstPointString && firstPointString.length > 0) {
+          realSpatialPoint = firstPointString[0];
+        }
+      }
+      
+      if (!realSpatialPoint && geometries && geometries.length > 0) {
+        const geometry = geometries[0];
+        
+        if (geometry.points && geometry.points.length > 0) {
+          const point = geometry.points[0];
+          realSpatialPoint = new Point3d(point.x, point.y, point.z);
+        } else if (geometry.vertices && geometry.vertices.length >= 3) {
+          realSpatialPoint = new Point3d(geometry.vertices[0], geometry.vertices[1], geometry.vertices[2]);
+        } else if (geometry.position) {
+          realSpatialPoint = new Point3d(geometry.position.x, geometry.position.y, geometry.position.z);
+        }
+      }
+      
+      if (realSpatialPoint && iModel) {
+        const converter = new CesiumCoordinateConverter(iModel);
+        entityPosition = converter.spatialToCesiumCartesian3(realSpatialPoint);
+      } else if (iModel) {
+        const converter = new CesiumCoordinateConverter(iModel);
+        const fallbackPoint = new Point3d(0, 0, 0);
+        entityPosition = converter.spatialToCesiumCartesian3(fallbackPoint);
+      } else {
+        entityPosition = this.getFallbackPosition(index);
+      }
+      
       const entityColor = this.getColorForIndex(index);
 
       switch (geometryType) {
         case 'point-string':
           return new Entity({
             id: entityId,
-            position: basePosition,
+            position: entityPosition,
             point: {
               pixelSize: 20,
-              color: Color.BLUE, // Different from mock decorations
+              color: Color.BLUE,
               outlineColor: Color.WHITE,
               outlineWidth: 2,
             },
@@ -155,15 +167,13 @@ export class CesiumEntityHelpers {
           });
 
         case 'polyline':
-          // For polylines, create a polyline entity
-          // TODO: Extract actual polyline data from geometry
           return new Entity({
             id: entityId,
             polyline: {
               positions: [
-                basePosition,
-                Cartesian3.add(basePosition, new Cartesian3(100000, 0, 0), new Cartesian3()),
-                Cartesian3.add(basePosition, new Cartesian3(100000, 100000, 0), new Cartesian3()),
+                entityPosition,
+                Cartesian3.add(entityPosition, new Cartesian3(100000, 0, 0), new Cartesian3()),
+                Cartesian3.add(entityPosition, new Cartesian3(100000, 100000, 0), new Cartesian3()),
               ],
               width: 3,
               material: entityColor,
@@ -175,21 +185,19 @@ export class CesiumEntityHelpers {
               outlineColor: Color.WHITE,
               outlineWidth: 1,
               pixelOffset: new Cartesian3(0, -30, 0),
-              position: basePosition,
+              position: entityPosition,
             },
           });
 
         case 'mesh':
-          // For meshes, create a polygon or model entity
-          // TODO: Extract actual mesh data from geometry
           return new Entity({
             id: entityId,
             polygon: {
               hierarchy: [
-                Cartesian3.add(basePosition, new Cartesian3(-50000, -50000, 0), new Cartesian3()),
-                Cartesian3.add(basePosition, new Cartesian3(50000, -50000, 0), new Cartesian3()),
-                Cartesian3.add(basePosition, new Cartesian3(50000, 50000, 0), new Cartesian3()),
-                Cartesian3.add(basePosition, new Cartesian3(-50000, 50000, 0), new Cartesian3()),
+                Cartesian3.add(entityPosition, new Cartesian3(-50000, -50000, 0), new Cartesian3()),
+                Cartesian3.add(entityPosition, new Cartesian3(50000, -50000, 0), new Cartesian3()),
+                Cartesian3.add(entityPosition, new Cartesian3(50000, 50000, 0), new Cartesian3()),
+                Cartesian3.add(entityPosition, new Cartesian3(-50000, 50000, 0), new Cartesian3()),
               ],
               material: entityColor.withAlpha(0.5),
               outline: true,
@@ -202,15 +210,14 @@ export class CesiumEntityHelpers {
               outlineColor: Color.WHITE,
               outlineWidth: 1,
               pixelOffset: new Cartesian3(0, -30, 0),
-              position: basePosition,
+              position: entityPosition,
             },
           });
 
         default:
-          console.log(`Unknown geometry type: ${geometryType}, creating default point entity`);
           return new Entity({
             id: entityId,
-            position: basePosition,
+            position: entityPosition,
             point: {
               pixelSize: 18,
               color: Color.ORANGE,
@@ -234,15 +241,12 @@ export class CesiumEntityHelpers {
     }
   }
 
-  /** Create mock decorations for testing when no real decorations exist */
   public static createMockDecorations(entityCollection: any): void {
     const mockGraphics = [
       { type: 'mockPoint', id: 'mock_point_1', properties: ['mockProperty1', 'mockProperty2'] },
       { type: 'mockLine', id: 'mock_line_1', geometry: { start: [0, 0, 0], end: [100, 100, 100] } },
       { type: 'mockPolygon', id: 'mock_polygon_1', vertices: [[0, 0, 0], [100, 0, 0], [100, 100, 0]] }
     ];
-
-    console.log(`Creating ${mockGraphics.length} mock decorations for testing...`);
 
     mockGraphics.forEach((mockGraphic, index) => {
       try {
@@ -255,10 +259,8 @@ export class CesiumEntityHelpers {
         console.error(`Error creating mock decoration ${index}:`, error);
       }
     });
-
   }
 
-  /** Get fallback position for entities */
   private static getFallbackPosition(index: number): Cartesian3 {
     const longitude = (index % 10) * 36 - 180;
     const latitude = Math.floor(index / 10) * 20 - 40;
@@ -267,7 +269,6 @@ export class CesiumEntityHelpers {
     return Cartesian3.fromDegrees(longitude, latitude, height);
   }
 
-  /** Get color for entity index */
   public static getColorForIndex(index: number): Color {
     const colors = [
       Color.RED,

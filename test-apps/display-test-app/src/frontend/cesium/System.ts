@@ -10,22 +10,10 @@ import { ElementAlignedBox3d, RenderFeatureTable } from "@itwin/core-common";
 import { Transform } from "@itwin/core-geometry";
 import { OffScreenTarget, OnScreenTarget } from "./Target";
 import { CesiumGraphic } from "./Graphic";
+import { CesiumPrimitiveBuilder } from "./CesiumPrimitiveBuilder";
+import { CesiumGeometryData } from "./CesiumGeometryData";
 import { BatchOptions, CreateGraphicFromTemplateArgs, CustomGraphicBuilderOptions, GraphicBranch, GraphicBranchOptions, GraphicBuilder, IModelApp, IModelConnection, InstancedGraphicParams, PrimitiveBuilder, RenderAreaPattern, RenderGeometry, RenderGraphic, RenderSystem, RenderTarget, ViewportGraphicBuilderOptions, ViewRect } from "@itwin/core-frontend";
 
-// import { RenderSystem } from "../../../../../core/frontend/src/render/RenderSystem";
-// // eslint-disable-next-line @itwin/import-within-package
-// import { RenderAreaPattern } from "../../../../../core/frontend/src/internal/render/RenderAreaPattern";
-// // eslint-disable-next-line @itwin/import-within-package
-// import { RenderGeometry } from "../../../../../core/frontend/src/internal/render/RenderGeometry";
-// // eslint-disable-next-line @itwin/import-within-package
-// import { PrimitiveBuilder } from "../../../../../core/frontend/src/internal/render/PrimitiveBuilder";
-
-// /** @internal */
-// export class Builder extends GraphicBuilder {
-//   public constructor(system: System, options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions) {
-//     super(system, options);
-//   }
-// }
 
 /** @internal */
 export class System extends RenderSystem {
@@ -98,14 +86,42 @@ export class System extends RenderSystem {
   }
 
   public createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder {
-    return new PrimitiveBuilder(this, options); // ###TODO let's check what this function is doing.
+    return new CesiumPrimitiveBuilder(this, options); // Use our custom builder that preserves Point3d data
   }
 
-  // ###TODO for all of the following create methods, we may need to implement separate classes for each type of graphic. Right now everything is using `CesiumGraphic` as a placeholder. In theory that might be able to handle everything, but we will see. Let's get one path working first!
 
-  public override createGraphicFromTemplate(_args: CreateGraphicFromTemplateArgs): RenderGraphic {
-    // Create CesiumGraphic with point-string type for proper entity conversion
-    return new CesiumGraphic([], 'point-string');
+  // ##TODO for all of the following create methods, we may need to implement separate classes for each type of graphic. Right now everything is using `CesiumGraphic` as a placeholder. In theory that might be able to handle everything, but we will see. Let's get one path working first!
+
+  public override createGraphicFromTemplate(args: CreateGraphicFromTemplateArgs): RenderGraphic {
+    const template = args.template;
+    
+    const templateId = (template as any)._cesiumTemplateId as symbol;
+    const originalPointStrings = templateId ? CesiumGeometryData.getPointStrings(templateId) : undefined;
+    
+    const symbols = Object.getOwnPropertySymbols(template);
+    const nodesSymbol = symbols.find(s => s.toString().includes('_nodes'));
+    const templateNodes = nodesSymbol ? (template as any)[nodesSymbol] : [];
+    
+    const allGeometries: RenderGeometry[] = [];
+    let geometryType = 'point-string';
+    
+    for (const node of templateNodes) {
+      if (node.geometry && Array.isArray(node.geometry)) {
+        allGeometries.push(...node.geometry);
+        if (node.geometry.length > 0 && node.geometry[0].renderGeometryType) {
+          geometryType = node.geometry[0].renderGeometryType;
+        }
+      }
+    }
+    
+    const cesiumGraphic = new CesiumGraphic(allGeometries, geometryType);
+    
+    if (originalPointStrings) {
+      (cesiumGraphic as any)._originalPointStrings = originalPointStrings;
+      CesiumGeometryData.clearPointStrings(templateId);
+    }
+    
+    return cesiumGraphic;
   }
 
   public override createRenderGraphic(geometry: RenderGeometry, _instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined {
