@@ -198,15 +198,17 @@ describe("TextAnnotation element", () => {
     function createElement3d(createArgs?: CreateTextAnnotationArgs<TextAnnotation3dProps>): TextAnnotation3d {
       return TextAnnotation3d.create(
         imodel,
-        seedCategoryId,
-        seedModelId,
         {
-          origin: { x: 0, y: 0, z: 0 },
-          angles: YawPitchRollAngles.createDegrees(0, 0, 0).toJSON(),
-        },
-        seedStyleId,
-        createArgs?.textAnnotationData,
-      )
+          category: seedCategoryId,
+          model: seedModelId,
+          placement: {
+            origin: { x: 0, y: 0, z: 0 },
+            angles: YawPitchRollAngles.createDegrees(0, 0, 0).toJSON(),
+          },
+          defaultTextStyleId: seedStyleId,
+          textAnnotationData: createArgs?.textAnnotationData,
+        }
+      );
     }
 
     it("creating element does not automatically compute the geometry", () => {
@@ -295,15 +297,17 @@ describe("TextAnnotation element", () => {
     function createElement2d(createArgs?: CreateTextAnnotationArgs<TextAnnotation2dProps>): TextAnnotation2d {
       return TextAnnotation2d.create(
         imodel,
-        seedCategoryId,
-        seedModelId,
         {
-          origin: { x: 0, y: 0 },
-          angle: Angle.createDegrees(0).toJSON(),
-        },
-        seedStyleId,
-        createArgs?.textAnnotationData,
-      )
+          category: seedCategoryId,
+          model: seedModelId,
+          placement: {
+            origin: { x: 0, y: 0 },
+            angle: Angle.createDegrees(0).toJSON(),
+          },
+          defaultTextStyleId: seedStyleId,
+          textAnnotationData: createArgs?.textAnnotationData,
+        }
+      );
     }
 
     it("creating element does not automatically compute the geometry", () => {

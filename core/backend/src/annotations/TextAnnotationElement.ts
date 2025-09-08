@@ -38,6 +38,42 @@ function getElementGeometryBuilderParams(iModel: IModelDb, modelId: Id64String, 
   return { entryArray: builder.entries };
 }
 
+/** Arguments supplied when creating a [[TextAnnotation2d]].
+ * @beta
+ */
+export interface TextAnnotation2dCreateArgs {
+  /** The category ID for the annotation. */
+  category: Id64String;
+  /** The model ID where the annotation will be placed. */
+  model: Id64String;
+  /** The placement properties for the annotation. */
+  placement: Placement2dProps;
+  /** The default text style ID for the annotation. */
+  defaultTextStyleId: Id64String;
+  /** Optional [[TextAnnotation]] JSON representation used to create the `TextAnnotation2d`. Essentially an empty element if not provided. */
+  textAnnotationData?: TextAnnotationProps;
+  /** Optional code for the element. */
+  code?: CodeProps;
+}
+
+/** Arguments supplied when creating a [[TextAnnotation3d]].
+ * @beta
+ */
+export interface TextAnnotation3dCreateArgs {
+  /** The category ID for the annotation. */
+  category: Id64String;
+  /** The model ID where the annotation will be placed. */
+  model: Id64String;
+  /** The placement properties for the annotation. */
+  placement: Placement3dProps;
+  /** The default text style ID for the annotation. */
+  defaultTextStyleId: Id64String;
+  /** Optional [[TextAnnotation]] JSON representation used to create the `TextAnnotation3d`. Essentially an empty element if not provided. */
+  textAnnotationData?: TextAnnotationProps;
+  /** Optional code for the element. */
+  code?: CodeProps;
+}
+
 /** An element that displays textual content within a 2d model.
  * The text is stored as a [TextAnnotation]($common) from which the element's [geometry]($docs/learning/common/GeometryStream.md) and [Placement]($common) are computed.
  * @see [[setAnnotation]] to change the textual content.
@@ -96,23 +132,20 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
 
   /** Creates a new `TextAnnotation2d` instance with the specified properties.
    * @param iModelDb The iModel.
-   * @param category The category ID for the annotation.
-   * @param model The model ID where the annotation will be placed.
-   * @param placement The placement properties for the annotation.
-   * @param textAnnotationData Optional [[TextAnnotation]] JSON representation used to create the `TextAnnotation2d`. Essentially an empty element if not provided.
-   * @param code Optional code for the element.
+   * @param arg The arguments for creating the TextAnnotation2d.
+   * @beta
    */
-  public static create(iModelDb: IModelDb, category: Id64String, model: Id64String, placement: Placement2dProps, defaultTextStyleId: Id64String, textAnnotationData?: TextAnnotationProps, code?: CodeProps): TextAnnotation2d {
-    const props: TextAnnotation2dProps = {
+  public static create(iModelDb: IModelDb, arg: TextAnnotation2dCreateArgs): TextAnnotation2d {
+    const elementProps: TextAnnotation2dProps = {
       classFullName: this.classFullName,
-      textAnnotationData: JSON.stringify(textAnnotationData),
-      defaultTextStyle: new TextAnnotationUsesTextStyleByDefault(defaultTextStyleId).toJSON(),
-      placement,
-      model,
-      category,
-      code: code ?? Code.createEmpty(),
+      textAnnotationData: JSON.stringify(arg.textAnnotationData),
+      defaultTextStyle: new TextAnnotationUsesTextStyleByDefault(arg.defaultTextStyleId).toJSON(),
+      placement: arg.placement,
+      model: arg.model,
+      category: arg.category,
+      code: arg.code ?? Code.createEmpty(),
     };
-    return new this(props, iModelDb);
+    return new this(elementProps, iModelDb);
   }
 
   /**
@@ -227,23 +260,20 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
 
   /** Creates a new `TextAnnotation3d` instance with the specified properties.
    * @param iModelDb The iModel.
-   * @param category The category ID for the annotation.
-   * @param model The model ID where the annotation will be placed.
-   * @param placement The placement properties for the annotation.
-   * @param textAnnotationData Optional [[TextAnnotation]] JSON representation used to create the `TextAnnotation3d`. Essentially an empty element if not provided.
-   * @param code Optional code for the element.
+   * @param arg The arguments for creating the TextAnnotation3d.
+   * @beta
    */
-  public static create(iModelDb: IModelDb, category: Id64String, model: Id64String, placement: Placement3dProps, defaultTextStyleId: Id64String, textAnnotationData?: TextAnnotationProps, code?: CodeProps): TextAnnotation3d {
-    const props: TextAnnotation3dProps = {
+  public static create(iModelDb: IModelDb, arg: TextAnnotation3dCreateArgs): TextAnnotation3d {
+    const elementProps: TextAnnotation3dProps = {
       classFullName: this.classFullName,
-      textAnnotationData: JSON.stringify(textAnnotationData),
-      defaultTextStyle: new TextAnnotationUsesTextStyleByDefault(defaultTextStyleId).toJSON(),
-      placement,
-      model,
-      category,
-      code: code ?? Code.createEmpty(),
+      textAnnotationData: JSON.stringify(arg.textAnnotationData),
+      defaultTextStyle: new TextAnnotationUsesTextStyleByDefault(arg.defaultTextStyleId).toJSON(),
+      placement: arg.placement,
+      model: arg.model,
+      category: arg.category,
+      code: arg.code ?? Code.createEmpty(),
     };
-    return new this(props, iModelDb);
+    return new this(elementProps, iModelDb);
   }
 
   /**

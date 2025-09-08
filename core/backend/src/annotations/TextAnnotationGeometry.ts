@@ -26,7 +26,7 @@ export interface AppendTextAnnotationGeometryArgs {
   layout: TextBlockLayout;
   /** [[TextStyleResolver]] used to get styling and scale information for creating geometry. */
   textStyleResolver: TextStyleResolver;
-  /** The scale factor to apply to the annotation. Usually comes from the `scaleFactor` */
+  /** The scale factor to apply to the annotation. Usually comes from the `scaleFactor` of a [[Drawing]] element. */
   scaleFactor: number;
   /** Builder that will be added to in place */
   builder: ElementGeometry.Builder;
