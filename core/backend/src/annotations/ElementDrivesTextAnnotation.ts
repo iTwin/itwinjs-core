@@ -148,9 +148,9 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 /** Relationship indicating that the [[AnnotationTextStyle]] is being used as the default style for the [[ITextAnnotation]].
  * @beta
  */
-export class TextAnnotationUsesTextStyle extends RelatedElement {
-  public static classFullName = "BisCore:TextAnnotationUsesTextStyle";
-  public constructor(annotationTextStyleId: Id64String, relClassName: string = TextAnnotationUsesTextStyle.classFullName) {
+export class TextAnnotationUsesTextStyleByDefault extends RelatedElement {
+  public static classFullName = "BisCore:TextAnnotationUsesTextStyleByDefault";
+  public constructor(annotationTextStyleId: Id64String, relClassName: string = TextAnnotationUsesTextStyleByDefault.classFullName) {
     super({ id: annotationTextStyleId, relClassName });
   }
 }

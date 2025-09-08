@@ -12,7 +12,7 @@ import { AnnotationElement2d, DefinitionElement, Drawing, GraphicalElement3d, On
 import { assert, Id64String } from "@itwin/core-bentley";
 import { layoutTextBlock, TextStyleResolver } from "./TextBlockLayout";
 import { appendTextAnnotationGeometry } from "./TextAnnotationGeometry";
-import { ElementDrivesTextAnnotation, TextAnnotationUsesTextStyle, TextBlockAndId } from "./ElementDrivesTextAnnotation";
+import { ElementDrivesTextAnnotation, TextAnnotationUsesTextStyleByDefault, TextBlockAndId } from "./ElementDrivesTextAnnotation";
 
 function parseTextAnnotationData(json: string | undefined): TextAnnotationProps | undefined {
   if (!json) return undefined;
@@ -47,7 +47,7 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
   /** @internal */
   public static override get className(): string { return "TextAnnotation2d"; }
   /** The default [[AnnotationTextStyle]] used by the TextAnnotation2d. */
-  public defaultTextStyle: TextAnnotationUsesTextStyle;
+  public defaultTextStyle: TextAnnotationUsesTextStyleByDefault;
   /** Optional string containing the data associated with the text annotation. */
   private _textAnnotationData?: string;
 
@@ -69,7 +69,7 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
 
   protected constructor(props: TextAnnotation2dProps, iModel: IModelDb) {
     super(props, iModel);
-    this.defaultTextStyle = new TextAnnotationUsesTextStyle(props.defaultTextStyle.id);
+    this.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault(props.defaultTextStyle.id);
     this._textAnnotationData = props.textAnnotationData;
   }
 
@@ -106,7 +106,7 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
     const props: TextAnnotation2dProps = {
       classFullName: this.classFullName,
       textAnnotationData: JSON.stringify(textAnnotationData),
-      defaultTextStyle: new TextAnnotationUsesTextStyle(defaultTextStyleId).toJSON(),
+      defaultTextStyle: new TextAnnotationUsesTextStyleByDefault(defaultTextStyleId).toJSON(),
       placement,
       model,
       category,
@@ -179,7 +179,7 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
   /** @internal */
   public static override get className(): string { return "TextAnnotation3d"; }
   /** The default [[AnnotationTextStyle]] used by the TextAnnotation3d. */
-  public defaultTextStyle: TextAnnotationUsesTextStyle;
+  public defaultTextStyle: TextAnnotationUsesTextStyleByDefault;
   /** Optional string containing the data associated with the text annotation. */
   private _textAnnotationData?: string;
 
@@ -201,7 +201,7 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
 
   protected constructor(props: TextAnnotation3dProps, iModel: IModelDb) {
     super(props, iModel);
-    this.defaultTextStyle = new TextAnnotationUsesTextStyle(props.defaultTextStyle.id);
+    this.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault(props.defaultTextStyle.id);
     this._textAnnotationData = props.textAnnotationData;
   }
 
@@ -237,7 +237,7 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
     const props: TextAnnotation3dProps = {
       classFullName: this.classFullName,
       textAnnotationData: JSON.stringify(textAnnotationData),
-      defaultTextStyle: new TextAnnotationUsesTextStyle(defaultTextStyleId).toJSON(),
+      defaultTextStyle: new TextAnnotationUsesTextStyleByDefault(defaultTextStyleId).toJSON(),
       placement,
       model,
       category,

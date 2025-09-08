@@ -14,7 +14,7 @@ import { Schema, Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
 import { PhysicalElement } from "../../Element";
 import { ElementOwnsUniqueAspect, ElementUniqueAspect, FontFile, TextAnnotation3d } from "../../core-backend";
-import { ElementDrivesTextAnnotation, TextAnnotationUsesTextStyle } from "../../annotations/ElementDrivesTextAnnotation";
+import { ElementDrivesTextAnnotation, TextAnnotationUsesTextStyleByDefault } from "../../annotations/ElementDrivesTextAnnotation";
 
 describe("updateField", () => {
   const mockElementId = "0x1";
@@ -465,7 +465,7 @@ describe("Field evaluation", () => {
         angles: YawPitchRollAngles.createDegrees(0, 0, 0).toJSON(),
       },
       classFullName: TextAnnotation3d.classFullName,
-      defaultTextStyle: new TextAnnotationUsesTextStyle("0x123").toJSON(),
+      defaultTextStyle: new TextAnnotationUsesTextStyleByDefault("0x123").toJSON(),
     }, imodel);
 
     if (textBlock) {

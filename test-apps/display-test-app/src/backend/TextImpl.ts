@@ -1,4 +1,4 @@
-import { AnnotationTextStyle, BriefcaseDb, Drawing, IModelDb, TextAnnotation2d, TextAnnotationUsesTextStyle } from "@itwin/core-backend";
+import { AnnotationTextStyle, BriefcaseDb, Drawing, IModelDb, TextAnnotation2d, TextAnnotationUsesTextStyleByDefault } from "@itwin/core-backend";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { Placement2d, Placement2dProps, TextAnnotation, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 
@@ -139,7 +139,7 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
       text.setAnnotation(TextAnnotation.fromJSON(textAnnotationProps));
 
     if (defaultTextStyleId && Id64.isValid(defaultTextStyleId)) {
-      text.defaultTextStyle = new TextAnnotationUsesTextStyle(defaultTextStyleId);
+      text.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault(defaultTextStyleId);
     }
 
     await iModel.locks.acquireLocks({ shared: [text.model], exclusive: [elementId] });

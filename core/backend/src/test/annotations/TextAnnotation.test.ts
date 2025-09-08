@@ -16,7 +16,7 @@ import { DisplayStyle2d, DisplayStyle3d } from "../../DisplayStyle";
 import { CategorySelector, DrawingViewDefinition, ModelSelector, SpatialViewDefinition } from "../../ViewDefinition";
 import { FontFile } from "../../FontFile";
 import { computeTextRangeAsStringLength } from "../AnnotationTestUtils";
-import { TextAnnotationUsesTextStyle } from "../../annotations/ElementDrivesTextAnnotation";
+import { TextAnnotationUsesTextStyleByDefault } from "../../annotations/ElementDrivesTextAnnotation";
 
 
 function mockIModel(): IModelDb {
@@ -122,7 +122,7 @@ describe("TextAnnotation element", () => {
         origin: { x: 0, y: 0 },
         angle: 0,
       },
-      defaultTextStyle: new TextAnnotationUsesTextStyle("0x21").toJSON(),
+      defaultTextStyle: new TextAnnotationUsesTextStyleByDefault("0x21").toJSON(),
       ...props,
     }, mockIModel());
   }
@@ -135,7 +135,7 @@ describe("TextAnnotation element", () => {
     it("converts JSON string to class instance", () => {
       const elem = makeElement({
         textAnnotationData: JSON.stringify({textBlock: TextBlock.create().toJSON()}),
-        defaultTextStyle: new TextAnnotationUsesTextStyle("0x42").toJSON()
+        defaultTextStyle: new TextAnnotationUsesTextStyleByDefault("0x42").toJSON()
       });
 
       const anno = elem.getAnnotation()!;
