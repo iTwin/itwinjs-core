@@ -10,7 +10,8 @@ import { BriefcaseDb, ChannelControl, DrawingCategory, IModelHost, SqliteChanges
 import { HubMock } from "../../internal/HubMock";
 import { after, Suite } from "mocha";
 import { Code, IModel, SubCategoryAppearance } from "@itwin/core-common";
-import { Id64String } from "@itwin/core-bentley/lib/cjs/Id";
+import { Guid, Id64String } from "@itwin/core-bentley/lib/cjs/Id";
+import { StashManager } from "../../StashManager";
 chai.use(chaiAsPromised);
 
 class TestIModel {
@@ -47,7 +48,7 @@ class TestIModel {
       drawingCategoryId = DrawingCategory.insert(b1, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance());
     this.drawingCategoryId = drawingCategoryId;
     b1.saveChanges();
-    await b1.pushChanges({description: "drawing category"});
+    await b1.pushChanges({ description: "drawing category" });
     b1.close();
   }
   public async openBriefcase(): Promise<BriefcaseDb> {
@@ -236,14 +237,14 @@ describe.only("change merge manager", function (this: Suite) {
     const e1 = await testIModel.insertElement(b1);
     const e2 = await testIModel.insertElement(b1, true);
     b1.saveChanges();
-    await b1.pushChanges({description: "insert element 1 direct and 1 indirect"});
+    await b1.pushChanges({ description: "insert element 1 direct and 1 indirect" });
 
     await b2.pullChanges();
 
     await testIModel.updateElement(b1, e1);
-    await testIModel.updateElement(b1, e2,  true);
+    await testIModel.updateElement(b1, e2, true);
     b1.saveChanges();
-    await b1.pushChanges({description: "update element 1 direct and 1 indirect"});
+    await b1.pushChanges({ description: "update element 1 direct and 1 indirect" });
 
 
     await testIModel.insertElement(b2);
@@ -267,159 +268,93 @@ describe.only("change merge manager", function (this: Suite) {
         await testIModel.insertElement(b2, true);
       },
     });
-
     await b1.pullChanges();
   });
-  // it("SaveChangesArgs() and direct/indirect changes", async () => {
-  //   const b1 = await testIModel.openBriefcase();
-  //   const b2 = await testIModel.openBriefcase();
-  //   //-----------------------------------------------------
-  //   await b1.locks.acquireLocks({ shared: [IModel.repositoryModelId, testIModel.drawingCategoryId, testIModel.drawingModelId] });
-  //   const baseProps = {
-  //     classFullName: "TestDomain:a1",
-  //     model: drawingModelId,
-  //     category: drawingCategoryId,
-  //     code: Code.createEmpty(),
-  //   };
+  it.only("stash", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const e1 = await testIModel.insertElement(b1);
+    b1.saveChanges();
+    await b1.pushChanges({ description: "insert element 1 direct and 1 indirect" });
 
-  //   const expectedInsertedEl = new Map<Id64String, { id: Id64String, isIndirect: boolean }>();
-  //   const insertDirectEl = (b: BriefcaseDb) => {
-  //     const id = b.elements.insertElement({ ...baseProps, prop1: `${b.briefcaseId}` } as any);
-  //     expectedInsertedEl.set(id, { id, isIndirect: false });
-  //   }
-  //   const insertIndirectEl = (b: BriefcaseDb) => {
-  //     const id = b.elements.insertElement({ ...baseProps, prop1: `${b.briefcaseId}` } as any);
-  //     expectedInsertedEl.set(id, { id, isIndirect: true });
-  //   };
+    const e2 = await testIModel.insertElement(b1);
+    b1.saveChanges();
+    await b1.pushChanges({ description: "insert element 1 direct and 1 indirect" });
 
-  //   insertDirectEl(b1);
-  //   insertDirectEl(b1);
-  //   b1.txns.withIndirectTxnMode(() => {
-  //     insertIndirectEl(b1);
-  //     insertIndirectEl(b1);
-  //     insertIndirectEl(b1);
-  //   });
-  //   insertDirectEl(b1);
-  //   insertDirectEl(b1);
+    await testIModel.insertElement(b1);
+    b1.saveChanges(`first`);
+    await testIModel.updateElement(b1, e1);
+    b1.saveChanges(`second`);
+    await testIModel.deleteElement(b1, e2);
+    b1.saveChanges(`third`);
+    await testIModel.insertElement(b1);
+    b1.saveChanges(`fourth`);
 
-  //   b1.saveChanges("insert some element 1 direct and 3 indirect");
-  //   lastTxn = b1.txns.changeMergeManager.getLastTxnSaved();
-  //   let checkCount = 0;
-  //   chai.assert.isDefined(lastTxn);
-  //   if (lastTxn) {
-  //     const reader = SqliteChangesetReader.openTxn({ txnId: lastTxn?.id, db: b1 });
-  //     while (reader.step()) {
-  //       const id = reader.primaryKeyValues[0] as Id64String;
-  //       if (!expectedInsertedEl.has(id)) {
-  //         continue;
-  //       }
-  //       const isIndirect = reader.isIndirect;
-  //       if (isIndirect) {
-  //         chai.assert.isTrue(expectedInsertedEl.get(id)?.isIndirect);
-  //       } else {
-  //         chai.assert.isFalse(expectedInsertedEl.get(id)?.isIndirect);
-  //       }
-  //       checkCount++;
-  //     }
-  //   }
-  //   assert(checkCount === expectedInsertedEl.size * 2);
-  //   assert(checkCount === 14); // two table bis_Element and bis_GeometricElement3d so 7+7 =14
+    const stash1 = await StashManager.stash({ briefcase: b1, description: "stash test 1" });
 
-  //   chai.assert.isDefined(lastTxn);
-  //   chai.assert.isTrue(lastTxn?.id === '0x100000000');
-  //   chai.assert.isFalse(lastTxn?.reversed);
-  //   chai.assert.isFalse(lastTxn?.grouped);
-  //   chai.assert.isTrue(lastTxn?.props.description === 'insert some element 1 direct and 3 indirect');
-  //   chai.assert.isTrue(lastTxn?.type === 'Data');
+    chai.expect(stash1).to.exist;
+    chai.assert(Guid.isGuid(stash1.id));
+    chai.expect(stash1.description).to.equals("stash test 1");
+    chai.expect(stash1.briefcaseId).equals(b1.briefcaseId);
+    chai.expect(stash1.iModelId).to.equals(b1.iModelId);
+    chai.expect(stash1.timestamp).to.exist;
+    chai.expect(stash1.description).to.exist;
+    chai.expect(stash1.hash).length(64);
+    chai.expect(stash1.parentChangeset).to.exist;
+    chai.expect(stash1.idSequences.element).to.equals("0x30000000004");
+    chai.expect(stash1.idSequences.instance).to.equals("0x30000000000");
+    chai.expect(stash1.acquiredLocks).equals(4);
+    chai.expect(stash1.txns).to.exist;
 
-  //   await b1.pushChanges({ description: "insert element 4 direct and 3 indirect" });
+    chai.expect(stash1.txns).to.have.lengthOf(4);
+    chai.expect(stash1.txns[0].props.description).to.equal("first");
+    chai.expect(stash1.txns[1].props.description).to.equal("second");
+    chai.expect(stash1.txns[2].props.description).to.equal("third");
+    chai.expect(stash1.txns[3].props.description).to.equal("fourth");
 
-  //   //-----------------------------------------------------
+    chai.expect(stash1.txns[0].id).to.equals("0x100000000");
+    chai.expect(stash1.txns[1].id).to.equals("0x100000001");
+    chai.expect(stash1.txns[2].id).to.equals("0x100000002");
+    chai.expect(stash1.txns[3].id).to.equals("0x100000003");
 
-  //   await b2.pullChanges();
-  //   await b3.pullChanges();
+    await testIModel.insertElement(b1);
+    b1.saveChanges(`fifth`);
+    await testIModel.updateElement(b1, e1);
+    b1.saveChanges(`sixth`);
+    await testIModel.insertElement(b1);
+    b1.saveChanges(`seventh`);
 
+    const stash2 = await StashManager.stash({ briefcase: b1, description: "stash test 2" });
+    chai.expect(stash2).to.exist;
+    chai.expect(stash2.description).to.equals("stash test 2");
+    chai.expect(stash2.hash).length(64);
+    chai.expect(stash2.parentChangeset).to.exist;
+    chai.expect(stash2.idSequences.element).to.equals("0x30000000006");
+    chai.expect(stash2.idSequences.instance).to.equals("0x30000000000");
+    chai.expect(stash2.acquiredLocks).equals(4);
+    chai.expect(stash2.txns).to.exist;
 
-  //   const directEls = Array.from(expectedInsertedEl.values()).filter(v => !v.isIndirect).map(v => v.id);
-  //   const indirectEls = Array.from(expectedInsertedEl.values()).filter(v => v.isIndirect).map(v => v.id);
+    chai.expect(stash2.txns).to.have.lengthOf(7);
+    chai.expect(stash2.txns[0].props.description).to.equal("first");
+    chai.expect(stash2.txns[1].props.description).to.equal("second");
+    chai.expect(stash2.txns[2].props.description).to.equal("third");
+    chai.expect(stash2.txns[3].props.description).to.equal("fourth");
+    chai.expect(stash2.txns[4].props.description).to.equal("fifth");
+    chai.expect(stash2.txns[5].props.description).to.equal("sixth");
+    chai.expect(stash2.txns[6].props.description).to.equal("seventh");
 
-  //   //-----------------------------------------------------
-  //   await b1.locks.acquireLocks({ shared: [IModel.repositoryModelId, drawingCategoryId, drawingModelId] });
-  //   insertDirectEl(b1)
-  //   b1.txns.withIndirectTxnMode(() => {
-  //     b1.elements.deleteElement(indirectEls[0])
-  //   });
-  //   b1.saveChanges("inserted new element");
-  //   await b1.pushChanges({ description: "insert element" });
-  //   //-----------------------------------------------------
+    chai.expect(stash2.txns[0].id).to.equals("0x100000000");
+    chai.expect(stash2.txns[1].id).to.equals("0x100000001");
+    chai.expect(stash2.txns[2].id).to.equals("0x100000002");
+    chai.expect(stash2.txns[3].id).to.equals("0x100000003");
+    chai.expect(stash2.txns[4].id).to.equals("0x100000004");
+    chai.expect(stash2.txns[5].id).to.equals("0x100000005");
+    chai.expect(stash2.txns[6].id).to.equals("0x100000006");
 
-  //   await b2.locks.acquireLocks({ shared: [IModel.repositoryModelId, drawingCategoryId, drawingModelId] });
-
-  //   const expectedUpdatedEl = new Map<Id64String, { id: Id64String, isIndirect: boolean }>();
-  //   const updateDirectEl = async (b: BriefcaseDb, elId: Id64String) => {
-  //     await b.locks.acquireLocks({ exclusive: [elId] });
-  //     const elProps = b.elements.getElementProps(elId);
-  //     b.elements.updateElement({ ...elProps, prop1: `${b.briefcaseId}` } as any);
-  //     expectedUpdatedEl.set(elId, { id: elId, isIndirect: false });
-  //   };
-
-  //   const updateIndirectEl = (b: BriefcaseDb, elId: Id64String) => {
-  //     const elProps = b.elements.getElementProps(elId);
-  //     b.elements.updateElement({ ...elProps, prop1: `${b.briefcaseId}` } as any);
-  //     expectedUpdatedEl.set(elId, { id: elId, isIndirect: true });
-  //   };
-
-
-  //   // txn 1 ----------------------------
-  //   await updateDirectEl(b2, directEls[0]);
-
-  //   // should not require any locks
-  //   b2.txns.withIndirectTxnMode(() => {
-  //     b2.elements.deleteElement(indirectEls[0])
-  //   });
-  //   b2.saveChanges("update element 1");
-
-  //   // txn 2 ----------------------------
-  //   await updateDirectEl(b2, directEls[1]);
-
-  //   // should not require any locks
-  //   b2.txns.withIndirectTxnMode(() => {
-  //     updateIndirectEl(b2, indirectEls[1]);
-  //   });
-  //   b2.saveChanges("update element 2");
-
-  //   // txn 3 ----------------------------
-  //   await updateDirectEl(b2, directEls[2]);
-
-  //   // should not require any locks
-  //   b2.txns.withIndirectTxnMode(() => {
-  //     updateIndirectEl(b2, indirectEls[2]);
-  //   });
-  //   b2.saveChanges("update element 3");
-
-  //   // rebase ---------------------------
-  //   let isRecomputedInvoked = 0;
-  //   let isShouldReinstateInvoked = 0;
-  //   b2.txns.changeMergeManager.setRebaseHandler({
-  //     shouldReinstate(_txn: TxnProps) {
-  //       isShouldReinstateInvoked++;
-  //       return true;
-  //     },
-  //     async recompute(_txn: TxnProps): Promise<void> {
-  //       isRecomputedInvoked++;
-  //     }
-  //   });
-
-  //   await b2.pullChanges();
-  //   chai.assert.isTrue(isShouldReinstateInvoked === 3);
-  //   chai.assert.isTrue(isRecomputedInvoked === 3);
-  //   // txn 4 ----------------------------
-  //   insertDirectEl(b2)
-  //   b2.saveChanges("update element 3");
-
-
-  //   b2.close();
-  //   b3.close();
-  //   HubMock.shutdown();
-  // });
+    const stashes = StashManager.getStashes(b1);
+    chai.expect(stashes).to.have.lengthOf(2);
+    chai.expect(stashes[0].description).to.equals("stash test 2");
+    chai.expect(stashes[1].description).to.equals("stash test 1");
+    chai.expect(stashes[0]).to.deep.equal(stash2);
+    chai.expect(stashes[1]).to.deep.equal(stash1);
+  });
 });
