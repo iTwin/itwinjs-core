@@ -868,9 +868,9 @@ export abstract class IModelDb extends IModel {
       await this.acquireSchemaLock();
 
     try {
-      await this[_nativeDb].dropSchemas(schemaNames);
+      this[_nativeDb].dropSchemas(schemaNames);
       this.saveChanges(`dropped unused schemas`);
-    } catch (error) {
+    } catch (error: any) {
       Logger.logError(loggerCategory, `Failed to drop schemas: ${error}`);
       this.abandonChanges();
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Failed to drop schemas: ${error}`);
