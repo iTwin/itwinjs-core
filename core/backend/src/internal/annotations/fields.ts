@@ -75,7 +75,7 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldPrimitiv
       case ECSqlValueType.Boolean:
         return { primitive: rootValue.getBoolean() };
       case ECSqlValueType.DateTime:
-        return { primitive: rootValue.getDateTime() };
+        return { primitive: new Date(rootValue.getDateTime()) };
       case ECSqlValueType.Double:
         return { primitive: rootValue.getDouble() };
       case ECSqlValueType.Guid:

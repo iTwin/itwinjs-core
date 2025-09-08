@@ -139,16 +139,15 @@ function formatQuantity(v: FieldPrimitiveValue, _o?: QuantityFieldFormatOptions)
 }
 
 function formatDateTime(v: FieldPrimitiveValue, _o?: DateTimeFieldFormatOptions): string | undefined {
-  if (typeof v === "string") {
-    const date = new Date(v);
-    if (!isNaN(date.getTime())) {
-      if (_o && _o.formatOptions){
-        const formatter = new Intl.DateTimeFormat(_o.locale, _o.formatOptions);
-        return formatter.format(date);
-      }
-      return v;
+if (!(v instanceof Date))
+  return undefined;
+
+if (!isNaN(v.getTime())) {
+    if (_o && _o.formatOptions){
+      const formatter = new Intl.DateTimeFormat(_o.locale, _o.formatOptions);
+      return formatter.format(v);
     }
-    return undefined
+    return v.toString();
   }
   return undefined
 }
