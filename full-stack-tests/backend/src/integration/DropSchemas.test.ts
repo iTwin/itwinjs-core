@@ -61,7 +61,7 @@ describe("Drop schemas", function (this: Suite) {
     b1.getJsClass("TestSchema1:Pipe2");
     b1.saveChanges();
     await b1.pushChanges({ description: "pushed TestSchema1" });
-    b1.dropSchemas(["TestSchema1"]);
+    await b1.dropSchemas(["TestSchema1"]);
     b1.saveChanges();
     await b1.pushChanges({ description: "drop TestSchema1" });
 
