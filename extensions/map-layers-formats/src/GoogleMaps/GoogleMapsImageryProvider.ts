@@ -31,7 +31,6 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     super(settings, true);
     this._decorator = new GoogleMapsDecorator();
     this._sessionManager = sessionManager;
-
   }
   public override get tileSize(): number { return this._tileSize; }
 
@@ -48,7 +47,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     }
   }
 
-  protected async getSessionManager (): Promise<GoogleMapsSessionManager> {
+  protected async getSessionManager(): Promise<GoogleMapsSessionManager> {
     if (this._sessionManager)
       return this._sessionManager;
 
@@ -142,10 +141,10 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
       }
       if (cartoRect && this._activeSession) {
         try {
-            const viewportInfo = await this.fetchViewportInfo(cartoRect, zoom);
-            if (viewportInfo?.copyright) {
-              matchingAttributions.push(viewportInfo.copyright);
-            }
+          const viewportInfo = await this.fetchViewportInfo(cartoRect, zoom);
+          if (viewportInfo?.copyright) {
+            matchingAttributions.push(viewportInfo.copyright);
+          }
         } catch (error:any) {
           Logger.logError(loggerCategory, `Error while loading viewport info: ${error?.message??"Unknown error"}`);
         }
@@ -217,7 +216,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
   }
 
   private getSelectedTiles(vp: ScreenViewport) {
-    return IModelApp.tileAdmin.getTilesForUser(vp)?.selected
+    return IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
   }
 
   public override async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
@@ -228,8 +227,8 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
         const attrList = await this.fetchAttributions(tiles);
         for (const attr of attrList) {
           attr.split(",").forEach((line) => {
-            copyrightMsg += `${copyrightMsg.length === 0 ? "": "<br"}${line}`;
-        });
+            copyrightMsg += `${copyrightMsg.length === 0 ? "": "<br>"}${line}`;
+          });
         }
       }
       catch (error: any) {
@@ -244,6 +243,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     cards.appendChild(IModelApp.makeLogoCard({
       iconSrc,
       heading: "Google Maps",
-      notice: copyrightMsg }));
+      notice: copyrightMsg
+    }));
   }
 }
