@@ -51,6 +51,7 @@ describe("ReadWrite", () => {
             ruleType: RuleTypes.RootNodes,
             specifications: [
               {
+                // eslint-disable-next-line @typescript-eslint/no-deprecated
                 specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
                 classes: { schemaName: "BisCore", classNames: ["Element"], arePolymorphic: true },
                 groupByClass: false,
@@ -68,6 +69,7 @@ describe("ReadWrite", () => {
             </ECEntityClass>
         </ECSchema>`;
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const nodesRequest = manager.getNodes({
         imodel,
         rulesetOrId: ruleset,

@@ -76,7 +76,7 @@ function* commandIterator(features: VisibleTileFeatures, pass: RenderPass) {
     if (command.opcode !== "pushBatch")
       continue;
 
-    const ovrs = command.batch.getOverrides(features.target);
+    const ovrs = command.batch.getOverrides(features.target, features.target.currentBranch);
     if (ovrs.allHidden)
       continue;
 

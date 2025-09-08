@@ -2,6 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module Hierarchies
  */
@@ -12,6 +13,8 @@ import { NodeKey } from "./Key.js";
 /**
  * Data structure that describes a tree node.
  * @public
+ * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface Node {
   /** A key that uniquely identifies a node. */
@@ -48,6 +51,8 @@ export interface Node {
 /**
  * Partial node definition.
  * @public
+ * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export type PartialNode = AllOrNone<Partial<Node>, "key" | "label">;
 
