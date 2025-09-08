@@ -595,7 +595,7 @@ describe("Field formatting", () => {
     });
   });
 
-  describe.only("datetime", () => {
+  describe("datetime", () => {
     it("formats date as string", () => {
       const date = new Date("2023-01-01T12:34:56Z");
       expect(formatFieldValue(date, "datetime", undefined)).toBe(date.toString());
