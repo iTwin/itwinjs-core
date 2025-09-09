@@ -1129,7 +1129,7 @@ export class ClipUtilities {
     const voronoi = Voronoi.createFromCurveChain(curveChain, strokeOptions, distanceTol, boundingBox);
     if (!voronoi)
       return undefined;
-    const superFaces = voronoi.collectVoronoiSuperFaces(curveChain.children.length);
+    const superFaces = voronoi.computeVoronoiSuperFaces(curveChain.children.length);
     if (superFaces === undefined || superFaces.length !== curveChain.children.length)
       return undefined;
     return voronoi.generateClippersFromVoronoiSuperFaces(superFaces);

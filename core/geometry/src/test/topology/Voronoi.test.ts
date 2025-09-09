@@ -42,30 +42,36 @@ function visualizeGraphEdges(allGeometry: GeometryQuery[], graph: HalfEdgeGraph,
  * @param showDelaunay whether to visualize the Delaunay triangulation.
  * @param showClippers whether to visualize the curve-based Voronoi super faces as UnionRegions derived from the clippers instead.
  */
-function visualizeVoronoiDiagram(allGeometry: GeometryQuery[], path: CurveChain, strokeOptions?: StrokeOptions, distanceTol?: number, bbox?: LowAndHighXY, showDelaunay?: boolean, showClippers?: boolean): void {
+function visualizeVoronoiDiagram(ck: Checker, allGeometry: GeometryQuery[], path: CurveChain, strokeOptions?: StrokeOptions, distanceTol?: number, bbox?: LowAndHighXY, showDelaunay?: boolean, showClippers?: boolean): void {
   const voronoi = Voronoi.createFromCurveChain(path, strokeOptions, distanceTol, bbox);
-  if (voronoi) {
+  if (ck.testDefined(voronoi, "created Voronoi instance")) {
+    ck.testTrue(voronoi.isCurveBased, "Voronoi instance is curve-based");
     if (showDelaunay)
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(voronoi.getInputGraph, undefined, undefined, () => true));
-    const superFaces = showClippers ? voronoi.collectVoronoiSuperFaces(path.children.length) : undefined;
-    const clippers = superFaces ? voronoi.generateClippersFromVoronoiSuperFaces(superFaces) : undefined;
-    if (clippers) {
-      const range = HalfEdgeGraphOps.graphRangeXY(voronoi.getVoronoiGraph);
-      const polygon: Point3d[] = [
-        Point3d.create(range.low.x, range.low.y),
-        Point3d.create(range.high.x, range.low.y),
-        Point3d.create(range.high.x, range.high.y),
-        Point3d.create(range.low.x, range.high.y),
-      ];
-      const work = new GrowableXYZArray();
-      for (const clipper of clippers) {
-        const clippedPolygons: GrowableXYZArray[] = [];
-        clipper.polygonClip(polygon, clippedPolygons, work);
-        const signedLoops = RegionOps.constructAllXYRegionLoops(clippedPolygons.map((clippedPolygon: GrowableXYZArray) => Loop.createPolygon(clippedPolygon)));
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoops[0].negativeAreaLoops[0]);
-      }
-    } else {
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, voronoi.constructPolyfaceFromVoronoiGraph(true));
+    const superFaces = voronoi.computeVoronoiSuperFaces(path.children.length);
+    if (ck.testDefined(superFaces, "computed Voronoi super faces")) {
+      if (showClippers) {
+        const clippers = voronoi.generateClippersFromVoronoiSuperFaces(superFaces);
+        if (ck.testDefined(clippers, "generated clippers from Voronoi super faces")) {
+          const range = HalfEdgeGraphOps.graphRangeXY(voronoi.getVoronoiGraph);
+          const polygon: Point3d[] = [
+            Point3d.create(range.low.x, range.low.y),
+            Point3d.create(range.high.x, range.low.y),
+            Point3d.create(range.high.x, range.high.y),
+            Point3d.create(range.low.x, range.high.y),
+          ];
+          const work = new GrowableXYZArray();
+          for (const clipper of clippers) {
+            const clippedPolygons: GrowableXYZArray[] = [];
+            clipper.polygonClip(polygon, clippedPolygons, work);
+            const signedLoops = RegionOps.constructAllXYRegionLoops(clippedPolygons.map((clippedPolygon: GrowableXYZArray) => Loop.createPolygon(clippedPolygon)));
+            if (ck.testExactNumber(signedLoops.length, 1, "one component in super face"))
+              if (ck.testExactNumber(signedLoops[0].negativeAreaLoops.length, 1, "no holes in super face"))
+                GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoops[0].negativeAreaLoops[0]);
+          }
+        }
+      } else
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, voronoi.constructPolyfaceFromVoronoiGraph(true));
     }
   }
 }
@@ -757,7 +763,7 @@ describe("Voronoi", () => {
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 0.5;
     const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(path, strokeOptions);
-    visualizeVoronoiDiagram(allGeometry, path, strokeOptions, undefined, undefined, false, true);
+    visualizeVoronoiDiagram(ck, allGeometry, path, strokeOptions, undefined, undefined, false, true);
     if (ck.testDefined(clippers)) {
       ck.testExactNumber(clippers.length, path.children.length, "Voronoi should have 3 faces");
       const clippedCurves: AnyCurve[][] = [];
@@ -785,7 +791,7 @@ describe("Voronoi", () => {
     const bbox = path.range();
     bbox.expandInPlace(10);
     const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(path, strokeOptions, undefined, bbox);
-    visualizeVoronoiDiagram(allGeometry, path, strokeOptions, undefined, bbox, false, true);
+    visualizeVoronoiDiagram(ck, allGeometry, path, strokeOptions, undefined, bbox, false, true);
     if (ck.testDefined(clippers, "Clippers should be defined")) {
       ck.testExactNumber(clippers.length, path.children.length, "Voronoi should have 5 faces");
       const clippedCurves: AnyCurve[][] = [];
@@ -809,7 +815,7 @@ describe("Voronoi", () => {
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 20;
     const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(path, strokeOptions);
-    visualizeVoronoiDiagram(allGeometry, path, strokeOptions, undefined, undefined, false, true);
+    visualizeVoronoiDiagram(ck, allGeometry, path, strokeOptions, undefined, undefined, false, true);
     if (ck.testDefined(clippers, "Clippers should be defined")) {
       ck.testExactNumber(clippers.length, path.children.length, "Voronoi should have 7 faces");
       const clippedCurves: AnyCurve[][] = [];
@@ -831,7 +837,7 @@ describe("Voronoi", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
     ck.testExactNumber(path.children.length, 18, "path should have 18 children");
     const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(path);
-    visualizeVoronoiDiagram(allGeometry, path, undefined, undefined, undefined, false, true);
+    visualizeVoronoiDiagram(ck, allGeometry, path, undefined, undefined, undefined, false, true);
     if (ck.testDefined(clippers, "Clippers should be defined")) {
       ck.testExactNumber(clippers.length, path.children.length, "Voronoi should have 18 faces");
       const clippedCurves: AnyCurve[][] = [];
@@ -868,7 +874,7 @@ describe("Voronoi", () => {
     const distanceTol = undefined;
     const bbox = Range2d.createXYXY(2500, 4400, 15000, 8400);
     const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(approximatedPath, strokeOptions, distanceTol, bbox);
-    visualizeVoronoiDiagram(allGeometry, approximatedPath, strokeOptions, distanceTol, bbox, false, true);
+    visualizeVoronoiDiagram(ck, allGeometry, approximatedPath, strokeOptions, distanceTol, bbox, false, true);
     if (ck.testDefined(clippers, "Clippers should be defined")) {
       ck.testExactNumber(clippers.length, approximatedPath.children.length, "Voronoi should have 9 faces");
       const clippedCurves: AnyCurve[][] = [];

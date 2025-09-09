@@ -13,6 +13,7 @@ import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSe
 import { Arc3d } from "../curve/Arc3d";
 import { CurveChain } from "../curve/CurveCollection";
 import { CurveCurve } from "../curve/CurveCurve";
+import { CurveOps } from "../curve/CurveOps";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
@@ -23,6 +24,7 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 import { PolylineOps } from "../geometry3d/PolylineOps";
 import { Range2d } from "../geometry3d/Range";
 import { Ray2d } from "../geometry3d/Ray2d";
+import { Ray3d } from "../geometry3d/Ray3d";
 import { LowAndHighXY, XAndY } from "../geometry3d/XYZProps";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
@@ -30,15 +32,6 @@ import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction } from
 import { HalfEdgeGraphSearch } from "./HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge, HalfEdgeGraphOps } from "./Merging";
 import { Triangulator } from "./Triangulation";
-
-/**
- * An interface to represent a 2D line segment.
- * @internal
- */
-interface Segment2d {
-  start: XAndY;
-  end: XAndY;
-}
 
 /**
  * A class to represent a Voronoi diagram in the xy-plane.
@@ -88,6 +81,14 @@ export class Voronoi {
    */
   public get getVoronoiGraph(): HalfEdgeGraph {
     return this._voronoiGraph;
+  }
+  /** Whether or not this instance represents a curve-based Voronoi diagram. */
+  public get isCurveBased(): boolean {
+    return this._isCurveBased;
+  }
+  /** Accessor for the super face mask used for constructing a curve-based Voronoi diagram. */
+  public get getSuperFaceMask(): HalfEdgeMask {
+    return this._superFaceMask;
   }
   /** Whether the constructor has created a minimally valid instance. */
   protected get isValid(): boolean {
@@ -170,7 +171,7 @@ export class Voronoi {
    * * direction vector has positive dot product with the vector from triangle centroid to edge midpoint
    * @returns bisector segment, or undefined if the triangle circumcenter lies outside the Voronoi boundary
    */
-  private getTriangleEdgeBisector(edge: HalfEdge, circumcenter: XAndY, box: VoronoiBoundary): Segment2d | undefined {
+  private getTriangleEdgeBisector(edge: HalfEdge, circumcenter: XAndY, box: VoronoiBoundary): Voronoi.Segment2d | undefined {
     const v0 = edge;
     const v1 = edge.faceSuccessor;
     const v2 = edge.facePredecessor;
@@ -324,7 +325,7 @@ export class Voronoi {
     return colinearGraph;
   }
   /** Return a segment along the bisector of the given edge. Clip the bisector to the Voronoi boundary. */
-  private static getEdgeBisector(edge: HalfEdge, box: VoronoiBoundary): Segment2d | undefined {
+  private static getEdgeBisector(edge: HalfEdge, box: VoronoiBoundary): Voronoi.Segment2d | undefined {
     const v0 = edge;
     const v1 = edge.faceSuccessor;
     const midPoint = Point2d.createAdd2ScaledXY(v0.x, v0.y, 0.5, v1.x, v1.y, 0.5);
@@ -391,44 +392,51 @@ export class Voronoi {
       return delaunayGraph ? Voronoi.createFromDelaunayGraph(delaunayGraph, distanceTol, boundingBox) : undefined;
     }
   }
-  /** Stroke the curve interior, and associate the stroke points to the given index. */
-  private static pushInteriorStrokePoints(pointToIndex: Dictionary<Point3d, number>, curve: CurvePrimitive, index: number, strokeOptions?: StrokeOptions, workPoint?: Point3d): void {
+  /** Stroke the curve interior, and associate the stroke points to the given index. Return first and last point. */
+  private static pushInteriorStrokePoints(pointToIndex: Dictionary<Point3d, number>, curve: CurvePrimitive, index: number, strokeOptions?: StrokeOptions, workPoint?: Point3d): Voronoi.Stroke01 {
     const strokes = LineString3d.create();
     curve.emitStrokes(strokes, strokeOptions);
     let pt: Point3d | undefined;
-    for (let i = 1; i < strokes.numPoints() - 1; ++i) { // skip first and last point
+    const n = strokes.numPoints();
+    for (let i = 1; i < n - 1; ++i) { // skip first and last point
       if (pt = strokes.pointAt(i, workPoint))
         pointToIndex.insert(pt, index);
     }
+    assert(() => n > 2, "Expect at least 1 interior stroke point");
+    const p0 = (n > 2 ? strokes.pointAt(1) : undefined) ?? curve.fractionToPoint(0.5);
+    const p1 = (n > 2 ? strokes.pointAt(n - 2) : undefined) ?? p0;
+    return {p0, p1};
   }
-  /** Intersect the circle with the curve, and associate the intersection closest to the desired curve endpoint to the given index. */
-  private static pushCircleIntersection(pointToIndex: Dictionary<Point3d, number>, circle: Arc3d, curve: CurvePrimitive, index: number, atStart: boolean, distanceTol?: number): boolean {
+  /** Intersect the circle with the curve and return the intersection closest to the desired curve endpoint. */
+  private static computeCircleIntersection(circle: Arc3d, curve: CurvePrimitive, atCurveStart: boolean, distanceTol?: number): Point3d | undefined {
     const intersections = CurveCurve.intersectionProjectedXYPairs(undefined, circle, false, curve, false, distanceTol);
     if (!intersections.length)
-      return false;
+      return undefined;
     if (intersections.length > 1) { // detailB has the info for curve
-      if (atStart)
+      if (atCurveStart)
         intersections.sort((a, b) => a.detailB.fraction - b.detailB.fraction); // first intersection is closest to curve start
       else
         intersections.sort((a, b) => b.detailB.fraction - a.detailB.fraction); // first intersection is closest to curve end
     }
-    pointToIndex.insert(intersections[0].detailB.point, index);
-    return true;
+    return intersections[0].detailB.point;
   };
   /** Intersect two consecutive curves with a tiny circle centered at their joint, and associate the intersection on each curve with its respective index. */
-  private static pushSymmetricPointPairAtJoint = (pointToIndex: Dictionary<Point3d, number>, prevCurve: CurvePrimitive, nextCurve: CurvePrimitive, prevIndex: number, nextIndex: number, strokeOptions?: StrokeOptions, distanceTol?: number, workArc?: Arc3d): boolean => {
-    const length0 = prevCurve.curveLength();
-    const length1 = nextCurve.curveLength();
-    // HEURISTIC: hopefully radius is small enough to produce the last/first stroke point for prev/nextCurve. See Step 3 below.
-    let radius = Math.min(length0, length1) / 100;
-    if (strokeOptions && strokeOptions.maxEdgeLength && radius > strokeOptions.maxEdgeLength)
-      radius = strokeOptions.maxEdgeLength / 2;
+  private static pushSymmetricPointPairAtJoint = (pointToIndex: Dictionary<Point3d, number>, prevStroke: Voronoi.StrokeData, nextStroke: Voronoi.StrokeData, distanceTol?: number, workArc?: Arc3d): boolean => {
     const circle = Arc3d.createUnitCircle(workArc);
-    nextCurve.startPoint(circle.centerRef); // circle centered at joint
+    const joint = nextStroke.cp.startPoint(circle.centerRef);
+    // ensure the symmetric pair we add will be the last/first stroke points on prev/next curve
+    const radius = 0.5 * Math.min(prevStroke.pt.distance(joint), nextStroke.pt.distance(joint));
     circle.matrixRef.setAt(0, 0, radius);
     circle.matrixRef.setAt(1, 1, radius);
-    return this.pushCircleIntersection(pointToIndex, circle, prevCurve, prevIndex, false, distanceTol)
-      && this.pushCircleIntersection(pointToIndex, circle, nextCurve, nextIndex, true, distanceTol);
+    const prevPt = this.computeCircleIntersection(circle, prevStroke.cp, false, distanceTol);
+    const nextPt = this.computeCircleIntersection(circle, nextStroke.cp, true, distanceTol);
+    if (!prevPt || !nextPt) {
+      assert(() => false, "Failed to add symmetric strokes at joint");
+      return false;
+    }
+    pointToIndex.set(prevPt, prevStroke.i);
+    pointToIndex.set(nextPt, nextStroke.i);
+    return true;
   }
   /** Stroke each curve in the chain and associate each point with the index of its generating curve in the chain. */
   private static createStrokePointsWithIndices(
@@ -446,7 +454,12 @@ export class Voronoi {
     const workPoint = Point3d.createZero();
     const workCircle = Arc3d.createUnitCircle(Voronoi._workArc);
     const workSegment0 = LineSegment3d.createXYXY(0, 0, 0, 0);
-    const workSegment1 = LineSegment3d.createXYXY(0, 0, 0, 0);
+    const workRay = Ray3d.createZero();
+    let stroke0: Voronoi.StrokeData | undefined;
+    let prevStroke: Voronoi.StrokeData | undefined;
+    let firstLastStroke: Voronoi.Stroke01;
+    // lambda for iterating the chain, splitting a linestring primitive into segments
+    const getNextCurve = (cp: CurvePrimitive, index: number): CurvePrimitive | undefined => cp instanceof LineString3d ? cp.getIndexedSegment(index, workSegment0) : index ? undefined : cp;
     const pointToIndex = new Dictionary<Point3d, number>(Geometry.compareXY(distanceTol), (p: Point3d) => p.clone());
     // Step 1: add open chain start/end point
     const isClosedChain = curveChain.isPhysicallyClosedCurve(distanceTol, true);
@@ -456,56 +469,25 @@ export class Voronoi {
       if (curveChain.endPoint(workPoint))
         pointToIndex.insert(workPoint, numChildren - 1);
     }
-    // TODO: refactor Steps 2 and 3 to remove the HEURISTIC in pushSymmetricPointPairAtJoint:
-    // 0. set prevPt = undefined, prevCurve = undefined
-    // 1. loop over each prim in chain:
-    //  a. if linestring is colinear, simplify to a line segment
-    //  b. create curves = [non-linestring prim] or [...segments of linestring prim]
-    //  c. loop over currCurve of curves:
-    //    i. stroke interior points, save firstPt and lastPt XAndY.
-    //    ii. add symmetric points on prevCurve/currCurve if prevPt and prevCurve are defined
-    //      * radius = fixed fraction of smaller dist of lastPt and firstPt to start of prim/seg
-    //    iii. set prevPt = lastPt, prevCurve = currCurve
-
-    // Step 2: add interior stroke points for each chain primitive and linestring segment
-    // * Do not add a stroke point at the chain joints and linestring vertices; otherwise they don't end up on Voronoi edges.
-    for (let i = 0; i < numChildren; i++) {
-      const child = children[i];
-      if (child instanceof LineString3d) {
-        for (let j = 0; j < child.numEdges(); j++) {
-          if (child.getIndexedSegment(j, workSegment0))
-            this.pushInteriorStrokePoints(pointToIndex, workSegment0, i, strokeOptions, workPoint); // each segment is associated to the linestring index
-        }
-      } else {
-        this.pushInteriorStrokePoints(pointToIndex, child, i, strokeOptions, workPoint);
-      }
-    }
-    // Step 3: add the stroke points nearest to each chain joint and linestring interior joint.
-    // * These are required to be symmetric so that the joint lands exactly on a Voronoi diagram edge.
-    // * We compute these stroke points by intersecting adjacent chain children with a common circle centered at the joint.
-    // * A tiny radius is chosen at each joint to increase the odds that the intersections become the closest stroke points to the joint.
+    // Step 2: add interior stroke points for each chain primitive
+    // To ensure Voronoi edges exactly hit the chain joints, the joints themselves are omitted from the strokes
     for (let i = 0; i < numChildren; i++) {
       let child = children[i];
-      if (child instanceof LineString3d) { // process open linestring interior joints (always open b/c numChildren > 1)
-        for (let j = 1; j < child.numEdges(); j++) {
-          if (child.getIndexedSegment(j - 1, workSegment0) && child.getIndexedSegment(j, workSegment1)) {
-            // associate both intersections to the linestring index
-            if (!this.pushSymmetricPointPairAtJoint(pointToIndex, workSegment0, workSegment1, i, i, strokeOptions, distanceTol, workCircle))
-              return undefined;
-          }
-        }
+      if (CurveOps.isColinear(child, { colinearRay: workRay, xyColinear: true, maxDeviation: distanceTol }))
+        child = LineSegment3d.createCapture(child.startPoint(), child.endPoint());
+      let j = 0;
+      for (let currCurve: CurvePrimitive | undefined; currCurve = getNextCurve(child, j); j++) {
+        firstLastStroke = this.pushInteriorStrokePoints(pointToIndex, currCurve, i, strokeOptions, workPoint);
+        const currStroke = { pt: firstLastStroke.p0, cp: currCurve, i };
+        if (prevStroke)
+          this.pushSymmetricPointPairAtJoint(pointToIndex, prevStroke, currStroke, distanceTol, workCircle);
+        stroke0 = (isClosedChain && i === 0 && j === 0) ? currStroke : stroke0;
+        prevStroke = { pt: firstLastStroke.p1, cp: currCurve, i };
       }
-      if (i === 0 && !isClosedChain)
-        continue; // no wrap-around joint to process
-      const iPrev = Geometry.modulo(i - 1, numChildren);
-      let prevChild = children[iPrev];
-      if (prevChild instanceof LineString3d && prevChild.getIndexedSegment(prevChild.numEdges() - 1, workSegment0))
-        prevChild = workSegment0; // use the last segment of the previous linestring
-      if (child instanceof LineString3d && child.getIndexedSegment(0, workSegment1))
-        child = workSegment1; // use the first segment of this linestring
-      if (!this.pushSymmetricPointPairAtJoint(pointToIndex, prevChild, child, iPrev, i, strokeOptions, distanceTol, workCircle))
-        return undefined;
     }
+    // Step 3: handle the seam if necessary
+    if (prevStroke && stroke0)
+      this.pushSymmetricPointPairAtJoint(pointToIndex, prevStroke, stroke0, distanceTol, workCircle);
     return pointToIndex;
   }
   /** Construct a graph from unique xy points. */
@@ -629,13 +611,15 @@ export class Voronoi {
     return (foundSuperFace && superFace.length > 2) ? superFace : undefined;
   }
   /**
-   * Collect super faces of a curve-based Voronoi diagram.
+   * Compute super faces of a curve-based Voronoi diagram.
    * * The instance must have been constructed with [[createFromCurveChain]].
+   * * Each super face corresponds to the planar region of points closer to one curve in the generating chain than to any other.
+   * * Each returned edge is masked for querying by subsequent methods.
    * @param numSuperFaces maximum number of super faces to return.
    * @returns up to `numSuperFaces` Voronoi super faces, sorted by curve index, or `undefined` if invalid input.
    * Each super face is an array of HalfEdges that form a loop.
    */
-  public collectVoronoiSuperFaces(numSuperFaces: number): HalfEdge[][] | undefined {
+  public computeVoronoiSuperFaces(numSuperFaces: number): HalfEdge[][] | undefined {
     if (!this._isCurveBased || numSuperFaces < 1)
       return undefined;
     const superFaces: HalfEdge[][] = [];
@@ -669,6 +653,7 @@ export class Voronoi {
       return undefined;
     const allClippers: UnionOfConvexClipPlaneSets[] = [];
     const superFaceOutsideMask = this._voronoiGraph.grabMask();
+    const visitedMask = this._voronoiGraph.grabMask();
     const maskOutsideOfSuperFace = (startEdge: HalfEdge, clearMask: boolean): boolean => {
       return startEdge.announceEdgesInSuperFace(
         (e: HalfEdge) => !e.isMaskSet(this._superFaceMask),
@@ -676,7 +661,8 @@ export class Voronoi {
       );
     };
     // Step 0: split each super face into convex faces (clipper prerequisite)
-    Triangulator.triangulateAllInteriorFaces(this._voronoiGraph);
+    // Disable triangle-flipping; we don't care about aspect ratio here.
+    Triangulator.triangulateAllInteriorFaces(this._voronoiGraph, false, true);
     HalfEdgeGraphOps.expandConvexFaces(this._voronoiGraph, this._superFaceMask);
     for (const superFace of superFaces) {
       if (superFace.length < 3) {
@@ -689,8 +675,7 @@ export class Voronoi {
         allClippers.length = 0;
         break; // invalid Voronoi graph
       }
-      this._voronoiGraph.clearMask(HalfEdgeMask.VISITED);
-      HalfEdgeGraphSearch.exploreComponent(superFace[0], HalfEdgeMask.VISITED, superFaceOutsideMask, undefined, convexFaces);
+      HalfEdgeGraphSearch.exploreComponent(superFace[0], visitedMask, superFaceOutsideMask, undefined, convexFaces);
       maskOutsideOfSuperFace(superFace[0], true);
       // Step 2: generate a clipper for each convex face
       const clippers: ConvexClipPlaneSet[] = [];
@@ -710,6 +695,7 @@ export class Voronoi {
       if (clippers.length === convexFaces.length)
         allClippers.push(UnionOfConvexClipPlaneSets.createConvexSets(clippers));
     }
+    this._voronoiGraph.dropMask(visitedMask);
     this._voronoiGraph.dropMask(superFaceOutsideMask);
     return allClippers.length === superFaces.length ? allClippers : undefined;
   }
@@ -724,6 +710,19 @@ export class Voronoi {
       isEdgeVisible = (e: HalfEdge) => e.isMaskSet(this._superFaceMask);
     return PolyfaceBuilder.graphToPolyface(this._voronoiGraph, undefined, undefined, isEdgeVisible);
   }
+}
+
+/**
+ * Interfaces used by the Voronoi class.
+ * @internal
+ */
+export namespace Voronoi {
+  /** An interface to represent a 2D line segment */
+  export interface Segment2d { start: XAndY; end: XAndY };
+  /** An interface to represent a single stroke point with an associated index. */
+  export interface StrokeData { pt: Point3d, cp: CurvePrimitive, i: number };
+  /** An interface to represent two stroke points, e.g., first and last. */
+  export interface Stroke01 { p0: Point3d, p1: Point3d };
 }
 
 /**
