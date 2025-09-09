@@ -243,8 +243,8 @@ export class ECDb implements Disposable {
    */
   public deleteSchemaItems(schemaName: string, schemaItemNames: string[]) {
     try {
-      this[_nativeDb].deleteSchemaItems(schemaName, schemaItemNames, { schemaLockHeld: true });
-    } catch (error) {
+      this[_nativeDb].deleteSchemaItems(schemaName, schemaItemNames);
+    } catch (error: any) {
       throw error;
     }
   };
