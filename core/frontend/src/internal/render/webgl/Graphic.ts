@@ -119,16 +119,16 @@ export class PerTargetBatchData {
     return this._thematicSensors;
   }
 
-  public getFeatureOverrides(batch: Batch): FeatureOverrides {
+  public getFeatureOverrides(batch: Batch, provider: FeatureAppearanceProvider): FeatureOverrides {
     const source = this.target.currentFeatureSymbologyOverrides?.source;
     let ovrs = this._featureOverrides.get(source);
     if (!ovrs) {
       const cleanup = source ? source.onSourceDisposed.addOnce(() => this.onSourceDisposed(source)) : undefined;
       this._featureOverrides.set(source, ovrs = FeatureOverrides.createFromTarget(this.target, batch.options, cleanup));
-      ovrs.initFromMap(batch.featureTable);
+      ovrs.initFromMap(batch.featureTable, provider);
     }
 
-    ovrs.update(batch.featureTable);
+    ovrs.update(batch.featureTable, provider);
     return ovrs;
   }
 
@@ -212,8 +212,8 @@ export class PerTargetData {
     return this.getBatchData(target).getThematicSensors(this._batch);
   }
 
-  public getFeatureOverrides(target: Target): FeatureOverrides {
-    return this.getBatchData(target).getFeatureOverrides(this._batch);
+  public getFeatureOverrides(target: Target, provider: FeatureAppearanceProvider): FeatureOverrides {
+    return this.getBatchData(target).getFeatureOverrides(this._batch, provider);
   }
 
   public getContours(target: Target): Contours {
@@ -320,8 +320,8 @@ export class Batch extends Graphic {
     return this.perTargetData.getThematicSensors(target);
   }
 
-  public getOverrides(target: Target): FeatureOverrides {
-    return this.perTargetData.getFeatureOverrides(target);
+  public getOverrides(target: Target, provider: FeatureAppearanceProvider): FeatureOverrides {
+    return this.perTargetData.getFeatureOverrides(target, provider);
   }
 
   public getContours(target: Target): Contours {
