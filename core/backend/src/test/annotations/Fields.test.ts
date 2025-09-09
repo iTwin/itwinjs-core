@@ -754,7 +754,7 @@ describe.only("Field evaluation", () => {
     });
 
     // FIXME: fails because Props with struct type return undefined, however fields with no prop type default to "string"
-    //        so either this test is now invalid or we structs should default to string type?
+    //        so either this test is now invalid or structs should default to string type instead of undefined?
     it.skip("supports complex property paths", () => {
       const sourceId = insertTestElement();
       const block = TextBlock.create({ styleId: "0x123" });

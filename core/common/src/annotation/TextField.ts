@@ -60,6 +60,13 @@ export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean"
 export type CoordinateComponentSelector = "X" | "Y" | "Z" | "XY" | "XYZ";
 
 export type FieldCase = "as-is" | "upper" | "lower";
+
+export type MonthPart = "long" | "short" | "numeric";
+export type WeekdayPart = "long" | "short";
+export type DayPart = "numeric";
+export type TimePart = "hr" | "min" | "sec";
+export type TimeZone = "string";
+export type HourCycle = "12hr" | "24hr";
 export interface BooleanFieldFormatOptions {
   trueString?: string;
   falseString?: string;
@@ -89,7 +96,13 @@ export interface DateTimeFieldFormatOptions {
   // People might also want to ask that the date be translated to a specific time zone before formatting is applied.
   // For now we simply spit out the full Date as a string in ISO8601 format.
   locale?: Intl.LocalesArgument;
-  formatOptions?: Intl.DateTimeFormatOptions;
+  extendOptions?: Intl.DateTimeFormatOptions; // allow users to use full Intl opts if they want?
+  day?: DayPart;
+  weekday?: WeekdayPart;
+  month?: MonthPart;
+  time?: TimePart;
+  timeZone?: TimeZone;
+  hourCycle?: HourCycle;
 }
 
 export interface EnumFieldFormatOptions<T extends number| string> {
