@@ -413,7 +413,7 @@ export class RegionOps {
         if (Math.abs(area) < areaTol)
           return;
         if (faceType === 1) {
-          const loopOrParityRegion = PlanarSubdivision.createLoopOrParityRegionInFace(face, bridgeMask, visitMask);
+          const loopOrParityRegion = PlanarSubdivision.createLoopOrParityRegionInFace(face, bridgeMask, visitMask, mergeTolerance);
           if (loopOrParityRegion)
             result.tryAddChild(loopOrParityRegion);
         }
