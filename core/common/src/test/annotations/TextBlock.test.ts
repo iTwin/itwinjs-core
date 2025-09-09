@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { beforeEach, describe, expect, it } from "vitest";
-import { FieldRun, FractionRunProps, List, ListProps, Paragraph, ParagraphProps, RunProps, TextBlock, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps } from "../../core-common";
+import { FieldRun, FractionRun, FractionRunProps, getTextBlockGenerator, LineBreakRun, List, ListProps, Paragraph, ParagraphProps, RunProps, TextBlock, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps } from "../../core-common";
 
 function makeTextRun(content?: string, styleOverrides?: TextStyleSettingsProps): TextRunProps {
   return {
@@ -505,5 +505,90 @@ describe("FieldRun", () => {
     });
   });
 });
+
+describe('getTextBlockGenerator', () => {
+  it('iterates through all runs in a TextBlock', () => {
+    const textBlock = TextBlock.create({ styleId: "" });
+
+    const p1 = textBlock.appendParagraph();
+    p1.appendChild(TextRun.create({ content: "Hello" }));
+    p1.appendChild(LineBreakRun.create());
+    p1.appendChild(FractionRun.create({ numerator: "1", denominator: "2" }));
+
+    const p2 = textBlock.appendParagraph();
+
+    const list = textBlock.appendList();
+    const listItem = Paragraph.create();
+    listItem.appendChild(TextRun.create({ content: "Item 1" }));
+    listItem.appendChild(LineBreakRun.create());
+    listItem.appendChild(TextRun.create({ content: "Continued" }));
+    listItem.appendChild(List.create());
+    (listItem.children[3] as List).appendChild(Paragraph.create({ children: [{type: "text", content: "Sub-item 1"}] }));
+    list.appendChild(listItem);
+
+    const iterator = getTextBlockGenerator(textBlock);
+    let result = iterator.next();
+    expect(result.value.current).toEqual(textBlock);
+    expect(result.value.parent).to.be.undefined;
+
+    result = iterator.next();
+    expect(result.value.current).toEqual(p1);
+    expect(result.value.parent).to.equal(textBlock);
+
+    result = iterator.next();
+    expect(result.value.current).toEqual(p1.children[0]);
+    expect(result.value.parent).to.equal(p1);
+
+    result = iterator.next();
+    expect(result.value.current).toEqual(p1.children[1]);
+    expect(result.value.parent).to.equal(p1);
+
+    result = iterator.next();
+    expect(result.value.current).toEqual(p1.children[2]);
+    expect(result.value.parent).to.equal(p1);
+
+    result = iterator.next();
+    expect(result.value.current).toEqual(p2);
+    expect(result.value.parent).to.equal(textBlock);
+
+    result = iterator.next();
+    expect(result.value.current).toEqual(list);
+    expect(result.value.parent).to.equal(textBlock);
+
+    result = iterator.next();
+    expect(result.value.current).toEqual(list.children[0]);
+    expect(result.value.parent).to.equal(list);
+
+    result = iterator.next();
+    expect(result.value.current).toEqual(list.children[0].children[0]);
+    expect(result.value.parent).to.equal(list.children[0]);
+
+    result = iterator.next();
+    expect(result.value.current).toEqual(list.children[0].children[1]);
+    expect(result.value.parent).to.equal(list.children[0]);
+
+    result = iterator.next();
+    expect(result.value.current).toEqual(list.children[0].children[2]);
+    expect(result.value.parent).to.equal(list.children[0]);
+
+    result = iterator.next();
+    expect(result.value.current).toEqual(list.children[0].children[3]);
+    expect(result.value.parent).to.equal(list.children[0]);
+
+    result = iterator.next();
+    expect(list.children[0].children[3] as List).toBeDefined();
+    expect(result.value.current).toEqual((list.children[0].children[3] as List).children[0]);
+    expect(result.value.parent).to.equal(list.children[0].children[3]);
+
+    result = iterator.next();
+    expect(list.children[0].children[3] as List).toBeDefined();
+    expect(result.value.current).toEqual((list.children[0].children[3] as List).children[0].children[0]);
+    expect(result.value.parent).to.equal((list.children[0].children[3] as List).children[0]);
+
+    result = iterator.next();
+    expect(result.done).to.be.true;
+  });
+
+})
 
 // cspell:ignore Consolas PPPLPF Pmno Verdana

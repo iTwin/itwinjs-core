@@ -268,17 +268,11 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
 // Re-evaluates the display strings for all fields that target the element specified by `context` and returns the number
 // of fields whose display strings changed as a result.
 export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext): number {
-  const iterator = getTextBlockGenerator(textBlock);
-
-  let result = iterator.next();
   let numUpdated = 0;
-
-  while (!result.done) {
-    const current = result.value.current;
+  for (const { current } of getTextBlockGenerator(textBlock)) {
     if (current.type === "field" && current instanceof FieldRun && updateField(current, context)) {
       ++numUpdated;
     }
-    result = iterator.next();
   }
 
   return numUpdated;

@@ -110,15 +110,10 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     const blocks = annotationElement.getTextBlocks();
 
     for (const block of blocks) {
-      const iterator = getTextBlockGenerator(block.textBlock);
-      let result = iterator.next();
-
-      while (!result.done) {
-        const current = result.value.current;
+      for (const { current } of getTextBlockGenerator(block.textBlock)) {
         if (current.type === "field" && current instanceof FieldRun && isValidSourceId(current.propertyHost.elementId)) {
           sourceToRelationship.set(current.propertyHost.elementId, null);
         }
-        result = iterator.next();
       }
     }
 
