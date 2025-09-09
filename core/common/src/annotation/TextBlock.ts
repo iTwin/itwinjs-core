@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { TextStyleSettings, TextStyleSettingsProps } from "./TextStyle";
+import { ListMarker, OrderedListMarker, TextStyleSettings, TextStyleSettingsProps } from "./TextStyle";
 
 /** Options supplied to [[TextBlockComponent.clearStyleOverrides]] to control how the style overrides are cleared on the component and its child components.
  * @beta
@@ -74,6 +74,10 @@ export interface TextBlockStringifyOptions {
    * Default: "undefined" - use "\t".
    */
   tabsAsSpaces?: number;
+  /** A string to insert in between the list marker and the list item.
+   * Default: " " - a single space..
+   */
+  listMarkerBreak?: string;
 }
 
 /**
@@ -807,7 +811,7 @@ export class Paragraph extends ContainerComponent<List | Run> {
 
   /** Compute a string representation of this paragraph by concatenating the string representations of all of its children. */
   public override stringify(options?: TextBlockStringifyOptions): string {
-    return this.children.map((x) => x.stringify(options)).join("") ?? "";
+    return this.children.map((x, index) => (index > 0 && x.type === ContainerComponentType.List) ? `${options?.lineBreak}${x.stringify(options)}` : x.stringify(options)).join("") ?? "";
   }
 
   public override equals(other: TextBlockComponent): boolean {
@@ -857,7 +861,10 @@ export class List extends ContainerComponent<Paragraph> {
 
   /** Compute a string representation of this paragraph by concatenating the string representations of all of its [[runs]]. */
   public override stringify(options?: TextBlockStringifyOptions): string {
-    return this.children.map((x) => x.stringify(options)).join("") ?? "";
+    return this.children.map((x, index) => {
+      const marker = getMarkerText(this.styleOverrides.listMarker ?? TextStyleSettings.defaultProps.listMarker, index + 1);
+      return `${marker}${options?.listMarkerBreak ?? " "}${x.stringify(options)}`
+    }).join(options?.paragraphBreak ?? " ") ?? "";
   }
 
   public override equals(other: TextBlockComponent): boolean {
@@ -1117,4 +1124,84 @@ export function* getTextBlockGenerator(block: TextBlockComponent, parent?: Conta
       yield* getTextBlockGenerator(child, block);
     }
   }
+}
+
+/**
+ * Returns the formatted marker text for a list item based on the marker type and item number.
+ * Supports ordered and unordered list markers, including alphabetic, Roman numeral, and numeric formats.
+ * @param marker The type of list marker to use.
+ * @param num The item number in the list.
+ * @returns The formatted marker string for the list item.
+ * @beta
+ */
+export function getMarkerText(marker: ListMarker, num: number): string {
+  switch (marker) {
+    case OrderedListMarker.A:
+      return integerToAlpha(num);
+    case OrderedListMarker.AWithPeriod:
+      return `${integerToAlpha(num)}.`;
+    case OrderedListMarker.AWithParenthesis:
+      return `${integerToAlpha(num)})`;
+    case OrderedListMarker.I:
+      return integerToRoman(num);
+    case OrderedListMarker.IWithPeriod:
+      return `${integerToRoman(num)}.`;
+    case OrderedListMarker.IWithParenthesis:
+      return `${integerToRoman(num)})`;
+    case OrderedListMarker.a:
+      return integerToAlpha(num).toLowerCase();
+    case OrderedListMarker.aWithPeriod:
+      return `${integerToAlpha(num).toLowerCase()}.`;
+    case OrderedListMarker.aWithParenthesis:
+      return `${integerToAlpha(num).toLowerCase()})`;
+    case OrderedListMarker.i:
+      return integerToRoman(num).toLowerCase();
+    case OrderedListMarker.iWithPeriod:
+      return `${integerToRoman(num).toLowerCase()}.`;
+    case OrderedListMarker.iWithParenthesis:
+      return `${integerToRoman(num).toLowerCase()})`;
+    case OrderedListMarker.One:
+      return `${num}`;
+    case OrderedListMarker.OneWithPeriod:
+      return `${num}.`;
+    case OrderedListMarker.OneWithParenthesis:
+      return `${num})`;
+    default: // Return marker as-is in an unordered fashion
+      return marker;
+  }
+}
+
+/**
+ * Converts an integer to its Roman numeral representation.
+ * Supports numbers from 1 and above.
+ * @param num The integer to convert.
+ * @returns The Roman numeral string.
+ */
+function integerToRoman(num: number): string {
+  const values =
+    [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1];
+  const symbols =
+    ['M', 'CM', 'D', 'CD', 'C', 'XC', 'L', 'XL', 'X', 'IX', 'V', 'IV', 'I'];
+  let roman = '';
+  for (let i = 0; i < values.length; i++) {
+    while (num >= values[i]) {
+      roman += symbols[i];
+      num -= values[i];
+    }
+  }
+
+  return roman;
+}
+
+/**
+ * Converts an integer to its alphabetic representation (A-Z, AA-ZZ, etc.).
+ * Used for ordered list markers with alphabetic styles.
+ * @param num The integer to convert (1-based).
+ * @returns The alphabetic string for the given number.
+ */
+function integerToAlpha(num: number): string {
+  const letterOffset = (num - 1) % 26
+  const letter = String.fromCharCode(65 + letterOffset);
+  const depth = Math.ceil(num / 26);
+  return letter.repeat(depth);
 }
