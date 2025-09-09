@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../Geometry";
 
 export function prettyPrint(jsonObject: object): string {
