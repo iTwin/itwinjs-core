@@ -425,10 +425,10 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
     await addSchema(schemaKey);
 
     const schemaInfos = await this._schemaInfoCache.getSchemasByContext(context) ?? [];
-    const items = itemRows.map((itemRow) => {
+    const stubItems = itemRows.map((itemRow) => {
       return JSON.parse(itemRow.item, reviver) as SchemaItemStubRow;
     });
-    await parseSchemaItemStubs(schemaKey.name, items, addItems, schemaInfos);
+    await parseSchemaItemStubs(schemaKey.name, stubItems, addItems, schemaInfos);
 
     return schemaPartials;
   }
