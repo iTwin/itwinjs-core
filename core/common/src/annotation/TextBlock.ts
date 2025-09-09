@@ -69,6 +69,15 @@ export interface TextBlockStringifyOptions {
 }
 
 /**
+ * Context information that may be useful when converting a [[TextBlock]] to a string.
+ * @beta
+ */
+export interface TextBlockStringifyContext {
+  /** The current depth of the text block in the document structure. */
+  depth: number;
+}
+
+/**
  * Abstract representation of any of the building blocks that make up a [[TextBlock]] document - namely [[Run]]s and [[ContainerComponent]]s.
  * The [[TextBlock]] can specify an [AnnotationTextStyle]($backend) that formats its contents.
  * Each component can specify an optional [[styleOverrides]] to customize that formatting.
@@ -121,7 +130,7 @@ export abstract class TextBlockComponent {
   public abstract clone(): TextBlockComponent;
 
   /** Compute a string representation of the contents of this component and all of its sub-components. */
-  public abstract stringify(options?: TextBlockStringifyOptions): string;
+  public abstract stringify(options?: TextBlockStringifyOptions, context?: TextBlockStringifyContext): string;
 
   /** Returns true if this component has no content or children. */
   public abstract get isEmpty(): boolean;
@@ -798,8 +807,8 @@ export class Paragraph extends ContainerComponent<List | Run> {
   }
 
   /** Compute a string representation of this paragraph by concatenating the string representations of all of its children. */
-  public override stringify(options?: TextBlockStringifyOptions): string {
-    return this.children.map((x, index) => (index > 0 && x.type === "list") ? `${options?.lineBreak}${x.stringify(options)}` : x.stringify(options)).join("") ?? "";
+  public override stringify(options?: TextBlockStringifyOptions, context?: TextBlockStringifyContext): string {
+    return this.children.map((x, index) => (index > 0 && x.type === "list") ? `${options?.lineBreak}${x.stringify(options, context)}` : x.stringify(options, context)).join("") ?? "";
   }
 
   public override equals(other: TextBlockComponent): boolean {
@@ -848,11 +857,13 @@ export class List extends ContainerComponent<Paragraph> {
   }
 
   /** Compute a string representation of this paragraph by concatenating the string representations of all of its [[runs]]. */
-  public override stringify(options?: TextBlockStringifyOptions): string {
-    return this.children.map((x, index) => {
+  public override stringify(options?: TextBlockStringifyOptions, context?: TextBlockStringifyContext): string {
+    const children = this.children.map((x, index) => {
       const marker = getMarkerText(this.styleOverrides.listMarker ?? TextStyleSettings.defaultProps.listMarker, index + 1);
-      return `${marker}${options?.listMarkerBreak ?? " "}${x.stringify(options)}`
-    }).join(options?.paragraphBreak ?? " ") ?? "";
+      const tab = (options?.tabsAsSpaces ? " ".repeat(options.tabsAsSpaces) : "\t").repeat((context?.depth ?? 0) + 1); // TODO: tomorrow, see if i can take out the plus 1;
+      return `${tab}${marker}${options?.listMarkerBreak ?? " "}${x.stringify(options, { depth: (context?.depth ?? 0) + 1 })}`;
+    });
+    return children.join(options?.paragraphBreak ?? " ") ?? "";
   }
 
   public override equals(other: TextBlockComponent): boolean {
