@@ -28,7 +28,8 @@ class CesiumDecorator implements Decorator {
   }
 
   private createPointDecorations(context: DecorateContext): void {
-    const center = this._iModel!.projectExtents.center;
+    if (!this._iModel) return;
+    const center = this._iModel.projectExtents.center;
     
     const points = [
       new Point3d(center.x - 50000, center.y, center.z + 10000),

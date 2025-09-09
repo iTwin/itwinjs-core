@@ -75,7 +75,7 @@ export class CesiumScene {
     this._scene.imageryLayers.add(ImageryLayer.fromWorldImagery({}));
 
     // Create PointPrimitiveCollection for direct primitive rendering
-    this._pointCollection = new PointPrimitiveCollection({ scene: this._scene });
+    this._pointCollection = new PointPrimitiveCollection();
     this._scene.primitives.add(this._pointCollection);
     
 
