@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "added new dropSchemas method",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
