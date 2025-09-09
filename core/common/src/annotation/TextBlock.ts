@@ -995,21 +995,23 @@ export class TextBlock extends ContainerComponent<(Paragraph | List)> {
    * By default, the container will be created with no [[styleOverrides]], so that it inherits the style of this block.
    * @param seedFromLast If true and [[children]] is not empty, the new container will inherit the style overrides of the last [[Paragraph]] or [[List]] in this block.
    */
-  public appendContainer(props?: (ParagraphProps | ListProps), seedFromLast: boolean = false): Paragraph | List {
-    let styleOverrides: TextStyleSettingsProps = {};
+  private appendContainer(props?: (ParagraphProps | ListProps), seedFromLast: boolean = false): Paragraph | List {
+    let styleOverrides: TextStyleSettingsProps = props?.styleOverrides ?? {};
 
     if (seedFromLast && this.last) {
       const seed = this.last;
-      styleOverrides = { ...seed.styleOverrides };
+      styleOverrides = { ...seed.styleOverrides, ...styleOverrides };
     }
 
     const containerProps = props ?? {
       type: "paragraph",
       styleOverrides
     };
+
     const container = containerProps.type === ContainerComponentType.List
-      ? List.create(containerProps)
-      : Paragraph.create(containerProps);
+      ? List.create({...containerProps, styleOverrides})
+      : Paragraph.create({...containerProps, styleOverrides});
+
     this.appendChild(container);
     return container;
   }
@@ -1018,8 +1020,9 @@ export class TextBlock extends ContainerComponent<(Paragraph | List)> {
    * By default, the paragraph will be created with no [[styleOverrides]], so that it inherits the style of this block.
    * @param seedFromLast If true and [[children]] is not empty, the new paragraph will inherit the style overrides of the last child in this block.
    */
-  public appendParagraph(props?: ParagraphProps, seedFromLast: boolean = false): Paragraph {
-    const container = this.appendContainer(props, seedFromLast);
+  public appendParagraph(props?: Omit<ParagraphProps, "type">, seedFromLast: boolean = false): Paragraph {
+    const type = ContainerComponentType.Paragraph;
+    const container = this.appendContainer({ ...props, type }, seedFromLast);
     return container as Paragraph;
   }
 
@@ -1028,8 +1031,9 @@ export class TextBlock extends ContainerComponent<(Paragraph | List)> {
    * By default, the list will be created with no [[styleOverrides]], so that it inherits the style of this block.
    * @param seedFromLast If true and [[children]] is not empty, the new list will inherit the style overrides of the last child in this block.
    */
-  public appendList(props?: ListProps, seedFromLast: boolean = false): List {
-    const container = this.appendContainer(props, seedFromLast);
+  public appendList(props?: Omit<ListProps, "type">, seedFromLast: boolean = false): List {
+    const type = ContainerComponentType.List;
+    const container = this.appendContainer({ ...props, type }, seedFromLast);
     return container as List;
   }
 

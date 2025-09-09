@@ -41,22 +41,33 @@ function makeList(children?: ParagraphProps[], styleOverrides?: TextStyleSetting
 function getOverrides(block: TextBlock) {
   const paragraph = block.children[0];
   const run = paragraph?.children[0];
+  const list = block.children[1] as List;
+  const listItem = list?.children[0];
+  const listRun = listItem?.children[0];
+
   return {
     block: block.styleOverrides,
     paragraph: paragraph?.styleOverrides,
     run: run?.styleOverrides,
+    list: list?.styleOverrides,
+    listItem: listItem?.styleOverrides,
+    listRun: listRun?.styleOverrides,
   };
 }
 
 describe("TextBlockComponent", () => {
   describe("setStyle", () => {
     let block: TextBlock;
-    let paragraph: Paragraph | List;
 
     beforeEach(() => {
       block = TextBlock.create({ styleId: "0x42", styleOverrides: { widthFactor: 1234 }});
-      paragraph = block.appendParagraph({ type: ContainerComponentType.Paragraph, styleOverrides: { lineHeight: 42 } });
+      const paragraph = block.appendParagraph({ styleOverrides: { lineHeight: 42 } });
       paragraph.appendChild(TextRun.create({ styleOverrides: { fontName: "Consolas" } }));
+
+      const list = block.appendList({ styleOverrides: { listMarker: "*" } });
+      const listParagraph = Paragraph.create({ styleOverrides: { lineHeight: 21 } });
+      listParagraph.appendChild(TextRun.create({ styleOverrides: { fontName: "Verdana" } }));
+      list.appendChild(listParagraph);
     });
 
     it("sets style but does not clear overrides by default", () => {
@@ -67,6 +78,10 @@ describe("TextBlockComponent", () => {
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
       expect(overrides.paragraph).to.deep.equal({ lineHeight: 42 });
       expect(overrides.run).to.deep.equal({ fontName: "Consolas" });
+
+      expect(overrides.list).to.deep.equal({ listMarker: "*" });
+      expect(overrides.listItem).to.deep.equal({ lineHeight: 21 });
+      expect(overrides.listRun).to.deep.equal({ fontName: "Verdana" });
     });
 
     it("clears children's overrides by default when clearing block overrides", () => {
@@ -77,6 +92,10 @@ describe("TextBlockComponent", () => {
       expect(overrides.block).to.deep.equal({});
       expect(overrides.paragraph).to.deep.equal({});
       expect(overrides.run).to.deep.equal({});
+
+      expect(overrides.list).to.deep.equal({});
+      expect(overrides.listItem).to.deep.equal({});
+      expect(overrides.listRun).to.deep.equal({});
     });
 
     it("clears children's overrides by default when clearing paragraph overrides", () => {
@@ -87,6 +106,24 @@ describe("TextBlockComponent", () => {
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
       expect(overrides.paragraph).to.deep.equal({});
       expect(overrides.run).to.deep.equal({});
+
+      expect(overrides.list).to.deep.equal({ listMarker: "*" });
+      expect(overrides.listItem).to.deep.equal({ lineHeight: 21 });
+      expect(overrides.listRun).to.deep.equal({ fontName: "Verdana" });
+    });
+
+    it("clears children's overrides by default when clearing list overrides", () => {
+      block.styleId = "0x99";
+
+      block.children[1].clearStyleOverrides();
+      const overrides = getOverrides(block);
+      expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
+      expect(overrides.paragraph).to.deep.equal({ lineHeight: 42 });
+      expect(overrides.run).to.deep.equal({ fontName: "Consolas" });
+
+      expect(overrides.list).to.deep.equal({});
+      expect(overrides.listItem).to.deep.equal({});
+      expect(overrides.listRun).to.deep.equal({});
     });
 
     it("does not clear children's overrides when clearing block overrides if preserveChildrenStyles is true", () => {
@@ -94,9 +131,14 @@ describe("TextBlockComponent", () => {
 
       block.clearStyleOverrides({ preserveChildrenOverrides: true });
       const overrides = getOverrides(block);
+
       expect(overrides.block).to.deep.equal({});
       expect(overrides.paragraph).to.deep.equal({ lineHeight: 42 });
       expect(overrides.run).to.deep.equal({ fontName: "Consolas" });
+
+      expect(overrides.list).to.deep.equal({ listMarker: "*" });
+      expect(overrides.listItem).to.deep.equal({ lineHeight: 21 });
+      expect(overrides.listRun).to.deep.equal({ fontName: "Verdana" });
     });
 
     it("does not clear children's overrides when clearing paragraph overrides if preserveChildrenStyles is true", () => {
@@ -107,6 +149,24 @@ describe("TextBlockComponent", () => {
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
       expect(overrides.paragraph).to.deep.equal({});
       expect(overrides.run).to.deep.equal({ fontName: "Consolas" });
+
+      expect(overrides.list).to.deep.equal({ listMarker: "*" });
+      expect(overrides.listItem).to.deep.equal({ lineHeight: 21 });
+      expect(overrides.listRun).to.deep.equal({ fontName: "Verdana" });
+    });
+
+    it("does not clear children's overrides when clearing list overrides if preserveChildrenStyles is true", () => {
+      block.styleId = "0x99";
+
+      block.children[1].clearStyleOverrides({ preserveChildrenOverrides: true });
+      const overrides = getOverrides(block);
+      expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
+      expect(overrides.paragraph).to.deep.equal({ lineHeight: 42 });
+      expect(overrides.run).to.deep.equal({ fontName: "Consolas" });
+
+      expect(overrides.list).to.deep.equal({});
+      expect(overrides.listItem).to.deep.equal({ lineHeight: 21 });
+      expect(overrides.listRun).to.deep.equal({ fontName: "Verdana" });
     });
 
     it("handles empty text block", () => {
@@ -164,15 +224,27 @@ describe("TextBlockComponent", () => {
 
 describe("ContainerComponent", () => {
   it("sets indexes", () => {
-    // TODO: implement tests for children
-  });
+    const textBlock = TextBlock.create({
+      styleId: "", children: [
+        makeParagraph(),
+        makeParagraph(),
+        makeList()
+      ]
+    });
 
-  it("clears overrides", () => {
-    // TODO
-  });
+    expect(textBlock.children.length).to.equal(3);
+    expect(textBlock.children[0].index).to.equal(0);
+    expect(textBlock.children[1].index).to.equal(1);
+    expect(textBlock.children[2].index).to.equal(2);
 
-  it("appends child", () => {
-    // TODO
+    const p1 = textBlock.appendParagraph();
+    const p2 = textBlock.appendParagraph();
+    const l1 = textBlock.appendList();
+
+    expect(textBlock.children.length).to.equal(6);
+    expect(p1.index).to.equal(3);
+    expect(p2.index).to.equal(4);
+    expect(l1.index).to.equal(5);
   });
 
   it("stringifies", () => {
@@ -184,10 +256,10 @@ describe("TextBlock", () => {
   describe("appendParagraph", () => {
     it("creates a paragraph with no overrides by default", () => {
       const tb = TextBlock.create({ styleId: "0x42", styleOverrides: { lineHeight: 42 } });
-      const p = tb.appendContainer();
+      const p = tb.appendParagraph();
       expect(p.styleOverrides).to.deep.equal({});
 
-      const p2 = tb.appendContainer();
+      const p2 = tb.appendParagraph();
       expect(p2.styleOverrides).to.deep.equal({});
 
       expect(tb.children.length).to.equal(2);
@@ -195,16 +267,18 @@ describe("TextBlock", () => {
 
     it("uses the overrides of the last paragraph if one exists and seedFromLast is true", () => {
       const tb = TextBlock.create({ styleId: "0x42", styleOverrides: { lineHeight: 42 } });
-      const p1 = Paragraph.create({ styleOverrides: { isBold: true } });
-      tb.appendContainer(p1);
+      const p1Props = { styleOverrides: { isBold: true } };
+      tb.appendParagraph(p1Props);
 
-      const p2 = tb.appendContainer(undefined, true);
-      expect(p2.styleOverrides).to.deep.equal(p1.styleOverrides);
+      expect(tb.children[0].styleOverrides).to.deep.equal(p1Props.styleOverrides);
+
+      const p2 = tb.appendParagraph(undefined, true);
+      expect(p2.styleOverrides).to.deep.equal(p1Props.styleOverrides);
     });
 
     it("creates a paragraph with no overrides if none exist even if seedFromLast is true", () => {
       const tb = TextBlock.create({ styleId: "0x42", styleOverrides: { lineHeight: 42 } });
-      const p1 = tb.appendContainer(undefined, true);
+      const p1 = tb.appendParagraph(undefined, true);
       expect(p1.styleOverrides).to.deep.equal({});
     });
   });

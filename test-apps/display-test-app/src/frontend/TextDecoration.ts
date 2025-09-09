@@ -143,7 +143,7 @@ class TextEditor implements Decorator {
 
   public appendList(overrides?: TextStyleSettingsProps, index?: number): void {
     if (undefined === index) {
-      this.textBlock.appendContainer({ type: ContainerComponentType.List, styleOverrides: { fontName: this.runStyle.fontName, ...overrides } });
+      this.textBlock.appendList({ styleOverrides: { fontName: this.runStyle.fontName, ...overrides } });
       return;
     }
 
