@@ -166,8 +166,11 @@ export class ECDb implements Disposable {
     }
   }
 
-  /** Drops schemas of array of schema
+  /** Removes unused schemas from the database.
+   *
+   * If the removal was successful, the database is automatically saved to disk.
    * @param schemaNames Array of schema names to drop
+   * @throws [IModelError]($common) if the database if the operation failed.
    * @alpha
    */
   public dropSchemas(schemaNames: string[]): void {

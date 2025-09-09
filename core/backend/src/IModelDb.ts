@@ -853,10 +853,13 @@ export abstract class IModelDb extends IModel {
     return this[_nativeDb].restartTxnSession();
   }
 
-  /** Drops schemas from an array of schema
-* @param schemaNames Array of schema names to drop
-* @alpha
-*/
+  /** Removes unused schemas from the database.
+   *
+   * If the removal was successful, the database is automatically saved to disk.
+   * @param schemaNames Array of schema names to drop
+   * @throws [IModelError]($common) if the database if the operation failed.
+   * @alpha
+   */
   public async dropSchemas(schemaNames: string[]): Promise<void> {
     if (schemaNames.length === 0)
       return;
@@ -874,9 +877,10 @@ export abstract class IModelDb extends IModel {
       Logger.logError(loggerCategory, `Failed to drop schemas: ${error}`);
       this.abandonChanges();
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Failed to drop schemas: ${error}`);
+    } finally {
+      await this.locks.releaseAllLocks();
+      this.clearCaches();
     }
-    await this.locks.releaseAllLocks();
-    this.clearCaches();
   }
 
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
