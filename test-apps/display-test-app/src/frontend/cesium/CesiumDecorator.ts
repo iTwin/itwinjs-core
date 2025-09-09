@@ -24,11 +24,6 @@ class CesiumDecorator implements Decorator {
       this.createPointDecorations(context);
     } catch (error) {
       console.error('Point decoration failed:', error);
-      try {
-        this.createMinimalDecoration(context);
-      } catch (error2) {
-        console.error('Minimal decoration also failed:', error2);
-      }
     }
   }
 
@@ -41,23 +36,12 @@ class CesiumDecorator implements Decorator {
       new Point3d(center.x + 50000, center.y - 50000, center.z + 30000),
     ];
     
-    points.forEach((point, index) => {
+    points.forEach((point) => {
       const builder = context.createGraphic({ type: GraphicType.WorldDecoration });
       builder.setSymbology(ColorDef.blue, ColorDef.blue, 1);
       builder.addPointString([point]);
       context.addDecorationFromBuilder(builder);
     });
-  }
-
-  private createMinimalDecoration(context: DecorateContext): void {
-    const center = this._iModel!.projectExtents.center;
-    const point = new Point3d(center.x, center.y, center.z + 15);
-    
-    const builder = context.createGraphic({ type: GraphicType.WorldDecoration });
-    builder.setSymbology(ColorDef.green, ColorDef.green, 1);
-    builder.addPointString([point]);
-    
-    context.addDecorationFromBuilder(builder);
   }
 
   public static start(iModel: IModelConnection): CesiumDecorator {

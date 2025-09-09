@@ -7,7 +7,7 @@
  */
 
 import { Point3d } from "@itwin/core-geometry";
-import { CustomGraphicBuilderOptions, GraphicTemplate, PrimitiveBuilder, ViewportGraphicBuilderOptions } from "@itwin/core-frontend";
+import { CustomGraphicBuilderOptions, GraphicTemplate, PrimitiveBuilder, RenderGraphic, ViewportGraphicBuilderOptions } from "@itwin/core-frontend";
 import { System } from "./System";
 import { CesiumGeometryData } from "./CesiumGeometryData";
 
@@ -29,7 +29,7 @@ export class CesiumPrimitiveBuilder extends PrimitiveBuilder {
       CesiumGeometryData.storePointStrings(templateId, this._originalPointStrings);
       (this as any)._cesiumTemplateId = templateId;
     }
-    
+    // convert coordinates
     const template = this.finishTemplate();
     
     if ((this as any)._cesiumTemplateId) {

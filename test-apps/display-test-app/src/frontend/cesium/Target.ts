@@ -11,7 +11,7 @@ import { System } from "./System";
 import { CesiumScene } from "./Scene";
 import { Decorations, GraphicList, IModelApp, Pixel, RenderPlan, RenderTarget, Scene, ViewRect } from "@itwin/core-frontend";
 import { CesiumDecorator } from "./CesiumDecorator";
-import { CesiumEntityHelpers } from "./CesiumEntityHelpers";
+import { PrimitiveConverterFactory } from "./PrimitiveConverterFactory";
 import { CesiumCameraHelpers } from "./CesiumCameraHelpers";
 
 
@@ -82,36 +82,17 @@ export class OnScreenTarget extends RenderTarget {
       
     }
     
-    // Get access to the CesiumJS EntityCollection
-    const entityCollection = this._scene.entities;
+    // Clear existing decoration primitives
+    const pointConverter = PrimitiveConverterFactory.getConverter('point-string');
+    pointConverter.clearDecorations(this._scene);
     
-    // Only clear decoration entities, not test entities
-    CesiumEntityHelpers.clearDecorationEntities(entityCollection);
-    
-    // Phase 2: Start with basic conversion (now with iModel for real coordinate conversion)
+    // Convert decorations to primitives using strategy pattern
     const currentIModel = IModelApp.viewManager.selectedView?.iModel;
-    CesiumEntityHelpers.convertDecorationsToCesiumEntities(decorations.world, 'world', entityCollection, currentIModel);
-    CesiumEntityHelpers.convertDecorationsToCesiumEntities(decorations.normal, 'normal', entityCollection, currentIModel);
-    CesiumEntityHelpers.convertDecorationsToCesiumEntities(decorations.worldOverlay, 'worldOverlay', entityCollection, currentIModel);
-    CesiumEntityHelpers.convertDecorationsToCesiumEntities(decorations.viewOverlay, 'viewOverlay', entityCollection, currentIModel);
+    if (decorations.world) pointConverter.convertDecorations(decorations.world, 'world', this._scene, currentIModel);
+    if (decorations.normal) pointConverter.convertDecorations(decorations.normal, 'normal', this._scene, currentIModel);
+    if (decorations.worldOverlay) pointConverter.convertDecorations(decorations.worldOverlay, 'worldOverlay', this._scene, currentIModel);
+    if (decorations.viewOverlay) pointConverter.convertDecorations(decorations.viewOverlay, 'viewOverlay', this._scene, currentIModel);
     
-    // WORKAROUND: Create mock decorations for testing when no real decorations exist
-    const totalDecorations = (decorations.world?.length || 0) + (decorations.normal?.length || 0) + 
-                           (decorations.worldOverlay?.length || 0) + (decorations.viewOverlay?.length || 0);
-    
-    // Check if we have any mock decoration entities currently
-    const currentMockEntities = entityCollection.values.filter((entity: any) => 
-      entity.id && entity.id.startsWith('mock_decoration_')
-    ).length;
-    
-    if (totalDecorations === 0 && !this._decorator && currentMockEntities === 0) {
-      console.log('No real decorations and no decorator found - creating mock decorations for testing');
-      CesiumEntityHelpers.createMockDecorations(entityCollection);
-    } else if (this._decorator && totalDecorations === 0) {
-      console.log(`Decorator exists but no decorations detected yet - skipping mock decorations`);
-    } else if (currentMockEntities > 0) {
-      console.log(`Found ${currentMockEntities} existing mock decoration entities`);
-    }
   }
 
   private startDecorator(): void {
@@ -142,8 +123,8 @@ export class OnScreenTarget extends RenderTarget {
       }
       this._currentIModel = undefined;
       
-      if (this._scene?.entities) {
-        CesiumEntityHelpers.clearAllCesiumEntities(this._scene.entities);
+      if (this._scene?.pointCollection) {
+        this._scene.pointCollection.removeAll();
       }
     };
     

@@ -7,7 +7,7 @@
  */
 
 import { IModelApp } from "@itwin/core-frontend";
-import { Cartesian3, Clock, Color, CustomDataSource, DataSourceCollection, DataSourceDisplay, defined, Ellipsoid, EntityCollection, Globe, ImageryLayer, Ion, Scene, ScreenSpaceEventHandler } from "cesium";
+import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion, PointPrimitiveCollection, Scene, ScreenSpaceEventHandler } from "cesium";
 
 /** Options to configure a Cesium scene.
  * @internal
@@ -25,9 +25,7 @@ export class CesiumScene {
   private readonly _scene: Scene;
   private readonly _clock: Clock;
   private readonly _screenSpaceEventHandler: ScreenSpaceEventHandler;
-  private readonly _dataSourceCollection: DataSourceCollection;
-  private readonly _dataSourceDisplay: DataSourceDisplay;
-  private readonly _entities: EntityCollection;
+  private readonly _pointCollection: PointPrimitiveCollection;
   private _canvasClientWidth: number = 0;
   private _canvasClientHeight: number = 0;
   private _lastDevicePixelRatio: number = 1;
@@ -37,9 +35,9 @@ export class CesiumScene {
     return this._scene;
   }
   
-  /** Get access to the EntityCollection for adding decorations */
-  public get entities(): EntityCollection {
-    return this._entities;
+  /** Get access to the PointPrimitiveCollection for adding point decorations */
+  public get pointCollection(): PointPrimitiveCollection {
+    return this._pointCollection;
   }
 
   public constructor(args: { canvas: HTMLCanvasElement, sceneOptions?: CesiumSceneOptions }) {
@@ -76,17 +74,9 @@ export class CesiumScene {
     }
     this._scene.imageryLayers.add(ImageryLayer.fromWorldImagery({}));
 
-    // Create DataSourceCollection and DataSourceDisplay for entity rendering
-    this._dataSourceCollection = new DataSourceCollection();
-    this._dataSourceDisplay = new DataSourceDisplay({
-      scene: this._scene,
-      dataSourceCollection: this._dataSourceCollection
-    });
-
-    // Create CustomDataSource and connect to entities
-    const dataSource = new CustomDataSource('iTwin-Decorations');
-    void this._dataSourceCollection.add(dataSource);
-    this._entities = dataSource.entities;
+    // Create PointPrimitiveCollection for direct primitive rendering
+    this._pointCollection = new PointPrimitiveCollection({ scene: this._scene });
+    this._scene.primitives.add(this._pointCollection);
     
 
     this._screenSpaceEventHandler = new ScreenSpaceEventHandler(this._canvas);
@@ -106,8 +96,7 @@ export class CesiumScene {
 
       const currentTime = this._clock.tick();
       
-      // Update DataSourceDisplay to render entities
-      this._dataSourceDisplay.update(currentTime);
+      // PointPrimitiveCollection renders automatically with scene
       
       this._scene.render(currentTime);
     });
