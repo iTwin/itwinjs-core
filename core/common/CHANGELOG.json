@@ -2,6 +2,24 @@
   "name": "@itwin/core-common",
   "entries": [
     {
+      "version": "5.1.7",
+      "tag": "@itwin/core-common_v5.1.7",
+      "date": "Tue, 09 Sep 2025 19:28:04 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix spurious assertions in FeatureAppearance.equals."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.1.6",
+      "tag": "@itwin/core-common_v5.1.6",
+      "date": "Mon, 08 Sep 2025 13:53:47 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.1.5",
       "tag": "@itwin/core-common_v5.1.5",
       "date": "Thu, 04 Sep 2025 13:51:08 GMT",

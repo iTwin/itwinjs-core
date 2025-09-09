@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Add ability to override format used by `FormatterSpec`/`ParserSpec` created by `KoqPropertyValueFormatter`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

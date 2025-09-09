@@ -7809,6 +7809,8 @@ export class PlanarClipMaskState {
     getPlanarClipMaskSymbologyOverrides(context: SceneContext, featureSymbologySource: FeatureSymbology.Source): FeatureSymbology.Overrides | undefined;
     // (undocumented)
     getTileTrees(context: SceneContext, classifiedModelId: Id64String, maskRange: Range3d): TileTreeReference[] | undefined;
+    // @internal (undocumented)
+    get overridesModelVisibility(): boolean;
     // (undocumented)
     readonly settings: PlanarClipMaskSettings;
     // (undocumented)
