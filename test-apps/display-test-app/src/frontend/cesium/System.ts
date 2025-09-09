@@ -10,8 +10,7 @@ import { ElementAlignedBox3d, RenderFeatureTable } from "@itwin/core-common";
 import { Transform } from "@itwin/core-geometry";
 import { OffScreenTarget, OnScreenTarget } from "./Target";
 import { CesiumGraphic } from "./Graphic";
-import { CesiumPrimitiveBuilder } from "./CesiumPrimitiveBuilder";
-import { CesiumGeometryData } from "./CesiumGeometryData";
+import { PrimitiveConverterFactory } from "./PrimitiveConverterFactory";
 import { BatchOptions, CreateGraphicFromTemplateArgs, CustomGraphicBuilderOptions, GraphicBranch, GraphicBranchOptions, GraphicBuilder, IModelApp, IModelConnection, InstancedGraphicParams, PrimitiveBuilder, RenderAreaPattern, RenderGeometry, RenderGraphic, RenderSystem, RenderTarget, ViewportGraphicBuilderOptions, ViewRect } from "@itwin/core-frontend";
 
 
@@ -86,7 +85,8 @@ export class System extends RenderSystem {
   }
 
   public createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder {
-    return new CesiumPrimitiveBuilder(this, options); // Use our custom builder that preserves Point3d data
+    const CoordinateBuilderClass = PrimitiveConverterFactory.getCoordinateBuilder();
+    return new CoordinateBuilderClass(this, options);
   }
 
 
@@ -95,8 +95,9 @@ export class System extends RenderSystem {
   public override createGraphicFromTemplate(args: CreateGraphicFromTemplateArgs): RenderGraphic {
     const template = args.template;
     
-    const templateId = (template as any)._cesiumTemplateId as symbol;
-    const originalPointStrings = templateId ? CesiumGeometryData.getPointStrings(templateId) : undefined;
+    const templateId = (template as any)._coordinateTemplateId as symbol;
+    const CoordinateStorage = PrimitiveConverterFactory.getCoordinateStorage();
+    const coordinateData = templateId ? CoordinateStorage.getCoordinates(templateId) : undefined;
     
     const symbols = Object.getOwnPropertySymbols(template);
     const nodesSymbol = symbols.find(s => s.toString().includes('_nodes'));
@@ -116,9 +117,9 @@ export class System extends RenderSystem {
     
     const cesiumGraphic = new CesiumGraphic(allGeometries, geometryType);
     
-    if (originalPointStrings) {
-      (cesiumGraphic as any)._originalPointStrings = originalPointStrings;
-      CesiumGeometryData.clearPointStrings(templateId);
+    if (coordinateData) {
+      (cesiumGraphic as any)._coordinateData = coordinateData;
+      CoordinateStorage.clearCoordinates(templateId);
     }
     
     return cesiumGraphic;

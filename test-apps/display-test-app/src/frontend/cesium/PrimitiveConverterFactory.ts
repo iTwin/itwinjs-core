@@ -8,6 +8,8 @@
 
 import { PrimitiveConverter } from "./PrimitiveConverter";
 import { PointPrimitiveConverter } from "./PointPrimitiveConverter";
+import { CoordinateBuilder } from "./CoordinateBuilder";
+import { CoordinateStorage } from "./CoordinateStorage";
 
 /** Factory for creating geometry-specific primitive converters */
 export class PrimitiveConverterFactory {
@@ -24,5 +26,13 @@ export class PrimitiveConverterFactory {
 
   public static setConverter(geometryType: string, converter: PrimitiveConverter): void {
     this._converters.set(geometryType, converter);
+  }
+
+  public static getCoordinateBuilder(): typeof CoordinateBuilder {
+    return CoordinateBuilder;
+  }
+
+  public static getCoordinateStorage(): typeof CoordinateStorage {
+    return CoordinateStorage;
   }
 }

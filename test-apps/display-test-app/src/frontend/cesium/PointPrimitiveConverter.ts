@@ -25,7 +25,8 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     graphics.forEach((graphic, index) => {
       try {
         const pointId = `${type}_decoration_${index}`;
-        const originalPointStrings = (graphic as any)._originalPointStrings as Point3d[][] | undefined;
+        const coordinateData = (graphic as any)._coordinateData;
+        const originalPointStrings = this.extractPointStringData(coordinateData);
         
         this.createPointPrimitiveFromGraphic(graphic, pointId, index, pointCollection, iModel, originalPointStrings);
       } catch (error) {
@@ -176,5 +177,12 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
   private getColorForIndex(index: number): Color {
     const colors = [Color.BLUE, Color.RED, Color.GREEN, Color.YELLOW, Color.PURPLE, Color.ORANGE];
     return colors[index % colors.length];
+  }
+
+  private extractPointStringData(coordinateData: any): Point3d[][] | undefined {
+    if (!coordinateData || !Array.isArray(coordinateData)) return undefined;
+    
+    const pointStringEntries = coordinateData.filter(entry => entry.type === 'point-string');
+    return pointStringEntries.map(entry => entry.data);
   }
 }

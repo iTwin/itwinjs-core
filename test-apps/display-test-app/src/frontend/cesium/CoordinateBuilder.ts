@@ -9,31 +9,32 @@
 import { Point3d } from "@itwin/core-geometry";
 import { CustomGraphicBuilderOptions, GraphicTemplate, PrimitiveBuilder, RenderGraphic, ViewportGraphicBuilderOptions } from "@itwin/core-frontend";
 import { System } from "./System";
-import { CesiumGeometryData } from "./CesiumGeometryData";
+import { CoordinateStorage } from "./CoordinateStorage";
 
-export class CesiumPrimitiveBuilder extends PrimitiveBuilder {
-  private _originalPointStrings: Point3d[][] = [];
+/** Generic coordinate builder for capturing geometry coordinates */
+export class CoordinateBuilder extends PrimitiveBuilder {
+  private _coordinateData: any[] = [];
 
   public constructor(system: System, options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions) {
     super(system, options);
   }
 
   public override addPointString(points: Point3d[]): void {
-    this._originalPointStrings.push([...points]);
+    this._coordinateData.push({ type: 'point-string', data: [...points] });
     super.addPointString(points);
   }
 
   public override finish(): RenderGraphic {
-    if (this._originalPointStrings.length > 0) {
-      const templateId = Symbol.for(`cesium_template_${Date.now()}_${Math.random()}`);
-      CesiumGeometryData.storePointStrings(templateId, this._originalPointStrings);
-      (this as any)._cesiumTemplateId = templateId;
+    if (this._coordinateData.length > 0) {
+      const templateId = Symbol.for(`coordinate_template_${Date.now()}_${Math.random()}`);
+      CoordinateStorage.storeCoordinates(templateId, this._coordinateData);
+      (this as any)._coordinateTemplateId = templateId;
     }
-    // convert coordinates
+    
     const template = this.finishTemplate();
     
-    if ((this as any)._cesiumTemplateId) {
-      (template as any)._cesiumTemplateId = (this as any)._cesiumTemplateId;
+    if ((this as any)._coordinateTemplateId) {
+      (template as any)._coordinateTemplateId = (this as any)._coordinateTemplateId;
     }
     
     const graphic = this.system.createGraphicFromTemplate({ template });
@@ -43,20 +44,20 @@ export class CesiumPrimitiveBuilder extends PrimitiveBuilder {
   public override finishTemplate(): GraphicTemplate {
     const template = super.finishTemplate();
     
-    if (this._originalPointStrings.length > 0) {
-      const templateId = Symbol.for(`cesium_template_${Date.now()}_${Math.random()}`);
-      CesiumGeometryData.storePointStrings(templateId, this._originalPointStrings);
-      (template as any)._cesiumTemplateId = templateId;
+    if (this._coordinateData.length > 0) {
+      const templateId = Symbol.for(`coordinate_template_${Date.now()}_${Math.random()}`);
+      CoordinateStorage.storeCoordinates(templateId, this._coordinateData);
+      (template as any)._coordinateTemplateId = templateId;
     }
     
     return template;
   }
 
-  public getOriginalPointStrings(): Point3d[][] {
-    return this._originalPointStrings;
+  public getCoordinateData(): any[] {
+    return this._coordinateData;
   }
 
-  public clearOriginalData(): void {
-    this._originalPointStrings = [];
+  public clearCoordinateData(): void {
+    this._coordinateData = [];
   }
 }
