@@ -82,16 +82,12 @@ export class OnScreenTarget extends RenderTarget {
       
     }
     
-    // Clear existing decoration primitives
+    // Clear and convert decorations using unified converter method
     const pointConverter = PrimitiveConverterFactory.getConverter('point-string');
     pointConverter.clearDecorations(this._scene);
     
-    // Convert decorations to primitives using strategy pattern
     const currentIModel = IModelApp.viewManager.selectedView?.iModel;
-    if (decorations.world) pointConverter.convertDecorations(decorations.world, 'world', this._scene, currentIModel);
-    if (decorations.normal) pointConverter.convertDecorations(decorations.normal, 'normal', this._scene, currentIModel);
-    if (decorations.worldOverlay) pointConverter.convertDecorations(decorations.worldOverlay, 'worldOverlay', this._scene, currentIModel);
-    if (decorations.viewOverlay) pointConverter.convertDecorations(decorations.viewOverlay, 'viewOverlay', this._scene, currentIModel);
+    pointConverter.convertAllDecorationTypes(decorations, this._scene, currentIModel);
     
   }
 

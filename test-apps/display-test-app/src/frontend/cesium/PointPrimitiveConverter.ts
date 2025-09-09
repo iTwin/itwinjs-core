@@ -28,7 +28,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
         const coordinateData = (graphic as any)._coordinateData;
         const originalPointStrings = this.extractPointStringData(coordinateData);
         
-        this.createPointPrimitiveFromGraphic(graphic, pointId, index, pointCollection, iModel, originalPointStrings);
+        this.createPointPrimitiveFromGraphic(graphic, pointId, index, pointCollection, iModel, originalPointStrings, type);
       } catch (error) {
         console.error(`Error creating ${type} point primitive:`, error);
       }
@@ -65,7 +65,8 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     index: number,
     pointCollection: PointPrimitiveCollection,
     iModel?: IModelConnection,
-    originalPointStrings?: Point3d[][]
+    originalPointStrings?: Point3d[][],
+    type?: string
   ): PointPrimitive | null {
     if (!graphic) {
       console.warn(`Null graphic for ${pointId}`);
@@ -74,7 +75,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
 
     try {
       if (graphic.geometries && graphic.geometryType) {
-        return this.createPointFromGeometry(graphic.geometries, graphic.geometryType, pointId, index, pointCollection, iModel, originalPointStrings);
+        return this.createPointFromGeometry(graphic.geometries, graphic.geometryType, pointId, index, pointCollection, iModel, originalPointStrings, type);
       }
 
       // Fallback primitive
@@ -87,6 +88,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
         color: Color.LIME,
         outlineColor: Color.WHITE,
         outlineWidth: 2,
+        disableDepthTestDistance: this.getDepthTestDistance(type || 'world'),
       });
 
     } catch (error) {
@@ -102,7 +104,8 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     index: number,
     pointCollection: PointPrimitiveCollection,
     iModel?: IModelConnection,
-    originalPointStrings?: Point3d[][]
+    originalPointStrings?: Point3d[][],
+    type?: string
   ): PointPrimitive | null {
     if (!geometries || !geometryType || !pointCollection) {
       return null;
@@ -154,6 +157,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
             color: Color.BLUE,
             outlineColor: Color.WHITE,
             outlineWidth: 2,
+            disableDepthTestDistance: this.getDepthTestDistance(type || 'world'),
           });
       }
     } catch (error) {
