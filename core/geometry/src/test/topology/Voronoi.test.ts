@@ -4,6 +4,7 @@ import * as fs from "fs";
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
+import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
 import { ClipUtilities } from "../../clipping/ClipUtils";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveChain, CurveCollection } from "../../curve/CurveCollection";
@@ -141,9 +142,9 @@ function verifyVoronoiTopology(_ck: Checker, _delaunay: HalfEdgeGraph, _voronoi:
 
 // compare the lengths and centroids of the path children to the clipped curves
 function comparePathToClippedCurves(
-  allGeometry: GeometryQuery[], ck: Checker, path: Path, clippedCurves: AnyCurve[][], dy: number = 0,
+  allGeometry: GeometryQuery[], ck: Checker, chain: CurveChain, clippedCurves: AnyCurve[][], dy: number = 0,
 ): void {
-  ck.testExactNumber(clippedCurves.length, path.children.length, "number of clipped curves matches number of path children");
+  ck.testExactNumber(clippedCurves.length, chain.children.length, "number of clipped curves matches number of chain children");
   const clippedCurvesLengths: number[] = [];
   const clippedCurvesCentroids: Point3d[] = [];
   for (let i = 0; i < clippedCurves.length; i++) {
@@ -167,7 +168,7 @@ function comparePathToClippedCurves(
   }
   const childrenLengths: number[] = [];
   const childrenCentroids: Point3d[] = [];
-  for (const child of path.children) {
+  for (const child of chain.children) {
     const momentData = RegionOps.computeXYZWireMomentSums(child);
     if (ck.testDefined(momentData)) {
       const length = momentData.quantitySum;
@@ -767,8 +768,8 @@ describe("Voronoi", () => {
     if (ck.testDefined(clippers)) {
       ck.testExactNumber(clippers.length, path.children.length, "Voronoi should have 3 faces");
       const clippedCurves: AnyCurve[][] = [];
-      for (const clipperUnions of clippers)
-        clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
+      for (const clipper of clippers)
+        clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipper));
       comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "ColinearCurveChain");
@@ -819,11 +820,47 @@ describe("Voronoi", () => {
     if (ck.testDefined(clippers, "Clippers should be defined")) {
       ck.testExactNumber(clippers.length, path.children.length, "Voronoi should have 7 faces");
       const clippedCurves: AnyCurve[][] = [];
-      for (const clipperUnions of clippers)
-        clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipperUnions));
+      for (const clipper of clippers)
+        clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipper));
       comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "PathFromJson0");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("LoopFromJson0", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let path = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/voronoi/path_with_arc_and_line_segment.imjs", "utf8"))) as Path;
+    ck.testExactNumber(path.children.length, 7, "path should have 7 children");
+    // plug the path gap to make a loop
+    const loop = Loop.create(...path.children);
+    const startTangent = path.children[0].fractionToPointAndDerivative(0);
+    const endTangent = path.children[path.children.length - 1].fractionToPointAndDerivative(1);
+    const fitOptions = InterpolationCurve3dOptions.create({fitPoints: [endTangent.origin, startTangent.origin], startTangent: endTangent.direction, endTangent: startTangent.direction.scaleInPlace(-1)});
+    const gapCurve = InterpolationCurve3d.createCapture(fitOptions);
+    if (ck.testDefined(gapCurve, "gap curve created"))
+      loop.children.push(gapCurve);
+    ck.testTrue(loop.isPhysicallyClosedCurve(), "loop is closed");
+    ck.testExactNumber(loop.children.length, 8, "loop should have 8 children");
+    path = Path.create(...loop.children);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, path); // draw path so not conflated with Voronoi super faces
+    const strokeOptions = StrokeOptions.createForCurves();
+    strokeOptions.maxEdgeLength = 20;
+    const distanceTol = undefined;
+    const bbox = Range2d.createXYXY(70250, 1209900, 70950, 1210500);
+    const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(loop, strokeOptions, distanceTol, bbox);
+    visualizeVoronoiDiagram(ck, allGeometry, loop, strokeOptions, distanceTol, bbox, false, true);
+    if (ck.testDefined(clippers, "Clippers should be defined")) {
+      ck.testExactNumber(clippers.length, loop.children.length, "Voronoi should have 8 faces");
+      const clippedCurves: AnyCurve[][] = [];
+      for (const clipper of clippers)
+        clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipper)); // use path to avoid region clip logic
+
+    // TODO: Restore this line after backlog issue 1580 is addressed.
+    // comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "LoopFromJson0");
     expect(ck.getNumErrors()).toBe(0);
   });
 
