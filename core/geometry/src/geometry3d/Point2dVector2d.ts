@@ -167,6 +167,12 @@ export class XY implements XAndY {
     return Geometry.crossProductXYXY(
       targetA.x - origin.x, targetA.y - origin.y, targetB.x - origin.x, targetB.y - origin.y);
   }
+  /** Multiply the x, y parts by scale, and return the instance. */
+  public scaleInPlace(scale: number): this  {
+    this.x *= scale;
+    this.y *= scale;
+    return this;
+  }
 }
 
 /** 2D point with `x`,`y` as properties
@@ -329,11 +335,6 @@ export class Point2d extends XY implements BeJSONFunctions {
   /** Point2d equivalent of [[Vector2d.createAdd3ScaledXY]]. */
   public static createAdd3ScaledXY(ax: number, ay: number, scaleA: number, bx: number, by: number, scaleB: number, cx: number, cy: number, scaleC: number, result?: Point2d): Point2d {
     return Point2d.create(ax * scaleA + bx * scaleB + cx * scaleC, ay * scaleA + by * scaleB + cy * scaleC, result);
-  }
-  /** Multiply the x, y parts by scale. */
-  public scaleInPlace(scale: number) {
-    this.x *= scale;
-    this.y *= scale;
   }
   /**
    * Return the dot product of vector from this to targetA and vector from this to targetB
