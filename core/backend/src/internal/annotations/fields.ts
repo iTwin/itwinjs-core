@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECSqlValueType, FieldRun, getTextBlockGenerator, RelationshipProps, RunComponentType, TextBlock } from "@itwin/core-common";
+import { ECSqlValueType, FieldRun, getTextBlockGenerator, RelationshipProps, TextBlock } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
@@ -275,7 +275,7 @@ export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext)
 
   while (!result.done) {
     const current = result.value.current;
-    if (current.type === RunComponentType.Field && current instanceof FieldRun && updateField(current, context)) {
+    if (current.type === "field" && current instanceof FieldRun && updateField(current, context)) {
       ++numUpdated;
     }
     result = iterator.next();

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, ContainerComponent, ContainerComponentType, FractionRun, LeaderTextPointOptions, LineBreakRun, List, OrderedListMarker, Paragraph, Placement2dProps, Run, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationLeader, TextAnnotationProps, TextBlock, TextBlockComponent, TextBlockJustification, TextBlockMargins, TextBlockProps, TextFrameStyleProps, TextRun, TextStyleSettingsProps, UnorderedListMarker } from "@itwin/core-common";
+import { BaselineShift, ColorDef, ContainerComponent, FractionRun, LeaderTextPointOptions, LineBreakRun, List, OrderedListMarker, Paragraph, Placement2dProps, Run, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationLeader, TextAnnotationProps, TextBlock, TextBlockComponent, TextBlockJustification, TextBlockMargins, TextBlockProps, TextFrameStyleProps, TextRun, TextStyleSettingsProps, UnorderedListMarker } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
@@ -147,7 +147,7 @@ class TextEditor implements Decorator {
       return;
     }
 
-    const paragraphs = this.pathToLastChild().filter(component => component.type === ContainerComponentType.Paragraph);
+    const paragraphs = this.pathToLastChild().filter(component => component.type === "paragraph");
     const child = paragraphs[index] as Paragraph;
     const list = List.create({ styleOverrides: { fontName: this.runStyle.fontName, ...overrides } });
     child?.appendChild(list);
@@ -159,7 +159,7 @@ class TextEditor implements Decorator {
       return;
     }
 
-    const lists = this.pathToLastChild().filter(component => component.type === ContainerComponentType.List);
+    const lists = this.pathToLastChild().filter(component => component.type === "list");
     const child = lists[index] as List;
     const list = Paragraph.create({ styleOverrides: { fontName: this.runStyle.fontName, ...overrides } });
     child?.appendChild(list);

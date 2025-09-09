@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { beforeEach, describe, expect, it } from "vitest";
-import { ContainerComponentType, FieldRun, FractionRunProps, List, ListProps, Paragraph, ParagraphProps, RunComponentType, RunProps, TextBlock, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps } from "../../core-common";
+import { FieldRun, FractionRunProps, List, ListProps, Paragraph, ParagraphProps, RunProps, TextBlock, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps } from "../../core-common";
 
 function makeTextRun(content?: string, styleOverrides?: TextStyleSettingsProps): TextRunProps {
   return {
-    type: RunComponentType.Text,
+    type: "text",
     content,
     styleOverrides,
   };
@@ -15,7 +15,7 @@ function makeTextRun(content?: string, styleOverrides?: TextStyleSettingsProps):
 
 function makeFractionRun(numerator?: string, denominator?: string, styleOverrides?: TextStyleSettingsProps): FractionRunProps {
   return {
-    type: RunComponentType.Fraction,
+    type: "fraction",
     numerator,
     denominator,
     styleOverrides,
@@ -24,7 +24,7 @@ function makeFractionRun(numerator?: string, denominator?: string, styleOverride
 
 function makeParagraph(children?: RunProps[], styleOverrides?: TextStyleSettingsProps): ParagraphProps {
   return {
-    type: ContainerComponentType.Paragraph,
+    type: "paragraph",
     styleOverrides,
     children,
   };
@@ -32,7 +32,7 @@ function makeParagraph(children?: RunProps[], styleOverrides?: TextStyleSettings
 
 function makeList(children?: ParagraphProps[], styleOverrides?: TextStyleSettingsProps): ListProps {
   return {
-    type: ContainerComponentType.List,
+    type: "list",
     styleOverrides,
     children,
   };
@@ -199,15 +199,15 @@ describe("TextBlockComponent", () => {
         makeParagraph([
           makeFractionRun("1", "π"),
           makeTextRun(" def   ghi"),
-          { type: RunComponentType.LineBreak },
+          { type: "linebreak" },
           makeTextRun("j k l"),
         ]),
         makeParagraph(),
         makeParagraph([makeTextRun()]),
-        makeParagraph([{ type: RunComponentType.LineBreak }]),
+        makeParagraph([{ type: "linebreak" }]),
         makeParagraph([makeFractionRun()]),
         makeParagraph([makeTextRun("mno")]),
-        makeParagraph([{ type: RunComponentType.LineBreak }, { type: RunComponentType.LineBreak }]),
+        makeParagraph([{ type: "linebreak" }, { type: "linebreak" }]),
       ],
     };
 
@@ -506,4 +506,4 @@ describe("FieldRun", () => {
   });
 });
 
-// cspell:ignore Consolas PPPLPF Pmno
+// cspell:ignore Consolas PPPLPF Pmno Verdana

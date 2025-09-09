@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { FieldRun, getTextBlockGenerator, RelationshipProps, RunComponentType, TextBlock } from "@itwin/core-common";
+import { FieldRun, getTextBlockGenerator, RelationshipProps, TextBlock } from "@itwin/core-common";
 import { ElementDrivesElement } from "../Relationship";
 import { IModelDb } from "../IModelDb";
 import { Element } from "../Element";
@@ -115,7 +115,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
       while (!result.done) {
         const current = result.value.current;
-        if (current.type === RunComponentType.Field && current instanceof FieldRun && isValidSourceId(current.propertyHost.elementId)) {
+        if (current.type === "field" && current instanceof FieldRun && isValidSourceId(current.propertyHost.elementId)) {
           sourceToRelationship.set(current.propertyHost.elementId, null);
         }
         result = iterator.next();
