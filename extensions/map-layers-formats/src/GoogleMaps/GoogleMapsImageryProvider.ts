@@ -240,7 +240,7 @@ export class GoogleMapsImageryProvider extends MapLayerImageryProvider {
     }
 
     const iconSrc = document.createElement("img");
-    iconSrc.src = `${IModelApp.publicPath}images/GoogleMaps_Logo_Gray_1x.png`;
+    iconSrc.src = `${IModelApp.publicPath}images/GoogleMaps_Logo_Gray.svg`;
     iconSrc.style.padding = "10px 10px 5px 10px";
 
     cards.appendChild(IModelApp.makeLogoCard({

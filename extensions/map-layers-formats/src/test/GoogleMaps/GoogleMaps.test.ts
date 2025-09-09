@@ -171,7 +171,7 @@ describe("GoogleMapsProvider", () => {
     await provider.addAttributions(table, {} as ScreenViewport);
 
     expect(getViewportInfoStub.called).to.be.true;
-    expect(table.innerHTML).to.includes(`<img src="public/images/GoogleMaps_Logo_Gray_1x.png" style="padding: 10px 10px 5px 10px;">`);
+    expect(table.innerHTML).to.includes(`<img src="public/images/GoogleMaps_Logo_Gray.svg" style="padding: 10px 10px 5px 10px;">`);
     expect(table.innerHTML).to.includes(`<p class="logo-cards">fake copyright</p>`);
   });
 
@@ -184,7 +184,7 @@ describe("GoogleMapsProvider", () => {
     const provider = createProvider(settings);
     await provider.initialize();
 
-    expect(getSpriteStub.firstCall.args[0]).to.eq("public/images/GoogleMaps_Logo_WithDarkOutline_1x.png");
+    expect(getSpriteStub.firstCall.args[0]).to.eq("public/images/GoogleMaps_Logo_WithDarkOutline.svg");
   });
 
   it("logo should be activated with the 'white outline' logo", async () => {
@@ -196,14 +196,14 @@ describe("GoogleMapsProvider", () => {
     const provider = createProvider(settings);
     await provider.initialize();
 
-    expect(getSpriteStub.firstCall.args[0]).to.eq("public/images/GoogleMaps_Logo_WithLightOutline_1x.png");
+    expect(getSpriteStub.firstCall.args[0]).to.eq("public/images/GoogleMaps_Logo_WithLightOutline.svg");
 
     // Should also work with "terrain" map type
     const settingsTerrain = GoogleMaps.createBaseLayerSettings({mapType: "terrain", language: "en-US", region: "US"});
     const providerTerrain = createProvider(settingsTerrain);
     await providerTerrain.initialize();
 
-    expect(getSpriteStub.secondCall.args[0]).to.eq("public/images/GoogleMaps_Logo_WithLightOutline_1x.png");
+    expect(getSpriteStub.secondCall.args[0]).to.eq("public/images/GoogleMaps_Logo_WithLightOutline.svg");
   });
 
   it("should decorate", async () => {
