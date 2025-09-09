@@ -82,10 +82,12 @@ export class OnScreenTarget extends RenderTarget {
       
       // Use unified converter for all decoration types
       const converter = PrimitiveConverterFactory.getConverter(); // Default converter as unified entry point
-      converter.clearDecorations(this._scene);
-      
-      const currentIModel = IModelApp.viewManager.selectedView?.iModel;
-      converter.convertAllDecorationTypes(decorations, this._scene, currentIModel);
+      if (converter) {
+        converter.clearDecorations(this._scene);
+        
+        const currentIModel = IModelApp.viewManager.selectedView?.iModel;
+        converter.convertAllDecorationTypes(decorations, this._scene, currentIModel);
+      }
     }
   }
 

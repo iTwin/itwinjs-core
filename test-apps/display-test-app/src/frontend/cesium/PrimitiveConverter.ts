@@ -56,12 +56,16 @@ export abstract class PrimitiveConverter {
           switch (entry.type) {
             case 'point-string':
               const pointConverter = PrimitiveConverterFactory.getConverter('point-string');
-              pointConverter.convertDecorations([graphic], type, scene, iModel);
+              if (pointConverter) {
+                pointConverter.convertDecorations([graphic], type, scene, iModel);
+              }
               break;
               
             case 'line-string':
               const lineConverter = PrimitiveConverterFactory.getConverter('line-string');
-              lineConverter.convertDecorations([graphic], type, scene, iModel);
+              if (lineConverter) {
+                lineConverter.convertDecorations([graphic], type, scene, iModel);
+              }
               break;
               
             default:
