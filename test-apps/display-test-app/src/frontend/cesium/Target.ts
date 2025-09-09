@@ -80,15 +80,13 @@ export class OnScreenTarget extends RenderTarget {
     if (currentCount !== this._lastDecorationCount) {
       this._lastDecorationCount = currentCount;
       
+      // Use unified converter for all decoration types
+      const converter = PrimitiveConverterFactory.getConverter(); // Default converter as unified entry point
+      converter.clearDecorations(this._scene);
+      
+      const currentIModel = IModelApp.viewManager.selectedView?.iModel;
+      converter.convertAllDecorationTypes(decorations, this._scene, currentIModel);
     }
-    
-    // Clear and convert decorations using unified converter method
-    const pointConverter = PrimitiveConverterFactory.getConverter('point-string');
-    pointConverter.clearDecorations(this._scene);
-    
-    const currentIModel = IModelApp.viewManager.selectedView?.iModel;
-    pointConverter.convertAllDecorationTypes(decorations, this._scene, currentIModel);
-    
   }
 
   private startDecorator(): void {

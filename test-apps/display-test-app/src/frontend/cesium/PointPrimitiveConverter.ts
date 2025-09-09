@@ -22,7 +22,16 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     const pointCollection = scene.pointCollection;
     if (!pointCollection) return;
 
-    graphics.forEach((graphic, index) => {
+    // Filter graphics to only include those with point-string geometries  
+    const pointStringGraphics = graphics.filter(graphic => {
+      const coordinateData = (graphic as any)._coordinateData;
+      const hasPointStringData = coordinateData && coordinateData.some((entry: any) => entry.type === 'point-string');
+      const geometryType = (graphic as any).geometryType;
+      
+      return hasPointStringData || geometryType === 'point-string';
+    });
+
+    pointStringGraphics.forEach((graphic, index) => {
       try {
         const pointId = `${type}_decoration_${index}`;
         const coordinateData = (graphic as any)._coordinateData;
@@ -35,29 +44,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     });
   }
 
-  public clearDecorations(scene: CesiumScene): void {
-    const pointCollection = scene.pointCollection;
-    if (!pointCollection) return;
 
-    const pointsToRemove: PointPrimitive[] = [];
-    const pointCount = pointCollection.length;
-
-    for (let i = 0; i < pointCount; i++) {
-      const point = pointCollection.get(i);
-      if (point.id && typeof point.id === 'string' && this.isDecorationPoint(point.id)) {
-        pointsToRemove.push(point);
-      }
-    }
-
-    pointsToRemove.forEach(point => pointCollection.remove(point));
-  }
-
-  private isDecorationPoint(id: string): boolean {
-    return id.startsWith('world_decoration_') ||
-           id.startsWith('normal_decoration_') ||
-           id.startsWith('worldOverlay_decoration_') ||
-           id.startsWith('viewOverlay_decoration_');
-  }
 
   private createPointPrimitiveFromGraphic(
     graphic: any,

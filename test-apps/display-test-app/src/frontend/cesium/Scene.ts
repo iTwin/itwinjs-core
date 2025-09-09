@@ -7,7 +7,7 @@
  */
 
 import { IModelApp } from "@itwin/core-frontend";
-import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion, PointPrimitiveCollection, Scene, ScreenSpaceEventHandler } from "cesium";
+import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion, PointPrimitiveCollection, PolylineCollection, Scene, ScreenSpaceEventHandler } from "cesium";
 
 /** Options to configure a Cesium scene.
  * @internal
@@ -26,6 +26,7 @@ export class CesiumScene {
   private readonly _clock: Clock;
   private readonly _screenSpaceEventHandler: ScreenSpaceEventHandler;
   private readonly _pointCollection: PointPrimitiveCollection;
+  private readonly _polylineCollection: PolylineCollection;
   private _canvasClientWidth: number = 0;
   private _canvasClientHeight: number = 0;
   private _lastDevicePixelRatio: number = 1;
@@ -38,6 +39,11 @@ export class CesiumScene {
   /** Get access to the PointPrimitiveCollection for adding point decorations */
   public get pointCollection(): PointPrimitiveCollection {
     return this._pointCollection;
+  }
+  
+  /** Get access to the PolylineCollection for adding line decorations */
+  public get polylineCollection(): PolylineCollection {
+    return this._polylineCollection;
   }
 
   public constructor(args: { canvas: HTMLCanvasElement, sceneOptions?: CesiumSceneOptions }) {
@@ -77,6 +83,10 @@ export class CesiumScene {
     // Create PointPrimitiveCollection for direct primitive rendering
     this._pointCollection = new PointPrimitiveCollection();
     this._scene.primitives.add(this._pointCollection);
+    
+    // Create PolylineCollection for line rendering
+    this._polylineCollection = new PolylineCollection();
+    this._scene.primitives.add(this._polylineCollection);
     
 
     this._screenSpaceEventHandler = new ScreenSpaceEventHandler(this._canvas);

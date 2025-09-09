@@ -22,8 +22,9 @@ class CesiumDecorator implements Decorator {
     
     try {
       this.createPointDecorations(context);
+      this.createLineStringDecorations(context);
     } catch (error) {
-      console.error('Point decoration failed:', error);
+      console.error('Decoration creation failed:', error);
     }
   }
 
@@ -41,6 +42,44 @@ class CesiumDecorator implements Decorator {
       const builder = context.createGraphic({ type: GraphicType.WorldDecoration });
       builder.setSymbology(ColorDef.blue, ColorDef.blue, 1);
       builder.addPointString([point]);
+      context.addDecorationFromBuilder(builder);
+    });
+  }
+
+  private createLineStringDecorations(context: DecorateContext): void {
+    if (!this._iModel) return;
+    const center = this._iModel.projectExtents.center;
+    
+    // Create test lines with different GraphicTypes
+    const lines = [
+      {
+        points: [
+          new Point3d(center.x - 120000, center.y - 120000, center.z + 5000),
+          new Point3d(center.x + 120000, center.y - 120000, center.z + 5000),
+          new Point3d(center.x + 120000, center.y + 120000, center.z + 5000),
+          new Point3d(center.x - 120000, center.y + 120000, center.z + 5000),
+          new Point3d(center.x - 120000, center.y - 120000, center.z + 5000),
+        ],
+        type: GraphicType.WorldDecoration,
+        color: ColorDef.from(255, 0, 0), // Red
+      },
+      {
+        points: [
+          new Point3d(center.x - 150000, center.y, center.z + 19000),
+          new Point3d(center.x, center.y + 150000, center.z + 19000),
+          new Point3d(center.x + 150000, center.y, center.z + 19000),
+          new Point3d(center.x, center.y - 150000, center.z + 19000),
+          new Point3d(center.x - 150000, center.y, center.z + 19000),
+        ],
+        type: GraphicType.WorldOverlay,
+        color: ColorDef.from(255, 165, 0), // Orange
+      }
+    ];
+    
+    lines.forEach((line) => {
+      const builder = context.createGraphic({ type: line.type });
+      builder.setSymbology(line.color, line.color, 2);
+      builder.addLineString(line.points);
       context.addDecorationFromBuilder(builder);
     });
   }
