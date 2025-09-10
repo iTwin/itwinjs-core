@@ -6,7 +6,7 @@
  * @module Cesium
  */
 
-import { Cartesian3, Color, Material, Polyline, PolylineCollection } from "cesium";
+import { Cartesian3, Color, ColorGeometryInstanceAttribute, GeometryInstance, PerInstanceColorAppearance, PolygonGeometry, PolygonHierarchy, Primitive, PrimitiveCollection } from "cesium";
 import { GraphicList, IModelConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "./Scene";
@@ -17,7 +17,7 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
 
 
   protected override getCollection(scene: CesiumScene): any {
-    return scene.polylineCollection;
+    return scene.primitivesCollection;
   }
 
 
@@ -30,7 +30,7 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
     originalData?: Point3d[][], 
     type?: string
   ): any {
-    return this.createPolylineFromGraphic(graphic, primitiveId, index, collection, iModel, originalData, type);
+    return this.createPolygonFromGraphic(graphic, primitiveId, index, collection, iModel, originalData, type);
   }
 
   protected override getPrimitiveTypeName(): string {
@@ -55,15 +55,15 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
     return baseOptions;
   }
 
-  private createPolylineFromGraphic(
+  private createPolygonFromGraphic(
     graphic: any,
     shapeId: string,
     index: number,
-    polylineCollection: any,
+    primitivesCollection: any,
     iModel?: IModelConnection,
     originalShapes?: Point3d[][],
     type?: string
-  ): Polyline | null {
+  ): Primitive | null {
     if (!graphic) {
       console.warn(`Null graphic for ${shapeId}`);
       return null;
@@ -71,29 +71,29 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
 
     try {
       if (graphic.geometries && graphic.geometryType) {
-        return this.createPolylineFromGeometry(graphic.geometries, graphic.geometryType, shapeId, index, polylineCollection, iModel, originalShapes, type, graphic);
+        return this.createPolygonFromGeometry(graphic.geometries, graphic.geometryType, shapeId, index, primitivesCollection, iModel, originalShapes, type, graphic);
       }
 
       return null;
 
     } catch (error) {
-      console.error(`Error in createPolylineFromGraphic for ${shapeId}:`, error);
+      console.error(`Error in createPolygonFromGraphic for ${shapeId}:`, error);
       return null;
     }
   }
 
-  private createPolylineFromGeometry(
+  private createPolygonFromGeometry(
     geometries: any[],
     geometryType: string,
     shapeId: string,
     _index: number,
-    polylineCollection: any,
+    primitivesCollection: any,
     iModel?: IModelConnection,
     originalShapes?: Point3d[][],
     type?: string,
     _graphic?: any
-  ): Polyline | null {
-    if (!geometries || !geometryType || !polylineCollection) {
+  ): Primitive | null {
+    if (!geometries || !geometryType || !primitivesCollection) {
       return null;
     }
 
@@ -104,7 +104,7 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
         const firstShape = originalShapes[0];
         if (firstShape && firstShape.length > 0) {
           positions = this.convertPointsToCartesian3(firstShape, iModel);
-          // Ensure the shape is closed by adding the first point at the end if needed
+          // For polygon, ensure the shape is properly closed
           if (positions.length > 2) {
             const firstPos = positions[0];
             const lastPos = positions[positions.length - 1];
@@ -141,17 +141,49 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
       switch (geometryType) {
         case 'shape':
         default:
-          return polylineCollection.add({
-            id: shapeId,
-            positions,
-            width: 3,
-            material: Material.fromType(Material.ColorType, { color: Color.ORANGE }),
-            ...this.getDepthOptions(type || 'world'),
+          // Create filled polygon geometry
+          const polygonGeometry = new PolygonGeometry({
+            polygonHierarchy: new PolygonHierarchy(positions),
+            extrudedHeight: 0, // Flat polygon, no extrusion
           });
+
+          // Determine color based on type
+          const color = this.getShapeColor(type);
+          
+          const geometryInstance = new GeometryInstance({
+            geometry: polygonGeometry,
+            id: shapeId,
+            attributes: {
+              color: ColorGeometryInstanceAttribute.fromColor(color)
+            }
+          });
+
+          const primitive = new Primitive({
+            geometryInstances: geometryInstance,
+            appearance: new PerInstanceColorAppearance({
+              flat: true, // Use flat shading for better performance
+              translucent: false
+            })
+          });
+
+          primitivesCollection.add(primitive);
+          return primitive;
       }
     } catch (error) {
-      console.error(`Error in createPolylineFromGeometry for ${shapeId}:`, error);
+      console.error(`Error in createPolygonFromGeometry for ${shapeId}:`, error);
       return null;
+    }
+  }
+
+  private getShapeColor(type?: string): Color {
+    switch (type) {
+      case 'worldOverlay':
+        return Color.MAGENTA;
+      case 'viewOverlay':
+        return Color.CYAN;
+      case 'world':
+      default:
+        return Color.GREEN;
     }
   }
 

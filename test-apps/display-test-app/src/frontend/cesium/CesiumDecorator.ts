@@ -23,6 +23,7 @@ class CesiumDecorator implements Decorator {
     try {
       this.createPointDecorations(context);
       this.createLineStringDecorations(context);
+      this.createShapeDecorations(context);
     } catch (error) {
       console.error('Decoration creation failed:', error);
     }
@@ -79,6 +80,42 @@ class CesiumDecorator implements Decorator {
       const builder = context.createGraphic({ type: line.type });
       builder.setSymbology(line.color, line.color, 2);
       builder.addLineString(line.points);
+      context.addDecorationFromBuilder(builder);
+    });
+  }
+
+  private createShapeDecorations(context: DecorateContext): void {
+    if (!this._iModel) return;
+    const center = this._iModel.projectExtents.center;
+    
+    const shapes = [
+      {
+        points: [
+          new Point3d(center.x - 80000, center.y - 80000, center.z + 15000),
+          new Point3d(center.x + 80000, center.y - 80000, center.z + 15000),
+          new Point3d(center.x, center.y + 80000, center.z + 15000),
+          new Point3d(center.x - 80000, center.y - 80000, center.z + 15000),
+        ],
+        type: GraphicType.WorldDecoration,
+        color: ColorDef.from(0, 255, 0),
+      },
+      {
+        points: [
+          new Point3d(center.x - 60000, center.y + 40000, center.z + 25000),
+          new Point3d(center.x - 20000, center.y + 40000, center.z + 25000),
+          new Point3d(center.x - 20000, center.y + 80000, center.z + 25000),
+          new Point3d(center.x - 60000, center.y + 80000, center.z + 25000),
+          new Point3d(center.x - 60000, center.y + 40000, center.z + 25000),
+        ],
+        type: GraphicType.WorldOverlay,
+        color: ColorDef.from(255, 0, 255),
+      }
+    ];
+    
+    shapes.forEach((shape) => {
+      const builder = context.createGraphic({ type: shape.type });
+      builder.setSymbology(shape.color, shape.color, 3);
+      builder.addShape(shape.points);
       context.addDecorationFromBuilder(builder);
     });
   }
