@@ -69,19 +69,15 @@ export class OnScreenTarget extends RenderTarget {
       return;
     }
 
-    // Start test decorator if not already started
     this.startDecorator();
     
-    
-    // Only log when decoration count changes
     const currentCount = (decorations.world?.length || 0) + (decorations.normal?.length || 0) + 
                         (decorations.worldOverlay?.length || 0) + (decorations.viewOverlay?.length || 0);
     
     if (currentCount !== this._lastDecorationCount) {
       this._lastDecorationCount = currentCount;
       
-      // Use unified converter for all decoration types
-      const converter = PrimitiveConverterFactory.getConverter(); // Default converter as unified entry point
+      const converter = PrimitiveConverterFactory.getConverter();
       if (converter) {
         converter.clearDecorations(this._scene);
         
@@ -94,24 +90,19 @@ export class OnScreenTarget extends RenderTarget {
   private startDecorator(): void {
     const currentIModel = IModelApp.viewManager.selectedView?.iModel;
     
-    // If we have a decorator but the iModel changed, stop the old one
     if (this._decorator && currentIModel && this._currentIModel !== currentIModel) {
       this._decorator.stop();
       this._decorator = undefined;
     }
     
-    // Start new decorator if needed
     if (!this._decorator && currentIModel) {
       this._decorator = CesiumDecorator.start(currentIModel);
       this._currentIModel = currentIModel;
-      
-      // Listen for iModel close events to clean up
       this.setupIModelCloseListener(currentIModel);
     }
   }
   
   private setupIModelCloseListener(iModel: any): void {
-    // Clean up entities when iModel closes
     const closeListener = () => {
       if (this._decorator) {
         this._decorator.stop();
@@ -124,7 +115,6 @@ export class OnScreenTarget extends RenderTarget {
       }
     };
     
-    // Try to add the close listener if the iModel supports it
     if (iModel.onClose && typeof iModel.onClose.addListener === 'function') {
       iModel.onClose.addListener(closeListener);
     }

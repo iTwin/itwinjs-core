@@ -17,15 +17,16 @@ export class PrimitiveConverterFactory {
   private static _converters = new Map<string, PrimitiveConverter>();
 
   static {
+    this._converters.set('pointstring', new PointPrimitiveConverter());
+    this._converters.set('linestring', new LineStringPrimitiveConverter());
     this._converters.set('point-string', new PointPrimitiveConverter());
     this._converters.set('point', new PointPrimitiveConverter());
     this._converters.set('line-string', new LineStringPrimitiveConverter());
-    this._converters.set('linestring', new LineStringPrimitiveConverter());
     this._converters.set('polyline', new LineStringPrimitiveConverter());
   }
 
   public static getConverter(geometryType?: string): PrimitiveConverter | undefined {
-    return this._converters.get(geometryType || 'point-string');
+    return this._converters.get(geometryType || 'pointstring');
   }
 
   public static setConverter(geometryType: string, converter: PrimitiveConverter): void {

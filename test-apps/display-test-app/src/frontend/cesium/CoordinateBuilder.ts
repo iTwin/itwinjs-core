@@ -7,25 +7,25 @@
  */
 
 import { Point3d } from "@itwin/core-geometry";
-import { CustomGraphicBuilderOptions, GraphicTemplate, PrimitiveBuilder, RenderGraphic, ViewportGraphicBuilderOptions } from "@itwin/core-frontend";
+import { CustomGraphicBuilderOptions, GraphicPrimitive, GraphicTemplate, PrimitiveBuilder, RenderGraphic, ViewportGraphicBuilderOptions } from "@itwin/core-frontend";
 import { System } from "./System";
 import { CoordinateStorage } from "./CoordinateStorage";
 
 /** Generic coordinate builder for capturing geometry coordinates */
 export class CoordinateBuilder extends PrimitiveBuilder {
-  private _coordinateData: any[] = [];
+  private _coordinateData: GraphicPrimitive[] = [];
 
   public constructor(system: System, options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions) {
     super(system, options);
   }
 
   public override addPointString(points: Point3d[]): void {
-    this._coordinateData.push({ type: 'point-string', data: [...points] });
+    this._coordinateData.push({ type: 'pointstring', points: [...points] });
     super.addPointString(points);
   }
 
   public override addLineString(points: Point3d[]): void {
-    this._coordinateData.push({ type: 'line-string', data: [...points] });
+    this._coordinateData.push({ type: 'linestring', points: [...points] });
     super.addLineString(points);
   }
 
@@ -58,7 +58,7 @@ export class CoordinateBuilder extends PrimitiveBuilder {
     return template;
   }
 
-  public getCoordinateData(): any[] {
+  public getCoordinateData(): GraphicPrimitive[] {
     return this._coordinateData;
   }
 

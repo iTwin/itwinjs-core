@@ -22,13 +22,12 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
     const polylineCollection = scene.polylineCollection;
     if (!polylineCollection) return;
     
-    // Filter graphics to only include those with line-string geometries
     const lineStringGraphics = graphics.filter(graphic => {
       const coordinateData = (graphic as any)._coordinateData;
-      const hasLineStringData = coordinateData && coordinateData.some((entry: any) => entry.type === 'line-string');
+      const hasLineStringData = coordinateData && coordinateData.some((entry: any) => entry.type === 'linestring');
       const geometryType = (graphic as any).geometryType;
       
-      return hasLineStringData || geometryType === 'line-string';
+      return hasLineStringData || geometryType === 'linestring';
     });
 
     if (lineStringGraphics.length === 0) {
@@ -161,7 +160,7 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
   private extractLineStringData(coordinateData: any): Point3d[][] | undefined {
     if (!coordinateData || !Array.isArray(coordinateData)) return undefined;
     
-    const lineStringEntries = coordinateData.filter(entry => entry.type === 'line-string');
-    return lineStringEntries.map(entry => entry.data);
+    const lineStringEntries = coordinateData.filter(entry => entry.type === 'linestring');
+    return lineStringEntries.map(entry => entry.points);
   }
 }

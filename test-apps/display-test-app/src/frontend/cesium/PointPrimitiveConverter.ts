@@ -22,13 +22,12 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     const pointCollection = scene.pointCollection;
     if (!pointCollection) return;
 
-    // Filter graphics to only include those with point-string geometries  
     const pointStringGraphics = graphics.filter(graphic => {
       const coordinateData = (graphic as any)._coordinateData;
-      const hasPointStringData = coordinateData && coordinateData.some((entry: any) => entry.type === 'point-string');
+      const hasPointStringData = coordinateData && coordinateData.some((entry: any) => entry.type === 'pointstring');
       const geometryType = (graphic as any).geometryType;
       
-      return hasPointStringData || geometryType === 'point-string';
+      return hasPointStringData || geometryType === 'pointstring';
     });
 
     pointStringGraphics.forEach((graphic, index) => {
@@ -173,7 +172,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
   private extractPointStringData(coordinateData: any): Point3d[][] | undefined {
     if (!coordinateData || !Array.isArray(coordinateData)) return undefined;
     
-    const pointStringEntries = coordinateData.filter(entry => entry.type === 'point-string');
-    return pointStringEntries.map(entry => entry.data);
+    const pointStringEntries = coordinateData.filter(entry => entry.type === 'pointstring');
+    return pointStringEntries.map(entry => entry.points);
   }
 }

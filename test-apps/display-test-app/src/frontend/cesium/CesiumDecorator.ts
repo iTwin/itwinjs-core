@@ -50,7 +50,6 @@ class CesiumDecorator implements Decorator {
     if (!this._iModel) return;
     const center = this._iModel.projectExtents.center;
     
-    // Create test lines with different GraphicTypes
     const lines = [
       {
         points: [
@@ -61,7 +60,7 @@ class CesiumDecorator implements Decorator {
           new Point3d(center.x - 120000, center.y - 120000, center.z + 5000),
         ],
         type: GraphicType.WorldDecoration,
-        color: ColorDef.from(255, 0, 0), // Red
+        color: ColorDef.from(255, 0, 0),
       },
       {
         points: [
@@ -72,7 +71,7 @@ class CesiumDecorator implements Decorator {
           new Point3d(center.x - 150000, center.y, center.z + 19000),
         ],
         type: GraphicType.WorldOverlay,
-        color: ColorDef.from(255, 165, 0), // Orange
+        color: ColorDef.from(255, 165, 0),
       }
     ];
     

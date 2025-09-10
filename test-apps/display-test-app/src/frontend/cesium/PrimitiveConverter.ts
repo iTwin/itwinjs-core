@@ -46,30 +46,29 @@ export abstract class PrimitiveConverter {
     }
   }
 
-  /** Auto dispatch graphics to appropriate converters based on geometry type */
   private autoDispatchGraphics(graphics: GraphicList, type: string, scene: CesiumScene, iModel?: IModelConnection): void {
     graphics.forEach((graphic) => {
       const coordinateData = (graphic as any)._coordinateData;
       
       if (coordinateData && Array.isArray(coordinateData)) {
-        coordinateData.forEach((entry: any) => {
-          switch (entry.type) {
-            case 'point-string':
-              const pointConverter = PrimitiveConverterFactory.getConverter('point-string');
+        coordinateData.forEach((primitive: any) => {
+          switch (primitive.type) {
+            case 'pointstring':
+              const pointConverter = PrimitiveConverterFactory.getConverter(primitive.type);
               if (pointConverter) {
                 pointConverter.convertDecorations([graphic], type, scene, iModel);
               }
               break;
               
-            case 'line-string':
-              const lineConverter = PrimitiveConverterFactory.getConverter('line-string');
+            case 'linestring':
+              const lineConverter = PrimitiveConverterFactory.getConverter(primitive.type);
               if (lineConverter) {
                 lineConverter.convertDecorations([graphic], type, scene, iModel);
               }
               break;
               
             default:
-              console.warn(`Unknown geometry type: ${entry.type}`);
+              console.warn(`Unknown geometry type: ${primitive.type}`);
           }
         });
       }
