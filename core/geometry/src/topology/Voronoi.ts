@@ -26,9 +26,7 @@ import { Range2d } from "../geometry3d/Range";
 import { Ray2d } from "../geometry3d/Ray2d";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { LowAndHighXY, XAndY } from "../geometry3d/XYZProps";
-import { IndexedPolyface } from "../polyface/Polyface";
-import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction } from "./Graph";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { HalfEdgeGraphSearch } from "./HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge, HalfEdgeGraphOps } from "./Merging";
 import { Triangulator } from "./Triangulation";
@@ -61,7 +59,7 @@ export class Voronoi {
     this._voronoiGraph = new HalfEdgeGraph();
     this._inputGraph = inputGraph;
     this._inputGraphRange = HalfEdgeGraphOps.graphRangeXY(inputGraph);
-    this._idToIndexMap = this.populateIdToIndexMap();
+    this._idToIndexMap = inputGraph.constructIdToVertexIndexMap();
     this._circumcenterMap = new Map<number, XAndY>();
     this._inputGraphIsTriangulation = isColinear ? false : this.populateCircumcenters(this._circumcenterMap);
     this._circumcenterRange = Range2d.createArray(Array.from(this._circumcenterMap.values()));
@@ -143,26 +141,6 @@ export class Voronoi {
     if (!isValid)
       circumcenterMap.clear();
     return isValid;
-  }
-  /** Create a map from Delaunay HalfEdge id to the smallest index of the HalfEdges in its vertex loop. */
-  private populateIdToIndexMap(): Map<number, number> {
-    const idToIndexMap = new Map<number, number>();
-    this._inputGraph.allHalfEdges.forEach((e: HalfEdge, i: number) => idToIndexMap.set(e.id, i));
-    this._inputGraph.announceVertexLoops(
-      (_g: HalfEdgeGraph, vertex: HalfEdge) => {
-        let minIndex = Number.MAX_SAFE_INTEGER;
-        vertex.announceEdgesAroundVertex(
-          (e: HalfEdge) => {
-            const index = idToIndexMap.get(e.id);
-            if (index !== undefined && index < minIndex)
-              minIndex = index;
-          },
-        );
-        vertex.announceEdgesAroundVertex((e: HalfEdge) => idToIndexMap.set(e.id, minIndex));
-        return true;
-      },
-    );
-    return idToIndexMap;
   }
   /**
    * Return a segment along the bisector of the given triangle edge with the following properties:
@@ -698,17 +676,6 @@ export class Voronoi {
     this._voronoiGraph.dropMask(visitedMask);
     this._voronoiGraph.dropMask(superFaceOutsideMask);
     return allClippers.length === superFaces.length ? allClippers : undefined;
-  }
-  /**
-   * Construct facets from the faces of the Voronoi graph.
-   * @param showSuperFacesOnly whether to hide edges of a curve-based Voronoi diagram that are not in super face loops.
-   * Default is `false`: all edges are visible.
-   */
-  public constructPolyfaceFromVoronoiGraph(showSuperFacesOnly: boolean = false): IndexedPolyface {
-    let isEdgeVisible: HalfEdgeToBooleanFunction = () => true;
-    if (showSuperFacesOnly && this._isCurveBased && this._superFaceMask !== HalfEdgeMask.NULL_MASK)
-      isEdgeVisible = (e: HalfEdge) => e.isMaskSet(this._superFaceMask);
-    return PolyfaceBuilder.graphToPolyface(this._voronoiGraph, undefined, undefined, isEdgeVisible);
   }
 }
 

@@ -1828,4 +1828,50 @@ export class HalfEdgeGraph {
     this.allHalfEdges.length = numAccepted;
     return numDeleted;
   }
+  /**
+   * Construct a map from id to vertex index.
+   * * For a given HalfEdge `e`, the key is `e.id` and the value is the minimum index in `graph.allHalfEdges` of all edges in the vertex loop of `e`.
+  */
+  public constructIdToVertexIndexMap(): Map<number, number> {
+    const idToIndexMap = new Map<number, number>();
+    this.allHalfEdges.forEach((e: HalfEdge, i: number) => idToIndexMap.set(e.id, i));
+    this.announceVertexLoops(
+      (_g, vertex: HalfEdge) => {
+        let minIndex = this.allHalfEdges.length;
+        vertex.announceEdgesAroundVertex(
+          (e: HalfEdge) => {
+            const index = idToIndexMap.get(e.id);
+            if (index !== undefined && index < minIndex)
+              minIndex = index;
+          },
+        );
+        vertex.announceEdgesAroundVertex((e: HalfEdge) => idToIndexMap.set(e.id, minIndex));
+        return true;
+      },
+    );
+    return idToIndexMap;
+  }
+  /**
+   * Construct a map from id to face index.
+   * * For a given HalfEdge `e`, the key is `e.id` and the value is the minimum index in `graph.allHalfEdges` of all edges in the face loop of `e`.
+  */
+  public constructIdToFaceIndexMap(): Map<number, number> {
+    const idToIndexMap = new Map<number, number>();
+    this.allHalfEdges.forEach((e: HalfEdge, i: number) => idToIndexMap.set(e.id, i));
+    this.announceFaceLoops(
+      (_g, face: HalfEdge) => {
+        let minIndex = this.allHalfEdges.length;
+        face.announceEdgesInFace(
+          (e: HalfEdge) => {
+            const index = idToIndexMap.get(e.id);
+            if (index !== undefined && index < minIndex)
+              minIndex = index;
+          },
+        );
+        face.announceEdgesInFace((e: HalfEdge) => idToIndexMap.set(e.id, minIndex));
+        return true;
+      },
+    );
+    return idToIndexMap;
+  }
 }

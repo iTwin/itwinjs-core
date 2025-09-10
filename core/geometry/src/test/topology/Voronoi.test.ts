@@ -23,16 +23,28 @@ import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range2d } from "../../geometry3d/Range";
 import { LowAndHighXY } from "../../geometry3d/XYZProps";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { IndexedPolyface } from "../../polyface/Polyface";
+import { HalfEdgeGraphSearch, PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction } from "../../topology/Graph";
 import { HalfEdgeGraphOps } from "../../topology/Merging";
 import { Triangulator } from "../../topology/Triangulation";
 import { Voronoi } from "../../topology/Voronoi";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-// capture all the edges of a graph
+/**
+ * Construct facets from the faces of a Voronoi graph.
+ * * Not included in Voronoi class to avoid depending on polyface code in topology code.
+ */
+function constructPolyfaceFromVoronoiGraph(voronoi: Voronoi, showSuperFacesOnly: boolean = false): IndexedPolyface {
+  let isEdgeVisible: HalfEdgeToBooleanFunction = () => true;
+  if (showSuperFacesOnly && voronoi.isCurveBased && voronoi.getSuperFaceMask !== HalfEdgeMask.NULL_MASK)
+    isEdgeVisible = (e: HalfEdge) => e.isMaskSet(voronoi.getSuperFaceMask);
+  return PolyfaceBuilder.graphToPolyface(voronoi.getVoronoiGraph, undefined, undefined, isEdgeVisible);
+}
+
+/** Capture all the edges of a graph */
 function visualizeGraphEdges(allGeometry: GeometryQuery[], graph: HalfEdgeGraph, dx?: number, dy?: number): void {
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, graph.collectSegments(), dx, dy);
 }
@@ -72,7 +84,7 @@ function visualizeVoronoiDiagram(ck: Checker, allGeometry: GeometryQuery[], path
           }
         }
       } else
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, voronoi.constructPolyfaceFromVoronoiGraph(true));
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, constructPolyfaceFromVoronoiGraph(voronoi, true));
     }
   }
 }
@@ -80,7 +92,24 @@ function visualizeVoronoiDiagram(ck: Checker, allGeometry: GeometryQuery[], path
 // verify the voronoi graph follows the expected topology by checking 10 random points
 // and making sure the point belongs to the voronoi face with the expected faceTag
 function verifyVoronoiTopology(_ck: Checker, _delaunay: HalfEdgeGraph, _voronoi: HalfEdgeGraph): void {
-  // enable body after https://github.com/iTwin/itwinjs-backlog/issues/1581 is fixed
+
+  HalfEdgeGraphSearch.findContainingFaceXY
+  /* TODO: rewrite Voronoi verification test:
+  * Use HalfEdgeGraphSearch.findContainingFaceXY of a random point P to find a HalfEdge fe in the containing Voronoi face.
+  * Use Point3dArrayRangeTreeContext to find closest Delaunay vertex ve (a HalfEdge!!) to P:
+          const vertices = graph.collectVertexLoops();
+          const searcher = Point3dArrayRangeTreeContext.createCapture(vertices, undefined, undefined, true);
+          if (!searcher)
+            return undefined;
+          let cld = searcher.searchForClosestPoint(testPoint);
+          if (!cld)
+            return undefined;
+          if (Array.isArray(cld))
+            cld = cld[0]; // don't expect multiple results
+          const ve = vertices[cld.fraction];
+  * Confirm that Delaunay.allHalfEdges[fe.faceTag] and ve are in the same Delaunay vertex loop.
+  */
+
   // const voronoiPoints = voronoi.allHalfEdges.map((he) => he.getPoint3d());
   // const delaunayPoints = delaunay.allHalfEdges.map((he) => he.getPoint3d());
   // const delaunayUniquePoints = Array.from(new Set(delaunayPoints.map(p => `${p.x},${p.y}`)))
