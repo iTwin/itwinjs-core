@@ -137,6 +137,31 @@ describe("FormatSetFormatsProvider", () => {
       await provider.removeFormat("TestFormat");
       expect(formatSet.unitSystem).to.equal(originalUnitSystem);
     });
+
+    it("should support optional description property", () => {
+      // Test FormatSet without description
+      const formatSetWithoutDescription: FormatSet = {
+        name: "TestWithoutDescription",
+        label: "Test Format Set",
+        unitSystem: "metric",
+        formats: {},
+      };
+
+      expect(formatSetWithoutDescription).to.not.have.property("description");
+
+      // Test FormatSet with description
+      const formatSetWithDescription: FormatSet = {
+        name: "TestWithDescription",
+        label: "Test Format Set",
+        description: "A test format set for demonstration purposes",
+        unitSystem: "metric",
+        formats: {},
+      };
+
+      expect(formatSetWithDescription).to.have.property("description");
+      expect(formatSetWithDescription.description).to.be.a("string");
+      expect(formatSetWithDescription.description).to.equal("A test format set for demonstration purposes");
+    });
   });
 
   describe("getFormat", () => {

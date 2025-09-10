@@ -797,6 +797,7 @@ export class Format extends SchemaItem {
 
 // @beta
 export interface FormatSet {
+    description?: string;
     formats: {
         [kindOfQuantityId: string]: FormatDefinition;
     };
