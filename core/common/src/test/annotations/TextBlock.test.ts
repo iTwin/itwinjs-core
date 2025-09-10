@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { beforeEach, describe, expect, it } from "vitest";
-import { FieldRun, FractionRun, FractionRunProps, getTextBlockGenerator, LineBreakRun, List, ListProps, Paragraph, ParagraphProps, RunProps, TextBlock, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps } from "../../core-common";
+import { FieldRun, FractionRun, FractionRunProps, getTextBlockGenerator, LineBreakRun, List, ListProps, Paragraph, ParagraphProps, RunProps, TabRun, TextBlock, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps, UnorderedListMarker } from "../../core-common";
 
 function makeTextRun(content?: string, styleOverrides?: TextStyleSettingsProps): TextRunProps {
   return {
@@ -22,7 +22,7 @@ function makeFractionRun(numerator?: string, denominator?: string, styleOverride
   };
 }
 
-function makeParagraph(children?: RunProps[], styleOverrides?: TextStyleSettingsProps): ParagraphProps {
+function makeParagraph(children?: (RunProps | ListProps)[], styleOverrides?: TextStyleSettingsProps): ParagraphProps {
   return {
     type: "paragraph",
     styleOverrides,
@@ -189,36 +189,219 @@ describe("TextBlockComponent", () => {
     });
   });
 
-  it("stringifies", () => {
-    const props: TextBlockProps = {
-      styleId: "",
-      children: [
+  describe("stringify", () => {
+    it("stringifies text runs", () => {
+      const run = TextRun.create();
+
+      // empty
+      expect(run.stringify()).to.equal("");
+
+      run.content = "  with some leading whitespace";
+      expect(run.stringify()).to.equal("  with some leading whitespace");
+
+      run.content = "with some trailing whitespace  ";
+      expect(run.stringify()).to.equal("with some trailing whitespace  ");
+
+      // one word, no whitespace
+      run.content = "lorem";
+      expect(run.stringify()).to.equal("lorem");
+    });
+
+    it("stringifies fraction runs", () => {
+      const run = FractionRun.create();
+
+      // both empty
+      expect(run.stringify()).to.equal("/");
+      expect(run.stringify({ fractionSeparator: "F" })).to.equal("F");
+
+      // both with leading whitespace
+      run.numerator = "  ipsum";
+      run.denominator = "  dolor";
+      expect(run.stringify()).to.equal("  ipsum/  dolor");
+      expect(run.stringify({ fractionSeparator: "F" })).to.equal("  ipsumF  dolor");
+
+      // both with trailing whitespace
+      run.numerator = "ipsum  ";
+      run.denominator = "dolor  ";
+      expect(run.stringify()).to.equal("ipsum  /dolor  ");
+      expect(run.stringify({ fractionSeparator: "F" })).to.equal("ipsum  Fdolor  "); //cspell: ignore Fdolor Fthe
+
+      // one word, no whitespace
+      run.numerator = "ipsum";
+      run.denominator = "dolor";
+      expect(run.stringify()).to.equal("ipsum/dolor");
+      expect(run.stringify({ fractionSeparator: "F" })).to.equal("ipsumFdolor");
+
+      // many words also symbols
+      run.numerator = "3.14159 is equal to >";
+      run.denominator = "the number π!";
+      expect(run.stringify()).to.equal("3.14159 is equal to >/the number π!");
+      expect(run.stringify({ fractionSeparator: "F" })).to.equal("3.14159 is equal to >Fthe number π!");
+    });
+
+    it("stringifies line break runs", () => {
+      const run = LineBreakRun.create();
+      expect(run.stringify()).to.equal(" ");
+      expect(run.stringify({ lineBreak: "L" })).to.equal("L");
+      expect(run.stringify({ lineBreak: "\n" })).to.equal("\n");
+    });
+
+    it("stringifies tab runs", () => {
+      const run = TabRun.create();
+      expect(run.stringify()).to.equal("\t");
+      expect(run.stringify({ tabsAsSpaces: 4 })).to.equal("    ");
+      expect(run.stringify({ tabsAsSpaces: 7 })).to.equal("       ");
+    });
+
+    it("stringifies paragraphs", () => {
+      let paragraph = Paragraph.create();
+
+      // empty
+      expect(paragraph.stringify()).to.equal("");
+
+      // One child
+      paragraph = Paragraph.create(makeParagraph([
+        makeTextRun("lorem")
+      ]));
+
+      expect(paragraph.stringify()).to.equal("lorem");
+
+      // Multiple children, all the different types of runs
+      paragraph = Paragraph.create(makeParagraph([
+        makeFractionRun("1", "π"),
+        { type: "tab" },
+        makeTextRun(" def   ghi"),
+        { type: "linebreak" },
+        makeTextRun("j k l"),
+      ]));
+
+      expect(paragraph.stringify()).to.equal("1/π\t def   ghi j k l");
+      expect(paragraph.stringify({ tabsAsSpaces: 4, lineBreak: "L", fractionSeparator: "F" })).to.equal("1Fπ     def   ghiLj k l");
+    });
+
+    it("stringifies lists", () => {
+      let list = List.create();
+
+      // empty
+      expect(list.stringify()).to.equal("");
+
+      // One child
+      list = List.create(makeList([
         makeParagraph([
-          makeTextRun("abc"),
+          makeTextRun("lorem")
+        ])
+      ]));
+
+      expect(list.stringify()).to.equal("1. lorem");
+      expect(list.stringify({ listMarkerBreak: "M" })).to.equal("1.Mlorem"); //cspell: ignore 1.Mlorem
+
+      // Multiple children, all the different types of runs
+      list = List.create(makeList([
+        makeParagraph([
+          makeTextRun("lorem")
         ]),
         makeParagraph([
           makeFractionRun("1", "π"),
+          { type: "tab" },
           makeTextRun(" def   ghi"),
           { type: "linebreak" },
           makeTextRun("j k l"),
         ]),
         makeParagraph(),
-        makeParagraph([makeTextRun()]),
-        makeParagraph([{ type: "linebreak" }]),
-        makeParagraph([makeFractionRun()]),
-        makeParagraph([makeTextRun("mno")]),
-        makeParagraph([{ type: "linebreak" }, { type: "linebreak" }]),
-      ],
-    };
+      ]));
 
-    // TODO: add lists
+      // Default list marker is "1."
+      expect(list.stringify()).to.equal("1. lorem 2. 1/π\t def   ghi j k l 3. ");
+      expect(list.stringify({ tabsAsSpaces: 4, lineBreak: "L", fractionSeparator: "F", listMarkerBreak: "M", paragraphBreak: "P" })).to.equal("1.MloremP2.M1Fπ     def   ghiLj k lP3.M");
 
-    const tb = TextBlock.create(props);
-    expect(tb.stringify()).to.equal("abc 1/π def   ghi j k l     / mno   ");
-    const paragraphBreak = "P";
-    const lineBreak = "L";
-    const fractionSeparator = "F";
-    expect(tb.stringify({ paragraphBreak, lineBreak, fractionSeparator })).to.equal("abcP1Fπ def   ghiLj k lPPPLPFPmnoPLL");
+      // Unordered list marker
+      list.styleOverrides.listMarker = "*";
+      expect(list.stringify()).to.equal("* lorem * 1/π\t def   ghi j k l * ");
+      expect(list.stringify({ tabsAsSpaces: 4, lineBreak: "L", fractionSeparator: "F", listMarkerBreak: "M", paragraphBreak: "P" })).to.equal("*MloremP*M1Fπ     def   ghiLj k lP*M");
+
+      // Alphabetic list marker
+      list.styleOverrides.listMarker = "a)";
+      expect(list.stringify()).to.equal("a) lorem b) 1/π\t def   ghi j k l c) ");
+      expect(list.stringify({ tabsAsSpaces: 4, lineBreak: "L", fractionSeparator: "F", listMarkerBreak: "M", paragraphBreak: "P" })).to.equal("a)MloremPb)M1Fπ     def   ghiLj k lPc)M");
+    });
+
+    it("stringifies nested lists", () => {
+      const list = List.create(makeList([
+        makeParagraph([
+          makeTextRun("Oranges")
+        ]),
+        makeParagraph([
+          makeTextRun("Apples"),
+          makeList([
+            makeParagraph([
+              makeTextRun("Gala"),
+              makeList([
+                makeParagraph([
+                  makeTextRun("Sweet and crisp")
+                ]),
+                makeParagraph([
+                  makeTextRun("From New Zealand"),
+                ]),
+              ], { listMarker: UnorderedListMarker.Bullet }) // •
+            ]),
+            makeParagraph([
+              makeTextRun("Fiji"),
+            ]),
+            makeParagraph([
+              makeTextRun("Red Delicious"),
+            ]),
+          ], { listMarker: "i." })
+        ]),
+      ], { listMarker: "a." }));
+
+      expect(list.stringify()).to.equal("a. Oranges b. Apples \ti. Gala \t\t• Sweet and crisp \t\t• From New Zealand \tii. Fiji \tiii. Red Delicious");
+      expect(list.stringify({ tabsAsSpaces: 3, listMarkerBreak: "M", paragraphBreak: "P" })).to.equal("a.MOrangesPb.MApplesP   i.MGalaP      •MSweet and crispP      •MFrom New ZealandP   ii.MFijiP   iii.MRed Delicious");
+    });
+
+    it("stringifies the whole TextBlock", () => {
+      const block = TextBlock.create({
+        styleId: "0x42",
+        children: [
+          makeParagraph([
+            makeFractionRun("1", "π"),
+            { type: "tab" },
+            makeTextRun(" def   ghi"),
+            { type: "linebreak" },
+            makeTextRun("j k l"),
+          ]),
+          makeList([
+            makeParagraph([
+              makeTextRun("Oranges")
+            ]),
+            makeParagraph([
+              makeTextRun("Apples"),
+              makeList([
+                makeParagraph([
+                  makeTextRun("Gala"),
+                  makeList([
+                    makeParagraph([
+                      makeTextRun("Sweet and crisp")
+                    ]),
+                    makeParagraph([
+                      makeTextRun("From New Zealand"),
+                    ]),
+                  ], { listMarker: UnorderedListMarker.Bullet }) // •
+                ]),
+                makeParagraph([
+                  makeTextRun("Fiji"),
+                ]),
+                makeParagraph([
+                  makeTextRun("Red Delicious"),
+                ]),
+              ], { listMarker: "i." })
+            ]),
+          ], { listMarker: "a." })
+        ]
+      });
+
+      expect(block.stringify()).to.equal("1/π\t def   ghi j k l a. Oranges b. Apples \ti. Gala \t\t• Sweet and crisp \t\t• From New Zealand \tii. Fiji \tiii. Red Delicious");
+      expect(block.stringify({ tabsAsSpaces: 3, lineBreak: "L", fractionSeparator: "F", listMarkerBreak: "M", paragraphBreak: "P" })).to.equal("1Fπ    def   ghiLj k lPa.MOrangesPb.MApplesP   i.MGalaP      •MSweet and crispP      •MFrom New ZealandP   ii.MFijiP   iii.MRed Delicious");
+    });
   });
 });
 

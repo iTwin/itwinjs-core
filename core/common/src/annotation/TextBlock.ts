@@ -808,7 +808,7 @@ export class Paragraph extends ContainerComponent<List | Run> {
 
   /** Compute a string representation of this paragraph by concatenating the string representations of all of its children. */
   public override stringify(options?: TextBlockStringifyOptions, context?: TextBlockStringifyContext): string {
-    return this.children.map((x, index) => (index > 0 && x.type === "list") ? `${options?.lineBreak}${x.stringify(options, context)}` : x.stringify(options, context)).join("") ?? "";
+    return this.children.map((x, index) => (index > 0 && x.type === "list") ? `${options?.paragraphBreak ?? " "}${x.stringify(options, context)}` : x.stringify(options, context)).join("") ?? "";
   }
 
   public override equals(other: TextBlockComponent): boolean {
