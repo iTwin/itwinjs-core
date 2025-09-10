@@ -95,11 +95,13 @@ export async function insertText(iModelKey: string, categoryId: Id64String, mode
   try {
     const annotation2d = TextAnnotation2d.create(
       iModel,
-      categoryId,
-      modelId,
-      placement,
-      defaultTextStyleId,
-      textAnnotationData
+      {
+        category: categoryId,
+        model: modelId,
+        placement,
+        defaultTextStyleId,
+        textAnnotationData
+      }
     );
 
     await iModel.locks.acquireLocks({ shared: modelId });
