@@ -429,10 +429,6 @@ describe("ContainerComponent", () => {
     expect(p2.index).to.equal(4);
     expect(l1.index).to.equal(5);
   });
-
-  it("stringifies", () => {
-
-  });
 });
 
 describe("TextBlock", () => {
