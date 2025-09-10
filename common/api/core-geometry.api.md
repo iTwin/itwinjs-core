@@ -8,15 +8,14 @@ import { OrderedComparator } from '@itwin/core-bentley';
 
 // @public
 export class AkimaCurve3d extends ProxyCurve {
+    announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     clone(): AkimaCurve3d;
     cloneProps(): AkimaCurve3dProps;
     copyFitPointsFloat64Array(): Float64Array;
     static create(options: AkimaCurve3dOptions | AkimaCurve3dProps): AkimaCurve3d | undefined;
-    // (undocumented)
     static createCapture(options: AkimaCurve3dOptions): AkimaCurve3d | undefined;
     // (undocumented)
     readonly curvePrimitiveType = "interpolationCurve";
-    // (undocumented)
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     // (undocumented)
     isAlmostEqual(other: GeometryQuery): boolean;
@@ -2560,6 +2559,11 @@ export class GrowableXYZArrayCache extends ReusableObjectCache<GrowableXYZArray>
     grabAndFill(source: IndexedXYZCollection): GrowableXYZArray;
 }
 
+// @internal
+export namespace HalfEdgeGraphSearch {
+    export function findContainingFaceXY(graph: HalfEdgeGraph, testPoint: XAndY | XAndY[]): (HalfEdge | undefined)[] | HalfEdge | undefined;
+}
+
 // @public
 export type HasZ = Readonly<WriteableHasZ>;
 
@@ -3080,6 +3084,7 @@ export type IntegratedSpiralTypeName = "clothoid" | "bloss" | "biquadratic" | "c
 
 // @public
 export class InterpolationCurve3d extends ProxyCurve {
+    announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     clone(): InterpolationCurve3d;
     cloneProps(): InterpolationCurve3dProps;
     copyFitPointsFloat64Array(): Float64Array;
@@ -3087,7 +3092,6 @@ export class InterpolationCurve3d extends ProxyCurve {
     static createCapture(options: InterpolationCurve3dOptions): InterpolationCurve3d | undefined;
     // (undocumented)
     readonly curvePrimitiveType = "interpolationCurve";
-    // (undocumented)
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     // (undocumented)
     isAlmostEqual(other: GeometryQuery): boolean;
@@ -4278,7 +4282,6 @@ export class Point2d extends XY implements BeJSONFunctions {
     plus3Scaled(vectorA: XAndY, scalarA: number, vectorB: XAndY, scalarB: number, vectorC: XAndY, scalarC: number, result?: Point2d): Point2d;
     plusScaled(vector: XAndY, scaleFactor: number, result?: Point2d): Point2d;
     plusXY(dx?: number, dy?: number, result?: Point2d): Point2d;
-    scaleInPlace(scale: number): void;
 }
 
 // @public
@@ -4637,7 +4640,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     // @internal
     static graphFacesToPolyface(faces: HalfEdge[]): IndexedPolyface;
     // @internal
-    static graphToPolyface(graph: HalfEdgeGraph, options?: StrokeOptions, acceptFaceFunction?: HalfEdgeToBooleanFunction, isEdgeVisibleFunction?: HalfEdgeToBooleanFunction): IndexedPolyface;
+    static graphToPolyface(graph: HalfEdgeGraph, options?: StrokeOptions, acceptFaceFunction?: HalfEdgeToBooleanFunction, isEdgeVisibleFunction?: HalfEdgeToBooleanFunction, clusterTol?: number): IndexedPolyface;
     handleBox(g: Box): any;
     handleCone(g: Cone): any;
     handleLinearSweep(g: LinearSweep): any;
@@ -4821,7 +4824,7 @@ export class PolyfaceRangeTreeContext {
     numRangeTestTrue: number;
     numSearch: number;
     static searchForClosestApproach(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext, maxDist?: number, searchFacetInterior?: boolean): FacetLocationDetailPair | FacetLocationDetailPair[] | undefined;
-    searchForClosestPoint(spacePoint: Point3d, maxDist?: number, searchFacetInterior?: boolean): FacetLocationDetail | FacetLocationDetail[] | undefined;
+    searchForClosestPoint(spacePoint: XYAndZ | XAndY, maxDist?: number, searchFacetInterior?: boolean): FacetLocationDetail | FacetLocationDetail[] | undefined;
     visitor: PolyfaceVisitor;
 }
 
@@ -6518,6 +6521,7 @@ export class XY implements XAndY {
     magnitudeSquared(): number;
     maxAbs(): number;
     maxDiff(other: XAndY): number;
+    scaleInPlace(scale: number): this;
     set(x?: number, y?: number): void;
     setAt(index: number, value: number): void;
     setFrom(other?: XAndY): void;
@@ -6581,7 +6585,7 @@ export class XYZ implements XYAndZ {
     maxAbs(): number;
     maxDiff(other: XYAndZ): number;
     scaledVectorTo(other: XYAndZ, scale: number, result?: Vector3d): Vector3d;
-    scaleInPlace(scale: number): void;
+    scaleInPlace(scale: number): this;
     set(x?: number, y?: number, z?: number): void;
     setAt(index: number, value: number): void;
     setFrom(other: Float64Array | XAndY | XYAndZ | undefined): void;

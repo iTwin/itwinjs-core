@@ -137,6 +137,7 @@ public;class;GrowableFloat64Array
 public;class;GrowableXYArray
 public;class;GrowableXYZArray
 public;class;GrowableXYZArrayCache
+internal;namespace;HalfEdgeGraphSearch
 public;type;HasZ
 public;interface;HoleFillOptions
 public;interface;ICloneable
