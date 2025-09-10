@@ -293,7 +293,7 @@ describe("TextBlockComponent", () => {
       ]));
 
       expect(list.stringify()).to.equal("1. lorem");
-      expect(list.stringify({ listMarkerBreak: "M" })).to.equal("1.Mlorem"); //cspell: ignore 1.Mlorem
+      expect(list.stringify({ listMarkerBreak: "M" })).to.equal("1.Mlorem"); //cspell: ignore 1.Mlorem Mlorem
 
       // Multiple children, all the different types of runs
       list = List.create(makeList([
