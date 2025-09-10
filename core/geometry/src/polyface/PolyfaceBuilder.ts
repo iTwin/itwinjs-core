@@ -54,6 +54,7 @@ import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction } from
 import { InsertedVertexZOptions } from "../topology/InsertAndRetriangulateContext";
 import { Triangulator } from "../topology/Triangulation";
 import { BoxTopology } from "./BoxTopology";
+import { FacetLocationDetail } from "./FacetLocationDetail";
 import { GreedyTriangulationBetweenLineStrings } from "./GreedyTriangulationBetweenLineStrings";
 import { SortableEdge, SortableEdgeCluster } from "./IndexedEdgeMatcher";
 import { IndexedPolyfaceSubsetVisitor } from "./IndexedPolyfaceVisitor";
@@ -2139,45 +2140,48 @@ function distinctIndices(i0: number, i1: number, i2: number): boolean {
 }
 
 /**
- * Avoid topology -> polyface dependency.
+ * In this file to avoid topology -> polyface dependency.
  * @internal
  */
 export namespace HalfEdgeGraphSearch {
   /**
-   * Search the graph for an interior face containing the test point.
+   * Search the graph for an interior face containing the test point(s).
    * * For best results:
-   *   * the z-coordinates of the graph vertices should be zero, as the searcher is fully 3d
-   *   * the graph exterior face(s) should be masked with HalfEdgeMask.EXTERIOR.
-   * @param source input xy-plane topology
-   * @param testPoint xy target point
-   * @returns edge in the containing face, or `undefined` if in the exterior face
+   *   * the graph exterior face(s) should be masked with HalfEdgeMask.EXTERIOR
+   *   * the graph should contain no vertical faces
+   * @param graph input topology, z-coordinates ignored
+   * @param testPoint xy point(s) to search
+   * @returns edge in the face loop of the containing face, or `undefined` if `testPoint` is in an exterior face,
+   * or an array of the same in 1-1 correspondence with the input points.
    */
-  export function findContainingFaceXY(graph: HalfEdgeGraph, testPoint: XAndY): HalfEdge | undefined {
+  export function findContainingFaceXY(graph: HalfEdgeGraph, testPoint: XAndY | XAndY[]): (HalfEdge | undefined)[] | HalfEdge | undefined {
+    const results: (HalfEdge | undefined)[] = [];
     const idToFaceIndexMap = graph.constructIdToFaceIndexMap();
-    const facetIndexToFaceIndexMap = new Map<number, number>();
-    let facetIndex = 0;
+    const facetIndexToFaceIndexMap: number[] = [];
     const acceptFace = (face: HalfEdge): boolean => {
       if (face.isMaskSet(HalfEdgeMask.EXTERIOR))
         return false; // skip exterior face
-      facetIndexToFaceIndexMap.set(facetIndex++, idToFaceIndexMap.get(face.id) ?? -1);
+      facetIndexToFaceIndexMap.push(idToFaceIndexMap.get(face.id) ?? -1);
       return true;
     };
     const clusterTol = Geometry.smallFloatingPoint; // don't want clustering to destroy edges
     const mesh = PolyfaceBuilder.graphToPolyface(graph, undefined, acceptFace, () => true, clusterTol);
+    mesh.data.point.multiplyMatrix3dInPlace(Matrix3d.createScale(1, 1, 0)); // flatten
     const searcher = PolyfaceRangeTreeContext.createCapture(mesh, undefined, undefined, false);
     if (searcher) {
-      let closestDetail = searcher.searchForClosestPoint(Point3d.createFrom(testPoint), undefined, true);
-      if (closestDetail && (!Array.isArray(closestDetail) || closestDetail.length > 0)) {
-        if (Array.isArray(closestDetail)) {
-          closestDetail = closestDetail[0];
-          if (closestDetail.isInsideOrOn) {
-            const faceIndex = facetIndexToFaceIndexMap.get(closestDetail.facetIndex);
-            if (undefined !== faceIndex && faceIndex >= 0)
-              return graph.allHalfEdges[faceIndex];
-          }
+      const testPoints = Array.isArray(testPoint) ? testPoint : [testPoint];
+      for (const testPt of testPoints) {
+        let result: HalfEdge | undefined;
+        const closestDetail = searcher.searchForClosestPoint(testPt, undefined, true) as FacetLocationDetail | undefined;
+        // closest point on the mesh should have zero distance to testPt, but allow for slop
+        if (closestDetail && closestDetail.a < Geometry.smallFloatingPoint) {
+          const faceIndex = facetIndexToFaceIndexMap[closestDetail.facetIndex];
+          if (faceIndex >= 0 && faceIndex < graph.allHalfEdges.length)
+            result = graph.allHalfEdges[faceIndex];
         }
+        results.push(result);
       }
     }
-    return undefined;
+    return results.length === 0 ? undefined : (results.length === 1 ? results[0] : results);
   }
 }

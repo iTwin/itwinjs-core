@@ -7,10 +7,8 @@ import { describe, expect, it } from "vitest";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Range2d } from "../../geometry3d/Range";
+import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
-import { XAndY } from "../../geometry3d/XYZProps";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
@@ -19,7 +17,6 @@ import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "../../topology/HalfEdgeGraphSearch";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { getRandomNumberScaled } from "../testFunctions";
 
 describe("HalfEdgeGraphSearch", () => {
   it("collectConnectedComponentsWithExteriorParityMasks", () => {
@@ -314,35 +311,6 @@ describe("HalfEdgeGraphSearch", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
     GeometryCoreTestIO.saveGeometry(allGeometry, "HalfEdgeGraphSearch", "graphToPolyface");
 
-    expect(ck.getNumErrors()).toBe(0);
-  });
-
-  it("containingFaceWithRangeTree", () => {
-    const ck = new Checker();
-    const allGeometry: GeometryQuery[] = [];
-    const side = 20; // mesh/graph is square xy-grid with this side length
-    const mesh = Sample.createTriangularUnitGridPolyface(Point3d.createZero(), Vector3d.create(1), Vector3d.create(0, 1), side + 1, side + 1, false, false, false, false);
-    if (ck.testDefined(mesh, "Sample mesh created")) {
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
-      const graph = PolyfaceQuery.convertToHalfEdgeGraph(mesh);
-      // test interior points
-      for (let i = 0; i < 100; i++) {
-        const testPt = Point3d.create(getRandomNumberScaled(side, 0.05), getRandomNumberScaled(side, 0.05), getRandomNumberScaled(1, 0, true));
-        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, testPt, 0.1);
-        const containingFace = HalfEdgeGraphSearch.findContainingFaceXY(graph, testPt);
-        if (ck.testDefined(containingFace, "found containing face in 3d range tree")) {
-          const quadRange = Range2d.createArray(containingFace.collectAroundFace() as XAndY[]);
-          ck.testTrue(quadRange.containsPoint(testPt), "range contains test point");
-        }
-      }
-      // test exterior point
-      const exteriorPt = Point3d.create(-1, -1);
-      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, exteriorPt, 0.1);
-      const exteriorFace = HalfEdgeGraphSearch.findContainingFaceXY(graph, exteriorPt);
-      if (ck.testDefined(exteriorFace, "found containing face of exterior point"))
-        ck.testTrue(exteriorFace.isMaskSet(HalfEdgeMask.EXTERIOR), "the containing face for an exterior point is exterior");
-    }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "HalfEdgeGraphSearch", "containingFaceWithRangeTree");
     expect(ck.getNumErrors()).toBe(0);
   });
 });
