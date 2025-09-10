@@ -155,6 +155,9 @@ internal;function;toBisCoreRootClassFullName
 public;interface;ConflictingLock
 beta;interface;ConflictingLocks
 public;class;ConflictingLocksError
+beta;class;ContainerComponent
+beta;interface;ContainerComponentProps
+beta;type;ContainerComponentType
 alpha;enum;ContentFlags
 internal;class;ContentIdProvider
 public;class;ContextRealityModel
@@ -398,8 +401,10 @@ public;type;GeometryStreamProps
 public;interface;GeometrySummaryOptions
 public;interface;GeometrySummaryRequestProps
 public;enum;GeometrySummaryVerbosity
+beta;function;getMarkerText
 internal;function;getMaximumMajorTileFormatVersion
 internal;const;getPullChangesIpcChannel
+beta;function;getTextBlockGenerator
 internal;function;getTileObjectReference
 internal;class;GlbHeader
 public;enum;GlobeMode
@@ -521,6 +526,9 @@ public;enum;LinePixels
 public;namespace;LineStyle
 public;interface;LineStyleProps
 preview;interface;LineStyleProps
+beta;class;List
+beta;type;ListMarker
+beta;interface;ListProps
 public;type;LocalAlignedBox3d
 public;interface;LocalBriefcaseProps
 public;type;LocalDirName
@@ -612,6 +620,7 @@ public;interface;OpenDbKey
 public;interface;OpenSqliteArgs
 internal;const;OPERATION
 alpha;interface;OrbitGtBlobProps
+beta;enum;OrderedListMarker
 beta;enum;OverriddenBy
 public;interface;OverrideElementAppearanceOptions
 public;type;OverrideFeatureAppearanceArgs
@@ -826,6 +835,7 @@ internal;class;RpcSessionInvocation
 alpha;interface;RscFontEncodingProps
 beta;type;Run
 beta;namespace;Run
+beta;type;RunComponentType
 beta;interface;RunLayoutResult
 beta;type;RunProps
 public;enum;SchemaState
@@ -927,6 +937,7 @@ beta;type;TextBlockJustification
 beta;interface;TextBlockLayoutResult
 beta;interface;TextBlockMargins
 beta;interface;TextBlockProps
+beta;interface;TextBlockStringifyContext
 beta;interface;TextBlockStringifyOptions
 beta;interface;TextFrameStyleProps
 beta;interface;TextLeaderStyleProps
@@ -996,6 +1007,7 @@ preview;interface;TypeDefinitionElementProps
 internal;type;TypedGltfChunk
 public;enum;TypeOfChange
 public;type;UnitType
+beta;enum;UnorderedListMarker
 public;type;UpdateCallback
 beta;interface;UpgradeOptions
 public;interface;UrlLinkProps

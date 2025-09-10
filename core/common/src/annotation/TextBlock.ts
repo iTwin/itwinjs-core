@@ -1115,6 +1115,7 @@ export class TextBlock extends ContainerComponent<(Paragraph | List)> {
  * @param block The root TextBlockComponent to start traversal from.
  * @param parent (Optional) The parent ContainerComponent of the current block. For the root, this is undefined.
  * @returns An IterableIterator yielding objects with the current component and its parent container.
+ * @beta
  */
 export function* getTextBlockGenerator(block: TextBlockComponent, parent?: ContainerComponent): IterableIterator<{ parent?: ContainerComponent, current: TextBlockComponent }> {
   yield { parent, current: block };
