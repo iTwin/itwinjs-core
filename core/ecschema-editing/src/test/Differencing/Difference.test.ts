@@ -183,6 +183,54 @@ describe("Schema Differences", () => {
     });
   });
 
+  it("should return schema reference change if target is more recent", async () => {
+    const sourceContext = new SchemaContext();
+    await Schema.fromJson({
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "ReferenceA",
+      version: "1.0.0",
+      alias: "ref"
+    }, sourceContext);
+
+    const sourceSchema = await Schema.fromJson({
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "SourceSchema",
+      version: "1.0.0",
+      alias: "source",
+      references: [
+        { name: "ReferenceA", version: "1.0.0" },
+      ]
+    }, sourceContext);
+
+    const targetContext = new SchemaContext();
+    await Schema.fromJson({
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "ReferenceA",
+      version: "1.0.1",
+      alias: "ref",
+    }, targetContext);
+
+    const targetSchema = await Schema.fromJson({
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "TargetSchema",
+      version: "1.0.0",
+      alias: "target",
+      references: [
+        { name: "ReferenceA", version: "1.0.1" },
+      ]
+    }, targetContext);
+
+    const differences = await getSchemaDifferences(targetSchema, sourceSchema);
+    expect(differences.conflicts).equals(undefined, "This test should not have conflicts.");
+    expect(differences.differences).has.lengthOf(1).and.satisfies(([result]: AnySchemaDifference[]) => {
+      expect(result).to.have.a.property("changeType", "modify");
+      expect(result).to.have.a.property("schemaType", "SchemaReference");
+      expect(result).to.have.a.nested.property("difference.name", "ReferenceA");
+      expect(result).to.have.a.nested.property("difference.version", "01.00.00");
+      return true;
+    });
+  });
+
   it("should return changed or missing references", () => {
     // There are three references in this workflow. Both target and source reference to the same
     // CustomAttributesSchema so this should not appear in the list, EmptySchema has a more recent

@@ -6,7 +6,7 @@
  * @module Differencing
  */
 
-import { classModifierToString, ECClass, ECClassModifier, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, LazyLoadedSchemaItem, Mixin, parseClassModifier, primitiveTypeToString, Property, propertyTypeToString, Schema, SchemaItem, SchemaItemKey, SchemaMatchType, Unit } from "@itwin/ecschema-metadata";
+import { classModifierToString, ECClass, ECClassModifier, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, LazyLoadedSchemaItem, Mixin, parseClassModifier, primitiveTypeToString, Property, propertyTypeToString, Schema, SchemaItem, SchemaItemKey, SchemaKey, SchemaMatchType, Unit } from "@itwin/ecschema-metadata";
 import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, FormatUnitDifference, FormatUnitLabelDifference, InvertedUnitDifference, KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "./SchemaDifference";
 import { AnySchemaDifferenceConflict, ConflictCode } from "./SchemaConflicts";
 import { SchemaDifferenceVisitor, SchemaDifferenceWalker } from "./SchemaDifferenceVisitor";
@@ -109,7 +109,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
       });
     }
 
-    if(entry.changeType === "modify" && !isDynamicSchema(targetSchemaReference) && !sourceSchemaKey.matches(targetSchemaKey, SchemaMatchType.LatestWriteCompatible)) {
+    if(entry.changeType === "modify" && !isDynamicSchema(targetSchemaReference) && !areCompatible(sourceSchemaKey, targetSchemaKey)) {
       return this.addConflict({
         code: ConflictCode.ConflictingReferenceVersion,
         difference: entry,
@@ -597,6 +597,18 @@ function resolvePropertyTypeName(property: Property) {
   return propertyTypeToString(property.propertyType);
 }
 
+/**
+ * Checks if a schema is dynamic.
+ */
 function isDynamicSchema(schema: Schema): boolean {
   return schema.customAttributes !== undefined && schema.customAttributes.has("CoreCustomAttributes.DynamicSchema");
+}
+
+/**
+ * Checks if the two schemas are compatible. Since the merger will eventually take the most
+ * recent schema version, it is sufficient to check if they are write compatible in one direction.
+ */
+function areCompatible(leftSchemaKey: SchemaKey, rightSchemaKey: SchemaKey): boolean {
+  return leftSchemaKey.matches(rightSchemaKey, SchemaMatchType.LatestWriteCompatible)
+      || rightSchemaKey.matches(leftSchemaKey, SchemaMatchType.LatestWriteCompatible);
 }
