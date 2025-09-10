@@ -765,6 +765,7 @@ export class TextBlockLayout {
     this.populateComponent(doc, context, doc.width, new LineLayout(doc.children[0]));
   }
 
+  // TODO: pass in style overrides recursively instead of doing the mend styles stuff
   private populateComponent(component: TextBlockComponent, context: LayoutContext, docWidth: number, curLine: LineLayout, parent?: ContainerComponent, depth: number = 0): LineLayout {
     switch (component.type) {
       case "textBlock": {
