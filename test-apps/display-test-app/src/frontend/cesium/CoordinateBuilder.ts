@@ -29,6 +29,11 @@ export class CoordinateBuilder extends PrimitiveBuilder {
     super.addLineString(points);
   }
 
+  public override addShape(points: Point3d[]): void {
+    this._coordinateData.push({ type: 'shape', points: [...points] });
+    super.addShape(points);
+  }
+
   public override finish(): RenderGraphic {
     if (this._coordinateData.length > 0) {
       const templateId = Symbol.for(`coordinate_template_${Date.now()}_${Math.random()}`);

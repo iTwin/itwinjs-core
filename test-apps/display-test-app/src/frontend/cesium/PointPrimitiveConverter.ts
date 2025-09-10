@@ -7,42 +7,48 @@
  */
 
 import { Cartesian3, Color, PointPrimitive, PointPrimitiveCollection } from "cesium";
-import { GraphicList, IModelConnection, GraphicPrimitive } from "@itwin/core-frontend";
+import { GraphicList, IModelConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
-import { CesiumCoordinateConverter } from "./CesiumCoordinateConverter";
 import { CesiumScene } from "./Scene";
-import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter";
+import { PrimitiveConverter } from "./PrimitiveConverter";
 
 /** Converts iTwin.js point decorations to Cesium PointPrimitives */
 export class PointPrimitiveConverter extends PrimitiveConverter {
+  protected readonly primitiveType = 'pointstring';
 
-  public convertDecorations(graphics: GraphicList, type: string, scene: CesiumScene, iModel?: IModelConnection): void {
-    if (!graphics || graphics.length === 0) return;
+
+  protected override getCollection(scene: CesiumScene): any {
+    return scene.pointCollection;
+  }
+
+
+  protected override createPrimitiveFromGraphic(
+    graphic: any, 
+    primitiveId: string, 
+    index: number, 
+    collection: any, 
+    iModel?: IModelConnection, 
+    originalData?: Point3d[][], 
+    type?: string
+  ): any {
+    return this.createPointPrimitiveFromGraphic(graphic, primitiveId, index, collection, iModel, originalData, type);
+  }
+
+  protected override getPrimitiveTypeName(): string {
+    return 'decoration';
+  }
+
+  protected override getDepthOptions(decorationType: string): any {
+    const baseOptions = super.getDepthOptions(decorationType);
     
-    const pointCollection = scene.pointCollection;
-    if (!pointCollection) return;
-
-    const pointStringGraphics = graphics.filter(graphic => {
-      const graphicWithCoords = graphic as RenderGraphicWithCoordinates;
-      const coordinateData = graphicWithCoords._coordinateData;
-      const hasPointStringData = coordinateData && coordinateData.some((entry: GraphicPrimitive) => entry.type === 'pointstring');
-      const geometryType = graphicWithCoords.geometryType;
-      
-      return hasPointStringData || geometryType === 'pointstring';
-    });
-
-    pointStringGraphics.forEach((graphic, index) => {
-      try {
-        const pointId = `${type}_decoration_${index}`;
-        const graphicWithCoords = graphic as RenderGraphicWithCoordinates;
-        const coordinateData = graphicWithCoords._coordinateData;
-        const originalPointStrings = this.extractPointStringData(coordinateData);
-        
-        this.createPointPrimitiveFromGraphic(graphic, pointId, index, pointCollection, iModel, originalPointStrings, type);
-      } catch (error) {
-        console.error(`Error creating ${type} point primitive:`, error);
-      }
-    });
+    const isOverlay = decorationType === 'worldOverlay' || decorationType === 'viewOverlay';
+    if (isOverlay) {
+      return {
+        ...baseOptions,
+        disableDepthTestDistance: Number.POSITIVE_INFINITY,
+      };
+    }
+    return baseOptions;
   }
 
 
@@ -76,7 +82,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
         color: Color.LIME,
         outlineColor: Color.WHITE,
         outlineWidth: 2,
-        disableDepthTestDistance: this.getDepthTestDistance(type || 'world'),
+        ...this.getDepthOptions(type || 'world'),
       });
 
     } catch (error) {
@@ -122,18 +128,12 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
       }
 
       // Convert coordinates to Cesium space
-      if (realSpatialPoint && iModel) {
-        const converter = new CesiumCoordinateConverter(iModel);
-        entityPosition = converter.spatialToCesiumCartesian3(realSpatialPoint);
-      } else if (iModel) {
-        const converter = new CesiumCoordinateConverter(iModel);
-        const fallbackPoint = new Point3d(0, 0, 0);
-        entityPosition = converter.spatialToCesiumCartesian3(fallbackPoint);
+      if (realSpatialPoint) {
+        const positions = this.convertPointsToCartesian3([realSpatialPoint], iModel);
+        entityPosition = positions.length > 0 ? positions[0] : this.getFallbackPosition(index);
       } else {
         entityPosition = this.getFallbackPosition(index);
       }
-
-      const entityColor = this.getColorForIndex(index);
 
       switch (geometryType) {
         case 'point-string':
@@ -145,7 +145,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
             color: Color.BLUE,
             outlineColor: Color.WHITE,
             outlineWidth: 2,
-            disableDepthTestDistance: this.getDepthTestDistance(type || 'world'),
+            ...this.getDepthOptions(type || 'world'),
           });
       }
     } catch (error) {
@@ -166,15 +166,4 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     }
   }
 
-  private getColorForIndex(index: number): Color {
-    const colors = [Color.BLUE, Color.RED, Color.GREEN, Color.YELLOW, Color.PURPLE, Color.ORANGE];
-    return colors[index % colors.length];
-  }
-
-  private extractPointStringData(coordinateData: GraphicPrimitive[] | undefined): Point3d[][] | undefined {
-    if (!coordinateData || !Array.isArray(coordinateData)) return undefined;
-    
-    const pointStringEntries = coordinateData.filter((entry: GraphicPrimitive) => entry.type === 'pointstring');
-    return pointStringEntries.map((entry: any) => entry.points);
-  }
 }

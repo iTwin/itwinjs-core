@@ -12,9 +12,8 @@ import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "./Scene";
 import { PrimitiveConverter } from "./PrimitiveConverter";
 
-/** Converts iTwin.js LineString decorations to Cesium Polylines */
-export class LineStringPrimitiveConverter extends PrimitiveConverter {
-  protected readonly primitiveType = 'linestring';
+export class ShapePrimitiveConverter extends PrimitiveConverter {
+  protected readonly primitiveType = 'shape';
 
 
   protected override getCollection(scene: CesiumScene): any {
@@ -35,7 +34,7 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
   }
 
   protected override getPrimitiveTypeName(): string {
-    return 'linestring';
+    return 'shape';
   }
 
   protected override shouldSkipEmptyGraphics(): boolean {
@@ -49,38 +48,36 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
     if (isOverlay) {
       return {
         ...baseOptions,
-        clampToGround: false,
-        distanceDisplayCondition: undefined,
+        heightReference: 0,
+        extrudedHeightReference: 0,
       };
     }
     return baseOptions;
   }
 
-
-
   private createPolylineFromGraphic(
     graphic: any,
-    lineId: string,
+    shapeId: string,
     index: number,
-    polylineCollection: PolylineCollection,
+    polylineCollection: any,
     iModel?: IModelConnection,
-    originalLineStrings?: Point3d[][],
+    originalShapes?: Point3d[][],
     type?: string
   ): Polyline | null {
     if (!graphic) {
-      console.warn(`Null graphic for ${lineId}`);
+      console.warn(`Null graphic for ${shapeId}`);
       return null;
     }
 
     try {
       if (graphic.geometries && graphic.geometryType) {
-        return this.createPolylineFromGeometry(graphic.geometries, graphic.geometryType, lineId, index, polylineCollection, iModel, originalLineStrings, type, graphic);
+        return this.createPolylineFromGeometry(graphic.geometries, graphic.geometryType, shapeId, index, polylineCollection, iModel, originalShapes, type, graphic);
       }
 
-      return null; // No valid geometry found
+      return null;
 
     } catch (error) {
-      console.error(`Error in createPolylineFromGraphic for ${lineId}:`, error);
+      console.error(`Error in createPolylineFromGraphic for ${shapeId}:`, error);
       return null;
     }
   }
@@ -88,11 +85,11 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
   private createPolylineFromGeometry(
     geometries: any[],
     geometryType: string,
-    lineId: string,
+    shapeId: string,
     _index: number,
-    polylineCollection: PolylineCollection,
+    polylineCollection: any,
     iModel?: IModelConnection,
-    originalLineStrings?: Point3d[][],
+    originalShapes?: Point3d[][],
     type?: string,
     _graphic?: any
   ): Polyline | null {
@@ -103,11 +100,18 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
     try {
       let positions: Cartesian3[] = [];
       
-      // Extract real Point3d coordinates and convert to Cartesian3
-      if (originalLineStrings && originalLineStrings.length > 0) {
-        const firstLineString = originalLineStrings[0];
-        if (firstLineString && firstLineString.length > 0) {
-          positions = this.convertPointsToCartesian3(firstLineString, iModel);
+      if (originalShapes && originalShapes.length > 0) {
+        const firstShape = originalShapes[0];
+        if (firstShape && firstShape.length > 0) {
+          positions = this.convertPointsToCartesian3(firstShape, iModel);
+          // Ensure the shape is closed by adding the first point at the end if needed
+          if (positions.length > 2) {
+            const firstPos = positions[0];
+            const lastPos = positions[positions.length - 1];
+            if (!Cartesian3.equals(firstPos, lastPos)) {
+              positions.push(firstPos);
+            }
+          }
         }
       }
       
@@ -118,22 +122,35 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
             new Point3d(coord.x, coord.y, coord.z)
           );
           positions = this.convertPointsToCartesian3(points, iModel);
+          // Ensure the shape is closed
+          if (positions.length > 2) {
+            const firstPos = positions[0];
+            const lastPos = positions[positions.length - 1];
+            if (!Cartesian3.equals(firstPos, lastPos)) {
+              positions.push(firstPos);
+            }
+          }
         }
       }
 
+      if (positions.length < 3) {
+        console.warn(`Shape requires at least 3 points, got ${positions.length}`);
+        return null;
+      }
+
       switch (geometryType) {
-        case 'line-string':
+        case 'shape':
         default:
           return polylineCollection.add({
-            id: lineId,
+            id: shapeId,
             positions,
-            width: 2,
-            material: Material.fromType(Material.ColorType, { color: Color.PURPLE }),
+            width: 3,
+            material: Material.fromType(Material.ColorType, { color: Color.ORANGE }),
             ...this.getDepthOptions(type || 'world'),
           });
       }
     } catch (error) {
-      console.error(`Error in createPolylineFromGeometry for ${lineId}:`, error);
+      console.error(`Error in createPolylineFromGeometry for ${shapeId}:`, error);
       return null;
     }
   }

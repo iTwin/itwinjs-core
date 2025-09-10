@@ -9,6 +9,7 @@
 import { PrimitiveConverter } from "./PrimitiveConverter";
 import { PointPrimitiveConverter } from "./PointPrimitiveConverter";
 import { LineStringPrimitiveConverter } from "./LineStringPrimitiveConverter";
+import { ShapePrimitiveConverter } from "./ShapePrimitiveConverter";
 import { CoordinateBuilder } from "./CoordinateBuilder";
 import { CoordinateStorage } from "./CoordinateStorage";
 
@@ -19,6 +20,7 @@ export class PrimitiveConverterFactory {
   static {
     this._converters.set('pointstring', new PointPrimitiveConverter());
     this._converters.set('linestring', new LineStringPrimitiveConverter());
+    this._converters.set('shape', new ShapePrimitiveConverter());
   }
 
   public static getConverter(geometryType?: string): PrimitiveConverter | undefined {

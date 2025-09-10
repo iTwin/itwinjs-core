@@ -7,8 +7,11 @@
  */
 
 import { Decorations, GraphicList, GraphicPrimitive, IModelConnection, RenderGraphic } from "@itwin/core-frontend";
+import { Point3d } from "@itwin/core-geometry";
+import { Cartesian3 } from "cesium";
 import { CesiumScene } from "./Scene";
 import { PrimitiveConverterFactory } from "./PrimitiveConverterFactory";
+import { CesiumCoordinateConverter } from "./CesiumCoordinateConverter";
 
 export interface RenderGraphicWithCoordinates extends RenderGraphic {
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -18,14 +21,114 @@ export interface RenderGraphicWithCoordinates extends RenderGraphic {
 
 /** Base class for converting iTwin.js decorations to Cesium primitives */
 export abstract class PrimitiveConverter {
-  public abstract convertDecorations(graphics: GraphicList, type: string, scene: CesiumScene, iModel?: IModelConnection): void;
+  // Geometry type handled by this converter
+  protected abstract readonly primitiveType: GraphicPrimitive["type"];
 
-  /** Get depth test distance based on decoration type */
-  protected getDepthTestDistance(type: string): number {
-    if (type === 'worldOverlay' || type === 'viewOverlay') {
-      return Number.POSITIVE_INFINITY;
+  // Unified convert method that uses the subclass primitiveType
+  public convertDecorations(graphics: GraphicList, type: string, scene: CesiumScene, iModel?: IModelConnection): void {
+    this.convertDecorationsTemplate(graphics, type, scene, this.primitiveType, iModel);
+  }
+
+  /** Convert Point3d array to Cartesian3 array for all geometry types */
+  protected convertPointsToCartesian3(points: Point3d[], iModel?: IModelConnection): Cartesian3[] {
+    if (!points || points.length === 0) return [];
+
+    if (this.primitiveType === 'pointstring' && points.length > 1) {
+      points = [points[0]];
     }
-    return 0.0;
+
+    if (iModel) {
+      const converter = new CesiumCoordinateConverter(iModel);
+      return points.map(point => converter.spatialToCesiumCartesian3(point));
+    } else {
+      return points.map(point => new Cartesian3(point.x, point.y, point.z));
+    }
+  }
+
+  /** Base implementation for depth options - can be extended by subclasses */
+  protected getDepthOptions(decorationType: string): any {
+    // Handle common base logic for all primitive types
+    const isOverlay = decorationType === 'worldOverlay' || decorationType === 'viewOverlay';
+    if (!isOverlay) {
+      return {}; // Normal depth testing case
+    }
+    
+    // Return base overlay configuration (if any common settings needed)
+    return {};
+  }
+
+  /** Generic method to extract primitive data by type */
+  protected extractPrimitiveData(coordinateData: GraphicPrimitive[] | undefined, primitiveType: string): Point3d[][] | undefined {
+    if (!coordinateData || !Array.isArray(coordinateData)) return undefined;
+    
+    const entries = coordinateData.filter((entry: GraphicPrimitive) => entry.type === primitiveType);
+    return entries.map((entry: any) => entry.points);
+  }
+
+  /** Template method for convertDecorations - defines the algorithm structure */
+  protected convertDecorationsTemplate(
+    graphics: GraphicList, 
+    type: string, 
+    scene: CesiumScene, 
+    primitiveType: string,
+    iModel?: IModelConnection
+  ): void {
+    if (!graphics || graphics.length === 0) return;
+    
+    const collection = this.getCollection(scene);
+    if (!collection) return;
+    
+    const filteredGraphics = this.filterGraphics(graphics, primitiveType);
+    
+    if (this.shouldSkipEmptyGraphics() && filteredGraphics.length === 0) {
+      return;
+    }
+    
+    filteredGraphics.forEach((graphic, index) => {
+      try {
+        const primitiveId = `${type}_${this.getPrimitiveTypeName()}_${index}`;
+        const graphicWithCoords = graphic as RenderGraphicWithCoordinates;
+        const coordinateData = graphicWithCoords._coordinateData;
+        const originalData = this.extractPrimitiveData(coordinateData, primitiveType);
+        
+        this.createPrimitiveFromGraphic(graphic, primitiveId, index, collection, iModel, originalData, type);
+      } catch (error) {
+        console.error(`Error creating ${type} ${primitiveType} primitive:`, error);
+      }
+    });
+  }
+
+  /** Default filterGraphics implementation - can be overridden by subclasses if needed */
+  protected filterGraphics(graphics: GraphicList, primitiveType: string): GraphicList {
+    return graphics.filter(graphic => {
+      const graphicWithCoords = graphic as RenderGraphicWithCoordinates;
+      const coordinateData = graphicWithCoords._coordinateData;
+      const hasPrimitiveData = coordinateData && coordinateData.some((entry: GraphicPrimitive) => entry.type === primitiveType);
+      const geometryType = graphicWithCoords.geometryType;
+      
+      return hasPrimitiveData || geometryType === primitiveType;
+    });
+  }
+
+  /** Abstract methods that must be implemented by subclasses */
+  protected abstract getCollection(scene: CesiumScene): any;
+  protected abstract createPrimitiveFromGraphic(
+    graphic: any, 
+    primitiveId: string, 
+    index: number, 
+    collection: any, 
+    iModel?: IModelConnection, 
+    originalData?: Point3d[][], 
+    type?: string
+  ): any;
+  // Default primitive type name for IDs; subclasses can override for custom naming
+  protected getPrimitiveTypeName(): string {
+    return this.primitiveType;
+  }
+
+  /** Hook method - can be overridden by subclasses */
+  protected shouldSkipEmptyGraphics(): boolean {
+    return false;
   }
 
   
@@ -71,6 +174,13 @@ export abstract class PrimitiveConverter {
               const lineConverter = PrimitiveConverterFactory.getConverter(primitive.type);
               if (lineConverter) {
                 lineConverter.convertDecorations([graphic], type, scene, iModel);
+              }
+              break;
+              
+            case 'shape':
+              const shapeConverter = PrimitiveConverterFactory.getConverter(primitive.type);
+              if (shapeConverter) {
+                shapeConverter.convertDecorations([graphic], type, scene, iModel);
               }
               break;
               
@@ -122,6 +232,7 @@ export abstract class PrimitiveConverter {
 
   /** Check if an ID is any type of decoration */
   private isAnyDecorationId(id: string): boolean {
-    return id.includes('_decoration_') || id.includes('_linestring_');
+    // Matches: <type>_(pointstring|linestring|shape)_<index>
+    return /^(world|normal|worldOverlay|viewOverlay|viewBackground)_(pointstring|linestring|shape)_/i.test(id);
   }
 }
