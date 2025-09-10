@@ -73,7 +73,7 @@ export class PolyfaceRangeTreeContext {
   /**
    * Search the range tree for closest facet(s) to spacePoint.
    * @param spacePoint point to test
-   * @param maxDist collect points at no more than this distance from spacePoint. If undefined, return only the closest point.
+   * @param maxDist collect facet locations at no more than this distance from spacePoint. If undefined, return only the closest facet location.
    * @param searchFacetInterior whether to include facet interiors in search. Default is false: just consider facet boundaries.
    * @return closest point detail(s) with detail.a set to the distance from spacePoint to detail.point
    */
