@@ -857,6 +857,7 @@ export type FilterByTextHierarchyRpcRequestOptions = PresentationRpcRequestOptio
 
 // @public
 export interface FormatOptions {
+    formatOverride?: Partial<Omit<FormatProps, "type">>;
     koqName: string;
     unitSystem?: UnitSystemKey;
 }

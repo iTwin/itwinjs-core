@@ -853,6 +853,36 @@ export abstract class IModelDb extends IModel {
     return this[_nativeDb].restartTxnSession();
   }
 
+  /** Removes unused schemas from the database.
+   *
+   * If the removal was successful, the database is automatically saved to disk.
+   * @param schemaNames Array of schema names to drop
+   * @throws [IModelError]($common) if the database if the operation failed.
+   * @alpha
+   */
+  public async dropSchemas(schemaNames: string[]): Promise<void> {
+    if (schemaNames.length === 0)
+      return;
+    if (this[_nativeDb].schemaSyncEnabled())
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cannot drop schemas when schema sync is enabled");
+    if (this[_nativeDb].hasUnsavedChanges())
+      throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot drop schemas with unsaved changes");
+    if (this[_nativeDb].getITwinId() !== Guid.empty)
+      await this.acquireSchemaLock();
+
+    try {
+      this[_nativeDb].dropSchemas(schemaNames);
+      this.saveChanges(`dropped unused schemas`);
+    } catch (error: any) {
+      Logger.logError(loggerCategory, `Failed to drop schemas: ${error}`);
+      this.abandonChanges();
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Failed to drop schemas: ${error}`);
+    } finally {
+      await this.locks.releaseAllLocks();
+      this.clearCaches();
+    }
+  }
+
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
@@ -2560,7 +2590,7 @@ export namespace IModelDb {
       try {
         return this._iModel[_nativeDb].insertElementAspect(aspectProps);
       } catch (err: any) {
-        const error =  new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`, aspectProps);
+        const error = new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`, aspectProps);
         error.cause = err;
         throw error;
       }
@@ -2574,7 +2604,7 @@ export namespace IModelDb {
       try {
         this._iModel[_nativeDb].updateElementAspect(aspectProps);
       } catch (err: any) {
-        const error =  new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`, aspectProps);
+        const error = new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`, aspectProps);
         error.cause = err;
         throw error;
       }
@@ -2590,7 +2620,7 @@ export namespace IModelDb {
         try {
           iModel[_nativeDb].deleteElementAspect(aspectInstanceId);
         } catch (err: any) {
-          const error =  new IModelError(err.errorNumber, `Error deleting ElementAspect [${err.message}], id: ${aspectInstanceId}`);
+          const error = new IModelError(err.errorNumber, `Error deleting ElementAspect [${err.message}], id: ${aspectInstanceId}`);
           error.cause = err;
           throw error;
         }

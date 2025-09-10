@@ -5,6 +5,7 @@
 import { AnySchemaDifferenceConflict, ConflictCode } from "../../Differencing/SchemaConflicts";
 import { Schema, SchemaContext, SchemaProps } from "@itwin/ecschema-metadata";
 import { getSchemaDifferences, SchemaDifferenceResult } from "../../Differencing/SchemaDifference";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -131,6 +132,112 @@ describe("Schema Difference Conflicts", () => {
         expect(conflict).to.have.a.property("source", "ReferenceA.02.00.00");
         expect(conflict).to.have.a.property("target", "ReferenceA.01.00.00");
         expect(conflict).to.have.a.property("description", "Schema reference cannot be updated, incompatible versions");
+        expect(conflict).to.have.a.nested.property("difference.schemaType", "SchemaReference");
+        return true;
+      });
+    });
+
+    it("should find a conflict if source schema is dynamic and the target is not", async () => {
+      const sourceContext = await BisTestHelper.getNewContext();
+      await Schema.fromJson({
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "ReferenceA",
+        version: "1.0.1",
+        alias: "ref",
+        references: [
+          { name: "CoreCustomAttributes", version: "01.00.01" },
+        ],
+        customAttributes: [
+          { className: "CoreCustomAttributes.DynamicSchema" },
+        ],
+      }, sourceContext);
+      const sourceSchema = await Schema.fromJson({
+        ...schemaHeader,
+        references: [
+          {
+            name: "ReferenceA",
+            version: "1.0.1",
+          },
+        ],
+      }, sourceContext);
+
+      const targetContext = new SchemaContext();
+      await Schema.fromJson({
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "ReferenceA",
+        version: "1.0.0",
+        alias: "ref",
+      }, targetContext);
+
+      const targetSchema = await Schema.fromJson({
+        ...schemaHeader,
+        references: [
+          {
+            name: "ReferenceA",
+            version: "1.0.0",
+          },
+        ],
+      }, targetContext);
+
+      const differences = await getSchemaDifferences(targetSchema, sourceSchema);
+      expect(differences.conflicts).to.have.a.lengthOf(1).and.satisfies(([conflict]: AnySchemaDifferenceConflict[]) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingReferenceDynamic);
+        expect(conflict).to.have.a.property("source", "ReferenceA.01.00.01");
+        expect(conflict).to.have.a.property("target", "ReferenceA.01.00.00");
+        expect(conflict).to.have.a.property("description", "Cannot update a schema reference to or from a dynamic schema.");
+        expect(conflict).to.have.a.nested.property("difference.schemaType", "SchemaReference");
+        return true;
+      });
+    });
+
+    it("should find a conflict if target schema is dynamic and the source is not", async () => {
+      const sourceContext = new SchemaContext();
+      await Schema.fromJson({
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "ReferenceA",
+        version: "1.0.1",
+        alias: "ref",
+      }, sourceContext);
+      const sourceSchema = await Schema.fromJson({
+        ...schemaHeader,
+        references: [
+          {
+            name: "ReferenceA",
+            version: "1.0.1",
+          },
+        ],
+      }, sourceContext);
+
+      const targetContext = await BisTestHelper.getNewContext();
+      await Schema.fromJson({
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "ReferenceA",
+        version: "1.0.0",
+        alias: "ref",
+        references: [
+          { name: "CoreCustomAttributes", version: "01.00.01" },
+        ],
+        customAttributes: [
+          { className: "CoreCustomAttributes.DynamicSchema" },
+        ],
+      }, targetContext);
+
+      const targetSchema = await Schema.fromJson({
+        ...schemaHeader,
+        references: [
+          {
+            name: "ReferenceA",
+            version: "1.0.0",
+          },
+        ],
+      }, targetContext);
+
+      const differences = await getSchemaDifferences(targetSchema, sourceSchema);
+      expect(differences.conflicts).to.have.a.lengthOf(1).and.satisfies(([conflict]: AnySchemaDifferenceConflict[]) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingReferenceDynamic);
+        expect(conflict).to.have.a.property("source", "ReferenceA.01.00.01");
+        expect(conflict).to.have.a.property("target", "ReferenceA.01.00.00");
+        expect(conflict).to.have.a.property("description", "Cannot update a schema reference to or from a dynamic schema.");
         expect(conflict).to.have.a.nested.property("difference.schemaType", "SchemaReference");
         return true;
       });
@@ -1799,7 +1906,7 @@ describe("Schema Difference Conflicts", () => {
         expect(conflict).to.have.a.nested.property("difference.schemaType", "FormatUnit");
         expect(conflict).to.have.a.nested.property("difference.itemName", "ConflictFormat");
       });
-    });  
+    });
 
     it("should find a conflict if format unit phenomenon differs", async () => {
       const sourceSchema = {
