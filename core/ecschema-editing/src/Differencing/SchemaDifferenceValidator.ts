@@ -80,7 +80,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
     const sourceSchemaReference = await this._sourceSchema.getReference(entry.difference.name) as Schema;
     const targetSchemaReferenceName = this._targetSchema.getReferenceNameByAlias(sourceSchemaReference.alias);
     if (targetSchemaReferenceName && targetSchemaReferenceName !== sourceSchemaReference.name) {
-      this.addConflict({
+      return this.addConflict({
         code: ConflictCode.ConflictingReferenceAlias,
         difference: entry,
         source: entry.difference.name,
@@ -89,11 +89,27 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
       });
     }
 
-    const sourceSchemaKey = sourceSchemaReference.schemaKey;
-    const targetSchemaKey = await this._targetSchema.getReference(entry.difference.name)
-      .then((schema) => schema?.schemaKey);
+    // The targetSchemaReference can be undefined, if the reference will be added by the source schema.
+    // In this case further validation is not needed.
+    const targetSchemaReference = await this._targetSchema.getReference(entry.difference.name);
+    if(targetSchemaReference === undefined) {
+      return;
+    }
 
-    if(entry.changeType === "modify" && targetSchemaKey && !sourceSchemaKey.matches(targetSchemaKey, SchemaMatchType.LatestWriteCompatible)) {
+    const sourceSchemaKey = sourceSchemaReference.schemaKey;
+    const targetSchemaKey = targetSchemaReference.schemaKey;
+
+    if(isDynamicSchema(targetSchemaReference) !== isDynamicSchema(sourceSchemaReference)) {
+      return this.addConflict({
+        code: ConflictCode.ConflictingReferenceDynamic,
+        difference: entry,
+        description: "Cannot update a schema reference to or from a dynamic schema.",
+        source: sourceSchemaKey.toString(),
+        target: targetSchemaKey.toString(),
+      });
+    }
+
+    if(entry.changeType === "modify" && !isDynamicSchema(targetSchemaReference) && !sourceSchemaKey.matches(targetSchemaKey, SchemaMatchType.LatestWriteCompatible)) {
       return this.addConflict({
         code: ConflictCode.ConflictingReferenceVersion,
         difference: entry,
@@ -579,4 +595,8 @@ function resolvePropertyTypeName(property: Property) {
   if (property.isNavigation())
     return `${prefix}${property.relationshipClass.fullName}${suffix}`;
   return propertyTypeToString(property.propertyType);
+}
+
+function isDynamicSchema(schema: Schema): boolean {
+  return schema.customAttributes !== undefined && schema.customAttributes.has("CoreCustomAttributes.DynamicSchema");
 }
