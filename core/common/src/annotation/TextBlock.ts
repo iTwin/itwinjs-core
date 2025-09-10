@@ -859,9 +859,10 @@ export class List extends ContainerComponent<Paragraph> {
   /** Compute a string representation of this paragraph by concatenating the string representations of all of its [[runs]]. */
   public override stringify(options?: TextBlockStringifyOptions, context?: TextBlockStringifyContext): string {
     const children = this.children.map((x, index) => {
+      const depth = context?.depth ?? 0;
       const marker = getMarkerText(this.styleOverrides.listMarker ?? TextStyleSettings.defaultProps.listMarker, index + 1);
-      const tab = (options?.tabsAsSpaces ? " ".repeat(options.tabsAsSpaces) : "\t").repeat((context?.depth ?? 0) + 1); // TODO: tomorrow, see if i can take out the plus 1;
-      return `${tab}${marker}${options?.listMarkerBreak ?? " "}${x.stringify(options, { depth: (context?.depth ?? 0) + 1 })}`;
+      const tab = (options?.tabsAsSpaces ? " ".repeat(options.tabsAsSpaces) : "\t").repeat(depth);
+      return `${tab}${marker}${options?.listMarkerBreak ?? " "}${x.stringify(options, { depth: depth + 1 })}`;
     });
     return children.join(options?.paragraphBreak ?? " ") ?? "";
   }
