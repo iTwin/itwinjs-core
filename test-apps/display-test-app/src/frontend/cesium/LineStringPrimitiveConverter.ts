@@ -7,11 +7,11 @@
  */
 
 import { Cartesian3, Color, Material, Polyline, PolylineCollection } from "cesium";
-import { GraphicList, IModelConnection } from "@itwin/core-frontend";
+import { GraphicList, IModelConnection, GraphicPrimitive } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumCoordinateConverter } from "./CesiumCoordinateConverter";
 import { CesiumScene } from "./Scene";
-import { PrimitiveConverter } from "./PrimitiveConverter";
+import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter";
 
 /** Converts iTwin.js LineString decorations to Cesium Polylines */
 export class LineStringPrimitiveConverter extends PrimitiveConverter {
@@ -23,9 +23,10 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
     if (!polylineCollection) return;
     
     const lineStringGraphics = graphics.filter(graphic => {
-      const coordinateData = (graphic as any)._coordinateData;
-      const hasLineStringData = coordinateData && coordinateData.some((entry: any) => entry.type === 'linestring');
-      const geometryType = (graphic as any).geometryType;
+      const graphicWithCoords = graphic as RenderGraphicWithCoordinates;
+      const coordinateData = graphicWithCoords._coordinateData;
+      const hasLineStringData = coordinateData && coordinateData.some((entry: GraphicPrimitive) => entry.type === 'linestring');
+      const geometryType = graphicWithCoords.geometryType;
       
       return hasLineStringData || geometryType === 'linestring';
     });
@@ -37,7 +38,8 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
     lineStringGraphics.forEach((graphic, index) => {
       try {
         const lineId = `${type}_linestring_${index}`;
-        const coordinateData = (graphic as any)._coordinateData;
+        const graphicWithCoords = graphic as RenderGraphicWithCoordinates;
+        const coordinateData = graphicWithCoords._coordinateData;
         const originalLineStrings = this.extractLineStringData(coordinateData);
         
         this.createPolylineFromGraphic(graphic, lineId, index, polylineCollection, iModel, originalLineStrings, type);
@@ -157,10 +159,10 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
   }
 
 
-  private extractLineStringData(coordinateData: any): Point3d[][] | undefined {
+  private extractLineStringData(coordinateData: GraphicPrimitive[] | undefined): Point3d[][] | undefined {
     if (!coordinateData || !Array.isArray(coordinateData)) return undefined;
     
-    const lineStringEntries = coordinateData.filter(entry => entry.type === 'linestring');
-    return lineStringEntries.map(entry => entry.points);
+    const lineStringEntries = coordinateData.filter((entry: GraphicPrimitive) => entry.type === 'linestring');
+    return lineStringEntries.map((entry: any) => entry.points);
   }
 }

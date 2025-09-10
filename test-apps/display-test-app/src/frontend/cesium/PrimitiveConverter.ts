@@ -6,9 +6,15 @@
  * @module Cesium
  */
 
-import { Decorations, GraphicList, IModelConnection } from "@itwin/core-frontend";
+import { Decorations, GraphicList, GraphicPrimitive, IModelConnection, RenderGraphic } from "@itwin/core-frontend";
 import { CesiumScene } from "./Scene";
 import { PrimitiveConverterFactory } from "./PrimitiveConverterFactory";
+
+export interface RenderGraphicWithCoordinates extends RenderGraphic {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  _coordinateData?: GraphicPrimitive[];
+  geometryType?: string;
+}
 
 /** Base class for converting iTwin.js decorations to Cesium primitives */
 export abstract class PrimitiveConverter {
@@ -48,10 +54,11 @@ export abstract class PrimitiveConverter {
 
   private autoDispatchGraphics(graphics: GraphicList, type: string, scene: CesiumScene, iModel?: IModelConnection): void {
     graphics.forEach((graphic) => {
-      const coordinateData = (graphic as any)._coordinateData;
+      const graphicWithCoords = graphic as RenderGraphicWithCoordinates;
+      const coordinateData = graphicWithCoords._coordinateData;
       
       if (coordinateData && Array.isArray(coordinateData)) {
-        coordinateData.forEach((primitive: any) => {
+        coordinateData.forEach((primitive: GraphicPrimitive) => {
           switch (primitive.type) {
             case 'pointstring':
               const pointConverter = PrimitiveConverterFactory.getConverter(primitive.type);

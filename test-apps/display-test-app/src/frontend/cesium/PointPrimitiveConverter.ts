@@ -7,11 +7,11 @@
  */
 
 import { Cartesian3, Color, PointPrimitive, PointPrimitiveCollection } from "cesium";
-import { GraphicList, IModelConnection } from "@itwin/core-frontend";
+import { GraphicList, IModelConnection, GraphicPrimitive } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumCoordinateConverter } from "./CesiumCoordinateConverter";
 import { CesiumScene } from "./Scene";
-import { PrimitiveConverter } from "./PrimitiveConverter";
+import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter";
 
 /** Converts iTwin.js point decorations to Cesium PointPrimitives */
 export class PointPrimitiveConverter extends PrimitiveConverter {
@@ -23,9 +23,10 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     if (!pointCollection) return;
 
     const pointStringGraphics = graphics.filter(graphic => {
-      const coordinateData = (graphic as any)._coordinateData;
-      const hasPointStringData = coordinateData && coordinateData.some((entry: any) => entry.type === 'pointstring');
-      const geometryType = (graphic as any).geometryType;
+      const graphicWithCoords = graphic as RenderGraphicWithCoordinates;
+      const coordinateData = graphicWithCoords._coordinateData;
+      const hasPointStringData = coordinateData && coordinateData.some((entry: GraphicPrimitive) => entry.type === 'pointstring');
+      const geometryType = graphicWithCoords.geometryType;
       
       return hasPointStringData || geometryType === 'pointstring';
     });
@@ -33,7 +34,8 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     pointStringGraphics.forEach((graphic, index) => {
       try {
         const pointId = `${type}_decoration_${index}`;
-        const coordinateData = (graphic as any)._coordinateData;
+        const graphicWithCoords = graphic as RenderGraphicWithCoordinates;
+        const coordinateData = graphicWithCoords._coordinateData;
         const originalPointStrings = this.extractPointStringData(coordinateData);
         
         this.createPointPrimitiveFromGraphic(graphic, pointId, index, pointCollection, iModel, originalPointStrings, type);
@@ -169,10 +171,10 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     return colors[index % colors.length];
   }
 
-  private extractPointStringData(coordinateData: any): Point3d[][] | undefined {
+  private extractPointStringData(coordinateData: GraphicPrimitive[] | undefined): Point3d[][] | undefined {
     if (!coordinateData || !Array.isArray(coordinateData)) return undefined;
     
-    const pointStringEntries = coordinateData.filter(entry => entry.type === 'pointstring');
-    return pointStringEntries.map(entry => entry.points);
+    const pointStringEntries = coordinateData.filter((entry: GraphicPrimitive) => entry.type === 'pointstring');
+    return pointStringEntries.map((entry: any) => entry.points);
   }
 }
