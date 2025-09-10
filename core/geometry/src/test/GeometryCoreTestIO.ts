@@ -25,6 +25,8 @@ import { BentleyGeometryFlatBuffer } from "../serialization/BentleyGeometryFlatB
 import { IModelJson } from "../serialization/IModelJsonSchema";
 import { prettyPrint } from "./testFunctions";
 
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 // Methods (called from other files in the test suite) for doing I/O of tests files.
 export class GeometryCoreTestIO {
   /** For debugging: set to true to enable output to console via wrapped methods. */

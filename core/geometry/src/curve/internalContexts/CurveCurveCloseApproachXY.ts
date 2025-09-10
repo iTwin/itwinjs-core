@@ -160,13 +160,13 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
     let globalFractionA, globalFractionB;
     let globalFractionA1, globalFractionB1;
     const isInterval = intervalDetails !== undefined &&
-      intervalDetails.detailA.hasFraction1 &&
-      intervalDetails.detailB.hasFraction1;
-    if (isInterval) {
+      intervalDetails.detailA.isInterval() &&
+      intervalDetails.detailB.isInterval();
+    if (isInterval && undefined !== intervalDetails.detailA.fraction1 && undefined !== intervalDetails.detailB.fraction1) {
       globalFractionA = Geometry.interpolate(fractionA0, intervalDetails.detailA.fraction, fractionA1);
       globalFractionB = Geometry.interpolate(fractionB0, intervalDetails.detailB.fraction, fractionB1);
-      globalFractionA1 = Geometry.interpolate(fractionA0, intervalDetails.detailA.fraction1!, fractionA1);
-      globalFractionB1 = Geometry.interpolate(fractionB0, intervalDetails.detailB.fraction1!, fractionB1);
+      globalFractionA1 = Geometry.interpolate(fractionA0, intervalDetails.detailA.fraction1, fractionA1);
+      globalFractionB1 = Geometry.interpolate(fractionB0, intervalDetails.detailB.fraction1, fractionB1);
     } else {
       globalFractionA = globalFractionA1 = Geometry.interpolate(fractionA0, localFractionA, fractionA1);
       globalFractionB = globalFractionB1 = Geometry.interpolate(fractionB0, localFractionB, fractionB1);
@@ -665,7 +665,9 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   private dispatchArcArc(cpA: Arc3d, cpB: Arc3d, reversed: boolean): void {
     const rangeA = cpA.range();
     const rangeB = cpB.range();
-    rangeA.expandInPlace(this._maxDistanceToAccept!);
+    if (undefined === this._maxDistanceToAccept)
+      return;
+    rangeA.expandInPlace(this._maxDistanceToAccept);
     if (!rangeB.intersectsRangeXY(rangeA))
       return;
     // 1) endpoints to endpoints or endpoints projection to the other curve
@@ -721,7 +723,9 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   public computeArcLineString(arcA: Arc3d, lsB: LineString3d, reversed: boolean): any {
     const rangeA = arcA.range();
     const rangeB = lsB.range();
-    rangeA.expandInPlace(this._maxDistanceToAccept!);
+    if (undefined === this._maxDistanceToAccept)
+      return;
+    rangeA.expandInPlace(this._maxDistanceToAccept);
     if (!rangeB.intersectsRangeXY(rangeA))
       return;
     const pointB0 = CurveCurveCloseApproachXY._workPointBB0;
@@ -823,7 +827,9 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   private computeLineStringLineString(lsA: LineString3d, lsB: LineString3d, reversed: boolean): void {
     const rangeA = lsA.range();
     const rangeB = lsB.range();
-    rangeA.expandInPlace(this._maxDistanceToAccept!);
+    if (undefined === this._maxDistanceToAccept)
+      return;
+    rangeA.expandInPlace(this._maxDistanceToAccept);
     if (!rangeB.intersectsRangeXY(rangeA))
       return;
     let bitB0: number;
@@ -849,7 +855,7 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
         rangeA1.setNull();
         rangeA1.extendPoint(pointA0);
         rangeA1.extendPoint(pointA1);
-        rangeA1.expandInPlace(this._maxDistanceToAccept!);
+        rangeA1.expandInPlace(this._maxDistanceToAccept);
         if (rangeA1.intersectsRangeXY(rangeB)) {
           lsB.pointAt(0, pointB0);
           bitB0 = this.classifyBitsPointRangeXY(pointB0.x, pointB0.y, rangeA1);

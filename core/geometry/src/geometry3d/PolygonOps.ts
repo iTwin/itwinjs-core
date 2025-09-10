@@ -178,7 +178,7 @@ export class CutLoop {
   public static createCaptureWithReturnEdge(xyz: GrowableXYZArray): CutLoop {
     const result = new CutLoop(xyz);
     if (xyz.length >= 2)
-      result.edge = Ray3d.createStartEnd(xyz.front()!, xyz.back()!);
+      result.edge = Ray3d.createStartEnd(xyz.frontUnchecked(), xyz.backUnchecked());
     return result;
   }
   /**
@@ -188,8 +188,10 @@ export class CutLoop {
    * * Hence sorting on the coordinates puts loops in left-to-right order by the their edge vector leftmost point.
    */
   public setSortCoordinates(ray: Ray3d) {
-    this.sortDelta = this.edge!.direction.dotProduct(ray.direction);
-    const a = ray.dotProductToPoint(this.edge!.origin);
+    if (!this.edge)
+      return;
+    this.sortDelta = this.edge.direction.dotProduct(ray.direction);
+    const a = ray.dotProductToPoint(this.edge.origin);
     if (this.sortDelta >= 0) {
       this.sortCoordinate0 = a;
       this.sortCoordinate1 = a + this.sortDelta;
@@ -230,11 +232,11 @@ export class CutLoop {
   /** Return first point coordinates.
    * * For type checking, assume array is not empty.
    */
-  public front(result?: Point3d): Point3d { return this.xyz.front(result)!; }
+  public front(result?: Point3d): Point3d { return this.xyz.frontUnchecked(result); }
   /** Return last point coordinates.
    * * For type checking, assume array is not empty.
    */
-  public back(result?: Point3d): Point3d { return this.xyz.back(result)!; }
+  public back(result?: Point3d): Point3d { return this.xyz.backUnchecked(result); }
 
 }
 /**
@@ -284,7 +286,7 @@ export class CutLoopMergeContext {
    */
   private sortInputs() {
     if (this.inputLoops.length > 0 && this.inputLoops[0].xyz.length > 0) {
-      const point0 = this.inputLoops[0].xyz.front()!;
+      const point0 = this.inputLoops[0].xyz.frontUnchecked();
       const workPoint = Point3d.create();
       const point1 = Point3d.create();
       // point0 could be in the middle.   Find the most distant point ...
@@ -564,9 +566,11 @@ export class PolygonOps {
     }
     const n = points.length;
     if (n === 3) {
-      const normal = points.crossProductIndexIndexIndex(0, 1, 2, result?.direction)!;
+      const normal = points.crossProductIndexIndexIndex(0, 1, 2, result?.direction);
+      if (!normal || normal.isAlmostZero)
+        return undefined;
       const a = 0.5 * normal.magnitude();
-      const centroid = points.getPoint3dAtCheckedPointIndex(0, result?.origin)!;
+      const centroid = points.getPoint3dAtUncheckedPointIndex(0, result?.origin);
       points.accumulateScaledXYZ(1, 1.0, centroid);
       points.accumulateScaledXYZ(2, 1.0, centroid);
       centroid.scaleInPlace(1.0 / 3.0);
@@ -583,7 +587,7 @@ export class PolygonOps {
         points.accumulateCrossProductIndexIndexIndex(0, i - 1, i, areaNormal);
       }
       areaNormal.normalizeInPlace();
-      const origin = points.getPoint3dAtCheckedPointIndex(0)!;
+      const origin = points.getPoint3dAtUncheckedPointIndex(0);
       const vector0 = Vector3d.create();
       const vector1 = Vector3d.create();
       points.vectorXYAndZIndex(origin, 1, vector0);
@@ -712,7 +716,7 @@ export class PolygonOps {
       const placement = PolygonOps._matrixA;
       const matrixAB = PolygonOps._matrixB;
       const matrixABC = PolygonOps._matrixC;
-      const vectorOrigin = points.vectorXYAndZIndex(origin, 0, PolygonOps._vectorOrigin)!;
+      const vectorOrigin = points.vectorXYAndZUncheckedIndex(origin, 0, PolygonOps._vectorOrigin);
       const numPoints = points.length;
       let detJ = 0;
       for (let i2 = 2; i2 < numPoints; i2++) {
@@ -757,7 +761,7 @@ export class PolygonOps {
     let signedTruncatedPrismVolumeTimes6 = 0.0;
     const h0 = facetPoints.evaluateUncheckedIndexPlaneAltitude(0, plane);
     for (let i = 1; i + 1 < facetPoints.length; i++) {
-      const triangleNormal = facetPoints.crossProductIndexIndexIndex(0, i, i + 1, options?.workVector)!;
+      const triangleNormal = facetPoints.crossProductUncheckedIndexIndexIndex(0, i, i + 1, options?.workVector);
       const hA = facetPoints.evaluateUncheckedIndexPlaneAltitude(i, plane);
       const hB = facetPoints.evaluateUncheckedIndexPlaneAltitude(i + 1, plane);
       const signedProjectedTriangleAreaTimes2 = triangleNormal.dotProductXYZ(plane.normalX(), plane.normalY(), plane.normalZ());
@@ -1010,7 +1014,7 @@ export class PolygonOps {
 
     let numPoints = polygon.length;
     while (numPoints > 1) {
-      if (polygon.distanceSquaredIndexIndex(0, numPoints - 1)! > distTol2)
+      if (polygon.distanceSquaredUncheckedIndexIndex(0, numPoints - 1) > distTol2)
         break;
       --numPoints; // ignore closure point
     }
@@ -1041,10 +1045,10 @@ export class PolygonOps {
         let iEdgeEnd = iEdgeStart + 1;
         if (iEdgeEnd === numPoints)
           iEdgeEnd = 0;
-        uDotU = polygon.distanceSquaredIndexIndex(iEdgeStart, iEdgeEnd)!;
+        uDotU = polygon.distanceSquaredUncheckedIndexIndex(iEdgeStart, iEdgeEnd);
         if (uDotU > distTol2) { // nontrivial edge
-          vDotV = polygon.distanceSquaredIndexXYAndZ(iEdgeStart, testPoint)!;
-          const uDotV = polygon.dotProductIndexIndexXYAndZ(iEdgeStart, iEdgeEnd, testPoint)!;
+          vDotV = polygon.distanceSquaredUncheckedIndexXYAndZ(iEdgeStart, testPoint);
+          const uDotV = polygon.dotProductUncheckedIndexIndexXYAndZ(iEdgeStart, iEdgeEnd, testPoint);
           edgeParam = uDotV / uDotU; // param of projection of testPoint onto edge [iEdgeStart, iEdgeEnd]
           isValid = true;
         }
@@ -1091,7 +1095,7 @@ export class PolygonOps {
           // update candidate (to edge start) only if testPoint projected beyond previous edge end
           polygon.getPoint3dAtUncheckedPointIndex(iBase, result.point);
           result.a = Math.sqrt(distToStart2);
-          polygon.crossProductIndexIndexIndex(iBase, iPrev, iNext, result.v)!;
+          polygon.crossProductIndexIndexIndex(iBase, iPrev, iNext, result.v);
           result.code = PolygonLocation.OnPolygonVertex;
           result.closestEdgeIndex = iBase;
           result.closestEdgeParam = 0.0;
@@ -1138,7 +1142,7 @@ export class PolygonOps {
           // update candidate
           polygon.interpolateIndexIndex(iBase, projData.edgeParam, iNext, result.point);
           result.a = Math.sqrt(projDist2);
-          polygon.crossProductIndexIndexXYAndZ(iBase, iNext, testPoint, result.v)!;
+          polygon.crossProductIndexIndexXYAndZ(iBase, iNext, testPoint, result.v);
           result.code = projData.edgeParam < 1.0 ? PolygonLocation.OnPolygonEdgeInterior : PolygonLocation.OnPolygonVertex;;
           result.closestEdgeIndex = iBase;
           result.closestEdgeParam = projData.edgeParam;
@@ -1170,8 +1174,10 @@ export class PolygonOps {
     if (!(polygon instanceof IndexedXYZCollection))
       return this.closestPoint(new Point3dArrayCarrier(polygon), testPoint, tolerance, result);
     if (!this.unitNormal(polygon, this._normal))
-      return PolygonLocationDetail.create(result);  // invalid
-    const polygonPlane = this._workPlane = Plane3dByOriginAndUnitNormal.createXYZUVW(polygon.getXAtUncheckedPointIndex(0), polygon.getYAtUncheckedPointIndex(0), polygon.getZAtUncheckedPointIndex(0), this._normal.x, this._normal.y, this._normal.z, this._workPlane)!;
+      return PolygonLocationDetail.create(result); // invalid
+    const polygonPlane = this._workPlane = Plane3dByOriginAndUnitNormal.createXYZUVW(polygon.getXAtUncheckedPointIndex(0), polygon.getYAtUncheckedPointIndex(0), polygon.getZAtUncheckedPointIndex(0), this._normal.x, this._normal.y, this._normal.z, this._workPlane);
+    if (!polygonPlane)
+      return PolygonLocationDetail.create(result); // invalid
     const planePoint = this._workXYZ = polygonPlane.projectPointToPlane(testPoint, this._workXYZ);
     result = this.closestPointOnBoundary(polygon, planePoint, tolerance, result);
     if (result.isValid) {
@@ -1228,7 +1234,9 @@ export class PolygonOps {
       polygon.getZAtUncheckedPointIndex(0),
       this._normal.x, this._normal.y, this._normal.z,
       this._workPlane,
-    )!;
+    );
+    if (!this._workPlane)
+      return PolygonLocationDetail.create(result); // invalid
     const intersectionPoint = this._workXYZ = Point3d.createZero(this._workXYZ);
     const rayParam = ray.intersectionWithPlane(this._workPlane, intersectionPoint);
     if (undefined === rayParam)
@@ -1300,7 +1308,7 @@ export class PolygonOps {
   ): Point2d {
     const i0 = edgeStartVertexIndex % polygon.length;
     const i1 = (i0 + 1) % polygon.length;
-    polygon.vectorIndexIndex(i0, i1, edgeOutwardUnitNormal)!.unitPerpendicularXY(edgeOutwardUnitNormal).negate(edgeOutwardUnitNormal);  // z is zero
+    polygon.vectorUncheckedIndexIndex(i0, i1, edgeOutwardUnitNormal).unitPerpendicularXY(edgeOutwardUnitNormal).negate(edgeOutwardUnitNormal);  // z is zero
     const hypDeltaX = polygon.getXAtUncheckedPointIndex(i0) - point.x;
     const hypDeltaY = polygon.getYAtUncheckedPointIndex(i0) - point.y;
     let projDist = Geometry.dotProductXYXY(hypDeltaX, hypDeltaY, edgeOutwardUnitNormal.x, edgeOutwardUnitNormal.y);
@@ -1390,9 +1398,20 @@ export class PolygonOps {
       return undefined;
     const localToWorld = this._workMatrix3d = Matrix3d.createRigidHeadsUp(this._normal, AxisOrder.ZXY, this._workMatrix3d);
     const polygonXY = new GrowableXYZArray(n);
-    for (let i = 0; i < n; ++i)
-      polygonXY.push(localToWorld.multiplyInverseXYZAsPoint3d(polygon.getXAtUncheckedPointIndex(i), polygon.getYAtUncheckedPointIndex(i), polygon.getZAtUncheckedPointIndex(i), this._workXYZ)!);
-    const pointXY = this._workXYZ = localToWorld.multiplyInverseXYZAsPoint3d(point.x, point.y, point.z, this._workXYZ)!;
+    for (let i = 0; i < n; ++i) {
+      const pt = localToWorld.multiplyInverseXYZAsPoint3d(
+        polygon.getXAtUncheckedPointIndex(i),
+        polygon.getYAtUncheckedPointIndex(i),
+        polygon.getZAtUncheckedPointIndex(i),
+        this._workXYZ,
+      );
+      if (!pt)
+        return undefined;
+      polygonXY.push(pt);
+    }
+    const pointXY = this._workXYZ = localToWorld.multiplyInverseXYZAsPoint3d(point.x, point.y, point.z, this._workXYZ);
+    if (!pointXY)
+      return undefined;
     // now we know polygon orientation is ccw, its last edge has positive length, and we can ignore z-coords
     let iPrev = n - 1;
     const outwardUnitNormalOfLastEdge = this._vector0;
@@ -1719,8 +1738,12 @@ export class IndexedXYZCollectionPolygonOps {
       return;
     // Simple cases: 2 loops . . .
     if (loops.inputLoops.length === 2) {
-      // if edges are in the same direction, it must be a pair of unrelated loop . . .
-      if (loops.inputLoops[0].edge!.direction.dotProduct(loops.inputLoops[1].edge!.direction) > 0) {
+      const edge0 = loops.inputLoops[0].edge;
+      const edge1 = loops.inputLoops[1].edge;
+      if (!edge0 || !edge1)
+        return;
+      // if edges are in the same direction, it must be a pair of unrelated loop
+      if (edge0.direction.dotProduct(edge1.direction) > 0) {
         loops.outputLoops.push(loops.inputLoops[0]);
         loops.outputLoops.push(loops.inputLoops[1]);
         return;

@@ -226,13 +226,15 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
       return undefined;
     if (fractionInterval === undefined)
       fractionInterval = Segment1d.create(0, 1);
+    if (!data.bearing0 || !data.bearing1 || !data.curveLength)
+      return undefined;
     return new IntegratedSpiral3d(
       spiralType,
       evaluator,
       Segment1d.create(data.radius0, data.radius1),
-      AngleSweep.createStartEnd(data.bearing0!, data.bearing1!),
+      AngleSweep.createStartEnd(data.bearing0, data.bearing1),
       fractionInterval ? fractionInterval.clone() : Segment1d.create(0, 1),
-      localToWorld, data.curveLength!, data1);
+      localToWorld, data.curveLength, data1);
   }
   /** Copy all defining data from another spiral. */
   public setFrom(other: IntegratedSpiral3d): IntegratedSpiral3d {
@@ -335,12 +337,17 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
       this._activeStrokes = this._globalStrokes.clone();
     this._activeStrokes.reverseInPlace();
   }
-  /** Evaluate curve point with respect to fraction. */
+  /**
+   * Evaluate curve point with respect to fraction.
+   * If calculation failed, a zero Point3d is returned.
+   */
   public fractionToPoint(activeFraction: number, result?: Point3d): Point3d {
     const targetGlobalFraction = this.activeFractionInterval.fractionToPoint(activeFraction);
     const numStrokes = this._globalStrokes.packedPoints.length - 1;
     if (activeFraction > 1.0) {
-      result = this._globalStrokes.packedPoints.back(result)!;
+      result = this._globalStrokes.packedPoints.back(result);
+      if (undefined === result)
+        result = Point3d.createZero();
       const integrationStep = 1.0 / numStrokes;
       let currentGlobalFraction = 1.0;
       let nextGlobalFraction = currentGlobalFraction + integrationStep;
@@ -351,7 +358,9 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
       }
       this.fullSpiralIncrementalIntegral(result, currentGlobalFraction, targetGlobalFraction, true);
     } else if (activeFraction < 0.0) {
-      result = this._globalStrokes.packedPoints.front(result)!;
+      result = this._globalStrokes.packedPoints.front(result);
+      if (undefined === result)
+        result = Point3d.createZero();
       const integrationStep = 1.0 / numStrokes;
       let currentGlobalFraction = 0.0;
       let nextGlobalFraction = currentGlobalFraction - integrationStep;

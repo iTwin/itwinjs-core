@@ -23,6 +23,8 @@ import { IModelJson } from "../serialization/IModelJsonSchema";
 import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
 import { prettyPrint } from "./testFunctions";
 
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 type NonUndefined<T> = T extends undefined ? never : T;
 
 export class Checker {

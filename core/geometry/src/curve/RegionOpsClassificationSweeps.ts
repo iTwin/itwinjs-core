@@ -478,7 +478,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     this.addConnectives();
   }
   private _workSegment?: LineSegment3d;
-  private static _bridgeDirection = Vector3d.createNormalized(1.0, -0.12328974132467)!; // magic unit direction to minimize vertex hits
+  private static _bridgeDirection = Vector3d.createNormalized(1.0, -0.12328974132467); // magic unit direction to minimize vertex hits
   /**
    * The sweep operations require access to all geometry by edge crossings and face walk.
    * If input loops are non-overlapping, there may be disconnected islands not reachable.
@@ -488,6 +488,8 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
    * * places those lines in the extraGeometry group
    */
   public addConnectives() {
+    if (undefined === RegionBooleanContext._bridgeDirection)
+      return;
     const rangeA = this.groupA.range();
     const rangeB = this.groupB.range();
     const rangeAB = rangeA.union(rangeB);
@@ -499,7 +501,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     const maxPoints: Point3d[] = [];
     const findExtremePointsInLoop = (region: Loop) => {
       const area = RegionOps.computeXYArea(region);
-      if (area === undefined || Math.abs(area) < areaTol)
+      if (area === undefined || Math.abs(area) < areaTol || undefined === RegionBooleanContext._bridgeDirection)
         return;   // avoid bridging trivial faces
       this._workSegment = PlaneAltitudeRangeContext.findExtremePointsInDirection(region, RegionBooleanContext._bridgeDirection, this._workSegment);
       if (this._workSegment)
@@ -604,10 +606,10 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
         doomedA.edgeTag instanceof CurveLocationDetail && doomedA.sortData !== undefined &&
         doomedB.edgeTag instanceof CurveLocationDetail && doomedB.sortData !== undefined &&
         doomedA.edgeTag.curve === doomedB.edgeTag.curve &&
-        doomedA.edgeTag.hasFraction1 && doomedB.edgeTag.hasFraction1 &&
+        doomedA.edgeTag.isInterval() && doomedB.edgeTag.isInterval() &&
         doomedA.sortData * doomedB.sortData < 0 &&
-        ((doomedA.sortData > 0 && Geometry.isSmallRelative(doomedA.edgeTag.fraction - doomedB.edgeTag.fraction1!)) ||
-         (doomedA.sortData < 0 && Geometry.isSmallRelative(doomedA.edgeTag.fraction1! - doomedB.edgeTag.fraction)))
+        ((doomedA.sortData > 0 && Geometry.isSmallRelative(doomedA.edgeTag.fraction - doomedB.edgeTag.fraction1)) ||
+         (doomedA.sortData < 0 && Geometry.isSmallRelative(doomedA.edgeTag.fraction1 - doomedB.edgeTag.fraction)))
       ) {
         const survivorA = HalfEdge.healEdge(doomedA, false);
         if (survivorA) {
@@ -739,9 +741,9 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     if (data instanceof RegionGroupMember)
       return updateRegionGroupMemberState(data);
 
-    if (data instanceof CurveLocationDetail) {
+    if (data instanceof CurveLocationDetail && undefined !== data.curve) {
       // We trust that the caller has linked from the graph node to a curve which has a RegionGroupMember as its parent.
-      const member = data.curve!.parent;
+      const member = data.curve.parent;
       if (member instanceof RegionGroupMember)
         return updateRegionGroupMemberState(member);
     }
@@ -796,15 +798,15 @@ function areaUnderPartialCurveXY(
     trapezoidArea = -(xyEnd.x - xyStart.x) * (0.5 * (xyStart.y + xyEnd.y) - referencePoint.y);
   }
   let areaToChord = 0.0;
-  if (detail && detail.curve && detail.hasFraction1) {
+  if (detail && detail.curve && detail.isInterval()) {
     if (detail.curve instanceof LineSegment3d) {
       // nothing to do for a line segment
     } else if (detail.curve instanceof Arc3d) {
-      areaToChord = detail.curve.areaToChordXY(detail.fraction, detail.fraction1!);
+      areaToChord = detail.curve.areaToChordXY(detail.fraction, detail.fraction1);
     } else {
-      const partial = detail.curve.clonePartialCurve(detail.fraction, detail.fraction1!);
-      areaToChord = partial ?
-        RegionOps.computeXYArea(Loop.create(partial, LineSegment3d.create(detail.point1!, detail.point))) ?? 0
+      const partial = detail.curve.clonePartialCurve(detail.fraction, detail.fraction1);
+      areaToChord = (partial) ?
+        RegionOps.computeXYArea(Loop.create(partial, LineSegment3d.create(detail.point1, detail.point))) ?? 0
         : 0;
     }
   }

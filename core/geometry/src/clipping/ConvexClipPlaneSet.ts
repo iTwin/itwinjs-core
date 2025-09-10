@@ -127,20 +127,38 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
   ): ConvexClipPlaneSet {
     const result = ConvexClipPlaneSet.createEmpty();
 
-    if (lowX)
-      result.planes.push(ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, range.low.x, 0, 0)!);
-    if (highX)
-      result.planes.push(ClipPlane.createNormalAndPointXYZXYZ(-1, 0, 0, range.high.x, 0, 0)!);
+    if (lowX) {
+      const clipPlane = ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, range.low.x, 0, 0);
+      if (clipPlane)
+      result.planes.push(clipPlane);
+    }
+    if (highX) {
+      const clipPlane = ClipPlane.createNormalAndPointXYZXYZ(-1, 0, 0, range.high.x, 0, 0);
+      if (clipPlane)
+        result.planes.push(clipPlane);
+    }
 
-    if (lowY)
-      result.planes.push(ClipPlane.createNormalAndPointXYZXYZ(0, 1, 0, 0, range.low.y, 0)!);
-    if (highY)
-      result.planes.push(ClipPlane.createNormalAndPointXYZXYZ(0, -1, 0, 0, range.high.y, 0)!);
+    if (lowY) {
+      const clipPlane = ClipPlane.createNormalAndPointXYZXYZ(0, 1, 0, 0, range.low.y, 0);
+      if (clipPlane)
+        result.planes.push(clipPlane);
+    }
+    if (highY) {
+      const clipPlane = ClipPlane.createNormalAndPointXYZXYZ(0, -1, 0, 0, range.high.y, 0);
+      if (clipPlane)
+        result.planes.push(clipPlane);
+    }
 
-    if (lowZ)
-      result.planes.push(ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, range.low.z)!);
-    if (highZ)
-      result.planes.push(ClipPlane.createNormalAndPointXYZXYZ(0, 0, -1, 0, 0, range.high.z)!);
+    if (lowZ) {
+      const clipPlane = ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, range.low.z);
+      if (clipPlane)
+        result.planes.push(clipPlane);
+    }
+    if (highZ) {
+      const clipPlane = ClipPlane.createNormalAndPointXYZXYZ(0, 0, -1, 0, 0, range.high.z);
+      if (clipPlane)
+        result.planes.push(clipPlane);
+    }
 
     return result;
   }
@@ -244,9 +262,9 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     let x1, y1, nx, ny;
     frustum._planes.length = 0;
     const z0 = points.getZAtUncheckedPointIndex(i0);  // z for planes can stay fixed
-    const planeNormal = points.crossProductIndexIndexIndex(0, 2, 1)!;
-    ClipPlane.createNormalAndPointXYZXYZ(planeNormal.x, planeNormal.y, planeNormal.z, x0, y0, z0, false, false, planeOfPolygon);
-    if (planeNormal.normalizeInPlace()) {
+    const planeNormal = points.crossProductIndexIndexIndex(0, 2, 1);
+    if (planeNormal?.normalizeInPlace()) {
+      ClipPlane.createNormalAndPointXYZXYZ(planeNormal.x, planeNormal.y, planeNormal.z, x0, y0, z0, false, false, planeOfPolygon);
       for (let i1 = 0; i1 < n; i1++, x0 = x1, y0 = y1) {
         x1 = points.getXAtUncheckedPointIndex(i1);
         y1 = points.getYAtUncheckedPointIndex(i1);
@@ -701,7 +719,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * @param transform (optional) transform to apply to the accepted points.
    * @param testContainment if true, test each point to see if it is within the convex set. (send false if confident
    * that the convex set is rectilinear set such as a slab. Send true if chiseled corners are possible).
-   * @returns number of points.
+   * @returns number of points. If computation fails, return 0.
    */
   public computePlanePlanePlaneIntersections(
     points: Point3d[] | undefined,
@@ -722,7 +740,9 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
             allPlanes[k].inwardNormalRef.x, allPlanes[k].inwardNormalRef.y, allPlanes[k].inwardNormalRef.z,
             normalRows);
           if (normalRows.computeCachedInverse(false)) {
-            const xyz = normalRows.multiplyInverseXYZAsPoint3d(allPlanes[i].distance, allPlanes[j].distance, allPlanes[k].distance)!;
+            const xyz = normalRows.multiplyInverseXYZAsPoint3d(allPlanes[i].distance, allPlanes[j].distance, allPlanes[k].distance);
+            if (undefined === xyz)
+              return 0;
             if (!testContainment || this.isPointOnOrInside(xyz, Geometry.smallMetricDistance)) {
               numPoints++;
               if (transform)
@@ -753,10 +773,16 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * @param zHigh high z value.  The plane clips out points with z above this.
    */
   public addZClipPlanes(invisible: boolean, zLow?: number, zHigh?: number) {
-    if (zLow !== undefined)
-      this._planes.push(ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, 1), zLow, invisible)!);
-    if (zHigh !== undefined)
-      this._planes.push(ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, -1), -zHigh, invisible)!);
+    if (zLow !== undefined) {
+      const clipPlane = ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, 1), zLow, invisible);
+      if (undefined !== clipPlane)
+        this._planes.push(clipPlane);
+    }
+    if (zHigh !== undefined) {
+      const clipPlane = ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, -1), -zHigh, invisible);
+      if (undefined !== clipPlane)
+        this._planes.push(clipPlane);
+    }
   }
   /**
    * Implement appendPolygonClip, as defined in interface PolygonClipper.
@@ -803,7 +829,8 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     for (visitor.reset(); visitor.moveToNextFacet(); ) {
       if (undefined !== PolygonOps.areaNormalGo(visitor.point, normal)) {
         normal.scaleInPlace(scale);
-        if (undefined !== Plane3dByOriginAndUnitNormal.create(visitor.point.front()!, normal, plane))
+        const front = visitor.point.front();
+        if (undefined !== front && undefined !== Plane3dByOriginAndUnitNormal.create(front, normal, plane))
           result.addPlaneToConvexSet(plane);
       }
     }

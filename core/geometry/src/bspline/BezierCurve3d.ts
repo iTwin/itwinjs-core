@@ -67,8 +67,11 @@ export class BezierCurve3d extends BezierCurveBase {
   /** Return poles as a linestring */
   public copyPointsAsLineString(): LineString3d {
     const result = LineString3d.create();
-    for (let i = 0; i < this._polygon.order; i++)
-      result.addPoint(this.getPolePoint3d(i)!);
+    const point = Point3d.createZero();
+    for (let i = 0; i < this._polygon.order; i++) {
+      if (this.getPolePoint3d(i, point))
+        result.addPoint(point);
+    }
     return result;
   }
   /** Create a curve with given points.
@@ -160,8 +163,9 @@ export class BezierCurve3d extends BezierCurveBase {
   public extendRange(rangeToExtend: Range3d, transform?: Transform) {
     const order = this.order;
     if (!transform) {
-      this.allocateAndZeroBezierWorkData(order - 1, 0, 0);
-      const bezier = this._workBezier!;
+      if (!this.allocateAndZeroBezierWorkData(order - 1, 0, 0))
+        return;
+      const bezier = this.workBezier;
       this.getPolePoint3d(0, this._workPoint0);
       rangeToExtend.extend(this._workPoint0);
       this.getPolePoint3d(order - 1, this._workPoint0);
@@ -177,9 +181,10 @@ export class BezierCurve3d extends BezierCurveBase {
         }
       }
     } else {
-      this.allocateAndZeroBezierWorkData(order - 1, order, 0);
-      const bezier = this._workBezier!;
-      const componentCoffs = this._workCoffsA!;   // to hold transformed copy of x,y,z in turn.
+      if (!this.allocateAndZeroBezierWorkData(order - 1, order, 0))
+        return;
+      const bezier = this.workBezier;
+      const componentCoffs = this.workCoffsA;   // to hold transformed copy of x,y,z in turn.
 
       this.getPolePoint3d(0, this._workPoint0);
       rangeToExtend.extendTransformedPoint(transform, this._workPoint0);

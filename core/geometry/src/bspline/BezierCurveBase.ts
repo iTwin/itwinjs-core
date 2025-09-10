@@ -139,15 +139,21 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     }
     return sum;
   }
-  /** Return the start point.  (first control point) */
+  /**
+   * Return the start point (first control point).
+   * @returns the start point as a Point3d. If insufficiently many control points exist, returns (0,0,0).
+   */
   public override startPoint(): Point3d {
-    const result = this.getPolePoint3d(0)!;   // ASSUME non-trivial pole set -- if null comes back, it bubbles out
-    return result;
+    const result = this.getPolePoint3d(0);
+    return result ?? Point3d.createZero();
   }
-  /** Return the end point.  (last control point) */
+  /**
+   * Return the end point (last control point).
+   * @returns the end point as a Point3d. If insufficiently many control points exist, returns (0,0,0).
+   */
   public override endPoint(): Point3d {
-    const result = this.getPolePoint3d(this.order - 1)!;    // ASSUME non-trivial pole set
-    return result;
+    const result = this.getPolePoint3d(this.order - 1);
+    return result ?? Point3d.createZero();
   }
   /** Return the control polygon length as a quick length estimate. */
   public quickLength(): number { return this.polygonLength(); }
@@ -157,39 +163,46 @@ export abstract class BezierCurveBase extends CurvePrimitive {
    * 1D bezier coefficients for use in range computations.
    * @internal
    */
-  protected _workBezier?: UnivariateBezier; // available for bezier logic within a method
+  protected workBezier?: UnivariateBezier; // available for bezier logic within a method
   /** scratch array for use by derived classes, using allocateAndZeroBezierWorkData for sizing. */
-  protected _workCoffsA?: Float64Array;
-  /** scratch array for use by derived classes, using allocateAndZeroBezierWorkData for sizing. */
-  protected _workCoffsB?: Float64Array;
+  protected workCoffsA?: Float64Array;
+  /** scratch array for use by derived classes, using allocateAndZeroBezierWorkData for sizing. */  
+  protected workCoffsB?: Float64Array;
 
   /**
-   * set up the _workBezier members with specific order.
+   * set up the workBezier members with specific order.
    * * Try to reuse existing members if their sizes match.
    * * Ignore members corresponding to args that are 0 or negative.
    * @param primaryBezierOrder order of expected bezier
-   * @param orderA length of _workCoffsA (simple array)
-   * @param orderB length of _workCoffsB (simple array)
+   * @param orderA length of workCoffsA (simple array)
+   * @param orderB length of workCoffsB (simple array)
    */
-  protected allocateAndZeroBezierWorkData(primaryBezierOrder: number, orderA: number, orderB: number) {
+  protected allocateAndZeroBezierWorkData(
+    primaryBezierOrder: number, orderA: number, orderB: number,
+  ): this is { workBezier: UnivariateBezier, workCoffsA: Float64Array, workCoffsB: Float64Array } {
+    let allocated = false;
     if (primaryBezierOrder > 0) {
-      if (this._workBezier !== undefined && this._workBezier.order === primaryBezierOrder) {
-        this._workBezier.zero();
+      allocated = true;
+      if (this.workBezier !== undefined && this.workBezier.order === primaryBezierOrder) {
+        this.workBezier.zero();
       } else
-        this._workBezier = new UnivariateBezier(primaryBezierOrder);
+        this.workBezier = new UnivariateBezier(primaryBezierOrder);
     }
     if (orderA > 0) {
-      if (this._workCoffsA !== undefined && this._workCoffsA.length === orderA)
-        this._workCoffsA.fill(0);
+      allocated = true;
+      if (this.workCoffsA !== undefined && this.workCoffsA.length === orderA)
+        this.workCoffsA.fill(0);
       else
-        this._workCoffsA = new Float64Array(orderA);
+        this.workCoffsA = new Float64Array(orderA);
     }
     if (orderB > 0) {
-      if (this._workCoffsB !== undefined && this._workCoffsB.length === orderB)
-        this._workCoffsB.fill(0);
+      allocated = true;
+      if (this.workCoffsB !== undefined && this.workCoffsB.length === orderB)
+        this.workCoffsB.fill(0);
       else
-        this._workCoffsB = new Float64Array(orderB);
+        this.workCoffsB = new Float64Array(orderB);
     }
+    return allocated;
   }
   /**
    * Assess length and turn to determine a stroke count.

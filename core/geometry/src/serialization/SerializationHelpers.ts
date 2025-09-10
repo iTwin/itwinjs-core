@@ -222,9 +222,11 @@ export namespace SerializationHelpers {
   function convertBSplineCurveDataArrays(data: BSplineCurveData, options?: BSplineDataOptions) {
     if (undefined !== options?.jsonPoles) {
       const packedPoles = data.poles instanceof Float64Array;
-      if (options.jsonPoles && packedPoles)
-        data.poles = NumberArray.unpack2d(data.poles as Float64Array, data.dim)!;
-      else if (!options.jsonPoles && !packedPoles)
+      if (options.jsonPoles && packedPoles) {
+        const poles = NumberArray.unpack2d(data.poles as Float64Array, data.dim);
+        if (poles)
+          data.poles = poles;
+      } else if (!options.jsonPoles && !packedPoles)
         data.poles = NumberArray.pack(data.poles as number[][]);
 
       if (data.weights) {
@@ -248,9 +250,11 @@ export namespace SerializationHelpers {
   function convertBSplineSurfaceDataArrays(data: BSplineSurfaceData, options?: BSplineDataOptions) {
     if (undefined !== options?.jsonPoles) {
       const packedPoles = data.poles instanceof Float64Array;
-      if (options.jsonPoles && packedPoles)
-        data.poles = NumberArray.unpack3d(data.poles as Float64Array, data.uParams.numPoles, data.dim)!;
-      else if (!options.jsonPoles && !packedPoles)
+      if (options.jsonPoles && packedPoles) {
+        const poles = NumberArray.unpack3d(data.poles as Float64Array, data.uParams.numPoles, data.dim);
+        if (poles)
+          data.poles = poles;
+      } else if (!options.jsonPoles && !packedPoles)
         data.poles = NumberArray.pack(data.poles as number[][][]);
 
       if (data.weights) {

@@ -7,6 +7,7 @@ import { flatbuffers } from "flatbuffers";
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/explicit-member-accessibility */
 /* eslint-disable @itwin/prefer-get */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 // cspell:word flatbuffers, Akima
 
 /**

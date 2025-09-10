@@ -116,14 +116,13 @@ class PolygonCarrier extends SimpleRegionCarrier {
     }
   }
   public constructInteriorPointNearEdge(edgeIndex: number, fractionAlong: number): Point3d | undefined {
-    if (edgeIndex + 1 < this.data.length) {
-      const ray = Ray3d.createCapture(
-        this.data.interpolateIndexIndex(edgeIndex, fractionAlong, edgeIndex + 1)!,
-        this.data.vectorIndexIndex(edgeIndex, edgeIndex + 1)!
-      );
-      return this.constructInteriorPoint(ray);
-    }
-    return undefined;
+    if (edgeIndex < 0 || edgeIndex >= this.data.length - 1)
+      return undefined;
+    const ray = Ray3d.createCapture(
+      this.data.interpolateUncheckedIndexIndex(edgeIndex, fractionAlong, edgeIndex + 1),
+      this.data.vectorUncheckedIndexIndex(edgeIndex, edgeIndex + 1)
+    );
+    return this.constructInteriorPoint(ray);
   }
 }
 
@@ -285,11 +284,18 @@ export class SortablePolygon {
         loopData._loopCarrier.reverseForAreaSign(1.0);
         loopData.outputSetIndex = outputSets.length;
         outputSets.push([]);
-        outputSets[loopData.outputSetIndex].push(loopData._loopCarrier.grabPolygon()!);
+        const polygon = loopData._loopCarrier.grabPolygon();
+        ///// I AM NOT SURE THIS IS THE CORRECT FIX
+        if (polygon)
+          outputSets[loopData.outputSetIndex].push(polygon);
       } else {
         loopData._loopCarrier.reverseForAreaSign(-1.0);
-        const outputSetIndex = loops[parentIndex!].outputSetIndex!;
-        outputSets[outputSetIndex].push(loopData._loopCarrier.grabPolygon()!);
+        let outputSetIndex : number | undefined;
+        if (undefined !== parentIndex)
+          outputSetIndex = loops[parentIndex].outputSetIndex;
+        const polygon = loopData._loopCarrier.grabPolygon();
+        if (undefined !== outputSetIndex && polygon)
+          outputSets[outputSetIndex].push(polygon);
       }
     }
     return outputSets;
@@ -307,7 +313,7 @@ export class SortablePolygon {
 
       if (!candidateData.isHole) {
         candidateData._loopCarrier.reverseForAreaSign(1.0);
-        const candidateLoop = candidateData._loopCarrier.grabLoop()!;
+        const candidateLoop = candidateData._loopCarrier.grabLoop();
         let candidateParityRegion: ParityRegion | undefined;
         // find all directly contained children . . .
         for (let childIndex = candidateIndex + 1; childIndex < numLoops; childIndex++) {

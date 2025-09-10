@@ -172,7 +172,9 @@ export class HalfEdgeGraphSearch {
     // the seed face is arbitrarily assigned the parity mask
     HalfEdgeGraphSearch.pushAndMaskAllNodesInFace(faceSeed, allMasks, stack, faces);
     while (stack.length > 0) {
-      const p = stack.pop()!;
+      const p = stack.pop();
+      if (!p)
+        break;
       const mate = p.edgeMate;
       if (!mate)
         continue;
@@ -279,8 +281,8 @@ export class HalfEdgeGraphSearch {
     while (candidates.length !== 0 && numFaces < maxFaceCount) {
       // shift is O(n) and may be inefficient for large queues; if needed, we can replace
       // queue by circular array or implement the queue using 2 stacks; both are O(1)
-      const node = candidates.shift()!;
-      if (node.isMaskSet(boundaryMask))
+      const node = candidates.shift();
+      if (!node || node.isMaskSet(boundaryMask))
         continue;
       component.push(node);
       ++numFaces;
@@ -298,10 +300,10 @@ export class HalfEdgeGraphSearch {
       const front = candidates[0];
       while (candidates.length !== 0) {
         // try to find a node at the boundary of both the geometry and previous component
-        const node = candidates.shift()!; // shift may be inefficient for large queues
-        if (node.vertexSuccessor.isMaskSet(ignoreMask))
+        const node = candidates.shift(); // shift may be inefficient for large queues
+        if (node && node.vertexSuccessor.isMaskSet(ignoreMask))
           return node;
-        if (node.edgeMate.isMaskSet(ignoreMask))
+        if (node && node.edgeMate.isMaskSet(ignoreMask))
           return node;
       }
       return front;

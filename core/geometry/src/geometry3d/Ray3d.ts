@@ -228,13 +228,15 @@ export class Ray3d implements BeJSONFunctions {
   public cloneInverseTransformed(transform: Transform, result?: Ray3d): Ray3d | undefined {
     if (!transform.computeCachedInverse(true))
       return undefined;
-    return Ray3d.create(
-      transform.multiplyInversePoint3d(this.origin, result?.origin)!,
-      transform.matrix.multiplyInverseXYZAsVector3d(
-        this.direction.x, this.direction.y, this.direction.z, result?.direction,
-      )!,
-      result,
+    const origin = transform.multiplyInversePoint3d(this.origin, result?.origin);
+    if (!origin)
+      return undefined;
+    const direction = transform.matrix.multiplyInverseXYZAsVector3d(
+      this.direction.x, this.direction.y, this.direction.z, result?.direction,
     );
+    if (!direction)
+      return undefined;
+    return Ray3d.create(origin, direction, result);
   }
   /** Apply a transform in place. */
   public transformInPlace(transform: Transform) {

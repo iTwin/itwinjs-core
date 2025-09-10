@@ -257,6 +257,5 @@ export * from "./polyface/TaggedNumericData";
 export * from "./topology/SpaceTriangulation";
 export * from "./serialization/IModelJsonSchema";
 export * from "./serialization/DeepCompare";
-export * from "./serialization/GeometrySamples";
 export * from "./serialization/SerializationHelpers";
 export { BentleyGeometryFlatBuffer } from "./serialization/BentleyGeometryFlatBuffer";

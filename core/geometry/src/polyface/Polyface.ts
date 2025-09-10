@@ -289,7 +289,7 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
     if (undefined !== this.data.normal && undefined !== source.data.normal && undefined !== source.data.normalIndex) {
       const startOfNewNormals = this.data.normal.length;
       for (let i = 0; i < source.data.normal.length; i++) {
-        const sourceNormal = source.data.normal.getVector3dAtCheckedVectorIndex(i)!;
+        const sourceNormal = source.data.normal.getVector3dAtUncheckedVectorIndex(i);
         if (transform)
           transform.multiplyVector(sourceNormal, sourceNormal);
         if (reversed)
@@ -427,7 +427,9 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   public addNormal(normal: Vector3d, priorIndexA?: number, priorIndexB?: number): number {
     // check if `normal` is duplicate of `dataNormal` at index `i`
     const normalIsDuplicate = (i: number) => {
-      const distance = this.data.normal!.distanceIndexToPoint(i, normal);
+      if (!this.data.normal)
+        return false;
+      const distance = this.data.normal.distanceIndexToPoint(i, normal);
       return distance !== undefined && Geometry.isSmallMetricDistance(distance);
     };
     if (this.data.normal !== undefined) {
@@ -673,7 +675,8 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
       if (setParamRange && visitor.param !== undefined)
         visitor.param.extendRange(faceData.paramRange);
     } while (visitor.moveToNextFacet() && visitor.currentReadIndex() < endFacetIndex);
-    if (paramDefined && !(this.data.param!.length === 0) && faceData.paramDistanceRange.isNull)
+    const param = this.data.param;
+    if (paramDefined && param && !(param.length === 0) && faceData.paramDistanceRange.isNull)
       faceData.setParamDistanceRangeFromNewFaceData(this, facetStart, endFacetIndex);
     this.data.face.push(faceData);
     const faceDataIndex = this.data.face.length - 1;

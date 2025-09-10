@@ -270,10 +270,11 @@ export class PolyfaceAuxData {
           case AuxChannelDataType.Normal: {
             inverseRot = inverseRot ?? rot.inverse();
             if (!inverseRot)
-                return false;
-
+              return false;
             transformPoints(data.values, (point) => {
-              inverseRot!.multiplyTransposeVectorInPlace(point);
+              if (!inverseRot)
+                return;
+              inverseRot.multiplyTransposeVectorInPlace(point);
               const dot = point.magnitudeSquared();
               const tol = 1.0e-15; // cf. GrowableXYZArray.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace
               if (dot > tol && Math.abs(dot - 1.0) > tol ) { // only renormalize if magnitude is not near 0 or 1

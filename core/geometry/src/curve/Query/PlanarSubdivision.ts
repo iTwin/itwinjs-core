@@ -109,6 +109,13 @@ export class PlanarSubdivision {
       // otherwise, these single-primitive loops are missing from the graph
       detailByPrimitive.splitAndAppendMissingClosedPrimitives(primitives, mergeTolerance);
     }
+    // these helper lambdas assume exactly one of the paired details is on the input curve
+    const getFractionOnCurve = (pair: CurveLocationDetailPair, curve: CurvePrimitive): number => {
+      return (pair.detailA.curve === curve) ? pair.detailA.fraction : pair.detailB.fraction;
+    };
+    const getDetailOnCurve = (pair: CurveLocationDetailPair, curve: CurvePrimitive): CurveLocationDetail => {
+      return (pair.detailA.curve === curve) ? pair.detailA : pair.detailB;
+    };
     const graph = new HalfEdgeGraph();
     for (const entry of detailByPrimitive.primitiveToPair.entries()) {
       const p = entry[0];
@@ -116,30 +123,34 @@ export class PlanarSubdivision {
       const details = entry[1].reduce((accumulator: CurveLocationDetailPair[], detailPair) => {
         if (!detailPair.detailA.hasFraction1)
           return [...accumulator, detailPair];
-        const detail = getDetailOnCurve(detailPair, p)!;
-        const detail0 = CurveLocationDetail.createCurveFractionPoint(p, detail.fraction, detail.point);
-        const detail1 = CurveLocationDetail.createCurveFractionPoint(p, detail.fraction1!, detail.point1!);
-        return [
-          ...accumulator,
-          CurveLocationDetailPair.createCapture(detail0, detail0),
-          CurveLocationDetailPair.createCapture(detail1, detail1),
-        ];
+        const detail = getDetailOnCurve(detailPair, p);
+        if (detail.isInterval()) {
+          const detail0 = CurveLocationDetail.createCurveFractionPoint(p, detail.fraction, detail.point);
+          const detail1 = CurveLocationDetail.createCurveFractionPoint(p, detail.fraction1, detail.point1);
+          return [
+            ...accumulator,
+            CurveLocationDetailPair.createCapture(detail0, detail0),
+            CurveLocationDetailPair.createCapture(detail1, detail1),
+          ];
+        }
+        return [...accumulator, detailPair];
       }, []);
       // lexical sort on p intersection fraction
       details.sort((pairA: CurveLocationDetailPair, pairB: CurveLocationDetailPair) => {
-        const fractionA = getFractionOnCurve(pairA, p)!;
-        const fractionB = getFractionOnCurve(pairB, p)!;
+        const fractionA = getFractionOnCurve(pairA, p);
+        const fractionB = getFractionOnCurve(pairB, p);
         return fractionA - fractionB;
       });
       let last = { point: p.startPoint(), fraction: 0.0 };
       for (const detailPair of details) {
-        const detail = getDetailOnCurve(detailPair, p)!;
+        const detail = getDetailOnCurve(detailPair, p);
         const detailFraction = Geometry.restrictToInterval(detail.fraction, 0, 1); // truncate fraction, but don't snap point; clustering happens later
         last = this.addHalfEdge(graph, p, last.point, last.fraction, detail.point, detailFraction, mergeTolerance);
       }
       this.addHalfEdge(graph, p, last.point, last.fraction, p.endPoint(), 1.0, mergeTolerance);
     }
-    HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph, (he: HalfEdge) => he.sortAngle!);
+    // every edge got its sortAngle defined by addHalfEdge
+    HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph, (he: HalfEdge) => he.sortAngle ?? 0);
     return graph;
   }
   /**
@@ -215,10 +226,10 @@ export class PlanarSubdivision {
   /** Create the geometry for a topological edge. */
   private static createCurveInEdge(edge: HalfEdge): CurvePrimitive | undefined {
     const info = this.extractGeometryFromEdge(edge);
-    if (info) {
+    if (info && undefined !== info.detail.curve && undefined !== info.detail.fraction1) {
       if (info.reversed)
-        return info.detail.curve!.clonePartialCurve(info.detail.fraction1!, info.detail.fraction);
-      return info.detail.curve!.clonePartialCurve(info.detail.fraction, info.detail.fraction1!);
+        return info.detail.curve.clonePartialCurve(info.detail.fraction1, info.detail.fraction);
+      return info.detail.curve.clonePartialCurve(info.detail.fraction, info.detail.fraction1);
     }
     return undefined;
   }
@@ -266,7 +277,10 @@ export class PlanarSubdivision {
     if (face.isSplitWasherFace(bridgeMask)) {
       const loops: Loop[] = [];
       const loopEdges: HalfEdge[] = [];
-      const bridgeStack: HalfEdge[] = [face.findMaskAroundFace(bridgeMask, true)!];
+      const node = face.findMaskAroundFace(bridgeMask, true);
+      if (undefined === node)
+        return undefined;
+      const bridgeStack: HalfEdge[] = [node];
       const announceEdge = (he: HalfEdge) => { he.setMask(visitMask); loopEdges.push(he); };
       const announceBridge = (he: HalfEdge) => { if (!he.isMaskSet(visitMask)) bridgeStack.push(he); };
       face.clearMaskAroundFace(visitMask);
@@ -359,19 +373,4 @@ function sortAngle(curve: CurvePrimitive, fraction: number, reverse: boolean): n
   const ray = curve.fractionToPointAndDerivative(fraction);
   const s = reverse ? -1.0 : 1.0;
   return Math.atan2(s * ray.direction.y, s * ray.direction.x);
-}
-
-function getFractionOnCurve(pair: CurveLocationDetailPair, curve: CurvePrimitive): number | undefined {
-  if (pair.detailA.curve === curve)
-    return pair.detailA.fraction;
-  if (pair.detailB.curve === curve)
-    return pair.detailB.fraction;
-  return undefined;
-}
-function getDetailOnCurve(pair: CurveLocationDetailPair, curve: CurvePrimitive): CurveLocationDetail | undefined {
-  if (pair.detailA.curve === curve)
-    return pair.detailA;
-  if (pair.detailB.curve === curve)
-    return pair.detailB;
-  return undefined;
 }

@@ -20,7 +20,7 @@ import { Range3d } from "../../geometry3d/Range";
 import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
 import { Transform } from "../../geometry3d/Transform";
 import { Matrix4d } from "../../geometry4d/Matrix4d";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";

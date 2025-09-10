@@ -117,10 +117,13 @@ export class Triangulator {
   /**
    *  *  Visit each node of the graph array
    *  *  If a flip would be possible, test the results of flipping using circumcircle condition
-   *  *  If revealed to be an improvement, conduct the flip, mark involved nodes as unvisited, and repeat until all nodes are visited
+   *  *  If revealed to be an improvement, conduct the flip, mark involved nodes as unvisited, and repeat until all nodes are visited.
+   * * @returns number of edges flipped.
    */
   public static flipTriangles(graph: HalfEdgeGraph): number {
-    const edgeSet = MarkedEdgeSet.create(graph)!;
+    const edgeSet = MarkedEdgeSet.create(graph);
+    if (!edgeSet)
+      return 0;
     for (const node of graph.allHalfEdges)
       edgeSet.addToSet(node);
     const numFlip = this.flipTrianglesInEdgeSet(graph, edgeSet);
@@ -1082,7 +1085,9 @@ class AssembleXYZXYZChains extends PointStreamXYZXYZHandlerBase {
       this._baseNode = this._nodeC;
       this._nodeB = this._baseNode.faceSuccessor;
     } else {
-      HalfEdge.pinch(this._nodeB!, this._nodeC);
+      if (!this._nodeB)
+        return;
+      HalfEdge.pinch(this._nodeB, this._nodeC);
       this._nodeB = this._nodeC.faceSuccessor;
     }
   }
