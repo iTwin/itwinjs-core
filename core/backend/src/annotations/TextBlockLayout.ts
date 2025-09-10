@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { BaselineShift, ContainerComponent, FieldRun, FontId, FontType, FractionRun, getMarkerText, LineLayoutResult, Run, RunLayoutResult, TabRun, TextAnnotationLeader, TextBlock, TextBlockComponent, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ContainerComponent, FieldRun, FontId, FontType, FractionRun, getMarkerText, LineLayoutResult, Run, RunLayoutResult, TabRun, TextBlock, TextBlockComponent, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Geometry, Range2d, WritableXAndY } from "@itwin/core-geometry";
 import { IModelDb } from "../IModelDb";
 import { assert, Id64String, NonFunctionPropertiesOf } from "@itwin/core-bentley";
@@ -254,16 +254,6 @@ export class TextStyleResolver {
     }
 
     return style;
-  }
-
-  /** Resolves the effective style for a [TextAnnotationLeader]($common). The TextAnnotationLeader should be a sibling of the provided TextBlock. */
-  public resolveTextAnnotationLeaderSettings(leader: TextAnnotationLeader): TextStyleSettings {
-    let settings = this.blockSettings;
-
-    if (leader.styleOverrides)
-      settings = settings.clone(leader.styleOverrides);
-
-    return applyBlockSettings(settings, this.blockSettings, true);
   }
 
   /**
