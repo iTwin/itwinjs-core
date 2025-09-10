@@ -23,10 +23,10 @@ function parseTextAnnotationData(json: string | undefined): TextAnnotationProps 
   }
 }
 
-function getElementGeometryBuilderParams(iModel: IModelDb, modelId: Id64String, _placementProps: PlacementProps, textStyleId: Id64String, stringifiedAnnotationProps: string, categoryId: Id64String, _subCategory?: Id64String): ElementGeometryBuilderParams {
+function getElementGeometryBuilderParams(iModel: IModelDb, modelId: Id64String, _placementProps: PlacementProps, stringifiedAnnotationProps: string, categoryId: Id64String, textStyleId?: Id64String, _subCategory?: Id64String): ElementGeometryBuilderParams {
   const annotationProps = parseTextAnnotationData(stringifiedAnnotationProps);
   const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
-  const textStyleResolver = new TextStyleResolver({textBlock, textStyleId, iModel});
+  const textStyleResolver = new TextStyleResolver({textBlock, textStyleId: textStyleId ?? "", iModel});
   const layout = layoutTextBlock({ iModel, textBlock, textStyleResolver });
   const builder = new ElementGeometry.Builder();
   let scaleFactor = 1;
@@ -83,7 +83,7 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
   /** @internal */
   public static override get className(): string { return "TextAnnotation2d"; }
   /** The default [[AnnotationTextStyle]] used by the TextAnnotation2d. */
-  public defaultTextStyle: TextAnnotationUsesTextStyleByDefault;
+  public defaultTextStyle?: TextAnnotationUsesTextStyleByDefault;
   /** Optional string containing the data associated with the text annotation. */
   private _textAnnotationData?: string;
 
@@ -105,7 +105,9 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
 
   protected constructor(props: TextAnnotation2dProps, iModel: IModelDb) {
     super(props, iModel);
-    this.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault(props.defaultTextStyle.id);
+    if (props.defaultTextStyle) {
+      this.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault(props.defaultTextStyle.id);
+    }
     this._textAnnotationData = props.textAnnotationData;
   }
 
@@ -124,7 +126,7 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
     const props = super.toJSON() as TextAnnotation2dProps;
     props.textAnnotationData = this._textAnnotationData;
     if (this._textAnnotationData) {
-      props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.model, this.placement, this.defaultTextStyle.id, this._textAnnotationData, this.category);
+      props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.model, this.placement, this._textAnnotationData, this.category, this.defaultTextStyle ? this.defaultTextStyle.id : undefined);
     }
 
     return props;
@@ -177,7 +179,7 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
       return;
     }
 
-    props.elementGeometryBuilderParams = getElementGeometryBuilderParams(iModelDb, props.model, props.placement ?? Placement2d.fromJSON(), props.defaultTextStyle.id, props.textAnnotationData, props.category);
+    props.elementGeometryBuilderParams = getElementGeometryBuilderParams(iModelDb, props.model, props.placement ?? Placement2d.fromJSON(), props.textAnnotationData, props.category, props.defaultTextStyle ? props.defaultTextStyle.id : undefined);
   }
 
   /** @internal */
@@ -212,7 +214,7 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
   /** @internal */
   public static override get className(): string { return "TextAnnotation3d"; }
   /** The default [[AnnotationTextStyle]] used by the TextAnnotation3d. */
-  public defaultTextStyle: TextAnnotationUsesTextStyleByDefault;
+  public defaultTextStyle?: TextAnnotationUsesTextStyleByDefault;
   /** Optional string containing the data associated with the text annotation. */
   private _textAnnotationData?: string;
 
@@ -234,7 +236,9 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
 
   protected constructor(props: TextAnnotation3dProps, iModel: IModelDb) {
     super(props, iModel);
-    this.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault(props.defaultTextStyle.id);
+    if (props.defaultTextStyle) {
+      this.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault(props.defaultTextStyle.id);
+    }
     this._textAnnotationData = props.textAnnotationData;
   }
 
@@ -252,7 +256,7 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
     const props = super.toJSON() as TextAnnotation3dProps;
     props.textAnnotationData = this._textAnnotationData;
     if (this._textAnnotationData) {
-      props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.model, this.placement, this.defaultTextStyle.id, this._textAnnotationData, this.category);
+      props.elementGeometryBuilderParams = getElementGeometryBuilderParams(this.iModel, this.model, this.placement, this._textAnnotationData, this.category, this.defaultTextStyle ? this.defaultTextStyle.id : undefined);
     }
 
     return props;
@@ -305,7 +309,7 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
       return;
     }
 
-    props.elementGeometryBuilderParams = getElementGeometryBuilderParams(iModelDb, props.model, props.placement ?? Placement3d.fromJSON(), props.defaultTextStyle.id, props.textAnnotationData, props.category);
+    props.elementGeometryBuilderParams = getElementGeometryBuilderParams(iModelDb, props.model, props.placement ?? Placement3d.fromJSON(), props.textAnnotationData, props.category, props.defaultTextStyle ? props.defaultTextStyle.id : undefined);
   }
 
   /** @internal */

@@ -256,7 +256,7 @@ export interface GeometricElement2dProps extends GeometricElementProps {
  */
 export interface ITextAnnotationProps {
   /** The default [[AnnotationTextStyle]] used by the annotation. */
-  defaultTextStyle: RelatedElementProps;
+  defaultTextStyle?: RelatedElementProps;
 }
 
 /** Properties that define a [TextAnnotation2d]($backend).

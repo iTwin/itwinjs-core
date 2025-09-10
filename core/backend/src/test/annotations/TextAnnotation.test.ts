@@ -145,7 +145,8 @@ describe("TextAnnotation element", () => {
       const anno = elem.getAnnotation()!;
       expect(anno).not.to.be.undefined;
       expect(anno.textBlock.isEmpty).to.be.true;
-      expect(elem.defaultTextStyle.id).to.equal("0x42");
+      expect(elem.defaultTextStyle).not.to.be.undefined;
+      expect(elem.defaultTextStyle!.id).to.equal("0x42");
     });
 
     it("produces a new object each time it is called", () => {
@@ -261,8 +262,6 @@ describe("TextAnnotation element", () => {
           expect(anno!.equals(annotation)).to.be.true;
           expect(el0.toJSON().elementGeometryBuilderParams).not.to.be.undefined;
         }
-
-        expect(el1.defaultTextStyle.id).to.equal(seedStyleId);
       }
 
       it("roundtrips an empty annotation", async () => { await test(); });
@@ -373,12 +372,14 @@ describe("TextAnnotation element", () => {
       it("preserves defaultTextStyle after round trip", () => {
         const annotation = createAnnotation();
         const el0 = createElement2d({ textAnnotationData: annotation.toJSON() });
-        expect(el0.defaultTextStyle.id).to.equal(seedStyleId);
+        expect(el0.defaultTextStyle).not.to.be.undefined;
+        expect(el0.defaultTextStyle!.id).to.equal(seedStyleId);
         el0.insert();
 
         const el1 = imodel.elements.getElement<TextAnnotation2d>(el0.id);
         expect(el1).not.to.be.undefined;
-        expect(el1.defaultTextStyle.id).to.equal(seedStyleId);
+        expect(el1.defaultTextStyle).not.to.be.undefined;
+        expect(el1.defaultTextStyle!.id).to.equal(seedStyleId);
         expect(el0.toJSON().elementGeometryBuilderParams).to.deep.equal(el1.toJSON().elementGeometryBuilderParams);
       });
 
@@ -395,32 +396,18 @@ describe("TextAnnotation element", () => {
         expect(geom1).not.to.deep.equal(geom2);
       });
 
-      // TODO: Currently failing. Cannot require an ID and let it be invalid
-      it("allows defaultTextStyle to be empty string", () => {
+      it("allows defaultTextStyle to be undefined", () => {
         const annotation = createAnnotation();
 
         const el0 = createElement2d({ textAnnotationData: annotation.toJSON() });
-        el0.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault("1");
+        el0.defaultTextStyle = undefined;
         const elId = el0.insert();
 
         expect(Id64.isValidId64(elId)).to.be.true;
         const el1 = imodel.elements.getElement<TextAnnotation2d>(elId);
         expect(el1).not.to.be.undefined;
         expect(el1 instanceof TextAnnotation2d).to.be.true;
-      });
-
-      // TODO: Currently failing. Cannot require an ID and let it be invalid
-      it("allows defaultTextStyle to be a value that does not resolve to a style", () => {
-        const annotation = createAnnotation();
-
-        const el0 = createElement2d({ textAnnotationData: annotation.toJSON() });
-        el0.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault("2");
-        const elId = el0.insert();
-
-        expect(Id64.isValidId64(elId)).to.be.true;
-        const el1 = imodel.elements.getElement<TextAnnotation2d>(elId);
-        expect(el1).not.to.be.undefined;
-        expect(el1 instanceof TextAnnotation2d).to.be.true;
+        expect(el1.defaultTextStyle).to.be.undefined;
       });
     });
 
@@ -539,6 +526,22 @@ describe("TextAnnotation element", () => {
         expect(builder.textStrings[1].bold).to.be.false;
         // From override on run
         expect(builder.textStrings[1].italic).to.be.false;
+      });
+
+      it("uses TextStyleSettings.defaults when no default style is provided", () => {
+        const block = TextBlock.create();
+        block.appendRun(TextRun.create({ content: "Run, Barry," }));
+        block.margins = { left: 0, right: 1, top: 2, bottom: 3 };
+
+        const annotation = createAnnotation(block);
+        const builder = runAppendTextAnnotationGeometry(annotation, "");
+
+        expect(builder.textStrings.length).to.equal(1);
+        expect(builder.textStrings[0].text).to.equal("Run, Barry,");
+        expect(builder.textStrings[0].font).to.equal(0); // Font ID 0 is the "missing" font in the default text style
+        expect(builder.textStrings[0].bold).to.equal(TextStyleSettings.defaultProps.isBold);
+        expect(builder.textStrings[0].italic).to.equal(TextStyleSettings.defaultProps.isItalic);
+        expect(builder.textStrings[0].underline).to.equal(TextStyleSettings.defaultProps.isUnderlined);
       });
 
       it("scales geometry correctly", () => {
