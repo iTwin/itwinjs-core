@@ -50,7 +50,7 @@ import { RuledSweep } from "../solid/RuledSweep";
 import { Sphere } from "../solid/Sphere";
 import { SweepContour } from "../solid/SweepContour";
 import { TorusPipe } from "../solid/TorusPipe";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeToBooleanFunction } from "../topology/Graph";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction } from "../topology/Graph";
 import { InsertedVertexZOptions } from "../topology/InsertAndRetriangulateContext";
 import { Triangulator } from "../topology/Triangulation";
 import { BoxTopology } from "./BoxTopology";
@@ -59,6 +59,7 @@ import { SortableEdge, SortableEdgeCluster } from "./IndexedEdgeMatcher";
 import { IndexedPolyfaceSubsetVisitor } from "./IndexedPolyfaceVisitor";
 import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceQuery } from "./PolyfaceQuery";
+import { PolyfaceRangeTreeContext } from "./RangeTree/PolyfaceRangeTreeContext";
 
 /**
  * A FacetSector.
@@ -1673,8 +1674,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * * Accepted face edge visibility is determined by `isEdgeVisibleFunction`.
    * * Rely on the builder's compress step to find common vertex coordinates.
    * @param graph faces to add as facets.
-   * @param acceptFaceFunction optional test for whether to add a given face. Default: ignore exterior faces.
-   * @param isEdgeVisibleFunction optional test for whether to hide an edge. Default: hide interior edges.
+   * @param acceptFaceFunction (optional) callback invoked once per graph face to test for whether to add a given face to the mesh. Default: accept only interior faces.
+   * @param isEdgeVisibleFunction (optional) callback invoked once per edge of each accepted face to test for whether to hide an edge. Default: only boundary edges are visible.
    * @internal
    */
   public addGraph(
@@ -1736,8 +1737,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * * Default callbacks assume graph is appropriately masked with HalfEdgeMask.EXTERIOR.
    * @param graph faces to add as facets.
    * @param options (optional) options for the polyface.
-   * @param acceptFaceFunction optional test for whether to add a given face. Default: accept only interior faces.
-   * @param isEdgeVisibleFunction optional test for whether to hide an edge. Default: only boundary edges are visible.
+   * @param acceptFaceFunction (optional) callback invoked once per graph face to test for whether to add a given face to the mesh. Default: accept only interior faces.
+   * @param isEdgeVisibleFunction (optional) callback invoked once per edge of each accepted face to test for whether to hide an edge. Default: only boundary edges are visible.
+   * @param clusterTol optional distance tolerance for mesh compression. Default is [[Geometry.smallMetricDistance]].
    * @internal
    */
   public static graphToPolyface(
@@ -1745,11 +1747,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     options?: StrokeOptions,
     acceptFaceFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testNodeMaskNotExterior(node),
     isEdgeVisibleFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testMateMaskExterior(node),
+    clusterTol: number = Geometry.smallMetricDistance
   ): IndexedPolyface {
     const builder = PolyfaceBuilder.create(options);
     builder.addGraph(graph, acceptFaceFunction, isEdgeVisibleFunction);
     builder.endFace();
-    return builder.claimPolyface();
+    return builder.claimPolyface(true, clusterTol); // always compress; addGraph does not share vertices!
   }
   /**
    * Create a polyface containing the faces of a HalfEdgeGraph that are specified by the HalfEdge array.
@@ -2133,4 +2136,48 @@ function resolveToIndexedXYZCollectionOrCarrier(points: Point3d[] | LineString3d
 }
 function distinctIndices(i0: number, i1: number, i2: number): boolean {
   return i0 !== i1 && i1 !== i2 && i2 !== i0;
+}
+
+/**
+ * Avoid topology -> polyface dependency.
+ * @internal
+ */
+export namespace HalfEdgeGraphSearch {
+  /**
+   * Search the graph for an interior face containing the test point.
+   * * For best results:
+   *   * the z-coordinates of the graph vertices should be zero, as the searcher is fully 3d
+   *   * the graph exterior face(s) should be masked with HalfEdgeMask.EXTERIOR.
+   * @param source input xy-plane topology
+   * @param testPoint xy target point
+   * @returns edge in the containing face, or `undefined` if in the exterior face
+   */
+  export function findContainingFaceXY(graph: HalfEdgeGraph, testPoint: XAndY): HalfEdge | undefined {
+    const idToFaceIndexMap = graph.constructIdToFaceIndexMap();
+    const facetIndexToFaceIndexMap = new Map<number, number>();
+    let facetIndex = 0;
+    const acceptFace = (face: HalfEdge): boolean => {
+      if (face.isMaskSet(HalfEdgeMask.EXTERIOR))
+        return false; // skip exterior face
+      facetIndexToFaceIndexMap.set(facetIndex++, idToFaceIndexMap.get(face.id) ?? -1);
+      return true;
+    };
+    const clusterTol = Geometry.smallFloatingPoint; // don't want clustering to destroy edges
+    const mesh = PolyfaceBuilder.graphToPolyface(graph, undefined, acceptFace, () => true, clusterTol);
+    const searcher = PolyfaceRangeTreeContext.createCapture(mesh, undefined, undefined, false);
+    if (searcher) {
+      let closestDetail = searcher.searchForClosestPoint(Point3d.createFrom(testPoint), undefined, true);
+      if (closestDetail && (!Array.isArray(closestDetail) || closestDetail.length > 0)) {
+        if (Array.isArray(closestDetail)) {
+          closestDetail = closestDetail[0];
+          if (closestDetail.isInsideOrOn) {
+            const faceIndex = facetIndexToFaceIndexMap.get(closestDetail.facetIndex);
+            if (undefined !== faceIndex && faceIndex >= 0)
+              return graph.allHalfEdges[faceIndex];
+          }
+        }
+      }
+    }
+    return undefined;
+  }
 }

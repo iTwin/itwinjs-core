@@ -7,8 +7,6 @@
  * @module Topology
  */
 import { Range1d } from "../geometry3d/Range";
-import { XAndY } from "../geometry3d/XYZProps";
-import { Point3dArrayRangeTreeContext } from "../polyface/RangeTree/Point3dArrayRangeTreeContext";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction, NodeToNumberFunction } from "./Graph";
 import { SignedDataSummary } from "./SignedDataSummary";
 import { XYParitySearchContext } from "./XYParitySearchContext";
@@ -396,36 +394,6 @@ export class HalfEdgeGraphSearch {
     }
     return context.classifyCounts();
   }
-
-  /**
-   * Search the graph for an interior face containing the test point, ignoring z-coordinates.
-   * * An edge in the exterior face will be returned for a point not contained in any interior face if and only if the
-   * graph's exterior face is marked with `HalfEdgeMask.EXTERIOR`; otherwise `undefined` will be returned for an
-   * exterior point.
-   * @param source input topology
-   * @param testPoint xy target point
-   * @returns edge in the containing face, or `undefined` if it could not be found.
-   */
-  public static findContainingFaceXY(graph: HalfEdgeGraph, testPoint: XAndY): HalfEdge | undefined {
-    const vertices = graph.collectVertexLoops();
-    const searcher = Point3dArrayRangeTreeContext.createCapture(vertices, undefined, undefined, true);
-    if (!searcher)
-      return undefined;
-    let cld = searcher.searchForClosestPoint(testPoint);
-    if (!cld)
-      return undefined;
-    if (Array.isArray(cld))
-      cld = cld[0]; // don't expect multiple results
-    const vertexIndex = cld.fraction;
-    const closestVertex = vertices[vertexIndex];
-    let face = closestVertex;
-    do { // test faces at the closest vertex
-      if (HalfEdgeGraphSearch.pointInOrOnFaceXY(face, testPoint.x, testPoint.y) >= 0)
-        return face; // found containing interior face
-    } while (closestVertex !== (face = face.vertexSuccessor));
-    return closestVertex.findMaskAroundVertex(HalfEdgeMask.EXTERIOR); // found containing exterior face
-  };
-
   /**
    * Collect boundary edges starting from `seed`.
    * * If `seed` is not a boundary node or is already visited, the function exists early.
