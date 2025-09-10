@@ -73,6 +73,10 @@ export class Voronoi {
   public get getInputGraph(): HalfEdgeGraph {
     return this._inputGraph;
   }
+  /** Accessor for the input graph's range */
+  public get getInputGraphRange(): Range2d {
+    return this._inputGraphRange;
+  }
   /**
    * Accessor for the Voronoi graph constructed from the input graph.
    * * The Voronoi graph is typically constructed by static createFromXXX methods.

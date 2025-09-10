@@ -2173,7 +2173,7 @@ export namespace HalfEdgeGraphSearch {
       for (const testPt of testPoints) {
         let result: HalfEdge | undefined;
         const closestDetail = searcher.searchForClosestPoint(testPt, undefined, true) as FacetLocationDetail | undefined;
-        // closest point on the mesh should have zero distance to testPt, but allow for slop
+        // closest point on the mesh should have zero distance to testPt, but allow for minute slop
         if (closestDetail && closestDetail.a < Geometry.smallFloatingPoint) {
           const faceIndex = facetIndexToFaceIndexMap[closestDetail.facetIndex];
           if (faceIndex >= 0 && faceIndex < graph.allHalfEdges.length)

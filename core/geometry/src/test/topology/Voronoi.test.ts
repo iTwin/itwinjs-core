@@ -8,6 +8,7 @@ import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline
 import { ClipUtilities } from "../../clipping/ClipUtils";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveChain, CurveCollection } from "../../curve/CurveCollection";
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { CurveOps } from "../../curve/CurveOps";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { AnyCurve } from "../../curve/CurveTypes";
@@ -19,13 +20,16 @@ import { Path } from "../../curve/Path";
 import { RegionOps } from "../../curve/RegionOps";
 import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
 import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Geometry } from "../../Geometry";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range2d } from "../../geometry3d/Range";
 import { LowAndHighXY, XAndY } from "../../geometry3d/XYZProps";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { HalfEdgeGraphSearch, PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { Point3dArrayRangeTreeContext } from "../../polyface/RangeTree/Point3dArrayRangeTreeContext";
 import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction } from "../../topology/Graph";
@@ -34,7 +38,7 @@ import { Triangulator } from "../../topology/Triangulation";
 import { Voronoi } from "../../topology/Voronoi";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { getRandomNumberScaled } from "../testFunctions";
+import { getRandomNumber, getRandomNumberScaled } from "../testFunctions";
 
 /**
  * Construct facets from the faces of a Voronoi graph.
@@ -53,14 +57,15 @@ function visualizeGraphEdges(allGeometry: GeometryQuery[], graph: HalfEdgeGraph,
 }
 
 /**
- * Capture the curve-based Voronoi diagram as a mesh.
+ * Capture the curve-based Voronoi diagram as a mesh, and verify the Voronoi distance property.
  * * The only visible edges are edges of super face loops.
  * @param showDelaunay whether to visualize the Delaunay triangulation.
  * @param showClippers whether to visualize the curve-based Voronoi super faces as UnionRegions derived from the clippers instead.
  */
-function visualizeVoronoiDiagram(ck: Checker, allGeometry: GeometryQuery[], path: CurveChain, strokeOptions?: StrokeOptions, distanceTol?: number, bbox?: LowAndHighXY, showDelaunay?: boolean, showClippers?: boolean): void {
+function visualizeAndVerifyCurveBasedVoronoiDiagram(ck: Checker, allGeometry: GeometryQuery[], path: CurveChain, strokeOptions?: StrokeOptions, distanceTol?: number, bbox?: LowAndHighXY, showDelaunay?: boolean, showClippers?: boolean): void {
   const voronoi = Voronoi.createFromCurveChain(path, strokeOptions, distanceTol, bbox);
   if (ck.testDefined(voronoi, "created Voronoi instance")) {
+    verifyVoronoiTopology(ck, voronoi);
     ck.testTrue(voronoi.isCurveBased, "Voronoi instance is curve-based");
     if (showDelaunay)
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(voronoi.getInputGraph, undefined, undefined, () => true));
@@ -93,83 +98,37 @@ function visualizeVoronoiDiagram(ck: Checker, allGeometry: GeometryQuery[], path
 }
 
 /** Verify the faces of the Voronoi graph consist of points closest to the expected Delaunay vertex. */
-function verifyVoronoiTopology(_ck: Checker, _v: Voronoi): void {
-
-  // const face = HalfEdgeGraphSearch.findContainingFaceXY(voronoi.getVoronoiGraph, testPoint);
-
-  /* TODO: rewrite Voronoi verification test:
-  * Use HalfEdgeGraphSearch.findContainingFaceXY of a random point P to find a HalfEdge fe in the containing Voronoi face.
-  * Use Point3dArrayRangeTreeContext to find closest Delaunay vertex ve (a HalfEdge!!) to P:
-          const vertices = graph.collectVertexLoops();
-          const searcher = Point3dArrayRangeTreeContext.createCapture(vertices, undefined, undefined, true);
-          if (!searcher)
-            return undefined;
-          let cld = searcher.searchForClosestPoint(testPoint);
-          if (!cld)
-            return undefined;
-          if (Array.isArray(cld))
-            cld = cld[0]; // don't expect multiple results
-          const ve = vertices[cld.fraction];
-  * Confirm that Delaunay.allHalfEdges[fe.faceTag] and ve are in the same Delaunay vertex loop.
-  */
-
-  // const voronoiPoints = voronoi.allHalfEdges.map((he) => he.getPoint3d());
-  // const delaunayPoints = delaunay.allHalfEdges.map((he) => he.getPoint3d());
-  // const delaunayUniquePoints = Array.from(new Set(delaunayPoints.map(p => `${p.x},${p.y}`)))
-  //   .map(p => p.split(',').map(Number))
-  //   .map(p => Point3d.create(p[0], p[1]));
-  // const voronoiSearcher = Point3dArrayRangeTreeContext.createCapture(voronoiPoints);
-  // const delaunaySearcher = Point3dArrayRangeTreeContext.createCapture(delaunayUniquePoints);
-  // const range = HalfEdgeGraphOps.graphRange(voronoi);
-  // if (voronoiSearcher && delaunaySearcher) {
-  //   for (let i = 0; i < 10; i++) {
-  //     const spacePoint = Point3d.create(getRandomNumber(range.xLow, range.xHigh), getRandomNumber(range.yLow, range.yHigh));
-  //     const closestVoronoiPoint = voronoiSearcher.searchForClosestPoint(spacePoint);
-  //     if (closestVoronoiPoint === undefined || Array.isArray(closestVoronoiPoint)) {
-  //       ck.announceError("one point should be found");
-  //     } else {
-  //       let closestVoronoiVertex: HalfEdge | undefined;
-  //       let closestVoronoiHalfEdge: HalfEdge | undefined;
-  //       for (const he of voronoi.allHalfEdges) {
-  //         if (he.getPoint3d().isExactEqual(closestVoronoiPoint.point)) {
-  //           closestVoronoiVertex = he;
-  //           break;
-  //         }
-  //       }
-  //       const spaceNode = new HalfEdge();
-  //       spaceNode.x = spacePoint.x;
-  //       spaceNode.y = spacePoint.y;
-  //       closestVoronoiVertex?.collectAroundVertex(
-  //         (node) => {
-  //           if (HalfEdge.isNodeVisibleInSector(spaceNode, node) && !node.isMaskSet(HalfEdgeMask.EXTERIOR))
-  //             closestVoronoiHalfEdge = node;
-  //         }
-  //       );
-  //       const closestDelaunayPoint = delaunaySearcher.searchForClosestPoint(spacePoint);
-  //       if (closestDelaunayPoint === undefined || Array.isArray(closestDelaunayPoint)) {
-  //         ck.announceError("one point should be found");
-  //       } else {
-  //         let expectedFaceTag = Number.MAX_VALUE;
-  //         const closestDelaunayPointXY = closestDelaunayPoint.point;
-  //         closestDelaunayPointXY.setAt(2, 0); // set z = 0
-  //         for (let j = 0; j < delaunay.allHalfEdges.length; j++) {
-  //           const he = delaunay.allHalfEdges[j];
-  //           const heXY = he.getPoint3d();
-  //           heXY.setAt(2, 0); // set z = 0
-  //           if (heXY.isExactEqual(closestDelaunayPointXY)) {
-  //             expectedFaceTag = j;
-  //             break;
-  //           }
-  //         }
-  //         ck.testExactNumber(
-  //           closestVoronoiHalfEdge?.faceTag,
-  //           expectedFaceTag,
-  //           `point ("${spacePoint.x}", "${spacePoint.y}") belongs to the face with faceTag "${expectedFaceTag}"`,
-  //         );
-  //       }
-  //     }
-  //   }
-  // }
+function verifyVoronoiTopology(ck: Checker, v: Voronoi): void {
+  const dVertices = v.getInputGraph.collectVertexLoops();
+  const searcher = Point3dArrayRangeTreeContext.createCapture(dVertices, undefined, undefined, true);
+  if (ck.testDefined(searcher, "searcher for Delaunay vertices is defined")) {
+    const vRange = HalfEdgeGraphOps.graphRangeXY(v.getVoronoiGraph);
+    const dRange = v.getInputGraphRange;
+    const testPoints: Point2d[] = [];
+    for (let i = 0; i < 50; i++) { // concentrate test points in the input graph range
+      testPoints.push(Point2d.create(getRandomNumber(vRange.low.x, vRange.high.x), getRandomNumber(vRange.low.y, vRange.high.y)));
+      testPoints.push(Point2d.create(getRandomNumber(dRange.low.x, dRange.high.x), getRandomNumber(dRange.low.y, dRange.high.y)));
+    }
+    // verify the Voronoi condition via Monte Carlo method
+    const vFaces = HalfEdgeGraphSearch.findContainingFaceXY(v.getVoronoiGraph, testPoints) as (HalfEdge | undefined)[] | undefined;
+    if (ck.testDefined(vFaces, "findContainingFaceXY succeeded")) {
+      if (ck.testExactNumber(vFaces.length, testPoints.length, "findContainingFaceXY returned one entry per point")) {
+        for (let i = 0; i < vFaces.length; i++) {
+          const vFace = vFaces[i];
+          if (ck.testDefined(vFace, "interior point containing face found")) {
+            const dGenerator = v.getInputGraph.allHalfEdges[vFace.faceTag];
+            let closestPoints = searcher.searchForClosestPoint(testPoints[i], Number.POSITIVE_INFINITY) as CurveLocationDetail[] | undefined;
+            if (ck.testDefined(closestPoints, "closest Delaunay vertex found")) {
+              closestPoints.sort((d0, d1) => d0.a - d1.a);
+              const closestDistance = closestPoints[0].a;
+              closestPoints = closestPoints.filter((d) => Geometry.isSmallMetricDistance(d.a - closestDistance)); // handle equidistant closest points
+              ck.testTrue(closestPoints.some((d) => dVertices[d.fraction].findAroundVertex(dGenerator)), "closest Delaunay vertex is generator of containing Voronoi face");
+            }
+          }
+        }
+      }
+    }
+  }
 }
 
 // compare the lengths and centroids of the path children to the clipped curves
@@ -796,7 +755,7 @@ describe("Voronoi", () => {
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 0.5;
     const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(path, strokeOptions);
-    visualizeVoronoiDiagram(ck, allGeometry, path, strokeOptions, undefined, undefined, false, true);
+    visualizeAndVerifyCurveBasedVoronoiDiagram(ck, allGeometry, path, strokeOptions, undefined, undefined, false, true);
     if (ck.testDefined(clippers)) {
       ck.testExactNumber(clippers.length, path.children.length, "Voronoi should have 3 faces");
       const clippedCurves: AnyCurve[][] = [];
@@ -824,7 +783,7 @@ describe("Voronoi", () => {
     const bbox = path.range();
     bbox.expandInPlace(10);
     const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(path, strokeOptions, undefined, bbox);
-    visualizeVoronoiDiagram(ck, allGeometry, path, strokeOptions, undefined, bbox, false, true);
+    visualizeAndVerifyCurveBasedVoronoiDiagram(ck, allGeometry, path, strokeOptions, undefined, bbox, false, true);
     if (ck.testDefined(clippers, "Clippers should be defined")) {
       ck.testExactNumber(clippers.length, path.children.length, "Voronoi should have 5 faces");
       const clippedCurves: AnyCurve[][] = [];
@@ -848,7 +807,7 @@ describe("Voronoi", () => {
     const strokeOptions = new StrokeOptions();
     strokeOptions.maxEdgeLength = 20;
     const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(path, strokeOptions);
-    visualizeVoronoiDiagram(ck, allGeometry, path, strokeOptions, undefined, undefined, false, true);
+    visualizeAndVerifyCurveBasedVoronoiDiagram(ck, allGeometry, path, strokeOptions, undefined, undefined, false, true);
     if (ck.testDefined(clippers, "Clippers should be defined")) {
       ck.testExactNumber(clippers.length, path.children.length, "Voronoi should have 7 faces");
       const clippedCurves: AnyCurve[][] = [];
@@ -882,7 +841,7 @@ describe("Voronoi", () => {
     const distanceTol = undefined;
     const bbox = Range2d.createXYXY(70250, 1209900, 70950, 1210500);
     const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(loop, strokeOptions, distanceTol, bbox);
-    visualizeVoronoiDiagram(ck, allGeometry, loop, strokeOptions, distanceTol, bbox, false, true);
+    visualizeAndVerifyCurveBasedVoronoiDiagram(ck, allGeometry, loop, strokeOptions, distanceTol, bbox, false, true);
     if (ck.testDefined(clippers, "Clippers should be defined")) {
       ck.testExactNumber(clippers.length, loop.children.length, "Voronoi should have 8 faces");
       const clippedCurves: AnyCurve[][] = [];
@@ -906,7 +865,7 @@ describe("Voronoi", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
     ck.testExactNumber(path.children.length, 18, "path should have 18 children");
     const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(path);
-    visualizeVoronoiDiagram(ck, allGeometry, path, undefined, undefined, undefined, false, true);
+    visualizeAndVerifyCurveBasedVoronoiDiagram(ck, allGeometry, path, undefined, undefined, undefined, false, true);
     if (ck.testDefined(clippers, "Clippers should be defined")) {
       ck.testExactNumber(clippers.length, path.children.length, "Voronoi should have 18 faces");
       const clippedCurves: AnyCurve[][] = [];
@@ -943,7 +902,7 @@ describe("Voronoi", () => {
     const distanceTol = undefined;
     const bbox = Range2d.createXYXY(2500, 4400, 15000, 8400);
     const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(approximatedPath, strokeOptions, distanceTol, bbox);
-    visualizeVoronoiDiagram(ck, allGeometry, approximatedPath, strokeOptions, distanceTol, bbox, false, true);
+    visualizeAndVerifyCurveBasedVoronoiDiagram(ck, allGeometry, approximatedPath, strokeOptions, distanceTol, bbox, false, true);
     if (ck.testDefined(clippers, "Clippers should be defined")) {
       ck.testExactNumber(clippers.length, approximatedPath.children.length, "Voronoi should have 9 faces");
       const clippedCurves: AnyCurve[][] = [];
@@ -972,12 +931,13 @@ describe("Voronoi", () => {
       GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, testPoints, 0.1);
       const containingFaces = HalfEdgeGraphSearch.findContainingFaceXY(graph, testPoints) as (HalfEdge | undefined)[] | undefined;
       if (ck.testDefined(containingFaces, "findContainingFaceXY succeeded")) {
-        ck.testExactNumber(containingFaces.length, testPoints.length, "findContainingFaceXY returned one entry per point");
-        for (let i = 0; i < containingFaces.length - 1; i++) {
-          const containingFace = containingFaces[i];
-          if (ck.testDefined(containingFace, "interior point containing face found")) {
-            const quadRange = Range2d.createArray(containingFace.collectAroundFace() as XAndY[]);
-            ck.testTrue(quadRange.containsPoint(testPoints[i]), "range of containing face contains test point");
+        if (ck.testExactNumber(containingFaces.length, testPoints.length, "findContainingFaceXY returned one entry per point")) {
+          for (let i = 0; i < containingFaces.length - 1; i++) {
+            const containingFace = containingFaces[i];
+            if (ck.testDefined(containingFace, "interior point containing face found")) {
+              const quadRange = Range2d.createArray(containingFace.collectAroundFace() as XAndY[]);
+              ck.testTrue(quadRange.containsPoint(testPoints[i]), "range of containing face contains test point");
+            }
           }
         }
         ck.testUndefined(containingFaces[containingFaces.length - 1], "exterior point has no containing face");
