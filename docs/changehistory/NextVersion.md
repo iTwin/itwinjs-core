@@ -42,18 +42,39 @@ In addition to [already supported Electron versions](../learning/SupportedPlatfo
   - TangentConstruction.circlesTangetntCCL (circleA, circleB, lineC)
   - TangetnConstruction.linesTangentCC, linesPerpLPerpC, linesPerpCPerpC -- lines tangent or perpendicular to lines and circles
   - TangentConstruction.circlesTangentCCR, circlesTangentLLR, circlesTangetnCLR -- circles with given radius an d tangent to given lines and circles.
-- CurveFactory class has new static methods for converting full 3D  curves to (new) specialized 2D classes for the tangency constructions.
+
+This code makes two circles and a line and constructs the tangent circles:
+'''
+    const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(0, 0, 2);
+    const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius(3, 5, 2);
+    const line = UnboundedLine2dByPointAndNormal.createPointXYPointXY(-1, 0, 5, 3);
+    const circles = TangentConstruction.circlesTangentCCL(circleA, circleB, line);
+'''
+
+![CircleCircleLine Tangency Example](./assets/circlesTangentCCL_SampleA.jpg "Example of circles tangent to 2 circles and a line.  For this case there are 4 tangent circles (green).")
+
+This code constructs a circleC which intersects both the line and circleA, so there are 8 tangent circles.
+'''
+    const circleC = UnboundedCircle2dByCenterAndRadius.createXYRadius(3, 5, 6);
+    const circlesAC = TangentConstruction.circlesTangentCCL(circleA, circleC, line);
+'''
+
+![CircleCircleLine Tangency Example](./assets/circlesTangentCCL_SampleB.jpg "Example of circles tangent to 2 circles and a line.  For this case there are 8 tangent circles (green).")
+
+The (new) CurveFactory class has new static methods for converting full 3D  curves to (new) specialized 2D classes for the tangency constructions.
   - CurveFactory.createImplicitCurve2dFromCurvePrimitiveXY (curve3d)
     - returns a specialized UnboundedLine2d, UnboundedCircle2d, unboundedEllipse2d for the XY part of the given CurvePrimitive
   - CurveFactory.createCurvePrimitiveFromImplicitCurve (curvePrimitive)
     - returns a CurvePrimitive for the given implicit curve.
-- New class ContraintSet is an array of constraints (tangent, radius, or perpendicular) it has methods to examine the array and select an appropriate circle or line tangency method (from TangentConstruction listed above).
+
+A new class ContraintSet is an array of constraints (tangent, radius, or perpendicular) it has methods to examine the array and select an appropriate circle or line tangency method (from TangentConstruction listed above).
   - ConstraintSet.constructConstrainedCircles (array of constraint descriptors) -- selects an appropriate TangencyConstruction for (unordered) combination of circles, lines and radius constraints.
 - ConstraintSet.constructConstrainedLines (array of constraint descriptors) -- selects an appropriate TangencyConstruction for (unordered) combination of circles and lines.
 - The 2D geometry base class ImplicitGeometry2d which are:
   - strictly 2D curves
     - UnboundedCircle2dByCenterAndRadius
       - complete circle defined by (only) center and radius
+      - (zero radius circle is a point)
     - UnboundedLine2dByPointAndNormal
       - line in 2d, with no preferred endpoints
     - and lesser known types for future use

@@ -170,6 +170,27 @@ describe("ImplicitCircle2d", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "geometry2d", "LinePerpLinePerpTanC");
     expect(ck.getNumErrors()).toBe(0);
   });
+  it("CircleTangentCCLSimpleExample", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+
+    const x0 = 0;
+    const y0 = 0;
+
+    const circleA = UnboundedCircle2dByCenterAndRadius.createXYRadius(0, 0, 2);
+    const circleB = UnboundedCircle2dByCenterAndRadius.createXYRadius(3, 5, 2);
+    const line = UnboundedLine2dByPointAndNormal.createPointXYPointXY(-1, 0, 5, 3);
+    const circles = TangentConstruction.circlesTangentCCL(circleA, circleB, line);
+    ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0, y0, circles, [circleA, circleB, line], 0, 4);
+
+    const circleC = UnboundedCircle2dByCenterAndRadius.createXYRadius(3, 5, 6);
+    const circlesAC = TangentConstruction.circlesTangentCCL(circleA, circleC, line);
+    ImplicitGeometryHelpers.outputCircleMarkup(ck, allGeometry, x0 + 100, y0, circlesAC, [circleA, circleC, line], 0, 4);
+
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "geometry2d", "CircleTangentCCLSimpleExample");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 
   it("CircleTangentLLC", () => {
     const ck = new Checker(false, false);
@@ -645,6 +666,7 @@ export class ImplicitGeometryHelpers {
     markup: ImplicitGeometryMarkup<UnboundedCircle2dByCenterAndRadius>[] | undefined,
     inputGeometry: ImplicitCurve2d[] | undefined = undefined,
     yStep: number = 0,
+    sizeHint: number = 10
   ): number {
     if (markup === undefined || markup.length === 0) {
       if (inputGeometry) {
@@ -668,7 +690,7 @@ export class ImplicitGeometryHelpers {
               GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 3, g1.center, 0.1, x0, y0);
             else
               GeometryCoreTestIO.captureCloneGeometry(
-                allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(g1), x0, y0,
+                allGeometry, CurveFactory.createCurvePrimitiveFromImplicitCurve(g1), x0, y0, sizeHint
               );
           }
         }
