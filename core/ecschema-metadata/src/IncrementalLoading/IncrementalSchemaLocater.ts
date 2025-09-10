@@ -14,6 +14,11 @@ import { SchemaKey } from "../SchemaKey";
 import { SchemaLoadingController } from "../utils/SchemaLoadingController";
 import { IncrementalSchemaReader } from "./IncrementalSchemaReader";
 
+interface IncrementalSchemaInfo extends SchemaInfo {
+  readonly description?: string;
+  readonly label?: string;
+}
+
 type LoadSchemaInfoHandler = (context: SchemaContext) => Promise<Iterable<SchemaInfo>>;
 
 /**
@@ -174,7 +179,7 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
    * @returns The SchemaProps object.
    */
   protected async createSchemaProps(schemaKey: SchemaKey, schemaContext: SchemaContext): Promise<SchemaProps> {
-    const schemaInfo = await schemaContext.getSchemaInfo(schemaKey, SchemaMatchType.Latest);
+    const schemaInfo = await schemaContext.getSchemaInfo(schemaKey, SchemaMatchType.Latest) as IncrementalSchemaInfo | undefined;
     if (!schemaInfo)
       throw new Error(`Schema ${schemaKey.name} could not be found.`);
 
@@ -184,6 +189,8 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
       name: schemaKey.name,
       alias: schemaInfo.alias,
       version: schemaInfo.schemaKey.version.toString(),
+      description: schemaInfo.description,
+      label: schemaInfo.label,
       references: schemaReferences,
       items: {}
     };
@@ -259,15 +266,15 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
  * Helper class to manage schema infos for a schema context.
  */
 class SchemaInfoCache {
-  private readonly _schemaInfoCache: WeakMap<SchemaContext, Array<SchemaInfo>>;
+  private readonly _schemaInfoCache: WeakMap<SchemaContext, Array<IncrementalSchemaInfo>>;
   private readonly _schemaInfoLoader: LoadSchemaInfoHandler;
 
   constructor(schemaInfoLoader: LoadSchemaInfoHandler) {
-    this._schemaInfoCache = new WeakMap<SchemaContext, Array<SchemaInfo>>();
+    this._schemaInfoCache = new WeakMap<SchemaContext, Array<IncrementalSchemaInfo>>();
     this._schemaInfoLoader = schemaInfoLoader;
   }
 
-  public async getSchemasByContext(context: SchemaContext): Promise<SchemaInfo[] | undefined> {
+  public async getSchemasByContext(context: SchemaContext): Promise<IncrementalSchemaInfo[] | undefined> {
     if (!this._schemaInfoCache.has(context)) {
       const schemaInfos = await this._schemaInfoLoader(context);
       this._schemaInfoCache.set(context, Array.from(schemaInfos));
@@ -275,7 +282,7 @@ class SchemaInfoCache {
     return this._schemaInfoCache.get(context);
   }
 
-  public async lookup(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
+  public async lookup(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<IncrementalSchemaInfo | undefined> {
     const contextSchemaInfos = await this.getSchemasByContext(context);
     return contextSchemaInfos
       ? contextSchemaInfos.find((schemaInfo) => schemaInfo.schemaKey.matches(schemaKey, matchType))

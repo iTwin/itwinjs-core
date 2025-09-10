@@ -1,6 +1,25 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Fri, 22 Aug 2025 14:26:46 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Sep 2025 19:33:20 GMT and should not be manually modified.
+
+## 5.1.7
+Tue, 09 Sep 2025 19:28:04 GMT
+
+_Version update only_
+
+## 5.1.6
+Mon, 08 Sep 2025 13:53:47 GMT
+
+### Updates
+
+- Fix 'ghost' elements when using GraphicalEditingScope with model masking.
+
+## 5.1.5
+Thu, 04 Sep 2025 13:51:08 GMT
+
+### Updates
+
+- Add DynamicsContext.addOverlay
 
 ## 5.1.4
 Fri, 22 Aug 2025 14:22:33 GMT
