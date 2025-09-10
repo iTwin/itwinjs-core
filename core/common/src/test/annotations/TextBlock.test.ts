@@ -510,6 +510,10 @@ describe("TextBlock", () => {
     expect(listItem2.type).toBe("paragraph");
     expect(listItem2.children.length).toBe(1);
     expect(listItem2.stringify()).toBe("item 3");
+
+    // TODO: test appending list items
+
+    // TODO: test nested lists
   });
 });
 
