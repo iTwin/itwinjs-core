@@ -15,8 +15,10 @@ import { DrawingCategory, SpatialCategory } from "../../Category";
 import { DisplayStyle2d, DisplayStyle3d } from "../../DisplayStyle";
 import { CategorySelector, DrawingViewDefinition, ModelSelector, SpatialViewDefinition } from "../../ViewDefinition";
 import { FontFile } from "../../FontFile";
-import { computeTextRangeAsStringLength } from "../AnnotationTestUtils";
+import { computeTextRangeAsStringLength, MockBuilder } from "../AnnotationTestUtils";
 import { TextAnnotationUsesTextStyleByDefault } from "../../annotations/ElementDrivesTextAnnotation";
+import { layoutTextBlock, TextStyleResolver } from "../../annotations/TextBlockLayout";
+import { appendTextAnnotationGeometry } from "../../annotations/TextAnnotationGeometry";
 
 
 function mockIModel(): IModelDb {
@@ -31,13 +33,15 @@ function mockIModel(): IModelDb {
   return iModel as IModelDb;
 }
 
-function createAnnotation(): TextAnnotation {
+function createAnnotation(textBlock?: TextBlock): TextAnnotation {
   const styleOverrides = { fontName: "Karla" };
-  const block = TextBlock.create({ styleOverrides });
-  block.appendRun(TextRun.create({ content: "Run, Barry,", styleOverrides }));
-  block.appendRun(TextRun.create({ content: " RUN!!! ", styleOverrides }));
-  block.appendRun(FractionRun.create({ numerator: "Harrison", denominator: "Wells", styleOverrides }));
-  block.margins = { left: 0, right: 1, top: 2, bottom: 3 };
+  const block = textBlock ?? TextBlock.create({ styleOverrides });
+  if (!textBlock) {
+    block.appendRun(TextRun.create({ content: "Run, Barry,", styleOverrides }));
+    block.appendRun(TextRun.create({ content: " RUN!!! ", styleOverrides }));
+    block.appendRun(FractionRun.create({ numerator: "Harrison", denominator: "Wells", styleOverrides }));
+    block.margins = { left: 0, right: 1, top: 2, bottom: 3 };
+  }
 
   const annotation = TextAnnotation.fromJSON({ textBlock: block.toJSON() });
   annotation.anchor = { vertical: "middle", horizontal: "right" };
@@ -270,7 +274,9 @@ describe("TextAnnotation element", () => {
     let imodel: StandaloneDb;
     let seedCategoryId: string;
     let seedModelId: string;
+    let seedDefinitionModelId: string;
     let seedStyleId: string;
+    let seedStyleId2: string;
 
     before(async () => {
       imodel = await createIModel("TextAnnotation2d");
@@ -278,6 +284,7 @@ describe("TextAnnotation element", () => {
       const definitionModel = DefinitionModel.insert(imodel, jobSubjectId, "Definition");
       const { category, model } = insertDrawingModel(imodel, jobSubjectId, definitionModel);
       const styleId = createAnnotationTextStyle(imodel, definitionModel, "test", {fontName: "Totally Real Font", lineHeight: 0.25, isItalic: true}).insert();
+      const differentStyleId = createAnnotationTextStyle(imodel, definitionModel, "alt", {fontName: "Karla", lineHeight: 0.5, isBold: true}).insert();
 
       expect(jobSubjectId).not.to.be.undefined;
       expect(category).not.to.be.undefined;
@@ -286,7 +293,9 @@ describe("TextAnnotation element", () => {
 
       seedCategoryId = category;
       seedModelId = model;
+      seedDefinitionModelId = definitionModel;
       seedStyleId = styleId;
+      seedStyleId2 = differentStyleId;
     });
 
     after(() => {
@@ -352,13 +361,194 @@ describe("TextAnnotation element", () => {
           expect(anno).not.to.be.undefined;
           expect(anno!.equals(annotation)).to.be.true;
           expect(el0.toJSON().elementGeometryBuilderParams).not.to.be.undefined;
+          expect(el0.toJSON().elementGeometryBuilderParams).to.deep.equal(el1.toJSON().elementGeometryBuilderParams);
         }
-
-        expect(el1.defaultTextStyle.id).to.equal(seedStyleId);
       }
 
       it("roundtrips an empty annotation", async () => { await test(); });
       it("roundtrips an annotation with a textBlock", async () => { await test(createAnnotation()); });
+    });
+
+    describe("defaultTextStyle", () => {
+      it("preserves defaultTextStyle after round trip", () => {
+        const annotation = createAnnotation();
+        const el0 = createElement2d({ textAnnotationData: annotation.toJSON() });
+        expect(el0.defaultTextStyle.id).to.equal(seedStyleId);
+        el0.insert();
+
+        const el1 = imodel.elements.getElement<TextAnnotation2d>(el0.id);
+        expect(el1).not.to.be.undefined;
+        expect(el1.defaultTextStyle.id).to.equal(seedStyleId);
+        expect(el0.toJSON().elementGeometryBuilderParams).to.deep.equal(el1.toJSON().elementGeometryBuilderParams);
+      });
+
+      it("produces different geometry when defaultTextStyle changes", () => {
+        const annotation = createAnnotation();
+
+        const el0 = createElement2d({ textAnnotationData: annotation.toJSON() });
+        el0.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault(seedStyleId);
+        const geom1 = el0.toJSON().elementGeometryBuilderParams;
+
+        el0.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault(seedStyleId2);
+
+        const geom2 = el0.toJSON().elementGeometryBuilderParams;
+        expect(geom1).not.to.deep.equal(geom2);
+      });
+
+      // TODO: Currently failing. Cannot require an ID and let it be invalid
+      it("allows defaultTextStyle to be empty string", () => {
+        const annotation = createAnnotation();
+
+        const el0 = createElement2d({ textAnnotationData: annotation.toJSON() });
+        el0.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault("1");
+        const elId = el0.insert();
+
+        expect(Id64.isValidId64(elId)).to.be.true;
+        const el1 = imodel.elements.getElement<TextAnnotation2d>(elId);
+        expect(el1).not.to.be.undefined;
+        expect(el1 instanceof TextAnnotation2d).to.be.true;
+      });
+
+      // TODO: Currently failing. Cannot require an ID and let it be invalid
+      it("allows defaultTextStyle to be a value that does not resolve to a style", () => {
+        const annotation = createAnnotation();
+
+        const el0 = createElement2d({ textAnnotationData: annotation.toJSON() });
+        el0.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault("2");
+        const elId = el0.insert();
+
+        expect(Id64.isValidId64(elId)).to.be.true;
+        const el1 = imodel.elements.getElement<TextAnnotation2d>(elId);
+        expect(el1).not.to.be.undefined;
+        expect(el1 instanceof TextAnnotation2d).to.be.true;
+      });
+    });
+
+    describe("appendTextAnnotationGeometry", () => {
+      function runAppendTextAnnotationGeometry(annotation: TextAnnotation, styleId: Id64String, scaleFactor: number = 1): MockBuilder {
+        const builder = new MockBuilder();
+
+        const resolver = new TextStyleResolver({
+          textBlock: annotation.textBlock,
+          textStyleId: styleId,
+          iModel: imodel,
+        });
+
+        const layout = layoutTextBlock({
+          textBlock: annotation.textBlock,
+          iModel: imodel,
+          textStyleResolver: resolver,
+        });
+
+        const result = appendTextAnnotationGeometry({
+          annotationProps: annotation.toJSON(),
+          layout,
+          textStyleResolver: resolver,
+          scaleFactor,
+          builder,
+          categoryId: seedCategoryId,
+        });
+
+        expect(result).to.be.true;
+        return builder;
+      }
+
+      it("produces the same geometry when given the same inputs", () => {
+        const builder1 = runAppendTextAnnotationGeometry(createAnnotation(), seedStyleId);
+        const builder2 = runAppendTextAnnotationGeometry(createAnnotation(), seedStyleId);
+
+        expect(builder1.geometries).to.deep.equal(builder2.geometries);
+        expect(builder1.params).to.deep.equal(builder2.params);
+        expect(builder1.textStrings).to.deep.equal(builder2.textStrings);
+      });
+
+      it("produces no geometry when given an empty annotation", () => {
+        const block = TextBlock.create();
+        const annotation = TextAnnotation.fromJSON({ textBlock: block.toJSON() });
+        const builder = runAppendTextAnnotationGeometry(annotation, seedStyleId);
+
+        expect(builder.geometries).to.be.empty;
+        expect(builder.params).to.be.empty;
+        expect(builder.textStrings).to.be.empty;
+      });
+
+      it("produces geometry when given an empty annotation with frame styling", () => {
+        const block = TextBlock.create();
+        const annotation = TextAnnotation.fromJSON({ textBlock: block.toJSON() });
+        const styleId = createAnnotationTextStyle(
+          imodel,
+          seedDefinitionModelId,
+          "empty anno style",
+          {
+            fontName: "Totally Real Font",
+            frame: {
+              shape: "rectangle",
+            }
+          }
+        ).insert();
+        const builder = runAppendTextAnnotationGeometry(annotation, styleId);
+
+        expect(builder.geometries).not.to.be.empty;
+        expect(builder.params).not.to.be.empty;
+        expect(builder.textStrings).to.be.empty;
+      });
+
+
+      it("produces different geometry when given different text-content in annotations", () => {
+        const anno1 = createAnnotation();
+        const anno2 = createAnnotation();
+        anno2.textBlock.appendRun(TextRun.create({ content: "extra", styleOverrides: { fontName: "Totally Real Font" } }));
+
+        const builder1 = runAppendTextAnnotationGeometry(anno1, seedStyleId);
+        const builder2 = runAppendTextAnnotationGeometry(anno2, seedStyleId);
+
+        expect(builder1.geometries).to.not.deep.equal(builder2.geometries);
+        expect(builder1.params).to.deep.equal(builder2.params);
+        expect(builder1.textStrings).to.not.deep.equal(builder2.textStrings);
+      });
+
+      it("produces different geometry when given different default styles", () => {
+        const builder1 = runAppendTextAnnotationGeometry(createAnnotation(), seedStyleId);
+        const builder2 = runAppendTextAnnotationGeometry(createAnnotation(), seedStyleId2);
+
+        expect(builder1.geometries).to.not.deep.equal(builder2.geometries);
+        expect(builder1.textStrings).to.not.deep.equal(builder2.textStrings);
+      });
+
+      it("accounts for style overrides in the text", () => {
+        const block = TextBlock.create();
+        block.appendParagraph();
+        block.paragraphs[0].styleOverrides = { isBold: true };
+        block.appendRun(TextRun.create({ content: "Run, Barry," }));
+        block.appendParagraph();
+        block.appendRun(TextRun.create({ content: " RUN!!! ", styleOverrides: { isItalic: false } }));
+        block.margins = { left: 0, right: 1, top: 2, bottom: 3 };
+
+        const annotation = createAnnotation(block);
+
+        const builder = runAppendTextAnnotationGeometry(annotation, seedStyleId);
+
+        expect(builder.textStrings.length).to.equal(2);
+        expect(builder.textStrings[0].text).to.equal("Run, Barry,");
+        // From override on paragraph
+        expect(builder.textStrings[0].bold).to.be.true;
+        // From default style
+        expect(builder.textStrings[0].italic).to.be.true;
+        expect(builder.textStrings[1].text).to.equal(" RUN!!! ");
+        // From default style
+        expect(builder.textStrings[1].bold).to.be.false;
+        // From override on run
+        expect(builder.textStrings[1].italic).to.be.false;
+      });
+
+      it("scales geometry correctly", () => {
+        const annotation = createAnnotation();
+        const builder1 = runAppendTextAnnotationGeometry(annotation, seedStyleId, 1);
+        const builder2 = runAppendTextAnnotationGeometry(annotation, seedStyleId, 2);
+
+        expect(builder1.textStrings[0].height * 2).to.equal(builder2.textStrings[0].height);
+        expect(builder1.textStrings[0].width * 2).to.equal(builder2.textStrings[0].width);
+      });
     });
   });
 });

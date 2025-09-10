@@ -26,13 +26,13 @@ function parseTextAnnotationData(json: string | undefined): TextAnnotationProps 
 function getElementGeometryBuilderParams(iModel: IModelDb, modelId: Id64String, _placementProps: PlacementProps, textStyleId: Id64String, stringifiedAnnotationProps: string, categoryId: Id64String, _subCategory?: Id64String): ElementGeometryBuilderParams {
   const annotationProps = parseTextAnnotationData(stringifiedAnnotationProps);
   const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
+  const textStyleResolver = new TextStyleResolver({textBlock, textStyleId, iModel});
+  const layout = layoutTextBlock({ iModel, textBlock, textStyleResolver });
+  const builder = new ElementGeometry.Builder();
   let scaleFactor = 1;
   const element = iModel.elements.getElement(modelId);
   if (element instanceof Drawing)
     scaleFactor = element.scaleFactor;
-  const textStyleResolver = new TextStyleResolver({textBlock, textStyleId, iModel});
-  const layout = layoutTextBlock({ iModel, textBlock, textStyleResolver });
-  const builder = new ElementGeometry.Builder();
   appendTextAnnotationGeometry({ layout, textStyleResolver, scaleFactor, annotationProps: annotationProps ?? {}, builder, categoryId });
 
   return { entryArray: builder.entries };

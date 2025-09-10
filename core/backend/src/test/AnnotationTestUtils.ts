@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ElementGeometry, GeometryParams, TextBlock, TextStyleSettings } from "@itwin/core-common";
+import { ElementGeometry, GeometryParams, TextBlock, TextString, TextStyleSettings } from "@itwin/core-common";
 import { AnyCurvePrimitive, Range2d } from "@itwin/core-geometry";
 import { ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, TextBlockLayout, TextLayoutRanges, TextStyleResolver } from "../core-backend";
 import { Id64String } from "@itwin/core-bentley";
@@ -40,6 +40,8 @@ export function doLayout(textBlock: TextBlock, args?: {
 export class MockBuilder extends ElementGeometry.Builder {
   public params: GeometryParams[] = [];
   public geometries: AnyCurvePrimitive[] = [];
+  public textStrings: TextString[] = []
+
   public override appendGeometryParamsChange(params: GeometryParams): boolean {
     this.params.push(params.clone());
     return super.appendGeometryParamsChange(params);
@@ -48,4 +50,10 @@ export class MockBuilder extends ElementGeometry.Builder {
     this.geometries.push(geometry);
     return super.appendGeometryQuery(geometry);
   }
+
+  public override appendTextString(text: TextString): boolean {
+    this.textStrings.push(text);
+    return super.appendTextString(text);
+  }
+
 }
