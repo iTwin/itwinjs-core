@@ -315,18 +315,18 @@ export class SingleTreeSearchHandlerForClosestPointOnPolyface extends SingleTree
 
   /**
    * Constructor
-   * @param spacePoint cloned
+   * @param spacePoint point to test
    * @param context captured
    * @param maxDist collect points at no more than this distance from spacePoint
    * @param searchFacetInterior true: search facet interior + boundary; false: just boundary
    */
-  public constructor(spacePoint: Point3d, context: PolyfaceRangeTreeContext, maxDist?: number, searchFacetInterior: boolean = false) {
+  public constructor(spacePoint: XYAndZ | XAndY, context: PolyfaceRangeTreeContext, maxDist?: number, searchFacetInterior: boolean = false) {
     super();
     this.context = context;
     if (maxDist !== undefined && maxDist < 0)
       maxDist = undefined;
     this.searchState = MinimumValueTester.create<FacetLocationDetail>(maxDist);
-    this.spacePoint = spacePoint.clone();
+    this.spacePoint = Point3d.createFrom(spacePoint);
     this.searchFacetInterior = searchFacetInterior;
   }
   /** Return the current closest point */

@@ -7,8 +7,8 @@
  */
 
 import { Geometry } from "../../Geometry";
-import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
+import { XAndY, XYAndZ } from "../../geometry3d/XYZProps";
 import { FacetLocationDetail, FacetLocationDetailPair } from "../FacetLocationDetail";
 import { Polyface, PolyfaceVisitor } from "../Polyface";
 import { PolyfaceQuery } from "../PolyfaceQuery";
@@ -77,7 +77,7 @@ export class PolyfaceRangeTreeContext {
    * @param searchFacetInterior whether to include facet interiors in search. Default is false: just consider facet boundaries.
    * @return closest point detail(s) with detail.a set to the distance from spacePoint to detail.point
    */
-  public searchForClosestPoint(spacePoint: Point3d, maxDist?: number, searchFacetInterior: boolean = false): FacetLocationDetail | FacetLocationDetail[] | undefined {
+  public searchForClosestPoint(spacePoint: XYAndZ | XAndY, maxDist?: number, searchFacetInterior: boolean = false): FacetLocationDetail | FacetLocationDetail[] | undefined {
     const handler = new SingleTreeSearchHandlerForClosestPointOnPolyface(spacePoint, this, maxDist, searchFacetInterior);
     this.numSearch++;
     const numFacet = PolyfaceQuery.visitorClientFacetCount(this.visitor);
