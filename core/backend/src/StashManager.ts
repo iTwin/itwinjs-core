@@ -11,6 +11,7 @@ import { IModelHost } from "./IModelHost";
 
 /**
  * Properties of a stash
+ * @internal
  */
 export interface StashProps {
   /** Unique identifier for the stash */
@@ -49,6 +50,7 @@ export interface StashProps {
 
 /**
  * Properties for creating a stash
+ * @internal
  */
 export interface CreateStashProps {
   /** Briefcase database instance */
@@ -63,15 +65,13 @@ export interface CreateStashProps {
 
 /**
  * Arguments for stash operations
+ * @internal
  */
 export interface StashArgs {
   readonly db: BriefcaseDb;
   readonly stash: Id64String | StashProps;
 }
 
-/**
- * Arguments for applying a stash
- */
 /**
  * Arguments for applying or restoring a stash.
  *
@@ -80,6 +80,7 @@ export interface StashArgs {
  * @property method - Specifies the stash operation to perform.
  *   - `"apply"`: Apply the stash without removing it.
  *   - `"restore"`: Apply the stash and remove it from the stash list.
+ * @internal
  */
 export interface StashApplyArgs extends StashArgs {
   readonly method: "apply" | "restore";
@@ -93,6 +94,7 @@ enum LockOrigin {
 
 /**
  * Stash manager allow stash, drop, apply and merge stashes
+ * @internal
  */
 export class StashManager {
   private static readonly STASH_ROOT_DIR_NAME: string = ".stashes";

@@ -8,7 +8,7 @@ import * as chaiAsPromised from "chai-as-promised";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
 import { BriefcaseDb, ChannelControl, DrawingCategory, IModelHost, SqliteChangesetReader, TxnProps } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
-import { after, Suite } from "mocha";
+import { Suite } from "mocha";
 import { Code, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Guid, Id64String } from "@itwin/core-bentley";
 import { StashManager } from "../../StashManager";
