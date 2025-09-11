@@ -258,6 +258,20 @@ export class ECDb implements Disposable {
     }
   }
 
+  /**
+   * Delete items from a schema.
+   * @param schemaName The name of the schema from which to delete items.
+   * @param schemaItemNames The names of the items to delete.
+   * @alpha
+   */
+  public deleteSchemaItems(schemaName: string, schemaItemNames: string[]) {
+    try {
+      this[_nativeDb].deleteSchemaItems(schemaName, schemaItemNames);
+    } catch (error: any) {
+      throw error;
+    }
+  };
+
   /** Prepare an ECSQL statement.
   * @param ecsql The ECSQL statement to prepare
   * @param logErrors Determines if error will be logged if statement fail to prepare
