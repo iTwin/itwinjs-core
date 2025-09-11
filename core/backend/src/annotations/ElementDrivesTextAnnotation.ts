@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { RelationshipProps, TextBlock } from "@itwin/core-common";
+import { FieldRun, getTextBlockGenerator, RelationshipProps, TextBlock } from "@itwin/core-common";
 import { ElementDrivesElement } from "../Relationship";
 import { IModelDb } from "../IModelDb";
 import { Element } from "../Element";
@@ -59,7 +59,7 @@ export function isITextAnnotation(element: Element): element is ITextAnnotation 
  */
 export class ElementDrivesTextAnnotation extends ElementDrivesElement {
   public static override get className(): string { return "ElementDrivesTextAnnotation"; }
-  
+
   /** @internal */
   public static override onRootChanged(props: RelationshipProps, iModel: IModelDb): void {
     updateElementFields(props, iModel, false);
@@ -108,12 +108,11 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
     const sourceToRelationship = new Map<Id64String, Id64String | null>();
     const blocks = annotationElement.getTextBlocks();
+
     for (const block of blocks) {
-      for (const paragraph of block.textBlock.paragraphs) {
-        for (const run of paragraph.runs) {
-          if (run.type === "field" && isValidSourceId(run.propertyHost.elementId)) {
-            sourceToRelationship.set(run.propertyHost.elementId, null);
-          }
+      for (const { current } of getTextBlockGenerator(block.textBlock)) {
+        if (current.type === "field" && current instanceof FieldRun && isValidSourceId(current.propertyHost.elementId)) {
+          sourceToRelationship.set(current.propertyHost.elementId, null);
         }
       }
     }

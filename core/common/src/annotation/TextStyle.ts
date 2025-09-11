@@ -9,6 +9,48 @@
 import { DeepReadonlyObject, DeepRequiredObject } from "@itwin/core-bentley";
 import { ColorDef, ColorDefProps } from "../ColorDef";
 
+/** Predefined markers for ordered list items in text annotations.
+ * These values control the appearance of list item markers (e.g., numbers, letters, roman numerals) in ordered lists.
+ *
+ * @beta
+ */
+export enum OrderedListMarker {
+  A = "A",
+  AWithPeriod = "A.",
+  AWithParenthesis = "A)",
+  a = "a",
+  aWithPeriod = "a.",
+  aWithParenthesis = "a)",
+  I = "I",
+  IWithPeriod = "I.",
+  IWithParenthesis = "I)",
+  i = "i",
+  iWithPeriod = "i.",
+  iWithParenthesis = "i)",
+  One = "1",
+  OneWithPeriod = "1.",
+  OneWithParenthesis = "1)",
+}
+
+/** Predefined markers for unordered list items in text annotations.
+ * These values control the appearance of list item markers (e.g., bullet, circle, square, dash) in unordered lists.
+ *
+ * @beta
+ */
+export enum UnorderedListMarker {
+  Bullet = "•",
+  Circle = "○",
+  Square = "■",
+  Dash = "–",
+}
+
+/** A string used to mark the start of a list item in a [[List]].
+ * This can be either one of the predefined markers in [[OrderedListMarker]] or [[UnorderedListMarker]], or any arbitrary string.
+ * If an arbitrary string is supplied, it will be used in an unordered list fashion.
+ * @beta
+ */
+export type ListMarker = OrderedListMarker | UnorderedListMarker | string;
+
 /** Set of predefined shapes that can be computed and drawn around the margins of a [[TextBlock]]
  * @beta
 */
@@ -110,6 +152,11 @@ export interface TextStyleSettingsProps {
    * Default: 0.5.
    */
   lineSpacingFactor?: number;
+  /** Multiplier used to compute the vertical distance between two paragraphs of text.
+   * The distance is computed in meters as paragraphSpacingFactor * [[lineHeight]].
+   * Default: 0.5.
+   */
+  paragraphSpacingFactor?: number;
   /** Specifies whether the content of a [[TextRun]] should be rendered **bold**.
    * Default: false.
    */
@@ -163,6 +210,8 @@ export interface TextStyleSettingsProps {
   leader?: TextLeaderStyleProps;
   /** The size (in meters) used to calculate the tab stops in a run.
    * These are equally spaced from the left edge of the TextBlock.
+   * [[tabInterval]] is also used in lists to compute the offset of children.
+   * This is computed by [[indentation]] + ([[tabInterval]] * depth).
    * Default: 4 meters.
    */
   tabInterval?: number;
@@ -172,6 +221,16 @@ export interface TextStyleSettingsProps {
    * Default: {shape: "none", fill: "none", border: black, borderWeight: 1} for no frame.
    */
   frame?: TextFrameStyleProps;
+  /** The offset (in meters) from the left edge of the text block to the start of the line of text.
+   * In lists, the indentation is added to offset of list items.
+   * This is computed by [[indentation]] + ([[tabInterval]] * depth)
+   * Default: 0 meters.
+   */
+  indentation?: number;
+  /** The marker used to indicate the start of a list item.
+   * Default: "1.".
+   */
+  listMarker?: ListMarker;
 }
 
 function deepFreeze<T>(obj: T) {
@@ -207,6 +266,10 @@ export class TextStyleSettings {
    * The distance is computed in meters as lineSpacingFactor * [[lineHeight]].
    */
   public readonly lineSpacingFactor: number;
+  /** Multiplier used to compute the vertical distance between two paragraphs of text.
+   * The distance is computed in meters as paragraphSpacingFactor * [[lineHeight]].
+   */
+  public readonly paragraphSpacingFactor: number;
   /** Specifies whether the content of a [[TextRun]] should be rendered **bold**. */
   public readonly isBold: boolean;
   /** Specifies whether the content of a [[TextRun]] should be rendered in *italics*. */
@@ -242,9 +305,20 @@ export class TextStyleSettings {
    */
   public readonly leader: Readonly<Required<TextLeaderStyleProps>>;
   /** The size (in meters) used to calculate the tab stops in a run.
-   * These are equally spaced from the left edge of the TextBlock. Default is 4 meters.
+   * These are equally spaced from the left edge of the TextBlock.
+   * [[tabInterval]] is also used in lists to compute the offset of children.
+   * This is computed by [[indentation]] + ([[tabInterval]] * depth).
    */
   public readonly tabInterval: number;
+  /** The offset (in meters) from the left edge of the text block to the start of the line of text.
+   * In lists, the indentation is added to offset of list items.
+   * This is computed by [[indentation]] + ([[tabInterval]] * depth)
+   */
+  public readonly indentation: number;
+  /** The marker used to indicate the start of a list item.
+   * Default: [[OrderedListMarker.OneWithPeriod]].
+   */
+  public readonly listMarker: ListMarker;
   /** The frame settings of the [[TextAnnotation]]. */
   public readonly frame: Readonly<Required<TextFrameStyleProps>>;
 
@@ -254,6 +328,7 @@ export class TextStyleSettings {
     fontName: "",
     lineHeight: 1,
     lineSpacingFactor: 0.5,
+    paragraphSpacingFactor: 0.5,
     isBold: false,
     isItalic: false,
     isUnderlined: false,
@@ -272,6 +347,8 @@ export class TextStyleSettings {
       terminatorWidthFactor: 1.0,
     },
     tabInterval: 4,
+    indentation: 0,
+    listMarker: OrderedListMarker.OneWithPeriod,
     frame: {
       shape: "none",
       fill: "none",
@@ -292,6 +369,7 @@ export class TextStyleSettings {
     this.fontName = props.fontName ?? defaults.fontName;
     this.lineHeight = props.lineHeight ?? defaults.lineHeight;
     this.lineSpacingFactor = props.lineSpacingFactor ?? defaults.lineSpacingFactor;
+    this.paragraphSpacingFactor = props.paragraphSpacingFactor ?? defaults.paragraphSpacingFactor;
     this.isBold = props.isBold ?? defaults.isBold;
     this.isItalic = props.isItalic ?? defaults.isItalic;
     this.isUnderlined = props.isUnderlined ?? defaults.isUnderlined;
@@ -311,12 +389,15 @@ export class TextStyleSettings {
     }
     this.leader = Object.freeze(leader) as Readonly<Required<TextLeaderStyleProps>>;
     this.tabInterval = props.tabInterval ?? defaults.tabInterval;
+    this.indentation = props.indentation ?? defaults.indentation;
+    this.listMarker = props.listMarker ?? defaults.listMarker;
+
     const frame = {
       shape: props.frame?.shape ?? defaults.frame.shape,
       fill: props.frame?.fill ?? defaults.frame.fill,
       border: props.frame?.border ?? defaults.frame.border,
       borderWeight: props.frame?.borderWeight ?? defaults.frame.borderWeight,
-     };
+    };
     // Cast to indicate to TypeScript that the frame properties are all defined
     this.frame = Object.freeze(frame) as Readonly<Required<TextFrameStyleProps>>;
   }
@@ -366,12 +447,13 @@ export class TextStyleSettings {
 
   public equals(other: TextStyleSettings): boolean {
     return this.color === other.color && this.fontName === other.fontName
-      && this.lineHeight === other.lineHeight && this.lineSpacingFactor === other.lineSpacingFactor && this.widthFactor === other.widthFactor
+      && this.lineHeight === other.lineHeight && this.lineSpacingFactor === other.lineSpacingFactor && this.paragraphSpacingFactor === other.paragraphSpacingFactor && this.widthFactor === other.widthFactor
       && this.isBold === other.isBold && this.isItalic === other.isItalic && this.isUnderlined === other.isUnderlined
       && this.stackedFractionType === other.stackedFractionType && this.stackedFractionScale === other.stackedFractionScale
       && this.subScriptOffsetFactor === other.subScriptOffsetFactor && this.subScriptScale === other.subScriptScale
       && this.superScriptOffsetFactor === other.superScriptOffsetFactor && this.superScriptScale === other.superScriptScale
-      && this.tabInterval === other.tabInterval
+      && this.tabInterval === other.tabInterval && this.indentation === other.indentation
+      && this.listMarker === other.listMarker
       && this.leaderEquals(other.leader)
       && this.frameEquals(other.frame)
   }
