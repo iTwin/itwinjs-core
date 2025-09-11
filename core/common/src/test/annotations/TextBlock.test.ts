@@ -280,6 +280,12 @@ describe("TextBlockComponent", () => {
     });
 
     it("stringifies lists", () => {
+      /* Final TextBlock should look like:
+        1. lorem
+        2. 1/π   def   ghi
+        j k l
+        3.
+      */
       let list = List.create();
 
       // empty
@@ -326,6 +332,15 @@ describe("TextBlockComponent", () => {
     });
 
     it("stringifies nested lists", () => {
+      /* Final TextBlock should look like:
+        a. Oranges
+        b. Apples
+          i. Gala
+            • Sweet and crisp
+            • From New Zealand
+          ii. Fiji
+          iii. Red Delicious
+      */
       const list = List.create(makeList([
         makeParagraph([
           makeTextRun("Oranges")
@@ -359,6 +374,18 @@ describe("TextBlockComponent", () => {
     });
 
     it("stringifies the whole TextBlock", () => {
+      /* Final TextBlock should look like:
+        1/π   def   ghi
+        j k l
+        a. Oranges
+        b. Apples
+          i. Gala
+            • Sweet and crisp
+            • From New Zealand
+          ii. Fiji
+          iii. Red Delicious
+      */
+
       const block = TextBlock.create({
         styleId: "0x42",
         children: [
@@ -497,24 +524,27 @@ describe("TextBlock", () => {
     });
 
     it("appends to a list if the last item is a list", () => {
+      /* Final TextBlock should look like:
+        1. one+two
+      */
       const tb = TextBlock.create({ styleId: "0x42" });
       const list = tb.appendList();
 
       expect(tb.children.length).to.equal(1);
       expect(list.children.length).to.equal(0);
 
-      tb.appendRun(TextRun.create({ content: "list item" }));
+      tb.appendRun(TextRun.create({ content: "one+" }));
       expect(tb.children.length).to.equal(1);
       expect(list.children.length).to.equal(1);
       expect(list.children[0].children.length).to.equal(1);
-      expect(list.children[0].children[0].stringify()).to.equal("list item");
+      expect(list.children[0].children[0].stringify()).to.equal("one+");
 
-      tb.appendRun(TextRun.create({ content: "list item 2" }));
+      tb.appendRun(TextRun.create({ content: "two" }));
       expect(tb.children.length).to.equal(1);
       expect(list.children.length).to.equal(1);
       expect(list.children[0].children.length).to.equal(2);
-      expect(list.children[0].children[0].stringify()).to.equal("list item");
-      expect(list.children[0].children[1].stringify()).to.equal("list item 2");
+      expect(list.children[0].children[0].stringify()).to.equal("one+");
+      expect(list.children[0].children[1].stringify()).to.equal("two");
     });
   });
 
@@ -550,6 +580,14 @@ describe("TextBlock", () => {
 
   describe("appendListItem", () => {
     it("appends a list if the last item is not a list", () => {
+      /* Final TextBlock should look like:
+        1. item
+        2. item
+
+        1. item
+        2. item
+      */
+
       const tb = TextBlock.create({ styleId: "0x42" });
 
       // No children to start with
@@ -598,6 +636,15 @@ describe("TextBlock", () => {
 
 
   it("adds items to list", () => {
+    /* Final TextBlock should look like:
+      1. item 11/π
+      2. item 2
+      3. item 3
+        1. sub item a1/π
+        2. sub item b
+        3. sub item c
+    */
+
     const props: TextBlockProps = {
       styleId: "0x42",
       children: [
@@ -834,6 +881,15 @@ describe("FieldRun", () => {
 
 describe('getTextBlockGenerator', () => {
   it('iterates through all runs in a TextBlock', () => {
+    /*
+    Text block to create:
+      Hello
+      1/2
+
+      1. Item 1
+      Continued
+        1. Sub-item 1
+    */
     const textBlock = TextBlock.create({ styleId: "" });
 
     const p1 = textBlock.appendParagraph();
