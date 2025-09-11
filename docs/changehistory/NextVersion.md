@@ -14,6 +14,8 @@ publish: false
     - [@itwin/presentation-common](#itwinpresentation-common)
     - [@itwin/presentation-backend](#itwinpresentation-backend)
     - [@itwin/presentation-frontend](#itwinpresentation-frontend)
+  - [Display](#display)
+    - [Draco decoding](#draco-decoding)
 
 ## @itwin/core-ecschema-metadata
 
@@ -24,7 +26,9 @@ publish: false
 ### Changes
 
 - Added  `unitSystem` property to [FormatSet]($ecschema-metadata) interface, using [UnitSystemKey]($quantity) type. This will help move APIs away from relying on `activeUnitSystem` in `quantityFormatter`, as they move to the new formatting APIs using `IModelApp.formatsProvider`. Looking ahead, tools and components that use formatting APIs can then listen to just the `onFormatsChanged` event from `IModelApp.formatsProvider` instead of `IModelApp.quantityFormatter.onActiveUnitSystemChanged`.
+- Added optional `description` property to [FormatSet]($ecschema-metadata) interface. This property allows for additional descriptive text to be associated with a format set, providing better documentation and user context for format set purposes.
 - Changed interface for formats in `FormatSet` from [SchemaItemFormatProps]($ecschema-metadata) to [FormatDefinition]($quantity). FormatSet just uses the `name`, `label`, `description` field from `SchemaItemFormatProps`, which `FormatDefinition` already has.
+
 ## Presentation
 
 ### Deprecation of hierarchy-related APIs
