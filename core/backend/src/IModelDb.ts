@@ -830,7 +830,7 @@ export abstract class IModelDb extends IModel {
       Logger.logWarning(loggerCategory, "there are no unsaved changes", () => args);
     }
 
-    const stat = this[_nativeDb].saveChanges(args ? JSON.stringify(args): undefined);
+    const stat = this[_nativeDb].saveChanges(args ? JSON.stringify(args) : undefined);
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, `Could not save changes (${args?.description})`);
   }
@@ -2603,7 +2603,7 @@ export namespace IModelDb {
       try {
         return this._iModel[_nativeDb].insertElementAspect(aspectProps);
       } catch (err: any) {
-        const error =  new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`, aspectProps);
+        const error = new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`, aspectProps);
         error.cause = err;
         throw error;
       }
@@ -2617,7 +2617,7 @@ export namespace IModelDb {
       try {
         this._iModel[_nativeDb].updateElementAspect(aspectProps);
       } catch (err: any) {
-        const error =  new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`, aspectProps);
+        const error = new IModelError(err.errorNumber, `Error updating ElementAspect [${err.message}], id: ${aspectProps.id}`, aspectProps);
         error.cause = err;
         throw error;
       }
@@ -2633,7 +2633,7 @@ export namespace IModelDb {
         try {
           iModel[_nativeDb].deleteElementAspect(aspectInstanceId);
         } catch (err: any) {
-          const error =  new IModelError(err.errorNumber, `Error deleting ElementAspect [${err.message}], id: ${aspectInstanceId}`);
+          const error = new IModelError(err.errorNumber, `Error deleting ElementAspect [${err.message}], id: ${aspectInstanceId}`);
           error.cause = err;
           throw error;
         }
@@ -3052,23 +3052,23 @@ export class BriefcaseDb extends IModelDb {
     return db?.isBriefcaseDb() ? db : undefined;
   }
 
-/**
- * Permanently discards any local changes made to this briefcase, reverting the briefcase to its last synchronized state.
- * This operation cannot be undone. By default, all locks held by this briefcase will be released unless the `holdLocks` option is specified.
- * @Note This operation can be performed at any point including after failed rebase attempts.
- * @param args - Options for discarding changes.
- * @param args.holdLocks - If `true`, retains all currently held locks after discarding changes. If omitted or `false`, all locks will be released.
- * @returns A promise that resolves when the operation is complete.
- * @throws May throw if discarding changes fails.
- * @alpha
- */
-  public async discardChanges(args? : { holdLocks?: true}): Promise<void> {
+  /**
+   * Permanently discards any local changes made to this briefcase, reverting the briefcase to its last synchronized state.
+   * This operation cannot be undone. By default, all locks held by this briefcase will be released unless the `holdLocks` option is specified.
+   * @Note This operation can be performed at any point including after failed rebase attempts.
+   * @param args - Options for discarding changes.
+   * @param args.holdLocks - If `true`, retains all currently held locks after discarding changes. If omitted or `false`, all locks will be released.
+   * @returns A promise that resolves when the operation is complete.
+   * @throws May throw if discarding changes fails.
+   * @alpha
+   */
+  public async discardChanges(args?: { retainLocks?: true }): Promise<void> {
     Logger.logInfo(loggerCategory, "Discarding local changes");
     this.clearCaches();
     this[_nativeDb].clearECDbCache();
     this[_nativeDb].discardLocalChanges();
     this.initializeIModelDb("pullMerge");
-    if (args?.holdLocks) {
+    if (args?.retainLocks) {
       return;
     }
 

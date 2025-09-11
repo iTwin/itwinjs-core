@@ -58,7 +58,7 @@ export interface CreateStashProps {
   /** discard all local changes and unless keepLocks flag is set, all locks will be released */
   readonly discardLocalChanges?: true;
   /** keep all locks after discarding local changes */
-  readonly keepLocks?: true;
+  readonly retainLocks?: true;
 }
 
 /**
@@ -212,7 +212,7 @@ export class StashManager {
 
     const stash = args.db[_nativeDb].stashChanges({ stashRootDir, description: args.description, iModelId }) as StashProps;
     if (args.discardLocalChanges) {
-      await this.discardLocalChanges(args);
+      await args.db.discardChanges({ retainLocks: args.retainLocks });
     }
     return stash;
   }
@@ -344,7 +344,7 @@ export class StashManager {
     Logger.logInfo("StashManager", `Restoring stash: ${stash.id}`);
 
     const stashFile = this.getStashFilePath({ db, stash });
-    await db.discardChanges({  holdLocks: true });
+    await db.discardChanges({ retainLocks: true });
     await this.acquireLocks(args);
     if (db.changeset.id !== stash.parentChangeset.id) {
       // Changeset ID mismatch

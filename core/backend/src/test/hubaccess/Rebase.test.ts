@@ -367,7 +367,7 @@ describe.only("change merge manager", function (this: Suite) {
     const e1 = await testIModel.insertElement(b1);
     chai.expect(e1).to.exist;
     b1.saveChanges("first");
-    const stash1 = await StashManager.stash({ db: b1, description: "stash test 1", discardLocalChanges: true, keepLocks: true });
+    const stash1 = await StashManager.stash({ db: b1, description: "stash test 1", discardLocalChanges: true, retainLocks: true });
     chai.expect(stash1).to.exist;
     chai.expect(b1.elements.tryGetElement(e1)).to.undefined;
     chai.expect(b1.txns.isUndoPossible).to.be.false;
@@ -377,7 +377,7 @@ describe.only("change merge manager", function (this: Suite) {
     const e2 = await testIModel.insertElement(b1);
     chai.expect(e2).to.exist;
     b1.saveChanges("second");
-    const stash2 = await StashManager.stash({ db: b1, description: "stash test 2", discardLocalChanges: true, keepLocks: true });
+    const stash2 = await StashManager.stash({ db: b1, description: "stash test 2", discardLocalChanges: true, retainLocks: true });
     chai.expect(stash2).to.exist;
     chai.expect(b1.elements.tryGetElement(e1)).to.undefined;
     chai.expect(b1.elements.tryGetElement(e2)).to.undefined;
@@ -388,7 +388,7 @@ describe.only("change merge manager", function (this: Suite) {
     const e3 = await testIModel.insertElement(b1);
     chai.expect(e3).to.exist;
     b1.saveChanges("third");
-    const stash3 = await StashManager.stash({ db: b1, description: "stash test 3", discardLocalChanges: true, keepLocks: true });
+    const stash3 = await StashManager.stash({ db: b1, description: "stash test 3", discardLocalChanges: true, retainLocks: true });
     chai.expect(stash3).to.exist;
     chai.expect(b1.elements.tryGetElement(e1)).to.undefined;
     chai.expect(b1.elements.tryGetElement(e2)).to.undefined;
@@ -424,7 +424,7 @@ describe.only("change merge manager", function (this: Suite) {
     chai.expect(b1.elements.tryGetElement(e2)).to.undefined;
     chai.expect(b1.elements.tryGetElement(e3)).to.exist;
   });
-it.only("should restore stash in any order", async () => {
+  it("should restore stash in any order", async () => {
     const b1 = await testIModel.openBriefcase();
 
     // stash 1
@@ -442,8 +442,8 @@ it.only("should restore stash in any order", async () => {
     const e2 = await testIModel.insertElement(b1);
     chai.expect(e2).to.exist;
     b1.saveChanges("second");
-     // do not discard local changes
-    const stash2 = await StashManager.stash({ db: b1, description: "stash test 2"});
+    // do not discard local changes
+    const stash2 = await StashManager.stash({ db: b1, description: "stash test 2" });
     chai.expect(stash2).to.exist;
     chai.expect(b1.elements.tryGetElement(e1)).to.exist;
     chai.expect(b1.elements.tryGetElement(e2)).to.exist;
@@ -454,8 +454,8 @@ it.only("should restore stash in any order", async () => {
     const e3 = await testIModel.insertElement(b1);
     chai.expect(e3).to.exist;
     b1.saveChanges("third");
-     // do not discard local changes
-    const stash3 = await StashManager.stash({ db: b1, description: "stash test 3"});
+    // do not discard local changes
+    const stash3 = await StashManager.stash({ db: b1, description: "stash test 3" });
     chai.expect(stash3).to.exist;
     chai.expect(b1.elements.tryGetElement(e1)).to.exist;
     chai.expect(b1.elements.tryGetElement(e2)).to.exist;
@@ -469,7 +469,7 @@ it.only("should restore stash in any order", async () => {
     chai.expect(stashes[1].description).to.equals("stash test 2");
     chai.expect(stashes[2].description).to.equals("stash test 1");
 
-    await b1.discardChanges({ holdLocks: true });
+    await b1.discardChanges({ retainLocks: true });
     chai.expect(b1.elements.tryGetElement(e1)).to.undefined;
     chai.expect(b1.elements.tryGetElement(e2)).to.undefined;
     chai.expect(b1.elements.tryGetElement(e3)).to.undefined;
@@ -496,5 +496,68 @@ it.only("should restore stash in any order", async () => {
     chai.expect(b1.elements.tryGetElement(e3)).to.exist;
 
   });
+  it("should restore stash in any order", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
 
+    chai.expect(b1.changeset.index).to.equals(2);
+    chai.expect(b2.changeset.index).to.equals(2);
+
+    const e1 = await testIModel.insertElement(b1);
+    chai.expect(e1).to.exist;
+    b1.saveChanges();
+    await b1.pushChanges({ description: `${e1} inserted` });
+
+    chai.expect(b1.changeset.index).to.equals(3);
+
+    const e2 = await testIModel.insertElement(b2);
+    chai.expect(e2).to.exist;
+    b2.saveChanges();
+
+    chai.expect(b2.elements.tryGetElement(e1)).to.undefined;
+    chai.expect(b2.elements.tryGetElement(e2)).to.exist;
+
+    const b2Stash1 = await StashManager.stash({ db: b2, description: "stash test 1", discardLocalChanges: true });
+    chai.expect(b2Stash1.parentChangeset.index).to.equals(2);
+
+    chai.expect(b2.elements.tryGetElement(e1)).to.undefined;
+    chai.expect(b2.elements.tryGetElement(e2)).to.undefined;
+
+    await b2.pullChanges();
+    chai.expect(b2.changeset.index).to.equals(3);
+
+    chai.expect(b2.elements.tryGetElement(e1)).to.exist;
+    chai.expect(b2.elements.tryGetElement(e2)).to.undefined;
+
+    // stash restore should downgrade briefcase to older changeset as specified in stash
+    await StashManager.apply({ db: b2, stash: b2Stash1, method: "restore" });
+    chai.expect(b2.changeset.index).to.equals(2);
+
+    chai.expect(b2.elements.tryGetElement(e1)).to.undefined;
+    chai.expect(b2.elements.tryGetElement(e2)).to.exist;
+
+    await b2.pullChanges();
+    chai.expect(b2.changeset.index).to.equals(3);
+    chai.expect(b2.elements.tryGetElement(e1)).to.exist;
+    chai.expect(b2.elements.tryGetElement(e2)).to.exist;
+
+    await b2.pushChanges({description: "test"});
+    chai.expect(b2.changeset.index).to.equals(4);
+  });
+  it.only("schema change should not be stashed", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const schema1 = `<?xml version="1.0" encoding="UTF-8"?>
+        <ECSchema schemaName="TestDomain" alias="ts" version="01.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+            <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+            <ECEntityClass typeName="a1">
+                <BaseClass>bis:GraphicalElement2d</BaseClass>
+                <ECProperty propertyName="prop1" typeName="string" />
+                <ECProperty propertyName="prop2" typeName="string" />
+            </ECEntityClass>
+        </ECSchema>`;
+    await b1.importSchemaStrings([schema1]);
+    b1.saveChanges();
+
+    await chai.expect(StashManager.stash({ db: b1, description: "stash test 1" })).to.not.rejectedWith("Bad Arg: Pending schema changeset stashing is not currently supported");
+  });
 });
