@@ -10,7 +10,7 @@ import { BriefcaseDb, ChannelControl, DrawingCategory, IModelHost, SqliteChanges
 import { HubMock } from "../../internal/HubMock";
 import { after, Suite } from "mocha";
 import { Code, IModel, SubCategoryAppearance } from "@itwin/core-common";
-import { Guid, Id64String } from "@itwin/core-bentley/lib/cjs/Id";
+import { Guid, Id64String } from "@itwin/core-bentley";
 import { StashManager } from "../../StashManager";
 chai.use(chaiAsPromised);
 
@@ -270,7 +270,7 @@ describe.only("change merge manager", function (this: Suite) {
     });
     await b1.pullChanges();
   });
-  it.only("stash", async () => {
+  it("stash & drop", async () => {
     const b1 = await testIModel.openBriefcase();
     const e1 = await testIModel.insertElement(b1);
     b1.saveChanges();
@@ -289,7 +289,7 @@ describe.only("change merge manager", function (this: Suite) {
     await testIModel.insertElement(b1);
     b1.saveChanges(`fourth`);
 
-    const stash1 = await StashManager.stash({ briefcase: b1, description: "stash test 1" });
+    const stash1 = await StashManager.stash({ db: b1, description: "stash test 1" });
 
     chai.expect(stash1).to.exist;
     chai.assert(Guid.isGuid(stash1.id));
@@ -323,7 +323,7 @@ describe.only("change merge manager", function (this: Suite) {
     await testIModel.insertElement(b1);
     b1.saveChanges(`seventh`);
 
-    const stash2 = await StashManager.stash({ briefcase: b1, description: "stash test 2" });
+    const stash2 = await StashManager.stash({ db: b1, description: "stash test 2" });
     chai.expect(stash2).to.exist;
     chai.expect(stash2.description).to.equals("stash test 2");
     chai.expect(stash2.hash).length(64);
@@ -356,5 +356,145 @@ describe.only("change merge manager", function (this: Suite) {
     chai.expect(stashes[1].description).to.equals("stash test 1");
     chai.expect(stashes[0]).to.deep.equal(stash2);
     chai.expect(stashes[1]).to.deep.equal(stash1);
+
+    StashManager.dropAllStashes(b1);
+    chai.expect(StashManager.getStashes(b1)).to.have.lengthOf(0);
   });
+  it("should restore mutually exclusive stashes", async () => {
+    const b1 = await testIModel.openBriefcase();
+
+    // stash 1
+    const e1 = await testIModel.insertElement(b1);
+    chai.expect(e1).to.exist;
+    b1.saveChanges("first");
+    const stash1 = await StashManager.stash({ db: b1, description: "stash test 1", discardLocalChanges: true, keepLocks: true });
+    chai.expect(stash1).to.exist;
+    chai.expect(b1.elements.tryGetElement(e1)).to.undefined;
+    chai.expect(b1.txns.isUndoPossible).to.be.false;
+    chai.expect(b1.txns.isRedoPossible).to.be.false;
+
+    // stash 2
+    const e2 = await testIModel.insertElement(b1);
+    chai.expect(e2).to.exist;
+    b1.saveChanges("second");
+    const stash2 = await StashManager.stash({ db: b1, description: "stash test 2", discardLocalChanges: true, keepLocks: true });
+    chai.expect(stash2).to.exist;
+    chai.expect(b1.elements.tryGetElement(e1)).to.undefined;
+    chai.expect(b1.elements.tryGetElement(e2)).to.undefined;
+    chai.expect(b1.txns.isUndoPossible).to.be.false;
+    chai.expect(b1.txns.isRedoPossible).to.be.false;
+
+    // stash 3
+    const e3 = await testIModel.insertElement(b1);
+    chai.expect(e3).to.exist;
+    b1.saveChanges("third");
+    const stash3 = await StashManager.stash({ db: b1, description: "stash test 3", discardLocalChanges: true, keepLocks: true });
+    chai.expect(stash3).to.exist;
+    chai.expect(b1.elements.tryGetElement(e1)).to.undefined;
+    chai.expect(b1.elements.tryGetElement(e2)).to.undefined;
+    chai.expect(b1.elements.tryGetElement(e3)).to.undefined;
+    chai.expect(b1.txns.isUndoPossible).to.be.false;
+    chai.expect(b1.txns.isRedoPossible).to.be.false;
+
+    chai.expect(e1).not.equals(e2);
+    chai.expect(e1).not.equals(e3);
+    chai.expect(e2).not.equals(e3);
+
+    const stashes = StashManager.getStashes(b1);
+    chai.expect(stashes).to.have.lengthOf(3);
+    chai.expect(stashes[0].description).to.equals("stash test 3");
+    chai.expect(stashes[1].description).to.equals("stash test 2");
+    chai.expect(stashes[2].description).to.equals("stash test 1");
+
+    // restore stash 1
+    await StashManager.apply({ db: b1, stash: stash1, method: "restore" });
+    chai.expect(b1.elements.tryGetElement(e1)).to.exist;
+    chai.expect(b1.elements.tryGetElement(e2)).to.undefined;
+    chai.expect(b1.elements.tryGetElement(e3)).to.undefined;
+
+    // restore stash 2
+    await StashManager.apply({ db: b1, stash: stash2, method: "restore" });
+    chai.expect(b1.elements.tryGetElement(e1)).to.undefined;
+    chai.expect(b1.elements.tryGetElement(e2)).to.exist;
+    chai.expect(b1.elements.tryGetElement(e3)).to.undefined;
+
+    // restore stash 3
+    await StashManager.apply({ db: b1, stash: stash3, method: "restore" });
+    chai.expect(b1.elements.tryGetElement(e1)).to.undefined;
+    chai.expect(b1.elements.tryGetElement(e2)).to.undefined;
+    chai.expect(b1.elements.tryGetElement(e3)).to.exist;
+  });
+it.only("should restore stash in any order", async () => {
+    const b1 = await testIModel.openBriefcase();
+
+    // stash 1
+    const e1 = await testIModel.insertElement(b1);
+    chai.expect(e1).to.exist;
+    b1.saveChanges("first");
+    // do not discard local changes
+    const stash1 = await StashManager.stash({ db: b1, description: "stash test 1" });
+    chai.expect(stash1).to.exist;
+    chai.expect(b1.elements.tryGetElement(e1)).to.exist;
+    chai.expect(b1.txns.isUndoPossible).to.be.true;
+    chai.expect(b1.txns.isRedoPossible).to.be.false;
+
+    // stash 2
+    const e2 = await testIModel.insertElement(b1);
+    chai.expect(e2).to.exist;
+    b1.saveChanges("second");
+     // do not discard local changes
+    const stash2 = await StashManager.stash({ db: b1, description: "stash test 2"});
+    chai.expect(stash2).to.exist;
+    chai.expect(b1.elements.tryGetElement(e1)).to.exist;
+    chai.expect(b1.elements.tryGetElement(e2)).to.exist;
+    chai.expect(b1.txns.isUndoPossible).to.be.true;
+    chai.expect(b1.txns.isRedoPossible).to.be.false;
+
+    // stash 3
+    const e3 = await testIModel.insertElement(b1);
+    chai.expect(e3).to.exist;
+    b1.saveChanges("third");
+     // do not discard local changes
+    const stash3 = await StashManager.stash({ db: b1, description: "stash test 3"});
+    chai.expect(stash3).to.exist;
+    chai.expect(b1.elements.tryGetElement(e1)).to.exist;
+    chai.expect(b1.elements.tryGetElement(e2)).to.exist;
+    chai.expect(b1.elements.tryGetElement(e3)).to.exist;
+    chai.expect(b1.txns.isUndoPossible).to.be.true;
+    chai.expect(b1.txns.isRedoPossible).to.be.false;
+
+    const stashes = StashManager.getStashes(b1);
+    chai.expect(stashes).to.have.lengthOf(3);
+    chai.expect(stashes[0].description).to.equals("stash test 3");
+    chai.expect(stashes[1].description).to.equals("stash test 2");
+    chai.expect(stashes[2].description).to.equals("stash test 1");
+
+    await b1.discardChanges({ holdLocks: true });
+    chai.expect(b1.elements.tryGetElement(e1)).to.undefined;
+    chai.expect(b1.elements.tryGetElement(e2)).to.undefined;
+    chai.expect(b1.elements.tryGetElement(e3)).to.undefined;
+    chai.expect(b1.txns.isUndoPossible).to.be.false;
+    chai.expect(b1.txns.isRedoPossible).to.be.false;
+
+    // restore stash 1
+    await StashManager.apply({ db: b1, stash: stash1, method: "restore" });
+    chai.expect(b1.elements.tryGetElement(e1)).to.exist;
+    chai.expect(b1.elements.tryGetElement(e2)).to.undefined;
+    chai.expect(b1.elements.tryGetElement(e3)).to.undefined;
+
+
+    // restore stash 2
+    await StashManager.apply({ db: b1, stash: stash2, method: "restore" });
+    chai.expect(b1.elements.tryGetElement(e1)).to.exist;
+    chai.expect(b1.elements.tryGetElement(e2)).to.exist;
+    chai.expect(b1.elements.tryGetElement(e3)).to.undefined;
+
+    // restore stash 3
+    await StashManager.apply({ db: b1, stash: stash3, method: "restore" });
+    chai.expect(b1.elements.tryGetElement(e1)).to.exist;
+    chai.expect(b1.elements.tryGetElement(e2)).to.exist;
+    chai.expect(b1.elements.tryGetElement(e3)).to.exist;
+
+  });
+
 });

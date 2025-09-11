@@ -810,6 +810,11 @@ export class TxnManager {
   public get hasUnsavedChanges(): boolean { return this._nativeDb.hasUnsavedChanges(); }
 
   /**
+   * Query if there are any pending schema changes in this IModelDb.
+   */
+  public get hasPendingSchemaChanges(): boolean { return this._nativeDb.hasPendingSchemaChanges(); }
+  
+  /**
    * Query if there are changes in memory that have not been saved to the iModelDb or if there are Txns that are waiting to be pushed.
    * @see [[IModelDb.saveChanges]]
    * @see [[IModelDb.pushChanges]]

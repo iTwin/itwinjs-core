@@ -1,11 +1,13 @@
 import { DbResult, GuidString, Id64Array, Id64String, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
 import { ChangesetIdWithIndex, IModelError, LocalDirName, LockState } from "@itwin/core-common";
-import { BriefcaseDb } from "./IModelDb";
-import { _elementWasCreated, _nativeDb } from "./internal/Symbols";
 import { existsSync, mkdirSync, readdirSync, statSync, unlinkSync } from "node:fs";
+import * as path from "path";
+import { BriefcaseManager } from "./BriefcaseManager";
+import { BriefcaseDb } from "./IModelDb";
+import { _elementWasCreated, _getHubAccess, _hubAccess, _nativeDb } from "./internal/Symbols";
 import { SQLiteDb } from "./SQLiteDb";
-import * as path from "path"
 import { TxnProps } from "./TxnManager";
+import { IModelHost } from "./IModelHost";
 
 /**
  * Properties of a stash
@@ -50,19 +52,28 @@ export interface StashProps {
  */
 export interface CreateStashProps {
   /** Briefcase database instance */
-  readonly briefcase: BriefcaseDb;
+  readonly db: BriefcaseDb;
   /** description of the stash */
   readonly description: string;
-  /** reverse and delete all local changes. Also release all locks */
-  readonly resetBriefcase?: true;
+  /** discard all local changes and unless keepLocks flag is set, all locks will be released */
+  readonly discardLocalChanges?: true;
+  /** keep all locks after discarding local changes */
+  readonly keepLocks?: true;
 }
 
 /**
  * Arguments for stash operations
  */
-interface StashOperationArgs {
-  db: BriefcaseDb;
-  stash: Id64String | StashProps;
+export interface StashArgs {
+  readonly db: BriefcaseDb;
+  readonly stash: Id64String | StashProps;
+}
+
+/**
+ * Arguments for applying a stash
+ */
+export interface StashApplyArgs extends StashArgs {
+  readonly method: "apply" | "restore";
 }
 
 enum LockOrigin {
@@ -111,7 +122,7 @@ export class StashManager {
    * @param args - The arguments containing the stash information, which can be either a string or an object with an `id` property.
    * @returns The stash ID as a lowercase string.
    */
-  private static getStashId(args: StashOperationArgs) {
+  private static getStashId(args: StashArgs) {
     return (typeof args.stash === "string" ? args.stash : args.stash.id).toLowerCase();
   }
 
@@ -122,7 +133,7 @@ export class StashManager {
    * @returns The absolute path to the stash file.
    * @throws IModelError with status `IModelStatus.BadArg` if the stash root folder or the stash file does not exist.
    */
-  private static getStashFilePath(args: StashOperationArgs) {
+  private static getStashFilePath(args: StashArgs) {
     const stashRoot = this.getStashRootFolder(args.db, false);
     if (!existsSync(stashRoot)) {
       throw new IModelError(IModelStatus.BadArg, "Invalid stash");
@@ -143,7 +154,7 @@ export class StashManager {
    * @param origin - The lock origin to filter by.
    * @returns An array of lock IDs (`Id64Array`) that match the given state and origin.
    */
-  private static queryLocks(args: StashOperationArgs, state: LockState, origin: LockOrigin): Id64Array {
+  private static queryLocks(args: StashArgs, state: LockState, origin: LockOrigin): Id64Array {
     return this.withStash(args, (stashDb) => {
       const query = `SELECT JSON_GROUP_ARRAY(FORMAT('0x%x', Id)) FROM [locks] WHERE State = ${state} AND origin = ${origin}`;
       return stashDb.withPreparedSqliteStatement(query, (stmt) => {
@@ -159,7 +170,7 @@ export class StashManager {
    * Acquire locks for the specified stash. If this fail then stash should not be applied.
    * @param args The stash arguments.
    */
-  public static async acquireLocks(args: StashOperationArgs) {
+  public static async acquireLocks(args: StashArgs) {
     const shared = this.queryLocks(args, LockState.Shared, LockOrigin.Acquired);
     await args.db.locks.acquireLocks({ shared });
 
@@ -185,11 +196,23 @@ export class StashManager {
    * @throws Error if the stash operation fails.
    */
   public static async stash(args: CreateStashProps): Promise<StashProps> {
-    const stashRootDir = StashManager.getStashRootFolder(args.briefcase, true);
-    const iModelId = args.briefcase.iModelId;
-    const stash = args.briefcase[_nativeDb].stashChanges({ stashRootDir, description: args.description, iModelId }) as StashProps;
-    if (args.resetBriefcase) {
-      await args.briefcase.locks.releaseAllLocks();
+    const stashRootDir = StashManager.getStashRootFolder(args.db, true);
+    const iModelId = args.db.iModelId;
+    if (!args.db.txns.hasPendingTxns) {
+      throw new IModelError(IModelStatus.BadArg, "nothing to stash");
+    }
+
+    if (args.db.txns.hasUnsavedChanges) {
+      throw new IModelError(IModelStatus.BadArg, "Unsaved changes exist");
+    }
+
+    if (args.db.txns.hasPendingSchemaChanges) {
+      throw new IModelError(IModelStatus.BadArg, "Pending schema changeset stashing is not currently supported");
+    }
+
+    const stash = args.db[_nativeDb].stashChanges({ stashRootDir, description: args.description, iModelId }) as StashProps;
+    if (args.discardLocalChanges) {
+      await this.discardLocalChanges(args);
     }
     return stash;
   }
@@ -204,7 +227,7 @@ export class StashManager {
    * @param args - The arguments required to locate and access the stash.
    * @returns The stash file properties if found; otherwise, `undefined`.
    */
-  public static getStash(args: StashOperationArgs): StashProps | undefined {
+  public static getStash(args: StashArgs): StashProps | undefined {
     try {
       return this.withStash(args, (stashDb) => {
         const stashProps = stashDb.withPreparedSqliteStatement("SELECT [val] FROM [be_Local] WHERE [name]='$stash_info'", (stmt) => {
@@ -233,7 +256,7 @@ export class StashManager {
    * The stash database is opened in read-only mode and is automatically closed after the callback completes,
    * regardless of whether the callback throws an error.
    */
-  public static withStash<T>(args: StashOperationArgs, callback: (stashDb: SQLiteDb) => T): T {
+  public static withStash<T>(args: StashArgs, callback: (stashDb: SQLiteDb) => T): T {
     const stashFile = this.getStashFilePath(args);
     if (!existsSync(stashFile)) {
       throw new IModelError(IModelStatus.BadArg, "Invalid stash");
@@ -306,5 +329,67 @@ export class StashManager {
     this.getStashes(db).forEach((stash) => {
       this.dropStash(db, stash);
     });
+  }
+
+  private static async queryChangeset(args: StashArgs & { stash: StashProps }): Promise<ChangesetIdWithIndex> {
+    return IModelHost[_hubAccess].queryChangeset({
+      iModelId: args.stash.iModelId,
+      changeset: args.stash.parentChangeset,
+      accessToken: await IModelHost.getAccessToken()
+    });
+  }
+
+  private static async restore(args: StashArgs & { stash: StashProps }): Promise<void> {
+    const { db, stash } = args;
+    Logger.logInfo("StashManager", `Restoring stash: ${stash.id}`);
+
+    const stashFile = this.getStashFilePath({ db, stash });
+    await db.discardChanges({  holdLocks: true });
+    await this.acquireLocks(args);
+    if (db.changeset.id !== stash.parentChangeset.id) {
+      // Changeset ID mismatch
+      Logger.logWarning("StashManager", "Changeset ID mismatch");
+
+      const stashChangeset = await this.queryChangeset(args);
+      await BriefcaseManager.pullAndApplyChangesets(db, { toIndex: stashChangeset.index });
+    }
+
+    db[_nativeDb].stashRestore(stashFile);
+
+    (db as any).loadIModelSettings();
+    (db as any).initializeIModelDb("pullMerge");
+    db.saveChanges();
+  }
+
+  /**
+   * Applies a stashed change to the specified BriefcaseDb.
+   * @param args - The arguments for applying the stash.
+   */
+  public static async apply(args: StashApplyArgs): Promise<void> {
+    const conn = args.db;
+    conn.clearCaches();
+    conn[_nativeDb].clearECDbCache();
+    const stash = this.getStash(args);
+    if (!stash) {
+      throw new IModelError(IModelStatus.BadArg, "Invalid stash");
+    }
+
+    if (conn.txns.hasUnsavedChanges) {
+      throw new IModelError(IModelStatus.BadArg, "Unsaved changes present");
+    }
+
+    if (conn.iModelId !== stash.iModelId) {
+      throw new IModelError(IModelStatus.BadArg, "Stash does not belong to this iModel");
+    }
+
+    if (conn.briefcaseId !== stash.briefcaseId) {
+      throw new IModelError(IModelStatus.BadArg, "Stash does not belong to this briefcase");
+    }
+
+    if (args.method === "restore") {
+      return this.restore({ db: conn, stash });
+    }
+
+    throw new IModelError(IModelStatus.BadArg, "Invalid stash operation");
   }
 }

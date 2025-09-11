@@ -72,6 +72,7 @@ import { _cache, _close, _hubAccess, _instanceKeyCache, _nativeDb, _releaseAllLo
 import { ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
+import { StashManager } from "./StashManager";
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -2965,6 +2966,41 @@ export type OpenBriefcaseArgs = OpenBriefcaseProps & CloudContainerArgs & OpenSq
  * BriefcaseDb raises a set of events to allow apps and subsystems to track its object life cycle, including [[onOpen]] and [[onOpened]].
  * @public
  */
+/**
+ * Represents a writable or read-only briefcase database, providing APIs for managing local changes,
+ * synchronizing with iModelHub, handling schema upgrades, and managing locks.
+ *
+ * `BriefcaseDb` extends {@link IModelDb} and adds functionality specific to briefcase workflows,
+ * such as transaction management, code service integration, schema synchronization, and event hooks
+ * for open/close operations.
+ *
+ * Key features:
+ * - Transaction management via {@link txns}
+ * - Schema synchronization and upgrade support
+ * - Lock server integration for collaborative editing
+ * - Event hooks for open, opened, closed, and code service creation
+ * - Methods for pulling, pushing, and reverting changesets
+ * - Support for read-only and writable modes, with seamless transitions
+ *
+ * @see {@link IModelDb}
+ */
+
+/**
+ * Permanently discards any local changes made to this briefcase, reverting the briefcase to its last synchronized state.
+ *
+ * This operation cannot be undone. By default, all locks held by this briefcase will be released unless the `holdLocks` option is specified.
+ *
+ * **Usage Example:**
+ * ```typescript
+ * await briefcaseDb.discardChanges({ holdLocks: true });
+ * ```
+ *
+ * @param args - Options for discarding changes.
+ * @param args.holdLocks - If `true`, retains all currently held locks after discarding changes. If omitted or `false`, all locks will be released.
+ * @returns A promise that resolves when the operation is complete.
+ * @throws May throw if discarding changes fails.
+ * @alpha
+ */
 export class BriefcaseDb extends IModelDb {
   /** Manages local changes to this briefcase. */
   public readonly txns: TxnManager = new TxnManager(this);
@@ -3016,6 +3052,30 @@ export class BriefcaseDb extends IModelDb {
     return db?.isBriefcaseDb() ? db : undefined;
   }
 
+/**
+ * Permanently discards any local changes made to this briefcase, reverting the briefcase to its last synchronized state.
+ * This operation cannot be undone. By default, all locks held by this briefcase will be released unless the `holdLocks` option is specified.
+ * @Note This operation can be performed at any point including after failed rebase attempts.
+ * @param args - Options for discarding changes.
+ * @param args.holdLocks - If `true`, retains all currently held locks after discarding changes. If omitted or `false`, all locks will be released.
+ * @returns A promise that resolves when the operation is complete.
+ * @throws May throw if discarding changes fails.
+ * @alpha
+ */
+  public async discardChanges(args? : { holdLocks?: true}): Promise<void> {
+    Logger.logInfo(loggerCategory, "Discarding local changes");
+    this.clearCaches();
+    this[_nativeDb].clearECDbCache();
+    this[_nativeDb].discardLocalChanges();
+    this.initializeIModelDb("pullMerge");
+    if (args?.holdLocks) {
+      return;
+    }
+
+    // attempt to release locks must happen after changes are undone successfully
+    Logger.logInfo(loggerCategory, "Releasing locks after discarding changes");
+    await this.locks.releaseAllLocks();
+  }
   /**
    * The Guid that identifies the *context* that owns this iModel.
    * GuidString | undefined for the superclass, but required for BriefcaseDb
