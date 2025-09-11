@@ -484,7 +484,7 @@ export class RunLayout {
     this.fontId = props.fontId;
   }
 
-  // todo; maybe pass settings in
+  // TODO: maybe pass settings in
   public static create(source: Run, context: LayoutContext): RunLayout {
     const style = context.textStyleResolver.resolveSettings(source.styleOverrides);
     const fontId = context.findFontId(style.fontName);
