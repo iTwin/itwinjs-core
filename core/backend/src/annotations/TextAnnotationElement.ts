@@ -49,7 +49,7 @@ export interface TextAnnotation2dCreateArgs {
   /** The placement properties for the annotation. */
   placement: Placement2dProps;
   /** The default text style ID for the annotation. */
-  defaultTextStyleId: Id64String;
+  defaultTextStyleId?: Id64String;
   /** Optional [[TextAnnotation]] JSON representation used to create the `TextAnnotation2d`. Essentially an empty element if not provided. */
   textAnnotationData?: TextAnnotationProps;
   /** Optional code for the element. */
@@ -67,7 +67,7 @@ export interface TextAnnotation3dCreateArgs {
   /** The placement properties for the annotation. */
   placement: Placement3dProps;
   /** The default text style ID for the annotation. */
-  defaultTextStyleId: Id64String;
+  defaultTextStyleId?: Id64String;
   /** Optional [[TextAnnotation]] JSON representation used to create the `TextAnnotation3d`. Essentially an empty element if not provided. */
   textAnnotationData?: TextAnnotationProps;
   /** Optional code for the element. */
@@ -141,7 +141,7 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
     const elementProps: TextAnnotation2dProps = {
       classFullName: this.classFullName,
       textAnnotationData: JSON.stringify(arg.textAnnotationData),
-      defaultTextStyle: new TextAnnotationUsesTextStyleByDefault(arg.defaultTextStyleId).toJSON(),
+      defaultTextStyle: arg.defaultTextStyleId ? new TextAnnotationUsesTextStyleByDefault(arg.defaultTextStyleId).toJSON() : undefined,
       placement: arg.placement,
       model: arg.model,
       category: arg.category,
@@ -271,7 +271,7 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
     const elementProps: TextAnnotation3dProps = {
       classFullName: this.classFullName,
       textAnnotationData: JSON.stringify(arg.textAnnotationData),
-      defaultTextStyle: new TextAnnotationUsesTextStyleByDefault(arg.defaultTextStyleId).toJSON(),
+      defaultTextStyle: arg.defaultTextStyleId ? new TextAnnotationUsesTextStyleByDefault(arg.defaultTextStyleId).toJSON() : undefined,
       placement: arg.placement,
       model: arg.model,
       category: arg.category,
