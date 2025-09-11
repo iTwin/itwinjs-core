@@ -5,7 +5,7 @@
 
 import { ColorDef } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection } from "@itwin/core-frontend";
-import { Point3d } from "@itwin/core-geometry";
+import { AngleSweep, Arc3d, Matrix3d, Point3d } from "@itwin/core-geometry";
 // import { LineString3d, Path } from "@itwin/core-geometry";
 
 class CesiumDecorator implements Decorator {
@@ -24,6 +24,7 @@ class CesiumDecorator implements Decorator {
       this.createPointDecorations(context);
       this.createLineStringDecorations(context);
       this.createShapeDecorations(context);
+      this.createArcDecorations(context);
     } catch (error) {
       console.error('Decoration creation failed:', error);
     }
@@ -116,6 +117,60 @@ class CesiumDecorator implements Decorator {
       const builder = context.createGraphic({ type: shape.type });
       builder.setSymbology(shape.color, shape.color, 3);
       builder.addShape(shape.points);
+      context.addDecorationFromBuilder(builder);
+    });
+  }
+
+  private createArcDecorations(context: DecorateContext): void {
+    if (!this._iModel) return;
+    const center = this._iModel.projectExtents.center;
+    
+    const arcs = [
+      {
+        arc: Arc3d.createScaledXYColumns(
+          new Point3d(center.x - 100000, center.y - 100000, center.z + 35000),
+          Matrix3d.createIdentity(),
+          40000,
+          40000,
+          AngleSweep.createStartSweepRadians(0, Math.PI)
+        ),
+        isEllipse: false,
+        filled: false,
+        type: GraphicType.WorldDecoration,
+        color: ColorDef.from(255, 255, 0),
+      },
+      {
+        arc: Arc3d.createScaledXYColumns(
+          new Point3d(center.x + 100000, center.y + 100000, center.z + 40000),
+          Matrix3d.createIdentity(),
+          30000,
+          50000,
+          AngleSweep.createStartSweepRadians(0, Math.PI * 2)
+        ),
+        isEllipse: true,
+        filled: true,
+        type: GraphicType.WorldOverlay,
+        color: ColorDef.from(0, 255, 255),
+      },
+      {
+        arc: Arc3d.createScaledXYColumns(
+          new Point3d(center.x, center.y - 200000, center.z + 45000),
+          Matrix3d.createIdentity(),
+          60000,
+          30000,
+          AngleSweep.createStartSweepRadians(Math.PI / 4, Math.PI * 1.5)
+        ),
+        isEllipse: false,
+        filled: false,
+        type: GraphicType.WorldDecoration,
+        color: ColorDef.from(255, 100, 100),
+      }
+    ];
+    
+    arcs.forEach((arcDef) => {
+      const builder = context.createGraphic({ type: arcDef.type });
+      builder.setSymbology(arcDef.color, arcDef.color, 2);
+      builder.addArc(arcDef.arc, arcDef.isEllipse, arcDef.filled);
       context.addDecorationFromBuilder(builder);
     });
   }

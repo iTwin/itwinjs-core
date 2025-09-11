@@ -91,7 +91,12 @@ export abstract class PrimitiveConverter {
         const coordinateData = graphicWithCoords._coordinateData;
         const originalData = this.extractPrimitiveData(coordinateData, primitiveType);
         
-        this.createPrimitiveFromGraphic(graphic, primitiveId, index, collection, iModel, originalData, type);
+        const result = this.createPrimitiveFromGraphic(graphic, primitiveId, index, collection, iModel, originalData, type);
+        
+        // For ArcPrimitiveConverter, we need to manually add Primitives to the collection
+        if (result && typeof result === 'object' && result.constructor.name === 'Primitive') {
+          collection.add(result);
+        }
       } catch (error) {
         console.error(`Error creating ${type} ${primitiveType} primitive:`, error);
       }
@@ -181,6 +186,13 @@ export abstract class PrimitiveConverter {
               const shapeConverter = PrimitiveConverterFactory.getConverter(primitive.type);
               if (shapeConverter) {
                 shapeConverter.convertDecorations([graphic], type, scene, iModel);
+              }
+              break;
+              
+            case 'arc':
+              const arcConverter = PrimitiveConverterFactory.getConverter(primitive.type);
+              if (arcConverter) {
+                arcConverter.convertDecorations([graphic], type, scene, iModel);
               }
               break;
               

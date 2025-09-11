@@ -6,7 +6,7 @@
  * @module Cesium
  */
 
-import { Point3d } from "@itwin/core-geometry";
+import { Arc3d, Point3d } from "@itwin/core-geometry";
 import { CustomGraphicBuilderOptions, GraphicPrimitive, GraphicTemplate, PrimitiveBuilder, RenderGraphic, ViewportGraphicBuilderOptions } from "@itwin/core-frontend";
 import { System } from "./System";
 import { CoordinateStorage } from "./CoordinateStorage";
@@ -32,6 +32,11 @@ export class CoordinateBuilder extends PrimitiveBuilder {
   public override addShape(points: Point3d[]): void {
     this._coordinateData.push({ type: 'shape', points: [...points] });
     super.addShape(points);
+  }
+
+  public override addArc(arc: Arc3d, isEllipse: boolean, filled: boolean): void {
+    this._coordinateData.push({ type: 'arc', arc: arc.clone(), isEllipse, filled });
+    super.addArc(arc, isEllipse, filled);
   }
 
   public override finish(): RenderGraphic {
