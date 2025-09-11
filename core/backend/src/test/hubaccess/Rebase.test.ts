@@ -545,6 +545,55 @@ describe.only("rebase changes & stashing api", function (this: Suite) {
     await b2.pushChanges({description: "test"});
     chai.expect(b2.changeset.index).to.equals(4);
   });
+  it.only("restore stash that has element changed by another briefcase", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    chai.expect(b1.changeset.index).to.equals(2);
+    chai.expect(b2.changeset.index).to.equals(2);
+
+    const e1 = await testIModel.insertElement(b1);
+    chai.expect(e1).to.exist;
+    b1.saveChanges();
+    await b1.pushChanges({ description: `${e1} inserted` });
+
+    chai.expect(b1.changeset.index).to.equals(3);
+
+    await b2.pullChanges();
+    chai.expect(b2.changeset.index).to.equals(3);
+    await testIModel.updateElement(b2, e1);
+    b2.saveChanges();
+
+    chai.expect(b2.locks.holdsExclusiveLock(e1)).to.be.true;
+    const b2Stash1 = await StashManager.stash({ db: b2, description: "stash test 1", discardLocalChanges: true });
+    chai.expect(b2Stash1.parentChangeset.index).to.equals(3);
+    chai.expect(b2.locks.holdsExclusiveLock(e1)).to.be.false;
+
+    // stash release lock so b2 should have released lock and b1 should be able to update.
+    await testIModel.updateElement(b1, e1);
+    b1.saveChanges();
+
+    // restore stash should fail because of lock not obtained on e1
+    await chai.expect(StashManager.apply({ db: b2, stash: b2Stash1, method: "restore" })).to.be.rejectedWith("exclusive lock is already held");
+
+    // push b1 changes to release lock
+    await b1.pushChanges({ description: `${e1} inserted` });
+
+    // restore stash should fail because pull is required to obtain lock
+    await chai.expect(StashManager.apply({ db: b2, stash: b2Stash1, method: "restore" })).to.be.rejectedWith("pull is required to obtain lock");
+
+    await b2.pullChanges();
+
+    chai.expect(b2.changeset.index).to.equals(4);
+    const elBefore = b2.elements.tryGetElementProps(e1);
+    chai.expect((elBefore as any).prop1).to.equals("2");
+    // restore stash should succeed as now it can obtain lock
+    await StashManager.apply({ db: b2, stash: b2Stash1, method: "restore" });
+
+    const elAfter = b2.elements.tryGetElementProps(e1);
+    chai.expect((elAfter as any).prop1).to.equals("1");
+    await b2.pushChanges({ description: `${e1} updated` });
+  });
   it("schema change should not be stashed", async () => {
     const b1 = await testIModel.openBriefcase();
     const schema1 = `<?xml version="1.0" encoding="UTF-8"?>
