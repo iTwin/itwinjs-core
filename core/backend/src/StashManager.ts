@@ -72,6 +72,15 @@ export interface StashArgs {
 /**
  * Arguments for applying a stash
  */
+/**
+ * Arguments for applying or restoring a stash.
+ *
+ * Extends {@link StashArgs} with an additional `method` property to specify the operation.
+ *
+ * @property method - Specifies the stash operation to perform.
+ *   - `"apply"`: Apply the stash without removing it.
+ *   - `"restore"`: Apply the stash and remove it from the stash list.
+ */
 export interface StashApplyArgs extends StashArgs {
   readonly method: "apply" | "restore";
 }
@@ -272,14 +281,14 @@ export class StashManager {
   }
 
   /**
-   * Retrieves all stash files associated with the specified BriefcaseDb.
+   * Retrieves all stash files associated with the specified {@link BriefcaseDb}.
    *
    * This method scans the stash directory for files with a `.stash` extension,
-   * loads their metadata, and returns an array of `StashFileProps` objects sorted
+   * loads their metadata, and returns an array of `StashProps` objects sorted
    * by their timestamp in descending order (most recent first).
    *
-   * @param db - The BriefcaseDb instance for which to retrieve stash files.
-   * @returns An array of `StashFileProps` representing the found stash files, sorted by timestamp.
+   * @param db - The {@link BriefcaseDb} instance for which to retrieve stash files.
+   * @returns An array of `StashProps` representing the found stash files, sorted by timestamp.
    */
   public static getStashes(db: BriefcaseDb): StashProps[] {
     const stashes: StashProps[] = [];
@@ -302,9 +311,9 @@ export class StashManager {
   }
 
   /**
-   * Deletes the stash file associated with the specified stash ID or properties from the given BriefcaseDb.
+   * Deletes the stash file associated with the specified stash ID or properties from the given {@link BriefcaseDb}.
    *
-   * @param db - The BriefcaseDb instance from which the stash should be dropped.
+   * @param db - The {@link BriefcaseDb} instance from which the stash should be dropped.
    * @param stashId - The unique identifier (GuidString) or properties (StashProps) of the stash to be deleted.
    * @returns Returns `true` if the stash file was successfully deleted, otherwise returns `false`.
    * @throws Does not throw; logs errors internally and returns `false` on failure.
@@ -321,9 +330,9 @@ export class StashManager {
   }
 
   /**
-   * Removes all stashes associated with the specified BriefcaseDb.
+   * Removes all stashes associated with the specified {@link BriefcaseDb}.
    *
-   * @param db - The BriefcaseDb instance from which all stashes will be removed.
+   * @param db - The {@link BriefcaseDb} instance from which all stashes will be removed.
    */
   public static dropAllStashes(db: BriefcaseDb): void {
     this.getStashes(db).forEach((stash) => {
@@ -331,6 +340,12 @@ export class StashManager {
     });
   }
 
+  /**
+   * Queries the hub for the changeset information associated with the given stash.
+   *
+   * @param args - The arguments including the stash properties.
+   * @returns A promise resolving to the changeset ID and index.
+   */
   private static async queryChangeset(args: StashArgs & { stash: StashProps }): Promise<ChangesetIdWithIndex> {
     return IModelHost[_hubAccess].queryChangeset({
       iModelId: args.stash.iModelId,
@@ -339,6 +354,15 @@ export class StashManager {
     });
   }
 
+  /**
+   * Restores the specified stash to the given {@link BriefcaseDb}.
+   *
+   * This method will discard local changes, acquire required locks, pull and apply changesets if needed,
+   * and then restore the stash from the stash file.
+   *
+   * @param args - The arguments including the target database and stash properties.
+   * @throws IModelError if the restore operation fails.
+   */
   private static async restore(args: StashArgs & { stash: StashProps }): Promise<void> {
     const { db, stash } = args;
     Logger.logInfo("StashManager", `Restoring stash: ${stash.id}`);
@@ -362,8 +386,12 @@ export class StashManager {
   }
 
   /**
-   * Applies a stashed change to the specified BriefcaseDb.
-   * @param args - The arguments for applying the stash.
+   * Applies a stashed change to the specified {@link BriefcaseDb}.
+   *
+   * This method validates the stash, ensures the database is in a valid state, and applies or restores the stash as requested.
+   *
+   * @param args - The arguments for applying the stash, including the method ("restore").
+   * @throws IModelError if the stash is invalid, the database is not in a valid state, or the stash does not belong to the database.
    */
   public static async apply(args: StashApplyArgs): Promise<void> {
     const conn = args.db;

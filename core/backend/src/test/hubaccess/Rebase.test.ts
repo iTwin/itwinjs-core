@@ -103,18 +103,19 @@ class TestIModel {
   }
 }
 
-describe.only("change merge manager", function (this: Suite) {
+describe.only("rebase changes & stashing api", function (this: Suite) {
   let testIModel: TestIModel;
   before(async () => {
     if (!IModelHost.isValid)
       await IModelHost.startup();
+  });
+  this.beforeEach(async () => {
     testIModel = new TestIModel();
     await testIModel.startup();
   });
-  after(async () => {
+  this.afterEach(async () => {
     await testIModel.shutdown();
   });
-
   it("save changes args", async () => {
     const b1 = await testIModel.openBriefcase();
     await testIModel.insertElement(b1)
@@ -496,7 +497,7 @@ describe.only("change merge manager", function (this: Suite) {
     chai.expect(b1.elements.tryGetElement(e3)).to.exist;
 
   });
-  it("should restore stash in any order", async () => {
+  it("should restore stash when briefcase has advanced to latest changeset", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
 
@@ -544,7 +545,7 @@ describe.only("change merge manager", function (this: Suite) {
     await b2.pushChanges({description: "test"});
     chai.expect(b2.changeset.index).to.equals(4);
   });
-  it.only("schema change should not be stashed", async () => {
+  it("schema change should not be stashed", async () => {
     const b1 = await testIModel.openBriefcase();
     const schema1 = `<?xml version="1.0" encoding="UTF-8"?>
         <ECSchema schemaName="TestDomain" alias="ts" version="01.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
