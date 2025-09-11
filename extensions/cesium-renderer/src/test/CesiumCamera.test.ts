@@ -6,7 +6,7 @@
 import { describe, expect, it } from "vitest";
 import { Code, EcefLocation, IModel } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
-import { createCesiumCamera } from "../../internal/render/CesiumCamera";
+import { createCesiumCamera } from "../CesiumCamera.js";
 
 type Point = {
   x: number;
@@ -164,9 +164,9 @@ describe("createCesiumCamera", () => {
     const cesiumCamera = createCesiumCamera(cameraOffView, ecefLocation);
 
     const expectedCesiumCamera = {
-      position: {x: 1255389.8978600262, y: -4732988.808369093, z: 4073555.356273554},
-      direction: {x: 0.692078850684251, y: 0.7011604395228591, z: -0.17146691367047218},
-      up: {x: 0.6188478278988585, y: -0.4540867701756252, z: 0.6409622227997012},
+      position: { x: 1255389.8978600262, y: -4732988.808369093, z: 4073555.356273554 },
+      direction: { x: 0.692078850684251, y: 0.7011604395228591, z: -0.17146691367047218 },
+      up: { x: 0.6188478278988585, y: -0.4540867701756252, z: 0.6409622227997012 },
       frustum: {
         near: 0.01,
         far: 1000000,
