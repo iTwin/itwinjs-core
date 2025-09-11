@@ -505,17 +505,24 @@ function traverseContentItemStructFieldValue(
     valueType.members.forEach((memberDescription) => {
       let memberField = fieldHierarchy.childFields.find((f) => f.field.name === memberDescription.name);
       if (!memberField) {
-        // Not finding a member field means we're traversing an ECStruct. We still need to carry member information, so we
-        // create a fake field to represent the member
+        // Not finding a member field means we're traversing an ECStruct. If current field is `StructPropertiesField`
+        // try looking up member field in there. Otherwise, just create fake field to propagate information.
+        const structMemberField =
+          fieldHierarchy.field.isPropertiesField() && fieldHierarchy.field.isStructPropertiesField()
+            ? fieldHierarchy.field.memberFields.find((mf) => mf.name === memberDescription.name)
+            : undefined;
+
         memberField = {
-          field: new Field({
-            category: fieldHierarchy.field.category,
-            name: memberDescription.name,
-            label: memberDescription.label,
-            type: memberDescription.type,
-            isReadonly: fieldHierarchy.field.isReadonly,
-            priority: 0,
-          }),
+          field:
+            structMemberField ??
+            new Field({
+              category: fieldHierarchy.field.category,
+              name: memberDescription.name,
+              label: memberDescription.label,
+              type: memberDescription.type,
+              isReadonly: fieldHierarchy.field.isReadonly,
+              priority: 0,
+            }),
           childFields: [],
         };
       }
