@@ -3,6 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Geometry } from "../Geometry";
+
 export function prettyPrint(jsonObject: object): string {
   if (jsonObject === undefined)
     return "";
@@ -92,7 +94,44 @@ export function prettyPrint(jsonObject: object): string {
   return prettyString;
 }
 
-/** Return a random number between a and b */
+/** Return a random number in [a, b). */
 export function getRandomNumber(a: number, b: number): number {
   return (b - a) * Math.random() + a;
 }
+
+/**
+ * Return a random number in the interval [0, scale) with options for interval expansion.
+ * * All defaults is just `Math.random()`.
+ * @param scale largest value that can be returned. Default is 1.
+ * @param edgeProbability additional probability of returning zero or an interval endpoint.
+ * Default zero means no additional probability over `Math.random()`. Increase this value for edge case testing.
+ * @param allowNegative whether to expand the interval to [-scale, scale). Default is false, for the interval [0,scale).
+ */
+export function getRandomNumberScaled(scale: number = 1, edgeProbability: number = 0, allowNegative: boolean = false): number {
+  scale = Math.abs(scale);
+  edgeProbability = Geometry.clamp(Math.abs(edgeProbability), 0, 1);
+  const fractionProbability = 1 - edgeProbability;
+  let numEdgeCases, numFractionCases;
+  if (allowNegative) {
+    numEdgeCases = 3;     // -1, 0, 1
+    numFractionCases = 2; // -f, f
+  } else {
+    numEdgeCases = 2;     // 0, 1
+    numFractionCases = 1; // f
+  }
+  let unscaled = 1, prevProbability = 0;
+  const choice = Math.random(); // in [0, 1)
+  if (allowNegative) {
+    if (choice < (prevProbability += edgeProbability / numEdgeCases))
+      unscaled = -1;
+    else if (choice < (prevProbability += fractionProbability / numFractionCases))
+      unscaled = -Math.random();
+  }
+  if (1 === unscaled) {
+    if (choice < (prevProbability += edgeProbability / numEdgeCases))
+      unscaled = 0;
+    else if (choice < (prevProbability += fractionProbability / numFractionCases))
+      unscaled = Math.random();
+  }
+  return unscaled * scale;
+};

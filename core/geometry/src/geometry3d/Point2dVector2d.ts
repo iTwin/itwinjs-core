@@ -167,6 +167,12 @@ export class XY implements XAndY {
     return Geometry.crossProductXYXY(
       targetA.x - origin.x, targetA.y - origin.y, targetB.x - origin.x, targetB.y - origin.y);
   }
+  /** Multiply the x, y parts by scale, and return the instance. */
+  public scaleInPlace(scale: number): this  {
+    this.x *= scale;
+    this.y *= scale;
+    return this;
+  }
 }
 
 /** 2D point with `x`,`y` as properties
@@ -314,10 +320,21 @@ export class Point2d extends XY implements BeJSONFunctions {
       result,
     );
   }
-  /** Multiply the x, y parts by scale. */
-  public scaleInPlace(scale: number) {
-    this.x *= scale;
-    this.y *= scale;
+  /** Point2d equivalent of [[Vector2d.createAdd2Scaled]]. */
+  public static createAdd2Scaled(pointA: XAndY, scaleA: number, pointB: XAndY, scaleB: number, result?: Point2d): Point2d {
+    return Point2d.create(pointA.x * scaleA + pointB.x * scaleB, pointA.y * scaleA + pointB.y * scaleB, result);
+  }
+  /** Point2d equivalent of [[Vector2d.createAdd2ScaledXY]]. */
+  public static createAdd2ScaledXY(ax: number, ay: number, scaleA: number, bx: number, by: number, scaleB: number, result?: Point2d): Point2d {
+    return Point2d.create(ax * scaleA + bx * scaleB, ay * scaleA + by * scaleB, result);
+  }
+  /** Point2d equivalent of [[Vector2d.createAdd3Scaled]]. */
+  public static createAdd3Scaled(pointA: XAndY, scaleA: number, pointB: XAndY, scaleB: number, pointC: XAndY, scaleC: number, result?: Point2d): Point2d {
+    return Point2d.create(pointA.x * scaleA + pointB.x * scaleB + pointC.x * scaleC, pointA.y * scaleA + pointB.y * scaleB + pointC.y * scaleC, result);
+  }
+  /** Point2d equivalent of [[Vector2d.createAdd3ScaledXY]]. */
+  public static createAdd3ScaledXY(ax: number, ay: number, scaleA: number, bx: number, by: number, scaleB: number, cx: number, cy: number, scaleC: number, result?: Point2d): Point2d {
+    return Point2d.create(ax * scaleA + bx * scaleB + cx * scaleC, ay * scaleA + by * scaleB + cy * scaleC, result);
   }
   /**
    * Return the dot product of vector from this to targetA and vector from this to targetB
@@ -440,6 +457,22 @@ export class Vector2d extends XY implements BeJSONFunctions {
       return bisector.safeDivideOrNull(c);
     }
     return undefined;
+  }
+  /** Return strongly typed Vector2d sum: `vectorA * scaleA + vectorB * scaleB`. */
+  public static createAdd2Scaled(vectorA: XAndY, scaleA: number, vectorB: XAndY, scaleB: number, result?: Vector2d): Vector2d {
+    return Vector2d.create(vectorA.x * scaleA + vectorB.x * scaleB, vectorA.y * scaleA + vectorB.y * scaleB, result);
+  }
+  /** Return strongly typed Vector2d sum: `vectorA * scaleA + vectorB * scaleB` with separate x,y components. */
+  public static createAdd2ScaledXY(ax: number, ay: number, scaleA: number, bx: number, by: number, scaleB: number, result?: Vector2d): Vector2d {
+    return Vector2d.create(ax * scaleA + bx * scaleB, ay * scaleA + by * scaleB, result);
+  }
+  /** Return strongly typed Vector2d sum: `vectorA * scaleA + vectorB * scaleB + vectorC * scaleC`. */
+  public static createAdd3Scaled(vectorA: XAndY, scaleA: number, vectorB: XAndY, scaleB: number, vectorC: XAndY, scaleC: number, result?: Vector2d): Vector2d {
+    return Vector2d.create(vectorA.x * scaleA + vectorB.x * scaleB + vectorC.x * scaleC, vectorA.y * scaleA + vectorB.y * scaleB + vectorC.y * scaleC, result);
+  }
+  /** Return strongly typed Vector2d sum: `vectorA * scaleA + vectorB * scaleB + vectorC * scaleC` with separate x,y components. */
+  public static createAdd3ScaledXY(ax: number, ay: number, scaleA: number, bx: number, by: number, scaleB: number, cx: number, cy: number, scaleC: number, result?: Vector2d): Vector2d {
+    return Vector2d.create(ax * scaleA + bx * scaleB + cx * scaleC, ay * scaleA + by * scaleB + cy * scaleC, result);
   }
   /**
    * Return a (new or optionally reused) vector which is `this` divided by `denominator`

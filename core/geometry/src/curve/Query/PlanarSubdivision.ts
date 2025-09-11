@@ -139,7 +139,8 @@ export class PlanarSubdivision {
       }
       this.addHalfEdge(graph, p, last.point, last.fraction, p.endPoint(), 1.0, mergeTolerance);
     }
-    HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph, (he: HalfEdge) => he.sortAngle!);
+    // every edge got its sortAngle defined by addHalfEdge
+    HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph, (he: HalfEdge) => he.sortAngle ?? 0, mergeTolerance);
     return graph;
   }
   /**
@@ -228,8 +229,15 @@ export class PlanarSubdivision {
    * @param announce optional callback invoked on each edge/curve of the face/Loop.
    * @param compress whether to consolidate adjacent curves in the output Loop (default `false`).
    * If `announce` is provided, no compression is performed, as edges and curves would no longer be in 1-1 correspondence.
+   * @param closureTol absolute xy-distance for confirming the returned Loop is closed (default [[Geometry.smallMetricDistance]]).
+   * @returns the Loop, or `undefined` if it is not closed within xy-tolerance.
    */
-  public static createLoopInFace(face: HalfEdge | HalfEdge[], announce?: (he: HalfEdge, curve: CurvePrimitive, loop: Loop) => void, compress: boolean = false): Loop | undefined {
+  public static createLoopInFace(
+    face: HalfEdge | HalfEdge[],
+    announce?: (he: HalfEdge, curve: CurvePrimitive, loop: Loop) => void,
+    compress: boolean = false,
+    closureTol: number = Geometry.smallMetricDistance,
+  ): Loop | undefined {
     if (announce)
       compress = false;
     const loop = Loop.create();
@@ -249,9 +257,9 @@ export class PlanarSubdivision {
       options.consolidateLoopSeam = true;
       RegionOps.consolidateAdjacentPrimitives(loop, options);
     }
-    if (loop.isPhysicallyClosedCurve(undefined, true))
+    if (loop.isPhysicallyClosedCurve(closureTol, true))
       return loop;
-    assert(false, "createLoopInFace: face is not physically closed");
+    assert(() => false, "face is not physically closed");
     return undefined;
   }
   /**
@@ -260,8 +268,15 @@ export class PlanarSubdivision {
    * @param face a node in the face loop.
    * @param bridgeMask mask preset on bridge edges (default is `HalfEdgeMask.BRIDGE_EDGE`).
    * @param visitMask mask to use for visiting edges in the face loop (default is `HalfEdgeMask.VISITED`).
+   * @param closureTol absolute xy-distance for confirming the returned Loop is closed (default [[Geometry.smallMetricDistance]]).
+   * @returns the Loop or ParityRegion, or `undefined` if one could not be computed
    */
-  public static createLoopOrParityRegionInFace(face: HalfEdge, bridgeMask: HalfEdgeMask = HalfEdgeMask.BRIDGE_EDGE, visitMask: HalfEdgeMask = HalfEdgeMask.VISITED): Loop | ParityRegion | undefined {
+  public static createLoopOrParityRegionInFace(
+    face: HalfEdge,
+    bridgeMask: HalfEdgeMask = HalfEdgeMask.BRIDGE_EDGE,
+    visitMask: HalfEdgeMask = HalfEdgeMask.VISITED,
+    closureTol: number = Geometry.smallMetricDistance,
+  ): Loop | ParityRegion | undefined {
     let region: AnyRegion | undefined;
     if (face.isSplitWasherFace(bridgeMask)) {
       const loops: Loop[] = [];
@@ -279,7 +294,7 @@ export class PlanarSubdivision {
             continue;
           loopEdges.length = 0;
           if (loopSeed.announceEdgesInSuperFace(bridgeMask, announceEdge, announceBridge)) {
-            const loop = this.createLoopInFace(loopEdges, undefined, true);
+            const loop = this.createLoopInFace(loopEdges, undefined, true, closureTol);
             if (loop) {
               loops.push(loop);
               continue;
@@ -290,7 +305,7 @@ export class PlanarSubdivision {
       region = RegionOps.sortOuterAndHoleLoopsXY(loops);
       region = RegionOps.simplifyRegion(region);
     } else {
-      region = this.createLoopInFace(face, undefined, true);
+      region = this.createLoopInFace(face, undefined, true, closureTol);
     }
     return (region && (region instanceof Loop || region instanceof ParityRegion)) ? region : undefined;
   }

@@ -6,17 +6,18 @@
  * @module Bspline
  */
 
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Geometry } from "../Geometry";
-import { Point3dArray } from "../geometry3d/PointHelpers";
-import { ProxyCurve } from "../curve/ProxyCurve";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { BSplineCurveOps } from "../bspline/BSplineCurveOps";
-import { BSplineCurve3d } from "./BSplineCurve";
+import { Clipper } from "../clipping/ClipUtils";
+import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "../curve/CurvePrimitive";
 import { GeometryQuery } from "../curve/GeometryQuery";
-import { Transform } from "../geometry3d/Transform";
+import { ProxyCurve } from "../curve/ProxyCurve";
+import { Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Point3dArray } from "../geometry3d/PointHelpers";
+import { Transform } from "../geometry3d/Transform";
 import { XYZProps } from "../geometry3d/XYZProps";
+import { BSplineCurve3d } from "./BSplineCurve";
 
 /**
  * fitPoints and end condition data for [[InterpolationCurve3d]]
@@ -24,25 +25,25 @@ import { XYZProps } from "../geometry3d/XYZProps";
  * @public
  */
 export interface InterpolationCurve3dProps {
-  /** order of the computed bspline (one more than degree) */
+  /** The order of the computed B-spline curve (one more than its degree). */
   order?: number;
-  /** true if the B-spline construction should be periodic */
+  /** Whether the B-spline construction should be periodic. Default is `false`. */
   closed?: boolean;
-  /** if closed and no knots, compute chord length knots (1) or uniform knots (0). Chord length knots give best fit. */
+  /** If closed and no knots, compute chord length knots (1) or uniform knots (0, default). Chord length knots give best fit. */
   isChordLenKnots?: number;
-  /** if !closed but first and last fitPoints are equal, pivot computed start/end tangent(s) so that they are colinear (1) or leave them be (0). */
+  /** If !closed but first and last fitPoints are equal, pivot computed start/end tangent(s) so that they are colinear (1) or leave them be (0, default). */
   isColinearTangents?: number;
-  /** if !closed and start/endTangent is given, set its magnitude to the first/last fit point chord length (1) or to the magnitude of the Bessel tangent (0). Bessel gives best fit. */
+  /** If !closed and start/endTangent is defined, set its magnitude to the first/last fit point chord length (1) or to the magnitude of the Bessel tangent (0, default). Bessel gives best fit. */
   isChordLenTangents?: number;
-  /** if !closed and start/endTangent is absent, compute it using the natural end condition (1) or Bessel (0). Bessel gives best fit. */
+  /** If !closed and start/endTangent is `undefined`, compute it using the natural end condition (1) or Bessel (0, default). Bessel gives best fit. */
   isNaturalTangents?: number;
-  /** optional start tangent, pointing into curve. Magnitude is ignored. */
+  /** Optional start tangent, pointing into curve. Magnitude is ignored. */
   startTangent?: XYZProps;
-  /** optional end tangent, pointing into curve. Magnitude is ignored. */
+  /** Optional end tangent, pointing into curve. Magnitude is ignored. */
   endTangent?: XYZProps;
-  /** points that the curve must pass through */
+  /** Points that the curve must pass through. */
   fitPoints: XYZProps[];
-  /** parameters for curve fitting, one per fit point */
+  /** Optional parameters for curve fitting, one per fit point. If `undefined`, knots are computed. */
   knots?: number[];
 }
 
@@ -242,14 +243,12 @@ export class InterpolationCurve3dOptions {
 export class InterpolationCurve3d extends ProxyCurve {
   public readonly curvePrimitiveType = "interpolationCurve";
   private _options: InterpolationCurve3dOptions;
-  /**
-   * CAPTURE properties and proxy curve.
-   */
+  /** CAPTURE properties and proxy curve. */
   private constructor(properties: InterpolationCurve3dOptions, proxyCurve: CurvePrimitive) {
     super(proxyCurve);
     this._options = properties;
   }
-
+  /** Second step of double dispatch: call `handler.handleInterpolationCurve3d(this)` */
   public override dispatchToGeometryHandler(handler: GeometryHandler): any {
     let result = handler.handleInterpolationCurve3d(this);
     if (undefined === result) // if handler doesn't specialize on interpolation curves, default to proxy
@@ -270,7 +269,8 @@ export class InterpolationCurve3d extends ProxyCurve {
     }
     return InterpolationCurve3d.createCapture(optionsCopy);
   }
-  /** Create an [[InterpolationCurve3d]]
+  /**
+   * Create an [[InterpolationCurve3d]]
    * * The options object is captured into the new curve object (not copied)
    */
   public static createCapture(options: InterpolationCurve3dOptions): InterpolationCurve3d | undefined {
@@ -321,7 +321,16 @@ export class InterpolationCurve3d extends ProxyCurve {
     }
     return proxyOk;
   }
-
+  /**
+   * Find intervals of this CurvePrimitive that are interior to a clipper.
+   * * This implementation simply passes the call to the proxy curve.
+   * @param clipper clip structure (e.g. clip planes).
+   * @param announce (optional) function to be called announcing fractional intervals of the input curve.
+   * @returns true if any "in" segments are announced.
+   */
+  public override announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
+    return this._proxyCurve.announceClipIntervals(clipper, announce);
+  }
   /** Return a deep clone */
   public override clone(): InterpolationCurve3d {
     return new InterpolationCurve3d(this._options.clone(), this._proxyCurve.clone());
