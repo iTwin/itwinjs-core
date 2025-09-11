@@ -10,7 +10,6 @@ import { Id64String } from "@itwin/core-bentley";
 import { System } from "./System";
 import { CesiumScene } from "./Scene";
 import { Decorations, GraphicList, IModelApp, Pixel, RenderPlan, RenderTarget, Scene, ViewRect } from "@itwin/core-frontend";
-import { CesiumDecorator } from "./CesiumDecorator";
 import { PrimitiveConverterFactory } from "./PrimitiveConverterFactory";
 import { CesiumCameraHelpers } from "./CesiumCameraHelpers";
 
@@ -21,8 +20,6 @@ import { CesiumCameraHelpers } from "./CesiumCameraHelpers";
 export class OnScreenTarget extends RenderTarget {
   private readonly _canvas: HTMLCanvasElement;
   private readonly _scene: CesiumScene;
-  private _decorator?: CesiumDecorator;
-  private _currentIModel?: any;
   private _lastDecorationCount = -1;
 
   public get renderSystem(): System { return System.instance; }
@@ -69,8 +66,6 @@ export class OnScreenTarget extends RenderTarget {
       return;
     }
 
-    this.startDecorator();
-    
     const currentCount = (decorations.world?.length || 0) + (decorations.normal?.length || 0) + 
                         (decorations.worldOverlay?.length || 0) + (decorations.viewOverlay?.length || 0);
     
@@ -87,38 +82,6 @@ export class OnScreenTarget extends RenderTarget {
     }
   }
 
-  private startDecorator(): void {
-    const currentIModel = IModelApp.viewManager.selectedView?.iModel;
-    
-    if (this._decorator && currentIModel && this._currentIModel !== currentIModel) {
-      this._decorator.stop();
-      this._decorator = undefined;
-    }
-    
-    if (!this._decorator && currentIModel) {
-      this._decorator = CesiumDecorator.start(currentIModel);
-      this._currentIModel = currentIModel;
-      this.setupIModelCloseListener(currentIModel);
-    }
-  }
-  
-  private setupIModelCloseListener(iModel: any): void {
-    const closeListener = () => {
-      if (this._decorator) {
-        this._decorator.stop();
-        this._decorator = undefined;
-      }
-      this._currentIModel = undefined;
-      
-      if (this._scene?.pointCollection) {
-        this._scene.pointCollection.removeAll();
-      }
-    };
-    
-    if (iModel.onClose && typeof iModel.onClose.addListener === 'function') {
-      iModel.onClose.addListener(closeListener);
-    }
-  }
 
 
   public changeRenderPlan(_plan: RenderPlan) {

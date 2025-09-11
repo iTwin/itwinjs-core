@@ -183,7 +183,6 @@ class CesiumDecorator implements Decorator {
 
   public stop(): void {
     IModelApp.viewManager.dropDecorator(this);
-    console.log('CesiumDecorator stopped');
   }
 }
 

@@ -5,6 +5,7 @@
 import { assert } from "@itwin/core-bentley";
 import { ColorDef, DisplayStyle3dSettingsProps, RenderMode } from "@itwin/core-common";
 import { StandardViewId } from "@itwin/core-frontend";
+import { CesiumDecorator } from "./cesium/CesiumDecorator";
 import { Viewer } from "./Viewer";
 
 export async function openEmptyExample(viewer: Viewer) {
@@ -31,4 +32,14 @@ export async function openEmptyExample(viewer: Viewer) {
   };
 
   viewer.viewport.overrideDisplayStyle(style);
+
+  // Start test decorations for Cesium prototype
+  if (viewer.viewport.iModel) {
+    const decorator = CesiumDecorator.start(viewer.viewport.iModel);
+    
+    // Clean up decorator when iModel closes
+    viewer.viewport.iModel.onClose.addOnce(() => {
+      decorator.stop();
+    });
+  }
 }
