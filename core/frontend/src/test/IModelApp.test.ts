@@ -83,6 +83,15 @@ describe("IModelApp", () => {
     await IModelApp.localization.registerNamespace("TestApp");  // we must wait for the localization read to finish.
   });
   afterAll(async () => TestApp.shutdown());
+  
+  it("Normalizes path correctly", async() => {
+    await IModelApp.startup({ publicPath: "assets"});
+    expect(IModelApp.publicPath).toBe("assets/");
+    await IModelApp.startup({ publicPath: "assets/"});
+    expect(IModelApp.publicPath).toBe("assets/");
+    await IModelApp.startup();
+    expect(IModelApp.publicPath).toBe("")
+  });
 
   it("TestApp should override correctly", async () => {
     expect(IModelApp.accuDraw).toBeInstanceOf(TestAccuDraw);
