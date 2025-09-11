@@ -26,6 +26,8 @@ export interface AppendTextAnnotationGeometryArgs {
   layout: TextBlockLayout;
   /** [[TextStyleResolver]] used to get styling and scale information for creating geometry. */
   textStyleResolver: TextStyleResolver;
+  /** The scale factor to apply to the annotation. Usually comes from the `scaleFactor` of a [[Drawing]] element. */
+  scaleFactor: number;
   /** Builder that will be added to in place */
   builder: ElementGeometry.Builder;
   /** The category the element will belong to. This will passed into the [[GeometryParams]] */
@@ -43,7 +45,7 @@ export interface AppendTextAnnotationGeometryArgs {
 export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometryArgs): boolean {
   const annotation = TextAnnotation.fromJSON(props.annotationProps);
 
-  const transform = annotation.computeTransform(props.layout.range, props.textStyleResolver.scaleFactor);
+  const transform = annotation.computeTransform(props.layout.range, props.scaleFactor);
 
   let result = true;
 
@@ -59,7 +61,7 @@ export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometry
 
   // Construct the leader geometry
   if (annotation.leaders && annotation.leaders.length > 0) {
-    result = result && appendLeadersToBuilder(props.builder, annotation.leaders, props.layout, transform.clone(), params, props.textStyleResolver);
+    result = result && appendLeadersToBuilder(props.builder, annotation.leaders, props.layout, transform.clone(), params, props.textStyleResolver, props.scaleFactor);
   }
 
   // Construct the debug geometry
