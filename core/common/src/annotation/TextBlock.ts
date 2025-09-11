@@ -1049,20 +1049,22 @@ export class TextBlock extends ContainerComponent<(Paragraph | List)> {
    * @param seedFromLast If true and [[children]] is not empty, the new paragraph will inherit the style overrides of the last child in this block.
    */
   public appendListItem(props?: Omit<ParagraphProps, "type">, seedFromLast: boolean = false): Paragraph | undefined {
-    const last = this.last;
+    let last = this.last;
 
     const overrides = seedFromLast && last ? { ...last?.styleOverrides } : {};
-    if (last instanceof List) {
-      const listItem = Paragraph.create({ ...overrides, ...props });
-      last.appendChild(listItem);
-      return listItem;
+
+    if (!(last instanceof List)) {
+      last = this.appendList(undefined, seedFromLast);
     }
 
-    return;
+    const listItem = Paragraph.create({ ...overrides, ...props });
+    last.appendChild(listItem);
+    return listItem;
   }
 
   /** Append a run to the last [[Paragraph]] or [[List]] in this block.
    * If the block contains no [[children]], a new [[Paragraph]] will first be created using [[appendParagraph]].
+   * TODO: consider removing this method in favor of having users explicitly create paragraphs and lists.
    */
   public appendRun(run: Run): void {
     if (this.last instanceof Paragraph) {
