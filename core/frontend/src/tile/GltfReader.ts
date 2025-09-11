@@ -2411,6 +2411,7 @@ export async function readGltfTemplate(args: ReadGltfGraphicsArgs): Promise<Gltf
   const result = await reader.readTemplate();
   if (!result.template)
     return undefined;
+  result.template.isGltf = true;
 
   return {
     template: result.template,
