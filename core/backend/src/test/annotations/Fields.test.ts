@@ -797,13 +797,31 @@ describe.only("Field evaluation", () => {
 
     it("should get all supported prop types", () => {
       const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
-      expect(getPropertyType(propertyHost, "intProp")).to.equal("quantity");
+      expect(getPropertyType(propertyHost, "intProp")).to.equal("string");
       expect(getPropertyType(propertyHost, "point")).to.equal("coordinate");
       expect(getPropertyType(propertyHost, "strings")).to.equal("string");
       expect(getPropertyType(propertyHost, "intEnum")).to.equal("int-enum");
       expect(getPropertyType(propertyHost, "outerStruct")).to.equal(undefined);
       expect(getPropertyType(propertyHost, "outerStructs")).to.equal(undefined);
-      expect(getPropertyType(propertyHost, "maybeNull")).to.equal("quantity");
+      expect(getPropertyType(propertyHost, "maybeNull")).to.equal("string");
+
+      propertyHost.schemaName = "BisCore";
+      propertyHost.className = "GeometricElement3d";
+      expect(getPropertyType(propertyHost, "LastMod")).to.equal("datetime");
+      expect(getPropertyType(propertyHost, "FederationGuid")).to.equal("string");
+    });
+
+    it("should returned 'user-specified' for JSON properties", () => {
+
+    });
+
+    it("should return undefined for invalid property paths", () => {
+
+    });
+
+    it("should return undefined for unsupported property types", () => {
+      const host = { elementId: sourceElementId, schemaName: "BisCore", className: "GeometricElement3d" };
+      expect(getPropertyType(host, "GeometryStream")).to.be.undefined;
     });
   });
 

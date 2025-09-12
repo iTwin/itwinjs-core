@@ -210,7 +210,7 @@ export function computeFieldPropertyType(path: FieldPropertyPath, host: FieldPro
       case PrimitiveType.Point3d:
         return "coordinate";
       case PrimitiveType.Binary:
-        return curProp.extendedTypeName === "Guid" ? "string" : undefined;
+        return curProp.extendedTypeName === "BeGuid" ? "string" : undefined;
       case PrimitiveType.Integer:
       case PrimitiveType.Long:
         return "string";
