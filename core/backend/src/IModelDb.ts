@@ -816,7 +816,7 @@ export abstract class IModelDb extends IModel {
 
   /** Commit unsaved changes in memory as a Txn to this iModelDb.
    * @param description Optional description of the changes
-   * @throws [[IModelError]] if there is a problem saving changes or if should invokeCallbacks through parentshere are pending, un-processed lock or code requests.
+   * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    * @note This will not push changes to the iModelHub.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
    */
