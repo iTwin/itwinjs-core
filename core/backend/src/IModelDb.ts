@@ -76,6 +76,25 @@ import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
+/**
+ * Arguments for saving changes to the iModel.
+ * @public
+ */
+export interface SaveChangesArgs {
+  /**
+   * Optional description of the changes being saved.
+   */
+  description?: string;
+  /**
+   * Optional source of the changes being saved.
+   */
+  source?: string;
+  /**
+   * Optional application-specific data to include with the changes.
+   */
+  appData?: { [key: string]: any };
+}
+
 /** Options for [[IModelDb.Models.updateModel]]
  * @note To mark *only* the geometry as changed, use [[IModelDb.Models.updateGeometryGuid]] instead.
  * @public
@@ -801,13 +820,18 @@ export abstract class IModelDb extends IModel {
    * @note This will not push changes to the iModelHub.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
    */
-  public saveChanges(description?: string): void {
+  public saveChanges(description?: string | SaveChangesArgs): void {
     if (this.openMode === OpenMode.Readonly)
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only");
 
-    const stat = this[_nativeDb].saveChanges(description);
+    const args = typeof description === "string" ? { description } : description;
+    if (!this[_nativeDb].hasUnsavedChanges()) {
+      Logger.logWarning(loggerCategory, "there are no unsaved changes", () => args);
+    }
+
+    const stat = this[_nativeDb].saveChanges(args ? JSON.stringify(args) : undefined);
     if (DbResult.BE_SQLITE_OK !== stat)
-      throw new IModelError(stat, `Could not save changes (${description})`);
+      throw new IModelError(stat, `Could not save changes (${args?.description})`);
   }
 
   /** Abandon changes in memory that have not been saved as a Txn to this iModelDb.
@@ -898,6 +922,15 @@ export abstract class IModelDb extends IModel {
     if (schemaFileNames.length === 0)
       return;
 
+    if (this instanceof BriefcaseDb) {
+      if (this.txns.rebaser.isRebasing) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
+      }
+      if (this.txns.isIndirectChanges) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change transaction");
+      }
+    }
+
     const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
     if (this[_nativeDb].schemaSyncEnabled()) {
 
@@ -952,6 +985,15 @@ export abstract class IModelDb extends IModel {
   public async importSchemaStrings(serializedXmlSchemas: string[]): Promise<void> {
     if (serializedXmlSchemas.length === 0)
       return;
+
+    if (this instanceof BriefcaseDb) {
+      if (this.txns.rebaser.isRebasing) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
+      }
+      if (this.txns.isIndirectChanges) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change transaction");
+      }
+    }
 
     if (this[_nativeDb].schemaSyncEnabled()) {
       await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schemaSync" }, async (syncAccess) => {
@@ -3005,6 +3047,30 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /**
+   * Permanently discards any local changes made to this briefcase, reverting the briefcase to its last synchronized state.
+   * This operation cannot be undone. By default, all locks held by this briefcase will be released unless the `holdLocks` option is specified.
+   * @Note This operation can be performed at any point including after failed rebase attempts.
+   * @param args - Options for discarding changes.
+   * @param args.holdLocks - If `true`, retains all currently held locks after discarding changes. If omitted or `false`, all locks will be released.
+   * @returns A promise that resolves when the operation is complete.
+   * @throws May throw if discarding changes fails.
+   * @alpha
+   */
+  public async discardChanges(args?: { retainLocks?: true }): Promise<void> {
+    Logger.logInfo(loggerCategory, "Discarding local changes");
+    this.clearCaches();
+    this[_nativeDb].clearECDbCache();
+    this[_nativeDb].discardLocalChanges();
+    this.initializeIModelDb("pullMerge");
+    if (args?.retainLocks) {
+      return;
+    }
+
+    // attempt to release locks must happen after changes are undone successfully
+    Logger.logInfo(loggerCategory, "Releasing locks after discarding changes");
+    await this.locks.releaseAllLocks();
+  }
+  /**
    * The Guid that identifies the *context* that owns this iModel.
    * GuidString | undefined for the superclass, but required for BriefcaseDb
    * */
@@ -3484,7 +3550,7 @@ export class BriefcaseDb extends IModelDb {
   }
 
   public override close() {
-    if (this.isBriefcase && this.isOpen && !this.isReadonly && this.txns.changeMergeManager.inProgress()) {
+    if (this.isBriefcase && this.isOpen && !this.isReadonly && this.txns.rebaser.inProgress()) {
       this.abandonChanges();
     }
     super.close();

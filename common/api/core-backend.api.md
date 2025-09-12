@@ -566,6 +566,10 @@ export class BriefcaseDb extends IModelDb {
     close(): void;
     // (undocumented)
     disableChangesetStatTracking(): Promise<void>;
+    // @alpha
+    discardChanges(args?: {
+        retainLocks?: true;
+    }): Promise<void>;
     // (undocumented)
     enableChangesetStatTracking(): Promise<void>;
     // @internal
@@ -620,6 +624,16 @@ export enum BriefcaseLocalValue {
 export class BriefcaseManager {
     static acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<BriefcaseId>;
     static get cacheDir(): LocalDirName;
+    // @internal
+    static containsRestorePoint(args: {
+        db: BriefcaseDb;
+        name: string;
+    }): boolean;
+    // @internal
+    static createRestorePoint(args: {
+        db: BriefcaseDb;
+        name: string;
+    }): Promise<StashProps>;
     static deleteBriefcaseFiles(filePath: LocalFileName, accessToken?: AccessToken): Promise<void>;
     // @internal
     static deleteChangeSetsFromLocalDisk(iModelId: string): void;
@@ -628,6 +642,11 @@ export class BriefcaseManager {
     static downloadChangeset(arg: DownloadChangesetArg): Promise<ChangesetFileProps>;
     // @beta
     static downloadChangesets(arg: DownloadChangesetRangeArg): Promise<ChangesetFileProps[]>;
+    // @internal
+    static dropRestorePoint(args: {
+        db: BriefcaseDb;
+        name: string;
+    }): void;
     static getBriefcaseBasePath(iModelId: GuidString): LocalDirName;
     static getCachedBriefcases(iModelId?: GuidString): LocalBriefcaseProps[];
     // @internal (undocumented)
@@ -644,6 +663,8 @@ export class BriefcaseManager {
     static initialize(cacheRootDir: LocalDirName): void;
     static isValidBriefcaseId(id: BriefcaseId): boolean;
     // @internal (undocumented)
+    static readonly PULL_MERGE_RESTORE_POINT_NAME = "$pull_merge_restore_point";
+    // @internal
     static pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void>;
     // @internal
     static pullMergePush(db: BriefcaseDb, arg: PushChangesArgs): Promise<void>;
@@ -657,6 +678,11 @@ export class BriefcaseManager {
     }): Promise<ChangesetProps[]>;
     static queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
     static releaseBriefcase(accessToken: AccessToken, briefcase: BriefcaseProps): Promise<void>;
+    // @internal
+    static restorePoint(args: {
+        db: BriefcaseDb;
+        name: string;
+    }): Promise<void>;
     // @internal (undocumented)
     static revertTimelineChanges(db: IModelDb, arg: RevertChangesArgs): Promise<void>;
 }
@@ -826,24 +852,6 @@ export interface ChangeInstanceKey {
     changeType: "inserted" | "updated" | "deleted";
     classFullName: string;
     id: Id64String;
-}
-
-// @internal
-export class ChangeMergeManager {
-    constructor(_iModel: BriefcaseDb | StandaloneDb);
-    // (undocumented)
-    addConflictHandler(args: {
-        id: string;
-        handler: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
-    }): void;
-    // (undocumented)
-    inProgress(): boolean;
-    // (undocumented)
-    onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
-    // (undocumented)
-    removeConflictHandler(id: string): void;
-    // (undocumented)
-    resume(): void;
 }
 
 // @beta
@@ -3688,7 +3696,7 @@ export abstract class IModelDb extends IModel {
     restartTxnSession(): void;
     // @internal @deprecated (undocumented)
     reverseTxns(numOperations: number): IModelStatus;
-    saveChanges(description?: string): void;
+    saveChanges(description?: string | SaveChangesArgs): void;
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     // @beta
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
@@ -5174,6 +5182,30 @@ export type QueryWorkspaceResourcesCallback = (resources: Iterable<{
     db: WorkspaceDb;
 }>) => void;
 
+// @alpha
+export interface RebaseHandler {
+    recompute(txn: TxnProps): Promise<void>;
+    shouldReinstate(txn: TxnProps): boolean;
+}
+
+// @alpha
+export class RebaseManager {
+    constructor(_iModel: BriefcaseDb | StandaloneDb);
+    abort(): Promise<void>;
+    addConflictHandler(args: {
+        id: string;
+        handler: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
+    }): void;
+    canAbort(): boolean;
+    inProgress(): boolean;
+    get isMerging(): boolean;
+    get isRebasing(): boolean;
+    onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
+    removeConflictHandler(id: string): void;
+    resume(): Promise<void>;
+    setCustomHandler(handler: RebaseHandler): void;
+}
+
 // @beta
 export abstract class RecipeDefinitionElement extends DefinitionElement {
     protected constructor(props: ElementProps, iModel: IModelDb);
@@ -5379,6 +5411,15 @@ export class RunLayout {
     style: TextStyleSettings;
     // (undocumented)
     toResult(paragraph: Paragraph): RunLayoutResult;
+}
+
+// @public
+export interface SaveChangesArgs {
+    appData?: {
+        [key: string]: any;
+    };
+    description?: string;
+    source?: string;
 }
 
 // @public
@@ -6559,18 +6600,23 @@ export class TxnManager {
     appCustomConflictHandler?: (args: DbRebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     beginMultiTxnOperation(): DbResult;
     cancelTo(txnId: TxnIdString): IModelStatus;
-    // @internal (undocumented)
-    readonly changeMergeManager: ChangeMergeManager;
     deleteAllTxns(): void;
     endMultiTxnOperation(): DbResult;
     getChangeTrackingMemoryUsed(): number;
+    getCurrentSessionId(): number;
     getCurrentTxnId(): TxnIdString;
+    // @alpha
+    getLastSavedTxnProps(): TxnProps | undefined;
+    getMode(): "direct" | "indirect";
     getMultiTxnOperationDepth(): number;
     getRedoString(): string;
     getTxnDescription(txnId: TxnIdString): string;
+    // @alpha
+    getTxnProps(id: TxnIdString): TxnProps | undefined;
     getUndoString(): string;
     get hasFatalError(): boolean;
     get hasLocalChanges(): boolean;
+    get hasPendingSchemaChanges(): boolean;
     get hasPendingTxns(): boolean;
     get hasUnsavedChanges(): boolean;
     // @internal (undocumented)
@@ -6616,9 +6662,9 @@ export class TxnManager {
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
     // @internal (undocumented)
-    readonly onRebaseTxnBegin: BeEvent<(txn: TxnArgs) => void>;
+    readonly onRebaseTxnBegin: BeEvent<(txn: TxnProps) => void>;
     // @internal (undocumented)
-    readonly onRebaseTxnEnd: BeEvent<(txn: TxnArgs) => void>;
+    readonly onRebaseTxnEnd: BeEvent<(txn: TxnProps) => void>;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onReplayedExternalTxns(): void;
@@ -6632,6 +6678,10 @@ export class TxnManager {
     queryLocalChanges(args?: QueryLocalChangesArgs): Iterable<ChangeInstanceKey>;
     queryNextTxnId(txnId: TxnIdString): TxnIdString;
     queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
+    // @alpha
+    queryTxns(): Generator<TxnProps>;
+    // @internal (undocumented)
+    readonly rebaser: RebaseManager;
     reinstateTxn(): IModelStatus;
     reportError(error: ValidationError): void;
     restartSession(): void;
@@ -6642,7 +6692,33 @@ export class TxnManager {
     // @internal
     touchWatchFile(): void;
     readonly validationErrors: ValidationError[];
+    withIndirectTxnMode(callback: () => void): void;
 }
+
+// @alpha
+export interface TxnProps {
+    // (undocumented)
+    grouped: boolean;
+    // (undocumented)
+    id: TxnIdString;
+    // (undocumented)
+    nextId?: TxnIdString;
+    // (undocumented)
+    prevId?: TxnIdString;
+    // (undocumented)
+    props: SaveChangesArgs;
+    // (undocumented)
+    reversed: boolean;
+    // (undocumented)
+    sessionId: number;
+    // (undocumented)
+    timestamp: string;
+    // (undocumented)
+    type: TxnType;
+}
+
+// @alpha
+export type TxnType = "Data" | "EcSchema" | "Ddl";
 
 // @public @preview
 export abstract class TypeDefinitionElement extends DefinitionElement {
