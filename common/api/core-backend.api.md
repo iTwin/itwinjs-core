@@ -566,6 +566,10 @@ export class BriefcaseDb extends IModelDb {
     close(): void;
     // (undocumented)
     disableChangesetStatTracking(): Promise<void>;
+    // @alpha
+    discardChanges(args?: {
+        retainLocks?: true;
+    }): Promise<void>;
     // (undocumented)
     enableChangesetStatTracking(): Promise<void>;
     // @internal
@@ -620,6 +624,16 @@ export enum BriefcaseLocalValue {
 export class BriefcaseManager {
     static acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<BriefcaseId>;
     static get cacheDir(): LocalDirName;
+    // @internal
+    static containsRestorePoint(args: {
+        db: BriefcaseDb;
+        name: string;
+    }): boolean;
+    // @internal
+    static createRestorePoint(args: {
+        db: BriefcaseDb;
+        name: string;
+    }): Promise<StashProps>;
     static deleteBriefcaseFiles(filePath: LocalFileName, accessToken?: AccessToken): Promise<void>;
     // @internal
     static deleteChangeSetsFromLocalDisk(iModelId: string): void;
@@ -628,6 +642,11 @@ export class BriefcaseManager {
     static downloadChangeset(arg: DownloadChangesetArg): Promise<ChangesetFileProps>;
     // @beta
     static downloadChangesets(arg: DownloadChangesetRangeArg): Promise<ChangesetFileProps[]>;
+    // @internal
+    static dropRestorePoint(args: {
+        db: BriefcaseDb;
+        name: string;
+    }): void;
     static getBriefcaseBasePath(iModelId: GuidString): LocalDirName;
     static getCachedBriefcases(iModelId?: GuidString): LocalBriefcaseProps[];
     // @internal (undocumented)
@@ -644,6 +663,8 @@ export class BriefcaseManager {
     static initialize(cacheRootDir: LocalDirName): void;
     static isValidBriefcaseId(id: BriefcaseId): boolean;
     // @internal (undocumented)
+    static readonly PULL_MERGE_RESTORE_POINT_NAME = "$pull_merge_restore_point";
+    // @internal
     static pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void>;
     // @internal
     static pullMergePush(db: BriefcaseDb, arg: PushChangesArgs): Promise<void>;
@@ -657,6 +678,11 @@ export class BriefcaseManager {
     }): Promise<ChangesetProps[]>;
     static queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
     static releaseBriefcase(accessToken: AccessToken, briefcase: BriefcaseProps): Promise<void>;
+    // @internal
+    static restorePoint(args: {
+        db: BriefcaseDb;
+        name: string;
+    }): Promise<void>;
     // @internal (undocumented)
     static revertTimelineChanges(db: IModelDb, arg: RevertChangesArgs): Promise<void>;
 }
@@ -831,28 +857,19 @@ export interface ChangeInstanceKey {
 // @alpha
 export class ChangeMergeManager {
     constructor(_iModel: BriefcaseDb | StandaloneDb);
-    // (undocumented)
+    abort(): Promise<void>;
     addConflictHandler(args: {
         id: string;
         handler: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     }): void;
-    // (undocumented)
-    getLastTxnSaved(): TxnProps | undefined;
-    // (undocumented)
-    getTxnProps(id: TxnIdString): TxnProps | undefined;
-    // (undocumented)
+    canAbort(): boolean;
     inProgress(): boolean;
-    // (undocumented)
     get isMerging(): boolean;
-    // (undocumented)
     get isRebasing(): boolean;
-    // (undocumented)
     onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
-    // (undocumented)
     removeConflictHandler(id: string): void;
-    // (undocumented)
+    // @internal
     resume(): Promise<void>;
-    // (undocumented)
     setRebaseHandler(handler: RebaseHandler): void;
 }
 
@@ -6589,14 +6606,20 @@ export class TxnManager {
     deleteAllTxns(): void;
     endMultiTxnOperation(): DbResult;
     getChangeTrackingMemoryUsed(): number;
+    getCurrentSessionId(): number;
     getCurrentTxnId(): TxnIdString;
+    // @alpha
+    getLastSavedTxnProps(): TxnProps | undefined;
     getMode(): "direct" | "indirect";
     getMultiTxnOperationDepth(): number;
     getRedoString(): string;
     getTxnDescription(txnId: TxnIdString): string;
+    // @alpha
+    getTxnProps(id: TxnIdString): TxnProps | undefined;
     getUndoString(): string;
     get hasFatalError(): boolean;
     get hasLocalChanges(): boolean;
+    get hasPendingSchemaChanges(): boolean;
     get hasPendingTxns(): boolean;
     get hasUnsavedChanges(): boolean;
     // @internal (undocumented)
@@ -6658,6 +6681,8 @@ export class TxnManager {
     queryLocalChanges(args?: QueryLocalChangesArgs): Iterable<ChangeInstanceKey>;
     queryNextTxnId(txnId: TxnIdString): TxnIdString;
     queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
+    // @alpha
+    queryTxns(): Generator<TxnProps>;
     reinstateTxn(): IModelStatus;
     reportError(error: ValidationError): void;
     restartSession(): void;
@@ -6671,7 +6696,7 @@ export class TxnManager {
     withIndirectTxnMode(callback: () => void): void;
 }
 
-// @alpha (undocumented)
+// @alpha
 export interface TxnProps {
     // (undocumented)
     grouped: boolean;
@@ -6686,10 +6711,15 @@ export interface TxnProps {
     // (undocumented)
     reversed: boolean;
     // (undocumented)
+    sessionId: number;
+    // (undocumented)
     timestamp: string;
     // (undocumented)
-    type: "Data" | "EcSchema" | "Ddl";
+    type: TxnType;
 }
+
+// @alpha
+export type TxnType = "Data" | "EcSchema" | "Ddl";
 
 // @public @preview
 export abstract class TypeDefinitionElement extends DefinitionElement {

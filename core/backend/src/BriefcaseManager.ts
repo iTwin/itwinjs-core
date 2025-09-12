@@ -634,7 +634,6 @@ export class BriefcaseManager {
    *   - `db`: The {@link BriefcaseDb} instance for which to create the restore point.
    *   - `name`: The unique name for the restore point. Must be a non-empty string.
    * @returns A promise that resolves to the created stash object representing the restore point.
-   * @throws {@link IModelError} If the provided restore point name is empty.``
    */
   public static async createRestorePoint(args: {db: BriefcaseDb, name: string}) {
     if (args.name.length === 0) {
@@ -658,7 +657,6 @@ export class BriefcaseManager {
    * @param args - An object containing:
    *   - `db`: The {@link BriefcaseDb} instance from which to drop the restore point.
    *   - `name`: The name of the restore point to be dropped. Must be a non-empty string.
-   * @throws {@link IModelError} If the restore point name is invalid (empty).
    */
   public static dropRestorePoint(args: {db: BriefcaseDb, name: string}) {
     if (args.name.length === 0) {
@@ -681,7 +679,6 @@ export class BriefcaseManager {
    *   - `db`: The {@link BriefcaseDb} instance to search within.
    *   - `name`: The name of the restore point to check for existence.
    * @returns `true` if the restore point exists and its stash is present; otherwise, `false`.
-   * @throws {@link IModelError} with status {@link IModelStatus.BadArg} if the restore point name is empty.
    */
   public static containsRestorePoint(args: {db: BriefcaseDb, name: string}): boolean {
     if (args.name.length === 0) {
@@ -704,7 +701,6 @@ export class BriefcaseManager {
    * @param args - An object containing:
    *   - `db`: The {@link BriefcaseDb} instance to restore.
    *   - `name`: The name of the restore point to apply.
-   * @throws {@link IModelError} If the restore point name is empty or the restore point cannot be found.
    * @remarks
    * This method looks up the specified restore point by name and applies it to the provided database.
    * If the restore point does not exist or the name is invalid, an error is thrown.

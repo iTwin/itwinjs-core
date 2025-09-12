@@ -594,6 +594,7 @@ preview;type;TxnIdString
 public;class;TxnManager
 preview;class;TxnManager
 alpha;interface;TxnProps
+alpha;type;TxnType
 public;class;TypeDefinitionElement
 preview;class;TypeDefinitionElement
 public;interface;UpdateModelOptions

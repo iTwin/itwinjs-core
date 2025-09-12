@@ -295,12 +295,14 @@ interface IConflictHandler {
   id: string;
 }
 
-export type TxnType = "Data" | "EcSchema" | "Ddl";
 /**
- * Transaction properties
  * @alpha
+ * Transaction types
  */
+export type TxnType = "Data" | "EcSchema" | "Ddl";
+
 /**
+ * @alpha
  * Represents the properties of a transaction within the transaction manager.
  *
  * @property id - The unique identifier for the transaction.
@@ -367,7 +369,6 @@ export class ChangeMergeManager {
    * If an error occurs during the process, the rebase is aborted and the error is rethrown.
    *
    * @throws {Error} If a transaction cannot be found or if any step in the rebase process fails.
-   * @internal
    */
   public async resume() {
     const nativeDb = this._iModel[_nativeDb];
@@ -446,7 +447,6 @@ export class ChangeMergeManager {
    * Sets the handler to be invoked for rebase operations.
    *
    * @param handler - The {@link RebaseHandler} to handle rebase events.
-   * @throws {@link IModelError} with {@link IModelStatus.BadArg} if a rebase handler has already been set.
    */
   public setRebaseHandler(handler: RebaseHandler) {
     if (this._rebaseHandler) {
