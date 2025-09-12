@@ -1,7 +1,7 @@
 {
   "name": "@itwin/cesium-renderer",
   "version": "5.2.0-dev.24",
-  "description": "TODO",
+  "description": "Alternative CesiumJS-based renderer for iTwin.js",
   "main": "lib/cjs/cesium-renderer.js",
   "module": "lib/esm/cesium-renderer.js",
   "typings": "lib/cjs/cesium-renderer",
@@ -44,15 +44,10 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@types/node": "~20.17.0",
-    "babel-loader": "~8.2.5",
-    "babel-plugin-istanbul": "^7.0.0",
     "eslint": "^9.31.0",
-    "glob": "^10.3.12",
     "internal-tools": "workspace:*",
     "rimraf": "^6.0.1",
-    "source-map-loader": "^5.0.0",
     "typescript": "~5.6.2",
-    "vitest": "^3.0.6",
-    "webpack": "^5.97.1"
+    "vitest": "^3.0.6"
   }
 }

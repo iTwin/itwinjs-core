@@ -1935,36 +1935,21 @@ importers:
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.0
-      babel-loader:
-        specifier: ~8.2.5
-        version: 8.2.5(@babel/core@7.26.10)(webpack@5.97.1)
-      babel-plugin-istanbul:
-        specifier: ^7.0.0
-        version: 7.0.0
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
-      glob:
-        specifier: ^10.3.12
-        version: 10.3.12
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
-      source-map-loader:
-        specifier: ^5.0.0
-        version: 5.0.0(webpack@5.97.1)
       typescript:
         specifier: ~5.6.2
         version: 5.6.2
       vitest:
         specifier: ^3.0.6
         version: 3.0.6(@types/debug@4.1.12)(@types/node@20.17.0)(@vitest/browser@3.0.6)(jsdom@26.0.0)(msw@2.7.3(@types/node@20.17.0)(typescript@5.6.2))(terser@5.39.0)(yaml@2.7.0)
-      webpack:
-        specifier: ^5.97.1
-        version: 5.97.1(webpack-cli@5.0.1)
 
   ../../extensions/frontend-tiles:
     devDependencies:
