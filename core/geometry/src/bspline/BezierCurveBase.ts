@@ -163,11 +163,11 @@ export abstract class BezierCurveBase extends CurvePrimitive {
    * 1D bezier coefficients for use in range computations.
    * @internal
    */
-  protected workBezier?: UnivariateBezier; // available for bezier logic within a method
+  protected _workBezier?: UnivariateBezier; // available for bezier logic within a method
   /** scratch array for use by derived classes, using allocateAndZeroBezierWorkData for sizing. */
-  protected workCoffsA?: Float64Array;
-  /** scratch array for use by derived classes, using allocateAndZeroBezierWorkData for sizing. */  
-  protected workCoffsB?: Float64Array;
+  protected _workCoffsA?: Float64Array;
+  /** scratch array for use by derived classes, using allocateAndZeroBezierWorkData for sizing. */
+  protected _workCoffsB?: Float64Array;
 
   /**
    * set up the workBezier members with specific order.
@@ -179,28 +179,29 @@ export abstract class BezierCurveBase extends CurvePrimitive {
    */
   protected allocateAndZeroBezierWorkData(
     primaryBezierOrder: number, orderA: number, orderB: number,
-  ): this is { workBezier: UnivariateBezier, workCoffsA: Float64Array, workCoffsB: Float64Array } {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+  ): this is { _workBezier: UnivariateBezier, _workCoffsA: Float64Array, _workCoffsB: Float64Array } {
     let allocated = false;
     if (primaryBezierOrder > 0) {
       allocated = true;
-      if (this.workBezier !== undefined && this.workBezier.order === primaryBezierOrder) {
-        this.workBezier.zero();
+      if (this._workBezier !== undefined && this._workBezier.order === primaryBezierOrder) {
+        this._workBezier.zero();
       } else
-        this.workBezier = new UnivariateBezier(primaryBezierOrder);
+        this._workBezier = new UnivariateBezier(primaryBezierOrder);
     }
     if (orderA > 0) {
       allocated = true;
-      if (this.workCoffsA !== undefined && this.workCoffsA.length === orderA)
-        this.workCoffsA.fill(0);
+      if (this._workCoffsA !== undefined && this._workCoffsA.length === orderA)
+        this._workCoffsA.fill(0);
       else
-        this.workCoffsA = new Float64Array(orderA);
+        this._workCoffsA = new Float64Array(orderA);
     }
     if (orderB > 0) {
       allocated = true;
-      if (this.workCoffsB !== undefined && this.workCoffsB.length === orderB)
-        this.workCoffsB.fill(0);
+      if (this._workCoffsB !== undefined && this._workCoffsB.length === orderB)
+        this._workCoffsB.fill(0);
       else
-        this.workCoffsB = new Float64Array(orderB);
+        this._workCoffsB = new Float64Array(orderB);
     }
     return allocated;
   }

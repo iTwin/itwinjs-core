@@ -231,7 +231,7 @@ export class BezierCurve3dH extends BezierCurveBase {
       const productOrder = 2 * this.order - 2;
       if (!this.allocateAndZeroBezierWorkData(productOrder, 0, 0))
         return false;
-      const bezier = this.workBezier;
+      const bezier = this._workBezier;
       // closestPoint condition is:
       //   (spacePoint - curvePoint) DOT curveTangent = 0;
       // Each product (x,y,z) of the DOT is the product of two bezier polynomials
@@ -250,9 +250,9 @@ export class BezierCurve3dH extends BezierCurveBase {
       const productOrder = orderA + orderB - 1;
       if (!this.allocateAndZeroBezierWorkData(productOrder, orderA, orderB))
         return false;
-      const bezier = this.workBezier;
-      const workA = this.workCoffsA;
-      const workB = this.workCoffsB;
+      const bezier = this._workBezier;
+      const workA = this._workCoffsA;
+      const workB = this._workCoffsB;
       const packedData = this._polygon.packedData;
       for (let i = 0; i < 3; i++) {
         // x representing loop pass:   (w * spacePoint.x - curve.x(s)) * (curveDelta.x(s) * curve.w(s) - curve.x(s) * curveDelta.w(s))
@@ -294,7 +294,7 @@ export class BezierCurve3dH extends BezierCurveBase {
     if (!transform) {
       if (!this.allocateAndZeroBezierWorkData(order * 2 - 2, 0, 0))
         return;
-      const bezier = this.workBezier;
+      const bezier = this._workBezier;
       const data = this._polygon.packedData;
       this.getPolePoint3d(0, this._workPoint0);
       rangeToExtend.extend(this._workPoint0);
@@ -333,9 +333,9 @@ export class BezierCurve3dH extends BezierCurveBase {
     } else {
       if (!this.allocateAndZeroBezierWorkData(order * 2 - 2, order, order))
         return;
-      const componentCoffs = this.workCoffsA;   // to hold transformed copy of x,y,z in turn.
-      const weightCoffs = this.workCoffsB;    // to hold weights
-      const bezier = this.workBezier;
+      const componentCoffs = this._workCoffsA;   // to hold transformed copy of x,y,z in turn.
+      const weightCoffs = this._workCoffsB;    // to hold weights
+      const bezier = this._workBezier;
 
       this.getPolePoint3d(0, this._workPoint0);
       rangeToExtend.extendTransformedPoint(transform, this._workPoint0);

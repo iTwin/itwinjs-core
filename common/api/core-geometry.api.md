@@ -578,9 +578,9 @@ export class BezierCurve3dH extends BezierCurveBase {
 export abstract class BezierCurveBase extends CurvePrimitive {
     protected constructor(blockSize: number, data: Float64Array);
     protected allocateAndZeroBezierWorkData(primaryBezierOrder: number, orderA: number, orderB: number): this is {
-        workBezier: UnivariateBezier;
-        workCoffsA: Float64Array;
-        workCoffsB: Float64Array;
+        _workBezier: UnivariateBezier;
+        _workCoffsA: Float64Array;
+        _workCoffsB: Float64Array;
     };
     abstract clone(): BezierCurveBase;
     clonePartialCurve(fractionA: number, fractionB: number): BezierCurveBase;
@@ -610,8 +610,8 @@ export abstract class BezierCurveBase extends CurvePrimitive {
     startPoint(): Point3d;
     // @internal
     protected _workBezier?: UnivariateBezier;
-    protected workCoffsA?: Float64Array;
-    protected workCoffsB?: Float64Array;
+    protected _workCoffsA?: Float64Array;
+    protected _workCoffsB?: Float64Array;
     protected _workData0: Float64Array;
     protected _workData1: Float64Array;
     protected _workPoint0: Point3d;
