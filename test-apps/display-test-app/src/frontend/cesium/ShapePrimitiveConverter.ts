@@ -91,7 +91,7 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
     primitivesCollection: any,
     iModel?: IModelConnection,
     originalShapes?: Point3d[][],
-    type?: string,
+    _type?: string,
     _graphic?: any
   ): Primitive | null {
     if (!geometries || !geometryType || !primitivesCollection) {
@@ -149,7 +149,9 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
           });
 
           // Determine color: prefer symbology fill, fallback by type
-          const color = this.extractFillColorFromGraphic(_graphic) ?? this.getShapeColor(type);
+          const color = this.extractFillColorFromGraphic(_graphic);
+          if (!color)
+            return null;
           
           const geometryInstance = new GeometryInstance({
             geometry: polygonGeometry,
@@ -189,18 +191,26 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
   }
 
   private extractFillColorFromGraphic(graphic?: any): Color | undefined {
-    try {
-      const symbology = (graphic as any)?.symbology;
-      const fillDef = (symbology?.fillColor ?? symbology?.color) as ColorDef | undefined;
-      if (fillDef) {
-        const c = fillDef.colors;
-        const alpha = 255 - (c.t ?? 0);
-        return Color.fromBytes(c.r, c.g, c.b, alpha);
-      }
-    } catch {
-      // ignore
+    const toCesium = (cd?: ColorDef) => {
+      if (!cd) return undefined;
+      const c = cd.colors;
+      const alpha = 255 - (c.t ?? 0);
+      return Color.fromBytes(c.r, c.g, c.b, alpha);
+    };
+
+    // Prefer symbology captured in coordinateData
+    const coordData = (graphic as any)?._coordinateData as any[] | undefined;
+    const entry = coordData?.find((e) => e?.type === 'shape' && (e.symbology?.fillColor || e.symbology?.lineColor));
+    if (entry) {
+      const fill = toCesium(entry.symbology?.fillColor as ColorDef | undefined) ?? toCesium(entry.symbology?.lineColor as ColorDef | undefined);
+      if (fill)
+        return fill;
     }
-    return undefined;
+
+    // Otherwise use graphic.symbology
+    const symbology = (graphic as any)?.symbology;
+    const fillDef = (symbology?.fillColor ?? symbology?.color) as ColorDef | undefined;
+    return toCesium(fillDef);
   }
 
 }

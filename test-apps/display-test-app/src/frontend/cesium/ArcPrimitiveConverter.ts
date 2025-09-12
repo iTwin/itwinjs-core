@@ -1,4 +1,4 @@
-import { BoundingSphere, Cartesian3, Color, ColorGeometryInstanceAttribute, ComponentDatatype, EllipseGeometry, Geometry, GeometryAttribute, GeometryInstance, Material, PerInstanceColorAppearance, Primitive, PrimitiveType } from "cesium";
+import { BoundingSphere, Cartesian3, Color, ColorGeometryInstanceAttribute, ComponentDatatype, Geometry, GeometryAttribute, GeometryInstance, Material, PerInstanceColorAppearance, Primitive, PrimitiveType } from "cesium";
 import { ColorDef } from "@itwin/core-common";
 import { Loop, Path, PolyfaceBuilder, StrokeOptions, SweepContour } from "@itwin/core-geometry";
 import { IModelConnection } from "@itwin/core-frontend";
@@ -34,7 +34,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     _collection: any, 
     iModel?: IModelConnection, 
     originalData?: any[], 
-    type?: string
+    _type?: string
   ): any {
     if (!originalData || originalData.length === 0) {
       return null;
@@ -63,8 +63,9 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     const converter = new CesiumCoordinateConverter(converterIModel);
     
     // Determine color from graphic symbology when available; fallback by type
-    const symColor = this.extractColorFromGraphic(_graphic);
-    const color: Color = symColor ?? (type === 'worldOverlay' ? Color.CYAN : Color.ORANGE);
+    const color = this.extractColorFromGraphic(_graphic);
+    if (!color)
+      return null;
 
     if (filled || isEllipse) {
       // Use iTwin.js Loop.create(arc) + SweepContour + PolyfaceBuilder for accurate filled ellipse
@@ -241,13 +242,24 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
   }
 
   private extractColorFromGraphic(graphic: any): Color | undefined {
+    const coordData = (graphic as any)?._coordinateData as any[] | undefined;
+    const entry = coordData?.find((e) => e?.type === 'arc' && e.symbology?.lineColor);
+    const toCesium = (cd?: ColorDef) => {
+      if (!cd) return undefined;
+      const c = cd.colors;
+      const alpha = 255 - (c.t ?? 0);
+      return Color.fromBytes(c.r, c.g, c.b, alpha);
+    };
+    if (entry) {
+      const fromEntry = toCesium(entry.symbology?.lineColor as ColorDef | undefined);
+      if (fromEntry)
+        return fromEntry;
+    }
+
+    // Otherwise use graphic.symbology
     const symbology = graphic?.symbology;
     const colorDef = symbology?.color as ColorDef | undefined;
-    if (!colorDef)
-      return undefined;
-    const colors = colorDef.colors;
-    const alpha = 255 - (colors.t ?? 0);
-    return Color.fromBytes(colors.r, colors.g, colors.b, alpha);
+    return toCesium(colorDef);
   }
 
 }

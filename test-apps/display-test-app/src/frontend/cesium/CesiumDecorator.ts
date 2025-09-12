@@ -9,7 +9,7 @@ import { AngleSweep, Arc3d, LineString3d, Loop, Matrix3d, Path, Point3d } from "
 
 class CesiumDecorator implements Decorator {
   private _iModel?: IModelConnection;
-  private xOffset = -220000; // Shift test paths left to avoid overlap
+  private _xOffset = -220000; // Shift test paths left to avoid overlap
 
   constructor(iModel: IModelConnection) {
     this._iModel = iModel;
@@ -188,11 +188,11 @@ class CesiumDecorator implements Decorator {
     
 
     // First segment: horizontal line from left to right
-    const P0 = new Point3d(c.x - 80000 + this.xOffset, c.y - 80000, z);
-    const P1 = new Point3d(c.x - 20000 + this.xOffset, c.y - 80000, z);
+    const P0 = new Point3d(c.x - 80000 + this._xOffset, c.y - 80000, z);
+    const P1 = new Point3d(c.x - 20000 + this._xOffset, c.y - 80000, z);
 
     // Second segment: vertical line upward to corner point
-    const P2 = new Point3d(c.x - 20000 + this.xOffset, c.y - 20000, z);
+    const P2 = new Point3d(c.x - 20000 + this._xOffset, c.y - 20000, z);
 
     // Arc transition: 90-degree arc with radius 20000
     // Using start-middle-end definition to ensure P2 is the arc start point
@@ -221,12 +221,12 @@ class CesiumDecorator implements Decorator {
     // Second path: zigzag wave pattern
     const zigZag = Path.create(
       LineString3d.create([
-        new Point3d(c.x + 50000 + this.xOffset, c.y - 100000, z + 10000),
-        new Point3d(c.x + 70000 + this.xOffset, c.y - 80000, z + 10000),
-        new Point3d(c.x + 50000 + this.xOffset, c.y - 60000, z + 10000),
-        new Point3d(c.x + 70000 + this.xOffset, c.y - 40000, z + 10000),
-        new Point3d(c.x + 50000 + this.xOffset, c.y - 20000, z + 10000),
-        new Point3d(c.x + 70000 + this.xOffset, c.y, z + 10000)
+        new Point3d(c.x + 50000 + this._xOffset, c.y - 100000, z + 10000),
+        new Point3d(c.x + 70000 + this._xOffset, c.y - 80000, z + 10000),
+        new Point3d(c.x + 50000 + this._xOffset, c.y - 60000, z + 10000),
+        new Point3d(c.x + 70000 + this._xOffset, c.y - 40000, z + 10000),
+        new Point3d(c.x + 50000 + this._xOffset, c.y - 20000, z + 10000),
+        new Point3d(c.x + 70000 + this._xOffset, c.y, z + 10000)
       ])
     );
     
@@ -244,10 +244,10 @@ class CesiumDecorator implements Decorator {
 
     // Simple test: Just one triangle
     const trianglePoints = [
-      new Point3d(c.x - 60000 + this.xOffset, c.y - 60000, z),
-      new Point3d(c.x + 60000 + this.xOffset, c.y - 60000, z),
-      new Point3d(c.x + this.xOffset, c.y + 60000, z),
-      new Point3d(c.x - 60000 + this.xOffset, c.y - 60000, z)
+      new Point3d(c.x - 60000 + this._xOffset, c.y - 60000, z),
+      new Point3d(c.x + 60000 + this._xOffset, c.y - 60000, z),
+      new Point3d(c.x + this._xOffset, c.y + 60000, z),
+      new Point3d(c.x - 60000 + this._xOffset, c.y - 60000, z)
     ];
 
     const triangleLoop = Loop.create(LineString3d.create(trianglePoints));

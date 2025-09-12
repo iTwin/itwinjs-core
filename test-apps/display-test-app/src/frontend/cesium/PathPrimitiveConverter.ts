@@ -60,6 +60,8 @@ export class PathPrimitiveConverter extends PrimitiveConverter {
 
       // Use symbology color when available
       const matColor = this.extractColorFromGraphic(_graphic);
+      if (!matColor)
+        return null;
 
       return collection.add({
         id: primitiveId,

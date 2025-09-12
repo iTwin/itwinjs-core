@@ -122,6 +122,8 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
       }
 
       const color = this.extractColorFromGraphic(graphic);
+      if (!color)
+        return null;
       switch (geometryType) {
         case 'line-string':
         default:

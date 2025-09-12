@@ -4,29 +4,82 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ColorDef } from "@itwin/core-common";
-import { GraphicList, IModelConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { LineString3d, Loop, Point3d } from "@itwin/core-geometry";
 import { Cartesian3, Color, ColorGeometryInstanceAttribute, GeometryInstance, PerInstanceColorAppearance, PolygonGeometry, PolygonHierarchy, Primitive } from "cesium";
 import { CesiumScene } from "./Scene";
 import { PrimitiveConverter } from "./PrimitiveConverter";
-import { CesiumCoordinateConverter } from "./CesiumCoordinateConverter";
 
 export class LoopPrimitiveConverter extends PrimitiveConverter {
-  public convertDecorations(graphics: GraphicList, type: string, scene: CesiumScene, iModel?: IModelConnection): void {
-    const loopGraphics = graphics.filter(graphic => {
-      const coordinateData = (graphic as any)._coordinateData;
-      const hasLoopData = coordinateData && coordinateData.some((entry: any) => entry.type === 'loop');
-      return hasLoopData || (graphic as any).geometryType === 'loop';
-    });
+  protected readonly primitiveType = 'loop' as const;
+  private _currentScene?: CesiumScene;
 
-    loopGraphics.forEach((graphic, index) => {
-      const coordinateData = (graphic as any)._coordinateData;
-      const originalLoops = this.extractLoopData(coordinateData);
-      this.createPolygonFromLoop(graphic, `${type}_loop_${index}`, scene, iModel, originalLoops);
-    });
+  protected override getCollection(scene: CesiumScene): any {
+    this._currentScene = scene;
+    return scene.primitivesCollection;
   }
 
-  public clearDecorations(scene: CesiumScene): void {
+  protected override extractPrimitiveData(coordinateData: any[] | undefined, primitiveType: string): any[] | undefined {
+    if (!coordinateData || !Array.isArray(coordinateData))
+      return undefined;
+    return coordinateData.filter((entry: any) => entry.type === primitiveType);
+  }
+
+  protected override createPrimitiveFromGraphic(
+    graphic: any,
+    primitiveId: string,
+    _index: number,
+    _collection: any,
+    iModel?: IModelConnection,
+    originalData?: any[],
+    _type?: string
+  ): any {
+    const loopEntry = Array.isArray(originalData) ? originalData.find((e) => e && e.loop instanceof Loop) : undefined;
+    const loop: Loop | undefined = loopEntry?.loop as Loop | undefined;
+    if (!loop)
+      return null;
+
+    const positions = this.convertLoopToPositions(loop, iModel);
+    if (positions.length < 3)
+      return null;
+
+    const colors = this.extractColorsFromGraphic(graphic);
+    if (!colors)
+      return null;
+    const { fillColor, lineColor, outlineWanted } = colors;
+
+    if (outlineWanted && this._currentScene) {
+      this._currentScene.polylineCollection.add({
+        id: `${primitiveId}_outline`,
+        positions,
+        width: 2.5,
+        color: lineColor,
+        clampToGround: false,
+      });
+    }
+
+    const positionsNoClose = this.removeDuplicateClosingPoint(positions);
+    if (positionsNoClose.length < 3)
+      return null;
+
+    const polygonGeometry = new PolygonGeometry({ polygonHierarchy: new PolygonHierarchy(positionsNoClose) });
+    const translucent = fillColor.alpha < 1.0;
+    const geometryInstance = new GeometryInstance({
+      geometry: polygonGeometry,
+      id: primitiveId,
+      attributes: { color: ColorGeometryInstanceAttribute.fromColor(fillColor) },
+    });
+
+    const primitive = new Primitive({
+      geometryInstances: geometryInstance,
+      appearance: new PerInstanceColorAppearance({ flat: true, translucent }),
+      asynchronous: false,
+    });
+
+    return primitive;
+  }
+
+  public override clearDecorations(scene: CesiumScene): void {
     // Clear from polylineCollection (temporary test)
     if (scene?.polylineCollection) {
       const loopPolylines = [];
@@ -75,11 +128,10 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
       console.warn('LoopPrimitiveConverter: No scene.cesiumScene.primitives');
       return;
     }
-    let loopsToProcess = originalLoops;
     
-    if (!loopsToProcess || loopsToProcess.length === 0)
+    if (!originalLoops || originalLoops.length === 0)
       return;
-    loopsToProcess.forEach((loop, loopIndex) => {
+    originalLoops.forEach((loop, loopIndex) => {
       const positions = this.convertLoopToPositions(loop, iModel);
 
       if (positions.length < 3)
@@ -162,16 +214,7 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
     return this.convertPointsToCartesian3(points, iModel);
   }
 
-  private convertPointsToCartesian3(points: Point3d[], iModel?: IModelConnection): Cartesian3[] {
-    if (!points || points.length === 0) return [];
-
-    if (iModel) {
-      const converter = new CesiumCoordinateConverter(iModel);
-      return points.map(point => converter.spatialToCesiumCartesian3(point));
-    } else {
-      return points.map(point => new Cartesian3(point.x, point.y, point.z));
-    }
-  }
+  // Use base class convertPointsToCartesian3
 
   private extractColorFromGraphic(graphic: any): Color | undefined {
     const symbology = graphic.symbology;
@@ -181,24 +224,6 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
     const colors = colorDef.colors;
     const alpha = 255 - (colors.t ?? 0);
     return Color.fromBytes(colors.r, colors.g, colors.b, alpha);
-  }
-
-  private extractFallbackLoops(graphic: any): Loop[] {
-    const loops: Loop[] = [];
-    
-    try {
-      if (graphic.geometries && Array.isArray(graphic.geometries)) {
-        graphic.geometries.forEach((geometry: any) => {
-          if (geometry && geometry.loop) {
-            loops.push(geometry.loop);
-          }
-        });
-      }
-    } catch (error) {
-      console.warn('Could not extract fallback loops:', error);
-    }
-    
-    return loops;
   }
 
   private removeDuplicateClosingPoint(positions: Cartesian3[]): Cartesian3[] {
@@ -212,22 +237,33 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
   }
 
   private extractColorsFromGraphic(graphic: any): { fillColor: Color; lineColor: Color; outlineWanted: boolean } | undefined {
-    const symbology = graphic?.symbology;
-    const lineDef = symbology?.color as ColorDef | undefined;
-    const fillDef = (symbology?.fillColor ?? symbology?.color) as ColorDef | undefined;
-
+    // Prefer symbology captured in coordinateData (from CoordinateBuilder)
+    const coordData = (graphic as any)?._coordinateData as any[] | undefined;
+    const entry = coordData?.find((e) => e?.type === 'loop' && e.symbology?.lineColor);
     const toCesium = (cd?: ColorDef) => {
       if (!cd) return undefined;
       const c = cd.colors;
       const alpha = 255 - (c.t ?? 0);
       return Color.fromBytes(c.r, c.g, c.b, alpha);
     };
+    if (entry) {
+      const lineColor = toCesium(entry.symbology.lineColor as ColorDef | undefined);
+      const fillColor = toCesium(entry.symbology.fillColor as ColorDef | undefined);
+      if (lineColor && fillColor) {
+        const outlineWanted = !Color.equals(lineColor, fillColor);
+        return { fillColor, lineColor, outlineWanted };
+      }
+    }
 
-    const lineColor = toCesium(lineDef);
-    const fillColor = toCesium(fillDef);
-    if (!lineColor || !fillColor)
+    // Otherwise, use graphic.symbology as provided
+    const symbology = graphic?.symbology;
+    const lineDef = symbology?.color as ColorDef | undefined;
+    const fillDef = (symbology?.fillColor ?? symbology?.color) as ColorDef | undefined;
+    const lineColor2 = toCesium(lineDef);
+    const fillColor2 = toCesium(fillDef);
+    if (!lineColor2 || !fillColor2)
       return undefined;
-    const outlineWanted = !Color.equals(lineColor, fillColor);
-    return { fillColor, lineColor, outlineWanted };
+    const outlineWanted2 = !Color.equals(lineColor2, fillColor2);
+    return { fillColor: fillColor2, lineColor: lineColor2, outlineWanted: outlineWanted2 };
   }
 }

@@ -26,13 +26,13 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
   protected override createPrimitiveFromGraphic(
     graphic: any, 
     primitiveId: string, 
-    index: number, 
+    _index: number, 
     collection: any, 
     iModel?: IModelConnection, 
     originalData?: Point3d[][], 
     type?: string
   ): any {
-    return this.createPointPrimitiveFromGraphic(graphic, primitiveId, index, collection, iModel, originalData, type);
+    return this.createPointPrimitiveFromGraphic(graphic, primitiveId, _index, collection, iModel, originalData, type);
   }
 
   protected override getPrimitiveTypeName(): string {
@@ -57,7 +57,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
   private createPointPrimitiveFromGraphic(
     graphic: any,
     pointId: string,
-    index: number,
+    _index: number,
     pointCollection: PointPrimitiveCollection,
     iModel?: IModelConnection,
     originalPointStrings?: Point3d[][],
@@ -67,7 +67,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
       return null;
 
     if (graphic.geometries && graphic.geometryType)
-      return this.createPointFromGeometry(graphic.geometries, graphic.geometryType, pointId, index, pointCollection, iModel, originalPointStrings, type, graphic);
+      return this.createPointFromGeometry(graphic.geometries, graphic.geometryType, pointId, _index, pointCollection, iModel, originalPointStrings, type, graphic);
 
     return null;
   }
@@ -76,7 +76,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     geometries: any[],
     geometryType: string,
     pointId: string,
-    index: number,
+    _index: number,
     pointCollection: PointPrimitiveCollection,
     iModel?: IModelConnection,
     originalPointStrings?: Point3d[][],
@@ -111,6 +111,8 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
       return null;
 
     const color = this.extractColorFromGraphic(graphic);
+    if (!color)
+      return null;
     switch (geometryType) {
       case 'point-string':
       default:
