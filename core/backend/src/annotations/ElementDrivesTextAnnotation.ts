@@ -6,13 +6,13 @@
  * @module Elements
  */
 
-import { RelationshipProps, TextBlock } from "@itwin/core-common";
+import { FieldPropertyHost, FieldPropertyPath, FieldPropertyType, RelationshipProps, TextBlock } from "@itwin/core-common";
 import { ElementDrivesElement } from "../Relationship";
 import { IModelDb } from "../IModelDb";
 import { Element } from "../Element";
 import { updateElementFields } from "../internal/annotations/fields";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { ECVersion } from "@itwin/ecschema-metadata";
+import { AnyClass, ECVersion, EntityClass, PrimitiveType, Property, PropertyType } from "@itwin/ecschema-metadata";
 
 /** Describes one of potentially many [TextBlock]($common)s hosted by an [[ITextAnnotation]].
  * For example, a [[TextAnnotation2d]] hosts only a single text block, but an element representing a table may
@@ -143,4 +143,81 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
       annotationElement.iModel.relationships.deleteInstance(props);
     }
   }
+}
+
+export function computeFieldPropertyType(path: FieldPropertyPath, host: FieldPropertyHost, iModel: IModelDb): FieldPropertyType | "user-specified" | undefined {
+  if (path.jsonAccessors && path.jsonAccessors?.length > 0) {
+    return "user-specified";
+  }
+
+  const schemaItem = iModel.schemaContext.getSchemaItemSync(host.schemaName, host.className);
+  if (!EntityClass.isEntityClass(schemaItem)) {
+    return undefined;
+  }
+
+  let curClass: AnyClass = schemaItem;
+  let maybeProp = curClass.getPropertySync(path.propertyName);
+  if (!maybeProp) {
+    return undefined;
+  }
+
+  let curProp: Property = maybeProp;
+  if (path.accessors) {
+    for (const accessor of path.accessors) {
+      if (typeof accessor === "number") {
+        if (!curProp.isArray()) {
+          return undefined;
+        }
+      } else {
+        if (!curProp.isStruct()) {
+          return undefined;
+        }
+
+        curClass = curProp.structClass;
+        maybeProp = curClass.getPropertySync(accessor);
+        if (!maybeProp) {
+          return undefined;
+        }
+
+        curProp = maybeProp;
+      }
+    }
+  }
+
+  if (curProp.isEnumeration()) {
+    switch (curProp.propertyType) {
+      case PropertyType.Integer_Enumeration:
+        return "int-enum";
+      case PropertyType.String_Enumeration:
+        return "string-enum";
+      default:
+        return undefined;
+    }
+  }
+
+  if (curProp.isPrimitive()) {
+    switch (curProp.primitiveType) {
+      case PrimitiveType.Boolean:
+        return "boolean";
+      case PrimitiveType.String:
+        return curProp.extendedTypeName === "DateTime" ? "datetime" : "string";
+      case PrimitiveType.DateTime:
+        return "datetime";
+      case PrimitiveType.Double:
+      case PrimitiveType.Long:
+        return "quantity";
+      case PrimitiveType.Point2d:
+      case PrimitiveType.Point3d:
+        return "coordinate";
+      case PrimitiveType.Binary:
+        return curProp.extendedTypeName === "Guid" ? "string" : undefined;
+      case PrimitiveType.Integer:
+      case PrimitiveType.Long:
+        return "string";
+      default:
+        return undefined;
+    }
+  }
+
+  return undefined;
 }

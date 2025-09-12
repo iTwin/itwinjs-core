@@ -6,7 +6,8 @@ import { expect } from "chai";
 import { Code, ElementAspectProps, FieldPrimitiveValue, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextRun } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { computeFieldPropertyType, createUpdateContext, updateField, updateFields } from "../../internal/annotations/fields";
+import { createUpdateContext, updateField, updateFields } from "../../internal/annotations/fields";
+import { computeFieldPropertyType } from "../../annotations/ElementDrivesTextAnnotation";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { SpatialCategory } from "../../Category";
 import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
@@ -291,25 +292,24 @@ describe("Field evaluation", () => {
     return id;
   }
 
-  function getPropertyType(propertyHost: FieldPropertyHost, propertyName: string): FieldPropertyType | undefined{
-     let propType: FieldPropertyType | undefined;
-      const schemaItem = imodel.schemaContext.getSchemaItemSync(propertyHost.schemaName, propertyHost.className);
-      if (EntityClass.isEntityClass(schemaItem)) {
-        const ecClass: AnyClass = schemaItem;
-        const ecProp = ecClass.getPropertySync(propertyName);
-        if (ecProp)
-          propType = computeFieldPropertyType(ecProp);
-      }
-      return propType;
-  }
+  function getPropertyType(propertyHost: FieldPropertyHost, propertyPath: string | FieldPropertyPath): FieldPropertyType | "user-specified" | undefined {
+    if (typeof propertyPath === "string") {
+      propertyPath = { propertyName: propertyPath };
+    }
+
+    return computeFieldPropertyType(propertyPath, propertyHost, imodel);
+}
 
   describe("getProperty", () => {
-    function expectValue(expected: any, propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String, deletedDependency = false): void {
+    function expectValue(expected: any, propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String, deletedDependency = false, propertyType?: FieldPropertyType | string | undefined): void {
       if (typeof propertyHost === "string") {
         propertyHost = { schemaName: "Fields", className: "TestElement", elementId: propertyHost };
       }
 
-      const propertyType = getPropertyType(propertyHost, propertyPath.propertyName);
+      if (!propertyType) {
+        const computedType = computeFieldPropertyType(propertyPath, propertyHost, imodel);
+        propertyType = (computedType && "user-specified" !== computedType) ? computedType : "invalid-type";
+      }
 
       const field = FieldRun.create({
         propertyPath,
