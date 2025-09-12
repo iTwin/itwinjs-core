@@ -17,7 +17,7 @@ import { ElementOwnsUniqueAspect, ElementUniqueAspect, FontFile, TextAnnotation3
 import { ElementDrivesTextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass } from "@itwin/ecschema-metadata";
 
-describe.only("updateField", () => {
+describe("updateField", () => {
   const mockElementId = "0x1";
   const mockPath: FieldPropertyPath = {
     propertyName: "mockProperty",
@@ -215,7 +215,7 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
   iModel.saveChanges();
 }
 
-describe.only("Field evaluation", () => {
+describe("Field evaluation", () => {
   let imodel: StandaloneDb;
   let model: Id64String;
   let category: Id64String;
@@ -391,7 +391,7 @@ describe.only("Field evaluation", () => {
     });
 
     // FIXME: structs should return undefined and fail evaluation?
-    it.skip("returns arbitrarily-nested properties of structs and struct arrays", () => {
+    it.only("returns arbitrarily-nested properties of structs and struct arrays", () => {
       expectValue(false, { propertyName: "outerStruct", accessors: ["innerStruct", "bool"] }, sourceElementId);
       for (const index of [0, 1, 2]) {
         expectValue(index + 1, { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", index] },sourceElementId);
@@ -755,7 +755,7 @@ describe.only("Field evaluation", () => {
 
     // FIXME: fails because Props with struct type return undefined, however fields with no prop type default to "string"
     //        so either this test is now invalid or we structs should default to string type?
-    it.skip("supports complex property paths", () => {
+    it.only("supports complex property paths", () => {
       const sourceId = insertTestElement();
       const block = TextBlock.create({ styleId: "0x123" });
       block.appendRun(createField(sourceId, "", "outerStruct", ["innerStructs", 1, "doubles", -2]));
