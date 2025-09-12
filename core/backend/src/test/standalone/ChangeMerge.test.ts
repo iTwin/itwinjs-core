@@ -405,7 +405,7 @@ describe("Change merge method", () => {
     b2.abandonChanges();
 
     // set handler to resolve conflict
-    b2.txns.changeMergeManager.addConflictHandler({
+    b2.txns.rebaser.addConflictHandler({
       id: "my", handler: (args: RebaseChangesetConflictArgs) => {
         if (args.cause === "Conflict") {
           if (args.tableName === "be_Prop") {
@@ -426,7 +426,7 @@ describe("Change merge method", () => {
     });
 
     // resume rebase see if it resolve the conflict
-    await b2.txns.changeMergeManager.resume();
+    await b2.txns.rebaser.resume();
 
     // use changeset api to read txn directly
     const reader = SqliteChangesetReader.openTxn({ db: b2, txnId: "0x100000000" });
@@ -471,7 +471,7 @@ describe("Change merge method", () => {
     await b1.pushChanges({ description: "test" });
 
     // set handler to resolve conflict
-    b2.txns.changeMergeManager.addConflictHandler({
+    b2.txns.rebaser.addConflictHandler({
       id: "my", handler: (args: RebaseChangesetConflictArgs) => {
         if (args.cause === "Data") {
           if (args.tableName === "be_Prop") {

@@ -923,7 +923,7 @@ export abstract class IModelDb extends IModel {
       return;
 
     if (this instanceof BriefcaseDb) {
-      if (this.txns.changeMergeManager.isRebasing) {
+      if (this.txns.rebaser.isRebasing) {
         throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
       }
       if (this.txns.isIndirectChanges) {
@@ -987,7 +987,7 @@ export abstract class IModelDb extends IModel {
       return;
 
     if (this instanceof BriefcaseDb) {
-      if (this.txns.changeMergeManager.isRebasing) {
+      if (this.txns.rebaser.isRebasing) {
         throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
       }
       if (this.txns.isIndirectChanges) {
@@ -3550,7 +3550,7 @@ export class BriefcaseDb extends IModelDb {
   }
 
   public override close() {
-    if (this.isBriefcase && this.isOpen && !this.isReadonly && this.txns.changeMergeManager.inProgress()) {
+    if (this.isBriefcase && this.isOpen && !this.isReadonly && this.txns.rebaser.inProgress()) {
       this.abandonChanges();
     }
     super.close();

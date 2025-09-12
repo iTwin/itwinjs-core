@@ -111,9 +111,6 @@ export class StashManager {
     if (!db.isOpen || db.isReadonly)
       throw new IModelError(IModelStatus.BadArg, "Database is not open or is readonly");
 
-    if (db.txns.hasUnsavedChanges)
-      throw new IModelError(IModelStatus.BadArg, "There are unsaved changes");
-
     if (!existsSync(db[_nativeDb].getFilePath())) {
       throw new IModelError(IModelStatus.BadArg, "Could not determine briefcase path");
     }

@@ -6,7 +6,7 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
-import { BriefcaseDb, ChannelControl, DrawingCategory, IModelHost, SqliteChangesetReader, TxnProps } from "../../core-backend";
+import { BriefcaseDb, BriefcaseManager, ChannelControl, DrawingCategory, IModelHost, SqliteChangesetReader, TxnProps } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { Suite } from "mocha";
 import { Code, IModel, SubCategoryAppearance } from "@itwin/core-common";
@@ -260,7 +260,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     await testIModel.insertElement(b2, true);
     b2.saveChanges("third change");
 
-    b2.txns.changeMergeManager.setRebaseHandler({
+    b2.txns.rebaser.setCustomHandler({
       shouldReinstate: (_txn: TxnProps) => {
         return true;
       },
@@ -609,5 +609,36 @@ describe("rebase changes & stashing api", function (this: Suite) {
     b1.saveChanges();
 
     await chai.expect(StashManager.stash({ db: b1, description: "stash test 1" })).to.not.rejectedWith("Bad Arg: Pending schema changeset stashing is not currently supported");
+  });
+  it("abort rebase", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const e1 = await testIModel.insertElement(b1);
+    b1.saveChanges();
+    await b1.pushChanges({ description: `${e1} inserted` });
+
+    const e2 = await testIModel.insertElement(b2);
+    chai.expect(e2).to.exist;
+    let e3;
+    b2.saveChanges();
+    b2.txns.rebaser.setCustomHandler({
+      shouldReinstate:  (_txnProps: TxnProps) => {
+        return true;
+      },
+      recompute: async (_txnProps: TxnProps) => {
+        chai.expect(BriefcaseManager.containsRestorePoint({db: b2, name: BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME})).is.true;
+        e3 = await testIModel.insertElement(b2);
+        throw new Error("Rebase failed");
+      },
+    });
+
+    await chai.expect(b2.pullChanges()).to.be.rejectedWith("Rebase failed");
+    chai.expect(e3).to.exist;
+    chai.expect(BriefcaseManager.containsRestorePoint({db: b2, name: BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME})).is.true;
+
+    chai.expect(b2.txns.rebaser.canAbort()).is.true;
+    await b2.txns.rebaser.abort();
+    chai.expect(BriefcaseManager.containsRestorePoint({db: b2, name: BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME})).is.false;
   });
 });

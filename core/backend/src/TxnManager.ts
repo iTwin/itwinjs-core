@@ -343,9 +343,9 @@ export interface TxnProps {
  *
  * @alpha
  */
-export class ChangeMergeManager {
+export class RebaseManager {
   private _conflictHandlers?: IConflictHandler;
-  private _rebaseHandler?: RebaseHandler;
+  private _customHandler?: RebaseHandler;
   public constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
   private get _txns() {
     return this._iModel.txns;
@@ -384,14 +384,14 @@ export class ChangeMergeManager {
 
         txns.onRebaseTxnBegin.raiseEvent(txnProps);
         Logger.logInfo(BackendLoggerCategory.IModelDb, `Rebasing local changes for transaction ${txnId}`);
-        const shouldReinstate = this._rebaseHandler ? this._rebaseHandler.shouldReinstate(txnProps) : true;
+        const shouldReinstate = this._customHandler ? this._customHandler.shouldReinstate(txnProps) : true;
         if (shouldReinstate) {
           nativeDb.pullMergeRebaseReinstateTxn();
           Logger.logInfo(BackendLoggerCategory.IModelDb, `Reinstated local changes for transaction ${txnId}`);
         }
 
-        if (this._rebaseHandler) {
-          await this._rebaseHandler.recompute(txnProps);
+        if (this._customHandler) {
+          await this._customHandler.recompute(txnProps);
         }
 
         nativeDb.pullMergeRebaseUpdateTxn();
@@ -448,11 +448,11 @@ export class ChangeMergeManager {
    *
    * @param handler - The {@link RebaseHandler} to handle rebase events.
    */
-  public setRebaseHandler(handler: RebaseHandler) {
-    if (this._rebaseHandler) {
+  public setCustomHandler(handler: RebaseHandler) {
+    if (this._customHandler) {
       throw new IModelError(IModelStatus.BadArg, "Rebase handler already set");
     }
-    this._rebaseHandler = handler;
+    this._customHandler = handler;
   }
 
   /**
@@ -577,11 +577,11 @@ export class TxnManager {
   }
 
   /** @internal */
-  public readonly changeMergeManager: ChangeMergeManager;
+  public readonly rebaser: RebaseManager;
 
   /** @internal */
   constructor(private _iModel: BriefcaseDb | StandaloneDb) {
-    this.changeMergeManager = new ChangeMergeManager(_iModel);
+    this.rebaser = new RebaseManager(_iModel);
     _iModel.onBeforeClose.addOnce(() => {
       this._isDisposed = true;
     });
@@ -729,7 +729,7 @@ export class TxnManager {
     }
 
     try {
-      const resolution = this.changeMergeManager.onConflict(args);
+      const resolution = this.rebaser.onConflict(args);
       if (resolution !== undefined)
         return resolution;
     } catch (err) {
