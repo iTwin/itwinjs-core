@@ -15,7 +15,7 @@
     "copy:js:cjs": "cpx \"./src/**/*.js\" ./lib/cjs",
     "copy:js:esm": "cpx \"./src/**/*.js\" ./lib/esm",
     "copy:workers": "cpx \"./lib/workers/webpack/parse-imdl-worker.js\" ./lib/public/scripts",
-    "copy:draco": "cpx \"./node_modules/draco3d/draco_decoder.wasm\" ./lib/public",
+    "copy:draco": "cpx \"./node_modules/@loaders.gl/draco/dist/libs/*\" ./lib/public/draco",
     "docs": "betools docs --json=../../generated-docs/core/core-frontend/file.json --tsIndexFile=./core-frontend.ts --onlyJson --excludes=webgl/**/*,**/map/*.d.ts,**/tile/*.d.ts,**/*-css.ts",
     "extract-api": "betools extract-api --entry=core-frontend && npm run extract-extension-api",
     "extract-extension-api": "eslint --no-inline-config -c extraction.eslint.config.js  \"./src/**/*.ts\" 1>&2",
@@ -100,7 +100,8 @@
     "@itwin/webgl-compatibility": "workspace:*",
     "@loaders.gl/core": "^4.3.4",
     "@loaders.gl/draco": "^4.3.4",
-    "draco3d": "^1.5.1",
+    "@loaders.gl/loader-utils": "^4.3.4",
+    "draco3d": "^1.5.7",
     "fuse.js": "^3.3.0",
     "wms-capabilities": "0.4.0"
   }

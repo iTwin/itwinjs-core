@@ -359,6 +359,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "@loaders.gl/loader-utils",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@microsoft/api-extractor",
       "allowedCategories": [ "tools" ]
     },
@@ -937,6 +941,10 @@
     {
       "name": "vite-plugin-static-copy",
       "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "vite-plugin-wasm",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "vitest",

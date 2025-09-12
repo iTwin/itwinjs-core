@@ -2160,7 +2160,7 @@ export abstract class GltfReader {
     } catch { }
   }
 
-  private async decodeDracoMesh(ext: DracoMeshCompression, loader: typeof DracoLoader, draco3d: any): Promise<void> {
+  private async decodeDracoMesh(ext: DracoMeshCompression, loader: typeof DracoLoader, _draco3d: any): Promise<void> {
     const bv = this._bufferViews[ext.bufferView];
     if (!bv || !bv.byteLength)
       return;
@@ -2172,7 +2172,26 @@ export abstract class GltfReader {
     const offset = bv.byteOffset ?? 0;
     buf = buf.subarray(offset, offset + bv.byteLength);
 
-    const mesh = await loader.parse(buf, { modules: { draco3d } }); // NB: `options` argument declared optional but will produce exception if not supplied. Regardless, we are specifying our own bundled draco3d module to avoid CDN requests.
+    const jsWrapper = await import(
+      `${IModelApp.publicPath}/draco/draco_wasm_wrapper.js`
+    );
+    const wasm = await (await fetch(`${IModelApp.publicPath}/draco/draco_decoder.wasm`)).arrayBuffer();
+
+    const mesh = await loader.parse(buf, {
+      draco: {
+        decoderType: "wasm",
+        // libraryPath: "draco/",
+        // wasmUrl: `${IModelApp.publicPath}/draco/draco_decoder.wasm`,
+        // jsUrl: `${IModelApp.publicPath}/draco/draco_wasm_wrapper.js`,
+      },
+      // modules: { draco3d },
+      modules: {
+        "draco_wasm_wrapper.js": jsWrapper,
+        "draco_decoder.wasm": wasm,
+      },
+      worker: false,
+      useLocalLibraries: true,
+    }); // NB: `options` argument declared optional but will produce exception if not supplied. Regardless, we are specifying our own bundled draco3d module to avoid CDN requests.
     if (mesh)
       this._dracoMeshes.set(ext, mesh);
   }
