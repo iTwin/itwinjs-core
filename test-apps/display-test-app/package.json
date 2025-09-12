@@ -77,8 +77,7 @@
     "@itwin/reality-data-client": "^1.2.1",
     "@itwin/webgl-compatibility": "workspace:*",
     "body-parser": "^1.20.3",
-    "vhacd-js": "^0.0.1",
-    "cesium": "1.133.0"
+    "vhacd-js": "^0.0.1"
   },
   "devDependencies": {
     "@bentley/formats-schema": "^1.0.0",
