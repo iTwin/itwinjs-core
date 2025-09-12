@@ -42,7 +42,6 @@ beta;interface;ChangedECInstance
 internal;class;ChangedElementsDb
 beta;interface;ChangeFormatArgs
 beta;interface;ChangeInstanceKey
-alpha;class;ChangeMergeManager
 beta;interface;ChangeMetaData
 public;interface;ChangesetArg
 beta;class;ChangesetECAdaptor
@@ -446,6 +445,7 @@ beta;interface;QueryMappedFamiliesArgs
 beta;interface;QueryWorkspaceResourcesArgs
 beta;type;QueryWorkspaceResourcesCallback
 alpha;interface;RebaseHandler
+alpha;class;RebaseManager
 beta;class;RecipeDefinitionElement
 public;class;Relationship
 public;class;Relationships

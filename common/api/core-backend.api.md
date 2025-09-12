@@ -854,25 +854,6 @@ export interface ChangeInstanceKey {
     id: Id64String;
 }
 
-// @alpha
-export class ChangeMergeManager {
-    constructor(_iModel: BriefcaseDb | StandaloneDb);
-    abort(): Promise<void>;
-    addConflictHandler(args: {
-        id: string;
-        handler: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
-    }): void;
-    canAbort(): boolean;
-    inProgress(): boolean;
-    get isMerging(): boolean;
-    get isRebasing(): boolean;
-    onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
-    removeConflictHandler(id: string): void;
-    // @internal
-    resume(): Promise<void>;
-    setRebaseHandler(handler: RebaseHandler): void;
-}
-
 // @beta
 export interface ChangeMetaData {
     changeIndexes: number[];
@@ -5207,6 +5188,24 @@ export interface RebaseHandler {
     shouldReinstate(txn: TxnProps): boolean;
 }
 
+// @alpha
+export class RebaseManager {
+    constructor(_iModel: BriefcaseDb | StandaloneDb);
+    abort(): Promise<void>;
+    addConflictHandler(args: {
+        id: string;
+        handler: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
+    }): void;
+    canAbort(): boolean;
+    inProgress(): boolean;
+    get isMerging(): boolean;
+    get isRebasing(): boolean;
+    onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
+    removeConflictHandler(id: string): void;
+    resume(): Promise<void>;
+    setCustomHandler(handler: RebaseHandler): void;
+}
+
 // @beta
 export abstract class RecipeDefinitionElement extends DefinitionElement {
     protected constructor(props: ElementProps, iModel: IModelDb);
@@ -6601,8 +6600,6 @@ export class TxnManager {
     appCustomConflictHandler?: (args: DbRebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     beginMultiTxnOperation(): DbResult;
     cancelTo(txnId: TxnIdString): IModelStatus;
-    // @internal (undocumented)
-    readonly changeMergeManager: ChangeMergeManager;
     deleteAllTxns(): void;
     endMultiTxnOperation(): DbResult;
     getChangeTrackingMemoryUsed(): number;
@@ -6683,6 +6680,8 @@ export class TxnManager {
     queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
     // @alpha
     queryTxns(): Generator<TxnProps>;
+    // @internal (undocumented)
+    readonly rebaser: RebaseManager;
     reinstateTxn(): IModelStatus;
     reportError(error: ValidationError): void;
     restartSession(): void;
