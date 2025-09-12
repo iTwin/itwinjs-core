@@ -12,6 +12,7 @@ import { LineStringPrimitiveConverter } from "./LineStringPrimitiveConverter";
 import { ShapePrimitiveConverter } from "./ShapePrimitiveConverter";
 import { ArcPrimitiveConverter } from "./ArcPrimitiveConverter";
 import { PathPrimitiveConverter } from "./PathPrimitiveConverter";
+import { LoopPrimitiveConverter } from "./LoopPrimitiveConverter";
 import { CoordinateBuilder } from "./CoordinateBuilder";
 import { CoordinateStorage } from "./CoordinateStorage";
 
@@ -25,6 +26,7 @@ export class PrimitiveConverterFactory {
     this._converters.set('shape', new ShapePrimitiveConverter());
     this._converters.set('arc', new ArcPrimitiveConverter());
     this._converters.set('path', new PathPrimitiveConverter());
+    this._converters.set('loop', new LoopPrimitiveConverter());
   }
 
   public static getConverter(geometryType?: string): PrimitiveConverter | undefined {

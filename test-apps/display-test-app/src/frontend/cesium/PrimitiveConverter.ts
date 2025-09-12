@@ -203,6 +203,13 @@ export abstract class PrimitiveConverter {
               }
               break;
               
+            case 'loop':
+              const loopConverter = PrimitiveConverterFactory.getConverter(primitive.type);
+              if (loopConverter) {
+                loopConverter.convertDecorations([graphic], type, scene, iModel);
+              }
+              break;
+              
             default:
               console.warn(`Unknown geometry type: ${primitive.type}`);
           }

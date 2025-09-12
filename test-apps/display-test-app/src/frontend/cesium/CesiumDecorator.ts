@@ -5,10 +5,11 @@
 
 import { ColorDef } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection } from "@itwin/core-frontend";
-import { AngleSweep, Arc3d, LineString3d, Matrix3d, Path, Point3d } from "@itwin/core-geometry";
+import { AngleSweep, Arc3d, LineString3d, Loop, Matrix3d, Path, Point3d } from "@itwin/core-geometry";
 
 class CesiumDecorator implements Decorator {
   private _iModel?: IModelConnection;
+  private xOffset = -220000; // Shift test paths left to avoid overlap
 
   constructor(iModel: IModelConnection) {
     this._iModel = iModel;
@@ -25,6 +26,7 @@ class CesiumDecorator implements Decorator {
       this.createShapeDecorations(context);
       this.createArcDecorations(context);
       this.createPathDecorations(context);
+      this.createLoopDecorations(context);
     } catch (error) {
       console.error('Decoration creation failed:', error);
     }
@@ -187,13 +189,14 @@ class CesiumDecorator implements Decorator {
 
     const z = c.z + 50000;
     const R = 20000;
+    
 
     // First segment: horizontal line from left to right
-    const P0 = new Point3d(c.x - 80000, c.y - 80000, z);
-    const P1 = new Point3d(c.x - 20000, c.y - 80000, z);
+    const P0 = new Point3d(c.x - 80000 + this.xOffset, c.y - 80000, z);
+    const P1 = new Point3d(c.x - 20000 + this.xOffset, c.y - 80000, z);
 
     // Second segment: vertical line upward to corner point
-    const P2 = new Point3d(c.x - 20000, c.y - 20000, z);
+    const P2 = new Point3d(c.x - 20000 + this.xOffset, c.y - 20000, z);
 
     // Arc transition: 90-degree arc with radius 20000
     // Using start-middle-end definition to ensure P2 is the arc start point
@@ -222,12 +225,12 @@ class CesiumDecorator implements Decorator {
     // Second path: zigzag wave pattern
     const zigZag = Path.create(
       LineString3d.create([
-        new Point3d(c.x + 50000, c.y - 100000, z + 10000),
-        new Point3d(c.x + 70000, c.y - 80000, z + 10000),
-        new Point3d(c.x + 50000, c.y - 60000, z + 10000),
-        new Point3d(c.x + 70000, c.y - 40000, z + 10000),
-        new Point3d(c.x + 50000, c.y - 20000, z + 10000),
-        new Point3d(c.x + 70000, c.y, z + 10000)
+        new Point3d(c.x + 50000 + this.xOffset, c.y - 100000, z + 10000),
+        new Point3d(c.x + 70000 + this.xOffset, c.y - 80000, z + 10000),
+        new Point3d(c.x + 50000 + this.xOffset, c.y - 60000, z + 10000),
+        new Point3d(c.x + 70000 + this.xOffset, c.y - 40000, z + 10000),
+        new Point3d(c.x + 50000 + this.xOffset, c.y - 20000, z + 10000),
+        new Point3d(c.x + 70000 + this.xOffset, c.y, z + 10000)
       ])
     );
     
@@ -235,6 +238,28 @@ class CesiumDecorator implements Decorator {
     builder2.setSymbology(ColorDef.from(100, 255, 100), ColorDef.from(100, 255, 100), 3);
     builder2.addPath(zigZag);
     context.addDecorationFromBuilder(builder2);
+  }
+
+  private createLoopDecorations(context: DecorateContext): void {
+    if (!this._iModel) return;
+    const c = this._iModel.projectExtents.center;
+
+    const z = c.z + 70000;
+
+    // Simple test: Just one triangle
+    const trianglePoints = [
+      new Point3d(c.x - 60000 + this.xOffset, c.y - 60000, z),
+      new Point3d(c.x + 60000 + this.xOffset, c.y - 60000, z),
+      new Point3d(c.x + this.xOffset, c.y + 60000, z),
+      new Point3d(c.x - 60000 + this.xOffset, c.y - 60000, z)
+    ];
+
+    const triangleLoop = Loop.create(LineString3d.create(trianglePoints));
+
+    const builder1 = context.createGraphic({ type: GraphicType.WorldDecoration });
+    builder1.setSymbology(ColorDef.from(255, 0, 255), ColorDef.from(255, 0, 255), 2);
+    builder1.addLoop(triangleLoop);
+    context.addDecorationFromBuilder(builder1);
   }
 
   public stop(): void {
