@@ -26,7 +26,6 @@ export interface DtaBooleanConfiguration {
   useWebGL2?: boolean; // default ON
   errorOnMissingUniform?: boolean; // default true
   debugShaders?: boolean; // default OFF
-  useCesium?: boolean; // default OFF
   alwaysLoadEdges?: boolean; // default OFF
   alwaysSubdivideIncompleteTiles?: boolean; // default OFF
   openReadWrite?: boolean; // default false
@@ -144,9 +143,6 @@ export const getConfig = (): DtaConfiguration => {
 
   if (undefined !== process.env.IMJS_DEBUG_SHADERS)
     configuration.debugShaders = true;
-
-  if (undefined !== process.env.IMJS_USE_CESIUM)
-    configuration.useCesium = true;
 
   if (undefined !== process.env.IMJS_BING_MAPS_KEY)
     configuration.bingMapsKey = process.env.IMJS_BING_MAPS_KEY;
