@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, expectDefined, JsonUtils, Logger, utf8ToString,
+  assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, expectDefined, JsonUtils, Logger, ProcessDetector, utf8ToString,
 } from "@itwin/core-bentley";
 import {
   Angle, IndexedPolyface, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform, Vector3d,
@@ -1421,7 +1421,7 @@ export abstract class GltfReader {
               appearance: this.getEdgeAppearance(extLineString.material),
               polylines: [],
             };
-            
+
             const curLineString: number[] = [];
             for (const index of polylineIndices.buffer) {
               if (index === 0xffffffff) {
@@ -2123,8 +2123,15 @@ export abstract class GltfReader {
       return;
 
     try {
+      // Refuse to continue decoding if using Internet Explorer or old Microsoft Edge. We do not want to trigger any legacy decoding fallbacks within draco3d.
+      if (ProcessDetector.isIEBrowser) {
+        throw new Error("Unsupported browser for Draco decoding");
+      }
+
+      const dracolib = await import("draco3d");
       const dracoLoader = (await import("@loaders.gl/draco")).DracoLoader;
-      await Promise.all(dracoMeshes.map(async (x) => this.decodeDracoMesh(x, dracoLoader)));
+
+      await Promise.all(dracoMeshes.map(async (x) => this.decodeDracoMesh(x, dracoLoader, dracolib)));
     } catch (err) {
       Logger.logWarning(FrontendLoggerCategory.Render, "Failed to decode draco-encoded glTF mesh");
       Logger.logException(FrontendLoggerCategory.Render, err);
@@ -2153,7 +2160,7 @@ export abstract class GltfReader {
     } catch { }
   }
 
-  private async decodeDracoMesh(ext: DracoMeshCompression, loader: typeof DracoLoader): Promise<void> {
+  private async decodeDracoMesh(ext: DracoMeshCompression, loader: typeof DracoLoader, draco3d: any): Promise<void> {
     const bv = this._bufferViews[ext.bufferView];
     if (!bv || !bv.byteLength)
       return;
@@ -2164,7 +2171,8 @@ export abstract class GltfReader {
 
     const offset = bv.byteOffset ?? 0;
     buf = buf.subarray(offset, offset + bv.byteLength);
-    const mesh = await loader.parse(buf, { }); // NB: `options` argument declared optional but will produce exception if not supplied.
+
+    const mesh = await loader.parse(buf, { modules: { draco3d } }); // NB: `options` argument declared optional but will produce exception if not supplied. Regardless, we are specifying our own bundled draco3d module to avoid CDN requests.
     if (mesh)
       this._dracoMeshes.set(ext, mesh);
   }

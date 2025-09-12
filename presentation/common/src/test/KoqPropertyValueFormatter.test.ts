@@ -61,6 +61,20 @@ describe("KoqPropertyValueFormatter", () => {
         });
         expect(formatterSpec).to.be.undefined;
       });
+
+      it("uses format overrides when creating formatterSpec", async () => {
+        const formatterSpec = await formatter.getFormatterSpec({
+          koqName: "TestSchema:TestKOQ",
+          unitSystem: "metric",
+          formatOverride: {
+            precision: 12,
+            decimalSeparator: "-",
+          },
+        });
+
+        expect(formatterSpec?.format.precision).to.equal(12);
+        expect(formatterSpec?.format.decimalSeparator).to.equal("-");
+      });
     });
 
     describe("getParserSpec", () => {
@@ -94,6 +108,20 @@ describe("KoqPropertyValueFormatter", () => {
           unitSystem: "imperial",
         });
         expect(parserSpec).to.be.undefined;
+      });
+
+      it("uses format overrides when creating parserSpec", async () => {
+        const formatterSpec = await formatter.getFormatterSpec({
+          koqName: "TestSchema:TestKOQ",
+          unitSystem: "metric",
+          formatOverride: {
+            precision: 12,
+            decimalSeparator: "-",
+          },
+        });
+
+        expect(formatterSpec?.format.precision).to.equal(12);
+        expect(formatterSpec?.format.decimalSeparator).to.equal("-");
       });
     });
 
