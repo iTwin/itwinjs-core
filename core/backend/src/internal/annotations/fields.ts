@@ -7,7 +7,7 @@ import { ECSqlValueType, FieldPrimitiveValue, FieldRun, formatFieldValue, Relati
 import { IModelDb } from "../../IModelDb";
 import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
-import { computeFieldPropertyType, isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
+import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, StructArrayProperty } from "@itwin/ecschema-metadata";
 
 interface FieldStructValue { [key: string]: any }
@@ -43,11 +43,6 @@ export interface UpdateFieldsContext {
 
 // Resolve the raw primitive value of the property that a field points to.
 function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldPrimitiveValue | undefined {
-  const type = computeFieldPropertyType(field.propertyPath, field.propertyHost, iModel);
-  if ("user-specified" !== type && (undefined === type || type !== field.propertyType)) {
-    return undefined;
-  }
-
   const host = field.propertyHost;
   const schemaItem = iModel.schemaContext.getSchemaItemSync(host.schemaName, host.className);
   if (!EntityClass.isEntityClass(schemaItem)) {
