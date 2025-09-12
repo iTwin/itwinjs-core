@@ -1,4 +1,5 @@
-import { BoundingSphere, Cartesian3, Color, ColorGeometryInstanceAttribute, ComponentDatatype, EllipseGeometry, Geometry, GeometryAttribute, GeometryInstance, PerInstanceColorAppearance, Primitive, PrimitiveType } from "cesium";
+import { BoundingSphere, Cartesian3, Color, ColorGeometryInstanceAttribute, ComponentDatatype, EllipseGeometry, Geometry, GeometryAttribute, GeometryInstance, Material, PerInstanceColorAppearance, Primitive, PrimitiveType } from "cesium";
+import { ColorDef } from "@itwin/core-common";
 import { Loop, Path, PolyfaceBuilder, StrokeOptions, SweepContour } from "@itwin/core-geometry";
 import { IModelConnection } from "@itwin/core-frontend";
 import { GraphicPrimitive } from "@itwin/core-frontend/lib/cjs/common/render/GraphicPrimitive";
@@ -61,22 +62,9 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     
     const converter = new CesiumCoordinateConverter(converterIModel);
     
-    // Use different colors based on type and properties to distinguish arcs
-    let color: Color;
-    if (type === 'worldOverlay') {
-      color = Color.CYAN;
-    } else if (filled || isEllipse) {
-      color = Color.MAGENTA;
-    } else {
-      // Use different colors for different WorldDecoration arcs
-      if (primitiveId.includes('1757561783760')) {
-        color = Color.YELLOW;
-      } else if (primitiveId.includes('1757561783761')) {
-        color = Color.RED;
-      } else {
-        color = Color.ORANGE;
-      }
-    }
+    // Determine color from graphic symbology when available; fallback by type
+    const symColor = this.extractColorFromGraphic(_graphic);
+    const color: Color = symColor ?? (type === 'worldOverlay' ? Color.CYAN : Color.ORANGE);
 
     if (filled || isEllipse) {
       // Use iTwin.js Loop.create(arc) + SweepContour + PolyfaceBuilder for accurate filled ellipse
@@ -143,8 +131,8 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
       if (this._currentScene && this._currentScene.polylineCollection) {
         const polyline = this._currentScene.polylineCollection.add({
           positions,
-          color,
-          width: 2
+          width: 2,
+          material: Material.fromType(Material.ColorType, { color })
         });
         
         return polyline;
@@ -250,6 +238,16 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     });
 
     return geometry;
+  }
+
+  private extractColorFromGraphic(graphic: any): Color | undefined {
+    const symbology = graphic?.symbology;
+    const colorDef = symbology?.color as ColorDef | undefined;
+    if (!colorDef)
+      return undefined;
+    const colors = colorDef.colors;
+    const alpha = 255 - (colors.t ?? 0);
+    return Color.fromBytes(colors.r, colors.g, colors.b, alpha);
   }
 
 }

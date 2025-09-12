@@ -11,6 +11,7 @@ import { GraphicList, IModelConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "./Scene";
 import { PrimitiveConverter } from "./PrimitiveConverter";
+import { ColorDef } from "@itwin/core-common";
 
 export class ShapePrimitiveConverter extends PrimitiveConverter {
   protected readonly primitiveType = 'shape';
@@ -147,8 +148,8 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
             extrudedHeight: 0, // Flat polygon, no extrusion
           });
 
-          // Determine color based on type
-          const color = this.getShapeColor(type);
+          // Determine color: prefer symbology fill, fallback by type
+          const color = this.extractFillColorFromGraphic(_graphic) ?? this.getShapeColor(type);
           
           const geometryInstance = new GeometryInstance({
             geometry: polygonGeometry,
@@ -185,6 +186,21 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
       default:
         return Color.GREEN;
     }
+  }
+
+  private extractFillColorFromGraphic(graphic?: any): Color | undefined {
+    try {
+      const symbology = (graphic as any)?.symbology;
+      const fillDef = (symbology?.fillColor ?? symbology?.color) as ColorDef | undefined;
+      if (fillDef) {
+        const c = fillDef.colors;
+        const alpha = 255 - (c.t ?? 0);
+        return Color.fromBytes(c.r, c.g, c.b, alpha);
+      }
+    } catch {
+      // ignore
+    }
+    return undefined;
   }
 
 }

@@ -8,44 +8,57 @@
 
 import { Arc3d, Loop, Path, Point3d } from "@itwin/core-geometry";
 import { CustomGraphicBuilderOptions, GraphicPrimitive, GraphicTemplate, PrimitiveBuilder, RenderGraphic, ViewportGraphicBuilderOptions } from "@itwin/core-frontend";
+import { ColorDef, LinePixels } from "@itwin/core-common";
 import { System } from "./System";
 import { CoordinateStorage } from "./CoordinateStorage";
 
 /** Generic coordinate builder for capturing geometry coordinates */
 export class CoordinateBuilder extends PrimitiveBuilder {
   private _coordinateData: GraphicPrimitive[] = [];
+  private _currentLineColor?: ColorDef;
+  private _currentFillColor?: ColorDef;
+  private _currentWidth?: number;
+  private _currentLinePixels?: LinePixels;
 
   public constructor(system: System, options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions) {
     super(system, options);
   }
 
+  public override setSymbology(lineColor: ColorDef, fillColor: ColorDef, width?: number, linePixels?: LinePixels): void {
+    this._currentLineColor = lineColor;
+    this._currentFillColor = fillColor;
+    this._currentWidth = width;
+    this._currentLinePixels = linePixels;
+    super.setSymbology(lineColor, fillColor, width ?? 0, linePixels);
+  }
+
   public override addPointString(points: Point3d[]): void {
-    this._coordinateData.push({ type: 'pointstring', points: [...points] });
+    this._coordinateData.push({ type: 'pointstring', points: [...points], symbology: this.snapshotSymbology() } as any);
     super.addPointString(points);
   }
 
   public override addLineString(points: Point3d[]): void {
-    this._coordinateData.push({ type: 'linestring', points: [...points] });
+    this._coordinateData.push({ type: 'linestring', points: [...points], symbology: this.snapshotSymbology() } as any);
     super.addLineString(points);
   }
 
   public override addShape(points: Point3d[]): void {
-    this._coordinateData.push({ type: 'shape', points: [...points] });
+    this._coordinateData.push({ type: 'shape', points: [...points], symbology: this.snapshotSymbology() } as any);
     super.addShape(points);
   }
 
   public override addArc(arc: Arc3d, isEllipse: boolean, filled: boolean): void {
-    this._coordinateData.push({ type: 'arc', arc: arc.clone(), isEllipse, filled });
+    this._coordinateData.push({ type: 'arc', arc: arc.clone(), isEllipse, filled, symbology: this.snapshotSymbology() } as any);
     super.addArc(arc, isEllipse, filled);
   }
 
   public override addPath(path: Path): void {
-    this._coordinateData.push({ type: 'path', path });
+    this._coordinateData.push({ type: 'path', path, symbology: this.snapshotSymbology() } as any);
     super.addPath(path);
   }
 
   public override addLoop(loop: Loop): void {
-    this._coordinateData.push({ type: 'loop', loop });
+    this._coordinateData.push({ type: 'loop', loop, symbology: this.snapshotSymbology() } as any);
     super.addLoop(loop);
   }
 
@@ -84,5 +97,14 @@ export class CoordinateBuilder extends PrimitiveBuilder {
 
   public clearCoordinateData(): void {
     this._coordinateData = [];
+  }
+
+  private snapshotSymbology(): { lineColor?: ColorDef; fillColor?: ColorDef; width?: number; linePixels?: LinePixels } {
+    return {
+      lineColor: this._currentLineColor,
+      fillColor: this._currentFillColor,
+      width: this._currentWidth,
+      linePixels: this._currentLinePixels,
+    };
   }
 }

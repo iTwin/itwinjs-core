@@ -7,6 +7,7 @@
  */
 
 import { Cartesian3, Color, PointPrimitive, PointPrimitiveCollection } from "cesium";
+import { ColorDef } from "@itwin/core-common";
 import { GraphicList, IModelConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "./Scene";
@@ -62,33 +63,13 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     originalPointStrings?: Point3d[][],
     type?: string
   ): PointPrimitive | null {
-    if (!graphic) {
-      console.warn(`Null graphic for ${pointId}`);
+    if (!graphic)
       return null;
-    }
 
-    try {
-      if (graphic.geometries && graphic.geometryType) {
-        return this.createPointFromGeometry(graphic.geometries, graphic.geometryType, pointId, index, pointCollection, iModel, originalPointStrings, type);
-      }
+    if (graphic.geometries && graphic.geometryType)
+      return this.createPointFromGeometry(graphic.geometries, graphic.geometryType, pointId, index, pointCollection, iModel, originalPointStrings, type, graphic);
 
-      // Fallback primitive
-      const fallbackPosition = this.getFallbackPosition(index);
-      
-      return pointCollection.add({
-        id: pointId,
-        position: fallbackPosition,
-        pixelSize: 15,
-        color: Color.LIME,
-        outlineColor: Color.WHITE,
-        outlineWidth: 2,
-        ...this.getDepthOptions(type || 'world'),
-      });
-
-    } catch (error) {
-      console.error(`Error in createPointPrimitiveFromGraphic for ${pointId}:`, error);
-      return null;
-    }
+    return null;
   }
 
   private createPointFromGeometry(
@@ -99,71 +80,74 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     pointCollection: PointPrimitiveCollection,
     iModel?: IModelConnection,
     originalPointStrings?: Point3d[][],
-    type?: string
+    type?: string,
+    graphic?: any
   ): PointPrimitive | null {
-    if (!geometries || !geometryType || !pointCollection) {
+    if (!geometries || !geometryType || !pointCollection)
       return null;
+
+    let entityPosition: Cartesian3 | undefined;
+    let realSpatialPoint: Point3d | null = null;
+
+    if (originalPointStrings && originalPointStrings.length > 0) {
+      const firstPointString = originalPointStrings[0];
+      if (firstPointString && firstPointString.length > 0)
+        realSpatialPoint = firstPointString[0];
     }
 
-    try {
-      let entityPosition: Cartesian3;
-      let realSpatialPoint: Point3d | null = null;
-      
-      // Extract real Point3d coordinates
-      if (originalPointStrings && originalPointStrings.length > 0) {
-        const firstPointString = originalPointStrings[0];
-        if (firstPointString && firstPointString.length > 0) {
-          realSpatialPoint = firstPointString[0];
-        }
-      }
-      
-      if (!realSpatialPoint && geometries && geometries.length > 0) {
-        const geometry = geometries[0];
-        if (geometry && geometry.coordinateData) {
-          const firstCoord = geometry.coordinateData[0];
-          if (firstCoord) {
-            realSpatialPoint = new Point3d(firstCoord.x, firstCoord.y, firstCoord.z);
-          }
-        }
-      }
+    if (!realSpatialPoint && geometries && geometries.length > 0) {
+      const geometry = geometries[0];
+      const firstCoord = geometry?.coordinateData?.[0];
+      if (firstCoord)
+        realSpatialPoint = new Point3d(firstCoord.x, firstCoord.y, firstCoord.z);
+    }
 
-      // Convert coordinates to Cesium space
-      if (realSpatialPoint) {
-        const positions = this.convertPointsToCartesian3([realSpatialPoint], iModel);
-        entityPosition = positions.length > 0 ? positions[0] : this.getFallbackPosition(index);
-      } else {
-        entityPosition = this.getFallbackPosition(index);
-      }
+    if (realSpatialPoint) {
+      const positions = this.convertPointsToCartesian3([realSpatialPoint], iModel);
+      entityPosition = positions[0];
+    }
 
-      switch (geometryType) {
-        case 'point-string':
-        default:
-          return pointCollection.add({
-            id: pointId,
-            position: entityPosition,
-            pixelSize: 20,
-            color: Color.BLUE,
-            outlineColor: Color.WHITE,
-            outlineWidth: 2,
-            ...this.getDepthOptions(type || 'world'),
-          });
-      }
-    } catch (error) {
-      console.error(`Error in createPointFromGeometry for ${pointId}:`, error);
+    if (!entityPosition)
       return null;
+
+    const color = this.extractColorFromGraphic(graphic);
+    switch (geometryType) {
+      case 'point-string':
+      default:
+        return pointCollection.add({
+          id: pointId,
+          position: entityPosition,
+          pixelSize: 20,
+          color,
+          outlineColor: Color.WHITE,
+          outlineWidth: 2,
+          ...this.getDepthOptions(type || 'world'),
+        });
     }
   }
 
-  private getFallbackPosition(index: number): Cartesian3 {
-    const baseDistance = 2000000;
-    const offset = index * 500000;
-    
-    switch (index % 3) {
-      case 0: return new Cartesian3(baseDistance + offset, 0, 0);
-      case 1: return new Cartesian3(0, baseDistance + offset, 0);  
-      case 2: return new Cartesian3(0, 0, baseDistance + offset);
-      default: return new Cartesian3(baseDistance, baseDistance, baseDistance);
+  private extractColorFromGraphic(graphic: any): Color | undefined {
+    // Prefer symbology captured in coordinateData entry
+    const coordData = (graphic as any)?._coordinateData as any[] | undefined;
+    const entry = coordData?.find((e) => e?.type === 'pointstring' && e.symbology?.lineColor);
+    const colorDefFromEntry = entry?.symbology?.lineColor as ColorDef | undefined;
+    if (colorDefFromEntry) {
+      const c1 = colorDefFromEntry.colors;
+      const alpha = 255 - (c1.t ?? 0);
+      return Color.fromBytes(c1.r, c1.g, c1.b, alpha);
     }
+
+    const symbology = (graphic as any)?.symbology;
+    const colorDef = symbology?.color as ColorDef | undefined;
+    if (colorDef) {
+      const c = colorDef.colors;
+      const alpha = 255 - (c.t ?? 0);
+      return Color.fromBytes(c.r, c.g, c.b, alpha);
+    }
+
+    return undefined;
   }
+
+  // Removed fallback position helper per request
 
 }

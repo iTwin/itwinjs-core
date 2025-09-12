@@ -7,6 +7,7 @@
  */
 
 import { Cartesian3, Color, Material, Polyline, PolylineCollection } from "cesium";
+import { ColorDef } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "./Scene";
@@ -94,13 +95,12 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
     iModel?: IModelConnection,
     originalLineStrings?: Point3d[][],
     type?: string,
-    _graphic?: any
+    graphic?: any
   ): Polyline | null {
     if (!geometries || !geometryType || !polylineCollection) {
       return null;
     }
 
-    try {
       let positions: Cartesian3[] = [];
       
       // Extract real Point3d coordinates and convert to Cartesian3
@@ -121,6 +121,7 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
         }
       }
 
+      const color = this.extractColorFromGraphic(graphic);
       switch (geometryType) {
         case 'line-string':
         default:
@@ -128,14 +129,36 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
             id: lineId,
             positions,
             width: 2,
-            material: Material.fromType(Material.ColorType, { color: Color.PURPLE }),
+            material: Material.fromType(Material.ColorType, { color }),
             ...this.getDepthOptions(type || 'world'),
           });
       }
-    } catch (error) {
-      console.error(`Error in createPolylineFromGeometry for ${lineId}:`, error);
-      return null;
+  }
+
+  private extractColorFromGraphic(graphic: any): Color | undefined {
+    try {
+      // Prefer symbology captured in coordinateData entry
+      const coordData = (graphic as any)?._coordinateData as any[] | undefined;
+      const entry = coordData?.find((e) => e?.type === 'linestring' && e.symbology?.lineColor);
+      const colorDefFromEntry = entry?.symbology?.lineColor as ColorDef | undefined;
+      if (colorDefFromEntry) {
+        const c1 = colorDefFromEntry.colors;
+        const alpha = 255 - (c1.t ?? 0);
+        return Color.fromBytes(c1.r, c1.g, c1.b, alpha);
+      }
+
+      // Fallback to graphic.symbology if present
+      const symbology = (graphic as any)?.symbology;
+      const colorDef = symbology?.color as ColorDef | undefined;
+      if (colorDef) {
+        const c = colorDef.colors;
+        const alpha = 255 - (c.t ?? 0);
+        return Color.fromBytes(c.r, c.g, c.b, alpha);
+      }
+    } catch {
+      // ignore
     }
+    return undefined;
   }
 
 }

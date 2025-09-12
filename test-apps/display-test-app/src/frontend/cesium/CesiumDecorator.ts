@@ -20,16 +20,12 @@ class CesiumDecorator implements Decorator {
       return;
     }
     
-    try {
-      this.createPointDecorations(context);
-      this.createLineStringDecorations(context);
-      this.createShapeDecorations(context);
-      this.createArcDecorations(context);
-      this.createPathDecorations(context);
-      this.createLoopDecorations(context);
-    } catch (error) {
-      console.error('Decoration creation failed:', error);
-    }
+    this.createPointDecorations(context);
+    this.createLineStringDecorations(context);
+    this.createShapeDecorations(context);
+    this.createArcDecorations(context);
+    this.createPathDecorations(context);
+    this.createLoopDecorations(context);
   }
 
   private createPointDecorations(context: DecorateContext): void {

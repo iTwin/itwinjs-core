@@ -85,21 +85,15 @@ export abstract class PrimitiveConverter {
     }
     
     filteredGraphics.forEach((graphic, index) => {
-      try {
-        const primitiveId = `${type}_${this.getPrimitiveTypeName()}_${index}`;
-        const graphicWithCoords = graphic as RenderGraphicWithCoordinates;
-        const coordinateData = graphicWithCoords._coordinateData;
-        const originalData = this.extractPrimitiveData(coordinateData, primitiveType);
-        
-        const result = this.createPrimitiveFromGraphic(graphic, primitiveId, index, collection, iModel, originalData, type);
-        
-        // For ArcPrimitiveConverter, we need to manually add Primitives to the collection
-        if (result && typeof result === 'object' && result.constructor.name === 'Primitive') {
-          collection.add(result);
-        }
-      } catch (error) {
-        console.error(`Error creating ${type} ${primitiveType} primitive:`, error);
-      }
+      const primitiveId = `${type}_${this.getPrimitiveTypeName()}_${index}`;
+      const graphicWithCoords = graphic as RenderGraphicWithCoordinates;
+      const coordinateData = graphicWithCoords._coordinateData;
+      const originalData = this.extractPrimitiveData(coordinateData, primitiveType);
+
+      const result = this.createPrimitiveFromGraphic(graphic, primitiveId, index, collection, iModel, originalData, type);
+
+      if (result && typeof result === 'object' && result.constructor.name === 'Primitive')
+        collection.add(result);
     });
   }
 

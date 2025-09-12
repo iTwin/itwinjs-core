@@ -7,6 +7,7 @@
  */
 
 import { Cartesian3, Color, Material, Polyline, PolylineCollection } from "cesium";
+import { ColorDef } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Path, Point3d, StrokeOptions } from "@itwin/core-geometry";
 import { GraphicPrimitive } from "@itwin/core-frontend/lib/cjs/common/render/GraphicPrimitive";
@@ -36,7 +37,6 @@ export class PathPrimitiveConverter extends PrimitiveConverter {
     originalData?: any[],
     type?: string
   ): Polyline | null {
-    try {
       // Prefer the captured Path object from coordinate data
       const pathEntry = Array.isArray(originalData)
         ? originalData.find((e) => e && e.type === "path" && e.path instanceof Path)
@@ -58,8 +58,8 @@ export class PathPrimitiveConverter extends PrimitiveConverter {
       // Convert to Cesium coordinates using base helper
       const positions: Cartesian3[] = this.convertPointsToCartesian3(pts, iModel);
 
-      // Choose a material color by decoration type for quick debugging
-      const matColor = type === "worldOverlay" || type === "viewOverlay" ? Color.CYAN : Color.ORANGE;
+      // Use symbology color when available
+      const matColor = this.extractColorFromGraphic(_graphic);
 
       return collection.add({
         id: primitiveId,
@@ -68,10 +68,29 @@ export class PathPrimitiveConverter extends PrimitiveConverter {
         material: Material.fromType(Material.ColorType, { color: matColor }),
         ...this.getDepthOptions(type ?? "world"),
       });
-    } catch (err) {
-      console.error(`Error creating path primitive ${primitiveId}:`, err);
-      return null;
+    return null;
+  }
+
+  private extractColorFromGraphic(graphic: any): Color | undefined {
+    // Prefer symbology captured in coordinateData entry
+    const coordData = (graphic as any)?._coordinateData as any[] | undefined;
+    const entry = coordData?.find((e) => e?.type === 'path' && e.symbology?.lineColor);
+    const colorDefFromEntry = entry?.symbology?.lineColor as ColorDef | undefined;
+    if (colorDefFromEntry) {
+      const c1 = colorDefFromEntry.colors;
+      const alpha = 255 - (c1.t ?? 0);
+      return Color.fromBytes(c1.r, c1.g, c1.b, alpha);
     }
+
+    const symbology = (graphic as any)?.symbology;
+    const colorDef = symbology?.color as ColorDef | undefined;
+    if (colorDef) {
+      const c = colorDef.colors;
+      const alpha = 255 - (c.t ?? 0);
+      return Color.fromBytes(c.r, c.g, c.b, alpha);
+    }
+
+    return undefined;
   }
 
   protected override getPrimitiveTypeName(): string {
@@ -95,4 +114,3 @@ export class PathPrimitiveConverter extends PrimitiveConverter {
     return base;
   }
 }
-
