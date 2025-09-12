@@ -196,6 +196,13 @@ export abstract class PrimitiveConverter {
               }
               break;
               
+            case 'path':
+              const pathConverter = PrimitiveConverterFactory.getConverter(primitive.type);
+              if (pathConverter) {
+                pathConverter.convertDecorations([graphic], type, scene, iModel);
+              }
+              break;
+              
             default:
               console.warn(`Unknown geometry type: ${primitive.type}`);
           }

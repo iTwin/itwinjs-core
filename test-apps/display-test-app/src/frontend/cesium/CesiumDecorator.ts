@@ -5,8 +5,7 @@
 
 import { ColorDef } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection } from "@itwin/core-frontend";
-import { AngleSweep, Arc3d, Matrix3d, Point3d } from "@itwin/core-geometry";
-// import { LineString3d, Path } from "@itwin/core-geometry";
+import { AngleSweep, Arc3d, LineString3d, Matrix3d, Path, Point3d } from "@itwin/core-geometry";
 
 class CesiumDecorator implements Decorator {
   private _iModel?: IModelConnection;
@@ -25,6 +24,7 @@ class CesiumDecorator implements Decorator {
       this.createLineStringDecorations(context);
       this.createShapeDecorations(context);
       this.createArcDecorations(context);
+      this.createPathDecorations(context);
     } catch (error) {
       console.error('Decoration creation failed:', error);
     }
@@ -179,6 +179,62 @@ class CesiumDecorator implements Decorator {
     const decorator = new CesiumDecorator(iModel);
     IModelApp.viewManager.addDecorator(decorator);
     return decorator;
+  }
+
+  private createPathDecorations(context: DecorateContext): void {
+    if (!this._iModel) return;
+    const c = this._iModel.projectExtents.center;
+
+    const z = c.z + 50000;
+    const R = 20000;
+
+    // First segment: horizontal line from left to right
+    const P0 = new Point3d(c.x - 80000, c.y - 80000, z);
+    const P1 = new Point3d(c.x - 20000, c.y - 80000, z);
+
+    // Second segment: vertical line upward to corner point
+    const P2 = new Point3d(c.x - 20000, c.y - 20000, z);
+
+    // Arc transition: 90-degree arc with radius 20000
+    // Using start-middle-end definition to ensure P2 is the arc start point
+    // Arc transitions from upward direction to rightward direction
+    const arcMid = new Point3d(P2.x + R / Math.SQRT2, P2.y + R / Math.SQRT2, z);
+    const arcEnd = new Point3d(P2.x + R, P2.y, z);
+
+    const arc = Arc3d.createCircularStartMiddleEnd(P2, arcMid, arcEnd);
+    if (!arc) return;
+
+    // Third segment: continue upward from arc end point
+    const P3 = new Point3d(arcEnd.x, arcEnd.y + 40000, z);
+
+    const path1 = Path.create(
+      LineString3d.create([P0, P1]),
+      LineString3d.create([P1, P2]),
+      arc,
+      LineString3d.create([arcEnd, P3])
+    );
+
+    const builder1 = context.createGraphic({ type: GraphicType.WorldDecoration });
+    builder1.setSymbology(ColorDef.from(255, 100, 200), ColorDef.from(255, 100, 200), 3);
+    builder1.addPath(path1);
+    context.addDecorationFromBuilder(builder1);
+
+    // Second path: zigzag wave pattern
+    const zigZag = Path.create(
+      LineString3d.create([
+        new Point3d(c.x + 50000, c.y - 100000, z + 10000),
+        new Point3d(c.x + 70000, c.y - 80000, z + 10000),
+        new Point3d(c.x + 50000, c.y - 60000, z + 10000),
+        new Point3d(c.x + 70000, c.y - 40000, z + 10000),
+        new Point3d(c.x + 50000, c.y - 20000, z + 10000),
+        new Point3d(c.x + 70000, c.y, z + 10000)
+      ])
+    );
+    
+    const builder2 = context.createGraphic({ type: GraphicType.WorldOverlay });
+    builder2.setSymbology(ColorDef.from(100, 255, 100), ColorDef.from(100, 255, 100), 3);
+    builder2.addPath(zigZag);
+    context.addDecorationFromBuilder(builder2);
   }
 
   public stop(): void {

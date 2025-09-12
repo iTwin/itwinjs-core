@@ -6,7 +6,7 @@
  * @module Cesium
  */
 
-import { Arc3d, Point3d } from "@itwin/core-geometry";
+import { Arc3d, Path, Point3d } from "@itwin/core-geometry";
 import { CustomGraphicBuilderOptions, GraphicPrimitive, GraphicTemplate, PrimitiveBuilder, RenderGraphic, ViewportGraphicBuilderOptions } from "@itwin/core-frontend";
 import { System } from "./System";
 import { CoordinateStorage } from "./CoordinateStorage";
@@ -37,6 +37,11 @@ export class CoordinateBuilder extends PrimitiveBuilder {
   public override addArc(arc: Arc3d, isEllipse: boolean, filled: boolean): void {
     this._coordinateData.push({ type: 'arc', arc: arc.clone(), isEllipse, filled });
     super.addArc(arc, isEllipse, filled);
+  }
+
+  public override addPath(path: Path): void {
+    this._coordinateData.push({ type: 'path', path: path.clone() });
+    super.addPath(path);
   }
 
   public override finish(): RenderGraphic {
