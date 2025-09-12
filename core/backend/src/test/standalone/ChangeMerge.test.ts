@@ -158,7 +158,7 @@ describe("Change merge method", () => {
     b2.saveChanges(`inserted physical object [id=${e4}]`);
 
     events.set(b2.briefcaseId, []);
-    // fast-forward
+    // fast-forward has no effect its a deprecated flag
     await b2.pushChanges({ description: `inserted physical object [id=${e3},${e4}]`, noFastForward: true });
     assert.equal(events.get(b2.briefcaseId)?.length, 4);
     assert.equal(events.get(b2.briefcaseId)?.[0].event, "onRebaseTxnBegin");
@@ -269,10 +269,6 @@ describe("Change merge method", () => {
     b2.close();
   });
   it("rebase events (noFastForward:false/default)", async () => {
-    /**
-     * Fastforward will not trigger rebase events as rebase was not required to merge changes.
-     * In this test we will test rebase events when noFastForward is set to false. Which mean rebase is not required to merge changes.
-     */
     const events = new Map<number, { args: TxnProps, event: "onRebaseTxnBegin" | "onRebaseTxnEnd" }[]>();
 
     const b1 = await ctx.openB1();
@@ -318,7 +314,7 @@ describe("Change merge method", () => {
     events.set(b2.briefcaseId, []);
     // fast-forward
     await b2.pushChanges({ description: `inserted physical object [id=${e3},${e4}]` });
-    assert.equal(events.get(b2.briefcaseId)?.length, 0);
+    assert.equal(events.get(b2.briefcaseId)?.length, 4);
 
     assert.isDefined(b2.elements.getElement(e1));
     assert.isDefined(b2.elements.getElement(e2));
@@ -331,7 +327,7 @@ describe("Change merge method", () => {
     b1.saveChanges(`inserted physical object [id=${e6}]`);
     events.set(b1.briefcaseId, []);
     await b1.pushChanges({ description: `inserted physical object [id=${e5}, ${e6}]` });
-    assert.equal(events.get(b1.briefcaseId)?.length, 0);
+    assert.equal(events.get(b1.briefcaseId)?.length, 4);
 
     assert.isDefined(b1.elements.getElement(e1));
     assert.isDefined(b1.elements.getElement(e2));

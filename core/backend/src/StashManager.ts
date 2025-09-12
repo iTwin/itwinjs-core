@@ -97,6 +97,7 @@ enum LockOrigin {
  * @internal
  */
 export class StashManager {
+
   private static readonly STASH_ROOT_DIR_NAME: string = ".stashes";
   /**
    * Retrieves the root folder path for stash files associated with the specified BriefcaseDb.
@@ -181,7 +182,7 @@ export class StashManager {
    * Acquire locks for the specified stash. If this fail then stash should not be applied.
    * @param args The stash arguments.
    */
-  public static async acquireLocks(args: StashArgs) {
+  private static async acquireLocks(args: StashArgs) {
     const shared = this.queryLocks(args, LockState.Shared, LockOrigin.Acquired);
     await args.db.locks.acquireLocks({ shared });
 
@@ -267,7 +268,7 @@ export class StashManager {
    * The stash database is opened in read-only mode and is automatically closed after the callback completes,
    * regardless of whether the callback throws an error.
    */
-  public static withStash<T>(args: StashArgs, callback: (stashDb: SQLiteDb) => T): T {
+  private static withStash<T>(args: StashArgs, callback: (stashDb: SQLiteDb) => T): T {
     const stashFile = this.getStashFilePath(args);
     if (!existsSync(stashFile)) {
       throw new IModelError(IModelStatus.BadArg, "Invalid stash");
@@ -320,9 +321,9 @@ export class StashManager {
    * @returns Returns `true` if the stash file was successfully deleted, otherwise returns `false`.
    * @throws Does not throw; logs errors internally and returns `false` on failure.
    */
-  public static dropStash(db: BriefcaseDb, stashId: GuidString | StashProps): boolean {
+  public static dropStash(args: StashArgs): boolean {
     try {
-      const stashFile = this.getStashFilePath({ db, stash: stashId });
+      const stashFile = this.getStashFilePath(args);
       unlinkSync(stashFile);
       return true;
     } catch (error: any) {
@@ -338,7 +339,7 @@ export class StashManager {
    */
   public static dropAllStashes(db: BriefcaseDb): void {
     this.getStashes(db).forEach((stash) => {
-      this.dropStash(db, stash);
+      this.dropStash({ db, stash });
     });
   }
 

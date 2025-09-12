@@ -25,6 +25,7 @@ import { IModelJsFs } from "./IModelJsFs";
 import { SchemaSync } from "./SchemaSync";
 import { _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { IModelNative } from "./internal/NativePlatform";
+import { StashManager } from "./StashManager";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -104,6 +105,9 @@ export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
  * @public
  */
 export class BriefcaseManager {
+  /** @internal */
+  public static readonly PULL_MERGE_RESTORE_POINT_NAME = "$pull_merge_restore_point";
+
   /** Get the local path of the folder storing files that are associated with an imodel */
   public static getIModelPath(iModelId: GuidString): LocalDirName { return path.join(this._cacheDir, iModelId); }
 
@@ -520,7 +524,21 @@ export class BriefcaseManager {
     db.notifyChangesetApplied();
   }
 
-  /** @internal */
+  /**
+   * @internal
+   * Pulls and applies changesets from the iModelHub to the specified IModelDb instance.
+   *
+   * This method downloads and applies all changesets required to bring the local briefcase up to the specified changeset index.
+   * It supports both forward and reverse application of changesets, depending on the `toIndex` argument.
+   * If there are pending local transactions and a reverse operation is requested, an error is thrown.
+   * The method manages restore points for safe merging, handles local transaction reversal, applies each changeset in order,
+   * and resumes or rebases local changes as appropriate for the type of database.
+   *
+   * @param db The IModelDb instance to which changesets will be applied. Must be open and writable.
+   * @param arg The arguments for pulling changesets, including access token, target changeset index, and optional progress callback.
+   * @throws IModelError If the briefcase is not open in read-write mode, if there are pending transactions when reversing, or if applying a changeset fails.
+   * @returns A promise that resolves when all required changesets have been applied.
+   */
   public static async pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void> {
     if (!db.isOpen || db[_nativeDb].isReadonly()) // don't use db.isReadonly - we reopen the file writable just for this operation but db.isReadonly is still true
       throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets");
@@ -550,70 +568,157 @@ export class BriefcaseManager {
     if (reverse)
       changesets.reverse();
 
-    let appliedChangesets = -1;
-    if (db[_nativeDb].hasPendingTxns() && !reverse && !arg.noFastForward) {
-      // attempt to perform fast forward
-      for (const changeset of changesets) {
-        // do not waste time on schema changesets. They cannot be fastforwarded.
-        if (changeset.changesType === ChangesetType.Schema || changeset.changesType === ChangesetType.SchemaSync)
-          break;
+    const nativeDb = db[_nativeDb];
+    const briefcaseDb = db instanceof BriefcaseDb ? db : undefined;
 
-        try {
-          const stopwatch = new StopWatch(`[${changeset.id}]`, true);
-          Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description} using fast forward method`);
-          await this.applySingleChangeset(db, changeset, true);
-          Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
-          appliedChangesets++;
-          db.saveChanges();
-        } catch {
-          db.abandonChanges();
-          break;
+    // create restore point if certain conditions are met
+    if (briefcaseDb && briefcaseDb.txns.hasPendingTxns && !briefcaseDb.txns.hasPendingSchemaChanges && !reverse) {
+      Logger.logInfo(loggerCategory, `Creating restore point ${this.PULL_MERGE_RESTORE_POINT_NAME}`);
+      await this.createRestorePoint({ db: briefcaseDb, name: this.PULL_MERGE_RESTORE_POINT_NAME });
+    }
+
+    const reversedTxns = nativeDb.pullMergeReverseLocalChanges();
+    Logger.logInfo(loggerCategory, `Reversed ${reversedTxns.length} local changes`);
+
+    // apply incoming changes
+    for (const changeset of changesets) {
+      const stopwatch = new StopWatch(`[${changeset.id}]`, true);
+      Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
+      try {
+        await this.applySingleChangeset(db, changeset, false);
+        Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
+      } catch (err: any) {
+        if (err instanceof Error) {
+          Logger.logError(loggerCategory, `Error applying changeset with id ${stopwatch.description}: ${err.message}`);
         }
+        db.abandonChanges();
+        throw err;
+      }
+    }
+    if (briefcaseDb) {
+      await briefcaseDb.txns.changeMergeManager.resume();
+    } else {
+      // Only Briefcase has change management. Following is
+      // for test related to standalone db with txn enabled.
+      nativeDb.pullMergeRebaseBegin();
+      let txnId= nativeDb.pullMergeRebaseNext();
+      while(txnId) {
+        nativeDb.pullMergeRebaseReinstateTxn();
+        nativeDb.pullMergeRebaseUpdateTxn();
+        txnId = nativeDb.pullMergeRebaseNext();
+      }
+      nativeDb.pullMergeRebaseEnd();
+      if (!nativeDb.isReadonly) {
+        nativeDb.saveChanges("Merge.");
       }
     }
 
-    if (appliedChangesets < changesets.length - 1) {
-      const nativeDb = db[_nativeDb];
-      const txns = db instanceof BriefcaseDb ? db.txns : undefined;
-      const reversedTxns = nativeDb.pullMergeReverseLocalChanges();
-      Logger.logInfo(loggerCategory, `Reversed ${reversedTxns.length} local changes`);
-
-      // apply incoming changes
-      for (const changeset of changesets.filter((_, index) => index > appliedChangesets)) {
-        const stopwatch = new StopWatch(`[${changeset.id}]`, true);
-        Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
-        try {
-          await this.applySingleChangeset(db, changeset, false);
-          Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
-        } catch (err: any) {
-          if (err instanceof Error) {
-            Logger.logError(loggerCategory, `Error applying changeset with id ${stopwatch.description}: ${err.message}`);
-          }
-          db.abandonChanges();
-          throw err;
-        }
-      }
-      if (txns) {
-        await txns.changeMergeManager.resume();
-      } else {
-        // Only Briefcase has change management. Following is
-        // for test related to standalone db with txn enabled.
-        nativeDb.pullMergeRebaseBegin();
-        let txnId= nativeDb.pullMergeRebaseNext();
-        while(txnId) {
-          nativeDb.pullMergeRebaseReinstateTxn();
-          nativeDb.pullMergeRebaseUpdateTxn();
-          txnId = nativeDb.pullMergeRebaseNext();
-        }
-        nativeDb.pullMergeRebaseEnd();
-        if (!nativeDb.isReadonly) {
-          nativeDb.saveChanges("Merge.");
-        }
-      }
+    if (briefcaseDb && this.containsRestorePoint({db: briefcaseDb, name: this.PULL_MERGE_RESTORE_POINT_NAME})) {
+      Logger.logInfo(loggerCategory, `Dropping restore point ${this.PULL_MERGE_RESTORE_POINT_NAME}`);
+      this.dropRestorePoint({ db: briefcaseDb, name: this.PULL_MERGE_RESTORE_POINT_NAME });
     }
-
     // notify listeners
     db.notifyChangesetApplied();
+  }
+
+  /**
+   * @internal
+   * Creates a restore point for the specified briefcase database.
+   *
+   * This method first validates the provided restore point name, ensuring it is not empty.
+   * It then drops any existing restore point with the same name before creating a new one.
+   * The restore point is created using the `StashManager`, and its identifier is saved locally
+   * in the database under a key derived from the restore point name.
+   *
+   * @param args - An object containing:
+   *   - `db`: The {@link BriefcaseDb} instance for which to create the restore point.
+   *   - `name`: The unique name for the restore point. Must be a non-empty string.
+   * @returns A promise that resolves to the created stash object representing the restore point.
+   * @throws {@link IModelError} If the provided restore point name is empty.``
+   */
+  public static async createRestorePoint(args: {db: BriefcaseDb, name: string}) {
+    if (args.name.length === 0) {
+      throw new IModelError(IModelStatus.BadArg, "Invalid restore point name");
+    }
+   this.dropRestorePoint(args);
+
+    const stash = await StashManager.stash({db: args.db, description: `restore_point/${args.name}`});
+    args.db[_nativeDb].saveLocalValue(`restore_point/${this.name}`, stash.id);
+    return stash;
+  }
+
+  /**
+   * @internal
+   * Drops a previously created restore point from the specified briefcase database.
+   *
+   * This method looks up the restore point by its name, retrieves its internal identifier,
+   * and removes the associated stash if it exists. If the provided restore point name is empty,
+   * an error is thrown.
+   *
+   * @param args - An object containing:
+   *   - `db`: The {@link BriefcaseDb} instance from which to drop the restore point.
+   *   - `name`: The name of the restore point to be dropped. Must be a non-empty string.
+   * @throws {@link IModelError} If the restore point name is invalid (empty).
+   */
+  public static dropRestorePoint(args: {db: BriefcaseDb, name: string}) {
+    if (args.name.length === 0) {
+      throw new IModelError(IModelStatus.BadArg, "Invalid restore point name");
+    }
+    const restorePointId = args.db[_nativeDb].queryLocalValue(`restore_point/${args.name}`);
+    if (restorePointId) {
+      StashManager.dropStash({db: args.db, stash: restorePointId});
+    }
+  }
+
+  /**
+   * @internal
+   * Determines whether a restore point with the specified name exists in the given briefcase database.
+   *
+   * This method checks if a restore point identifier can be found for the provided name,
+   * and verifies that the corresponding stash exists in the database.
+   *
+   * @param args - An object containing:
+   *   - `db`: The {@link BriefcaseDb} instance to search within.
+   *   - `name`: The name of the restore point to check for existence.
+   * @returns `true` if the restore point exists and its stash is present; otherwise, `false`.
+   * @throws {@link IModelError} with status {@link IModelStatus.BadArg} if the restore point name is empty.
+   */
+  public static containsRestorePoint(args: {db: BriefcaseDb, name: string}): boolean {
+    if (args.name.length === 0) {
+      throw new IModelError(IModelStatus.BadArg, "Invalid restore point name");
+    }
+    const restorePointId = args.db[_nativeDb].queryLocalValue(`restore_point/${args.name}`);
+    if (!restorePointId){
+      return false;
+    }
+    if (!StashManager.getStash({db: args.db, stash: restorePointId})) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * @internal
+   * Restores the state of a briefcase database to a previously saved restore point.
+   *
+   * @param args - An object containing:
+   *   - `db`: The {@link BriefcaseDb} instance to restore.
+   *   - `name`: The name of the restore point to apply.
+   * @throws {@link IModelError} If the restore point name is empty or the restore point cannot be found.
+   * @remarks
+   * This method looks up the specified restore point by name and applies it to the provided database.
+   * If the restore point does not exist or the name is invalid, an error is thrown.
+   * The operation is asynchronous and returns a promise that resolves when the restore is complete.
+   */
+  public static async restorePoint(args: {db: BriefcaseDb, name: string}) {
+    if (args.name.length === 0) {
+      throw new IModelError(IModelStatus.BadArg, "Invalid restore point name");
+    }
+    const restorePointId = args.db[_nativeDb].queryLocalValue(`restore_point/${this.name}`);
+    if (!restorePointId) {
+      throw new IModelError(IModelStatus.BadArg, "Restore point not found");
+    }
+    await StashManager.apply({db: args.db, stash: restorePointId, method: "restore"});
   }
 
   /** create a changeset from the current changes, and push it to iModelHub */

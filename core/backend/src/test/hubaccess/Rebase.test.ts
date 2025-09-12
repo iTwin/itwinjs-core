@@ -103,7 +103,7 @@ class TestIModel {
   }
 }
 
-describe.only("rebase changes & stashing api", function (this: Suite) {
+describe("rebase changes & stashing api", function (this: Suite) {
   let testIModel: TestIModel;
   before(async () => {
     if (!IModelHost.isValid)
@@ -129,7 +129,7 @@ describe.only("rebase changes & stashing api", function (this: Suite) {
       }
     });
 
-    let lastTxn = b1.txns.changeMergeManager.getLastTxnSaved();
+    let lastTxn = b1.txns.getLastSavedTxnProps();
     chai.assert.isDefined(lastTxn);
     if (lastTxn) {
       chai.expect(lastTxn.props.source).to.be.equals("test");
@@ -157,7 +157,7 @@ describe.only("rebase changes & stashing api", function (this: Suite) {
       }
     });
 
-    lastTxn = b1.txns.changeMergeManager.getLastTxnSaved();
+    lastTxn = b1.txns.getLastSavedTxnProps();
     chai.assert.isDefined(lastTxn);
     if (lastTxn) {
       chai.expect(lastTxn.props.source).to.be.equals("test2");
@@ -176,7 +176,7 @@ describe.only("rebase changes & stashing api", function (this: Suite) {
 
     await testIModel.insertElement(b1)
     b1.saveChanges("new element");
-    lastTxn = b1.txns.changeMergeManager.getLastTxnSaved();
+    lastTxn = b1.txns.getLastSavedTxnProps();
     chai.assert.isDefined(lastTxn);
     if (lastTxn) {
       chai.expect(lastTxn.props.source).is.undefined;
@@ -193,7 +193,7 @@ describe.only("rebase changes & stashing api", function (this: Suite) {
     await b1.pushChanges({ description: "new element" });
     chai.expect(b1.txns.isUndoPossible).is.false;
     chai.expect(b1.txns.isRedoPossible).is.false;
-    lastTxn = b1.txns.changeMergeManager.getLastTxnSaved();
+    lastTxn = b1.txns.getLastSavedTxnProps();
     chai.assert.isUndefined(lastTxn);
   });
 
@@ -204,7 +204,7 @@ describe.only("rebase changes & stashing api", function (this: Suite) {
     chai.expect(directElId).to.not.be.undefined;
     chai.expect(indirectElId).to.not.be.undefined;
     b1.saveChanges({ description: "insert element 1 direct and 1 indirect" });
-    const txn = b1.txns.changeMergeManager.getLastTxnSaved();
+    const txn = b1.txns.getLastSavedTxnProps();
     chai.assert.isDefined(txn);
     if (txn) {
       let checkCount = 0;
@@ -227,7 +227,7 @@ describe.only("rebase changes & stashing api", function (this: Suite) {
     await b1.pushChanges({ description: "insert element 1 direct and 1 indirect" });
     chai.expect(b1.txns.isUndoPossible).is.false;
     chai.expect(b1.txns.isRedoPossible).is.false;
-    const lastTxn = b1.txns.changeMergeManager.getLastTxnSaved();
+    const lastTxn = b1.txns.getLastSavedTxnProps();
     chai.assert.isUndefined(lastTxn);
   });
 
@@ -542,10 +542,10 @@ describe.only("rebase changes & stashing api", function (this: Suite) {
     chai.expect(b2.elements.tryGetElement(e1)).to.exist;
     chai.expect(b2.elements.tryGetElement(e2)).to.exist;
 
-    await b2.pushChanges({description: "test"});
+    await b2.pushChanges({ description: "test" });
     chai.expect(b2.changeset.index).to.equals(4);
   });
-  it.only("restore stash that has element changed by another briefcase", async () => {
+  it("restore stash that has element changed by another briefcase", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
 
