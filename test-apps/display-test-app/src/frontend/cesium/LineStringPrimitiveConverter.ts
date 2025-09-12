@@ -7,7 +7,7 @@
  */
 
 import { Cartesian3, Color, Material, Polyline, PolylineCollection } from "cesium";
-import { GraphicList, IModelConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "./Scene";
 import { PrimitiveConverter } from "./PrimitiveConverter";
