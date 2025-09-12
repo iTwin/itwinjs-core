@@ -1007,7 +1007,13 @@ export class OffsetMeshContext {
         OffsetMeshContext.stringDebugFunction("");
         OffsetMeshContext.stringDebugFunction(` VERTEX LOOP   ${JSON.stringify(vertexSeed.getPoint3d().toJSON())} `);
         vertexSeed.sumAroundVertex(
-          (node: HalfEdge) => { OffsetMeshContext.stringDebugFunction!(this.inspectMasks(node, false, true)); return 0; });
+          (node: HalfEdge) => {
+            const stringDebugFunction = OffsetMeshContext.stringDebugFunction;
+            if (!stringDebugFunction)
+              return 0;
+            stringDebugFunction(this.inspectMasks(node, false, true));
+            return 0;
+          });
       }
       // Take care of the easiest vertices directly . . . note that this returns from the lambda, not computeOffsetFacetIntersections
       if (this.assignOffsetByAverageNormalAroundVertex(vertexSeed, maxAllowedNormalDeviationRadians, averageNormalData, distance))

@@ -395,7 +395,9 @@ class Joint {
             Joint.link(jointA.previousJoint, newJoint);
             Joint.link(newJoint, jointC.nextJoint);
             newJoint.annotateJointMode(options);
-            newJoint.previousJoint!.annotateJointMode(options);
+            if (undefined === newJoint.previousJoint)
+              return { newStart: start, numJointRemoved: numRemoved };
+            newJoint.previousJoint.annotateJointMode(options);
             if (newJoint.nextJoint)
               newJoint.nextJoint.annotateJointMode(options);
             /*
@@ -409,8 +411,10 @@ class Joint {
             Joint.link(jointA.previousJoint, newJoint);
             Joint.link(newJoint, jointB.nextJoint);
             newJoint.annotateJointMode(options);
-            newJoint.previousJoint!.annotateJointMode(options);
-            newJoint.nextJoint!.annotateJointMode(options);
+            if (undefined === newJoint.previousJoint || undefined === newJoint.nextJoint)
+              return { newStart: start, numJointRemoved: numRemoved };
+            newJoint.previousJoint.annotateJointMode(options);
+            newJoint.nextJoint.annotateJointMode(options);
             /*
             if (Checker.noisy.PolygonOffset) {
               GeometryCoreTestIO.consoleLog(" NEW JOINT");
@@ -524,7 +528,9 @@ export class PolygonWireOffsetContext {
     Joint.collectStrokesFromChain(joint0, chain, numPoints);  // compute offset corners (by extension/trim)
     const n = chain.packedPoints.length;
     if (n > 1) {
-      if (chain.packedPoints.front()!.isAlmostEqual(chain.packedPoints.back()!))
+      const front = chain.packedPoints.frontUnchecked();
+      const back = chain.packedPoints.backUnchecked();
+      if (front.isAlmostEqual(back))
         return Loop.create(chain);
       else
         return Path.create(chain);

@@ -182,7 +182,7 @@ export class Ellipsoid implements Clipper {
   public static createCenterMatrixRadii(center: Point3d, axes: Matrix3d | undefined, radiusX: number, radiusY: number, radiusZ: number): Ellipsoid {
     let scaledAxes;
     if (axes === undefined)
-      scaledAxes = Matrix3d.createScale(radiusX, radiusY, radiusZ)!;
+      scaledAxes = Matrix3d.createScale(radiusX, radiusY, radiusZ);
     else
       scaledAxes = axes.scaleColumns(radiusX, radiusY, radiusZ);
     return new Ellipsoid(Transform.createOriginAndMatrix(center, scaledAxes));
@@ -382,7 +382,7 @@ export class Ellipsoid implements Clipper {
     SphereImplicit.radiansToUnitSphereXYZ(thetaBRadians, phiBRadians, this._workUnitVectorB);
     const sweepAngle = this._workUnitVectorA.angleTo(this._workUnitVectorB);
     // the unit vectors (on unit sphere) are never 0, so this cannot fail.
-    const matrix = Matrix3d.createRigidFromColumns(this._workUnitVectorA, this._workUnitVectorB, AxisOrder.XYZ)!;
+    const matrix = Matrix3d.createRigidFromColumns(this._workUnitVectorA, this._workUnitVectorB, AxisOrder.XYZ);
     if (matrix !== undefined) {
       const matrix1 = this._transform.matrix.multiplyMatrixMatrix(matrix);
       return Arc3d.create(this._transform.getOrigin(), matrix1.columnX(), matrix1.columnY(),
@@ -527,16 +527,21 @@ export class Ellipsoid implements Clipper {
    * @param angleA start point of arc (given as angles on this ellipsoid)
    * @param intermediateNormalFraction
    * @param angleB end point of arc (given as angles on this ellipsoid)
+   * @returns arc in the plane defined by the normal at the intermediate point. If calculation fails, return an
+   * arc with zero center and zero vectors.
    */
   public sectionArcWithIntermediateNormal(
     angleA: LongitudeLatitudeNumber,
     intermediateNormalFraction: number,
     angleB: LongitudeLatitudeNumber): Arc3d {
-    const normalA = this.radiansToUnitNormalRay(angleA.longitudeRadians, angleA.latitudeRadians)!;
-    const normalB = this.radiansToUnitNormalRay(angleB.longitudeRadians, angleB.latitudeRadians)!;
+    const defaultArc = Arc3d.create(Point3d.createZero(), Vector3d.createZero(), Vector3d.createZero());
+    const normalA = this.radiansToUnitNormalRay(angleA.longitudeRadians, angleA.latitudeRadians);
+    const normalB = this.radiansToUnitNormalRay(angleB.longitudeRadians, angleB.latitudeRadians);
+    if (!normalA || !normalB)
+      return defaultArc;
     const normal = normalA.direction.interpolate(intermediateNormalFraction, normalB.direction);
     const arc = this.createSectionArcPointPointVectorInPlane(angleA, angleB, normal);
-    return arc!;
+    return arc ?? defaultArc;
   }
 
   /**

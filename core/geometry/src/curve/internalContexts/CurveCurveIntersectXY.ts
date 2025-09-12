@@ -171,11 +171,11 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     const isInterval = intervalDetails !== undefined &&
       intervalDetails.detailA.hasFraction1 &&
       intervalDetails.detailB.hasFraction1;
-    if (isInterval) {
+    if (isInterval && undefined !== intervalDetails.detailA.fraction1 && undefined !== intervalDetails.detailB.fraction1) {
       globalFractionA = Geometry.interpolate(fractionA0, intervalDetails.detailA.fraction, fractionA1);
       globalFractionB = Geometry.interpolate(fractionB0, intervalDetails.detailB.fraction, fractionB1);
-      globalFractionA1 = Geometry.interpolate(fractionA0, intervalDetails.detailA.fraction1!, fractionA1);
-      globalFractionB1 = Geometry.interpolate(fractionB0, intervalDetails.detailB.fraction1!, fractionB1);
+      globalFractionA1 = Geometry.interpolate(fractionA0, intervalDetails.detailA.fraction1, fractionA1);
+      globalFractionB1 = Geometry.interpolate(fractionB0, intervalDetails.detailB.fraction1, fractionB1);
     } else {
       globalFractionA = globalFractionA1 = Geometry.interpolate(fractionA0, localFractionA, fractionA1);
       globalFractionB = globalFractionB1 = Geometry.interpolate(fractionB0, localFractionB, fractionB1);
@@ -292,14 +292,16 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     extendB1: boolean,
     reversed: boolean,
   ): void {
+    if (undefined === this._worldToLocalPerspective)
+      return;
     const hA0 = CurveCurveIntersectXY._workPointA0H;
     const hA1 = CurveCurveIntersectXY._workPointA1H;
     const hB0 = CurveCurveIntersectXY._workPointB0H;
     const hB1 = CurveCurveIntersectXY._workPointB1H;
-    this._worldToLocalPerspective!.multiplyPoint3d(pointA0, 1, hA0);
-    this._worldToLocalPerspective!.multiplyPoint3d(pointA1, 1, hA1);
-    this._worldToLocalPerspective!.multiplyPoint3d(pointB0, 1, hB0);
-    this._worldToLocalPerspective!.multiplyPoint3d(pointB1, 1, hB1);
+    this._worldToLocalPerspective.multiplyPoint3d(pointA0, 1, hA0);
+    this._worldToLocalPerspective.multiplyPoint3d(pointA1, 1, hA1);
+    this._worldToLocalPerspective.multiplyPoint3d(pointB0, 1, hB0);
+    this._worldToLocalPerspective.multiplyPoint3d(pointB1, 1, hB1);
     const fractionAB = SmallSystem.lineSegment3dHXYTransverseIntersectionUnbounded(hA0, hA1, hB0, hB1);
     if (fractionAB !== undefined) {
       const fractionA = fractionAB.x;

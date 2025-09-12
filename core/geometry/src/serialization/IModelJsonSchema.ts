@@ -831,7 +831,7 @@ export namespace IModelJson {
     }
     /** Parse `transitionSpiral` content (right side) to TransitionSpiral3d. */
     public static parseTransitionSpiral(data?: TransitionSpiralProps): TransitionSpiral3d | undefined {
-      const axes = Reader.parseOrientation(data, true)!;
+      const axes = Reader.parseOrientation(data, true);
       const origin = Reader.parsePoint3dProperty(data, "origin");
       // the create method will juggle any 4 out of these 5 inputs to define the other ..
       const startBearing = Reader.parseAngleProperty(data, "startBearing");
@@ -847,7 +847,7 @@ export namespace IModelJson {
         interval = Reader.parseSegment1dProperty(data, "fractionInterval", undefined);
       if (!interval)
         interval = Reader.parseSegment1dProperty(data, "activeInterval", undefined);
-      const spiralType = Reader.parseStringProperty(data, "type", "clothoid")!;
+      const spiralType = Reader.parseStringProperty(data, "type", "clothoid");
       // REMARK:  Our job is to parse and pass data along -- inscrutable validation happens in the implementation classes . . .
       if (origin) {
         let candidate: TransitionSpiral3d | undefined;
@@ -860,6 +860,8 @@ export namespace IModelJson {
           Transform.createOriginAndMatrix(origin, axes));
         if (candidate)
           return candidate;
+        if (undefined === spiralType)
+          return undefined;
         candidate = DirectSpiral3d.createFromLengthAndRadius(
           spiralType,
           startRadius, endRadius,
@@ -1169,8 +1171,9 @@ export namespace IModelJson {
       const topX = Reader.parseNumberProperty(json, "topX", baseX);
       const topY = Reader.parseNumberProperty(json, "topY", baseY);
       const height = Reader.parseNumberProperty(json, "height", baseX);
-      const axes = Reader.parseOrientation(json, true)!;
-
+      const axes = Reader.parseOrientation(json, true);
+      if (!axes)
+        return undefined;
       if (origin && !topOrigin && height)
         topOrigin = Matrix3d.xyzPlusMatrixTimesXYZ(origin, axes, Vector3d.create(0, 0, height));
 
@@ -1216,13 +1219,13 @@ export namespace IModelJson {
     }
     /** Parse TorusPipe props to TorusPipe instance. */
     public static parseTorusPipe(json?: TorusPipeProps): TorusPipe | undefined {
-      const axes = Reader.parseOrientation(json, true)!;  // force frame to be pure rotation (no scale or mirror)!
+      const axes = Reader.parseOrientation(json, true);  // force frame to be pure rotation (no scale or mirror)!
       const center = Reader.parsePoint3dProperty(json, "center");
       const radiusA = Reader.parseNumberProperty(json, "majorRadius");
       const radiusB = Reader.parseNumberProperty(json, "minorRadius");
       const sweepAngle = Reader.parseAngleProperty(json, "sweepAngle", undefined);
-      const capped = Reader.parseBooleanProperty(json, "capped", false)!;
-      if (center
+      const capped = Reader.parseBooleanProperty(json, "capped", false);
+      if (capped !== undefined && axes !== undefined &&center
         && radiusA !== undefined
         && radiusB !== undefined) {
         return TorusPipe.createDgnTorusPipe(center, axes.columnX(), axes.columnY(),
@@ -1701,7 +1704,9 @@ export namespace IModelJson {
         },
       };
 
-      const outBox = out.box!;
+      const outBox = out.box;
+      if (!outBox)
+        return undefined;
       Writer.insertXYOrientation(outBox, box.getVectorX(), box.getVectorY(), true);
       if (!Geometry.isSameCoordinate(box.getTopX(), box.getBaseX()))
         outBox.topX = box.getTopX();
@@ -1716,8 +1721,10 @@ export namespace IModelJson {
       const contents: AuxDataProps = { indices: [], channels: [] };
       const visitor = pf.createVisitor(0);
       while (visitor.moveToNextFacet()) {
-        for (let i = 0; i < visitor.indexCount; i++)
-          contents.indices.push(visitor.auxData!.indices[i] + 1);
+        for (let i = 0; i < visitor.indexCount; i++) {
+          if (visitor.auxData)
+            contents.indices.push(visitor.auxData.indices[i] + 1);
+        }
         contents.indices.push(0);  // facet terminator.
       }
       for (const inChannel of auxData.channels) {
@@ -1805,7 +1812,7 @@ export namespace IModelJson {
         edgeMateIndex = [];
         if (!SerializationHelpers.announceUncompressedZeroBasedReflexiveIndices(pf.data.edgeMateIndex, pf.facetStart,
           SerializationHelpers.EdgeMateIndex.BlockSeparator, SerializationHelpers.EdgeMateIndex.NoEdgeMate,
-          (i: number) => edgeMateIndex!.push(i),
+          (i: number) => (edgeMateIndex as number[]).push(i),
         )) {
           edgeMateIndex = undefined;
         }

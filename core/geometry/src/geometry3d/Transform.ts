@@ -605,14 +605,16 @@ export class Transform implements BeJSONFunctions {
       return result;
     }
     result = [];
-    for (const point of points)
-      result.push(
-        this._matrix.multiplyInverseXYZAsPoint3d(
-          point.x - originX,
-          point.y - originY,
-          point.z - originZ,
-        )!,
+    for (const point of points) {
+      const pt = this._matrix.multiplyInverseXYZAsPoint3d(
+        point.x - originX,
+        point.y - originY,
+        point.z - originZ,
       );
+      if (!pt)
+        return undefined;
+      result.push(pt);
+    }
     return result;
   }
   /**

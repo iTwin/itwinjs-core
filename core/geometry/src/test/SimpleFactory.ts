@@ -5,6 +5,8 @@
 
 import * as g from "../core-geometry";
 
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 // GeometryCoreTestIO.consoleLog("=========================");
 // GeometryCoreTestIO.consoleLog("Standalone Output");
 // GeometryCoreTestIO.consoleLog("=========================");

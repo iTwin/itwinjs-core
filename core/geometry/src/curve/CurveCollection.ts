@@ -89,8 +89,11 @@ export abstract class CurveCollection extends GeometryQuery {
     const detailB = new CurveLocationDetail();
     if (this.children !== undefined) {
       for (const child of this.children) {
-        if (child.closestPoint(spacePoint, false, detailB))
-          detailA = result = CurveLocationDetail.chooseSmallerA(detailA, detailB)!.clone(result);
+        if (child.closestPoint(spacePoint, false, detailB)) {
+          const smaller = CurveLocationDetail.chooseSmallerA(detailA, detailB);
+          if (undefined !== smaller)
+            detailA = result = smaller.clone(result);
+        }
       }
     }
     return detailA;
@@ -597,8 +600,11 @@ export class BagOfCurves extends CurveCollection {
     const detailB = new CurveLocationDetail();
     if (this.children !== undefined) {
       for (const child of this.children) {
-        if (child.closestPoint(spacePoint, extend, detailB))
-          detailA = result = CurveLocationDetail.chooseSmallerA(detailA, detailB)!.clone(result);
+        if (child.closestPoint(spacePoint, extend, detailB)) {
+          const smaller = CurveLocationDetail.chooseSmallerA(detailA, detailB);
+          if (undefined !== smaller)
+            detailA = result = smaller.clone(result);
+        }
       }
     }
     return detailA;

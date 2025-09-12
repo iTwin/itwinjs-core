@@ -168,7 +168,10 @@ export class LineStringOffsetClipperContext {
     const context = new LineStringOffsetClipperContext(positiveOffsetLeft, positiveOffsetRight);
     const result = UnionOfConvexClipPlaneSets.createEmpty();
     if (points.length > 1) {
-      const closed = Geometry.isSmallMetricDistance(points.distanceIndexIndex(0, points.length - 1)!);
+      const distance = points.distanceIndexIndex(0, points.length - 1);
+      if (undefined === distance)
+        return result;
+      const closed = Geometry.isSmallMetricDistance(distance);
       for (let i = 0; i + 1 < points.length; i++) {
         const unitVectorA = this.createUnit(points, i - 1, closed);
         const unitVectorB = this.createUnit(points, i, closed);
