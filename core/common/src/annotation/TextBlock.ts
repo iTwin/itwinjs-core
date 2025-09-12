@@ -172,11 +172,11 @@ export abstract class TextBlockComponent {
 
 /**
  * The JSON representation of a [[ContainerComponent]].
- * @beta
+ * @internal
  */
-export interface ContainerComponentProps extends TextBlockComponentProps {
+export interface ContainerComponentProps<T extends TextBlockComponentProps = TextBlockComponentProps> extends TextBlockComponentProps {
   /** The child components contained within this container. */
-  children?: TextBlockComponentProps[];
+  children?: ReadonlyArray<T>;
   /** Discriminator field for the type of [[TextBlockComponent]] */
   type?: ContainerComponentType;
 }
@@ -185,7 +185,7 @@ export interface ContainerComponentProps extends TextBlockComponentProps {
 /**
  * Abstract representation of any of the container blocks that make up a [[TextBlock]] document.
  * Each component can specify an optional [[styleOverrides]] to customize that formatting.
- * @beta
+ * @internal
  */
 export abstract class ContainerComponent<T extends TextBlockComponent = TextBlockComponent> extends TextBlockComponent {
   private _children: T[] = [];
@@ -198,13 +198,8 @@ export abstract class ContainerComponent<T extends TextBlockComponent = TextBloc
    * Don't directly manipulate this array. Instead, set this property with a clone containing the updated children.
    * Setting this value will recalculate the indices of all child components.
    */
-  public get children(): T[] {
-    return this._children;
-  }
-
-  public set children(children: T[]) {
-    this._children = children;
-    this._children.forEach((child, index) => child.index = index);
+  public get children(): ReadonlyArray<T> {
+    return [...this._children];
   }
 
   /** The last child component contained within this container. */
@@ -253,8 +248,13 @@ export abstract class ContainerComponent<T extends TextBlockComponent = TextBloc
 
   /** Appends a child component to this container and sets the child's index. */
   public appendChild(child: T): void {
-    this.children.push(child);
+    this._children.push(child);
     child.index = this.children.length - 1; // Update the index of the new child
+  }
+
+  public setChildren(children: T[]): void {
+    this._children = children;
+    this._children.forEach((child, index) => child.index = index);
   }
 }
 
@@ -761,7 +761,7 @@ export class FieldRun extends TextBlockComponent {
 /** JSON representation of a [[Paragraph]].
  * @beta
  */
-export interface ParagraphProps extends ContainerComponentProps {
+export interface ParagraphProps extends ContainerComponentProps<ListProps | RunProps> {
   type: "paragraph";
   children?: (ListProps | RunProps)[];
 }
@@ -819,7 +819,7 @@ export class Paragraph extends ContainerComponent<List | Run> {
 /** JSON representation of a [[List]].
  * @beta
  */
-export interface ListProps extends ContainerComponentProps {
+export interface ListProps extends ContainerComponentProps<ParagraphProps> {
   type: "list";
   children?: ParagraphProps[];
 }
@@ -1122,7 +1122,7 @@ export class TextBlock extends ContainerComponent<(Paragraph | List)> {
 export function* getTextBlockGenerator(block: ContainerComponent, parent?: ContainerComponent): IterableIterator<{ parent?: ContainerComponent, current: TextBlockComponent }> {
   yield { parent, current: block };
 
-    for (const child of block.children) {
+  for (const child of block.children) {
     if (child instanceof ContainerComponent) {
       yield* getTextBlockGenerator(child, block);
     } else {
