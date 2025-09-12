@@ -2100,6 +2100,8 @@ export class ECDb implements Disposable {
     detachDb(alias: string): void;
     // @deprecated (undocumented)
     dispose(): void;
+    // @alpha
+    dropSchemas(schemaNames: string[]): void;
     // @internal
     getCachedStatementCount(): number;
     getSchemaProps(name: string): ECSchemaProps;
@@ -3588,6 +3590,8 @@ export abstract class IModelDb extends IModel {
     // @beta
     deleteSettingDictionary(name: string): void;
     detachDb(alias: string): void;
+    // @alpha
+    dropSchemas(schemaNames: string[]): Promise<void>;
     // @beta
     elementGeometryCacheOperation(requestProps: ElementGeometryCacheOperationRequestProps): BentleyStatus;
     // @beta

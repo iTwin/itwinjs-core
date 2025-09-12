@@ -50,6 +50,7 @@ describe("FormatSetFormatsProvider", () => {
     formatSet = {
       name: "TestFormatSet",
       label: "Test Format Set",
+      unitSystem: "metric",
       formats: {
         testFormat: sampleFormat,
       },
@@ -69,6 +70,97 @@ describe("FormatSetFormatsProvider", () => {
       };
       const providerWithFallback = new FormatSetFormatsProvider({ formatSet, fallbackProvider });
       expect(providerWithFallback).to.be.instanceOf(FormatSetFormatsProvider);
+    });
+
+    it("should preserve unitSystem property from format set", () => {
+      expect(formatSet.unitSystem).to.equal("metric");
+    });
+
+    it("should work with different unit system values", () => {
+      const customFormatSet: FormatSet = {
+        name: "CustomFormatSet",
+        label: "Custom Format Set",
+        unitSystem: "imperial",
+        formats: {
+          testFormat: sampleFormat,
+        },
+      };
+      const customProvider = new FormatSetFormatsProvider({ formatSet: customFormatSet });
+      expect(customProvider).to.be.instanceOf(FormatSetFormatsProvider);
+      expect(customFormatSet.unitSystem).to.equal("imperial");
+    });
+  });
+
+  describe("FormatSet properties", () => {
+    it("should have required unitSystem property", () => {
+      expect(formatSet).to.have.property("unitSystem");
+      expect(formatSet.unitSystem).to.be.a("string");
+      expect(formatSet.unitSystem).to.equal("metric");
+    });
+
+    it("should have all required FormatSet properties", () => {
+      expect(formatSet).to.have.property("name");
+      expect(formatSet).to.have.property("label");
+      expect(formatSet).to.have.property("unitSystem");
+      expect(formatSet).to.have.property("formats");
+
+      expect(formatSet.name).to.be.a("string");
+      expect(formatSet.label).to.be.a("string");
+      expect(formatSet.unitSystem).to.be.a("string");
+      expect(formatSet.formats).to.be.an("object");
+    });
+
+    it("should support different unit system values", () => {
+      const unitSystems: ("metric" | "imperial" | "usCustomary" | "usSurvey")[] = ["metric", "imperial", "usCustomary", "usSurvey"];
+
+      unitSystems.forEach(unitSystem => {
+        const testFormatSet: FormatSet = {
+          name: `Test_${unitSystem}`,
+          label: `Test ${unitSystem}`,
+          unitSystem,
+          formats: {},
+        };
+
+        expect(testFormatSet.unitSystem).to.equal(unitSystem);
+        expect(testFormatSet).to.have.property("unitSystem");
+      });
+    });
+
+    it("should maintain unitSystem property after modifications", async () => {
+      const originalUnitSystem = formatSet.unitSystem;
+
+      // Add a format
+      await provider.addFormat("TestFormat", anotherFormat);
+      expect(formatSet.unitSystem).to.equal(originalUnitSystem);
+
+      // Remove a format
+      await provider.removeFormat("TestFormat");
+      expect(formatSet.unitSystem).to.equal(originalUnitSystem);
+    });
+
+    it("should support optional description property", () => {
+      // Test FormatSet without description
+      const formatSetWithoutDescription: FormatSet = {
+        name: "TestWithoutDescription",
+        label: "Test Format Set",
+        unitSystem: "metric",
+        formats: {},
+      };
+
+      expect(formatSetWithoutDescription).to.not.have.property("description");
+
+      // Test FormatSet with description
+      const formatSetWithDescription: FormatSet = {
+        name: "TestWithDescription",
+        label: "Test Format Set",
+        description: "A test format set for demonstration purposes",
+        unitSystem: "metric",
+        formats: {},
+      };
+
+      expect(formatSetWithDescription).to.have.property("description");
+      expect(formatSetWithDescription.description).to.be.a("string");
+      expect(formatSetWithDescription.description).to.equal("A test format set for demonstration purposes");
     });
   });
 

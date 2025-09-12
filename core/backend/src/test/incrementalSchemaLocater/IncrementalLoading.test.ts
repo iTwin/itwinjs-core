@@ -83,6 +83,8 @@ describe("Incremental Schema Loading", function () {
       const schema = await schemaContext.getSchema(testSchemaKey) as Schema;
       expect(schema).to.be.not.undefined;
       expect(schema).to.have.property("name", testSchemaKey.name);
+      expect(schema).to.have.property("description", testSchemaConfiguration.description);
+      expect(schema).to.have.property("label", testSchemaConfiguration.label);
 
       expect(schema).to.have.property("references").to.have.a.lengthOf(testSchemaConfiguration.references.length);
       for (const item of schema.getItems()) {

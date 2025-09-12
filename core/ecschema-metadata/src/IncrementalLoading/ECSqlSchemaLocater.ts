@@ -25,17 +25,13 @@ interface SchemaInfoRow {
   readonly name: string;
   readonly version: string;
   readonly alias: string;
+  readonly label: string;
+  readonly description: string;  
   readonly references: string;
 }
 
 interface SchemaStubRow {
-  readonly name: string;
-  readonly version: string;
-  readonly alias: string;
-  readonly displayLabel: string;
-  readonly description: string;
-  readonly references: string;
-  readonly items: string;
+  readonly item: string;
 }
 
 interface BaseClassStubRow {
@@ -360,6 +356,8 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
     return schemaRows.map((schemaRow) => (
       {
         alias: schemaRow.alias,
+        description: schemaRow.description,
+        label: schemaRow.label,
         schemaKey: SchemaKey.parseString(`${schemaRow.name}.${schemaRow.version}`),
         references: Array.from(JSON.parse(schemaRow.references), parseSchemaReference),
       }
@@ -375,18 +373,18 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
    */
   protected async getSchemaPartials(schemaKey: SchemaKey, context: SchemaContext): Promise<ReadonlyArray<SchemaProps> | undefined> {
     const queryStart = Date.now();
-    const [schemaRow] = await this.executeQuery<SchemaStubRow>(ecsqlQueries.schemaStubQuery, {
-       parameters: { schemaName: schemaKey.name },
-       limit: 1
+    const itemRows = await this.executeQuery<SchemaStubRow>(ecsqlQueries.schemaStubQuery, {
+       parameters: { schemaName: schemaKey.name }
     });
 
     const queryDuration = Date.now() - queryStart;
     Logger.logTrace(LOGGER_CATEGORY, `Recieved PartialSchema for ${schemaKey.name} in ${queryDuration}ms`, {
       schemaName: schemaKey.name,
+      itemCount: itemRows.length,
       duration: queryDuration,
     });
 
-    if (!schemaRow)
+    if (itemRows.length === 0)
       return undefined;
 
     const schemaPartials: Array<SchemaProps> = [];
@@ -421,16 +419,16 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
     };
 
     const reviver = (_key: string, value: any) => {
-      if (value === null) {
-        return undefined;
-      }
-      return value;
+      return value === null ? undefined : value;
     };
 
     await addSchema(schemaKey);
 
     const schemaInfos = await this._schemaInfoCache.getSchemasByContext(context) ?? [];
-    await parseSchemaItemStubs(schemaKey.name, JSON.parse(schemaRow.items, reviver), addItems, schemaInfos);
+    const stubItems = itemRows.map((itemRow) => {
+      return JSON.parse(itemRow.item, reviver) as SchemaItemStubRow;
+    });
+    await parseSchemaItemStubs(schemaKey.name, stubItems, addItems, schemaInfos);
 
     return schemaPartials;
   }

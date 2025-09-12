@@ -33,7 +33,9 @@ import {
   createTestContentDescriptor,
   createTestContentItem,
   createTestNestedContentField,
+  createTestPropertiesContentField,
   createTestSimpleContentField,
+  createTestStructPropertiesContentField,
 } from "../_helpers/Content.js";
 import { createTestECInstanceKey } from "../_helpers/EC.js";
 
@@ -333,6 +335,54 @@ describe("ContentTraverser", () => {
       });
       traverseContentItem(visitor, descriptor, item);
       spies.forEach((spy) => expect(spy).to.be.called);
+    });
+
+    it("process struct value with metadata available on struct properties field member", () => {
+      sinon.stub(visitor, "startStruct").returns(true);
+      const processValueSpy = sinon.spy(visitor, "processPrimitiveValue");
+      const memberField = createTestPropertiesContentField({
+        properties: [
+          {
+            property: {
+              name: "StructMemberProp",
+              type: "double",
+              classInfo: { id: "0x1", label: "MemberClass", name: "Schema.MemberClass" },
+              kindOfQuantity: { label: "MemberKOQ", name: "Schema.MemberKOQ", persistenceUnit: "M" },
+            },
+          },
+        ],
+        name: "StructMemberProp",
+        label: "Struct Member",
+      });
+      const structField = createTestStructPropertiesContentField({
+        properties: [],
+        memberFields: [memberField],
+        type: {
+          valueFormat: PropertyValueFormat.Struct,
+          typeName: `TestStruct`,
+          members: [
+            {
+              name: "StructMemberProp",
+              label: "Struct Member",
+              type: memberField.type,
+            },
+          ],
+        },
+      });
+      const descriptor = createTestContentDescriptor({ fields: [structField] });
+      const item = createTestContentItem({
+        values: {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          [structField.name]: { StructMemberProp: "value" },
+        },
+        displayValues: {
+          // eslint-disable-next-line @typescript-eslint/naming-convention
+          [structField.name]: { StructMemberProp: "display value" },
+        },
+      });
+      traverseContentItem(visitor, descriptor, item);
+      expect(processValueSpy).to.be.calledOnce;
+      expect(processValueSpy.firstCall.args[0].field).to.be.eq(memberField);
     });
 
     it("processes merged primitive value", () => {
