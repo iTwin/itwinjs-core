@@ -20,7 +20,6 @@ import { Surface } from "./Surface";
 import { setTitle } from "./Title";
 import { showStatus } from "./Utils";
 import { Dock } from "./Window";
-import { System } from "./cesium/System";
 
 const configuration: DtaConfiguration = {};
 
@@ -86,25 +85,20 @@ async function openFile(props: OpenIModelProps): Promise<IModelConnection> {
   return iModelConnection;
 }
 
-function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options | RenderSystem, tileAdminProps: TileAdmin.Props] {
-  let renderSystemOptions: RenderSystem.Options | RenderSystem;
-
-  if (true === configuration.useCesium)
-    renderSystemOptions = System.create();
-  else
-    renderSystemOptions = {
-      disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],
-      preserveShaderSourceCode: true === configuration.preserveShaderSourceCode,
-      logarithmicDepthBuffer: false !== configuration.logarithmicZBuffer,
-      dpiAwareViewports: false !== configuration.dpiAwareViewports,
-      devicePixelRatioOverride: configuration.devicePixelRatioOverride,
-      dpiAwareLOD: true === configuration.dpiAwareLOD,
-      useWebGL2: false !== configuration.useWebGL2,
-      planProjections: true,
-      errorOnMissingUniform: false !== configuration.errorOnMissingUniform,
-      debugShaders: true === configuration.debugShaders,
-      antialiasSamples: configuration.antialiasSamples,
-    };
+function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, tileAdminProps: TileAdmin.Props] {
+  const renderSystemOptions: RenderSystem.Options = {
+    disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],
+    preserveShaderSourceCode: true === configuration.preserveShaderSourceCode,
+    logarithmicDepthBuffer: false !== configuration.logarithmicZBuffer,
+    dpiAwareViewports: false !== configuration.dpiAwareViewports,
+    devicePixelRatioOverride: configuration.devicePixelRatioOverride,
+    dpiAwareLOD: true === configuration.dpiAwareLOD,
+    useWebGL2: false !== configuration.useWebGL2,
+    planProjections: true,
+    errorOnMissingUniform: false !== configuration.errorOnMissingUniform,
+    debugShaders: true === configuration.debugShaders,
+    antialiasSamples: configuration.antialiasSamples,
+  };
 
   const tileAdminProps: TileAdmin.Props = {
     retryInterval: 50,
@@ -189,7 +183,7 @@ const dtaFrontendMain = async () => {
 
   // Start the app. (This tries to fetch a number of localization json files from the origin.)
   let tileAdminProps: TileAdmin.Props;
-  let renderSystemOptions: RenderSystem.Options | RenderSystem;
+  let renderSystemOptions: RenderSystem.Options;
   [renderSystemOptions, tileAdminProps] = setConfigurationResults();
   await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps);
   if (false !== configuration.enableDiagnostics)
