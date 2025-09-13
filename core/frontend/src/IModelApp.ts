@@ -427,8 +427,8 @@ export class IModelApp {
     this._formatsProviderManager = new FormatsProviderManager(opts.formatsProvider ?? new QuantityTypeFormatsProvider());
 
     this._publicPath = opts.publicPath ?? "";
-    if (this._publicPath !== "" && !this._publicPath.endsWith("/")){
-      this._publicPath += "/"
+    if (this._publicPath !== "" && !this._publicPath.endsWith("/")) {
+      this._publicPath += "/";
     }
 
     [
