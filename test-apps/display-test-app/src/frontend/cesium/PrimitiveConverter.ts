@@ -92,8 +92,9 @@ export abstract class PrimitiveConverter {
 
       const result = this.createPrimitiveFromGraphic(graphic, primitiveId, index, collection, iModel, originalData, type);
 
-      if (result && typeof result === 'object' && result.constructor.name === 'Primitive')
+      if (result && typeof result === 'object' && result.constructor.name === 'Primitive') {
         collection.add(result);
+      }
     });
   }
 
@@ -208,6 +209,13 @@ export abstract class PrimitiveConverter {
               const polyfaceConverter = PrimitiveConverterFactory.getConverter(primitive.type);
               if (polyfaceConverter) {
                 polyfaceConverter.convertDecorations([graphic], type, scene, iModel);
+              }
+              break;
+              
+            case 'solidPrimitive':
+              const solidPrimitiveConverter = PrimitiveConverterFactory.getConverter(primitive.type);
+              if (solidPrimitiveConverter) {
+                solidPrimitiveConverter.convertDecorations([graphic], type, scene, iModel);
               }
               break;
               

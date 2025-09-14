@@ -5,7 +5,7 @@
 
 import { ColorDef } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection } from "@itwin/core-frontend";
-import { AngleSweep, Arc3d, IndexedPolyface, LineString3d, Loop, Matrix3d, Path, Point3d, PolyfaceBuilder } from "@itwin/core-geometry";
+import { AngleSweep, Arc3d, Box, Cone, IndexedPolyface, LineString3d, Loop, Matrix3d, Path, Point3d, PolyfaceBuilder, Range3d, Sphere } from "@itwin/core-geometry";
 
 class CesiumDecorator implements Decorator {
   private _iModel?: IModelConnection;
@@ -27,6 +27,7 @@ class CesiumDecorator implements Decorator {
     this.createPathDecorations(context);
     this.createLoopDecorations(context);
     this.createPolyfaceDecorations(context);
+    this.createSolidPrimitiveDecorations(context);
   }
 
   private createPointDecorations(context: DecorateContext): void {
@@ -349,6 +350,56 @@ class CesiumDecorator implements Decorator {
     builder.addQuadFacet([b4, b1, t1, t4]); // Left
 
     return builder.claimPolyface();
+  }
+
+  private createSolidPrimitiveDecorations(context: DecorateContext): void {
+    if (!this._iModel) return;
+    const c = this._iModel.projectExtents.center;
+
+    const z = c.z + 80000; // Same height as other decorations
+    const yOffset = -80000; // Position below other decorations
+
+    // Create a Box solid primitive
+    const boxSize = 20000; // Smaller for better visibility
+    const boxCenter = new Point3d(c.x + 200000, c.y + yOffset, z); // Far right to avoid overlap
+    const boxRange = Range3d.create(
+      new Point3d(boxCenter.x - boxSize/2, boxCenter.y - boxSize/2, boxCenter.z - boxSize/2),
+      new Point3d(boxCenter.x + boxSize/2, boxCenter.y + boxSize/2, boxCenter.z + boxSize/2)
+    );
+    const boxSolid = Box.createRange(boxRange, true);
+    
+    if (boxSolid) {
+      const builder1 = context.createGraphic({ type: GraphicType.WorldDecoration });
+      builder1.setSymbology(ColorDef.from(255, 100, 100), ColorDef.from(255, 100, 100, 150), 2); // Red with transparent fill
+      builder1.addSolidPrimitive(boxSolid);
+      context.addDecorationFromBuilder(builder1);
+    }
+
+    // Create a Sphere solid primitive
+    const sphereRadius = 15000; // Reasonable size
+    const sphereCenter = new Point3d(c.x + 240000, c.y + yOffset, z); // Next to box
+    const sphereSolid = Sphere.createCenterRadius(sphereCenter, sphereRadius);
+    
+    if (sphereSolid) {
+      const builder2 = context.createGraphic({ type: GraphicType.WorldOverlay });
+      builder2.setSymbology(ColorDef.from(100, 100, 255), ColorDef.from(100, 100, 255, 120), 2); // Blue with transparent fill
+      builder2.addSolidPrimitive(sphereSolid);
+      context.addDecorationFromBuilder(builder2);
+    }
+
+    // Create a Cone solid primitive
+    const coneHeight = 25000;
+    const coneRadius = 10000;
+    const coneStart = new Point3d(c.x + 280000, c.y + yOffset, z); // Next to sphere
+    const coneEnd = new Point3d(c.x + 280000, c.y + yOffset, z + coneHeight);
+    const coneSolid = Cone.createAxisPoints(coneStart, coneEnd, coneRadius, 0, true); // Radius at start, 0 at end = cone
+    
+    if (coneSolid) {
+      const builder3 = context.createGraphic({ type: GraphicType.WorldDecoration });
+      builder3.setSymbology(ColorDef.from(100, 255, 100), ColorDef.from(100, 255, 100, 100), 2); // Green with transparent fill
+      builder3.addSolidPrimitive(coneSolid);
+      context.addDecorationFromBuilder(builder3);
+    }
   }
 
   public stop(): void {
