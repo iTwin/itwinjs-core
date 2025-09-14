@@ -6,7 +6,7 @@
  * @module Cesium
  */
 
-import { Arc3d, Loop, Path, Point3d } from "@itwin/core-geometry";
+import { Arc3d, Loop, Path, Point3d, Polyface } from "@itwin/core-geometry";
 import { CustomGraphicBuilderOptions, GraphicPrimitive, GraphicTemplate, PrimitiveBuilder, RenderGraphic, ViewportGraphicBuilderOptions } from "@itwin/core-frontend";
 import { ColorDef, LinePixels } from "@itwin/core-common";
 import { System } from "./System";
@@ -60,6 +60,11 @@ export class CoordinateBuilder extends PrimitiveBuilder {
   public override addLoop(loop: Loop): void {
     this._coordinateData.push({ type: 'loop', loop, symbology: this.snapshotSymbology() } as any);
     super.addLoop(loop);
+  }
+
+  public override addPolyface(polyface: Polyface, filled: boolean): void {
+    this._coordinateData.push({ type: 'polyface', polyface, filled, symbology: this.snapshotSymbology() } as any);
+    super.addPolyface(polyface, filled);
   }
 
   public override finish(): RenderGraphic {

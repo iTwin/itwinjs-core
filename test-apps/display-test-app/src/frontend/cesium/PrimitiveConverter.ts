@@ -204,6 +204,13 @@ export abstract class PrimitiveConverter {
               }
               break;
               
+            case 'polyface':
+              const polyfaceConverter = PrimitiveConverterFactory.getConverter(primitive.type);
+              if (polyfaceConverter) {
+                polyfaceConverter.convertDecorations([graphic], type, scene, iModel);
+              }
+              break;
+              
             default:
               console.warn(`Unknown geometry type: ${primitive.type}`);
           }

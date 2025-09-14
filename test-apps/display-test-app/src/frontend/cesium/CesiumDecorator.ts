@@ -5,7 +5,7 @@
 
 import { ColorDef } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection } from "@itwin/core-frontend";
-import { AngleSweep, Arc3d, LineString3d, Loop, Matrix3d, Path, Point3d } from "@itwin/core-geometry";
+import { AngleSweep, Arc3d, IndexedPolyface, LineString3d, Loop, Matrix3d, Path, Point3d, PolyfaceBuilder } from "@itwin/core-geometry";
 
 class CesiumDecorator implements Decorator {
   private _iModel?: IModelConnection;
@@ -26,6 +26,7 @@ class CesiumDecorator implements Decorator {
     this.createArcDecorations(context);
     this.createPathDecorations(context);
     this.createLoopDecorations(context);
+    this.createPolyfaceDecorations(context);
   }
 
   private createPointDecorations(context: DecorateContext): void {
@@ -256,6 +257,98 @@ class CesiumDecorator implements Decorator {
     builder1.setSymbology(ColorDef.from(255, 0, 255), ColorDef.from(255, 0, 255), 2);
     builder1.addLoop(triangleLoop);
     context.addDecorationFromBuilder(builder1);
+  }
+
+  private createPolyfaceDecorations(context: DecorateContext): void {
+    if (!this._iModel) return;
+    const c = this._iModel.projectExtents.center;
+
+    const z = c.z + 80000;
+    const yOffset = -80000; // Position below other decorations
+
+    // Create a simple pyramid polyface
+    const pyramidPolyface = this.createPyramidPolyface(
+      new Point3d(c.x + this._xOffset, c.y + yOffset, z),
+      40000 // Base size
+    );
+    
+    if (pyramidPolyface) {
+      const builder1 = context.createGraphic({ type: GraphicType.WorldDecoration });
+      builder1.setSymbology(ColorDef.from(255, 165, 0), ColorDef.from(255, 165, 0, 128), 2); // Orange with transparent fill
+      builder1.addPolyface(pyramidPolyface, true);
+      context.addDecorationFromBuilder(builder1);
+    }
+
+    // Create a simple box polyface
+    const boxPolyface = this.createBoxPolyface(
+      new Point3d(c.x + 100000 + this._xOffset, c.y + yOffset, z),
+      30000, // Width
+      30000, // Depth  
+      40000  // Height
+    );
+    
+    if (boxPolyface) {
+      const builder2 = context.createGraphic({ type: GraphicType.WorldOverlay });
+      builder2.setSymbology(ColorDef.from(100, 255, 255), ColorDef.from(100, 255, 255, 100), 2); // Cyan with transparent fill
+      builder2.addPolyface(boxPolyface, true);
+      context.addDecorationFromBuilder(builder2);
+    }
+  }
+
+  private createPyramidPolyface(center: Point3d, baseSize: number): IndexedPolyface | undefined {
+    const builder = PolyfaceBuilder.create();
+    const halfSize = baseSize / 2;
+    const height = baseSize * 0.8; // Pyramid height
+
+    // Rotated pyramid - lying on its side for better view
+    // Base vertices (square base) - rotated 90 degrees around Y axis
+    const base1 = new Point3d(center.x, center.y - halfSize, center.z - halfSize);
+    const base2 = new Point3d(center.x, center.y + halfSize, center.z - halfSize);
+    const base3 = new Point3d(center.x, center.y + halfSize, center.z + halfSize);
+    const base4 = new Point3d(center.x, center.y - halfSize, center.z + halfSize);
+    
+    // Apex vertex - pointing in X direction
+    const apex = new Point3d(center.x + height, center.y, center.z);
+
+    // Add base (square) - counter-clockwise for outward normal
+    builder.addQuadFacet([base1, base2, base3, base4]);
+
+    // Add triangular faces - each face should have outward normal
+    builder.addTriangleFacet([base1, apex, base2]); // Front face
+    builder.addTriangleFacet([base2, apex, base3]); // Right face
+    builder.addTriangleFacet([base3, apex, base4]); // Back face
+    builder.addTriangleFacet([base4, apex, base1]); // Left face
+
+    return builder.claimPolyface();
+  }
+
+  private createBoxPolyface(center: Point3d, width: number, depth: number, height: number): IndexedPolyface | undefined {
+    const builder = PolyfaceBuilder.create();
+    const halfW = width / 2;
+    const halfD = depth / 2;
+    const halfH = height / 2;
+
+    // Bottom vertices
+    const b1 = new Point3d(center.x - halfW, center.y - halfD, center.z - halfH);
+    const b2 = new Point3d(center.x + halfW, center.y - halfD, center.z - halfH);
+    const b3 = new Point3d(center.x + halfW, center.y + halfD, center.z - halfH);
+    const b4 = new Point3d(center.x - halfW, center.y + halfD, center.z - halfH);
+
+    // Top vertices
+    const t1 = new Point3d(center.x - halfW, center.y - halfD, center.z + halfH);
+    const t2 = new Point3d(center.x + halfW, center.y - halfD, center.z + halfH);
+    const t3 = new Point3d(center.x + halfW, center.y + halfD, center.z + halfH);
+    const t4 = new Point3d(center.x - halfW, center.y + halfD, center.z + halfH);
+
+    // Add faces with outward normals
+    builder.addQuadFacet([b4, b3, b2, b1]); // Bottom (looking up)
+    builder.addQuadFacet([t1, t2, t3, t4]); // Top (looking down)
+    builder.addQuadFacet([b1, b2, t2, t1]); // Front
+    builder.addQuadFacet([b2, b3, t3, t2]); // Right
+    builder.addQuadFacet([b3, b4, t4, t3]); // Back
+    builder.addQuadFacet([b4, b1, t1, t4]); // Left
+
+    return builder.claimPolyface();
   }
 
   public stop(): void {

@@ -13,6 +13,7 @@ import { ShapePrimitiveConverter } from "./ShapePrimitiveConverter";
 import { ArcPrimitiveConverter } from "./ArcPrimitiveConverter";
 import { PathPrimitiveConverter } from "./PathPrimitiveConverter";
 import { LoopPrimitiveConverter } from "./LoopPrimitiveConverter";
+import { PolyfacePrimitiveConverter } from "./PolyfacePrimitiveConverter";
 import { CoordinateBuilder } from "./CoordinateBuilder";
 import { CoordinateStorage } from "./CoordinateStorage";
 
@@ -27,6 +28,7 @@ export class PrimitiveConverterFactory {
     this._converters.set('arc', new ArcPrimitiveConverter());
     this._converters.set('path', new PathPrimitiveConverter());
     this._converters.set('loop', new LoopPrimitiveConverter());
+    this._converters.set('polyface', new PolyfacePrimitiveConverter());
   }
 
   public static getConverter(geometryType?: string): PrimitiveConverter | undefined {
