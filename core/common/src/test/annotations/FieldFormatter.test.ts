@@ -650,7 +650,7 @@ describe("Field formatting", () => {
       expect(formatFieldValue(date, "datetime", options)).to.equal("Thursday, August 28, 2025");
     });
 
-    it("format date as dd/mm/yyyy", () => {
+    it("formats using specified locale", () => {
       const date = new Date("2025-08-28T13:45:30.123Z");
       const dateTimeOpts: Intl.DateTimeFormatOptions = {
         year: "numeric",
@@ -681,6 +681,59 @@ describe("Field formatting", () => {
         }
       };
       expect(formatFieldValue(date, "datetime", options)).to.equal("Aug 28, 2025");
+    });
+
+    it("defaults to en-US locale", () => {
+      const date = new Date("2025-08-28T13:45:30.123Z");
+      const options: FieldFormatOptions = {
+        dateTime: {
+          formatOptions: {
+            weekday: "long",
+            month: "2-digit",
+            day: "2-digit",
+            year: "numeric",
+          },
+        },
+      };
+
+      expect(formatFieldValue(date, "datetime", options)).to.equal("Thursday, 08/28/2025");
+    });
+
+    it("supports other locales", () => {
+      const opts: FieldFormatOptions = {
+        dateTime: {
+          formatOptions: {
+            weekday: "long",
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          },
+        },
+      };
+
+      const date = new Date(2012, 5);
+
+      const testCases = [
+        ["sr-RS", "петак, 1. јун 2012."],
+        ["id-u-co-pinyin", "Jumat, 1 Jun 2012"],
+        ["de-ID", "Freitag, 1. Juni 2012"],
+      ];
+
+      for (const testCase of testCases) {
+        const opts: FieldFormatOptions = {
+          dateTime: {
+            locale: testCase[0],
+            formatOptions: {
+              weekday: "long",
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+            },
+          },
+        };
+
+        expect(formatFieldValue(date, "datetime", opts)).to.equal(testCase[1]);
+      }
     });
   });
 });
