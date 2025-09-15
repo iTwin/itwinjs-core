@@ -170,40 +170,32 @@ export abstract class BezierCurveBase extends CurvePrimitive {
   protected _workCoffsB?: Float64Array;
 
   /**
-   * set up the workBezier members with specific order.
+   * set up the _workBezier members with specific order.
    * * Try to reuse existing members if their sizes match.
    * * Ignore members corresponding to args that are 0 or negative.
    * @param primaryBezierOrder order of expected bezier
-   * @param orderA length of workCoffsA (simple array)
-   * @param orderB length of workCoffsB (simple array)
+   * @param orderA length of _workCoffsA (simple array)
+   * @param orderB length of _workCoffsB (simple array)
    */
-  protected allocateAndZeroBezierWorkData(
-    primaryBezierOrder: number, orderA: number, orderB: number,
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-  ): this is { _workBezier: UnivariateBezier, _workCoffsA: Float64Array, _workCoffsB: Float64Array } {
-    let allocated = false;
+  protected allocateAndZeroBezierWorkData(primaryBezierOrder: number, orderA: number, orderB: number) {
     if (primaryBezierOrder > 0) {
-      allocated = true;
       if (this._workBezier !== undefined && this._workBezier.order === primaryBezierOrder) {
         this._workBezier.zero();
       } else
         this._workBezier = new UnivariateBezier(primaryBezierOrder);
     }
     if (orderA > 0) {
-      allocated = true;
       if (this._workCoffsA !== undefined && this._workCoffsA.length === orderA)
         this._workCoffsA.fill(0);
       else
         this._workCoffsA = new Float64Array(orderA);
     }
     if (orderB > 0) {
-      allocated = true;
       if (this._workCoffsB !== undefined && this._workCoffsB.length === orderB)
         this._workCoffsB.fill(0);
       else
         this._workCoffsB = new Float64Array(orderB);
     }
-    return allocated;
   }
   /**
    * Assess length and turn to determine a stroke count.

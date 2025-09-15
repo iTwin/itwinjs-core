@@ -158,14 +158,17 @@ export class BezierCurve3d extends BezierCurveBase {
   }
   /** Extend `rangeToExtend`, using candidate extrema at
    * * both end points
-   * * any internal extrema in x,y,z
+   * * any internal extrema in x,y,z.
+   * 
+   * Extend fails if Bezier curve order is less than 2.
    */
   public extendRange(rangeToExtend: Range3d, transform?: Transform) {
     const order = this.order;
     if (!transform) {
-      if (!this.allocateAndZeroBezierWorkData(order - 1, 0, 0))
-        return;
+      this.allocateAndZeroBezierWorkData(order - 1, 0, 0);
       const bezier = this._workBezier;
+      if (!bezier)
+        return;
       this.getPolePoint3d(0, this._workPoint0);
       rangeToExtend.extend(this._workPoint0);
       this.getPolePoint3d(order - 1, this._workPoint0);
@@ -181,11 +184,11 @@ export class BezierCurve3d extends BezierCurveBase {
         }
       }
     } else {
-      if (!this.allocateAndZeroBezierWorkData(order - 1, order, 0))
-        return;
+      this.allocateAndZeroBezierWorkData(order - 1, order, 0);
       const bezier = this._workBezier;
       const componentCoffs = this._workCoffsA;   // to hold transformed copy of x,y,z in turn.
-
+      if (!bezier || !componentCoffs)
+        return;
       this.getPolePoint3d(0, this._workPoint0);
       rangeToExtend.extendTransformedPoint(transform, this._workPoint0);
       this.getPolePoint3d(order - 1, this._workPoint0);
