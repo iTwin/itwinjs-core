@@ -580,7 +580,7 @@ describe("Field evaluation", () => {
         const p1 = anno.textBlock.children[0] as Paragraph;
         const runs = [...p1.children];
         runs.shift();
-        p1.children = runs;
+        p1.setChildren(runs);
 
         target.setAnnotation(anno);
         target.update();
@@ -590,7 +590,7 @@ describe("Field evaluation", () => {
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).to.be.undefined;
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).not.to.be.undefined;
 
-        anno.textBlock.children = [];
+        anno.textBlock.setChildren([]);
         anno.textBlock.appendRun(createField(sourceA, "A2"));
         target.setAnnotation(anno);
         target.update();
@@ -600,7 +600,7 @@ describe("Field evaluation", () => {
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).not.to.be.undefined;
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).to.be.undefined;
 
-        anno.textBlock.children = [];
+        anno.textBlock.setChildren([]);
         anno.textBlock.appendRun(TextRun.create({
           styleOverrides: { fontName: "Karla" },
           content: "not a field",
