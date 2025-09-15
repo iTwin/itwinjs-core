@@ -6,7 +6,7 @@
 import { describe, expect, it } from "vitest";
 import { Code, EcefLocation, IModel } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
-import { createCesiumCamera } from "../CesiumCamera.js";
+import { createCesiumCameraProps } from "../CesiumCamera.js";
 
 type Point = {
   x: number;
@@ -135,11 +135,11 @@ const ecefLocProps = {
 };
 const ecefLocation = new EcefLocation(ecefLocProps);
 
-describe("createCesiumCamera", () => {
-  it("creates a CesiumCamera object from SpatialViewDefinitionProps with the camera on (perspective projection)", () => {
-    const cesiumCamera = createCesiumCamera(cameraOnView, ecefLocation);
+describe("createCesiumCameraProps", () => {
+  it("creates a CesiumCameraProps object from SpatialViewDefinitionProps with the camera on (perspective projection)", () => {
+    const CesiumCameraProps = createCesiumCameraProps(cameraOnView, ecefLocation);
 
-    const expectedCesiumCamera = {
+    const expectedCesiumCameraProps = {
       position: { x: 1255551.8995579786, y: -4732788.948703558, z: 4073675.732118358 },
       direction: { x: 0.4713215948502468, y: 0.28355077006441065, z: -0.8351376623190333 },
       up: { x: 0.6668920140307033, y: -0.7342387351881554, z: 0.12707683255168906 },
@@ -150,20 +150,20 @@ describe("createCesiumCamera", () => {
       },
     };
 
-    expectPointToEqual(cesiumCamera.position, expectedCesiumCamera.position, false);
-    expectPointToEqual(cesiumCamera.direction, expectedCesiumCamera.direction, false);
-    expectPointToEqual(cesiumCamera.up, expectedCesiumCamera.up, false);
+    expectPointToEqual(CesiumCameraProps.position, expectedCesiumCameraProps.position, false);
+    expectPointToEqual(CesiumCameraProps.direction, expectedCesiumCameraProps.direction, false);
+    expectPointToEqual(CesiumCameraProps.up, expectedCesiumCameraProps.up, false);
 
-    expect(cesiumCamera.frustum.fov).toBeCloseTo(expectedCesiumCamera.frustum.fov);
-    expect(cesiumCamera.frustum.width).to.be.undefined;
-    expect(cesiumCamera.frustum.near).to.equal(expectedCesiumCamera.frustum.near);
-    expect(cesiumCamera.frustum.far).to.equal(expectedCesiumCamera.frustum.far);
+    expect(CesiumCameraProps.frustum.fov).toBeCloseTo(expectedCesiumCameraProps.frustum.fov);
+    expect(CesiumCameraProps.frustum.width).to.be.undefined;
+    expect(CesiumCameraProps.frustum.near).to.equal(expectedCesiumCameraProps.frustum.near);
+    expect(CesiumCameraProps.frustum.far).to.equal(expectedCesiumCameraProps.frustum.far);
   });
 
-  it("creates a CesiumCamera object from SpatialViewDefinitionProps with the camera off (orthographic projection)", () => {
-    const cesiumCamera = createCesiumCamera(cameraOffView, ecefLocation);
+  it("creates a CesiumCameraProps object from SpatialViewDefinitionProps with the camera off (orthographic projection)", () => {
+    const CesiumCameraProps = createCesiumCameraProps(cameraOffView, ecefLocation);
 
-    const expectedCesiumCamera = {
+    const expectedCesiumCameraProps = {
       position: { x: 1255389.8978600262, y: -4732988.808369093, z: 4073555.356273554 },
       direction: { x: 0.692078850684251, y: 0.7011604395228591, z: -0.17146691367047218 },
       up: { x: 0.6188478278988585, y: -0.4540867701756252, z: 0.6409622227997012 },
@@ -174,13 +174,13 @@ describe("createCesiumCamera", () => {
       },
     };
 
-    expectPointToEqual(cesiumCamera.position, expectedCesiumCamera.position, false);
-    expectPointToEqual(cesiumCamera.direction, expectedCesiumCamera.direction, false);
-    expectPointToEqual(cesiumCamera.up, expectedCesiumCamera.up, false);
+    expectPointToEqual(CesiumCameraProps.position, expectedCesiumCameraProps.position, false);
+    expectPointToEqual(CesiumCameraProps.direction, expectedCesiumCameraProps.direction, false);
+    expectPointToEqual(CesiumCameraProps.up, expectedCesiumCameraProps.up, false);
 
-    expect(cesiumCamera.frustum.fov).to.be.undefined;
-    expect(cesiumCamera.frustum.width).toBeCloseTo(expectedCesiumCamera.frustum.width);
-    expect(cesiumCamera.frustum.near).to.equal(expectedCesiumCamera.frustum.near);
-    expect(cesiumCamera.frustum.far).to.equal(expectedCesiumCamera.frustum.far);
+    expect(CesiumCameraProps.frustum.fov).to.be.undefined;
+    expect(CesiumCameraProps.frustum.width).toBeCloseTo(expectedCesiumCameraProps.frustum.width);
+    expect(CesiumCameraProps.frustum.near).to.equal(expectedCesiumCameraProps.frustum.near);
+    expect(CesiumCameraProps.frustum.far).to.equal(expectedCesiumCameraProps.frustum.far);
   });
 });

@@ -10,7 +10,7 @@ import { Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geom
  * A [perspective frustum](https://cesium.com/learn/cesiumjs/ref-doc/PerspectiveFrustum.html) requires an fov and an [orthographic frustum](https://cesium.com/learn/cesiumjs/ref-doc/OrthographicFrustum.html) requires a width.
  * @internal
  */
-interface CesiumFrustum {
+interface CesiumFrustumProps {
   near: number;
   far: number;
   fov?: number;
@@ -20,17 +20,17 @@ interface CesiumFrustum {
 /** Properties that define a [Cesium camera object](https://cesium.com/learn/cesiumjs/ref-doc/Camera.html).
  * @internal
  */
-interface CesiumCamera {
+interface CesiumCameraProps {
   position: Point3d;
   direction: Vector3d;
   up: Vector3d;
-  frustum: CesiumFrustum;
+  frustum: CesiumFrustumProps;
 }
 
 /** Returns the position, orientation (direction, up), and frustum needed to create/modify a [Cesium camera object](https://cesium.com/learn/cesiumjs/ref-doc/Camera.html).
  * @internal
  */
-export function createCesiumCamera(viewDefinition: ViewDefinition3dProps, ecefLoc?: EcefLocation, modelExtents?: Range3d): CesiumCamera {
+export function createCesiumCameraProps(viewDefinition: ViewDefinition3dProps, ecefLoc?: EcefLocation, modelExtents?: Range3d): CesiumCameraProps {
   const defaultOrigin = Cartographic.fromDegrees({ longitude: 0, latitude: 0, height: 0 });
   let ecefLocation;
   if (ecefLoc) {
@@ -70,18 +70,18 @@ export function createCesiumCamera(viewDefinition: ViewDefinition3dProps, ecefLo
   const transformedUp = ecefLocation.getTransform().multiplyVector(up);
   const transformedDirection = ecefLocation.getTransform().multiplyVector(direction);
 
-  const frustum: CesiumFrustum = {
+  const frustum: CesiumFrustumProps = {
     near: 0.01,
     far: 1000000,
     fov,
     width
   };
-  const cesiumCamera: CesiumCamera = {
+  const CesiumCameraProps: CesiumCameraProps = {
     position: transformedPosition,
     up: transformedUp,
     direction: transformedDirection,
     frustum
   }
 
-  return cesiumCamera;
+  return CesiumCameraProps;
 }
