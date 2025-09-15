@@ -11,9 +11,13 @@ import { Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geom
  * @alpha
  */
 export interface CesiumFrustumProps {
+  /** The distance to the near plane. */
   near: number;
+  /** The distance to the far plane. */
   far: number;
+  /** The angle of the field of view in radians. Required for [perspective frustums](https://cesium.com/learn/cesiumjs/ref-doc/PerspectiveFrustum.html). */
   fov?: number;
+  /** The width of the frustum in meters. Required for [orthographic frustums](https://cesium.com/learn/cesiumjs/ref-doc/OrthographicFrustum.html). */
   width?: number;
 }
 
@@ -21,9 +25,17 @@ export interface CesiumFrustumProps {
  * @alpha
  */
 export interface CesiumCameraProps {
+  /** The position of the camera in ECEF coordinates. */
   position: Point3d;
+  /** The direction the camera points toward, aimed at the center of the frame. Used with `up` to define the camera's orientation.
+   * See the `options` argument in [Camera.setView](https://cesium.com/learn/cesiumjs/ref-doc/Camera.html#setView).
+   */
   direction: Vector3d;
+  /** The up direction relative to the camera. Used with `direction` to define the camera's orientation.
+   * See the `options` argument in [Camera.setView](https://cesium.com/learn/cesiumjs/ref-doc/Camera.html#setView).
+   */
   up: Vector3d;
+  /** The region of space in view of the camera. See [Camera.frustum](https://cesium.com/learn/cesiumjs/ref-doc/Camera.html#frustum). */
   frustum: CesiumFrustumProps;
 }
 
