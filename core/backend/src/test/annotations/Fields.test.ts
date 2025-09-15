@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, ElementAspectProps, FieldPrimitiveValue, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextRun } from "@itwin/core-common";
+import { Code, ElementAspectProps, FieldPrimitiveValue, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldValue, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextRun } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, updateField, updateFields } from "../../internal/annotations/fields";
@@ -29,7 +29,7 @@ describe.only("updateField", () => {
 
   const createMockContext = (elementId: string, propertyValue?: string) => ({
     hostElementId: elementId,
-    getProperty: (field: FieldRun): FieldPrimitiveValue | undefined => {
+    getProperty: (field: FieldRun): FieldValue | undefined => {
       const propertyPath = field.propertyPath;
       if (
         propertyPath.propertyName === "mockProperty" &&
@@ -37,7 +37,7 @@ describe.only("updateField", () => {
         propertyPath.accessors?.[1] === "nestedProperty" &&
         propertyValue !== undefined
       ) {
-        return propertyValue;
+        return { value: propertyValue, type: "string" };
       }
       return undefined;
     },
@@ -319,7 +319,7 @@ describe.only("Field evaluation", () => {
 
       const context = createUpdateContext(propertyHost.elementId, imodel, deletedDependency);
       const actual = context.getProperty(field);
-      expect(actual).to.deep.equal(expected);
+      expect(actual?.value).to.deep.equal(expected);
     }
 
     it("returns a primitive property value", () => {
@@ -841,7 +841,7 @@ describe.only("Field evaluation", () => {
 
       const context = {
         hostElementId: sourceElementId,
-        getProperty: () => "newValue"
+        getProperty: () => { return { value: "newValue", type: "string" } },
       };
 
       // Update the field and check the result
@@ -849,7 +849,7 @@ describe.only("Field evaluation", () => {
 
       // The formatted value should be uppercased and have prefix/suffix applied
       expect(updated).to.be.true;
-      expect(fieldRun.cachedContent).to.equal(FieldRun.invalidContentIndicator);
+      expect(fieldRun.cachedContent).to.equal("Value: NEWVALUE!");
     });
 
     it("validates formatting options for string property type", () => {
@@ -869,7 +869,7 @@ describe.only("Field evaluation", () => {
       // Context returns a string value for the property
       const context = {
         hostElementId: sourceElementId,
-        getProperty: () => "abc"
+        getProperty: () => { return { value: "abc", type: "string" } },
       };
 
       // Update the field and check the result
@@ -931,7 +931,7 @@ describe.only("Field evaluation", () => {
       // Context returns a numeric value for the property
       const context = {
         hostElementId: sourceElementId,
-        getProperty: () => 123.456
+        getProperty: () => { return { value: 123.456, type: "quantity" } },
       };
 
       // Update the field and check the result
@@ -960,7 +960,7 @@ describe.only("Field evaluation", () => {
       // Context returns a coordinate value for the property
       const context = {
         hostElementId: sourceElementId,
-        getProperty: () => ({ x: 1, y: 2, z: 3 })
+        getProperty: () => { return { value: { x: 1, y: 2, z: 3 }, type: "coordinate" } },
       };
 
       // Update the field and check the result
@@ -989,7 +989,7 @@ describe.only("Field evaluation", () => {
       // Context returns a boolean value for the property
       const context = {
         hostElementId: sourceElementId,
-        getProperty: () => false
+        getProperty: () => { return { value: false, type: "boolean" } },
       };
 
       // Update the field and check the result
@@ -1021,7 +1021,7 @@ describe.only("Field evaluation", () => {
       // Context returns an int-enum value for the property
       const context = {
         hostElementId: sourceElementId,
-        getProperty: () => 1
+        getProperty: () => { return { value: 1, type: "int-enum" } },
       };
 
       // Update the field and check the result
@@ -1053,7 +1053,7 @@ describe.only("Field evaluation", () => {
       // Context returns a string-enum value for the property
       const context = {
         hostElementId: sourceElementId,
-        getProperty: () => "duck"
+        getProperty: () => { return { value: "duck", type: "string-enum" } },
       };
 
       // Update the field and check the result
@@ -1081,7 +1081,7 @@ describe.only("Field evaluation", () => {
       // Context returns a string value for the property
       const context = {
         hostElementId: sourceElementId,
-        getProperty: () => "abc"
+        getProperty: () => { return { value: "abc", type: "string" } },
       };
 
       // Update the field and check the result
@@ -1144,7 +1144,7 @@ describe.only("Field evaluation", () => {
       // Context returns a numeric value for the property from JSON
       const context = {
         hostElementId: sourceElementId,
-        getProperty: () => 11 // This matches jsonProperties.ints[1] in the test element
+        getProperty: () => { return { value: 11, type: "quantity" } }, // This matches jsonProperties.ints[1] in the test element
       };
 
       // Update the field and check the result

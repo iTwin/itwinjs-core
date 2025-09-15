@@ -3,17 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECSqlValueType, FieldPrimitiveValue, FieldRun, formatFieldValue, RelationshipProps, TextBlock } from "@itwin/core-common";
+import { ECSqlValueType, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, RelationshipProps, TextBlock } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
-import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
+import { computeFieldPropertyType, isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 import { AnyClass, EntityClass, StructArrayProperty } from "@itwin/ecschema-metadata";
 
 interface FieldStructValue { [key: string]: any }
 
 // An intermediate value obtained while evaluating a FieldPropertyPath.
-type FieldValue = {
+type FieldValueType = {
   primitive: FieldPrimitiveValue;
   struct?: never;
   primitiveArray?: never;
@@ -38,11 +38,11 @@ type FieldValue = {
 export interface UpdateFieldsContext {
   readonly hostElementId: Id64String;
 
-  getProperty(field: FieldRun): FieldPrimitiveValue | undefined
+  getProperty(field: FieldRun): FieldValue | undefined
 }
 
 // Resolve the raw primitive value of the property that a field points to.
-function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldPrimitiveValue | undefined {
+function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | undefined {
   const host = field.propertyHost;
   const schemaItem = iModel.schemaContext.getSchemaItemSync(host.schemaName, host.className);
   if (!EntityClass.isEntityClass(schemaItem)) {
@@ -59,7 +59,7 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldPrimitiv
   const isAspect = ecClass.isSync("ElementAspect", "BisCore");
   const where = ` WHERE ${isAspect ? "Element.Id" : "ECInstanceId"}=${host.elementId}`;
   // eslint-disable-next-line @typescript-eslint/no-deprecated
-  let curValue: FieldValue | undefined = iModel.withPreparedStatement(`SELECT ${propertyName} FROM ${host.schemaName}.${host.className} ${where}`, (stmt) => {
+  let curValue: FieldValueType | undefined = iModel.withPreparedStatement(`SELECT ${propertyName} FROM ${host.schemaName}.${host.className} ${where}`, (stmt) => {
     if (stmt.step() !== DbResult.BE_SQLITE_ROW) {
       return undefined;
     }
@@ -169,7 +169,8 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldPrimitiv
     }
   }
 
-  if (field.propertyPath.jsonAccessors) {
+  let propertyType: FieldPropertyType;
+  if (field.propertyPath.jsonAccessors && field.propertyPath.jsonAccessors.length > 0) {
     if (!ecProp.isPrimitive() || ecProp.isArray() || ecProp.extendedTypeName !== "Json" || typeof curValue.primitive !== "string") {
       return undefined;
     }
@@ -193,13 +194,27 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldPrimitiv
 
     switch (typeof json) {
       case "string":
+        curValue = { primitive: json };
+        propertyType = "string";
+        break;
       case "number":
+        curValue = { primitive: json };
+        propertyType = "quantity";
+        break;
       case "boolean":
         curValue = { primitive: json };
+        propertyType = "boolean";
         break;
       default:
         return undefined;
     }
+  } else {
+    const computedType = computeFieldPropertyType(field.propertyPath, field.propertyHost, iModel);
+    if(!computedType || "user-specified" === computedType) {
+      return undefined;
+    }
+
+    propertyType = computedType;
   }
 
   // The ultimate result must be a primitive value.
@@ -207,7 +222,7 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldPrimitiv
     return undefined;
   }
 
-  return curValue.primitive;
+  return { value: curValue.primitive, type: propertyType };
 }
 
 export function createUpdateContext(hostElementId: string, iModel: IModelDb, deleted: boolean): UpdateFieldsContext {
@@ -228,7 +243,7 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
     const propValue = context.getProperty(field);
     if (undefined !== propValue) {
       // ###TODO formatting etc.
-      newContent = formatFieldValue({ value: propValue, type: field.propertyType }, field.formatOptions);
+      newContent = formatFieldValue(propValue, field.formatOptions);
     }
   } catch (err) {
     Logger.logException(BackendLoggerCategory.IModelDb, err);
