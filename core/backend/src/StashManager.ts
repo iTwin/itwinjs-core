@@ -72,9 +72,9 @@ export interface CreateStashProps {
   readonly db: BriefcaseDb;
   /** description of the stash */
   readonly description: string;
-  /** discard all local changes and unless keepLocks flag is set, all locks will be released */
+  /** discard all local changes and unless retainLocks flag is set, all locks will be released */
   readonly discardLocalChanges?: true;
-  /** keep all locks after discarding local changes */
+  /** retains all locks after discarding local changes */
   readonly retainLocks?: true;
 }
 
@@ -87,25 +87,11 @@ export interface StashArgs {
   readonly stash: Id64String | StashProps;
 }
 
-/**
- * Arguments for applying or restoring a stash.
- *
- * Extends {@link StashArgs} with an additional `method` property to specify the operation.
- *
- * @property method - Specifies the stash operation to perform.
- *   - `"apply"`: Apply the stash without removing it.
- *   - `"restore"`: Apply the stash and remove it from the stash list.
- * @internal
- */
-export interface StashApplyArgs extends StashArgs {
-  readonly method: "apply" | "restore";
-}
-
 enum LockOrigin {
   Acquired = 0,
   NewElement = 1,
   Discovered = 2,
-}
+};
 
 /**
  * Stash manager allow stash, drop, apply and merge stashes
@@ -120,7 +106,6 @@ export class StashManager {
    * @param db - The BriefcaseDb instance for which to determine the stash root folder.
    * @param ensureExists - If true, the stash root directory will be created if it does not already exist.
    * @returns The absolute path to the stash root directory.
-   * @throws IModelError if the database is not open, is readonly, has unsaved changes, or if the briefcase path cannot be determined.
    */
   private static getStashRootFolder(db: BriefcaseDb, ensureExists: boolean): LocalDirName {
     if (!db.isOpen || db.isReadonly)
@@ -155,7 +140,6 @@ export class StashManager {
    *
    * @param args - The arguments required to identify the stash, including the database reference.
    * @returns The absolute path to the stash file.
-   * @throws IModelError with status `IModelStatus.BadArg` if the stash root folder or the stash file does not exist.
    */
   private static getStashFilePath(args: StashArgs) {
     const stashRoot = this.getStashRootFolder(args.db, false);
@@ -163,11 +147,11 @@ export class StashManager {
       throw new StashError("Stash root folder does not exist");
     }
 
-    const stashFile = path.join(stashRoot, `${this.getStashId(args)}.stash`);
-    if (!existsSync(stashFile)) {
+    const stashFilePath = path.join(stashRoot, `${this.getStashId(args)}.stash`);
+    if (!existsSync(stashFilePath)) {
       throw new StashError("Invalid stash");
     }
-    return stashFile;
+    return stashFilePath;
   }
 
   /**
@@ -182,7 +166,7 @@ export class StashManager {
     return this.withStash(args, (stashDb) => {
       const query = `SELECT JSON_GROUP_ARRAY(FORMAT('0x%x', Id)) FROM [locks] WHERE State = ${state} AND origin = ${origin}`;
       return stashDb.withPreparedSqliteStatement(query, (stmt) => {
-        while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        if (stmt.step() === DbResult.BE_SQLITE_ROW) {
           return JSON.parse(stmt.getValueString(0)) as Id64Array;
         }
         return [];
@@ -216,8 +200,6 @@ export class StashManager {
    *
    * @param args - The properties required to create a stash, including the briefcase, description, iModelId, and an optional resetBriefcase flag.
    * @returns A promise that resolves to the properties of the created stash.
-   *
-   * @throws Error if the stash operation fails.
    */
   public static async stash(args: CreateStashProps): Promise<StashProps> {
     const stashRootDir = StashManager.getStashRootFolder(args.db, true);
@@ -277,11 +259,6 @@ export class StashManager {
    * @param args - Arguments required to determine the stash file path.
    * @param callback - A function that receives an open {@link SQLiteDb} instance connected to the stash file.
    * @returns The value returned by the callback function.
-   * @throws {@link IModelError} If the stash file does not exist or cannot be opened.
-   *
-   * @remarks
-   * The stash database is opened in read-only mode and is automatically closed after the callback completes,
-   * regardless of whether the callback throws an error.
    */
   private static withStash<T>(args: StashArgs, callback: (stashDb: SQLiteDb) => T): T {
     const stashFile = this.getStashFilePath(args);
@@ -300,11 +277,6 @@ export class StashManager {
 
   /**
    * Retrieves all stash files associated with the specified {@link BriefcaseDb}.
-   *
-   * This method scans the stash directory for files with a `.stash` extension,
-   * loads their metadata, and returns an array of `StashProps` objects sorted
-   * by their timestamp in descending order (most recent first).
-   *
    * @param db - The {@link BriefcaseDb} instance for which to retrieve stash files.
    * @returns An array of `StashProps` representing the found stash files, sorted by timestamp.
    */
@@ -334,7 +306,6 @@ export class StashManager {
    * @param db - The {@link BriefcaseDb} instance from which the stash should be dropped.
    * @param stashId - The unique identifier (GuidString) or properties (StashProps) of the stash to be deleted.
    * @returns Returns `true` if the stash file was successfully deleted, otherwise returns `false`.
-   * @throws Does not throw; logs errors internally and returns `false` on failure.
    */
   public static dropStash(args: StashArgs): boolean {
     try {
@@ -372,20 +343,14 @@ export class StashManager {
     });
   }
   /**
-   * Restores the specified stash to the given {@link BriefcaseDb}.
-   *
-   * This method will discard local changes, acquire required locks, pull and apply changesets if needed,
-   * and then restore the stash from the stash file.
+   * Restores the specified stash to the given {@link BriefcaseDb}. This operation will discard any local changes made to db and reverse the tip to the state of the stash and then apply stash. This will restore the undo stack.
    *
    * @param args - The arguments including the target database and stash properties.
-   * @throws IModelError if the restore operation fails.
    */
   public static async restore(args: StashArgs): Promise<void> {
     const { db } = args;
     Logger.logInfo(loggerCategory, `Restoring stash: ${this.getStashId(args)}`);
 
-    db.clearCaches();
-    db[_nativeDb].clearECDbCache();
     const stash = this.getStash(args);
     if (!stash) {
       throw new StashError(`stash not found ${this.getStashId(args)}`);
@@ -418,41 +383,5 @@ export class StashManager {
     (db as any).initializeIModelDb("pullMerge");
     db.saveChanges();
     Logger.logInfo(loggerCategory, `Restored stash: ${this.getStashId(args)}`);
-  }
-
-  /**
-   * Applies a stashed change to the specified {@link BriefcaseDb}.
-   *
-   * This method validates the stash, ensures the database is in a valid state, and applies or restores the stash as requested.
-   *
-   * @param args - The arguments for applying the stash, including the method ("restore").
-   * @throws IModelError if the stash is invalid, the database is not in a valid state, or the stash does not belong to the database.
-   */
-  public static async apply(args: StashApplyArgs): Promise<void> {
-    const conn = args.db;
-    conn.clearCaches();
-    conn[_nativeDb].clearECDbCache();
-    const stash = this.getStash(args);
-    if (!stash) {
-      throw new IModelError(IModelStatus.BadArg, "Invalid stash");
-    }
-
-    if (conn.txns.hasUnsavedChanges) {
-      throw new IModelError(IModelStatus.BadArg, "Unsaved changes present");
-    }
-
-    if (conn.iModelId !== stash.iModelId) {
-      throw new IModelError(IModelStatus.BadArg, "Stash does not belong to this iModel");
-    }
-
-    if (conn.briefcaseId !== stash.briefcaseId) {
-      throw new IModelError(IModelStatus.BadArg, "Stash does not belong to this briefcase");
-    }
-
-    if (args.method === "restore") {
-      return this.restore({ db: conn, stash });
-    }
-
-    throw new IModelError(IModelStatus.BadArg, "Invalid stash operation");
   }
 }

@@ -3686,7 +3686,8 @@ export abstract class IModelDb extends IModel {
     restartTxnSession(): void;
     // @internal @deprecated (undocumented)
     reverseTxns(numOperations: number): IModelStatus;
-    saveChanges(description?: string | SaveChangesArgs): void;
+    saveChanges(description?: string): void;
+    saveChanges(descriptionOrArgs: SaveChangesArgs): void;
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     // @beta
     saveSettingDictionary(name: string, dict: SettingsContainer): void;

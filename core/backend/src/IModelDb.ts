@@ -820,11 +820,26 @@ export abstract class IModelDb extends IModel {
    * @note This will not push changes to the iModelHub.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
    */
-  public saveChanges(description?: string | SaveChangesArgs): void {
+  public saveChanges(description?: string): void ;
+  /** Commit unsaved changes in memory as a Txn to this iModelDb.
+   * @param args Optional  [[SaveChangesArgs]] of the changes
+   * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
+   * @note This will not push changes to the iModelHub.
+   * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
+   */
+
+    public saveChanges(descriptionOrArgs: SaveChangesArgs): void;
+  /** Commit unsaved changes in memory as a Txn to this iModelDb.
+   * @param descriptionOrArgs Optional description of the changes
+   * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
+   * @note This will not push changes to the iModelHub.
+   * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
+   */
+  public saveChanges(descriptionOrArgs?: string | SaveChangesArgs): void {
     if (this.openMode === OpenMode.Readonly)
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only");
 
-    const args = typeof description === "string" ? { description } : description;
+    const args = typeof descriptionOrArgs === "string" ? { description: descriptionOrArgs } : descriptionOrArgs;
     if (!this[_nativeDb].hasUnsavedChanges()) {
       Logger.logWarning(loggerCategory, "there are no unsaved changes", () => args);
     }
@@ -3070,7 +3085,7 @@ export class BriefcaseDb extends IModelDb {
     Logger.logInfo(loggerCategory, "Releasing locks after discarding changes");
     await this.locks.releaseAllLocks();
   }
-  
+
   /**
    * The Guid that identifies the *context* that owns this iModel.
    * GuidString | undefined for the superclass, but required for BriefcaseDb

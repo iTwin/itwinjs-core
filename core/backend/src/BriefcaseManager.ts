@@ -57,7 +57,7 @@ export interface PushChangesArgs extends TokenArg {
   /** The delay to wait between retry attempts on failed pushes. Default is 3 seconds. */
   pushRetryDelay?: BeDuration;
   /**
-   *  For testing purpose
+   *  (unused)
    * @internal
    */
   noFastForward?: true;
@@ -81,7 +81,7 @@ export type PullChangesArgs = ToChangesetArgs & {
    */
   onProgress?: ProgressFunction;
   /**
-   *  For testing purpose
+   *  (unused)
    * @internal
    */
   noFastForward?: true;
@@ -718,7 +718,7 @@ export class BriefcaseManager {
       throw new Error(`Restore point not found: ${name}`);
     }
 
-    await StashManager.apply({ db, stash: restorePointId, method: "restore" });
+    await StashManager.restore({ db, stash: restorePointId });
     Logger.logTrace(loggerCategory, `Restored to restore point ${name}`);
     this.dropRestorePoint(db, name);
   }

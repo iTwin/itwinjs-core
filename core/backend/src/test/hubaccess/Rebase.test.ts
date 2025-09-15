@@ -408,19 +408,19 @@ describe("rebase changes & stashing api", function (this: Suite) {
     chai.expect(stashes[2].description).to.equals("stash test 1");
 
     // restore stash 1
-    await StashManager.apply({ db: b1, stash: stash1, method: "restore" });
+    await StashManager.restore({ db: b1, stash: stash1 });
     chai.expect(b1.elements.tryGetElement(e1)).to.exist;
     chai.expect(b1.elements.tryGetElement(e2)).to.undefined;
     chai.expect(b1.elements.tryGetElement(e3)).to.undefined;
 
     // restore stash 2
-    await StashManager.apply({ db: b1, stash: stash2, method: "restore" });
+    await StashManager.restore({ db: b1, stash: stash2 });
     chai.expect(b1.elements.tryGetElement(e1)).to.undefined;
     chai.expect(b1.elements.tryGetElement(e2)).to.exist;
     chai.expect(b1.elements.tryGetElement(e3)).to.undefined;
 
     // restore stash 3
-    await StashManager.apply({ db: b1, stash: stash3, method: "restore" });
+    await StashManager.restore({ db: b1, stash: stash3 });
     chai.expect(b1.elements.tryGetElement(e1)).to.undefined;
     chai.expect(b1.elements.tryGetElement(e2)).to.undefined;
     chai.expect(b1.elements.tryGetElement(e3)).to.exist;
@@ -478,20 +478,20 @@ describe("rebase changes & stashing api", function (this: Suite) {
     chai.expect(b1.txns.isRedoPossible).to.be.false;
 
     // restore stash 1
-    await StashManager.apply({ db: b1, stash: stash1, method: "restore" });
+    await StashManager.restore({ db: b1, stash: stash1 });
     chai.expect(b1.elements.tryGetElement(e1)).to.exist;
     chai.expect(b1.elements.tryGetElement(e2)).to.undefined;
     chai.expect(b1.elements.tryGetElement(e3)).to.undefined;
 
 
     // restore stash 2
-    await StashManager.apply({ db: b1, stash: stash2, method: "restore" });
+    await StashManager.restore({ db: b1, stash: stash2 });
     chai.expect(b1.elements.tryGetElement(e1)).to.exist;
     chai.expect(b1.elements.tryGetElement(e2)).to.exist;
     chai.expect(b1.elements.tryGetElement(e3)).to.undefined;
 
     // restore stash 3
-    await StashManager.apply({ db: b1, stash: stash3, method: "restore" });
+    await StashManager.restore({ db: b1, stash: stash3 });
     chai.expect(b1.elements.tryGetElement(e1)).to.exist;
     chai.expect(b1.elements.tryGetElement(e2)).to.exist;
     chai.expect(b1.elements.tryGetElement(e3)).to.exist;
@@ -531,7 +531,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     chai.expect(b2.elements.tryGetElement(e2)).to.undefined;
 
     // stash restore should downgrade briefcase to older changeset as specified in stash
-    await StashManager.apply({ db: b2, stash: b2Stash1, method: "restore" });
+    await StashManager.restore({ db: b2, stash: b2Stash1 });
     chai.expect(b2.changeset.index).to.equals(2);
 
     chai.expect(b2.elements.tryGetElement(e1)).to.undefined;
@@ -588,7 +588,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     const elBefore = b2.elements.tryGetElementProps(e1);
     chai.expect((elBefore as any).prop1).to.equals("2");
     // restore stash should succeed as now it can obtain lock
-    await StashManager.apply({ db: b2, stash: b2Stash1, method: "restore" });
+    await StashManager.restore({ db: b2, stash: b2Stash1 });
 
     const elAfter = b2.elements.tryGetElementProps(e1);
     chai.expect((elAfter as any).prop1).to.equals("1");
