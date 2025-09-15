@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "fix: allow IModelApp.publicPath to be passed without a trailing slash /",
+      "comment": "fix: allow IModelApp.publicPath to be passed without a trailing slash `/`",
       "type": "none"
     }
   ],
