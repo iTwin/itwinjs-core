@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { BaselineShift, ContainerComponent, FieldRun, FontId, FontType, FractionRun, getMarkerText, LineLayoutResult, Run, RunLayoutResult, TabRun, TextBlock, TextBlockComponent, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, Container, FieldRun, FontId, FontType, FractionRun, getMarkerText, LineLayoutResult, List, Paragraph, Run, RunLayoutResult, TabRun, TextBlock, TextBlockComponent, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Geometry, Range2d, WritableXAndY } from "@itwin/core-geometry";
 import { IModelDb } from "../IModelDb";
 import { assert, Id64String, NonFunctionPropertiesOf } from "@itwin/core-bentley";
@@ -302,10 +302,10 @@ export class TextStyleResolver {
   public mendSettings(component: TextBlockComponent): TextBlockComponent {
     const block = component.clone();
 
-    if (component instanceof ContainerComponent) {
+    if (Container.isContainer(component)) {
       component.children.forEach(child => {
         child.styleOverrides = { ...component.styleOverrides, ...child.styleOverrides };
-        if (child instanceof TextBlockComponent) {
+        if (Container.isContainer(child)) {
           this.mendSettings(child);
         }
       });
@@ -756,11 +756,10 @@ export class TextBlockLayout {
   }
 
   // TODO: pass in style overrides recursively instead of doing the mend styles stuff
-  private populateComponent(component: TextBlockComponent, context: LayoutContext, docWidth: number, curLine: LineLayout, parent?: ContainerComponent, depth: number = 0): LineLayout {
+  private populateComponent(component: Run | TextBlock | Paragraph | List, context: LayoutContext, docWidth: number, curLine: LineLayout, parent?: Container, depth: number = 0): LineLayout {
     switch (component.type) {
       case "textBlock": {
-        const block = component as ContainerComponent;
-        block.children.forEach((child) => curLine = this.populateComponent(child, context, docWidth, curLine, block, depth));
+        component.children.forEach((child) => curLine = this.populateComponent(child, context, docWidth, curLine, component, depth));
 
         if (curLine.runs.length > 0) {
           curLine = this.flushLine(context, curLine);
@@ -769,27 +768,24 @@ export class TextBlockLayout {
         break;
       }
       case "list": {
-        const list = component as ContainerComponent;
-
-        curLine = this.flushLine(context, curLine, list.children[0], true, depth + 1);
-        list.children.forEach((child, index) => {
-          const styleOverrides = context.textStyleResolver.resolveSettings(list.styleOverrides);
+        curLine = this.flushLine(context, curLine, component.children[0], true, depth + 1);
+        component.children.forEach((child, index) => {
+          const styleOverrides = context.textStyleResolver.resolveSettings(component.styleOverrides);
           const markerContent = getMarkerText(styleOverrides.listMarker, index + 1);
           const marker = RunLayout.create(TextRun.create({ styleOverrides, content: markerContent }), context);
 
           curLine.marker = marker;
-          curLine = this.populateComponent(child, context, docWidth, curLine, list, depth + 1);
+          curLine = this.populateComponent(child, context, docWidth, curLine, component, depth + 1);
         });
 
-        const nextSibling = parent?.children[list.index + 1];
+        const nextSibling = parent?.children[component.index + 1];
         if (curLine && nextSibling) {
           curLine = this.flushLine(context, curLine, nextSibling, true, depth);
         }
         break;
       }
       case "paragraph": {
-        const paragraph = component as ContainerComponent;
-        paragraph.children.forEach(child => curLine = this.populateComponent(child, context, docWidth, curLine, paragraph, depth));
+        component.children.forEach(child => curLine = this.populateComponent(child, context, docWidth, curLine, component, depth));
         const nextSibling = parent?.children[component.index + 1];
         if (curLine && nextSibling) {
           curLine = this.flushLine(context, curLine, nextSibling, true, depth);
@@ -797,8 +793,7 @@ export class TextBlockLayout {
         break;
       }
       case "text": {
-        const run = component as Run;
-        const layout = RunLayout.create(run, context);
+        const layout = RunLayout.create(component, context);
 
         if (docWidth > 0) {
           layout.split(context).forEach(r => { curLine = this.populateRun(curLine, r, context, docWidth) });
@@ -809,14 +804,12 @@ export class TextBlockLayout {
       }
       case "fraction":
       case "tab": {
-        const run = component as Run;
-        const layout = RunLayout.create(run, context);
+        const layout = RunLayout.create(component, context);
         curLine = this.populateRun(curLine, layout, context, docWidth);
         break;
       }
       case "linebreak": {
-        const run = component as Run;
-        const layout = RunLayout.create(run, context);
+        const layout = RunLayout.create(component, context);
 
         curLine.append(layout);
         curLine = this.flushLine(context, curLine, undefined, undefined, depth);

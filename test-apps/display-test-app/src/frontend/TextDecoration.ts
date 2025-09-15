@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, ContainerComponent, FractionRun, LeaderTextPointOptions, LineBreakRun, List, OrderedListMarker, Paragraph, Placement2dProps, Run, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationLeader, TextAnnotationProps, TextBlock, TextBlockComponent, TextBlockJustification, TextBlockMargins, TextBlockProps, TextFrameStyleProps, TextRun, TextStyleSettingsProps, UnorderedListMarker } from "@itwin/core-common";
+import { BaselineShift, ColorDef, ContainerBase, FractionRun, LeaderTextPointOptions, LineBreakRun, List, OrderedListMarker, Paragraph, Placement2dProps, Run, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationLeader, TextAnnotationProps, TextBlock, TextBlockComponent, TextBlockJustification, TextBlockMargins, TextBlockProps, TextFrameStyleProps, TextRun, TextStyleSettingsProps, UnorderedListMarker } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
@@ -63,7 +63,7 @@ class TextEditor implements Decorator {
     let current: TextBlockComponent | undefined = this.textBlock;
     while (current) {
       pathToChild.push(current);
-      current = (current as ContainerComponent)?.last;
+      current = (current as ContainerBase)?.last;
     }
     return pathToChild;
   }
@@ -72,10 +72,10 @@ class TextEditor implements Decorator {
     const pathToChild = this.pathToLastChild();
     const last = pathToChild[pathToChild.length - 1];
     if (Run.isRun(last)) {
-      const container = pathToChild[pathToChild.length - 2] as ContainerComponent;
+      const container = pathToChild[pathToChild.length - 2] as ContainerBase;
       container?.appendChild(run);
     } else {
-      (last as ContainerComponent)?.appendChild(run);
+      (last as ContainerBase)?.appendChild(run);
     }
     return last;
   }

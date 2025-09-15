@@ -432,7 +432,7 @@ describe("TextBlockComponent", () => {
   });
 });
 
-describe("ContainerComponent", () => {
+describe("ContainerBase", () => {
   it("sets indexes", () => {
     const textBlock = TextBlock.create({
       styleId: "", children: [
@@ -646,6 +646,7 @@ describe("TextBlock", () => {
     */
 
     const props: TextBlockProps = {
+      type: "textBlock",
       styleId: "0x42",
       children: [
         makeList([

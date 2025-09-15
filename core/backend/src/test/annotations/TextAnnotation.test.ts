@@ -254,7 +254,7 @@ describe("TextAnnotation element", () => {
       }
 
       it("roundtrips an empty annotation", async () => { await test(); });
-      it("roundtrips an annotation with a style", async () => { await test(TextAnnotation.fromJSON({ textBlock: { styleId: seedStyleId } })); });
+      it("roundtrips an annotation with a style", async () => { await test(TextAnnotation.fromJSON({ textBlock: { type: "textBlock", styleId: seedStyleId } })); });
       it("roundtrips an annotation with a textBlock", async () => { await test(createAnnotation()); });
     });
   });
@@ -346,7 +346,7 @@ describe("TextAnnotation element", () => {
       }
 
       it("roundtrips an empty annotation", async () => { await test(); });
-      it("roundtrips an annotation with a style", async () => { await test(TextAnnotation.fromJSON({ textBlock: { styleId: seedStyleId } })); });
+      it("roundtrips an annotation with a style", async () => { await test(TextAnnotation.fromJSON({ textBlock: { type: "textBlock", styleId: seedStyleId } })); });
       it("roundtrips an annotation with a textBlock", async () => { await test(createAnnotation()); });
     });
   });
