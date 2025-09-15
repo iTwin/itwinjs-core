@@ -10,6 +10,11 @@ import { Format, FormatterSpec } from "@itwin/core-quantity";
 // A FieldPropertyPath must ultimately resolve to one of these primitive types.
 export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
 
+export interface FieldValue {
+  value: FieldPrimitiveValue;
+  type: FieldPropertyType | string;
+}
+
 type FieldFormatter = (value: FieldPrimitiveValue, options: FieldFormatOptions | undefined) => string | undefined;
 
 interface Coordinate { x: number, y: number, z: number | undefined }
@@ -153,7 +158,7 @@ if (!isNaN(v.getTime())) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-export function formatFieldValue(value: FieldPrimitiveValue, type: FieldPropertyType | string, options: FieldFormatOptions | undefined): string | undefined {
-  const formatter = formatters[type];
-  return formatter ? formatter(value, options) : undefined;
+export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined): string | undefined {
+  const formatter = formatters[options?.propertyType ?? value.type];
+  return formatter ? formatter(value.value, options) : undefined;
 }

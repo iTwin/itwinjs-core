@@ -4,13 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { beforeAll, describe, expect, it } from "vitest";
-import { formatFieldValue } from "../../internal/annotations/FieldFormatter";
-import type { FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../core-common";
-import { Format, FormatterSpec, ResolvedFormatProps } from "@itwin/core-quantity";
+import { formatFieldValue as fmtFldVal } from "../../internal/annotations/FieldFormatter";
+import type { FieldFormatOptions, FieldPrimitiveValue, FieldPropertyType, QuantityFieldFormatOptions } from "../../core-common";
+import { Format, FormatterSpec } from "@itwin/core-quantity";
 import { KindOfQuantity, SchemaContext, SchemaFormatsProvider, SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
 import * as path from "path";
 import * as fs from "fs";
+
+function formatFieldValue(value: FieldPrimitiveValue, type: FieldPropertyType | string, options: FieldFormatOptions | undefined): string | undefined {
+  return fmtFldVal({ value, type }, options);
+}
 
 describe("Field formatting", () => {
   describe("string", () => {

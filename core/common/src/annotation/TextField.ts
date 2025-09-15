@@ -102,6 +102,7 @@ export interface EnumFieldFormatOptions<T extends number| string> {
  * @beta
  */
 export interface FieldFormatOptions {
+  propertyType?: FieldPropertyType;
   prefix?: string;
   suffix?: string;
   case?: FieldCase;
@@ -113,6 +114,10 @@ export interface FieldFormatOptions {
 }
 
 export function fieldFormatOptionsDeepEquals(opts1: FieldFormatOptions, opts2: FieldFormatOptions): boolean {
+  if (opts1.propertyType !== opts2.propertyType) {
+    return false;
+  }
+
   // Check basic string properties
   if (opts1.case !== opts2.case ||
       opts1.prefix !== opts2.prefix ||

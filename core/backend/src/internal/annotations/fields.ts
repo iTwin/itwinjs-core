@@ -228,7 +228,7 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
     const propValue = context.getProperty(field);
     if (undefined !== propValue) {
       // ###TODO formatting etc.
-      newContent = formatFieldValue(propValue, field.propertyType, field.formatOptions);
+      newContent = formatFieldValue({ value: propValue, type: field.propertyType }, field.formatOptions);
     }
   } catch (err) {
     Logger.logException(BackendLoggerCategory.IModelDb, err);
