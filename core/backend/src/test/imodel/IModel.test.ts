@@ -1492,6 +1492,13 @@ describe("iModel", () => {
 
   });
 
+    it("should fail to get an imodel when not passed a string", () => {
+    const testImodel = imodel2;
+    const regionId = "0x23";
+    const badId = { foobar: regionId } as unknown as Id64String;
+    expect(() => testImodel.elements.getElement(badId)).to.throw("Id must be a string");
+  });
+
   it("should create model with custom relationship to modeled element", async () => {
     const testImodel = imodel1;
 
@@ -1860,10 +1867,10 @@ describe("iModel", () => {
       for (let numPts = 0; numPts < 3; numPts++) {
         const geoResponse = await imodel5.getGeoCoordinatesFromIModelCoordinates({ target: "WGS84", iModelCoords });
         expect(geoResponse.geoCoords.length).to.equal(numPts);
-        
+
         const iModelResponse = await imodel5.getIModelCoordinatesFromGeoCoordinates({ source: "WGS84", geoCoords });
         expect(iModelResponse.iModelCoords.length).to.equal(numPts);
-        
+
         iModelCoords.push(new Point3d());
         geoCoords.push(new Point3d());
       }
@@ -1875,11 +1882,11 @@ describe("iModel", () => {
       for (let numPts = 0; numPts < 3; numPts++) {
         const geoResponse = await imodel5.getGeoCoordinatesFromIModelCoordinates({ target: "WGS84", iModelCoords });
         expect(geoResponse.fromCache).to.equal(0);
-        
+
         const iModelResponse = await imodel5.getIModelCoordinatesFromGeoCoordinates({ source: "WGS84", geoCoords });
         expect(iModelResponse.iModelCoords.length).to.equal(numPts);
         expect(iModelResponse.fromCache).to.equal(0);
-        
+
         iModelCoords.push(new Point3d());
         geoCoords.push(new Point3d());
       }
