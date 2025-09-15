@@ -735,6 +735,23 @@ describe("Field formatting", () => {
         expect(formatFieldValue(date, "datetime", opts)).to.equal(testCase[1]);
       }
     });
+
+    it("rejects unsupported locales", () => {
+      const date = new Date("2025-08-28T13:45:30.123Z");
+      const options: FieldFormatOptions = {
+        dateTime: {
+          locale: "not-a-locale",
+          formatOptions: {
+            weekday: "long",
+            month: "2-digit",
+            day: "2-digit",
+            year: "numeric",
+          },
+        },
+      };
+
+      expect(formatFieldValue(date, "datetime", options)).to.be.undefined;
+    });
   });
 });
 

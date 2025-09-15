@@ -88,7 +88,7 @@ export interface DateTimeFieldFormatOptions {
   // be needed for the parts it specifies in its formatting.
   // People might also want to ask that the date be translated to a specific time zone before formatting is applied.
   // For now we simply spit out the full Date as a string in ISO8601 format.
-  locale?: Intl.LocalesArgument;
+  locale?: Intl.UnicodeBCP47LocaleIdentifier;
   formatOptions?: Intl.DateTimeFormatOptions;
 }
 

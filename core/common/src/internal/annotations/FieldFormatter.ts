@@ -128,28 +128,33 @@ function formatEnum<T extends number | string>(v: T, o: EnumFieldFormatOptions<n
   return fallback;
 }
 
-function formatQuantity(v: FieldPrimitiveValue, _o?: QuantityFieldFormatOptions): string | undefined {
+function formatQuantity(v: FieldPrimitiveValue, o?: QuantityFieldFormatOptions): string | undefined {
   if (typeof v !== "number") {
     return undefined;
   }
 
   // ###TODO apply quantity formatting...
-  if (_o && _o.formatProps){
-    const formatName = _o.formatProps.name ?? "defaultFormat";
-    const format = Format.createFromFullyResolvedJSON(formatName, _o.formatProps);
-    const formatterSpec = new FormatterSpec(format.name, format, _o?.unitConversions, _o?.sourceUnit);
+  if (o && o.formatProps){
+    const formatName = o.formatProps.name ?? "defaultFormat";
+    const format = Format.createFromFullyResolvedJSON(formatName, o.formatProps);
+    const formatterSpec = new FormatterSpec(format.name, format, o?.unitConversions, o?.sourceUnit);
     return formatterSpec.applyFormatting(v);
   }else
     return v.toString();
 }
 
-function formatDateTime(v: FieldPrimitiveValue, _o?: DateTimeFieldFormatOptions): string | undefined {
+function formatDateTime(v: FieldPrimitiveValue, o?: DateTimeFieldFormatOptions): string | undefined {
 if (!(v instanceof Date))
   return undefined;
 
 if (!isNaN(v.getTime())) {
-    if (_o && _o.formatOptions){
-      const formatter = new Intl.DateTimeFormat(_o.locale, _o.formatOptions);
+    if (o?.formatOptions) {
+      const locale = o.locale ?? "en-US";
+      if (!Intl.DateTimeFormat.supportedLocalesOf([locale], { localeMatcher: "lookup" }).includes(locale)) {
+        return undefined;
+      }
+
+      const formatter = new Intl.DateTimeFormat(locale, o.formatOptions);
       return formatter.format(v);
     }
     return v.toString();
