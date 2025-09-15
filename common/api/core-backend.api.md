@@ -462,6 +462,8 @@ export enum BackendLoggerCategory {
     Relationship = "core-backend.Relationship",
     Schemas = "core-backend.Schemas",
     // @internal
+    StashManager = "core-backend.StashManager",
+    // @internal
     ViewStateHydrator = "core-backend.ViewStateHydrator",
     // @internal (undocumented)
     Workspace = "core-backend.Workspace"
@@ -625,15 +627,9 @@ export class BriefcaseManager {
     static acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<BriefcaseId>;
     static get cacheDir(): LocalDirName;
     // @internal
-    static containsRestorePoint(args: {
-        db: BriefcaseDb;
-        name: string;
-    }): boolean;
+    static containsRestorePoint(db: BriefcaseDb, name: string): boolean;
     // @internal
-    static createRestorePoint(args: {
-        db: BriefcaseDb;
-        name: string;
-    }): Promise<StashProps>;
+    static createRestorePoint(db: BriefcaseDb, name: string): Promise<StashProps>;
     static deleteBriefcaseFiles(filePath: LocalFileName, accessToken?: AccessToken): Promise<void>;
     // @internal
     static deleteChangeSetsFromLocalDisk(iModelId: string): void;
@@ -643,10 +639,7 @@ export class BriefcaseManager {
     // @beta
     static downloadChangesets(arg: DownloadChangesetRangeArg): Promise<ChangesetFileProps[]>;
     // @internal
-    static dropRestorePoint(args: {
-        db: BriefcaseDb;
-        name: string;
-    }): void;
+    static dropRestorePoint(db: BriefcaseDb, name: string): void;
     static getBriefcaseBasePath(iModelId: GuidString): LocalDirName;
     static getCachedBriefcases(iModelId?: GuidString): LocalBriefcaseProps[];
     // @internal (undocumented)
@@ -679,10 +672,7 @@ export class BriefcaseManager {
     static queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
     static releaseBriefcase(accessToken: AccessToken, briefcase: BriefcaseProps): Promise<void>;
     // @internal
-    static restorePoint(args: {
-        db: BriefcaseDb;
-        name: string;
-    }): Promise<void>;
+    static restorePoint(db: BriefcaseDb, name: string): Promise<void>;
     // @internal (undocumented)
     static revertTimelineChanges(db: IModelDb, arg: RevertChangesArgs): Promise<void>;
 }
@@ -3982,6 +3972,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
     // (undocumented)
     static defaultTileRequestTimeout: number;
     // @beta
+    disableRestorePointOnPullMerge?: true;
+    // @beta
     disableThinnedNativeInstanceWorkflow?: boolean;
     // (undocumented)
     hubAccess?: BackendHubAccess;
@@ -4010,6 +4002,7 @@ export interface IModelHostOptions {
     compressCachedTiles?: boolean;
     // @internal
     crashReportingConfig?: CrashReportingConfig;
+    disableRestorePointOnPullMerge?: true;
     disableThinnedNativeInstanceWorkflow?: boolean;
     enableOpenTelemetry?: boolean;
     hubAccess?: BackendHubAccess;
