@@ -763,7 +763,7 @@ export class FieldRun extends TextBlockComponent {
  */
 export interface ParagraphProps extends ContainerComponentProps<ListProps | RunProps> {
   type: "paragraph";
-  children?: (ListProps | RunProps)[];
+  children?: ReadonlyArray<ListProps | RunProps>;
 }
 
 /** A collection of [[Run]]s and [[List]]s. Paragraphs can be appended to [[List]]s or to the [[TextBlock]] itself.
@@ -821,7 +821,7 @@ export class Paragraph extends ContainerComponent<List | Run> {
  */
 export interface ListProps extends ContainerComponentProps<ParagraphProps> {
   type: "list";
-  children?: ParagraphProps[];
+  children?: ReadonlyArray<ParagraphProps>;
 }
 
 /** A collection of list items ([[Paragraph]]s). Lists can be appended to [[Paragraph]]s or to the [[TextBlock]] itself.
