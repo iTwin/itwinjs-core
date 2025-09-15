@@ -53,28 +53,28 @@ export class AccuDrawViewportUI extends AccuDraw {
     /** Column spacing of text input fields and buttons for horizontal arrangement. */
     columnSpacingFactor: 1.1,
     /** Corner radius of text input fields and locks buttons. */
-    borderRadius: "0.5em",
+    borderRadius: "var(--iui-border-radius-1, 0.5em)",
     /** Background color of unfocused text input fields and unlocked buttons. */
-    backgroundColor: "rgba(150, 150, 150, 0.5)",
+    backgroundColor: "hsl(var(--iui-color-background-hsl, 240 5% 40%) / var(--iui-opacity-4, 75%))",
 
     /** Settings specific to text input fields and lock button labels. */
     text: {
       /** Font family to use for text input field values and button labels. */
-      fontFamily: "sans-serif",
+      fontFamily: "var(--iui-font-sans, sans-serif)",
       /** Font size to use for text input field values and button labels. */
-      fontSize: "9pt",
+      fontSize: "var(--iui-font-size-1, 9pt)",
       /** Font color to use for text input field values and button labels. */
-      color: "white",
+      color: "var(--iui-color-white, white)",
       /** Background color of focused text input field. */
-      focusColor: "rgba(50, 50, 200, 0.75)",
+      focusColor: "hsl(var(--iui-color-accent-hsl, 240 100% 35%) / var(--iui-opacity-4, 75%))",
     },
 
     /** Settings specific to lock buttons. */
     button: {
       /** Background color of locked buttons. */
-      pressedColor: "rgba(50, 50, 50, 0.75)",
+      pressedColor: "hsl(var(--iui-color-accent-hsl, 240 5% 20%) / var(--iui-opacity-4, 75%))",
       /** Margin to use on left and right to position relative to text input field. */
-      margin: "0.25em",
+      margin: "var(--iui-size-2xs, 0.25em)",
       /** Width of border outline. */
       outlineWidth: "thin",
       /** Shadow shown when unlocked to make it appear raised. */
