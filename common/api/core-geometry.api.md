@@ -3744,6 +3744,10 @@ export class Matrix4d implements BeJSONFunctions {
     setOriginAndVectors(origin: XYZ, vectorX: Vector3d, vectorY: Vector3d, vectorZ: Vector3d): void;
     setZero(): void;
     toJSON(): Matrix4dProps;
+    toTransform(result?: Transform): {
+        transform: Transform;
+        isValid: boolean;
+    };
     weight(): number;
 }
 
