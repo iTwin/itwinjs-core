@@ -203,6 +203,11 @@ export interface IModelHostOptions {
    * this option can be set to true to revert to old workflow.
    */
   disableThinnedNativeInstanceWorkflow?: boolean;
+
+  /**
+   * Configuration controlling whether to disable the creation of restore points during pull/merge operations.
+   */
+  disableRestorePointOnPullMerge?: true;
 }
 
 /** Configuration of core-backend.
@@ -243,6 +248,12 @@ export class IModelHostConfiguration implements IModelHostOptions {
    * @beta
   */
   public disableThinnedNativeInstanceWorkflow?: boolean;
+
+  /**
+   * Configuration controlling whether to disable the creation of restore points during pull/merge operations.
+   * @beta
+   */
+  public disableRestorePointOnPullMerge?: true;
 }
 
 /**

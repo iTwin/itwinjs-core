@@ -8,6 +8,21 @@ import { _elementWasCreated, _getHubAccess, _hubAccess, _nativeDb } from "./inte
 import { SQLiteDb } from "./SQLiteDb";
 import { TxnProps } from "./TxnManager";
 import { IModelHost } from "./IModelHost";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
+
+const loggerCategory = BackendLoggerCategory.StashManager;
+
+/**
+ * Custom error class for stash-related errors.
+ * @internal
+ */
+export class StashError extends Error {
+  constructor( message: string) {
+    super(message);
+    this.name = "StashError";
+    Logger.logError(loggerCategory, message);
+  }
+}
 
 /**
  * Properties of a stash
@@ -109,10 +124,10 @@ export class StashManager {
    */
   private static getStashRootFolder(db: BriefcaseDb, ensureExists: boolean): LocalDirName {
     if (!db.isOpen || db.isReadonly)
-      throw new IModelError(IModelStatus.BadArg, "Database is not open or is readonly");
+      throw new StashError("Database is not open or is readonly");
 
     if (!existsSync(db[_nativeDb].getFilePath())) {
-      throw new IModelError(IModelStatus.BadArg, "Could not determine briefcase path");
+      throw new StashError("Could not determine briefcase path");
     }
 
     const stashDir = path.join(path.dirname(db[_nativeDb].getFilePath()), StashManager.STASH_ROOT_DIR_NAME, `${db.briefcaseId}`);
@@ -145,12 +160,12 @@ export class StashManager {
   private static getStashFilePath(args: StashArgs) {
     const stashRoot = this.getStashRootFolder(args.db, false);
     if (!existsSync(stashRoot)) {
-      throw new IModelError(IModelStatus.BadArg, "Invalid stash");
+      throw new StashError("Stash root folder does not exist");
     }
 
     const stashFile = path.join(stashRoot, `${this.getStashId(args)}.stash`);
     if (!existsSync(stashFile)) {
-      throw new IModelError(IModelStatus.BadArg, "Invalid stash");
+      throw new StashError("Invalid stash");
     }
     return stashFile;
   }
@@ -208,21 +223,23 @@ export class StashManager {
     const stashRootDir = StashManager.getStashRootFolder(args.db, true);
     const iModelId = args.db.iModelId;
     if (!args.db.txns.hasPendingTxns) {
-      throw new IModelError(IModelStatus.BadArg, "nothing to stash");
+      throw new StashError("nothing to stash");
     }
 
     if (args.db.txns.hasUnsavedChanges) {
-      throw new IModelError(IModelStatus.BadArg, "Unsaved changes exist");
+      throw new StashError("Unsaved changes exist");
     }
 
     if (args.db.txns.hasPendingSchemaChanges) {
-      throw new IModelError(IModelStatus.BadArg, "Pending schema changeset stashing is not currently supported");
+      throw new StashError("Pending schema changeset. Stashing is not currently supported for schema changes");
     }
 
     const stash = args.db[_nativeDb].stashChanges({ stashRootDir, description: args.description, iModelId }) as StashProps;
     if (args.discardLocalChanges) {
       await args.db.discardChanges({ retainLocks: args.retainLocks });
     }
+
+    Logger.logInfo(loggerCategory, `Stashed changes`, () => stash);
     return stash;
   }
 
@@ -247,7 +264,8 @@ export class StashManager {
         return stashProps;
       });
     } catch (error: any) {
-      Logger.logError("StashManager", `Error getting stash: ${error}`);
+      const stashId = typeof args.stash === "string" ? args.stash : args.stash.id;
+      Logger.logError(loggerCategory, `Error getting stash with ${stashId}: ${error.message}`);
     }
     return undefined;
   }
@@ -324,7 +342,7 @@ export class StashManager {
       unlinkSync(stashFile);
       return true;
     } catch (error: any) {
-      Logger.logError("StashManager", `Error dropping stash: ${error}`);
+      Logger.logError(loggerCategory, `Error dropping stash: ${error}`);
     }
     return false;
   }
@@ -353,7 +371,6 @@ export class StashManager {
       accessToken: await IModelHost.getAccessToken()
     });
   }
-
   /**
    * Restores the specified stash to the given {@link BriefcaseDb}.
    *
@@ -363,26 +380,44 @@ export class StashManager {
    * @param args - The arguments including the target database and stash properties.
    * @throws IModelError if the restore operation fails.
    */
-  private static async restore(args: StashArgs & { stash: StashProps }): Promise<void> {
-    const { db, stash } = args;
-    Logger.logInfo("StashManager", `Restoring stash: ${stash.id}`);
+  public static async restore(args: StashArgs): Promise<void> {
+    const { db } = args;
+    Logger.logInfo(loggerCategory, `Restoring stash: ${this.getStashId(args)}`);
+
+    db.clearCaches();
+    db[_nativeDb].clearECDbCache();
+    const stash = this.getStash(args);
+    if (!stash) {
+      throw new StashError(`stash not found ${this.getStashId(args)}`);
+    }
+
+    if (db.txns.hasUnsavedChanges) {
+      throw new StashError(`Unsaved changes present`);
+    }
+
+    if (db.iModelId !== stash.iModelId) {
+      throw new StashError(`Stash does not belong to this iModel`);
+    }
+
+    if (db.briefcaseId !== stash.briefcaseId) {
+      throw new StashError(`Stash does not belong to this briefcase`);
+    }
 
     const stashFile = this.getStashFilePath({ db, stash });
     await db.discardChanges({ retainLocks: true });
     await this.acquireLocks(args);
     if (db.changeset.id !== stash.parentChangeset.id) {
       // Changeset ID mismatch
-      Logger.logWarning("StashManager", "Changeset ID mismatch");
-
-      const stashChangeset = await this.queryChangeset(args);
+      Logger.logWarning(loggerCategory, "Changeset ID mismatch");
+      const stashChangeset = await this.queryChangeset({ db, stash });
       await BriefcaseManager.pullAndApplyChangesets(db, { toIndex: stashChangeset.index });
     }
 
     db[_nativeDb].stashRestore(stashFile);
-
     (db as any).loadIModelSettings();
     (db as any).initializeIModelDb("pullMerge");
     db.saveChanges();
+    Logger.logInfo(loggerCategory, `Restored stash: ${this.getStashId(args)}`);
   }
 
   /**

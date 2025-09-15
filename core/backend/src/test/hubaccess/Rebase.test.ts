@@ -620,25 +620,41 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     const e2 = await testIModel.insertElement(b2);
     chai.expect(e2).to.exist;
-    let e3;
+    let e3 = "";
     b2.saveChanges();
     b2.txns.rebaser.setCustomHandler({
       shouldReinstate:  (_txnProps: TxnProps) => {
         return true;
       },
       recompute: async (_txnProps: TxnProps) => {
-        chai.expect(BriefcaseManager.containsRestorePoint({db: b2, name: BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME})).is.true;
+        chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.true;
         e3 = await testIModel.insertElement(b2);
         throw new Error("Rebase failed");
       },
     });
 
+    chai.expect(b2.elements.tryGetElementProps(e1)).to.undefined;
+    chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;
+    chai.expect(b2.elements.tryGetElementProps(e3)).to.undefined;
+    chai.expect(b2.changeset.index).to.equals(2);
     await chai.expect(b2.pullChanges()).to.be.rejectedWith("Rebase failed");
+
+    chai.expect(b2.changeset.index).to.equals(3);
     chai.expect(e3).to.exist;
-    chai.expect(BriefcaseManager.containsRestorePoint({db: b2, name: BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME})).is.true;
+    chai.expect(b2.elements.tryGetElementProps(e1)).to.exist;     // came from incoming changeset
+    chai.expect(b2.elements.tryGetElementProps(e2)).to.undefined; // was local change and reversed during rebase.
+    chai.expect(b2.elements.tryGetElementProps(e3)).to.undefined; // was insert by reCompute() but due to exception the rebase attempt was abandoned.
+
+    chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.true;
 
     chai.expect(b2.txns.rebaser.canAbort()).is.true;
     await b2.txns.rebaser.abort();
-    chai.expect(BriefcaseManager.containsRestorePoint({db: b2, name: BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME})).is.false;
+
+    chai.expect(b2.changeset.index).to.equals(2);
+    chai.expect(b2.elements.tryGetElementProps(e1)).to.undefined; // reset briefcase should move tip back to where it was before pull
+    chai.expect(b2.elements.tryGetElementProps(e2)).to.exist;  // abort should put back e2 which was only change at the time of pull
+    chai.expect(b2.elements.tryGetElementProps(e3)).to.undefined; // add by rebase so should not exist either
+
+    chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.false;
   });
 });

@@ -404,8 +404,8 @@ export class RebaseManager {
       if (!nativeDb.isReadonly) {
         nativeDb.saveChanges("Merge.");
       }
-      if (BriefcaseManager.containsRestorePoint({ db: this._iModel, name: BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME })) {
-        BriefcaseManager.dropRestorePoint({ db: this._iModel, name: BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME });
+      if (BriefcaseManager.containsRestorePoint(this._iModel,  BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)) {
+        BriefcaseManager.dropRestorePoint(this._iModel,  BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
       }
     } catch (err) {
       nativeDb.pullMergeRebaseAbortTxn();
@@ -422,7 +422,7 @@ export class RebaseManager {
    * @returns {boolean} Returns `true` if a transaction is in progress and the required restore point exists; otherwise, returns `false`.
    */
   public canAbort() {
-    return this.inProgress() && BriefcaseManager.containsRestorePoint({ db: this._iModel, name: BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME });
+    return this.inProgress() && BriefcaseManager.containsRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
   }
 
   /**
@@ -437,7 +437,7 @@ export class RebaseManager {
    */
   public async abort() {
     if (this.canAbort()) {
-      return BriefcaseManager.restorePoint({ db: this._iModel, name: BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME });
+      return BriefcaseManager.restorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
     } else {
       throw new Error("No restore point to abort to");
     }

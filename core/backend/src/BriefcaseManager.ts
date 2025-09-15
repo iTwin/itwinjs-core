@@ -25,7 +25,7 @@ import { IModelJsFs } from "./IModelJsFs";
 import { SchemaSync } from "./SchemaSync";
 import { _hubAccess, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { IModelNative } from "./internal/NativePlatform";
-import { StashManager } from "./StashManager";
+import { StashManager, StashProps } from "./StashManager";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -540,7 +540,8 @@ export class BriefcaseManager {
    * @returns A promise that resolves when all required changesets have been applied.
    */
   public static async pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void> {
-    if (!db.isOpen || db[_nativeDb].isReadonly()) // don't use db.isReadonly - we reopen the file writable just for this operation but db.isReadonly is still true
+    const nativeDb = db[_nativeDb];
+    if (!db.isOpen || nativeDb.isReadonly()) // don't use db.isReadonly - we reopen the file writable just for this operation but db.isReadonly is still true
       throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets");
 
     let currentIndex = db.changeset.index;
@@ -549,7 +550,7 @@ export class BriefcaseManager {
 
     const reverse = (arg.toIndex && arg.toIndex < currentIndex) ? true : false;
 
-    if (db[_nativeDb].hasPendingTxns() && reverse) {
+    if (nativeDb.hasPendingTxns() && reverse) {
       throw new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse changesets when there are pending changes");
     }
 
@@ -568,13 +569,12 @@ export class BriefcaseManager {
     if (reverse)
       changesets.reverse();
 
-    const nativeDb = db[_nativeDb];
-    const briefcaseDb = db instanceof BriefcaseDb ? db : undefined;
 
+    const briefcaseDb = db instanceof BriefcaseDb ? db : undefined;
     // create restore point if certain conditions are met
-    if (briefcaseDb && briefcaseDb.txns.hasPendingTxns && !briefcaseDb.txns.hasPendingSchemaChanges && !reverse) {
+    if (briefcaseDb && briefcaseDb.txns.hasPendingTxns && !briefcaseDb.txns.hasPendingSchemaChanges && !reverse && !IModelHost.configuration?.disableRestorePointOnPullMerge) {
       Logger.logInfo(loggerCategory, `Creating restore point ${this.PULL_MERGE_RESTORE_POINT_NAME}`);
-      await this.createRestorePoint({ db: briefcaseDb, name: this.PULL_MERGE_RESTORE_POINT_NAME });
+      await this.createRestorePoint(briefcaseDb, this.PULL_MERGE_RESTORE_POINT_NAME);
     }
 
     const reversedTxns = nativeDb.pullMergeReverseLocalChanges();
@@ -614,9 +614,9 @@ export class BriefcaseManager {
         }
       }
 
-      if (briefcaseDb && this.containsRestorePoint({ db: briefcaseDb, name: this.PULL_MERGE_RESTORE_POINT_NAME })) {
+      if (briefcaseDb && this.containsRestorePoint(briefcaseDb, this.PULL_MERGE_RESTORE_POINT_NAME)) {
         Logger.logInfo(loggerCategory, `Dropping restore point ${this.PULL_MERGE_RESTORE_POINT_NAME}`);
-        this.dropRestorePoint({ db: briefcaseDb, name: this.PULL_MERGE_RESTORE_POINT_NAME });
+        this.dropRestorePoint(briefcaseDb, this.PULL_MERGE_RESTORE_POINT_NAME);
       }
     }
     // notify listeners
@@ -627,25 +627,22 @@ export class BriefcaseManager {
    * @internal
    * Creates a restore point for the specified briefcase database.
    *
-   * This method first validates the provided restore point name, ensuring it is not empty.
-   * It then drops any existing restore point with the same name before creating a new one.
-   * The restore point is created using the `StashManager`, and its identifier is saved locally
-   * in the database under a key derived from the restore point name.
-   *
-   * @param args - An object containing:
-   *   - `db`: The {@link BriefcaseDb} instance for which to create the restore point.
-   *   - `name`: The unique name for the restore point. Must be a non-empty string.
+   * @param db - The {@link BriefcaseDb} instance for which to create the restore point.
+   * @param name - The unique name for the restore point. Must be a non-empty string.
    * @returns A promise that resolves to the created stash object representing the restore point.
    */
-  public static async createRestorePoint(args: { db: BriefcaseDb, name: string }) {
-    if (args.name.length === 0) {
-      throw new IModelError(IModelStatus.BadArg, "Invalid restore point name");
+  public static async createRestorePoint(db: BriefcaseDb, name: string ): Promise<StashProps> {
+    Logger.logTrace(loggerCategory, `Creating restore point ${name}`);
+    if (name.length === 0) {
+      throw new Error("Invalid restore point name");
     }
-    this.dropRestorePoint(args);
 
-    const stash = await StashManager.stash({ db: args.db, description: `restore_point/${args.name}` });
-    args.db[_nativeDb].saveLocalValue(`restore_point/${args.name}`, stash.id);
-    args.db.saveChanges("Create restore point");
+    this.dropRestorePoint(db, name);
+
+    const stash = await StashManager.stash({ db, description: this.getRestorePointLocalValueKey(name) });
+    db[_nativeDb].saveLocalValue(this.getRestorePointLocalValueKey(name), stash.id);
+    db.saveChanges("Create restore point");
+    Logger.logTrace(loggerCategory, `Created restore point ${name}`, () => stash);
     return stash;
   }
 
@@ -653,76 +650,77 @@ export class BriefcaseManager {
    * @internal
    * Drops a previously created restore point from the specified briefcase database.
    *
-   * This method looks up the restore point by its name, retrieves its internal identifier,
-   * and removes the associated stash if it exists. If the provided restore point name is empty,
-   * an error is thrown.
-   *
-   * @param args - An object containing:
-   *   - `db`: The {@link BriefcaseDb} instance from which to drop the restore point.
-   *   - `name`: The name of the restore point to be dropped. Must be a non-empty string.
+   * @param db - The {@link BriefcaseDb} instance from which to drop the restore point.
+   * @param name - The name of the restore point to be dropped. Must be a non-empty string.
    */
-  public static dropRestorePoint(args: { db: BriefcaseDb, name: string }) {
-    if (args.name.length === 0) {
-      throw new IModelError(IModelStatus.BadArg, "Invalid restore point name");
+  public static dropRestorePoint(db: BriefcaseDb, name: string ): void {
+    Logger.logTrace(loggerCategory, `Dropping restore point ${name}`);
+    if (name.length === 0) {
+      throw new Error("Invalid restore point name");
     }
-    const restorePointId = args.db[_nativeDb].queryLocalValue(`restore_point/${args.name}`);
+
+    const restorePointId = db[_nativeDb].queryLocalValue(this.getRestorePointLocalValueKey(name));
     if (restorePointId) {
-      StashManager.dropStash({ db: args.db, stash: restorePointId });
-      args.db[_nativeDb].deleteLocalValue(`restore_point/${args.name}`);
-      args.db.saveChanges("Drop restore point");
+      StashManager.dropStash({ db, stash: restorePointId });
+      db[_nativeDb].deleteLocalValue(this.getRestorePointLocalValueKey(name));
+      db.saveChanges("Drop restore point");
+      Logger.logTrace(loggerCategory, `Dropped restore point ${name}`);
     }
+
   }
 
   /**
    * @internal
-   * Determines whether a restore point with the specified name exists in the given briefcase database.
+   * Checks if a restore point with the specified name exists in the given briefcase database.
    *
-   * This method checks if a restore point identifier can be found for the provided name,
-   * and verifies that the corresponding stash exists in the database.
-   *
-   * @param args - An object containing:
-   *   - `db`: The {@link BriefcaseDb} instance to search within.
-   *   - `name`: The name of the restore point to check for existence.
+   * @param db - The {@link BriefcaseDb} instance to search within.
+   * @param name - The name of the restore point to check for existence.
    * @returns `true` if the restore point exists and its stash is present; otherwise, `false`.
    */
-  public static containsRestorePoint(args: { db: BriefcaseDb, name: string }): boolean {
-    if (args.name.length === 0) {
-      throw new IModelError(IModelStatus.BadArg, "Invalid restore point name");
+  public static containsRestorePoint(db: BriefcaseDb, name: string ): boolean {
+    Logger.logTrace(loggerCategory, `Checking if restore point ${name} exists`);
+    if (name.length === 0) {
+      throw new Error("Invalid restore point name");
     }
-    const restorePointId = args.db[_nativeDb].queryLocalValue(`restore_point/${args.name}`);
+    const key = this.getRestorePointLocalValueKey(name);
+    const restorePointId = db[_nativeDb].queryLocalValue(key);
     if (!restorePointId) {
       return false;
     }
 
-    const stash = StashManager.getStash({ db: args.db, stash: restorePointId });
+    const stash = StashManager.getStash({ db, stash: restorePointId });
     if (!stash) {
+      Logger.logTrace(loggerCategory, `Restore point ${name} does not exist. Deleting ${key}`);
+      db[_nativeDb].deleteLocalValue(key);
       return false;
     }
     return true;
+  }
+
+  private static getRestorePointLocalValueKey(name: string ): string {
+    return `restore_point/${name}`;
   }
 
   /**
    * @internal
    * Restores the state of a briefcase database to a previously saved restore point.
    *
-   * @param args - An object containing:
-   *   - `db`: The {@link BriefcaseDb} instance to restore.
-   *   - `name`: The name of the restore point to apply.
-   * @remarks
-   * This method looks up the specified restore point by name and applies it to the provided database.
-   * If the restore point does not exist or the name is invalid, an error is thrown.
-   * The operation is asynchronous and returns a promise that resolves when the restore is complete.
+   * @param db - The {@link BriefcaseDb} instance to restore.
+   * @param name - The name of the restore point to apply.
    */
-  public static async restorePoint(args: { db: BriefcaseDb, name: string }) {
-    if (args.name.length === 0) {
-      throw new IModelError(IModelStatus.BadArg, "Invalid restore point name");
+  public static async restorePoint(db: BriefcaseDb, name: string): Promise<void> {
+    Logger.logTrace(loggerCategory, `Restoring to restore point ${name}`);
+    if (name.length === 0) {
+      throw new Error("Invalid restore point name");
     }
-    const restorePointId = args.db[_nativeDb].queryLocalValue(`restore_point/${args.name}`);
+    const restorePointId = db[_nativeDb].queryLocalValue(this.getRestorePointLocalValueKey(name));
     if (!restorePointId) {
-      throw new IModelError(IModelStatus.BadArg, "Restore point not found");
+      throw new Error(`Restore point not found: ${name}`);
     }
-    await StashManager.apply({ db: args.db, stash: restorePointId, method: "restore" });
-    this.dropRestorePoint({ db: args.db, name: args.name });
+
+    await StashManager.apply({ db, stash: restorePointId, method: "restore" });
+    Logger.logTrace(loggerCategory, `Restored to restore point ${name}`);
+    this.dropRestorePoint(db, name);
   }
 
   /** create a changeset from the current changes, and push it to iModelHub */
