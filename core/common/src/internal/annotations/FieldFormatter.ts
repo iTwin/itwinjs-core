@@ -164,6 +164,11 @@ if (!isNaN(v.getTime())) {
 
 // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
 export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined): string | undefined {
-  const formatter = formatters[options?.propertyType ?? value.type];
+  const formatter = formatters[value.type];
   return formatter ? formatter(value.value, options) : undefined;
 }
+
+export function isKnownFieldPropertyType(type: string): type is FieldPropertyType {
+  return type in formatters;
+}
+

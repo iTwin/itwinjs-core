@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECSqlValueType, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, RelationshipProps, TextBlock } from "@itwin/core-common";
+import { ECSqlValueType, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, isKnownFieldPropertyType, RelationshipProps, TextBlock } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
@@ -170,13 +170,13 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
   }
 
   let propertyType: FieldPropertyType;
-  if (field.propertyPath.jsonAccessors && field.propertyPath.jsonAccessors.length > 0) {
+  if (field.propertyPath.json) {
     if (!ecProp.isPrimitive() || ecProp.isArray() || ecProp.extendedTypeName !== "Json" || typeof curValue.primitive !== "string") {
       return undefined;
     }
 
     let json = JSON.parse(curValue.primitive);
-    for (const accessor of field.propertyPath.jsonAccessors) {
+    for (const accessor of field.propertyPath.json.accessors) {
       if (typeof accessor === "number") {
         if (!Array.isArray(json)) {
           return undefined;
@@ -207,6 +207,11 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
         break;
       default:
         return undefined;
+    }
+
+    const explicitType = field.propertyPath.json.type;
+    if (explicitType && isKnownFieldPropertyType(explicitType)) {
+      propertyType = explicitType;
     }
   } else {
     const computedType = computeFieldPropertyType(field.propertyPath, field.propertyHost, iModel);

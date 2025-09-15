@@ -13,4 +13,4 @@ export {
 export type { BackendReadable, BackendWritable, BackendBuffer } from "./BackendTypes";
 export { RenderMaterialParams } from "./RenderMaterialParams";
 export { RenderTextureParams } from "./RenderTextureParams";
-export { type FieldPrimitiveValue, FieldValue, formatFieldValue } from "./annotations/FieldFormatter";
+export { type FieldPrimitiveValue, FieldValue, formatFieldValue, isKnownFieldPropertyType } from "./annotations/FieldFormatter";

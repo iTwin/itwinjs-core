@@ -388,21 +388,21 @@ describe.only("Field evaluation", () => {
     });
 
     it("returns arbitrarily-nested JSON properties", () => {
-      expectValue("abc", { propertyName: "jsonProperties", jsonAccessors: ["stringProp"] }, sourceElementId);
+      expectValue("abc", { propertyName: "jsonProperties", json: { accessors: ["stringProp"] } }, sourceElementId);
 
-      expectValue(10, { propertyName: "jsonProperties", jsonAccessors: ["ints", 0] }, sourceElementId);
-      expectValue(13, { propertyName: "jsonProperties", jsonAccessors: ["ints", 3] }, sourceElementId);
-      expectValue(13, { propertyName: "jsonProperties", jsonAccessors: ["ints", -1] }, sourceElementId);
-      expectValue(11, { propertyName: "jsonProperties", jsonAccessors: ["ints", -3] }, sourceElementId);
+      expectValue(10, { propertyName: "jsonProperties", json: { accessors: ["ints", 0] } }, sourceElementId);
+      expectValue(13, { propertyName: "jsonProperties", json: { accessors: ["ints", 3] } }, sourceElementId);
+      expectValue(13, { propertyName: "jsonProperties", json: { accessors: ["ints", -1] } }, sourceElementId);
+      expectValue(11, { propertyName: "jsonProperties", json: { accessors: ["ints", -3] } }, sourceElementId);
 
-      expectValue(12345, { propertyName: "jsonProperties", jsonAccessors: ["zoo", "address", "zipcode"] }, sourceElementId);
-      expectValue("scree!", { propertyName: "jsonProperties", jsonAccessors: ["zoo", "birds", 1, "sound"] }, sourceElementId);
+      expectValue(12345, { propertyName: "jsonProperties", json: { accessors: ["zoo", "address", "zipcode"] } }, sourceElementId);
+      expectValue("scree!", { propertyName: "jsonProperties", json: { accessors: ["zoo", "birds", 1, "sound"] } }, sourceElementId);
     });
 
     it("returns undefined if JSON accessors applied to non-JSON property", () => {
-      expectValue(undefined, { propertyName: "int", jsonAccessors: ["whatever"] }, sourceElementId);
+      expectValue(undefined, { propertyName: "int", json: { accessors: ["whatever"] } }, sourceElementId);
       expectValue(undefined, { propertyName: "strings", accessors: [2, "name"] }, sourceElementId);
-      expectValue(undefined, { propertyName: "outerStruct", accessors: ["innerStruct"], jsonAccessors: ["bool"] }, sourceElementId);
+      expectValue(undefined, { propertyName: "outerStruct", accessors: ["innerStruct"], json: { accessors: ["bool"] } }, sourceElementId);
     });
 
     it("returns the value of a property of an aspect", () => {
@@ -532,11 +532,12 @@ describe.only("Field evaluation", () => {
         propertyHost = { schemaName: "Fields", className: "TestElement", elementId: propertyHost };
       }
 
+      const json = jsonAccessors ? { accessors: jsonAccessors } : undefined;
       return FieldRun.create({
         styleOverrides: { fontName: "Karla" },
         propertyHost,
         cachedContent,
-        propertyPath: { propertyName, accessors, jsonAccessors },
+        propertyPath: { propertyName, accessors, json },
       });
     }
 
@@ -798,7 +799,7 @@ describe.only("Field evaluation", () => {
 
     it("returns 'user-specified' for JSON properties", () => {
       const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
-      expect(getPropertyType(propertyHost, { propertyName: "jsonProperties", jsonAccessors: ["zoo", "birds", 0, "name"] })).to.equal("user-specified");
+      expect(getPropertyType(propertyHost, { propertyName: "jsonProperties", json: { accessors: ["zoo", "birds", 0, "name"] } })).to.equal("user-specified");
     });
 
     it("returns undefined for non-primitive properties", () => {
@@ -998,7 +999,7 @@ describe.only("Field evaluation", () => {
       // Create a FieldRun with string-enum property type and some format options
       const fieldRun = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "jsonProperties", jsonAccessors: ["zoo", "birds", 0, "name"] },
+        propertyPath: { propertyName: "jsonProperties", json: { accessors: ["zoo", "birds", 0, "name"] } },
         cachedContent: "oldValue",
         formatOptions: {
           enum: {
@@ -1029,7 +1030,7 @@ describe.only("Field evaluation", () => {
       // Create a FieldRun with string property type and some format options
       const fieldRun = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "jsonProperties", jsonAccessors: ["stringProp"] },
+        propertyPath: { propertyName: "jsonProperties", json: { accessors: ["stringProp"] } },
         cachedContent: "oldValue",
         formatOptions: {
           case: "upper",
@@ -1056,7 +1057,7 @@ describe.only("Field evaluation", () => {
       // Create a FieldRun with quantity property type and some format options
       const fieldRun = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "jsonProperties", jsonAccessors: ["ints", 1] }, // Gets value 11 from the test element
+        propertyPath: { propertyName: "jsonProperties", json: { accessors: ["ints", 1] } }, // Gets value 11 from the test element
         cachedContent: "oldValue",
         formatOptions: {
           quantity: {

@@ -146,7 +146,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 }
 
 export function computeFieldPropertyType(path: FieldPropertyPath, host: FieldPropertyHost, iModel: IModelDb): FieldPropertyType | "user-specified" | undefined {
-  if (path.jsonAccessors && path.jsonAccessors?.length > 0) {
+  if (path.json) {
     return "user-specified";
   }
 

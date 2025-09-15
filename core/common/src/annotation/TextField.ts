@@ -8,21 +8,22 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { Format, FormatDefinition, ResolvedFormatProps, UnitConversionProps, UnitConversionSpec, UnitProps } from "@itwin/core-quantity";
-import { KindOfQuantity } from "@itwin/ecschema-metadata";
+
+export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean" | "datetime" | "int-enum" | "string-enum";
 
 /** A chain of property accesses that resolves to a primitive value that forms the basis of the displayed content
  * of a [[FieldRun]].
    * The simplest property paths consist of a [[propertyName]] and nothing else, where `propertyName` identifies
    * a primitive property.
    * If `propertyName` identifies a struct or array property, then additional [[accessors]] are required to identify the specific value.
-   * If `propertyName` (including any [[accessors]]) resolves to a JSON property, then additional [[jsonAccessors]] are required to identify a specific value within the JSON.
+   * If `propertyName` (including any [[accessors]]) resolves to a JSON property, then additional [[json]] accessors are required to identify a specific value within the JSON.
    * Some examples:
    * ```
-   * | Access String | propertyName | accessors | jsonAccessors |
-   * | ------------- | ------------ | --------- | ------------- |
-   * | name          | "name"       | undefined | undefined     |
-   * | spouse.name   | "spouse"     | [name]    | undefined     |
-   * | colors[2]     | "colors"     | [2]       | undefined     |
+   * | Access String | propertyName | accessors | json.accessors |
+   * | ------------- | ------------ | --------- | -------------- |
+   * | name          | "name"       | undefined | undefined      |
+   * | spouse.name   | "spouse"     | [name]    | undefined      |
+   * | colors[2]     | "colors"     | [2]       | undefined      |
    * | spouse.favoriteRestaurants[1].address | "spouse" | ["favoriteRestaurants", 1, "address"] | undefined |
    * | jsonProperties.contactInfo.email | "jsonProperties" | undefined | ["contactInfo", "email"] |
    * | spouse.jsonProperties.contactInfo.phoneNumbers[0].areaCode | "spouse" | ["jsonProperties"] | ["contactInfo", "phoneNumbers", 0, "areaCode"] |
@@ -34,10 +35,10 @@ export interface FieldPropertyPath {
   propertyName: string;
   /** Property names and/or array indices describing the path from [[propertyName]] to the ultimate BIS property. */
   accessors?: Array<string | number>;
-  /** If [[propertyName]] and [[accessors]] (if defined) resolve to a BIS property of extended type `Json`, property names and/or
-   * array indices for selecting a primitive value within the JSON.
-   */
-  jsonAccessors?: Array<string | number>;
+  json?: {
+    accessors: Array<string | number>;
+    type?: FieldPropertyType | string;
+  };
 }
 
 /** Describes the source of the property value against which a [[FieldPropertyPath]] is evaluated.
@@ -54,8 +55,6 @@ export interface FieldPropertyHost {
   /** The name of the exact class (not a subclass) containing the property identified by [[FieldPropertyPath.propertyName]]. */
   className: string;
 }
-
-export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean" | "datetime" | "int-enum" | "string-enum";
 
 export type CoordinateComponentSelector = "X" | "Y" | "Z" | "XY" | "XYZ";
 
@@ -102,7 +101,6 @@ export interface EnumFieldFormatOptions<T extends number| string> {
  * @beta
  */
 export interface FieldFormatOptions {
-  propertyType?: FieldPropertyType | string;
   prefix?: string;
   suffix?: string;
   case?: FieldCase;
@@ -114,10 +112,6 @@ export interface FieldFormatOptions {
 }
 
 export function fieldFormatOptionsDeepEquals(opts1: FieldFormatOptions, opts2: FieldFormatOptions): boolean {
-  if (opts1.propertyType !== opts2.propertyType) {
-    return false;
-  }
-
   // Check basic string properties
   if (opts1.case !== opts2.case ||
       opts1.prefix !== opts2.prefix ||

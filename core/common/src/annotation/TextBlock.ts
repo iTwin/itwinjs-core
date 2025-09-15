@@ -501,14 +501,17 @@ export class FieldRun extends TextBlockComponent {
       return false;
     }
 
-    if (this.propertyPath.propertyName !== other.propertyPath.propertyName) {
+    if (
+      this.propertyPath.propertyName !== other.propertyPath.propertyName ||
+      this.propertyPath.json?.type !== other.propertyPath.json?.type
+    ) {
       return false;
     }
 
     const thisAccessors = this.propertyPath.accessors ?? [];
     const otherAccessors = other.propertyPath.accessors ?? [];
-    const thisJsonAccessors = this.propertyPath.jsonAccessors ?? [];
-    const otherJsonAccessors = other.propertyPath.jsonAccessors ?? [];
+    const thisJsonAccessors = this.propertyPath.json?.accessors ?? [];
+    const otherJsonAccessors = other.propertyPath.json?.accessors ?? [];
 
     if (thisAccessors.length !== otherAccessors.length || thisJsonAccessors.length !== otherJsonAccessors.length) {
       return false;
