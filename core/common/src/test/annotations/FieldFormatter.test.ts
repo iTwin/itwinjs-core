@@ -753,20 +753,5 @@ describe("Field formatting", () => {
       expect(formatFieldValue(date, "datetime", options)).to.be.undefined;
     });
   });
-
-  describe("json property type", () => {
-    // ###TODO
-    it("is inferred by default", () => {
-
-    });
-
-    it("can be overridden", () => {
-
-    });
-
-    it("fails to format if actual type is incompatible with formatter's expected type", () => {
-
-    });
-  });
 });
 
