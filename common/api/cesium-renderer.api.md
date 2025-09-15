@@ -12,30 +12,26 @@ import { ViewDefinition3dProps } from '@itwin/core-common';
 
 // @alpha
 export interface CesiumCameraProps {
-    // (undocumented)
     direction: Vector3d;
-    // (undocumented)
     frustum: CesiumFrustumProps;
-    // (undocumented)
     position: Point3d;
-    // (undocumented)
     up: Vector3d;
 }
 
 // @alpha
 export interface CesiumFrustumProps {
-    // (undocumented)
     far: number;
-    // (undocumented)
     fov?: number;
-    // (undocumented)
     near: number;
-    // (undocumented)
     width?: number;
 }
 
 // @alpha
-export function createCesiumCameraProps(viewDefinition: ViewDefinition3dProps, ecefLoc?: EcefLocation, modelExtents?: Range3d): CesiumCameraProps;
+export function createCesiumCameraProps(opts: {
+    viewDefinition: ViewDefinition3dProps;
+    ecefLoc?: EcefLocation;
+    modelExtents?: Range3d;
+}): CesiumCameraProps;
 
 // (No @packageDocumentation comment for this package)
 

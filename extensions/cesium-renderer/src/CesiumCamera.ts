@@ -42,35 +42,38 @@ export interface CesiumCameraProps {
 /** Returns the position, orientation (direction, up), and frustum needed to create/modify a [Cesium camera object](https://cesium.com/learn/cesiumjs/ref-doc/Camera.html).
  * @alpha
  */
-export function createCesiumCameraProps(viewDefinition: ViewDefinition3dProps, ecefLoc?: EcefLocation, modelExtents?: Range3d): CesiumCameraProps {
+export function createCesiumCameraProps(opts: { viewDefinition: ViewDefinition3dProps, ecefLoc?: EcefLocation, modelExtents?: Range3d}): CesiumCameraProps {
   const defaultOrigin = Cartographic.fromDegrees({ longitude: 0, latitude: 0, height: 0 });
   let ecefLocation;
-  if (ecefLoc) {
-    ecefLocation = ecefLoc;
-  } else if (modelExtents) {
-    ecefLocation = EcefLocation.createFromCartographicOrigin(defaultOrigin, modelExtents.center);
+
+  // The provided ECEF location is used to position the camera in Cesium.
+  // Otherwise, if model extents are provided, assume the model is at null island (0 latitude, 0 longitude).
+  if (opts.ecefLoc) {
+    ecefLocation = opts.ecefLoc;
+  } else if (opts.modelExtents) {
+    ecefLocation = EcefLocation.createFromCartographicOrigin(defaultOrigin, opts.modelExtents.center);
   } else {
-    throw new Error("Either ecefLocation or modelExtents must be defined to create Cesium camera.");
+    throw new Error("Either ecefLocation or modelExtents must be defined to create a CesiumCameraProps.");
   }
 
   const angles = new YawPitchRollAngles();
-  angles.setFromJSON(viewDefinition.angles);
+  angles.setFromJSON(opts.viewDefinition.angles);
 
   const rotation = angles.toMatrix3d();
   const up = rotation.rowY();
   const direction = rotation.rowZ().scale(-1);
 
   const viewExtents = new Vector3d();
-  viewExtents.setFromJSON(viewDefinition.extents);
+  viewExtents.setFromJSON(opts.viewDefinition.extents);
 
   let fov;
   let width;
   let position = new Point3d();
-  if (viewDefinition.cameraOn) {
-    position = Point3d.fromJSON(viewDefinition.camera.eye);
-    fov = 2.0 * Math.atan2(viewExtents.x / 2.0, viewDefinition.camera.focusDist);
+  if (opts.viewDefinition.cameraOn) {
+    position = Point3d.fromJSON(opts.viewDefinition.camera.eye);
+    fov = 2.0 * Math.atan2(viewExtents.x / 2.0, opts.viewDefinition.camera.focusDist);
   } else {
-    position = Point3d.fromJSON(viewDefinition.origin);
+    position = Point3d.fromJSON(opts.viewDefinition.origin);
     rotation.multiplyVectorInPlace(position);
     position.addScaledInPlace(viewExtents, 0.5);
     position = rotation.multiplyInverseXYZAsPoint3d(position.x, position.y, position.z) ?? position;

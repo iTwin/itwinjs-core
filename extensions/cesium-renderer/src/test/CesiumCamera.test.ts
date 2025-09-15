@@ -133,11 +133,11 @@ const ecefLocProps = {
     height: 4.102413240985213
   }
 };
-const ecefLocation = new EcefLocation(ecefLocProps);
+const ecefLoc = new EcefLocation(ecefLocProps);
 
 describe("createCesiumCameraProps", () => {
   it("creates a CesiumCameraProps object from SpatialViewDefinitionProps with the camera on (perspective projection)", () => {
-    const cesiumCameraProps = createCesiumCameraProps(cameraOnView, ecefLocation);
+    const cesiumCameraProps = createCesiumCameraProps({ viewDefinition: cameraOnView, ecefLoc });
 
     const expectedCesiumCameraProps = {
       position: { x: 1255551.8995579786, y: -4732788.948703558, z: 4073675.732118358 },
@@ -161,7 +161,7 @@ describe("createCesiumCameraProps", () => {
   });
 
   it("creates a CesiumCameraProps object from SpatialViewDefinitionProps with the camera off (orthographic projection)", () => {
-    const cesiumCameraProps = createCesiumCameraProps(cameraOffView, ecefLocation);
+    const cesiumCameraProps = createCesiumCameraProps({ viewDefinition: cameraOffView, ecefLoc });
 
     const expectedCesiumCameraProps = {
       position: { x: 1255389.8978600262, y: -4732988.808369093, z: 4073555.356273554 },
