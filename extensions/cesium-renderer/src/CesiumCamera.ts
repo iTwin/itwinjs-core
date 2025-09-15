@@ -82,18 +82,18 @@ export function createCesiumCameraProps(viewDefinition: ViewDefinition3dProps, e
   const transformedUp = ecefLocation.getTransform().multiplyVector(up);
   const transformedDirection = ecefLocation.getTransform().multiplyVector(direction);
 
-  const frustum: CesiumFrustumProps = {
+  const frustum = {
     near: 0.01,
     far: 1000000,
     fov,
     width
   };
-  const CesiumCameraProps: CesiumCameraProps = {
+  const cesiumCameraProps = {
     position: transformedPosition,
     up: transformedUp,
     direction: transformedDirection,
     frustum
   }
 
-  return CesiumCameraProps;
+  return cesiumCameraProps;
 }
