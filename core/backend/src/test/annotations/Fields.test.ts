@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldRun, FieldValue, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextRun } from "@itwin/core-common";
+import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldValue, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextRun } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, updateField, updateFields } from "../../internal/annotations/fields";
@@ -14,7 +14,7 @@ import { Schema, Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
 import { PhysicalElement } from "../../Element";
 import { ElementOwnsUniqueAspect, ElementUniqueAspect, FontFile, TextAnnotation3d } from "../../core-backend";
-import { ElementDrivesTextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
+import { computeFieldPropertyType, ElementDrivesTextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 
 describe.only("updateField", () => {
   const mockElementId = "0x1";
@@ -751,7 +751,7 @@ describe.only("Field evaluation", () => {
     });
   });
 
-  describe("Compute Field Property Type", () => {
+  describe("computeFieldPropertyType", () => {
     it("should fail to evaluate if prop type does not match", () => {
        const fieldRun = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
@@ -772,16 +772,23 @@ describe.only("Field evaluation", () => {
       expect(fieldRun.cachedContent).to.equal(FieldRun.invalidContentIndicator);
     });
 
-    /* ###TODO
-    it("should get all supported prop types", () => {
+    function getPropertyType(propertyHost: FieldPropertyHost, propertyPath: string | FieldPropertyPath): FieldPropertyType | "user-specified" | undefined {
+      if (typeof propertyPath === "string") {
+        propertyPath = { propertyName: propertyPath };
+      }
+
+      return computeFieldPropertyType(propertyPath, propertyHost, imodel);
+    }
+
+    it("deduces type for primitive properties", () => {
       const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
       expect(getPropertyType(propertyHost, "intProp")).to.equal("string");
       expect(getPropertyType(propertyHost, "point")).to.equal("coordinate");
       expect(getPropertyType(propertyHost, "strings")).to.equal("string");
       expect(getPropertyType(propertyHost, "intEnum")).to.equal("int-enum");
-      expect(getPropertyType(propertyHost, "outerStruct")).to.equal(undefined);
-      expect(getPropertyType(propertyHost, "outerStructs")).to.equal(undefined);
       expect(getPropertyType(propertyHost, "maybeNull")).to.equal("string");
+      expect(getPropertyType(propertyHost, { propertyName: "outerStruct", accessors: ["innerStruct", "doubles"] })).to.equal("quantity");
+      expect(getPropertyType(propertyHost, { propertyName: "outerStruct", accessors: ["innerStruct", "bool"] })).to.equal("boolean");
 
       propertyHost.schemaName = "BisCore";
       propertyHost.className = "GeometricElement3d";
@@ -789,47 +796,29 @@ describe.only("Field evaluation", () => {
       expect(getPropertyType(propertyHost, "FederationGuid")).to.equal("string");
     });
 
-    it("should returned 'user-specified' for JSON properties", () => {
-
+    it("returns 'user-specified' for JSON properties", () => {
+      const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
+      expect(getPropertyType(propertyHost, { propertyName: "jsonProperties", jsonAccessors: ["zoo", "birds", 0, "name"] })).to.equal("user-specified");
     });
 
-    it("should return undefined for invalid property paths", () => {
-
+    it("returns undefined for non-primitive properties", () => {
+      const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
+      expect(getPropertyType(propertyHost, "outerStruct")).to.equal(undefined);
+      expect(getPropertyType(propertyHost, "outerStructs")).to.equal(undefined);
     });
 
-    it("should return undefined for unsupported property types", () => {
+    it("returns undefined for invalid property paths", () => {
+      const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
+      expect(getPropertyType(propertyHost, "unknownPropertyName")).to.be.undefined;
+    });
+
+    it("should return undefined for unsupported primitive types", () => {
       const host = { elementId: sourceElementId, schemaName: "BisCore", className: "GeometricElement3d" };
       expect(getPropertyType(host, "GeometryStream")).to.be.undefined;
     });
-    */
   });
 
   describe("Format Validation", () => {
-    it("should evaluate to invalid string",() => {
-      const fieldRun = FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "string", accessors: [0] },
-        cachedContent: "oldValue",
-        formatOptions: {
-          case: "upper",
-          prefix: "Value: ",
-          suffix: "!"
-        }
-      });
-
-      const context = {
-        hostElementId: sourceElementId,
-        getProperty: () => { return { value: "newValue", type: "string" } },
-      };
-
-      // Update the field and check the result
-      const updated = updateField(fieldRun, context);
-
-      // The formatted value should be uppercased and have prefix/suffix applied
-      expect(updated).to.be.true;
-      expect(fieldRun.cachedContent).to.equal("Value: NEWVALUE!");
-    });
-
     it("validates formatting options for string property type", () => {
       // Create a FieldRun with string property type and some format options
       const fieldRun = FieldRun.create({
