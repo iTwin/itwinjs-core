@@ -8,7 +8,7 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { TextStyleSettings, TextStyleSettingsProps } from "./TextStyle";
-import { FieldFormatOptions, fieldFormatOptionsDeepEquals, FieldPropertyHost, FieldPropertyPath, FieldPropertyType } from "./TextField";
+import { FieldFormatOptions, fieldFormatOptionsDeepEquals, FieldPropertyHost, FieldPropertyPath } from "./TextField";
 
 /** Options supplied to [[TextBlockComponent.clearStyleOverrides]] to control how the style overrides are cleared on the component and its child components.
  * @beta
@@ -390,8 +390,6 @@ export interface FieldRunProps extends TextBlockComponentProps {
    * If the value of the property cannot be converted to the specified type, then evaluation of the field's display string will fail.
    * @see [[formatOptions]] to customize the formatting more granularly.
    */
-  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-  propertyType?: FieldPropertyType | string;
   /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]].
    * The specific options used depend upon the field's [[propertyType]].
    */
@@ -424,10 +422,8 @@ export class FieldRun extends TextBlockComponent {
    * If the value of the property cannot be converted to the specified type, then evaluation of the field's display string will fail.
    * @see [[formatOptions]] to customize the formatting more granularly.
    */
-  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
-  public readonly propertyType: FieldPropertyType | string;
   /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]].
-   * The specific options used depend upon the field's [[propertyType]].
+   * The specific options used depend upon the [[FieldPropertyType]].
    */
   public readonly formatOptions?: FieldFormatOptions;
   private _cachedContent: string;
@@ -449,7 +445,6 @@ export class FieldRun extends TextBlockComponent {
     this.propertyHost = props.propertyHost
     this.propertyPath = props.propertyPath;
     this.formatOptions = props.formatOptions;
-    this.propertyType = props.propertyType ?? "string";
   }
 
   /** Create a FieldRun from its JSON representation. */
@@ -479,10 +474,6 @@ export class FieldRun extends TextBlockComponent {
       json.formatOptions = structuredClone(this.formatOptions);
     }
 
-    if (this.propertyType !== "string") {
-      json.propertyType = this.propertyType;
-    }
-
     return json;
   }
 
@@ -499,10 +490,6 @@ export class FieldRun extends TextBlockComponent {
   /** Returns true if `this` is equivalent to `other`. */
   public override equals(other: TextBlockComponent): boolean {
     if (!(other instanceof FieldRun) || !super.equals(other)) {
-      return false;
-    }
-
-    if (this.propertyType !== other.propertyType) {
       return false;
     }
 

@@ -102,7 +102,7 @@ export interface EnumFieldFormatOptions<T extends number| string> {
  * @beta
  */
 export interface FieldFormatOptions {
-  propertyType?: FieldPropertyType;
+  propertyType?: FieldPropertyType | string;
   prefix?: string;
   suffix?: string;
   case?: FieldCase;

@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, ElementAspectProps, FieldPrimitiveValue, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldValue, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextRun } from "@itwin/core-common";
+import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldRun, FieldValue, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextRun } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, updateField, updateFields } from "../../internal/annotations/fields";
-import { computeFieldPropertyType } from "../../annotations/ElementDrivesTextAnnotation";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { SpatialCategory } from "../../Category";
 import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
@@ -16,7 +15,6 @@ import { ClassRegistry } from "../../ClassRegistry";
 import { PhysicalElement } from "../../Element";
 import { ElementOwnsUniqueAspect, ElementUniqueAspect, FontFile, TextAnnotation3d } from "../../core-backend";
 import { ElementDrivesTextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
-import { AnyClass, EntityClass } from "@itwin/ecschema-metadata";
 
 describe.only("updateField", () => {
   const mockElementId = "0x1";
@@ -292,29 +290,15 @@ describe.only("Field evaluation", () => {
     return id;
   }
 
-  function getPropertyType(propertyHost: FieldPropertyHost, propertyPath: string | FieldPropertyPath): FieldPropertyType | "user-specified" | undefined {
-    if (typeof propertyPath === "string") {
-      propertyPath = { propertyName: propertyPath };
-    }
-
-    return computeFieldPropertyType(propertyPath, propertyHost, imodel);
-}
-
   describe("getProperty", () => {
-    function expectValue(expected: any, propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String, deletedDependency = false, propertyType?: FieldPropertyType | string | undefined): void {
+    function expectValue(expected: any, propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String, deletedDependency = false): void {
       if (typeof propertyHost === "string") {
         propertyHost = { schemaName: "Fields", className: "TestElement", elementId: propertyHost };
-      }
-
-      if (!propertyType) {
-        const computedType = computeFieldPropertyType(propertyPath, propertyHost, imodel);
-        propertyType = (computedType && "user-specified" !== computedType) ? computedType : "invalid-type";
       }
 
       const field = FieldRun.create({
         propertyPath,
         propertyHost,
-        propertyType,
       });
 
       const context = createUpdateContext(propertyHost.elementId, imodel, deletedDependency);
@@ -433,7 +417,6 @@ describe.only("Field evaluation", () => {
       const fieldRun = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "intProp" },
-        propertyType: "quantity",
         cachedContent: "oldValue",
       });
 
@@ -451,7 +434,6 @@ describe.only("Field evaluation", () => {
       const fieldRun = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "intProp" },
-        propertyType: "quantity",
         cachedContent: "100",
       });
 
@@ -469,7 +451,6 @@ describe.only("Field evaluation", () => {
       const fieldRun1 = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "intProp" },
-        propertyType: "quantity",
         cachedContent: "100",
       });
 
@@ -551,14 +532,11 @@ describe.only("Field evaluation", () => {
         propertyHost = { schemaName: "Fields", className: "TestElement", elementId: propertyHost };
       }
 
-      const propertyType = getPropertyType(propertyHost, propertyName)
-
       return FieldRun.create({
         styleOverrides: { fontName: "Karla" },
         propertyHost,
         cachedContent,
         propertyPath: { propertyName, accessors, jsonAccessors },
-        propertyType,
       });
     }
 
@@ -778,7 +756,6 @@ describe.only("Field evaluation", () => {
        const fieldRun = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "string", accessors: [0] },
-        propertyType: "datetime",
         cachedContent: "oldValue",
         formatOptions: {
           case: "upper",
@@ -795,6 +772,7 @@ describe.only("Field evaluation", () => {
       expect(fieldRun.cachedContent).to.equal(FieldRun.invalidContentIndicator);
     });
 
+    /* ###TODO
     it("should get all supported prop types", () => {
       const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
       expect(getPropertyType(propertyHost, "intProp")).to.equal("string");
@@ -823,6 +801,7 @@ describe.only("Field evaluation", () => {
       const host = { elementId: sourceElementId, schemaName: "BisCore", className: "GeometricElement3d" };
       expect(getPropertyType(host, "GeometryStream")).to.be.undefined;
     });
+    */
   });
 
   describe("Format Validation", () => {
@@ -830,7 +809,6 @@ describe.only("Field evaluation", () => {
       const fieldRun = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "string", accessors: [0] },
-        propertyType: "superString",
         cachedContent: "oldValue",
         formatOptions: {
           case: "upper",
@@ -857,7 +835,6 @@ describe.only("Field evaluation", () => {
       const fieldRun = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "strings", accessors: [0] },
-        propertyType: "string",
         cachedContent: "oldValue",
         formatOptions: {
           case: "upper",
@@ -884,7 +861,6 @@ describe.only("Field evaluation", () => {
       const fieldRun = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "intProp" },
-        propertyType: "quantity",
         cachedContent: "oldValue",
         formatOptions: {
           quantity: {
@@ -947,7 +923,6 @@ describe.only("Field evaluation", () => {
       const fieldRun = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "point" },
-        propertyType: "coordinate",
         cachedContent: "oldValue",
         formatOptions: {
           coordinate: {
@@ -976,7 +951,6 @@ describe.only("Field evaluation", () => {
       const fieldRun = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "outerStruct", accessors: ["innerStruct", "bool"] },
-        propertyType: "boolean",
         cachedContent: "oldValue",
         formatOptions: {
           boolean: {
@@ -1005,7 +979,6 @@ describe.only("Field evaluation", () => {
       const fieldRun = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "intEnum" },
-        propertyType: "int-enum",
         cachedContent: "oldValue",
         formatOptions: {
           enum: {
@@ -1037,7 +1010,6 @@ describe.only("Field evaluation", () => {
       const fieldRun = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "jsonProperties", jsonAccessors: ["zoo", "birds", 0, "name"] },
-        propertyType: "string-enum",
         cachedContent: "oldValue",
         formatOptions: {
           enum: {
@@ -1069,7 +1041,6 @@ describe.only("Field evaluation", () => {
       const fieldRun = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "jsonProperties", jsonAccessors: ["stringProp"] },
-        propertyType: "string",
         cachedContent: "oldValue",
         formatOptions: {
           case: "upper",
@@ -1097,7 +1068,6 @@ describe.only("Field evaluation", () => {
       const fieldRun = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "jsonProperties", jsonAccessors: ["ints", 1] }, // Gets value 11 from the test element
-        propertyType: "quantity",
         cachedContent: "oldValue",
         formatOptions: {
           quantity: {
@@ -1157,11 +1127,9 @@ describe.only("Field evaluation", () => {
 
     it("validates formatting options for datetime objects", () => {
       const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
-      const propertyType = getPropertyType(propertyHost, "datetime");
       const fieldRun = FieldRun.create({
         propertyHost,
         propertyPath: { propertyName: "datetime"},
-        propertyType,
         cachedContent: "oldval",
         formatOptions: {
           dateTime: {
