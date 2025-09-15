@@ -2172,10 +2172,10 @@ export abstract class GltfReader {
     const offset = bv.byteOffset ?? 0;
     buf = buf.subarray(offset, offset + bv.byteLength);
 
-    const jsWrapper = await import(
-      `${IModelApp.publicPath}/draco/draco_wasm_wrapper.js`
-    );
-    const wasm = await (await fetch(`${IModelApp.publicPath}/draco/draco_decoder.wasm`)).arrayBuffer();
+    // const jsWrapper = await import(
+    //   `${IModelApp.publicPath}/draco/draco_wasm_wrapper.js`
+    // );
+    // const wasm = await (await fetch(`${IModelApp.publicPath}/draco/draco_decoder.wasm`)).arrayBuffer();
 
     const mesh = await loader.parse(buf, {
       draco: {
@@ -2186,8 +2186,10 @@ export abstract class GltfReader {
       },
       // modules: { draco3d },
       modules: {
-        "draco_wasm_wrapper.js": jsWrapper,
-        "draco_decoder.wasm": wasm,
+        // "draco_wasm_wrapper.js": jsWrapper,
+        // "draco_decoder.wasm": wasm,
+        "draco_wasm_wrapper.js": `${IModelApp.publicPath}/draco/draco_wasm_wrapper.js`,
+        "draco_decoder.wasm": `${IModelApp.publicPath}/draco/draco_decoder.wasm`,
       },
       worker: false,
       useLocalLibraries: true,
