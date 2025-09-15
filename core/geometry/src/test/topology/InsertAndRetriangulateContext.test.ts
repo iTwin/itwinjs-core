@@ -13,7 +13,7 @@ import { Point3dArray } from "../../geometry3d/PointHelpers";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { HalfEdgeGraph } from "../../topology/Graph";
 import { HalfEdgePositionDetail, HalfEdgeTopo } from "../../topology/HalfEdgePositionDetail";
 import { InsertAndRetriangulateContext, InsertedVertexZOptions } from "../../topology/InsertAndRetriangulateContext";

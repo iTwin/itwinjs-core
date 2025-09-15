@@ -38,7 +38,7 @@ import { Transform } from "../../geometry3d/Transform";
 import { PolyfaceVisitor } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { DuplicateFacetClusterSelector, PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { LinearSweep } from "../../solid/LinearSweep";
 import { HalfEdgeGraph } from "../../topology/Graph";

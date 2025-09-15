@@ -10,7 +10,7 @@ import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
 import { Point3d, Vector3d, XYZ } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { XYZProps } from "../../geometry3d/XYZProps";
-import { Sample } from "../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import * as bsiChecker from "../Checker";
 
 // cSpell:words Jcross CCWXY CWXY
