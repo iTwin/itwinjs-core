@@ -506,16 +506,22 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
    * Clip a polygon to the inside or outside of the plane.
    * * Results with 2 or fewer points are ignored.
    * * Other than ensuring capacity in the arrays, there are no object allocations during execution of this function.
+   * * For a convex input polygon, the output polygon is also convex.
+   * * For non-convex input, the output polygon may have double-back edges along plane intersections. This is still a
+   * valid clip in a parity sense (overlapping regions cancel).
    * @param xyz input points.
-   * @param work work buffer
-   * @param tolerance tolerance for "on plane" decision.
+   * @param work optional work buffer
+   * @param inside whether the positive side of the plane survives (true, default), or negative side (false).
+   * @param tolerance distance tolerance for "on plane" decision. Default value is [[Geometry.smallMetricDistance]].
+   * @return the number of crossings. If this is larger than 2, the input polygon was non-convex.
+   * @see appendPolygonClip
    */
   public clipConvexPolygonInPlace(
     xyz: GrowableXYZArray,
-    work: GrowableXYZArray,
+    work?: GrowableXYZArray,
     inside: boolean = true,
     tolerance: number = Geometry.smallMetricDistance,
-  ) {
+  ): number {
     return IndexedXYZCollectionPolygonOps.clipConvexPolygonInPlace(this, xyz, work, inside, tolerance);
   }
   /**
@@ -619,6 +625,7 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
    * @param outsideFragments Array to receive "outside" fragments. Each fragment is a GrowableXYZArray grabbed
    * from the cache. This is NOT cleared.
    * @param arrayCache cache for reusable GrowableXYZArray.
+   * @see clipConvexPolygonInPlace
    */
   public appendPolygonClip(
     xyz: IndexedXYZCollection,

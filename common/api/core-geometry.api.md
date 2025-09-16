@@ -1048,7 +1048,7 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     announceClippedSegmentIntervals(f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void): boolean;
     appendIntersectionRadians(arc: Arc3d, intersectionRadians: GrowableFloat64Array): void;
     appendPolygonClip(xyz: IndexedXYZCollection, insideFragments: GrowableXYZArray[], outsideFragments: GrowableXYZArray[], arrayCache: GrowableXYZArrayCache): void;
-    clipConvexPolygonInPlace(xyz: GrowableXYZArray, work: GrowableXYZArray, inside?: boolean, tolerance?: number): number;
+    clipConvexPolygonInPlace(xyz: GrowableXYZArray, work?: GrowableXYZArray, inside?: boolean, tolerance?: number): number;
     clone(): ClipPlane;
     cloneNegated(): ClipPlane;
     static createEdgeAndUpVector(point0: Point3d, point1: Point3d, upVector: Vector3d, tiltAngle?: Angle, result?: ClipPlane): ClipPlane | undefined;
@@ -1441,7 +1441,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     multiplyPlanesByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
     negateAllPlanes(): void;
     get planes(): ClipPlane[];
-    polygonClip(input: GrowableXYZArray | Point3d[], output: GrowableXYZArray, work?: GrowableXYZArray, planeToSkip?: ClipPlane): void;
+    polygonClip(input: GrowableXYZArray | Point3d[], output: GrowableXYZArray, work?: GrowableXYZArray, planeToSkip?: ClipPlane, tolerance?: number): void;
     reloadSweptPolygon(points: Point3d[], sweepDirection: Vector3d, sideSelect: number): number;
     setInvisible(invisible: boolean): void;
     static setPlaneAndXYLoopCCW(points: GrowableXYZArray, planeOfPolygon: ClipPlane, frustum: ConvexClipPlaneSet): void;
@@ -3032,7 +3032,7 @@ export class IndexedXYZCollectionInterval extends IndexedCollectionInterval<Inde
 
 // @public
 export class IndexedXYZCollectionPolygonOps {
-    static clipConvexPolygonInPlace(plane: PlaneAltitudeEvaluator, xyz: GrowableXYZArray, work: GrowableXYZArray, keepPositive?: boolean, tolerance?: number): number;
+    static clipConvexPolygonInPlace(plane: PlaneAltitudeEvaluator, xyz: GrowableXYZArray, work?: GrowableXYZArray, keepPositive?: boolean, tolerance?: number): number;
     // @internal
     static gatherCutLoopsFromPlaneClip(plane: PlaneAltitudeEvaluator, xyz: GrowableXYZArray, minChainLength?: number, tolerance?: number): CutLoopMergeContext;
     static intersectRangeConvexPolygonInPlace(range: Range3d, xyz: GrowableXYZArray): GrowableXYZArray | undefined;
@@ -3758,6 +3758,10 @@ export class Matrix4d implements BeJSONFunctions {
     setOriginAndVectors(origin: XYZ, vectorX: Vector3d, vectorY: Vector3d, vectorZ: Vector3d): void;
     setZero(): void;
     toJSON(): Matrix4dProps;
+    toTransform(result?: Transform): {
+        transform: Transform;
+        isValid: boolean;
+    };
     weight(): number;
 }
 
@@ -6229,7 +6233,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     isPointOnOrInside(point: Point3d, tolerance?: number): boolean;
     isSphereInside(point: Point3d, radius: number): boolean;
     multiplyPlanesByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
-    polygonClip(input: GrowableXYZArray | Point3d[], output: GrowableXYZArray[], work?: GrowableXYZArray): void;
+    polygonClip(input: GrowableXYZArray | Point3d[], output: GrowableXYZArray[], work?: GrowableXYZArray, planeToSkip?: ClipPlane, tolerance?: number): void;
     setInvisible(invisible: boolean): void;
     takeConvexSets(source: UnionOfConvexClipPlaneSets): void;
     toJSON(): UnionOfConvexClipPlaneSetsProps;
