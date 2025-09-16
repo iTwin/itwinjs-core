@@ -378,7 +378,6 @@ describe.only("Field evaluation", () => {
       expectValue(undefined, { propertyName: "outerStructs", accessors: [0, "innerStruct"] }, sourceElementId);
     });
 
-    // FIXME: structs should return undefined and fail evaluation?
     it("returns arbitrarily-nested properties of structs and struct arrays", () => {
       expectValue(false, { propertyName: "outerStruct", accessors: ["innerStruct", "bool"] }, sourceElementId);
       for (const index of [0, 1, 2]) {

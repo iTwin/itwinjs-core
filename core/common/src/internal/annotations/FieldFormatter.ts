@@ -133,7 +133,6 @@ function formatQuantity(v: FieldPrimitiveValue, o?: QuantityFieldFormatOptions):
     return undefined;
   }
 
-  // ###TODO apply quantity formatting...
   if (o && o.formatProps){
     const formatName = o.formatProps.name ?? "defaultFormat";
     const format = Format.createFromFullyResolvedJSON(formatName, o.formatProps);

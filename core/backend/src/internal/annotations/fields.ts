@@ -290,7 +290,6 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
   try {
     const propValue = context.getProperty(field);
     if (undefined !== propValue) {
-      // ###TODO formatting etc.
       newContent = formatFieldValue(propValue, field.formatOptions);
     }
   } catch (err) {
