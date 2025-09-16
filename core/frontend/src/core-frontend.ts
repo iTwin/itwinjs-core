@@ -106,7 +106,6 @@ export * from "./render/Scene";
 export * from "./render/ScreenSpaceEffectBuilder";
 export * from "./render/VisibleFeature";
 export * from "./internal/render/webgl/IModelFrameLifecycle";
-export { RealityTreeReference, RealityModelTileTree } from "./internal/tile/RealityModelTileTree";
 export type {
   TxnEntityChange,
   TxnEntityChangeIterable,

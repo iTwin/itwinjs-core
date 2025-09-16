@@ -15,7 +15,7 @@ import { ClipVector, Matrix3d, Point2d, Point3d, Range3d, Transform, XAndY, XYAn
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { createGraphicFromDescription, createGraphicTemplateFromDescription, MapTileTreeReference, RealityModelTileTree, RealityTreeReference, TileTreeReference } from "../tile/internal";
+import { createGraphicFromDescription, createGraphicTemplateFromDescription, MapTileTreeReference, TileTreeReference } from "../tile/internal";
 import { ToolAdmin } from "../tools/ToolAdmin";
 import { Viewport } from "../Viewport";
 import { imageElementFromImageSource, tryImageElementFromUrl } from "../common/ImageUtil";
@@ -193,11 +193,6 @@ export abstract class RenderSystem implements Disposable {
   public abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
   /** @internal */
   public abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
-
-  /** @internal */
-  public createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference {
-    return new RealityTreeReference(props);
-  }
 
   /** Perform a small unit of idle work and return true if more idle work remains to be done. This function is invoked on each tick of the javascript event loop as long as no viewports are registered with the ViewManager, until it returns false to indicate all idle work has been completed.
    * @internal
