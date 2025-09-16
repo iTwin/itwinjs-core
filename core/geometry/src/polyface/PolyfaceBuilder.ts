@@ -2157,11 +2157,11 @@ export namespace HalfEdgeGraphSearch {
   export function findContainingFaceXY(graph: HalfEdgeGraph, testPoint: XAndY | XAndY[]): (HalfEdge | undefined)[] | HalfEdge | undefined {
     const results: (HalfEdge | undefined)[] = [];
     const idToFaceIndexMap = graph.constructIdToFaceIndexMap();
-    const facetIndexToFaceIndexMap: number[] = [];
+    const facetIndexToFaceIndex: number[] = [];
     const acceptFace = (face: HalfEdge): boolean => {
       if (face.isMaskSet(HalfEdgeMask.EXTERIOR))
         return false; // skip exterior face
-      facetIndexToFaceIndexMap.push(idToFaceIndexMap.get(face.id) ?? -1);
+      facetIndexToFaceIndex.push(idToFaceIndexMap.get(face.id) ?? -1);
       return true;
     };
     const clusterTol = Geometry.smallFloatingPoint; // don't want clustering to destroy edges
@@ -2175,7 +2175,7 @@ export namespace HalfEdgeGraphSearch {
         const closestDetail = searcher.searchForClosestPoint(testPt, undefined, true) as FacetLocationDetail | undefined;
         // closest point on the mesh should have zero distance to testPt, but allow for minute slop
         if (closestDetail && closestDetail.a < Geometry.smallFloatingPoint) {
-          const faceIndex = facetIndexToFaceIndexMap[closestDetail.facetIndex];
+          const faceIndex = facetIndexToFaceIndex[closestDetail.facetIndex];
           if (faceIndex >= 0 && faceIndex < graph.allHalfEdges.length)
             result = graph.allHalfEdges[faceIndex];
         }

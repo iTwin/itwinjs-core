@@ -718,10 +718,6 @@ class VoronoiBoundary {
       this.bbox.expandInPlace(pad);
     }
   }
-  /** Checks if a point is contained within the boundary. */
-  public contains(point: XAndY): boolean {
-    return this.contains(point);
-  }
   /** Compute the intersection fractions of the ray and this boundary. */
   public intersect(ray: Ray2d): number[] | undefined {
     const fractionalRange = ray.intersectionWithRange2d(this.bbox);
