@@ -775,7 +775,11 @@ export class BriefcaseManager {
         await BriefcaseManager.pullAndApplyChangesets(db, arg);
         if (!db.skipSyncSchemasOnPullAndPush)
           await SchemaSync.pull(db);
-        return await BriefcaseManager.pushChanges(db, arg);
+        // pullAndApply rebase changes and might remove redundant changes in local briefcase
+        // this mean hasPendingTxns was true before but now after pullAndApply it might be false
+        if (db[_nativeDb].hasPendingTxns()) {
+          await BriefcaseManager.pushChanges(db, arg);
+        }
       } catch (err: any) {
         if (retryCount-- <= 0 || err.errorNumber !== IModelHubStatus.PullIsRequired)
           throw (err);
