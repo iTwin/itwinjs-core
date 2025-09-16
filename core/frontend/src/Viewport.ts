@@ -68,7 +68,6 @@ import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
 import { GraphicType } from "./common/render/GraphicType";
 import { compareMapLayer } from "./internal/render/webgl/MapLayerParams";
-import { System } from "./internal/render/webgl/System";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -3277,6 +3276,8 @@ export class ScreenViewport extends Viewport {
 
     const div = this.vpDiv = IModelApp.makeHTMLElement("div", { className: "imodeljs-vp" });
     this.addChildDiv(this.parentDiv, div, 0);
+
+    this.addChildDiv(this.vpDiv, canvas, 10);
     this.target.updateViewRect();
 
     // SEE: decorationDiv doc comment
