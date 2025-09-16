@@ -34,12 +34,12 @@ describe("FormatsProvider examples", () => {
 
   before(() => {
     schemaContext = new SchemaContext();
-    const unitSchemaFile = path.join(__dirname,  "..", "..", "node_modules", "@bentley", "units-schema");
+    const unitSchemaFile = path.join(__dirname, "..", "..", "node_modules", "@bentley", "units-schema");
     const locUnits = new SchemaXmlFileLocater();
     locUnits.addSchemaSearchPath(unitSchemaFile)
     schemaContext.addLocater(locUnits);
 
-    const schemaFile = path.join(__dirname, "..", "..","node_modules", "@bentley", "formats-schema");
+    const schemaFile = path.join(__dirname, "..", "..", "node_modules", "@bentley", "formats-schema");
     const locFormats = new SchemaXmlFileLocater();
     locFormats.addSchemaSearchPath(schemaFile)
     schemaContext.addLocater(locFormats);
