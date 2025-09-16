@@ -50,12 +50,12 @@ const formatters: { [type: string]: FieldFormatter | undefined } = {
   },
 
   "boolean": (v, o) => {
-    const opts = o?.boolean;
+    const opts = o?.bool;
     if (typeof v !== "boolean") {
       return undefined;
     }
 
-    return formatString(v ? (opts?.trueString ?? "true") : (opts?.falseString ?? "false"), o);
+    return formatString(v ? (opts?.trueString ?? "1") : (opts?.falseString ?? "0"), o);
   },
 
   "quantity": (v, o) => formatString(formatQuantity(v, o?.quantity), o),

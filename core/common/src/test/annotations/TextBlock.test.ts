@@ -236,7 +236,7 @@ describe("FieldRun", () => {
     });
 
     it("deeply clones formatter", () => {
-      const formatter = { prefix: "abc", boolean: { trueString: "yay!", falseString: "boo!" } };
+      const formatter = { prefix: "abc", bool: { trueString: "yay!", falseString: "boo!" } };
 
       const fieldRun = FieldRun.create({
         propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
@@ -246,9 +246,9 @@ describe("FieldRun", () => {
 
       // Modify the original formatter to ensure the FieldRun's copy is unaffected
       formatter.prefix = "cba";
-      formatter.boolean.trueString = "woohoo!";
+      formatter.bool.trueString = "woohoo!";
 
-      expect(fieldRun.formatOptions).to.deep.equal({ prefix: "abc", boolean: { trueString: "yay!", falseString: "boo!" } });
+      expect(fieldRun.formatOptions).to.deep.equal({ prefix: "abc", bool: { trueString: "yay!", falseString: "boo!" } });
     });
 
     it("deeply clones propertyHost", () => {

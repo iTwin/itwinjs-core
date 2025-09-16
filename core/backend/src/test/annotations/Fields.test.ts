@@ -980,7 +980,7 @@ describe.only("Field evaluation", () => {
         propertyPath: { propertyName: "outerStruct", accessors: ["innerStruct", "bool"] },
         cachedContent: "oldValue",
         formatOptions: {
-          boolean: {
+          bool: {
             trueString: "YES",
             falseString: "NO"
           }

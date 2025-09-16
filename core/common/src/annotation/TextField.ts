@@ -88,11 +88,11 @@ export type FieldCase = "as-is" | "upper" | "lower";
  */
 export interface BooleanFieldFormatOptions {
   /** The display string if the property is `true`.
-   * Default: "true" (non-localized).
+   * Default: "1".
    */
   trueString?: string;
   /** The display string if the property is `false`.
-   * Default: "false" (non-localized).
+   * Default: "0".
    */
   falseString?: string;
 }
@@ -164,7 +164,7 @@ export interface FieldFormatOptions {
   /** Modifies the case of the formatted string. */
   case?: FieldCase;
   /** Formatting options for [[FieldPropertyType]] "boolean". */
-  boolean?: BooleanFieldFormatOptions;
+  bool?: BooleanFieldFormatOptions;
   /** Formatting options for [[FieldPropertyType]] "coordinate". */
   coordinate?: CoordinateFieldFormatOptions;
   /** Formatting options for [[FieldPropertyType]] "quantity". */

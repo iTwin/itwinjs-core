@@ -51,28 +51,28 @@ describe("Field formatting", () => {
 
   describe("boolean", () => {
     it("fails if property value is not boolean", () => {
-      const options: FieldFormatOptions = { boolean: { trueString: "Yes", falseString: "No" } };
+      const options: FieldFormatOptions = { bool: { trueString: "Yes", falseString: "No" } };
       expect(formatFieldValue("notbool", "boolean", options)).toBeUndefined();
       expect(formatFieldValue(1, "boolean", options)).toBeUndefined();
       expect(formatFieldValue(undefined as any, "boolean", options)).toBeUndefined();
     });
 
     it("converts boolean to display label (all string options)", () => {
-      const options: FieldFormatOptions = { boolean: { trueString: "Yes", falseString: "No" } };
+      const options: FieldFormatOptions = { bool: { trueString: "Yes", falseString: "No" } };
       expect(formatFieldValue(true, "boolean", options)).toBe("Yes");
       expect(formatFieldValue(false, "boolean", options)).toBe("No");
-      expect(formatFieldValue(true, "boolean", { boolean: { trueString: "T", falseString: "F" } })).toBe("T");
-      expect(formatFieldValue(false, "boolean", { boolean: { trueString: "T", falseString: "F" } })).toBe("F");
+      expect(formatFieldValue(true, "boolean", { bool: { trueString: "T", falseString: "F" } })).toBe("T");
+      expect(formatFieldValue(false, "boolean", { bool: { trueString: "T", falseString: "F" } })).toBe("F");
     });
 
     it("fails if display label is not specified", () => {
       expect(formatFieldValue(true, "boolean", undefined)).toBeUndefined();
       expect(formatFieldValue(false, "boolean", {})).toBeUndefined();
-      expect(formatFieldValue(true, "boolean", { boolean: {} })).toBeUndefined();
+      expect(formatFieldValue(true, "boolean", { bool: {} })).toBeUndefined();
     });
 
     it("applies all string formatting options", () => {
-      const base: FieldFormatOptions = { boolean: { trueString: "yes", falseString: "no" } };
+      const base: FieldFormatOptions = { bool: { trueString: "yes", falseString: "no" } };
       expect(formatFieldValue(true, "boolean", { ...base, prefix: "<" })).toBe("<yes");
       expect(formatFieldValue(false, "boolean", { ...base, suffix: ">" })).toBe("no>");
       expect(formatFieldValue(true, "boolean", { ...base, prefix: "<", suffix: ">" })).toBe("<yes>");

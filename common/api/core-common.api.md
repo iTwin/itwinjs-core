@@ -3638,7 +3638,7 @@ export type FieldCase = "as-is" | "upper" | "lower";
 
 // @beta
 export interface FieldFormatOptions {
-    boolean?: BooleanFieldFormatOptions;
+    bool?: BooleanFieldFormatOptions;
     case?: FieldCase;
     coordinate?: CoordinateFieldFormatOptions;
     dateTime?: DateTimeFieldFormatOptions;
