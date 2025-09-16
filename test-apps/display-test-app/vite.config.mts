@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 import { defineConfig, loadEnv, searchForWorkspaceRoot } from "vite";
 import envCompatible from "vite-plugin-env-compatible";
-import wasm from "vite-plugin-wasm";
 import browserslistToEsbuild from "browserslist-to-esbuild";
 import copy from "rollup-plugin-copy";
 import ignore from "rollup-plugin-ignore";
@@ -128,8 +127,7 @@ export default defineConfig(() => {
       }),
       envCompatible({
         prefix: "IMJS_",
-      }),
-      wasm(), // to import .wasm files
+      })
     ],
     define: {
       "process.env": process.env, // injects process.env into the frontend
