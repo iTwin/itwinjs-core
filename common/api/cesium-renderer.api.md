@@ -8,7 +8,7 @@ import { EcefLocation } from '@itwin/core-common';
 import { Point3d } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Vector3d } from '@itwin/core-geometry';
-import { ViewDefinition3dProps } from '@itwin/core-common';
+import type { ViewDefinition3dProps } from '@itwin/core-common';
 
 // @alpha
 export interface CesiumCameraProps {
