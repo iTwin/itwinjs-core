@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "address loaders.gl shortcomings",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
