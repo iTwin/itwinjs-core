@@ -2172,11 +2172,6 @@ export abstract class GltfReader {
     const offset = bv.byteOffset ?? 0;
     buf = buf.subarray(offset, offset + bv.byteLength);
 
-    // const jsWrapper = await import(
-    //   `${IModelApp.publicPath}/draco/draco_wasm_wrapper.js`
-    // );
-    // const wasm = await (await fetch(`${IModelApp.publicPath}/draco/draco_decoder.wasm`)).arrayBuffer();
-
     const mesh = await loader.parse(buf, {
       draco: {
         decoderType: "wasm",
