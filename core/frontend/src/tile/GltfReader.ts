@@ -2128,10 +2128,9 @@ export abstract class GltfReader {
         throw new Error("Unsupported browser for Draco decoding");
       }
 
-      const dracolib = await import("draco3d");
       const dracoLoader = (await import("@loaders.gl/draco")).DracoLoader;
 
-      await Promise.all(dracoMeshes.map(async (x) => this.decodeDracoMesh(x, dracoLoader, dracolib)));
+      await Promise.all(dracoMeshes.map(async (x) => this.decodeDracoMesh(x, dracoLoader)));
     } catch (err) {
       Logger.logWarning(FrontendLoggerCategory.Render, "Failed to decode draco-encoded glTF mesh");
       Logger.logException(FrontendLoggerCategory.Render, err);
@@ -2160,7 +2159,7 @@ export abstract class GltfReader {
     } catch { }
   }
 
-  private async decodeDracoMesh(ext: DracoMeshCompression, loader: typeof DracoLoader, _draco3d: any): Promise<void> {
+  private async decodeDracoMesh(ext: DracoMeshCompression, loader: typeof DracoLoader): Promise<void> {
     const bv = this._bufferViews[ext.bufferView];
     if (!bv || !bv.byteLength)
       return;
