@@ -48,7 +48,7 @@ export interface FieldPropertyPath {
   propertyName: string;
   /** Property names and/or array indices describing the path from [[propertyName]] to the ultimate BIS property. */
   accessors?: Array<string | number>;
-  /** If [[propertyName]] (and [[acessors]], if present) resolves to a BIS property of extended type "Json", specifies the path to a field within the JSON object. */
+  /** If [[propertyName]] (and [[accessors]], if present) resolves to a BIS property of extended type "Json", specifies the path to a field within the JSON object. */
   json?: {
     /** Property names and/or array indices describing the path to the ultimate JSON property. */
     accessors: Array<string | number>;
