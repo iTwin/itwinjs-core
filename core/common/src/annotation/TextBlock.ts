@@ -385,23 +385,22 @@ export interface FieldRunProps extends TextBlockComponentProps {
   propertyHost: FieldPropertyHost;
   /** Describes how to obtain the property value from [[propertyHost]]. */
   propertyPath: FieldPropertyPath;
-  /** The type of the value of the property specified by [[propertyPath]], which determines how the display string is formatted.
-   * Defaults to "string".
-   * If the value of the property cannot be converted to the specified type, then evaluation of the field's display string will fail.
-   * @see [[formatOptions]] to customize the formatting more granularly.
-   */
   /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]].
    * The specific options used depend upon the field's [[propertyType]].
    */
   formatOptions?: FieldFormatOptions;
-  /** The field's most recently evaluated display string. */
+  /** The field's most recently evaluated display string.
+   * @note It is unnecessary to specify this when creating a field as part of an element like a [[TextAnnotation2d]], because
+   * all of the element's fields will be re-evaluated when inserting or updating the element in the iModel.
+   */
   cachedContent?: string;
 }
 
 /** A [[Run]] that displays the formatted value of a property of some [Element]($backend).
  * When a [[TextBlock]] containing a [[FieldRun]] is written into the iModel as an [ITextAnnotation]($backend) element,
  * a dependency is established between the two elements via the [ElementDrivesTextAnnotation]($backend) relationship such that
- * whenever the source element specified by [[propertyHost]] is modified, the field(s) in the `ITextAnnotation` element are automatically
+ * whenever the source element specified by [[propertyHost]] is modified or the `ITextAnnotation` element is inserted or updated in the iModel,
+ * the field(s) in the `ITextAnnotation` element are automatically
  * recalculated, causing their [[cachedContent]] to update. If the field's display string cannot be evaluated (for example, because the specified element or
  * property does not exist), then its cached content is set to [[FieldRun.invalidContentIndicator]].
  * A [[FieldRun]] displays its [[cachedContent]] in the same way that [[TextRun]]s display their `content`, including word wrapping where appropriate.
@@ -417,11 +416,6 @@ export class FieldRun extends TextBlockComponent {
   public readonly propertyHost: Readonly<FieldPropertyHost>;
   /** Describes how to obtain the property value from [[propertyHost]]. */
   public readonly propertyPath: Readonly<FieldPropertyPath>;
-  /** The type of the value of the property specified by [[propertyPath]], which determines how the display string is formatted.
-   * Defaults to "string".
-   * If the value of the property cannot be converted to the specified type, then evaluation of the field's display string will fail.
-   * @see [[formatOptions]] to customize the formatting more granularly.
-   */
   /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]].
    * The specific options used depend upon the [[FieldPropertyType]].
    */

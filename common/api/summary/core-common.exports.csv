@@ -64,6 +64,7 @@ internal;function;bisectTileRange3d
 beta;interface;BlobOptions
 beta;class;BlobOptionsBuilder
 beta;type;BlobRange
+beta;interface;BooleanFieldFormatOptions
 public;class;BoundingSphere
 alpha;interface;BRepCutProps
 public;namespace;BRepEntity
@@ -175,6 +176,8 @@ public;interface;ContourProps
 public;class;ContourStyle
 public;type;ContourStyleProperties
 public;interface;ContourStyleProps
+beta;type;CoordinateComponentSelector
+beta;interface;CoordinateFieldFormatOptions
 public;type;CreateEmptySnapshotIModelProps
 public;type;CreateEmptyStandaloneIModelProps
 public;interface;CreateIModelProps
@@ -190,6 +193,7 @@ internal;interface;CustomViewState3dProps
 public;class;CutStyle
 public;interface;CutStyleProps
 public;type;DanishSystem34Region
+beta;interface;DateTimeFieldFormatOptions
 internal;interface;DbBlobRequest
 internal;interface;DbBlobResponse
 internal;interface;DbQueryConfig
@@ -292,6 +296,7 @@ public;interface;EntityQueryParams
 preview;interface;EntityQueryParams
 alpha;type;EntityReference
 alpha;class;EntityReferenceSet
+beta;interface;EnumFieldFormatOptions
 public;class;Environment
 public;type;EnvironmentProperties
 public;interface;EnvironmentProps
@@ -313,11 +318,15 @@ public;class;FeatureOverrides
 public;enum;FeatureOverrideType
 public;class;FeatureTable
 internal;class;FeatureTableHeader
-beta;interface;FieldFormatter
+beta;type;FieldCase
+beta;interface;FieldFormatOptions
+public;type;FieldPrimitiveValue
 beta;interface;FieldPropertyHost
 beta;interface;FieldPropertyPath
+beta;type;FieldPropertyType
 beta;class;FieldRun
 beta;interface;FieldRunProps
+public;interface;FieldValue
 public;interface;FilePropertyProps
 public;enum;FillDisplay
 public;enum;FillFlags
@@ -332,6 +341,7 @@ public;interface;FontMapProps
 deprecated;interface;FontMapProps
 public;interface;FontProps
 public;enum;FontType
+public;function;formatFieldValue
 internal;interface;FormDataCommon
 beta;class;FractionRun
 beta;interface;FractionRunProps
@@ -499,6 +509,7 @@ internal;namespace;IpcWebSocketMessage
 internal;enum;IpcWebSocketMessageType
 internal;class;IpcWebSocketTransport
 public;function;isBinaryImageSource
+public;function;isKnownFieldPropertyType
 internal;function;isKnownTileFormat
 public;function;isPlacement2dProps
 preview;function;isPlacement2dProps
@@ -694,6 +705,7 @@ public;interface;QPoint3dBuffer
 public;namespace;QPoint3dBuffer
 public;class;QPoint3dBufferBuilder
 public;class;QPoint3dList
+beta;interface;QuantityFieldFormatOptions
 public;namespace;Quantization
 public;class;QueryBinder
 public;interface;QueryLimit

@@ -67,11 +67,14 @@ import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import type { Readable } from 'stream';
 import { RequireAtLeastOne } from '@itwin/core-bentley';
+import { ResolvedFormatProps } from '@itwin/core-quantity';
 import type { TransferConfig } from '@itwin/object-storage-core/lib/common';
 import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
 import { Uint16ArrayBuilder } from '@itwin/core-bentley';
 import { UintArray } from '@itwin/core-bentley';
+import { UnitConversionSpec } from '@itwin/core-quantity';
+import { UnitProps } from '@itwin/core-quantity';
 import { Vector2d } from '@itwin/core-geometry';
 import { Vector3d } from '@itwin/core-geometry';
 import type { Writable } from 'stream';
@@ -752,6 +755,12 @@ export class BlobOptionsBuilder {
 
 // @beta (undocumented)
 export type BlobRange = QueryLimit;
+
+// @beta
+export interface BooleanFieldFormatOptions {
+    falseString?: string;
+    trueString?: string;
+}
 
 // @public
 export class BoundingSphere {
@@ -2065,6 +2074,15 @@ export interface ContourStyleProps {
     pixelWidth?: number;
 }
 
+// @beta
+export type CoordinateComponentSelector = "X" | "Y" | "Z" | "XY" | "XYZ";
+
+// @beta
+export interface CoordinateFieldFormatOptions {
+    components?: CoordinateComponentSelector;
+    componentSeparator?: string;
+}
+
 // @public
 export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps;
 
@@ -2148,6 +2166,12 @@ export interface CutStyleProps {
 
 // @public
 export type DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm";
+
+// @beta
+export interface DateTimeFieldFormatOptions {
+    formatOptions?: Intl.DateTimeFormatOptions;
+    locale?: Intl.UnicodeBCP47LocaleIdentifier;
+}
 
 // @internal (undocumented)
 export interface DbBlobRequest extends DbRequest, BlobOptions {
@@ -3317,6 +3341,15 @@ export class EntityReferenceSet extends Set<EntityReference> {
     addRelationship(id: Id64String): void;
 }
 
+// @beta
+export interface EnumFieldFormatOptions<T extends number | string> {
+    fallbackLabel?: string;
+    labels: Array<{
+        value: T;
+        label: string;
+    }>;
+}
+
 // @public
 export class Environment {
     protected constructor(props?: Partial<EnvironmentProperties>);
@@ -3601,10 +3634,22 @@ export class FeatureTableHeader {
 }
 
 // @beta
-export interface FieldFormatter {
-    // (undocumented)
-    [k: string]: any;
+export type FieldCase = "as-is" | "upper" | "lower";
+
+// @beta
+export interface FieldFormatOptions {
+    boolean?: BooleanFieldFormatOptions;
+    case?: FieldCase;
+    coordinate?: CoordinateFieldFormatOptions;
+    dateTime?: DateTimeFieldFormatOptions;
+    enum?: EnumFieldFormatOptions<number> | EnumFieldFormatOptions<string>;
+    prefix?: string;
+    quantity?: QuantityFieldFormatOptions;
+    suffix?: string;
 }
+
+// @public (undocumented)
+export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
 
 // @beta
 export interface FieldPropertyHost {
@@ -3616,9 +3661,15 @@ export interface FieldPropertyHost {
 // @beta
 export interface FieldPropertyPath {
     accessors?: Array<string | number>;
-    jsonAccessors?: Array<string | number>;
+    json?: {
+        accessors: Array<string | number>;
+        type?: FieldPropertyType | string;
+    };
     propertyName: string;
 }
+
+// @beta
+export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean" | "datetime" | "int-enum" | "string-enum";
 
 // @beta
 export class FieldRun extends TextBlockComponent {
@@ -3626,7 +3677,7 @@ export class FieldRun extends TextBlockComponent {
     clone(): FieldRun;
     static create(props: Omit<FieldRunProps, "type">): FieldRun;
     equals(other: TextBlockComponent): boolean;
-    readonly formatter?: FieldFormatter;
+    readonly formatOptions?: FieldFormatOptions;
     static invalidContentIndicator: string;
     readonly propertyHost: Readonly<FieldPropertyHost>;
     readonly propertyPath: Readonly<FieldPropertyPath>;
@@ -3640,10 +3691,18 @@ export class FieldRun extends TextBlockComponent {
 // @beta
 export interface FieldRunProps extends TextBlockComponentProps {
     cachedContent?: string;
-    formatter?: FieldFormatter;
+    formatOptions?: FieldFormatOptions;
     propertyHost: FieldPropertyHost;
     propertyPath: FieldPropertyPath;
     readonly type: "field";
+}
+
+// @public (undocumented)
+export interface FieldValue {
+    // (undocumented)
+    type: FieldPropertyType;
+    // (undocumented)
+    value: FieldPrimitiveValue;
 }
 
 // @public (undocumented)
@@ -3735,6 +3794,9 @@ export enum FontType {
     Shx = 3,
     TrueType = 1
 }
+
+// @public (undocumented)
+export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined): string | undefined;
 
 // @internal (undocumented)
 export interface FormDataCommon {
@@ -5652,6 +5714,9 @@ export abstract class IpcWebSocketTransport {
 
 // @public
 export function isBinaryImageSource(source: ImageSource): source is BinaryImageSource;
+
+// @public (undocumented)
+export function isKnownFieldPropertyType(type: string): type is FieldPropertyType;
 
 // @internal
 export function isKnownTileFormat(format: number): boolean;
@@ -7589,6 +7654,14 @@ export class QPoint3dList {
     reset(params: QParams3d): void;
     toTypedArray(): Uint16Array;
     unquantize(index: number, out?: Point3d): Point3d;
+}
+
+// @beta
+export interface QuantityFieldFormatOptions {
+    formatProps?: ResolvedFormatProps;
+    koqName?: string;
+    sourceUnit?: UnitProps;
+    unitConversions?: UnitConversionSpec[];
 }
 
 // @public

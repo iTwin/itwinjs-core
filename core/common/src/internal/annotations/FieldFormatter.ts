@@ -46,11 +46,11 @@ const formatters: { [type: string]: FieldFormatter | undefined } = {
 
   "boolean": (v, o) => {
     const opts = o?.boolean;
-    if (typeof v !== "boolean" || !opts) {
+    if (typeof v !== "boolean") {
       return undefined;
     }
 
-    return formatString(v ? opts.trueString : opts.falseString, o);
+    return formatString(v ? (opts?.trueString ?? "true") : (opts?.falseString ?? "false"), o);
   },
 
   "quantity": (v, o) => formatString(formatQuantity(v, o?.quantity), o),
@@ -161,7 +161,7 @@ if (!isNaN(v.getTime())) {
   return undefined
 }
 
-// eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+ 
 export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined): string | undefined {
   const formatter = formatters[value.type];
   return formatter ? formatter(value.value, options) : undefined;

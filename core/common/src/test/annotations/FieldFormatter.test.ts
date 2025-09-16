@@ -177,7 +177,6 @@ describe("Field formatting", () => {
       const formatsProvider = new SchemaFormatsProvider(schemaContext, "metric");
 
       const fromUnit = await unitsProvider.findUnitByName("Units.M");
-      const toUnit = await unitsProvider.findUnitByName("Units.KM");
 
       const formatProps = await formatsProvider.getFormat("AecUnits.LENGTH_LONG");
 
@@ -195,7 +194,6 @@ describe("Field formatting", () => {
         formatProps: resolvedProps,
         unitConversions,
         sourceUnit: fromUnit,
-        targetUnit: toUnit,
       };
 
       const fieldOptions: FieldFormatOptions = {
