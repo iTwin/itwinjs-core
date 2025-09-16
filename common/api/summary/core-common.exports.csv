@@ -320,13 +320,13 @@ public;class;FeatureTable
 internal;class;FeatureTableHeader
 beta;type;FieldCase
 beta;interface;FieldFormatOptions
-public;type;FieldPrimitiveValue
+internal;type;FieldPrimitiveValue
 beta;interface;FieldPropertyHost
 beta;interface;FieldPropertyPath
 beta;type;FieldPropertyType
 beta;class;FieldRun
 beta;interface;FieldRunProps
-public;interface;FieldValue
+internal;interface;FieldValue
 public;interface;FilePropertyProps
 public;enum;FillDisplay
 public;enum;FillFlags
@@ -341,7 +341,7 @@ public;interface;FontMapProps
 deprecated;interface;FontMapProps
 public;interface;FontProps
 public;enum;FontType
-public;function;formatFieldValue
+internal;function;formatFieldValue
 internal;interface;FormDataCommon
 beta;class;FractionRun
 beta;interface;FractionRunProps
@@ -509,7 +509,7 @@ internal;namespace;IpcWebSocketMessage
 internal;enum;IpcWebSocketMessageType
 internal;class;IpcWebSocketTransport
 public;function;isBinaryImageSource
-public;function;isKnownFieldPropertyType
+internal;function;isKnownFieldPropertyType
 internal;function;isKnownTileFormat
 public;function;isPlacement2dProps
 preview;function;isPlacement2dProps

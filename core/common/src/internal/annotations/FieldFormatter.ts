@@ -7,9 +7,14 @@ import { XAndY, XYAndZ } from "@itwin/core-geometry";
 import { DateTimeFieldFormatOptions, EnumFieldFormatOptions, FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../annotation/TextField";
 import { Format, FormatterSpec } from "@itwin/core-quantity";
 
-// A FieldPropertyPath must ultimately resolve to one of these primitive types.
+/** A FieldPropertyPath must ultimately resolve to one of these primitive types.
+ * @internal
+ */
 export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
 
+/** Resolved value of a field.
+ * @internal
+ */
 export interface FieldValue {
   value: FieldPrimitiveValue;
   type: FieldPropertyType;
@@ -161,12 +166,13 @@ if (!isNaN(v.getTime())) {
   return undefined
 }
 
- 
+/** @internal */
 export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined): string | undefined {
   const formatter = formatters[value.type];
   return formatter ? formatter(value.value, options) : undefined;
 }
 
+/** @internal */
 export function isKnownFieldPropertyType(type: string): type is FieldPropertyType {
   return type in formatters;
 }

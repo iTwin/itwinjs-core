@@ -3648,7 +3648,7 @@ export interface FieldFormatOptions {
     suffix?: string;
 }
 
-// @public (undocumented)
+// @internal
 export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
 
 // @beta
@@ -3697,7 +3697,7 @@ export interface FieldRunProps extends TextBlockComponentProps {
     readonly type: "field";
 }
 
-// @public (undocumented)
+// @internal
 export interface FieldValue {
     // (undocumented)
     type: FieldPropertyType;
@@ -3795,7 +3795,7 @@ export enum FontType {
     TrueType = 1
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined): string | undefined;
 
 // @internal (undocumented)
@@ -5715,7 +5715,7 @@ export abstract class IpcWebSocketTransport {
 // @public
 export function isBinaryImageSource(source: ImageSource): source is BinaryImageSource;
 
-// @public (undocumented)
+// @internal (undocumented)
 export function isKnownFieldPropertyType(type: string): type is FieldPropertyType;
 
 // @internal
