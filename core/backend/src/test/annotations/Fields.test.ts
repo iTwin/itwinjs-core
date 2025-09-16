@@ -646,6 +646,19 @@ describe.only("Field evaluation", () => {
       expect(actual).to.equal(expected);
     }
 
+    it("evaluates cachedContent when annotation element is inserted", () => {
+      const sourceId = insertTestElement();
+      const block = TextBlock.create({ styleId: "0x123" });
+      block.appendRun(createField(sourceId, "initial cached content"));
+      expect(block.stringify()).to.equal("initial cached content");
+
+      const targetId = insertAnnotationElement(block);
+      imodel.saveChanges();
+
+      const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
+      expect(target.getAnnotation()!.textBlock.stringify()).to.equal("100");
+    });
+
     it("updates fields when source element is modified or deleted", () => {
       const sourceId = insertTestElement();
       const block = TextBlock.create({ styleId: "0x123" });
