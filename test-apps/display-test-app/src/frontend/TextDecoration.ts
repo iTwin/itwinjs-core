@@ -3,16 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FieldFormatOptions, FieldPropertyType, FieldRun, formatFieldValue, FractionRun, LeaderTextPointOptions, LineBreakRun, Placement2dProps, QuantityFieldFormatOptions, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationLeader, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ColorDef, FractionRun, LeaderTextPointOptions, LineBreakRun, Placement2dProps, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationLeader, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { Angle, Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { dtaIpc } from "./App";
-import { AnyClass, EntityClass, Property, SchemaFormatsProvider, SchemaUnitProvider } from "@itwin/ecschema-metadata";
-import { Format, FormatterSpec, UnitSystemKey } from "@itwin/core-quantity";
-import { error } from "console";
-import { A } from "@svgdotjs/svg.js";
 
 // Ignoring the spelling of the keyins. They're case insensitive, so we check against lowercase.
 // cspell:ignore superscript, subscript, widthfactor, fractionscale, fractiontype, textpoint, subscriptscale, superscriptscale, insertstyle, updatestyle, deletestyle, applystyle
@@ -122,102 +118,6 @@ class TextEditor implements Decorator {
       styleOverrides: this.runStyle,
     }));
   }
-
-public async appendFieldRun(elementId: string, propName: string = "string"): Promise<void> {
-    if(this._iModel){
-      const element = (await this._iModel.elements.getProps(elementId))[0];
-      const classFullName = element.classFullName;
-      const [schemaName, className] = classFullName.split(/[:.]/);
-
-      let ecProp: Property | undefined;
-      const schemaItem = await this._iModel.schemaContext.getSchemaItem(schemaName, className);
-      if (EntityClass.isEntityClass(schemaItem)) {
-        const ecClass: AnyClass = schemaItem;
-        ecProp = await ecClass.getProperty(propName); //should be user defined? maybe diff var?
-      }
-      if (!ecProp)
-        throw new Error("Property Undefined");
-
-      const query = `SELECT ${propName} FROM ${schemaName}.${className} WHERE ECInstanceId = ${elementId}`;
-      const reader = this._iModel.createQueryReader(query);
-
-      let value: any;
-      for await (const row of reader) {
-        value = row[propName];
-        break; // Only need the first result
-      }
-      // this defeats the purpose of checking for the prop type in getFieldPropertyValue?
-      // const propType = computeFieldPropertyType(ecProp);
-
-      this.textBlock.appendRun(FieldRun.create({
-        styleOverrides: this.runStyle,
-        propertyHost: { elementId, className, schemaName},
-        propertyPath: {propertyName: propName}, //ecProp.name should go here? How do we get this to match propType?
-        propertyType: "string", //can be computed, but maybe should be user defined? unsure of the purpose of compute func
-        cachedContent: value,
-      }));
-    }
-  }
-
-  // public async appendFieldRun(elementId: string, propName: string, propertyType: string): Promise<void> {
-  //   if(this._iModel){
-  //     const elements = await this._iModel.elements.getProps(elementId);
-  //     const classFullName = elements[0].classFullName;
-  //     const [schemaName, className] = classFullName.split(/[:.]/);
-
-  //     let ecProp: Property | undefined;
-  //     const schemaItem = await this._iModel.schemaContext.getSchemaItem(schemaName, className);
-  //     if (EntityClass.isEntityClass(schemaItem)) {
-  //       const ecClass: AnyClass = schemaItem;
-  //       ecProp = await ecClass.getProperty(propName);
-  //     }
-  //     if (!ecProp)
-  //       throw new Error("Property Undefined");
-
-  //     const koq = await ecProp.kindOfQuantity;
-  //     if (!koq)
-  //       throw new Error("KindOfQuantity Undefined")
-
-  //     const unit = await koq.persistenceUnit;
-  //     if (!unit)
-  //       throw new Error("Unit Undefined")
-
-  //     let fieldOptions: FieldFormatOptions | undefined;
-  //     if (propertyType === "quantity"){
-  //       const unitsProvider = new SchemaUnitProvider(this._iModel?.schemaContext);
-  //       const formatsProvider = new SchemaFormatsProvider(this._iModel.schemaContext, IModelApp.quantityFormatter.activeUnitSystem);
-
-  //       const persistenceUnit = await unitsProvider.findUnitByName(unit.fullName);
-  //       const formatProps = await formatsProvider.getFormat(koq.fullName);
-  //       if (!formatProps)
-  //         throw new Error("formatProps is undefined");
-  //       const format = await Format.createFromJSON("test format", unitsProvider, formatProps);
-  //       const unitConversions = await FormatterSpec.getUnitConversions(format, unitsProvider, persistenceUnit);
-  //       const resolvedProps = format.toFullyResolvedJSON();
-
-  //       const quantityOptions: QuantityFieldFormatOptions = {
-  //         koqName: koq.name,
-  //         formatProps: resolvedProps,
-  //         unitConversions,
-  //         sourceUnit: persistenceUnit
-  //       };
-  //       fieldOptions = {
-  //         quantity: quantityOptions
-  //       };
-  //    }
-  //    if (propertyType === "")
-  //     // ... other prop types?
-
-  //     this.textBlock.appendRun(FieldRun.create({
-  //       styleOverrides: this.runStyle,
-  //       propertyHost: { elementId, className, schemaName},
-  //       propertyPath: {propertyName: ecProp.name},
-  //       propertyType, //user provided?
-  //       cachedContent: elements[0].code.value,
-  //       formatOptions: fieldOptions,
-  //     }));
-  //   }
-  // }
 
   public appendParagraph(): void {
     this.textBlock.appendParagraph();
@@ -362,12 +262,6 @@ export class TextDecorationTool extends Tool {
         }
 
         editor.appendFraction(inArgs[1], inArgs[2]);
-        break;
-      case "field":
-        if (inArgs.length === 2)
-          await editor.appendFieldRun(inArgs[1]);
-        else
-          await editor.appendFieldRun(inArgs[1], inArgs[2]);
         break;
       case "break":
         editor.appendBreak();
