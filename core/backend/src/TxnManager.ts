@@ -299,17 +299,18 @@ interface IConflictHandler {
  * @alpha
  * Transaction types
  */
-export type TxnType = "Data" | "EcSchema" | "Ddl";
+export type TxnType = "Data" | "ECSchema" | "Ddl";
 
 /**
  * @alpha
  * Represents the properties of a transaction within the transaction manager.
  *
  * @property id - The unique identifier for the transaction.
+ * @property sessionId - The identifier of the session to which the transaction belongs.
  * @property nextId - (Optional) The identifier of the next transaction in the sequence.
  * @property prevId - (Optional) The identifier of the previous transaction in the sequence.
  * @property props - The arguments or properties associated with the save changes operation.
- * @property type - The type of transaction, which can be "Data", "EcSchema", or "Ddl".
+ * @property type - The type of transaction, which can be "Data", "ECSchema", or "Ddl".
  * @property reversed - Indicates whether the transaction has been reversed.
  * @property grouped - Indicates whether the transaction is grouped with others.
  * @property timestamp - The timestamp when the transaction was created.
@@ -329,7 +330,7 @@ export interface TxnProps {
 /**
  * Manages the process of merging and rebasing local changes (transactions) in a [[BriefcaseDb]] or [[StandaloneDb]].
  *
- * The `ChangeMergeManager` coordinates the rebase of local transactions when pulling and merging changes from other sources,
+ * The `RebaseManager` coordinates the rebase of local transactions when pulling and merging changes from other sources,
  * such as remote repositories or other users. It provides mechanisms to handle transaction conflicts, register custom conflict
  * handlers, and manage the rebase workflow. This includes resuming rebases, invoking user-defined handlers for conflict resolution,
  * and tracking the current merge/rebase state.
@@ -347,9 +348,6 @@ export class RebaseManager {
   private _conflictHandlers?: IConflictHandler;
   private _customHandler?: RebaseHandler;
   public constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
-  private get _txns() {
-    return this._iModel.txns;
-  }
 
   /**
    * Resumes the rebase process for the current iModel, applying any pending local changes
@@ -377,14 +375,14 @@ export class RebaseManager {
       nativeDb.pullMergeRebaseBegin();
       let txnId = nativeDb.pullMergeRebaseNext();
       while (txnId) {
-        const txnProps = this._txns.getTxnProps(txnId);
+        const txnProps = txns.getTxnProps(txnId);
         if (!txnProps) {
           throw new Error(`Transaction ${txnId} not found`);
         }
 
         txns.onRebaseTxnBegin.raiseEvent(txnProps);
         Logger.logInfo(BackendLoggerCategory.IModelDb, `Rebasing local changes for transaction ${txnId}`);
-        const shouldReinstate = this._customHandler ? this._customHandler.shouldReinstate(txnProps) : true;
+        const shouldReinstate = this._customHandler?.shouldReinstate(txnProps) ?? true;
         if (shouldReinstate) {
           nativeDb.pullMergeRebaseReinstateTxn();
           Logger.logInfo(BackendLoggerCategory.IModelDb, `Reinstated local changes for transaction ${txnId}`);
@@ -450,7 +448,7 @@ export class RebaseManager {
    */
   public setCustomHandler(handler: RebaseHandler) {
     if (this._customHandler) {
-      throw new IModelError(IModelStatus.BadArg, "Rebase handler already set");
+      Logger.logWarning(BackendLoggerCategory.IModelDb, "Rebase handler already set");
     }
     this._customHandler = handler;
   }
@@ -863,9 +861,15 @@ export class TxnManager {
    */
   public readonly onReplayedExternalTxns = new BeEvent<() => void>();
 
-  /** @internal */
+  /**
+   * @alpha
+   * Event raised when a rebase transaction begins.
+   */
   public readonly onRebaseTxnBegin = new BeEvent<(txn: TxnProps) => void>();
-  /** @internal */
+  /**
+   * @alpha
+   * Event raised when a rebase transaction ends.
+   */
   public readonly onRebaseTxnEnd = new BeEvent<(txn: TxnProps) => void>();
   /**
    * if handler is set and it does not return undefined then default handler will not be called

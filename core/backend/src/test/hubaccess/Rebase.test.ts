@@ -574,13 +574,13 @@ describe("rebase changes & stashing api", function (this: Suite) {
     b1.saveChanges();
 
     // restore stash should fail because of lock not obtained on e1
-    await chai.expect(StashManager.apply({ db: b2, stash: b2Stash1, method: "restore" })).to.be.rejectedWith("exclusive lock is already held");
+    await chai.expect(StashManager.restore({ db: b2, stash: b2Stash1 })).to.be.rejectedWith("exclusive lock is already held");
 
     // push b1 changes to release lock
     await b1.pushChanges({ description: `${e1} inserted` });
 
     // restore stash should fail because pull is required to obtain lock
-    await chai.expect(StashManager.apply({ db: b2, stash: b2Stash1, method: "restore" })).to.be.rejectedWith("pull is required to obtain lock");
+    await chai.expect(StashManager.restore({ db: b2, stash: b2Stash1 })).to.be.rejectedWith("pull is required to obtain lock");
 
     await b2.pullChanges();
 

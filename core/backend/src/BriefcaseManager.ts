@@ -58,6 +58,7 @@ export interface PushChangesArgs extends TokenArg {
   pushRetryDelay?: BeDuration;
   /**
    *  (unused)
+   * @deprecated Not used by BriefcaseManager
    * @internal
    */
   noFastForward?: true;
@@ -577,8 +578,10 @@ export class BriefcaseManager {
       await this.createRestorePoint(briefcaseDb, this.PULL_MERGE_RESTORE_POINT_NAME);
     }
 
-    const reversedTxns = nativeDb.pullMergeReverseLocalChanges();
-    Logger.logInfo(loggerCategory, `Reversed ${reversedTxns.length} local changes`);
+    if (!reverse) {
+      const reversedTxns = nativeDb.pullMergeReverseLocalChanges();
+      Logger.logInfo(loggerCategory, `Reversed ${reversedTxns.length} local changes`);
+    }
 
     // apply incoming changes
     for (const changeset of changesets) {
@@ -633,10 +636,6 @@ export class BriefcaseManager {
    */
   public static async createRestorePoint(db: BriefcaseDb, name: string ): Promise<StashProps> {
     Logger.logTrace(loggerCategory, `Creating restore point ${name}`);
-    if (name.length === 0) {
-      throw new Error("Invalid restore point name");
-    }
-
     this.dropRestorePoint(db, name);
 
     const stash = await StashManager.stash({ db, description: this.getRestorePointLocalValueKey(name) });
@@ -655,9 +654,6 @@ export class BriefcaseManager {
    */
   public static dropRestorePoint(db: BriefcaseDb, name: string ): void {
     Logger.logTrace(loggerCategory, `Dropping restore point ${name}`);
-    if (name.length === 0) {
-      throw new Error("Invalid restore point name");
-    }
 
     const restorePointId = db[_nativeDb].queryLocalValue(this.getRestorePointLocalValueKey(name));
     if (restorePointId) {
@@ -679,9 +675,6 @@ export class BriefcaseManager {
    */
   public static containsRestorePoint(db: BriefcaseDb, name: string ): boolean {
     Logger.logTrace(loggerCategory, `Checking if restore point ${name} exists`);
-    if (name.length === 0) {
-      throw new Error("Invalid restore point name");
-    }
     const key = this.getRestorePointLocalValueKey(name);
     const restorePointId = db[_nativeDb].queryLocalValue(key);
     if (!restorePointId) {
@@ -698,6 +691,9 @@ export class BriefcaseManager {
   }
 
   private static getRestorePointLocalValueKey(name: string ): string {
+    if (name.length === 0) {
+      throw new Error("Invalid restore point name");
+    }
     return `restore_point/${name}`;
   }
 
@@ -710,9 +706,6 @@ export class BriefcaseManager {
    */
   public static async restorePoint(db: BriefcaseDb, name: string): Promise<void> {
     Logger.logTrace(loggerCategory, `Restoring to restore point ${name}`);
-    if (name.length === 0) {
-      throw new Error("Invalid restore point name");
-    }
     const restorePointId = db[_nativeDb].queryLocalValue(this.getRestorePointLocalValueKey(name));
     if (!restorePointId) {
       throw new Error(`Restore point not found: ${name}`);

@@ -3534,6 +3534,8 @@ export interface ImageSourceFromImageBufferArgs {
 export abstract class IModelDb extends IModel {
     // @internal (undocumented)
     readonly [_nativeDb]: IModelJsNative.DgnDb;
+    // @internal (undocumented)
+    [_resetIModelDb](): void;
     // @internal
     protected constructor(args: {
         nativeDb: IModelJsNative.DgnDb;
@@ -3687,7 +3689,7 @@ export abstract class IModelDb extends IModel {
     // @internal @deprecated (undocumented)
     reverseTxns(numOperations: number): IModelStatus;
     saveChanges(description?: string): void;
-    saveChanges(descriptionOrArgs: SaveChangesArgs): void;
+    saveChanges(args: SaveChangesArgs): void;
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     // @beta
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
@@ -4003,6 +4005,7 @@ export interface IModelHostOptions {
     compressCachedTiles?: boolean;
     // @internal
     crashReportingConfig?: CrashReportingConfig;
+    // @beta
     disableRestorePointOnPullMerge?: true;
     disableThinnedNativeInstanceWorkflow?: boolean;
     enableOpenTelemetry?: boolean;
@@ -5143,7 +5146,7 @@ export interface PushChangesArgs extends TokenArg {
     description: string;
     mergeRetryCount?: number;
     mergeRetryDelay?: BeDuration;
-    // @internal
+    // @internal @deprecated
     noFastForward?: true;
     pushRetryCount?: number;
     pushRetryDelay?: BeDuration;
@@ -6655,9 +6658,9 @@ export class TxnManager {
     protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
-    // @internal (undocumented)
+    // @alpha
     readonly onRebaseTxnBegin: BeEvent<(txn: TxnProps) => void>;
-    // @internal (undocumented)
+    // @alpha
     readonly onRebaseTxnEnd: BeEvent<(txn: TxnProps) => void>;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     // @internal (undocumented)
@@ -6712,7 +6715,7 @@ export interface TxnProps {
 }
 
 // @alpha
-export type TxnType = "Data" | "EcSchema" | "Ddl";
+export type TxnType = "Data" | "ECSchema" | "Ddl";
 
 // @public @preview
 export abstract class TypeDefinitionElement extends DefinitionElement {

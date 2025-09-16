@@ -68,7 +68,7 @@ import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
-import { _cache, _close, _hubAccess, _instanceKeyCache, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
+import { _cache, _close, _hubAccess, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
 import { ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
@@ -380,10 +380,7 @@ export abstract class IModelDb extends IModel {
 
     this[_nativeDb].setIModelDb(this);
 
-    this.loadIModelSettings();
-    GeoCoordConfig.loadForImodel(this.workspace.settings); // load gcs data specified by iModel's settings dictionaries, must be done before calling initializeIModelDb
-
-    this.initializeIModelDb();
+    this[_resetIModelDb]();
     IModelDb._openDbs.set(this._fileKey, this);
 
     if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
@@ -397,11 +394,19 @@ export abstract class IModelDb extends IModel {
       });
     }
   }
+
+  /** @internal */
+  public [_resetIModelDb] () {
+    this.loadIModelSettings();
+    GeoCoordConfig.loadForImodel(this.workspace.settings); // load gcs data specified by iModel's settings dictionaries, must be done before calling initializeIModelDb
+    this.initializeIModelDb();
+  }
+
   /**
    * Attach an iModel file to this connection and load and register its schemas.
    * @note There are some reserve tablespace names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
    * @param fileName IModel file name
-   * @param alias identifier for the attached file. This identifer is used to access schema from the attached file. e.g. if alias is 'abc' then schema can be accessed using 'abc.MySchema.MyClass'
+   * @param alias identifier for the attached file. This identifier is used to access schema from the attached file. e.g. if alias is 'abc' then schema can be accessed using 'abc.MySchema.MyClass'
    *
    * *Example:*
    * ``` ts
@@ -828,9 +833,9 @@ export abstract class IModelDb extends IModel {
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
    */
 
-    public saveChanges(descriptionOrArgs: SaveChangesArgs): void;
+    public saveChanges(args: SaveChangesArgs): void;
   /** Commit unsaved changes in memory as a Txn to this iModelDb.
-   * @param descriptionOrArgs Optional description of the changes
+   * @param args Optional [[SaveChangesArgs]]
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    * @note This will not push changes to the iModelHub.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
@@ -3076,7 +3081,7 @@ export class BriefcaseDb extends IModelDb {
     this.clearCaches();
     this[_nativeDb].clearECDbCache();
     this[_nativeDb].discardLocalChanges();
-    this.initializeIModelDb("pullMerge");
+    this[_resetIModelDb]();
     if (args?.retainLocks) {
       return;
     }

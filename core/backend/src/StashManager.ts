@@ -1,10 +1,10 @@
-import { DbResult, GuidString, Id64Array, Id64String, IModelStatus, Logger, OpenMode } from "@itwin/core-bentley";
-import { ChangesetIdWithIndex, IModelError, LocalDirName, LockState } from "@itwin/core-common";
+import { DbResult, GuidString, Id64Array, Id64String, Logger, OpenMode } from "@itwin/core-bentley";
+import { ChangesetIdWithIndex, LocalDirName, LockState } from "@itwin/core-common";
 import { existsSync, mkdirSync, readdirSync, statSync, unlinkSync } from "node:fs";
 import * as path from "path";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { BriefcaseDb } from "./IModelDb";
-import { _elementWasCreated, _getHubAccess, _hubAccess, _nativeDb } from "./internal/Symbols";
+import { _elementWasCreated, _getHubAccess, _hubAccess, _nativeDb, _resetIModelDb } from "./internal/Symbols";
 import { SQLiteDb } from "./SQLiteDb";
 import { TxnProps } from "./TxnManager";
 import { IModelHost } from "./IModelHost";
@@ -99,7 +99,7 @@ enum LockOrigin {
  */
 export class StashManager {
 
-  private static readonly STASH_ROOT_DIR_NAME: string = ".stashes";
+  private static readonly STASHES_ROOT_DIR_NAME: string = ".stashes";
   /**
    * Retrieves the root folder path for stash files associated with the specified BriefcaseDb.
    *
@@ -115,7 +115,7 @@ export class StashManager {
       throw new StashError("Could not determine briefcase path");
     }
 
-    const stashDir = path.join(path.dirname(db[_nativeDb].getFilePath()), StashManager.STASH_ROOT_DIR_NAME, `${db.briefcaseId}`);
+    const stashDir = path.join(path.dirname(db[_nativeDb].getFilePath()), this.STASHES_ROOT_DIR_NAME, `${db.briefcaseId}`);
     if (ensureExists && !existsSync(stashDir)) {
       mkdirSync(stashDir, { recursive: true });
     }
@@ -202,8 +202,6 @@ export class StashManager {
    * @returns A promise that resolves to the properties of the created stash.
    */
   public static async stash(args: CreateStashProps): Promise<StashProps> {
-    const stashRootDir = StashManager.getStashRootFolder(args.db, true);
-    const iModelId = args.db.iModelId;
     if (!args.db.txns.hasPendingTxns) {
       throw new StashError("nothing to stash");
     }
@@ -216,6 +214,8 @@ export class StashManager {
       throw new StashError("Pending schema changeset. Stashing is not currently supported for schema changes");
     }
 
+    const stashRootDir = this.getStashRootFolder(args.db, true);
+    const iModelId = args.db.iModelId;
     const stash = args.db[_nativeDb].stashChanges({ stashRootDir, description: args.description, iModelId }) as StashProps;
     if (args.discardLocalChanges) {
       await args.db.discardChanges({ retainLocks: args.retainLocks });
@@ -240,14 +240,13 @@ export class StashManager {
       return this.withStash(args, (stashDb) => {
         const stashProps = stashDb.withPreparedSqliteStatement("SELECT [val] FROM [be_Local] WHERE [name]='$stash_info'", (stmt) => {
           if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-            throw new IModelError(IModelStatus.BadArg, "Invalid stash");
+            throw new StashError("Invalid stash");
           return JSON.parse(stmt.getValueString(0)) as StashProps;
         });
         return stashProps;
       });
     } catch (error: any) {
-      const stashId = typeof args.stash === "string" ? args.stash : args.stash.id;
-      Logger.logError(loggerCategory, `Error getting stash with ${stashId}: ${error.message}`);
+      Logger.logError(loggerCategory, `Error getting stash with ${this.getStashId(args)}: ${error.message}`);
     }
     return undefined;
   }
@@ -263,7 +262,7 @@ export class StashManager {
   private static withStash<T>(args: StashArgs, callback: (stashDb: SQLiteDb) => T): T {
     const stashFile = this.getStashFilePath(args);
     if (!existsSync(stashFile)) {
-      throw new IModelError(IModelStatus.BadArg, "Invalid stash");
+      throw new StashError("Invalid stash");
     }
 
     const stashDb = new SQLiteDb();
@@ -282,7 +281,7 @@ export class StashManager {
    */
   public static getStashes(db: BriefcaseDb): StashProps[] {
     const stashes: StashProps[] = [];
-    const stashDir = StashManager.getStashRootFolder(db, false);
+    const stashDir = this.getStashRootFolder(db, false);
     if (!existsSync(stashDir)) {
       return stashes;
     }
@@ -379,8 +378,7 @@ export class StashManager {
     }
 
     db[_nativeDb].stashRestore(stashFile);
-    (db as any).loadIModelSettings();
-    (db as any).initializeIModelDb("pullMerge");
+    db[_resetIModelDb]();
     db.saveChanges();
     Logger.logInfo(loggerCategory, `Restored stash: ${this.getStashId(args)}`);
   }
