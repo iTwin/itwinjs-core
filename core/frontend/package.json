@@ -100,7 +100,6 @@
     "@itwin/webgl-compatibility": "workspace:*",
     "@loaders.gl/core": "^4.3.4",
     "@loaders.gl/draco": "^4.3.4",
-    "@loaders.gl/loader-utils": "^4.3.4",
     "draco3d": "^1.5.7",
     "fuse.js": "^3.3.0",
     "wms-capabilities": "0.4.0"
