@@ -9,7 +9,7 @@ import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
 import { BriefcaseDb, BriefcaseManager, ChannelControl, DrawingCategory, IModelHost, SqliteChangesetReader, TxnProps } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { Suite } from "mocha";
-import { Code, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { Code, ElementProps, GeometricElement2dProps, IModel, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Guid, Id64String } from "@itwin/core-bentley";
 import { StashManager } from "../../StashManager";
 chai.use(chaiAsPromised);
@@ -28,12 +28,21 @@ class TestIModel {
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     b1.saveChanges();
     const schema1 = `<?xml version="1.0" encoding="UTF-8"?>
-    <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
-        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
         <ECEntityClass typeName="a1">
             <BaseClass>bis:GraphicalElement2d</BaseClass>
             <ECProperty propertyName="prop1" typeName="string" />
         </ECEntityClass>
+        <ECRelationshipClass typeName="A1OwnsA1" modifier="None" strength="embedding">
+            <BaseClass>bis:ElementOwnsChildElements</BaseClass>
+            <Source multiplicity="(0..1)" roleLabel="owns" polymorphic="true">
+                <Class class="a1"/>
+            </Source>
+            <Target multiplicity="(0..*)" roleLabel="is owned by" polymorphic="false">
+                <Class class="a1"/>
+            </Target>
+        </ECRelationshipClass>
     </ECSchema>`;
 
     await b1.importSchemaStrings([schema1]);
@@ -74,6 +83,27 @@ class TestIModel {
       return id;
     }
     return b.elements.insertElement({ ...baseProps, prop1: `${this._data++}` } as any);
+  }
+  public async insertElement2(b: BriefcaseDb, args?: { prop1?: string, markAsIndirect?: true, parent?: RelatedElementProps }) {
+    await b.locks.acquireLocks({ shared: [this.drawingModelId] });
+
+    const props: GeometricElement2dProps & { prop1: string } = {
+      classFullName: "TestDomain:a1",
+      model: this.drawingModelId,
+      category: this.drawingCategoryId,
+      code: Code.createEmpty(),
+      parent: args?.parent,
+      prop1: args?.prop1 ?? `${this._data++}`
+    };
+
+    let id: Id64String = "";
+    if (args?.markAsIndirect) {
+      b.txns.withIndirectTxnMode(() => {
+        id = b.elements.insertElement(props as any);
+      });
+      return id;
+    }
+    return b.elements.insertElement(props as any);
   }
   public async updateElement(b: BriefcaseDb, id: Id64String, markAsIndirect?: true) {
     await b.locks.acquireLocks({ shared: [this.drawingModelId], exclusive: [id] });
@@ -623,7 +653,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     let e3 = "";
     b2.saveChanges();
     b2.txns.rebaser.setCustomHandler({
-      shouldReinstate:  (_txnProps: TxnProps) => {
+      shouldReinstate: (_txnProps: TxnProps) => {
         return true;
       },
       recompute: async (_txnProps: TxnProps) => {
@@ -656,5 +686,29 @@ describe("rebase changes & stashing api", function (this: Suite) {
     chai.expect(b2.elements.tryGetElementProps(e3)).to.undefined; // add by rebase so should not exist either
 
     chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.false;
+  });
+  it("edge case: a indirect update can cause FK violation", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const parentId = await testIModel.insertElement(b1);
+    const childId = await testIModel.insertElement2(b1, { parent: {id: parentId, relClassName: "TestDomain:A1OwnsA1"} });
+    b1.saveChanges("insert parent and child");
+    await b1.pushChanges({ description: `inserted parent ${parentId} and child ${childId}` });
+    await b2.pullChanges();
+
+    // b1 delete childId while b1 create a child of childId as indirect change
+    await testIModel.deleteElement(b1, childId);
+    b1.saveChanges("delete child");
+    // no exclusive lock required on child1
+    const grandChildId = await testIModel.insertElement2(b2, { parent: {id: childId, relClassName: "TestDomain:A1OwnsA1"}, markAsIndirect: true });
+    b2.saveChanges("delete child and insert grandchild");
+
+    await b1.pushChanges({ description: `deleted child ${childId}` });
+
+    // should fail to pull and rebase changes.
+    await chai.expect(b2.pushChanges({ description: `deleted child ${childId} and inserted grandchild ${grandChildId}` }))
+      .to.be.rejectedWith("Foreign key conflicts in ChangeSet. Aborting rebase." );
+
   });
 });
