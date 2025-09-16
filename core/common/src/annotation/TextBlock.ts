@@ -64,6 +64,15 @@ export interface TextBlockStringifyContext {
   depth: number;
 }
 
+function clearStyleOverrides(component: StructuralTextBlockComponent, options?: ClearTextStyleOptions): void {
+  component.styleOverrides = {};
+  if (options?.preserveChildrenOverrides) {
+    for (const child of component.children) {
+      child.clearStyleOverrides(options);
+    }
+  }
+}
+
 /**
  * Abstract representation of any of the building blocks that make up a [[TextBlock]] document - namely [[Run]]s and [[ContainerBase]]s.
  * The [[TextBlock]] can specify an [AnnotationTextStyle]($backend) that formats its contents.
@@ -638,6 +647,10 @@ export class Paragraph extends TextBlockComponent {
     return new Paragraph(props);
   }
 
+  public override clearStyleOverrides(options?: ClearTextStyleOptions): void {
+    clearStyleOverrides(this, options);
+  }
+
   public override get isEmpty() {
     return this.children.length === 0;
   }
@@ -688,6 +701,10 @@ export class List extends TextBlockComponent {
   /** Create a list from its JSON representation. */
   public static create(props?: Omit<ListProps, "type">): List {
     return new List({ ...props, type: "list" });
+  }
+
+  public override clearStyleOverrides(options?: ClearTextStyleOptions): void {
+    clearStyleOverrides(this, options);
   }
 
   public override get isEmpty() {
@@ -800,6 +817,10 @@ export class TextBlock extends TextBlockComponent {
     };
 
     this.children = props?.children?.map((para) => Paragraph.create(para)) ?? [];
+  }
+
+  public override clearStyleOverrides(options?: ClearTextStyleOptions): void {
+    clearStyleOverrides(this, options);
   }
 
   public override toJSON(): TextBlockProps {
