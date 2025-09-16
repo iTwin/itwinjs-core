@@ -12,7 +12,7 @@ import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
 import * as path from "path";
 import * as fs from "fs";
 
-function formatFieldValue(value: FieldPrimitiveValue, type: FieldPropertyType | string, options: FieldFormatOptions | undefined): string | undefined {
+function formatFieldValue(value: FieldPrimitiveValue, type: FieldPropertyType, options: FieldFormatOptions | undefined): string | undefined {
   return fmtFldVal({ value, type }, options);
 }
 

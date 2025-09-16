@@ -7,8 +7,8 @@ import { ECSqlValueType, FieldPrimitiveValue, FieldPropertyType, FieldRun, Field
 import { IModelDb } from "../../IModelDb";
 import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
-import { computeFieldPropertyType, isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
-import { AnyClass, EntityClass, StructArrayProperty } from "@itwin/ecschema-metadata";
+import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
+import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, StructArrayProperty } from "@itwin/ecschema-metadata";
 
 interface FieldStructValue { [key: string]: any }
 
@@ -210,12 +210,16 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
     }
 
     const explicitType = field.propertyPath.json.type;
-    if (explicitType && isKnownFieldPropertyType(explicitType)) {
+    if (explicitType) {
+      if (!isKnownFieldPropertyType(explicitType)) {
+        return undefined;
+      }
+
       propertyType = explicitType;
     }
   } else {
-    const computedType = computeFieldPropertyType(field.propertyPath, field.propertyHost, iModel);
-    if(!computedType || "user-specified" === computedType) {
+    const computedType = determineFieldPropertyType(ecProp);
+    if(!computedType) {
       return undefined;
     }
 
@@ -228,6 +232,45 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
   }
 
   return { value: curValue.primitive, type: propertyType };
+}
+
+function determineFieldPropertyType(prop: Property): FieldPropertyType | undefined {
+  if (prop.isEnumeration()) {
+    switch (prop.propertyType) {
+      case PropertyType.Integer_Enumeration:
+        return "int-enum";
+      case PropertyType.String_Enumeration:
+        return "string-enum";
+      default:
+        return undefined;
+    }
+  }
+
+  if (prop.isPrimitive()) {
+    switch (prop.primitiveType) {
+      case PrimitiveType.Boolean:
+        return "boolean";
+      case PrimitiveType.String:
+        return prop.extendedTypeName === "DateTime" ? "datetime" : "string";
+      case PrimitiveType.DateTime:
+        return "datetime";
+      case PrimitiveType.Double:
+      case PrimitiveType.Long:
+        return "quantity";
+      case PrimitiveType.Point2d:
+      case PrimitiveType.Point3d:
+        return "coordinate";
+      case PrimitiveType.Binary:
+        return prop.extendedTypeName === "BeGuid" ? "string" : undefined;
+      case PrimitiveType.Integer:
+      case PrimitiveType.Long:
+        return "string";
+      default:
+        return undefined;
+    }
+  }
+
+  return undefined;
 }
 
 export function createUpdateContext(hostElementId: string, iModel: IModelDb, deleted: boolean): UpdateFieldsContext {

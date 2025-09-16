@@ -12,7 +12,7 @@ export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYA
 
 export interface FieldValue {
   value: FieldPrimitiveValue;
-  type: FieldPropertyType | string;
+  type: FieldPropertyType;
 }
 
 type FieldFormatter = (value: FieldPrimitiveValue, options: FieldFormatOptions | undefined) => string | undefined;

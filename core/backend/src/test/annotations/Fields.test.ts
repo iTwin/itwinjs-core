@@ -14,7 +14,7 @@ import { Schema, Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
 import { PhysicalElement } from "../../Element";
 import { ElementOwnsUniqueAspect, ElementUniqueAspect, FontFile, TextAnnotation3d } from "../../core-backend";
-import { computeFieldPropertyType, ElementDrivesTextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
+import { ElementDrivesTextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 
 describe.only("updateField", () => {
   const mockElementId = "0x1";
@@ -291,20 +291,23 @@ describe.only("Field evaluation", () => {
     return id;
   }
 
+  function evaluateField(propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String, deletedDependency = false): FieldValue | undefined {
+    if (typeof propertyHost === "string") {
+      propertyHost = { schemaName: "Fields", className: "TestElement", elementId: propertyHost };
+    }
+
+    const field = FieldRun.create({
+      propertyPath,
+      propertyHost,
+    });
+
+    const context = createUpdateContext(propertyHost.elementId, imodel, deletedDependency);
+    return context.getProperty(field);
+  }
+
   describe("getProperty", () => {
     function expectValue(expected: any, propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String, deletedDependency = false): void {
-      if (typeof propertyHost === "string") {
-        propertyHost = { schemaName: "Fields", className: "TestElement", elementId: propertyHost };
-      }
-
-      const field = FieldRun.create({
-        propertyPath,
-        propertyHost,
-      });
-
-      const context = createUpdateContext(propertyHost.elementId, imodel, deletedDependency);
-      const actual = context.getProperty(field);
-      expect(actual?.value).to.deep.equal(expected);
+      expect(evaluateField(propertyPath, propertyHost, deletedDependency)?.value).to.deep.equal(expected);
     }
 
     it("returns a primitive property value", () => {
@@ -410,6 +413,95 @@ describe.only("Field evaluation", () => {
       expect(imodel.elements.getAspects(sourceElementId, "Fields:TestAspect").length).to.equal(1);
       expectValue(999, { propertyName: "aspectProp" }, { elementId: sourceElementId, schemaName: "Fields", className: "TestAspect" });
     });
+
+    describe("property type", () => {
+      it("should fail to evaluate if prop type does not match", () => {
+        const fieldRun = FieldRun.create({
+          propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+          propertyPath: { propertyName: "string", accessors: [0] },
+          cachedContent: "oldValue",
+          formatOptions: {
+            case: "upper",
+            prefix: "Value: ",
+            suffix: "!"
+          }
+        });
+
+        const context =  createUpdateContext(sourceElementId, imodel, false);
+
+        const updated = updateField(fieldRun, context);
+
+        expect(updated).to.be.true;
+        expect(fieldRun.cachedContent).to.equal(FieldRun.invalidContentIndicator);
+      });
+
+      function getPropertyType(propertyHost: FieldPropertyHost, propertyPath: string | FieldPropertyPath): FieldPropertyType | undefined {
+        if (typeof propertyPath === "string") {
+          propertyPath = { propertyName: propertyPath };
+        }
+
+        return evaluateField(propertyPath, propertyHost)?.type;
+      }
+
+      it("deduces type for primitive properties", () => {
+        const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
+        expect(getPropertyType(propertyHost, "intProp")).to.equal("string");
+        expect(getPropertyType(propertyHost, "point")).to.equal("coordinate");
+        expect(getPropertyType(propertyHost, { propertyName: "strings", accessors: [0] })).to.equal("string");
+        expect(getPropertyType(propertyHost, "intEnum")).to.equal("int-enum");
+        expect(getPropertyType(propertyHost, { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", 0] })).to.equal("quantity");
+        expect(getPropertyType(propertyHost, { propertyName: "outerStruct", accessors: ["innerStruct", "bool"] })).to.equal("boolean");
+
+        propertyHost.schemaName = "BisCore";
+        propertyHost.className = "GeometricElement3d";
+        expect(getPropertyType(propertyHost, "LastMod")).to.equal("datetime");
+        expect(getPropertyType(propertyHost, "FederationGuid")).to.equal("string");
+      });
+
+      it("returns undefined for non-primitive properties", () => {
+        const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
+        expect(getPropertyType(propertyHost, "outerStruct")).to.equal(undefined);
+        expect(getPropertyType(propertyHost, "outerStructs")).to.equal(undefined);
+      });
+
+      it("returns undefined for invalid property paths", () => {
+        const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
+        expect(getPropertyType(propertyHost, "unknownPropertyName")).to.be.undefined;
+      });
+
+      it("should return undefined for unsupported primitive types", () => {
+        const host = { elementId: sourceElementId, schemaName: "BisCore", className: "GeometricElement3d" };
+        expect(getPropertyType(host, "GeometryStream")).to.be.undefined;
+      });
+
+      it("infers type for JSON properties", () => {
+        const host = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
+        const path = { propertyName: "jsonProperties", json: { accessors: ["replace-me", 1] }};
+
+        path.json.accessors = ["stringProp"];
+        expect(getPropertyType(host, path)).to.equal("string");
+
+        path.json.accessors = ["ints", 0];
+        expect(getPropertyType(host, path)).to.equal("quantity");
+
+        path.json.accessors = ["bool"];
+        expect(getPropertyType(host, path)).to.equal("boolean");
+
+        path.json.accessors = ["zoo", "address", "zipcode"];
+        expect(getPropertyType(host, path)).to.equal("quantity");
+
+        path.json.accessors = ["zoo", "birds", 0, "name"];
+        expect(getPropertyType(host, path)).to.equal("string");
+      });
+
+      it("permits explicit type specification for JSON properties", () => {
+
+      });
+
+      it("produces undefined for unknown explicit type", () => {
+        // ###TODO
+      });
+    })
   });
 
   describe("updateFields", () => {
@@ -763,97 +855,6 @@ describe.only("Field evaluation", () => {
     });
   });
 
-  describe("computeFieldPropertyType", () => {
-    it("should fail to evaluate if prop type does not match", () => {
-       const fieldRun = FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "string", accessors: [0] },
-        cachedContent: "oldValue",
-        formatOptions: {
-          case: "upper",
-          prefix: "Value: ",
-          suffix: "!"
-        }
-      });
-
-      const context =  createUpdateContext(sourceElementId, imodel, false);
-
-      const updated = updateField(fieldRun, context);
-
-      expect(updated).to.be.true;
-      expect(fieldRun.cachedContent).to.equal(FieldRun.invalidContentIndicator);
-    });
-
-    function getPropertyType(propertyHost: FieldPropertyHost, propertyPath: string | FieldPropertyPath): FieldPropertyType | "user-specified" | undefined {
-      if (typeof propertyPath === "string") {
-        propertyPath = { propertyName: propertyPath };
-      }
-
-      return computeFieldPropertyType(propertyPath, propertyHost, imodel);
-    }
-
-    it("deduces type for primitive properties", () => {
-      const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
-      expect(getPropertyType(propertyHost, "intProp")).to.equal("string");
-      expect(getPropertyType(propertyHost, "point")).to.equal("coordinate");
-      expect(getPropertyType(propertyHost, "strings")).to.equal("string");
-      expect(getPropertyType(propertyHost, "intEnum")).to.equal("int-enum");
-      expect(getPropertyType(propertyHost, "maybeNull")).to.equal("string");
-      expect(getPropertyType(propertyHost, { propertyName: "outerStruct", accessors: ["innerStruct", "doubles"] })).to.equal("quantity");
-      expect(getPropertyType(propertyHost, { propertyName: "outerStruct", accessors: ["innerStruct", "bool"] })).to.equal("boolean");
-
-      propertyHost.schemaName = "BisCore";
-      propertyHost.className = "GeometricElement3d";
-      expect(getPropertyType(propertyHost, "LastMod")).to.equal("datetime");
-      expect(getPropertyType(propertyHost, "FederationGuid")).to.equal("string");
-    });
-
-    it("returns 'user-specified' for JSON properties", () => {
-      const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
-      expect(getPropertyType(propertyHost, { propertyName: "jsonProperties", json: { accessors: ["zoo", "birds", 0, "name"] } })).to.equal("user-specified");
-    });
-
-    it("returns undefined for non-primitive properties", () => {
-      const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
-      expect(getPropertyType(propertyHost, "outerStruct")).to.equal(undefined);
-      expect(getPropertyType(propertyHost, "outerStructs")).to.equal(undefined);
-    });
-
-    it("returns undefined for invalid property paths", () => {
-      const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
-      expect(getPropertyType(propertyHost, "unknownPropertyName")).to.be.undefined;
-    });
-
-    it("should return undefined for unsupported primitive types", () => {
-      const host = { elementId: sourceElementId, schemaName: "BisCore", className: "GeometricElement3d" };
-      expect(getPropertyType(host, "GeometryStream")).to.be.undefined;
-    });
-
-    it("infers type for JSON properties", () => {
-      const host = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
-      const path = { propertyName: "jsonProperties", json: { accessors: ["replace-me", 1] }};
-
-      path.json.accessors = ["stringProp"];
-      expect(getPropertyType(host, path)).to.equal("string");
-
-      path.json.accessors = ["intProps", 0];
-      expect(getPropertyType(host, path)).to.equal("quantity");
-
-      path.json.accessors = ["bool"];
-      expect(getPropertyType(host, path)).to.equal("boolean");
-
-      path.json.accessors = ["zoo", "address", "zipcode"];
-      expect(getPropertyType(host, path)).to.equal("quantity");
-
-      path.json.accessors = ["birds", 0, "name"];
-      expect(getPropertyType(host, path)).to.equal("string");
-    });
-
-    it("permits explicit type specification for JSON properties", () => {
-
-    });
-  });
-
   describe("Format Validation", () => {
     it("validates formatting options for string property type", () => {
       // Create a FieldRun with string property type and some format options
@@ -871,7 +872,7 @@ describe.only("Field evaluation", () => {
       // Context returns a string value for the property
       const context = {
         hostElementId: sourceElementId,
-        getProperty: () => { return { value: "abc", type: "string" } },
+        getProperty: () => { return { value: "abc", type: "string" as const } },
       };
 
       // Update the field and check the result
@@ -932,7 +933,7 @@ describe.only("Field evaluation", () => {
       // Context returns a numeric value for the property
       const context = {
         hostElementId: sourceElementId,
-        getProperty: () => { return { value: 123.456, type: "quantity" } },
+        getProperty: () => { return { value: 123.456, type: "quantity" as const } },
       };
 
       // Update the field and check the result
@@ -960,7 +961,7 @@ describe.only("Field evaluation", () => {
       // Context returns a coordinate value for the property
       const context = {
         hostElementId: sourceElementId,
-        getProperty: () => { return { value: { x: 1, y: 2, z: 3 }, type: "coordinate" } },
+        getProperty: () => { return { value: { x: 1, y: 2, z: 3 }, type: "coordinate" as const } },
       };
 
       // Update the field and check the result
@@ -988,7 +989,7 @@ describe.only("Field evaluation", () => {
       // Context returns a boolean value for the property
       const context = {
         hostElementId: sourceElementId,
-        getProperty: () => { return { value: false, type: "boolean" } },
+        getProperty: () => { return { value: false, type: "boolean" as const } },
       };
 
       // Update the field and check the result
@@ -1019,7 +1020,7 @@ describe.only("Field evaluation", () => {
       // Context returns an int-enum value for the property
       const context = {
         hostElementId: sourceElementId,
-        getProperty: () => { return { value: 1, type: "int-enum" } },
+        getProperty: () => { return { value: 1, type: "int-enum" as const } },
       };
 
       // Update the field and check the result
@@ -1050,7 +1051,7 @@ describe.only("Field evaluation", () => {
       // Context returns a string-enum value for the property
       const context = {
         hostElementId: sourceElementId,
-        getProperty: () => { return { value: "duck", type: "string-enum" } },
+        getProperty: () => { return { value: "duck", type: "string-enum" as const } },
       };
 
       // Update the field and check the result
@@ -1077,7 +1078,7 @@ describe.only("Field evaluation", () => {
       // Context returns a string value for the property
       const context = {
         hostElementId: sourceElementId,
-        getProperty: () => { return { value: "abc", type: "string" } },
+        getProperty: () => { return { value: "abc", type: "string" as const } },
       };
 
       // Update the field and check the result
@@ -1139,7 +1140,7 @@ describe.only("Field evaluation", () => {
       // Context returns a numeric value for the property from JSON
       const context = {
         hostElementId: sourceElementId,
-        getProperty: () => { return { value: 11, type: "quantity" } }, // This matches jsonProperties.ints[1] in the test element
+        getProperty: () => { return { value: 11, type: "quantity" as const } }, // This matches jsonProperties.ints[1] in the test element
       };
 
       // Update the field and check the result
