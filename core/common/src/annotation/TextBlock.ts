@@ -183,6 +183,7 @@ export interface ContainerBaseProps<T extends TextBlockComponentProps = TextBloc
 
 
 /**
+ * TODO: Possibly remove, or at least not export it. Instead export unions of mostly flat types.
  * Abstract representation of any of the container blocks that make up a [[TextBlock]] document.
  * Each component can specify an optional [[styleOverrides]] to customize that formatting.
  * @internal
