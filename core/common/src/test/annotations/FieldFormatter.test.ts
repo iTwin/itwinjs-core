@@ -698,17 +698,6 @@ describe("Field formatting", () => {
     });
 
     it("supports other locales", () => {
-      const opts: FieldFormatOptions = {
-        dateTime: {
-          formatOptions: {
-            weekday: "long",
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          },
-        },
-      };
-
       const date = new Date(2012, 5);
 
       const testCases = [

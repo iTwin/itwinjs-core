@@ -30,6 +30,7 @@ function isCoordinate(v: FieldPrimitiveValue): v is Coordinate {
 }
 
 const formatters: { [type: string]: FieldFormatter | undefined } = {
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string
   "string": (v, o) => formatString(v.toString(), o),
 
   "int-enum": (v, o) => {

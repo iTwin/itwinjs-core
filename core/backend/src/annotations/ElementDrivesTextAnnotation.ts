@@ -6,13 +6,13 @@
  * @module Elements
  */
 
-import { FieldPropertyHost, FieldPropertyPath, FieldPropertyType, RelationshipProps, TextBlock } from "@itwin/core-common";
+import { RelationshipProps, TextBlock } from "@itwin/core-common";
 import { ElementDrivesElement } from "../Relationship";
 import { IModelDb } from "../IModelDb";
 import { Element } from "../Element";
 import { updateElementFields } from "../internal/annotations/fields";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { AnyClass, ECVersion, EntityClass, PrimitiveType, Property, PropertyType } from "@itwin/ecschema-metadata";
+import { ECVersion } from "@itwin/ecschema-metadata";
 
 /** Describes one of potentially many [TextBlock]($common)s hosted by an [[ITextAnnotation]].
  * For example, a [[TextAnnotation2d]] hosts only a single text block, but an element representing a table may

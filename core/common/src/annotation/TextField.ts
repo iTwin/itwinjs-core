@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { Format, FormatDefinition, ResolvedFormatProps, UnitConversionProps, UnitConversionSpec, UnitProps } from "@itwin/core-quantity";
+import { ResolvedFormatProps, UnitConversionSpec, UnitProps } from "@itwin/core-quantity";
 
 /** Enumerates the different kinds of [Property]($ecschema-metadata) values that can be used as the basis for a [[FieldRun]]'s display string.
  * A field's property type is derived from the property's [PrimitiveType]($ecschema-metadata) and other attributes like its [PrimitiveOrEnumPropertyBase.extendedTypeName]($ecschema-metadata).
@@ -52,8 +52,11 @@ export interface FieldPropertyPath {
   json?: {
     /** Property names and/or array indices describing the path to the ultimate JSON property. */
     accessors: Array<string | number>;
-    /** Optionally specifies the expected type of the JSON property. If unspecified, then numbers are treated as "quantity", booleans as "boolean", and strings as "string". */
-    type?: FieldPropertyType | string;
+    /** Optionally specifies the expected type of the JSON property. If unspecified, then numbers are treated as "quantity", booleans as "boolean", and strings as "string".
+     * @note This is permitted to be any string because we anticipate adding new [[FieldPropertyType]]s in the future. If you specify an unrecognized type, the
+     * field will fail to format and will display as [[FieldRun.invalidContentIndicator]].
+     */
+    type?: FieldPropertyType | string; // eslint-disable-line @typescript-eslint/no-redundant-type-constituents
   };
 }
 
