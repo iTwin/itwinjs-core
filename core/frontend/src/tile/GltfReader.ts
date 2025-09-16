@@ -2188,8 +2188,8 @@ export abstract class GltfReader {
       modules: {
         // "draco_wasm_wrapper.js": jsWrapper,
         // "draco_decoder.wasm": wasm,
-        "draco_wasm_wrapper.js": `${IModelApp.publicPath}/draco/draco_wasm_wrapper.js`,
-        "draco_decoder.wasm": `${IModelApp.publicPath}/draco/draco_decoder.wasm`,
+        "draco_wasm_wrapper.js": `${IModelApp.publicPath}draco/draco_wasm_wrapper.js`,
+        "draco_decoder.wasm": `${IModelApp.publicPath}draco/draco_decoder.wasm`,
       },
       worker: false,
       useLocalLibraries: true,
