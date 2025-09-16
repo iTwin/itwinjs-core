@@ -65,10 +65,10 @@ describe("Field formatting", () => {
       expect(formatFieldValue(false, "boolean", { bool: { trueString: "T", falseString: "F" } })).toBe("F");
     });
 
-    it("fails if display label is not specified", () => {
-      expect(formatFieldValue(true, "boolean", undefined)).toBeUndefined();
-      expect(formatFieldValue(false, "boolean", {})).toBeUndefined();
-      expect(formatFieldValue(true, "boolean", { bool: {} })).toBeUndefined();
+    it("defaults to 1 and 0", () => {
+      expect(formatFieldValue(true, "boolean", undefined)).to.equal("1");
+      expect(formatFieldValue(false, "boolean", {})).to.equal("0");
+      expect(formatFieldValue(true, "boolean", { bool: {} })).to.equal("1");
     });
 
     it("applies all string formatting options", () => {
