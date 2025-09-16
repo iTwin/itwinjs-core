@@ -265,6 +265,7 @@ describe.only("Field evaluation", () => {
       jsonProperties: {
         stringProp: "abc",
         ints: [10, 11, 12, 13],
+        bool: true,
         zoo: {
           address: {
             zipcode: 12345,
@@ -692,7 +693,6 @@ describe.only("Field evaluation", () => {
       expectText(FieldRun.invalidContentIndicator, targetId);
     });
 
-    // FIXME: flakey after adding computeFieldPropertyType to createField(), can fail randomly on any assertion
     it("updates fields when source element aspect is modified, deleted, or recreated", () => {
       const sourceId = insertTestElement();
       const block = TextBlock.create({ styleId: "0x123" });
@@ -745,8 +745,6 @@ describe.only("Field evaluation", () => {
       expectText("100123", targetId);
     });
 
-    // FIXME: fails because Props with struct type return undefined, however fields with no prop type default to "string"
-    //        so either this test is now invalid or we structs should default to string type?
     it("supports complex property paths", () => {
       const sourceId = insertTestElement();
       const block = TextBlock.create({ styleId: "0x123" });
@@ -829,6 +827,30 @@ describe.only("Field evaluation", () => {
     it("should return undefined for unsupported primitive types", () => {
       const host = { elementId: sourceElementId, schemaName: "BisCore", className: "GeometricElement3d" };
       expect(getPropertyType(host, "GeometryStream")).to.be.undefined;
+    });
+
+    it("infers type for JSON properties", () => {
+      const host = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
+      const path = { propertyName: "jsonProperties", json: { accessors: ["replace-me", 1] }};
+
+      path.json.accessors = ["stringProp"];
+      expect(getPropertyType(host, path)).to.equal("string");
+
+      path.json.accessors = ["intProps", 0];
+      expect(getPropertyType(host, path)).to.equal("quantity");
+
+      path.json.accessors = ["bool"];
+      expect(getPropertyType(host, path)).to.equal("boolean");
+
+      path.json.accessors = ["zoo", "address", "zipcode"];
+      expect(getPropertyType(host, path)).to.equal("quantity");
+
+      path.json.accessors = ["birds", 0, "name"];
+      expect(getPropertyType(host, path)).to.equal("string");
+    });
+
+    it("permits explicit type specification for JSON properties", () => {
+
     });
   });
 
@@ -1155,9 +1177,8 @@ describe.only("Field evaluation", () => {
     });
 
     describe("json property type", () => {
-      // ###TODO
       it("is inferred by default", () => {
-
+        
       });
 
       it("can be overridden", () => {
