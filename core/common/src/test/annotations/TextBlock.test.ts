@@ -24,7 +24,6 @@ function makeFractionRun(numerator?: string, denominator?: string, styleOverride
 
 function makeParagraph(children?: (RunProps | ListProps)[], styleOverrides?: TextStyleSettingsProps): ParagraphProps {
   return {
-    type: "paragraph",
     styleOverrides,
     children,
   };
@@ -38,10 +37,20 @@ function makeList(children?: ParagraphProps[], styleOverrides?: TextStyleSetting
   };
 }
 
+function makeInnerList(children?: ParagraphProps[], styleOverrides?: TextStyleSettingsProps): ParagraphProps {
+  return {
+    children: [{
+      type: "list",
+      styleOverrides,
+      children,
+    }],
+  };
+}
+
 function getOverrides(block: TextBlock) {
   const paragraph = block.children[0];
   const run = paragraph?.children[0];
-  const list = block.children[1] as List;
+  const list = paragraph.children[1] as List;
   const listItem = list?.children[0];
   const listRun = listItem?.children[0];
 
@@ -62,12 +71,13 @@ describe("TextBlockComponent", () => {
     beforeEach(() => {
       block = TextBlock.create({ styleId: "0x42", styleOverrides: { widthFactor: 1234 }});
       const paragraph = block.appendParagraph({ styleOverrides: { lineHeight: 42 } });
-      paragraph.appendChild(TextRun.create({ styleOverrides: { fontName: "Consolas" } }));
+      paragraph.children.push(TextRun.create({ styleOverrides: { fontName: "Consolas" } }));
 
-      const list = block.appendList({ styleOverrides: { listMarker: "*" } });
+      const list = List.create({ styleOverrides: { listMarker: "*" } });
+      paragraph.children.push(list);
       const listParagraph = Paragraph.create({ styleOverrides: { lineHeight: 21 } });
-      listParagraph.appendChild(TextRun.create({ styleOverrides: { fontName: "Verdana" } }));
-      list.appendChild(listParagraph);
+      listParagraph.children.push(TextRun.create({ styleOverrides: { fontName: "Verdana" } }));
+      list.children.push(listParagraph);
     });
 
     it("sets style but does not clear overrides by default", () => {
@@ -396,7 +406,7 @@ describe("TextBlockComponent", () => {
             { type: "linebreak" },
             makeTextRun("j k l"),
           ]),
-          makeList([
+          makeInnerList([
             makeParagraph([
               makeTextRun("Oranges")
             ]),
@@ -429,48 +439,6 @@ describe("TextBlockComponent", () => {
       expect(block.stringify()).to.equal("1/π\t def   ghi j k l a. Oranges b. Apples \ti. Gala \t\t• Sweet and crisp \t\t• From New Zealand \tii. Fiji \tiii. Red Delicious");
       expect(block.stringify({ tabsAsSpaces: 3, lineBreak: "L", fractionSeparator: "F", listMarkerBreak: "M", paragraphBreak: "P" })).to.equal("1Fπ    def   ghiLj k lPa.MOrangesPb.MApplesP   i.MGalaP      •MSweet and crispP      •MFrom New ZealandP   ii.MFijiP   iii.MRed Delicious");
     });
-  });
-});
-
-describe("ContainerBase", () => {
-  it("sets indexes", () => {
-    const textBlock = TextBlock.create({
-      styleId: "", children: [
-        makeParagraph(),
-        makeParagraph(),
-        makeList()
-      ]
-    });
-
-    expect(textBlock.children.length).to.equal(3);
-    expect(textBlock.children[0].index).to.equal(0);
-    expect(textBlock.children[1].index).to.equal(1);
-    expect(textBlock.children[2].index).to.equal(2);
-
-    const p1 = textBlock.appendParagraph();
-    const p2 = textBlock.appendParagraph();
-    const l1 = textBlock.appendList();
-
-    const l1Item1 = Paragraph.create({ children: [makeTextRun("Item 1"), makeTextRun("Item 2")] });
-    const l1Item2 = Paragraph.create({ children: [makeTextRun("Item 2")] });
-    const l1Item3 = Paragraph.create({ children: [makeTextRun("Item 3")] });
-    l1.appendChild(l1Item1);
-    l1.appendChild(l1Item2);
-    l1.appendChild(l1Item3);
-
-    expect(textBlock.children.length).to.equal(6);
-    expect(p1.index).to.equal(3);
-    expect(p2.index).to.equal(4);
-    expect(l1.index).to.equal(5);
-
-    expect(l1.children.length).to.equal(3);
-    expect(l1Item1.index).to.equal(0);
-    expect(l1Item1.children[0].index).to.equal(0);
-    expect(l1Item1.children[1].index).to.equal(1);
-    expect(l1Item2.index).to.equal(1);
-    expect(l1Item2.children[0].index).to.equal(0);
-    expect(l1Item3.index).to.equal(2);
-    expect(l1Item3.children[0].index).to.equal(0);
   });
 });
 
@@ -522,118 +490,7 @@ describe("TextBlock", () => {
       expect(tb.children.length).to.equal(1);
       expect(tb.children[0].children.length).to.equal(2);
     });
-
-    it("appends to a list if the last item is a list", () => {
-      /* Final TextBlock should look like:
-        1. one+two
-      */
-      const tb = TextBlock.create({ styleId: "0x42" });
-      const list = tb.appendList();
-
-      expect(tb.children.length).to.equal(1);
-      expect(list.children.length).to.equal(0);
-
-      tb.appendRun(TextRun.create({ content: "one+" }));
-      expect(tb.children.length).to.equal(1);
-      expect(list.children.length).to.equal(1);
-      expect(list.children[0].children.length).to.equal(1);
-      expect(list.children[0].children[0].stringify()).to.equal("one+");
-
-      tb.appendRun(TextRun.create({ content: "two" }));
-      expect(tb.children.length).to.equal(1);
-      expect(list.children.length).to.equal(1);
-      expect(list.children[0].children.length).to.equal(2);
-      expect(list.children[0].children[0].stringify()).to.equal("one+");
-      expect(list.children[0].children[1].stringify()).to.equal("two");
-    });
   });
-
-  describe("appendList", () => {
-    it("creates a list with no overrides by default", () => {
-      const tb = TextBlock.create({ styleId: "0x42", styleOverrides: { lineHeight: 42 } });
-      const l1 = tb.appendList();
-      expect(l1.styleOverrides).to.deep.equal({});
-
-      const l2 = tb.appendList();
-      expect(l2.styleOverrides).to.deep.equal({});
-
-      expect(tb.children.length).to.equal(2);
-    });
-
-    it("uses the overrides of the last sibling if one exists and seedFromLast is true", () => {
-      const tb = TextBlock.create({ styleId: "0x42", styleOverrides: { lineHeight: 42 } });
-      const l1Props = { styleOverrides: { isBold: true } };
-      tb.appendList(l1Props);
-
-      expect(tb.children[0].styleOverrides).to.deep.equal(l1Props.styleOverrides);
-
-      const l2 = tb.appendList(undefined, true);
-      expect(l2.styleOverrides).to.deep.equal(l1Props.styleOverrides);
-    });
-
-    it("creates a list with no overrides if none exist even if seedFromLast is true", () => {
-      const tb = TextBlock.create({ styleId: "0x42", styleOverrides: { lineHeight: 42 } });
-      const l1 = tb.appendList(undefined, true);
-      expect(l1.styleOverrides).to.deep.equal({});
-    });
-  });
-
-  describe("appendListItem", () => {
-    it("appends a list if the last item is not a list", () => {
-      /* Final TextBlock should look like:
-        1. item
-        2. item
-
-        1. item
-        2. item
-      */
-
-      const tb = TextBlock.create({ styleId: "0x42" });
-
-      // No children to start with
-      expect(tb.children.length).to.equal(0);
-
-      // First item creates a list
-      const listItem = makeParagraph([makeTextRun("item")]);
-      tb.appendListItem(listItem);
-      expect(tb.children.length).to.equal(1);
-      expect(tb.children[0].type).to.equal("list");
-      expect(tb.children[0].children.length).to.equal(1);
-      expect(tb.children[0].children[0].type).to.equal("paragraph");
-
-      // Second item appends to the existing list
-      tb.appendListItem(listItem);
-      expect(tb.children.length).to.equal(1);
-      expect(tb.children[0].type).to.equal("list");
-      expect(tb.children[0].children.length).to.equal(2);
-      expect(tb.children[0].children[0].type).to.equal("paragraph");
-
-      // Adding a paragraph breaks the list
-      tb.appendParagraph();
-      expect(tb.children.length).to.equal(2);
-      expect(tb.children[0].type).to.equal("list");
-      expect(tb.children[1].type).to.equal("paragraph");
-
-      // Next item creates a new list
-      tb.appendListItem(listItem);
-      expect(tb.children.length).to.equal(3);
-      expect(tb.children[0].type).to.equal("list");
-      expect(tb.children[0].children.length).to.equal(2);
-      expect(tb.children[1].type).to.equal("paragraph");
-      expect(tb.children[2].type).to.equal("list");
-      expect(tb.children[2].children.length).to.equal(1);
-
-      // Final item appends to the new list
-      tb.appendListItem(listItem);
-      expect(tb.children.length).to.equal(3);
-      expect(tb.children[0].type).to.equal("list");
-      expect(tb.children[0].children.length).to.equal(2);
-      expect(tb.children[1].type).to.equal("paragraph");
-      expect(tb.children[2].type).to.equal("list");
-      expect(tb.children[2].children.length).to.equal(2);
-    });
-  });
-
 
   it("adds items to list", () => {
     /* Final TextBlock should look like:
@@ -646,10 +503,9 @@ describe("TextBlock", () => {
     */
 
     const props: TextBlockProps = {
-      type: "textBlock",
       styleId: "0x42",
       children: [
-        makeList([
+        makeInnerList([
           makeParagraph([makeTextRun("item 1"), makeFractionRun("1", "π")]),
           makeParagraph([makeTextRun("item 2")]),
           makeParagraph([
@@ -666,7 +522,7 @@ describe("TextBlock", () => {
 
     const tb = TextBlock.create(props);
     expect(tb.children.length).to.equal(1);
-    const list = tb.children[0] as List;
+    const list = tb.children[0].children[0] as List;
     expect(list.children).toBeDefined();
     expect(list.children.length).to.equal(3);
 
@@ -894,20 +750,24 @@ describe('getTextBlockGenerator', () => {
     const textBlock = TextBlock.create({ styleId: "" });
 
     const p1 = textBlock.appendParagraph();
-    p1.appendChild(TextRun.create({ content: "Hello" }));
-    p1.appendChild(LineBreakRun.create());
-    p1.appendChild(FractionRun.create({ numerator: "1", denominator: "2" }));
+    p1.children.push(TextRun.create({ content: "Hello" }));
+    p1.children.push(LineBreakRun.create());
+    p1.children.push(FractionRun.create({ numerator: "1", denominator: "2" }));
 
     const p2 = textBlock.appendParagraph();
 
-    const list = textBlock.appendList();
+    const list = List.create();
+    p2.children.push(list);
     const listItem = Paragraph.create();
-    listItem.appendChild(TextRun.create({ content: "Item 1" }));
-    listItem.appendChild(LineBreakRun.create());
-    listItem.appendChild(TextRun.create({ content: "Continued" }));
-    listItem.appendChild(List.create());
-    (listItem.children[3] as List).appendChild(Paragraph.create({ children: [{type: "text", content: "Sub-item 1"}] }));
-    list.appendChild(listItem);
+    listItem.children.push(TextRun.create({ content: "Item 1" }));
+    listItem.children.push(LineBreakRun.create());
+    listItem.children.push(TextRun.create({ content: "Continued" }));
+
+    const childList = List.create();
+    listItem.children.push(childList);
+    listItem.children.push(List.create());
+    childList.children.push(Paragraph.create({ children: [{type: "text", content: "Sub-item 1"}] }));
+    list.children.push(listItem);
 
     const iterator = getTextBlockGenerator(textBlock);
     let result = iterator.next();

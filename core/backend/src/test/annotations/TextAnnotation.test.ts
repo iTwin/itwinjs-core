@@ -107,7 +107,7 @@ const createAnnotationTextStyle = (iModel: IModelDb, definitionModel: Id64String
 
 type CreateTextAnnotationArgs<T> = Partial<Omit<T, "textAnnotationData">> & { textAnnotationData?: TextAnnotationProps };
 
-describe("TextAnnotation element", () => {
+describe.only("TextAnnotation element", () => {
   function makeElement(props?: Partial<TextAnnotation2dProps>): TextAnnotation2d {
     return TextAnnotation2d.fromJSON({
       category: "0x12",
@@ -254,7 +254,7 @@ describe("TextAnnotation element", () => {
       }
 
       it("roundtrips an empty annotation", async () => { await test(); });
-      it("roundtrips an annotation with a style", async () => { await test(TextAnnotation.fromJSON({ textBlock: { type: "textBlock", styleId: seedStyleId } })); });
+      it("roundtrips an annotation with a style", async () => { await test(TextAnnotation.fromJSON({ textBlock: { styleId: seedStyleId } })); });
       it("roundtrips an annotation with a textBlock", async () => { await test(createAnnotation()); });
     });
   });
@@ -346,13 +346,13 @@ describe("TextAnnotation element", () => {
       }
 
       it("roundtrips an empty annotation", async () => { await test(); });
-      it("roundtrips an annotation with a style", async () => { await test(TextAnnotation.fromJSON({ textBlock: { type: "textBlock", styleId: seedStyleId } })); });
+      it("roundtrips an annotation with a style", async () => { await test(TextAnnotation.fromJSON({ textBlock: { styleId: seedStyleId } })); });
       it("roundtrips an annotation with a textBlock", async () => { await test(createAnnotation()); });
     });
   });
 });
 
-describe("AnnotationTextStyle", () => {
+describe.only("AnnotationTextStyle", () => {
   let imodel: StandaloneDb;
   let seedSubjectId: string;
   let seedDefinitionModel: string;

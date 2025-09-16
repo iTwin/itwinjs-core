@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { BaselineShift, Container, FieldRun, FontId, FontType, FractionRun, getMarkerText, LineLayoutResult, List, Paragraph, Run, RunLayoutResult, TabRun, TextBlock, TextBlockComponent, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, FieldRun, FontId, FontType, FractionRun, getMarkerText, LineLayoutResult, List, Paragraph, Run, RunLayoutResult, StructuralTextBlockComponent, TabRun, TextBlock, TextBlockComponent, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { Geometry, Range2d, WritableXAndY } from "@itwin/core-geometry";
 import { IModelDb } from "../IModelDb";
 import { assert, Id64String, NonFunctionPropertiesOf } from "@itwin/core-bentley";
@@ -302,14 +302,7 @@ export class TextStyleResolver {
   public mendSettings(component: TextBlockComponent): TextBlockComponent {
     const block = component.clone();
 
-    if (Container.isContainer(component)) {
-      component.children.forEach(child => {
-        child.styleOverrides = { ...component.styleOverrides, ...child.styleOverrides };
-        if (Container.isContainer(child)) {
-          this.mendSettings(child);
-        }
-      });
-    }
+    // ###TODO delete this function and `resolveAndMendStyle`, see TODO in populateComponent.
 
     return block;
   }
@@ -600,7 +593,7 @@ export class RunLayout {
  * @beta
  */
 export class LineLayout {
-  public source: TextBlockComponent;
+  public source: List | Run | Paragraph;
   public range = new Range2d(0, 0, 0, 0);
   public justificationRange = new Range2d(0, 0, 0, 0);
   public offsetFromDocument: WritableXAndY;
@@ -609,7 +602,7 @@ export class LineLayout {
   private _runs: RunLayout[] = [];
   private _marker?: RunLayout;
 
-  public constructor(source: TextBlockComponent, context?: LayoutContext, depth: number = 0) {
+  public constructor(source: List | Run | Paragraph, context?: LayoutContext, depth: number = 0) {
     this.source = source;
     this.depth = depth;
     this.offsetFromDocument = { x: context?.textStyleResolver.resolveIndentation(source, depth) ?? 0, y: 0 };
@@ -752,21 +745,21 @@ export class TextBlockLayout {
     if (!doc.children || doc.children.length === 0) {
       return;
     }
-    this.populateComponent(doc, context, doc.width, new LineLayout(doc.children[0]));
+
+    let curLine = new LineLayout(doc.children[0]);
+    let childIndex = 0;
+    for (const child of doc.children) {
+      curLine = this.populateComponent(child, childIndex++, context, doc.width, curLine, doc);
+    }
+
+    if (curLine.runs.length > 0) {
+      this.flushLine(context, curLine);
+    }
   }
 
   // TODO: pass in style overrides recursively instead of doing the mend styles stuff
-  private populateComponent(component: Run | TextBlock | Paragraph | List, context: LayoutContext, docWidth: number, curLine: LineLayout, parent?: Container, depth: number = 0): LineLayout {
+  private populateComponent(component: Run | Paragraph | List, componentIndex: number, context: LayoutContext, docWidth: number, curLine: LineLayout, parent: StructuralTextBlockComponent, depth: number = 0): LineLayout {
     switch (component.type) {
-      case "textBlock": {
-        component.children.forEach((child) => curLine = this.populateComponent(child, context, docWidth, curLine, component, depth));
-
-        if (curLine.runs.length > 0) {
-          curLine = this.flushLine(context, curLine);
-        }
-
-        break;
-      }
       case "list": {
         curLine = this.flushLine(context, curLine, component.children[0], true, depth + 1);
         component.children.forEach((child, index) => {
@@ -775,18 +768,18 @@ export class TextBlockLayout {
           const marker = RunLayout.create(TextRun.create({ styleOverrides, content: markerContent }), context);
 
           curLine.marker = marker;
-          curLine = this.populateComponent(child, context, docWidth, curLine, component, depth + 1);
+          curLine = this.populateComponent(child, index, context, docWidth, curLine, component, depth + 1);
         });
 
-        const nextSibling = parent?.children[component.index + 1];
+        const nextSibling = parent?.children[componentIndex + 1];
         if (curLine && nextSibling) {
           curLine = this.flushLine(context, curLine, nextSibling, true, depth);
         }
         break;
       }
       case "paragraph": {
-        component.children.forEach(child => curLine = this.populateComponent(child, context, docWidth, curLine, component, depth));
-        const nextSibling = parent?.children[component.index + 1];
+        component.children.forEach((child, index) => curLine = this.populateComponent(child, index, context, docWidth, curLine, component, depth));
+        const nextSibling = parent?.children[componentIndex + 1];
         if (curLine && nextSibling) {
           curLine = this.flushLine(context, curLine, nextSibling, true, depth);
         }
@@ -890,7 +883,7 @@ export class TextBlockLayout {
     }
   }
 
-  private flushLine(context: LayoutContext, curLine: LineLayout, next?: TextBlockComponent, newParagraph: boolean = false, depth: number = 0): LineLayout {
+  private flushLine(context: LayoutContext, curLine: LineLayout, next?: List | Run | Paragraph, newParagraph: boolean = false, depth: number = 0): LineLayout {
     next = next ?? curLine.source;
 
     // We want to guarantee that each layout line has at least one run.

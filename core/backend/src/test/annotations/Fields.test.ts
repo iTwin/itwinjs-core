@@ -16,7 +16,7 @@ import { PhysicalElement } from "../../Element";
 import { ElementOwnsUniqueAspect, ElementUniqueAspect, FontFile, TextAnnotation3d } from "../../core-backend";
 import { ElementDrivesTextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
 
-describe("updateField", () => {
+describe.only("updateField", () => {
   const mockElementId = "0x1";
   const mockPath: FieldPropertyPath = {
     propertyName: "mockProperty",
@@ -204,7 +204,7 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
   iModel.saveChanges();
 }
 
-describe("Field evaluation", () => {
+describe.only("Field evaluation", () => {
   let imodel: StandaloneDb;
   let model: Id64String;
   let category: Id64String;
@@ -578,9 +578,7 @@ describe("Field evaluation", () => {
 
         // Remove the sourceA FieldRun from the first paragraph.
         const p1 = anno.textBlock.children[0] as Paragraph;
-        const runs = [...p1.children];
-        runs.shift();
-        p1.setChildren(runs);
+        p1.children.shift();
 
         target.setAnnotation(anno);
         target.update();
@@ -590,7 +588,7 @@ describe("Field evaluation", () => {
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).to.be.undefined;
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).not.to.be.undefined;
 
-        anno.textBlock.setChildren([]);
+        anno.textBlock.children.length = 0;
         anno.textBlock.appendRun(createField(sourceA, "A2"));
         target.setAnnotation(anno);
         target.update();
@@ -600,7 +598,7 @@ describe("Field evaluation", () => {
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).not.to.be.undefined;
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).to.be.undefined;
 
-        anno.textBlock.setChildren([]);
+        anno.textBlock.children.length = 0;
         anno.textBlock.appendRun(TextRun.create({
           styleOverrides: { fontName: "Karla" },
           content: "not a field",

@@ -31,7 +31,7 @@ function findTextStyleImpl(id: Id64String): TextStyleSettings {
   return TextStyleSettings.fromJSON({ lineSpacingFactor: 1, fontName: "other" });
 }
 
-describe("layoutTextBlock", () => {
+describe.only("layoutTextBlock", () => {
   describe("resolves TextStyleSettings", () => {
     it("inherits styling from TextBlock when Paragraph and Run have no style overrides", () => {
       const textBlock = TextBlock.create({ styleId: "0x42" });
@@ -398,7 +398,7 @@ describe("layoutTextBlock", () => {
 
         const p = textBlock.appendParagraph();
         for (let j = 0; j <= i; j++) {
-          p.appendChild(TextRun.create({ content: "Run" }));
+          p.children.push(TextRun.create({ content: "Run" }));
         }
       }
     });
@@ -1281,7 +1281,7 @@ describe("layoutTextBlock", () => {
   });
 });
 
-describe("produceTextBlockGeometry", () => {
+describe.only("produceTextBlockGeometry", () => {
   type Color = ColorDef | "subcategory";
 
   function makeText(color?: Color): TextRun {

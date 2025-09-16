@@ -269,8 +269,8 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
 // of fields whose display strings changed as a result.
 export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext): number {
   let numUpdated = 0;
-  for (const { current } of getTextBlockGenerator(textBlock)) {
-    if (current.type === "field" && current instanceof FieldRun && updateField(current, context)) {
+  for (const { child } of getTextBlockGenerator(textBlock)) {
+    if (child.type === "field" && updateField(child, context)) {
       ++numUpdated;
     }
   }
