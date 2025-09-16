@@ -127,7 +127,7 @@ export default defineConfig(() => {
       }),
       envCompatible({
         prefix: "IMJS_",
-      })
+      }),
     ],
     define: {
       "process.env": process.env, // injects process.env into the frontend
