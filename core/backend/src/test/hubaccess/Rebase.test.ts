@@ -9,7 +9,7 @@ import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
 import { BriefcaseDb, BriefcaseManager, ChannelControl, DrawingCategory, IModelHost, SqliteChangesetReader, TxnProps } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { Suite } from "mocha";
-import { Code, ElementProps, GeometricElement2dProps, IModel, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import { Code, GeometricElement2dProps, IModel, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Guid, Id64String } from "@itwin/core-bentley";
 import { StashManager } from "../../StashManager";
 chai.use(chaiAsPromised);
