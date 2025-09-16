@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "address loaders.gl shortcomings",
+      "comment": "Fix loaders.gl issue with resolving draco static assets",
       "type": "none"
     }
   ],
