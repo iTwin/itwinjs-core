@@ -70,7 +70,6 @@ export interface CoordinateFieldFormatOptions {
 }
 
 export interface QuantityFieldFormatOptions {
-  // ###TODO source+target units, FormatProps.
   koqName?: string;
   sourceUnit?: UnitProps;
   targetUnit?: UnitProps;
@@ -79,14 +78,6 @@ export interface QuantityFieldFormatOptions {
 }
 
 export interface DateTimeFieldFormatOptions {
-  // ###TODO this should probably specify a list of "date-time parts" mixed in with other strings like commas and other separators like "of" or whatever.
-  // Examples of parts:
-  //  - Date: day of week (long or short name, or number), month (long or short name, or number), year (full or only last 2 digits)
-  //  - Time: hour (using 12- or 24-hour clock), minute, second, milliseconds, AM/PM
-  // Days, months, AM/PM, etc are subject to localization so this options object would need to include any localized strings that might
-  // be needed for the parts it specifies in its formatting.
-  // People might also want to ask that the date be translated to a specific time zone before formatting is applied.
-  // For now we simply spit out the full Date as a string in ISO8601 format.
   locale?: Intl.UnicodeBCP47LocaleIdentifier;
   formatOptions?: Intl.DateTimeFormatOptions;
 }
@@ -110,110 +101,3 @@ export interface FieldFormatOptions {
   dateTime?: DateTimeFieldFormatOptions;
   enum?: EnumFieldFormatOptions<number> | EnumFieldFormatOptions<string>;
 }
-
-export function fieldFormatOptionsDeepEquals(opts1: FieldFormatOptions, opts2: FieldFormatOptions): boolean {
-  // Check basic string properties
-  if (opts1.case !== opts2.case ||
-      opts1.prefix !== opts2.prefix ||
-      opts1.suffix !== opts2.suffix) {
-    return false;
-  }
-
-  // Check boolean format options
-  if (!booleanFormatOptionsEqual(opts1.boolean, opts2.boolean)) {
-    return false;
-  }
-
-  // Check enum format options
-  if (!enumFormatOptionsEqual(opts1.enum, opts2.enum)) {
-    return false;
-  }
-
-  // Check quantity format options
-  if (!quantityFormatOptionsEqual(opts1.quantity, opts2.quantity)) {
-    return false;
-  }
-
-  // Check coordinate format options
-  if (!coordinateFormatOptionsEqual(opts1.coordinate, opts2.coordinate)) {
-    return false;
-  }
-
-  return true;
-}
-
-function booleanFormatOptionsEqual(
-  opts1: BooleanFieldFormatOptions | undefined,
-  opts2: BooleanFieldFormatOptions | undefined
-): boolean {
-  if (opts1 === opts2) return true;
-  if (!opts1 || !opts2) return false;
-
-  return opts1.trueString === opts2.trueString &&
-         opts1.falseString === opts2.falseString;
-}
-
-function enumFormatOptionsEqual(
-  opts1: EnumFieldFormatOptions<number | string> | undefined,
-  opts2: EnumFieldFormatOptions<number | string> | undefined
-): boolean {
-  if (opts1 === opts2) return true;
-  if (!opts1 || !opts2) return false;
-
-  if (opts1.fallbackLabel !== opts2.fallbackLabel) return false;
-
-  // Compare labels arrays
-  const labels1 = opts1.labels;
-  const labels2 = opts2.labels;
-
-  if (labels1 === labels2) return true;
-  if (!labels1 || !labels2) return false;
-  if (labels1.length !== labels2.length) return false;
-
-  for (let i = 0; i < labels1.length; i++) {
-    if (labels1[i].value !== labels2[i].value ||
-        labels1[i].label !== labels2[i].label) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-function quantityFormatOptionsEqual(
-  opts1: QuantityFieldFormatOptions | undefined,
-  opts2: QuantityFieldFormatOptions | undefined
-): boolean {
-  if (opts1 === opts2) return true;
-  if (!opts1 || !opts2) return false;
-
-  // Compare formatProps using JSON stringify (similar to existing TODO pattern)
-  // This could be improved with a proper deep equality check
-  if (JSON.stringify(opts1.formatProps) !== JSON.stringify(opts2.formatProps)) {
-    return false;
-  }
-
-  // Compare unitConversions
-  if (JSON.stringify(opts1.unitConversions) !== JSON.stringify(opts2.unitConversions)) {
-    return false;
-  }
-
-  // Compare sourceUnit
-  if (JSON.stringify(opts1.sourceUnit) !== JSON.stringify(opts2.sourceUnit)) {
-    return false;
-  }
-
-  return true;
-}
-
-function coordinateFormatOptionsEqual(
-  opts1: CoordinateFieldFormatOptions | undefined,
-  opts2: CoordinateFieldFormatOptions | undefined
-): boolean {
-  if (opts1 === opts2) return true;
-  if (!opts1 || !opts2) return false;
-
-  return opts1.components === opts2.components &&
-         opts1.componentSeparator === opts2.componentSeparator;
-}
-

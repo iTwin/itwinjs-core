@@ -8,7 +8,7 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { TextStyleSettings, TextStyleSettingsProps } from "./TextStyle";
-import { FieldFormatOptions, fieldFormatOptionsDeepEquals, FieldPropertyHost, FieldPropertyPath } from "./TextField";
+import { FieldFormatOptions, FieldPropertyHost, FieldPropertyPath } from "./TextField";
 
 /** Options supplied to [[TextBlockComponent.clearStyleOverrides]] to control how the style overrides are cleared on the component and its child components.
  * @beta
@@ -526,8 +526,9 @@ export class FieldRun extends TextBlockComponent {
     }
 
     if (this.formatOptions && other.formatOptions) {
-      // ###TODO better comparison of formatOptions objects.
-      if(!fieldFormatOptionsDeepEquals(this.formatOptions, other.formatOptions)){
+      // We anticipate new formatting options being added in the future.
+      // So to account for properties we don't know about, just compare the string representations.
+      if (JSON.stringify(this.formatOptions) !== JSON.stringify(other.formatOptions)) {
         return false;
       }
     } else if (this.formatOptions || other.formatOptions) {
