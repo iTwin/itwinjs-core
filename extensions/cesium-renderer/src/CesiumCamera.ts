@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Cartographic, EcefLocation } from "@itwin/core-common";
-import type { ViewDefinition3dProps } from "@itwin/core-common";
+import { Cartographic, EcefLocation, type ViewDefinition3dProps } from "@itwin/core-common";
 import { Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 
 /** Properties that define a Cesium frustum.
