@@ -491,6 +491,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * @param outsideFragments an array to receive (via push, with no preliminary clear) outside fragments
    * @param arrayCache cache for work arrays.
    * @return the surviving inside part (if any)
+   * @see polygonClip
    */
   public clipInsidePushOutside(
     xyz: IndexedXYZCollection, outsideFragments: GrowableXYZArray[] | undefined, arrayCache: GrowableXYZArrayCache,
@@ -512,7 +513,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
         if (outsideFragments)   // save the definitely outside part as return data.
           ClipUtilities.captureOrDrop(newOutside, 3, outsideFragments, arrayCache);
         newOutside = arrayCache.grabFromCache();
-        if (newInside.length === 0) {
+        if (newInside.length < 3) { // ignore inside slivers
           insidePart.length = 0;
           break;
         }
@@ -520,8 +521,9 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
         arrayCache.dropToCache(insidePart);
         insidePart = newInside;
         newInside = arrayCache.grabFromCache();
+      } else {
+        // newOutside is empty => newInside is identical to insidePart. Let insidePart feed through to the next clipper.
       }
-      // outside clip was empty .. insideWork is identical to insidePart .. let insidePart feed through to the next clipper.
     }
     // at break or fall out ...
     // ALWAYS drop `newInside` and `newOutside` to the cache
@@ -630,18 +632,23 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
   }
   /**
    * Clip a polygon to the planes of the clip plane set.
-   * * For a convex input polygon, the output is another convex polygon.
-   * * For a non-convex input, the output may have double-back edges along plane intersections. This is still a
-   * valid clip in a parity sense.
-   * * The containingPlane parameter allows callers within ConvexClipPlane set to bypass planes known to contain
-   * the polygon.
-   * @param input polygon, usually convex.
+   * * For a convex input polygon, the output polygon is also convex.
+   * * For non-convex input, the output polygon may have double-back edges along plane intersections. This is still a
+   * valid clip in a parity sense (overlapping regions cancel).
+   * @param input polygon, usually convex. Unchanged.
    * @param output output polygon
-   * @param work work array.
-   * @param containingPlane if this plane is found in the convex set, it is NOT applied.
+   * @param work optional work array.
+   * @param planeToSkip if this plane is found in the convex set, it is NOT applied.
+   * This is useful when caller knows the polygon lies in one of the instance planes.
+   * @param tolerance distance tolerance for "on plane" decision. Default value is [[Geometry.smallMetricDistance]].
+   * @see appendPolygonClip
    */
   public polygonClip(
-    input: GrowableXYZArray | Point3d[], output: GrowableXYZArray, work: GrowableXYZArray, planeToSkip?: ClipPlane,
+    input: GrowableXYZArray | Point3d[],
+    output: GrowableXYZArray,
+    work?: GrowableXYZArray,
+    planeToSkip?: ClipPlane,
+    tolerance: number =  Geometry.smallMetricDistance,
   ): void {
     if (input instanceof GrowableXYZArray)
       input.clone(output);
@@ -653,7 +660,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
         continue;
       if (output.length === 0)
         break;
-      plane.clipConvexPolygonInPlace(output, work);
+      plane.clipConvexPolygonInPlace(output, work, true, tolerance);
     }
   }
   /**
@@ -792,6 +799,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * @param outsideFragments Array to receive "outside" fragments. Each fragment is a GrowableXYZArray grabbed from
    * the cache. This is NOT cleared.
    * @param arrayCache cache for reusable GrowableXYZArray.
+   * @see polygonClip
    */
   public appendPolygonClip(
     xyz: IndexedXYZCollection,
