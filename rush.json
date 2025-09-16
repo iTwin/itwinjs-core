@@ -336,8 +336,7 @@
       "packageName": "@itwin/cesium-renderer",
       "projectFolder": "extensions/cesium-renderer",
       "reviewCategory": "frontend",
-      "shouldPublish": false,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
+      "shouldPublish": false
     },
     {
       "packageName": "internal-tools",
