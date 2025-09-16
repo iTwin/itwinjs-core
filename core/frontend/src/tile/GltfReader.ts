@@ -2177,12 +2177,12 @@ export abstract class GltfReader {
         decoderType: "wasm",
       },
       modules: {
-        "draco_wasm_wrapper.js": `${IModelApp.publicPath}draco/draco_wasm_wrapper.js`,
-        "draco_decoder.wasm": `${IModelApp.publicPath}draco/draco_decoder.wasm`,
+        "draco_wasm_wrapper.js": `${IModelApp.publicPath}scripts/draco_wasm_wrapper.js`,
+        "draco_decoder.wasm": `${IModelApp.publicPath}scripts/draco_decoder.wasm`,
       },
       worker: false,
       useLocalLibraries: true,
-    }); // NB: `options` argument declared optional but will produce exception if not supplied. Regardless, we are specifying our own bundled draco3d module to avoid CDN requests.
+    });
     if (mesh)
       this._dracoMeshes.set(ext, mesh);
   }

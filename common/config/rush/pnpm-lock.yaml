@@ -859,9 +859,6 @@ importers:
       '@loaders.gl/draco':
         specifier: ^4.3.4
         version: 4.3.4(@loaders.gl/core@4.3.4)
-      draco3d:
-        specifier: ^1.5.7
-        version: 1.5.7
       fuse.js:
         specifier: ^3.3.0
         version: 3.3.0
