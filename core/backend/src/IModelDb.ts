@@ -820,22 +820,23 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Commit unsaved changes in memory as a Txn to this iModelDb.
-   * @param description Optional description of the changes
+   * @param description Optional description of the changes.
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    * @note This will not push changes to the iModelHub.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
    */
   public saveChanges(description?: string): void ;
-  /** Commit unsaved changes in memory as a Txn to this iModelDb.
-   * @param args Optional  [[SaveChangesArgs]] of the changes
+
+  /** Commit unsaved changes in memory as a Txn to this iModelDb. This is preferable for case where application like to store additional structured information with the change that could be useful later when rebasing.
+   * @param args Provide [[SaveChangesArgs]] of the changes.
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    * @note This will not push changes to the iModelHub.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
    */
-
     public saveChanges(args: SaveChangesArgs): void;
+
   /** Commit unsaved changes in memory as a Txn to this iModelDb.
-   * @param args Optional [[SaveChangesArgs]]
+   * @param descriptionOrArgs Optionally provide description or [[SaveChangesArgs]] args for the changes.
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    * @note This will not push changes to the iModelHub.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
