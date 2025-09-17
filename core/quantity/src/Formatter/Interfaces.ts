@@ -10,15 +10,21 @@ import { BeEvent } from "@itwin/core-bentley";
 import { UnitProps } from "../Interfaces";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision } from "./FormatEnums";
 
-/** [[FormatProps.composite]] lacks documentation, please add a description here of what this represents.
+/** Defines the units that make up a composite format and their display properties.
+ * A composite format allows displaying a single quantity value across multiple units,
+ * such as displaying length as "5 feet 6 inches" or angle as "45° 30' 15"".
  * @beta
  */
 export interface FormatCompositeProps {
   /** separates values when formatting composite strings */
   readonly spacer?: string;
   readonly includeZero?: boolean;
+  /** Array of units this format is comprised of. Each unit specifies the unit name and
+   * an optional custom label that will override the unit's default label when displaying values. */
   readonly units: Array<{
+    /** The name of the unit (e.g., "Units.FT", "Units.IN") */
     readonly name: string;
+    /** Optional custom label that overrides the unit's default label (e.g., "ft" for feet, 'in' for inches) */
     readonly label?: string;
   }>;
 }
@@ -88,7 +94,7 @@ export type ResolvedFormatCompositeProps = Omit<FormatCompositeProps, "units"> &
     readonly unit: UnitProps;
     readonly label?: string;
   }>;
-}
+};
 
 /** A [[FormatProps]] with all the references to units replaced with JSON representations of those units.
  * @beta
@@ -98,7 +104,7 @@ export type ResolvedFormatProps = Omit<FormatDefinition, "azimuthBaseUnit" | "re
   readonly revolutionUnit?: UnitProps;
   readonly composite?: ResolvedFormatCompositeProps;
   readonly custom?: any;
-}
+};
 
 /** CloneFormat defines unit and label specification if primary unit is to be set during clone.
  * @beta

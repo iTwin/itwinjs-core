@@ -255,7 +255,6 @@ export interface FormatCompositeProps {
     // (undocumented)
     readonly includeZero?: boolean;
     readonly spacer?: string;
-    // (undocumented)
     readonly units: Array<{
         readonly name: string;
         readonly label?: string;
