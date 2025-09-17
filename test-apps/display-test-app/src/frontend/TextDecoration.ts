@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, LeaderTextPointOptions, LineBreakRun, Placement2dProps, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationLeader, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
+import { BaselineShift, ColorDef, FieldPropertyHost, FieldPropertyPath, FieldRun, FieldRunProps, FractionRun, LeaderTextPointOptions, LineBreakRun, Placement2dProps, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationLeader, TextAnnotationProps, TextBlock, TextBlockJustification, TextBlockMargins, TextFrameStyleProps, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
-import { assert, Id64, Id64String } from "@itwin/core-bentley";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { Angle, Point3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { dtaIpc } from "./App";
 
@@ -160,6 +160,18 @@ class TextEditor implements Decorator {
   }
   public setLeaderNearest(leader: TextAnnotationLeader) {
     leader.attachment = { mode: "Nearest" };
+  }
+
+  public setAnnotation(annotation: TextAnnotation) {
+    // TODO : add placement
+
+    // WIP
+    // this.textBlock = annotation.textBlock;
+    // this.origin = annotation.placement.origin;
+    // this.rotation = annotation.rotation;
+    // this.offset = annotation.offset;
+    // this.anchor = annotation.anchor;
+    // this.leaders = annotation.leaders;
   }
 
   /**
@@ -472,13 +484,33 @@ export class TextDecorationTool extends Tool {
         editor.textBlock.clearStyleOverrides();
         break;
       }
+      case "load": {
+        const id = inArgs[1];
+        if (!id) {
+          throw new Error("Expected annotation ID");
+        }
+
+        const props = await dtaIpc.fetchTextAnnotationProps(vp.iModel.key, id, vp.view.is2d());
+        if (!props) {
+          throw new Error(`No text annotation found with ID ${id}`);
+        }
+
+        editor.setAnnotation(TextAnnotation.fromJSON(props));
+
+        break;
+      }
       case "insert": {
-        assert(vp.view.is2d() === true, "View is not 2d");
-        const id = await dtaIpc.insertText(
+        const id = vp.view.is2d() ? await dtaIpc.insertText2d(
           vp.iModel.key,
           editor.categoryId,
           editor.modelId,
           editor.placementProps,
+          editor.annotationProps
+        ) : await dtaIpc.insertText3d(
+          vp.iModel.key,
+          editor.categoryId,
+          editor.modelId,
+          { ...editor.placementProps, angles: {} },
           editor.annotationProps
         );
 
@@ -492,14 +524,19 @@ export class TextDecorationTool extends Tool {
           throw new Error("Expected annotation ID");
         }
 
-        await dtaIpc.updateText(
+        vp.view.is2d() ? await dtaIpc.updateText2d(
           vp.iModel.key,
-          arg,
           editor.categoryId,
+          editor.modelId,
           editor.placementProps,
           editor.annotationProps
+        ) : await dtaIpc.updateText3d(
+          vp.iModel.key,
+          editor.categoryId,
+          editor.modelId,
+          { ...editor.placementProps, angles: {} },
+          editor.annotationProps
         );
-
         return true;
       }
       case "delete": {
@@ -560,6 +597,32 @@ export class TextDecorationTool extends Tool {
         }
         break;
 
+      case "field": {
+        const json = inArgs[1] && (JSON.parse(inArgs[1].replaceAll("'", "\"")) as FieldRunProps);
+
+        if (!json) {
+          const propertyHost: FieldPropertyHost = {
+            elementId: Id64.invalid,
+            schemaName: "BisCore",
+            className: "Element",
+          };
+
+          const propertyPath: FieldPropertyPath = {
+            propertyName: "someProperty",
+          };
+
+          const cachedContent = "[[Placeholder for decorator]]";
+
+          const testField = FieldRun.create({ propertyHost, propertyPath, cachedContent, styleOverrides: editor.runStyle });
+
+          throw new Error(`Expected JSON for field run. Example: ${JSON.stringify(testField.toJSON()).replaceAll("\"", "'")}`);
+        }
+
+        const field = FieldRun.create(json);
+        editor.textBlock.appendRun(field);
+
+        break;
+      }
       default:
         throw new Error(`unrecognized command ${cmd}`);
     }

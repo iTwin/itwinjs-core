@@ -10,8 +10,8 @@ import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Bac
 import { IpcHandler } from "@itwin/core-backend";
 import { getConfig } from "../common/DtaConfiguration";
 import { createSectionDrawing } from "./SectionDrawingImpl";
-import { Placement2dProps, TextAnnotationProps, TextStyleSettingsProps } from "@itwin/core-common";
-import { deleteText, deleteTextStyle, insertText, insertTextStyle, setScaleFactor, updateText, updateTextStyle } from "./TextImpl";
+import { Placement2dProps, Placement3dProps, TextAnnotationProps, TextStyleSettingsProps } from "@itwin/core-common";
+import { deleteText, deleteTextStyle, fetchTextAnnotationProps, insertText2d, insertText3d, insertTextStyle, setScaleFactor, updateText2d, updateText3d, updateTextStyle } from "./TextImpl";
 
 const mainWindowName = "mainWindow";
 const getWindowSize = (winSize?: string) => {
@@ -55,12 +55,24 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
     return deleteTextStyle(iModelKey, name);
   }
 
-  public async insertText(iModelKey: string, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, textAnnotationData?: TextAnnotationProps): Promise<Id64String> {
-    return insertText(iModelKey, categoryId, modelId, placement, textAnnotationData);
+  public async fetchTextAnnotationProps(iModelKey: string, elementId: Id64String, is2d: boolean = true): Promise<TextAnnotationProps | undefined> {
+    return fetchTextAnnotationProps(iModelKey, elementId, is2d);
   }
 
-  public async updateText(iModelKey: string, elementId: Id64String, categoryId?: Id64String, placement?: Placement2dProps, textAnnotationProps?: TextAnnotationProps): Promise<void> {
-    return updateText(iModelKey, elementId, categoryId, placement, textAnnotationProps);
+  public async insertText2d(iModelKey: string, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, textAnnotationData?: TextAnnotationProps): Promise<Id64String> {
+    return insertText2d(iModelKey, categoryId, modelId, placement, textAnnotationData);
+  }
+
+  public async updateText2d(iModelKey: string, elementId: Id64String, categoryId?: Id64String, placement?: Placement2dProps, textAnnotationProps?: TextAnnotationProps): Promise<void> {
+    return updateText2d(iModelKey, elementId, categoryId, placement, textAnnotationProps);
+  }
+
+  public async insertText3d(iModelKey: string, categoryId: Id64String, modelId: Id64String, placement: Placement3dProps, textAnnotationData?: TextAnnotationProps): Promise<Id64String> {
+    return insertText3d(iModelKey, categoryId, modelId, placement, textAnnotationData);
+  }
+
+  public async updateText3d(iModelKey: string, elementId: Id64String, categoryId?: Id64String, placement?: Placement3dProps, textAnnotationProps?: TextAnnotationProps): Promise<void> {
+    return updateText3d(iModelKey, elementId, categoryId, placement, textAnnotationProps);
   }
 
   public async deleteText(iModelKey: string, elementId: Id64String): Promise<void> {

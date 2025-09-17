@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String } from "@itwin/core-bentley";
-import { DisplayStyle3dProps, Placement2dProps, SpatialViewDefinitionProps, TextAnnotationProps, TextStyleSettingsProps } from "@itwin/core-common";
+import { DisplayStyle3dProps, Placement2dProps, Placement3dProps, SpatialViewDefinitionProps, TextAnnotationProps, TextStyleSettingsProps } from "@itwin/core-common";
 import { TransformProps } from "@itwin/core-geometry";
 
 export const dtaChannel = "display-test-app/dta";
@@ -56,15 +56,28 @@ export interface DtaIpcInterface {
    */
   deleteTextStyle(iModelKey: string, name: string): Promise<void>;
 
+
+  fetchTextAnnotationProps(iModelKey: string, elementId: Id64String, is2d: boolean): Promise<TextAnnotationProps | undefined>;
+
   /**
    * Inserts a text annotation into the specified iModel.
    */
-  insertText(iModelKey: string, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, textAnnotationData?: TextAnnotationProps): Promise<Id64String>;
+  insertText2d(iModelKey: string, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, textAnnotationData?: TextAnnotationProps): Promise<Id64String>;
 
   /**
    * Updates an existing text annotation in the specified iModel.
    */
-  updateText(iModelKey: string, elementId: Id64String, categoryId?: Id64String, placement?: Placement2dProps, textAnnotationProps?: TextAnnotationProps): Promise<void>;
+  updateText2d(iModelKey: string, elementId: Id64String, categoryId?: Id64String, placement?: Placement2dProps, textAnnotationProps?: TextAnnotationProps): Promise<void>;
+
+  /**
+   * Inserts a text annotation into the specified iModel.
+   */
+  insertText3d(iModelKey: string, categoryId: Id64String, modelId: Id64String, placement: Placement3dProps, textAnnotationData?: TextAnnotationProps): Promise<Id64String>;
+
+  /**
+   * Updates an existing text annotation in the specified iModel.
+   */
+  updateText3d(iModelKey: string, elementId: Id64String, categoryId?: Id64String, placement?: Placement3dProps, textAnnotationProps?: TextAnnotationProps): Promise<void>;
 
   /**
    * Deletes an existing text annotation in the specified iModel.

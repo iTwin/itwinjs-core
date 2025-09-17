@@ -1,6 +1,6 @@
-import { AnnotationTextStyle, BriefcaseDb, Drawing, IModelDb, TextAnnotation2d } from "@itwin/core-backend";
+import { AnnotationTextStyle, BriefcaseDb, Drawing, IModelDb, TextAnnotation2d, TextAnnotation3d } from "@itwin/core-backend";
 import { Id64String } from "@itwin/core-bentley";
-import { Placement2d, Placement2dProps, TextAnnotation, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { Placement2d, Placement2dProps, Placement3d, Placement3dProps, TextAnnotation, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 
 /**
  * Inserts a new text style into the iModel.
@@ -79,6 +79,15 @@ export async function deleteTextStyle(iModelKey: string, name: string): Promise<
   }
 }
 
+export async function fetchTextAnnotationProps(iModelKey: string, elementId: Id64String, is2d: boolean = true): Promise<TextAnnotationProps | undefined> {
+  const iModel = BriefcaseDb.findByKey(iModelKey);
+  const text = is2d
+    ? iModel.elements.getElement<TextAnnotation2d>(elementId)
+    : iModel.elements.getElement<TextAnnotation3d>(elementId);
+
+  return text?.getAnnotation()?.toJSON();
+}
+
 /**
  * Inserts a new text annotation element into the iModel.
  * @param iModelKey - Key to identify the iModel.
@@ -89,8 +98,9 @@ export async function deleteTextStyle(iModelKey: string, name: string): Promise<
  * @returns The Id of the inserted annotation.
  * @throws If insertion fails, abandons changes and rethrows the error.
  */
-export async function insertText(iModelKey: string, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, textAnnotationData?: TextAnnotationProps): Promise<Id64String> {
+export async function insertText2d(iModelKey: string, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, textAnnotationData?: TextAnnotationProps): Promise<Id64String> {
   const iModel = BriefcaseDb.findByKey(iModelKey);
+  iModel.channels.addAllowedChannel("DrawingProduction");
 
   try {
     const annotation2d = TextAnnotation2d.create(
@@ -121,8 +131,9 @@ export async function insertText(iModelKey: string, categoryId: Id64String, mode
  * @param textAnnotationProps - Optional new text annotation properties.
  * @throws If update fails, abandons changes and rethrows the error.
  */
-export async function updateText(iModelKey: string, elementId: Id64String, categoryId?: Id64String, placement?: Placement2dProps, textAnnotationProps?: TextAnnotationProps): Promise<void> {
+export async function updateText2d(iModelKey: string, elementId: Id64String, categoryId?: Id64String, placement?: Placement2dProps, textAnnotationProps?: TextAnnotationProps): Promise<void> {
   const iModel = BriefcaseDb.findByKey(iModelKey);
+  iModel.channels.addAllowedChannel("DrawingProduction");
 
   try {
     const text = iModel.elements.getElement<TextAnnotation2d>(elementId);
@@ -132,6 +143,74 @@ export async function updateText(iModelKey: string, elementId: Id64String, categ
 
     if (placement)
       text.placement = Placement2d.fromJSON(placement);
+
+    if (textAnnotationProps)
+      text.setAnnotation(TextAnnotation.fromJSON(textAnnotationProps));
+
+    await iModel.locks.acquireLocks({ shared: [text.model], exclusive: [elementId] });
+    text.update();
+    iModel.saveChanges('Updated annotation');
+  } catch (e) {
+    iModel.abandonChanges();
+    throw e;
+  }
+}
+
+/**
+ * Inserts a new text annotation element into the iModel.
+ * @param iModelKey - Key to identify the iModel.
+ * @param categoryId - Category Id for the annotation.
+ * @param modelId - Model Id for the annotation.
+ * @param placement - Placement properties for the annotation.
+ * @param textAnnotationData - Optional text annotation properties.
+ * @returns The Id of the inserted annotation.
+ * @throws If insertion fails, abandons changes and rethrows the error.
+ */
+export async function insertText3d(iModelKey: string, categoryId: Id64String, modelId: Id64String, placement: Placement3dProps, textAnnotationData?: TextAnnotationProps): Promise<Id64String> {
+  const iModel = BriefcaseDb.findByKey(iModelKey);
+  iModel.channels.addAllowedChannel("DrawingProduction");
+
+  try {
+    const annotation2d = TextAnnotation3d.create(
+      iModel,
+      categoryId,
+      modelId,
+      placement,
+      textAnnotationData
+    );
+
+    await iModel.locks.acquireLocks({ shared: modelId });
+    const annotationId = annotation2d.insert();
+
+    iModel.saveChanges('Inserted annotation');
+    return annotationId;
+  } catch (e) {
+    iModel.abandonChanges();
+    throw e;
+  }
+}
+
+/**
+ * Updates an existing text annotation element in the iModel.
+ * @param iModelKey - Key to identify the iModel.
+ * @param elementId - Id of the annotation element to update.
+ * @param categoryId - Optional new category Id.
+ * @param placement - Optional new placement properties.
+ * @param textAnnotationProps - Optional new text annotation properties.
+ * @throws If update fails, abandons changes and rethrows the error.
+ */
+export async function updateText3d(iModelKey: string, elementId: Id64String, categoryId?: Id64String, placement?: Placement3dProps, textAnnotationProps?: TextAnnotationProps): Promise<void> {
+  const iModel = BriefcaseDb.findByKey(iModelKey);
+  iModel.channels.addAllowedChannel("DrawingProduction");
+
+  try {
+    const text = iModel.elements.getElement<TextAnnotation3d>(elementId);
+
+    if (categoryId)
+      text.category = categoryId;
+
+    if (placement)
+      text.placement = Placement3d.fromJSON(placement);
 
     if (textAnnotationProps)
       text.setAnnotation(TextAnnotation.fromJSON(textAnnotationProps));
