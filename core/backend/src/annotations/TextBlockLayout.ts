@@ -745,7 +745,12 @@ export class TextBlockLayout {
   ): LineLayout {
     switch (component.type) {
       case "list": {
-        curLine = this.flushLine(context, curLine, component.children[0], true, depth + 1);
+        // If we have any runs in the current line, flush it before starting the list.
+        if (curLine.runs.length > 0) {
+          curLine = this.flushLine(context, curLine, component.children[0], true, depth + 1);
+        }
+
+        // Iterate through each list item, setting the marker and populating its contents.
         component.children.forEach((child, index) => {
           const styleOverrides = context.textStyleResolver.resolveSettings(component.styleOverrides);
           const markerContent = getMarkerText(styleOverrides.listMarker, index + 1);
@@ -755,6 +760,7 @@ export class TextBlockLayout {
           curLine = this.populateComponent(child, index, context, docWidth, curLine, component, depth + 1);
         });
 
+        // Lastly flush the line.
         const nextSibling = parent?.children[componentIndex + 1];
         if (curLine && nextSibling) {
           curLine = this.flushLine(context, curLine, nextSibling, true, depth);
@@ -762,10 +768,12 @@ export class TextBlockLayout {
         break;
       }
       case "paragraph": {
+        // Iterate through each paragraph child (either a list or a run), populating its contents.
         component.children.forEach((child, index) => {
           curLine = this.populateComponent(child, index, context, docWidth, curLine, component, depth)
         });
 
+        // Lastly flush the line.
         const nextSibling = parent?.children[componentIndex + 1];
         if (curLine && nextSibling) {
           curLine = this.flushLine(context, curLine, nextSibling, true, depth);
@@ -775,6 +783,7 @@ export class TextBlockLayout {
       case "text": {
         const layout = RunLayout.create(component, context);
 
+        // Text can be word-wrapped, so we need to split it into multiple runs if necessary.
         if (docWidth > 0) {
           layout.split(context).forEach(r => { curLine = this.populateRun(curLine, r, context, docWidth) });
         } else {
@@ -805,13 +814,13 @@ export class TextBlockLayout {
     // If this is a tab, we need to apply the tab shift first, and then we can treat it like a text run.
     applyTabShift(run, curLine, context);
 
-    // If our width is not set (doWrap is false), then we don't have to compute word wrapping, so just append the run, and continue.
+    // If our width is not set, then we don't have to compute word wrapping, so just append the run, and continue.
     if (docWidth <= 0) {
       curLine.append(run);
       return curLine;
     }
 
-    // Next, determine if we can append this run to the current line without exceeding the document width
+    // If not, we need to determine if we can append this run to the current line without exceeding the document width or if we need to word wrap.
     const runWidth = run.range.xLength();
     const lineWidth = curLine.range.xLength();
     const newWidth = runWidth + lineWidth + curLine.offsetFromDocument.x;
@@ -822,7 +831,7 @@ export class TextBlockLayout {
       return curLine;
     }
 
-    // Do word wrapping
+    // If not, do word wrapping
     if (curLine.runs.length === 0) {
       curLine.append(run);
 
