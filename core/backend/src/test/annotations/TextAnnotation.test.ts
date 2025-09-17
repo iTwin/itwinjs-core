@@ -107,7 +107,7 @@ const createAnnotationTextStyle = (iModel: IModelDb, definitionModel: Id64String
 
 type CreateTextAnnotationArgs<T> = Partial<Omit<T, "textAnnotationData">> & { textAnnotationData?: TextAnnotationProps };
 
-describe.only("TextAnnotation element", () => {
+describe("TextAnnotation element", () => {
   function makeElement(props?: Partial<TextAnnotation2dProps>): TextAnnotation2d {
     return TextAnnotation2d.fromJSON({
       category: "0x12",
@@ -352,7 +352,7 @@ describe.only("TextAnnotation element", () => {
   });
 });
 
-describe.only("AnnotationTextStyle", () => {
+describe("AnnotationTextStyle", () => {
   let imodel: StandaloneDb;
   let seedSubjectId: string;
   let seedDefinitionModel: string;

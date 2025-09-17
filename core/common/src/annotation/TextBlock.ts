@@ -864,7 +864,7 @@ export class TextBlock extends TextBlockComponent {
    */
   public appendParagraph(props?: ParagraphProps, seedFromLast = false): Paragraph {
     const seed = seedFromLast ? this.children[this.children.length - 1] : undefined;
-    const styleOverrides = { ...seed?.styleOverrides };
+    const styleOverrides = { ...seed?.styleOverrides, ...props?.styleOverrides };
     const paragraph = Paragraph.create({ ...props, styleOverrides });
     this.children.push(paragraph);
     return paragraph;
