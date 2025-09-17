@@ -38,12 +38,21 @@ export class CesiumScene {
 
     this.configureCanvasSize();
 
+    const creditContainer = document.createElement("div") as any;
+    creditContainer.style.position = "absolute";
+    creditContainer.style.bottom = "0";
+    creditContainer.style["text-shadow"] = "0 0 2px #000000";
+    creditContainer.style.color = "#ffffff";
+    creditContainer.style["font-size"] = "10px";
+    creditContainer.style["padding-right"] = "5px";
+
     // see: https://cesium.com/learn/ion-sdk/ref-doc/Scene.html
     // also see: https://sandcastle.cesium.com/?src=Cesium%20Widget.html
     // source found here: https://github.com/CesiumGS/cesium/blob/main/packages/engine/Source/Widget/CesiumWidget.js
 
     this._scene = new Scene({
       canvas: this._canvas,
+      creditContainer,
       contextOptions : {
         allowTextureFilterAnisotropic : false
       }
