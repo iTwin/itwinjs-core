@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Angle, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { FractionRun, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextAnnotationProps, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { FractionRun, Placement2dProps, Placement3dProps, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
-import { AnnotationTextStyle, TextAnnotation2d, TextAnnotation3d } from "../../annotations/TextAnnotationElement";
+import { AnnotationTextStyle, TextAnnotation2d, TextAnnotation2dCreateArgs, TextAnnotation3d, TextAnnotation3dCreateArgs } from "../../annotations/TextAnnotationElement";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { GeometricElement2d, GeometricElement3d, Subject } from "../../Element";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
@@ -110,41 +110,32 @@ const createAnnotationTextStyle = (iModel: IModelDb, definitionModel: Id64String
   )
 }
 
-interface CreateTextAnnotationArgs {
-  category: Id64String,
-  model: Id64String,
-  defaultTextStyleId?: Id64String
-  textAnnotationData?: TextAnnotationProps,
-};
+function createElement2d(imodel: IModelDb, createArgs: Omit<TextAnnotation2dCreateArgs, "placement">): TextAnnotation2d {
+  const placement: Placement2dProps = {
+    origin: { x: 0, y: 0 },
+    angle: Angle.createDegrees(0).toJSON(),
+  };
 
-function createElement2d(imodel: IModelDb, createArgs: CreateTextAnnotationArgs): TextAnnotation2d {
   return TextAnnotation2d.create(
     imodel,
     {
-      category: createArgs.category,
-      model: createArgs.model,
-      placement: {
-        origin: { x: 0, y: 0 },
-        angle: Angle.createDegrees(0).toJSON(),
-      },
-      defaultTextStyleId: createArgs?.defaultTextStyleId,
-      textAnnotationData: createArgs.textAnnotationData,
+      ...createArgs,
+      placement,
     }
   );
 }
 
-function createElement3d(imodel: IModelDb, createArgs: CreateTextAnnotationArgs): TextAnnotation3d {
+function createElement3d(imodel: IModelDb, createArgs: Omit<TextAnnotation3dCreateArgs, "placement">): TextAnnotation3d {
+  const placement: Placement3dProps = {
+    origin: { x: 0, y: 0, z: 0 },
+    angles: YawPitchRollAngles.createDegrees(0, 0, 0).toJSON(),
+  };
+
   return TextAnnotation3d.create(
     imodel,
     {
-      category: createArgs.category,
-      model: createArgs.model,
-      placement: {
-        origin: { x: 0, y: 0, z: 0 },
-        angles: YawPitchRollAngles.createDegrees(0, 0, 0).toJSON(),
-      },
-      defaultTextStyleId: createArgs?.defaultTextStyleId,
-      textAnnotationData: createArgs?.textAnnotationData,
+      ...createArgs,
+      placement,
     }
   );
 }
@@ -214,7 +205,7 @@ describe("TextAnnotation element", () => {
 
   describe("TextAnnotation3d Persistence", () => {
     let imodel: StandaloneDb;
-    let createElement3dArgs: CreateTextAnnotationArgs;
+    let createElement3dArgs: Omit<TextAnnotation3dCreateArgs, "placement">;
 
     before(async () => {
       imodel = await createIModel("TextAnnotation3d");
@@ -289,7 +280,7 @@ describe("TextAnnotation element", () => {
 
   describe("TextAnnotation2d Persistence", () => {
     let imodel: StandaloneDb;
-    let createElement2dArgs: CreateTextAnnotationArgs;
+    let createElement2dArgs: Omit<TextAnnotation2dCreateArgs, "placement">;
 
     before(async () => {
       imodel = await createIModel("TextAnnotation2d");
@@ -392,7 +383,7 @@ describe("TextAnnotation element", () => {
     });
 
     describe("TextAnnotation2d", () => {
-      let createElement2dArgs: CreateTextAnnotationArgs;
+      let createElement2dArgs: Omit<TextAnnotation2dCreateArgs, "placement">;
 
       before(() => {
         const { category, model } = insertDrawingModel(imodel, seedSubjectId, seedDefinitionModelId);
@@ -446,7 +437,7 @@ describe("TextAnnotation element", () => {
     });
 
     describe("TextAnnotation3d", () => {
-      let createElement3dArgs: CreateTextAnnotationArgs;
+      let createElement3dArgs: Omit<TextAnnotation3dCreateArgs, "placement">;
 
       before(() => {
         const { category, model } = insertSpatialModel(imodel, seedSubjectId, seedDefinitionModelId);
