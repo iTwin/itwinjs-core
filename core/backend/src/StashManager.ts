@@ -352,7 +352,7 @@ export class StashManager {
 
     const stash = this.getStash(args);
     if (!stash) {
-      throw new StashError(`stash not found ${this.getStashId(args)}`);
+      throw new StashError(`Stash not found ${this.getStashId(args)}`);
     }
 
     if (db.txns.hasUnsavedChanges) {
