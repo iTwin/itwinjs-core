@@ -43,7 +43,7 @@ export interface CesiumCameraProps {
  * @alpha
  */
 export function createCesiumCameraProps(opts: { viewDefinition: ViewDefinition3dProps, ecefLoc?: EcefLocation, modelExtents?: Range3d}): CesiumCameraProps {
-  const defaultOrigin = Cartographic.fromDegrees({ longitude: 0, latitude: 0, height: 0 });
+  const defaultOrigin = Cartographic.createZero();
   let ecefLocation;
 
   // The provided ECEF location is used to position the camera in Cesium.
@@ -85,9 +85,13 @@ export function createCesiumCameraProps(opts: { viewDefinition: ViewDefinition3d
   const transformedUp = ecefLocation.getTransform().multiplyVector(up);
   const transformedDirection = ecefLocation.getTransform().multiplyVector(direction);
 
+  // Use Cesium's default near and far values
+  const near = 1.0;
+  const far = 500000000.0;
+
   const frustum = {
-    near: 0.01,
-    far: 1000000,
+    near,
+    far,
     fov,
     width
   };
