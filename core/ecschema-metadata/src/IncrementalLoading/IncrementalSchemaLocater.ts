@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { ECSchemaNamespaceUris } from "../Constants";
 import { ISchemaLocater, SchemaContext } from "../Context";
-import { SchemaProps } from "../Deserialization/JsonProps";
+import { SchemaProps, SchemaReferenceProps } from "../Deserialization/JsonProps";
 import { SchemaGraphUtil } from "../Deserialization/SchemaGraphUtil";
 import { SchemaMatchType } from "../ECObjects";
 import { ECSchemaError, ECSchemaStatus } from "../Exception";
@@ -13,6 +13,11 @@ import { Schema } from "../Metadata/Schema";
 import { SchemaKey } from "../SchemaKey";
 import { SchemaLoadingController } from "../utils/SchemaLoadingController";
 import { IncrementalSchemaReader } from "./IncrementalSchemaReader";
+
+interface IncrementalSchemaInfo extends SchemaInfo {
+  readonly description?: string;
+  readonly label?: string;
+}
 
 type LoadSchemaInfoHandler = (context: SchemaContext) => Promise<Iterable<SchemaInfo>>;
 
@@ -37,7 +42,7 @@ export interface SchemaLocaterOptions {
  */
 export abstract class IncrementalSchemaLocater implements ISchemaLocater {
   private readonly _options: SchemaLocaterOptions;
-  private readonly _schemaInfoCache: SchemaInfoCache;
+  protected readonly _schemaInfoCache: SchemaInfoCache;
 
   /**
    * Initializes a new instance of the IncrementalSchemaLocater class.
@@ -116,7 +121,7 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
    * @param context   The schema context to load the schema infos for.
    * @returns         A promise that resolves to an iterable of schema infos.
    */
-  public abstract loadSchemaInfos(context: SchemaContext): Promise<Iterable<SchemaInfo>>;
+  protected abstract loadSchemaInfos(context: SchemaContext): Promise<Iterable<SchemaInfo>>;
 
   /**
    * Checks if the context contains the right schemas to support incremental schema loading.
@@ -133,13 +138,16 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
    * @param schemaInfo    The schema info of the schema to load.
    * @param schemaContext The schema context to load the schema into.
    */
-  public async loadSchema(schemaInfo: SchemaInfo, schemaContext: SchemaContext): Promise<Schema> {
+  protected async loadSchema(schemaInfo: SchemaInfo, schemaContext: SchemaContext): Promise<Schema> {
     // If the meta schema is an earlier version than 4.0.3, we can't use the ECSql query interface to get the schema
     // information required to load the schema entirely. In this case, we fallback to use the ECSchema RPC interface
     // to fetch the whole schema json.
     if (!await this.supportPartialSchemaLoading(schemaContext)) {
       const schemaJson = await this.getSchemaJson(schemaInfo.schemaKey, schemaContext);
-      return Schema.fromJson(schemaJson!, schemaContext);
+      if(schemaJson === undefined)
+        throw new ECSchemaError(ECSchemaStatus.UnableToLocateSchema, `Could not locate the schema, ${schemaInfo.schemaKey.name}.${schemaInfo.schemaKey.version.toString()}`);
+
+      return Schema.fromJson(schemaJson, schemaContext);
     }
 
     // Fetches the schema partials for the given schema key. The first item in the array is the
@@ -171,23 +179,24 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
    * @returns The SchemaProps object.
    */
   protected async createSchemaProps(schemaKey: SchemaKey, schemaContext: SchemaContext): Promise<SchemaProps> {
-    const schemaInfo = await schemaContext.getSchemaInfo(schemaKey, SchemaMatchType.Latest);
+    const schemaInfo = await schemaContext.getSchemaInfo(schemaKey, SchemaMatchType.Latest) as IncrementalSchemaInfo | undefined;
     if (!schemaInfo)
       throw new Error(`Schema ${schemaKey.name} could not be found.`);
+
+    const schemaReferences: Array<SchemaReferenceProps> = [];
     const schemaProps: SchemaProps = {
       $schema: ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       name: schemaKey.name,
       alias: schemaInfo.alias,
       version: schemaInfo.schemaKey.version.toString(),
-      references: [],
+      description: schemaInfo.description,
+      label: schemaInfo.label,
+      references: schemaReferences,
       items: {}
     };
 
-    if (!schemaProps.references)
-      throw new Error(`Schema references is undefined for the Schema ${schemaInfo.schemaKey.name}`);
-
     schemaInfo.references.forEach((ref) => {
-      schemaProps.references!.push({ name: ref.schemaKey.name, version: ref.schemaKey.version.toString() });
+      schemaReferences.push({ name: ref.schemaKey.name, version: ref.schemaKey.version.toString() });
     });
 
     return schemaProps;
@@ -257,15 +266,15 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
  * Helper class to manage schema infos for a schema context.
  */
 class SchemaInfoCache {
-  private readonly _schemaInfoCache: WeakMap<SchemaContext, Array<SchemaInfo>>;
+  private readonly _schemaInfoCache: WeakMap<SchemaContext, Array<IncrementalSchemaInfo>>;
   private readonly _schemaInfoLoader: LoadSchemaInfoHandler;
 
   constructor(schemaInfoLoader: LoadSchemaInfoHandler) {
-    this._schemaInfoCache = new WeakMap<SchemaContext, Array<SchemaInfo>>();
+    this._schemaInfoCache = new WeakMap<SchemaContext, Array<IncrementalSchemaInfo>>();
     this._schemaInfoLoader = schemaInfoLoader;
   }
 
-  public async getSchemasByContext(context: SchemaContext): Promise<SchemaInfo[] | undefined> {
+  public async getSchemasByContext(context: SchemaContext): Promise<IncrementalSchemaInfo[] | undefined> {
     if (!this._schemaInfoCache.has(context)) {
       const schemaInfos = await this._schemaInfoLoader(context);
       this._schemaInfoCache.set(context, Array.from(schemaInfos));
@@ -273,7 +282,7 @@ class SchemaInfoCache {
     return this._schemaInfoCache.get(context);
   }
 
-  public async lookup(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
+  public async lookup(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<IncrementalSchemaInfo | undefined> {
     const contextSchemaInfos = await this.getSchemasByContext(context);
     return contextSchemaInfos
       ? contextSchemaInfos.find((schemaInfo) => schemaInfo.schemaKey.matches(schemaKey, matchType))

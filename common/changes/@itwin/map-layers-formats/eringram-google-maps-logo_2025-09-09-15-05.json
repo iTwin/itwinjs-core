@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers-formats",
+      "comment": "Update Google Maps attribution",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers-formats"
+}

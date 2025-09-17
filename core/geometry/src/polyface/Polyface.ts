@@ -635,13 +635,9 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   public createVisitor(numWrap: number = 0): IndexedPolyfaceVisitor {
     return IndexedPolyfaceVisitor.create(this, numWrap);
   }
-  /** Return the range of (optionally transformed) points in this mesh. */
-  public override range(transform?: Transform, result?: Range3d): Range3d {
-    return this.data.range(result, transform);
-  }
-  /** Extend `range` with coordinates from this mesh. */
+  /** Extend `range` with coordinates from this mesh, optionally transformed. */
   public extendRange(range: Range3d, transform?: Transform): void {
-    this.data.range(range, transform);
+    this.data.extendRange(range, transform);
   }
   /**
    * Given the index of a facet, return the data pertaining to the face it is a part of.

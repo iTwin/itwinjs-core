@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Fix spurious assertions in FeatureAppearance.equals.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
