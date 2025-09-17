@@ -311,7 +311,7 @@ jobs:
               git checkout -b $conflictBranchName
 
               # Cherry-pick changes onto conflict handling branch
-              git cherry-pick $commitHash
+              git cherry-pick $(deprecationCommit.hash)
 
               # Add, commit and push all ESLint deprecation changes (including conflicts) to conflict handling branch for manual resolution.
               git add .
@@ -322,7 +322,7 @@ jobs:
               # Create a PR with new conflict branch
               gh pr create --title "Merge deprecation comment changes for version $(getVersion.version) into master" --body "This PR contains all changes after running lint-deprecation ESLint rule and merging with master. Manual intervention required: solve conflicts in this branch and merge PR into master. This happened because deprecation comments in master and in release branch could not be merged automatically. @iTwin/itwinjs-core-admins" --draft --head $conflictBranchName
             displayName: Create PR for manual resolution of deprecation comment changes
-            condition: eq(variables['needsPr'], 'true')
+            condition: eq(variables['needsPR'], 'true')
             env:
               GH_TOKEN: $(GITHUBTOKEN)
 
