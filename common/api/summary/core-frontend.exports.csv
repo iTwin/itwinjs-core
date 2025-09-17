@@ -552,7 +552,7 @@ internal;interface;Consumer
 internal;class;Consumers
 internal;enum;ConsumerType
 internal;interface;RenderPlan
-public;class;RenderPlanEllipsoid
+internal;class;RenderPlanEllipsoid
 public;class;RenderSystem
 public;namespace;RenderSystem
 internal;interface;RenderSystemDebugControl
