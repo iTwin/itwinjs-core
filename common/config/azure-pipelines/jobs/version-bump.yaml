@@ -292,8 +292,12 @@ jobs:
 
       - bash: |
           echo Committing version bump $(getVersion.version)...
-
-          git commit -m "$(getVersion.version)" --author="imodeljs-admin <imodeljs-admin@users.noreply.github.com>"
+          if [ "$(deprecationCommentChangesMade)" = "true" ]; then
+            echo "Amending previous deprecation commit with version bump changes"
+            git commit --amend -m "$(getVersion.version)" --author="imodeljs-admin <imodeljs-admin@users.noreply.github.com>"
+          else
+            git commit -m "$(getVersion.version)" --author="imodeljs-admin <imodeljs-admin@users.noreply.github.com>"
+          fi
         displayName: Commit version bump
 
       - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
