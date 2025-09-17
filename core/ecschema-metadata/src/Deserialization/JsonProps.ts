@@ -297,6 +297,8 @@ export interface FormatSet {
   name: string;
   /** The display label for this format set. */
   label: string;
+  /** The description for this format set. */
+  description?: string;
   /** A [UnitSystemKey]($quantity) that determines the unit system for this format set. */
   unitSystem: UnitSystemKey;
   /** A mapping of kind of quantity identifiers to their corresponding format properties. */
