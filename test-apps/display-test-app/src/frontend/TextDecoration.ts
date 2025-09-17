@@ -3,7 +3,32 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, ContainerBase, FractionRun, LeaderTextPointOptions, LineBreakRun, List, OrderedListMarker, Paragraph, Placement2dProps, Run, TabRun, TextAnnotation, TextAnnotationAnchor, TextAnnotationFrameShape, TextAnnotationLeader, TextAnnotationProps, TextBlock, TextBlockComponent, TextBlockJustification, TextBlockMargins, TextBlockProps, TextFrameStyleProps, TextRun, TextStyleSettingsProps, UnorderedListMarker } from "@itwin/core-common";
+import {
+  BaselineShift,
+  ColorDef,
+  FractionRun,
+  LeaderTextPointOptions,
+  LineBreakRun,
+  List,
+  OrderedListMarker,
+  Paragraph,
+  Placement2dProps,
+  Run,
+  TabRun,
+  TextAnnotation,
+  TextAnnotationAnchor,
+  TextAnnotationFrameShape,
+  TextAnnotationLeader,
+  TextAnnotationProps,
+  TextBlock,
+  TextBlockJustification,
+  TextBlockMargins,
+  TextBlockProps,
+  TextFrameStyleProps,
+  TextRun,
+  TextStyleSettingsProps,
+  UnorderedListMarker
+} from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
@@ -58,24 +83,30 @@ class TextEditor implements Decorator {
     }
   }
 
-  private pathToLastChild(): TextBlockComponent[] {
-    const pathToChild: TextBlockComponent[] = [];
-    let current: TextBlockComponent | undefined = this.textBlock;
+  private pathToLastChild(): (Run | Paragraph | List)[] {
+    const pathToChild: (Run | Paragraph | List)[] = [];
+    let current: Run | Paragraph | List | undefined = this.textBlock.children[this.textBlock.children.length - 1];
     while (current) {
       pathToChild.push(current);
-      current = (current as ContainerBase)?.last;
+
+      current = (current.type === "paragraph" || current.type === "list") && current.children.length !== 0 ? current.children[current.children.length - 1] : undefined;
     }
     return pathToChild;
   }
 
   private appendRunToLastChild(run: Run) {
-    const pathToChild = this.pathToLastChild();
+    if (this.textBlock.children.length === 0) {
+      this.textBlock.appendParagraph();
+    }
+
+    const pathToChild: (Paragraph | List)[] = this.pathToLastChild().filter((component) => component.type === "paragraph" || component.type === "list");
     const last = pathToChild[pathToChild.length - 1];
-    if (Run.isRun(last)) {
-      const container = pathToChild[pathToChild.length - 2] as ContainerBase;
-      container?.appendChild(run);
+
+    if (last.type === "paragraph") {
+      last.children.push(run);
     } else {
-      (last as ContainerBase)?.appendChild(run);
+      last.children.push(Paragraph.create({ styleOverrides: { fontName: this.runStyle.fontName } }));
+      last.children[last.children.length - 1].children.push(run);
     }
     return last;
   }
@@ -141,28 +172,18 @@ class TextEditor implements Decorator {
     }));
   }
 
-  public appendList(overrides?: TextStyleSettingsProps, index?: number): void {
-    if (undefined === index) {
-      this.textBlock.appendList({ styleOverrides: { fontName: this.runStyle.fontName, ...overrides } });
-      return;
-    }
-
-    const paragraphs = this.pathToLastChild().filter(component => component.type === "paragraph");
-    const child = paragraphs[index] as Paragraph;
+  public appendList(overrides?: TextStyleSettingsProps, index: number = 0): void {
     const list = List.create({ styleOverrides: { fontName: this.runStyle.fontName, ...overrides } });
-    child?.appendChild(list);
+    const path = this.pathToLastChild().filter(component => component.type === "paragraph");
+    const child = path[index];
+    child?.children.push(list);
   }
 
-  public appendListItem(overrides?: TextStyleSettingsProps, index?: number): void {
-    if (undefined === index) {
-      this.textBlock.appendListItem({ styleOverrides: { ...overrides } });
-      return;
-    }
-
+  public appendListItem(overrides?: TextStyleSettingsProps, index: number = 0): void {
     const lists = this.pathToLastChild().filter(component => component.type === "list");
-    const child = lists[index] as List;
-    const list = Paragraph.create({ styleOverrides: { fontName: this.runStyle.fontName, ...overrides } });
-    child?.appendChild(list);
+    const list = lists[index];
+    const item = Paragraph.create({ styleOverrides: { fontName: this.runStyle.fontName, ...overrides } });
+    list?.children.push(item);
   }
 
   public appendParagraph(): void {
@@ -170,7 +191,7 @@ class TextEditor implements Decorator {
   }
 
   public setIndentation(indentation: number): void {
-    const currentParagraph = this.textBlock.last;
+    const currentParagraph = this.textBlock.children[this.textBlock.children.length - 1];
 
     if (!currentParagraph) return;
     currentParagraph.styleOverrides = {
