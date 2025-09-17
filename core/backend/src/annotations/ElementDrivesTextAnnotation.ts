@@ -36,6 +36,8 @@ const minBisCoreVersion = new ECVersion(1, 0, 22);
  * @beta
  */
 export interface ITextAnnotation {
+  /** The default [[AnnotationTextStyle]] used by the text annotation. */
+  defaultTextStyle?: TextAnnotationUsesTextStyleByDefault;
   /** Obtain a collection of all of the [TextBlock]($common)s hosted by this element. */
   getTextBlocks(): Iterable<TextBlockAndId>;
   /** Update the element to replace the contents of the specified [TextBlock]($common)s. */
