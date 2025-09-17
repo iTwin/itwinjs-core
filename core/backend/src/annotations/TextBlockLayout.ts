@@ -97,11 +97,7 @@ export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout {
   const findFontId = args.findFontId ?? ((name, type) => args.iModel.fonts.findId({ name, type }) ?? 0);
   const computeTextRange = args.computeTextRange ?? ((x) => args.iModel.computeRangesForText(x));
 
-  // Reduce style overrides by recursively applying style overrides from a container component to its children.
-  // This ensures that each branch and leaf will have all of the necessary style override information.
-  // This way we don't have to reverse lookup later for each branch/leaf.
-  const textBlock = args.textStyleResolver.resolveAndMendStyle(args.textBlock);
-  return new TextBlockLayout(textBlock, new LayoutContext(args.textStyleResolver, computeTextRange, findFontId));
+  return new TextBlockLayout(args.textBlock, new LayoutContext(args.textStyleResolver, computeTextRange, findFontId));
 }
 
 /**
@@ -281,30 +277,6 @@ export class TextStyleResolver {
     const indentation = overrides.indentation;
     const tabInterval = overrides.tabInterval;
     return indentation + tabInterval * depth;
-  }
-
-  /**
-   * Resolves and applies style overrides to a TextBlock, ensuring all child components are updated.
-   * @param component The TextBlock to resolve and mend styles for.
-   * @returns A cloned TextBlock with resolved and mended styles.
-   */
-  public resolveAndMendStyle(component: TextBlock): TextBlock {
-    const block = component.clone();
-    this.mendSettings(block);
-    return block;
-  }
-
-  /**
-   * Recursively applies style overrides from a container component to its children, ensuring all children have all the necessary information of its style overrides.
-   * @param component The TextBlockComponent to mend styles for.
-   * @returns A cloned TextBlockComponent with updated style overrides for all children.
-   */
-  public mendSettings(component: TextBlockComponent): TextBlockComponent {
-    const block = component.clone();
-
-    // ###TODO delete this function and `resolveAndMendStyle`, see TODO in populateComponent.
-
-    return block;
   }
 }
 
@@ -761,8 +733,16 @@ export class TextBlockLayout {
     }
   }
 
-  // TODO: pass in style overrides recursively instead of doing the mend styles stuff
-  private populateComponent(component: Run | Paragraph | List, componentIndex: number, context: LayoutContext, docWidth: number, curLine: LineLayout, parent: StructuralTextBlockComponent, depth: number = 0): LineLayout {
+  // TODO: pass in styleOverrides
+  private populateComponent(
+    component: Run | Paragraph | List,
+    componentIndex: number,
+    context: LayoutContext,
+    docWidth: number,
+    curLine: LineLayout,
+    parent: StructuralTextBlockComponent,
+    depth: number = 0
+  ): LineLayout {
     switch (component.type) {
       case "list": {
         curLine = this.flushLine(context, curLine, component.children[0], true, depth + 1);
