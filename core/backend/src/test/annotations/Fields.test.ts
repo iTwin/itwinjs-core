@@ -7,7 +7,7 @@ import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldPr
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, updateField, updateFields } from "../../internal/annotations/fields";
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
 import { SpatialCategory } from "../../Category";
 import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Schema, Schemas } from "../../Schema";
@@ -15,6 +15,13 @@ import { ClassRegistry } from "../../ClassRegistry";
 import { PhysicalElement } from "../../Element";
 import { ElementOwnsUniqueAspect, ElementUniqueAspect, FontFile, TextAnnotation3d } from "../../core-backend";
 import { ElementDrivesTextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
+
+function isIntlSupported(): boolean {
+  // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
+  // users are not expected to do any editing, but long term we will attempt to find a better
+  // solution.
+  return !ProcessDetector.isMobileAppBackend;
+}
 
 describe("updateField", () => {
   const mockElementId = "0x1";
@@ -1152,7 +1159,11 @@ describe("Field evaluation", () => {
       expect(fieldRun.cachedContent).to.equal("11.00 m");
     });
 
-    it("validates formatting options for datetime objects", () => {
+    it("validates formatting options for datetime objects", function () {
+      if (!isIntlSupported()) {
+        this.skip();
+      }
+
       const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
       const fieldRun = FieldRun.create({
         propertyHost,
