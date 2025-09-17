@@ -909,10 +909,14 @@ export class TextBlock extends TextBlockComponent {
   }
 }
 
+/**
+ * A union of all the [[TextBlockComponent]]s that can contain other components.
+ * @beta
+ */
 export type StructuralTextBlockComponent = List | Paragraph | TextBlock;
 
 /**
- * Recursively traverses a tree of Container objects, yielding each component along with its parent container.
+ * Recursively traverses a [[StructuralTextBlockComponent]] tree, yielding each child component along with its parent container.
  * This generator enables depth-first iteration over all components in a text block structure, including paragraphs, lists, and runs.
  *
  * @param parent The root container whose children should be traversed.

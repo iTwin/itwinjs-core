@@ -155,9 +155,6 @@ internal;function;toBisCoreRootClassFullName
 public;interface;ConflictingLock
 beta;interface;ConflictingLocks
 public;class;ConflictingLocksError
-beta;class;ContainerComponent
-beta;interface;ContainerComponentProps
-beta;type;ContainerComponentType
 alpha;enum;ContentFlags
 internal;class;ContentIdProvider
 public;class;ContextRealityModel
@@ -404,7 +401,6 @@ public;enum;GeometrySummaryVerbosity
 beta;function;getMarkerText
 internal;function;getMaximumMajorTileFormatVersion
 internal;const;getPullChangesIpcChannel
-beta;function;getTextBlockGenerator
 internal;function;getTileObjectReference
 internal;class;GlbHeader
 public;enum;GlobeMode
@@ -835,7 +831,6 @@ internal;class;RpcSessionInvocation
 alpha;interface;RscFontEncodingProps
 beta;type;Run
 beta;namespace;Run
-beta;type;RunComponentType
 beta;interface;RunLayoutResult
 beta;type;RunProps
 public;enum;SchemaState
@@ -897,6 +892,7 @@ beta;namespace;SqliteError
 beta;type;StackedFractionType
 public;type;StandaloneOpenOptions
 beta;type;StorageValue
+beta;type;StructuralTextBlockComponent
 public;class;SubCategoryAppearance
 public;namespace;SubCategoryAppearance
 public;class;SubCategoryOverride
@@ -994,6 +990,7 @@ internal;interface;TileTreeMetadata
 internal;interface;TileTreeProps
 public;interface;TileVersionInfo
 public;interface;TranslationOptions
+beta;function;traverseTextBlockComponent
 alpha;enum;TreeFlags
 public;class;Tween
 public;type;TweenCallback

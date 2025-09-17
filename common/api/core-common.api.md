@@ -1817,28 +1817,6 @@ export class ConflictingLocksError extends IModelError {
     static isError<T extends ConflictingLocks>(error: any): error is T;
 }
 
-// @beta
-export abstract class ContainerComponent<T extends TextBlockComponent = TextBlockComponent> extends TextBlockComponent {
-    appendChild(child: T): void;
-    get children(): T[];
-    set children(children: T[]);
-    clearStyleOverrides(options?: ClearTextStyleOptions): void;
-    equals(other: TextBlockComponent): boolean;
-    get isEmpty(): boolean;
-    get last(): T | undefined;
-    toJSON(): ContainerComponentProps;
-    abstract readonly type: ContainerComponentType;
-}
-
-// @beta
-export interface ContainerComponentProps extends TextBlockComponentProps {
-    children?: TextBlockComponentProps[];
-    type?: ContainerComponentType;
-}
-
-// @beta
-export type ContainerComponentType = "paragraph" | "list" | "textBlock";
-
 // @alpha
 export enum ContentFlags {
     // (undocumented)
@@ -4396,12 +4374,6 @@ export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, format
 // @internal
 export const getPullChangesIpcChannel: (iModelId: string) => string;
 
-// @beta
-export function getTextBlockGenerator(block: TextBlockComponent, parent?: ContainerComponent): IterableIterator<{
-    parent?: ContainerComponent;
-    current: TextBlockComponent;
-}>;
-
 // @internal (undocumented)
 export function getTileObjectReference(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): ObjectReference;
 
@@ -5790,7 +5762,7 @@ export class LineBreakRun extends TextBlockComponent {
     // (undocumented)
     clone(): LineBreakRun;
     // (undocumented)
-    static create(props?: Omit<TextBlockComponentProps, "type">): LineBreakRun;
+    static create(props?: Omit<LineBreakRunProps, "type">): LineBreakRun;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
     // (undocumented)
@@ -5897,15 +5869,19 @@ export interface LineStyleProps extends DefinitionElementProps {
 }
 
 // @beta
-export class List extends ContainerComponent<Paragraph> {
-    protected constructor(props?: Omit<ListProps, "type">);
+export class List extends TextBlockComponent {
+    protected constructor(props?: ListProps);
     // (undocumented)
-    appendToListItem(run: Run, itemIndex?: number): void;
+    readonly children: Paragraph[];
+    // (undocumented)
+    clearStyleOverrides(options?: ClearTextStyleOptions): void;
     // (undocumented)
     clone(): List;
     static create(props?: Omit<ListProps, "type">): List;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
+    // (undocumented)
+    get isEmpty(): boolean;
     stringify(options?: TextBlockStringifyOptions, context?: TextBlockStringifyContext): string;
     // (undocumented)
     toJSON(): ListProps;
@@ -5917,11 +5893,11 @@ export class List extends ContainerComponent<Paragraph> {
 export type ListMarker = OrderedListMarker | UnorderedListMarker | string;
 
 // @beta
-export interface ListProps extends ContainerComponentProps {
+export interface ListProps extends TextBlockComponentProps {
     // (undocumented)
     children?: ParagraphProps[];
     // (undocumented)
-    type: "list";
+    readonly type: "list";
 }
 
 // @public
@@ -6944,12 +6920,18 @@ export interface PackedFeatureWithIndex extends PackedFeature {
 }
 
 // @beta
-export class Paragraph extends ContainerComponent<List | Run> {
+export class Paragraph extends TextBlockComponent {
+    // (undocumented)
+    readonly children: Array<List | Run>;
+    // (undocumented)
+    clearStyleOverrides(options?: ClearTextStyleOptions): void;
     // (undocumented)
     clone(): Paragraph;
     static create(props?: Omit<ParagraphProps, "type">): Paragraph;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
+    // (undocumented)
+    get isEmpty(): boolean;
     stringify(options?: TextBlockStringifyOptions, context?: TextBlockStringifyContext): string;
     // (undocumented)
     toJSON(): ParagraphProps;
@@ -6958,11 +6940,9 @@ export class Paragraph extends ContainerComponent<List | Run> {
 }
 
 // @beta
-export interface ParagraphProps extends ContainerComponentProps {
+export interface ParagraphProps extends TextBlockComponentProps {
     // (undocumented)
-    children?: (ListProps | RunProps)[];
-    // (undocumented)
-    type: "paragraph";
+    children?: Array<ListProps | RunProps>;
 }
 
 // @internal
@@ -9307,12 +9287,7 @@ export type Run = TextRun | FractionRun | TabRun | LineBreakRun | FieldRun;
 // @beta
 export namespace Run {
     export function fromJSON(props: RunProps): Run;
-    export function isRun(component: TextBlockComponent): component is Run;
-    export function isRunProps(component: TextBlockComponentProps): component is RunProps;
 }
-
-// @beta
-export type RunComponentType = "text" | "field" | "fraction" | "linebreak" | "tab";
 
 // @beta
 export interface RunLayoutResult {
@@ -9868,6 +9843,9 @@ export type StandaloneOpenOptions = OpenDbKey;
 // @beta
 export type StorageValue = string | number | boolean | undefined | Uint8Array;
 
+// @beta
+export type StructuralTextBlockComponent = List | Paragraph | TextBlock;
+
 // @public
 export class SubCategoryAppearance {
     constructor(props?: SubCategoryAppearance.Props);
@@ -10137,11 +10115,13 @@ export interface TextAnnotationProps {
 }
 
 // @beta
-export class TextBlock extends ContainerComponent<(Paragraph | List)> {
-    appendList(props?: Omit<ListProps, "type">, seedFromLast?: boolean): List;
-    appendListItem(props?: Omit<ParagraphProps, "type">, seedFromLast?: boolean): Paragraph | undefined;
-    appendParagraph(props?: Omit<ParagraphProps, "type">, seedFromLast?: boolean): Paragraph;
+export class TextBlock extends TextBlockComponent {
+    appendParagraph(props?: ParagraphProps, seedFromLast?: boolean): Paragraph;
     appendRun(run: Run): void;
+    // (undocumented)
+    readonly children: Paragraph[];
+    // (undocumented)
+    clearStyleOverrides(options?: ClearTextStyleOptions): void;
     // (undocumented)
     clone(): TextBlock;
     static create(props: Omit<TextBlockProps, "type">): TextBlock;
@@ -10155,8 +10135,6 @@ export class TextBlock extends ContainerComponent<(Paragraph | List)> {
     styleId: Id64String;
     // (undocumented)
     toJSON(): TextBlockProps;
-    // (undocumented)
-    readonly type = "textBlock";
     width: number;
 }
 
@@ -10167,8 +10145,6 @@ export abstract class TextBlockComponent {
     clearStyleOverrides(_options?: ClearTextStyleOptions): void;
     abstract clone(): TextBlockComponent;
     equals(other: TextBlockComponent): boolean;
-    get index(): number;
-    set index(value: number);
     abstract get isEmpty(): boolean;
     get isWhitespace(): boolean;
     get overridesStyle(): boolean;
@@ -10176,13 +10152,11 @@ export abstract class TextBlockComponent {
     get styleOverrides(): TextStyleSettingsProps;
     set styleOverrides(overrides: TextStyleSettingsProps);
     toJSON(): TextBlockComponentProps;
-    abstract readonly type: RunComponentType | ContainerComponentType;
 }
 
 // @beta
 export interface TextBlockComponentProps {
     styleOverrides?: TextStyleSettingsProps;
-    type?: RunComponentType | ContainerComponentType;
 }
 
 // @beta
@@ -10226,8 +10200,9 @@ export interface TextBlockMargins {
 }
 
 // @beta
-export interface TextBlockProps extends ContainerComponentProps {
-    children?: (ParagraphProps | ListProps)[];
+export interface TextBlockProps extends TextBlockComponentProps {
+    // (undocumented)
+    children?: ParagraphProps[];
     justification?: TextBlockJustification;
     margins?: Partial<TextBlockMargins>;
     styleId: Id64String;
@@ -11012,6 +10987,12 @@ export interface TranslationOptions {
     fallbackLng?: string;
     lngs?: string[];
 }
+
+// @beta
+export function traverseTextBlockComponent(parent: StructuralTextBlockComponent): IterableIterator<{
+    parent: StructuralTextBlockComponent;
+    child: List | Paragraph | Run;
+}>;
 
 // @alpha
 export enum TreeFlags {

@@ -154,6 +154,7 @@ import { LightLocationProps } from '@itwin/core-common';
 import { LineLayoutResult } from '@itwin/core-common';
 import { LinePixels } from '@itwin/core-common';
 import { LineStyleProps } from '@itwin/core-common';
+import { List } from '@itwin/core-common';
 import { LocalBriefcaseProps } from '@itwin/core-common';
 import { LocalDirName } from '@itwin/core-common';
 import { LocalFileName } from '@itwin/core-common';
@@ -185,6 +186,7 @@ import { OpenSqliteArgs } from '@itwin/core-common';
 import { Optional } from '@itwin/core-bentley';
 import * as os from 'os';
 import { OverriddenBy } from '@itwin/core-common';
+import { Paragraph } from '@itwin/core-common';
 import { Path } from '@itwin/core-geometry';
 import { PhysicalElementProps } from '@itwin/core-common';
 import { PhysicalTypeProps } from '@itwin/core-common';
@@ -1584,7 +1586,7 @@ export interface ComputeFrameArgs {
 export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2d[];
 
 // @beta
-export interface ComputeGraphemeOffsetsArgs extends LayoutStyleArgs {
+export interface ComputeGraphemeOffsetsArgs extends LayoutTextArgs {
     graphemeCharIndexes: number[];
     runLayoutResult: RunLayoutResult;
     source: TextBlockComponent;
@@ -4235,7 +4237,7 @@ export class KnownLocations {
 }
 
 // @beta
-export interface LayoutStyleArgs {
+export interface LayoutTextArgs {
     // @internal
     computeTextRange?: ComputeRangesForTextLayout;
     // @internal
@@ -4248,7 +4250,7 @@ export interface LayoutStyleArgs {
 export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout;
 
 // @beta
-export interface LayoutTextBlockArgs extends LayoutStyleArgs {
+export interface LayoutTextBlockArgs extends LayoutTextArgs {
     textBlock: TextBlock;
 }
 
@@ -4262,7 +4264,7 @@ export class LightLocation extends SpatialLocationElement {
 
 // @beta
 export class LineLayout {
-    constructor(source: TextBlockComponent, context?: LayoutContext, depth?: number);
+    constructor(source: List | Run | Paragraph, context?: LayoutContext, depth?: number);
     // (undocumented)
     append(run: RunLayout): void;
     get back(): RunLayout;
@@ -4281,7 +4283,7 @@ export class LineLayout {
     range: Range2d;
     get runs(): ReadonlyArray<RunLayout>;
     // (undocumented)
-    source: TextBlockComponent;
+    source: List | Run | Paragraph;
     stringify(): string;
     // (undocumented)
     toResult(): LineLayoutResult;
@@ -6461,8 +6463,6 @@ export class TextStyleResolver {
     constructor(args: TextStyleResolverArgs);
     readonly blockSettings: TextStyleSettings;
     findTextStyle(id: Id64String): TextStyleSettings;
-    mendSettings(component: TextBlockComponent): TextBlockComponent;
-    resolveAndMendStyle(component: TextBlock): TextBlock;
     resolveIndentation(component: TextBlockComponent, depth: number): number;
     resolveSettings(overrides: TextStyleSettingsProps, isLeader?: boolean): TextStyleSettings;
     readonly scaleFactor: number;
