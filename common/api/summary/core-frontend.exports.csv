@@ -113,11 +113,13 @@ public;enum;CoordinateLockOverrides
 public;enum;CoordSource
 public;enum;CoordSystem
 internal;class;CoreTools
+internal;function;createEmptyRenderPlan
 beta;interface;CreateFormattingSpecProps
 beta;interface;CreateGraphicFromDescriptionArgs
 beta;interface;CreateGraphicFromTemplateArgs
 beta;interface;CreateRenderInstancesParamsBuilderArgs
 public;interface;CreateRenderMaterialArgs
+internal;function;createRenderPlanFromViewport
 internal;function;createSpatialTileTreeReferences
 public;interface;CreateTextureArgs
 public;interface;CreateTextureFromSourceArgs
@@ -530,9 +532,11 @@ public;class;RealityTileTree
 beta;function;registerWorker
 alpha;class;RemoteExtensionProvider
 alpha;interface;RemoteExtensionProviderProps
+internal;interface;RenderAreaPattern
 public;class;RenderClipVolume
 public;class;RenderContext
 internal;enum;RenderDiagnostics
+internal;interface;RenderGeometry
 public;class;RenderGraphic
 public;class;RenderGraphicOwner
 beta;interface;RenderGraphicTileTreeArgs
@@ -547,6 +551,8 @@ internal;enum;BufferType
 internal;interface;Consumer
 internal;class;Consumers
 internal;enum;ConsumerType
+internal;interface;RenderPlan
+public;class;RenderPlanEllipsoid
 public;class;RenderSystem
 public;namespace;RenderSystem
 internal;interface;RenderSystemDebugControl
