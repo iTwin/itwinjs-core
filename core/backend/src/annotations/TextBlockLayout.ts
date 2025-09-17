@@ -64,7 +64,7 @@ function createFindTextStyleImpl(iModel: IModelDb): FindTextStyle {
  * Base interface for arguments supplied to [[computeLayoutTextBlockResult]] and [[computeGraphemeOffsets]].
  * @beta
  */
-export interface LayoutStyleArgs {
+export interface LayoutTextArgs {
   /** The iModel from which to obtain fonts and [[AnnotationTextStyle]]s when laying out glyphs. */
   iModel: IModelDb;
   /** The text style resolver used to resolve effective text styles during layout. */
@@ -79,7 +79,7 @@ export interface LayoutStyleArgs {
  * Arguments supplied to [[computeLayoutTextBlockResult]].
  * @beta
  */
-export interface LayoutTextBlockArgs extends LayoutStyleArgs {
+export interface LayoutTextBlockArgs extends LayoutTextArgs {
   /** The text block whose extents are to be computed. */
   textBlock: TextBlock;
 }
@@ -119,7 +119,7 @@ export function computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlo
  * Arguments supplied to [[computeGraphemeOffsets]].
  * @beta
  */
-export interface ComputeGraphemeOffsetsArgs extends LayoutStyleArgs {
+export interface ComputeGraphemeOffsetsArgs extends LayoutTextArgs {
   /** The TextBlockComponent for which to compute grapheme offsets. */
   source: TextBlockComponent;
   /** The run layout result for which grapheme ranges will be computed. */
@@ -623,7 +623,11 @@ export class LineLayout {
     assert(!this.isEmpty);
     return this._runs[this._runs.length - 1];
   }
-  /** Gets or sets the marker RunLayout for this line, used for list item markers. */
+
+  /**
+   * Gets or sets the marker RunLayout for this line, used for lists.
+   * A marker is the symbol or character that appears before each list item in a list, bullets, numbers, etc.
+   * */
   public get marker(): RunLayout | undefined { return this._marker; }
   public set marker(value: RunLayout | undefined) { this._marker = value; }
 

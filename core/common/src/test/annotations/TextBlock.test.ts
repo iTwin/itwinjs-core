@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { beforeEach, describe, expect, it } from "vitest";
-import { FieldRun, FractionRun, FractionRunProps, getTextBlockGenerator, LineBreakRun, List, ListProps, Paragraph, ParagraphProps, RunProps, TabRun, TextBlock, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps, UnorderedListMarker } from "../../core-common";
+import { FieldRun, FractionRun, FractionRunProps, LineBreakRun, List, ListProps, Paragraph, ParagraphProps, RunProps, TabRun, TextBlock, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps, traverseTextBlockComponent, UnorderedListMarker } from "../../core-common";
 
 function makeTextRun(content?: string, styleOverrides?: TextStyleSettingsProps): TextRunProps {
   return {
@@ -736,7 +736,7 @@ describe("FieldRun", () => {
   });
 });
 
-describe('getTextBlockGenerator', () => {
+describe('traverseTextBlockComponent', () => {
   it('iterates through all runs in a TextBlock', () => {
     /*
     Text block to create:
@@ -769,7 +769,7 @@ describe('getTextBlockGenerator', () => {
     childList.children.push(Paragraph.create({ children: [{type: "text", content: "Sub-item 1"}] }));
     list.children.push(listItem);
 
-    const iterator = getTextBlockGenerator(textBlock);
+    const iterator = traverseTextBlockComponent(textBlock);
     let result = iterator.next();
     expect(result.value.current).toEqual(textBlock);
     expect(result.value.parent).to.be.undefined;

@@ -919,11 +919,11 @@ export type StructuralTextBlockComponent = List | Paragraph | TextBlock;
  * @returns An IterableIterator yielding objects with the current component and its parent container.
  * @beta
  */
-export function* getTextBlockGenerator(parent: StructuralTextBlockComponent): IterableIterator<{ parent: StructuralTextBlockComponent, child: List | Paragraph | Run }> {
+export function* traverseTextBlockComponent(parent: StructuralTextBlockComponent): IterableIterator<{ parent: StructuralTextBlockComponent, child: List | Paragraph | Run }> {
   for (const child of parent.children) {
     yield { parent, child };
     if (child.type === "list" || child.type === "paragraph") {
-      yield* getTextBlockGenerator(child);
+      yield* traverseTextBlockComponent(child);
     }
   }
 }
