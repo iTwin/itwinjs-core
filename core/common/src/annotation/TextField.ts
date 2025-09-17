@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { ResolvedFormatProps, UnitConversionSpec, UnitProps } from "@itwin/core-quantity";
+import type { ResolvedFormatProps, UnitConversionSpec, UnitProps } from "@itwin/core-quantity";
 
 /** Enumerates the different kinds of [Property]($ecschema-metadata) values that can be used as the basis for a [[FieldRun]]'s display string.
  * A field's property type is derived from the property's [PrimitiveType]($ecschema-metadata) and other attributes like its [PrimitiveOrEnumPropertyBase.extendedTypeName]($ecschema-metadata).
