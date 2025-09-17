@@ -272,8 +272,8 @@ export class TextStyleResolver {
    * @param depth The nesting depth of the component.
    * @returns The computed indentation value.
    */
-  public resolveIndentation(component: TextBlockComponent, depth: number): number {
-    const overrides = this.resolveSettings(component.styleOverrides);
+  public resolveIndentation(styleOverrides: TextStyleSettingsProps, depth: number): number {
+    const overrides = this.resolveSettings(styleOverrides);
     const indentation = overrides.indentation;
     const tabInterval = overrides.tabInterval;
     return indentation + tabInterval * depth;
@@ -449,7 +449,6 @@ export class RunLayout {
     this.fontId = props.fontId;
   }
 
-  // TODO: maybe pass settings in
   public static create(source: Run, context: LayoutContext): RunLayout {
     const style = context.textStyleResolver.resolveSettings(source.styleOverrides);
     const fontId = context.findFontId(style.fontName);
@@ -574,10 +573,10 @@ export class LineLayout {
   private _runs: RunLayout[] = [];
   private _marker?: RunLayout;
 
-  public constructor(source: List | Run | Paragraph, context?: LayoutContext, depth: number = 0) {
+  public constructor(source: List | Run | Paragraph, style: TextStyleSettingsProps, context?: LayoutContext, depth: number = 0) {
     this.source = source;
     this.depth = depth;
-    this.offsetFromDocument = { x: context?.textStyleResolver.resolveIndentation(source, depth) ?? 0, y: 0 };
+    this.offsetFromDocument = { x: context?.textStyleResolver.resolveIndentation(style, depth) ?? 0, y: 0 };
   }
 
   /** Compute a string representation, primarily for debugging purposes. */
@@ -722,18 +721,17 @@ export class TextBlockLayout {
       return;
     }
 
-    let curLine = new LineLayout(doc.children[0]);
+    let curLine = new LineLayout(doc.children[0], doc.children[0].styleOverrides);
     let childIndex = 0;
     for (const child of doc.children) {
-      curLine = this.populateComponent(child, childIndex++, context, doc.width, curLine, doc);
+      curLine = this.populateComponent(child, childIndex++, context, doc.width, curLine, doc, doc.styleOverrides);
     }
 
     if (curLine.runs.length > 0) {
-      this.flushLine(context, curLine);
+      this.flushLine(context, curLine, doc.styleOverrides);
     }
   }
 
-  // TODO: pass in styleOverrides
   private populateComponent(
     component: Run | Paragraph | List,
     componentIndex: number,
@@ -741,42 +739,45 @@ export class TextBlockLayout {
     docWidth: number,
     curLine: LineLayout,
     parent: StructuralTextBlockComponent,
+    cumulativeOverrides: TextStyleSettingsProps,
     depth: number = 0
   ): LineLayout {
+    cumulativeOverrides = { ...cumulativeOverrides, ...component.styleOverrides };
+
     switch (component.type) {
       case "list": {
         // If we have any runs in the current line, flush it before starting the list.
         if (curLine.runs.length > 0) {
-          curLine = this.flushLine(context, curLine, component.children[0], true, depth + 1);
+          curLine = this.flushLine(context, curLine, cumulativeOverrides, component.children[0], true, depth + 1);
         }
 
         // Iterate through each list item, setting the marker and populating its contents.
         component.children.forEach((child, index) => {
-          const styleOverrides = context.textStyleResolver.resolveSettings(component.styleOverrides);
+          const styleOverrides = context.textStyleResolver.resolveSettings(cumulativeOverrides);
           const markerContent = getMarkerText(styleOverrides.listMarker, index + 1);
           const marker = RunLayout.create(TextRun.create({ styleOverrides, content: markerContent }), context);
 
           curLine.marker = marker;
-          curLine = this.populateComponent(child, index, context, docWidth, curLine, component, depth + 1);
+          curLine = this.populateComponent(child, index, context, docWidth, curLine, component, cumulativeOverrides, depth + 1);
         });
 
         // Lastly flush the line.
         const nextSibling = parent?.children[componentIndex + 1];
         if (curLine && nextSibling) {
-          curLine = this.flushLine(context, curLine, nextSibling, true, depth);
+          curLine = this.flushLine(context, curLine, cumulativeOverrides, nextSibling, true, depth);
         }
         break;
       }
       case "paragraph": {
         // Iterate through each paragraph child (either a list or a run), populating its contents.
         component.children.forEach((child, index) => {
-          curLine = this.populateComponent(child, index, context, docWidth, curLine, component, depth)
+          curLine = this.populateComponent(child, index, context, docWidth, curLine, component, cumulativeOverrides, depth);
         });
 
         // Lastly flush the line.
         const nextSibling = parent?.children[componentIndex + 1];
         if (curLine && nextSibling) {
-          curLine = this.flushLine(context, curLine, nextSibling, true, depth);
+          curLine = this.flushLine(context, curLine, cumulativeOverrides, nextSibling, true, depth);
         }
         break;
       }
@@ -785,23 +786,23 @@ export class TextBlockLayout {
 
         // Text can be word-wrapped, so we need to split it into multiple runs if necessary.
         if (docWidth > 0) {
-          layout.split(context).forEach(r => { curLine = this.populateRun(curLine, r, context, docWidth) });
+          layout.split(context).forEach(r => { curLine = this.populateRun(curLine, r, context, cumulativeOverrides, docWidth) });
         } else {
-          curLine = this.populateRun(curLine, layout, context, docWidth);
+          curLine = this.populateRun(curLine, layout, context, cumulativeOverrides, docWidth);
         }
         break;
       }
       case "fraction":
       case "tab": {
         const layout = RunLayout.create(component, context);
-        curLine = this.populateRun(curLine, layout, context, docWidth);
+        curLine = this.populateRun(curLine, layout, context, cumulativeOverrides, docWidth);
         break;
       }
       case "linebreak": {
         const layout = RunLayout.create(component, context);
 
         curLine.append(layout);
-        curLine = this.flushLine(context, curLine, undefined, undefined, depth);
+        curLine = this.flushLine(context, curLine, cumulativeOverrides, undefined, undefined, depth);
         break;
       }
       default: break;
@@ -810,7 +811,7 @@ export class TextBlockLayout {
     return curLine;
   };
 
-  private populateRun(curLine: LineLayout, run: RunLayout, context: LayoutContext, docWidth: number): LineLayout {
+  private populateRun(curLine: LineLayout, run: RunLayout, context: LayoutContext, cumulativeOverrides: TextStyleSettingsProps, docWidth: number): LineLayout {
     // If this is a tab, we need to apply the tab shift first, and then we can treat it like a text run.
     applyTabShift(run, curLine, context);
 
@@ -836,10 +837,10 @@ export class TextBlockLayout {
       curLine.append(run);
 
       // Lastly, flush line
-      curLine = this.flushLine(context, curLine, undefined, undefined, curLine.depth);
+      curLine = this.flushLine(context, curLine, cumulativeOverrides, undefined, undefined, curLine.depth);
     } else {
       // First, flush line
-      curLine = this.flushLine(context, curLine, undefined, undefined, curLine.depth);
+      curLine = this.flushLine(context, curLine, cumulativeOverrides, undefined, undefined, curLine.depth);
 
       // Recompute tab shift if applicable
       applyTabShift(run, curLine, context);
@@ -850,17 +851,17 @@ export class TextBlockLayout {
     return curLine;
   };
 
-  private flushLine(context: LayoutContext, curLine: LineLayout, next?: List | Run | Paragraph, newParagraph: boolean = false, depth: number = 0): LineLayout {
+  private flushLine(context: LayoutContext, curLine: LineLayout, cumulativeOverrides: TextStyleSettingsProps, next?: List | Run | Paragraph, newParagraph: boolean = false, depth: number = 0): LineLayout {
     next = next ?? curLine.source;
 
     // We want to guarantee that each layout line has at least one run.
     if (curLine.runs.length === 0) {
       if (this.lines.length === 0 || this._back.runs.length === 0) {
-        return new LineLayout(next, context, depth);
+        return new LineLayout(next, cumulativeOverrides, context, depth);
       }
 
       if (curLine.source.type !== "linebreak") {
-        const newLine = new LineLayout(next, context, depth);
+        const newLine = new LineLayout(next, cumulativeOverrides, context, depth);
         newLine.offsetFromDocument.y -= context.textStyleResolver.blockSettings.paragraphSpacingFactor * context.textStyleResolver.blockSettings.lineHeight;
         return newLine;
       }
@@ -886,11 +887,11 @@ export class TextBlockLayout {
 
     this.lines.push(curLine);
     if (newParagraph) {
-      const newLine = new LineLayout(next, context, depth);
+      const newLine = new LineLayout(next, cumulativeOverrides, context, depth);
       newLine.offsetFromDocument.y -= context.textStyleResolver.blockSettings.paragraphSpacingFactor * context.textStyleResolver.blockSettings.lineHeight;
       return newLine;
     }
-    return new LineLayout(next, context, depth);
+    return new LineLayout(next, cumulativeOverrides, context, depth);
   }
 
   private justifyLines(): void {

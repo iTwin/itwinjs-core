@@ -172,22 +172,23 @@ class TextEditor implements Decorator {
     }));
   }
 
-  public appendList(overrides?: TextStyleSettingsProps, index: number = 0): void {
-    const list = List.create({ styleOverrides: { fontName: this.runStyle.fontName, ...overrides } });
+  public appendList(index: number = 0, listMarker?: string): void {
+    const list = List.create({ styleOverrides: { fontName: this.runStyle.fontName, ...this.runStyle, listMarker } });
+
     const path = this.pathToLastChild().filter(component => component.type === "paragraph");
     const child = path[index];
     child?.children.push(list);
   }
 
-  public appendListItem(overrides?: TextStyleSettingsProps, index: number = 0): void {
+  public appendListItem(index: number = 0): void {
     const lists = this.pathToLastChild().filter(component => component.type === "list");
     const list = lists[index];
-    const item = Paragraph.create({ styleOverrides: { fontName: this.runStyle.fontName, ...overrides } });
+    const item = Paragraph.create({ styleOverrides: { fontName: this.runStyle.fontName, ...this.runStyle } });
     list?.children.push(item);
   }
 
   public appendParagraph(): void {
-    this.textBlock.appendParagraph();
+    this.textBlock.appendParagraph({ styleOverrides: this.runStyle });
   }
 
   public setIndentation(indentation: number): void {
@@ -627,12 +628,12 @@ export class TextDecorationTool extends Tool {
         if (listMarker in OrderedListMarker) listMarker = (OrderedListMarker as any)[listMarker];
         else if (listMarker in UnorderedListMarker) listMarker = (UnorderedListMarker as any)[listMarker];
 
-        editor.appendList({ listMarker }, index);
+        editor.appendList(index, listMarker);
         break;
       }
       case "list-item": {
         const index = inArgs[1] !== undefined ? parseInt(inArgs[1], 10) : undefined;
-        editor.appendListItem(undefined, index);
+        editor.appendListItem(index);
         break;
       }
       case "leader":
