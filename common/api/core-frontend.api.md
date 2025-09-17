@@ -8921,7 +8921,7 @@ export interface RenderPlan {
     readonly whiteOnWhiteReversal: WhiteOnWhiteReversalSettings;
 }
 
-// @public (undocumented)
+// @internal (undocumented)
 export class RenderPlanEllipsoid {
     constructor(ellipsoidCenter: Point3d, ellipsoidRotation: Matrix3d, ellipsoidRadii: Point3d);
     // (undocumented)
