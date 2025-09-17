@@ -549,9 +549,13 @@ export class PolyfaceData {
   }
   /** Return the range of the point array (optionally transformed). */
   public range(result?: Range3d, transform?: Transform): Range3d {
-    result = result ? result : Range3d.createNull();
-    result.extendArray(this.point, transform);
-    return result;
+    const range = Range3d.createNull(result);
+    this.extendRange(range, transform);
+    return range;
+  }
+  /** Extend `range` with coordinates from this mesh, optionally transformed. */
+  public extendRange(range: Range3d, transform?: Transform): void {
+    range.extendArray(this.point, transform);
   }
   /**
    * Apply a transform to the mesh data.
