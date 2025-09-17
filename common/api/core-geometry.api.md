@@ -2883,7 +2883,6 @@ export class IndexedPolyface extends Polyface {
     numEdgeInFacet(facetIndex: number): number;
     get paramCount(): number;
     get pointCount(): number;
-    range(transform?: Transform, result?: Range3d): Range3d;
     reverseIndices(): void;
     reverseNormals(): void;
     reverseSingleFacet(facetId: number): void;
@@ -4673,6 +4672,7 @@ export class PolyfaceData {
     edgeVisible: boolean[];
     get expectedClosure(): number;
     set expectedClosure(value: number);
+    extendRange(range: Range3d, transform?: Transform): void;
     face: FacetFaceData[];
     get faceCount(): number;
     gatherIndexedData(other: PolyfaceData, index0: number, index1: number, numWrap: number): void;
