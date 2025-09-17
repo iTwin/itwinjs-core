@@ -26,7 +26,7 @@ import { GraphicDescription } from "../../common/render/GraphicDescriptionBuilde
 import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
 import { GraphicDescriptionContext } from "../../common/render/GraphicDescriptionContext";
 import { _implementationProhibited, _textures } from "../../common/internal/Symbols";
-import { RenderGeometry } from "../../render/RenderGeometry";
+import { RenderGeometry } from "../../internal/render/RenderGeometry";
 import { createGraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch } from "../../internal/render/GraphicTemplateImpl";
 import { GraphicTemplate } from "../../render/GraphicTemplate";
 import { LayerTileData } from "../render/webgl/MapLayerParams";

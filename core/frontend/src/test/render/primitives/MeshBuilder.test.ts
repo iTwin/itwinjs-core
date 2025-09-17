@@ -8,7 +8,7 @@ import { ColorDef, GraphicParams } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { MockRender } from "../../../internal/render/MockRender";
 import { ScreenViewport } from "../../../Viewport";
-import { PrimitiveBuilder } from "../../../render/PrimitiveBuilder";
+import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
 import { openBlankViewport } from "../../openBlankViewport";
 import { GraphicType } from "../../../common/render/GraphicType";
 import { DisplayParams } from "../../../common/internal/render/DisplayParams";

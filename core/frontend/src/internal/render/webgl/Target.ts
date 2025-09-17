@@ -24,7 +24,7 @@ import { AnimationBranchStates } from "../AnimationBranchState";
 import { Pixel } from "../../../render/Pixel";
 import { GraphicList } from "../../../render/RenderGraphic";
 import { RenderMemory } from "../../../render/RenderMemory";
-import { createEmptyRenderPlan, RenderPlan } from "../../../render/RenderPlan";
+import { createEmptyRenderPlan, RenderPlan } from "../RenderPlan";
 import { PlanarClassifierMap, RenderPlanarClassifier } from "../RenderPlanarClassifier";
 import { RenderTextureDrape, TextureDrapeMap } from "../RenderTextureDrape";
 import { RenderTarget } from "../../../render/RenderTarget";
@@ -100,6 +100,7 @@ interface ReadPixelResources {
 
 /** @internal */
 export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGLDisposable {
+  protected override readonly [_implementationProhibited] = undefined;
   public readonly graphics = new TargetGraphics();
   private _planarClassifiers?: PlanarClassifierMap;
   private _textureDrapes?: TextureDrapeMap;

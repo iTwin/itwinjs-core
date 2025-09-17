@@ -22,7 +22,7 @@ import { ViewRect } from "../../../common/ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "../../../render/GraphicBranch";
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../../render/GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "../../../common/render/InstancedGraphicParams";
-import { PrimitiveBuilder } from "../../../render/PrimitiveBuilder";
+import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
 import { MeshMapLayerGraphicParams } from "../MeshMapLayerGraphicParams";
 import { PointCloudArgs } from "../../../common/internal/render/PointCloudPrimitive";
 import { RenderClipVolume } from "../../../render/RenderClipVolume";
@@ -66,12 +66,12 @@ import { Techniques } from "./Technique";
 import { ExternalTextureLoader, Texture, TextureHandle } from "./Texture";
 import { UniformHandle } from "./UniformHandle";
 import { BatchOptions } from "../../../common/render/BatchOptions";
-import { RenderGeometry } from "../../../render/RenderGeometry";
+import { RenderGeometry } from "../../../internal/render/RenderGeometry";
 import { RenderInstancesParams } from "../../../common/render/RenderInstancesParams";
 import { _batch, _branch, _featureTable, _nodes } from "../../../common/internal/Symbols";
 import { RenderInstancesParamsImpl } from "../../../internal/render/RenderInstancesParamsImpl";
 import { RenderSkyBoxParams } from "../RenderSkyBoxParams";
-import { RenderAreaPattern } from "../../../render/RenderAreaPattern";
+import { RenderAreaPattern } from "../../../internal/render/RenderAreaPattern";
 
 /* eslint-disable no-restricted-syntax */
 

@@ -25,7 +25,7 @@ import { RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
-import { RenderGeometry } from "../../../render/RenderGeometry";
+import { RenderGeometry } from "../../../internal/render/RenderGeometry";
 import { TerrainTexture } from "../RenderTerrain";
 import { MapCartoRectangle, PlanarProjection, PlanarTilePatch } from "../../../tile/internal";
 import { LayerTextureParams, ProjectedTexture } from "./MapLayerParams";

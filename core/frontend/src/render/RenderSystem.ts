@@ -15,7 +15,7 @@ import { ClipVector, Matrix3d, Point2d, Point3d, Range3d, Transform, XAndY, XYAn
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { createGraphicFromDescription, createGraphicTemplateFromDescription, MapTileTreeReference, RealityModelTileTree, RealityTreeReference, TileTreeReference } from "../tile/internal";
+import { createGraphicFromDescription, createGraphicTemplateFromDescription, MapTileTreeReference, TileTreeReference } from "../tile/internal";
 import { ToolAdmin } from "../tools/ToolAdmin";
 import { Viewport } from "../Viewport";
 import { imageElementFromImageSource, tryImageElementFromUrl } from "../common/ImageUtil";
@@ -47,14 +47,14 @@ import { _featureTable, _implementationProhibited, _renderSystem, _textures, _tr
 import { GraphicDescriptionContext, GraphicDescriptionContextProps, WorkerGraphicDescriptionContextProps } from "../common/render/GraphicDescriptionContext";
 import { MeshArgs } from "./MeshArgs";
 import { PolylineArgs } from "./PolylineArgs";
-import { RenderGeometry } from "./RenderGeometry";
+import { RenderGeometry } from "../internal/render/RenderGeometry";
 import { RenderInstancesParams } from "../common/render/RenderInstancesParams";
 import { GraphicTemplate } from "./GraphicTemplate";
 import { RenderSystemDebugControl } from "../internal/render/RenderSystemDebugControl";
 import { RenderTextureDrape } from "../internal/render/RenderTextureDrape";
 import { RenderTerrainGeometry } from "../internal/render/RenderTerrain";
 import { RenderSkyBoxParams } from "../internal/render/RenderSkyBoxParams";
-import { RenderAreaPattern } from "./RenderAreaPattern";
+import { RenderAreaPattern } from "../internal/render/RenderAreaPattern";
 import { LayerTileData } from "../internal/render/webgl/MapLayerParams";
 
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -193,11 +193,6 @@ export abstract class RenderSystem implements Disposable {
   public abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
   /** @internal */
   public abstract createOffscreenTarget(rect: ViewRect): RenderTarget;
-
-  /** @internal */
-  public createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference {
-    return new RealityTreeReference(props);
-  }
 
   /** Perform a small unit of idle work and return true if more idle work remains to be done. This function is invoked on each tick of the javascript event loop as long as no viewports are registered with the ViewManager, until it returns false to indicate all idle work has been completed.
    * @internal

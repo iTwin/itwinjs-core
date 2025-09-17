@@ -56,3 +56,10 @@ export { GoogleMapsDecorator, LogoDecoration } from "./GoogleMapsDecorator";
 // Remove once CommonJS is dropped.
 export { DebugShaderFile } from "./render/RenderSystemDebugControl";
 export { IModelTileTree } from "./tile/IModelTileTree";
+
+// Used by cesium-renderer
+export { type RenderPlan } from "./render/RenderPlan";
+export { type RenderAreaPattern } from "./render/RenderAreaPattern";
+export { type RenderGeometry } from "./render/RenderGeometry";
+export { PrimitiveBuilder } from "./render/PrimitiveBuilder";
+export { _implementationProhibited } from "../common/internal/Symbols";

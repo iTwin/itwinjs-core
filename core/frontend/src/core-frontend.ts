@@ -92,21 +92,16 @@ export * from "./render/MeshArgs";
 export * from "./render/ParticleCollectionBuilder";
 export * from "./render/Pixel";
 export * from "./render/PolylineArgs";
-export * from "./render/PrimitiveBuilder";
 export * from "./render/RealityMeshParams";
-export * from "./render/RenderAreaPattern";
 export * from "./render/RenderClipVolume";
-export * from "./render/RenderGeometry";
 export * from "./render/RenderGraphic";
 export * from "./render/RenderMemory";
-export * from "./render/RenderPlan";
 export * from "./render/RenderSystem";
 export * from "./render/RenderTarget";
 export * from "./render/Scene";
 export * from "./render/ScreenSpaceEffectBuilder";
 export * from "./render/VisibleFeature";
 export * from "./internal/render/webgl/IModelFrameLifecycle";
-export { RealityTreeReference, RealityModelTileTree } from "./internal/tile/RealityModelTileTree";
 export type {
   TxnEntityChange,
   TxnEntityChangeIterable,

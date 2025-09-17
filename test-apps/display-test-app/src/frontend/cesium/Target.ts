@@ -9,7 +9,7 @@
 import { Id64String } from "@itwin/core-bentley";
 import { System } from "./System";
 import { CesiumScene } from "./CesiumScene";
-import { Decorations, GraphicList, Pixel, RenderPlan, RenderTarget, Scene, ViewRect } from "@itwin/core-frontend";
+import { _implementationProhibited, Decorations, GraphicList, Pixel, RenderPlan, RenderTarget, Scene, ViewRect } from "@itwin/core-frontend";
 
 // import { RenderPlan } from "@itwin/core-frontend/src/internal/render/RenderPlan";
 // // eslint-disable-next-line @itwin/import-within-package
@@ -19,6 +19,8 @@ import { Decorations, GraphicList, Pixel, RenderPlan, RenderTarget, Scene, ViewR
  * @internal
  */
 export class OnScreenTarget extends RenderTarget {
+  protected override readonly [_implementationProhibited] = undefined;
+
   private readonly _canvas: HTMLCanvasElement;
   private readonly _scene: CesiumScene;
 
@@ -87,6 +89,8 @@ export class OnScreenTarget extends RenderTarget {
  * @internal
  */
 export class OffScreenTarget extends RenderTarget {
+  protected override readonly [_implementationProhibited] = undefined;
+
   private readonly _rect: ViewRect
 
   public get renderSystem(): System { return System.instance; }

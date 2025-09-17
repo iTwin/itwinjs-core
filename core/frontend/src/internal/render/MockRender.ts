@@ -20,17 +20,17 @@ import { Decorations } from "../../render/Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "../../render/GraphicBranch";
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder";
 import { Pixel } from "../../render/Pixel";
-import { PrimitiveBuilder } from "../../render/PrimitiveBuilder";
+import { PrimitiveBuilder } from "../../internal/render/PrimitiveBuilder";
 import { PointCloudArgs } from "../../common/internal/render/PointCloudPrimitive";
 import { GraphicList, RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
-import { RenderPlan } from "../../render/RenderPlan";
+import { RenderPlan } from "../../internal/render/RenderPlan";
 import { RenderSystem } from "../../render/RenderSystem";
 import { RenderTarget } from "../../render/RenderTarget";
 import { Scene } from "../../render/Scene";
 import { _implementationProhibited } from "../../common/internal/Symbols";
-import { RenderGeometry } from "../../render/RenderGeometry";
-import { RenderAreaPattern } from "../../render/RenderAreaPattern";
+import { RenderGeometry } from "./RenderGeometry";
+import { RenderAreaPattern } from "./RenderAreaPattern";
 
 /** Contains extensible mock implementations of the various components of a RenderSystem, intended for use in tests.
  * Use these for tests instead of the default RenderSystem wherever possible because:
@@ -47,6 +47,8 @@ import { RenderAreaPattern } from "../../render/RenderAreaPattern";
 export namespace MockRender {
   /** @internal */
   export abstract class Target extends RenderTarget {
+    protected override readonly [_implementationProhibited] = undefined;
+
     protected constructor(private readonly _system: RenderSystem) { super(); }
 
     public get renderSystem(): RenderSystem { return this._system; }

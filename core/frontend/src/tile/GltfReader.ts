@@ -40,7 +40,7 @@ import {
 } from "../common/gltf/GltfSchema";
 import { PickableGraphicOptions } from "../common/render/BatchOptions";
 import { createGraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch, GraphicTemplateNode } from "../internal/render/GraphicTemplateImpl";
-import { RenderGeometry } from "../render/RenderGeometry";
+import { RenderGeometry } from "../internal/render/RenderGeometry";
 import { GraphicTemplate } from "../render/GraphicTemplate";
 import { LayerTileData } from "../internal/render/webgl/MapLayerParams";
 import { compactEdgeIterator } from "../common/imdl/CompactEdges";
@@ -1421,7 +1421,7 @@ export abstract class GltfReader {
               appearance: this.getEdgeAppearance(extLineString.material),
               polylines: [],
             };
-            
+
             const curLineString: number[] = [];
             for (const index of polylineIndices.buffer) {
               if (index === 0xffffffff) {

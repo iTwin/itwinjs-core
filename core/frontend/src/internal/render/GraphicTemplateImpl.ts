@@ -8,7 +8,7 @@
 
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { _batch, _branch, _implementationProhibited, _nodes } from "../../common/internal/Symbols";
-import { RenderGeometry } from "../../render/RenderGeometry";
+import { RenderGeometry } from "./RenderGeometry";
 import { RenderFeatureTable, ViewFlagOverrides } from "@itwin/core-common";
 import { InstancedGraphicParams } from "../../common/render/InstancedGraphicParams";
 import { BatchOptions } from "../../common/render/BatchOptions";

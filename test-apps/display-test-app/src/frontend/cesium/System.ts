@@ -10,8 +10,7 @@ import { ElementAlignedBox3d, RenderFeatureTable } from "@itwin/core-common";
 import { Transform } from "@itwin/core-geometry";
 import { OffScreenTarget, OnScreenTarget } from "./Target";
 import { CesiumGraphic } from "./Graphic";
-import { BatchOptions, CreateGraphicFromTemplateArgs, CustomGraphicBuilderOptions, GraphicBranch, GraphicBranchOptions, GraphicBuilder, IModelApp, IModelConnection, InstancedGraphicParams, PrimitiveBuilder, RealityModelTileTree, RenderAreaPattern, RenderGeometry, RenderGraphic, RenderSystem, RenderTarget, ViewportGraphicBuilderOptions, ViewRect } from "@itwin/core-frontend";
-import { CesiumRealityTreeReference } from "./RealityTreeReference";
+import { BatchOptions, CreateGraphicFromTemplateArgs, CustomGraphicBuilderOptions, GraphicBranch, GraphicBranchOptions, GraphicBuilder, IModelApp, IModelConnection, InstancedGraphicParams, PrimitiveBuilder, RenderAreaPattern, RenderGeometry, RenderGraphic, RenderSystem, RenderTarget, ViewportGraphicBuilderOptions, ViewRect } from "@itwin/core-frontend";
 
 // import { RenderSystem } from "../../../../../core/frontend/src/render/RenderSystem";
 // // eslint-disable-next-line @itwin/import-within-package
@@ -88,10 +87,6 @@ export class System extends RenderSystem {
 
   public createOffscreenTarget(rect: ViewRect): RenderTarget {
     return new OffScreenTarget(rect);
-  }
-
-  public override createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference {
-    return new CesiumRealityTreeReference(props);
   }
 
   public doIdleWork(): boolean {
