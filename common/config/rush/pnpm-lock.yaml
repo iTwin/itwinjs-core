@@ -868,9 +868,6 @@ importers:
       '@loaders.gl/draco':
         specifier: ^4.3.4
         version: 4.3.4(@loaders.gl/core@4.3.4)
-      draco3d:
-        specifier: ^1.5.1
-        version: 1.5.1
       fuse.js:
         specifier: ^3.3.0
         version: 3.3.0
@@ -7092,9 +7089,6 @@ packages:
 
   dottie@2.0.6:
     resolution: {integrity: sha512-iGCHkfUc5kFekGiqhe8B/mdaurD+lakO9txNnTvKtA6PISrw86LgqHvRzWYPyoE2Ph5aMIrCw9/uko6XHTKCwA==}
-
-  draco3d@1.5.1:
-    resolution: {integrity: sha512-CxorIEl3kFWQvSdCAkGdcZoPKzkjuLKL1C78f509LZEdm8UPMySZjz1CXFOayF+yvJl3UPRpBC1V27uDPJkFSw==}
 
   draco3d@1.5.7:
     resolution: {integrity: sha512-m6WCKt/erDXcw+70IJXnG7M3awwQPAsZvJGX5zY7beBqpELw6RDGkYVU0W43AFxye4pDZ5i2Lbyc/NNGqwjUVQ==}
@@ -13629,8 +13623,6 @@ snapshots:
   dotenv@8.2.0: {}
 
   dottie@2.0.6: {}
-
-  draco3d@1.5.1: {}
 
   draco3d@1.5.7: {}
 
