@@ -17,7 +17,7 @@ const loggerCategory = BackendLoggerCategory.StashManager;
  * @internal
  */
 export class StashError extends Error {
-  constructor( message: string) {
+  constructor(message: string) {
     super(message);
     this.name = "StashError";
     Logger.logError(loggerCategory, message);
@@ -144,7 +144,7 @@ export class StashManager {
   private static getStashFilePath(args: StashArgs) {
     const stashRoot = this.getStashRootFolder(args.db, false);
     if (!existsSync(stashRoot)) {
-      throw new StashError("Stash root folder does not exist");
+      throw new StashError("Invalid stash");
     }
 
     const stashFilePath = path.join(stashRoot, `${this.getStashId(args)}.stash`);
@@ -228,27 +228,33 @@ export class StashManager {
   /**
    * Retrieves the stash properties from the database for the given arguments.
    *
-   * This method attempts to read the stash information from the local database using a prepared SQL statement.
-   * If successful, it returns the stash properties along with the file path of the stash database.
-   * If an error occurs during the process, it logs the error and returns `undefined`.
-   *
    * @param args - The arguments required to locate and access the stash.
    * @returns The stash file properties if found; otherwise, `undefined`.
    */
-  public static getStash(args: StashArgs): StashProps | undefined {
+  public static tryGetStash(args: StashArgs): StashProps | undefined {
     try {
-      return this.withStash(args, (stashDb) => {
-        const stashProps = stashDb.withPreparedSqliteStatement("SELECT [val] FROM [be_Local] WHERE [name]='$stash_info'", (stmt) => {
-          if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-            throw new StashError("Invalid stash");
-          return JSON.parse(stmt.getValueString(0)) as StashProps;
-        });
-        return stashProps;
-      });
+      return this.getStash(args);
     } catch (error: any) {
       Logger.logError(loggerCategory, `Error getting stash with ${this.getStashId(args)}: ${error.message}`);
     }
     return undefined;
+  }
+
+  /**
+   * Retrieves the stash properties from the database using the provided arguments.
+   *
+   * @param args - The arguments required to access the stash.
+   * @returns The stash properties parsed from the database.
+   */
+  public static getStash(args: StashArgs): StashProps {
+    return this.withStash(args, (stashDb) => {
+      const stashProps = stashDb.withPreparedSqliteStatement("SELECT [val] FROM [be_Local] WHERE [name]='$stash_info'", (stmt) => {
+        if (stmt.step() !== DbResult.BE_SQLITE_ROW)
+          throw new StashError("Invalid stash");
+        return JSON.parse(stmt.getValueString(0)) as StashProps;
+      });
+      return stashProps;
+    });
   }
 
   /**
@@ -289,7 +295,7 @@ export class StashManager {
       const filePath = path.join(stashDir, file);
       if (existsSync(filePath) && statSync(filePath).isFile() && file.endsWith(".stash")) {
         const id = file.slice(0, -path.extname(file).length)
-        const stash = this.getStash({ db, stash: id });
+        const stash = this.tryGetStash({ db, stash: id });
         if (stash) {
           stashes.push(stash);
         }
@@ -350,7 +356,7 @@ export class StashManager {
     const { db } = args;
     Logger.logInfo(loggerCategory, `Restoring stash: ${this.getStashId(args)}`);
 
-    const stash = this.getStash(args);
+    const stash = this.tryGetStash(args);
     if (!stash) {
       throw new StashError(`Stash not found ${this.getStashId(args)}`);
     }
@@ -368,6 +374,7 @@ export class StashManager {
     }
 
     const stashFile = this.getStashFilePath({ db, stash });
+    // we need to retain lock that overlapped with stash locks instead of all locks
     await db.discardChanges({ retainLocks: true });
     await this.acquireLocks(args);
     if (db.changeset.id !== stash.parentChangeset.id) {

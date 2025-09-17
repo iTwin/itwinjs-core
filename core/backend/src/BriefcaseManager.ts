@@ -635,12 +635,12 @@ export class BriefcaseManager {
    * @param name - The unique name for the restore point. Must be a non-empty string.
    * @returns A promise that resolves to the created stash object representing the restore point.
    */
-  public static async createRestorePoint(db: BriefcaseDb, name: string ): Promise<StashProps> {
+  public static async createRestorePoint(db: BriefcaseDb, name: string): Promise<StashProps> {
     Logger.logTrace(loggerCategory, `Creating restore point ${name}`);
     this.dropRestorePoint(db, name);
 
-    const stash = await StashManager.stash({ db, description: this.getRestorePointLocalValueKey(name) });
-    db[_nativeDb].saveLocalValue(this.getRestorePointLocalValueKey(name), stash.id);
+    const stash = await StashManager.stash({ db, description: this.makeRestorePointKey(name) });
+    db[_nativeDb].saveLocalValue(this.makeRestorePointKey(name), stash.id);
     db.saveChanges("Create restore point");
     Logger.logTrace(loggerCategory, `Created restore point ${name}`, () => stash);
     return stash;
@@ -653,13 +653,13 @@ export class BriefcaseManager {
    * @param db - The {@link BriefcaseDb} instance from which to drop the restore point.
    * @param name - The name of the restore point to be dropped. Must be a non-empty string.
    */
-  public static dropRestorePoint(db: BriefcaseDb, name: string ): void {
+  public static dropRestorePoint(db: BriefcaseDb, name: string): void {
     Logger.logTrace(loggerCategory, `Dropping restore point ${name}`);
 
-    const restorePointId = db[_nativeDb].queryLocalValue(this.getRestorePointLocalValueKey(name));
+    const restorePointId = db[_nativeDb].queryLocalValue(this.makeRestorePointKey(name));
     if (restorePointId) {
       StashManager.dropStash({ db, stash: restorePointId });
-      db[_nativeDb].deleteLocalValue(this.getRestorePointLocalValueKey(name));
+      db[_nativeDb].deleteLocalValue(this.makeRestorePointKey(name));
       db.saveChanges("Drop restore point");
       Logger.logTrace(loggerCategory, `Dropped restore point ${name}`);
     }
@@ -674,15 +674,15 @@ export class BriefcaseManager {
    * @param name - The name of the restore point to check for existence.
    * @returns `true` if the restore point exists and its stash is present; otherwise, `false`.
    */
-  public static containsRestorePoint(db: BriefcaseDb, name: string ): boolean {
+  public static containsRestorePoint(db: BriefcaseDb, name: string): boolean {
     Logger.logTrace(loggerCategory, `Checking if restore point ${name} exists`);
-    const key = this.getRestorePointLocalValueKey(name);
+    const key = this.makeRestorePointKey(name);
     const restorePointId = db[_nativeDb].queryLocalValue(key);
     if (!restorePointId) {
       return false;
     }
 
-    const stash = StashManager.getStash({ db, stash: restorePointId });
+    const stash = StashManager.tryGetStash({ db, stash: restorePointId });
     if (!stash) {
       Logger.logTrace(loggerCategory, `Restore point ${name} does not exist. Deleting ${key}`);
       db[_nativeDb].deleteLocalValue(key);
@@ -691,7 +691,7 @@ export class BriefcaseManager {
     return true;
   }
 
-  private static getRestorePointLocalValueKey(name: string ): string {
+  private static makeRestorePointKey(name: string): string {
     if (name.length === 0) {
       throw new Error("Invalid restore point name");
     }
@@ -707,7 +707,7 @@ export class BriefcaseManager {
    */
   public static async restorePoint(db: BriefcaseDb, name: string): Promise<void> {
     Logger.logTrace(loggerCategory, `Restoring to restore point ${name}`);
-    const restorePointId = db[_nativeDb].queryLocalValue(this.getRestorePointLocalValueKey(name));
+    const restorePointId = db[_nativeDb].queryLocalValue(this.makeRestorePointKey(name));
     if (!restorePointId) {
       throw new Error(`Restore point not found: ${name}`);
     }

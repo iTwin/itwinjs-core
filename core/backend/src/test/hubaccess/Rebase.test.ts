@@ -696,6 +696,11 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.false;
   });
+  it("getStash() should throw exception", async () => {
+    const b1 = await testIModel.openBriefcase();
+    chai.expect(() => StashManager.getStash({ db: b1, stash: "invalid_stash" })).to.throw("Invalid stash");
+    chai.expect(StashManager.tryGetStash({ db: b1, stash: "invalid_stash" })).to.be.undefined;
+  });
   it("edge case: a indirect update can cause FK violation", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
@@ -718,6 +723,5 @@ describe("rebase changes & stashing api", function (this: Suite) {
     // should fail to pull and rebase changes.
     await chai.expect(b2.pushChanges({ description: `deleted child ${childId} and inserted grandchild ${grandChildId}` }))
       .to.be.rejectedWith("Foreign key conflicts in ChangeSet. Aborting rebase.");
-
   });
 });
