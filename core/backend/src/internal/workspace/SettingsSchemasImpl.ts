@@ -37,7 +37,7 @@ class SettingsSchemasImpl implements SettingsSchemas {
     } else if (typeof val === expectedType)
       return;
 
-    throw new Error(`value for ${path}: "${val}" is wrong type, expected ${expectedType}`);
+    throw new Error(`value for ${path}: "${String(val)}" is wrong type, expected ${expectedType}`);
   }
 
   public validateSetting<T>(value: T, settingName: string): T {
@@ -247,7 +247,7 @@ class SettingsSchemasImpl implements SettingsSchemas {
         return;
 
       default:
-        throw new Error(`property ${name} has illegal type "${property.type}"`);
+        throw new Error(`property ${name} has illegal type "${String(property.type)}"`);
     }
   }
 

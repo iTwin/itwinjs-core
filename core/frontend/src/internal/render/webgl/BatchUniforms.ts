@@ -16,6 +16,8 @@ import { FeatureMode } from "./TechniqueFlags";
 import { ThematicSensors } from "./ThematicSensors";
 import { Contours } from "./Contours";
 import { OvrFlags } from "../../../common/internal/render/OvrFlags";
+import { FeatureAppearanceProvider } from "@itwin/core-common";
+import { assert } from "@itwin/core-bentley";
 
 const scratchRgb = new Float32Array(3);
 const noOverrideRgb = new Float32Array([-1.0, -1.0, -1.0]);
@@ -42,13 +44,25 @@ export class BatchUniforms {
     this._target = target;
   }
 
-  public setCurrentBatch(batch: Batch | undefined): void {
+  public clearCurrentBatch(): void {
+    this._setCurrentBatch(undefined, undefined);
+  }
+
+  public setCurrentBatch(batch: Batch, provider: FeatureAppearanceProvider): void {
+    this._setCurrentBatch(batch, provider);
+  }
+
+  private _setCurrentBatch(batch: Batch | undefined, provider: FeatureAppearanceProvider | undefined): void {
     desync(this);
 
-    if (undefined !== batch)
+    let overrides;
+    if (undefined !== batch) {
+      assert(undefined !== provider);
+      overrides = batch.getOverrides(this._target, provider);
       this.state.push(batch, false);
-    else
+    } else {
       this.state.pop();
+    }
 
     const batchId = this.state.currentBatchId;
     this._scratchUint32[0] = batchId;
@@ -57,12 +71,11 @@ export class BatchUniforms {
     this._batchId[2] = this._scratchBytes[2];
     this._batchId[3] = this._scratchBytes[3];
 
-    const overrides = undefined !== batch ? batch.getOverrides(this._target) : undefined;
     this._overrides = (undefined !== overrides && overrides.anyOverridden) ? overrides : undefined;
 
     let sensors: ThematicSensors | undefined;
     if (undefined !== batch && this._target.wantThematicSensors) {
-      const distanceCutoff = this._target.plan.thematic!.sensorSettings.distanceCutoff;
+      const distanceCutoff = this._target.plan.thematic?.sensorSettings.distanceCutoff ?? 0;
       if (distanceCutoff > 0) // if we have a distance cutoff, we want to create per-batch sensor textures
         sensors = batch.getThematicSensors(this._target);
     }

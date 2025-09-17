@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { ECSchemaNamespaceUris } from "../Constants";
-import { SchemaContext } from "../Context";
 import { SchemaItemProps, SchemaProps } from "../Deserialization/JsonProps";
 import { parseSchemaItemType, SchemaItemType } from "../ECObjects";
+import { SchemaInfo } from "../Interfaces";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { ClassParser, CustomAttributeClassParser, MixinParser, RelationshipClassParser } from "./ClassParsers";
 import { KindOfQuantityParser, SchemaItemParser } from "./SchemaItemParsers";
@@ -18,6 +18,11 @@ function clean(_key: string, value: any) {
 type MutableSchemaProps = {
   -readonly [K in keyof SchemaProps]: SchemaProps[K]
 };
+
+interface NamedSchemaItemProps extends SchemaItemProps {
+  name: string;
+  schemaItemType: SchemaItemType;
+}
 
 /**
  * Parses SchemaProps JSON returned from an ECSql query and returns the correct SchemaProps JSON object.
@@ -34,14 +39,14 @@ export class SchemaParser {
    * @param context The SchemaContext that will contain the schema and it's references.
    * @returns The corrected SchemaProps JSON.
    */
-  public static async parse(schema: SchemaProps, context: SchemaContext): Promise<SchemaProps> {
+  public static async parse(schema: SchemaProps, schemaInfos: Iterable<SchemaInfo>): Promise<SchemaProps> {
     const props = schema as MutableSchemaProps;
     props.$schema = ECSchemaNamespaceUris.SCHEMAURL3_2_JSON,
       props.customAttributes = props.customAttributes ? props.customAttributes.map((attr: any) => { return parseCustomAttribute(attr); }) : undefined;
     props.label = props.label === null ? undefined : props.label;
     props.description = props.description === null ? undefined : props.description;
     if (props.items) {
-      props.items = await this.parseItems(props.items as any, props.name, context);
+      props.items = await this.parseItems(props.items as any, props.name, schemaInfos);
     }
 
     if (!props.customAttributes || props.customAttributes.length === 0)
@@ -58,50 +63,50 @@ export class SchemaParser {
    * @param context The SchemaContext containing the Schema.
    * @returns The corrected SchemaItemProps.
    */
-  public static async parseSchemaItems(schemaItems: readonly SchemaItemProps[], schemaName: string, context: SchemaContext): Promise<SchemaItemProps[] | undefined> {
-    const items: SchemaItemProps[] = [];
+  public static async parseSchemaItems(schemaItems: readonly SchemaItemProps[], schemaName: string, schemaInfos: Iterable<SchemaInfo>): Promise<NamedSchemaItemProps[] | undefined> {
+    const items: NamedSchemaItemProps[] = [];
     for (const item of schemaItems) {
-      const props = await this.parseItem(item, schemaName, context);
+      const props = await this.parseItem(item, schemaName, schemaInfos);
       const cleaned = JSON.parse(JSON.stringify(props, clean));
       items.push(cleaned);
     }
     return items.length > 0 ? items : undefined;
   }
 
-  private static async parseItems(schemaItemProps: readonly SchemaItemProps[], schemaName: string, context: SchemaContext): Promise<{ [name: string]: SchemaItemProps } | undefined> {
+  private static async parseItems(schemaItemProps: readonly SchemaItemProps[], schemaName: string, schemaInfos: Iterable<SchemaInfo>): Promise<{ [name: string]: SchemaItemProps } | undefined> {
     const items: { [name: string]: SchemaItemProps } = {};
     for (const itemProps of schemaItemProps) {
-      const props = await this.parseItem(itemProps, schemaName, context);
-      items[props.name!] = props;
+      const props = await this.parseItem(itemProps, schemaName, schemaInfos);
+      items[props.name] = props;
       delete (props as any).name;
     }
 
     return Object.keys(items).length > 0 ? items : undefined;
   }
 
-  public static async parseItem(props: SchemaItemProps, schemaName: string, context: SchemaContext): Promise<SchemaItemProps> {
+  public static async parseItem(props: SchemaItemProps, schemaName: string, schemaInfos: Iterable<SchemaInfo>): Promise<NamedSchemaItemProps> {
     const schemaItem = "string" === typeof (props) ? JSON.parse(props) : props;
     const type = parseSchemaItemType(schemaItem.schemaItemType);
     switch (type) {
       case SchemaItemType.KindOfQuantity:
-        const koqParser = new KindOfQuantityParser(schemaName, context);
-        return koqParser.parse(schemaItem);
+        const koqParser = new KindOfQuantityParser(schemaName, schemaInfos);
+        return await koqParser.parse(schemaItem) as NamedSchemaItemProps;
       case SchemaItemType.EntityClass:
       case SchemaItemType.StructClass:
-        const classParser = new ClassParser(schemaName, context);
-        return classParser.parse(schemaItem);
+        const classParser = new ClassParser(schemaName, schemaInfos);
+        return await classParser.parse(schemaItem) as NamedSchemaItemProps;
       case SchemaItemType.RelationshipClass:
-        const relationshipParser = new RelationshipClassParser(schemaName, context);
-        return relationshipParser.parse(schemaItem);
+        const relationshipParser = new RelationshipClassParser(schemaName, schemaInfos);
+        return await relationshipParser.parse(schemaItem) as NamedSchemaItemProps;
       case SchemaItemType.Mixin:
-        const mixinParser = new MixinParser(schemaName, context);
-        return mixinParser.parse(schemaItem);
+        const mixinParser = new MixinParser(schemaName, schemaInfos);
+        return await mixinParser.parse(schemaItem) as NamedSchemaItemProps;
       case SchemaItemType.CustomAttributeClass:
-        const caParser = new CustomAttributeClassParser(schemaName, context);
-        return caParser.parse(schemaItem);
+        const caParser = new CustomAttributeClassParser(schemaName, schemaInfos);
+        return await caParser.parse(schemaItem) as NamedSchemaItemProps;
       default:
-        const itemParser = new SchemaItemParser(schemaName, context);
-        return itemParser.parse(schemaItem);
+        const itemParser = new SchemaItemParser(schemaName, schemaInfos);
+        return await itemParser.parse(schemaItem) as NamedSchemaItemProps;
     }
   }
 }

@@ -20,7 +20,9 @@
     - [Composite Format](#composite-format)
     - [Parsing Values](#parsing-values)
     - [Using a FormatsProvider](#using-a-formatsprovider)
+    - [Retrieving a FormatProp, and a PersistenceUnit with only a KindOfQuantity Name and through schemas](#retrieving-a-formatprop-and-a-persistenceunit-with-only-a-kindofquantity-name-and-through-schemas)
     - [Using a MutableFormatsProvider](#using-a-mutableformatsprovider)
+    - [Using a FormatSetFormatsProvider](#using-a-formatsetformatsprovider)
     - [Registering a SchemaFormatsProvider on IModelConnection open](#registering-a-schemaformatsprovider-on-imodelconnection-open)
     - [Mathematical Operation Parsing](#mathematical-operation-parsing)
       - [Limitations](#limitations)
@@ -90,6 +92,8 @@ A [MutableFormatsProvider]($quantity) interface extends the read-only `FormatsPr
 
 The [SchemaFormatsProvider]($ecschema-metadata) takes in a [SchemaContext]($ecschema-metadata), to provide `Formats` coming from schemas. The `SchemaFormatsProvider` also requires a [UnitSystemKey]($quantity) passed in to filter the [FormatDefinition]($quantity) returned, according to the current unit system set in the `SchemaFormatsProvider`. When getting a format, the `SchemaFormatsProvider` will throw an error if it receives a non-valid [EC full name](https://www.itwinjs.org/bis/ec/ec-name/#full-name).
 
+The [FormatSetFormatsProvider]($ecschema-metadata) is a mutable format provider that manages format definitions within a [FormatSet](#formatset). This provider automatically updates the underlying format set when formats are added or removed, making it ideal for applications that need to persist format changes. It also supports an optional fallback provider to provide formats not found in the format set.
+
 #### Units Provider
 
 To appropriately parse and output formatted values, a units provider is used to define all available units and provides conversion factors between units. There are several implementations of the [UnitsProvider]($quantity) across iTwin.js:
@@ -112,7 +116,9 @@ We expose APIs and interfaces to support persistence of formats. Different from 
 
 [FormatSet]($ecschema-metadata) defines properties necessary to support persistence of a set of `Formats`.
 
-Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../../bis/ec/ec-name.md) for a [KindOfQuantity](../../bis/ec/kindofquantity.md). During an application's runtime, the `Format` associated to a `KindofQuantity` within a `FormatSet` would take precedence and be used over the default presentation formats of that `KindOfQuantity`.
+> Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../../bis/ec/ec-name.md) for a [KindOfQuantity](../../bis/ec/kindofquantity.md). During an application's runtime, the `Format` associated to a `KindofQuantity` within a `FormatSet` would take precedence and be used over the default presentation formats of that `KindOfQuantity`.
+
+- The `unitSystem` property uses a [UnitSystemKey]($quantity) to specify the unit system for the format set. This provides better type safety and leads to less dependency on `activeUnitSystem` in `IModelApp.quantityFormatter`. Tools using the new formatting API can then listen to only the `onFormatsChanged` event from `IModelApp.formatsProvider` instead of `IModelApp.quantityFormatter.onActiveUnitSystemChanged`.
 
 > The naming convention for a valid format within a FormatSet is <full-schema-name>:<koq-name>
 .
@@ -123,6 +129,7 @@ Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../
 {
   "name": "metric",
   "label": "Metric",
+  "unitSystem": "metric",
   "formats": {
     "AecUnits.LENGTH": {
       "composite": {
@@ -160,6 +167,7 @@ Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../
 {
   "name": "imperial",
   "label": "Imperial",
+  "unitSystem": "imperial",
   "formats": {
     "AecUnits.LENGTH": {
       "composite": {
@@ -207,7 +215,6 @@ The table below lists common measurements with their typical `KindOfQuantity` an
 | Bearing | RoadRailUnits.BEARING | Units.RAD |
 | Weight | AecUnits.WEIGHT | Units.KG |
 | Time | AecUnits.TIME | Units.S |
-
 
 ## Examples of Usage
 
@@ -282,6 +289,19 @@ When retrieving a format from a schema, users might want to ensure the format th
 
 </details>
 
+### Retrieving a FormatProp, and a PersistenceUnit with only a KindOfQuantity Name and through schemas
+
+When working with formats, developers often need to retrieve a format and determine the appropriate persistence unit. When you only have a KindOfQuantity name, you can utilize a SchemaContext to find the schema item for that KindOfQuantity and then access its persistence unit:
+
+<details>
+  <summary>Using a SchemaContext to get KindOfQuantity and a persistence unit<summary>
+
+```ts
+[[include:Quantity_Formatting.KindOfQuantityPersistenceUnitFormatting]]
+```
+
+</details>
+
 ### Using a MutableFormatsProvider
 
 The example below is of a `MutableFormatsProvider` that lets you add/remove formats during runtime.
@@ -295,6 +315,85 @@ The example below is of a `MutableFormatsProvider` that lets you add/remove form
 
 ```ts
 [[include:Quantity_Formatting.Mutable_Formats_Provider_Adding_A_Format]]
+```
+
+</details>
+
+### Using a FormatSetFormatsProvider
+
+The [FormatSetFormatsProvider]($ecschema-metadata) provides a convenient way to manage formats within a `FormatSet` while supporting runtime modifications. This provider is particularly useful when you need to persist format changes or override default schema formats.
+
+<details>
+  <summary>Example of using FormatSetFormatsProvider</summary>
+
+```ts
+import { FormatSetFormatsProvider } from "@itwin/core-ecschema-metadata";
+import { FormatDefinition } from "@itwin/core-quantity";
+
+// Create a format set with initial formats
+const formatSet = {
+  name: "MyFormatSet",
+  label: "My Custom Formats",
+  unitSystem: "metric",
+  formats: {
+    "AecUnits.LENGTH": {
+      composite: {
+        includeZero: true,
+        spacer: " ",
+        units: [{ label: "m", name: "Units.M" }]
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 2,
+      type: "Decimal"
+    }
+  }
+};
+
+// Create the provider
+const provider = new FormatSetFormatsProvider(formatSet);
+
+// Add a new format at runtime
+const angleFormat: FormatDefinition = {
+  composite: {
+    includeZero: true,
+    spacer: "",
+    units: [{ label: "°", name: "Units.ARC_DEG" }]
+  },
+  formatTraits: ["keepSingleZero", "showUnitLabel"],
+  precision: 1,
+  type: "Decimal"
+};
+
+await provider.addFormat("AecUnits.ANGLE", angleFormat);
+
+// The format set is automatically updated
+console.log(formatSet.formats["AecUnits.ANGLE"]); // Contains the angle format
+
+// Listen for format changes
+provider.onFormatsChanged.addListener((args) => {
+  console.log("Formats changed:", args.formatsChanged);
+});
+```
+
+</details>
+
+The `FormatSetFormatsProvider` also supports a fallback provider for cases where a format isn't found in the format set:
+
+<details>
+  <summary>Example with fallback provider</summary>
+
+```ts
+import { FormatSetFormatsProvider } from "@itwin/core-ecschema-metadata";
+import { SchemaFormatsProvider } from "@itwin/core-ecschema-metadata";
+
+// Create a schema formats provider as fallback
+const schemaProvider = new SchemaFormatsProvider(schemaContext);
+
+// Create format set provider with fallback
+const provider = new FormatSetFormatsProvider(formatSet, schemaProvider);
+
+// If a format isn't found in formatSet, it will check the schema provider
+const format = await provider.getFormat("SomeSchema.SomeKindOfQuantity");
 ```
 
 </details>

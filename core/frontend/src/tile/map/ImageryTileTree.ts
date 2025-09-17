@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareNumbers, compareSimpleArrays, compareSimpleTypes, compareStrings, compareStringsOrUndefined, dispose, Logger,} from "@itwin/core-bentley";
+import { assert, compareBooleans, compareNumbers, compareSimpleArrays, compareSimpleTypes, compareStrings, compareStringsOrUndefined, dispose, expectDefined, Logger,} from "@itwin/core-bentley";
 import { Angle, Range3d, Transform } from "@itwin/core-geometry";
 import { Cartographic, ImageMapLayerSettings, ImageSource, MapLayerProviderArrayProperty, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
@@ -49,7 +49,7 @@ export class ImageryMapTile extends RealityTile {
   public override setContent(content: ImageryTileContent): void {
     this._texture = content.imageryTexture;        // No dispose - textures may be shared by terrain tiles so let garbage collector dispose them.
     if (undefined === content.imageryTexture)
-      (this.parent! as ImageryMapTile).setLeaf();   // Avoid traversing bing branches after no graphics is found.
+      (expectDefined(this.parent) as ImageryMapTile).setLeaf();   // Avoid traversing bing branches after no graphics is found.
 
     this.setIsReady();
   }

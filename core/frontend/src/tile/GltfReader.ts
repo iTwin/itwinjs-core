@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, JsonUtils, Logger, utf8ToString,
+  assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, expectDefined, JsonUtils, Logger, ProcessDetector, utf8ToString,
 } from "@itwin/core-bentley";
 import {
   Angle, IndexedPolyface, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform, Vector3d,
@@ -47,7 +47,7 @@ import { compactEdgeIterator } from "../common/imdl/CompactEdges";
 import { MeshPolylineGroup } from "@itwin/core-common/lib/cjs/internal/RenderMesh";
 
 /** @internal */
-export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
+export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array | Int8Array;
 
 /**
  * A chunk of binary data exposed as a typed array.
@@ -75,6 +75,7 @@ export class GltfBufferData {
       switch (expectedType) {
         case GltfDataType.Float:
         case GltfDataType.UnsignedByte:
+        case GltfDataType.SignedByte:
           return undefined;
         case GltfDataType.UnsignedShort:
           if (GltfDataType.UnsignedByte !== actualType)
@@ -97,6 +98,8 @@ export class GltfBufferData {
     switch (actualType) {
       case GltfDataType.UnsignedByte:
         return bytes;
+      case GltfDataType.SignedByte:
+        return new Int8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength);
       case GltfDataType.UnsignedShort:
         return new Uint16Array(bytes.buffer, bytes.byteOffset, bytes.byteLength / 2);
       case GltfDataType.UInt32:
@@ -469,13 +472,13 @@ export function getMeshPrimitives(mesh: GltfMesh | undefined): GltfMeshPrimitive
 
     for (const primitiveIndex of group.primitives) {
       const thisPrimitive = primitives[primitiveIndex];
-      
+
       // Spec: all primitives must use indexed geometry and a given primitive may appear in at most one group.
       // Spec: all primitives must have same topology.
       if (undefined === thisPrimitive?.indices || thisPrimitive.mode !== primitive.mode) {
         return meshPrimitives;
       }
-      
+
       primitives[primitiveIndex] = undefined;
     }
 
@@ -845,6 +848,8 @@ export abstract class GltfReader {
           this._instanceFeatures.push(new Feature(instanceElementId));
         }
 
+        // If the map didn't contain instanceElementId, it was inserted above
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const instanceFeatureId = this._instanceElementIdToFeatureId.get(instanceElementId)!;
         featureIds[localInstanceId * 3 + 0] = instanceFeatureId & 0xFF;
         featureIds[localInstanceId * 3 + 1] = (instanceFeatureId >> 8) & 0xFF;
@@ -1013,6 +1018,7 @@ export abstract class GltfReader {
       let dataSize = 0;
       switch (type) {
         case GltfDataType.UnsignedByte:
+        case GltfDataType.SignedByte:
           dataSize = 1;
           break;
         case GltfDataType.UnsignedShort:
@@ -1337,7 +1343,7 @@ export abstract class GltfReader {
         if (!this.readMeshIndices(mesh, primitive))
           return undefined;
 
-        if (!displayParams.ignoreLighting && !this.readNormals(mesh, primitive.attributes, "NORMAL"))
+        if (!displayParams.ignoreLighting && !this.readMeshNormals(mesh, primitive.attributes, "NORMAL"))
           return undefined;
 
         if (!mesh.uvs) {
@@ -1386,8 +1392,8 @@ export abstract class GltfReader {
         assert(indices !== undefined);
         assert(visibility.buffer instanceof Uint8Array);
 
-        const silhouetteNormals = this.readBufferData16(ext, "silhouetteNormals");
-        const normalPairs = silhouetteNormals ? new Uint32Array(silhouetteNormals.buffer.buffer, silhouetteNormals.buffer.byteOffset, silhouetteNormals.buffer.byteLength / 4) : undefined;
+        const silhouetteNormals = this.readAndOctEncodeNormals(ext, "silhouetteNormals");
+        const normalPairs = silhouetteNormals ? new Uint32Array(silhouetteNormals.buffer, silhouetteNormals.byteOffset, silhouetteNormals.byteLength / 4) : undefined;
         mesh.primitive.edges = new MeshEdges();
 
         for (const edge of compactEdgeIterator(visibility.buffer, normalPairs, indices.length, (idx) => indices[idx])) {
@@ -1415,7 +1421,7 @@ export abstract class GltfReader {
               appearance: this.getEdgeAppearance(extLineString.material),
               polylines: [],
             };
-            
+
             const curLineString: number[] = [];
             for (const index of polylineIndices.buffer) {
               if (index === 0xffffffff) {
@@ -1645,10 +1651,15 @@ export abstract class GltfReader {
       points[i * 3 + 2] = mesh.points[index * 3 + 2];
 
       if (normals)
+        // normals is only defined if mesh.normals is defined.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         normals[i] = mesh.normals![index];
 
       if (uvs) {
+        // uvs is only defined if mesh.uvs is defined.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         uvs[i * 2 + 0] = mesh.uvs![index * 2 + 0];
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         uvs[i * 2 + 1] = mesh.uvs![index * 2 + 1];
       }
     }
@@ -1785,7 +1796,7 @@ export abstract class GltfReader {
         if (featureIdDesc.attribute === undefined) {
           continue;
         }
-        const {buffer, stride} = featureIdBuffers.get(featureIdDesc.attribute)!;
+        const {buffer, stride} = expectDefined(featureIdBuffers.get(featureIdDesc.attribute));
         const featureId = buffer[vertexId * stride];
         const propertyTableId = featureIdDesc.propertyTable ?? 0;
         vertexUniqueId = `${vertexUniqueId}-${featureId}-${propertyTableId}`;
@@ -1799,7 +1810,7 @@ export abstract class GltfReader {
           if (featureIdDesc.attribute === undefined) {
             continue;
           }
-          const {buffer, stride} = featureIdBuffers.get(featureIdDesc.attribute)!;
+          const {buffer, stride} = expectDefined(featureIdBuffers.get(featureIdDesc.attribute));
           const featureId = buffer[vertexId * stride];
 
           const table = this._structuralMetadata.tables[featureIdDesc.propertyTable ?? 0];
@@ -1852,44 +1863,78 @@ export abstract class GltfReader {
     return true;
   }
 
-  protected readNormals(mesh: GltfMeshData, json: { [k: string]: any }, accessorName: string): boolean {
+  protected readMeshNormals(mesh: GltfMeshData, json: { [k: string]: any }, accessorName: string): boolean {
+    const normals = this.readAndOctEncodeNormals(json, accessorName);
+    if (normals) {
+      mesh.normals = normals;
+      return true;
+    }
+
+    return false;
+  }
+
+  protected readAndOctEncodeNormals(json: { [k: string]: any }, accessorName: string): Uint16Array | undefined {
     const view = this.getBufferView(json, accessorName);
     if (undefined === view)
-      return false;
+      return undefined;
 
     switch (view.type) {
       case GltfDataType.Float: {
         const data = view.toBufferData(GltfDataType.Float);
         if (undefined === data)
-          return false;
+          return undefined;
 
-        mesh.normals = new Uint16Array(data.count);
+        const normals = new Uint16Array(data.count);
         const scratchNormal = new Vector3d();
         const strideSkip = view.stride - 3;
         for (let i = 0, j = 0; i < data.count; i++, j += strideSkip) {
           scratchNormal.set(data.buffer[j++], data.buffer[j++], data.buffer[j++]);
-          mesh.normals[i] = OctEncodedNormal.encode(scratchNormal);
+          normals[i] = OctEncodedNormal.encode(scratchNormal);
         }
-        return true;
+
+        return normals;
       }
 
+      case GltfDataType.SignedByte: {
+        const data = view.toBufferData(GltfDataType.SignedByte);
+        if (!data) {
+          return undefined;
+        }
+
+        const normalize = (val: number) => 2 * ((val + 128) / 255) - 1;
+        const normals = new Uint16Array(data.count);
+        const scratchNormal = new Vector3d();
+        const strideSkip = view.stride - 3;
+        for (let i = 0, j = 0; i < data.count; i++, j += strideSkip) {
+          const x = normalize(data.buffer[j++]);
+          const y = normalize(data.buffer[j++]);
+          const z = normalize(data.buffer[j++]);
+          scratchNormal.set(x, y, z);
+          normals[i] = OctEncodedNormal.encode(scratchNormal);
+        }
+
+        return normals;
+      }
+
+      // This is weird, why does it assume 8-bit normal vectors are actually 16-bit oct-encoded normals?
       case GltfDataType.UnsignedByte: {
         const data = view.toBufferData(GltfDataType.UnsignedByte);
         if (undefined === data)
-          return false;
+          return undefined;
 
         // ###TODO: we shouldn't have to allocate OctEncodedNormal objects...just use uint16s / numbers...
-        mesh.normals = new Uint16Array(data.count);
+        const normals = new Uint16Array(data.count);
         for (let i = 0; i < data.count; i++) {
           // ###TODO? not clear why ray writes these as pairs of uint8...
           const index = i * view.stride;
           const normal = data.buffer[index] | (data.buffer[index + 1] << 8);
-          mesh.normals[i] = normal;
+          normals[i] = normal;
         }
-        return true;
+
+        return normals;
       }
       default:
-        return false;
+        return undefined;
     }
   }
 
@@ -2078,7 +2123,13 @@ export abstract class GltfReader {
       return;
 
     try {
+      // Refuse to continue decoding if using Internet Explorer or old Microsoft Edge. We do not want to trigger any legacy decoding fallbacks within draco3d.
+      if (ProcessDetector.isIEBrowser) {
+        throw new Error("Unsupported browser for Draco decoding");
+      }
+
       const dracoLoader = (await import("@loaders.gl/draco")).DracoLoader;
+
       await Promise.all(dracoMeshes.map(async (x) => this.decodeDracoMesh(x, dracoLoader)));
     } catch (err) {
       Logger.logWarning(FrontendLoggerCategory.Render, "Failed to decode draco-encoded glTF mesh");
@@ -2119,7 +2170,18 @@ export abstract class GltfReader {
 
     const offset = bv.byteOffset ?? 0;
     buf = buf.subarray(offset, offset + bv.byteLength);
-    const mesh = await loader.parse(buf, { }); // NB: `options` argument declared optional but will produce exception if not supplied.
+
+    const mesh = await loader.parse(buf, {
+      draco: {
+        decoderType: "wasm",
+      },
+      modules: {
+        "draco_wasm_wrapper.js": `${IModelApp.publicPath}scripts/draco_wasm_wrapper.js`,
+        "draco_decoder.wasm": `${IModelApp.publicPath}scripts/draco_decoder.wasm`,
+      },
+      worker: false,
+      useLocalLibraries: true,
+    });
     if (mesh)
       this._dracoMeshes.set(ext, mesh);
   }

@@ -6,6 +6,7 @@
  * @module Views
  */
 
+import { expectDefined } from "@itwin/core-bentley";
 import { Angle, Geometry, Matrix3d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Tweens } from "@itwin/core-common";
 import { Animator, ViewAnimationOptions } from "./ViewAnimation";
@@ -72,7 +73,7 @@ export class FrustumAnimator implements Animator {
     const end3 = end as ViewPose3d;
     const beginTarget = begin.target;
     const endTarget = end.target;
-    const axis = end.rotation.multiplyMatrixMatrixInverse(begin.rotation)!.getAxisAndAngleOfRotation(); // axis to rotate begin to get to end
+    const axis = expectDefined(end.rotation.multiplyMatrixMatrixInverse(begin.rotation)).getAxisAndAngleOfRotation(); // axis to rotate begin to get to end
     const timing = { fraction: 0.0, height: 0, position: 0 }; // updated by tween.
 
     // don't do "zoom out" if the two views aren't pointing in the same direction, or if they request cancelOnAbort (since that implies that the view
@@ -109,7 +110,7 @@ export class FrustumAnimator implements Animator {
         viewport.setupFromView(end), // when we're done, set up from final state
       onUpdate: () => {
         const fraction = extentBias ? timing.position : timing.fraction; // if we're zooming, fraction comes from position interpolation
-        const rot = Matrix3d.createRotationAroundVector(axis.axis, Angle.createDegrees(fraction * axis.angle.degrees))!.multiplyMatrixMatrix(begin.rotation);
+        const rot = expectDefined(Matrix3d.createRotationAroundVector(axis.axis, Angle.createDegrees(fraction * axis.angle.degrees))).multiplyMatrixMatrix(begin.rotation);
         if (begin.cameraOn) {
           const newExtents = begin.extents.interpolate(fraction, end.extents);
           if (undefined !== eyeBias) {

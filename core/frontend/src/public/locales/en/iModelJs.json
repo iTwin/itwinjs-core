@@ -102,7 +102,7 @@
     "IllegalValue": "Illegal value",
     "Details": "In case you're interested in the details:",
     "ReloadPage": "😞 Oops, something went wrong - please reload the page.",
-    "WebGLContextLost": "The WebGL rendering context was lost, most likely as a result of running out of graphics memory.\nSee <a target=\"_blank\" href=\"https://connect-imodeljscompatibility.bentley.com/\">the WebGL compatibility checker</a> for more information.\nClosing other browser tabs before reloading the page may help."
+    "WebGLContextLost": "The WebGL rendering context was lost, most likely as a result of running out of graphics memory.\nSee <a target=\"_blank\" href=\"https://itwinjscompatibility.bentley.com/\">the WebGL compatibility checker</a> for more information.\nClosing other browser tabs before reloading the page may help."
   },
   "Properties": {
     "Angle": "Angle",
