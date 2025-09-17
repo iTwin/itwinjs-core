@@ -306,7 +306,7 @@ jobs:
               echo "##[warning] Cherry-pick operation on master failed (most likely due to merge conflicts). Manual intervention required"
 
               # Create and checkout to conflict handling branch
-              conflictBranchName="cherry-pick-conflict-$(date +%y%m%d%H%m%s)"
+              conflictBranchName="cherry-pick-conflict-$(getVersion.version)"
               echo "##[warning] Creating new branch '$conflictBranchName' for manual resolution"
               git checkout -b $conflictBranchName
 
@@ -320,7 +320,7 @@ jobs:
               echo "##[warning] Branch '$conflictBranchName' created and pushed. It contains all ESLint deprecation changes and cherry-pick conflicts. Manually fix conflicts inside branch and merge changes into master. Draft PR will be created now"
 
               # Create a PR with new conflict branch
-              gh pr create --title "Merge deprecation comment changes for version $(getVersion.version) into master" --body "This PR contains all changes after running lint-deprecation ESLint rule and merging with master. Manual intervention required: solve conflicts in this branch and merge PR into master. This happened because deprecation comments in master and in release branch could not be merged automatically. @iTwin/itwinjs-core-admins" --draft --head $conflictBranchName
+              gh pr create --title "Merge deprecation comment changes for version $(getVersion.version) into master" --body "This PR contains all changes after running lint-deprecation ESLint rule and merging with master. Manual intervention required: solve conflicts in this branch and merge PR into master. This happened because deprecation comments in master and in release branch could not be merged automatically." --draft --head $conflictBranchName
             displayName: Create PR for manual resolution of deprecation comment changes
             condition: eq(variables['needsPR'], 'true')
             env:
