@@ -858,35 +858,6 @@ export class TextBlockLayout {
     return curLine;
   };
 
-  private justifyLines(): void {
-    // We don't want to justify empty text, or a single line of text whose width is 0. By default text is already left justified.
-    if (this.lines.length < 1 || (this.lines.length === 1 && this.source.width === 0) || "left" === this.source.justification) {
-      return;
-    }
-
-    // This is the minimum width of the document's bounding box.
-    const docWidth = this.source.width;
-
-    let minOffset = Number.MAX_VALUE;
-    for (const line of this.lines) {
-      const lineWidth = line.justificationRange.xLength() + line.offsetFromDocument.x;
-
-      let offset = docWidth - lineWidth;
-      if ("center" === this.source.justification) {
-        offset = offset / 2;
-      }
-
-      line.offsetFromDocument.x += offset;
-      minOffset = Math.min(offset, minOffset);
-    }
-
-    if (minOffset < 0) {
-      // Shift left to accommodate lines that exceeded the document's minimum width.
-      this.textRange.low.x += minOffset;
-      this.textRange.high.x += minOffset;
-    }
-  }
-
   private flushLine(context: LayoutContext, curLine: LineLayout, next?: List | Run | Paragraph, newParagraph: boolean = false, depth: number = 0): LineLayout {
     next = next ?? curLine.source;
 
@@ -931,6 +902,35 @@ export class TextBlockLayout {
       return newLine;
     }
     return new LineLayout(next, context, depth);
+  }
+
+  private justifyLines(): void {
+    // We don't want to justify empty text, or a single line of text whose width is 0. By default text is already left justified.
+    if (this.lines.length < 1 || (this.lines.length === 1 && this.source.width === 0) || "left" === this.source.justification) {
+      return;
+    }
+
+    // This is the minimum width of the document's bounding box.
+    const docWidth = this.source.width;
+
+    let minOffset = Number.MAX_VALUE;
+    for (const line of this.lines) {
+      const lineWidth = line.justificationRange.xLength() + line.offsetFromDocument.x;
+
+      let offset = docWidth - lineWidth;
+      if ("center" === this.source.justification) {
+        offset = offset / 2;
+      }
+
+      line.offsetFromDocument.x += offset;
+      minOffset = Math.min(offset, minOffset);
+    }
+
+    if (minOffset < 0) {
+      // Shift left to accommodate lines that exceeded the document's minimum width.
+      this.textRange.low.x += minOffset;
+      this.textRange.high.x += minOffset;
+    }
   }
 
   private applyMargins(margins: TextBlockMargins) {
