@@ -92,7 +92,6 @@ export * from "./render/MeshArgs";
 export * from "./render/ParticleCollectionBuilder";
 export * from "./render/Pixel";
 export * from "./render/PolylineArgs";
-export * from "./render/PrimitiveBuilder";
 export * from "./render/RealityMeshParams";
 export * from "./render/RenderAreaPattern";
 export * from "./render/RenderClipVolume";
