@@ -83,6 +83,8 @@ describe("Incremental Schema Loading", function () {
       const schema = await schemaContext.getSchema(testSchemaKey) as Schema;
       expect(schema).to.be.not.undefined;
       expect(schema).to.have.property("name", testSchemaKey.name);
+      expect(schema).to.have.property("description", testSchemaConfiguration.description);
+      expect(schema).to.have.property("label", testSchemaConfiguration.label);
 
       expect(schema).to.have.property("references").to.have.a.lengthOf(testSchemaConfiguration.references.length);
       for (const item of schema.getItems()) {
@@ -99,9 +101,7 @@ describe("Incremental Schema Loading", function () {
       for (const checkStub of testSchemaConfiguration.checkStubs) {
         const item = await schema.lookupItem(checkStub.item);
         expect(item).to.be.not.undefined;
-        const props = item!.schemaItemType === SchemaItemType.KindOfQuantity
-          ? SchemaItem.prototype.toJSON.call(item)
-          : item!.toJSON();
+        const props = item!.toJSON();
         for (const [propertyName, propertyValue] of Object.entries(checkStub.properties)) {
           expect(props).to.have.property(propertyName).deep.equalInAnyOrder(propertyValue);
         }

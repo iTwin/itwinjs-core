@@ -18,6 +18,9 @@ class TestSchemaLocater extends IncrementalSchemaLocater {
   public async loadSchemaInfos(_context: SchemaContext): Promise<Iterable<SchemaInfo>> {
     throw new Error("Implementation will be provided by the test.");
   }
+  public override async loadSchema(schemaInfo: SchemaInfo, context: SchemaContext): Promise<Schema> {
+    return super.loadSchema(schemaInfo, context);
+  }
   public async getSchemaPartials(_schemaKey: SchemaKey): Promise<[SchemaProps, ...SchemaProps[]] | undefined> {
     throw new Error("Implementation will be provided by the test.");
   }

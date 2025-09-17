@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose, Id64, Id64String } from "@itwin/core-bentley";
+import { assert, dispose, expectDefined, expectNotNull, Id64, Id64String } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@itwin/core-geometry";
 import {
   AmbientOcclusion, AnalysisStyle, ContourDisplay, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, ThematicDisplayMode, ViewFlags,
@@ -373,10 +373,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   public pushBatch(batch: Batch) {
-    this.uniforms.batch.setCurrentBatch(batch);
+    this.uniforms.batch.setCurrentBatch(batch, this.currentBranch);
   }
   public popBatch() {
-    this.uniforms.batch.setCurrentBatch(undefined);
+    this.uniforms.batch.clearCurrentBatch();
   }
 
   public addBatch(batch: Batch) {
@@ -626,7 +626,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         return;
 
       this.performanceMetrics.endOperation(); // End the 'CPU Total Time' operation
-      this.performanceMetrics.completeFrameTimings(this._fbo!);
+      this.performanceMetrics.completeFrameTimings(expectDefined(this._fbo));
     }
   }
 
@@ -973,7 +973,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         this.performanceMetrics.beginOperation("Finish GPU Queue");
         const gl = this.renderSystem.context;
         const bytes = new Uint8Array(4);
-        this.renderSystem.frameBufferStack.execute(this._fbo!, true, false, () => {
+        this.renderSystem.frameBufferStack.execute(expectDefined(this._fbo), true, false, () => {
           gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
         });
         this.performanceMetrics.endOperation();
@@ -1115,12 +1115,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     const retCanvas = undefined !== canvas ? canvas : document.createElement("canvas");
 
     if (overlayCanvas) {
-      const ctx = retCanvas.getContext("2d")!;
+      const ctx = expectNotNull(retCanvas.getContext("2d"));
       ctx.drawImage(overlayCanvas, 0, 0);
     }
 
     const pixelRatio = this.devicePixelRatio;
-    retCanvas.getContext("2d")!.scale(pixelRatio, pixelRatio);
+    expectNotNull(retCanvas.getContext("2d")).scale(pixelRatio, pixelRatio);
 
     return retCanvas;
   }
@@ -1231,7 +1231,7 @@ class CanvasState {
     this.canvas.height = h;
 
     if (!this._isWebGLCanvas) {
-      const ctx = this.canvas.getContext("2d")!;
+      const ctx = expectNotNull(this.canvas.getContext("2d"));
       ctx.scale(pixelRatio, pixelRatio); // apply the pixelRatio as a scale on the 2d context for drawing of decorations, etc.
       ctx.save();
     }
@@ -1320,7 +1320,7 @@ export class OnScreenTarget extends Target {
 
     const tx = fbo.getColor(0);
     assert(undefined !== tx.getHandle());
-    this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(tx.getHandle()!, TechniqueId.CopyColorNoAlpha);
+    this._blitGeom = SingleTexturedViewportQuadGeometry.createGeometry(expectDefined(tx.getHandle()), TechniqueId.CopyColorNoAlpha);
     if (undefined === this._blitGeom)
       this.disposeFbo();
 
@@ -1359,8 +1359,11 @@ export class OnScreenTarget extends Target {
     }
 
     this._scratchProgParams.init(target);
-    this._scratchDrawParams!.init(this._scratchProgParams, geom);
-    return this._scratchDrawParams!;
+    if (undefined === this._scratchDrawParams) {
+      throw new Error("OnScreenTarget.getDrawParams: this._scratchDrawParams is undefined");
+    }
+    this._scratchDrawParams.init(this._scratchProgParams, geom);
+    return this._scratchDrawParams;
   }
 
   protected _endPaint(): void {
@@ -1398,7 +1401,7 @@ export class OnScreenTarget extends Target {
   }
 
   protected override drawOverlayDecorations(): void {
-    const ctx = this._2dCanvas.canvas.getContext("2d", { alpha: true })!;
+    const ctx = expectNotNull(this._2dCanvas.canvas.getContext("2d", { alpha: true }));
     if (this._usingWebGLCanvas && this._2dCanvas.needsClear) {
       ctx.save();
       ctx.setTransform(1, 0, 0, 1, 0, 0); // revert any previous devicePixelRatio scale for clearRect() call below.

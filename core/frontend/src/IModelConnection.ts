@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, IModelStatus, Logger, OneAtATimeAction, OpenMode,
+  assert, BeEvent, CompressedId64Set, expectDefined, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, IModelStatus, Logger, OneAtATimeAction, OpenMode,
   PickAsyncMethods, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
@@ -215,7 +215,7 @@ export abstract class IModelConnection extends IModel {
   /** @internal */
   protected constructor(iModelProps: IModelConnectionProps) {
     super(iModelProps);
-    super.initialize(iModelProps.name!, iModelProps);
+    super.initialize(iModelProps.name ?? "<undefined>", iModelProps);
     this.models = new IModelConnection.Models(this);
     this.elements = new IModelConnection.Elements(this);
     this.codeSpecs = new IModelConnection.CodeSpecs(this);
@@ -387,7 +387,7 @@ export abstract class IModelConnection extends IModel {
     if (!this.isGeoLocated && this.noGcsDefined)
       throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
-    const geoConverter = this.geoServices.getConverter()!;
+    const geoConverter = expectDefined(this.geoServices.getConverter());
     const coordResponse = await geoConverter.getGeoCoordinatesFromIModelCoordinates([spatial]);
 
     if (1 !== coordResponse.geoCoords.length || GeoCoordStatus.NoGCSDefined === coordResponse.geoCoords[0].s)
@@ -481,7 +481,7 @@ export abstract class IModelConnection extends IModel {
     if (!this.isGeoLocated && this.noGcsDefined)
       throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
-    const geoConverter = this.geoServices.getConverter()!;
+    const geoConverter = expectDefined(this.geoServices.getConverter());
     const geoCoord = Point3d.create(cartographic.longitudeDegrees, cartographic.latitudeDegrees, cartographic.height); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
     const coordResponse = await geoConverter.getIModelCoordinatesFromGeoCoordinates([geoCoord]);
 
@@ -698,7 +698,7 @@ export class SnapshotConnection extends IModelConnection {
   public override isSnapshotConnection(): this is SnapshotConnection { return true; }
 
   /** The Guid that identifies this iModel. */
-  public override get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the superclass, but required for SnapshotConnection
+  public override get iModelId(): GuidString { return expectDefined(super.iModelId); } // GuidString | undefined for the superclass, but required for SnapshotConnection
 
   /** Returns `true` if [[close]] has already been called. */
   public get isClosed(): boolean { return this._isClosed ? true : false; }
@@ -937,8 +937,8 @@ export namespace IModelConnection {
       try {
         for (const props of modelProps) {
           const ctor = await this._iModel.findClassFor(props.classFullName, ModelState);
-          if (undefined === this.getLoaded(props.id!)) { // do not overwrite if someone else loads it while we await
-            const modelState = new ctor!(props, this._iModel); // create a new instance of the appropriate ModelState subclass
+          if (undefined !== ctor && undefined !== props.id && undefined === this.getLoaded(props.id)) { // do not overwrite if someone else loads it while we await
+            const modelState = new ctor(props, this._iModel); // create a new instance of the appropriate ModelState subclass
             this._loaded.set(modelState.id, modelState); // save it in loaded set
           }
         }
@@ -1393,7 +1393,7 @@ export namespace IModelConnection {
       const views: ViewSpec[] = [];
       const viewProps: ViewDefinitionProps[] = await this.queryProps(queryParams);
       viewProps.forEach((viewProp) => {
-        views.push({ id: viewProp.id as string, name: viewProp.code.value!, class: viewProp.classFullName });
+        views.push({ id: viewProp.id as string, name: viewProp.code.value ?? "", class: viewProp.classFullName });
       });
 
       return views;
@@ -1432,7 +1432,7 @@ export namespace IModelConnection {
       if (undefined === ctor)
         throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", () => viewProps);
 
-      const viewState = ctor.createFromProps(viewProps, this._iModel)!;
+      const viewState = expectDefined(ctor.createFromProps(viewProps, this._iModel));
       await viewState.load(); // loads models for ModelSelector
 
       return viewState;

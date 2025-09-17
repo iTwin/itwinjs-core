@@ -46,6 +46,8 @@ function compareTileUserSets(lhs: TileUserSet, rhs: TileUserSet): number {
   let diff = lhs.length - rhs.length;
   if (0 === diff) {
     for (let i = 0; i < lhs.length; i++) {
+      // lhs and rhs are the same length, and i is guaranteed to be in bounds for both.
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       diff = lhs.get(i)!.tileUserId - rhs.get(i)!.tileUserId;
       if (0 !== diff)
         break;
@@ -66,6 +68,8 @@ class TileUserSetSet extends SortedArray<TileUserSet> {
   private getForUser(user: TileUser): TileUserSet {
     for (let i = 0; i < this.length; i++) {
       const set = this._array[i];
+      // If 1 === set.length, set.get(0) is guaranteed to be defined.
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (1 === set.length && set.get(0)! === user)
         return set;
     }

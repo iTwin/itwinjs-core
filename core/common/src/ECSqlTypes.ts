@@ -140,7 +140,7 @@ export class ECJsNames {
     assert(tokenCount > 0);
 
     if (tokenCount === 1) {
-      if (propTypeUnknown || isSystemProperty!) {
+      if (propTypeUnknown || isSystemProperty) {
         if (propName === "ECInstanceId")
           return ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.ECInstanceId);
 
@@ -174,7 +174,7 @@ export class ECJsNames {
 
     const leafToken: string = accessStringTokens[tokenCount - 1];
 
-    if (propTypeUnknown || isSystemProperty!) {
+    if (propTypeUnknown || isSystemProperty) {
       if (leafToken === "Id")
         jsName += ECJsNames.systemPropertyToJsName(ECSqlSystemProperty.NavigationId);
       else if (leafToken === "RelECClassId")
@@ -225,7 +225,7 @@ export class ECJsNames {
       case ECSqlSystemProperty.PointZ:
         return "z";
       default:
-        throw new Error(`Unknown ECSqlSystemProperty enum value ${systemPropertyType}.`);
+        throw new Error(`Unknown ECSqlSystemProperty enum value ${String(systemPropertyType)}.`);
     }
   }
 

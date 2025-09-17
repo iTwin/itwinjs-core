@@ -31,7 +31,12 @@ describe("Schema RPC Interface", () => {
     const schemaKeys: SchemaKey[] = [];
     const props: SchemaKeyProps[] = await ECSchemaRpcInterface.getClient().getSchemaKeys(iModel.getRpcProps());
     props.forEach((prop: SchemaKeyProps) => schemaKeys.push(SchemaKey.fromJSON(prop)));
-    const schemaJSON: SchemaProps = await ECSchemaRpcInterface.getClient().getSchemaJSON(iModel.getRpcProps(), schemaKeys[0].name);
+    const schemaJSON: SchemaProps | undefined = await ECSchemaRpcInterface.getClient().getSchemaJSON(iModel.getRpcProps(), schemaKeys[0].name);
     expect(schemaJSON).to.not.be.undefined;
+  });
+
+  it("should return undefined for non-existent schema", async () => {
+    const schemaJSON: SchemaProps | undefined = await ECSchemaRpcInterface.getClient().getSchemaJSON(iModel.getRpcProps(), "DoesNotExist");
+    expect(schemaJSON).to.be.undefined;
   });
 });

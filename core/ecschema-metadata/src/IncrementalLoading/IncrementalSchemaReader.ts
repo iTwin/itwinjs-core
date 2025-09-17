@@ -56,31 +56,29 @@ export class IncrementalSchemaReader extends SchemaReadHelper {
     // The fromJSON method of the actual class instances may complain about missing properties in the props, so
     // calling the fromJSON on the ECClass ensures only the bare minimum is loaded.
     if (this._incremental && schemaItemObject && schemaItem) {
-      if (schemaItem.schemaItemType === SchemaItemType.KindOfQuantity) {
-        SchemaItem.prototype.fromJSONSync.call(schemaItem, schemaItemObject);
-      } else {
-        schemaItem.fromJSONSync(schemaItemObject);
-      }
+      await schemaItem.fromJSON(schemaItemObject);
     }
 
     this.schemaItemLoading(schemaItem);
     return schemaItem;
   }
 
-  private schemaItemLoading(schemaItem: SchemaItem | undefined) {
+  private schemaItemLoading(schemaItem: SchemaItem | undefined): void {
     if (schemaItem === undefined)
       return;
 
     if (schemaItem.loadingController === undefined) {
       const controller = new SchemaLoadingController();
       schemaItem.setLoadingController(controller);
+
+      return this.schemaItemLoading(schemaItem);
     }
 
     if (ECClass.isECClass(schemaItem)
       || schemaItem.schemaItemType === SchemaItemType.KindOfQuantity
       || schemaItem.schemaItemType === SchemaItemType.Format)
-      schemaItem.loadingController!.isComplete = !this._incremental;
+      schemaItem.loadingController.isComplete = !this._incremental;
     else
-      schemaItem.loadingController!.isComplete = true;
+      schemaItem.loadingController.isComplete = true;
   }
 }

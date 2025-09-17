@@ -6,6 +6,7 @@
  * @module Rendering
  */
 
+import { expectNotNull } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
 import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { ViewRect } from "./ViewRect";
@@ -62,7 +63,7 @@ export function canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targe
     adjustImageY += 0.5;
   }
 
-  const context = canvasOut.getContext("2d")!;
+  const context = expectNotNull(canvasOut.getContext("2d"));
   context.fillStyle = barStyle;
   context.fillRect(0, 0, canvasOut.width, canvasOut.height);
   context.drawImage(canvasIn, adjustImageX, adjustImageY, targetSize.x, targetSize.y);

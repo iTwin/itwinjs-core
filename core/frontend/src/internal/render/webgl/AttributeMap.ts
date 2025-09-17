@@ -116,6 +116,8 @@ export class AttributeMap {
   public static findAttributeMap(techniqueId: TechniqueId | undefined, instanced: boolean): Map<string, AttributeDetails> {
     let entry = attributeMap._attrMaps.get(techniqueId);
     if (undefined === entry) {
+      // AttributeMap has a hard-coded entry for undefined techniqueId.
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       entry = attributeMap._attrMaps.get(undefined)!;
       attributeMap._attrMaps.set(techniqueId, entry);
     }

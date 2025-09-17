@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, JsonUtils, Logger, utf8ToString,
+  assert, ByteStream, compareBooleans, compareNumbers, compareStrings, Dictionary, expectDefined, JsonUtils, Logger, ProcessDetector, utf8ToString,
 } from "@itwin/core-bentley";
 import {
   Angle, IndexedPolyface, Matrix3d, Point2d, Point3d, Point4d, Range2d, Range3d, Transform, Vector3d,
@@ -472,13 +472,13 @@ export function getMeshPrimitives(mesh: GltfMesh | undefined): GltfMeshPrimitive
 
     for (const primitiveIndex of group.primitives) {
       const thisPrimitive = primitives[primitiveIndex];
-      
+
       // Spec: all primitives must use indexed geometry and a given primitive may appear in at most one group.
       // Spec: all primitives must have same topology.
       if (undefined === thisPrimitive?.indices || thisPrimitive.mode !== primitive.mode) {
         return meshPrimitives;
       }
-      
+
       primitives[primitiveIndex] = undefined;
     }
 
@@ -848,6 +848,8 @@ export abstract class GltfReader {
           this._instanceFeatures.push(new Feature(instanceElementId));
         }
 
+        // If the map didn't contain instanceElementId, it was inserted above
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const instanceFeatureId = this._instanceElementIdToFeatureId.get(instanceElementId)!;
         featureIds[localInstanceId * 3 + 0] = instanceFeatureId & 0xFF;
         featureIds[localInstanceId * 3 + 1] = (instanceFeatureId >> 8) & 0xFF;
@@ -1419,7 +1421,7 @@ export abstract class GltfReader {
               appearance: this.getEdgeAppearance(extLineString.material),
               polylines: [],
             };
-            
+
             const curLineString: number[] = [];
             for (const index of polylineIndices.buffer) {
               if (index === 0xffffffff) {
@@ -1649,10 +1651,15 @@ export abstract class GltfReader {
       points[i * 3 + 2] = mesh.points[index * 3 + 2];
 
       if (normals)
+        // normals is only defined if mesh.normals is defined.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         normals[i] = mesh.normals![index];
 
       if (uvs) {
+        // uvs is only defined if mesh.uvs is defined.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         uvs[i * 2 + 0] = mesh.uvs![index * 2 + 0];
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         uvs[i * 2 + 1] = mesh.uvs![index * 2 + 1];
       }
     }
@@ -1789,7 +1796,7 @@ export abstract class GltfReader {
         if (featureIdDesc.attribute === undefined) {
           continue;
         }
-        const {buffer, stride} = featureIdBuffers.get(featureIdDesc.attribute)!;
+        const {buffer, stride} = expectDefined(featureIdBuffers.get(featureIdDesc.attribute));
         const featureId = buffer[vertexId * stride];
         const propertyTableId = featureIdDesc.propertyTable ?? 0;
         vertexUniqueId = `${vertexUniqueId}-${featureId}-${propertyTableId}`;
@@ -1803,7 +1810,7 @@ export abstract class GltfReader {
           if (featureIdDesc.attribute === undefined) {
             continue;
           }
-          const {buffer, stride} = featureIdBuffers.get(featureIdDesc.attribute)!;
+          const {buffer, stride} = expectDefined(featureIdBuffers.get(featureIdDesc.attribute));
           const featureId = buffer[vertexId * stride];
 
           const table = this._structuralMetadata.tables[featureIdDesc.propertyTable ?? 0];
@@ -2116,8 +2123,15 @@ export abstract class GltfReader {
       return;
 
     try {
+      // Refuse to continue decoding if using Internet Explorer or old Microsoft Edge. We do not want to trigger any legacy decoding fallbacks within draco3d.
+      if (ProcessDetector.isIEBrowser) {
+        throw new Error("Unsupported browser for Draco decoding");
+      }
+
+      const dracolib = await import("draco3d");
       const dracoLoader = (await import("@loaders.gl/draco")).DracoLoader;
-      await Promise.all(dracoMeshes.map(async (x) => this.decodeDracoMesh(x, dracoLoader)));
+
+      await Promise.all(dracoMeshes.map(async (x) => this.decodeDracoMesh(x, dracoLoader, dracolib)));
     } catch (err) {
       Logger.logWarning(FrontendLoggerCategory.Render, "Failed to decode draco-encoded glTF mesh");
       Logger.logException(FrontendLoggerCategory.Render, err);
@@ -2146,7 +2160,7 @@ export abstract class GltfReader {
     } catch { }
   }
 
-  private async decodeDracoMesh(ext: DracoMeshCompression, loader: typeof DracoLoader): Promise<void> {
+  private async decodeDracoMesh(ext: DracoMeshCompression, loader: typeof DracoLoader, draco3d: any): Promise<void> {
     const bv = this._bufferViews[ext.bufferView];
     if (!bv || !bv.byteLength)
       return;
@@ -2157,7 +2171,8 @@ export abstract class GltfReader {
 
     const offset = bv.byteOffset ?? 0;
     buf = buf.subarray(offset, offset + bv.byteLength);
-    const mesh = await loader.parse(buf, { }); // NB: `options` argument declared optional but will produce exception if not supplied.
+
+    const mesh = await loader.parse(buf, { modules: { draco3d } }); // NB: `options` argument declared optional but will produce exception if not supplied. Regardless, we are specifying our own bundled draco3d module to avoid CDN requests.
     if (mesh)
       this._dracoMeshes.set(ext, mesh);
   }
