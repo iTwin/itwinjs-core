@@ -762,7 +762,10 @@ export class TextBlockLayout {
         break;
       }
       case "paragraph": {
-        component.children.forEach((child, index) => curLine = this.populateComponent(child, index, context, docWidth, curLine, component, depth));
+        component.children.forEach((child, index) => {
+          curLine = this.populateComponent(child, index, context, docWidth, curLine, component, depth)
+        });
+
         const nextSibling = parent?.children[componentIndex + 1];
         if (curLine && nextSibling) {
           curLine = this.flushLine(context, curLine, nextSibling, true, depth);
@@ -843,13 +846,10 @@ export class TextBlockLayout {
 
     // We want to guarantee that each layout line has at least one run.
     if (curLine.runs.length === 0) {
-      // If we're empty, there should always be a preceding run, and it should be a line break.
       if (this.lines.length === 0 || this._back.runs.length === 0) {
         return new LineLayout(next, context, depth);
       }
 
-      // const prevRun = this._back.back.source;
-      // assert(prevRun.type === "linebreak");
       if (curLine.source.type !== "linebreak") {
         const newLine = new LineLayout(next, context, depth);
         newLine.offsetFromDocument.y -= context.textStyleResolver.blockSettings.paragraphSpacingFactor * context.textStyleResolver.blockSettings.lineHeight;
