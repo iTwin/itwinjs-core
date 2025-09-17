@@ -627,13 +627,22 @@ describe("rebase changes & stashing api", function (this: Suite) {
   it("schema change should not be stashed", async () => {
     const b1 = await testIModel.openBriefcase();
     const schema1 = `<?xml version="1.0" encoding="UTF-8"?>
-        <ECSchema schemaName="TestDomain" alias="ts" version="01.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
-            <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECSchema schemaName="TestDomain" alias="ts" version="01.00.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+            <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
             <ECEntityClass typeName="a1">
                 <BaseClass>bis:GraphicalElement2d</BaseClass>
                 <ECProperty propertyName="prop1" typeName="string" />
                 <ECProperty propertyName="prop2" typeName="string" />
             </ECEntityClass>
+            <ECRelationshipClass typeName="A1OwnsA1" modifier="None" strength="embedding">
+                <BaseClass>bis:ElementOwnsChildElements</BaseClass>
+                <Source multiplicity="(0..1)" roleLabel="owns" polymorphic="true">
+                    <Class class="a1"/>
+                </Source>
+                <Target multiplicity="(0..*)" roleLabel="is owned by" polymorphic="false">
+                    <Class class="a1"/>
+                </Target>
+            </ECRelationshipClass>
         </ECSchema>`;
     await b1.importSchemaStrings([schema1]);
     b1.saveChanges();
@@ -692,7 +701,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     const b2 = await testIModel.openBriefcase();
 
     const parentId = await testIModel.insertElement(b1);
-    const childId = await testIModel.insertElement2(b1, { parent: {id: parentId, relClassName: "TestDomain:A1OwnsA1"} });
+    const childId = await testIModel.insertElement2(b1, { parent: { id: parentId, relClassName: "TestDomain:A1OwnsA1" } });
     b1.saveChanges("insert parent and child");
     await b1.pushChanges({ description: `inserted parent ${parentId} and child ${childId}` });
     await b2.pullChanges();
@@ -701,14 +710,14 @@ describe("rebase changes & stashing api", function (this: Suite) {
     await testIModel.deleteElement(b1, childId);
     b1.saveChanges("delete child");
     // no exclusive lock required on child1
-    const grandChildId = await testIModel.insertElement2(b2, { parent: {id: childId, relClassName: "TestDomain:A1OwnsA1"}, markAsIndirect: true });
+    const grandChildId = await testIModel.insertElement2(b2, { parent: { id: childId, relClassName: "TestDomain:A1OwnsA1" }, markAsIndirect: true });
     b2.saveChanges("delete child and insert grandchild");
 
     await b1.pushChanges({ description: `deleted child ${childId}` });
 
     // should fail to pull and rebase changes.
     await chai.expect(b2.pushChanges({ description: `deleted child ${childId} and inserted grandchild ${grandChildId}` }))
-      .to.be.rejectedWith("Foreign key conflicts in ChangeSet. Aborting rebase." );
+      .to.be.rejectedWith("Foreign key conflicts in ChangeSet. Aborting rebase.");
 
   });
 });
