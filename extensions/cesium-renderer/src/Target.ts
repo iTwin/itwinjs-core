@@ -4,9 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String } from "@itwin/core-bentley";
-import { _implementationProhibited, Decorations, GraphicList, Pixel, RenderPlan, RenderTarget, Scene, ViewRect } from "@itwin/core-frontend";
+import { _implementationProhibited, Decorations, GraphicList, IModelApp, Pixel, RenderPlan, RenderTarget, Scene, ViewRect } from "@itwin/core-frontend";
 import { CesiumScene } from "./CesiumScene.js";
 import { System } from "./System.js";
+import { PrimitiveConverterFactory } from "./decorations/PrimitiveConverterFactory.js";
+import { CesiumCameraHelpers } from "./decorations/CesiumCameraHelpers.js";
 
 /** A Target that renders to a canvas on the screen using Cesium.
  * @internal
@@ -16,6 +18,7 @@ export class OnScreenTarget extends RenderTarget {
 
   private readonly _canvas: HTMLCanvasElement;
   private readonly _scene: CesiumScene;
+  private _lastDecorationCount = -1;
 
   public get renderSystem(): System { return System.instance; }
 
@@ -34,6 +37,8 @@ export class OnScreenTarget extends RenderTarget {
       sceneOptions: {
       }
     });
+    // Add keyboard shortcuts for debugging
+    CesiumCameraHelpers.setupKeyboardShortcuts(this._scene);
   }
 
   // ###TODO getters and setters
@@ -51,8 +56,26 @@ export class OnScreenTarget extends RenderTarget {
     // ###TODO Implement dynamics change logic for Cesium
   }
 
-  public changeDecorations(_decorations: Decorations) {
-    // ###TODO Implement decoration change logic for Cesium
+  public changeDecorations(decorations: Decorations) {
+    // Check if scene is ready before proceeding  
+    if (!this._scene?.cesiumScene) {
+      return;
+    }
+
+    const currentCount = (decorations.world?.length || 0) + (decorations.normal?.length || 0) + 
+                        (decorations.worldOverlay?.length || 0) + (decorations.viewOverlay?.length || 0);
+
+    if (currentCount !== this._lastDecorationCount) {
+      this._lastDecorationCount = currentCount;
+
+      const converter = PrimitiveConverterFactory.getConverter();
+      if (converter) {
+        converter.clearDecorations(this._scene);
+
+        const currentIModel = IModelApp.viewManager.selectedView?.iModel;
+        converter.convertAllDecorationTypes(decorations, this._scene, currentIModel);
+      }
+    }
   }
 
   public changeRenderPlan(_plan: RenderPlan) {

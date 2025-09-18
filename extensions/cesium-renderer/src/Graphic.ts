@@ -8,6 +8,16 @@ import { Range3d } from "@itwin/core-geometry";
 
 /** @internal */
 export class CesiumGraphic extends RenderGraphic {
+  /** The geometry data from the original iTwin.js decoration */
+  public readonly geometries?: any[];
+  /** The type of geometry (point-string, polyline, mesh, etc.) */
+  public readonly geometryType?: string;
+
+  constructor(geometries?: any[], geometryType?: string) {
+    super();
+    this.geometries = geometries;
+    this.geometryType = geometryType;
+  }
   // ##TODO implement dispose and statistics, if necessary.
   public dispose() {}
   public collectStatistics(_stats: RenderMemory.Statistics) {}

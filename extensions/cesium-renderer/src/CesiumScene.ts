@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelApp } from "@itwin/core-frontend";
-import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Scene, ScreenSpaceEventHandler } from "cesium";
+import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler } from "cesium";
 
 /** Options to configure a Cesium scene.
  * @internal
@@ -22,9 +22,32 @@ export class CesiumScene {
   private readonly _scene: Scene;
   private readonly _clock: Clock;
   private readonly _screenSpaceEventHandler: ScreenSpaceEventHandler;
+  private readonly _pointCollection: PointPrimitiveCollection;
+  private readonly _polylineCollection: PolylineCollection;
+  private readonly _primitivesCollection: PrimitiveCollection;
   private _canvasClientWidth: number = 0;
   private _canvasClientHeight: number = 0;
   private _lastDevicePixelRatio: number = 1;
+
+  /** Get access to the underlying CesiumJS Scene for advanced operations */
+  public get cesiumScene(): Scene {
+    return this._scene;
+  }
+
+  /** Get access to the PointPrimitiveCollection for adding point decorations */
+  public get pointCollection(): PointPrimitiveCollection {
+    return this._pointCollection;
+  }
+
+  /** Get access to the PolylineCollection for adding line decorations */
+  public get polylineCollection(): PolylineCollection {
+    return this._polylineCollection;
+  }
+
+  /** Get access to the PrimitiveCollection for adding shape decorations */
+  public get primitivesCollection(): PrimitiveCollection {
+    return this._primitivesCollection;
+  }
 
   public constructor(args: { canvas: HTMLCanvasElement, sceneOptions?: CesiumSceneOptions }) {
     const sceneOpts = args.sceneOptions ?? {};
@@ -64,7 +87,24 @@ export class CesiumScene {
     this._scene.backgroundColor = Color.FUCHSIA;
     this._scene.debugShowFramesPerSecond = true;
 
+    const cesiumKey = process.env.IMJS_CESIUM_ION_KEY;
+    if (cesiumKey) {
+      Ion.defaultAccessToken = cesiumKey;
+    }
+
     this._scene.imageryLayers.add(ImageryLayer.fromWorldImagery({}));
+
+    // Create PointPrimitiveCollection for direct primitive rendering
+    this._pointCollection = new PointPrimitiveCollection();
+    this._scene.primitives.add(this._pointCollection);
+
+    // Create PolylineCollection for line rendering
+    this._polylineCollection = new PolylineCollection();
+    this._scene.primitives.add(this._polylineCollection);
+
+    // Create PrimitiveCollection for shape rendering
+    this._primitivesCollection = new PrimitiveCollection();
+    this._scene.primitives.add(this._primitivesCollection);
 
     this._screenSpaceEventHandler = new ScreenSpaceEventHandler(this._canvas);
 

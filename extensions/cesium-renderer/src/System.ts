@@ -8,13 +8,15 @@ import { Transform } from "@itwin/core-geometry";
 import { BatchOptions, CreateGraphicFromTemplateArgs, CustomGraphicBuilderOptions, GraphicBranch, GraphicBranchOptions, GraphicBuilder, IModelApp, IModelConnection, InstancedGraphicParams, RenderAreaPattern, RenderGeometry, RenderGraphic, RenderSystem, RenderTarget, ViewportGraphicBuilderOptions, ViewRect } from "@itwin/core-frontend";
 import { OffScreenTarget, OnScreenTarget } from "./Target.js";
 import { CesiumGraphic } from "./Graphic.js";
-import { CesiumGraphicBuilder } from "./GraphicBuilder.js";
+import { PrimitiveConverterFactory } from "./decorations/PrimitiveConverterFactory.js";
 
 /** @internal */
 export class System extends RenderSystem {
   private _removeEventListener?: () => void;
 
   public get isValid(): boolean { return true; }
+  /** Override maxTextureSize to prevent VertexTable assertion errors */
+  public override get maxTextureSize(): number { return 4096; }
 
   public static create(optionsIn?: RenderSystem.Options): System {
     const options: RenderSystem.Options = undefined !== optionsIn ? optionsIn : {};
@@ -55,19 +57,48 @@ export class System extends RenderSystem {
   }
 
   public createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder {
-    return new CesiumGraphicBuilder(this, options);
+    const coordinateBuilderClass = PrimitiveConverterFactory.getCoordinateBuilder();
+    return new coordinateBuilderClass(this, options);
   }
 
   // ###TODO for all of the following create methods, we may need to implement separate classes for each type of graphic. Right now everything is using `CesiumGraphic` as a placeholder. In theory that might be able to handle everything, but we will see. Let's get one path working first!
 
-  public override createGraphicFromTemplate(_args: CreateGraphicFromTemplateArgs): RenderGraphic {
-    // ###TODO instancing in Cesium? Take into account _args?
-    return new CesiumGraphic();
+  public override createGraphicFromTemplate(args: CreateGraphicFromTemplateArgs): RenderGraphic {
+    const template = args.template;
+
+    const templateId = (template as any)._coordinateTemplateId as symbol;
+    const coordinateStorage = PrimitiveConverterFactory.getCoordinateStorage();
+    const coordinateData = templateId ? coordinateStorage.getCoordinates(templateId) : undefined;
+
+    const symbols = Object.getOwnPropertySymbols(template);
+    const nodesSymbol = symbols.find(s => s.toString().includes('_nodes'));
+    const templateNodes = nodesSymbol ? (template as any)[nodesSymbol] : [];
+
+    const allGeometries: RenderGeometry[] = [];
+    let geometryType = 'point-string';
+
+    for (const node of templateNodes) {
+      if (node.geometry && Array.isArray(node.geometry)) {
+        allGeometries.push(...node.geometry);
+        if (node.geometry.length > 0 && node.geometry[0].renderGeometryType) {
+          geometryType = node.geometry[0].renderGeometryType;
+        }
+      }
+    }
+
+    const cesiumGraphic = new CesiumGraphic(allGeometries, geometryType);
+
+    if (coordinateData) {
+      (cesiumGraphic as any)._coordinateData = coordinateData;
+      coordinateStorage.clearCoordinates(templateId);
+    }
+
+    return cesiumGraphic;
   }
 
-  public override createRenderGraphic(_geometry: RenderGeometry, _instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined {
-    // ###TODO actually do something here with the args
-    return new CesiumGraphic();
+  public override createRenderGraphic(geometry: RenderGeometry, _instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined {
+    // Pass the single geometry to CesiumGraphic
+    return new CesiumGraphic([geometry], geometry.renderGeometryType);
   }
 
   public createGraphicList(_primitives: RenderGraphic[]): RenderGraphic {
