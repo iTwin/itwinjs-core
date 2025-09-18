@@ -1081,7 +1081,7 @@ function testSelectedTangencySubsets(
       for (const indexRange of arcCyclicIndexRanges) {
         const subsetLoop = new Loop();
         if (indexRange[0] + n < indexRange[1]) {
-          GeometryCoreTestIO.consoleLog(`Ignoring index range ${indexRange}`);
+          GeometryCoreTestIO.consoleLog(`Ignoring index range ${indexRange.toString()}`);
           continue;
         }
         for (let k = indexRange[0]; k < indexRange[1]; k++) {

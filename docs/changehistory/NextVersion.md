@@ -16,6 +16,8 @@ publish: false
     - [@itwin/presentation-frontend](#itwinpresentation-frontend)
   - [Display](#display)
     - [Draco decoding](#draco-decoding)
+  - [Geometry](#geometry)
+    - [@itwin/geometry](#itwingeometry)
 
 ## @itwin/core-ecschema-metadata
 
@@ -142,3 +144,28 @@ Deprecated all hierarchy-related types (see [Deprecation of hierarchy-related AP
 ### Draco decoding
 
 Draco decoding in iTwin.js has been changed so that the loaders.gl dependency will no longer use a CDN to request the draco-decoder source files. Instead, we now bundle those resources into iTwin.js from a new draco3d dependency. We ask the loaders.gl library to locally use those resources.
+
+## Geometry
+
+### Clippers for a curve chain
+
+Added a new API **ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY** to the clip utilities class to create clippers for regions closest to the children of a curve chain.
+
+The API takes a curve chain (z-coordinate is ignored) and other optional inputs (which control the accuracy and xy-range of the returned clippers) and returns an ordered array of clippers, each of which represents the region closest to the corresponding primitive in the input curve chain.
+
+**Examples**<br>
+A custom path is generated and passed along with control options to the API:
+```ts
+const bbox = Range2d.createXYXY(70250, 1209900, 70950, 1210500);
+const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(path, strokeOptions, distanceTol, bbox);
+```
+Below you can see the visualization of `clippers`. Each child is shown by a color and the corresponding region to that child is shown by a similar color. Note that regions crossed the curve chain exactly at the joins.
+![Regions for curve chain children - example 1](../learning/geometry/figs/Clipping/curveChainClipping1.png "Regions for curve chain children - example 1")
+
+Here is another example for a path provided by the Civil team:
+![Regions for curve chain children - example 2](../learning/geometry/figs/Clipping/curveChainClipping2.png "Regions for curve chain children - example 2")
+
+
+
+
+
