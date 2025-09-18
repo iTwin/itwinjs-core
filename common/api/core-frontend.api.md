@@ -11660,6 +11660,7 @@ export class ToolAdmin {
     onMouseLeave(vp: ScreenViewport): void;
     // @internal (undocumented)
     onPostInstallTool(tool: InteractiveTool): Promise<void>;
+    protected onPreButtonEvent(_ev: BeButtonEvent): boolean;
     // @internal (undocumented)
     onSelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): Promise<void>;
     // @internal (undocumented)
