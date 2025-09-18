@@ -3729,11 +3729,6 @@ export class ScreenViewport extends Viewport {
    */
   public get rendersToScreen(): boolean { return undefined !== this._webglCanvas; }
   public set rendersToScreen(toScreen: boolean) {
-    // See https://github.com/iTwin/itwinjs-core/issues/8525
-    // This function's canvas rearranging needs to be avoided in the case of a CesiumJS render system.
-    if (!(IModelApp.renderSystem instanceof System))
-      return; // When using Cesium, let's avoid these workarounds and just trust it to do the right thing.
-
     if (toScreen === this.rendersToScreen)
       return;
 

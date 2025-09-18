@@ -3,6 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-export * from "./CesiumCamera.js";
-export { System } from "./System.js";
-export { CesiumViewManager } from "./ViewManager.js";
+import { ViewManager } from "@itwin/core-frontend";
+
+/** @internal */
+export class CesiumViewManager extends ViewManager {
+  protected override updateRenderToScreen() { }
+}
