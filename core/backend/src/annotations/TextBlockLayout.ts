@@ -754,6 +754,9 @@ export class TextBlockLayout {
         // If we have any runs in the current line, flush it before starting the list.
         if (curLine.runs.length > 0) {
           curLine = this.flushLine(context, curLine, cumulativeOverrides, component.children[0], true, depth + 1);
+        } else {
+          // If not, we need to apply the indentation for the list to the first line.
+          curLine.offsetFromDocument.x = context.textStyleResolver.resolveIndentation(cumulativeOverrides, depth + 1)
         }
 
         // Iterate through each list item, setting the marker and populating its contents.
@@ -871,7 +874,7 @@ export class TextBlockLayout {
       }
 
       const run = curLine.source.clone();
-      curLine.append(RunLayout.create(run as Run, context, cumulativeOverrides));
+      curLine.append(RunLayout.create(run, context, cumulativeOverrides));
     }
 
     // Line origin is its baseline.
