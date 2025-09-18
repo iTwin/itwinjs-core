@@ -191,4 +191,35 @@ describe("BriefcaseManager", () => {
     sinon.restore();
   });
 
+  it("Should add os.hostname as deviceName when acquiring briefcase", async () => {
+    const testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
+
+    // Stub the acquireNewBriefcaseId method to capture the args
+    const acquireStub = sinon.stub(BriefcaseManager, "acquireNewBriefcaseId");
+    acquireStub.resolves(1234);
+
+    // Stub downloadCheckpoint to prevent actual download
+    const downloadStub = sinon.stub(CheckpointManager, "downloadCheckpoint");
+    downloadStub.throws(new Error("Stop execution after acquireNewBriefcaseId"));
+
+    const args: RequestNewBriefcaseArg = {
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId: testIModelId,
+    };
+
+    try {
+      await BriefcaseManager.downloadBriefcase(args);
+    } catch {
+      // Expected to fail due to download stub
+    }
+
+    // Verify that acquireNewBriefcaseId was called with the correct deviceName
+    expect(acquireStub.calledOnce).to.be.true;
+    const callArgs = acquireStub.getCall(0).args[0];
+    expect(callArgs.deviceName).to.equal(os.hostname());
+
+    sinon.restore();
+  });
+
 });
