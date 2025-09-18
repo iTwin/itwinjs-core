@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "Briefcase Manager now provides deviceName to aquired briefcases",
+      "comment": "Briefcase Manager now provides deviceName to acquired briefcases",
       "type": "none"
     }
   ],
