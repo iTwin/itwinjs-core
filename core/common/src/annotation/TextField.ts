@@ -75,61 +75,11 @@ export interface FieldPropertyHost {
   className: string;
 }
 
-/** As part of [[CoordinateFieldFormatOptions]], specifies which component(s) to include in the display string.
- * @beta
- */
-export type CoordinateComponentSelector = "X" | "Y" | "Z" | "XY" | "XYZ";
-
 /** As part of [[FieldFormatOptions]], specifies how to modify the case of the display string.
  * "as-is" leaves it unmodified. "upper" and "lower" convert it to all upper-case or all lower-case, respectively.
  * @beta
  */
 export type FieldCase = "as-is" | "upper" | "lower";
-
-/** As part of a [[FieldFormatOptions]], specifies how to format properties of [[FieldPropertyType]] "boolean".
- * @beta
- */
-export interface BooleanFieldFormatOptions {
-  /** The display string if the property is `true`.
-   * Default: "1".
-   */
-  trueString?: string;
-  /** The display string if the property is `false`.
-   * Default: "0".
-   */
-  falseString?: string;
-}
-
-/** As part of a [[FieldFormatOptions]], specifies how to format properties of [[FieldPropertyType]] "coordinate".
- * @beta
- */
-export interface CoordinateFieldFormatOptions {
-  /** Specifies which component(s) (X, Y, and/or Z) to include in the display string.
-   * Default: "XYZ".
-   * @note For two-dimensional points, Z is always omitted even if specified here.
-   */
-  components?: CoordinateComponentSelector;
-  /** The string to insert between components.
-   * Default: "," (comma).
-   */
-  componentSeparator?: string;
-}
-
-/** As part of a [[FieldFormatOptions]], specifies how to format properties of [[FieldPropertyType]] "quantity".
- * @beta
- */
-export interface QuantityFieldFormatOptions {
-  /** Optionally records the name of the [KindOfQuantity]($ecschema-metadata) from which the other properties were derived.
-   * This property is not used during formatting.
-   */
-  koqName?: string;
-  /** The units in which the field property value is defined. */
-  sourceUnit?: UnitProps;
-  /** An array of conversion factors necessary to convert from [[sourceUnit]] to the units specified in [[formatProps]]. */
-  unitConversions?: UnitConversionSpec[];
-  /** JSON representation of the [Format]($core-quantity) used to produce the display string. */
-  formatProps?: ResolvedFormatProps;
-}
 
 /** As part of a [[FieldFormatOptions]], specifies how to format properties of [[FieldPropertyType]] "datetime".
  * @beta
@@ -143,18 +93,6 @@ export interface DateTimeFieldFormatOptions {
   formatOptions?: Intl.DateTimeFormatOptions;
 }
 
-/** As part of a [[FieldFormatOptions]], specifies how to format properties of [[FieldPropertyType]] "int-enum" or "string-enum".
- * The value will be mapped to the corresponding display label.
- * If a label cannot be determined, formatting will fail and the field will display as [[FieldRun.invalidFieldIndicator]].
- * @beta
- */
-export interface EnumFieldFormatOptions<T extends number| string> {
-  /** Maps the possible enumeration values to display strings. */
-  labels: Array<{ value: T, label: string }>;
-  /** Specifies a default display string to use if the property value does not appear as a key in [[labels]]. */
-  fallbackLabel?: string;
-}
-
 /** Customizes how to format the raw property value resolved by a [[FieldPropertyPath]] into a [[FieldRun]]'s display string.
  * The exact options used depend upon the [[FieldPropertyType]].
  * @beta
@@ -166,14 +104,6 @@ export interface FieldFormatOptions {
   suffix?: string;
   /** Modifies the case of the formatted string. */
   case?: FieldCase;
-  /** Formatting options for [[FieldPropertyType]] "boolean". */
-  bool?: BooleanFieldFormatOptions;
-  /** Formatting options for [[FieldPropertyType]] "coordinate". */
-  coordinate?: CoordinateFieldFormatOptions;
-  /** Formatting options for [[FieldPropertyType]] "quantity". */
-  quantity?: QuantityFieldFormatOptions;
   /** Formatting options for [[FieldPropertyType]] "datetime". */
   dateTime?: DateTimeFieldFormatOptions;
-  /** Formatting options for [[FieldPropertyType]] "int-enum" or "string-enum". */
-  enum?: EnumFieldFormatOptions<number> | EnumFieldFormatOptions<string>;
 }

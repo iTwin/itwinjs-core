@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
-import { DateTimeFieldFormatOptions, EnumFieldFormatOptions, FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../annotation/TextField";
+import { DateTimeFieldFormatOptions, FieldFormatOptions, FieldPropertyType } from "../../annotation/TextField";
 // import { Format, FormatterSpec } from "@itwin/core-quantity";
 
 /** A FieldPropertyPath must ultimately resolve to one of these primitive types.
@@ -22,77 +22,9 @@ export interface FieldValue {
 
 type FieldFormatter = (value: FieldPrimitiveValue, options: FieldFormatOptions | undefined) => string | undefined;
 
-interface Coordinate { x: number, y: number, z: number | undefined }
-
-function isCoordinate(v: FieldPrimitiveValue): v is Coordinate {
-  const obj = typeof v === "object" ? v as any : undefined;
-  return undefined !== obj && typeof obj.x === "number" && typeof obj.y === "number" && (undefined === obj.z || typeof obj.z === "number");
-}
-
 const formatters: { [type: string]: FieldFormatter | undefined } = {
   // eslint-disable-next-line @typescript-eslint/no-base-to-string
   "string": (v, o) => formatString(v.toString(), o),
-
-  "int-enum": (v, o) => {
-    const n = typeof v === "number" ? v : undefined;
-    if (undefined === n || Math.floor(n) !== n) {
-      return undefined;
-    }
-
-    return formatString(formatEnum<number>(n, o?.enum), o);
-  },
-
-  "string-enum": (v, o) => {
-    if (typeof v !== "string") {
-      return undefined;
-    }
-
-    return formatString(formatEnum<string>(v, o?.enum), o);
-  },
-
-  "boolean": (v, o) => {
-    const opts = o?.bool;
-    if (typeof v !== "boolean") {
-      return undefined;
-    }
-
-    return formatString(v ? (opts?.trueString ?? "1") : (opts?.falseString ?? "0"), o);
-  },
-
-  "quantity": (v, o) => formatString(formatQuantity(v, o?.quantity), o),
-
-  "coordinate": (v, o) => {
-    if (!isCoordinate(v)) {
-      return undefined;
-    }
-
-    const parts: string[] = [];
-    const formatComponent = (component: number) => {
-      const str = formatQuantity(component, o?.quantity);
-      if (undefined === str) {
-        return false;
-      }
-
-      parts.push(str);
-      return true;
-    };
-
-    const selector = o?.coordinate?.components ?? "XYZ";
-    if ((selector === "XYZ" || selector === "XY" || selector === "X") && !formatComponent(v.x)) {
-      return undefined;
-    }
-
-    if ((selector === "XYZ" || selector === "XY" || selector === "Y") && !formatComponent(v.y)) {
-      return undefined;
-    }
-
-    if (selector === "XYZ" && undefined !== v.z && !formatComponent(v.z)) {
-      return undefined;
-    }
-
-    const components = parts.join(o?.coordinate?.componentSeparator ?? ",");
-    return formatString(components, o);
-  },
 
   "datetime": (v, o) => formatString(formatDateTime(v, o?.dateTime), o),
 };
@@ -116,43 +48,6 @@ function formatString(s: string | undefined, o?: FieldFormatOptions): string | u
   }
 
   return s;
-}
-
-function formatEnum<T extends number | string>(v: T, o: EnumFieldFormatOptions<number | string> | undefined): string | undefined {
-  const fallback = o?.fallbackLabel;
-  const labels = o?.labels;
-  if (!labels) {
-    return fallback;
-  }
-
-  for (const entry of labels) {
-    if (entry.value === v) {
-      return entry.label;
-    }
-  }
-
-  return fallback;
-}
-
-function formatQuantity(v: FieldPrimitiveValue, o?: QuantityFieldFormatOptions): string | undefined {
-  if (typeof v !== "number") {
-    return undefined;
-  }
-
-  if (o && o.formatProps){
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/naming-convention
-      const { Format, FormatterSpec } = require("@itwin/core-quantity");
-      const formatName = o.formatProps.name ?? "defaultFormat";
-      const format = Format.createFromFullyResolvedJSON(formatName, o.formatProps);
-      const formatterSpec = new FormatterSpec(format.name, format, o?.unitConversions, o?.sourceUnit);
-      return formatterSpec.applyFormatting(v);
-    } catch (error) {
-      throw new Error("Unable to format quantity - @itwin/core-quantity package is not available", { cause: error });
-    }
-  } else {
-    return v.toString();
-  }
 }
 
 function formatDateTime(v: FieldPrimitiveValue, o?: DateTimeFieldFormatOptions): string | undefined {
