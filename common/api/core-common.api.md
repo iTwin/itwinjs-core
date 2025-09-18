@@ -8395,6 +8395,7 @@ export interface RepositoryLinkProps extends UrlLinkProps {
 export interface RequestNewBriefcaseProps {
     asOf?: IModelVersionProps;
     briefcaseId?: BriefcaseId;
+    deviceName?: string;
     readonly fileName?: LocalFileName;
     readonly iModelId: GuidString;
     readonly iTwinId: GuidString;
