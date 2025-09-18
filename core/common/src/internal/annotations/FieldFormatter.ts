@@ -5,7 +5,7 @@
 
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
 import { DateTimeFieldFormatOptions, EnumFieldFormatOptions, FieldFormatOptions, FieldPropertyType, QuantityFieldFormatOptions } from "../../annotation/TextField";
-import { Format, FormatterSpec } from "@itwin/core-quantity";
+// import { Format, FormatterSpec } from "@itwin/core-quantity";
 
 /** A FieldPropertyPath must ultimately resolve to one of these primitive types.
  * @internal
@@ -140,19 +140,26 @@ function formatQuantity(v: FieldPrimitiveValue, o?: QuantityFieldFormatOptions):
   }
 
   if (o && o.formatProps){
-    const formatName = o.formatProps.name ?? "defaultFormat";
-    const format = Format.createFromFullyResolvedJSON(formatName, o.formatProps);
-    const formatterSpec = new FormatterSpec(format.name, format, o?.unitConversions, o?.sourceUnit);
-    return formatterSpec.applyFormatting(v);
-  }else
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports, @typescript-eslint/naming-convention
+      const { Format, FormatterSpec } = require("@itwin/core-quantity");
+      const formatName = o.formatProps.name ?? "defaultFormat";
+      const format = Format.createFromFullyResolvedJSON(formatName, o.formatProps);
+      const formatterSpec = new FormatterSpec(format.name, format, o?.unitConversions, o?.sourceUnit);
+      return formatterSpec.applyFormatting(v);
+    } catch (error) {
+      throw new Error("Unable to format quantity - @itwin/core-quantity package is not available", { cause: error });
+    }
+  } else {
     return v.toString();
+  }
 }
 
 function formatDateTime(v: FieldPrimitiveValue, o?: DateTimeFieldFormatOptions): string | undefined {
-if (!(v instanceof Date))
-  return undefined;
+  if (!(v instanceof Date))
+    return undefined;
 
-if (!isNaN(v.getTime())) {
+  if (!isNaN(v.getTime())) {
     if (o?.formatOptions) {
       const locale = o.locale ?? "en-US";
       if (!Intl.DateTimeFormat.supportedLocalesOf([locale], { localeMatcher: "lookup" }).includes(locale)) {
@@ -164,7 +171,7 @@ if (!isNaN(v.getTime())) {
     }
     return v.toString();
   }
-  return undefined
+  return undefined;
 }
 
 /** @internal */

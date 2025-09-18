@@ -45,6 +45,11 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-quantity": "workspace:*"
   },
+  "peerDependenciesMeta": {
+    "@itwin/core-quantity": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
