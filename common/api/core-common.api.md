@@ -9962,7 +9962,7 @@ export class TextAnnotation {
     computeTransform(boundingBox: Range2d, scaleFactor?: number): Transform;
     static create(args?: TextAnnotationCreateArgs): TextAnnotation;
     equals(other: TextAnnotation): boolean;
-    static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation;
+    static fromJSON(props?: TextAnnotationProps): TextAnnotation;
     leaders?: TextAnnotationLeader[];
     offset: Point3d;
     orientation: YawPitchRollAngles;
@@ -9972,11 +9972,15 @@ export class TextAnnotation {
 
 // @public @preview
 export interface TextAnnotation2dProps extends GeometricElement2dProps {
+    // @beta
+    defaultTextStyle?: RelatedElementProps;
     textAnnotationData?: string;
 }
 
 // @public @preview
 export interface TextAnnotation3dProps extends GeometricElement3dProps {
+    // @beta
+    defaultTextStyle?: RelatedElementProps;
     textAnnotationData?: string;
 }
 
@@ -10036,8 +10040,7 @@ export class TextBlock extends TextBlockComponent {
     clearStyleOverrides(options?: ClearTextStyleOptions): void;
     // (undocumented)
     clone(): TextBlock;
-    static create(props: TextBlockProps): TextBlock;
-    static createEmpty(): TextBlock;
+    static create(props?: TextBlockProps): TextBlock;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
     get isEmpty(): boolean;
@@ -10045,7 +10048,6 @@ export class TextBlock extends TextBlockComponent {
     margins: TextBlockMargins;
     readonly paragraphs: Paragraph[];
     stringify(options?: TextBlockStringifyOptions): string;
-    styleId: Id64String;
     // (undocumented)
     toJSON(): TextBlockProps;
     width: number;
@@ -10116,7 +10118,6 @@ export interface TextBlockProps extends TextBlockComponentProps {
     justification?: TextBlockJustification;
     margins?: Partial<TextBlockMargins>;
     paragraphs?: ParagraphProps[];
-    styleId: Id64String;
     width?: number;
 }
 
