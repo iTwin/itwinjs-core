@@ -3689,6 +3689,7 @@ export abstract class IModelDb extends IModel {
     // @internal @deprecated (undocumented)
     reverseTxns(numOperations: number): IModelStatus;
     saveChanges(description?: string): void;
+    // @alpha
     saveChanges(args: SaveChangesArgs): void;
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     // @beta
@@ -5410,7 +5411,7 @@ export class RunLayout {
     toResult(paragraph: Paragraph): RunLayoutResult;
 }
 
-// @public
+// @alpha
 export interface SaveChangesArgs {
     appData?: {
         [key: string]: any;

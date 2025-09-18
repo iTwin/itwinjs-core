@@ -78,7 +78,7 @@ const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /**
  * Arguments for saving changes to the iModel.
- * @public
+ * @alpha
  */
 export interface SaveChangesArgs {
   /**
@@ -828,6 +828,7 @@ export abstract class IModelDb extends IModel {
   public saveChanges(description?: string): void ;
 
   /** Commit unsaved changes in memory as a Txn to this iModelDb. This is preferable for case where application like to store additional structured information with the change that could be useful later when rebasing.
+   * @alpha
    * @param args Provide [[SaveChangesArgs]] of the changes.
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    * @note This will not push changes to the iModelHub.
@@ -836,6 +837,7 @@ export abstract class IModelDb extends IModel {
     public saveChanges(args: SaveChangesArgs): void;
 
   /** Commit unsaved changes in memory as a Txn to this iModelDb.
+   * @internal
    * @param descriptionOrArgs Optionally provide description or [[SaveChangesArgs]] args for the changes.
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    * @note This will not push changes to the iModelHub.
