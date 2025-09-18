@@ -909,6 +909,71 @@ describe("RegionBoolean", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "HoleDiscovery");
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it("UnionAnomaly", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+    const loopA = Loop.create(
+      LineSegment3d.createXYZXYZ(0, 0, 0, 23.11520443856716, 0, 0),
+      LineSegment3d.createXYZXYZ(23.11520443856716, 0, 0, 23.11520443856716, 42.60609423182905, 0),
+      LineSegment3d.createXYZXYZ(23.11520443856716, 42.60609423182905, 0, 0, 42.60609423182905, 0),
+      LineSegment3d.createXYZXYZ(0, 42.60609423182905, 0, 0, 0, 0),
+    );
+    const loopB = Loop.create(
+      Arc3d.create(Point3d.create(42.29925166000612, -15.407369868364185, 0), Vector3d.create(-29.779550526647522, 8.539117313243498, 0), Vector3d.create(8.539117313243493, 29.779550526647522, 0), AngleSweep.fromJSON([-51.851283981714374, 51.851283981714374])),
+      Arc3d.create(Point3d.create(42.29925166023895, -15.407369868364185, 0), Vector3d.create(15.35031151952128, 26.909219429633033, 0), Vector3d.create(26.90921942963303, -15.35031151952128, 0), AngleSweep.fromJSON([-51.85128398159269, 51.85128398159269])),
+      Arc3d.create(Point3d.create(53.30649186950177, -42.44887617137283, 0), Vector3d.create(35.73091863110368, 10.340829677241958, 0), Vector3d.create(10.340829677241963, -35.73091863110368, 0), AngleSweep.fromJSON([-41.99542910345029, 41.99542910345029])),
+      Arc3d.create(Point3d.create(53.30649186950177, -42.44887617137283, 0), Vector3d.create(14.024576697456764, -34.45203264095505, 0), Vector3d.create(-34.45203264095506, -14.02457669745676, 0), AngleSweep.fromJSON([-41.99542910345027,41.99542910345027])),
+      Arc3d.create(Point3d.create(53.30649186903611, -42.44887617137283, 0), Vector3d.create(-32.79491890989654, -17.553478240211835, 0), Vector3d.create(-17.553478240211838, 32.79491890989654, 0), AngleSweep.fromJSON([-41.99668897850568,41.99668897850568])),
+    );
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [loopA, loopB]);
+    const union = RegionOps.regionBooleanXY(loopA, loopB, RegionBinaryOpType.Union);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, union);
+
+    // Test post-process
+    if (ck.testDefined(union, "Boolean returns something")) {
+      const signedLoops = RegionOps.constructAllXYRegionLoops(union);
+      if (ck.testDefined(signedLoops, "Post-process returns something")) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoops.map((component) => component.negativeAreaLoops).flat(), 0, 100);
+        if (ck.testExactNumber(1, signedLoops.length, "Post-process found one component..."))
+          ck.testExactNumber(1, signedLoops[0].negativeAreaLoops.length, "... with one negative area loop...");
+      }
+    }
+
+    // Current behavior is for the Boolean union to be a UnionRegion of disjoint Loops
+    if (ck.testType(union, UnionRegion, "current behavior is for Boolean union to result in, ahem, a UnionRegion...")) {
+      ck.testTrue(union.children.every((child) => child instanceof Loop), "... with Loop children...");
+      if (ck.testExactNumber(3, union.children.length, "... numbering 3...")) {
+        // Problem 2: why is the intersection the smaller loop?
+        let loop0 = union.children[1] as Loop;
+        let loop1 = union.children[2] as Loop;
+        let sliver = RegionOps.regionBooleanXY(loop0, loop1, RegionBinaryOpType.Intersection) as Loop;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [loop0, loop1], 200);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, sliver, 200, 0, 50);
+
+        // Problem 3: why is the intersection the smaller loop?
+        loop0 = union.children[2] as Loop;
+        loop1 = union.children[0] as Loop;
+        sliver = RegionOps.regionBooleanXY(loop0, loop1, RegionBinaryOpType.Intersection) as Loop;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [loop0, loop1], 300);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, sliver, 300, 0, 50);
+
+/* When Problems 2 and 3 are fixed use this logic to verify:
+        ck.testTrue(union.children.every(
+          (child, i) => {
+            const sliver = RegionOps.regionBooleanXY(child, union.children[Geometry.cyclic3dAxis(i + 1)], RegionBinaryOpType.Intersection);
+            return !sliver || Geometry.isAlmostEqualOptional(RegionOps.computeXYArea(sliver), 0.0, Geometry.smallMetricDistanceSquared);
+          }),
+          "... and disjoint.");
+*/    }
+    }
+
+    // Problem 1: add option to simplify Boolean Union to the (assembled) negative area loops
+    ck.testType(union, Loop, "user expectation is for Boolean union to result in a single Loop");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "UnionAnomaly");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });
 
 describe("PlaneAltitudeRangeContext", () => {
