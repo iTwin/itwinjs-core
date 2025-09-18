@@ -42,7 +42,6 @@ beta;interface;ChangedECInstance
 internal;class;ChangedElementsDb
 beta;interface;ChangeFormatArgs
 beta;interface;ChangeInstanceKey
-internal;class;ChangeMergeManager
 beta;interface;ChangeMetaData
 public;interface;ChangesetArg
 beta;class;ChangesetECAdaptor
@@ -445,6 +444,8 @@ beta;interface;QueryLocalChangesArgs
 beta;interface;QueryMappedFamiliesArgs
 beta;interface;QueryWorkspaceResourcesArgs
 beta;type;QueryWorkspaceResourcesCallback
+alpha;interface;RebaseHandler
+alpha;class;RebaseManager
 beta;class;RecipeDefinitionElement
 public;class;Relationship
 public;class;Relationships
@@ -466,6 +467,7 @@ public;class;RoleModel
 preview;class;RoleModel
 public;class;RpcTrace
 beta;class;RunLayout
+alpha;interface;SaveChangesArgs
 public;class;Schema
 public;interface;SchemaImportOptions
 internal;type;SchemaKey
@@ -591,6 +593,9 @@ public;type;TxnIdString
 preview;type;TxnIdString
 public;class;TxnManager
 preview;class;TxnManager
+alpha;type;TxnMode
+alpha;interface;TxnProps
+alpha;type;TxnType
 public;class;TypeDefinitionElement
 preview;class;TypeDefinitionElement
 public;interface;UpdateModelOptions
