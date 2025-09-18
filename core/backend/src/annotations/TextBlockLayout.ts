@@ -449,8 +449,8 @@ export class RunLayout {
     this.fontId = props.fontId;
   }
 
-  public static create(source: Run, context: LayoutContext): RunLayout {
-    const style = context.textStyleResolver.resolveSettings(source.styleOverrides);
+  public static create(source: Run, context: LayoutContext, cumulativeOverrides: TextStyleSettingsProps): RunLayout {
+    const style = context.textStyleResolver.resolveSettings(cumulativeOverrides);
     const fontId = context.findFontId(style.fontName);
     const charOffset = 0;
     const offsetFromLine = { x: 0, y: 0 };
@@ -755,7 +755,7 @@ export class TextBlockLayout {
         component.children.forEach((child, index) => {
           const styleOverrides = context.textStyleResolver.resolveSettings(cumulativeOverrides);
           const markerContent = getMarkerText(styleOverrides.listMarker, index + 1);
-          const marker = RunLayout.create(TextRun.create({ styleOverrides, content: markerContent }), context);
+          const marker = RunLayout.create(TextRun.create({ styleOverrides, content: markerContent }), context, cumulativeOverrides);
 
           curLine.marker = marker;
           curLine = this.populateComponent(child, index, context, docWidth, curLine, component, cumulativeOverrides, depth + 1);
@@ -782,7 +782,7 @@ export class TextBlockLayout {
         break;
       }
       case "text": {
-        const layout = RunLayout.create(component, context);
+        const layout = RunLayout.create(component, context, cumulativeOverrides);
 
         // Text can be word-wrapped, so we need to split it into multiple runs if necessary.
         if (docWidth > 0) {
@@ -794,12 +794,12 @@ export class TextBlockLayout {
       }
       case "fraction":
       case "tab": {
-        const layout = RunLayout.create(component, context);
+        const layout = RunLayout.create(component, context, cumulativeOverrides);
         curLine = this.populateRun(curLine, layout, context, cumulativeOverrides, docWidth);
         break;
       }
       case "linebreak": {
-        const layout = RunLayout.create(component, context);
+        const layout = RunLayout.create(component, context, cumulativeOverrides);
 
         curLine.append(layout);
         curLine = this.flushLine(context, curLine, cumulativeOverrides, undefined, undefined, depth);
@@ -867,7 +867,7 @@ export class TextBlockLayout {
       }
 
       const run = curLine.source.clone();
-      curLine.append(RunLayout.create(run as Run, context));
+      curLine.append(RunLayout.create(run as Run, context, cumulativeOverrides));
     }
 
     // Line origin is its baseline.

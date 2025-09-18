@@ -31,7 +31,7 @@ function findTextStyleImpl(id: Id64String): TextStyleSettings {
   return TextStyleSettings.fromJSON({ lineSpacingFactor: 1, fontName: "other" });
 }
 
-describe.only("layoutTextBlock", () => {
+describe("layoutTextBlock", () => {
   describe("resolves TextStyleSettings", () => {
     it("inherits styling from TextBlock when Paragraph and Run have no style overrides", () => {
       const textBlock = TextBlock.create({ styleId: "0x42" });
@@ -53,12 +53,11 @@ describe.only("layoutTextBlock", () => {
     });
 
     it("inherits style overrides from Paragraph when Run has no style overrides", () => {
-      // TODO: failing
       const textBlock = TextBlock.create({ styleId: "0x42" });
-      const paragraph = Paragraph.create({ styleOverrides: {fontName: "paragraph"} });
-      const run = TextRun.create({ content: "test" });
-      textBlock.appendParagraph(paragraph);
-      textBlock.appendRun(run);
+
+      // TODO: these should both either take in props or take in the class instance to be consistent
+      textBlock.appendParagraph({ styleOverrides: { fontName: "paragraph" } });
+      textBlock.appendRun(TextRun.create({ content: "test" }));
 
       const tb = doLayout(textBlock, {
         findTextStyle: findTextStyleImpl,
@@ -74,10 +73,8 @@ describe.only("layoutTextBlock", () => {
 
     it("uses Run style overrides when Run has overrides", () => {
       const textBlock = TextBlock.create({ styleId: "0x42" });
-      const paragraph = Paragraph.create({ styleOverrides: { lineSpacingFactor: 55, fontName: "paragraph" } });
-      const run = TextRun.create({ content: "test", styleOverrides: { lineSpacingFactor: 99, fontName: "run" } });
-      textBlock.appendParagraph(paragraph);
-      textBlock.appendRun(run);
+      textBlock.appendParagraph({ styleOverrides: { lineSpacingFactor: 55, fontName: "paragraph" } });
+      textBlock.appendRun(TextRun.create({ content: "test", styleOverrides: { lineSpacingFactor: 99, fontName: "run" } }));
 
       const tb = doLayout(textBlock, {
         findTextStyle: findTextStyleImpl,
@@ -110,11 +107,10 @@ describe.only("layoutTextBlock", () => {
     });
 
     it("inherits overrides from TextBlock, Paragraph and Run when there is no styleId", () => {
-      // TODO: failing
       const textBlock = TextBlock.create({ styleId: "", styleOverrides: { widthFactor: 34, lineHeight: 3, lineSpacingFactor: 12, isBold: true } });
       const paragraph = Paragraph.create({ styleOverrides: { lineHeight: 56, color: 0xff0000, frame: {shape: "octagon"} } });
       const run = TextRun.create({ content: "test", styleOverrides: { widthFactor: 78, fontName: "override", leader: { wantElbow: true } } });
-      textBlock.appendParagraph(paragraph);
+      textBlock.appendParagraph(paragraph.toJSON());
       textBlock.appendRun(run);
 
       const tb = doLayout(textBlock, {
@@ -141,7 +137,6 @@ describe.only("layoutTextBlock", () => {
     });
 
     it("does not inherit overrides in TextBlock or Paragraph when Run has same propertied overriden - unless they are TextBlock specific settings", () => {
-      // TODO: failing
       const textBlock = TextBlock.create({ styleId: "0x42", styleOverrides: { widthFactor: 34, lineHeight: 3, lineSpacingFactor: 12, isBold: true } });
       const paragraph = Paragraph.create({ styleOverrides: { lineHeight: 56, color: 0xff0000 } });
       const run = TextRun.create({ content: "test", styleOverrides: { widthFactor: 78, lineHeight: 6, lineSpacingFactor: 24, fontName: "override", isBold: false } });
@@ -1281,7 +1276,7 @@ describe.only("layoutTextBlock", () => {
   });
 });
 
-describe.only("produceTextBlockGeometry", () => {
+describe("produceTextBlockGeometry", () => {
   type Color = ColorDef | "subcategory";
 
   function makeText(color?: Color): TextRun {
