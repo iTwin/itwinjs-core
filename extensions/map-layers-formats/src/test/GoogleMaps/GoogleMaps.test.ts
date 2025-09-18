@@ -171,21 +171,11 @@ describe("GoogleMapsProvider", () => {
     await provider.addAttributions(table, {} as ScreenViewport);
 
     expect(getViewportInfoStub.called).to.be.true;
-    // Important : When satellite base layer is used, the logo should be white
-    expect(table.innerHTML).to.includes(`<img src="public/images/google_on_white_hdpi.png" width="64">`);
+    expect(table.innerHTML).to.includes(`<img src="public/images/GoogleMaps_Logo_Gray.svg" style="padding: 10px 10px 5px 10px;">`);
     expect(table.innerHTML).to.includes(`<p class="logo-cards">fake copyright</p>`);
-
-    // Now re-do the test with roadmap base layer
-    const settings2 = GoogleMaps.createBaseLayerSettings({mapType: "roadmap", language: "en-US", region: "US"});
-    const provider2 = createProvider(settings2);
-    await provider2.initialize();
-    const table2 = document.createElement('table');
-    await provider2.addAttributions(table2, {} as ScreenViewport);
-    expect(table2.innerHTML).to.includes(`<img src="public/images/google_on_white_hdpi.png" width="64">`);
-    expect(table2.innerHTML).to.includes(`<p class="logo-cards">fake copyright</p>`);
   });
 
-  it("logo should be activated with the 'on non-white' logo", async () => {
+  it("logo should be activated with the 'dark outline' logo", async () => {
     fakeJsonFetch(sandbox, defaultPngSession);
     const getSpriteStub = sandbox.stub(IconSprites, "getSpriteFromUrl").callsFake(function _(_url: string) {
       return {} as Sprite;
@@ -194,10 +184,10 @@ describe("GoogleMapsProvider", () => {
     const provider = createProvider(settings);
     await provider.initialize();
 
-    expect(getSpriteStub.firstCall.args[0]).to.eq("public/images/google_on_non_white.png");
+    expect(getSpriteStub.firstCall.args[0]).to.eq("public/images/GoogleMaps_Logo_WithDarkOutline.svg");
   });
 
-  it("logo should be activated with the 'on white' logo", async () => {
+  it("logo should be activated with the 'white outline' logo", async () => {
     fakeJsonFetch(sandbox, defaultPngSession);
     const getSpriteStub = sandbox.stub(IconSprites, "getSpriteFromUrl").callsFake(function _(_url: string) {
       return {} as Sprite;
@@ -206,7 +196,14 @@ describe("GoogleMapsProvider", () => {
     const provider = createProvider(settings);
     await provider.initialize();
 
-    expect(getSpriteStub.firstCall.args[0]).to.eq("public/images/google_on_white.png");
+    expect(getSpriteStub.firstCall.args[0]).to.eq("public/images/GoogleMaps_Logo_WithLightOutline.svg");
+
+    // Should also work with "terrain" map type
+    const settingsTerrain = GoogleMaps.createBaseLayerSettings({mapType: "terrain", language: "en-US", region: "US"});
+    const providerTerrain = createProvider(settingsTerrain);
+    await providerTerrain.initialize();
+
+    expect(getSpriteStub.secondCall.args[0]).to.eq("public/images/GoogleMaps_Logo_WithLightOutline.svg");
   });
 
   it("should decorate", async () => {
@@ -238,6 +235,4 @@ describe("GoogleMapsProvider", () => {
     await provider.initialize();
     expect(createSessionSpy.called).to.be.true;
   });
-
-
 });

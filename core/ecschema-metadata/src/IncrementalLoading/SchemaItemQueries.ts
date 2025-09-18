@@ -20,10 +20,10 @@ SELECT
     'name', [koq].[Name],
     'label', [koq].[DisplayLabel],
     'description', [koq].[Description]
-    ${singleSchema ? `
     ,'relativeError', [koq].[RelativeError],
-    'persistenceUnit', [koq].[PersistenceUnit],
-    'presentationUnits', (
+    'persistenceUnit', [koq].[PersistenceUnit]
+    ${singleSchema ? `
+    , 'presentationUnits', (
         SELECT json_group_array(js."value")
         FROM [meta].[KindOfQuantityDef] [koq1], json1.json_each([PresentationUnits]) js
         WHERE [koq1].[ECInstanceId] = [koq].[ECInstanceId]
