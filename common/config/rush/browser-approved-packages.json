@@ -159,6 +159,10 @@
       "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/cesium-renderer",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/cloud-agnostic-core",
       "allowedCategories": [ "backend", "frontend" ]
     },
@@ -533,10 +537,6 @@
     {
       "name": "dotenv-expand",
       "allowedCategories": [ "backend", "integration-testing", "internal" ]
-    },
-    {
-      "name": "draco3d",
-      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "electron",

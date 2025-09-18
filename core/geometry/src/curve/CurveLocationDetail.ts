@@ -9,6 +9,7 @@ import { Geometry, ICloneable } from "../Geometry";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
+import { XYAndZ } from "../geometry3d/XYZProps";
 import { CurvePrimitive } from "./CurvePrimitive";
 
 /**
@@ -174,7 +175,7 @@ export class CurveLocationDetail {
    * @param vector (optional) vector to install.
    * @param a (optional) numeric value to install.
    */
-  public setFP(fraction: number, point: Point3d, vector?: Vector3d, a: number = 0.0): void {
+  public setFP(fraction: number, point: XYAndZ, vector?: Vector3d, a: number = 0.0): void {
     this.fraction = fraction;
     this.point.setFromPoint3d(point);
     this.vectorInCurveLocationDetail = optionalUpdate<Vector3d>(vector, this.vectorInCurveLocationDetail);
@@ -196,7 +197,7 @@ export class CurveLocationDetail {
     this.curve = curve;
   }
   /** Record the distance from the CurveLocationDetail's point to the parameter point. */
-  public setDistanceTo(point: Point3d) {
+  public setDistanceTo(point: XYAndZ) {
     this.a = this.point.distance(point);
   }
   /** Create with a CurvePrimitive pointer but no coordinate data. */
@@ -207,7 +208,7 @@ export class CurveLocationDetail {
   }
   /** Create a new detail using CurvePrimitive pointer, fraction, and point coordinates. */
   public static createCurveFractionPoint(
-    curve: CurvePrimitive | undefined, fraction: number, point: Point3d, result?: CurveLocationDetail,
+    curve: CurvePrimitive | undefined, fraction: number, point: XYAndZ, result?: CurveLocationDetail,
   ): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.curve = curve;
@@ -221,7 +222,7 @@ export class CurveLocationDetail {
   }
   /** Create a new detail with only ray, fraction, and point. */
   public static createRayFractionPoint(
-    ray: Ray3d, fraction: number, point: Point3d, result?: CurveLocationDetail,
+    ray: Ray3d, fraction: number, point: XYAndZ, result?: CurveLocationDetail,
   ): CurveLocationDetail {
     result = result ? result : new CurveLocationDetail();
     result.fraction = fraction;
@@ -233,7 +234,7 @@ export class CurveLocationDetail {
   public static createCurveFractionPointDistanceCurveSearchStatus(
     curve: CurvePrimitive | undefined,
     fraction: number,
-    point: Point3d,
+    point: XYAndZ,
     distance: number,
     status: CurveSearchStatus,
     result?: CurveLocationDetail,
@@ -330,7 +331,7 @@ export class CurveLocationDetail {
   public static createCurveFractionPointDistance(
     curve: CurvePrimitive,
     fraction: number,
-    point: Point3d,
+    point: XYAndZ,
     a: number,
     result?: CurveLocationDetail,
   ): CurveLocationDetail {
@@ -353,7 +354,7 @@ export class CurveLocationDetail {
    * @returns true if the given distance is smaller (and hence this detail was updated)
    */
   public updateIfCloserCurveFractionPointDistance(
-    curve: CurvePrimitive, fraction: number, point: Point3d, a: number,
+    curve: CurvePrimitive, fraction: number, point: XYAndZ, a: number,
   ): boolean {
     if (this.a < a)
       return false;
