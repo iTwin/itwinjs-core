@@ -20,7 +20,7 @@ import { Surface } from "./Surface";
 import { setTitle } from "./Title";
 import { showStatus } from "./Utils";
 import { Dock } from "./Window";
-import { System } from "./cesium/System";
+import { System as CesiumSystem } from "@itwin/cesium-renderer";
 
 const configuration: DtaConfiguration = {};
 
@@ -90,7 +90,7 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options |
   let renderSystemOptions: RenderSystem.Options | RenderSystem;
 
   if (true === configuration.useCesium)
-    renderSystemOptions = System.create();
+    renderSystemOptions = CesiumSystem.create();
   else
     renderSystemOptions = {
       disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],

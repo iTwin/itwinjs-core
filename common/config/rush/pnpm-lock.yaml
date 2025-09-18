@@ -1917,13 +1917,23 @@ importers:
         version: 5.6.2
 
   ../../extensions/cesium-renderer:
+    dependencies:
+      cesium:
+        specifier: 1.133.0
+        version: 1.133.0
     devDependencies:
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
+      '@itwin/core-bentley':
+        specifier: workspace:*
+        version: link:../../core/bentley
       '@itwin/core-common':
         specifier: workspace:*
         version: link:../../core/common
+      '@itwin/core-frontend':
+        specifier: workspace:*
+        version: link:../../core/frontend
       '@itwin/core-geometry':
         specifier: workspace:*
         version: link:../../core/geometry
@@ -1933,6 +1943,9 @@ importers:
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.0
+      cpx2:
+        specifier: ^8.0.0
+        version: 8.0.0
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
@@ -3678,6 +3691,9 @@ importers:
       '@itwin/browser-authorization':
         specifier: ^1.0.1
         version: 1.0.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+      '@itwin/cesium-renderer':
+        specifier: workspace:*
+        version: link:../../extensions/cesium-renderer
       '@itwin/core-backend':
         specifier: workspace:*
         version: link:../../core/backend
@@ -3768,9 +3784,6 @@ importers:
       body-parser:
         specifier: ^1.20.3
         version: 1.20.3
-      cesium:
-        specifier: 1.133.0
-        version: 1.133.0
       vhacd-js:
         specifier: ^0.0.1
         version: 0.0.1

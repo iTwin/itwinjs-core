@@ -456,7 +456,7 @@
     },
     {
       "name": "cesium",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "chai",

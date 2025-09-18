@@ -2,18 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module Cesium
- */
 
 import { Id64String } from "@itwin/core-bentley";
-import { System } from "./System";
-import { CesiumScene } from "./CesiumScene";
 import { _implementationProhibited, Decorations, GraphicList, Pixel, RenderPlan, RenderTarget, Scene, ViewRect } from "@itwin/core-frontend";
-
-// import { RenderPlan } from "@itwin/core-frontend/src/internal/render/RenderPlan";
-// // eslint-disable-next-line @itwin/import-within-package
-// import { RenderPlan } from "../../../../../core/frontend/src/internal/render/RenderPlan";
+import { CesiumScene } from "./CesiumScene.js";
+import { System } from "./System.js";
 
 /** A Target that renders to a canvas on the screen using Cesium.
  * @internal
@@ -34,7 +27,6 @@ export class OnScreenTarget extends RenderTarget {
   }
 
   public constructor(canvas: HTMLCanvasElement) {
-    console.log("creating Cesium OnScreenTarget...");
     super();
     this._canvas = canvas;
     this._scene = new CesiumScene({

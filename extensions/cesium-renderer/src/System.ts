@@ -2,62 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module Cesium
- */
 
 import { ElementAlignedBox3d, RenderFeatureTable } from "@itwin/core-common";
 import { Transform } from "@itwin/core-geometry";
-import { OffScreenTarget, OnScreenTarget } from "./Target";
-import { CesiumGraphic } from "./Graphic";
 import { BatchOptions, CreateGraphicFromTemplateArgs, CustomGraphicBuilderOptions, GraphicBranch, GraphicBranchOptions, GraphicBuilder, IModelApp, IModelConnection, InstancedGraphicParams, PrimitiveBuilder, RenderAreaPattern, RenderGeometry, RenderGraphic, RenderSystem, RenderTarget, ViewportGraphicBuilderOptions, ViewRect } from "@itwin/core-frontend";
-
-// import { RenderSystem } from "../../../../../core/frontend/src/render/RenderSystem";
-// // eslint-disable-next-line @itwin/import-within-package
-// import { RenderAreaPattern } from "../../../../../core/frontend/src/internal/render/RenderAreaPattern";
-// // eslint-disable-next-line @itwin/import-within-package
-// import { RenderGeometry } from "../../../../../core/frontend/src/internal/render/RenderGeometry";
-// // eslint-disable-next-line @itwin/import-within-package
-// import { PrimitiveBuilder } from "../../../../../core/frontend/src/internal/render/PrimitiveBuilder";
-
-// /** @internal */
-// export class Builder extends GraphicBuilder {
-//   public constructor(system: System, options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions) {
-//     super(system, options);
-//   }
-// }
+import { OffScreenTarget, OnScreenTarget } from "./Target.js";
+import { CesiumGraphic } from "./Graphic.js";
 
 /** @internal */
 export class System extends RenderSystem {
   private _removeEventListener?: () => void;
 
-  // ###TODO
   public get isValid(): boolean { return true; }
 
   public static create(optionsIn?: RenderSystem.Options): System {
-    console.log("creating Cesium System...");
-
     const options: RenderSystem.Options = undefined !== optionsIn ? optionsIn : {};
 
     // ###TODO use new CesiumJS shared context API: https://github.com/CesiumGS/cesium/pull/12635
-
-    // const canvas = document.createElement("canvas");
-    // if (null === canvas)
-    //   throw new IModelError(BentleyStatus.ERROR, "Failed to obtain HTMLCanvasElement");
-
-    // const context = this.createContext(canvas, true, optionsIn?.contextAttributes);
-    // if (undefined === context)
-    //   throw new IModelError(BentleyStatus.ERROR, "Failed to obtain WebGL context");
-
-    // if (!(context instanceof WebGL2RenderingContext))
-    //   throw new IModelError(BentleyStatus.ERROR, "WebGL 2 support is required");
-
-    // const capabilities = Capabilities.create(context, options.disabledExtensions);
-    // if (undefined === capabilities)
-    //   throw new IModelError(BentleyStatus.ERROR, "Failed to initialize rendering capabilities");
-
-    // // set actual gl state to match desired state defaults
-    // context.depthFunc(GL.DepthFunc.Default);  // LessOrEqual
 
     return new this(options);
   }
@@ -81,8 +42,6 @@ export class System extends RenderSystem {
 
   public createTarget(canvas: HTMLCanvasElement): RenderTarget {
     return new OnScreenTarget(canvas);
-    // return new OnScreenTarget(canvas);
-    // ###TODO Implement target creation logic for Cesium
   }
 
   public createOffscreenTarget(rect: ViewRect): RenderTarget {

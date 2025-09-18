@@ -2,9 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module Cesium
- */
 
 import { IModelApp } from "@itwin/core-frontend";
 import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Scene, ScreenSpaceEventHandler } from "cesium";
@@ -38,6 +35,8 @@ export class CesiumScene {
 
     this.configureCanvasSize();
 
+    // ###TODO make this creditContainer actually be shown on screen
+    // Converge it with iTwin.js credit display?
     const creditContainer = document.createElement("div") as any;
     creditContainer.style.position = "absolute";
     creditContainer.style.bottom = "0";
