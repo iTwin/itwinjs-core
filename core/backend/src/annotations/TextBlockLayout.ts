@@ -266,6 +266,11 @@ export class TextStyleResolver {
     return applyBlockSettings(settings, this.blockSettings, isLeader);
   }
 
+  public resolveMarkerText(overrides: TextStyleSettingsProps, index: number): string {
+    const markerSettings = overrides.listMarker ?? this.blockSettings.listMarker;
+    return getMarkerText(markerSettings, index);
+  }
+
   /**
    * Computes the indentation for a TextBlockComponent based on its style and nesting depth.
    * @param component The TextBlockComponent for which to compute indentation.
@@ -753,11 +758,10 @@ export class TextBlockLayout {
 
         // Iterate through each list item, setting the marker and populating its contents.
         component.children.forEach((child, index) => {
-          const styleOverrides = context.textStyleResolver.resolveSettings(cumulativeOverrides);
-          const markerContent = getMarkerText(styleOverrides.listMarker, index + 1);
-          const marker = RunLayout.create(TextRun.create({ styleOverrides, content: markerContent }), context, cumulativeOverrides);
+          const markerContent = context.textStyleResolver.resolveMarkerText(cumulativeOverrides, index + 1);
+          const markerRun = TextRun.create({ content: markerContent });
+          curLine.marker = RunLayout.create(markerRun, context, cumulativeOverrides);
 
-          curLine.marker = marker;
           curLine = this.populateComponent(child, index, context, docWidth, curLine, component, cumulativeOverrides, depth + 1);
         });
 
