@@ -5,9 +5,9 @@ import * as fs from "fs";
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import { OrderedSet, StopWatch } from "@itwin/core-bentley";
-import { CurveLocationDetail } from "../../core-geometry";
 import { Arc3d } from "../../curve/Arc3d";
 import { BagOfCurves } from "../../curve/CurveCollection";
+import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { AnyCurve } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
