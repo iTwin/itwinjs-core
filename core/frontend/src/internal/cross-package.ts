@@ -62,5 +62,4 @@ export { IModelTileTree } from "./tile/IModelTileTree";
 export { type RenderPlan } from "./render/RenderPlan";
 export { type RenderAreaPattern } from "./render/RenderAreaPattern";
 export { type RenderGeometry } from "./render/RenderGeometry";
-export { PrimitiveBuilder } from "./render/PrimitiveBuilder";
 export { _implementationProhibited } from "../common/internal/Symbols";

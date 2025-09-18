@@ -5,9 +5,10 @@
 
 import { ElementAlignedBox3d, RenderFeatureTable } from "@itwin/core-common";
 import { Transform } from "@itwin/core-geometry";
-import { BatchOptions, CreateGraphicFromTemplateArgs, CustomGraphicBuilderOptions, GraphicBranch, GraphicBranchOptions, GraphicBuilder, IModelApp, IModelConnection, InstancedGraphicParams, PrimitiveBuilder, RenderAreaPattern, RenderGeometry, RenderGraphic, RenderSystem, RenderTarget, ViewportGraphicBuilderOptions, ViewRect } from "@itwin/core-frontend";
+import { BatchOptions, CreateGraphicFromTemplateArgs, CustomGraphicBuilderOptions, GraphicBranch, GraphicBranchOptions, GraphicBuilder, IModelApp, IModelConnection, InstancedGraphicParams, RenderAreaPattern, RenderGeometry, RenderGraphic, RenderSystem, RenderTarget, ViewportGraphicBuilderOptions, ViewRect } from "@itwin/core-frontend";
 import { OffScreenTarget, OnScreenTarget } from "./Target.js";
 import { CesiumGraphic } from "./Graphic.js";
+import { CesiumGraphicBuilder } from "./GraphicBuilder.js";
 
 /** @internal */
 export class System extends RenderSystem {
@@ -54,7 +55,7 @@ export class System extends RenderSystem {
   }
 
   public createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder {
-    return new PrimitiveBuilder(this, options); // ###TODO let's check what this function is doing.
+    return new CesiumGraphicBuilder(this, options);
   }
 
   // ###TODO for all of the following create methods, we may need to implement separate classes for each type of graphic. Right now everything is using `CesiumGraphic` as a placeholder. In theory that might be able to handle everything, but we will see. Let's get one path working first!
