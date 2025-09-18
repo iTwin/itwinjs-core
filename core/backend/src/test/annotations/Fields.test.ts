@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldRun, Paragraph, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextRun } from "@itwin/core-common";
+import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextRun } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, FieldProperty, updateField, updateFields } from "../../internal/annotations/fields";
@@ -577,7 +577,7 @@ describe("Field evaluation", () => {
         const anno = target.getAnnotation()!;
 
         // Remove the sourceA FieldRun from the first paragraph.
-        const p1 = anno.textBlock.children[0] as Paragraph;
+        const p1 = anno.textBlock.children[0];
         p1.children.shift();
 
         target.setAnnotation(anno);
