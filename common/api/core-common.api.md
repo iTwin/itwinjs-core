@@ -67,14 +67,11 @@ import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import type { Readable } from 'stream';
 import { RequireAtLeastOne } from '@itwin/core-bentley';
-import type { ResolvedFormatProps } from '@itwin/core-quantity';
 import type { TransferConfig } from '@itwin/object-storage-core/lib/common';
 import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
 import { Uint16ArrayBuilder } from '@itwin/core-bentley';
 import { UintArray } from '@itwin/core-bentley';
-import type { UnitConversionSpec } from '@itwin/core-quantity';
-import type { UnitProps } from '@itwin/core-quantity';
 import { Vector2d } from '@itwin/core-geometry';
 import { Vector3d } from '@itwin/core-geometry';
 import type { Writable } from 'stream';
@@ -755,12 +752,6 @@ export class BlobOptionsBuilder {
 
 // @beta (undocumented)
 export type BlobRange = QueryLimit;
-
-// @beta
-export interface BooleanFieldFormatOptions {
-    falseString?: string;
-    trueString?: string;
-}
 
 // @public
 export class BoundingSphere {
@@ -2074,15 +2065,6 @@ export interface ContourStyleProps {
     pixelWidth?: number;
 }
 
-// @beta
-export type CoordinateComponentSelector = "X" | "Y" | "Z" | "XY" | "XYZ";
-
-// @beta
-export interface CoordinateFieldFormatOptions {
-    components?: CoordinateComponentSelector;
-    componentSeparator?: string;
-}
-
 // @public
 export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps;
 
@@ -3341,15 +3323,6 @@ export class EntityReferenceSet extends Set<EntityReference> {
     addRelationship(id: Id64String): void;
 }
 
-// @beta
-export interface EnumFieldFormatOptions<T extends number | string> {
-    fallbackLabel?: string;
-    labels: Array<{
-        value: T;
-        label: string;
-    }>;
-}
-
 // @public
 export class Environment {
     protected constructor(props?: Partial<EnvironmentProperties>);
@@ -3638,13 +3611,9 @@ export type FieldCase = "as-is" | "upper" | "lower";
 
 // @beta
 export interface FieldFormatOptions {
-    bool?: BooleanFieldFormatOptions;
     case?: FieldCase;
-    coordinate?: CoordinateFieldFormatOptions;
     dateTime?: DateTimeFieldFormatOptions;
-    enum?: EnumFieldFormatOptions<number> | EnumFieldFormatOptions<string>;
     prefix?: string;
-    quantity?: QuantityFieldFormatOptions;
     suffix?: string;
 }
 
@@ -7654,14 +7623,6 @@ export class QPoint3dList {
     reset(params: QParams3d): void;
     toTypedArray(): Uint16Array;
     unquantize(index: number, out?: Point3d): Point3d;
-}
-
-// @beta
-export interface QuantityFieldFormatOptions {
-    formatProps?: ResolvedFormatProps;
-    koqName?: string;
-    sourceUnit?: UnitProps;
-    unitConversions?: UnitConversionSpec[];
 }
 
 // @public

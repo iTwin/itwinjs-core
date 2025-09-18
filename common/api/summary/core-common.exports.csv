@@ -64,7 +64,6 @@ internal;function;bisectTileRange3d
 beta;interface;BlobOptions
 beta;class;BlobOptionsBuilder
 beta;type;BlobRange
-beta;interface;BooleanFieldFormatOptions
 public;class;BoundingSphere
 alpha;interface;BRepCutProps
 public;namespace;BRepEntity
@@ -176,8 +175,6 @@ public;interface;ContourProps
 public;class;ContourStyle
 public;type;ContourStyleProperties
 public;interface;ContourStyleProps
-beta;type;CoordinateComponentSelector
-beta;interface;CoordinateFieldFormatOptions
 public;type;CreateEmptySnapshotIModelProps
 public;type;CreateEmptyStandaloneIModelProps
 public;interface;CreateIModelProps
@@ -296,7 +293,6 @@ public;interface;EntityQueryParams
 preview;interface;EntityQueryParams
 alpha;type;EntityReference
 alpha;class;EntityReferenceSet
-beta;interface;EnumFieldFormatOptions
 public;class;Environment
 public;type;EnvironmentProperties
 public;interface;EnvironmentProps
@@ -705,7 +701,6 @@ public;interface;QPoint3dBuffer
 public;namespace;QPoint3dBuffer
 public;class;QPoint3dBufferBuilder
 public;class;QPoint3dList
-beta;interface;QuantityFieldFormatOptions
 public;namespace;Quantization
 public;class;QueryBinder
 public;interface;QueryLimit
