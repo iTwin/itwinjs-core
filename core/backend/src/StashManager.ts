@@ -1,7 +1,7 @@
 import { DbResult, GuidString, Id64Array, Id64String, Logger, OpenMode } from "@itwin/core-bentley";
 import { ChangesetIdWithIndex, LocalDirName, LockState } from "@itwin/core-common";
 import { existsSync, mkdirSync, readdirSync, statSync, unlinkSync } from "node:fs";
-import * as path from "path";
+import * as path from "node:path";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { BriefcaseDb } from "./IModelDb";
 import { _elementWasCreated, _getHubAccess, _hubAccess, _nativeDb, _resetIModelDb } from "./internal/Symbols";
