@@ -303,6 +303,12 @@ export type TxnType = "Data" | "ECSchema" | "Ddl";
 
 /**
  * @alpha
+ * Transaction modes
+ */
+export type TxnMode = "direct" | "indirect";
+
+/**
+ * @alpha
  * Represents the properties of a transaction within the transaction manager.
  *
  * @property id - The unique identifier for the transaction.
@@ -1031,14 +1037,16 @@ export class TxnManager {
   }
 
   /**
+   * @alpha
    * Get the current transaction mode.
    * @returns The current transaction mode, either "direct" or "indirect".
    */
-  public getMode(): "direct" | "indirect" {
+  public getMode(): TxnMode {
     return this._nativeDb.getTxnMode();
   }
 
   /**
+   * @alpha
    * Execute a series of changes in an indirect transaction.
    * @param callback The function containing the changes to make.
    */

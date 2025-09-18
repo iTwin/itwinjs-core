@@ -6604,7 +6604,8 @@ export class TxnManager {
     getCurrentTxnId(): TxnIdString;
     // @alpha
     getLastSavedTxnProps(): TxnProps | undefined;
-    getMode(): "direct" | "indirect";
+    // @alpha
+    getMode(): TxnMode;
     getMultiTxnOperationDepth(): number;
     getRedoString(): string;
     getTxnDescription(txnId: TxnIdString): string;
@@ -6689,8 +6690,12 @@ export class TxnManager {
     // @internal
     touchWatchFile(): void;
     readonly validationErrors: ValidationError[];
+    // @alpha
     withIndirectTxnMode(callback: () => void): void;
 }
+
+// @alpha
+export type TxnMode = "direct" | "indirect";
 
 // @alpha
 export interface TxnProps {

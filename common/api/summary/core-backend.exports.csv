@@ -593,6 +593,7 @@ public;type;TxnIdString
 preview;type;TxnIdString
 public;class;TxnManager
 preview;class;TxnManager
+alpha;type;TxnMode
 alpha;interface;TxnProps
 alpha;type;TxnType
 public;class;TypeDefinitionElement
