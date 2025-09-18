@@ -978,7 +978,10 @@ export class TxnManager {
   /** Get the Id of the current (tip) transaction.  */
   public getCurrentTxnId(): TxnIdString { return this._nativeDb.getCurrentTxnId(); }
 
-  /** Get the Id of the current session. */
+  /**
+   * @alpha
+   * Get the Id of the current session.
+   */
   public getCurrentSessionId(): number { return this._nativeDb.currentTxnSessionId(); }
 
   /** Get the description that was supplied when the specified transaction was saved. */
@@ -999,6 +1002,7 @@ export class TxnManager {
   public get hasUnsavedChanges(): boolean { return this._nativeDb.hasUnsavedChanges(); }
 
   /**
+   * @alpha
    * Query if there are any pending schema changes in this IModelDb.
    */
   public get hasPendingSchemaChanges(): boolean { return this._nativeDb.hasPendingSchemaChanges(); }

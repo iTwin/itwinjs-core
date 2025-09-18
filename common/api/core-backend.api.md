@@ -6601,6 +6601,7 @@ export class TxnManager {
     deleteAllTxns(): void;
     endMultiTxnOperation(): DbResult;
     getChangeTrackingMemoryUsed(): number;
+    // @alpha
     getCurrentSessionId(): number;
     getCurrentTxnId(): TxnIdString;
     // @alpha
@@ -6615,6 +6616,7 @@ export class TxnManager {
     getUndoString(): string;
     get hasFatalError(): boolean;
     get hasLocalChanges(): boolean;
+    // @alpha
     get hasPendingSchemaChanges(): boolean;
     get hasPendingTxns(): boolean;
     get hasUnsavedChanges(): boolean;
