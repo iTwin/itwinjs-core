@@ -198,7 +198,7 @@ describe("BriefcaseManager", () => {
     const acquireStub = sinon.stub(BriefcaseManager, "acquireNewBriefcaseId");
     acquireStub.resolves(1234);
 
-    // Stub downloadCheckpoint to prevent actual download
+    // Stub downloadCheckpoint
     const downloadStub = sinon.stub(CheckpointManager, "downloadCheckpoint");
     downloadStub.throws(new Error("Stop execution after acquireNewBriefcaseId"));
 
@@ -211,7 +211,7 @@ describe("BriefcaseManager", () => {
     try {
       await BriefcaseManager.downloadBriefcase(args);
     } catch {
-      // Expected to fail due to download stub
+      // downloadCheckpoint will throw from stub
     }
 
     // Verify that acquireNewBriefcaseId was called with the correct deviceName
