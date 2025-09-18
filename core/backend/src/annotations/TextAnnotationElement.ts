@@ -82,7 +82,10 @@ export interface TextAnnotation3dCreateArgs {
 export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnnotation */ {
   /** @internal */
   public static override get className(): string { return "TextAnnotation2d"; }
-  /** The default [[AnnotationTextStyle]] used by the TextAnnotation2d. */
+  /**
+   * The default [[AnnotationTextStyle]] used by the TextAnnotation2d.
+   * @beta
+   */
   public defaultTextStyle?: TextAnnotationUsesTextStyleByDefault;
   /** Optional string containing the data associated with the text annotation. */
   private _textAnnotationData?: string;
@@ -213,7 +216,10 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
 export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnnotation */ {
   /** @internal */
   public static override get className(): string { return "TextAnnotation3d"; }
-  /** The default [[AnnotationTextStyle]] used by the TextAnnotation3d. */
+  /**
+   * The default [[AnnotationTextStyle]] used by the TextAnnotation3d.
+   * @beta
+   */
   public defaultTextStyle?: TextAnnotationUsesTextStyleByDefault;
   /** Optional string containing the data associated with the text annotation. */
   private _textAnnotationData?: string;
