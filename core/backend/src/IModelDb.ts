@@ -3630,7 +3630,7 @@ export class SnapshotDb extends IModelDb {
 
     nativeDb.deleteLocalValue(BriefcaseLocalValue.StandaloneEdit);
     nativeDb.saveChanges();
-    nativeDb.deleteAllTxns();
+    nativeDb.clearAllTxns();
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
 
     const snapshotDb = new SnapshotDb(nativeDb, Guid.createValue());
@@ -3846,7 +3846,7 @@ export class StandaloneDb extends BriefcaseDb {
     nativeDb.openIModel(iModelFileName, OpenMode.ReadWrite);
     nativeDb.setITwinId(Guid.empty); // empty iTwinId means "standalone"
     nativeDb.saveChanges(); // save change to iTwinId
-    nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
+    nativeDb.clearAllTxns(); // necessary before resetting briefcaseId
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned); // standalone iModels should always have BriefcaseId unassigned
     nativeDb.saveLocalValue("StandaloneEdit", JSON.stringify({ txns: true }));
     nativeDb.saveChanges(); // save change to briefcaseId
