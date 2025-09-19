@@ -42,7 +42,7 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
   const frameCurve = computeFrame({ frame: frame.shape, range: layout.range, transform });
 
   for (const leader of leaders) {
-    const leaderStyle = textStyleResolver.resolveTextAnnotationLeaderSettings(leader);
+    const leaderStyle = textStyleResolver.resolveSettings(leader.styleOverrides ?? {}, true);
 
     let effectiveColor: TextStyleColor = "subcategory";
 

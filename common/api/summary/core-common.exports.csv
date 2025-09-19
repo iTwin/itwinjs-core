@@ -398,6 +398,7 @@ public;type;GeometryStreamProps
 public;interface;GeometrySummaryOptions
 public;interface;GeometrySummaryRequestProps
 public;enum;GeometrySummaryVerbosity
+beta;function;getMarkerText
 internal;function;getMaximumMajorTileFormatVersion
 internal;const;getPullChangesIpcChannel
 internal;function;getTileObjectReference
@@ -521,6 +522,9 @@ public;enum;LinePixels
 public;namespace;LineStyle
 public;interface;LineStyleProps
 preview;interface;LineStyleProps
+beta;class;List
+beta;type;ListMarker
+beta;interface;ListProps
 public;type;LocalAlignedBox3d
 public;interface;LocalBriefcaseProps
 public;type;LocalDirName
@@ -612,6 +616,7 @@ public;interface;OpenDbKey
 public;interface;OpenSqliteArgs
 internal;const;OPERATION
 alpha;interface;OrbitGtBlobProps
+beta;enum;OrderedListMarker
 beta;enum;OverriddenBy
 public;interface;OverrideElementAppearanceOptions
 public;type;OverrideFeatureAppearanceArgs
@@ -887,6 +892,7 @@ beta;namespace;SqliteError
 beta;type;StackedFractionType
 public;type;StandaloneOpenOptions
 beta;type;StorageValue
+beta;type;StructuralTextBlockComponent
 public;class;SubCategoryAppearance
 public;namespace;SubCategoryAppearance
 public;class;SubCategoryOverride
@@ -927,6 +933,7 @@ beta;type;TextBlockJustification
 beta;interface;TextBlockLayoutResult
 beta;interface;TextBlockMargins
 beta;interface;TextBlockProps
+beta;interface;TextBlockStringifyContext
 beta;interface;TextBlockStringifyOptions
 beta;interface;TextFrameStyleProps
 beta;interface;TextLeaderStyleProps
@@ -983,6 +990,7 @@ internal;interface;TileTreeMetadata
 internal;interface;TileTreeProps
 public;interface;TileVersionInfo
 public;interface;TranslationOptions
+beta;function;traverseTextBlockComponent
 alpha;enum;TreeFlags
 public;class;Tween
 public;type;TweenCallback
@@ -996,6 +1004,7 @@ preview;interface;TypeDefinitionElementProps
 internal;type;TypedGltfChunk
 public;enum;TypeOfChange
 public;type;UnitType
+beta;enum;UnorderedListMarker
 public;type;UpdateCallback
 beta;interface;UpgradeOptions
 public;interface;UrlLinkProps

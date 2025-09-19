@@ -3628,6 +3628,8 @@ export class FieldRun extends TextBlockComponent {
     equals(other: TextBlockComponent): boolean;
     readonly formatter?: FieldFormatter;
     static invalidContentIndicator: string;
+    // (undocumented)
+    get isEmpty(): boolean;
     readonly propertyHost: Readonly<FieldPropertyHost>;
     readonly propertyPath: Readonly<FieldPropertyPath>;
     // @internal
@@ -3751,6 +3753,8 @@ export class FractionRun extends TextBlockComponent {
     denominator: string;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
+    // (undocumented)
+    get isEmpty(): boolean;
     numerator: string;
     stringify(options?: TextBlockStringifyOptions): string;
     // (undocumented)
@@ -4360,6 +4364,9 @@ export enum GeometrySummaryVerbosity {
     Detailed = 20,
     Full = 30
 }
+
+// @beta
+export function getMarkerText(marker: ListMarker, num: number): string;
 
 // @internal (undocumented)
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
@@ -5755,9 +5762,11 @@ export class LineBreakRun extends TextBlockComponent {
     // (undocumented)
     clone(): LineBreakRun;
     // (undocumented)
-    static create(props?: TextBlockComponentProps): LineBreakRun;
+    static create(props?: Omit<LineBreakRunProps, "type">): LineBreakRun;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
+    // (undocumented)
+    get isEmpty(): boolean;
     stringify(options?: TextBlockStringifyOptions): string;
     // (undocumented)
     toJSON(): LineBreakRunProps;
@@ -5775,7 +5784,6 @@ export interface LineLayoutResult {
     offsetFromDocument: XAndY;
     range: Range2dProps;
     runs: RunLayoutResult[];
-    sourceParagraphIndex: number;
 }
 
 // @public
@@ -5858,6 +5866,38 @@ export interface LineStyleProps extends DefinitionElementProps {
     data: string;
     // (undocumented)
     description?: string;
+}
+
+// @beta
+export class List extends TextBlockComponent {
+    protected constructor(props?: ListProps);
+    // (undocumented)
+    readonly children: Paragraph[];
+    // (undocumented)
+    clearStyleOverrides(options?: ClearTextStyleOptions): void;
+    // (undocumented)
+    clone(): List;
+    static create(props?: Omit<ListProps, "type">): List;
+    // (undocumented)
+    equals(other: TextBlockComponent): boolean;
+    // (undocumented)
+    get isEmpty(): boolean;
+    stringify(options?: TextBlockStringifyOptions, context?: TextBlockStringifyContext): string;
+    // (undocumented)
+    toJSON(): ListProps;
+    // (undocumented)
+    readonly type = "list";
+}
+
+// @beta
+export type ListMarker = OrderedListMarker | UnorderedListMarker | string;
+
+// @beta
+export interface ListProps extends TextBlockComponentProps {
+    // (undocumented)
+    children?: ParagraphProps[];
+    // (undocumented)
+    readonly type: "list";
 }
 
 // @public
@@ -6715,6 +6755,40 @@ export interface OrbitGtBlobProps {
 }
 
 // @beta
+export enum OrderedListMarker {
+    // (undocumented)
+    A = "A",
+    // (undocumented)
+    a = "a",
+    // (undocumented)
+    AWithParenthesis = "A)",
+    // (undocumented)
+    aWithParenthesis = "a)",
+    // (undocumented)
+    AWithPeriod = "A.",
+    // (undocumented)
+    aWithPeriod = "a.",
+    // (undocumented)
+    I = "I",
+    // (undocumented)
+    i = "i",
+    // (undocumented)
+    IWithParenthesis = "I)",
+    // (undocumented)
+    iWithParenthesis = "i)",
+    // (undocumented)
+    IWithPeriod = "I.",
+    // (undocumented)
+    iWithPeriod = "i.",
+    // (undocumented)
+    One = "1",
+    // (undocumented)
+    OneWithParenthesis = "1)",
+    // (undocumented)
+    OneWithPeriod = "1."
+}
+
+// @beta
 export enum OverriddenBy {
     // (undocumented)
     Browser = 0,
@@ -6847,21 +6921,28 @@ export interface PackedFeatureWithIndex extends PackedFeature {
 
 // @beta
 export class Paragraph extends TextBlockComponent {
+    // (undocumented)
+    readonly children: Array<List | Run>;
+    // (undocumented)
     clearStyleOverrides(options?: ClearTextStyleOptions): void;
     // (undocumented)
     clone(): Paragraph;
-    static create(props?: ParagraphProps): Paragraph;
+    static create(props?: Omit<ParagraphProps, "type">): Paragraph;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
-    readonly runs: Run[];
-    stringify(options?: TextBlockStringifyOptions): string;
+    // (undocumented)
+    get isEmpty(): boolean;
+    stringify(options?: TextBlockStringifyOptions, context?: TextBlockStringifyContext): string;
     // (undocumented)
     toJSON(): ParagraphProps;
+    // (undocumented)
+    readonly type = "paragraph";
 }
 
 // @beta
 export interface ParagraphProps extends TextBlockComponentProps {
-    runs?: RunProps[];
+    // (undocumented)
+    children?: Array<ListProps | RunProps>;
 }
 
 // @internal
@@ -9219,7 +9300,6 @@ export interface RunLayoutResult {
     numeratorRange?: Range2dProps;
     offsetFromLine: XAndY;
     range: Range2dProps;
-    sourceRunIndex: number;
     textStyle: TextStyleSettingsProps;
 }
 
@@ -9764,6 +9844,9 @@ export type StandaloneOpenOptions = OpenDbKey;
 // @beta
 export type StorageValue = string | number | boolean | undefined | Uint8Array;
 
+// @beta
+export type StructuralTextBlockComponent = List | Paragraph | TextBlock;
+
 // @public
 export class SubCategoryAppearance {
     constructor(props?: SubCategoryAppearance.Props);
@@ -9896,6 +9979,8 @@ export class TabRun extends TextBlockComponent {
     static create(props?: Omit<TabRunProps, "type">): TabRun;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
+    // (undocumented)
+    get isEmpty(): boolean;
     stringify(options?: TextBlockStringifyOptions): string;
     // (undocumented)
     toJSON(): TabRunProps;
@@ -10036,18 +10121,20 @@ export interface TextAnnotationProps {
 
 // @beta
 export class TextBlock extends TextBlockComponent {
-    appendParagraph(seedFromLast?: boolean): Paragraph;
+    appendParagraph(props?: ParagraphProps, seedFromLast?: boolean): Paragraph;
     appendRun(run: Run): void;
+    // (undocumented)
+    readonly children: Paragraph[];
+    // (undocumented)
     clearStyleOverrides(options?: ClearTextStyleOptions): void;
     // (undocumented)
     clone(): TextBlock;
-    static create(props?: TextBlockProps): TextBlock;
+    static create(props?: Omit<TextBlockProps, "type">): TextBlock;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
     get isEmpty(): boolean;
     justification: TextBlockJustification;
     margins: TextBlockMargins;
-    readonly paragraphs: Paragraph[];
     stringify(options?: TextBlockStringifyOptions): string;
     // (undocumented)
     toJSON(): TextBlockProps;
@@ -10061,9 +10148,10 @@ export abstract class TextBlockComponent {
     clearStyleOverrides(_options?: ClearTextStyleOptions): void;
     abstract clone(): TextBlockComponent;
     equals(other: TextBlockComponent): boolean;
+    abstract get isEmpty(): boolean;
     get isWhitespace(): boolean;
     get overridesStyle(): boolean;
-    abstract stringify(options?: TextBlockStringifyOptions): string;
+    abstract stringify(options?: TextBlockStringifyOptions, context?: TextBlockStringifyContext): string;
     get styleOverrides(): TextStyleSettingsProps;
     set styleOverrides(overrides: TextStyleSettingsProps);
     toJSON(): TextBlockComponentProps;
@@ -10116,16 +10204,23 @@ export interface TextBlockMargins {
 
 // @beta
 export interface TextBlockProps extends TextBlockComponentProps {
+    // (undocumented)
+    children?: ParagraphProps[];
     justification?: TextBlockJustification;
     margins?: Partial<TextBlockMargins>;
-    paragraphs?: ParagraphProps[];
     width?: number;
+}
+
+// @beta
+export interface TextBlockStringifyContext {
+    depth: number;
 }
 
 // @beta
 export interface TextBlockStringifyOptions {
     fractionSeparator?: string;
     lineBreak?: string;
+    listMarkerBreak?: string;
     paragraphBreak?: string;
     tabsAsSpaces?: number;
 }
@@ -10157,6 +10252,8 @@ export class TextRun extends TextBlockComponent {
     static create(props?: Omit<TextRunProps, "type">): TextRun;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
+    // (undocumented)
+    get isEmpty(): boolean;
     stringify(): string;
     // (undocumented)
     toJSON(): TextRunProps;
@@ -10243,6 +10340,7 @@ export class TextStyleSettings {
     frameEquals(other: TextFrameStyleProps): boolean;
     static fromJSON(props?: TextStyleSettingsProps): TextStyleSettings;
     getValidationErrors(): string[];
+    readonly indentation: number;
     readonly isBold: boolean;
     readonly isItalic: boolean;
     readonly isUnderlined: boolean;
@@ -10250,6 +10348,8 @@ export class TextStyleSettings {
     leaderEquals(other: TextLeaderStyleProps): boolean;
     readonly lineHeight: number;
     readonly lineSpacingFactor: number;
+    readonly listMarker: ListMarker;
+    readonly paragraphSpacingFactor: number;
     readonly stackedFractionScale: number;
     readonly stackedFractionType: StackedFractionType;
     readonly subScriptOffsetFactor: number;
@@ -10267,12 +10367,15 @@ export interface TextStyleSettingsProps {
     color?: TextStyleColor;
     fontName?: string;
     frame?: TextFrameStyleProps;
+    indentation?: number;
     isBold?: boolean;
     isItalic?: boolean;
     isUnderlined?: boolean;
     leader?: TextLeaderStyleProps;
     lineHeight?: number;
     lineSpacingFactor?: number;
+    listMarker?: ListMarker;
+    paragraphSpacingFactor?: number;
     stackedFractionScale?: number;
     stackedFractionType?: StackedFractionType;
     subScriptOffsetFactor?: number;
@@ -10887,6 +10990,12 @@ export interface TranslationOptions {
     lngs?: string[];
 }
 
+// @beta
+export function traverseTextBlockComponent(parent: StructuralTextBlockComponent): IterableIterator<{
+    parent: StructuralTextBlockComponent;
+    child: List | Paragraph | Run;
+}>;
+
 // @alpha
 export enum TreeFlags {
     // (undocumented)
@@ -11067,6 +11176,18 @@ export enum TypeOfChange {
 
 // @public
 export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
+
+// @beta
+export enum UnorderedListMarker {
+    // (undocumented)
+    Bullet = "\u2022",
+    // (undocumented)
+    Circle = "\u25CB",
+    // (undocumented)
+    Dash = "\u2013",
+    // (undocumented)
+    Square = "\u25A0"
+}
 
 // @public (undocumented)
 export type UpdateCallback = (obj: any, t: number) => void;

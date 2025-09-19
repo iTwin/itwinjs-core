@@ -12,6 +12,7 @@ describe("TextStyleSettings", () => {
     fontName: "customFont",
     lineHeight: 2,
     lineSpacingFactor: 1,
+    paragraphSpacingFactor: 2,
     isBold: true,
     isItalic: true,
     isUnderlined: true,
@@ -36,6 +37,8 @@ describe("TextStyleSettings", () => {
       terminatorWidthFactor: 0.5,
     },
     tabInterval: 7,
+    indentation: 0.33,
+    listMarker: "1)",
   };
 
   it("returns defaults if no props provided", () => {
