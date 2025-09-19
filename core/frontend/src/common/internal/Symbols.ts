@@ -6,6 +6,7 @@
  * @module Utils
  */
 
+/** @internal */
 export const _implementationProhibited = Symbol.for("Implementations of this interface can only be obtained from the containing package");
 
 function sym(name: string): string {

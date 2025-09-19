@@ -9,7 +9,9 @@
 import { RenderMemory } from "../../render/RenderMemory";
 import { Range3d } from "@itwin/core-geometry";
 
-/** An opaque representation of geometry allocated by a [[RenderSystem]] to be supplied to [[RenderSystem.createRenderGraphic]]. */
+/** An opaque representation of geometry allocated by a [[RenderSystem]] to be supplied to [[RenderSystem.createRenderGraphic]].
+ * @internal
+ */
 export interface RenderGeometry extends Disposable, RenderMemory.Consumer {
   readonly renderGeometryType: "mesh" | "polyline" | "point-string" | "point-cloud" | "reality-mesh";
   readonly isInstanceable: boolean;
