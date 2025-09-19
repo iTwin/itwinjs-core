@@ -1547,6 +1547,16 @@ describe("produceTextBlockGeometry", () => {
     return produceTextBlockGeometry(layout, annotation.computeTransform(layout.range)).entries;
   }
 
+  function makeListGeometry(children: ParagraphProps[]): TextBlockGeometryPropsEntry[] {
+    const textBlock = TextBlock.create();
+    const p1 = textBlock.appendParagraph();
+    p1.children.push(List.create({ children }));
+
+    const annotation = TextAnnotation.fromJSON({ textBlock: textBlock.toJSON() });
+    const layout = doLayout(textBlock);
+    return produceTextBlockGeometry(layout, annotation.computeTransform(layout.range)).entries;
+  }
+
   it("produces an empty array for an empty text block", () => {
     expect(makeGeometry([])).to.deep.equal([]);
   });
@@ -1614,7 +1624,114 @@ describe("produceTextBlockGeometry", () => {
   });
 
   it("produces entries for list markers", () => {
-    // TODO
+    /* Final TextBlock should look like:
+      1. Oranges                        // Oranges -> default "subcategory" text
+      2. Apples                         // Apples -> Switch to red text
+          • Red
+          • Green                       // Green -> Switch to green text, not including the bullet.
+            i.  Granny Smith
+            ii. Rhode Island Greening
+          • Yellow                      // Yellow -> Back to red text
+
+        We have:
+          7 lines each containing one TextString for the list marker and one for the text,
+          4 appearance overrides
+      */
+
+    const listChildren: ParagraphProps[] = [
+      {
+        children: [
+          {
+            type: "text",
+            content: "Oranges",
+          }
+        ]
+      },
+      {
+        children: [
+          {
+            type: "text",
+            content: "Apples",
+          },
+          {
+            type: "list",
+            styleOverrides: { listMarker: UnorderedListMarker.Bullet, color: ColorDef.red.tbgr },
+            children: [
+              {
+                children: [
+                  {
+                    type: "text",
+                    content: "Red",
+                  }
+                ]
+              },
+              {
+                styleOverrides: { color: ColorDef.green.tbgr },
+                children: [
+                  {
+                    type: "text",
+                    content: "Green",
+                  },
+                  {
+                    type: "list",
+                    styleOverrides: { listMarker: OrderedListMarker.iWithPeriod },
+                    children: [
+                      {
+                        children: [
+                          {
+                            type: "text",
+                            content: "Granny Smith",
+                          }
+                        ]
+                      },
+                      {
+                        children: [
+                          {
+                            type: "text",
+                            content: "Rhode Island Greening",
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                children: [
+                  {
+                    type: "text",
+                    content: "Yellow",
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ];
+
+    const entries = makeListGeometry(listChildren);
+    expect(entries.length).to.equal(14 + 4); // 14 text strings + 4 appearance entry
+
+    expect(entries[0].color).to.equal("subcategory");
+    expect(entries[1].text?.text).to.equal("1.");
+    expect(entries[2].text?.text).to.equal("Oranges");
+    expect(entries[3].text?.text).to.equal("2.");
+    expect(entries[4].text?.text).to.equal("Apples");
+    expect(entries[5].color).to.equal(ColorDef.red.tbgr);
+    expect(entries[6].text?.text).to.equal("•");
+    expect(entries[7].text?.text).to.equal("Red");
+    expect(entries[8].text?.text).to.equal("•");
+    expect(entries[9].color).to.equal(ColorDef.green.tbgr);
+    expect(entries[10].text?.text).to.equal("Green");
+    expect(entries[11].text?.text).to.equal("i.");
+    expect(entries[12].text?.text).to.equal("Granny Smith");
+    expect(entries[13].text?.text).to.equal("ii.");
+    expect(entries[14].text?.text).to.equal("Rhode Island Greening");
+    expect(entries[15].color).to.equal(ColorDef.red.tbgr);
+    expect(entries[16].text?.text).to.equal("•");
+    expect(entries[17].text?.text).to.equal("Yellow");
+
   });
 
   it("offsets geometry entries by margins", () => {
