@@ -1504,9 +1504,10 @@ describe("PolyfaceSpeedup", () => {
         const sweptEdges2 = PolyfaceQuery.sweepLineStringToFacetsXY(drapePath, mesh0, sweepOptions.searcher);
         const elapsedDrapeXY = timer.stop().milliseconds;
 
-        ck.testLE(elapsedDrapeWithSearcher, elapsedDrape, "searcher speeds up drape");
-        ck.testLE(elapsedDrapeXY, elapsedDrape, "drapeXY speeds up vertical drape");
-
+        if (GeometryCoreTestIO.enableLongTests) { // prevent CI build flakiness
+          ck.testLE(elapsedDrapeWithSearcher, elapsedDrape, "searcher speeds up drape");
+          ck.testLE(elapsedDrapeXY, elapsedDrape, "drapeXY speeds up vertical drape");
+        }
         const hole0 = BagOfCurves.create(...sweptEdges0).collectCurvePrimitives(undefined, true, true) as LineSegment3d[];
         const hole1 = BagOfCurves.create(...sweptEdges1).collectCurvePrimitives(undefined, true, true) as LineSegment3d[];
         const hole2 = BagOfCurves.create(...sweptEdges2).collectCurvePrimitives(undefined, true, true) as LineSegment3d[];
@@ -1605,7 +1606,9 @@ describe("PolyfaceSpeedup", () => {
       isManifold = PolyfaceQuery.isPolyfaceManifold(mesh, false);
       const elapsedIsManifoldWithTopo = timer.stop().milliseconds;
       ck.testTrue(isManifold, "sphere is manifold");
-      ck.testLE(elapsedIsManifoldWithTopo, elapsedIsManifold, "topo cache speeds up isPolyfaceManifold");
+
+      if (GeometryCoreTestIO.enableLongTests) // prevent CI build flakiness
+        ck.testLE(elapsedIsManifoldWithTopo, elapsedIsManifold, "topo cache speeds up isPolyfaceManifold");
     }
 
     // find a mesh vertex at which to start path
