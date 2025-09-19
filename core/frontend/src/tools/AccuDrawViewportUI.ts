@@ -75,18 +75,18 @@ export class AccuDrawViewportUI extends AccuDraw {
       focused: {
         /** Background color for focused text input fields. */
         backgroundColor:
-          "hsl(var(--iui-color-accent-hsl, 203 100% 44%) / var(--iui-opacity-3, 75%))",
+          "hsl(var(--iui-color-accent-hsl, 164 68% 30%) / var(--iui-opacity-4, 45%))",
         /** Border settings for focused text input fields. */
         border: {
           /** Border color for focused text input fields. */
-          color: "hsl(var(--iui-color-accent-hsl, 203 100% 44%))",
+          color: "hsl(var(--iui-color-accent-hsl, 164 68% 30%))",
         },
       },
       /** Settings applied to text input fields when they do not have focus. */
       unfocused: {
         /** Background color for unfocused text input fields. */
         backgroundColor:
-          "hsl(var(--iui-color-background-hsl, 240 5% 40%) / var(--iui-opacity-3, 75%))",
+          "hsl(var(--iui-color-background-hsl, 240 5% 40%) / var(--iui-opacity-4, 45%))",
         /** Border settings for unfocused text input fields. */
         border: {
           /** Border color for unfocused text input fields. */
@@ -104,7 +104,7 @@ export class AccuDrawViewportUI extends AccuDraw {
         color: "var(--iui-color-text-muted, #cccccc)",
         /** Background color for unlocked lock buttons. */
         backgroundColor:
-          "hsl(var(--iui-color-background-hsl, 240 5% 40%) / var(--iui-opacity-3, 75%))",
+          "hsl(var(--iui-color-background-hsl, 240 5% 40%) / var(--iui-opacity-4, 45%))",
         /** Border settings for unlocked lock buttons. */
         border: {
           /** Border color for unlocked lock buttons. */
@@ -114,14 +114,14 @@ export class AccuDrawViewportUI extends AccuDraw {
       /** Settings applied to lock buttons when they are locked. */
       locked: {
         /** Text color for locked lock buttons. */
-        color: "hsl(var(--iui-color-accent-hsl, 203 100% 44%))",
+        color: "hsl(var(--iui-color-accent-hsl, 166 96% 51%))",
         /** Background color for locked lock buttons. */
         backgroundColor:
-          "hsl(var(--iui-color-accent-hsl, 203 100% 44%) / var(--iui-opacity-4, 45%))",
+          "hsl(var(--iui-color-accent-hsl, 164 68% 30%) / var(--iui-opacity-4, 45%))",
         /** Border settings for locked lock buttons. */
         border: {
           /** Border color for locked lock buttons. */
-          color: "hsl(var(--iui-color-accent-hsl, 203 100% 44%))",
+          color: "hsl(var(--iui-color-accent-hsl, 164 68% 30%))",
         },
       },
     },
