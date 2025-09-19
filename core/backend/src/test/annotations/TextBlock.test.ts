@@ -283,13 +283,14 @@ describe("layoutTextBlock", () => {
         if (resultRun.denominatorRange && originalRun.denominatorRange) {
           expect(resultRun.denominatorRange).to.deep.equal(originalRun.denominatorRange.toJSON());
         }
+
         // Check that the result string matches what we expect
-        // const inputRun = textBlock.children ? [resultLine.sourceParagraphIndex].runs[resultRun.sourceRunIndex].clone();
-        // if (inputRun.type === "text") {
-        //   const resultText = inputRun.content.substring(resultRun.characterOffset, resultRun.characterOffset + resultRun.characterCount);
-        //   const originalText = inputRun.content.substring(originalRun.charOffset, originalRun.charOffset + originalRun.numChars);
-        //   expect(resultText).to.equal(originalText);
-        // }
+        const inputRun = originalRun.source;
+        if (inputRun.type === "text") {
+          const resultText = inputRun.content.substring(resultRun.characterOffset, resultRun.characterOffset + resultRun.characterCount);
+          const originalText = inputRun.content.substring(originalRun.charOffset, originalRun.charOffset + originalRun.numChars);
+          expect(resultText).to.equal(originalText);
+        }
       }
     }
   });
