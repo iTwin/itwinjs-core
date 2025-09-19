@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it} from "vitest";
+
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { AccuDraw } from "../AccuDraw";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
@@ -167,5 +168,25 @@ describe("IModelApp", () => {
   it("Should create mock render system without WebGL", () => {
     expect(IModelApp.hasRenderSystem).toBe(true);
     expect(IModelApp.renderSystem).toBeInstanceOf(MockRender.System);
+  });
+});
+
+
+describe("IModelApp startup tests", () => {
+  afterEach(async () => {
+    if (IModelApp.initialized)
+      await IModelApp.shutdown();
+  });
+
+  it("Should normalize path correctly", async () => {
+    await IModelApp.startup({ publicPath: "assets" });
+    expect(IModelApp.publicPath).toBe("assets/");
+    await IModelApp.shutdown();
+    await IModelApp.startup({ publicPath: "assets/" });
+    expect(IModelApp.publicPath).toBe("assets/");
+    await IModelApp.shutdown();
+    await IModelApp.startup();
+    expect(IModelApp.publicPath).toBe("");
+    await IModelApp.shutdown();
   });
 });

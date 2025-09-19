@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Improve performance of model masking when using pregenerated tiles.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

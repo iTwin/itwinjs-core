@@ -387,7 +387,7 @@ export class Transform implements BeJSONFunctions {
    * Return a transformation which flattens space onto a plane, sweeping along a direction which may be different
    * from the plane normal.
    * * See [Matrix3d.createFlattenAlongVectorToPlane] for math details.
-   * @param sweepVector sweep direction. If same as `planeNormal`, the resulting transformation flattens to the plane.
+   * @param sweepVector sweep direction. If same as `planeNormal`, the resulting transformation is a projection onto the plane.
    * @param planePoint any point on the plane
    * @param planeNormal vector normal to the plane.
    */

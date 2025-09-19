@@ -2128,10 +2128,9 @@ export abstract class GltfReader {
         throw new Error("Unsupported browser for Draco decoding");
       }
 
-      const dracolib = await import("draco3d");
       const dracoLoader = (await import("@loaders.gl/draco")).DracoLoader;
 
-      await Promise.all(dracoMeshes.map(async (x) => this.decodeDracoMesh(x, dracoLoader, dracolib)));
+      await Promise.all(dracoMeshes.map(async (x) => this.decodeDracoMesh(x, dracoLoader)));
     } catch (err) {
       Logger.logWarning(FrontendLoggerCategory.Render, "Failed to decode draco-encoded glTF mesh");
       Logger.logException(FrontendLoggerCategory.Render, err);
@@ -2160,7 +2159,7 @@ export abstract class GltfReader {
     } catch { }
   }
 
-  private async decodeDracoMesh(ext: DracoMeshCompression, loader: typeof DracoLoader, draco3d: any): Promise<void> {
+  private async decodeDracoMesh(ext: DracoMeshCompression, loader: typeof DracoLoader): Promise<void> {
     const bv = this._bufferViews[ext.bufferView];
     if (!bv || !bv.byteLength)
       return;
@@ -2172,7 +2171,17 @@ export abstract class GltfReader {
     const offset = bv.byteOffset ?? 0;
     buf = buf.subarray(offset, offset + bv.byteLength);
 
-    const mesh = await loader.parse(buf, { modules: { draco3d } }); // NB: `options` argument declared optional but will produce exception if not supplied. Regardless, we are specifying our own bundled draco3d module to avoid CDN requests.
+    const mesh = await loader.parse(buf, {
+      draco: {
+        decoderType: "wasm",
+      },
+      modules: {
+        "draco_wasm_wrapper.js": `${IModelApp.publicPath}scripts/draco_wasm_wrapper.js`,
+        "draco_decoder.wasm": `${IModelApp.publicPath}scripts/draco_decoder.wasm`,
+      },
+      worker: false,
+      useLocalLibraries: true,
+    });
     if (mesh)
       this._dracoMeshes.set(ext, mesh);
   }
