@@ -847,6 +847,7 @@ export class TextBlock extends TextBlockComponent {
   /** Add and return a new paragraph.
    * By default, the paragraph will be created with no [[styleOverrides]], so that it inherits the style of this block.
    * @param seedFromLast If true and [[children]] is not empty, the new paragraph will inherit the style overrides of the last child in this block.
+   * @note Be sure you pass in [[ParagraphProps]] and not [[Paragraph]] or style overrides will be ignored.
    */
   public appendParagraph(props?: ParagraphProps, seedFromLast = false): Paragraph {
     const seed = seedFromLast ? this.children[this.children.length - 1] : undefined;

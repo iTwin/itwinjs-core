@@ -55,8 +55,6 @@ describe("layoutTextBlock", () => {
 
     it("inherits style overrides from Paragraph when Run has no style overrides", () => {
       const textBlock = TextBlock.create();
-
-      // TODO: these should both either take in props or take in the class instance to be consistent
       textBlock.appendParagraph({ styleOverrides: { fontName: "paragraph" } });
       textBlock.appendRun(TextRun.create({ content: "test" }));
 
