@@ -66,7 +66,7 @@ export interface TextBlockStringifyContext {
 
 function clearStyleOverrides(component: StructuralTextBlockComponent, options?: ClearTextStyleOptions): void {
   component.styleOverrides = {};
-  if (options?.preserveChildrenOverrides) {
+  if (!options?.preserveChildrenOverrides) {
     for (const child of component.children) {
       child.clearStyleOverrides(options);
     }

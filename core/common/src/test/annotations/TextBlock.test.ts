@@ -104,19 +104,20 @@ describe("TextBlockComponent", () => {
     });
 
     it("clears children's overrides by default when clearing paragraph overrides", () => {
+      // TODO: failing
       block.children[0].clearStyleOverrides();
       const overrides = getOverrides(block);
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
       expect(overrides.paragraph).to.deep.equal({});
       expect(overrides.run).to.deep.equal({});
 
-      expect(overrides.list).to.deep.equal({ listMarker: "*" });
-      expect(overrides.listItem).to.deep.equal({ lineHeight: 21 });
-      expect(overrides.listRun).to.deep.equal({ fontName: "Verdana" });
+      expect(overrides.list).to.deep.equal({});
+      expect(overrides.listItem).to.deep.equal({});
+      expect(overrides.listRun).to.deep.equal({});
     });
 
     it("clears children's overrides by default when clearing list overrides", () => {
-      block.children[1].clearStyleOverrides();
+      block.children[0].children[1].clearStyleOverrides();
       const overrides = getOverrides(block);
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
       expect(overrides.paragraph).to.deep.equal({ lineHeight: 42 });
@@ -128,7 +129,6 @@ describe("TextBlockComponent", () => {
     });
 
     it("does not clear children's overrides when clearing block overrides if preserveChildrenStyles is true", () => {
-
       block.clearStyleOverrides({ preserveChildrenOverrides: true });
       const overrides = getOverrides(block);
 
@@ -142,7 +142,6 @@ describe("TextBlockComponent", () => {
     });
 
     it("does not clear children's overrides when clearing paragraph overrides if preserveChildrenStyles is true", () => {
-
       block.children[0].clearStyleOverrides({ preserveChildrenOverrides: true });
       const overrides = getOverrides(block);
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
@@ -155,7 +154,7 @@ describe("TextBlockComponent", () => {
     });
 
     it("does not clear children's overrides when clearing list overrides if preserveChildrenStyles is true", () => {
-      block.children[1].clearStyleOverrides({ preserveChildrenOverrides: true });
+      block.children[0].children[1].clearStyleOverrides({ preserveChildrenOverrides: true });
       const overrides = getOverrides(block);
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
       expect(overrides.paragraph).to.deep.equal({ lineHeight: 42 });
