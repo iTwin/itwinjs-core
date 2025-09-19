@@ -16,7 +16,6 @@ publish: false
     - [@itwin/presentation-frontend](#itwinpresentation-frontend)
   - [Display](#display)
     - [Draco decoding](#draco-decoding)
-  - [New core-common peer dependency](#new-core-common-peer-dependency)
 
 ## @itwin/core-ecschema-metadata
 
@@ -143,8 +142,4 @@ Deprecated all hierarchy-related types (see [Deprecation of hierarchy-related AP
 ### Draco decoding
 
 Draco decoding in iTwin.js has been changed so that the loaders.gl dependency will no longer use a CDN to request the draco-decoder source files. Instead, we now bundle those resources into iTwin.js from a new draco3d dependency. We ask the loaders.gl library to locally use those resources.
-
-## New core-common peer dependency
-
-The @itwin/core-common package now depends upon the @itwin/core-quantity package for APIs used to format display strings for [TextAnnotation]($common)s.
 
