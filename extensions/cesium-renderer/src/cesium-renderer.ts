@@ -6,4 +6,3 @@
 export * from "./CesiumCamera.js";
 export { System } from "./System.js";
 export { CesiumViewManager } from "./ViewManager.js";
-export { CesiumDecorator } from "./decorations/CesiumDecorator.js";
