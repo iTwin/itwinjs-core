@@ -6,15 +6,15 @@
  * @module Cesium
  */
 
-/** Generic coordinate storage for any geometry type */
+/** Generic coordinate storage for captured decoration coordinate data */
 export class CoordinateStorage {
-  private static _coordinateData = new Map<symbol, any>();
+  private static _coordinateData = new Map<symbol, import('./DecorationTypes.js').DecorationPrimitiveEntry[]>();
 
-  public static storeCoordinates(templateId: symbol, data: any): void {
+  public static storeCoordinates(templateId: symbol, data: import('./DecorationTypes.js').DecorationPrimitiveEntry[]): void {
     this._coordinateData.set(templateId, data);
   }
 
-  public static getCoordinates(templateId: symbol): any {
+  public static getCoordinates(templateId: symbol): import('./DecorationTypes.js').DecorationPrimitiveEntry[] | undefined {
     return this._coordinateData.get(templateId);
   }
 

@@ -5,7 +5,7 @@
 
 import { ColorDef } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
-import { IndexedPolyface, Point3d } from "@itwin/core-geometry";
+import { Polyface, Point3d } from "@itwin/core-geometry";
 import { 
   BoundingSphere, 
   Cartesian3, 
@@ -21,32 +21,35 @@ import {
   PrimitiveType, 
 } from "cesium";
 import { CesiumScene } from "../CesiumScene.js";
-import { PrimitiveConverter } from "./PrimitiveConverter.js";
+import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
+import { DecorationPrimitiveEntry } from "./DecorationTypes.js";
 
 export class PolyfacePrimitiveConverter extends PrimitiveConverter {
   protected readonly primitiveType = 'polyface' as const;
 
-  protected override getCollection(scene: CesiumScene): any {
+  protected override getCollection(scene: CesiumScene): import('cesium').PrimitiveCollection {
     return scene.primitivesCollection;
   }
 
-  protected override extractPrimitiveData(coordinateData: any[] | undefined, primitiveType: string): any[] | undefined {
+  protected override extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[] | undefined, primitiveType: string): DecorationPrimitiveEntry[] | undefined {
     if (!coordinateData || !Array.isArray(coordinateData))
       return undefined;
-    return coordinateData.filter((entry: any) => entry.type === primitiveType);
+    return coordinateData.filter((entry: DecorationPrimitiveEntry) => entry.type === primitiveType);
   }
 
   protected override createPrimitiveFromGraphic(
-    graphic: any,
+    graphic: RenderGraphicWithCoordinates,
     primitiveId: string,
     _index: number,
-    _collection: any,
+    _collection: import('cesium').PrimitiveCollection,
     iModel?: IModelConnection,
-    originalData?: any[],
+    originalData?: unknown,
     _type?: string
-  ): any {
-    const polyfaceEntry = Array.isArray(originalData) ? originalData.find((e) => e && e.polyface) : undefined;
-    const polyface = polyfaceEntry?.polyface as IndexedPolyface | undefined;
+  ): Primitive | null {
+    const data = Array.isArray(originalData) ? (originalData as DecorationPrimitiveEntry[]) : undefined;
+    const isPolyfaceEntry = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').PolyfaceEntry => e.type === 'polyface';
+    const polyfaceEntry = Array.isArray(data) ? data.find((e): e is import('./DecorationTypes.js').PolyfaceEntry => isPolyfaceEntry(e)) : undefined;
+    const polyface = polyfaceEntry?.polyface as Polyface | undefined;
     const filled = polyfaceEntry?.filled ?? true;
     
     if (!polyface)
@@ -100,7 +103,7 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
     }
   }
 
-  private convertPolyfaceToGeometry(polyface: IndexedPolyface, iModel?: IModelConnection): Geometry | null {
+  private convertPolyfaceToGeometry(polyface: Polyface, iModel?: IModelConnection): Geometry | null {
     if (!polyface.data.point || !polyface.data.pointIndex)
       return null;
 
@@ -203,10 +206,11 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
     }
   }
 
-  private extractColorsFromGraphic(graphic: any): { fillColor: Color; lineColor: Color; outlineWanted: boolean } | undefined {
+  private extractColorsFromGraphic(graphic: RenderGraphicWithCoordinates): { fillColor: Color; lineColor: Color; outlineWanted: boolean } | undefined {
     // Prefer symbology captured in coordinateData (from CoordinateBuilder)
-    const coordData = (graphic as any)?._coordinateData as any[] | undefined;
-    const entry = coordData?.find((e) => e?.type === 'polyface' && e.symbology?.lineColor);
+    const coordData = graphic?._coordinateData as DecorationPrimitiveEntry[] | undefined;
+    const isPolyface = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').PolyfaceEntry => e.type === 'polyface';
+    const entry = coordData?.find((e) => isPolyface(e) && !!e.symbology?.lineColor);
     const toCesium = (cd?: ColorDef) => {
       if (!cd) return undefined;
       const c = cd.colors;
@@ -224,7 +228,7 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
     }
 
     // Otherwise, use graphic.symbology as provided
-    const symbology = graphic?.symbology;
+    const symbology = (graphic as unknown as { symbology?: { color?: ColorDef; fillColor?: ColorDef } })?.symbology;
     const lineDef = symbology?.color as ColorDef | undefined;
     const fillDef = (symbology?.fillColor ?? symbology?.color) as ColorDef | undefined;
     const lineColor2 = toCesium(lineDef);

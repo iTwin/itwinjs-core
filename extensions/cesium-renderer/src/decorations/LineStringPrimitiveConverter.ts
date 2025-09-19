@@ -11,28 +11,29 @@ import { ColorDef } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "../CesiumScene.js";
-import { PrimitiveConverter } from "./PrimitiveConverter.js";
+import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
+import { DecorationPrimitiveEntry } from "./DecorationTypes.js";
 
 /** Converts iTwin.js LineString decorations to Cesium Polylines */
 export class LineStringPrimitiveConverter extends PrimitiveConverter {
   protected readonly primitiveType = 'linestring';
 
 
-  protected override getCollection(scene: CesiumScene): any {
+  protected override getCollection(scene: CesiumScene): PolylineCollection {
     return scene.polylineCollection;
   }
 
 
   protected override createPrimitiveFromGraphic(
-    graphic: any, 
-    primitiveId: string, 
-    index: number, 
-    collection: any, 
-    iModel?: IModelConnection, 
-    originalData?: Point3d[][], 
+    graphic: RenderGraphicWithCoordinates,
+    primitiveId: string,
+    index: number,
+    collection: PolylineCollection,
+    iModel?: IModelConnection,
+    originalData?: unknown,
     type?: string
-  ): any {
-    return this.createPolylineFromGraphic(graphic, primitiveId, index, collection, iModel, originalData, type);
+  ): Polyline | null {
+    return this.createPolylineFromGraphic(graphic, primitiveId, index, collection, iModel, originalData as Point3d[][] | undefined, type);
   }
 
   protected override getPrimitiveTypeName(): string {
@@ -43,7 +44,7 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
     return true;
   }
 
-  protected override getDepthOptions(decorationType: string): any {
+  protected override getDepthOptions(decorationType: string): Record<string, unknown> {
     const baseOptions = super.getDepthOptions(decorationType);
     
     const isOverlay = decorationType === 'worldOverlay' || decorationType === 'viewOverlay';
@@ -60,7 +61,7 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
 
 
   private createPolylineFromGraphic(
-    graphic: any,
+    graphic: RenderGraphicWithCoordinates,
     lineId: string,
     index: number,
     polylineCollection: PolylineCollection,
@@ -87,7 +88,7 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
   }
 
   private createPolylineFromGeometry(
-    geometries: any[],
+    geometries: unknown[],
     geometryType: string,
     lineId: string,
     _index: number,
@@ -95,7 +96,7 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
     iModel?: IModelConnection,
     originalLineStrings?: Point3d[][],
     type?: string,
-    graphic?: any
+    graphic?: RenderGraphicWithCoordinates
   ): Polyline | null {
     if (!geometries || !geometryType || !polylineCollection) {
       return null;
@@ -112,11 +113,12 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
       }
       
       if (positions.length === 0 && geometries && geometries.length > 0) {
-        const geometry = geometries[0];
-        if (geometry && geometry.coordinateData && geometry.coordinateData.length > 0) {
-          const points = geometry.coordinateData.map((coord: any) => 
-            new Point3d(coord.x, coord.y, coord.z)
-          );
+        const geometry = geometries[0] as unknown;
+        type Coord = { x: number; y: number; z: number };
+        const hasCoords = (g: unknown): g is { coordinateData: Coord[] } =>
+          typeof g === 'object' && g !== null && 'coordinateData' in (g as object);
+        if (hasCoords(geometry) && Array.isArray(geometry.coordinateData) && geometry.coordinateData.length > 0) {
+          const points = geometry.coordinateData.map((coord) => new Point3d(coord.x, coord.y, coord.z));
           positions = this.convertPointsToCartesian3(points, iModel);
         }
       }
@@ -137,11 +139,12 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
       }
   }
 
-  private extractColorFromGraphic(graphic: any): Color | undefined {
+  private extractColorFromGraphic(graphic?: RenderGraphicWithCoordinates): Color | undefined {
     try {
       // Prefer symbology captured in coordinateData entry
-      const coordData = (graphic as any)?._coordinateData as any[] | undefined;
-      const entry = coordData?.find((e) => e?.type === 'linestring' && e.symbology?.lineColor);
+      const coordData = graphic?._coordinateData as DecorationPrimitiveEntry[] | undefined;
+      const isLine = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').LineStringEntry => e.type === 'linestring';
+      const entry = coordData?.find((e): e is import('./DecorationTypes.js').LineStringEntry => isLine(e) && !!e.symbology?.lineColor);
       const colorDefFromEntry = entry?.symbology?.lineColor as ColorDef | undefined;
       if (colorDefFromEntry) {
         const c1 = colorDefFromEntry.colors;
@@ -150,7 +153,7 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
       }
 
       // Fallback to graphic.symbology if present
-      const symbology = (graphic as any)?.symbology;
+      const symbology = (graphic as unknown as { symbology?: { color?: ColorDef } } | undefined)?.symbology;
       const colorDef = symbology?.color as ColorDef | undefined;
       if (colorDef) {
         const c = colorDef.colors;

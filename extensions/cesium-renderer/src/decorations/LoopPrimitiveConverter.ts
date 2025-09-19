@@ -8,33 +8,36 @@ import { IModelConnection } from "@itwin/core-frontend";
 import { LineString3d, Loop, Point3d } from "@itwin/core-geometry";
 import { Cartesian3, Color, ColorGeometryInstanceAttribute, GeometryInstance, PerInstanceColorAppearance, PolygonGeometry, PolygonHierarchy, Primitive } from "cesium";
 import { CesiumScene } from "../CesiumScene.js";
-import { PrimitiveConverter } from "./PrimitiveConverter.js";
+import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
+import { DecorationPrimitiveEntry } from "./DecorationTypes.js";
 
 export class LoopPrimitiveConverter extends PrimitiveConverter {
   protected readonly primitiveType = 'loop' as const;
   private _currentScene?: CesiumScene;
 
-  protected override getCollection(scene: CesiumScene): any {
+  protected override getCollection(scene: CesiumScene): import('cesium').PrimitiveCollection {
     this._currentScene = scene;
     return scene.primitivesCollection;
   }
 
-  protected override extractPrimitiveData(coordinateData: any[] | undefined, primitiveType: string): any[] | undefined {
+  protected override extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[] | undefined, primitiveType: string): DecorationPrimitiveEntry[] | undefined {
     if (!coordinateData || !Array.isArray(coordinateData))
       return undefined;
-    return coordinateData.filter((entry: any) => entry.type === primitiveType);
+    return coordinateData.filter((entry: DecorationPrimitiveEntry) => entry.type === primitiveType);
   }
 
   protected override createPrimitiveFromGraphic(
-    graphic: any,
+    graphic: RenderGraphicWithCoordinates,
     primitiveId: string,
     _index: number,
-    _collection: any,
+    _collection: import('cesium').PrimitiveCollection,
     iModel?: IModelConnection,
-    originalData?: any[],
+    originalData?: unknown,
     _type?: string
-  ): any {
-    const loopEntry = Array.isArray(originalData) ? originalData.find((e) => e && e.loop instanceof Loop) : undefined;
+  ): import('cesium').Primitive | null {
+    const data = Array.isArray(originalData) ? (originalData as DecorationPrimitiveEntry[]) : undefined;
+    const isLoopEntry = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').LoopEntry => e.type === 'loop';
+    const loopEntry = Array.isArray(data) ? data.find((e): e is import('./DecorationTypes.js').LoopEntry => isLoopEntry(e)) : undefined;
     const loop: Loop | undefined = loopEntry?.loop as Loop | undefined;
     if (!loop)
       return null;
@@ -105,11 +108,12 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
     }
   }
 
-  private extractLoopData(coordinateData: any): Loop[] {
+  private extractLoopData(coordinateData: DecorationPrimitiveEntry[]): Loop[] {
     const loops: Loop[] = [];
     if (coordinateData && Array.isArray(coordinateData)) {
-      coordinateData.forEach((entry: any) => {
-        if (entry.type === 'loop' && entry.loop) {
+      const isLoop = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').LoopEntry => e.type === 'loop';
+      coordinateData.forEach((entry) => {
+        if (isLoop(entry)) {
           loops.push(entry.loop);
         }
       });
@@ -118,7 +122,7 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
   }
 
   private createPolygonFromLoop(
-    graphic: any, 
+    graphic: RenderGraphicWithCoordinates, 
     loopId: string, 
     scene: CesiumScene, 
     iModel?: IModelConnection, 
@@ -216,8 +220,8 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
 
   // Use base class convertPointsToCartesian3
 
-  private extractColorFromGraphic(graphic: any): Color | undefined {
-    const symbology = graphic.symbology;
+  private extractColorFromGraphic(graphic: RenderGraphicWithCoordinates): Color | undefined {
+    const symbology = (graphic as unknown as { symbology?: { color?: import('@itwin/core-common').ColorDef } }).symbology;
     const colorDef = symbology?.color as ColorDef | undefined;
     if (!colorDef)
       return undefined;
@@ -236,10 +240,11 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
     return positions;
   }
 
-  private extractColorsFromGraphic(graphic: any): { fillColor: Color; lineColor: Color; outlineWanted: boolean } | undefined {
+  private extractColorsFromGraphic(graphic: RenderGraphicWithCoordinates): { fillColor: Color; lineColor: Color; outlineWanted: boolean } | undefined {
     // Prefer symbology captured in coordinateData (from CoordinateBuilder)
-    const coordData = (graphic as any)?._coordinateData as any[] | undefined;
-    const entry = coordData?.find((e) => e?.type === 'loop' && e.symbology?.lineColor);
+    const coordData = graphic?._coordinateData as DecorationPrimitiveEntry[] | undefined;
+    const isLoopEntry = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').LoopEntry => e.type === 'loop';
+    const entry = coordData?.find((e) => isLoopEntry(e) && !!e.symbology?.lineColor);
     const toCesium = (cd?: ColorDef) => {
       if (!cd) return undefined;
       const c = cd.colors;
@@ -256,7 +261,7 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
     }
 
     // Otherwise, use graphic.symbology as provided
-    const symbology = graphic?.symbology;
+    const symbology = (graphic as unknown as { symbology?: { color?: ColorDef; fillColor?: ColorDef } })?.symbology;
     const lineDef = symbology?.color as ColorDef | undefined;
     const fillDef = (symbology?.fillColor ?? symbology?.color) as ColorDef | undefined;
     const lineColor2 = toCesium(lineDef);

@@ -10,9 +10,9 @@ import { Cartesian3, Color, Material, Polyline, PolylineCollection } from "cesiu
 import { ColorDef } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Path, Point3d, StrokeOptions } from "@itwin/core-geometry";
-import { GraphicPrimitive } from "@itwin/core-frontend";
 import { CesiumScene } from "../CesiumScene.js";
-import { PrimitiveConverter } from "./PrimitiveConverter.js";
+import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
+import { DecorationPrimitiveEntry } from "./DecorationTypes.js";
 
 /** Converts iTwin.js Path decorations to Cesium Polyline primitives */
 export class PathPrimitiveConverter extends PrimitiveConverter {
@@ -23,25 +23,24 @@ export class PathPrimitiveConverter extends PrimitiveConverter {
   }
 
   // For paths, keep the full primitive entries so we can access the Path object
-  protected override extractPrimitiveData(coordinateData: GraphicPrimitive[] | undefined, primitiveType: string): any[] | undefined {
+  protected override extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[] | undefined, primitiveType: string): DecorationPrimitiveEntry[] | undefined {
     if (!coordinateData || !Array.isArray(coordinateData)) return undefined;
-    return coordinateData.filter((entry: GraphicPrimitive) => entry.type === primitiveType);
+    return coordinateData.filter((entry: DecorationPrimitiveEntry) => entry.type === primitiveType);
   }
 
   protected override createPrimitiveFromGraphic(
-    _graphic: any,
+    _graphic: RenderGraphicWithCoordinates,
     primitiveId: string,
     _index: number,
     collection: PolylineCollection,
     iModel?: IModelConnection,
-    originalData?: any[],
+    originalData?: unknown,
     type?: string
   ): Polyline | null {
       // Prefer the captured Path object from coordinate data
-      const pathEntry = Array.isArray(originalData)
-        ? originalData.find((e) => e && e.type === "path" && e.path instanceof Path)
-        : undefined;
-
+      const data = Array.isArray(originalData) ? (originalData as DecorationPrimitiveEntry[]) : undefined;
+      const isPathEntry = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').PathEntry => e.type === 'path';
+      const pathEntry = Array.isArray(data) ? data.find((e): e is import('./DecorationTypes.js').PathEntry => isPathEntry(e)) : undefined;
       const path: Path | undefined = pathEntry?.path as Path | undefined;
       if (!path) {
         // No valid path found; nothing to draw
@@ -73,10 +72,11 @@ export class PathPrimitiveConverter extends PrimitiveConverter {
     return null;
   }
 
-  private extractColorFromGraphic(graphic: any): Color | undefined {
+  private extractColorFromGraphic(graphic: RenderGraphicWithCoordinates): Color | undefined {
     // Prefer symbology captured in coordinateData entry
-    const coordData = (graphic as any)?._coordinateData as any[] | undefined;
-    const entry = coordData?.find((e) => e?.type === 'path' && e.symbology?.lineColor);
+    const coordData = graphic?._coordinateData as DecorationPrimitiveEntry[] | undefined;
+    const isPath = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').PathEntry => e.type === 'path';
+    const entry = coordData?.find((e) => isPath(e) && !!e.symbology?.lineColor);
     const colorDefFromEntry = entry?.symbology?.lineColor as ColorDef | undefined;
     if (colorDefFromEntry) {
       const c1 = colorDefFromEntry.colors;
@@ -84,7 +84,7 @@ export class PathPrimitiveConverter extends PrimitiveConverter {
       return Color.fromBytes(c1.r, c1.g, c1.b, alpha);
     }
 
-    const symbology = (graphic as any)?.symbology;
+    const symbology = (graphic as unknown as { symbology?: { color?: ColorDef } })?.symbology;
     const colorDef = symbology?.color as ColorDef | undefined;
     if (colorDef) {
       const c = colorDef.colors;
@@ -103,7 +103,7 @@ export class PathPrimitiveConverter extends PrimitiveConverter {
     return true;
   }
 
-  protected override getDepthOptions(decorationType: string): any {
+  protected override getDepthOptions(decorationType: string): Record<string, unknown> {
     const base = super.getDepthOptions(decorationType);
     const isOverlay = decorationType === "worldOverlay" || decorationType === "viewOverlay";
     if (isOverlay) {

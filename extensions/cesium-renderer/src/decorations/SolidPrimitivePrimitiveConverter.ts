@@ -17,35 +17,38 @@ import {
   PerInstanceColorAppearance,
   Primitive,
   SphereGeometry,
-  VertexFormat
+  VertexFormat,
+  PrimitiveCollection
 } from "cesium";
 import { CesiumScene } from "../CesiumScene.js";
-import { PrimitiveConverter } from "./PrimitiveConverter.js";
+import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
 import { CesiumCoordinateConverter } from "./CesiumCoordinateConverter.js";
+import { DecorationPrimitiveEntry, SolidPrimitiveEntry } from "./DecorationTypes.js";
 
 export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
   protected readonly primitiveType = 'solidPrimitive' as const;
 
-  protected override getCollection(scene: CesiumScene): any {
+  protected override getCollection(scene: CesiumScene): PrimitiveCollection {
     return scene.primitivesCollection;
   }
 
-  protected override extractPrimitiveData(coordinateData: any[] | undefined, primitiveType: string): any[] | undefined {
+  protected override extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[] | undefined, primitiveType: string): DecorationPrimitiveEntry[] | undefined {
     if (!coordinateData || !Array.isArray(coordinateData))
       return undefined;
-    return coordinateData.filter((entry: any) => entry.type === primitiveType);
+    return coordinateData.filter((entry: DecorationPrimitiveEntry) => entry.type === primitiveType);
   }
 
   protected override createPrimitiveFromGraphic(
-    graphic: any,
+    graphic: RenderGraphicWithCoordinates,
     primitiveId: string,
     _index: number,
-    _collection: any,
+    _collection: PrimitiveCollection,
     iModel?: IModelConnection,
-    originalData?: any[],
+    originalData?: unknown,
     _type?: string
-  ): any {
-    const solidEntry = Array.isArray(originalData) ? originalData.find((e) => e && e.solidPrimitive) : undefined;
+  ): Primitive | null {
+    const entries = Array.isArray(originalData) ? (originalData as DecorationPrimitiveEntry[]) : undefined;
+    const solidEntry = entries?.find((e): e is SolidPrimitiveEntry => e.type === 'solidPrimitive');
     const solidPrimitive = solidEntry?.solidPrimitive as SolidPrimitive | undefined;
 
     if (!solidPrimitive) {
@@ -104,7 +107,7 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     }
   }
 
-  private convertSolidPrimitiveToGeometry(solidPrimitive: SolidPrimitive, iModel?: IModelConnection): { geometry: any; modelMatrix: Matrix4 } | null {
+  private convertSolidPrimitiveToGeometry(solidPrimitive: SolidPrimitive, iModel?: IModelConnection): { geometry: BoxGeometry | SphereGeometry | CylinderGeometry; modelMatrix: Matrix4 } | null {
     switch (solidPrimitive.solidPrimitiveType) {
       case 'box':
         return this.convertBoxToGeometry(solidPrimitive as Box, iModel);
@@ -254,10 +257,11 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     return { geometry: cylinderGeometry, modelMatrix };
   }
 
-  private extractColorsFromGraphic(graphic: any): { fillColor: Color; lineColor: Color; outlineWanted: boolean } | undefined {
+  private extractColorsFromGraphic(graphic: RenderGraphicWithCoordinates): { fillColor: Color; lineColor: Color; outlineWanted: boolean } | undefined {
     // Prefer symbology captured in coordinateData (from CoordinateBuilder)
-    const coordData = (graphic as any)?._coordinateData as any[] | undefined;
-    const entry = coordData?.find((e) => e?.type === 'solidPrimitive' && e.symbology?.lineColor);
+    const coordData = graphic?._coordinateData as DecorationPrimitiveEntry[] | undefined;
+    const isSolid = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').SolidPrimitiveEntry => e.type === 'solidPrimitive';
+    const entry = coordData?.find((e) => isSolid(e) && !!e.symbology?.lineColor);
     const toCesium = (cd?: ColorDef) => {
       if (!cd) return undefined;
       const c = cd.colors;
@@ -275,7 +279,7 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     }
 
     // Otherwise, use graphic.symbology as provided
-    const symbology = graphic?.symbology;
+    const symbology = (graphic as unknown as { symbology?: { color?: ColorDef; fillColor?: ColorDef } })?.symbology;
     const lineDef = symbology?.color as ColorDef | undefined;
     const fillDef = (symbology?.fillColor ?? symbology?.color) as ColorDef | undefined;
     const lineColor2 = toCesium(lineDef);

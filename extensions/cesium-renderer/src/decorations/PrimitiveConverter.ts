@@ -6,23 +6,25 @@
  * @module Cesium
  */
 
-import { Decorations, GraphicList, GraphicPrimitive, IModelConnection, RenderGraphic } from "@itwin/core-frontend";
+import { Decorations, GraphicList, IModelConnection, RenderGraphic } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { Cartesian3 } from "cesium";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverterFactory } from "./PrimitiveConverterFactory.js";
 import { CesiumCoordinateConverter } from "./CesiumCoordinateConverter.js";
+import { DecorationPrimitiveEntry } from "./DecorationTypes.js";
 
 export interface RenderGraphicWithCoordinates extends RenderGraphic {
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  _coordinateData?: GraphicPrimitive[];
+  _coordinateData?: DecorationPrimitiveEntry[];
+  geometries?: unknown[];
   geometryType?: string;
 }
 
 /** Base class for converting iTwin.js decorations to Cesium primitives */
 export abstract class PrimitiveConverter {
   // Geometry type handled by this converter
-  protected abstract readonly primitiveType: GraphicPrimitive["type"];
+  protected abstract readonly primitiveType: import('./DecorationTypes.js').DecorationPrimitiveEntry["type"];
 
   // Unified convert method that uses the subclass primitiveType
   public convertDecorations(graphics: GraphicList, type: string, scene: CesiumScene, iModel?: IModelConnection): void {
@@ -46,7 +48,7 @@ export abstract class PrimitiveConverter {
   }
 
   /** Base implementation for depth options - can be extended by subclasses */
-  protected getDepthOptions(decorationType: string): any {
+  protected getDepthOptions(decorationType: string): Record<string, unknown> {
     // Handle common base logic for all primitive types
     const isOverlay = decorationType === 'worldOverlay' || decorationType === 'viewOverlay';
     if (!isOverlay) {
@@ -57,12 +59,16 @@ export abstract class PrimitiveConverter {
     return {};
   }
 
-  /** Generic method to extract primitive data by type */
-  protected extractPrimitiveData(coordinateData: GraphicPrimitive[] | undefined, primitiveType: string): Point3d[][] | undefined {
+  /** Generic method to extract primitive data by type. Subclasses may override and return their own shape. */
+  protected extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[] | undefined, primitiveType: string): unknown {
     if (!coordinateData || !Array.isArray(coordinateData)) return undefined;
-    
-    const entries = coordinateData.filter((entry: GraphicPrimitive) => entry.type === primitiveType);
-    return entries.map((entry: any) => entry.points);
+    const entries = coordinateData.filter((entry) => entry.type === primitiveType);
+    type EntriesWithPoints =
+      | import('./DecorationTypes.js').PointStringEntry
+      | import('./DecorationTypes.js').LineStringEntry
+      | import('./DecorationTypes.js').ShapeEntry;
+    const withPoints = entries.filter((e): e is EntriesWithPoints => 'points' in e);
+    return withPoints.map((entry) => entry.points);
   }
 
   /** Template method for convertDecorations - defines the algorithm structure */
@@ -90,10 +96,12 @@ export abstract class PrimitiveConverter {
       const coordinateData = graphicWithCoords._coordinateData;
       const originalData = this.extractPrimitiveData(coordinateData, primitiveType);
 
-      const result = this.createPrimitiveFromGraphic(graphic, primitiveId, index, collection, iModel, originalData, type);
+      const result = this.createPrimitiveFromGraphic(graphicWithCoords, primitiveId, index, collection, iModel, originalData, type);
 
-      if (result && typeof result === 'object' && result.constructor.name === 'Primitive') {
-        collection.add(result);
+      if (result && typeof result === 'object' && (result as { constructor?: { name?: string } }).constructor?.name === 'Primitive') {
+        const add = (collection as unknown as { add: (arg: unknown) => unknown }).add;
+        if (typeof add === 'function')
+          add.call(collection, result);
       }
     });
   }
@@ -103,7 +111,7 @@ export abstract class PrimitiveConverter {
     return graphics.filter(graphic => {
       const graphicWithCoords = graphic as RenderGraphicWithCoordinates;
       const coordinateData = graphicWithCoords._coordinateData;
-      const hasPrimitiveData = coordinateData && coordinateData.some((entry: GraphicPrimitive) => entry.type === primitiveType);
+      const hasPrimitiveData = !!(coordinateData && coordinateData.some((entry: DecorationPrimitiveEntry) => entry.type === primitiveType));
       const geometryType = graphicWithCoords.geometryType;
       
       return hasPrimitiveData || geometryType === primitiveType;
@@ -111,16 +119,16 @@ export abstract class PrimitiveConverter {
   }
 
   /** Abstract methods that must be implemented by subclasses */
-  protected abstract getCollection(scene: CesiumScene): any;
+  protected abstract getCollection(scene: CesiumScene): unknown;
   protected abstract createPrimitiveFromGraphic(
-    graphic: any, 
-    primitiveId: string, 
-    index: number, 
-    collection: any, 
-    iModel?: IModelConnection, 
-    originalData?: Point3d[][], 
+    graphic: RenderGraphicWithCoordinates,
+    primitiveId: string,
+    index: number,
+    collection: unknown,
+    iModel?: IModelConnection,
+    originalData?: unknown,
     type?: string
-  ): any;
+  ): unknown;
   // Default primitive type name for IDs; subclasses can override for custom naming
   protected getPrimitiveTypeName(): string {
     return this.primitiveType;
@@ -161,7 +169,8 @@ export abstract class PrimitiveConverter {
       const coordinateData = graphicWithCoords._coordinateData;
       
       if (coordinateData && Array.isArray(coordinateData)) {
-        coordinateData.forEach((primitive: GraphicPrimitive) => {
+        const data = coordinateData as DecorationPrimitiveEntry[];
+        data.forEach((primitive) => {
           switch (primitive.type) {
             case 'pointstring':
               const pointConverter = PrimitiveConverterFactory.getConverter(primitive.type);
@@ -220,7 +229,8 @@ export abstract class PrimitiveConverter {
               break;
               
             default:
-              console.warn(`Unknown geometry type: ${primitive.type}`);
+              // Exhaustive over DecorationPrimitiveEntry discriminant; no-op for unknown
+              break;
           }
         });
       }
@@ -241,27 +251,27 @@ export abstract class PrimitiveConverter {
     // Clear all point primitives
     const pointCollection = scene.pointCollection;
     if (pointCollection) {
-      const pointsToRemove: any[] = [];
+      const pointsToRemove: unknown[] = [];
       for (let i = 0; i < pointCollection.length; i++) {
         const point = pointCollection.get(i);
-        if (point.id && typeof point.id === 'string' && this.isAnyDecorationId(point.id)) {
+        const hasId = (p: unknown): p is { id?: unknown } => typeof p === 'object' && p !== null && 'id' in (p as object);
+        if (hasId(point) && typeof point.id === 'string' && this.isAnyDecorationId(point.id))
           pointsToRemove.push(point);
-        }
       }
-      pointsToRemove.forEach(point => pointCollection.remove(point));
+      pointsToRemove.forEach(point => pointCollection.remove(point as unknown as import('cesium').PointPrimitive));
     }
 
     // Clear all line primitives  
     const polylineCollection = scene.polylineCollection;
     if (polylineCollection) {
-      const linesToRemove: any[] = [];
+      const linesToRemove: unknown[] = [];
       for (let i = 0; i < polylineCollection.length; i++) {
         const line = polylineCollection.get(i);
-        if (line.id && typeof line.id === 'string' && this.isAnyDecorationId(line.id)) {
+        const hasId = (l: unknown): l is { id?: unknown } => typeof l === 'object' && l !== null && 'id' in (l as object);
+        if (hasId(line) && typeof line.id === 'string' && this.isAnyDecorationId(line.id))
           linesToRemove.push(line);
-        }
       }
-      linesToRemove.forEach(line => polylineCollection.remove(line));
+      linesToRemove.forEach(line => polylineCollection.remove(line as unknown as import('cesium').Polyline));
     }
   }
 

@@ -10,28 +10,28 @@ import { Cartesian3, Color, ColorGeometryInstanceAttribute, GeometryInstance, Pe
 import { GraphicList, IModelConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "../CesiumScene.js";
-import { PrimitiveConverter } from "./PrimitiveConverter.js";
+import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
 import { ColorDef } from "@itwin/core-common";
 
 export class ShapePrimitiveConverter extends PrimitiveConverter {
   protected readonly primitiveType = 'shape';
 
 
-  protected override getCollection(scene: CesiumScene): any {
+  protected override getCollection(scene: CesiumScene): PrimitiveCollection {
     return scene.primitivesCollection;
   }
 
 
   protected override createPrimitiveFromGraphic(
-    graphic: any, 
-    primitiveId: string, 
-    index: number, 
-    collection: any, 
-    iModel?: IModelConnection, 
-    originalData?: Point3d[][], 
+    graphic: RenderGraphicWithCoordinates,
+    primitiveId: string,
+    index: number,
+    collection: PrimitiveCollection,
+    iModel?: IModelConnection,
+    originalData?: unknown,
     type?: string
-  ): any {
-    return this.createPolygonFromGraphic(graphic, primitiveId, index, collection, iModel, originalData, type);
+  ): Primitive | null {
+    return this.createPolygonFromGraphic(graphic, primitiveId, index, collection, iModel, originalData as Point3d[][] | undefined, type);
   }
 
   protected override getPrimitiveTypeName(): string {
@@ -42,7 +42,7 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
     return true;
   }
 
-  protected override getDepthOptions(decorationType: string): any {
+  protected override getDepthOptions(decorationType: string): Record<string, unknown> {
     const baseOptions = super.getDepthOptions(decorationType);
     
     const isOverlay = decorationType === 'worldOverlay' || decorationType === 'viewOverlay';
@@ -57,10 +57,10 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
   }
 
   private createPolygonFromGraphic(
-    graphic: any,
+    graphic: RenderGraphicWithCoordinates,
     shapeId: string,
     index: number,
-    primitivesCollection: any,
+    primitivesCollection: PrimitiveCollection,
     iModel?: IModelConnection,
     originalShapes?: Point3d[][],
     type?: string
@@ -84,15 +84,15 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
   }
 
   private createPolygonFromGeometry(
-    geometries: any[],
+    geometries: unknown[],
     geometryType: string,
     shapeId: string,
     _index: number,
-    primitivesCollection: any,
+    primitivesCollection: PrimitiveCollection,
     iModel?: IModelConnection,
     originalShapes?: Point3d[][],
     _type?: string,
-    _graphic?: any
+    _graphic?: RenderGraphicWithCoordinates
   ): Primitive | null {
     if (!geometries || !geometryType || !primitivesCollection) {
       return null;
@@ -117,11 +117,12 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
       }
       
       if (positions.length === 0 && geometries && geometries.length > 0) {
-        const geometry = geometries[0];
-        if (geometry && geometry.coordinateData && geometry.coordinateData.length > 0) {
-          const points = geometry.coordinateData.map((coord: any) => 
-            new Point3d(coord.x, coord.y, coord.z)
-          );
+        const geometry = geometries[0] as unknown;
+        type Coord = { x: number; y: number; z: number };
+        const hasCoords = (g: unknown): g is { coordinateData: Coord[] } =>
+          typeof g === 'object' && g !== null && 'coordinateData' in (g as object);
+        if (hasCoords(geometry) && geometry.coordinateData.length > 0) {
+          const points = geometry.coordinateData.map((coord) => new Point3d(coord.x, coord.y, coord.z));
           positions = this.convertPointsToCartesian3(points, iModel);
           // Ensure the shape is closed
           if (positions.length > 2) {
@@ -190,7 +191,7 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
     }
   }
 
-  private extractFillColorFromGraphic(graphic?: any): Color | undefined {
+  private extractFillColorFromGraphic(graphic?: RenderGraphicWithCoordinates): Color | undefined {
     const toCesium = (cd?: ColorDef) => {
       if (!cd) return undefined;
       const c = cd.colors;
@@ -199,8 +200,9 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
     };
 
     // Prefer symbology captured in coordinateData
-    const coordData = (graphic as any)?._coordinateData as any[] | undefined;
-    const entry = coordData?.find((e) => e?.type === 'shape' && (e.symbology?.fillColor || e.symbology?.lineColor));
+    const coordData = (graphic as RenderGraphicWithCoordinates | undefined)?._coordinateData as import('./DecorationTypes.js').DecorationPrimitiveEntry[] | undefined;
+    const isShape = (e: import('./DecorationTypes.js').DecorationPrimitiveEntry): e is import('./DecorationTypes.js').ShapeEntry => e.type === 'shape';
+    const entry = coordData?.find((e) => isShape(e) && (!!e.symbology?.fillColor || !!e.symbology?.lineColor));
     if (entry) {
       const fill = toCesium(entry.symbology?.fillColor as ColorDef | undefined) ?? toCesium(entry.symbology?.lineColor as ColorDef | undefined);
       if (fill)
@@ -208,7 +210,7 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
     }
 
     // Otherwise use graphic.symbology
-    const symbology = (graphic as any)?.symbology;
+    const symbology = (graphic as unknown as { symbology?: { fillColor?: ColorDef; color?: ColorDef } } | undefined)?.symbology;
     const fillDef = (symbology?.fillColor ?? symbology?.color) as ColorDef | undefined;
     return toCesium(fillDef);
   }

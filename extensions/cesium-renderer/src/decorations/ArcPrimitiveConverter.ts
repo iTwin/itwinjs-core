@@ -1,50 +1,51 @@
-import { BoundingSphere, Cartesian3, Color, ColorGeometryInstanceAttribute, ComponentDatatype, Geometry, GeometryAttribute, GeometryInstance, Material, PerInstanceColorAppearance, Primitive, PrimitiveType } from "cesium";
+import { BoundingSphere, Cartesian3, Color, ColorGeometryInstanceAttribute, ComponentDatatype, Geometry, GeometryAttribute, GeometryInstance, Material, PerInstanceColorAppearance, Primitive, PrimitiveType, PrimitiveCollection, Polyline } from "cesium";
 import { ColorDef } from "@itwin/core-common";
-import { Loop, Path, PolyfaceBuilder, StrokeOptions, SweepContour } from "@itwin/core-geometry";
+import { Loop, Path, Polyface, PolyfaceBuilder, StrokeOptions, SweepContour } from "@itwin/core-geometry";
 import { IModelConnection } from "@itwin/core-frontend";
-import { GraphicPrimitive } from "@itwin/core-frontend";
 import { CesiumScene } from "../CesiumScene.js";
-import { PrimitiveConverter } from "./PrimitiveConverter.js";
+import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
 import { CesiumCoordinateConverter } from "./CesiumCoordinateConverter.js";
+import { DecorationPrimitiveEntry } from "./DecorationTypes.js";
 
 export class ArcPrimitiveConverter extends PrimitiveConverter {
   protected readonly primitiveType = 'arc';
   private _currentScene?: CesiumScene;
 
-  protected override getCollection(scene: CesiumScene): any {
+  protected override getCollection(scene: CesiumScene): PrimitiveCollection {
     this._currentScene = scene; // Store scene reference for later use
     return scene.primitivesCollection;
   }
 
-  protected override extractPrimitiveData(coordinateData: GraphicPrimitive[] | undefined, primitiveType: string): any[] | undefined {
+  protected override extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[] | undefined, primitiveType: string): DecorationPrimitiveEntry[] | undefined {
     if (!coordinateData || !Array.isArray(coordinateData)) {
       return undefined;
     }
     
-    const entries = coordinateData.filter((entry: GraphicPrimitive) => entry.type === primitiveType);
+    const entries = coordinateData.filter((entry: DecorationPrimitiveEntry) => entry.type === primitiveType);
     
     // For arcs, return the whole entry object, not just points
     return entries;
   }
 
   protected override createPrimitiveFromGraphic(
-    _graphic: any, 
+    _graphic: RenderGraphicWithCoordinates, 
     primitiveId: string, 
     _index: number, 
-    _collection: any, 
+    _collection: PrimitiveCollection, 
     iModel?: IModelConnection, 
-    originalData?: any[], 
+    originalData?: unknown, 
     _type?: string
-  ): any {
-    if (!originalData || originalData.length === 0) {
+  ): Primitive | Polyline | null {
+    const data = Array.isArray(originalData) ? (originalData as DecorationPrimitiveEntry[]) : undefined;
+    if (!data || data.length === 0) {
       return null;
     }
 
     // Find the arc data in the array
-    let arcData = null;
-    for (const data of originalData) {
-      if (data && data.type === 'arc') {
-        arcData = data;
+    let arcData: import('./DecorationTypes.js').ArcEntry | null = null;
+    for (const d of data) {
+      if (d && d.type === 'arc') {
+        arcData = d as import('./DecorationTypes.js').ArcEntry;
         break;
       }
     }
@@ -55,7 +56,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
 
     const { arc, isEllipse = false, filled = false } = arcData;
 
-    const converterIModel = iModel || (this._currentScene as any)?._iModel;
+    const converterIModel = iModel;
     if (!converterIModel) {
       return null;
     }
@@ -151,7 +152,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     return true;
   }
 
-  protected override getDepthOptions(decorationType: string): any {
+  protected override getDepthOptions(decorationType: string): Record<string, unknown> {
     const baseOptions = super.getDepthOptions(decorationType);
     
     const isOverlay = decorationType === 'worldOverlay' || decorationType === 'viewOverlay';
@@ -165,7 +166,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     return baseOptions;
   }
 
-  private createGeometryFromPolyface(polyface: any, converter: CesiumCoordinateConverter): Geometry | null {
+  private createGeometryFromPolyface(polyface: Polyface, converter: CesiumCoordinateConverter): Geometry | null {
     if (!polyface || !polyface.data || !polyface.data.point || polyface.data.point.length === 0) {
       return null;
     }
@@ -241,9 +242,10 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     return geometry;
   }
 
-  private extractColorFromGraphic(graphic: any): Color | undefined {
-    const coordData = (graphic as any)?._coordinateData as any[] | undefined;
-    const entry = coordData?.find((e) => e?.type === 'arc' && e.symbology?.lineColor);
+  private extractColorFromGraphic(graphic: RenderGraphicWithCoordinates): Color | undefined {
+    const coordData = graphic?._coordinateData as DecorationPrimitiveEntry[] | undefined;
+    const isArc = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').ArcEntry => e.type === 'arc';
+    const entry = coordData?.find((e) => isArc(e) && !!e.symbology?.lineColor);
     const toCesium = (cd?: ColorDef) => {
       if (!cd) return undefined;
       const c = cd.colors;
@@ -257,7 +259,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     }
 
     // Otherwise use graphic.symbology
-    const symbology = graphic?.symbology;
+    const symbology = (graphic as unknown as { symbology?: { color?: ColorDef } })?.symbology;
     const colorDef = symbology?.color as ColorDef | undefined;
     return toCesium(colorDef);
   }

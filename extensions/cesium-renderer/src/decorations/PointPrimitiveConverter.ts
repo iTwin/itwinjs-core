@@ -11,35 +11,36 @@ import { ColorDef } from "@itwin/core-common";
 import { GraphicList, IModelConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "../CesiumScene.js";
-import { PrimitiveConverter } from "./PrimitiveConverter.js";
+import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
+import { DecorationPrimitiveEntry } from "./DecorationTypes.js";
 
 /** Converts iTwin.js point decorations to Cesium PointPrimitives */
 export class PointPrimitiveConverter extends PrimitiveConverter {
   protected readonly primitiveType = 'pointstring';
 
 
-  protected override getCollection(scene: CesiumScene): any {
+  protected override getCollection(scene: CesiumScene): PointPrimitiveCollection {
     return scene.pointCollection;
   }
 
 
   protected override createPrimitiveFromGraphic(
-    graphic: any, 
-    primitiveId: string, 
-    _index: number, 
-    collection: any, 
-    iModel?: IModelConnection, 
-    originalData?: Point3d[][], 
+    graphic: RenderGraphicWithCoordinates,
+    primitiveId: string,
+    _index: number,
+    collection: PointPrimitiveCollection,
+    iModel?: IModelConnection,
+    originalData?: unknown,
     type?: string
-  ): any {
-    return this.createPointPrimitiveFromGraphic(graphic, primitiveId, _index, collection, iModel, originalData, type);
+  ): PointPrimitive | null {
+    return this.createPointPrimitiveFromGraphic(graphic, primitiveId, _index, collection, iModel, originalData as Point3d[][] | undefined, type);
   }
 
   protected override getPrimitiveTypeName(): string {
     return 'decoration';
   }
 
-  protected override getDepthOptions(decorationType: string): any {
+  protected override getDepthOptions(decorationType: string): Record<string, unknown> {
     const baseOptions = super.getDepthOptions(decorationType);
     
     const isOverlay = decorationType === 'worldOverlay' || decorationType === 'viewOverlay';
@@ -55,7 +56,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
 
 
   private createPointPrimitiveFromGraphic(
-    graphic: any,
+    graphic: RenderGraphicWithCoordinates,
     pointId: string,
     _index: number,
     pointCollection: PointPrimitiveCollection,
@@ -73,7 +74,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
   }
 
   private createPointFromGeometry(
-    geometries: any[],
+    geometries: unknown[],
     geometryType: string,
     pointId: string,
     _index: number,
@@ -81,7 +82,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     iModel?: IModelConnection,
     originalPointStrings?: Point3d[][],
     type?: string,
-    graphic?: any
+    graphic?: RenderGraphicWithCoordinates
   ): PointPrimitive | null {
     if (!geometries || !geometryType || !pointCollection)
       return null;
@@ -96,8 +97,8 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     }
 
     if (!realSpatialPoint && geometries && geometries.length > 0) {
-      const geometry = geometries[0];
-      const firstCoord = geometry?.coordinateData?.[0];
+      const geometry = geometries[0] as unknown;
+      const firstCoord = (geometry as { coordinateData?: Array<{ x: number; y: number; z: number }> })?.coordinateData?.[0];
       if (firstCoord)
         realSpatialPoint = new Point3d(firstCoord.x, firstCoord.y, firstCoord.z);
     }
@@ -128,10 +129,11 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     }
   }
 
-  private extractColorFromGraphic(graphic: any): Color | undefined {
+  private extractColorFromGraphic(graphic?: RenderGraphicWithCoordinates): Color | undefined {
     // Prefer symbology captured in coordinateData entry
-    const coordData = (graphic as any)?._coordinateData as any[] | undefined;
-    const entry = coordData?.find((e) => e?.type === 'pointstring' && e.symbology?.lineColor);
+    const coordData = graphic?._coordinateData as DecorationPrimitiveEntry[] | undefined;
+    const isPoint = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').PointStringEntry => e.type === 'pointstring';
+    const entry = coordData?.find((e): e is import('./DecorationTypes.js').PointStringEntry => isPoint(e) && !!e.symbology?.lineColor);
     const colorDefFromEntry = entry?.symbology?.lineColor as ColorDef | undefined;
     if (colorDefFromEntry) {
       const c1 = colorDefFromEntry.colors;
@@ -139,7 +141,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
       return Color.fromBytes(c1.r, c1.g, c1.b, alpha);
     }
 
-    const symbology = (graphic as any)?.symbology;
+    const symbology = (graphic as unknown as { symbology?: { color?: ColorDef } } | undefined)?.symbology;
     const colorDef = symbology?.color as ColorDef | undefined;
     if (colorDef) {
       const c = colorDef.colors;
