@@ -31,7 +31,7 @@ function findTextStyleImpl(id: Id64String): TextStyleSettings {
   return TextStyleSettings.fromJSON({ lineSpacingFactor: 1, fontName: "other" });
 }
 
-describe.only("layoutTextBlock", () => {
+describe("layoutTextBlock", () => {
   describe("resolves TextStyleSettings", () => {
     it("inherits styling from TextBlock when Paragraph and Run have no style overrides", () => {
       const textBlock = TextBlock.create();
@@ -336,7 +336,7 @@ describe.only("layoutTextBlock", () => {
 
   });
 
-  describe.only("range", () => {
+  describe("range", () => {
 
     it("aligns text to center based on height of stacked fraction", () => {
       const textBlock = TextBlock.create();
@@ -512,11 +512,13 @@ describe.only("layoutTextBlock", () => {
       expect(line3.range.xLength()).to.equal(7 + 3 + 7, `Multiple tabs with different intervals should be applied correctly`);
     });
 
-    it("computes ranges based on custom line spacing and line height", () => {
+    it("computes ranges based on custom line spacing, line height, and indentation", () => {
       const lineSpacingFactor = 2;
       const lineHeight = 3;
       const paragraphSpacingFactor = 13;
-      const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor, lineHeight, paragraphSpacingFactor } });
+      const indentation = 7;
+
+      const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor, lineHeight, paragraphSpacingFactor, indentation } });
       textBlock.appendRun(TextRun.create({ content: "abc" }));
       textBlock.appendRun(LineBreakRun.create());
       textBlock.appendRun(TextRun.create({ content: "def" }));
@@ -532,32 +534,28 @@ describe.only("layoutTextBlock", () => {
 
       /* Final TextBlock should look like:
         abc↵
-        def¶
-        ghi¶
-        →1. list item 1¶
-        →2. list item 2¶
-        →3. list item 3
+        defghi↵
+        jkl
 
-        Where ↵ = LineBreak, ¶ = ParagraphBreak, → = Tab/2
+        Where ↵ = LineBreak, ¶ = ParagraphBreak
 
         We have 3 lines each `lineHeight` high, plus 2 line breaks in between each `lineHeight*lineSpacingFactor` high.
         No paragraph spacing should be applied since there is only one paragraph.
       */
 
       expect(tb.range.low.x).to.equal(0);
-      expect(tb.range.high.x).to.equal(6);
+      expect(tb.range.high.x).to.equal(6 + 7); // 7 for indentation, 6 for the length of "defghi"
       expect(tb.range.high.y).to.equal(0);
       expect(tb.range.low.y).to.equal(-(lineHeight * 3 + (lineHeight * lineSpacingFactor) * 2));
 
       expect(tb.lines[0].offsetFromDocument.y).to.equal(-lineHeight);
       expect(tb.lines[1].offsetFromDocument.y).to.equal(tb.lines[0].offsetFromDocument.y - (lineHeight + lineHeight * lineSpacingFactor));
       expect(tb.lines[2].offsetFromDocument.y).to.equal(tb.lines[1].offsetFromDocument.y - (lineHeight + lineHeight * lineSpacingFactor));
-      expect(tb.lines.every((line) => line.offsetFromDocument.x === 0)).to.be.true;
-
-      // console.log(textBlock.stringify({ paragraphBreak: "¶\n", lineBreak: "↵\n", tabsAsSpaces: 3, /*"→"*/ }));
+      // TODO: investigate why this is failing. It seems like the first line is not getting the indentation applied for some reason.
+      expect(tb.lines.every((line) => line.offsetFromDocument.x === 7)).to.be.true;
     });
 
-    it.only("computes paragraph spacing and indentation", () => {
+    it("computes paragraph spacing and indentation", () => {
       const lineSpacingFactor = 2;
       const lineHeight = 3;
       const paragraphSpacingFactor = 13;
