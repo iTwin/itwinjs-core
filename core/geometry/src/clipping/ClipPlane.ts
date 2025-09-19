@@ -22,7 +22,7 @@ import { IndexedXYZCollectionPolygonOps } from "../geometry3d/PolygonOps";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 import { Transform } from "../geometry3d/Transform";
-import { XYZProps } from "../geometry3d/XYZProps";
+import { XYAndZ, XYZProps } from "../geometry3d/XYZProps";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Point4d } from "../geometry4d/Point4d";
 import { AnalyticRoots } from "../numerics/Polynomials";
@@ -145,7 +145,7 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
    * a vector from the origin.)
    */
   public static createNormalAndPoint(
-    normal: Vector3d, point: Point3d, invisible: boolean = false, interior: boolean = false, result?: ClipPlane,
+    normal: Vector3d, point: XYAndZ, invisible: boolean = false, interior: boolean = false, result?: ClipPlane,
   ): ClipPlane | undefined {
     const normalized = normal.normalize();
     if (normalized) {
@@ -279,11 +279,23 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     return undefined;
   }
   /** Create a plane perpendicular to the edge between the xy parts of point0 and point1. */
-  public static createEdgeXY(point0: Point3d, point1: Point3d, result?: ClipPlane): ClipPlane | undefined {
+  public static createEdgeXY(point0: XYAndZ, point1: XYAndZ, result?: ClipPlane): ClipPlane | undefined {
     const normal = Vector3d.create(point0.y - point1.y, point1.x - point0.x);
     if (normal.normalizeInPlace())
       return ClipPlane.createNormalAndPoint(normal, point0, false, false, result);
     return undefined;
+  }
+  /**
+   * Variant of [[createEdgeXY]] that computes the plane using the edge midpoint instead of its start point.
+   * * This is more stable for creating a pair of clip planes from a long edge and its reversal, as is commonly found
+   * in a [[UnionOfConvexClipPlaneSets]].
+   */
+  public static createMidPointEdgeXY(point0: XYAndZ, point1: XYAndZ, result?: ClipPlane): ClipPlane | undefined {
+    return ClipPlane.createNormalAndPointXYZXYZ(
+      point0.y - point1.y, point1.x - point0.x, 0,
+      0.5 * (point0.x + point1.x), 0.5 * (point0.y + point1.y), 0,
+      false, false, result,
+    );
   }
   /**
    * Return the Plane3d form of the plane.

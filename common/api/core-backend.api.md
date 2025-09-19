@@ -301,6 +301,7 @@ import { YawPitchRollAngles } from '@itwin/core-geometry';
 // @public
 export interface AcquireNewBriefcaseIdArg extends IModelIdArg {
     readonly briefcaseAlias?: string;
+    readonly deviceName?: string;
 }
 
 // @public @preview
@@ -332,7 +333,7 @@ export type AnyDb = IModelDb | ECDb;
 export function appendFrameToBuilder(builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams: GeometryParams): boolean;
 
 // @beta
-export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders: TextAnnotationLeader[], layout: TextBlockLayout, transform: Transform, params: GeometryParams, textStyleResolver: TextStyleResolver): boolean;
+export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders: TextAnnotationLeader[], layout: TextBlockLayout, transform: Transform, params: GeometryParams, textStyleResolver: TextStyleResolver, scaleFactor: number): boolean;
 
 // @beta
 export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometryArgs): boolean;
@@ -343,6 +344,7 @@ export interface AppendTextAnnotationGeometryArgs {
     builder: ElementGeometry.Builder;
     categoryId: Id64String;
     layout: TextBlockLayout;
+    scaleFactor: number;
     subCategoryId?: Id64String;
     textStyleResolver: TextStyleResolver;
     wantDebugGeometry?: boolean;
@@ -4222,6 +4224,7 @@ export function isITextAnnotation(element: Element_2): element is ITextAnnotatio
 
 // @beta
 export interface ITextAnnotation {
+    defaultTextStyle?: TextAnnotationUsesTextStyleByDefault;
     getTextBlocks(): Iterable<TextBlockAndId>;
     updateTextBlocks(textBlocks: TextBlockAndId[]): void;
 }
@@ -6417,8 +6420,10 @@ export class TextAnnotation2d extends AnnotationElement2d {
     protected constructor(props: TextAnnotation2dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    protected collectReferenceIds(ids: EntityReferenceSet): void;
-    static create(iModelDb: IModelDb, category: Id64String, model: Id64String, placement: Placement2dProps, textAnnotationData?: TextAnnotationProps, code?: CodeProps): TextAnnotation2d;
+    // @beta
+    static create(iModelDb: IModelDb, arg: TextAnnotation2dCreateArgs): TextAnnotation2d;
+    // @beta
+    defaultTextStyle?: TextAnnotationUsesTextStyleByDefault;
     static fromJSON(props: TextAnnotation2dProps, iModel: IModelDb): TextAnnotation2d;
     getAnnotation(): TextAnnotation | undefined;
     // @internal (undocumented)
@@ -6438,13 +6443,25 @@ export class TextAnnotation2d extends AnnotationElement2d {
     updateTextBlocks(textBlocks: TextBlockAndId[]): void;
 }
 
+// @beta
+export interface TextAnnotation2dCreateArgs {
+    category: Id64String;
+    code?: CodeProps;
+    defaultTextStyleId?: Id64String;
+    model: Id64String;
+    placement: Placement2dProps;
+    textAnnotationData?: TextAnnotationProps;
+}
+
 // @public @preview
 export class TextAnnotation3d extends GraphicalElement3d {
     protected constructor(props: TextAnnotation3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    protected collectReferenceIds(ids: EntityReferenceSet): void;
-    static create(iModelDb: IModelDb, category: Id64String, model: Id64String, placement: Placement3dProps, textAnnotationData?: TextAnnotationProps, code?: CodeProps): TextAnnotation3d;
+    // @beta
+    static create(iModelDb: IModelDb, arg: TextAnnotation3dCreateArgs): TextAnnotation3d;
+    // @beta
+    defaultTextStyle?: TextAnnotationUsesTextStyleByDefault;
     static fromJSON(props: TextAnnotation3dProps, iModel: IModelDb): TextAnnotation3d;
     getAnnotation(): TextAnnotation | undefined;
     // @internal (undocumented)
@@ -6462,6 +6479,23 @@ export class TextAnnotation3d extends GraphicalElement3d {
     protected static updateGeometry(iModelDb: IModelDb, props: TextAnnotation3dProps): void;
     // @internal (undocumented)
     updateTextBlocks(textBlocks: TextBlockAndId[]): void;
+}
+
+// @beta
+export interface TextAnnotation3dCreateArgs {
+    category: Id64String;
+    code?: CodeProps;
+    defaultTextStyleId?: Id64String;
+    model: Id64String;
+    placement: Placement3dProps;
+    textAnnotationData?: TextAnnotationProps;
+}
+
+// @beta
+export class TextAnnotationUsesTextStyleByDefault extends RelatedElement {
+    constructor(annotationTextStyleId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
 }
 
 // @beta
@@ -6496,11 +6530,9 @@ export interface TextLayoutRanges {
 export class TextStyleResolver {
     constructor(args: TextStyleResolverArgs);
     readonly blockSettings: TextStyleSettings;
-    findTextStyle(id: Id64String): TextStyleSettings;
     resolveParagraphSettings(paragraph: Paragraph): TextStyleSettings;
     resolveRunSettings(paragraph: Paragraph, run: Run): TextStyleSettings;
     resolveTextAnnotationLeaderSettings(leader: TextAnnotationLeader): TextStyleSettings;
-    readonly scaleFactor: number;
 }
 
 // @beta
@@ -6508,8 +6540,8 @@ export interface TextStyleResolverArgs {
     // @internal
     findTextStyle?: FindTextStyle;
     iModel: IModelDb;
-    modelId?: Id64String;
     textBlock: TextBlock;
+    textStyleId: Id64String;
 }
 
 // @public @preview

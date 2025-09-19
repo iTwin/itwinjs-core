@@ -8,7 +8,8 @@
 
 // cspell:ignore cset csets ecchanges
 
-import * as path from "path";
+import * as path from "node:path";
+import * as os from "node:os";
 import {
   AccessToken, BeDuration, ChangeSetStatus, DbResult, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, Optional, StopWatch
 } from "@itwin/core-bentley";
@@ -235,7 +236,7 @@ export class BriefcaseManager {
    * @note *It is invalid to edit briefcases on a shared network drive* and that is a sure way to corrupt your briefcase (see https://www.sqlite.org/howtocorrupt.html)
    */
   public static async downloadBriefcase(arg: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps> {
-    const briefcaseId = arg.briefcaseId ?? await this.acquireNewBriefcaseId(arg);
+    const briefcaseId = arg.briefcaseId ?? await this.acquireNewBriefcaseId({ deviceName: `${os.hostname()}:${os.type()}:${os.arch()}`, ...arg });
     const fileName = arg.fileName ?? this.getFileName({ ...arg, briefcaseId });
 
     if (IModelJsFs.existsSync(fileName))

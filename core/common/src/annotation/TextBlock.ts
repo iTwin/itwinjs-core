@@ -64,7 +64,7 @@ export abstract class TextBlockComponent {
     this._styleOverrides = TextStyleSettings.cloneProps(props?.styleOverrides ?? {});
   }
 
-  /** Deviations in individual properties of the [[TextStyleSettings]] in the [AnnotationTextStyle]($backend) specified by `styleId` on the [[TextBlock]].
+  /** Deviations in individual properties of the [[TextStyleSettings]] in the [AnnotationTextStyle]($backend).
    * For example, if the style uses the "Arial" font, you can override that by settings `styleOverrides.fontName` to "Comic Sans".
    * @see [[clearStyleOverrides]] to reset this to an empty object.
    */
@@ -626,8 +626,6 @@ export interface TextBlockMargins {
  * @beta
  */
 export interface TextBlockProps extends TextBlockComponentProps {
-  /** The ID of an [AnnotationTextStyle]($backend) stored in the iModel from which the base [[TextStyleSettings]] applied to the [[TextBlock]] originates. */
-  styleId: Id64String;
   /** The width of the document in meters. Lines that would exceed this width are instead wrapped around to the next line if possible.
    * A value less than or equal to zero indicates no wrapping is to be applied.
    * Default: 0
@@ -648,11 +646,6 @@ export interface TextBlockProps extends TextBlockComponentProps {
  * @beta
  */
 export class TextBlock extends TextBlockComponent {
-  /** The ID of the [AnnotationTextStyle]($backend) that provides the base formatting for the contents of this TextBlock.
-   * @note Assigning to this property retains all style overrides on the TextBlock and its child components.
-   * Call [[clearStyleOverrides]] to clear the TextBlock's and optionally all children's style overrides.
-   */
-  public styleId: Id64String;
   /** The width of the document in meters. Lines that would exceed this width are instead wrapped around to the next line if possible.
    * A value less than or equal to zero indicates no wrapping is to be applied.
    * Default: 0
@@ -667,7 +660,6 @@ export class TextBlock extends TextBlockComponent {
 
   private constructor(props: TextBlockProps) {
     super(props);
-    this.styleId = props.styleId;
     this.width = props.width ?? 0;
     this.justification = props.justification ?? "left";
 
@@ -685,7 +677,6 @@ export class TextBlock extends TextBlockComponent {
   public override toJSON(): TextBlockProps {
     return {
       ...super.toJSON(),
-      styleId: this.styleId,
       width: this.width,
       justification: this.justification,
       margins: this.margins,
@@ -694,13 +685,8 @@ export class TextBlock extends TextBlockComponent {
   }
 
   /** Create a text block from its JSON representation. */
-  public static create(props: TextBlockProps): TextBlock {
-    return new TextBlock(props);
-  }
-
-  /** Create an empty text block containing no [[paragraphs]] and an empty [[styleId]]. */
-  public static createEmpty(): TextBlock {
-    return TextBlock.create({ styleId: "" });
+  public static create(props?: TextBlockProps): TextBlock {
+    return new TextBlock(props ?? {});
   }
 
   /** Returns true if every paragraph in this text block is empty. */
@@ -761,10 +747,6 @@ export class TextBlock extends TextBlockComponent {
 
   public override equals(other: TextBlockComponent): boolean {
     if (!(other instanceof TextBlock)) {
-      return false;
-    }
-
-    if (this.styleId !== other.styleId || !super.equals(other)) {
       return false;
     }
 
