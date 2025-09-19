@@ -106,15 +106,14 @@ export class PathFragment {
    * Return 0 if conversion failed.
    */
   public chainDistanceToInterpolatedChildFraction(distance: number): number {
-    const value = Geometry.inverseInterpolate(
+    return Geometry.inverseInterpolate(
       this.childFraction0,
       this.chainDistance0,
       this.childFraction1,
       this.chainDistance1,
       distance,
       this.childFraction0,
-    );
-    return value ?? 0;
+    ) ?? 0;
   }
   /**
    * Convert the given chainDistance to a fraction along this childCurve using `moveSignedDistanceFromFraction`.
