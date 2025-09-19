@@ -1612,8 +1612,8 @@ function checkInverseRelationship(ck: Checker, name: string, matrix: Matrix3d | 
   if (matrix !== undefined) {
     if (Checker.noisy.matrixMultiplyAliasing) {
       GeometryCoreTestIO.consoleLog("-------------------------------");
-      GeometryCoreTestIO.consoleLog(`${name}    ${matrix.coffs}`, ` inverse state ${matrix.inverseState}        `);
-      GeometryCoreTestIO.consoleLog(`cached inverse    ${matrix.inverseCoffs}`);
+      GeometryCoreTestIO.consoleLog(`${name}    ${matrix.coffs.toString()}`, ` inverse state ${matrix.inverseState}        `);
+      GeometryCoreTestIO.consoleLog(`cached inverse    ${matrix.inverseCoffs?.toString()}`);
     }
     if (expectedInverseState !== undefined)
       ck.testExactNumber(expectedInverseState, matrix.inverseState, `${name} inverse state`);

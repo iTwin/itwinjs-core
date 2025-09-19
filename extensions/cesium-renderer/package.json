@@ -1,0 +1,55 @@
+{
+  "name": "@itwin/cesium-renderer",
+  "version": "5.2.0-dev.26",
+  "description": "Alternative CesiumJS-based renderer for iTwin.js",
+  "main": "lib/cjs/cesium-renderer.js",
+  "module": "lib/esm/cesium-renderer.js",
+  "typings": "lib/cjs/cesium-renderer",
+  "type": "module",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "build": "npm run -s build:cjs && npm run -s build:esm",
+    "build:cjs": "internal-tools build-cjs",
+    "build:esm": "tsc 1>&2 --outDir lib/esm",
+    "clean": "rimraf -g lib .rush/temp/package-deps*.json",
+    "cover": "npm -s test",
+    "docs": "",
+    "extract-api": "betools extract-api --entry=cesium-renderer",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
+    "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
+    "test": "vitest --run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iTwin/itwinjs-core.git",
+    "directory": "extensions/cesium-renderer"
+  },
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel",
+    "Cesium"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "peerDependencies": {
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-geometry": "workspace:*"
+  },
+  "devDependencies": {
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/core-common": "workspace:*",
+    "@itwin/core-geometry": "workspace:*",
+    "@itwin/eslint-plugin": "5.2.2-dev.2",
+    "@types/node": "~20.17.0",
+    "eslint": "^9.31.0",
+    "internal-tools": "workspace:*",
+    "rimraf": "^6.0.1",
+    "typescript": "~5.6.2",
+    "vitest": "^3.0.6"
+  }
+}

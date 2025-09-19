@@ -2234,7 +2234,6 @@ describe("CurveCurveIntersectXY", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "LineStringBagOfCurves");
     expect(ck.getNumErrors()).toBe(0);
   });
-
   it("ChainArcBSpline", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -2336,6 +2335,32 @@ describe("CurveCurveIntersectXY", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "ChainArcBSpline");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("tinyCircleBSplineCurve", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const circle = Arc3d.create(Point3d.create(6876.645147144647, 7330.9428493629475), Vector3d.create(0.001), Vector3d.create(0.0, 0.001));
+    const poleArray = [
+      Point3d.create(6876.645147144647, 7330.9428493629475),
+      Point3d.create(6908.764445237094, 7339.801434070039),
+      Point3d.create(6940.991924575155, 7348.685030413842),
+      Point3d.create(6973.835142740912, 7354.292779826999),
+    ];
+    const curve = BSplineCurve3d.createUniformKnots(poleArray, 4);
+    if (ck.testDefined(curve, "created curve")) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [circle, curve]);
+      // this requires a call to UnivariateBezier.runNewton that needs 20 iterations to converge!
+      const intersections = CurveCurve.intersectionProjectedXYPairs(undefined, circle, false, curve, false);
+      if (ck.testCoordinate(1, intersections.length, "Expected one intersection between the circle and the bspline")) {
+        const intersection = intersections[0].detailA.point;
+        if (ck.testPoint3d(intersection, intersections[0].detailB.point, "report same intersection point on both curves")) {
+          GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, intersection, 0.0003);
+          ck.testPoint3d(Point3d.create(6876.64611115,7330.94311524), intersection, "expected intersection point");
+        }
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "tinyCircleBSplineCurve");
     expect(ck.getNumErrors()).toBe(0);
   });
 });

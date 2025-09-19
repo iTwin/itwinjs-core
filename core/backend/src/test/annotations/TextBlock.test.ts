@@ -34,12 +34,13 @@ function findTextStyleImpl(id: Id64String): TextStyleSettings {
 describe("layoutTextBlock", () => {
   describe("resolves TextStyleSettings", () => {
     it("inherits styling from TextBlock when Paragraph and Run have no style overrides", () => {
-      const textBlock = TextBlock.create({ styleId: "0x42" });
+      const textBlock = TextBlock.create();
       const run = TextRun.create({ content: "test" });
       textBlock.appendParagraph();
       textBlock.appendRun(run);
 
       const tb = doLayout(textBlock, {
+        textStyleId: "0x42",
         findTextStyle: findTextStyleImpl,
       });
 
@@ -53,13 +54,14 @@ describe("layoutTextBlock", () => {
     });
 
     it("inherits style overrides from Paragraph when Run has no style overrides", () => {
-      const textBlock = TextBlock.create({ styleId: "0x42" });
+      const textBlock = TextBlock.create();
       const paragraph = Paragraph.create({ styleOverrides: {fontName: "paragraph"} });
       const run = TextRun.create({ content: "test" });
       textBlock.paragraphs.push(paragraph);
       textBlock.appendRun(run);
 
       const tb = doLayout(textBlock, {
+        textStyleId: "0x42",
         findTextStyle: findTextStyleImpl,
       });
 
@@ -72,13 +74,14 @@ describe("layoutTextBlock", () => {
     });
 
     it("uses Run style overrides when Run has overrides", () => {
-      const textBlock = TextBlock.create({ styleId: "0x42" });
+      const textBlock = TextBlock.create();
       const paragraph = Paragraph.create({ styleOverrides: { lineSpacingFactor: 55, fontName: "paragraph" } });
       const run = TextRun.create({ content: "test", styleOverrides: { lineSpacingFactor: 99, fontName: "run" } });
       textBlock.paragraphs.push(paragraph);
       textBlock.appendRun(run);
 
       const tb = doLayout(textBlock, {
+        textStyleId: "0x42",
         findTextStyle: findTextStyleImpl,
       });
 
@@ -92,12 +95,13 @@ describe("layoutTextBlock", () => {
 
     it("still uses TextBlock specific styles when Run has style overrides", () => {
       // Some style settings only make sense on a TextBlock, so they are always applied from the TextBlock, even if the Run has a style override.
-      const textBlock = TextBlock.create({ styleId: "0x42" });
+      const textBlock = TextBlock.create();
       const run = TextRun.create({ content: "test", styleOverrides: { lineSpacingFactor: 99, fontName: "run" } });
       textBlock.appendParagraph();
       textBlock.appendRun(run);
 
       const tb = doLayout(textBlock, {
+        textStyleId: "0x42",
         findTextStyle: findTextStyleImpl,
       });
 
@@ -109,7 +113,7 @@ describe("layoutTextBlock", () => {
     });
 
     it("inherits overrides from TextBlock, Paragraph and Run when there is no styleId", () => {
-      const textBlock = TextBlock.create({ styleId: "", styleOverrides: { widthFactor: 34, lineHeight: 3, lineSpacingFactor: 12, isBold: true } });
+      const textBlock = TextBlock.create({ styleOverrides: { widthFactor: 34, lineHeight: 3, lineSpacingFactor: 12, isBold: true } });
       const paragraph = Paragraph.create({ styleOverrides: { lineHeight: 56, color: 0xff0000, frame: {shape: "octagon"} } });
       const run = TextRun.create({ content: "test", styleOverrides: { widthFactor: 78, fontName: "override", leader: { wantElbow: true } } });
       textBlock.paragraphs.push(paragraph);
@@ -139,13 +143,14 @@ describe("layoutTextBlock", () => {
     });
 
     it("does not inherit overrides in TextBlock or Paragraph when Run has same propertied overriden - unless they are TextBlock specific settings", () => {
-      const textBlock = TextBlock.create({ styleId: "0x42", styleOverrides: { widthFactor: 34, lineHeight: 3, lineSpacingFactor: 12, isBold: true }});
+      const textBlock = TextBlock.create({ styleOverrides: { widthFactor: 34, lineHeight: 3, lineSpacingFactor: 12, isBold: true }});
       const paragraph = Paragraph.create({ styleOverrides: { lineHeight: 56, color: 0xff0000 } });
       const run = TextRun.create({ content: "test", styleOverrides: { widthFactor: 78, lineHeight: 6, lineSpacingFactor: 24, fontName: "override", isBold: false } });
       textBlock.paragraphs.push(paragraph);
       textBlock.appendRun(run);
 
       const tb = doLayout(textBlock, {
+        textStyleId: "0x42",
         findTextStyle: findTextStyleImpl,
       });
 
@@ -166,7 +171,7 @@ describe("layoutTextBlock", () => {
 
     it("takes child overrides over parent overrides", () => {
       //...unless they are TextBlock specific as covered in other tests
-      const textBlock = TextBlock.create({ styleId: "", styleOverrides: { fontName: "grandparent" } });
+      const textBlock = TextBlock.create({ styleOverrides: { fontName: "grandparent" } });
       const paragraph = Paragraph.create({ styleOverrides: { fontName: "parent" } });
       const run = TextRun.create({ content: "test", styleOverrides: { fontName: "child" } });
       textBlock.paragraphs.push(paragraph);
@@ -190,7 +195,7 @@ describe("layoutTextBlock", () => {
     }
 
     // Initialize a new TextBlockLayout object
-    const textBlock = TextBlock.create({ width: 50, styleId: "", styleOverrides: { widthFactor: 34, color: 0x00ff00, fontName: "arial" } });
+    const textBlock = TextBlock.create({ width: 50, styleOverrides: { widthFactor: 34, color: 0x00ff00, fontName: "arial" } });
     const run0 = TextRun.create({
       content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus pretium mi sit amet magna malesuada, at venenatis ante eleifend.",
       styleOverrides: { lineHeight: 56, color: 0xff0000 },
@@ -306,7 +311,7 @@ describe("layoutTextBlock", () => {
     }
 
     const makeTextBlock = (margins: Partial<TextBlockMargins>) => {
-      const textBlock = TextBlock.create({ styleId: "", styleOverrides: { lineSpacingFactor: 0 }, margins });
+      const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor: 0 }, margins });
       textBlock.appendRun(makeTextRun("abc"));
       textBlock.appendRun(makeTextRun("defg"));
       return textBlock;
@@ -342,7 +347,7 @@ describe("layoutTextBlock", () => {
   describe("range", () => {
 
     it("aligns text to center based on height of stacked fraction", () => {
-      const textBlock = TextBlock.create({ styleId: "" });
+      const textBlock = TextBlock.create();
       const fractionRun = FractionRun.create({ numerator: "1", denominator: "2" });
       const textRun = TextRun.create({ content: "text" });
       textBlock.appendRun(fractionRun);
@@ -365,7 +370,7 @@ describe("layoutTextBlock", () => {
     });
 
     it("produces one line per paragraph if document width <= 0", () => {
-      const textBlock = TextBlock.create({ styleId: "" });
+      const textBlock = TextBlock.create();
       for (let i = 0; i < 4; i++) {
         const layout = doLayout(textBlock);
         if (i === 0) {
@@ -405,7 +410,7 @@ describe("layoutTextBlock", () => {
     it("produces a new line for each LineBreakRun", () => {
       const lineSpacingFactor = 0.5;
       const lineHeight = 1;
-      const textBlock = TextBlock.create({ styleId: "", styleOverrides: { lineSpacingFactor, lineHeight } });
+      const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor, lineHeight } });
       textBlock.appendRun(TextRun.create({ content: "abc" }));
       textBlock.appendRun(LineBreakRun.create());
       textBlock.appendRun(TextRun.create({ content: "def" }));
@@ -428,7 +433,7 @@ describe("layoutTextBlock", () => {
     it("applies tab shifts", () => {
       const lineHeight = 1;
       const tabInterval = 6;
-      const textBlock = TextBlock.create({ styleId: "", styleOverrides: { lineHeight, tabInterval } });
+      const textBlock = TextBlock.create({ styleOverrides: { lineHeight, tabInterval } });
 
       // Appends a line that looks like `stringOne` TAB `stringTwo` LINEBREAK
       const appendLine = (stringOne: string, stringTwo: string, wantLineBreak: boolean = true) => {
@@ -462,7 +467,7 @@ describe("layoutTextBlock", () => {
     it("applies consecutive tab shifts", () => {
       const lineHeight = 1;
       const tabInterval = 6;
-      const textBlock = TextBlock.create({ styleId: "", styleOverrides: { lineHeight, tabInterval } });
+      const textBlock = TextBlock.create({ styleOverrides: { lineHeight, tabInterval } });
 
       // line 0: ----->----->----->LINEBREAK
       textBlock.appendRun(TabRun.create({ styleOverrides: { tabInterval } }));
@@ -515,7 +520,7 @@ describe("layoutTextBlock", () => {
     it("computes ranges based on custom line spacing and line height", () => {
       const lineSpacingFactor = 2;
       const lineHeight = 3;
-      const textBlock = TextBlock.create({ styleId: "", styleOverrides: { lineSpacingFactor, lineHeight } });
+      const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor, lineHeight } });
       textBlock.appendRun(TextRun.create({ content: "abc" }));
       textBlock.appendRun(LineBreakRun.create());
       textBlock.appendRun(TextRun.create({ content: "def" }));
@@ -551,7 +556,7 @@ describe("layoutTextBlock", () => {
         this.skip();
       }
 
-      const block = TextBlock.create({ styleId: "", width: 3, styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
+      const block = TextBlock.create({ width: 3, styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
 
       function expectBlockRange(width: number, height: number): void {
         const layout = doLayout(block);
@@ -584,7 +589,7 @@ describe("layoutTextBlock", () => {
         this.skip();
       }
 
-      const block = TextBlock.create({ styleId: "", styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
+      const block = TextBlock.create({ styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
 
       function expectBlockRange(width: number, height: number): void {
         const layout = doLayout(block);
@@ -607,7 +612,7 @@ describe("layoutTextBlock", () => {
         this.skip();
       }
 
-      const block = TextBlock.create({ styleId: "", styleOverrides: { lineSpacingFactor: 0 } });
+      const block = TextBlock.create({ styleOverrides: { lineSpacingFactor: 0 } });
 
       function expectBlockRange(width: number, height: number): void {
         const layout = doLayout(block);
@@ -701,7 +706,7 @@ describe("layoutTextBlock", () => {
   describe("word-wrapping", () => {
 
     function expectLines(input: string, width: number, expectedLines: string[]): TextBlockLayout {
-      const textBlock = TextBlock.create({ styleId: "" });
+      const textBlock = TextBlock.create();
       textBlock.width = width;
       const run = makeTextRun(input);
       textBlock.appendRun(run);
@@ -720,7 +725,7 @@ describe("layoutTextBlock", () => {
         this.skip();
       }
 
-      const textBlock = TextBlock.create({ styleId: "" });
+      const textBlock = TextBlock.create();
       textBlock.width = 6;
       textBlock.appendRun(makeTextRun("ab"));
       expect(doLayout(textBlock).lines.length).to.equal(1);
@@ -822,7 +827,7 @@ describe("layoutTextBlock", () => {
       }
 
       const lineHeight = 1;
-      const textBlock = TextBlock.create({ styleId: "", styleOverrides: { lineHeight } });
+      const textBlock = TextBlock.create({ styleOverrides: { lineHeight } });
 
       // line 0:  -->-->------> LINEBREAK
       textBlock.appendRun(TabRun.create({ styleOverrides: { tabInterval: 3 } }));
@@ -904,7 +909,7 @@ describe("layoutTextBlock", () => {
         this.skip();
       }
 
-      const textBlock = TextBlock.create({ styleId: "" });
+      const textBlock = TextBlock.create();
       for (const str of ["The ", "quick brown", " fox jumped over ", "the lazy ", "dog"]) {
         textBlock.appendRun(makeTextRun(str));
       }
@@ -952,7 +957,7 @@ describe("layoutTextBlock", () => {
         this.skip();
       }
 
-      const block = TextBlock.create({ styleId: "" });
+      const block = TextBlock.create();
       block.appendRun(makeTextRun("aa")); // 2 chars wide
       block.appendRun(makeTextRun("bb ccc d ee")); // 11 chars wide
       block.appendRun(makeTextRun("ff ggg h")); // 8 chars wide
@@ -996,7 +1001,7 @@ describe("layoutTextBlock", () => {
         this.skip();
       }
 
-      const block = TextBlock.create({ styleId: "", styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
+      const block = TextBlock.create({ styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
       block.appendRun(makeTextRun("abc defg"));
       const layout1 = doLayout(block);
       let width = layout1.range.xLength();
@@ -1014,15 +1019,15 @@ describe("layoutTextBlock", () => {
       const result = layout.toResult();
       const textStyleResolver = new TextStyleResolver({
         textBlock,
+        textStyleId: "",
         iModel: {} as any,
-        modelId: undefined,
         findTextStyle: () => TextStyleSettings.defaults
       });
       return { textStyleResolver, result };
     }
 
     it("should return an empty array if source type is not text", function () {
-      const textBlock = TextBlock.create({ styleId: "" });
+      const textBlock = TextBlock.create();
       const fractionRun = FractionRun.create({ numerator: "1", denominator: "2" });
       textBlock.appendRun(fractionRun);
 
@@ -1043,7 +1048,7 @@ describe("layoutTextBlock", () => {
     });
 
     it("should handle empty text content", function () {
-      const textBlock = TextBlock.create({ styleId: "" });
+      const textBlock = TextBlock.create();
       const textRun = TextRun.create({ content: "" });
       textBlock.appendRun(textRun);
 
@@ -1064,7 +1069,7 @@ describe("layoutTextBlock", () => {
     });
 
     it("should compute grapheme offsets correctly for a given text", function () {
-      const textBlock = TextBlock.create({ styleId: "" });
+      const textBlock = TextBlock.create();
       const textRun = TextRun.create({ content: "hello"});
       textBlock.appendRun(textRun);
 
@@ -1087,7 +1092,7 @@ describe("layoutTextBlock", () => {
     });
 
     it("should compute grapheme offsets correctly for non-English text", function () {
-      const textBlock = TextBlock.create({ styleId: "" });
+      const textBlock = TextBlock.create();
       // Hindi - "Paragraph"
       const textRun = TextRun.create({ content: "अनुच्छेद" });
       textBlock.appendRun(textRun);
@@ -1113,7 +1118,7 @@ describe("layoutTextBlock", () => {
     });
 
     it("should compute grapheme offsets correctly for emoji content", function () {
-      const textBlock = TextBlock.create({ styleId: "" });
+      const textBlock = TextBlock.create();
       const textRun = TextRun.create({ content: "👨‍👦" });
       textBlock.appendRun(textRun);
 
@@ -1159,9 +1164,9 @@ describe("layoutTextBlock", () => {
       expect(iModel.fonts.findId({ name: "Consolas" })).to.be.undefined;
 
       function test(fontName: string, expectedFontId: number): void {
-        const textBlock = TextBlock.create({ styleId: "" });
+        const textBlock = TextBlock.create();
         textBlock.appendRun(TextRun.create({ styleOverrides: { fontName } }));
-        const textStyleResolver = new TextStyleResolver({textBlock, iModel});
+        const textStyleResolver = new TextStyleResolver({textBlock, textStyleId: "", iModel});
         const layout = layoutTextBlock({ textBlock, iModel, textStyleResolver });
         const run = layout.lines[0].runs[0];
         expect(run).not.to.be.undefined;
@@ -1178,7 +1183,6 @@ describe("layoutTextBlock", () => {
 
     function computeDimensions(args: { content?: string, bold?: boolean, italic?: boolean, font?: string, height?: number, width?: number }): { x: number, y: number } {
       const textBlock = TextBlock.create({
-        styleId: "",
         styleOverrides: {
           lineHeight: args.height,
           widthFactor: args.width,
@@ -1194,7 +1198,7 @@ describe("layoutTextBlock", () => {
         },
       }));
 
-      const textStyleResolver = new TextStyleResolver({textBlock, iModel});
+      const textStyleResolver = new TextStyleResolver({textBlock, textStyleId: "", iModel});
       const range = layoutTextBlock({ textBlock, iModel, textStyleResolver }).range;
       return { x: range.high.x - range.low.x, y: range.high.y - range.low.y };
     }
@@ -1287,7 +1291,7 @@ describe("produceTextBlockGeometry", () => {
   }
 
   function makeTextBlock(runs: Run[]): TextBlock {
-    const block = TextBlock.create({ styleId: "" });
+    const block = TextBlock.create();
     for (const run of runs) {
       block.appendRun(run);
     }

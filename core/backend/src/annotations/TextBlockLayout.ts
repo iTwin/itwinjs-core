@@ -12,7 +12,6 @@ import { IModelDb } from "../IModelDb";
 import { assert, Id64String, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 import * as LineBreaker from "linebreak";
 import { AnnotationTextStyle } from "./TextAnnotationElement";
-import { Drawing } from "../Element";
 
 
 /** @internal */
@@ -201,37 +200,26 @@ function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings
 export interface TextStyleResolverArgs {
   /** The text block whose styles are being resolved. */
   textBlock: TextBlock;
+  /** The ID of the [[AnnotationTextStyle]] to apply. */
+  textStyleId: Id64String;
   /** The iModel from which to obtain [[AnnotationTextStyle]]s when resolving styles. */
   iModel: IModelDb;
-  /** The ID of the model containing the text block, used to compute the scale factor. */
-  modelId?: Id64String;
   /** @internal chiefly for tests, by default looks up an [[AnnotationTextStyle]] in the iModel by ID. */
   findTextStyle?: FindTextStyle;
 }
 
 /**
- * Resolves the effective style of TextBlockComponents and Leaders, taking into account overrides/style of the instance and its parent(s).
+ * Resolves the effective style of TextBlockComponents and Leaders, taking into account overrides of the instance and its parent(s).
  * @beta
  */
 export class TextStyleResolver {
-  private readonly _textStyles = new Map<Id64String, TextStyleSettings>();
-  private readonly _findTextStyle: FindTextStyle;
   /** The resolved style of the TextBlock. */
   public readonly blockSettings: TextStyleSettings;
-  /** The scale factor of the model containing the TextBlock. */
-  public readonly scaleFactor: number;
 
   public constructor(args: TextStyleResolverArgs) {
-    this._findTextStyle = args.findTextStyle ?? createFindTextStyleImpl(args.iModel);
+    const findTextStyle = args.findTextStyle ?? createFindTextStyleImpl(args.iModel);
+    this.blockSettings = findTextStyle(args.textStyleId);
 
-    this.scaleFactor = 1;
-    if (args.modelId) {
-      const element = args.iModel.elements.getElement(args.modelId);
-      if (element instanceof Drawing)
-        this.scaleFactor = element.scaleFactor;
-    }
-
-    this.blockSettings = this.findTextStyle(args.textBlock.styleId);
     if (args.textBlock.styleOverrides)
       this.blockSettings = this.blockSettings.clone(args.textBlock.styleOverrides);
   }
@@ -243,16 +231,6 @@ export class TextStyleResolver {
       settings = settings.clone(paragraph.styleOverrides);
 
     return settings;
-  }
-
-  /** Looks up an [[AnnotationTextStyle]] by ID. Uses caching. */
-  public findTextStyle(id: Id64String): TextStyleSettings {
-    let style = this._textStyles.get(id);
-    if (undefined === style) {
-      this._textStyles.set(id, style = this._findTextStyle(id));
-    }
-
-    return style;
   }
 
   /** Resolves the effective style for a [TextAnnotationLeader]($common). The TextAnnotationLeader should be a sibling of the provided TextBlock. */
