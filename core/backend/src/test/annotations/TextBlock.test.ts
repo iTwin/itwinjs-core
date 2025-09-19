@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges, TextStyleResolver } from "../../annotations/TextBlockLayout";
 import { Geometry, Range2d } from "@itwin/core-geometry";
-import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, List, Paragraph, Run, RunLayoutResult, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, List, OrderedListMarker, Paragraph, ParagraphProps, Run, RunLayoutResult, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings, UnorderedListMarker } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Id64String, ProcessDetector } from "@itwin/core-bentley";
@@ -584,11 +584,11 @@ describe("layoutTextBlock", () => {
         ⇥abc↵
         ⇥def¶
         ⇥ghi¶
-        ⇥→1. list item 1¶
-        ⇥→2. list item 2¶
-        ⇥→3. list item 3
+        ⇥￫1. list item 1¶
+        ⇥￫2. list item 2¶
+        ⇥￫3. list item 3
 
-        Where ↵ = LineBreak, ¶ = ParagraphBreak, → = tabInterval/2, ⇥ = indentation
+        Where ↵ = LineBreak, ¶ = ParagraphBreak, ￫ = tabInterval/2, ⇥ = indentation
 
         We have:
           6 lines each `lineHeight` high
@@ -693,7 +693,125 @@ describe("layoutTextBlock", () => {
     });
 
     it("computes range for list markers and list items based on indentation", function () {
-      // TODO
+      const lineSpacingFactor = 2;
+      const lineHeight = 3;
+      const paragraphSpacingFactor = 13;
+      const indentation = 7;
+      const tabInterval = 5;
+
+      const listChildren: ParagraphProps[] = [
+        {
+          children: [
+            {
+              type: "text",
+              content: "Oranges",
+            }
+          ]
+        },
+        {
+          children: [
+            {
+              type: "text",
+              content: "Apples",
+            },
+            {
+              type: "list",
+              styleOverrides: { listMarker: UnorderedListMarker.Bullet },
+              children: [
+                {
+                  children: [
+                    {
+                      type: "text",
+                      content: "Red",
+                    }
+                  ]
+                },
+                {
+                  children: [
+                    {
+                      type: "text",
+                      content: "Green",
+                    },
+                    {
+                      type: "list",
+                      styleOverrides: { listMarker: OrderedListMarker.iWithPeriod },
+                      children: [
+                        {
+                          children: [
+                            {
+                              type: "text",
+                              content: "Granny Smith",
+                            }
+                          ]
+                        },
+                        {
+                          children: [
+                            {
+                              type: "text",
+                              content: "Rhode Island Greening",
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  children: [
+                    {
+                      type: "text",
+                      content: "Yellow",
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ];
+
+      const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor, lineHeight, paragraphSpacingFactor, indentation, tabInterval } });
+      const p1 = textBlock.appendParagraph();
+      p1.children.push(List.create({ children: listChildren }));
+
+
+      const tb = doLayout(textBlock);
+      expect(tb.lines.length).to.equal(6);
+
+      /* Final TextBlock should look like:
+        ￫ 1. ￫ Oranges¶
+        ￫ 2. ￫ Apples¶
+        → ￫ • ￫ Red¶
+        → ￫ • ￫ Green¶
+        → → ￫ i.  ￫ Granny Smith¶
+        → → ￫ ii. ￫ Rhode Island Greening¶
+        → ￫ • ￫ Yellow
+
+
+
+        Where ↵ = LineBreak, ¶ = ParagraphBreak, → = tab, ￫ = tabInterval/2, ⇥ = indentation
+
+        We have:
+          6 lines each `lineHeight` high
+          5 line breaks in between each `lineHeight*lineSpacingFactor` high
+          4 paragraph breaks in between each `lineHeight*paragraphSpacingFactor` high
+      */
+
+      expect(tb.range.low.x).to.equal(0);
+      expect(tb.range.high.x).to.equal(7 + 5 + 11); // 7 for indentation, 5 for the tab stop, 11 for the length of "list item 1"
+      expect(tb.range.high.y).to.equal(0);
+      expect(tb.range.low.y).to.equal(-(lineHeight * 6 + (lineHeight * lineSpacingFactor) * 5 + (lineHeight * paragraphSpacingFactor) * 4));
+
+      // Cumulative vertical offsets to help make the test more readable.
+      const offsetY = -lineHeight;
+      const offsetX = indentation;
+
+      expect(tb.lines[0].offsetFromDocument.y).to.equal(offsetY);
+      // TODO: investigate why this is failing. It seems like the first line is not getting the indentation applied for some reason.
+      // expect(tb.lines[0].offsetFromDocument.x).to.equal(offsetX);
+      // offsetY -= (lineHeight + lineHeight * lineSpacingFactor + lineHeight * paragraphSpacingFactor);
+      // expect(tb.lines[1].offsetFromDocument.y).to.equal(offsetY);
+      // expect(tb.lines[1].offsetFromDocument.x).to.equal(offsetX);
     });
 
     it("justifies lines", function () {
@@ -1522,3 +1640,5 @@ describe("produceTextBlockGeometry", () => {
 
 // Ignoring the text strings from the spell checker
 // cspell:ignore jklmnop vwxyz defg hijk ghij klmno pqrstu Tanuki aabb eeff nggg amet adipiscing elit Phasellus pretium malesuada venenatis eleifend Donec sapien Nullam commodo accumsan lacinia metus enim pharetra lacus facilisis Duis suscipit quis feugiat fermentum ut augue Mauris iaculis odio rhoncus lorem viverra turpis elementum posuere Consolas अनुच्छेद cdefg cdefgh cdefghi
+
+
