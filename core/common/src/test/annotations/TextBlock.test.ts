@@ -69,7 +69,7 @@ describe("TextBlockComponent", () => {
     let block: TextBlock;
 
     beforeEach(() => {
-      block = TextBlock.create({ styleId: "0x42", styleOverrides: { widthFactor: 1234 }});
+      block = TextBlock.create({ styleOverrides: { widthFactor: 1234 }});
       const paragraph = block.appendParagraph({ styleOverrides: { lineHeight: 42 } });
       paragraph.children.push(TextRun.create({ styleOverrides: { fontName: "Consolas" } }));
 
@@ -80,10 +80,7 @@ describe("TextBlockComponent", () => {
       list.children.push(listParagraph);
     });
 
-    it("sets style but does not clear overrides by default", () => {
-      block.styleId = "0x99";
-      expect(block.styleId).to.equal("0x99");
-
+    it("has overrides", () => {
       const overrides = getOverrides(block);
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
       expect(overrides.paragraph).to.deep.equal({ lineHeight: 42 });
@@ -95,8 +92,6 @@ describe("TextBlockComponent", () => {
     });
 
     it("clears children's overrides by default when clearing block overrides", () => {
-      block.styleId = "0x99";
-
       block.clearStyleOverrides();
       const overrides = getOverrides(block);
       expect(overrides.block).to.deep.equal({});
@@ -109,8 +104,6 @@ describe("TextBlockComponent", () => {
     });
 
     it("clears children's overrides by default when clearing paragraph overrides", () => {
-      block.styleId = "0x99";
-
       block.children[0].clearStyleOverrides();
       const overrides = getOverrides(block);
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
@@ -137,7 +130,6 @@ describe("TextBlockComponent", () => {
     });
 
     it("does not clear children's overrides when clearing block overrides if preserveChildrenStyles is true", () => {
-      block.styleId = "0x99";
 
       block.clearStyleOverrides({ preserveChildrenOverrides: true });
       const overrides = getOverrides(block);
@@ -152,7 +144,6 @@ describe("TextBlockComponent", () => {
     });
 
     it("does not clear children's overrides when clearing paragraph overrides if preserveChildrenStyles is true", () => {
-      block.styleId = "0x99";
 
       block.children[0].clearStyleOverrides({ preserveChildrenOverrides: true });
       const overrides = getOverrides(block);
@@ -180,12 +171,9 @@ describe("TextBlockComponent", () => {
     });
 
     it("handles empty text block", () => {
-      const empty = TextBlock.createEmpty();
-      expect(empty.styleId).to.equal("");
+      const empty = TextBlock.create();
       expect(empty.styleOverrides).to.deep.equal({});
       expect(() => empty.clearStyleOverrides()).not.to.throw();
-      expect(() => empty.styleId = "0x01").not.to.throw();
-      expect(empty.styleId).to.equal("0x01");
     });
 
     it("creates a deep copy of the style overrides", () => {
@@ -445,7 +433,7 @@ describe("TextBlockComponent", () => {
 describe("TextBlock", () => {
   describe("appendParagraph", () => {
     it("creates a paragraph with no overrides by default", () => {
-      const tb = TextBlock.create({ styleId: "0x42", styleOverrides: { lineHeight: 42 } });
+      const tb = TextBlock.create({ styleOverrides: { lineHeight: 42 } });
       const p = tb.appendParagraph();
       expect(p.styleOverrides).to.deep.equal({});
 
@@ -456,7 +444,7 @@ describe("TextBlock", () => {
     });
 
     it("uses the overrides of the last paragraph if one exists and seedFromLast is true", () => {
-      const tb = TextBlock.create({ styleId: "0x42", styleOverrides: { lineHeight: 42 } });
+      const tb = TextBlock.create({ styleOverrides: { lineHeight: 42 } });
       const p1Props = { styleOverrides: { isBold: true } };
       tb.appendParagraph(p1Props);
 
@@ -467,7 +455,7 @@ describe("TextBlock", () => {
     });
 
     it("creates a paragraph with no overrides if none exist even if seedFromLast is true", () => {
-      const tb = TextBlock.create({ styleId: "0x42", styleOverrides: { lineHeight: 42 } });
+      const tb = TextBlock.create({ styleOverrides: { lineHeight: 42 } });
       const p1 = tb.appendParagraph(undefined, true);
       expect(p1.styleOverrides).to.deep.equal({});
     });
@@ -475,7 +463,7 @@ describe("TextBlock", () => {
 
   describe("appendRun", () => {
     it("appends a paragraph IFF the text block is empty", () => {
-      const tb = TextBlock.create({ styleId: "0x42" });
+      const tb = TextBlock.create();
 
       // No children to start with
       expect(tb.children.length).to.equal(0);

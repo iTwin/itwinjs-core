@@ -45,6 +45,7 @@ class TextEditor implements Decorator {
   private _graphic?: RenderGraphicOwner;
   public categoryId: Id64String = Id64.invalid;
   public modelId: Id64String = Id64.invalid;
+  public defaultTextStyleId: Id64String = Id64.invalid;
 
   // TextAnnotation properties
   public origin: Point3d = new Point3d(0, 0, 0);
@@ -115,7 +116,7 @@ class TextEditor implements Decorator {
   public runStyle: Omit<TextStyleSettingsProps, "lineHeight" | "widthFactor" | "lineSpacingFactor"> = { fontName: "Arial" };
   public baselineShift: BaselineShift = "none";
 
-  public textBlock = TextBlock.createEmpty();
+  public textBlock = TextBlock.create();
 
   public init(iModel: IModelConnection, category: Id64String): void {
     this.clear();
@@ -133,7 +134,8 @@ class TextEditor implements Decorator {
     this._iModel = undefined;
     this._graphic?.disposeGraphic();
     this._graphic = undefined;
-    this.textBlock = TextBlock.createEmpty();
+    this.textBlock = TextBlock.create();
+    this.defaultTextStyleId = Id64.invalid;
     this.origin.setZero();
     this.rotation = 0;
     this.offset.x = this.offset.y = 0;
@@ -267,6 +269,7 @@ class TextEditor implements Decorator {
     const gfx = await DtaRpcInterface.getClient().generateTextAnnotationGeometry(
       rpcProps,
       this.annotationProps,
+      Id64.isValid(this.defaultTextStyleId) ? this.defaultTextStyleId : Id64.invalid,
       this.categoryId,
       this.modelId,
       this.placementProps,
@@ -557,7 +560,7 @@ export class TextDecorationTool extends Tool {
         return true;
       }
       case "applystyle": {
-        editor.textBlock.styleId = arg;
+        editor.defaultTextStyleId = arg;
         editor.textBlock.clearStyleOverrides();
         break;
       }
@@ -568,6 +571,7 @@ export class TextDecorationTool extends Tool {
           editor.categoryId,
           editor.modelId,
           editor.placementProps,
+          editor.defaultTextStyleId,
           editor.annotationProps
         );
 
@@ -586,6 +590,7 @@ export class TextDecorationTool extends Tool {
           arg,
           editor.categoryId,
           editor.placementProps,
+          editor.defaultTextStyleId,
           editor.annotationProps
         );
 

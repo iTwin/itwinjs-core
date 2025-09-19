@@ -173,6 +173,10 @@ export interface TextAnnotation3dProps extends GeometricElement3dProps {
    * @note Don't set this property directly - use [TextAnnotation3d.setAnnotation]($backend) instead.
    */
   textAnnotationData?: string;
+  /** The default [AnnotationTextStyle]($backend) element used by the text annotation.
+   * @beta
+   */
+  defaultTextStyle?: RelatedElementProps;
 }
 
 /** Properties that define a [PhysicalElement]($backend)
@@ -260,6 +264,10 @@ export interface TextAnnotation2dProps extends GeometricElement2dProps {
    * @note Don't set this property directly - use [TextAnnotation2d.setAnnotation]($backend) instead.
    */
   textAnnotationData?: string;
+  /** The default [AnnotationTextStyle]($backend) element used by the text annotation.
+   * @beta
+   */
+  defaultTextStyle?: RelatedElementProps;
 }
 
 /** Properties of a [GeometryPart]($backend)

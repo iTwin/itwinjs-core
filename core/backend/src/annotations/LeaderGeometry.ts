@@ -24,13 +24,14 @@ import { TextBlockLayout, TextStyleResolver } from "./TextBlockLayout";
  * @param layout - The layout information for the text block, including its range.
  * @param transform - The transform to apply to the frame and leader geometry.
  * @param params - The geometry parameters, such as color, to use for the leader lines.
- * @param frame - (Optional) The style properties for the text frame. If not provided or set to "none", a default rectangle is used.
+ * @param textStyleResolver - Resolver for text styles, used to obtain leader styles.
+ * @param scaleFactor - The scale factor to apply to leader dimensions, usually comes from the `scaleFactor` of a [[Drawing]] element.
  * @returns `true` if at least one leader with a terminator was successfully appended; otherwise, `false`.
  * @beta
  */
-export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders: TextAnnotationLeader[], layout: TextBlockLayout, transform: Transform, params: GeometryParams, textStyleResolver: TextStyleResolver): boolean {
+export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders: TextAnnotationLeader[], layout: TextBlockLayout, transform: Transform, params: GeometryParams, textStyleResolver: TextStyleResolver, scaleFactor: number): boolean {
   let result = true;
-  const scaledLineHeight = textStyleResolver.blockSettings.lineHeight * textStyleResolver.scaleFactor;
+  const scaledLineHeight = textStyleResolver.blockSettings.lineHeight * scaleFactor;
   let frame: TextFrameStyleProps | undefined = textStyleResolver.blockSettings.frame;
 
   // If there is no frame, use a rectangular frame to compute the attachmentPoints for leaders.

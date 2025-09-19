@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { RelatedElement, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { ElementDrivesElement } from "../Relationship";
 import { IModelDb } from "../IModelDb";
 import { Element } from "../Element";
@@ -36,6 +36,8 @@ const minBisCoreVersion = new ECVersion(1, 0, 22);
  * @beta
  */
 export interface ITextAnnotation {
+  /** The default [[AnnotationTextStyle]] used by the text annotation. */
+  defaultTextStyle?: TextAnnotationUsesTextStyleByDefault;
   /** Obtain a collection of all of the [TextBlock]($common)s hosted by this element. */
   getTextBlocks(): Iterable<TextBlockAndId>;
   /** Update the element to replace the contents of the specified [TextBlock]($common)s. */
@@ -141,5 +143,15 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
       const props = annotationElement.iModel.relationships.getInstanceProps("BisCore.ElementDrivesTextAnnotation", relationshipId);
       annotationElement.iModel.relationships.deleteInstance(props);
     }
+  }
+}
+
+/** Relationship indicating that the [[AnnotationTextStyle]] is being used as the default style for the [[ITextAnnotation]].
+ * @beta
+ */
+export class TextAnnotationUsesTextStyleByDefault extends RelatedElement {
+  public static classFullName = "BisCore:TextAnnotationUsesTextStyleByDefault";
+  public constructor(annotationTextStyleId: Id64String, relClassName: string = TextAnnotationUsesTextStyleByDefault.classFullName) {
+    super({ id: annotationTextStyleId, relClassName });
   }
 }
