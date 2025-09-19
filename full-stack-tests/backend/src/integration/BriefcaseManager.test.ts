@@ -211,6 +211,11 @@ describe("BriefcaseManager", () => {
     try {
       // check default deviceName value
       await BriefcaseManager.downloadBriefcase(args);
+    } catch {
+      // downloadCheckpoint will throw from stub
+    }
+
+    try {
       // check custom deviceName value
       await BriefcaseManager.downloadBriefcase({ ...args, deviceName: "customDeviceName" });
     } catch {
