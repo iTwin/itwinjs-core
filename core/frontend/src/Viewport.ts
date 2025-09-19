@@ -68,7 +68,6 @@ import { FlashSettings } from "./FlashSettings";
 import { GeometricModelState } from "./ModelState";
 import { GraphicType } from "./common/render/GraphicType";
 import { compareMapLayer } from "./internal/render/webgl/MapLayerParams";
-import { System } from "./internal/render/webgl/System";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
