@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldRun, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextRun } from "@itwin/core-common";
+import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldValue, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextRun } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { createUpdateContext, FieldProperty, updateField, updateFields } from "../../internal/annotations/fields";
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { createUpdateContext, updateField, updateFields } from "../../internal/annotations/fields";
+import { DbResult, Id64, Id64String, ProcessDetector } from "@itwin/core-bentley";
 import { SpatialCategory } from "../../Category";
 import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Schema, Schemas } from "../../Schema";
@@ -15,6 +15,13 @@ import { ClassRegistry } from "../../ClassRegistry";
 import { PhysicalElement } from "../../Element";
 import { ElementOwnsUniqueAspect, ElementUniqueAspect, FontFile, TextAnnotation3d } from "../../core-backend";
 import { ElementDrivesTextAnnotation, TextAnnotationUsesTextStyleByDefault } from "../../annotations/ElementDrivesTextAnnotation";
+
+function isIntlSupported(): boolean {
+  // Node in the mobile add-on does not include Intl, so this test fails. Right now, mobile
+  // users are not expected to do any editing, but long term we will attempt to find a better
+  // solution.
+  return !ProcessDetector.isMobileAppBackend;
+}
 
 describe("updateField", () => {
   const mockElementId = "0x1";
@@ -27,7 +34,7 @@ describe("updateField", () => {
 
   const createMockContext = (elementId: string, propertyValue?: string) => ({
     hostElementId: elementId,
-    getProperty: (field: FieldRun): FieldProperty | undefined => {
+    getProperty: (field: FieldRun): FieldValue | undefined => {
       const propertyPath = field.propertyPath;
       if (
         propertyPath.propertyName === "mockProperty" &&
@@ -35,7 +42,7 @@ describe("updateField", () => {
         propertyPath.accessors?.[1] === "nestedProperty" &&
         propertyValue !== undefined
       ) {
-        return { value: propertyValue, metadata: {} as any };
+        return { value: propertyValue, type: "string" };
       }
       return undefined;
     },
@@ -123,6 +130,11 @@ const fieldsSchemaXml = `
 <ECSchema schemaName="Fields" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
   <ECSchemaReference name="BisCore" version="01.00.04" alias="bis"/>
 
+  <ECEnumeration typeName="IntEnum" backingTypeName="int">
+    <ECEnumerator name="one" displayLabel="One" value="1" />
+    <ECEnumerator name="two" displayLabel="Two" value="2"/>
+  </ECEnumeration>
+
   <ECStructClass typeName="InnerStruct" modifier="None">
     <ECProperty propertyName="bool" typeName="boolean"/>
     <ECArrayProperty propertyName="doubles" typeName="double" minOccurs="0" maxOccurs="unbounded"/>
@@ -138,9 +150,11 @@ const fieldsSchemaXml = `
     <ECProperty propertyName="intProp" typeName="int"/>
     <ECProperty propertyName="point" typeName="point3d"/>
     <ECProperty propertyName="maybeNull" typeName="int"/>
+    <ECProperty propertyName="datetime" typeName="dateTime"/>
     <ECArrayProperty propertyName="strings" typeName="string" minOccurs="0" maxOccurs="unbounded"/>
     <ECStructProperty propertyName="outerStruct" typeName="OuterStruct"/>
     <ECStructArrayProperty propertyName="outerStructs" typeName="OuterStruct" minOccurs="0" maxOccurs="unbounded"/>
+    <ECProperty propertyName="intEnum" typeName="IntEnum"/>
   </ECEntityClass>
 
   <ECEntityClass typeName="TestAspect" modifier="None">
@@ -165,8 +179,10 @@ interface TestElementProps extends PhysicalElementProps {
   point: XYAndZ;
   maybeNull?: number;
   strings: string[];
+  datetime: Date;
   outerStruct: OuterStruct;
   outerStructs: OuterStruct[];
+  intEnum?: number;
 }
 
 class TestElement extends PhysicalElement {
@@ -175,6 +191,7 @@ class TestElement extends PhysicalElement {
   declare public point: XYAndZ;
   declare public maybeNull?: number;
   declare public strings: string[];
+  declare public datetime: Date;
   declare public outerStruct: OuterStruct;
   declare public outerStructs: OuterStruct[];
 }
@@ -238,6 +255,8 @@ describe("Field evaluation", () => {
       intProp: 100,
       point: { x: 1, y: 2, z: 3 },
       strings: ["a", "b", `"name": "c"`],
+      datetime: new Date("2025-08-28T13:45:30.123Z"),
+      intEnum: 1,
       outerStruct: {
         innerStruct: { bool: false, doubles: [1, 2, 3] },
         innerStructs: [{ bool: true, doubles: [] }, { bool: false, doubles: [5, 4, 3, 2, 1] }],
@@ -253,6 +272,7 @@ describe("Field evaluation", () => {
       jsonProperties: {
         stringProp: "abc",
         ints: [10, 11, 12, 13],
+        bool: true,
         zoo: {
           address: {
             zipcode: 12345,
@@ -278,24 +298,31 @@ describe("Field evaluation", () => {
     return id;
   }
 
+  function evaluateField(propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String, deletedDependency = false): FieldValue | undefined {
+    if (typeof propertyHost === "string") {
+      propertyHost = { schemaName: "Fields", className: "TestElement", elementId: propertyHost };
+    }
+
+    const field = FieldRun.create({
+      propertyPath,
+      propertyHost,
+    });
+
+    const context = createUpdateContext(propertyHost.elementId, imodel, deletedDependency);
+    return context.getProperty(field);
+  }
+
   describe("getProperty", () => {
     function expectValue(expected: any, propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String, deletedDependency = false): void {
-      if (typeof propertyHost === "string") {
-        propertyHost = { schemaName: "Fields", className: "TestElement", elementId: propertyHost };
-      }
-
-      const field = FieldRun.create({
-        propertyPath,
-        propertyHost,
-      });
-
-      const context = createUpdateContext(propertyHost.elementId, imodel, deletedDependency);
-      const actual = context.getProperty(field);
-      expect(actual?.value).to.deep.equal(expected);
+      expect(evaluateField(propertyPath, propertyHost, deletedDependency)?.value).to.deep.equal(expected);
     }
 
     it("returns a primitive property value", () => {
       expectValue(100, { propertyName: "intProp" }, sourceElementId);
+    });
+
+    it("returns an integer enum property value", () => {
+      expectValue(1, { propertyName: "intEnum" }, sourceElementId);
     });
 
     it("treats points as primitive values", () => {
@@ -370,27 +397,68 @@ describe("Field evaluation", () => {
       expectValue(5, { propertyName: "outerStructs", accessors: [0, "innerStructs", 0, "doubles", 0] }, sourceElementId);
     });
 
-    it("returns arbitrarily-nested JSON properties", () => {
-      expectValue("abc", { propertyName: "jsonProperties", jsonAccessors: ["stringProp"] }, sourceElementId);
-
-      expectValue(10, { propertyName: "jsonProperties", jsonAccessors: ["ints", 0] }, sourceElementId);
-      expectValue(13, { propertyName: "jsonProperties", jsonAccessors: ["ints", 3] }, sourceElementId);
-      expectValue(13, { propertyName: "jsonProperties", jsonAccessors: ["ints", -1] }, sourceElementId);
-      expectValue(11, { propertyName: "jsonProperties", jsonAccessors: ["ints", -3] }, sourceElementId);
-
-      expectValue(12345, { propertyName: "jsonProperties", jsonAccessors: ["zoo", "address", "zipcode"] }, sourceElementId);
-      expectValue("scree!", { propertyName: "jsonProperties", jsonAccessors: ["zoo", "birds", 1, "sound"] }, sourceElementId);
-    });
-
-    it("returns undefined if JSON accessors applied to non-JSON property", () => {
-      expectValue(undefined, { propertyName: "int", jsonAccessors: ["whatever"] }, sourceElementId);
-      expectValue(undefined, { propertyName: "strings", accessors: [2, "name"] }, sourceElementId);
-      expectValue(undefined, { propertyName: "outerStruct", accessors: ["innerStruct"], jsonAccessors: ["bool"] }, sourceElementId);
-    });
-
     it("returns the value of a property of an aspect", () => {
       expect(imodel.elements.getAspects(sourceElementId, "Fields:TestAspect").length).to.equal(1);
       expectValue(999, { propertyName: "aspectProp" }, { elementId: sourceElementId, schemaName: "Fields", className: "TestAspect" });
+    });
+
+    it("should fail to evaluate if prop type does not match", () => {
+      const fieldRun = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "string", accessors: [0] },
+        cachedContent: "oldValue",
+        formatOptions: {
+          case: "upper",
+          prefix: "Value: ",
+          suffix: "!"
+        }
+      });
+
+      const context =  createUpdateContext(sourceElementId, imodel, false);
+
+      const updated = updateField(fieldRun, context);
+
+      expect(updated).to.be.true;
+      expect(fieldRun.cachedContent).to.equal(FieldRun.invalidContentIndicator);
+    });
+
+    function getPropertyType(propertyHost: FieldPropertyHost, propertyPath: string | FieldPropertyPath): FieldPropertyType | undefined {
+      if (typeof propertyPath === "string") {
+        propertyPath = { propertyName: propertyPath };
+      }
+
+      return evaluateField(propertyPath, propertyHost)?.type;
+    }
+
+    it("deduces type for primitive properties", () => {
+      const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
+      expect(getPropertyType(propertyHost, "intProp")).to.equal("string");
+      expect(getPropertyType(propertyHost, "point")).to.equal("coordinate");
+      expect(getPropertyType(propertyHost, { propertyName: "strings", accessors: [0] })).to.equal("string");
+      expect(getPropertyType(propertyHost, "intEnum")).to.equal("int-enum");
+      expect(getPropertyType(propertyHost, { propertyName: "outerStruct", accessors: ["innerStruct", "doubles", 0] })).to.equal("quantity");
+      expect(getPropertyType(propertyHost, { propertyName: "outerStruct", accessors: ["innerStruct", "bool"] })).to.equal("boolean");
+
+      propertyHost.schemaName = "BisCore";
+      propertyHost.className = "GeometricElement3d";
+      expect(getPropertyType(propertyHost, "LastMod")).to.equal("datetime");
+      expect(getPropertyType(propertyHost, "FederationGuid")).to.equal("string");
+    });
+
+    it("returns undefined for non-primitive properties", () => {
+      const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
+      expect(getPropertyType(propertyHost, "outerStruct")).to.equal(undefined);
+      expect(getPropertyType(propertyHost, "outerStructs")).to.equal(undefined);
+    });
+
+    it("returns undefined for invalid property paths", () => {
+      const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
+      expect(getPropertyType(propertyHost, "unknownPropertyName")).to.be.undefined;
+    });
+
+    it("should return undefined for unsupported primitive types", () => {
+      const host = { elementId: sourceElementId, schemaName: "BisCore", className: "GeometricElement3d" };
+      expect(getPropertyType(host, "GeometryStream")).to.be.undefined;
     });
   });
 
@@ -511,7 +579,7 @@ describe("Field evaluation", () => {
       expect(relationship.targetId).to.equal(targetId);
     });
 
-    function createField(propertyHost: Id64String | FieldPropertyHost, cachedContent: string, propertyName = "intProp", accessors?: Array<string | number>, jsonAccessors?: Array<string | number>): FieldRun {
+    function createField(propertyHost: Id64String | FieldPropertyHost, cachedContent: string, propertyName = "intProp", accessors?: Array<string | number>): FieldRun {
       if (typeof propertyHost === "string") {
         propertyHost = { schemaName: "Fields", className: "TestElement", elementId: propertyHost };
       }
@@ -520,7 +588,7 @@ describe("Field evaluation", () => {
         styleOverrides: { fontName: "Karla" },
         propertyHost,
         cachedContent,
-        propertyPath: { propertyName, accessors, jsonAccessors },
+        propertyPath: { propertyName, accessors },
       });
     }
 
@@ -629,6 +697,19 @@ describe("Field evaluation", () => {
       expect(actual).to.equal(expected);
     }
 
+    it("evaluates cachedContent when annotation element is inserted", () => {
+      const sourceId = insertTestElement();
+      const block = TextBlock.create();
+      block.appendRun(createField(sourceId, "initial cached content"));
+      expect(block.stringify()).to.equal("initial cached content");
+
+      const targetId = insertAnnotationElement(block);
+      imodel.saveChanges();
+
+      const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
+      expect(target.getAnnotation()!.textBlock.stringify()).to.equal("100");
+    });
+
     it("updates fields when source element is modified or deleted", () => {
       const sourceId = insertTestElement();
       const block = TextBlock.create();
@@ -718,19 +799,74 @@ describe("Field evaluation", () => {
       const sourceId = insertTestElement();
       const block = TextBlock.create();
       block.appendRun(createField(sourceId, "", "outerStruct", ["innerStructs", 1, "doubles", -2]));
-      block.appendRun(createField(sourceId, "", "jsonProperties", undefined, ["zoo", "birds", 0, "name"]));
       const targetId = insertAnnotationElement(block);
       imodel.saveChanges();
-      expectText("2duck", targetId);
+      expectText("2", targetId);
 
       const source = imodel.elements.getElement<TestElement>(sourceId);
       source.outerStruct.innerStructs[1].doubles[3] = 12.5;
-      source.jsonProperties.zoo.birds[0].name = "parrot";
       source.update();
       imodel.saveChanges();
-      expectText("12.5parrot", targetId);
+      expectText("12.5", targetId);
+    });
+  });
+
+  describe("Format Validation", () => {
+    it("validates formatting options for string property type", () => {
+      // Create a FieldRun with string property type and some format options
+      const fieldRun = FieldRun.create({
+        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
+        propertyPath: { propertyName: "strings", accessors: [0] },
+        cachedContent: "oldValue",
+        formatOptions: {
+          case: "upper",
+          prefix: "Value: ",
+          suffix: "!"
+        }
+      });
+
+      // Context returns a string value for the property
+      const context = {
+        hostElementId: sourceElementId,
+        getProperty: () => { return { value: "abc", type: "string" as const } },
+      };
+
+      // Update the field and check the result
+      const updated = updateField(fieldRun, context);
+
+      // The formatted value should be uppercased and have prefix/suffix applied
+      expect(updated).to.be.true;
+      expect(fieldRun.cachedContent).to.equal("Value: ABC!");
+    });
+
+    it("validates formatting options for datetime objects", function () {
+      if (!isIntlSupported()) {
+        this.skip();
+      }
+
+      const propertyHost = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
+      const fieldRun = FieldRun.create({
+        propertyHost,
+        propertyPath: { propertyName: "datetime"},
+        cachedContent: "oldval",
+        formatOptions: {
+          dateTime: {
+            formatOptions:{
+              month: "short",
+              day: "2-digit",
+              year: "numeric",
+              timeZone: "UTC"
+            },
+            locale: "en-US",
+         },
+        },
+      });
+
+      const context = createUpdateContext(sourceElementId, imodel, false);
+      const updated = updateField(fieldRun, context);
+
+      expect(updated).to.be.true;
+      expect(fieldRun.cachedContent).to.equal("Aug 28, 2025");
     });
   });
 });
-
-
