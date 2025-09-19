@@ -28,7 +28,7 @@ export class AccuDrawViewportUI extends AccuDraw {
   private _focusItem: ItemField;
   private _controls?: AccuDrawControls;
   private _toolTipsSuspended?: true;
-  private _expression?: { item: ItemField; operator: string };
+  private _expression?: { item: ItemField, operator: string };
 
   /** Settings to control the behavior and visual appearance of the viewport controls.
    * @note Colors were chosen for visibility against viewport background and contents.
@@ -41,7 +41,7 @@ export class AccuDrawViewportUI extends AccuDraw {
     /** Layout controls in a single row horizontally instead of in columns vertically as an option when using fixed location. */
     horizontalArrangement: false,
     /** When controls follow the cursor, the X and Y offsets applied to the current point to position the top left (values in inches based on screen DPI) */
-    cursorOffset: { x: 0.4, y: 0.1 },
+    cursorOffset: { x: .4, y: .1 },
     /** Replace "^", ";", and ".." with "°" or ":" for easier input. */
     simplifiedInput: true,
     /** Enable simple math operations not supported by quantity parser. */
@@ -133,10 +133,12 @@ export class AccuDrawViewportUI extends AccuDraw {
 
   /** Call to update the currently displayed controls after settings are changed. */
   public refreshControls(): void {
-    if (undefined === this._controls) return;
+    if (undefined === this._controls)
+      return;
 
     this.removeControls();
-    if (!this.isActive) return;
+    if (!this.isActive)
+      return;
 
     // Shouldn't need to call IModelApp.toolAdmin.simulateMotionEvent() in this case...
     const ev = new BeButtonEvent();
@@ -145,20 +147,15 @@ export class AccuDrawViewportUI extends AccuDraw {
   }
 
   private suspendToolTips() {
-    if (
-      !AccuDrawViewportUI.controlProps.suspendLocateToolTip ||
-      undefined ===
-        (this._toolTipsSuspended = IModelApp.accuSnap.userSettings.toolTip
-          ? true
-          : undefined)
-    )
+    if (!AccuDrawViewportUI.controlProps.suspendLocateToolTip || undefined === (this._toolTipsSuspended = (IModelApp.accuSnap.userSettings.toolTip ? true : undefined)))
       return;
     IModelApp.accuSnap.userSettings.toolTip = false;
     IModelApp.notifications.clearToolTip();
   }
 
   private unsuspendToolTips() {
-    if (undefined === this._toolTipsSuspended) return;
+    if (undefined === this._toolTipsSuspended)
+      return;
     IModelApp.accuSnap.userSettings.toolTip = true;
     this._toolTipsSuspended = undefined;
   }
@@ -169,20 +166,18 @@ export class AccuDrawViewportUI extends AccuDraw {
   }
 
   private setPartialKeyinStatus(item: ItemField, selectAll: boolean): void {
-    if (!this.isDynamicKeyinStatus(item)) return;
+    if (!this.isDynamicKeyinStatus(item))
+      return;
 
     AccuDrawShortcuts.itemFieldNewInput(item);
-    if (undefined === this._controls || !selectAll) return;
+    if (undefined === this._controls || !selectAll)
+      return;
 
     const itemField = this._controls.itemFields[item];
     itemField.setSelectionRange(0, itemField.value.length);
   }
 
-  private evaluateExpression(
-    operator: string,
-    operandA: number,
-    operandB: number
-  ): number {
+  private evaluateExpression(operator: string, operandA: number, operandB: number): number {
     switch (operator) {
       case "+":
         return operandA + operandB;
@@ -197,58 +192,53 @@ export class AccuDrawViewportUI extends AccuDraw {
     }
   }
 
-  private parseExpression(
-    currentValue: string,
-    isAngle: boolean
-  ): string | undefined {
-    if (undefined === this._expression) return undefined; // Not an expression...
+  private parseExpression(currentValue: string, isAngle: boolean): string | undefined {
+    if (undefined === this._expression)
+      return undefined; // Not an expression...
 
     // Attempt to parse and apply operation to current value...
-    const operator = currentValue.lastIndexOf(this._expression.operator);
+    const operator = currentValue.lastIndexOf(this._expression.operator)
     if (-1 === operator) {
       this._expression = undefined; // Operator has been edited out of string, parse current value...
       return undefined;
     }
 
-    const parserSpec = isAngle ? this.getAngleParser() : this.getLengthParser();
-    const formatterSpec = isAngle
-      ? this.getAngleFormatter()
-      : this.getLengthFormatter();
+    const parserSpec = (isAngle ? this.getAngleParser() : this.getLengthParser());
+    const formatterSpec = (isAngle ? this.getAngleFormatter() : this.getLengthFormatter());
     if (undefined === parserSpec || undefined === formatterSpec)
       return undefined; // Nothing to do...
 
     const operandAStr = currentValue.substring(0, operator);
     const parseResultA = parserSpec.parseToQuantityValue(operandAStr);
-    if (!Parser.isParsedQuantity(parseResultA)) return undefined; // First operand isn't valid, try to parse current value (which is also likely to fail)...
+    if (!Parser.isParsedQuantity(parseResultA))
+      return undefined; // First operand isn't valid, try to parse current value (which is also likely to fail)...
 
-    const operandBStr = currentValue.substring(
-      operator + this._expression.operator.length
-    );
+    const operandBStr = currentValue.substring(operator + this._expression.operator.length);
     const operatorKey = this._expression.operator[1];
-    const isNumber = "*" === operatorKey || "/" === operatorKey; // Treat as number for */ and quantity for +-...
+    const isNumber = ("*" === operatorKey || "/" === operatorKey); // Treat as number for */ and quantity for +-...
     let operandB;
 
     if (isNumber) {
       operandB = parseFloat(operandBStr);
-      if (Number.isNaN(operandB)) return operandAStr; // Second operand is invalid number, set value to first operand which is valid...
+      if (Number.isNaN(operandB))
+        return operandAStr; // Second operand is invalid number, set value to first operand which is valid...
     } else {
       const parseResultB = parserSpec.parseToQuantityValue(operandBStr);
-      if (!Parser.isParsedQuantity(parseResultB)) return operandAStr; // Second operand is invalid quantity, set value to first operand which is valid...
+      if (!Parser.isParsedQuantity(parseResultB))
+        return operandAStr; // Second operand is invalid quantity, set value to first operand which is valid...
       operandB = parseResultB.value;
     }
 
     const operandA = parseResultA.value;
     const newValue = this.evaluateExpression(operatorKey, operandA, operandB);
-    const newValueStr = IModelApp.quantityFormatter.formatQuantity(
-      newValue,
-      formatterSpec
-    );
+    const newValueStr = IModelApp.quantityFormatter.formatQuantity(newValue, formatterSpec);
 
     return newValueStr;
   }
 
   private async processPartialInput(item: ItemField): Promise<void> {
-    if (undefined === this._controls) return;
+    if (undefined === this._controls)
+      return;
 
     const itemField = this._controls.itemFields[item];
     const currentValue = itemField.value;
@@ -260,16 +250,14 @@ export class AccuDrawViewportUI extends AccuDraw {
       return;
     }
 
-    const isAngle = ItemField.ANGLE_Item === item;
+    const isAngle = (ItemField.ANGLE_Item === item);
     const expressionValue = this.parseExpression(currentValue, isAngle);
     return this.processFieldInput(item, expressionValue ?? currentValue, false);
   }
 
-  private async acceptPartialInput(
-    item: ItemField,
-    forward?: boolean
-  ): Promise<void> {
-    if (undefined === this._controls) return;
+  private async acceptPartialInput(item: ItemField, forward?: boolean): Promise<void> {
+    if (undefined === this._controls)
+      return;
 
     const itemField = this._controls.itemFields[item];
     const currentValue = itemField.value;
@@ -280,110 +268,80 @@ export class AccuDrawViewportUI extends AccuDraw {
       return this.updateItemFieldValue(itemField, item);
     }
 
-    const isAngle = ItemField.ANGLE_Item === item;
+    const isAngle = (ItemField.ANGLE_Item === item);
     const expressionValue = this.parseExpression(currentValue, isAngle);
 
     if (undefined === forward)
-      return AccuDrawShortcuts.itemFieldAcceptInput(
-        item,
-        expressionValue ?? currentValue
-      );
+      return AccuDrawShortcuts.itemFieldAcceptInput(item, expressionValue ?? currentValue);
 
-    return AccuDrawShortcuts.itemFieldNavigate(
-      item,
-      expressionValue ?? currentValue,
-      forward
-    );
+    return AccuDrawShortcuts.itemFieldNavigate(item, expressionValue ?? currentValue, forward);
   }
 
   private acceptSavedValue(item: ItemField, next: boolean): void {
-    if (next) AccuDrawShortcuts.chooseNextValue(item);
-    else AccuDrawShortcuts.choosePreviousValue(item);
+    if (next)
+      AccuDrawShortcuts.chooseNextValue(item);
+    else
+      AccuDrawShortcuts.choosePreviousValue(item);
   }
 
-  private doFocusHome(
-    ev: KeyboardEvent,
-    isDown: boolean,
-    _item: ItemField
-  ): void {
+  private doFocusHome(ev: KeyboardEvent, isDown: boolean, _item: ItemField): void {
     ev.preventDefault();
-    if (!isDown || this._isFocusHome) return;
+    if (!isDown || this._isFocusHome)
+      return;
 
     ev.stopPropagation();
     this.setFocusHome();
     IModelApp.viewManager.invalidateDecorationsAllViews();
   }
 
-  private async doChooseSavedValue(
-    ev: KeyboardEvent,
-    isDown: boolean,
-    item: ItemField,
-    next: boolean
-  ): Promise<void> {
+  private async doChooseSavedValue(ev: KeyboardEvent, isDown: boolean, item: ItemField, next: boolean): Promise<void> {
     ev.preventDefault();
     ev.stopPropagation();
 
-    if (!isDown) return;
+    if (!isDown)
+      return;
 
     this.acceptSavedValue(item, next);
   }
 
-  private async doNavigate(
-    ev: KeyboardEvent,
-    isDown: boolean,
-    item: ItemField,
-    forward: boolean
-  ): Promise<void> {
+  private async doNavigate(ev: KeyboardEvent, isDown: boolean, item: ItemField, forward: boolean): Promise<void> {
     ev.preventDefault();
     ev.stopPropagation();
 
-    if (!isDown) return;
+    if (!isDown)
+      return;
 
     return this.acceptPartialInput(item, forward);
   }
 
-  private async doAcceptInput(
-    ev: KeyboardEvent,
-    isDown: boolean,
-    item: ItemField
-  ): Promise<void> {
+  private async doAcceptInput(ev: KeyboardEvent, isDown: boolean, item: ItemField): Promise<void> {
     ev.preventDefault();
-    if (!isDown || this.isDynamicKeyinStatus(item)) return;
+    if (!isDown || this.isDynamicKeyinStatus(item))
+      return;
 
     ev.stopPropagation();
     return this.acceptPartialInput(item);
   }
 
-  private doNewInput(
-    _ev: KeyboardEvent,
-    isDown: boolean,
-    item: ItemField
-  ): void {
-    if (!isDown) return;
+  private doNewInput(_ev: KeyboardEvent, isDown: boolean, item: ItemField): void {
+    if (!isDown)
+      return;
 
     this.setPartialKeyinStatus(item, false);
   }
 
-  private async doDeleteInput(
-    _ev: KeyboardEvent,
-    isDown: boolean,
-    item: ItemField
-  ): Promise<void> {
-    if (isDown) return this.setPartialKeyinStatus(item, false);
+  private async doDeleteInput(_ev: KeyboardEvent, isDown: boolean, item: ItemField): Promise<void> {
+    if (isDown)
+      return this.setPartialKeyinStatus(item, false);
 
     return this.processPartialInput(item);
   }
 
-  private processReplacementKey(
-    ev: KeyboardEvent,
-    isDown: boolean,
-    item: ItemField,
-    replacement: string,
-    allowStart: boolean
-  ): boolean {
-    if (undefined === this._controls) return false;
+  private processReplacementKey(ev: KeyboardEvent, isDown: boolean, item: ItemField, replacement: string, allowStart: boolean): boolean {
+    if (undefined === this._controls)
+      return false;
 
-    ev.preventDefault();
+    ev.preventDefault()
     if (!isDown || 0 === replacement.length || this.isDynamicKeyinStatus(item))
       return true;
 
@@ -392,94 +350,52 @@ export class AccuDrawViewportUI extends AccuDraw {
       return true;
 
     const currentValue = itemField.value;
-    if (
-      !allowStart &&
-      (!currentValue.length ||
-        !itemField.selectionStart ||
-        !itemField.selectionEnd)
-    )
+    if (!allowStart && (!currentValue.length || !itemField.selectionStart || !itemField.selectionEnd))
       return true;
 
-    const selectionStart =
-      itemField.selectionStart > itemField.selectionEnd
-        ? itemField.selectionEnd
-        : itemField.selectionStart;
-    itemField.value =
-      currentValue.substring(0, selectionStart) +
-      replacement +
-      currentValue.substring(itemField.selectionEnd);
+    const selectionStart = (itemField.selectionStart > itemField.selectionEnd ? itemField.selectionEnd : itemField.selectionStart);
+    itemField.value = currentValue.substring(0, selectionStart) + replacement + currentValue.substring(itemField.selectionEnd);
     itemField.selectionStart = itemField.selectionEnd = selectionStart + 1;
 
     return false;
   }
 
-  private processRepeatedKey(
-    ev: KeyboardEvent,
-    isDown: boolean,
-    item: ItemField,
-    replacement: string
-  ): boolean {
-    if (undefined === this._controls) return false;
+  private processRepeatedKey(ev: KeyboardEvent, isDown: boolean, item: ItemField, replacement: string): boolean {
+    if (undefined === this._controls)
+      return false;
 
     const itemField = this._controls.itemFields[item];
     const currentValue = itemField.value;
-    if (
-      !currentValue.length ||
-      !itemField.selectionStart ||
-      !itemField.selectionEnd
-    )
+    if (!currentValue.length || !itemField.selectionStart || !itemField.selectionEnd)
       return false;
 
-    const selectionStart =
-      itemField.selectionStart > itemField.selectionEnd
-        ? itemField.selectionEnd
-        : itemField.selectionStart;
-    if (selectionStart !== itemField.selectionEnd) return false;
+    const selectionStart = (itemField.selectionStart > itemField.selectionEnd ? itemField.selectionEnd : itemField.selectionStart);
+    if (selectionStart !== itemField.selectionEnd)
+      return false;
 
     const selectionPrevious = selectionStart - 1;
     if (currentValue[selectionPrevious] !== (isDown ? ev.key : replacement))
       return false;
 
-    ev.preventDefault();
-    if (!isDown) return false;
+    ev.preventDefault()
+    if (!isDown)
+      return false;
 
-    itemField.value =
-      currentValue.substring(0, selectionPrevious) +
-      replacement +
-      currentValue.substring(selectionStart);
+    itemField.value = currentValue.substring(0, selectionPrevious) + replacement + currentValue.substring(selectionStart);
     itemField.selectionStart = itemField.selectionEnd = selectionPrevious + 1;
 
     return false;
   }
 
-  private doProcessOverrideKey(
-    ev: KeyboardEvent,
-    isDown: boolean,
-    item: ItemField
-  ): boolean {
-    if (
-      undefined === this._controls ||
-      !AccuDrawViewportUI.controlProps.simplifiedInput
-    )
+  private doProcessOverrideKey(ev: KeyboardEvent, isDown: boolean, item: ItemField): boolean {
+    if (undefined === this._controls || !AccuDrawViewportUI.controlProps.simplifiedInput)
       return false;
 
     switch (ev.key) {
       case "^":
-        return this.processReplacementKey(
-          ev,
-          isDown,
-          item,
-          ItemField.ANGLE_Item === item ? "°" : "",
-          false
-        ); // Easier "°" input...
+        return this.processReplacementKey(ev, isDown, item, (ItemField.ANGLE_Item === item ? "°" : ""), false); // Easier "°" input...
       case ";":
-        return this.processReplacementKey(
-          ev,
-          isDown,
-          item,
-          ItemField.ANGLE_Item === item ? "°" : ":",
-          false
-        ); // Easier ":" input still useful w/o MU:SU:PU?
+        return this.processReplacementKey(ev, isDown, item, (ItemField.ANGLE_Item === item ? "°" : ":"), false); // Easier ":" input still useful w/o MU:SU:PU?
       case ".":
         return this.processRepeatedKey(ev, isDown, item, ":"); // Still useful replacing ".." with ":" for numeric keypad users w/o MU:SU:PU?
       default:
@@ -487,15 +403,8 @@ export class AccuDrawViewportUI extends AccuDraw {
     }
   }
 
-  private doProcessExpressionKey(
-    ev: KeyboardEvent,
-    isDown: boolean,
-    item: ItemField
-  ): boolean {
-    if (
-      undefined === this._controls ||
-      !AccuDrawViewportUI.controlProps.mathOperations
-    )
+  private doProcessExpressionKey(ev: KeyboardEvent, isDown: boolean, item: ItemField): boolean {
+    if (undefined === this._controls || !AccuDrawViewportUI.controlProps.mathOperations)
       return false;
 
     const itemField = this._controls.itemFields[item];
@@ -504,24 +413,12 @@ export class AccuDrawViewportUI extends AccuDraw {
     switch (ev.key) {
       case "ArrowLeft":
       case "ArrowRight":
-        if (
-          undefined === this._expression ||
-          !isDown ||
-          this.isDynamicKeyinStatus(item) ||
-          !itemField.selectionStart
-        )
+        if (undefined === this._expression || !isDown || this.isDynamicKeyinStatus(item) || !itemField.selectionStart)
           break;
 
-        const moveLeft = "ArrowLeft" === ev.key;
-        const operatorPosIns = currentValue.lastIndexOf(
-          this._expression.operator
-        );
-        if (
-          itemField.selectionStart !==
-          (moveLeft
-            ? operatorPosIns + this._expression.operator.length
-            : operatorPosIns)
-        )
+        const moveLeft = ("ArrowLeft" === ev.key);
+        const operatorPosIns = currentValue.lastIndexOf(this._expression.operator);
+        if (itemField.selectionStart !== (moveLeft ? operatorPosIns + this._expression.operator.length : operatorPosIns))
           break;
 
         // Treat expression operator string as a single character when moving the text insertion cursor...
@@ -533,36 +430,24 @@ export class AccuDrawViewportUI extends AccuDraw {
 
       case "Backspace":
       case "Delete":
-        if (
-          undefined === this._expression ||
-          !isDown ||
-          this.isDynamicKeyinStatus(item) ||
-          !itemField.selectionStart
-        )
+        if (undefined === this._expression || !isDown || this.isDynamicKeyinStatus(item) || !itemField.selectionStart)
           break;
 
-        const deleteBefore = "Backspace" === ev.key;
-        const operatorPosDel = currentValue.lastIndexOf(
-          this._expression.operator
-        );
-        if (
-          itemField.selectionStart !==
-          (deleteBefore
-            ? operatorPosDel + this._expression.operator.length
-            : operatorPosDel)
-        )
+        const deleteBefore = ("Backspace" === ev.key);
+        const operatorPosDel = currentValue.lastIndexOf(this._expression.operator);
+        if (itemField.selectionStart !== (deleteBefore ? operatorPosDel + this._expression.operator.length : operatorPosDel))
           break;
 
         // Treat expression operator string as single character for delete...
         itemField.value = currentValue.substring(0, operatorPosDel);
-        itemField.selectionStart = itemField.selectionEnd =
-          itemField.value.length;
+        itemField.selectionStart = itemField.selectionEnd = itemField.value.length;
         this._expression = undefined;
         ev.preventDefault();
         return true;
 
       case " ":
-        if (!isDown || !this.isDynamicKeyinStatus(item)) break;
+        if (!isDown || !this.isDynamicKeyinStatus(item))
+          break;
 
         this.setPartialKeyinStatus(item, false); // Replacing current w/space isn't useful, append to end to support + or - more conveniently...
         return true;
@@ -571,33 +456,23 @@ export class AccuDrawViewportUI extends AccuDraw {
       case "-":
       case "*":
       case "/":
-        if (!isDown || undefined !== this._expression) break;
-
-        if (
-          !currentValue.length ||
-          !itemField.selectionStart ||
-          itemField.selectionStart !== currentValue.length
-        )
+        if (!isDown || undefined !== this._expression)
           break;
 
-        const haveSpace = " " === currentValue[itemField.selectionStart - 1];
-        const requireSpace = "+" === ev.key || "-" === ev.key; // These are valid for 1st character to replace current value...
-
-        if (
-          !(requireSpace
-            ? haveSpace
-            : haveSpace || this.isDynamicKeyinStatus(item))
-        )
+        if (!currentValue.length || !itemField.selectionStart || itemField.selectionStart !== currentValue.length)
           break;
 
-        const operator = ` ${ev.key} `;
-        const expression = `${
-          currentValue + (haveSpace ? operator.substring(1) : operator)
-        }`;
+        const haveSpace = (" " === currentValue[itemField.selectionStart - 1]);
+        const requireSpace = ("+" === ev.key || "-" === ev.key); // These are valid for 1st character to replace current value...
+
+        if (!(requireSpace ? haveSpace : (haveSpace || this.isDynamicKeyinStatus(item))))
+          break;
+
+        const operator = ` ${ev.key} `
+        const expression = `${currentValue + (haveSpace ? operator.substring(1) : operator)}`;
 
         itemField.value = expression;
-        itemField.selectionStart = itemField.selectionEnd =
-          itemField.value.length;
+        itemField.selectionStart = itemField.selectionEnd = itemField.value.length;
         this._expression = { item, operator };
 
         this.setPartialKeyinStatus(item, false);
@@ -609,30 +484,27 @@ export class AccuDrawViewportUI extends AccuDraw {
     return false;
   }
 
-  private async doProcessKey(
-    ev: KeyboardEvent,
-    isDown: boolean,
-    item: ItemField
-  ): Promise<void> {
+  private async doProcessKey(ev: KeyboardEvent, isDown: boolean, item: ItemField): Promise<void> {
     if (!this.itemFieldInputIsValid(ev.key, item)) {
       ev.preventDefault(); // Ignore potential shortcuts...
       return;
     }
 
-    if (this.doProcessOverrideKey(ev, isDown, item)) return;
+    if (this.doProcessOverrideKey(ev, isDown, item))
+      return;
 
-    if (this.doProcessExpressionKey(ev, isDown, item)) return;
+    if (this.doProcessExpressionKey(ev, isDown, item))
+      return;
 
-    if (isDown) return this.setPartialKeyinStatus(item, true);
+    if (isDown)
+      return this.setPartialKeyinStatus(item, true);
 
     return this.processPartialInput(item);
   }
 
-  private async onKeyboardEvent(
-    ev: KeyboardEvent,
-    isDown: boolean
-  ): Promise<void> {
-    if (ev.ctrlKey || ev.altKey || ev.metaKey) return; // Ignore qualifiers other than shift...
+  private async onKeyboardEvent(ev: KeyboardEvent, isDown: boolean): Promise<void> {
+    if (ev.ctrlKey || ev.altKey || ev.metaKey)
+      return; // Ignore qualifiers other than shift...
 
     switch (ev.key) {
       case "Escape":
@@ -659,11 +531,13 @@ export class AccuDrawViewportUI extends AccuDraw {
         return this.doNewInput(ev, isDown, this._focusItem);
       case "ArrowLeft":
       case "ArrowRight":
-        if (this.doProcessExpressionKey(ev, isDown, this._focusItem)) return;
+        if (this.doProcessExpressionKey(ev, isDown, this._focusItem))
+          return;
         return this.doNewInput(ev, isDown, this._focusItem);
       case "Backspace":
       case "Delete":
-        if (this.doProcessExpressionKey(ev, isDown, this._focusItem)) return;
+        if (this.doProcessExpressionKey(ev, isDown, this._focusItem))
+          return;
         return this.doDeleteInput(ev, isDown, this._focusItem);
       default:
         return this.doProcessKey(ev, isDown, this._focusItem);
@@ -671,7 +545,8 @@ export class AccuDrawViewportUI extends AccuDraw {
   }
 
   private removeControls(): void {
-    if (undefined === this._controls) return;
+    if (undefined === this._controls)
+      return;
 
     this._controls.overlay.remove();
     this._controls = undefined;
@@ -694,22 +569,17 @@ export class AccuDrawViewportUI extends AccuDraw {
     return div;
   }
 
-  private updateItemFieldKeyinStatus(
-    itemField: HTMLInputElement,
-    item: ItemField
-  ) {
-    const isDynamic = this.isDynamicKeyinStatus(item);
+  private updateItemFieldKeyinStatus(itemField: HTMLInputElement, item: ItemField) {
+    const isDynamic = this.isDynamicKeyinStatus(item)
 
     if (isDynamic && item === this._expression?.item)
       this._expression = undefined; // Only valid when entering partial input...
 
-    itemField.style.caretColor = isDynamic
-      ? "transparent"
-      : itemField.style.color;
+    itemField.style.caretColor = isDynamic ? "transparent" : itemField.style.color;
   }
 
   private updateItemFieldValue(itemField: HTMLInputElement, item: ItemField) {
-    const value = this.getFormattedValueByIndex(item);
+    const value = this.getFormattedValueByIndex(item)
     itemField.value = value;
     this.updateItemFieldKeyinStatus(itemField, item);
   }
@@ -731,10 +601,7 @@ export class AccuDrawViewportUI extends AccuDraw {
       : AccuDrawViewportUI.controlProps.button.unlocked.color;
   }
 
-  private initializeItemStyle(
-    style: CSSStyleDeclaration,
-    isButton: boolean
-  ): void {
+  private initializeItemStyle(style: CSSStyleDeclaration, isButton: boolean): void {
     style.pointerEvents = "none"; // Don't receive pointer events...
     style.textWrap = "nowrap";
     style.textAnchor = "top";
@@ -768,7 +635,6 @@ export class AccuDrawViewportUI extends AccuDraw {
 
     style.fontFamily = controlProps.text.fontFamily;
     style.fontSize = controlProps.text.fontSize;
-
     style.borderRadius = controlProps.border.radius;
   }
 
@@ -782,18 +648,10 @@ export class AccuDrawViewportUI extends AccuDraw {
     this.initializeItemStyle(style, false);
     this.updateItemFieldValue(itemField, item);
 
-    itemField.onkeydown = async (ev: KeyboardEvent) => {
-      await this.onKeyboardEvent(ev, true);
-    };
-    itemField.onkeyup = async (ev: KeyboardEvent) => {
-      await this.onKeyboardEvent(ev, false);
-    };
-    itemField.onfocus = (ev: FocusEvent) => {
-      this.onFocusChange(ev, item, true);
-    };
-    itemField.onblur = (ev: FocusEvent) => {
-      this.onFocusChange(ev, item, false);
-    };
+    itemField.onkeydown = async (ev: KeyboardEvent) => { await this.onKeyboardEvent(ev, true); };
+    itemField.onkeyup = async (ev: KeyboardEvent) => { await this.onKeyboardEvent(ev, false); };
+    itemField.onfocus = (ev: FocusEvent) => { this.onFocusChange(ev, item, true); };
+    itemField.onblur = (ev: FocusEvent) => { this.onFocusChange(ev, item, false); };;
 
     return itemField;
   }
@@ -831,30 +689,22 @@ export class AccuDrawViewportUI extends AccuDraw {
   }
 
   /** Called after the controls have been removed from the view. */
-  protected removedControlRect(): void {}
+  protected removedControlRect(): void { }
 
   /** Called after the position of the controls in the supplied view is updated. */
-  protected changedControlRect(_rect: ViewRect, _vp: ScreenViewport): void {}
+  protected changedControlRect(_rect: ViewRect, _vp: ScreenViewport): void { }
 
   /** Use to override the position of the controls in the supplied view. */
-  protected modifyControlRect(_rect: ViewRect, _vp: ScreenViewport): void {}
+  protected modifyControlRect(_rect: ViewRect, _vp: ScreenViewport): void { }
 
   /** Return the ViewRect currently occupied by the controls in the supplied view. */
   protected currentControlRect(vp: ScreenViewport): ViewRect | undefined {
-    if (
-      undefined === this._controls ||
-      this._controls.overlay.parentElement !== vp.vpDiv
-    )
+    if (undefined === this._controls || this._controls.overlay.parentElement !== vp.vpDiv)
       return undefined;
 
     const viewRect = vp.vpDiv.getBoundingClientRect();
     const elemRect = this._controls.div.getBoundingClientRect();
-    const controlRect = new ViewRect(
-      elemRect.left - viewRect.left,
-      elemRect.top - viewRect.top,
-      elemRect.right - viewRect.left,
-      elemRect.bottom - viewRect.top
-    );
+    const controlRect = new ViewRect(elemRect.left - viewRect.left, elemRect.top - viewRect.top, elemRect.right - viewRect.left, elemRect.bottom - viewRect.top);
 
     return controlRect;
   }
@@ -885,12 +735,10 @@ export class AccuDrawViewportUI extends AccuDraw {
 
   private updateControls(ev: BeButtonEvent): void {
     const vp = ev.viewport;
-    if (undefined === vp || !this.isActive) return;
+    if (undefined === vp || !this.isActive)
+      return;
 
-    if (
-      undefined !== this._controls &&
-      this._controls.overlay.parentElement !== vp.vpDiv
-    )
+    if (undefined !== this._controls && this._controls.overlay.parentElement !== vp.vpDiv)
       this.removeControls(); // Could be enhanced to save/restore partial input of currently focused item...
 
     const props = AccuDrawViewportUI.controlProps;
@@ -930,10 +778,7 @@ export class AccuDrawViewportUI extends AccuDraw {
       createFieldAndLock(ItemField.Z_Item); // Both polar and rectangular modes support Z in 3d views...
 
       this._controls = { overlay, div, itemFields, itemLocks };
-      this.updateControlVisibility(
-        CompassMode.Polar === this.compassMode,
-        this.is3dCompass(vp)
-      );
+      this.updateControlVisibility(CompassMode.Polar === this.compassMode, this.is3dCompass(vp));
       this.setFocusItem(this._focusItem);
       this.suspendToolTips();
 
@@ -944,23 +789,18 @@ export class AccuDrawViewportUI extends AccuDraw {
     const position = vp.worldToView(ev.point);
 
     if (props.fixedLocation) {
-      position.x =
-        viewRect.left + (viewRect.width - this._controls.div.offsetWidth) * 0.5;
-      position.y = viewRect.bottom - this._controls.div.offsetHeight;
+      position.x = (viewRect.left + ((viewRect.width - this._controls.div.offsetWidth) * 0.5));
+      position.y = (viewRect.bottom - this._controls.div.offsetHeight);
     } else {
       position.x += Math.floor(vp.pixelsFromInches(props.cursorOffset.x)) + 0.5;
       position.y += Math.floor(vp.pixelsFromInches(props.cursorOffset.y)) + 0.5;
     }
 
-    const controlRect = new ViewRect(
-      position.x,
-      position.y,
-      position.x + this._controls.div.offsetWidth,
-      position.y + this._controls.div.offsetHeight
-    );
+    const controlRect = new ViewRect(position.x, position.y, position.x + this._controls.div.offsetWidth, position.y + this._controls.div.offsetHeight);
     this.modifyControlRect(controlRect, vp);
 
-    if (!controlRect.isContained(viewRect)) return; // Keep showing at last valid location...
+    if (!controlRect.isContained(viewRect))
+      return; // Keep showing at last valid location...
 
     this._controls.div.style.left = `${controlRect.left}px`;
     this._controls.div.style.top = `${controlRect.top}px`;
@@ -970,20 +810,17 @@ export class AccuDrawViewportUI extends AccuDraw {
   }
 
   private get _isFocusHome(): boolean {
-    return document.body === document.activeElement;
+    return (document.body === document.activeElement);
   }
 
   private get _isFocusAccuDraw(): boolean {
-    return (
-      undefined !== this._controls &&
-      document.activeElement?.parentElement ===
-        this._controls.itemFields[this._focusItem].parentElement
-    );
+    return (undefined !== this._controls && document.activeElement?.parentElement === this._controls.itemFields[this._focusItem].parentElement);
   }
 
   private setFocusHome(): void {
     const element = document.activeElement as HTMLElement;
-    if (element && element !== document.body) element.blur();
+    if (element && element !== document.body)
+      element.blur();
     document.body.focus();
   }
 
@@ -994,13 +831,14 @@ export class AccuDrawViewportUI extends AccuDraw {
    */
   public override get hasInputFocus(): boolean {
     // Indicate when keyboard shortcuts can't be used (i.e. focus not at AccuDraw or Home) by changing compass to monochrome...
-    return this._isFocusHome || this._isFocusAccuDraw;
+    return (this._isFocusHome || this._isFocusAccuDraw);
   }
 
   /** Get the item field that currently has input focus.
    */
   public override getFocusItem(): ItemField | undefined {
-    if (!this._isFocusAccuDraw) return undefined;
+    if (!this._isFocusAccuDraw)
+      return undefined;
     return this._focusItem;
   }
 
@@ -1009,7 +847,8 @@ export class AccuDrawViewportUI extends AccuDraw {
    */
   public override setFocusItem(index: ItemField) {
     this._focusItem = index;
-    if (undefined === this._controls) return;
+    if (undefined === this._controls)
+      return;
     const itemField = this._controls.itemFields[this._focusItem];
     itemField.focus();
   }
@@ -1019,16 +858,14 @@ export class AccuDrawViewportUI extends AccuDraw {
    */
   public override grabInputFocus() {
     // Set focus to active input field for entering values...
-    if (this._isFocusAccuDraw) return;
+    if (this._isFocusAccuDraw)
+      return;
     this.setFocusItem(this._focusItem);
   }
 
-  private onFocusChange(
-    _ev: FocusEvent,
-    item: ItemField,
-    focusIn: boolean
-  ): void {
-    if (undefined === this._controls) return;
+  private onFocusChange(_ev: FocusEvent, item: ItemField, focusIn: boolean): void {
+    if (undefined === this._controls)
+      return;
 
     // NOTE: Using "setSelectionRange" while value is changing in dynamics isn't pretty, use background+caret color instead...
     const itemField = this._controls.itemFields[item];
@@ -1040,14 +877,16 @@ export class AccuDrawViewportUI extends AccuDraw {
       : `${AccuDrawViewportUI.controlProps.border.width} ${AccuDrawViewportUI.controlProps.border.style} ${AccuDrawViewportUI.controlProps.input.unfocused.border.color}`;
     this.updateItemFieldKeyinStatus(itemField, item);
 
-    if (!focusIn) this.setDynamicKeyinStatus(item);
+    if (!focusIn)
+      this.setDynamicKeyinStatus(item);
   }
 
   /** Change notification for when the compass is shown or hidden.
    * Used to hide the viewport controls when the compass is no longer displayed.
    */
   public override onCompassDisplayChange(state: "show" | "hide"): void {
-    if ("show" === state) return;
+    if ("show" === state)
+      return;
     this.removeControls();
   }
 
@@ -1066,15 +905,17 @@ export class AccuDrawViewportUI extends AccuDraw {
    * Unlocking a field or accepting a value by focusing is expected to change the input state to dynamic.
    */
   public override onFieldKeyinStatusChange(item: ItemField) {
-    if (undefined === this._controls) return;
-    this.updateItemFieldKeyinStatus(this._controls.itemFields[item], item);
+    if (undefined === this._controls)
+      return;
+    this.updateItemFieldKeyinStatus(this._controls.itemFields[item], item)
   }
 
   /** Change notification for when the supplied input field value has been modified.
    * Used to update the displayed input field with the value from the active angle or distance formatter.
    */
   public override onFieldValueChange(item: ItemField) {
-    if (undefined === this._controls) return;
+    if (undefined === this._controls)
+      return;
     this.updateItemFieldValue(this._controls.itemFields[item], item);
   }
 
@@ -1082,7 +923,8 @@ export class AccuDrawViewportUI extends AccuDraw {
    * Used to update the displayed lock toggles to reflect the current state.
    */
   public override onFieldLockChange(item: ItemField) {
-    if (undefined === this._controls) return;
+    if (undefined === this._controls)
+      return;
     this.updateItemFieldLock(this._controls.itemLocks[item], item);
   }
 
