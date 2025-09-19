@@ -67,7 +67,7 @@ export class System extends RenderSystem {
     // (undocumented)
     createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder;
     // (undocumented)
-    createGraphicBranch(_lBranch: GraphicBranch, _transform: Transform, _options?: GraphicBranchOptions): RenderGraphic;
+    createGraphicBranch(_branch: GraphicBranch, _transform: Transform, _options?: GraphicBranchOptions): RenderGraphic;
     // (undocumented)
     createGraphicFromTemplate(args: CreateGraphicFromTemplateArgs): RenderGraphic;
     // (undocumented)
