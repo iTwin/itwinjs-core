@@ -734,7 +734,8 @@ export class TextBlockLayout {
           curLine = this.flushLine(context, curLine, cumulativeOverrides, component.children[0], true, depth + 1);
         } else {
           // If not, we need to apply the indentation for the list to the first line.
-          curLine.offsetFromDocument.x = context.textStyleResolver.resolveIndentation(cumulativeOverrides, depth + 1)
+          curLine.offsetFromDocument.x = context.textStyleResolver.resolveIndentation(cumulativeOverrides, depth + 1);
+          curLine.depth = depth + 1;
         }
 
         // Iterate through each list item, setting the marker and populating its contents.
