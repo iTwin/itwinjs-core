@@ -104,7 +104,6 @@ describe("TextBlockComponent", () => {
     });
 
     it("clears children's overrides by default when clearing paragraph overrides", () => {
-      // TODO: failing
       block.children[0].clearStyleOverrides();
       const overrides = getOverrides(block);
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
