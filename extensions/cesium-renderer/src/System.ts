@@ -106,7 +106,7 @@ export class System extends RenderSystem {
     return new CesiumGraphic();
   }
 
-  public createGraphicBranch(_lBranch: GraphicBranch, _transform: Transform, _options?: GraphicBranchOptions): RenderGraphic {
+  public createGraphicBranch(_branch: GraphicBranch, _transform: Transform, _options?: GraphicBranchOptions): RenderGraphic {
     // ###TODO implement logic to create a graphic branch from the branch and transform
     return new CesiumGraphic();
   }
