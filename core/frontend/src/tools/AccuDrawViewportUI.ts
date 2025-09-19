@@ -46,66 +46,91 @@ export class AccuDrawViewportUI extends AccuDraw {
     simplifiedInput: true,
     /** Enable simple math operations not supported by quantity parser. */
     mathOperations: true,
+    /** Settings that apply to both text input fields and lock buttons. */
     field: {
       /** Number of visible characters to show in text input fields. */
       size: 12,
-      height: "var(--iui-component-height-small)",
+      height: "var(--iui-component-height-small, 1.75rem)",
+      border: {
+        width: "1px",
+        style: "solid",
+        /** Corner radius of text input fields and locks buttons. */
+        radius: "var(--iui-border-radius-1, 0.25rem)",
+      },
+      /** Settings specific to text input fields and lock button labels. */
+      text: {
+        /** Font family to use for text input field values and button labels. */
+        fontFamily: "var(--iui-font-sans, sans-serif)",
+        /** Font size to use for text input field values and button labels. */
+        fontSize: "var(--iui-font-size-1, 0.875rem)",
+      },
     },
-    border: {
-      width: "1px",
-      style: "solid",
-      /** Corner radius of text input fields and locks buttons. */
-      radius: "var(--iui-border-radius-1)",
-    },
-    /** Settings specific to text input fields and lock button labels. */
-    text: {
-      /** Font family to use for text input field values and button labels. */
-      fontFamily: "var(--iui-font-sans)",
-      /** Font size to use for text input field values and button labels. */
-      fontSize: "var(--iui-font-size-1)",
-    },
+    /** Settings specific to text input fields. */
     input: {
       /** Font color to use for text input field values. */
-      color: "var(--iui-color-white)",
-      padding: "0 var(--iui-size-s)",
+      color: "var(--iui-color-white, white)",
+      /** Padding applied to text input fields. */
+      padding: "0 var(--iui-size-s, 0.5rem)",
+      /** Settings applied to text input fields when they have focus. */
       focused: {
+        /** Background color for focused text input fields. */
         backgroundColor:
-          "hsl(var(--iui-color-accent-hsl) / var(--iui-opacity-3))",
+          "hsl(var(--iui-color-accent-hsl, 203 100% 44%) / var(--iui-opacity-3, 75%))",
+        /** Border settings for focused text input fields. */
         border: {
-          color: "hsl(var(--iui-color-accent-hsl))",
+          /** Border color for focused text input fields. */
+          color: "hsl(var(--iui-color-accent-hsl, 203 100% 44%))",
         },
       },
+      /** Settings applied to text input fields when they do not have focus. */
       unfocused: {
+        /** Background color for unfocused text input fields. */
         backgroundColor:
-          "hsl(var(--iui-color-background-hsl) / var(--iui-opacity-3))",
+          "hsl(var(--iui-color-background-hsl, 240 5% 40%) / var(--iui-opacity-3, 75%))",
+        /** Border settings for unfocused text input fields. */
         border: {
-          color: "var(--iui-color-border)",
+          /** Border color for unfocused text input fields. */
+          color: "var(--iui-color-border, #b3bcc1)",
         },
       },
     },
     /** Settings specific to lock buttons. */
     button: {
-      padding: "var(--iui-size-2xs)",
+      /** Padding applied to lock buttons. */
+      padding: "var(--iui-size-2xs, 0.25rem)",
+      /** Settings applied to lock buttons when they are unlocked. */
       unlocked: {
-        color: "var(--iui-color-text-muted)",
+        /** Text color for unlocked lock buttons. */
+        color: "var(--iui-color-text-muted, #cccccc)",
+        /** Background color for unlocked lock buttons. */
         backgroundColor:
-          "hsl(var(--iui-color-background-hsl) / var(--iui-opacity-3))",
+          "hsl(var(--iui-color-background-hsl, 240 5% 40%) / var(--iui-opacity-3, 75%))",
+        /** Border settings for unlocked lock buttons. */
         border: {
-          color: "var(--iui-color-border)",
+          /** Border color for unlocked lock buttons. */
+          color: "var(--iui-color-border, #b3bcc1)",
         },
       },
+      /** Settings applied to lock buttons when they are locked. */
       locked: {
-        color: "hsl(var(--iui-color-accent-hsl))",
+        /** Text color for locked lock buttons. */
+        color: "hsl(var(--iui-color-accent-hsl, 203 100% 44%))",
+        /** Background color for locked lock buttons. */
         backgroundColor:
-          "hsl(var(--iui-color-accent-hsl) / var(--iui-opacity-4))",
+          "hsl(var(--iui-color-accent-hsl, 203 100% 44%) / var(--iui-opacity-4, 45%))",
+        /** Border settings for locked lock buttons. */
         border: {
-          color: "hsl(var(--iui-color-accent-hsl))",
+          /** Border color for locked lock buttons. */
+          color: "hsl(var(--iui-color-accent-hsl, 203 100% 44%))",
         },
       },
     },
+    /** Spacing between controls. */
     spacing: {
-      row: "var(--iui-size-2xs)",
-      column: "var(--iui-size-2xs)",
+      /** Spacing between rows of controls. */
+      row: "var(--iui-size-2xs, 0.25rem)",
+      /** Spacing between columns of controls. */
+      column: "var(--iui-size-2xs, 0.25rem)",
     },
   };
 
@@ -589,8 +614,8 @@ export class AccuDrawViewportUI extends AccuDraw {
     itemLock.style.backgroundColor = locked
       ? AccuDrawViewportUI.controlProps.button.locked.backgroundColor
       : AccuDrawViewportUI.controlProps.button.unlocked.backgroundColor;
-    itemLock.style.border = `${AccuDrawViewportUI.controlProps.border.width} ${
-      AccuDrawViewportUI.controlProps.border.style
+    itemLock.style.border = `${AccuDrawViewportUI.controlProps.field.border.width} ${
+      AccuDrawViewportUI.controlProps.field.border.style
     } ${
       locked
         ? AccuDrawViewportUI.controlProps.button.locked.border.color
@@ -610,7 +635,7 @@ export class AccuDrawViewportUI extends AccuDraw {
     const controlProps = AccuDrawViewportUI.controlProps;
 
     style.height = controlProps.field.height;
-    const baseBorder = `${controlProps.border.width} ${controlProps.border.style} `;
+    const baseBorder = `${controlProps.field.border.width} ${controlProps.field.border.style} `;
 
     switch (isButton) {
       case true:
@@ -633,9 +658,9 @@ export class AccuDrawViewportUI extends AccuDraw {
         break;
     }
 
-    style.fontFamily = controlProps.text.fontFamily;
-    style.fontSize = controlProps.text.fontSize;
-    style.borderRadius = controlProps.border.radius;
+    style.fontFamily = controlProps.field.text.fontFamily;
+    style.fontSize = controlProps.field.text.fontSize;
+    style.borderRadius = controlProps.field.border.radius;
   }
 
   private createItemField(item: ItemField): HTMLInputElement {
@@ -873,8 +898,8 @@ export class AccuDrawViewportUI extends AccuDraw {
       ? AccuDrawViewportUI.controlProps.input.focused.backgroundColor
       : AccuDrawViewportUI.controlProps.input.unfocused.backgroundColor;
     itemField.style.border = focusIn
-      ? `${AccuDrawViewportUI.controlProps.border.width} ${AccuDrawViewportUI.controlProps.border.style} ${AccuDrawViewportUI.controlProps.input.focused.border.color}`
-      : `${AccuDrawViewportUI.controlProps.border.width} ${AccuDrawViewportUI.controlProps.border.style} ${AccuDrawViewportUI.controlProps.input.unfocused.border.color}`;
+      ? `${AccuDrawViewportUI.controlProps.field.border.width} ${AccuDrawViewportUI.controlProps.field.border.style} ${AccuDrawViewportUI.controlProps.input.focused.border.color}`
+      : `${AccuDrawViewportUI.controlProps.field.border.width} ${AccuDrawViewportUI.controlProps.field.border.style} ${AccuDrawViewportUI.controlProps.input.unfocused.border.color}`;
     this.updateItemFieldKeyinStatus(itemField, item);
 
     if (!focusIn)
