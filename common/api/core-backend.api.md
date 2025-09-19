@@ -4272,7 +4272,7 @@ export class LightLocation extends SpatialLocationElement {
 
 // @beta
 export class LineLayout {
-    constructor(source: List | Run | Paragraph, context?: LayoutContext, depth?: number);
+    constructor(source: List | Run | Paragraph, style: TextStyleSettingsProps, context?: LayoutContext, depth?: number);
     // (undocumented)
     append(run: RunLayout): void;
     get back(): RunLayout;
@@ -5389,7 +5389,7 @@ export class RunLayout {
     // (undocumented)
     charOffset: number;
     // (undocumented)
-    static create(source: Run, context: LayoutContext): RunLayout;
+    static create(source: Run, context: LayoutContext, cumulativeOverrides: TextStyleSettingsProps): RunLayout;
     // (undocumented)
     denominatorRange?: Range2d;
     // (undocumented)
@@ -6534,9 +6534,10 @@ export interface TextLayoutRanges {
 export class TextStyleResolver {
     constructor(args: TextStyleResolverArgs);
     readonly blockSettings: TextStyleSettings;
-    resolveParagraphSettings(paragraph: Paragraph): TextStyleSettings;
-    resolveRunSettings(paragraph: Paragraph, run: Run): TextStyleSettings;
-    resolveTextAnnotationLeaderSettings(leader: TextAnnotationLeader): TextStyleSettings;
+    resolveIndentation(styleOverrides: TextStyleSettingsProps, depth: number): number;
+    // (undocumented)
+    resolveMarkerText(overrides: TextStyleSettingsProps, index: number): string;
+    resolveSettings(overrides: TextStyleSettingsProps, isLeader?: boolean): TextStyleSettings;
 }
 
 // @beta

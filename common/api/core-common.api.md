@@ -10128,7 +10128,7 @@ export class TextBlock extends TextBlockComponent {
     clearStyleOverrides(options?: ClearTextStyleOptions): void;
     // (undocumented)
     clone(): TextBlock;
-    static create(props?: TextBlockProps): TextBlock;
+    static create(props?: Omit<TextBlockProps, "type">): TextBlock;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
     get isEmpty(): boolean;
@@ -10207,7 +10207,6 @@ export interface TextBlockProps extends TextBlockComponentProps {
     children?: ParagraphProps[];
     justification?: TextBlockJustification;
     margins?: Partial<TextBlockMargins>;
-    paragraphs?: ParagraphProps[];
     width?: number;
 }
 
