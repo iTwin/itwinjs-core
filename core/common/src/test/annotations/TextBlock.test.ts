@@ -116,8 +116,6 @@ describe("TextBlockComponent", () => {
     });
 
     it("clears children's overrides by default when clearing list overrides", () => {
-      block.styleId = "0x99";
-
       block.children[1].clearStyleOverrides();
       const overrides = getOverrides(block);
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
@@ -157,8 +155,6 @@ describe("TextBlockComponent", () => {
     });
 
     it("does not clear children's overrides when clearing list overrides if preserveChildrenStyles is true", () => {
-      block.styleId = "0x99";
-
       block.children[1].clearStyleOverrides({ preserveChildrenOverrides: true });
       const overrides = getOverrides(block);
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
@@ -385,7 +381,6 @@ describe("TextBlockComponent", () => {
       */
 
       const block = TextBlock.create({
-        styleId: "0x42",
         children: [
           makeParagraph([
             makeFractionRun("1", "π"),
@@ -491,7 +486,6 @@ describe("TextBlock", () => {
     */
 
     const props: TextBlockProps = {
-      styleId: "0x42",
       children: [
         makeInnerList([
           makeParagraph([makeTextRun("item 1"), makeFractionRun("1", "π")]),
@@ -735,7 +729,7 @@ describe('traverseTextBlockComponent', () => {
       Continued
         1. Sub-item 1
     */
-    const textBlock = TextBlock.create({ styleId: "" });
+    const textBlock = TextBlock.create();
 
     const p1 = textBlock.appendParagraph();
     p1.children.push(TextRun.create({ content: "Hello" }));
