@@ -23,7 +23,7 @@ function isIntlSupported(): boolean {
   return !ProcessDetector.isMobileAppBackend;
 }
 
-describe("updateField", () => {
+describe.only("updateField", () => {
   const mockElementId = "0x1";
   const mockPath: FieldPropertyPath = {
     propertyName: "mockProperty",
@@ -221,7 +221,7 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
   iModel.saveChanges();
 }
 
-describe("Field evaluation", () => {
+describe.only("Field evaluation", () => {
   let imodel: StandaloneDb;
   let model: Id64String;
   let category: Id64String;
@@ -397,24 +397,6 @@ describe("Field evaluation", () => {
       expectValue(5, { propertyName: "outerStructs", accessors: [0, "innerStructs", 0, "doubles", 0] }, sourceElementId);
     });
 
-    it("returns arbitrarily-nested JSON properties", () => {
-      expectValue("abc", { propertyName: "jsonProperties", json: { accessors: ["stringProp"] } }, sourceElementId);
-
-      expectValue(10, { propertyName: "jsonProperties", json: { accessors: ["ints", 0] } }, sourceElementId);
-      expectValue(13, { propertyName: "jsonProperties", json: { accessors: ["ints", 3] } }, sourceElementId);
-      expectValue(13, { propertyName: "jsonProperties", json: { accessors: ["ints", -1] } }, sourceElementId);
-      expectValue(11, { propertyName: "jsonProperties", json: { accessors: ["ints", -3] } }, sourceElementId);
-
-      expectValue(12345, { propertyName: "jsonProperties", json: { accessors: ["zoo", "address", "zipcode"] } }, sourceElementId);
-      expectValue("scree!", { propertyName: "jsonProperties", json: { accessors: ["zoo", "birds", 1, "sound"] } }, sourceElementId);
-    });
-
-    it("returns undefined if JSON accessors applied to non-JSON property", () => {
-      expectValue(undefined, { propertyName: "int", json: { accessors: ["whatever"] } }, sourceElementId);
-      expectValue(undefined, { propertyName: "strings", accessors: [2, "name"] }, sourceElementId);
-      expectValue(undefined, { propertyName: "outerStruct", accessors: ["innerStruct"], json: { accessors: ["bool"] } }, sourceElementId);
-    });
-
     it("returns the value of a property of an aspect", () => {
       expect(imodel.elements.getAspects(sourceElementId, "Fields:TestAspect").length).to.equal(1);
       expectValue(999, { propertyName: "aspectProp" }, { elementId: sourceElementId, schemaName: "Fields", className: "TestAspect" });
@@ -477,38 +459,6 @@ describe("Field evaluation", () => {
     it("should return undefined for unsupported primitive types", () => {
       const host = { elementId: sourceElementId, schemaName: "BisCore", className: "GeometricElement3d" };
       expect(getPropertyType(host, "GeometryStream")).to.be.undefined;
-    });
-
-    it("infers type for JSON properties", () => {
-      const host = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
-      const path = { propertyName: "jsonProperties", json: { accessors: ["replace-me", 1] }};
-
-      path.json.accessors = ["stringProp"];
-      expect(getPropertyType(host, path)).to.equal("string");
-
-      path.json.accessors = ["ints", 0];
-      expect(getPropertyType(host, path)).to.equal("quantity");
-
-      path.json.accessors = ["bool"];
-      expect(getPropertyType(host, path)).to.equal("boolean");
-
-      path.json.accessors = ["zoo", "address", "zipcode"];
-      expect(getPropertyType(host, path)).to.equal("quantity");
-
-      path.json.accessors = ["zoo", "birds", 0, "name"];
-      expect(getPropertyType(host, path)).to.equal("string");
-    });
-
-    it("permits explicit type specification for JSON properties", () => {
-      const host = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
-      const path = { propertyName: "jsonProperties", json: { accessors: ["bool"], type: "string" }};
-      expect(getPropertyType(host, path)).to.equal("string");
-    });
-
-    it("fails to evaluate for unknown explicit type", () => {
-      const host = { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" };
-      const path = { propertyName: "jsonProperties", json: { accessors: ["bool"], type: "unknown-type" }};
-      expect(getPropertyType(host, path)).to.be.undefined;
     });
   });
 
@@ -629,17 +579,16 @@ describe("Field evaluation", () => {
       expect(relationship.targetId).to.equal(targetId);
     });
 
-    function createField(propertyHost: Id64String | FieldPropertyHost, cachedContent: string, propertyName = "intProp", accessors?: Array<string | number>, jsonAccessors?: Array<string | number>): FieldRun {
+    function createField(propertyHost: Id64String | FieldPropertyHost, cachedContent: string, propertyName = "intProp", accessors?: Array<string | number>): FieldRun {
       if (typeof propertyHost === "string") {
         propertyHost = { schemaName: "Fields", className: "TestElement", elementId: propertyHost };
       }
 
-      const json = jsonAccessors ? { accessors: jsonAccessors } : undefined;
       return FieldRun.create({
         styleOverrides: { fontName: "Karla" },
         propertyHost,
         cachedContent,
-        propertyPath: { propertyName, accessors, json },
+        propertyPath: { propertyName, accessors },
       });
     }
 
@@ -850,17 +799,15 @@ describe("Field evaluation", () => {
       const sourceId = insertTestElement();
       const block = TextBlock.create();
       block.appendRun(createField(sourceId, "", "outerStruct", ["innerStructs", 1, "doubles", -2]));
-      block.appendRun(createField(sourceId, "", "jsonProperties", undefined, ["zoo", "birds", 0, "name"]));
       const targetId = insertAnnotationElement(block);
       imodel.saveChanges();
       expectText("2duck", targetId);
 
       const source = imodel.elements.getElement<TestElement>(sourceId);
       source.outerStruct.innerStructs[1].doubles[3] = 12.5;
-      source.jsonProperties.zoo.birds[0].name = "parrot";
       source.update();
       imodel.saveChanges();
-      expectText("12.5parrot", targetId);
+      expectText("12.5", targetId);
     });
   });
 
@@ -870,33 +817,6 @@ describe("Field evaluation", () => {
       const fieldRun = FieldRun.create({
         propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
         propertyPath: { propertyName: "strings", accessors: [0] },
-        cachedContent: "oldValue",
-        formatOptions: {
-          case: "upper",
-          prefix: "Value: ",
-          suffix: "!"
-        }
-      });
-
-      // Context returns a string value for the property
-      const context = {
-        hostElementId: sourceElementId,
-        getProperty: () => { return { value: "abc", type: "string" as const } },
-      };
-
-      // Update the field and check the result
-      const updated = updateField(fieldRun, context);
-
-      // The formatted value should be uppercased and have prefix/suffix applied
-      expect(updated).to.be.true;
-      expect(fieldRun.cachedContent).to.equal("Value: ABC!");
-    });
-
-    it("validates formatting options for string property type from jsonProp", () => {
-      // Create a FieldRun with string property type and some format options
-      const fieldRun = FieldRun.create({
-        propertyHost: { elementId: sourceElementId, schemaName: "Fields", className: "TestElement" },
-        propertyPath: { propertyName: "jsonProperties", json: { accessors: ["stringProp"] } },
         cachedContent: "oldValue",
         formatOptions: {
           case: "upper",

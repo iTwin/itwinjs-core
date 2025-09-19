@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECSqlValueType, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, isKnownFieldPropertyType, RelationshipProps, TextBlock } from "@itwin/core-common";
+import { ECSqlValueType, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, RelationshipProps, TextBlock } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
@@ -169,61 +169,9 @@ function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | 
     }
   }
 
-  let propertyType: FieldPropertyType;
-  if (field.propertyPath.json) {
-    if (!ecProp.isPrimitive() || ecProp.isArray() || ecProp.extendedTypeName !== "Json" || typeof curValue.primitive !== "string") {
-      return undefined;
-    }
-
-    let json = JSON.parse(curValue.primitive);
-    for (const accessor of field.propertyPath.json.accessors) {
-      if (typeof accessor === "number") {
-        if (!Array.isArray(json)) {
-          return undefined;
-        }
-
-        json = json[accessor < 0 ? json.length + accessor : accessor];
-      } else {
-        if (typeof json !== "object" || json === null) {
-          return undefined;
-        }
-
-        json = json[accessor];
-      }
-    }
-
-    switch (typeof json) {
-      case "string":
-        curValue = { primitive: json };
-        propertyType = "string";
-        break;
-      case "number":
-        curValue = { primitive: json };
-        propertyType = "quantity";
-        break;
-      case "boolean":
-        curValue = { primitive: json };
-        propertyType = "boolean";
-        break;
-      default:
-        return undefined;
-    }
-
-    const explicitType = field.propertyPath.json.type;
-    if (explicitType) {
-      if (!isKnownFieldPropertyType(explicitType)) {
-        return undefined;
-      }
-
-      propertyType = explicitType;
-    }
-  } else {
-    const computedType = determineFieldPropertyType(ecProp);
-    if(!computedType) {
-      return undefined;
-    }
-
-    propertyType = computedType;
+  const propertyType = determineFieldPropertyType(ecProp);
+  if(!propertyType) {
+    return undefined;
   }
 
   // The ultimate result must be a primitive value.

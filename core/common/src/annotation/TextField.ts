@@ -29,17 +29,14 @@ export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean"
    * The simplest property paths consist of a [[propertyName]] and nothing else, where `propertyName` identifies
    * a primitive property.
    * If `propertyName` identifies a struct or array property, then additional [[accessors]] are required to identify the specific value.
-   * If `propertyName` (including any [[accessors]]) resolves to a JSON property, then additional [[json]] accessors are required to identify a specific value within the JSON.
    * Some examples:
    * ```
-   * | Access String | propertyName | accessors | json.accessors |
-   * | ------------- | ------------ | --------- | -------------- |
-   * | name          | "name"       | undefined | undefined      |
-   * | spouse.name   | "spouse"     | [name]    | undefined      |
-   * | colors[2]     | "colors"     | [2]       | undefined      |
-   * | spouse.favoriteRestaurants[1].address | "spouse" | ["favoriteRestaurants", 1, "address"] | undefined |
-   * | jsonProperties.contactInfo.email | "jsonProperties" | undefined | ["contactInfo", "email"] |
-   * | spouse.jsonProperties.contactInfo.phoneNumbers[0].areaCode | "spouse" | ["jsonProperties"] | ["contactInfo", "phoneNumbers", 0, "areaCode"] |
+   * | Access String | propertyName | accessors |
+   * | ------------- | ------------ | --------- |
+   * | name          | "name"       | undefined |
+   * | spouse.name   | "spouse"     | [name]    |
+   * | colors[2]     | "colors"     | [2]       |
+   * | spouse.favoriteRestaurants[1].address | "spouse" | ["favoriteRestaurants", 1, "address"] |
    * ```
  * @beta
  */
@@ -48,16 +45,6 @@ export interface FieldPropertyPath {
   propertyName: string;
   /** Property names and/or array indices describing the path from [[propertyName]] to the ultimate BIS property. */
   accessors?: Array<string | number>;
-  /** If [[propertyName]] (and [[accessors]], if present) resolves to a BIS property of extended type "Json", specifies the path to a field within the JSON object. */
-  json?: {
-    /** Property names and/or array indices describing the path to the ultimate JSON property. */
-    accessors: Array<string | number>;
-    /** Optionally specifies the expected type of the JSON property. If unspecified, then numbers are treated as "quantity", booleans as "boolean", and strings as "string".
-     * @note This is permitted to be any string because we anticipate adding new [[FieldPropertyType]]s in the future. If you specify an unrecognized type, the
-     * field will fail to format and will display as [[FieldRun.invalidContentIndicator]].
-     */
-    type?: FieldPropertyType | string; // eslint-disable-line @typescript-eslint/no-redundant-type-constituents
-  };
 }
 
 /** Describes the source of the property value against which a [[FieldPropertyPath]] is evaluated.

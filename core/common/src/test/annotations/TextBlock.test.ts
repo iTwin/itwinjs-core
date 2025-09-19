@@ -309,12 +309,6 @@ describe("FieldRun", () => {
         { propertyPath: { propertyName: "someProperty", accessors: [1, "nestedProperty"] } },
         { propertyPath: { propertyName: "someProperty", accessors: [0, "otherNestedProperty"] } },
         { propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty", "extraNestedProperty"] } },
-
-        { propertyPath: { propertyName: "otherProperty", accessors: [0, "nestedProperty"], json: { accessors: ["array", 2] } } },
-        { propertyPath: { propertyName: "someProperty", accessors: [1, "nestedProperty"], json: { accessors: ["array", 2] } },},
-        { propertyPath: { propertyName: "someProperty", accessors: [0, "otherNestedProperty"], json: { accessors: ["array", 2] } },},
-        { propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty", "extraNestedProperty"], json: { accessors: ["array", 2] } },},
-        { propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty", "extraNestedProperty"], json: { accessors: ["array", 3] } },},
       ];
 
       const fieldRuns = combinations.map((combo) =>

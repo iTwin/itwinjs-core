@@ -494,27 +494,18 @@ export class FieldRun extends TextBlockComponent {
       return false;
     }
 
-    if (
-      this.propertyPath.propertyName !== other.propertyPath.propertyName ||
-      this.propertyPath.json?.type !== other.propertyPath.json?.type
-    ) {
+    if (this.propertyPath.propertyName !== other.propertyPath.propertyName) {
       return false;
     }
 
     const thisAccessors = this.propertyPath.accessors ?? [];
     const otherAccessors = other.propertyPath.accessors ?? [];
-    const thisJsonAccessors = this.propertyPath.json?.accessors ?? [];
-    const otherJsonAccessors = other.propertyPath.json?.accessors ?? [];
 
-    if (thisAccessors.length !== otherAccessors.length || thisJsonAccessors.length !== otherJsonAccessors.length) {
+    if (thisAccessors.length !== otherAccessors.length) {
       return false;
     }
 
     if (!thisAccessors.every((value, index) => value === otherAccessors[index])) {
-      return false;
-    }
-
-    if (!thisJsonAccessors.every((value, index) => value === otherJsonAccessors[index])) {
       return false;
     }
 
