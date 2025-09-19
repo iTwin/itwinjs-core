@@ -209,15 +209,20 @@ describe("BriefcaseManager", () => {
     };
 
     try {
+      // check default deviceName value
       await BriefcaseManager.downloadBriefcase(args);
+      // check custom deviceName value
+      await BriefcaseManager.downloadBriefcase({ ...args, deviceName: "customDeviceName" });
     } catch {
       // downloadCheckpoint will throw from stub
     }
 
     // Verify that acquireNewBriefcaseId was called with the correct deviceName
-    expect(acquireStub.calledOnce).to.be.true;
-    const callArgs = acquireStub.getCall(0).args[0];
-    expect(callArgs.deviceName).to.equal(os.hostname());
+    expect(acquireStub.calledTwice).to.be.true;
+    const callArgsDefault = acquireStub.getCall(0).args[0];
+    expect(callArgsDefault.deviceName).to.equal(`${os.hostname()}:${os.type()}:${os.arch()}`);
+    const callArgsCustom = acquireStub.getCall(1).args[0];
+    expect(callArgsCustom.deviceName).to.equal("customDeviceName");
 
     sinon.restore();
   });
