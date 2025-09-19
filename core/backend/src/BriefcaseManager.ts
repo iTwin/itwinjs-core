@@ -230,7 +230,7 @@ export class BriefcaseManager {
    * @note *It is invalid to edit briefcases on a shared network drive* and that is a sure way to corrupt your briefcase (see https://www.sqlite.org/howtocorrupt.html)
    */
   public static async downloadBriefcase(arg: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps> {
-    const briefcaseId = arg.briefcaseId ?? await this.acquireNewBriefcaseId({...arg, deviceName: os.hostname()});
+    const briefcaseId = arg.briefcaseId ?? await this.acquireNewBriefcaseId({ deviceName: os.hostname(), ...arg });
     const fileName = arg.fileName ?? this.getFileName({ ...arg, briefcaseId });
 
     if (IModelJsFs.existsSync(fileName))
