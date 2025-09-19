@@ -750,7 +750,7 @@ describe.only("Field evaluation", () => {
 
     it("evaluates cachedContent when annotation element is inserted", () => {
       const sourceId = insertTestElement();
-      const block = TextBlock.create({ styleId: "0x123" });
+      const block = TextBlock.create();
       block.appendRun(createField(sourceId, "initial cached content"));
       expect(block.stringify()).to.equal("initial cached content");
 
