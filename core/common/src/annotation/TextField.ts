@@ -19,6 +19,7 @@ import { Id64String } from "@itwin/core-bentley";
  *  - "int-enum": an integer [EnumerationProperty]($ecschema-metadata) formatted using the enum value's display label.
  *  - "string-enum": a string [EnumerationProperty]($ecschema-metadata) formatted using the enum value's display label.
  *  - "string": a value convertible to a string.
+ * @note Currently, only formatting of "string" and "datetime" types is implemented. Other types are converted to and formatted as "string".
  * @beta
  */
 export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean" | "datetime" | "int-enum" | "string-enum";
