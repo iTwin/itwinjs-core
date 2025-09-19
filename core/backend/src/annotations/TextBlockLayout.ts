@@ -625,7 +625,6 @@ export class LineLayout {
 
     if (this._marker) {
       const indentation = this.range.low.x;
-      // TODO: this logic doesn't match what's in TextStyle
       const x = indentation - (this._marker.style.tabInterval / 2) - this._marker.range.xLength();
       const runHeight = this._marker.range.yLength();
       const runOffset = {
