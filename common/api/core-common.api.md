@@ -3630,10 +3630,6 @@ export interface FieldPropertyHost {
 // @beta
 export interface FieldPropertyPath {
     accessors?: Array<string | number>;
-    json?: {
-        accessors: Array<string | number>;
-        type?: FieldPropertyType | string;
-    };
     propertyName: string;
 }
 
