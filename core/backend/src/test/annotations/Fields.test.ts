@@ -23,7 +23,7 @@ function isIntlSupported(): boolean {
   return !ProcessDetector.isMobileAppBackend;
 }
 
-describe.only("updateField", () => {
+describe("updateField", () => {
   const mockElementId = "0x1";
   const mockPath: FieldPropertyPath = {
     propertyName: "mockProperty",
@@ -221,7 +221,7 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
   iModel.saveChanges();
 }
 
-describe.only("Field evaluation", () => {
+describe("Field evaluation", () => {
   let imodel: StandaloneDb;
   let model: Id64String;
   let category: Id64String;
@@ -801,7 +801,7 @@ describe.only("Field evaluation", () => {
       block.appendRun(createField(sourceId, "", "outerStruct", ["innerStructs", 1, "doubles", -2]));
       const targetId = insertAnnotationElement(block);
       imodel.saveChanges();
-      expectText("2duck", targetId);
+      expectText("2", targetId);
 
       const source = imodel.elements.getElement<TestElement>(sourceId);
       source.outerStruct.innerStructs[1].doubles[3] = 12.5;
