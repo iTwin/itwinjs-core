@@ -6,7 +6,6 @@
  * @module Annotation
  */
 
-import { Id64String } from "@itwin/core-bentley";
 import { TextStyleSettings, TextStyleSettingsProps } from "./TextStyle";
 import { FieldFormatOptions, FieldPropertyHost, FieldPropertyPath } from "./TextField";
 

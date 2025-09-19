@@ -5,7 +5,6 @@
 
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
 import { DateTimeFieldFormatOptions, FieldFormatOptions, FieldPropertyType } from "../../annotation/TextField";
-// import { Format, FormatterSpec } from "@itwin/core-quantity";
 
 /** A FieldPropertyPath must ultimately resolve to one of these primitive types.
  * @internal
@@ -27,6 +26,17 @@ const formatters: { [type: string]: FieldFormatter | undefined } = {
   "string": (v, o) => formatString(v.toString(), o),
 
   "datetime": (v, o) => formatString(formatDateTime(v, o?.dateTime), o),
+
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string
+  "quantity": (v, o) => formatString(v.toString(), o),
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string
+  "coordinate": (v, o) => formatString(v.toString(), o),
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string
+  "boolean": (v, o) => formatString(v.toString(), o),
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string
+  "int-enum": (v, o) => formatString(v.toString(), o),
+  // eslint-disable-next-line @typescript-eslint/no-base-to-string
+  "string-enum": (v, o) => formatString(v.toString(), o),
 };
 
 function formatString(s: string | undefined, o?: FieldFormatOptions): string | undefined {
