@@ -589,6 +589,20 @@ describe("AnnotationTextStyle", () => {
     el0.settings = newStyle;
     expect(el0.settings.toJSON()).to.deep.equal(newStyle.toJSON());
   });
+
+  describe.only("clone", () => {
+    it("invalidates field host if source element not cloned", () => {
+
+    });
+
+    it("remaps field host if source element also cloned", () => {
+
+    });
+
+    it("re-evaluates fields in context of target iModel", () => {
+
+    });
+  });
 });
 
 describe("appendTextAnnotationGeometry", () => {
