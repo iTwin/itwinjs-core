@@ -747,67 +747,62 @@ describe('traverseTextBlockComponent', () => {
 
     const childList = List.create();
     listItem.children.push(childList);
-    listItem.children.push(List.create());
     childList.children.push(Paragraph.create({ children: [{type: "text", content: "Sub-item 1"}] }));
     list.children.push(listItem);
 
     const iterator = traverseTextBlockComponent(textBlock);
     let result = iterator.next();
-    expect(result.value.current).toEqual(textBlock);
-    expect(result.value.parent).to.be.undefined;
-
-    result = iterator.next();
-    expect(result.value.current).toEqual(p1);
+    expect(result.value.child).toEqual(p1);
     expect(result.value.parent).to.equal(textBlock);
 
     result = iterator.next();
-    expect(result.value.current).toEqual(p1.children[0]);
+    expect(result.value.child).toEqual(p1.children[0]);
     expect(result.value.parent).to.equal(p1);
 
     result = iterator.next();
-    expect(result.value.current).toEqual(p1.children[1]);
+    expect(result.value.child).toEqual(p1.children[1]);
     expect(result.value.parent).to.equal(p1);
 
     result = iterator.next();
-    expect(result.value.current).toEqual(p1.children[2]);
+    expect(result.value.child).toEqual(p1.children[2]);
     expect(result.value.parent).to.equal(p1);
 
     result = iterator.next();
-    expect(result.value.current).toEqual(p2);
+    expect(result.value.child).toEqual(p2);
     expect(result.value.parent).to.equal(textBlock);
 
     result = iterator.next();
-    expect(result.value.current).toEqual(list);
-    expect(result.value.parent).to.equal(textBlock);
+    expect(result.value.child).toEqual(list);
+    expect(result.value.parent).to.equal(p2);
 
     result = iterator.next();
-    expect(result.value.current).toEqual(list.children[0]);
+    expect(result.value.child).toEqual(list.children[0]);
     expect(result.value.parent).to.equal(list);
 
     result = iterator.next();
-    expect(result.value.current).toEqual(list.children[0].children[0]);
+    expect(result.value.child).toEqual(list.children[0].children[0]);
     expect(result.value.parent).to.equal(list.children[0]);
 
     result = iterator.next();
-    expect(result.value.current).toEqual(list.children[0].children[1]);
+    expect(result.value.child).toEqual(list.children[0].children[1]);
     expect(result.value.parent).to.equal(list.children[0]);
 
     result = iterator.next();
-    expect(result.value.current).toEqual(list.children[0].children[2]);
+    expect(result.value.child).toEqual(list.children[0].children[2]);
     expect(result.value.parent).to.equal(list.children[0]);
 
     result = iterator.next();
-    expect(result.value.current).toEqual(list.children[0].children[3]);
+    expect(result.value.child).toEqual(list.children[0].children[3]);
     expect(result.value.parent).to.equal(list.children[0]);
 
     result = iterator.next();
     expect(list.children[0].children[3] as List).toBeDefined();
-    expect(result.value.current).toEqual((list.children[0].children[3] as List).children[0]);
+    expect(result.value.child).toEqual((list.children[0].children[3] as List).children[0]);
     expect(result.value.parent).to.equal(list.children[0].children[3]);
 
     result = iterator.next();
     expect(list.children[0].children[3] as List).toBeDefined();
-    expect(result.value.current).toEqual((list.children[0].children[3] as List).children[0].children[0]);
+    expect(result.value.child).toEqual((list.children[0].children[3] as List).children[0].children[0]);
     expect(result.value.parent).to.equal((list.children[0].children[3] as List).children[0]);
 
     result = iterator.next();
