@@ -45,7 +45,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     let arcData: import('./DecorationTypes.js').ArcEntry | null = null;
     for (const d of data) {
       if (d && d.type === 'arc') {
-        arcData = d as import('./DecorationTypes.js').ArcEntry;
+        arcData = d;
         break;
       }
     }
@@ -243,7 +243,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
   }
 
   private extractColorFromGraphic(graphic: RenderGraphicWithCoordinates): Color | undefined {
-    const coordData = graphic?._coordinateData as DecorationPrimitiveEntry[] | undefined;
+    const coordData = graphic?._coordinateData;
     const isArc = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').ArcEntry => e.type === 'arc';
     const entry = coordData?.find((e) => isArc(e) && !!e.symbology?.lineColor);
     const toCesium = (cd?: ColorDef) => {
@@ -253,14 +253,16 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
       return Color.fromBytes(c.r, c.g, c.b, alpha);
     };
     if (entry) {
-      const fromEntry = toCesium(entry.symbology?.lineColor as ColorDef | undefined);
+      const fromEntry = toCesium(entry.symbology?.lineColor);
       if (fromEntry)
         return fromEntry;
     }
 
     // Otherwise use graphic.symbology
-    const symbology = (graphic as unknown as { symbology?: { color?: ColorDef } })?.symbology;
-    const colorDef = symbology?.color as ColorDef | undefined;
+    interface HasSymbology { symbology?: { color?: ColorDef } }
+    const hasSymbology = (g: unknown): g is HasSymbology => typeof g === 'object' && g !== null && ('symbology' in g);
+    const symbology = hasSymbology(graphic) ? graphic.symbology : undefined;
+    const colorDef = symbology?.color;
     return toCesium(colorDef);
   }
 

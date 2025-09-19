@@ -16,9 +16,9 @@ import {
   Matrix4,
   PerInstanceColorAppearance,
   Primitive,
+  PrimitiveCollection,
   SphereGeometry,
   VertexFormat,
-  PrimitiveCollection
 } from "cesium";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
@@ -49,7 +49,7 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
   ): Primitive | null {
     const entries = Array.isArray(originalData) ? (originalData as DecorationPrimitiveEntry[]) : undefined;
     const solidEntry = entries?.find((e): e is SolidPrimitiveEntry => e.type === 'solidPrimitive');
-    const solidPrimitive = solidEntry?.solidPrimitive as SolidPrimitive | undefined;
+    const solidPrimitive = solidEntry?.solidPrimitive;
 
     if (!solidPrimitive) {
       return null;
@@ -144,7 +144,6 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     const centerX = (minX + maxX) / 2;
     const centerY = (minY + maxY) / 2;
     const centerZ = (minZ + maxZ) / 2;
-    const iTwinCenter = { x: centerX, y: centerY, z: centerZ };
 
     // Calculate dimensions
     const width = maxX - minX;
@@ -175,20 +174,17 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     // Use the radius from the sphere creation (which should be 15000)
     let radius = 15000; // Use the radius from CesiumDecorator
 
-    // Try to get radius from the sphere's transform or other properties
-    try {
-      const transform = sphere.getConstructiveFrame();
-      if (transform) {
-        const matrix = transform.matrix;
-        // Extract scale from transformation matrix (approximate radius)
-        const scaleX = Math.sqrt(matrix.at(0,0)**2 + matrix.at(1,0)**2 + matrix.at(2,0)**2);
-        if (scaleX > 1000) { // Only use if it seems reasonable
-          radius = scaleX;
-        }
+
+    const transform = sphere.getConstructiveFrame();
+    if (transform) {
+      const matrix = transform.matrix;
+      // Extract scale from transformation matrix (approximate radius)
+      const scaleX = Math.sqrt(matrix.at(0,0)**2 + matrix.at(1,0)**2 + matrix.at(2,0)**2);
+      if (scaleX > 1000) { // Only use if it seems reasonable
+        radius = scaleX;
       }
-    } catch (e) {
-      // Use fallback radius
     }
+
 
     // Clamp radius to reasonable bounds
     radius = Math.max(5000, Math.min(radius, 50000));
@@ -245,7 +241,6 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     const centerX = (centerA.x + centerB.x) / 2;
     const centerY = (centerA.y + centerB.y) / 2;
     const centerZ = (centerA.z + centerB.z) / 2;
-    const iTwinCenter = { x: centerX, y: centerY, z: centerZ };
 
     // Create translation using Cesium coordinates (keep consistent with other converters)
     const converter = iModel ? new CesiumCoordinateConverter(iModel) : undefined;
@@ -259,7 +254,7 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
 
   private extractColorsFromGraphic(graphic: RenderGraphicWithCoordinates): { fillColor: Color; lineColor: Color; outlineWanted: boolean } | undefined {
     // Prefer symbology captured in coordinateData (from CoordinateBuilder)
-    const coordData = graphic?._coordinateData as DecorationPrimitiveEntry[] | undefined;
+    const coordData = graphic?._coordinateData;
     const isSolid = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').SolidPrimitiveEntry => e.type === 'solidPrimitive';
     const entry = coordData?.find((e) => isSolid(e) && !!e.symbology?.lineColor);
     const toCesium = (cd?: ColorDef) => {
@@ -270,8 +265,8 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     };
     
     if (entry) {
-      const lineColor = toCesium(entry.symbology.lineColor as ColorDef | undefined);
-      const fillColor = toCesium(entry.symbology.fillColor as ColorDef | undefined);
+      const lineColor = toCesium(entry.symbology.lineColor);
+      const fillColor = toCesium(entry.symbology.fillColor);
       if (lineColor && fillColor) {
         const outlineWanted = !Color.equals(lineColor, fillColor);
         return { fillColor, lineColor, outlineWanted };
@@ -279,9 +274,11 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     }
 
     // Otherwise, use graphic.symbology as provided
-    const symbology = (graphic as unknown as { symbology?: { color?: ColorDef; fillColor?: ColorDef } })?.symbology;
-    const lineDef = symbology?.color as ColorDef | undefined;
-    const fillDef = (symbology?.fillColor ?? symbology?.color) as ColorDef | undefined;
+    interface HasSymbology { symbology?: { color?: ColorDef; fillColor?: ColorDef } }
+    const hasSymbology = (g: unknown): g is HasSymbology => typeof g === 'object' && g !== null && ('symbology' in g);
+    const symbology = hasSymbology(graphic) ? graphic.symbology : undefined;
+    const lineDef = symbology?.color;
+    const fillDef = symbology?.fillColor ?? symbology?.color;
     const lineColor2 = toCesium(lineDef);
     const fillColor2 = toCesium(fillDef);
     if (!lineColor2 || !fillColor2)

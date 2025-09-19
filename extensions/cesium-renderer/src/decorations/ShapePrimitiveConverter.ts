@@ -7,7 +7,7 @@
  */
 
 import { Cartesian3, Color, ColorGeometryInstanceAttribute, GeometryInstance, PerInstanceColorAppearance, PolygonGeometry, PolygonHierarchy, Primitive, PrimitiveCollection } from "cesium";
-import { GraphicList, IModelConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
@@ -117,10 +117,10 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
       }
       
       if (positions.length === 0 && geometries && geometries.length > 0) {
-        const geometry = geometries[0] as unknown;
-        type Coord = { x: number; y: number; z: number };
+        const geometry = geometries[0];
+        interface Coord { x: number; y: number; z: number }
         const hasCoords = (g: unknown): g is { coordinateData: Coord[] } =>
-          typeof g === 'object' && g !== null && 'coordinateData' in (g as object);
+          typeof g === 'object' && g !== null && ('coordinateData' in g);
         if (hasCoords(geometry) && geometry.coordinateData.length > 0) {
           const points = geometry.coordinateData.map((coord) => new Point3d(coord.x, coord.y, coord.z));
           positions = this.convertPointsToCartesian3(points, iModel);
@@ -200,18 +200,20 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
     };
 
     // Prefer symbology captured in coordinateData
-    const coordData = (graphic as RenderGraphicWithCoordinates | undefined)?._coordinateData as import('./DecorationTypes.js').DecorationPrimitiveEntry[] | undefined;
+    const coordData = (graphic as RenderGraphicWithCoordinates | undefined)?._coordinateData;
     const isShape = (e: import('./DecorationTypes.js').DecorationPrimitiveEntry): e is import('./DecorationTypes.js').ShapeEntry => e.type === 'shape';
     const entry = coordData?.find((e) => isShape(e) && (!!e.symbology?.fillColor || !!e.symbology?.lineColor));
     if (entry) {
-      const fill = toCesium(entry.symbology?.fillColor as ColorDef | undefined) ?? toCesium(entry.symbology?.lineColor as ColorDef | undefined);
+      const fill = toCesium(entry.symbology?.fillColor) ?? toCesium(entry.symbology?.lineColor);
       if (fill)
         return fill;
     }
 
     // Otherwise use graphic.symbology
-    const symbology = (graphic as unknown as { symbology?: { fillColor?: ColorDef; color?: ColorDef } } | undefined)?.symbology;
-    const fillDef = (symbology?.fillColor ?? symbology?.color) as ColorDef | undefined;
+    interface HasSymbology { symbology?: { fillColor?: ColorDef; color?: ColorDef } }
+    const hasSymbology = (g: unknown): g is HasSymbology => typeof g === 'object' && g !== null && ('symbology' in g);
+    const symbology = hasSymbology(graphic) ? graphic.symbology : undefined;
+    const fillDef = symbology?.fillColor ?? symbology?.color;
     return toCesium(fillDef);
   }
 

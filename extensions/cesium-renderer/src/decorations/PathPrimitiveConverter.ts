@@ -41,7 +41,7 @@ export class PathPrimitiveConverter extends PrimitiveConverter {
       const data = Array.isArray(originalData) ? (originalData as DecorationPrimitiveEntry[]) : undefined;
       const isPathEntry = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').PathEntry => e.type === 'path';
       const pathEntry = Array.isArray(data) ? data.find((e): e is import('./DecorationTypes.js').PathEntry => isPathEntry(e)) : undefined;
-      const path: Path | undefined = pathEntry?.path as Path | undefined;
+      const path: Path | undefined = pathEntry?.path;
       if (!path) {
         // No valid path found; nothing to draw
         return null;
@@ -74,18 +74,20 @@ export class PathPrimitiveConverter extends PrimitiveConverter {
 
   private extractColorFromGraphic(graphic: RenderGraphicWithCoordinates): Color | undefined {
     // Prefer symbology captured in coordinateData entry
-    const coordData = graphic?._coordinateData as DecorationPrimitiveEntry[] | undefined;
+    const coordData = graphic?._coordinateData;
     const isPath = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').PathEntry => e.type === 'path';
     const entry = coordData?.find((e) => isPath(e) && !!e.symbology?.lineColor);
-    const colorDefFromEntry = entry?.symbology?.lineColor as ColorDef | undefined;
+    const colorDefFromEntry = entry?.symbology?.lineColor;
     if (colorDefFromEntry) {
       const c1 = colorDefFromEntry.colors;
       const alpha = 255 - (c1.t ?? 0);
       return Color.fromBytes(c1.r, c1.g, c1.b, alpha);
     }
 
-    const symbology = (graphic as unknown as { symbology?: { color?: ColorDef } })?.symbology;
-    const colorDef = symbology?.color as ColorDef | undefined;
+    interface HasSymbology { symbology?: { color?: ColorDef } }
+    const hasSymbology = (g: unknown): g is HasSymbology => typeof g === 'object' && g !== null && ('symbology' in g);
+    const symbology = hasSymbology(graphic) ? graphic.symbology : undefined;
+    const colorDef = symbology?.color;
     if (colorDef) {
       const c = colorDef.colors;
       const alpha = 255 - (c.t ?? 0);

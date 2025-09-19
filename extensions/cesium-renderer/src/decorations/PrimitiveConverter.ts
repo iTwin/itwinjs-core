@@ -169,7 +169,7 @@ export abstract class PrimitiveConverter {
       const coordinateData = graphicWithCoords._coordinateData;
       
       if (coordinateData && Array.isArray(coordinateData)) {
-        const data = coordinateData as DecorationPrimitiveEntry[];
+        const data = coordinateData;
         data.forEach((primitive) => {
           switch (primitive.type) {
             case 'pointstring':

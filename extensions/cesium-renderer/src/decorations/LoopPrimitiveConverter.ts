@@ -221,8 +221,10 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
   // Use base class convertPointsToCartesian3
 
   private extractColorFromGraphic(graphic: RenderGraphicWithCoordinates): Color | undefined {
-    const symbology = (graphic as unknown as { symbology?: { color?: import('@itwin/core-common').ColorDef } }).symbology;
-    const colorDef = symbology?.color as ColorDef | undefined;
+    interface HasSymbology { symbology?: { color?: import('@itwin/core-common').ColorDef } }
+    const hasSymbology = (g: unknown): g is HasSymbology => typeof g === 'object' && g !== null && ('symbology' in g);
+    const symbology = hasSymbology(graphic) ? graphic.symbology : undefined;
+    const colorDef = symbology?.color;
     if (!colorDef)
       return undefined;
     const colors = colorDef.colors;
@@ -242,7 +244,7 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
 
   private extractColorsFromGraphic(graphic: RenderGraphicWithCoordinates): { fillColor: Color; lineColor: Color; outlineWanted: boolean } | undefined {
     // Prefer symbology captured in coordinateData (from CoordinateBuilder)
-    const coordData = graphic?._coordinateData as DecorationPrimitiveEntry[] | undefined;
+    const coordData = graphic?._coordinateData;
     const isLoopEntry = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').LoopEntry => e.type === 'loop';
     const entry = coordData?.find((e) => isLoopEntry(e) && !!e.symbology?.lineColor);
     const toCesium = (cd?: ColorDef) => {
@@ -252,8 +254,8 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
       return Color.fromBytes(c.r, c.g, c.b, alpha);
     };
     if (entry) {
-      const lineColor = toCesium(entry.symbology.lineColor as ColorDef | undefined);
-      const fillColor = toCesium(entry.symbology.fillColor as ColorDef | undefined);
+      const lineColor = toCesium(entry.symbology.lineColor);
+      const fillColor = toCesium(entry.symbology.fillColor);
       if (lineColor && fillColor) {
         const outlineWanted = !Color.equals(lineColor, fillColor);
         return { fillColor, lineColor, outlineWanted };
@@ -261,9 +263,11 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
     }
 
     // Otherwise, use graphic.symbology as provided
-    const symbology = (graphic as unknown as { symbology?: { color?: ColorDef; fillColor?: ColorDef } })?.symbology;
-    const lineDef = symbology?.color as ColorDef | undefined;
-    const fillDef = (symbology?.fillColor ?? symbology?.color) as ColorDef | undefined;
+    interface HasSymbology2 { symbology?: { color?: ColorDef; fillColor?: ColorDef } }
+    const hasSymbology2 = (g: unknown): g is HasSymbology2 => typeof g === 'object' && g !== null && ('symbology' in g);
+    const symbology = hasSymbology2(graphic) ? graphic.symbology : undefined;
+    const lineDef = symbology?.color;
+    const fillDef = symbology?.fillColor ?? symbology?.color;
     const lineColor2 = toCesium(lineDef);
     const fillColor2 = toCesium(fillDef);
     if (!lineColor2 || !fillColor2)

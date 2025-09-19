@@ -113,10 +113,10 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
       }
       
       if (positions.length === 0 && geometries && geometries.length > 0) {
-        const geometry = geometries[0] as unknown;
-        type Coord = { x: number; y: number; z: number };
+        const geometry = geometries[0];
+        interface Coord { x: number; y: number; z: number }
         const hasCoords = (g: unknown): g is { coordinateData: Coord[] } =>
-          typeof g === 'object' && g !== null && 'coordinateData' in (g as object);
+          typeof g === 'object' && g !== null && ('coordinateData' in g);
         if (hasCoords(geometry) && Array.isArray(geometry.coordinateData) && geometry.coordinateData.length > 0) {
           const points = geometry.coordinateData.map((coord) => new Point3d(coord.x, coord.y, coord.z));
           positions = this.convertPointsToCartesian3(points, iModel);
@@ -142,10 +142,10 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
   private extractColorFromGraphic(graphic?: RenderGraphicWithCoordinates): Color | undefined {
     try {
       // Prefer symbology captured in coordinateData entry
-      const coordData = graphic?._coordinateData as DecorationPrimitiveEntry[] | undefined;
+      const coordData = graphic?._coordinateData;
       const isLine = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').LineStringEntry => e.type === 'linestring';
       const entry = coordData?.find((e): e is import('./DecorationTypes.js').LineStringEntry => isLine(e) && !!e.symbology?.lineColor);
-      const colorDefFromEntry = entry?.symbology?.lineColor as ColorDef | undefined;
+      const colorDefFromEntry = entry?.symbology?.lineColor;
       if (colorDefFromEntry) {
         const c1 = colorDefFromEntry.colors;
         const alpha = 255 - (c1.t ?? 0);
@@ -153,8 +153,10 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
       }
 
       // Fallback to graphic.symbology if present
-      const symbology = (graphic as unknown as { symbology?: { color?: ColorDef } } | undefined)?.symbology;
-      const colorDef = symbology?.color as ColorDef | undefined;
+      interface HasSymbology { symbology?: { color?: ColorDef } }
+      const hasSymbology = (g: unknown): g is HasSymbology => typeof g === 'object' && g !== null && ('symbology' in g);
+      const symbology = hasSymbology(graphic) ? graphic.symbology : undefined;
+      const colorDef = symbology?.color;
       if (colorDef) {
         const c = colorDef.colors;
         const alpha = 255 - (c.t ?? 0);
