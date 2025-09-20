@@ -6,8 +6,7 @@
  * @module Cesium
  */
 
-import { Cartesian3, Color, Material, Polyline, PolylineCollection } from "cesium";
-import { ColorDef } from "@itwin/core-common";
+import { Cartesian3, Material, Polyline, PolylineCollection } from "cesium";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Path, Point3d, StrokeOptions } from "@itwin/core-geometry";
 import { CesiumScene } from "../CesiumScene.js";
@@ -58,7 +57,7 @@ export class PathPrimitiveConverter extends PrimitiveConverter {
       const positions: Cartesian3[] = this.convertPointsToCartesian3(pts, iModel);
 
       // Use symbology color when available
-      const matColor = this.extractColorFromGraphic(_graphic);
+      const matColor = this.extractLineColorFromGraphic(_graphic, 'path');
       if (!matColor)
         return null;
 
@@ -70,31 +69,6 @@ export class PathPrimitiveConverter extends PrimitiveConverter {
         ...this.getDepthOptions(type ?? "world"),
       });
     return null;
-  }
-
-  private extractColorFromGraphic(graphic: RenderGraphicWithCoordinates): Color | undefined {
-    // Prefer symbology captured in coordinateData entry
-    const coordData = graphic?._coordinateData;
-    const isPath = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').PathEntry => e.type === 'path';
-    const entry = coordData?.find((e) => isPath(e) && !!e.symbology?.lineColor);
-    const colorDefFromEntry = entry?.symbology?.lineColor;
-    if (colorDefFromEntry) {
-      const c1 = colorDefFromEntry.colors;
-      const alpha = 255 - (c1.t ?? 0);
-      return Color.fromBytes(c1.r, c1.g, c1.b, alpha);
-    }
-
-    interface HasSymbology { symbology?: { color?: ColorDef } }
-    const hasSymbology = (g: unknown): g is HasSymbology => typeof g === 'object' && g !== null && ('symbology' in g);
-    const symbology = hasSymbology(graphic) ? graphic.symbology : undefined;
-    const colorDef = symbology?.color;
-    if (colorDef) {
-      const c = colorDef.colors;
-      const alpha = 255 - (c.t ?? 0);
-      return Color.fromBytes(c.r, c.g, c.b, alpha);
-    }
-
-    return undefined;
   }
 
   protected override getPrimitiveTypeName(): string {

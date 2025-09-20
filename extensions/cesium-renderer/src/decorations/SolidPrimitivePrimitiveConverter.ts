@@ -3,13 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ColorDef } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Box, Cone, Point3d, SolidPrimitive, Sphere } from "@itwin/core-geometry";
 import {
   BoxGeometry,
   Cartesian3,
-  Color,
   ColorGeometryInstanceAttribute,
   CylinderGeometry,
   GeometryInstance,
@@ -63,7 +61,7 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
 
     const { geometry, modelMatrix } = geometryResult;
 
-    const colors = this.extractColorsFromGraphic(graphic);
+    const colors = this.extractFillAndLineColorsFromGraphic(graphic, 'solidPrimitive');
     if (!colors) {
       return null;
     }
@@ -250,40 +248,5 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     const modelMatrix = Matrix4.fromTranslation(cesiumCenter);
 
     return { geometry: cylinderGeometry, modelMatrix };
-  }
-
-  private extractColorsFromGraphic(graphic: RenderGraphicWithCoordinates): { fillColor: Color; lineColor: Color; outlineWanted: boolean } | undefined {
-    // Prefer symbology captured in coordinateData (from CoordinateBuilder)
-    const coordData = graphic?._coordinateData;
-    const isSolid = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').SolidPrimitiveEntry => e.type === 'solidPrimitive';
-    const entry = coordData?.find((e) => isSolid(e) && !!e.symbology?.lineColor);
-    const toCesium = (cd?: ColorDef) => {
-      if (!cd) return undefined;
-      const c = cd.colors;
-      const alpha = 255 - (c.t ?? 0);
-      return Color.fromBytes(c.r, c.g, c.b, alpha);
-    };
-    
-    if (entry) {
-      const lineColor = toCesium(entry.symbology.lineColor);
-      const fillColor = toCesium(entry.symbology.fillColor);
-      if (lineColor && fillColor) {
-        const outlineWanted = !Color.equals(lineColor, fillColor);
-        return { fillColor, lineColor, outlineWanted };
-      }
-    }
-
-    // Otherwise, use graphic.symbology as provided
-    interface HasSymbology { symbology?: { color?: ColorDef; fillColor?: ColorDef } }
-    const hasSymbology = (g: unknown): g is HasSymbology => typeof g === 'object' && g !== null && ('symbology' in g);
-    const symbology = hasSymbology(graphic) ? graphic.symbology : undefined;
-    const lineDef = symbology?.color;
-    const fillDef = symbology?.fillColor ?? symbology?.color;
-    const lineColor2 = toCesium(lineDef);
-    const fillColor2 = toCesium(fillDef);
-    if (!lineColor2 || !fillColor2)
-      return undefined;
-    const outlineWanted2 = !Color.equals(lineColor2, fillColor2);
-    return { fillColor: fillColor2, lineColor: lineColor2, outlineWanted: outlineWanted2 };
   }
 }

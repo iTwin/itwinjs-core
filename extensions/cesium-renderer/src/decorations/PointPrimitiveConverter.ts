@@ -7,12 +7,11 @@
  */
 
 import { Cartesian3, Color, PointPrimitive, PointPrimitiveCollection } from "cesium";
-import { ColorDef } from "@itwin/core-common";
-import { GraphicList, IModelConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
-import { DecorationPrimitiveEntry } from "./DecorationTypes.js";
+ 
 
 /** Converts iTwin.js point decorations to Cesium PointPrimitives */
 export class PointPrimitiveConverter extends PrimitiveConverter {
@@ -111,7 +110,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     if (!entityPosition)
       return null;
 
-    const color = this.extractColorFromGraphic(graphic);
+    const color = this.extractLineColorFromGraphic(graphic, 'pointstring');
     if (!color)
       return null;
     switch (geometryType) {
@@ -128,32 +127,4 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
         });
     }
   }
-
-  private extractColorFromGraphic(graphic?: RenderGraphicWithCoordinates): Color | undefined {
-    // Prefer symbology captured in coordinateData entry
-    const coordData = graphic?._coordinateData;
-    const isPoint = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').PointStringEntry => e.type === 'pointstring';
-    const entry = coordData?.find((e): e is import('./DecorationTypes.js').PointStringEntry => isPoint(e) && !!e.symbology?.lineColor);
-    const colorDefFromEntry = entry?.symbology?.lineColor;
-    if (colorDefFromEntry) {
-      const c1 = colorDefFromEntry.colors;
-      const alpha = 255 - (c1.t ?? 0);
-      return Color.fromBytes(c1.r, c1.g, c1.b, alpha);
-    }
-
-    interface HasSymbology { symbology?: { color?: ColorDef } }
-    const hasSymbology = (g: unknown): g is HasSymbology => typeof g === 'object' && g !== null && ('symbology' in g);
-    const symbology = hasSymbology(graphic) ? graphic.symbology : undefined;
-    const colorDef = symbology?.color;
-    if (colorDef) {
-      const c = colorDef.colors;
-      const alpha = 255 - (c.t ?? 0);
-      return Color.fromBytes(c.r, c.g, c.b, alpha);
-    }
-
-    return undefined;
-  }
-
-  // Removed fallback position helper per request
-
 }

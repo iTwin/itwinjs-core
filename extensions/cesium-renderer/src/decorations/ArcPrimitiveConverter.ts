@@ -1,5 +1,4 @@
-import { BoundingSphere, Cartesian3, Color, ColorGeometryInstanceAttribute, ComponentDatatype, Geometry, GeometryAttribute, GeometryInstance, Material, PerInstanceColorAppearance, Primitive, PrimitiveType, PrimitiveCollection, Polyline } from "cesium";
-import { ColorDef } from "@itwin/core-common";
+import { BoundingSphere, Cartesian3, ColorGeometryInstanceAttribute, ComponentDatatype, Geometry, GeometryAttribute, GeometryInstance, Material, PerInstanceColorAppearance, Polyline, Primitive, PrimitiveCollection, PrimitiveType } from "cesium";
 import { Loop, Path, Polyface, PolyfaceBuilder, StrokeOptions, SweepContour } from "@itwin/core-geometry";
 import { IModelConnection } from "@itwin/core-frontend";
 import { CesiumScene } from "../CesiumScene.js";
@@ -64,7 +63,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     const converter = new CesiumCoordinateConverter(converterIModel);
     
     // Determine color from graphic symbology when available; fallback by type
-    const color = this.extractColorFromGraphic(_graphic);
+    const color = this.extractLineColorFromGraphic(_graphic, 'arc');
     if (!color)
       return null;
 
@@ -110,7 +109,6 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
       
       return primitive;
     } else {
-      // Use iTwin.js Path.create(arc).getPackedStrokes() for accurate arc points
       const path = Path.create(arc);
       const strokeOptions = StrokeOptions.createForCurves();
       strokeOptions.chordTol = 0.01;
@@ -241,29 +239,4 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
 
     return geometry;
   }
-
-  private extractColorFromGraphic(graphic: RenderGraphicWithCoordinates): Color | undefined {
-    const coordData = graphic?._coordinateData;
-    const isArc = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').ArcEntry => e.type === 'arc';
-    const entry = coordData?.find((e) => isArc(e) && !!e.symbology?.lineColor);
-    const toCesium = (cd?: ColorDef) => {
-      if (!cd) return undefined;
-      const c = cd.colors;
-      const alpha = 255 - (c.t ?? 0);
-      return Color.fromBytes(c.r, c.g, c.b, alpha);
-    };
-    if (entry) {
-      const fromEntry = toCesium(entry.symbology?.lineColor);
-      if (fromEntry)
-        return fromEntry;
-    }
-
-    // Otherwise use graphic.symbology
-    interface HasSymbology { symbology?: { color?: ColorDef } }
-    const hasSymbology = (g: unknown): g is HasSymbology => typeof g === 'object' && g !== null && ('symbology' in g);
-    const symbology = hasSymbology(graphic) ? graphic.symbology : undefined;
-    const colorDef = symbology?.color;
-    return toCesium(colorDef);
-  }
-
 }

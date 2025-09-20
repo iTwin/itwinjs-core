@@ -6,14 +6,12 @@
  * @module Cesium
  */
 
-import { Cartesian3, Color, Material, Polyline, PolylineCollection } from "cesium";
-import { ColorDef } from "@itwin/core-common";
+import { Cartesian3, Material, Polyline, PolylineCollection } from "cesium";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
-import { DecorationPrimitiveEntry } from "./DecorationTypes.js";
-
+ 
 /** Converts iTwin.js LineString decorations to Cesium Polylines */
 export class LineStringPrimitiveConverter extends PrimitiveConverter {
   protected readonly primitiveType = 'linestring';
@@ -22,7 +20,6 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
   protected override getCollection(scene: CesiumScene): PolylineCollection {
     return scene.polylineCollection;
   }
-
 
   protected override createPrimitiveFromGraphic(
     graphic: RenderGraphicWithCoordinates,
@@ -70,21 +67,13 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
     type?: string
   ): Polyline | null {
     if (!graphic) {
-      console.warn(`Null graphic for ${lineId}`);
       return null;
     }
 
-    try {
-      if (graphic.geometries && graphic.geometryType) {
-        return this.createPolylineFromGeometry(graphic.geometries, graphic.geometryType, lineId, index, polylineCollection, iModel, originalLineStrings, type, graphic);
-      }
-
-      return null; // No valid geometry found
-
-    } catch (error) {
-      console.error(`Error in createPolylineFromGraphic for ${lineId}:`, error);
-      return null;
+    if (graphic.geometries && graphic.geometryType) {
+      return this.createPolylineFromGeometry(graphic.geometries, graphic.geometryType, lineId, index, polylineCollection, iModel, originalLineStrings, type, graphic);
     }
+    return null;
   }
 
   private createPolylineFromGeometry(
@@ -123,7 +112,7 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
         }
       }
 
-      const color = this.extractColorFromGraphic(graphic);
+      const color = this.extractLineColorFromGraphic(graphic, 'linestring');
       if (!color)
         return null;
       switch (geometryType) {
@@ -138,34 +127,4 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
           });
       }
   }
-
-  private extractColorFromGraphic(graphic?: RenderGraphicWithCoordinates): Color | undefined {
-    try {
-      // Prefer symbology captured in coordinateData entry
-      const coordData = graphic?._coordinateData;
-      const isLine = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').LineStringEntry => e.type === 'linestring';
-      const entry = coordData?.find((e): e is import('./DecorationTypes.js').LineStringEntry => isLine(e) && !!e.symbology?.lineColor);
-      const colorDefFromEntry = entry?.symbology?.lineColor;
-      if (colorDefFromEntry) {
-        const c1 = colorDefFromEntry.colors;
-        const alpha = 255 - (c1.t ?? 0);
-        return Color.fromBytes(c1.r, c1.g, c1.b, alpha);
-      }
-
-      // Fallback to graphic.symbology if present
-      interface HasSymbology { symbology?: { color?: ColorDef } }
-      const hasSymbology = (g: unknown): g is HasSymbology => typeof g === 'object' && g !== null && ('symbology' in g);
-      const symbology = hasSymbology(graphic) ? graphic.symbology : undefined;
-      const colorDef = symbology?.color;
-      if (colorDef) {
-        const c = colorDef.colors;
-        const alpha = 255 - (c.t ?? 0);
-        return Color.fromBytes(c.r, c.g, c.b, alpha);
-      }
-    } catch {
-      // ignore
-    }
-    return undefined;
-  }
-
 }

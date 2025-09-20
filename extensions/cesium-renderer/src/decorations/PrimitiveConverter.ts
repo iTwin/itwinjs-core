@@ -8,7 +8,8 @@
 
 import { Decorations, GraphicList, IModelConnection, RenderGraphic } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
-import { Cartesian3 } from "cesium";
+import { Cartesian3, Color } from "cesium";
+import { ColorDef } from "@itwin/core-common";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverterFactory } from "./PrimitiveConverterFactory.js";
 import { CesiumCoordinateConverter } from "./CesiumCoordinateConverter.js";
@@ -254,11 +255,11 @@ export abstract class PrimitiveConverter {
       const pointsToRemove: unknown[] = [];
       for (let i = 0; i < pointCollection.length; i++) {
         const point = pointCollection.get(i);
-        const hasId = (p: unknown): p is { id?: unknown } => typeof p === 'object' && p !== null && 'id' in (p as object);
+        const hasId = (p: unknown): p is { id?: unknown } => typeof p === 'object' && p !== null && 'id' in (p);
         if (hasId(point) && typeof point.id === 'string' && this.isAnyDecorationId(point.id))
           pointsToRemove.push(point);
       }
-      pointsToRemove.forEach(point => pointCollection.remove(point as unknown as import('cesium').PointPrimitive));
+      pointsToRemove.forEach(point => pointCollection.remove(point as import('cesium').PointPrimitive));
     }
 
     // Clear all line primitives  
@@ -267,11 +268,11 @@ export abstract class PrimitiveConverter {
       const linesToRemove: unknown[] = [];
       for (let i = 0; i < polylineCollection.length; i++) {
         const line = polylineCollection.get(i);
-        const hasId = (l: unknown): l is { id?: unknown } => typeof l === 'object' && l !== null && 'id' in (l as object);
+        const hasId = (l: unknown): l is { id?: unknown } => typeof l === 'object' && l !== null && 'id' in (l);
         if (hasId(line) && typeof line.id === 'string' && this.isAnyDecorationId(line.id))
           linesToRemove.push(line);
       }
-      linesToRemove.forEach(line => polylineCollection.remove(line as unknown as import('cesium').Polyline));
+      linesToRemove.forEach(line => polylineCollection.remove(line as import('cesium').Polyline));
     }
   }
 
@@ -279,5 +280,60 @@ export abstract class PrimitiveConverter {
   private isAnyDecorationId(id: string): boolean {
     // Matches: <type>_(pointstring|linestring|shape)_<index>
     return /^(world|normal|worldOverlay|viewOverlay|viewBackground)_(pointstring|linestring|shape)_/i.test(id);
+  }
+
+  // Shared helpers to reduce duplication in converters
+
+  protected getCoordData(graphic?: RenderGraphicWithCoordinates): DecorationPrimitiveEntry[] | undefined {
+    return graphic?._coordinateData;
+  }
+
+  protected colorFromColorDef(cd?: ColorDef): Color | undefined {
+    if (!cd) return undefined;
+    const c = cd.colors;
+    const alpha = 255 - (c.t ?? 0);
+    return Color.fromBytes(c.r, c.g, c.b, alpha);
+  }
+
+  protected getGraphicSymbology(graphic?: RenderGraphicWithCoordinates): { color?: ColorDef; fillColor?: ColorDef } | undefined {
+    interface HasSymbology { symbology?: { color?: ColorDef; fillColor?: ColorDef } }
+    const hasSymbology = (g: unknown): g is HasSymbology => typeof g === 'object' && g !== null && ('symbology' in g);
+    return hasSymbology(graphic) ? graphic.symbology : undefined;
+  }
+
+  protected findEntryByType<K extends DecorationPrimitiveEntry["type"]>(graphic: RenderGraphicWithCoordinates | undefined, type: K): Extract<DecorationPrimitiveEntry, { type: K }> | undefined {
+    const data = this.getCoordData(graphic);
+    const isType = (e: DecorationPrimitiveEntry): e is Extract<DecorationPrimitiveEntry, { type: K }> => e.type === type;
+    return data?.find((e): e is Extract<DecorationPrimitiveEntry, { type: K }> => isType(e));
+  }
+
+  protected extractLineColorFromGraphic<K extends DecorationPrimitiveEntry["type"]>(graphic: RenderGraphicWithCoordinates | undefined, type: K): Color | undefined {
+    const entry = this.findEntryByType(graphic, type);
+    const fromEntry = this.colorFromColorDef(entry?.symbology?.lineColor);
+    if (fromEntry) return fromEntry;
+    const sym = this.getGraphicSymbology(graphic);
+    return this.colorFromColorDef(sym?.color);
+  }
+
+  protected extractFillOrLineColorFromGraphic(graphic: RenderGraphicWithCoordinates | undefined, type: 'shape'): Color | undefined {
+    const entry = this.findEntryByType(graphic, type);
+    const fill = this.colorFromColorDef(entry?.symbology?.fillColor) ?? this.colorFromColorDef(entry?.symbology?.lineColor);
+    if (fill) return fill;
+    const sym = this.getGraphicSymbology(graphic);
+    return this.colorFromColorDef(sym?.fillColor ?? sym?.color);
+  }
+
+  protected extractFillAndLineColorsFromGraphic<K extends DecorationPrimitiveEntry["type"]>(graphic: RenderGraphicWithCoordinates | undefined, type: K): { fillColor: Color; lineColor: Color; outlineWanted: boolean } | undefined {
+    const entry = this.findEntryByType(graphic, type);
+    const line = this.colorFromColorDef(entry?.symbology?.lineColor);
+    const fill = this.colorFromColorDef(entry?.symbology?.fillColor);
+    if (line && fill) {
+      return { fillColor: fill, lineColor: line, outlineWanted: !Color.equals(line, fill) };
+    }
+    const sym = this.getGraphicSymbology(graphic);
+    const line2 = this.colorFromColorDef(sym?.color);
+    const fill2 = this.colorFromColorDef(sym?.fillColor ?? sym?.color);
+    if (!line2 || !fill2) return undefined;
+    return { fillColor: fill2, lineColor: line2, outlineWanted: !Color.equals(line2, fill2) };
   }
 }

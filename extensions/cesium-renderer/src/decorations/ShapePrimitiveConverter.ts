@@ -6,13 +6,12 @@
  * @module Cesium
  */
 
-import { Cartesian3, Color, ColorGeometryInstanceAttribute, GeometryInstance, PerInstanceColorAppearance, PolygonGeometry, PolygonHierarchy, Primitive, PrimitiveCollection } from "cesium";
+import { Cartesian3, ColorGeometryInstanceAttribute, GeometryInstance, PerInstanceColorAppearance, PolygonGeometry, PolygonHierarchy, Primitive, PrimitiveCollection } from "cesium";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
-import { ColorDef } from "@itwin/core-common";
-
+ 
 export class ShapePrimitiveConverter extends PrimitiveConverter {
   protected readonly primitiveType = 'shape';
 
@@ -66,21 +65,13 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
     type?: string
   ): Primitive | null {
     if (!graphic) {
-      console.warn(`Null graphic for ${shapeId}`);
       return null;
     }
-
-    try {
-      if (graphic.geometries && graphic.geometryType) {
-        return this.createPolygonFromGeometry(graphic.geometries, graphic.geometryType, shapeId, index, primitivesCollection, iModel, originalShapes, type, graphic);
-      }
-
-      return null;
-
-    } catch (error) {
-      console.error(`Error in createPolygonFromGraphic for ${shapeId}:`, error);
-      return null;
+    if (graphic.geometries && graphic.geometryType) {
+      return this.createPolygonFromGeometry(graphic.geometries, graphic.geometryType, shapeId, index, primitivesCollection, iModel, originalShapes, type, graphic);
     }
+
+    return null;
   }
 
   private createPolygonFromGeometry(
@@ -98,123 +89,78 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
       return null;
     }
 
-    try {
-      let positions: Cartesian3[] = [];
-      
-      if (originalShapes && originalShapes.length > 0) {
-        const firstShape = originalShapes[0];
-        if (firstShape && firstShape.length > 0) {
-          positions = this.convertPointsToCartesian3(firstShape, iModel);
-          // For polygon, ensure the shape is properly closed
-          if (positions.length > 2) {
-            const firstPos = positions[0];
-            const lastPos = positions[positions.length - 1];
-            if (!Cartesian3.equals(firstPos, lastPos)) {
-              positions.push(firstPos);
-            }
+    let positions: Cartesian3[] = [];
+    
+    if (originalShapes && originalShapes.length > 0) {
+      const firstShape = originalShapes[0];
+      if (firstShape && firstShape.length > 0) {
+        positions = this.convertPointsToCartesian3(firstShape, iModel);
+        // For polygon, ensure the shape is properly closed
+        if (positions.length > 2) {
+          const firstPos = positions[0];
+          const lastPos = positions[positions.length - 1];
+          if (!Cartesian3.equals(firstPos, lastPos)) {
+            positions.push(firstPos);
           }
         }
       }
-      
-      if (positions.length === 0 && geometries && geometries.length > 0) {
-        const geometry = geometries[0];
-        interface Coord { x: number; y: number; z: number }
-        const hasCoords = (g: unknown): g is { coordinateData: Coord[] } =>
-          typeof g === 'object' && g !== null && ('coordinateData' in g);
-        if (hasCoords(geometry) && geometry.coordinateData.length > 0) {
-          const points = geometry.coordinateData.map((coord) => new Point3d(coord.x, coord.y, coord.z));
-          positions = this.convertPointsToCartesian3(points, iModel);
-          // Ensure the shape is closed
-          if (positions.length > 2) {
-            const firstPos = positions[0];
-            const lastPos = positions[positions.length - 1];
-            if (!Cartesian3.equals(firstPos, lastPos)) {
-              positions.push(firstPos);
-            }
+    }
+    
+    if (positions.length === 0 && geometries && geometries.length > 0) {
+      const geometry = geometries[0];
+      interface Coord { x: number; y: number; z: number }
+      const hasCoords = (g: unknown): g is { coordinateData: Coord[] } =>
+        typeof g === 'object' && g !== null && ('coordinateData' in g);
+      if (hasCoords(geometry) && geometry.coordinateData.length > 0) {
+        const points = geometry.coordinateData.map((coord) => new Point3d(coord.x, coord.y, coord.z));
+        positions = this.convertPointsToCartesian3(points, iModel);
+        // Ensure the shape is closed
+        if (positions.length > 2) {
+          const firstPos = positions[0];
+          const lastPos = positions[positions.length - 1];
+          if (!Cartesian3.equals(firstPos, lastPos)) {
+            positions.push(firstPos);
           }
         }
       }
+    }
 
-      if (positions.length < 3) {
-        console.warn(`Shape requires at least 3 points, got ${positions.length}`);
-        return null;
-      }
-
-      switch (geometryType) {
-        case 'shape':
-        default:
-          // Create filled polygon geometry
-          const polygonGeometry = new PolygonGeometry({
-            polygonHierarchy: new PolygonHierarchy(positions),
-            extrudedHeight: 0, // Flat polygon, no extrusion
-          });
-
-          // Determine color: prefer symbology fill, fallback by type
-          const color = this.extractFillColorFromGraphic(_graphic);
-          if (!color)
-            return null;
-          
-          const geometryInstance = new GeometryInstance({
-            geometry: polygonGeometry,
-            id: shapeId,
-            attributes: {
-              color: ColorGeometryInstanceAttribute.fromColor(color)
-            }
-          });
-
-          const primitive = new Primitive({
-            geometryInstances: geometryInstance,
-            appearance: new PerInstanceColorAppearance({
-              flat: true, // Use flat shading for better performance
-              translucent: false
-            })
-          });
-
-          primitivesCollection.add(primitive);
-          return primitive;
-      }
-    } catch (error) {
-      console.error(`Error in createPolygonFromGeometry for ${shapeId}:`, error);
+    if (positions.length < 3) {
       return null;
     }
-  }
 
-  private getShapeColor(type?: string): Color {
-    switch (type) {
-      case 'worldOverlay':
-        return Color.MAGENTA;
-      case 'viewOverlay':
-        return Color.CYAN;
-      case 'world':
+    switch (geometryType) {
+      case 'shape':
       default:
-        return Color.GREEN;
+        // Create filled polygon geometry
+        const polygonGeometry = new PolygonGeometry({
+          polygonHierarchy: new PolygonHierarchy(positions),
+          extrudedHeight: 0, // Flat polygon, no extrusion
+        });
+
+        // Determine color: prefer symbology fill, fallback by type
+        const color = this.extractFillOrLineColorFromGraphic(_graphic, 'shape');
+        if (!color)
+          return null;
+        
+        const geometryInstance = new GeometryInstance({
+          geometry: polygonGeometry,
+          id: shapeId,
+          attributes: {
+            color: ColorGeometryInstanceAttribute.fromColor(color)
+          }
+        });
+
+        const primitive = new Primitive({
+          geometryInstances: geometryInstance,
+          appearance: new PerInstanceColorAppearance({
+            flat: true, // Use flat shading for better performance
+            translucent: false
+          })
+        });
+
+        primitivesCollection.add(primitive);
+        return primitive;
     }
   }
-
-  private extractFillColorFromGraphic(graphic?: RenderGraphicWithCoordinates): Color | undefined {
-    const toCesium = (cd?: ColorDef) => {
-      if (!cd) return undefined;
-      const c = cd.colors;
-      const alpha = 255 - (c.t ?? 0);
-      return Color.fromBytes(c.r, c.g, c.b, alpha);
-    };
-
-    // Prefer symbology captured in coordinateData
-    const coordData = (graphic as RenderGraphicWithCoordinates | undefined)?._coordinateData;
-    const isShape = (e: import('./DecorationTypes.js').DecorationPrimitiveEntry): e is import('./DecorationTypes.js').ShapeEntry => e.type === 'shape';
-    const entry = coordData?.find((e) => isShape(e) && (!!e.symbology?.fillColor || !!e.symbology?.lineColor));
-    if (entry) {
-      const fill = toCesium(entry.symbology?.fillColor) ?? toCesium(entry.symbology?.lineColor);
-      if (fill)
-        return fill;
-    }
-
-    // Otherwise use graphic.symbology
-    interface HasSymbology { symbology?: { fillColor?: ColorDef; color?: ColorDef } }
-    const hasSymbology = (g: unknown): g is HasSymbology => typeof g === 'object' && g !== null && ('symbology' in g);
-    const symbology = hasSymbology(graphic) ? graphic.symbology : undefined;
-    const fillDef = symbology?.fillColor ?? symbology?.color;
-    return toCesium(fillDef);
-  }
-
 }

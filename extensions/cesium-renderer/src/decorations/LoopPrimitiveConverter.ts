@@ -2,11 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import { ColorDef } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { LineString3d, Loop, Point3d } from "@itwin/core-geometry";
-import { Cartesian3, Color, ColorGeometryInstanceAttribute, GeometryInstance, PerInstanceColorAppearance, PolygonGeometry, PolygonHierarchy, Primitive } from "cesium";
+import { Cartesian3, ColorGeometryInstanceAttribute, GeometryInstance, PerInstanceColorAppearance, PolygonGeometry, PolygonHierarchy, Primitive } from "cesium";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
 import { DecorationPrimitiveEntry } from "./DecorationTypes.js";
@@ -38,7 +36,7 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
     const data = Array.isArray(originalData) ? (originalData as DecorationPrimitiveEntry[]) : undefined;
     const isLoopEntry = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').LoopEntry => e.type === 'loop';
     const loopEntry = Array.isArray(data) ? data.find((e): e is import('./DecorationTypes.js').LoopEntry => isLoopEntry(e)) : undefined;
-    const loop: Loop | undefined = loopEntry?.loop as Loop | undefined;
+    const loop: Loop | undefined = loopEntry?.loop;
     if (!loop)
       return null;
 
@@ -46,7 +44,7 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
     if (positions.length < 3)
       return null;
 
-    const colors = this.extractColorsFromGraphic(graphic);
+    const colors = this.extractFillAndLineColorsFromGraphic(graphic, 'loop');
     if (!colors)
       return null;
     const { fillColor, lineColor, outlineWanted } = colors;
@@ -108,82 +106,6 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
     }
   }
 
-  private extractLoopData(coordinateData: DecorationPrimitiveEntry[]): Loop[] {
-    const loops: Loop[] = [];
-    if (coordinateData && Array.isArray(coordinateData)) {
-      const isLoop = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').LoopEntry => e.type === 'loop';
-      coordinateData.forEach((entry) => {
-        if (isLoop(entry)) {
-          loops.push(entry.loop);
-        }
-      });
-    }
-    return loops;
-  }
-
-  private createPolygonFromLoop(
-    graphic: RenderGraphicWithCoordinates, 
-    loopId: string, 
-    scene: CesiumScene, 
-    iModel?: IModelConnection, 
-    originalLoops?: Loop[]
-  ): void {
-    if (!scene?.cesiumScene?.primitives) {
-      console.warn('LoopPrimitiveConverter: No scene.cesiumScene.primitives');
-      return;
-    }
-    
-    if (!originalLoops || originalLoops.length === 0)
-      return;
-    originalLoops.forEach((loop, loopIndex) => {
-      const positions = this.convertLoopToPositions(loop, iModel);
-
-      if (positions.length < 3)
-        return;
-
-      const colors = this.extractColorsFromGraphic(graphic);
-      if (!colors)
-        return;
-      const { fillColor, lineColor, outlineWanted } = colors;
-
-      const primitiveId = `${loopId}_${loopIndex}_${Date.now()}`;
-
-      if (outlineWanted) {
-        scene.polylineCollection.add({
-          id: `${primitiveId}_outline`,
-          positions,
-          width: 2.5,
-          color: lineColor,
-          clampToGround: false,
-        });
-      }
-
-      const positionsNoClose = this.removeDuplicateClosingPoint(positions);
-      if (positionsNoClose.length >= 3) {
-        const polygonGeometry = new PolygonGeometry({
-          polygonHierarchy: new PolygonHierarchy(positionsNoClose),
-        });
-
-        const translucent = fillColor.alpha < 1.0;
-        const geometryInstance = new GeometryInstance({
-          geometry: polygonGeometry,
-          id: primitiveId,
-          attributes: {
-            color: ColorGeometryInstanceAttribute.fromColor(fillColor),
-          },
-        });
-
-        const primitive = new Primitive({
-          geometryInstances: geometryInstance,
-          appearance: new PerInstanceColorAppearance({ flat: true, translucent }),
-          asynchronous: false,
-        });
-
-        scene.primitivesCollection.add(primitive);
-      }
-    });
-  }
-
   private convertLoopToPositions(loop: Loop, iModel?: IModelConnection): Cartesian3[] {
     const points: Point3d[] = [];
     
@@ -218,20 +140,6 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
     return this.convertPointsToCartesian3(points, iModel);
   }
 
-  // Use base class convertPointsToCartesian3
-
-  private extractColorFromGraphic(graphic: RenderGraphicWithCoordinates): Color | undefined {
-    interface HasSymbology { symbology?: { color?: import('@itwin/core-common').ColorDef } }
-    const hasSymbology = (g: unknown): g is HasSymbology => typeof g === 'object' && g !== null && ('symbology' in g);
-    const symbology = hasSymbology(graphic) ? graphic.symbology : undefined;
-    const colorDef = symbology?.color;
-    if (!colorDef)
-      return undefined;
-    const colors = colorDef.colors;
-    const alpha = 255 - (colors.t ?? 0);
-    return Color.fromBytes(colors.r, colors.g, colors.b, alpha);
-  }
-
   private removeDuplicateClosingPoint(positions: Cartesian3[]): Cartesian3[] {
     if (positions.length < 2)
       return positions;
@@ -240,39 +148,5 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
     if (Cartesian3.equals(first, last))
       return positions.slice(0, -1);
     return positions;
-  }
-
-  private extractColorsFromGraphic(graphic: RenderGraphicWithCoordinates): { fillColor: Color; lineColor: Color; outlineWanted: boolean } | undefined {
-    // Prefer symbology captured in coordinateData (from CoordinateBuilder)
-    const coordData = graphic?._coordinateData;
-    const isLoopEntry = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').LoopEntry => e.type === 'loop';
-    const entry = coordData?.find((e) => isLoopEntry(e) && !!e.symbology?.lineColor);
-    const toCesium = (cd?: ColorDef) => {
-      if (!cd) return undefined;
-      const c = cd.colors;
-      const alpha = 255 - (c.t ?? 0);
-      return Color.fromBytes(c.r, c.g, c.b, alpha);
-    };
-    if (entry) {
-      const lineColor = toCesium(entry.symbology.lineColor);
-      const fillColor = toCesium(entry.symbology.fillColor);
-      if (lineColor && fillColor) {
-        const outlineWanted = !Color.equals(lineColor, fillColor);
-        return { fillColor, lineColor, outlineWanted };
-      }
-    }
-
-    // Otherwise, use graphic.symbology as provided
-    interface HasSymbology2 { symbology?: { color?: ColorDef; fillColor?: ColorDef } }
-    const hasSymbology2 = (g: unknown): g is HasSymbology2 => typeof g === 'object' && g !== null && ('symbology' in g);
-    const symbology = hasSymbology2(graphic) ? graphic.symbology : undefined;
-    const lineDef = symbology?.color;
-    const fillDef = symbology?.fillColor ?? symbology?.color;
-    const lineColor2 = toCesium(lineDef);
-    const fillColor2 = toCesium(fillDef);
-    if (!lineColor2 || !fillColor2)
-      return undefined;
-    const outlineWanted2 = !Color.equals(lineColor2, fillColor2);
-    return { fillColor: fillColor2, lineColor: lineColor2, outlineWanted: outlineWanted2 };
   }
 }
