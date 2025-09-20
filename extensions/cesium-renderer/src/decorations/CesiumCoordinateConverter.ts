@@ -40,9 +40,6 @@ export class CesiumCoordinateConverter {
     this._iModel = iModel;
     this._ecefLocation = iModel.ecefLocation;
     
-    if (!this._iModel.isGeoLocated) {
-      console.warn('IModel is not geo-located, coordinate conversions may not be accurate');
-    }
   }
 
   /**
@@ -53,22 +50,13 @@ export class CesiumCoordinateConverter {
    */
   public spatialToCesiumCartesian3(spatial: XYAndZ): Cartesian3 {
     if (!this._iModel.isGeoLocated) {
-      console.warn('IModel not geo-located, using fallback positioning');
       return this._getFallbackCartesian3(spatial);
     }
-
-    try {
-      // Direct call to iTwin.js spatialToEcef method (IModel.ts:636)
-      // public spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d
-      const ecefPoint = this._iModel.spatialToEcef(spatial);
-      
-      // Convert iTwin.js Point3d ECEF to CesiumJS Cartesian3 ECEF
-      return new Cartesian3(ecefPoint.x, ecefPoint.y, ecefPoint.z);
-      
-    } catch (error) {
-      console.error('Error in spatialToEcef conversion:', error);
-      return this._getFallbackCartesian3(spatial);
-    }
+    // Direct call to iTwin.js spatialToEcef method (IModel.ts:636)
+    // public spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d
+    const ecefPoint = this._iModel.spatialToEcef(spatial);
+    // Convert iTwin.js Point3d ECEF to CesiumJS Cartesian3 ECEF
+    return new Cartesian3(ecefPoint.x, ecefPoint.y, ecefPoint.z);
   }
 
   /**
@@ -79,21 +67,12 @@ export class CesiumCoordinateConverter {
    */
   public cesiumCartesian3ToSpatial(cartesian3: Cartesian3): Point3d {
     if (!this._iModel.isGeoLocated) {
-      console.warn('IModel not geo-located, conversion may not be accurate');
       return new Point3d(cartesian3.x, cartesian3.y, cartesian3.z);
     }
-
-    try {
-      // Convert CesiumJS Cartesian3 to iTwin.js Point3d
-      const ecefPoint = new Point3d(cartesian3.x, cartesian3.y, cartesian3.z);
-      
-      // Use iTwin.js built-in ecefToSpatial method
-      return this._iModel.ecefToSpatial(ecefPoint);
-      
-    } catch (error) {
-      console.error('Error in ecefToSpatial conversion:', error);
-      return new Point3d(cartesian3.x, cartesian3.y, cartesian3.z);
-    }
+    // Convert CesiumJS Cartesian3 to iTwin.js Point3d
+    const ecefPoint = new Point3d(cartesian3.x, cartesian3.y, cartesian3.z);
+    // Use iTwin.js built-in ecefToSpatial method
+    return this._iModel.ecefToSpatial(ecefPoint);
   }
 
   /**
@@ -106,25 +85,17 @@ export class CesiumCoordinateConverter {
     if (!this._iModel.isGeoLocated) {
       return this._getFallbackCartesian3(spatial);
     }
-
-    try {
-      // Step 1: iTwin.js spatial → ECEF using built-in method
-      const ecefPoint = this._iModel.spatialToEcef(spatial);
-      const cesiumEcef = new Cartesian3(ecefPoint.x, ecefPoint.y, ecefPoint.z);
-      
-      // Step 2: ECEF → Geographic coordinates 
-      const cartographic = CesiumCartographic.fromCartesian(cesiumEcef);
-      
-      // Step 3: Geographic → Cartesian3 (for CesiumJS positioning)
-      return Cartesian3.fromRadians(
-        cartographic.longitude,
-        cartographic.latitude, 
-        cartographic.height
-      );
-    } catch (error) {
-      console.error('Error in spatial to geographic conversion:', error);
-      return this._getFallbackCartesian3(spatial);
-    }
+    // Step 1: iTwin.js spatial → ECEF using built-in method
+    const ecefPoint = this._iModel.spatialToEcef(spatial);
+    const cesiumEcef = new Cartesian3(ecefPoint.x, ecefPoint.y, ecefPoint.z);
+    // Step 2: ECEF → Geographic coordinates 
+    const cartographic = CesiumCartographic.fromCartesian(cesiumEcef);
+    // Step 3: Geographic → Cartesian3 (for CesiumJS positioning)
+    return Cartesian3.fromRadians(
+      cartographic.longitude,
+      cartographic.latitude, 
+      cartographic.height
+    );
   }
 
   /**
@@ -145,20 +116,14 @@ export class CesiumCoordinateConverter {
    */
   public convertLineStringToCesium(linePoints: Point3d[]): Cartesian3[] {
     if (!this._iModel.isGeoLocated) {
-      console.warn('Using fallback conversion for line string');
       return linePoints.map(point => this._getFallbackCartesian3(point));
     }
 
     const cesiumPositions: Cartesian3[] = [];
     
     for (const point of linePoints) {
-      try {
-        const ecefPoint = this._iModel.spatialToEcef(point);
-        cesiumPositions.push(new Cartesian3(ecefPoint.x, ecefPoint.y, ecefPoint.z));
-      } catch (error) {
-        console.error('Error converting point in line string:', error);
-        cesiumPositions.push(this._getFallbackCartesian3(point));
-      }
+      const ecefPoint = this._iModel.spatialToEcef(point);
+      cesiumPositions.push(new Cartesian3(ecefPoint.x, ecefPoint.y, ecefPoint.z));
     }
     
     return cesiumPositions;
@@ -243,17 +208,10 @@ export class CesiumCoordinateConverter {
     if (!this._iModel.isGeoLocated) {
       return modelExtents; // Return as-is if not geo-located
     }
-
-    try {
-      // Convert using spatialToEcef
-      const lowEcef = this._iModel.spatialToEcef(modelExtents.low);
-      const highEcef = this._iModel.spatialToEcef(modelExtents.high);
-      
-      return Range3d.create(lowEcef, highEcef);
-    } catch (error) {
-      console.error('Error converting model extents:', error);
-      return modelExtents;
-    }
+    // Convert using spatialToEcef
+    const lowEcef = this._iModel.spatialToEcef(modelExtents.low);
+    const highEcef = this._iModel.spatialToEcef(modelExtents.high);
+    return Range3d.create(lowEcef, highEcef);
   }
 
   /**
@@ -308,14 +266,14 @@ export class CesiumCoordinateUtils {
   /**
    * Create Cartesian3 from geographic coordinates
    */
-  static fromDegrees(longitude: number, latitude: number, height: number = 0): Cartesian3 {
+  public static fromDegrees(longitude: number, latitude: number, height: number = 0): Cartesian3 {
     return Cartesian3.fromDegrees(longitude, latitude, height);
   }
 
   /**
    * Calculate distance between two CesiumJS positions
    */
-  static distance(pos1: Cartesian3, pos2: Cartesian3): number {
+  public static distance(pos1: Cartesian3, pos2: Cartesian3): number {
     return Cartesian3.distance(pos1, pos2);
   }
 }

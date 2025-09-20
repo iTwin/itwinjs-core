@@ -15,7 +15,6 @@ import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveCon
 export class ShapePrimitiveConverter extends PrimitiveConverter {
   protected readonly primitiveType = 'shape';
 
-
   protected override getCollection(scene: CesiumScene): PrimitiveCollection {
     return scene.primitivesCollection;
   }

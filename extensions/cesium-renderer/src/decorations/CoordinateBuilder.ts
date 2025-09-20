@@ -7,7 +7,7 @@
  */
 
 import { Arc3d, Loop, Path, Point3d, Polyface, SolidPrimitive } from "@itwin/core-geometry";
-import { CustomGraphicBuilderOptions, GraphicBuilder, GraphicTemplate, RenderGraphic, ViewportGraphicBuilderOptions, _implementationProhibited } from "@itwin/core-frontend";
+import { _implementationProhibited, CustomGraphicBuilderOptions, GraphicBuilder, GraphicTemplate, RenderGraphic, ViewportGraphicBuilderOptions } from "@itwin/core-frontend";
 import { ColorDef, LinePixels } from "@itwin/core-common";
 import { System } from "../System.js";
 import { CoordinateStorage } from "./CoordinateStorage.js";
@@ -96,8 +96,7 @@ export class CoordinateBuilder extends GraphicBuilder {
     const template = this.finishTemplate();
     
     if (this._pendingTemplateId) {
-      interface CoordinateTemplateTag { _coordinateTemplateId?: symbol }
-      (template as unknown as CoordinateTemplateTag)._coordinateTemplateId = this._pendingTemplateId;
+      Reflect.set(template as object, "_coordinateTemplateId", this._pendingTemplateId);
     }
     
     const graphic = this.system.createGraphicFromTemplate({ template });
@@ -110,8 +109,7 @@ export class CoordinateBuilder extends GraphicBuilder {
     if (this._coordinateData.length > 0) {
       const templateId = Symbol.for(`coordinate_template_${Date.now()}_${Math.random()}`);
       CoordinateStorage.storeCoordinates(templateId, this._coordinateData);
-      interface CoordinateTemplateTag { _coordinateTemplateId?: symbol }
-      (template as unknown as CoordinateTemplateTag)._coordinateTemplateId = templateId;
+      Reflect.set(template as object, "_coordinateTemplateId", templateId);
     }
     
     return template;
