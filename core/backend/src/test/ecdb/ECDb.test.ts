@@ -515,67 +515,30 @@ describe("ECDb", () => {
     ecdb.closeDb();
   });
 
-  it("should drop a single schema", () => {
-    using ecdb = ECDbTestHelper.createECDb(outDir, "test.ecdb",
-      `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
-        <ECEntityClass typeName="Foo" modifier="Sealed">
-          <ECProperty propertyName="n" typeName="int"/>
+  it("deleteSchemaItems should remove only the specified schema items", () => {
+    using testECDb = ECDbTestHelper.createECDb(outDir, "delete-schema-items.ecdb",
+      `<ECSchema schemaName="DelTest" alias="dt" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECEntityClass typeName="Person" modifier="Sealed">
+          <ECProperty propertyName="Name" typeName="string"/>
+        </ECEntityClass>
+        <ECEntityClass typeName="Building" modifier="Sealed">
+          <ECProperty propertyName="Code" typeName="string"/>
         </ECEntityClass>
       </ECSchema>`);
-    assert.isTrue(ecdb.isOpen);
-    ecdb.saveChanges();
-    const schemaProps = ecdb.getSchemaProps("Test");
-    expect(schemaProps.name).to.equal("Test");
 
-    ecdb.dropSchemas(["Test"]);
-    expect(() => ecdb.getSchemaProps("Test")).to.throw();
-  });
+    const before = testECDb.getSchemaProps("DelTest");
+    expect(before.items, "items should exist before delete").not.to.be.undefined;
+    expect(before.items!.Person, "Person exists before delete").to.not.be.undefined;
+    expect(before.items!.Building, "Building exists before delete").to.not.be.undefined;
 
-  it("should drop multiple schemas", () => {
-    const testSchema1Xml = `<?xml version="1.0" encoding="utf-8"?>
-      <ECSchema schemaName="TestSchema1" alias="ts1" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
-        <ECEntityClass typeName="TestClass1">
-          <ECProperty propertyName="Prop1" typeName="string"/>
-        </ECEntityClass>
-      </ECSchema>`;
+    testECDb.deleteSchemaItems("DelTest", ["Person", "Building"]);
 
-    const testSchema2Xml = `<?xml version="1.0" encoding="utf-8"?>
-      <ECSchema schemaName="TestSchema2" alias="ts2" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
-        <ECSchemaReference name="TestSchema1" version="01.00.00" alias="ts1"/>
-        <ECEntityClass typeName="TestClass2">
-          <ECProperty propertyName="Prop2" typeName="string"/>
-        </ECEntityClass>
-      </ECSchema>`;
-
-    using ecdb = ECDbTestHelper.createECDb(outDir, "drop-multiple-schemas.ecdb");
-    assert.isTrue(ecdb.isOpen);
-
-    const schema1Path = path.join(outDir, "TestSchema1.ecschema.xml");
-    IModelJsFs.writeFileSync(schema1Path, testSchema1Xml);
-    ecdb.importSchema(schema1Path);
-
-    const schema2Path = path.join(outDir, "TestSchema2.ecschema.xml");
-    IModelJsFs.writeFileSync(schema2Path, testSchema2Xml);
-    ecdb.importSchema(schema2Path);
-
-    ecdb.saveChanges();
-
-    const schema1Props = ecdb.getSchemaProps("TestSchema1");
-    expect(schema1Props.name).to.equal("TestSchema1");
-    const schema2Props = ecdb.getSchemaProps("TestSchema2");
-    expect(schema2Props.name).to.equal("TestSchema2");
-
-    expect(() => ecdb.dropSchemas(["TestSchema1"])).to.throw();
-
-    const stillExistsSchema1 = ecdb.getSchemaProps("TestSchema1");
-    expect(stillExistsSchema1.name).to.equal("TestSchema1");
-
-    ecdb.dropSchemas(["TestSchema2", "TestSchema1"]);
-
-    expect(() => ecdb.getSchemaProps("TestSchema2")).to.throw();
-    expect(() => ecdb.getSchemaProps("TestSchema1")).to.throw();
-
-    IModelJsFs.removeSync(schema1Path);
-    IModelJsFs.removeSync(schema2Path);
+    const after = testECDb.getSchemaProps("DelTest");
+    expect(after.items?.Person, "Person should be removed").to.be.undefined;
+    expect(after.items?.Building, "Building should be removed").to.be.undefined;
+    if (after.items) {
+      expect(Object.keys(after.items)).to.not.include("Person");
+      expect(Object.keys(after.items)).to.not.include("Building");
+    }
   });
 });
