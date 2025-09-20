@@ -11,7 +11,7 @@ import { FrameBuilder } from "../../geometry3d/FrameBuilder";
 import { IStrokeHandler } from "../../geometry3d/GeometryHandler";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 // import { Point3d, Vector3d, Transform, Matrix3d, Range1d } from "../PointVector";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 // import { Geometry } from "../Geometry";
 import { Checker } from "../Checker";
 

@@ -13,7 +13,7 @@ import { Path } from "../../curve/Path";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { DeepCompare } from "../../serialization/DeepCompare";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Box } from "../../solid/Box";
 import { Checker } from "../Checker";

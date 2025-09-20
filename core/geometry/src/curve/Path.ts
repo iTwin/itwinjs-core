@@ -93,8 +93,11 @@ export class Path extends CurveChain {
         const child = this.children[i]; // head only extends at start; tail, only at end. NOTE: child may be both head and tail!
         const mode0 = (i === 0) ? CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 0) : CurveExtendMode.None;
         const mode1 = (i === this.children.length - 1) ? CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 1) : CurveExtendMode.None;
-        if (child.closestPoint(spacePoint, [mode0, mode1], detailB))
-          detailA = result = CurveLocationDetail.chooseSmallerA(detailA, detailB)!.clone(result);
+        if (child.closestPoint(spacePoint, [mode0, mode1], detailB)) {
+          const smaller = CurveLocationDetail.chooseSmallerA(detailA, detailB);
+          if (undefined !== smaller)
+            detailA = result = smaller.clone(result);
+        }
       }
     }
     return detailA;

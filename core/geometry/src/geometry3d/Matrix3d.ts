@@ -493,11 +493,12 @@ export class Matrix3d implements BeJSONFunctions {
    * This is for use by matrix * matrix multiplications which need to be sure the member is there to be
    * filled with method-specific content.
    */
-  private createInverseCoffsWithZeros() {
+  private createInverseCoffsWithZeros(): this is { inverseCoffs: Float64Array, inverseState: InverseMatrixState } {
     if (!this.inverseCoffs) {
       this.inverseState = InverseMatrixState.unknown;
       this.inverseCoffs = new Float64Array(9);
     }
+    return this.inverseCoffs !== undefined && this.inverseState !== undefined;
   }
   /**
    * Copy the transpose of the coffs to the inverseCoffs.
@@ -553,10 +554,11 @@ export class Matrix3d implements BeJSONFunctions {
       for (let i = 0; i < 9; i++)
         this.coffs[i] = other.coffs[i];
       if (other.inverseState === InverseMatrixState.inverseStored && other.inverseCoffs !== undefined) {
-        this.createInverseCoffsWithZeros();
-        for (let i = 0; i < 9; i++)
-          this.inverseCoffs![i] = other.inverseCoffs[i];
-        this.inverseState = InverseMatrixState.inverseStored;
+        if (this.createInverseCoffsWithZeros()) {
+          for (let i = 0; i < 9; i++)
+            this.inverseCoffs[i] = other.inverseCoffs[i];
+          this.inverseState = InverseMatrixState.inverseStored;
+        }
       } else if (other.inverseState !== InverseMatrixState.inverseStored) {
         this.inverseState = other.inverseState;
       } else {  // This is reached when other says stored but does not have coffs. This should not happen.
@@ -1324,7 +1326,10 @@ export class Matrix3d implements BeJSONFunctions {
     } else if (!scaleXIsZero && !scaleYIsZero) { // rank 2
       column[0].scaleInPlace(1 / scale.x);
       column[1].scaleInPlace(1 / scale.y);
-      column[2] = column[0].unitCrossProduct(column[1], column[2])!;
+      const crossProduct = column[0].unitCrossProduct(column[1], column[2]);
+      if (!crossProduct)
+        return false;
+      column[2] = crossProduct;
       matrixV.setColumns(column[0], column[1], column[2]);
     } else if (!scaleXIsZero) { // rank 1
       matrixV = Matrix3d.createRigidHeadsUp(column[0], AxisOrder.XYZ, matrixV); // preserve column0
@@ -2091,10 +2096,9 @@ export class Matrix3d implements BeJSONFunctions {
     f: (factorA: Float64Array, factorB: Float64Array, result: Float64Array) => void, coffA?: Float64Array,
     coffB?: Float64Array,
   ): void {
-    if (coffA && coffB) {
-      this.createInverseCoffsWithZeros();
+    if (coffA && coffB && this.createInverseCoffsWithZeros()) {
       this.inverseState = InverseMatrixState.inverseStored;
-      f(coffA, coffB, this.inverseCoffs!); // call function f (which is provided by user) to compute the inverse.
+      f(coffA, coffB, this.inverseCoffs); // call function f (which is provided by user) to compute the inverse.
     } else {
       this.inverseState = InverseMatrixState.unknown;
     }
@@ -2130,7 +2134,7 @@ export class Matrix3d implements BeJSONFunctions {
     if (!other.computeCachedInverse(true))
       return undefined;
     result = result ? result : new Matrix3d();
-    PackedMatrix3dOps.multiplyMatrixMatrix(this.coffs, other.inverseCoffs!, Matrix3d._productBuffer);
+    PackedMatrix3dOps.multiplyMatrixMatrix(this.coffs, other.inverseCoffs, Matrix3d._productBuffer);
     if (this.inverseState === InverseMatrixState.inverseStored)
       result.finishInverseCoffs((a, b, _result) => PackedMatrix3dOps.multiplyMatrixMatrix(a, b, _result), other.coffs, this.inverseCoffs);
     else
@@ -2145,8 +2149,8 @@ export class Matrix3d implements BeJSONFunctions {
   public multiplyMatrixInverseMatrix(other: Matrix3d, result?: Matrix3d): Matrix3d | undefined {
     if (!this.computeCachedInverse(true))
       return undefined;
+    PackedMatrix3dOps.multiplyMatrixMatrix(this.inverseCoffs, other.coffs, Matrix3d._productBuffer);
     result = result ? result : new Matrix3d();
-    PackedMatrix3dOps.multiplyMatrixMatrix(this.inverseCoffs!, other.coffs, Matrix3d._productBuffer);
     if (other.inverseState === InverseMatrixState.inverseStored)
       result.finishInverseCoffs((a, b, _result) => PackedMatrix3dOps.multiplyMatrixMatrix(a, b, _result), other.inverseCoffs, this.coffs);
     else
@@ -2257,18 +2261,20 @@ export class Matrix3d implements BeJSONFunctions {
     if (result === this) {
       // swap the contents of this.coffs and this.inverseCoffs
       PackedMatrix3dOps.copy(this.coffs, Matrix3d._productBuffer);
-      PackedMatrix3dOps.copy(this.inverseCoffs!, this.coffs);
-      PackedMatrix3dOps.copy(Matrix3d._productBuffer, this.inverseCoffs!);
+      PackedMatrix3dOps.copy(this.inverseCoffs, this.coffs);
+      PackedMatrix3dOps.copy(Matrix3d._productBuffer, this.inverseCoffs);
       return result;
     }
     if (result === undefined) {
       result = Matrix3d.createIdentity();
     }
-    result.createInverseCoffsWithZeros();
-    PackedMatrix3dOps.copy(this.coffs, result.inverseCoffs!);
-    PackedMatrix3dOps.copy(this.inverseCoffs!, result.coffs);
-    result.inverseState = this.inverseState;
-    return result;
+    if (result.createInverseCoffsWithZeros()) {
+      PackedMatrix3dOps.copy(this.coffs, result.inverseCoffs);
+      PackedMatrix3dOps.copy(this.inverseCoffs, result.coffs);
+      result.inverseState = this.inverseState;
+      return result;
+    }
+    return undefined;
   }
   /**
    * Take the dot product of a row (specified by `rowStartA`) of `coffA` and `columnStartB` of `coffB`.
@@ -2407,38 +2413,40 @@ export class Matrix3d implements BeJSONFunctions {
    * recompute the inverse.
    * @returns return `true` if the inverse is computed. Return `false` if matrix is singular.
    */
-  public computeCachedInverse(useCacheIfAvailable: boolean): boolean {
+  public computeCachedInverse(useCacheIfAvailable: boolean): this is { inverseCoffs: Float64Array} {
     if (useCacheIfAvailable && Matrix3d.useCachedInverse && this.inverseState !== InverseMatrixState.unknown) {
       Matrix3d.numUseCache++;
       return this.inverseState === InverseMatrixState.inverseStored;
     }
     this.inverseState = InverseMatrixState.unknown;
-    this.createInverseCoffsWithZeros();
-    const coffs = this.coffs;
-    const inverseCoffs = this.inverseCoffs!;
-    /**
-     * We calculate the inverse using cross products.
-     * Math details can be found at docs/learning/matrix/Matrix.md
-     *                    [   A   ]
-     * In summary, if M = [   B   ] then inverse of M = (1/det)[BxC   CxA   AxB] where
-     *                    [   C   ]
-     * det is the determinant of matrix M (which is equal to "A dot BxC").
-     */
-    Matrix3d.indexedRowCrossProduct(coffs, 3, 6, inverseCoffs, 0); // BxC
-    Matrix3d.indexedRowCrossProduct(coffs, 6, 0, inverseCoffs, 1); // CxA
-    Matrix3d.indexedRowCrossProduct(coffs, 0, 3, inverseCoffs, 2); // AxB
-    Matrix3d.numComputeCache++;
-    const det = Matrix3d.rowColumnDot(coffs, 0, inverseCoffs, 0); // A dot BxC
-    if (det === 0.0) {
-      this.inverseState = InverseMatrixState.singular;
-      this.inverseCoffs = undefined;
-      return false;
+    if (this.createInverseCoffsWithZeros()) {
+      const coffs = this.coffs;
+      const inverseCoffs = this.inverseCoffs;
+      /**
+       * We calculate the inverse using cross products.
+       * Math details can be found at docs/learning/matrix/Matrix.md
+       *                    [   A   ]
+       * In summary, if M = [   B   ] then inverse of M = (1/det)[BxC   CxA   AxB] where
+       *                    [   C   ]
+       * det is the determinant of matrix M (which is equal to "A dot BxC").
+       */
+      Matrix3d.indexedRowCrossProduct(coffs, 3, 6, inverseCoffs, 0); // BxC
+      Matrix3d.indexedRowCrossProduct(coffs, 6, 0, inverseCoffs, 1); // CxA
+      Matrix3d.indexedRowCrossProduct(coffs, 0, 3, inverseCoffs, 2); // AxB
+      Matrix3d.numComputeCache++;
+      const det = Matrix3d.rowColumnDot(coffs, 0, inverseCoffs, 0);  // A dot BxC
+      if (det === 0.0) {
+        this.inverseState = InverseMatrixState.singular;
+      } else {
+        const f = 1.0 / det;
+        for (let i = 0; i < 9; i++)
+          inverseCoffs[i] *= f;
+        this.inverseState = InverseMatrixState.inverseStored;
+        return true;
+      }
     }
-    const f = 1.0 / det;
-    for (let i = 0; i < 9; i++)
-      inverseCoffs[i] *= f;
-    this.inverseState = InverseMatrixState.inverseStored;
-    return true;
+    this.inverseCoffs = undefined;
+    return false;
   }
   /**
    * Convert a (row,column) index pair to the single index within flattened array of 9 numbers in row-major-order

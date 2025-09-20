@@ -1460,7 +1460,7 @@ export class HalfEdgeGraph {
   private _maskManager: MaskManager;
   public constructor() {
     this.allHalfEdges = [];
-    this._maskManager = MaskManager.create(HalfEdgeMask.ALL_GRAB_DROP_MASKS)!;
+    this._maskManager = MaskManager.create(HalfEdgeMask.ALL_GRAB_DROP_MASKS) as MaskManager;
   }
   /**
    * Ask for a mask (from the graph's free pool) for caller's use.

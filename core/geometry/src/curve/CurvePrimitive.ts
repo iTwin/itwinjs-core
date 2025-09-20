@@ -188,7 +188,9 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * @param fraction fractional position on the curve
    */
   public fractionToCurvature(fraction: number): number | undefined {
-    const data = this.fractionToPointAnd2Derivatives(fraction)!;
+    const data = this.fractionToPointAnd2Derivatives(fraction);
+    if (!data)
+      return undefined;
     const cross = data.vectorU.crossProduct(data.vectorV);
     const a = cross.magnitude();
     const b = data.vectorU.magnitude();

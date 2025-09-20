@@ -262,8 +262,10 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
   }
   /** Extend `rangeToExtend` so it includes this `Cone` instance. */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
-    const arc0 = this.constantVSection(0.0)!;
-    const arc1 = this.constantVSection(1.0)!;
+    const arc0 = this.constantVSection(0.0);
+    const arc1 = this.constantVSection(1.0);
+    if (!arc0 || !arc1)
+      return;
     arc0.extendRange(rangeToExtend, transform);
     arc1.extendRange(rangeToExtend, transform);
   }
@@ -307,13 +309,16 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
    * Directional distance query
    * * u direction is around longitude circle at maximum distance from axis.
    * * v direction is on a line of longitude between the latitude limits.
+   * If calculation failed, a zero vector is returned.
    */
   public maxIsoParametricDistance(): Vector2d {
     const vectorX = this._localToWorld.matrix.columnX();
     const vectorY = this._localToWorld.matrix.columnY();
     const columnZ = this._localToWorld.matrix.columnZ();
 
-    const xyNormal = vectorX.unitCrossProduct(vectorY)!;
+    const xyNormal = vectorX.unitCrossProduct(vectorY);
+    if (!xyNormal)
+      return Vector2d.createZero();
     const hZ = xyNormal.dotProduct(columnZ);
     const zSkewVector = columnZ.plusScaled(xyNormal, hZ);
     const zSkewDistance = zSkewVector.magnitudeXY();

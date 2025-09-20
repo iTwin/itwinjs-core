@@ -171,9 +171,14 @@ export class ChainMergeContext {
   private primarySortKey(node: HalfEdge): number {
     return this._options.primarySortDirection.dotProductXYZ(node.x, node.y, node.z);
   }
-  /** Return difference of sortData members as sort comparison */
+  /**
+   * Return difference of sortData members as sort comparison.
+   * sortData members must be defined. Otherwise, return 0.
+   */
   private static nodeCompareSortData(nodeA: HalfEdge, nodeB: HalfEdge): number {
-    return nodeA.sortData! - nodeB.sortData!;
+    if (nodeA.sortData === undefined || nodeB.sortData === undefined)
+      return 0;
+    return nodeA.sortData - nodeB.sortData;
   }
   /** test if nodeA is a dangling edge end (i.e. edges around vertex equal 1, but detect it without walking all the way around. */
   private static isIsolatedEnd(nodeA: HalfEdge): boolean {
@@ -204,13 +209,15 @@ export class ChainMergeContext {
     const n = sortArray.length;
     for (let i0 = 0; i0 < n; i0++) {
       const node0 = sortArray[i0];
-      const qMin = node0.sortData!;
+      const qMin = node0.sortData;
+      if (undefined === qMin)
+        continue;
       const qMax = qMin + xyzTolerance;
       if (ChainMergeContext.isIsolatedEnd(node0)) {
         for (let i1 = i0 + 1; i1 < n; i1++) {
           const node1 = sortArray[i1];
           if (ChainMergeContext.isIsolatedEnd(node1)) {
-            if (node1.sortData! > qMax)
+            if (undefined !== node1.sortData && node1.sortData > qMax)
               break;
             if (node0.distanceXYZ(node1) <= xyzTolerance) {
               HalfEdge.pinch(node0, node1);

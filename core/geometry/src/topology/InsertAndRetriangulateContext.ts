@@ -55,7 +55,7 @@ export class InsertAndRetriangulateContext {
 
   private constructor(graph: HalfEdgeGraph, tolerance: number) {
     this._graph = graph;
-    this._edgeSet = MarkedEdgeSet.create(graph)!;
+    this._edgeSet = MarkedEdgeSet.create(graph) as MarkedEdgeSet;
     this._searcher = HalfEdgePositionDetail.create();
     this._tolerance = tolerance;
   }
@@ -101,19 +101,21 @@ export class InsertAndRetriangulateContext {
     const xyzC = Point3d.create();
     let fractionC;
     let distanceC;
+    let tag: number | undefined;
     for (const nodeA of this._graph.allHalfEdges) {
       const nodeB = nodeA.faceSuccessor;
       fractionC = SmallSystem.lineSegment3dXYClosestPointUnbounded(nodeA, nodeB, xyz);
-      if (fractionC !== undefined) {
+      tag = position.getDTag();
+      if (tag !== undefined && fractionC !== undefined) {
         if (fractionC > 1.0) {
           distanceC = xyz.distanceXY(nodeB);
-          if (distanceC < position.getDTag()!) {
+          if (distanceC < tag) {
             position.resetAsVertex(nodeB);
             position.setDTag(distanceC);
           }
         } else if (fractionC < 0.0) {
           distanceC = xyz.distanceXY(nodeA);
-          if (distanceC < position.getDTag()!) {
+          if (distanceC < tag) {
             position.resetAsVertex(nodeA);
             position.setDTag(distanceC);
           }
@@ -121,7 +123,7 @@ export class InsertAndRetriangulateContext {
           nodeA.fractionToPoint3d(fractionC, xyzC);
 
           distanceC = xyz.distanceXY(xyzC);
-          if (distanceC < position.getDTag()!) {
+          if (distanceC < tag) {
             position.resetAtEdgeAndFraction(nodeA, fractionC);
           }
         }
@@ -134,9 +136,11 @@ export class InsertAndRetriangulateContext {
     const position = HalfEdgePositionDetail.create();
     position.setDTag(Number.MAX_VALUE);
     let distanceA;
+    let tag : number | undefined;
     for (const nodeA of this._graph.allHalfEdges) {
       distanceA = xyz.distanceXY(nodeA);
-      if (distanceA < position.getDTag()!) {
+      tag = position.getDTag();
+      if (undefined !== tag && distanceA < tag) {
         position.resetAsVertex(nodeA);
         position.setDTag(distanceA);
       }
@@ -245,7 +249,10 @@ export class InsertAndRetriangulateContext {
       }
     } else if (this._searcher.isEdge) {
       // insert point into the graph by splitting its containing edge
-      const newA = this._graph.splitEdgeAtFraction(this._searcher.node, this._searcher.edgeFraction!);
+      const edgeFraction = this._searcher.edgeFraction;
+      if (undefined === edgeFraction)
+        return false;
+      const newA = this._graph.splitEdgeAtFraction(this._searcher.node, edgeFraction);
       const newB = newA.vertexPredecessor;
       this.updateZAroundVertex(newA, point, InsertedVertexZOptions.Replace);  // always replace
       this.retriangulateFromBaseVertex(newA);
@@ -290,7 +297,11 @@ export class InsertAndRetriangulateContext {
       } else if (movingPosition.isFace) {
         const lastBefore = HalfEdgePositionDetail.create();
         const firstAfter = HalfEdgePositionDetail.create();
-        const rc = psc.reAimAroundFace(movingPosition.node!, ray, ray.a!, lastBefore, firstAfter);
+        const node = movingPosition.node;
+        const a = ray.a;
+        if (!node || undefined === a)
+          return false;
+        const rc = psc.reAimAroundFace(node, ray, a, lastBefore, firstAfter);
         // reAimAroundFace returns lots of cases in `lastBefore`
         switch (rc) {
           case RayClassification.NoHits: {
@@ -330,11 +341,17 @@ export class InsertAndRetriangulateContext {
           }
         }
       } else if (movingPosition.isEdge) {
-        psc.reAimFromEdge(movingPosition, ray, ray.a!);
+        const a = ray.a;
+        if (undefined === a)
+          return false;
+        psc.reAimFromEdge(movingPosition, ray, a);
         if (movingPosition.isUnclassified)
           break;
       } else if (movingPosition.isVertex) {
-        psc.reAimFromVertex(movingPosition, ray, ray.a!);
+        const a = ray.a;
+        if (undefined === a)
+          return false;
+        psc.reAimFromVertex(movingPosition, ray, a);
         if (movingPosition.isUnclassified)
           break;
       }

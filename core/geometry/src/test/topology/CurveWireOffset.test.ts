@@ -18,7 +18,7 @@ import { RegionOps } from "../../curve/RegionOps";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";

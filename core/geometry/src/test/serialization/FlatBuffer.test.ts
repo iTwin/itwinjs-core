@@ -23,7 +23,7 @@ import { TaggedNumericData } from "../../polyface/TaggedNumericData";
 import { BentleyGeometryFlatBuffer } from "../../serialization/BentleyGeometryFlatBuffer";
 import { BGFBAccessors } from "../../serialization/BGFBAccessors";
 import { DeepCompare } from "../../serialization/DeepCompare";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { SolidPrimitive } from "../../solid/SolidPrimitive";
 import { Checker } from "../Checker";

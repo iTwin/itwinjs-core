@@ -16,6 +16,8 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { AnalyticRoots } from "../../numerics/Polynomials";
 import { SmallSystem } from "../../numerics/SmallSystem";
 
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+
 /**
  * Assorted static methods for constructing fragmentary and complete curves for offsets from linestrings.
  * * Primary method is the static edgeByEdgeOffsetFromPoints

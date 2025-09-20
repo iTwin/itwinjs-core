@@ -919,8 +919,11 @@ export class PolyfaceQuery {
     context: SweepLineStringToFacetContext, visitor: PolyfaceVisitor, announce: AnnounceDrapePanel,
   ): Promise<number> {
     let workCount = 0;
+    let clientPolyface: Polyface | undefined;
     while ((workCount < this.asyncWorkLimit) && visitor.moveToNextFacet()) {
-      workCount += context.projectToPolygon(visitor.point, announce, visitor.clientPolyface()!, visitor.currentReadIndex());
+      clientPolyface = visitor.clientPolyface();
+      if (clientPolyface)
+        workCount += context.projectToPolygon(visitor.point, announce, clientPolyface, visitor.currentReadIndex());
     }
     return workCount;
   }
@@ -1583,11 +1586,14 @@ export class PolyfaceQuery {
   /**
    * Clone the facets, inserting vertices (within edges) where points not part of each facet's vertex indices
    * impinge within edges.
+   * If clone failed, a default empty IndexedPolyface is returned.
    */
   public static cloneWithTVertexFixup(polyface: Polyface): IndexedPolyface {
     const oldFacetVisitor = polyface.createVisitor(1); // this is to visit the existing facets
     const newFacetVisitor = polyface.createVisitor(0); // this is to build the new facets
-    const rangeSearcher = XYPointBuckets.create(polyface.data.point, 30)!;
+    const rangeSearcher = XYPointBuckets.create(polyface.data.point, 30);
+    if (!rangeSearcher)
+      return IndexedPolyface.create();
     const builder = PolyfaceBuilder.create();
     const edgeRange = Range3d.createNull();
     const point0 = Point3d.create();
