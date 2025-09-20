@@ -15,6 +15,11 @@ import path from "path";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
+// This is the base url for static files that CesiumJS needs to load.
+// Set to an empty string to place the files at the site's root path
+// In our case, it is "cesium", because the cesium-renderer package copies the assets to "lib/public/cesium"
+const cesiumBaseUrl = "cesium";
+
 const mode =
   process.env.NODE_ENV === "development" ? "development" : "production";
 
@@ -131,6 +136,9 @@ export default defineConfig(() => {
     ],
     define: {
       "process.env": process.env, // injects process.env into the frontend
+      // Define relative base path in cesium for loading assets
+      // https://vitejs.dev/config/shared-options.html#define
+      CESIUM_BASE_URL: JSON.stringify(`/${cesiumBaseUrl}`),
     },
     resolve: {
       alias: {

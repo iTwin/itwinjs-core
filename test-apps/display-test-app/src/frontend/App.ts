@@ -17,6 +17,7 @@ import { EditTools } from "@itwin/editor-frontend";
 import {
   AccuDrawHintBuilder, AccuDrawViewportUI, AccuSnap, IModelApp, IModelConnection, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode,
   TileAdmin, Tool, ToolAdmin,
+  ViewManager,
 } from "@itwin/core-frontend";
 import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
@@ -265,7 +266,7 @@ export class DisplayTestApp {
   private static _iTwinId?: GuidString;
   public static get iTwinId(): GuidString | undefined { return this._iTwinId; }
 
-  public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options, tileAdmin: TileAdmin.Props): Promise<void> {
+  public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options | RenderSystem, tileAdmin: TileAdmin.Props, viewManager?: ViewManager): Promise<void> {
     let socketUrl = new URL(configuration.customOrchestratorUri || "http://localhost:3001");
     socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
     const realityDataClientOptions: RealityDataClientOptions = {
@@ -284,6 +285,7 @@ export class DisplayTestApp {
         uiAdmin: new UiManager(),
         realityDataAccess: new RealityDataAccessClient(realityDataClientOptions),
         renderSys,
+        viewManager,
         rpcInterfaces: [
           DtaRpcInterface,
           IModelReadRpcInterface,
