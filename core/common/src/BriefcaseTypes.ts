@@ -161,6 +161,9 @@ export interface RequestNewBriefcaseProps {
 
   /** Id of the change set of the new briefcase. If undefined, use latest. */
   asOf?: IModelVersionProps;
+
+  /** A string to represent the device that holds the briefcase. */
+  deviceName?: string;
 }
 
 /**
