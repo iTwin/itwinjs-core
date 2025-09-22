@@ -6,8 +6,8 @@
  * @module ElementGeometry
  */
 
-import { BaselineShift, FieldRun, FontId, FontType, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TabRun, TextAnnotationLeader, TextBlock, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
-import { Geometry, Range2d } from "@itwin/core-geometry";
+import { BaselineShift, FieldRun, FontId, FontType, FractionRun, getMarkerText, LineLayoutResult, List, Paragraph, Run, RunLayoutResult, StructuralTextBlockComponent, TabRun, TextBlock, TextBlockComponent, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { Geometry, Range2d, WritableXAndY } from "@itwin/core-geometry";
 import { IModelDb } from "../IModelDb";
 import { assert, Id64String, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 import * as LineBreaker from "linebreak";
@@ -60,12 +60,10 @@ function createFindTextStyleImpl(iModel: IModelDb): FindTextStyle {
 }
 
 /**
- * Arguments supplied to [[computeLayoutTextBlockResult]].
+ * Base interface for arguments supplied to [[computeLayoutTextBlockResult]] and [[computeGraphemeOffsets]].
  * @beta
  */
-export interface LayoutTextBlockArgs {
-  /** The text block whose extents are to be computed. */
-  textBlock: TextBlock;
+export interface LayoutTextArgs {
   /** The iModel from which to obtain fonts and [[AnnotationTextStyle]]s when laying out glyphs. */
   iModel: IModelDb;
   /** The text style resolver used to resolve effective text styles during layout. */
@@ -74,6 +72,15 @@ export interface LayoutTextBlockArgs {
   computeTextRange?: ComputeRangesForTextLayout;
   /** @internal chiefly for tests, by default uses IModelDb.fontMap. */
   findFontId?: FindFontId;
+}
+
+/**
+ * Arguments supplied to [[computeLayoutTextBlockResult]].
+ * @beta
+ */
+export interface LayoutTextBlockArgs extends LayoutTextArgs {
+  /** The text block whose extents are to be computed. */
+  textBlock: TextBlock;
 }
 
 /**
@@ -107,9 +114,9 @@ export function computeLayoutTextBlockResult(args: LayoutTextBlockArgs): TextBlo
  * Arguments supplied to [[computeGraphemeOffsets]].
  * @beta
  */
-export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
-  /** The index of the [Paragraph]($common) in the text block that contains the run layout result text. */
-  paragraphIndex: number;
+export interface ComputeGraphemeOffsetsArgs extends LayoutTextArgs {
+  /** The TextBlockComponent for which to compute grapheme offsets. */
+  source: TextBlockComponent;
   /** The run layout result for which grapheme ranges will be computed. */
   runLayoutResult: RunLayoutResult;
   /** An array of starting character indexes for each grapheme. Each entry represents the index of the first character in a grapheme. */
@@ -124,12 +131,11 @@ export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
  * @beta
  */
 export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2d[] {
-  const { textBlock, paragraphIndex, runLayoutResult, graphemeCharIndexes, iModel } = args;
+  const { source, runLayoutResult, graphemeCharIndexes, iModel } = args;
   const findFontId = args.findFontId ?? ((name, type) => iModel.fonts.findId({ name, type }) ?? 0);
   const computeTextRange = args.computeTextRange ?? ((x) => iModel.computeRangesForText(x));
-  const source = textBlock.paragraphs[paragraphIndex].runs[runLayoutResult.sourceRunIndex];
 
-  if (source.type !== "text" || runLayoutResult.characterCount === 0) {
+  if (!(source instanceof TextRun) || runLayoutResult.characterCount === 0) {
     return [];
   }
 
@@ -171,10 +177,10 @@ function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings
   const leaderShouldChange = !isLeader && !target.leaderEquals(leader);
 
   if (lineSpacingFactor !== target.lineSpacingFactor ||
-      lineHeight !== target.lineHeight ||
-      widthFactor !== target.widthFactor ||
-      !target.frameEquals(frame) ||
-      leaderShouldChange
+    lineHeight !== target.lineHeight ||
+    widthFactor !== target.widthFactor ||
+    !target.frameEquals(frame) ||
+    leaderShouldChange
   ) {
     const cloneProps: TextStyleSettingsProps = {
       lineSpacingFactor,
@@ -224,45 +230,38 @@ export class TextStyleResolver {
       this.blockSettings = this.blockSettings.clone(args.textBlock.styleOverrides);
   }
 
-  private resolveParagraphSettingsImpl(paragraph: Paragraph): TextStyleSettings {
+  /**
+   * Resolves the effective text style settings for a given TextBlockComponent, applying block-level overrides.
+   */
+  public resolveSettings(overrides: TextStyleSettingsProps, isLeader: boolean = false): TextStyleSettings {
     let settings = this.blockSettings;
 
-    if (paragraph.overridesStyle)
-      settings = settings.clone(paragraph.styleOverrides);
+    if (overrides)
+      settings = settings.clone(overrides);
 
-    return settings;
+    return applyBlockSettings(settings, this.blockSettings, isLeader);
   }
 
-  /** Resolves the effective style for a [TextAnnotationLeader]($common). The TextAnnotationLeader should be a sibling of the provided TextBlock. */
-  public resolveTextAnnotationLeaderSettings(leader: TextAnnotationLeader): TextStyleSettings {
-    let settings = this.blockSettings;
-
-    if (leader.styleOverrides)
-      settings = settings.clone(leader.styleOverrides);
-
-    return applyBlockSettings(settings, this.blockSettings, true);
+  public resolveMarkerText(overrides: TextStyleSettingsProps, index: number): string {
+    const markerSettings = overrides.listMarker ?? this.blockSettings.listMarker;
+    return getMarkerText(markerSettings, index);
   }
 
-  /** Resolves the effective style for a [Paragraph]($common). Paragraph should be child of provided TextBlock. */
-  public resolveParagraphSettings(paragraph: Paragraph): TextStyleSettings {
-    return applyBlockSettings(this.resolveParagraphSettingsImpl(paragraph), this.blockSettings);
-  }
-
-  /** Resolves the effective style for a [Run]($common). Run should be child of provided Paragraph and TextBlock. */
-  public resolveRunSettings(paragraph: Paragraph, run: Run): TextStyleSettings {
-    let settings = this.resolveParagraphSettingsImpl(paragraph);
-
-    if (run.overridesStyle)
-      settings = settings.clone(run.styleOverrides);
-
-    return applyBlockSettings(settings, this.blockSettings);
+  /**
+   * Computes the indentation based on its style and nesting depth.
+   */
+  public resolveIndentation(styleOverrides: TextStyleSettingsProps, depth: number): number {
+    const overrides = this.resolveSettings(styleOverrides);
+    const indentation = overrides.indentation;
+    const tabInterval = overrides.tabInterval;
+    return indentation + tabInterval * depth;
   }
 }
 
 class LayoutContext {
   private readonly _fontIds = new Map<string, FontId>();
 
-  public constructor(public readonly textStyleResolver: TextStyleResolver, private readonly _computeTextRange: ComputeRangesForTextLayout, private readonly _findFontId: FindFontId) {}
+  public constructor(public readonly textStyleResolver: TextStyleResolver, private readonly _computeTextRange: ComputeRangesForTextLayout, private readonly _findFontId: FindFontId) { }
 
   public findFontId(name: string): FontId {
     let fontId = this._fontIds.get(name);
@@ -355,9 +354,9 @@ class LayoutContext {
     return { layout, numerator, denominator };
   }
 
-  public computeRangeForTabRun(style: TextStyleSettings, source: TabRun, length: number): Range2d {
+  public computeRangeForTabRun(style: TextStyleSettings, source: TabRun, lengthFromLastTab: number): Range2d {
     const interval = source.styleOverrides.tabInterval ?? style.tabInterval;
-    const tabEndX = interval - length % interval;
+    const tabEndX = interval - lengthFromLastTab % interval;
 
     const range = new Range2d(0, 0, 0, style.lineHeight);
     range.extendXY(tabEndX, range.low.y);
@@ -428,8 +427,8 @@ export class RunLayout {
     this.fontId = props.fontId;
   }
 
-  public static create(source: Run, parentParagraph: Paragraph,  context: LayoutContext): RunLayout {
-    const style = context.textStyleResolver.resolveRunSettings(parentParagraph, source);
+  public static create(source: Run, context: LayoutContext, cumulativeOverrides: TextStyleSettingsProps): RunLayout {
+    const style = context.textStyleResolver.resolveSettings(cumulativeOverrides);
     const fontId = context.findFontId(style.fontName);
     const charOffset = 0;
     const offsetFromLine = { x: 0, y: 0 };
@@ -456,8 +455,8 @@ export class RunLayout {
         break;
       }
       default: { // "linebreak" or "tab"
-      // "tab": Tabs rely on the context they are in, so we compute its range later.
-      // lineBreak: We do this so that blank lines space correctly without special casing later.
+        // "tab": Tabs rely on the context they are in, so we compute its range later.
+        // lineBreak: We do this so that blank lines space correctly without special casing later.
         range = new Range2d(0, 0, 0, style.lineHeight);
         break;
       }
@@ -510,9 +509,8 @@ export class RunLayout {
     });
   }
 
-  public toResult(paragraph: Paragraph): RunLayoutResult {
+  public toResult(): RunLayoutResult {
     const result: RunLayoutResult = {
-      sourceRunIndex: paragraph.runs.indexOf(this.source),
       fontId: this.fontId,
       characterOffset: this.charOffset,
       characterCount: this.numChars,
@@ -544,15 +542,20 @@ export class RunLayout {
  * @beta
  */
 export class LineLayout {
-  public source: Paragraph;
+  public source: List | Run | Paragraph;
   public range = new Range2d(0, 0, 0, 0);
+  public runRange = new Range2d(0, 0, 0, 0); // Range of all runs excluding marker.
   public justificationRange = new Range2d(0, 0, 0, 0);
-  public offsetFromDocument = { x: 0, y: 0 };
+  public offsetFromDocument: WritableXAndY;
+  public depth: number;
   public lengthFromLastTab = 0; // Used to track the length from the last tab for tab runs.
   private _runs: RunLayout[] = [];
+  private _marker?: RunLayout;
 
-  public constructor(source: Paragraph) {
+  public constructor(source: List | Run | Paragraph, style: TextStyleSettingsProps, context?: LayoutContext, depth: number = 0) {
     this.source = source;
+    this.depth = depth;
+    this.offsetFromDocument = { x: context?.textStyleResolver.resolveIndentation(style, depth) ?? 0, y: 0 };
   }
 
   /** Compute a string representation, primarily for debugging purposes. */
@@ -561,12 +564,22 @@ export class LineLayout {
     return `${runs.join("")}`;
   }
 
+  /** Gets the array of RunLayout objects contained in this line. */
   public get runs(): ReadonlyArray<RunLayout> { return this._runs; }
+  /** Indicates whether this line contains any runs. */
   public get isEmpty() { return this._runs.length === 0; }
+  /** Gets the last RunLayout in this line. */
   public get back(): RunLayout {
     assert(!this.isEmpty);
     return this._runs[this._runs.length - 1];
   }
+
+  /**
+   * Gets or sets the marker RunLayout for this line, used for lists.
+   * A marker is the symbol or character that appears before each list item in a list, bullets, numbers, etc.
+   * */
+  public get marker(): RunLayout | undefined { return this._marker; }
+  public set marker(value: RunLayout | undefined) { this._marker = value; }
 
   public append(run: RunLayout): void {
     this._runs.push(run);
@@ -575,8 +588,9 @@ export class LineLayout {
 
   /** Invoked every time a run is appended,. */
   private computeRanges(): void {
-    this.range.low.setZero();
-    this.range.high.setZero();
+    this.runRange.low.setZero();
+    this.runRange.high.setZero();
+    this.lengthFromLastTab = 0;
 
     // Some runs (fractions) are taller than others.
     // We want to center each run vertically inside the line.
@@ -587,29 +601,46 @@ export class LineLayout {
 
     for (const run of this._runs) {
       const runHeight = run.range.yLength();
-      const runOffset = { x: this.range.high.x, y: (lineHeight - runHeight) / 2 };
+      const runOffset = { x: this.runRange.high.x, y: (lineHeight - runHeight) / 2 };
       run.offsetFromLine = runOffset;
 
       const runLayoutRange = run.range.cloneTranslated(runOffset);
-      this.range.extendRange(runLayoutRange);
+      this.runRange.extendRange(runLayoutRange);
 
       if ("linebreak" !== run.source.type) {
         const runJustificationRange = run.justificationRange?.cloneTranslated(runOffset);
         this.justificationRange.extendRange(runJustificationRange ?? runLayoutRange);
       }
 
-      if (run.source.type === "tab") {
+      if ("tab" === run.source.type) {
         this.lengthFromLastTab = 0;
       } else {
         this.lengthFromLastTab += run.range.xLength();
       }
     }
+
+    this.range.setFrom(this.runRange);
+
+    if (this._marker) {
+      const indentation = this.range.low.x;
+      const x = indentation - (this._marker.style.tabInterval / 2) - this._marker.range.xLength();
+      const runHeight = this._marker.range.yLength();
+      const runOffset = {
+        x,
+        y: (lineHeight - runHeight) / 2 // Center the marker vertically in the line.
+      };
+
+      this._marker.offsetFromLine = runOffset;
+
+      const markerRange = this._marker.range.cloneTranslated(this._marker.offsetFromLine);
+      this.range.extendRange(markerRange);
+    }
   }
 
-  public toResult(textBlock: TextBlock): LineLayoutResult {
+  public toResult(): LineLayoutResult {
     return {
-      sourceParagraphIndex: textBlock.paragraphs.indexOf(this.source),
-      runs: this.runs.map((x) => x.toResult(this.source)),
+      runs: this.runs.map((x) => x.toResult()),
+      marker: this.marker?.toResult(),
       range: this.range.toJSON(),
       justificationRange: this.justificationRange.toJSON(),
       offsetFromDocument: this.offsetFromDocument,
@@ -650,7 +681,7 @@ export class TextBlockLayout {
 
   public toResult(): TextBlockLayoutResult {
     return {
-      lines: this.lines.map((x) => x.toResult(this.source)),
+      lines: this.lines.map((x) => x.toResult()),
       range: this.range.toJSON(),
     };
   }
@@ -667,70 +698,184 @@ export class TextBlockLayout {
 
   private populateLines(context: LayoutContext): void {
     const doc = this.source;
-    if (doc.paragraphs.length === 0) {
+    if (!doc.children || doc.children.length === 0) {
       return;
     }
 
-    const doWrap = doc.width > 0;
-    let curLine = new LineLayout(doc.paragraphs[0]);
-    for (let i = 0; i < doc.paragraphs.length; i++) {
-      const paragraph = doc.paragraphs[i];
-      if (i > 0) {
-        curLine = this.flushLine(context, curLine, paragraph);
-      }
-
-      let runs = paragraph.runs.map((run) => RunLayout.create(run, paragraph, context));
-      if (doWrap) {
-        runs = runs.map((run) => run.split(context)).flat();
-      }
-
-      for (const run of runs) {
-        if ("linebreak" === run.source.type) {
-          curLine.append(run);
-          curLine = this.flushLine(context, curLine);
-          continue;
-        }
-
-        // If this is a tab, we need to apply the tab shift first, and then we can treat it like a text run.
-        applyTabShift(run, curLine, context);
-
-        // If our width is not set (doWrap is false), then we don't have to compute word wrapping, so just append the run, and continue.
-        if (!doWrap) {
-          curLine.append(run);
-          continue;
-        }
-
-        // Next, determine if we can append this run to the current line without exceeding the document width
-        const runWidth = run.range.xLength();
-        const lineWidth = curLine.range.xLength();
-
-        // If true, then no word wrapping is required, so we can append to the current line.
-        if (runWidth + lineWidth < doc.width || Geometry.isAlmostEqualNumber(runWidth + lineWidth, doc.width, Geometry.smallMetricDistance)) {
-          curLine.append(run);
-          continue;
-        }
-
-        // Do word wrapping
-        if (curLine.runs.length === 0) {
-          curLine.append(run);
-
-          // Lastly, flush line
-          curLine = this.flushLine(context, curLine);
-        } else {
-          // First, flush line
-          curLine = this.flushLine(context, curLine);
-
-          // Recompute tab shift if applicable
-          applyTabShift(run, curLine, context);
-
-          curLine.append(run);
-        }
-      }
+    let curLine = new LineLayout(doc.children[0], doc.children[0].styleOverrides, context);
+    let childIndex = 0;
+    for (const child of doc.children) {
+      curLine = this.populateComponent(child, childIndex++, context, doc.width, curLine, doc, doc.styleOverrides);
     }
 
     if (curLine.runs.length > 0) {
-      this.flushLine(context, curLine);
+      this.flushLine(context, curLine, doc.styleOverrides);
     }
+  }
+
+  private populateComponent(
+    component: Run | Paragraph | List,
+    componentIndex: number,
+    context: LayoutContext,
+    docWidth: number,
+    curLine: LineLayout,
+    parent: StructuralTextBlockComponent,
+    cumulativeOverrides: TextStyleSettingsProps,
+    depth: number = 0
+  ): LineLayout {
+    cumulativeOverrides = { ...cumulativeOverrides, ...component.styleOverrides };
+
+    switch (component.type) {
+      case "list": {
+        // If we have any runs in the current line, flush it before starting the list.
+        if (curLine.runs.length > 0) {
+          curLine = this.flushLine(context, curLine, cumulativeOverrides, component.children[0], true, depth + 1);
+        } else {
+          // If not, we need to apply the indentation for the list to the first line.
+          curLine.offsetFromDocument.x = context.textStyleResolver.resolveIndentation(cumulativeOverrides, depth + 1);
+          curLine.depth = depth + 1;
+        }
+
+        // Iterate through each list item, setting the marker and populating its contents.
+        component.children.forEach((child, index) => {
+          const markerContent = context.textStyleResolver.resolveMarkerText(cumulativeOverrides, index + 1);
+          const markerRun = TextRun.create({ content: markerContent });
+          curLine.marker = RunLayout.create(markerRun, context, cumulativeOverrides);
+
+          curLine = this.populateComponent(child, index, context, docWidth, curLine, component, cumulativeOverrides, depth + 1);
+        });
+
+        // Lastly flush the line.
+        const nextSibling = parent?.children[componentIndex + 1];
+        if (curLine && nextSibling) {
+          curLine = this.flushLine(context, curLine, cumulativeOverrides, nextSibling, true, depth);
+        }
+        break;
+      }
+      case "paragraph": {
+        // Iterate through each paragraph child (either a list or a run), populating its contents.
+        component.children.forEach((child, index) => {
+          curLine = this.populateComponent(child, index, context, docWidth, curLine, component, cumulativeOverrides, depth);
+        });
+
+        // Lastly flush the line.
+        const nextSibling = parent?.children[componentIndex + 1];
+        if (curLine && nextSibling) {
+          curLine = this.flushLine(context, curLine, cumulativeOverrides, nextSibling, true, depth);
+        }
+        break;
+      }
+      case "text": {
+        const layout = RunLayout.create(component, context, cumulativeOverrides);
+
+        // Text can be word-wrapped, so we need to split it into multiple runs if necessary.
+        if (docWidth > 0) {
+          layout.split(context).forEach(r => { curLine = this.populateRun(curLine, r, context, cumulativeOverrides, docWidth) });
+        } else {
+          curLine = this.populateRun(curLine, layout, context, cumulativeOverrides, docWidth);
+        }
+        break;
+      }
+      case "fraction":
+      case "tab": {
+        const layout = RunLayout.create(component, context, cumulativeOverrides);
+        curLine = this.populateRun(curLine, layout, context, cumulativeOverrides, docWidth);
+        break;
+      }
+      case "linebreak": {
+        const layout = RunLayout.create(component, context, cumulativeOverrides);
+
+        curLine.append(layout);
+        curLine = this.flushLine(context, curLine, cumulativeOverrides, undefined, undefined, depth);
+        break;
+      }
+      default: break;
+    }
+
+    return curLine;
+  };
+
+  private populateRun(curLine: LineLayout, run: RunLayout, context: LayoutContext, cumulativeOverrides: TextStyleSettingsProps, docWidth: number): LineLayout {
+    // If this is a tab, we need to apply the tab shift first, and then we can treat it like a text run.
+    applyTabShift(run, curLine, context);
+
+    // If our width is not set, then we don't have to compute word wrapping, so just append the run, and continue.
+    if (docWidth <= 0) {
+      curLine.append(run);
+      return curLine;
+    }
+
+    // If not, we need to determine if we can append this run to the current line without exceeding the document width or if we need to word wrap.
+    const runWidth = run.justificationRange?.xLength() ?? run.range.xLength();
+    const lineWidth = curLine.runRange.xLength();
+    const newWidth = runWidth + lineWidth + curLine.offsetFromDocument.x;
+
+    // If true, then no word wrapping is required, so we can append to the current line.
+    if (newWidth < docWidth || Geometry.isAlmostEqualNumber(newWidth, docWidth, Geometry.smallMetricDistance)) {
+      curLine.append(run);
+      return curLine;
+    }
+
+    // If not, do word wrapping
+    if (curLine.runs.length === 0) {
+      curLine.append(run);
+
+      // Lastly, flush line
+      curLine = this.flushLine(context, curLine, cumulativeOverrides, undefined, undefined, curLine.depth);
+    } else {
+      // First, flush line
+      curLine = this.flushLine(context, curLine, cumulativeOverrides, undefined, undefined, curLine.depth);
+
+      // Recompute tab shift if applicable
+      applyTabShift(run, curLine, context);
+
+      curLine.append(run);
+    }
+
+    return curLine;
+  };
+
+  private flushLine(context: LayoutContext, curLine: LineLayout, cumulativeOverrides: TextStyleSettingsProps, next?: List | Run | Paragraph, newParagraph: boolean = false, depth: number = 0): LineLayout {
+    next = next ?? curLine.source;
+
+    // We want to guarantee that each layout line has at least one run.
+    if (curLine.runs.length === 0) {
+      if (this.lines.length === 0 || this._back.runs.length === 0) {
+        return new LineLayout(next, cumulativeOverrides, context, depth);
+      }
+
+      if (curLine.source.type !== "linebreak") {
+        const newLine = new LineLayout(next, cumulativeOverrides, context, depth);
+        newLine.offsetFromDocument.y -= context.textStyleResolver.blockSettings.paragraphSpacingFactor * context.textStyleResolver.blockSettings.lineHeight;
+        return newLine;
+      }
+
+      const run = curLine.source.clone();
+      curLine.append(RunLayout.create(run, context, cumulativeOverrides));
+    }
+
+    // Line origin is its baseline.
+    const lineOffset = { ...curLine.offsetFromDocument }; // Start with the line's original offset, which includes indentation.
+    lineOffset.y -= curLine.range.yLength(); // Shift down the baseline
+
+    // Place it below any existing lines
+    if (this.lines.length > 0) {
+      lineOffset.y += this._back.offsetFromDocument.y;
+      lineOffset.y -= context.textStyleResolver.blockSettings.lineSpacingFactor * context.textStyleResolver.blockSettings.lineHeight;
+    }
+
+    curLine.offsetFromDocument = lineOffset;
+
+    // Update document range from computed line range and position
+    this.textRange.extendRange(curLine.range.cloneTranslated(lineOffset));
+
+    this.lines.push(curLine);
+    if (newParagraph) {
+      const newLine = new LineLayout(next, cumulativeOverrides, context, depth);
+      newLine.offsetFromDocument.y -= context.textStyleResolver.blockSettings.paragraphSpacingFactor * context.textStyleResolver.blockSettings.lineHeight;
+      return newLine;
+    }
+    return new LineLayout(next, cumulativeOverrides, context, depth);
   }
 
   private justifyLines(): void {
@@ -744,7 +889,7 @@ export class TextBlockLayout {
 
     let minOffset = Number.MAX_VALUE;
     for (const line of this.lines) {
-      const lineWidth = line.justificationRange.xLength();
+      const lineWidth = line.justificationRange.xLength() + line.offsetFromDocument.x;
 
       let offset = docWidth - lineWidth;
       if ("center" === this.source.justification) {
@@ -760,43 +905,6 @@ export class TextBlockLayout {
       this.textRange.low.x += minOffset;
       this.textRange.high.x += minOffset;
     }
-  }
-
-  private flushLine(context: LayoutContext, line: LineLayout, nextParagraph?: Paragraph): LineLayout {
-    nextParagraph = nextParagraph ?? line.source;
-
-    // We want to guarantee that each layout line has at least one run.
-    if (line.runs.length === 0) {
-      // If we're empty, there should always be a preceding run, and it should be a line break.
-      if (this.lines.length === 0 || this._back.runs.length === 0) {
-        return new LineLayout(nextParagraph);
-      }
-
-      const prevRun = this._back.back.source;
-      assert(prevRun.type === "linebreak");
-      if (prevRun.type !== "linebreak") {
-        return new LineLayout(nextParagraph);
-      }
-
-      line.append(RunLayout.create(prevRun.clone(), line.source, context));
-    }
-
-    // Line origin is its baseline.
-    const lineOffset = { x: 0, y: -line.range.yLength() };
-
-    // Place it below any existing lines
-    if (this.lines.length > 0) {
-      lineOffset.y += this._back.offsetFromDocument.y;
-      lineOffset.y -= context.textStyleResolver.blockSettings.lineSpacingFactor * context.textStyleResolver.blockSettings.lineHeight;
-    }
-
-    line.offsetFromDocument = lineOffset;
-
-    // Update document range from computed line range and position
-    this.textRange.extendRange(line.range.cloneTranslated(lineOffset));
-
-    this.lines.push(line);
-    return new LineLayout(nextParagraph);
   }
 
   private applyMargins(margins: TextBlockMargins) {

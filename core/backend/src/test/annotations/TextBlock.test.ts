@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges, TextStyleResolver } from "../../annotations/TextBlockLayout";
 import { Geometry, Range2d } from "@itwin/core-geometry";
-import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, List, ListMarkerEnumerator, Paragraph, ParagraphProps, Run, RunLayoutResult, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Id64String, ProcessDetector } from "@itwin/core-bentley";
@@ -55,10 +55,8 @@ describe("layoutTextBlock", () => {
 
     it("inherits style overrides from Paragraph when Run has no style overrides", () => {
       const textBlock = TextBlock.create();
-      const paragraph = Paragraph.create({ styleOverrides: {fontName: "paragraph"} });
-      const run = TextRun.create({ content: "test" });
-      textBlock.paragraphs.push(paragraph);
-      textBlock.appendRun(run);
+      textBlock.appendParagraph({ styleOverrides: { fontName: "paragraph" } });
+      textBlock.appendRun(TextRun.create({ content: "test" }));
 
       const tb = doLayout(textBlock, {
         textStyleId: "0x42",
@@ -75,10 +73,8 @@ describe("layoutTextBlock", () => {
 
     it("uses Run style overrides when Run has overrides", () => {
       const textBlock = TextBlock.create();
-      const paragraph = Paragraph.create({ styleOverrides: { lineSpacingFactor: 55, fontName: "paragraph" } });
-      const run = TextRun.create({ content: "test", styleOverrides: { lineSpacingFactor: 99, fontName: "run" } });
-      textBlock.paragraphs.push(paragraph);
-      textBlock.appendRun(run);
+      textBlock.appendParagraph({ styleOverrides: { lineSpacingFactor: 55, fontName: "paragraph" } });
+      textBlock.appendRun(TextRun.create({ content: "test", styleOverrides: { lineSpacingFactor: 99, fontName: "run" } }));
 
       const tb = doLayout(textBlock, {
         textStyleId: "0x42",
@@ -94,7 +90,7 @@ describe("layoutTextBlock", () => {
     });
 
     it("still uses TextBlock specific styles when Run has style overrides", () => {
-      // Some style settings only make sense on a TextBlock, so they are always applied from the TextBlock, even if the Run has a style override.
+      // Some style settings make sense on a TextBlock, so they are always applied from the TextBlock, even if the Run has a style override.
       const textBlock = TextBlock.create();
       const run = TextRun.create({ content: "test", styleOverrides: { lineSpacingFactor: 99, fontName: "run" } });
       textBlock.appendParagraph();
@@ -114,9 +110,8 @@ describe("layoutTextBlock", () => {
 
     it("inherits overrides from TextBlock, Paragraph and Run when there is no styleId", () => {
       const textBlock = TextBlock.create({ styleOverrides: { widthFactor: 34, lineHeight: 3, lineSpacingFactor: 12, isBold: true } });
-      const paragraph = Paragraph.create({ styleOverrides: { lineHeight: 56, color: 0xff0000, frame: {shape: "octagon"} } });
       const run = TextRun.create({ content: "test", styleOverrides: { widthFactor: 78, fontName: "override", leader: { wantElbow: true } } });
-      textBlock.paragraphs.push(paragraph);
+      textBlock.appendParagraph({ styleOverrides: { lineHeight: 56, color: 0xff0000, frame: { shape: "octagon" } } });
       textBlock.appendRun(run);
 
       const tb = doLayout(textBlock, {
@@ -143,10 +138,9 @@ describe("layoutTextBlock", () => {
     });
 
     it("does not inherit overrides in TextBlock or Paragraph when Run has same propertied overriden - unless they are TextBlock specific settings", () => {
-      const textBlock = TextBlock.create({ styleOverrides: { widthFactor: 34, lineHeight: 3, lineSpacingFactor: 12, isBold: true }});
-      const paragraph = Paragraph.create({ styleOverrides: { lineHeight: 56, color: 0xff0000 } });
+      const textBlock = TextBlock.create({ styleOverrides: { widthFactor: 34, lineHeight: 3, lineSpacingFactor: 12, isBold: true } });
       const run = TextRun.create({ content: "test", styleOverrides: { widthFactor: 78, lineHeight: 6, lineSpacingFactor: 24, fontName: "override", isBold: false } });
-      textBlock.paragraphs.push(paragraph);
+      textBlock.appendParagraph({ styleOverrides: { lineHeight: 56, color: 0xff0000 } });
       textBlock.appendRun(run);
 
       const tb = doLayout(textBlock, {
@@ -172,9 +166,8 @@ describe("layoutTextBlock", () => {
     it("takes child overrides over parent overrides", () => {
       //...unless they are TextBlock specific as covered in other tests
       const textBlock = TextBlock.create({ styleOverrides: { fontName: "grandparent" } });
-      const paragraph = Paragraph.create({ styleOverrides: { fontName: "parent" } });
       const run = TextRun.create({ content: "test", styleOverrides: { fontName: "child" } });
-      textBlock.paragraphs.push(paragraph);
+      textBlock.appendParagraph({ styleOverrides: { fontName: "parent" } });
       textBlock.appendRun(run);
 
       const tb = doLayout(textBlock, {
@@ -239,8 +232,6 @@ describe("layoutTextBlock", () => {
       const resultLine: LineLayoutResult = result.lines[i];
       const originalLine: LineLayout = textBlockLayout.lines[i];
 
-      // Source paragraph index matches
-      expect(resultLine.sourceParagraphIndex).to.equal(textBlock.paragraphs.indexOf(originalLine.source));
       // Ranges match
       expect(resultLine.range).to.deep.equal(originalLine.range.toJSON());
       expect(resultLine.justificationRange).to.deep.equal(originalLine.justificationRange.toJSON());
@@ -251,8 +242,6 @@ describe("layoutTextBlock", () => {
         const resultRun: RunLayoutResult = resultLine.runs[j];
         const originalRun: RunLayout = originalLine.runs[j];
 
-        // Source run index matches
-        expect(resultRun.sourceRunIndex).to.equal(textBlock.paragraphs[resultLine.sourceParagraphIndex].runs.indexOf(originalRun.source));
         // FontId matches
         expect(resultRun.fontId).to.equal(originalRun.fontId);
         // Offsets match
@@ -291,8 +280,9 @@ describe("layoutTextBlock", () => {
         if (resultRun.denominatorRange && originalRun.denominatorRange) {
           expect(resultRun.denominatorRange).to.deep.equal(originalRun.denominatorRange.toJSON());
         }
+
         // Check that the result string matches what we expect
-        const inputRun = textBlock.paragraphs[resultLine.sourceParagraphIndex].runs[resultRun.sourceRunIndex].clone();
+        const inputRun = originalRun.source;
         if (inputRun.type === "text") {
           const resultText = inputRun.content.substring(resultRun.characterOffset, resultRun.characterOffset + resultRun.characterCount);
           const originalText = inputRun.content.substring(originalRun.charOffset, originalRun.charOffset + originalRun.numChars);
@@ -370,7 +360,9 @@ describe("layoutTextBlock", () => {
     });
 
     it("produces one line per paragraph if document width <= 0", () => {
-      const textBlock = TextBlock.create();
+      const lineSpacingFactor = 0.5;
+      const paragraphSpacingFactor = 0.25;
+      const textBlock = TextBlock.create({ styleOverrides: { paragraphSpacingFactor, lineSpacingFactor } });
       for (let i = 0; i < 4; i++) {
         const layout = doLayout(textBlock);
         if (i === 0) {
@@ -378,7 +370,7 @@ describe("layoutTextBlock", () => {
         } else {
           expect(layout.lines.length).to.equal(i);
           expect(layout.range.low.x).to.equal(0);
-          expect(layout.range.low.y).to.equal(-i - (0.5 * (i - 1))); // lineSpacingFactor=0.5
+          expect(layout.range.low.y).to.equal(-i - ((i - 1) * (lineSpacingFactor + paragraphSpacingFactor)));
           expect(layout.range.high.x).to.equal(i * 3);
           expect(layout.range.high.y).to.equal(0);
         }
@@ -402,7 +394,7 @@ describe("layoutTextBlock", () => {
 
         const p = textBlock.appendParagraph();
         for (let j = 0; j <= i; j++) {
-          p.runs.push(TextRun.create({ content: "Run" }));
+          p.children.push(TextRun.create({ content: "Run" }));
         }
       }
     });
@@ -427,6 +419,7 @@ describe("layoutTextBlock", () => {
       expect(tb.range.low.x).to.equal(0);
       expect(tb.range.high.x).to.equal(6);
       expect(tb.range.high.y).to.equal(0);
+      // paragraphSpacingFactor should not be applied to linebreaks, but lineSpacingFactor should.
       expect(tb.range.low.y).to.equal(-(lineSpacingFactor * 2 + lineHeight * 3));
     });
 
@@ -443,15 +436,15 @@ describe("layoutTextBlock", () => {
         if (wantLineBreak) textBlock.appendRun(LineBreakRun.create());
       }
 
-      // The extra whitespace is intentional to show where the tab stops should be.
-      appendLine("", "a");
-      appendLine("", "bc");
-      appendLine("a", "a");
-      appendLine("bc", "bc");
-      appendLine("cde", "cde");
-      appendLine("cdefg", "cde"); // this one is the max tab distance before needing to move to the next tab stop
-      appendLine("cdefgh", "cde"); // This one should push to the next tab stop.
-      appendLine("cdefghi", "cde", false); // This one should push to the next tab stop.
+      // The extra comments are intentional to show where the tab stops should be.
+      appendLine("", /*______*/ "a");
+      appendLine("", /*______*/ "bc");
+      appendLine("a", /*_____*/ "a");
+      appendLine("bc", /*____*/ "bc");
+      appendLine("cde", /*___*/ "cde");
+      appendLine("cdefg", /*_*/ "cde"); // this one is the max tab distance before needing to move to the next tab stop
+      appendLine("cdefgh", /*______*/ "cde"); // This one should push to the next tab stop.
+      appendLine("cdefghi", /*_____*/ "cde", false); // This one should push to the next tab stop.
 
       const tb = doLayout(textBlock);
       tb.lines.forEach((line, index) => {
@@ -505,7 +498,7 @@ describe("layoutTextBlock", () => {
       const line3 = tb.lines[3];
 
       expect(line0.runs.length).to.equal(4);
-      expect(line0.range.xLength()).to.equal(3 * tabInterval, `Lines with only tabs should have the correct range length`);
+      expect(line0.range.xLength()).to.equal(3 * tabInterval, `Lines with tabs should have the correct range length`);
 
       expect(line1.runs.length).to.equal(4);
       expect(line1.range.xLength()).to.equal(2 * tabInterval, `Tabs should be applied correctly when they are at the end of a line`);
@@ -517,10 +510,13 @@ describe("layoutTextBlock", () => {
       expect(line3.range.xLength()).to.equal(7 + 3 + 7, `Multiple tabs with different intervals should be applied correctly`);
     });
 
-    it("computes ranges based on custom line spacing and line height", () => {
+    it("computes ranges based on custom line spacing, line height, and indentation", () => {
       const lineSpacingFactor = 2;
       const lineHeight = 3;
-      const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor, lineHeight } });
+      const paragraphSpacingFactor = 13;
+      const indentation = 7;
+
+      const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor, lineHeight, paragraphSpacingFactor, indentation } });
       textBlock.appendRun(TextRun.create({ content: "abc" }));
       textBlock.appendRun(LineBreakRun.create());
       textBlock.appendRun(TextRun.create({ content: "def" }));
@@ -534,16 +530,102 @@ describe("layoutTextBlock", () => {
       expect(tb.lines[1].runs.length).to.equal(3);
       expect(tb.lines[2].runs.length).to.equal(1);
 
-      // We have 3 lines each `lineHeight` high, plus 2 line breaks in between each `lineHeight*lineSpacingFactor` high.
-      expect(tb.range.low.x).to.equal(0);
-      expect(tb.range.high.x).to.equal(6);
+      /* Final TextBlock should look like:
+        ⇥abc↵
+        ⇥defghi↵
+        ⇥jkl
+
+        Where ↵ = LineBreak, ¶ = ParagraphBreak, ⇥ = indentation
+
+        We have 3 lines each `lineHeight` high, plus 2 line breaks in between each `lineHeight*lineSpacingFactor` high.
+        No paragraph spacing should be applied since there is one paragraph.
+      */
+
+      expect(tb.range.low.x).to.equal(7);
+      expect(tb.range.high.x).to.equal(6 + 7); // 7 for indentation, 6 for the length of "defghi"
       expect(tb.range.high.y).to.equal(0);
       expect(tb.range.low.y).to.equal(-(lineHeight * 3 + (lineHeight * lineSpacingFactor) * 2));
 
       expect(tb.lines[0].offsetFromDocument.y).to.equal(-lineHeight);
       expect(tb.lines[1].offsetFromDocument.y).to.equal(tb.lines[0].offsetFromDocument.y - (lineHeight + lineHeight * lineSpacingFactor));
       expect(tb.lines[2].offsetFromDocument.y).to.equal(tb.lines[1].offsetFromDocument.y - (lineHeight + lineHeight * lineSpacingFactor));
-      expect(tb.lines.every((line) => line.offsetFromDocument.x === 0)).to.be.true;
+
+      tb.lines.forEach((line) => expect(line.offsetFromDocument.x).to.equal(7));
+    });
+
+    it("computes paragraph spacing and indentation", () => {
+      const lineSpacingFactor = 2;
+      const lineHeight = 3;
+      const paragraphSpacingFactor = 13;
+      const indentation = 7;
+      const tabInterval = 5;
+      const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor, lineHeight, paragraphSpacingFactor, indentation, tabInterval } });
+
+      const p1 = textBlock.appendParagraph();
+      p1.children.push(TextRun.create({ content: "abc" })); // Line 1
+      p1.children.push(LineBreakRun.create());
+      p1.children.push(TextRun.create({ content: "def" })); // Line 2
+
+      const p2 = textBlock.appendParagraph();
+      p2.children.push(TextRun.create({ content: "ghi" })); // Line 3
+
+      const list = List.create();
+      list.children.push(Paragraph.create({ children: [{ type: "text", content: "list item 1" }] })); // Line 4
+      list.children.push(Paragraph.create({ children: [{ type: "text", content: "list item 2" }] })); // Line 5
+      list.children.push(Paragraph.create({ children: [{ type: "text", content: "list item 3" }] })); // Line 6
+      p2.children.push(list);
+
+      const tb = doLayout(textBlock);
+      expect(tb.lines.length).to.equal(6);
+
+      /* Final TextBlock should look like:
+        ⇥abc↵
+        ⇥def¶
+        ⇥ghi¶
+        ⇥￫1. list item 1¶
+        ⇥￫2. list item 2¶
+        ⇥￫3. list item 3
+
+        Where ↵ = LineBreak, ¶ = ParagraphBreak, ￫ = tabInterval/2, ⇥ = indentation
+
+        We have:
+          6 lines each `lineHeight` high
+          5 line breaks in between each `lineHeight*lineSpacingFactor` high
+          4 paragraph breaks in between each `lineHeight*paragraphSpacingFactor` high
+      */
+
+      expect(tb.range.low.x).to.equal(7); // 7 for indentation
+      expect(tb.range.high.x).to.equal(7 + 5 + 11); // 7 for indentation, 5 for the tab stop, 11 for the length of "list item 1"
+      expect(tb.range.high.y).to.equal(0);
+      expect(tb.range.low.y).to.equal(-(lineHeight * 6 + (lineHeight * lineSpacingFactor) * 5 + (lineHeight * paragraphSpacingFactor) * 4));
+
+      // Cumulative vertical offsets to help make the test more readable.
+      let offsetY = -lineHeight;
+      let offsetX = indentation;
+
+      expect(tb.lines[0].offsetFromDocument.y).to.equal(offsetY);
+      expect(tb.lines[0].offsetFromDocument.x).to.equal(offsetX);
+
+      offsetY -= (lineHeight + lineHeight * lineSpacingFactor);
+      expect(tb.lines[1].offsetFromDocument.y).to.equal(offsetY);
+      expect(tb.lines[1].offsetFromDocument.x).to.equal(offsetX);
+
+      offsetY -= (lineHeight + lineHeight * lineSpacingFactor + lineHeight * paragraphSpacingFactor);
+      expect(tb.lines[2].offsetFromDocument.y).to.equal(offsetY);
+      expect(tb.lines[2].offsetFromDocument.x).to.equal(offsetX);
+
+      offsetX += tabInterval; // List items are indented using tabInterval.
+      offsetY -= (lineHeight + lineHeight * lineSpacingFactor + lineHeight * paragraphSpacingFactor);
+      expect(tb.lines[3].offsetFromDocument.y).to.equal(offsetY);
+      expect(tb.lines[3].offsetFromDocument.x).to.equal(offsetX);
+
+      offsetY -= (lineHeight + lineHeight * lineSpacingFactor + lineHeight * paragraphSpacingFactor);
+      expect(tb.lines[4].offsetFromDocument.y).to.equal(offsetY);
+      expect(tb.lines[4].offsetFromDocument.x).to.equal(offsetX);
+
+      offsetY -= (lineHeight + lineHeight * lineSpacingFactor + lineHeight * paragraphSpacingFactor);
+      expect(tb.lines[5].offsetFromDocument.y).to.equal(offsetY);
+      expect(tb.lines[5].offsetFromDocument.x).to.equal(offsetX);
     });
 
     function expectRange(width: number, height: number, range: Range2d): void {
@@ -605,6 +687,155 @@ describe("layoutTextBlock", () => {
 
       block.width = 10;
       expectBlockRange(10, 2);
+    });
+
+    it("computes range for list markers and list items based on indentation", function () {
+      const lineSpacingFactor = 2;
+      const lineHeight = 3;
+      const paragraphSpacingFactor = 13;
+      const indentation = 7;
+      const tabInterval = 5;
+
+      const listChildren: ParagraphProps[] = [
+        {
+          children: [
+            {
+              type: "text",
+              content: "Oranges",
+            }
+          ]
+        },
+        {
+          children: [
+            {
+              type: "text",
+              content: "Apples",
+            },
+            {
+              type: "list",
+              styleOverrides: { listMarker: { enumerator: ListMarkerEnumerator.Bullet } },
+              children: [
+                {
+                  children: [
+                    {
+                      type: "text",
+                      content: "Red",
+                    }
+                  ]
+                },
+                {
+                  children: [
+                    {
+                      type: "text",
+                      content: "Green",
+                    },
+                    {
+                      type: "list",
+                      styleOverrides: { listMarker: { enumerator: ListMarkerEnumerator.RomanNumeral, case: "lower", terminator: "period" } },
+                      children: [
+                        {
+                          children: [
+                            {
+                              type: "text",
+                              content: "Granny Smith",
+                            }
+                          ]
+                        },
+                        {
+                          children: [
+                            {
+                              type: "text",
+                              content: "Rhode Island Greening",
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  children: [
+                    {
+                      type: "text",
+                      content: "Yellow",
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ];
+
+      const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor, lineHeight, paragraphSpacingFactor, indentation, tabInterval } });
+      const p1 = textBlock.appendParagraph();
+      p1.children.push(List.create({ children: listChildren }));
+
+      /* Final TextBlock should look like:
+      ￫1.￫Oranges¶
+      ￫2.￫Apples¶
+        →￫•￫Red¶
+        →￫•￫Green¶
+        → →￫i. ￫Granny Smith¶
+        → →￫ii.￫Rhode Island Greening¶
+        →￫•￫Yellow
+
+        Where ↵ = LineBreak, ¶ = ParagraphBreak, → = tab, ￫ = tabInterval/2, ⇥ = indentation
+
+        We have:
+          7 lines each `lineHeight` high
+          6 line breaks in between each `lineHeight*lineSpacingFactor` high
+          6 paragraph breaks in between each `lineHeight*paragraphSpacingFactor` high
+      */
+
+      const tb = doLayout(textBlock);
+      expect(tb.lines.length).to.equal(7);
+
+      expect(tb.range.low.x).to.equal(7 + 5 - 5 / 2 - 2); // indentation + tabInterval - tabInterval/2 (for marker offset) + 2 (for the marker "1." justification, it's 2 characters wide)
+      expect(tb.range.high.x).to.equal(7 + 3 * 5 + 21); // 7 for indentation, 3 * 5 for the most nested tab stops, 21 for the length of "Rhode Island Greening"
+      expect(tb.range.high.y).to.equal(0);
+      expect(tb.range.low.y).to.equal(-(lineHeight * 7 + (lineHeight * lineSpacingFactor) * 6 + (lineHeight * paragraphSpacingFactor) * 6));
+
+      // Cumulative vertical offsets to help make the test more readable.
+      let offsetY = -lineHeight;
+
+      for (const line of tb.lines) {
+        expect(line.offsetFromDocument.y).to.equal(offsetY);
+        expect(line.marker).to.not.be.undefined;
+        expect(line.marker?.offsetFromLine.y).to.equal((lineHeight - line.marker!.range.yLength()) / 2);
+        offsetY -= (lineHeight + lineHeight * lineSpacingFactor + lineHeight * paragraphSpacingFactor);
+      }
+
+      let markerXLength = tb.lines[0].marker!.range.xLength();
+      let inset = indentation + tabInterval;
+      expect(tb.lines[0].offsetFromDocument.x).to.equal(inset); // →Oranges
+      expect(markerXLength).to.equal(2); // "1." is 2 characters wide
+      expect(tb.lines[0].marker!.offsetFromLine.x).to.equal(0 - markerXLength - (tabInterval / 2));
+
+      markerXLength = tb.lines[1].marker!.range.xLength();
+      expect(tb.lines[1].offsetFromDocument.x).to.equal(inset); // →Apples
+      expect(tb.lines[1].marker!.offsetFromLine.x).to.equal(0 - markerXLength - (tabInterval / 2));
+
+      markerXLength = tb.lines[2].marker!.range.xLength();
+      inset = indentation + tabInterval * 2;
+      expect(tb.lines[2].offsetFromDocument.x).to.equal(indentation + tabInterval * 2); // →→Red
+      expect(tb.lines[2].marker!.offsetFromLine.x).to.equal(0 - markerXLength - (tabInterval / 2));
+
+      markerXLength = tb.lines[3].marker!.range.xLength();
+      expect(tb.lines[3].offsetFromDocument.x).to.equal(indentation + tabInterval * 2); // →→Green
+      expect(tb.lines[3].marker!.offsetFromLine.x).to.equal(0 - markerXLength - (tabInterval / 2));
+
+      markerXLength = tb.lines[4].marker!.range.xLength();
+      expect(tb.lines[4].offsetFromDocument.x).to.equal(indentation + tabInterval * 3); // →→→Granny Smith
+      expect(tb.lines[4].marker!.offsetFromLine.x).to.equal(0 - markerXLength - (tabInterval / 2));
+
+      markerXLength = tb.lines[5].marker!.range.xLength();
+      expect(tb.lines[5].offsetFromDocument.x).to.equal(indentation + tabInterval * 3); // →→→Rhode Island Greening
+      expect(tb.lines[5].marker!.offsetFromLine.x).to.equal(0 - markerXLength - (tabInterval / 2));
+
+      markerXLength = tb.lines[6].marker!.range.xLength();
+      expect(tb.lines[6].offsetFromDocument.x).to.equal(indentation + tabInterval * 2); // →→Yellow
+      expect(tb.lines[6].marker!.offsetFromLine.x).to.equal(0 - markerXLength - (tabInterval / 2));
     });
 
     it("justifies lines", function () {
@@ -706,13 +937,14 @@ describe("layoutTextBlock", () => {
   describe("word-wrapping", () => {
 
     function expectLines(input: string, width: number, expectedLines: string[]): TextBlockLayout {
-      const textBlock = TextBlock.create();
+      const textBlock = TextBlock.create({ styleOverrides: { paragraphSpacingFactor: 0, lineSpacingFactor: 0, lineHeight: 1 } });
       textBlock.width = width;
       const run = makeTextRun(input);
       textBlock.appendRun(run);
 
       const layout = doLayout(textBlock);
-      expect(layout.lines.every((line) => line.runs.every((r) => r.source === run))).to.be.true;
+      const content = run.stringify();
+      expect(layout.lines.every((line) => line.runs.every((r) => r.source.stringify() === content))).to.be.true;
 
       const actual = layout.lines.map((line) => line.runs.map((runLayout) => (runLayout.source as TextRun).content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars)).join(""));
       expect(actual).to.deep.equal(expectedLines);
@@ -1011,6 +1243,70 @@ describe("layoutTextBlock", () => {
       const layout2 = doLayout(block);
       expect(layout2.range.yLength()).to.equal(1);
     })
+
+    it("wraps list items and applies indentation/insets for narrow text block width", function () {
+      if (!isIntlSupported()) {
+        this.skip();
+      }
+
+      const textBlock = TextBlock.create({ styleOverrides: { indentation: 2, tabInterval: 3, lineHeight: 1, lineSpacingFactor: 0, paragraphSpacingFactor: 0 } });
+
+      /* Final TextBlock should look like:
+        ⇥￫1.￫Lorem ipsum dolor sit amet, consectetur adipiscing elit¶     | Inset by 5
+        ⇥￫2.￫sed do¶                                                      | Inset by 5
+        ⇥→￫a.￫eiusmod tempor¶                                             | Inset by 8
+        ⇥→￫b.￫incididunt ut labore et dolore magna aliqua                 | Inset by 8
+
+        Where ↵ = LineBreak, ¶ = ParagraphBreak, → = tab, ￫ = tabInterval/2, ⇥ = indentation
+      */
+
+      // Create nested list structure
+      const list = List.create();
+      list.children.push(Paragraph.create({ children: [TextRun.create({ content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit" })] }));
+      const apples = Paragraph.create({ children: [TextRun.create({ content: "sed do" })] });
+
+      const subList = List.create({ styleOverrides: { listMarker: { enumerator: ListMarkerEnumerator.Letter, case: "lower", terminator: "period" } } });
+      subList.children.push(Paragraph.create({ children: [TextRun.create({ content: "eiusmod tempor" })] }));
+      subList.children.push(Paragraph.create({ children: [TextRun.create({ content: "incididunt ut labore et dolore magna aliqua" })] }));
+
+      apples.children.push(subList);
+      list.children.push(apples);
+
+      textBlock.appendParagraph().children.push(list);
+
+
+      function expectLayout(width: number, expected: string): void {
+        textBlock.width = width;
+        const layout = doLayout(textBlock);
+
+        // Check that each line is wrapped to width
+        const minWidth = Math.max(19, width); // 19 for the width of the longest word with inset: "⇥→￫b.￫incididunt "
+        if (width > 0) {
+          layout.lines.forEach((line) => {
+            expect(line.justificationRange.xLength() + line.offsetFromDocument.x).to.be.at.most(minWidth);
+          });
+        }
+
+
+        expect(layout.stringify()).to.equal(expected);
+
+        // Top-level items should have indentation + tabInterval
+        let inset = 2 + 3;
+        layout.lines.forEach((line) => {
+          if (line.stringify().includes("eiusmod")) inset += 3; // SubList items should have increased indentation
+
+          expect(line.offsetFromDocument.x).to.equal(inset);
+        });
+      }
+
+      // Check indentation/insets for each line, indentation: 2, tabInterval: 5
+      expectLayout(0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit\nsed do\neiusmod tempor\nincididunt ut labore et dolore magna aliqua");
+      expectLayout(70, "Lorem ipsum dolor sit amet, consectetur adipiscing elit\nsed do\neiusmod tempor\nincididunt ut labore et dolore magna aliqua");
+      expectLayout(40, "Lorem ipsum dolor sit amet, \nconsectetur adipiscing elit\nsed do\neiusmod tempor\nincididunt ut labore et dolore \nmagna aliqua");
+      // TODO: layout should not pay attention to trailing whitespace when wrapping. I'll do this in another PR.
+      expectLayout(21, "Lorem ipsum \ndolor sit amet, \nconsectetur \nadipiscing elit\nsed do\neiusmod \ntempor\nincididunt \nut labore et \ndolore magna \naliqua");
+      expectLayout(15, "Lorem \nipsum \ndolor sit \namet, \nconsectetur \nadipiscing \nelit\nsed do\neiusmod \ntempor\nincididunt \nut \nlabore \net \ndolore \nmagna \naliqua");
+    });
   });
 
   describe("grapheme offsets", () => {
@@ -1032,13 +1328,13 @@ describe("layoutTextBlock", () => {
       textBlock.appendRun(fractionRun);
 
       const { textStyleResolver, result } = getLayoutResultAndStyleResolver(textBlock);
+      const source = textBlock.children[0]; // FractionRun is not a TextRun
       const args: ComputeGraphemeOffsetsArgs = {
-        textBlock,
+        source,
         iModel: {} as any,
         textStyleResolver,
         findFontId: () => 0,
         computeTextRange: computeTextRangeAsStringLength,
-        paragraphIndex: result.lines[0].sourceParagraphIndex,
         runLayoutResult: result.lines[0].runs[0],
         graphemeCharIndexes: [0],
       };
@@ -1053,13 +1349,13 @@ describe("layoutTextBlock", () => {
       textBlock.appendRun(textRun);
 
       const { textStyleResolver, result } = getLayoutResultAndStyleResolver(textBlock);
+      const source = textBlock.children[0]; // FractionRun is not a TextRun
       const args: ComputeGraphemeOffsetsArgs = {
-        textBlock,
+        source,
         iModel: {} as any,
         textStyleResolver,
         findFontId: () => 0,
         computeTextRange: computeTextRangeAsStringLength,
-        paragraphIndex: result.lines[0].sourceParagraphIndex,
         runLayoutResult: result.lines[0].runs[0],
         graphemeCharIndexes: [0], // Supply a grapheme index even though there is no text
       };
@@ -1074,13 +1370,13 @@ describe("layoutTextBlock", () => {
       textBlock.appendRun(textRun);
 
       const { textStyleResolver, result } = getLayoutResultAndStyleResolver(textBlock);
+      const source = textBlock.children[0].children[0];
       const args: ComputeGraphemeOffsetsArgs = {
-        textBlock,
+        source,
         iModel: {} as any,
         textStyleResolver,
         findFontId: () => 0,
         computeTextRange: computeTextRangeAsStringLength,
-        paragraphIndex: result.lines[0].sourceParagraphIndex,
         runLayoutResult: result.lines[0].runs[0],
         graphemeCharIndexes: [0, 1, 2, 3, 4],
       };
@@ -1098,13 +1394,13 @@ describe("layoutTextBlock", () => {
       textBlock.appendRun(textRun);
 
       const { textStyleResolver, result } = getLayoutResultAndStyleResolver(textBlock);
+      const source = textBlock.children[0].children[0];
       const args: ComputeGraphemeOffsetsArgs = {
-        textBlock,
+        source,
         iModel: {} as any,
         textStyleResolver,
         findFontId: () => 0,
         computeTextRange: computeTextRangeAsStringLength,
-        paragraphIndex: result.lines[0].sourceParagraphIndex,
         runLayoutResult: result.lines[0].runs[0],
         graphemeCharIndexes: [0, 1, 3, 7],
       };
@@ -1123,13 +1419,13 @@ describe("layoutTextBlock", () => {
       textBlock.appendRun(textRun);
 
       const { textStyleResolver, result } = getLayoutResultAndStyleResolver(textBlock);
+      const source = textBlock.children[0].children[0];
       const args: ComputeGraphemeOffsetsArgs = {
-        textBlock,
+        source,
         iModel: {} as any,
         textStyleResolver,
         findFontId: () => 0,
         computeTextRange: computeTextRangeAsStringLength,
-        paragraphIndex: result.lines[0].sourceParagraphIndex,
         runLayoutResult: result.lines[0].runs[0],
         graphemeCharIndexes: [0],
       };
@@ -1306,11 +1602,21 @@ describe("produceTextBlockGeometry", () => {
     return produceTextBlockGeometry(layout, annotation.computeTransform(layout.range)).entries;
   }
 
+  function makeListGeometry(children: ParagraphProps[]): TextBlockGeometryPropsEntry[] {
+    const textBlock = TextBlock.create();
+    const p1 = textBlock.appendParagraph();
+    p1.children.push(List.create({ children }));
+
+    const annotation = TextAnnotation.fromJSON({ textBlock: textBlock.toJSON() });
+    const layout = doLayout(textBlock);
+    return produceTextBlockGeometry(layout, annotation.computeTransform(layout.range)).entries;
+  }
+
   it("produces an empty array for an empty text block", () => {
     expect(makeGeometry([])).to.deep.equal([]);
   });
 
-  it("produces an empty array for a block consisting only of line breaks", () => {
+  it("produces an empty array for a block consisting of line breaks", () => {
     expect(makeGeometry([makeBreak(), makeBreak(), makeBreak()])).to.deep.equal([]);
   });
 
@@ -1372,6 +1678,117 @@ describe("produceTextBlockGeometry", () => {
     ]);
   });
 
+  it("produces entries for list markers", () => {
+    /* Final TextBlock should look like:
+      1. Oranges                        // Oranges -> default "subcategory" text
+      2. Apples                         // Apples -> Switch to red text
+          • Red
+          • Green                       // Green -> Switch to green text, not including the bullet.
+            i.  Granny Smith
+            ii. Rhode Island Greening
+          • Yellow                      // Yellow -> Back to red text
+
+        We have:
+          7 lines each containing one TextString for the list marker and one for the text,
+          4 appearance overrides
+      */
+
+    const listChildren: ParagraphProps[] = [
+      {
+        children: [
+          {
+            type: "text",
+            content: "Oranges",
+          }
+        ]
+      },
+      {
+        children: [
+          {
+            type: "text",
+            content: "Apples",
+          },
+          {
+            type: "list",
+            styleOverrides: { listMarker: { enumerator: ListMarkerEnumerator.Bullet }, color: ColorDef.red.tbgr },
+            children: [
+              {
+                children: [
+                  {
+                    type: "text",
+                    content: "Red",
+                  }
+                ]
+              },
+              {
+                styleOverrides: { color: ColorDef.green.tbgr },
+                children: [
+                  {
+                    type: "text",
+                    content: "Green",
+                  },
+                  {
+                    type: "list",
+                    styleOverrides: { listMarker: { enumerator: ListMarkerEnumerator.RomanNumeral, case: "lower", terminator: "period" } },
+                    children: [
+                      {
+                        children: [
+                          {
+                            type: "text",
+                            content: "Granny Smith",
+                          }
+                        ]
+                      },
+                      {
+                        children: [
+                          {
+                            type: "text",
+                            content: "Rhode Island Greening",
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                children: [
+                  {
+                    type: "text",
+                    content: "Yellow",
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ];
+
+    const entries = makeListGeometry(listChildren);
+    expect(entries.length).to.equal(14 + 4); // 14 text strings + 4 appearance entry
+
+    expect(entries[0].color).to.equal("subcategory");
+    expect(entries[1].text?.text).to.equal("1.");
+    expect(entries[2].text?.text).to.equal("Oranges");
+    expect(entries[3].text?.text).to.equal("2.");
+    expect(entries[4].text?.text).to.equal("Apples");
+    expect(entries[5].color).to.equal(ColorDef.red.tbgr);
+    expect(entries[6].text?.text).to.equal("•");
+    expect(entries[7].text?.text).to.equal("Red");
+    expect(entries[8].text?.text).to.equal("•");
+    expect(entries[9].color).to.equal(ColorDef.green.tbgr);
+    expect(entries[10].text?.text).to.equal("Green");
+    expect(entries[11].text?.text).to.equal("i.");
+    expect(entries[12].text?.text).to.equal("Granny Smith");
+    expect(entries[13].text?.text).to.equal("ii.");
+    expect(entries[14].text?.text).to.equal("Rhode Island Greening");
+    expect(entries[15].color).to.equal(ColorDef.red.tbgr);
+    expect(entries[16].text?.text).to.equal("•");
+    expect(entries[17].text?.text).to.equal("Yellow");
+
+  });
+
   it("offsets geometry entries by margins", () => {
     function makeGeometryWithMargins(anchor: TextAnnotationAnchor, margins: TextBlockMargins): TextStringProps | undefined {
       const runs = [makeText()];
@@ -1423,4 +1840,4 @@ describe("produceTextBlockGeometry", () => {
 });
 
 // Ignoring the text strings from the spell checker
-// cspell:ignore jklmnop vwxyz defg hijk ghij klmno pqrstu Tanuki aabb eeff nggg amet adipiscing elit Phasellus pretium malesuada venenatis eleifend Donec sapien Nullam commodo accumsan lacinia metus enim pharetra lacus facilisis Duis suscipit quis feugiat fermentum ut augue Mauris iaculis odio rhoncus lorem viverra turpis elementum posuere Consolas अनुच्छेद cdefg cdefgh cdefghi
+// cspell:ignore jklmnop vwxyz defg hijk ghij klmno pqrstu Tanuki aabb eeff nggg amet adipiscing elit Phasellus pretium malesuada venenatis eleifend Donec sapien Nullam commodo accumsan lacinia metus enim pharetra lacus facilisis Duis suscipit quis feugiat fermentum ut augue Mauris iaculis odio rhoncus lorem viverra turpis elementum posuere Consolas अनुच्छेद cdefg cdefgh cdefghi eiusmod tempor incididunt ut labore et dolore magna aliqua sed defghi

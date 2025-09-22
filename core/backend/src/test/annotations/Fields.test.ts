@@ -644,7 +644,11 @@ describe("Field evaluation", () => {
 
         const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
         const anno = target.getAnnotation()!;
-        anno.textBlock.paragraphs[0].runs.shift();
+
+        // Remove the sourceA FieldRun from the first paragraph.
+        const p1 = anno.textBlock.children[0];
+        p1.children.shift();
+
         target.setAnnotation(anno);
         target.update();
         imodel.saveChanges();
@@ -653,7 +657,7 @@ describe("Field evaluation", () => {
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).to.be.undefined;
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).not.to.be.undefined;
 
-        anno.textBlock.paragraphs.length = 0;
+        anno.textBlock.children.length = 0;
         anno.textBlock.appendRun(createField(sourceA, "A2"));
         target.setAnnotation(anno);
         target.update();
@@ -663,7 +667,7 @@ describe("Field evaluation", () => {
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceA })).not.to.be.undefined;
         expect(imodel.relationships.tryGetInstance(ElementDrivesTextAnnotation.classFullName, { targetId, sourceId: sourceB })).to.be.undefined;
 
-        anno.textBlock.paragraphs.length = 0;
+        anno.textBlock.children.length = 0;
         anno.textBlock.appendRun(TextRun.create({
           styleOverrides: { fontName: "Karla" },
           content: "not a field",
