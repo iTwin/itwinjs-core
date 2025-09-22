@@ -54,14 +54,14 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     };
 
     const arcData = getEntry();
-    if (!arcData)
+    if (!arcData || (arcData.type !== 'arc' && arcData.type !== 'arc2d'))
       return null;
 
-    const isArc2d = this.primitiveType === 'arc2d';
+    const isArc2d = arcData.type === 'arc2d';
     const arc = arcData.arc.clone();
     const isEllipse = arcData.isEllipse === true;
     const filled = arcData.filled === true;
-    const depth = isArc2d && 'zDepth' in arcData ? arcData.zDepth : undefined;
+    const depth = isArc2d ? arcData.zDepth : undefined;
     if (typeof depth === 'number' && arc.center.z !== depth)
       arc.center.z = depth;
 

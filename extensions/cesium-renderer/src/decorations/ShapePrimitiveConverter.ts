@@ -66,13 +66,14 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
     primitivesCollection: PrimitiveCollection,
     iModel?: IModelConnection,
     originalShapes?: unknown,
-    type?: string
+    type?: string,
+    originalGraphic?: RenderGraphicWithCoordinates
   ): Primitive | null {
     if (!graphic) {
       return null;
     }
     if (graphic.geometries && graphic.geometryType) {
-      return this.createPolygonFromGeometry(graphic.geometries, graphic.geometryType, shapeId, index, primitivesCollection, iModel, originalShapes, type, graphic);
+      return this.createPolygonFromGeometry(graphic.geometries, graphic.geometryType, shapeId, index, primitivesCollection, iModel, originalShapes, type, originalGraphic ?? graphic);
     }
 
     return null;
