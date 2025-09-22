@@ -304,6 +304,7 @@ import { YawPitchRollAngles } from '@itwin/core-geometry';
 // @public
 export interface AcquireNewBriefcaseIdArg extends IModelIdArg {
     readonly briefcaseAlias?: string;
+    readonly deviceName?: string;
 }
 
 // @public @preview

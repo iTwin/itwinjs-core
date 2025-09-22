@@ -2149,6 +2149,12 @@ export interface CutStyleProps {
 // @public
 export type DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm";
 
+// @beta
+export interface DateTimeFieldFormatOptions {
+    formatOptions?: Intl.DateTimeFormatOptions;
+    locale?: Intl.UnicodeBCP47LocaleIdentifier;
+}
+
 // @internal (undocumented)
 export interface DbBlobRequest extends DbRequest, BlobOptions {
     // (undocumented)
@@ -3601,10 +3607,18 @@ export class FeatureTableHeader {
 }
 
 // @beta
-export interface FieldFormatter {
-    // (undocumented)
-    [k: string]: any;
+export type FieldCase = "as-is" | "upper" | "lower";
+
+// @beta
+export interface FieldFormatOptions {
+    case?: FieldCase;
+    dateTime?: DateTimeFieldFormatOptions;
+    prefix?: string;
+    suffix?: string;
 }
+
+// @internal
+export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
 
 // @beta
 export interface FieldPropertyHost {
@@ -3616,9 +3630,11 @@ export interface FieldPropertyHost {
 // @beta
 export interface FieldPropertyPath {
     accessors?: Array<string | number>;
-    jsonAccessors?: Array<string | number>;
     propertyName: string;
 }
+
+// @beta
+export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean" | "datetime" | "int-enum" | "string-enum";
 
 // @beta
 export class FieldRun extends TextBlockComponent {
@@ -3626,7 +3642,7 @@ export class FieldRun extends TextBlockComponent {
     clone(): FieldRun;
     static create(props: Omit<FieldRunProps, "type">): FieldRun;
     equals(other: TextBlockComponent): boolean;
-    readonly formatter?: FieldFormatter;
+    readonly formatOptions?: FieldFormatOptions;
     static invalidContentIndicator: string;
     // (undocumented)
     get isEmpty(): boolean;
@@ -3642,10 +3658,18 @@ export class FieldRun extends TextBlockComponent {
 // @beta
 export interface FieldRunProps extends TextBlockComponentProps {
     cachedContent?: string;
-    formatter?: FieldFormatter;
+    formatOptions?: FieldFormatOptions;
     propertyHost: FieldPropertyHost;
     propertyPath: FieldPropertyPath;
     readonly type: "field";
+}
+
+// @internal
+export interface FieldValue {
+    // (undocumented)
+    type: FieldPropertyType;
+    // (undocumented)
+    value: FieldPrimitiveValue;
 }
 
 // @public (undocumented)
@@ -3737,6 +3761,9 @@ export enum FontType {
     Shx = 3,
     TrueType = 1
 }
+
+// @internal (undocumented)
+export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined): string | undefined;
 
 // @internal (undocumented)
 export interface FormDataCommon {
@@ -5659,6 +5686,9 @@ export abstract class IpcWebSocketTransport {
 
 // @public
 export function isBinaryImageSource(source: ImageSource): source is BinaryImageSource;
+
+// @internal (undocumented)
+export function isKnownFieldPropertyType(type: string): type is FieldPropertyType;
 
 // @internal
 export function isKnownTileFormat(format: number): boolean;
@@ -8476,6 +8506,7 @@ export interface RepositoryLinkProps extends UrlLinkProps {
 export interface RequestNewBriefcaseProps {
     asOf?: IModelVersionProps;
     briefcaseId?: BriefcaseId;
+    deviceName?: string;
     readonly fileName?: LocalFileName;
     readonly iModelId: GuidString;
     readonly iTwinId: GuidString;
