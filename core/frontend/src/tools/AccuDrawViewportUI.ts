@@ -79,7 +79,7 @@ export class AccuDrawViewportUI extends AccuDraw {
       focused: {
         /** Background color for focused text input fields. */
         backgroundColor:
-          "hsl(var(--iui-color-accent-hsl, 166 96% 30.7%) / var(--iui-opacity-3, 65%))",
+          "hsl(var(--iui-color-accent-hsl, 166 96% 30.7%) / var(--iui-opacity-2, 85%))",
         /** Inner stroke for focused text input fields. */
         innerStroke: `inset 0px 0px 0px 1px var(--iui-color-background, #333c41)`,
         /** Border settings for focused text input fields. */
@@ -92,7 +92,7 @@ export class AccuDrawViewportUI extends AccuDraw {
       unfocused: {
         /** Background color for unfocused text input fields. */
         backgroundColor:
-          "hsl(var(--iui-color-background-hsl, 225 6% 13%) / var(--iui-opacity-3, 65%))",
+          "hsl(var(--iui-color-background-hsl, 203 6% 21.25%) / var(--iui-opacity-2, 85%))",
         /** Border settings for unfocused text input fields. */
         border: {
           /** Border color for unfocused text input fields. */
@@ -110,7 +110,7 @@ export class AccuDrawViewportUI extends AccuDraw {
         color: "var(--iui-color-text-muted, #cccccc)",
         /** Background color for unlocked lock buttons. */
         backgroundColor:
-          "hsl(var(--iui-color-background-hsl, 225 6% 13%) / var(--iui-opacity-3, 65%))",
+          "hsl(var(--iui-color-background-hsl, 203 6% 21.25%) / var(--iui-opacity-2, 85%))",
         /** Border settings for unlocked lock buttons. */
         border: {
           /** Border color for unlocked lock buttons. */
@@ -123,7 +123,7 @@ export class AccuDrawViewportUI extends AccuDraw {
         color: "hsl(var(--iui-color-accent-hsl, 166 96% 51%))",
         /** Background color for locked lock buttons. */
         backgroundColor:
-          "hsl(var(--iui-color-accent-hsl, 166 96% 30.7%) / var(--iui-opacity-3, 65%))",
+          "hsl(var(--iui-color-accent-hsl, 166 96% 30.7%) / var(--iui-opacity-2, 85%))",
         /** Border settings for locked lock buttons. */
         border: {
           /** Border color for locked lock buttons. */
@@ -136,7 +136,7 @@ export class AccuDrawViewportUI extends AccuDraw {
       /** Spacing between input field and lock button within each field group. */
       gap: "var(--iui-size-2xs, 0.25rem)",
       /** Spacing between field groups (distance/angle, x, y, z controls). */
-      margin: "var(--iui-size-xs, 0.50rem)",
+      margin: "var(--iui-size-2xs, 0.25rem)",
     },
   };
 
@@ -597,9 +597,12 @@ export class AccuDrawViewportUI extends AccuDraw {
     style.flexDirection = isHorizontal ? "row" : "column";
 
     if (isHorizontal) {
+      // Make the space between each control group bigger than the space between fields within a group
       style.columnGap = AccuDrawViewportUI.controlProps.spacing.margin;
-    } else {
-      style.rowGap = AccuDrawViewportUI.controlProps.spacing.margin;
+    }
+    else {
+      // Make the space between each control group equal than the space between fields within a group
+      style.rowGap = AccuDrawViewportUI.controlProps.spacing.gap;
     }
 
     return div;
@@ -792,7 +795,7 @@ export class AccuDrawViewportUI extends AccuDraw {
         fieldWrapper.style.alignItems = "center";
         fieldWrapper.style.justifyContent = "center";
         fieldWrapper.style.columnGap = AccuDrawViewportUI.controlProps.spacing.gap;
-        fieldWrapper.style.rowGap = AccuDrawViewportUI.controlProps.spacing.margin;
+        fieldWrapper.style.rowGap = AccuDrawViewportUI.controlProps.spacing.gap;
 
         const itemField = (itemFields[item] = this.createItemField(item));
         fieldWrapper.appendChild(itemField);
