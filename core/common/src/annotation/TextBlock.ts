@@ -50,7 +50,7 @@ export interface TextBlockStringifyOptions {
    */
   tabsAsSpaces?: number;
   /** A string to insert in between the list marker and the list item.
-   * Default: " " - a single space..
+   * Default: " " - a single space.
    */
   listMarkerBreak?: string;
 }
