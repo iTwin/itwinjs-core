@@ -789,7 +789,7 @@ export class TextBlock extends TextBlockComponent {
     return new TextBlock(this.toJSON());
   }
 
-  /** Compute a string representation of the document's contents by concatenating the string representations of each of its [[paragraphs]], separated by [[TextBlockStringifyOptions.paragraphBreak]]. */
+  /** Compute a string representation of the document's contents by concatenating the string representations of each of its [[children]], separated by [[TextBlockStringifyOptions.paragraphBreak]]. */
   public stringify(options?: TextBlockStringifyOptions): string {
     return this.children.map((x) => x.stringify(options)).join(options?.paragraphBreak ?? " ") || "";
   }
