@@ -21,7 +21,7 @@ import { Surface } from "./Surface";
 import { setTitle } from "./Title";
 import { showStatus } from "./Utils";
 import { Dock } from "./Window";
-import { System as CesiumSystem, CesiumViewManager } from "@itwin/cesium-renderer";
+import { CesiumSystem, CesiumViewManager } from "@itwin/cesium-renderer";
 
 const configuration: DtaConfiguration = {};
 

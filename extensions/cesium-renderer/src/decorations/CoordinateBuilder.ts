@@ -9,7 +9,7 @@
 import { Arc3d, Loop, Path, Point2d, Point3d, Polyface, SolidPrimitive } from "@itwin/core-geometry";
 import { _implementationProhibited, CustomGraphicBuilderOptions, GraphicBuilder, GraphicTemplate, RenderGraphic, ViewportGraphicBuilderOptions } from "@itwin/core-frontend";
 import { ColorDef, LinePixels } from "@itwin/core-common";
-import { System } from "../System.js";
+import { CesiumSystem } from "../System.js";
 import { CoordinateStorage } from "./CoordinateStorage.js";
 import { DecorationPrimitiveEntry, SymbologySnapshot } from "./DecorationTypes.js";
 
@@ -21,15 +21,15 @@ export class CoordinateBuilder extends GraphicBuilder {
   private _currentFillColor?: ColorDef;
   private _currentWidth?: number;
   private _currentLinePixels?: LinePixels;
-  private _system: System;
+  private _system: CesiumSystem;
   private _pendingTemplateId?: symbol;
 
-  public constructor(system: System, options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions) {
+  public constructor(system: CesiumSystem, options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions) {
     super(options);
     this._system = system;
   }
 
-  public get system(): System {
+  public get system(): CesiumSystem {
     return this._system;
   }
 
@@ -115,26 +115,26 @@ export class CoordinateBuilder extends GraphicBuilder {
       CoordinateStorage.storeCoordinates(templateId, this._coordinateData);
       this._pendingTemplateId = templateId;
     }
-    
+
     const template = this.finishTemplate();
-    
+
     if (this._pendingTemplateId) {
       Reflect.set(template as object, "_coordinateTemplateId", this._pendingTemplateId);
     }
-    
+
     const graphic = this.system.createGraphicFromTemplate({ template });
     return graphic ?? this.system.createGraphicList([]);
   }
 
   public override finishTemplate(): GraphicTemplate {
     const template = {} as GraphicTemplate;
-    
+
     if (this._coordinateData.length > 0) {
       const templateId = Symbol.for(`coordinate_template_${Date.now()}_${Math.random()}`);
       CoordinateStorage.storeCoordinates(templateId, this._coordinateData);
       Reflect.set(template as object, "_coordinateTemplateId", templateId);
     }
-    
+
     return template;
   }
 

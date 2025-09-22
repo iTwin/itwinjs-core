@@ -6,21 +6,21 @@
 import { Id64String } from "@itwin/core-bentley";
 import { _implementationProhibited, Decorations, GraphicList, IModelApp, Pixel, RenderPlan, RenderTarget, Scene, ViewRect } from "@itwin/core-frontend";
 import { CesiumScene } from "./CesiumScene.js";
-import { System } from "./System.js";
+import { CesiumSystem } from "./System.js";
 import { PrimitiveConverterFactory } from "./decorations/PrimitiveConverterFactory.js";
 import { CesiumCameraHelpers } from "./decorations/CesiumCameraHelpers.js";
 
 /** A Target that renders to a canvas on the screen using Cesium.
  * @internal
  */
-export class OnScreenTarget extends RenderTarget {
+export class CesiumOnScreenTarget extends RenderTarget {
   protected override readonly [_implementationProhibited] = undefined;
 
   private readonly _canvas: HTMLCanvasElement;
   private readonly _scene: CesiumScene;
   private _lastDecorationCount = -1;
 
-  public get renderSystem(): System { return System.instance; }
+  public get renderSystem(): CesiumSystem { return CesiumSystem.instance; }
 
   public get viewRect(): ViewRect {
     // ###TODO consider this a temporary solution until we have a proper ViewRect implementation for Cesium.
@@ -57,12 +57,12 @@ export class OnScreenTarget extends RenderTarget {
   }
 
   public changeDecorations(decorations: Decorations) {
-    // Check if scene is ready before proceeding  
+    // Check if scene is ready before proceeding
     if (!this._scene?.cesiumScene) {
       return;
     }
 
-    const currentCount = (decorations.world?.length || 0) + (decorations.normal?.length || 0) + 
+    const currentCount = (decorations.world?.length || 0) + (decorations.normal?.length || 0) +
                         (decorations.worldOverlay?.length || 0) + (decorations.viewOverlay?.length || 0);
 
     if (currentCount !== this._lastDecorationCount) {
@@ -103,12 +103,12 @@ export class OnScreenTarget extends RenderTarget {
 /** A Target that renders to an offscreen buffer using Cesium.
  * @internal
  */
-export class OffScreenTarget extends RenderTarget {
+export class CesiumOffScreenTarget extends RenderTarget {
   protected override readonly [_implementationProhibited] = undefined;
 
   private readonly _rect: ViewRect
 
-  public get renderSystem(): System { return System.instance; }
+  public get renderSystem(): CesiumSystem { return CesiumSystem.instance; }
 
   public get viewRect(): ViewRect {
     return this._rect;

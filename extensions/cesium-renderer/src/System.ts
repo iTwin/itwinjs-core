@@ -6,19 +6,19 @@
 import { ElementAlignedBox3d, RenderFeatureTable } from "@itwin/core-common";
 import { Transform } from "@itwin/core-geometry";
 import { BatchOptions, CreateGraphicFromTemplateArgs, CustomGraphicBuilderOptions, GraphicBranch, GraphicBranchOptions, GraphicBuilder, IModelApp, IModelConnection, InstancedGraphicParams, RenderAreaPattern, RenderGeometry, RenderGraphic, RenderSystem, RenderTarget, ViewportGraphicBuilderOptions, ViewRect } from "@itwin/core-frontend";
-import { OffScreenTarget, OnScreenTarget } from "./Target.js";
+import { CesiumOffScreenTarget, CesiumOnScreenTarget } from "./Target.js";
 import { CesiumGraphic } from "./Graphic.js";
 import { PrimitiveConverterFactory } from "./decorations/PrimitiveConverterFactory.js";
 
 /** @internal */
-export class System extends RenderSystem {
+export class CesiumSystem extends RenderSystem {
   private _removeEventListener?: () => void;
 
   public get isValid(): boolean { return true; }
   /** Override maxTextureSize to prevent VertexTable assertion errors */
   public override get maxTextureSize(): number { return 4096; }
 
-  public static create(optionsIn?: RenderSystem.Options): System {
+  public static create(optionsIn?: RenderSystem.Options): CesiumSystem {
     const options: RenderSystem.Options = undefined !== optionsIn ? optionsIn : {};
 
     // ###TODO use new CesiumJS shared context API: https://github.com/CesiumGS/cesium/pull/12635
@@ -41,14 +41,14 @@ export class System extends RenderSystem {
     }
   }
 
-  public static get instance() { return IModelApp.renderSystem as System; }
+  public static get instance() { return IModelApp.renderSystem as CesiumSystem; }
 
   public createTarget(canvas: HTMLCanvasElement): RenderTarget {
-    return new OnScreenTarget(canvas);
+    return new CesiumOnScreenTarget(canvas);
   }
 
   public createOffscreenTarget(rect: ViewRect): RenderTarget {
-    return new OffScreenTarget(rect);
+    return new CesiumOffScreenTarget(rect);
   }
 
   public doIdleWork(): boolean {
