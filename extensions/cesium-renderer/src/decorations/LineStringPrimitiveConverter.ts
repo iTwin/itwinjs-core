@@ -21,7 +21,6 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
     this.primitiveType = primitiveType;
   }
 
-
   protected override getCollection(scene: CesiumScene): PolylineCollection {
     return scene.polylineCollection;
   }
