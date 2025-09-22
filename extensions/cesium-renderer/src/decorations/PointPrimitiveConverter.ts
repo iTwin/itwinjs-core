@@ -12,7 +12,6 @@ import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
 
-
 /** Converts iTwin.js point decorations to Cesium PointPrimitives */
 export class PointPrimitiveConverter extends PrimitiveConverter {
   protected readonly primitiveType: 'pointstring' | 'pointstring2d';
