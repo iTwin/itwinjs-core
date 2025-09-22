@@ -478,7 +478,8 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     this.addConnectives();
   }
   private _workSegment?: LineSegment3d;
-  private static _bridgeDirection = Vector3d.createNormalized(1.0, -0.12328974132467); // magic unit direction to minimize vertex hits
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  private static _bridgeDirection = Vector3d.createNormalized(1.0, -0.12328974132467)!; // magic unit direction to minimize vertex hits
   /**
    * The sweep operations require access to all geometry by edge crossings and face walk.
    * If input loops are non-overlapping, there may be disconnected islands not reachable.
@@ -488,8 +489,6 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
    * * places those lines in the extraGeometry group
    */
   public addConnectives() {
-    if (undefined === RegionBooleanContext._bridgeDirection)
-      return;
     const rangeA = this.groupA.range();
     const rangeB = this.groupB.range();
     const rangeAB = rangeA.union(rangeB);
@@ -501,7 +500,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     const maxPoints: Point3d[] = [];
     const findExtremePointsInLoop = (region: Loop) => {
       const area = RegionOps.computeXYArea(region);
-      if (area === undefined || Math.abs(area) < areaTol || undefined === RegionBooleanContext._bridgeDirection)
+      if (area === undefined || Math.abs(area) < areaTol)
         return;   // avoid bridging trivial faces
       this._workSegment = PlaneAltitudeRangeContext.findExtremePointsInDirection(region, RegionBooleanContext._bridgeDirection, this._workSegment);
       if (this._workSegment)

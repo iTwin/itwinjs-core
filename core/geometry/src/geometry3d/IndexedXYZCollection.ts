@@ -137,12 +137,7 @@ export abstract class IndexedXYZCollection {
   public dotProductIndexIndexXYAndZ(origin: number, indexA: number, targetB: XYAndZ): number | undefined {
     if (origin < 0 || origin >= this.length || indexA < 0 || indexA >= this.length)
       return undefined;
-    const x0 = this.getXAtUncheckedPointIndex(origin);
-    const y0 = this.getYAtUncheckedPointIndex(origin);
-    const z0 = this.getZAtUncheckedPointIndex(origin);
-    return (this.getXAtUncheckedPointIndex(indexA) - x0) * (targetB.x - x0) +
-           (this.getYAtUncheckedPointIndex(indexA) - y0) * (targetB.y - y0) +
-           (this.getZAtUncheckedPointIndex(indexA) - z0) * (targetB.z - z0);
+    return this.dotProductUncheckedIndexIndexXYAndZ(origin, indexA, targetB);
   }
     /**
    * Return the dot product of the vectors from the point at `origin` to the point at `indexA` and to `targetB`.
@@ -235,10 +230,7 @@ export abstract class IndexedXYZCollection {
   public distanceSquaredIndexXYAndZ(index0: number, target: XYAndZ): number | undefined {
     if (index0 < 0 || index0 >= this.length)
       return undefined;
-    return Geometry.hypotenuseSquaredXYZ(
-      target.x - this.getXAtUncheckedPointIndex(index0),
-      target.y - this.getYAtUncheckedPointIndex(index0),
-      target.z - this.getZAtUncheckedPointIndex(index0));
+    return this.distanceSquaredUncheckedIndexXYAndZ(index0, target);
   }
     /**
    * Return distance squared between the point at index0 and target.
@@ -353,9 +345,7 @@ export abstract class IndexedXYZCollection {
   public interpolateIndexIndex(index0: number, fraction: number, index1: number, result?: Point3d): Point3d | undefined {
     if (index0 < 0 || index0 >= this.length || index1 < 0 || index1 >= this.length)
       return undefined;
-    return Point3d.create(Geometry.interpolate(this.getXAtUncheckedPointIndex(index0), fraction, this.getXAtUncheckedPointIndex(index1)),
-                          Geometry.interpolate(this.getYAtUncheckedPointIndex(index0), fraction, this.getYAtUncheckedPointIndex(index1)),
-                          Geometry.interpolate(this.getZAtUncheckedPointIndex(index0), fraction, this.getZAtUncheckedPointIndex(index1)), result);
+    return this.interpolateUncheckedIndexIndex(index0, fraction, index1, result);
   }
   /**
    * Interpolate the points at the given indices.
@@ -430,9 +420,7 @@ export abstract class IndexedXYZCollection {
   public almostEqualIndexIndex(index0: number, index1: number, tolerance = Geometry.smallMetricDistance): boolean | undefined {
     if (index0 < 0 || index0 >= this.length || index1 < 0 || index1 >= this.length)
       return undefined;
-    return Geometry.isSameCoordinate(this.getXAtUncheckedPointIndex(index0), this.getXAtUncheckedPointIndex(index1), tolerance)
-      && Geometry.isSameCoordinate(this.getYAtUncheckedPointIndex(index0), this.getYAtUncheckedPointIndex(index1), tolerance)
-      && Geometry.isSameCoordinate(this.getZAtUncheckedPointIndex(index0), this.getZAtUncheckedPointIndex(index1), tolerance);
+    return this.almostEqualUncheckedIndexIndex(index0, index1, tolerance);
   }
     /**
    * Test whether the indexed points are equal within tolerance.
@@ -457,8 +445,7 @@ export abstract class IndexedXYZCollection {
   public almostEqualXYIndexIndex(index0: number, index1: number, tolerance = Geometry.smallMetricDistance): boolean | undefined {
     if (index0 < 0 || index0 >= this.length || index1 < 0 || index1 >= this.length)
       return undefined;
-    return Geometry.isSameCoordinate(this.getXAtUncheckedPointIndex(index0), this.getXAtUncheckedPointIndex(index1), tolerance)
-      && Geometry.isSameCoordinate(this.getYAtUncheckedPointIndex(index0), this.getYAtUncheckedPointIndex(index1), tolerance);
+    return this.almostEqualXYUncheckedIndexIndex(index0, index1, tolerance);
   }
   /**
    * Test whether the xy-coordinates of the indexed points are equal within tolerance. The z-coordinates are ignored.

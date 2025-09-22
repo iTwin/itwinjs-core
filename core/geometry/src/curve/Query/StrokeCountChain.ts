@@ -326,9 +326,7 @@ export class StrokeCountSection {
           break;
         for (let sectionIndex = 0; sectionIndex < numSection; sectionIndex++) {
           const componentData = sections[sectionIndex].chains[chainIndex].maps[primitiveIndex].componentData;
-          if (undefined === componentData)
-            return false;
-          if (!callback.visit(pass, componentData[componentIndex]))
+          if (undefined === componentData || !callback.visit(pass, componentData[componentIndex]))
             return false;
         }
         if (!callback.endPass(pass))

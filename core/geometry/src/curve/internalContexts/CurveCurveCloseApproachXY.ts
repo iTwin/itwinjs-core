@@ -159,10 +159,10 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   ): void {
     let globalFractionA, globalFractionB;
     let globalFractionA1, globalFractionB1;
-    const isInterval = intervalDetails !== undefined &&
-      intervalDetails.detailA.isInterval() &&
-      intervalDetails.detailB.isInterval();
-    if (isInterval && undefined !== intervalDetails.detailA.fraction1 && undefined !== intervalDetails.detailB.fraction1) {
+    let isInterval = false;
+    if (undefined !== intervalDetails && intervalDetails.detailA.isInterval() && intervalDetails.detailB.isInterval())
+      isInterval = true;
+    if (isInterval && undefined !== intervalDetails && intervalDetails.detailA.fraction1 && intervalDetails.detailB.fraction1) {
       globalFractionA = Geometry.interpolate(fractionA0, intervalDetails.detailA.fraction, fractionA1);
       globalFractionB = Geometry.interpolate(fractionB0, intervalDetails.detailB.fraction, fractionB1);
       globalFractionA1 = Geometry.interpolate(fractionA0, intervalDetails.detailA.fraction1, fractionA1);

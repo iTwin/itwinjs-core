@@ -801,15 +801,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   public vectorIndexIndex(i: number, j: number, result?: Vector3d): Vector3d | undefined {
     if (!this.isIndexValid(i) || !this.isIndexValid(j))
       return undefined;
-    const data = this._data;
-    i = 3 * i;
-    j = 3 * j;
-    return Vector3d.create(
-      data[j] - data[i],
-      data[j + 1] - data[i + 1],
-      data[j + 2] - data[i + 2],
-      result,
-    );
+    return this.vectorUncheckedIndexIndex(i, j, result);
   }
   /**
    * Compute a vector from index origin i to indexed target j.
@@ -828,16 +820,8 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   }
   /** Compute a vector from origin to indexed target j. */
   public vectorXYAndZIndex(origin: XYAndZ, j: number, result?: Vector3d): Vector3d | undefined {
-    if (this.isIndexValid(j)) {
-      const data = this._data;
-      j = 3 * j;
-      return Vector3d.create(
-        data[j] - origin.x,
-        data[j + 1] - origin.y,
-        data[j + 2] - origin.z,
-        result,
-      );
-    }
+    if (this.isIndexValid(j))
+      return this.vectorXYAndZUncheckedIndex(origin, j, result);
     return undefined;
   }
   /**
@@ -857,17 +841,8 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
 
   /** Compute the cross product of vectors from from indexed origin to indexed targets i and j. */
   public crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined {
-    if (this.isIndexValid(originIndex) && this.isIndexValid(targetAIndex) && this.isIndexValid(targetBIndex)) {
-      const i = originIndex * 3;
-      const j = targetAIndex * 3;
-      const k = targetBIndex * 3;
-      const data = this._data;
-      return Geometry.crossProductXYZXYZ(
-        data[j] - data[i], data[j + 1] - data[i + 1], data[j + 2] - data[i + 2],
-        data[k] - data[i], data[k + 1] - data[i + 1], data[k + 2] - data[i + 2],
-        result,
-      );
-    }
+    if (this.isIndexValid(originIndex) && this.isIndexValid(targetAIndex) && this.isIndexValid(targetBIndex))
+      return this.crossProductUncheckedIndexIndexIndex(originIndex, targetAIndex, targetBIndex, result);
     return undefined;
   }
   /**
@@ -961,14 +936,8 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * @param j second point index
    */
   public distanceSquaredIndexIndex(i: number, j: number): number | undefined {
-    if (this.isIndexValid(i) && this.isIndexValid(j)) {
-      const i0 = 3 * i;
-      const j0 = 3 * j;
-      return Geometry.hypotenuseSquaredXYZ(
-        this._data[j0] - this._data[i0],
-        this._data[j0 + 1] - this._data[i0 + 1],
-        this._data[j0 + 2] - this._data[i0 + 2]);
-    }
+    if (this.isIndexValid(i) && this.isIndexValid(j))
+      return this.distanceSquaredUncheckedIndexIndex(i, j);
     return undefined;
   }
     /**
@@ -991,14 +960,8 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * @param j second point index
    */
   public distanceIndexIndex(i: number, j: number): number | undefined {
-    if (this.isIndexValid(i) && this.isIndexValid(j)) {
-      const i0 = 3 * i;
-      const j0 = 3 * j;
-      return Geometry.hypotenuseXYZ(
-        this._data[j0] - this._data[i0],
-        this._data[j0 + 1] - this._data[i0 + 1],
-        this._data[j0 + 2] - this._data[i0 + 2]);
-    }
+    if (this.isIndexValid(i) && this.isIndexValid(j))
+      return this.distanceUncheckedIndexIndex(i, j);
     return undefined;
   }
    /**

@@ -531,8 +531,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       return Point3d.createFrom(this._points.getPoint3dAtUncheckedPointIndex(0), result);
     const df = 1.0 / (n - 1);
     if (fraction <= df) {
-      const interpolatedPoint = this._points.interpolate(0, fraction / df, 1, result);
-      return interpolatedPoint ?? Point3d.createZero();
+      return this._points.interpolate(0, fraction / df, 1, result) ?? Point3d.createZero();
     }
     if (fraction + df >= 1.0) {
       const interpolatedPoint = this._points.interpolate(n - 1, (1.0 - fraction) / df, n - 2, result);
@@ -815,9 +814,8 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       // (either or both partial may be zero length)
       const distance0 = this._points.distanceIndexIndex(index0 - 1, index0);
       const distance1 = this._points.distanceIndexIndex(index1, index1 + 1);
-      let sum = 0;
       if (undefined !== distance0 && undefined !== distance1) {
-        sum = localFraction0 * distance0 + localFraction1 * distance1;
+        let sum = localFraction0 * distance0 + localFraction1 * distance1;
         for (let i = index0; i < index1; i++) {
           const d = this._points.distanceIndexIndex(i, i + 1);
           if (undefined !== d)
