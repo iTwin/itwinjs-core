@@ -74,7 +74,7 @@ function clearStyleOverrides(component: StructuralTextBlockComponent, options?: 
 }
 
 /**
- * Abstract representation of any of the building blocks that make up a [[TextBlock]] document - namely [[Run]]s and [[ContainerBase]]s.
+ * Abstract representation of any of the building blocks that make up a [[TextBlock]] document - namely [[Run]]s and [[StructuralTextBlockComponent]]s.
  * The [[TextBlock]] can specify an [AnnotationTextStyle]($backend) that formats its contents.
  * Each component can specify an optional [[styleOverrides]] to customize that formatting.
  * @beta
@@ -578,7 +578,7 @@ export interface ParagraphProps extends TextBlockComponentProps {
   children?: Array<ListProps | RunProps>;
 }
 
-/** A collection of [[Run]]s and [[List]]s. Paragraphs can be appended to [[List]]s or to the [[TextBlock]] itself.
+/** A collection of [[Run]]s and [[List]]s. Paragraphs can be appended to [[List]]s
  * Each paragraph is laid out on a separate line. If included in a [[List]], the paragraph will be treated as a list item.
  * @beta
  */
@@ -636,7 +636,7 @@ export interface ListProps extends TextBlockComponentProps {
   children?: ParagraphProps[];
 }
 
-/** A collection of list items ([[Paragraph]]s). Lists can be appended to [[Paragraph]]s or to the [[TextBlock]] itself.
+/** A collection of list items ([[Paragraph]]s). Lists can be appended to [[Paragraph]]s.
  * Lists will be laid out on a new line. Each item in a list is laid out on a separate line.
  * @beta
  */
@@ -675,7 +675,7 @@ export class List extends TextBlockComponent {
     };
   }
 
-  /** Compute a string representation of this paragraph by concatenating the string representations of all of its [[runs]]. */
+  /** Compute a string representation of this list by concatenating the string representations of all of its [[children]]. */
   public override stringify(options?: TextBlockStringifyOptions, context?: TextBlockStringifyContext): string {
     const children = this.children.map((x, index) => {
       const depth = context?.depth ?? 0;
@@ -727,7 +727,7 @@ export interface TextBlockProps extends TextBlockComponentProps {
   children?: ParagraphProps[];
 }
 
-/** Represents a formatted text document consisting of a series of [[Paragraph]]s and [[List]]s, each laid out on a separate line and containing their own content.
+/** Represents a formatted text document consisting of a series of [[Paragraph]]s, each laid out on a separate line and containing their own content.
  * [[Paragraph]]s and [[List]]s act as branches and can contain [[Paragraph]]s, [[List]]s, or leaf nodes in the form of [[Run]]s.
  * To modify the children, you can either directly set the [[TextBlock.children]] property or use the provided methods to append new elements.
  * No word-wrapping is applied to the document unless a [[width]] greater than zero is specified.
@@ -809,7 +809,7 @@ export class TextBlock extends TextBlockComponent {
     return paragraph;
   }
 
-  /** Append a run to the last [[Paragraph]] or [[List]] in this block.
+  /** Append a run to the last [[Paragraph]] in this block.
    * If the block contains no [[children]], a new [[Paragraph]] will first be created using [[appendParagraph]].
    */
   public appendRun(run: Run): void {
@@ -859,7 +859,7 @@ export type StructuralTextBlockComponent = List | Paragraph | TextBlock;
  * This generator enables depth-first iteration over all components in a text block structure, including paragraphs, lists, and runs.
  *
  * @param parent The root container whose children should be traversed.
- * @returns An IterableIterator yielding objects with the current component and its parent container.
+ * @returns An IterableIterator yielding objects with the child component and its parent container.
  * @beta
  */
 export function* traverseTextBlockComponent(parent: StructuralTextBlockComponent): IterableIterator<{ parent: StructuralTextBlockComponent, child: List | Paragraph | Run }> {

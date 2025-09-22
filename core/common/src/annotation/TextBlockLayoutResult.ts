@@ -46,7 +46,7 @@ export interface RunLayoutResult {
 export interface LineLayoutResult {
   /** The runs contained in the line. */
   runs: RunLayoutResult[];
-  /** The marker run for the line, if any. It's range is separate from the line's range. */
+  /** The marker run for the line, if any */
   marker: RunLayoutResult | undefined;
   /** The range of all the runs (including the marker) contained in the line. */
   range: Range2dProps;

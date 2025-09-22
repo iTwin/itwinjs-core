@@ -211,7 +211,7 @@ export interface TextStyleSettingsProps {
   /** The size (in meters) used to calculate the tab stops in a run.
    * These are equally spaced from the left edge of the TextBlock.
    * [[tabInterval]] is also used in lists to compute the offset of each child or [[Paragraph]].
-   * [[listMarker]]s will be centered on [[indentation]] + [[tabInterval]]*(depth - 1/2).
+   * [[listMarker]]s right justified on [[indentation]] + [[tabInterval]]*(depth - 1/2).
    * [[Paragraph]]s will start at [[indentation]] + [[tabInterval]]*depth.
    * Default: 4 meters.
    */
@@ -224,7 +224,7 @@ export interface TextStyleSettingsProps {
   frame?: TextFrameStyleProps;
   /** The offset (in meters) from the left edge of the text block to the start of the line of text.
    * In lists, the indentation is added to offset of list items.
-   * [[listMarker]]s will be centered on [[indentation]] + [[tabInterval]]*(depth - 1/2).
+   * [[listMarker]]s right justified on [[indentation]] + [[tabInterval]]*(depth - 1/2).
    * [[Paragraph]]s will start at [[indentation]] + [[tabInterval]]*depth.
    * Default: 0 meters.
    */
@@ -309,13 +309,13 @@ export class TextStyleSettings {
   /** The size (in meters) used to calculate the tab stops in a run.
    * These are equally spaced from the left edge of the TextBlock.
    * [[tabInterval]] is also used in lists to compute the offset of each child or [[Paragraph]].
-   * [[listMarker]]s will be centered on [[indentation]] + [[tabInterval]]*(depth - 1/2).
+   * [[listMarker]]s right justified on [[indentation]] + [[tabInterval]]*(depth - 1/2).
    * [[Paragraph]]s will start at [[indentation]] + [[tabInterval]]*depth.
    */
   public readonly tabInterval: number;
   /** The offset (in meters) from the left edge of the text block to the start of the line of text.
    * In lists, the indentation is added to offset of list items.
-   * [[listMarker]]s will be centered on [[indentation]] + [[tabInterval]]*(depth - 1/2).
+   * [[listMarker]]s right justified on [[indentation]] + [[tabInterval]]*(depth - 1/2).
    * [[Paragraph]]s will start at [[indentation]] + [[tabInterval]]*depth.
    */
   public readonly indentation: number;
