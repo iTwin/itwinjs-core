@@ -31,7 +31,7 @@ function findTextStyleImpl(id: Id64String): TextStyleSettings {
   return TextStyleSettings.fromJSON({ lineSpacingFactor: 1, fontName: "other" });
 }
 
-describe.only("layoutTextBlock", () => {
+describe("layoutTextBlock", () => {
   describe("resolves TextStyleSettings", () => {
     it("inherits styling from TextBlock when Paragraph and Run have no style overrides", () => {
       const textBlock = TextBlock.create();
@@ -90,7 +90,7 @@ describe.only("layoutTextBlock", () => {
     });
 
     it("still uses TextBlock specific styles when Run has style overrides", () => {
-      // Some style settings only make sense on a TextBlock, so they are always applied from the TextBlock, even if the Run has a style override.
+      // Some style settings make sense on a TextBlock, so they are always applied from the TextBlock, even if the Run has a style override.
       const textBlock = TextBlock.create();
       const run = TextRun.create({ content: "test", styleOverrides: { lineSpacingFactor: 99, fontName: "run" } });
       textBlock.appendParagraph();
@@ -110,9 +110,8 @@ describe.only("layoutTextBlock", () => {
 
     it("inherits overrides from TextBlock, Paragraph and Run when there is no styleId", () => {
       const textBlock = TextBlock.create({ styleOverrides: { widthFactor: 34, lineHeight: 3, lineSpacingFactor: 12, isBold: true } });
-      const paragraph = Paragraph.create({ styleOverrides: { lineHeight: 56, color: 0xff0000, frame: {shape: "octagon"} } });
       const run = TextRun.create({ content: "test", styleOverrides: { widthFactor: 78, fontName: "override", leader: { wantElbow: true } } });
-      textBlock.appendParagraph(paragraph.toJSON());
+      textBlock.appendParagraph({ styleOverrides: { lineHeight: 56, color: 0xff0000, frame: { shape: "octagon" } } });
       textBlock.appendRun(run);
 
       const tb = doLayout(textBlock, {
@@ -140,9 +139,8 @@ describe.only("layoutTextBlock", () => {
 
     it("does not inherit overrides in TextBlock or Paragraph when Run has same propertied overriden - unless they are TextBlock specific settings", () => {
       const textBlock = TextBlock.create({ styleOverrides: { widthFactor: 34, lineHeight: 3, lineSpacingFactor: 12, isBold: true } });
-      const paragraph = Paragraph.create({ styleOverrides: { lineHeight: 56, color: 0xff0000 } });
       const run = TextRun.create({ content: "test", styleOverrides: { widthFactor: 78, lineHeight: 6, lineSpacingFactor: 24, fontName: "override", isBold: false } });
-      textBlock.appendParagraph(paragraph);
+      textBlock.appendParagraph({ styleOverrides: { lineHeight: 56, color: 0xff0000 } });
       textBlock.appendRun(run);
 
       const tb = doLayout(textBlock, {
@@ -168,9 +166,8 @@ describe.only("layoutTextBlock", () => {
     it("takes child overrides over parent overrides", () => {
       //...unless they are TextBlock specific as covered in other tests
       const textBlock = TextBlock.create({ styleOverrides: { fontName: "grandparent" } });
-      const paragraph = Paragraph.create({ styleOverrides: { fontName: "parent" } });
       const run = TextRun.create({ content: "test", styleOverrides: { fontName: "child" } });
-      textBlock.appendParagraph(paragraph);
+      textBlock.appendParagraph({ styleOverrides: { fontName: "parent" } });
       textBlock.appendRun(run);
 
       const tb = doLayout(textBlock, {
@@ -337,7 +334,7 @@ describe.only("layoutTextBlock", () => {
 
   });
 
-  describe.only("range", () => {
+  describe("range", () => {
 
     it("aligns text to center based on height of stacked fraction", () => {
       const textBlock = TextBlock.create();
@@ -501,7 +498,7 @@ describe.only("layoutTextBlock", () => {
       const line3 = tb.lines[3];
 
       expect(line0.runs.length).to.equal(4);
-      expect(line0.range.xLength()).to.equal(3 * tabInterval, `Lines with only tabs should have the correct range length`);
+      expect(line0.range.xLength()).to.equal(3 * tabInterval, `Lines with tabs should have the correct range length`);
 
       expect(line1.runs.length).to.equal(4);
       expect(line1.range.xLength()).to.equal(2 * tabInterval, `Tabs should be applied correctly when they are at the end of a line`);
@@ -541,7 +538,7 @@ describe.only("layoutTextBlock", () => {
         Where ↵ = LineBreak, ¶ = ParagraphBreak, ⇥ = indentation
 
         We have 3 lines each `lineHeight` high, plus 2 line breaks in between each `lineHeight*lineSpacingFactor` high.
-        No paragraph spacing should be applied since there is only one paragraph.
+        No paragraph spacing should be applied since there is one paragraph.
       */
 
       expect(tb.range.low.x).to.equal(7);
@@ -1615,7 +1612,7 @@ describe("produceTextBlockGeometry", () => {
     expect(makeGeometry([])).to.deep.equal([]);
   });
 
-  it("produces an empty array for a block consisting only of line breaks", () => {
+  it("produces an empty array for a block consisting of line breaks", () => {
     expect(makeGeometry([makeBreak(), makeBreak(), makeBreak()])).to.deep.equal([]);
   });
 
