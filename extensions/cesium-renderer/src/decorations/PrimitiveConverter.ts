@@ -55,7 +55,7 @@ export abstract class PrimitiveConverter {
     if (!isOverlay) {
       return {}; // Normal depth testing case
     }
-    
+
     // Return base overlay configuration (if any common settings needed)
     return {};
   }
@@ -74,23 +74,23 @@ export abstract class PrimitiveConverter {
 
   /** Template method for convertDecorations - defines the algorithm structure */
   protected convertDecorationsTemplate(
-    graphics: GraphicList, 
-    type: string, 
-    scene: CesiumScene, 
+    graphics: GraphicList,
+    type: string,
+    scene: CesiumScene,
     primitiveType: string,
     iModel?: IModelConnection
   ): void {
     if (!graphics || graphics.length === 0) return;
-    
+
     const collection = this.getCollection(scene);
     if (!collection) return;
-    
+
     const filteredGraphics = this.filterGraphics(graphics, primitiveType);
-    
+
     if (this.shouldSkipEmptyGraphics() && filteredGraphics.length === 0) {
       return;
     }
-    
+
     filteredGraphics.forEach((graphic, index) => {
       const primitiveId = `${type}_${this.getPrimitiveTypeName()}_${index}`;
       const graphicWithCoords = graphic as RenderGraphicWithCoordinates;
@@ -114,7 +114,7 @@ export abstract class PrimitiveConverter {
       const coordinateData = graphicWithCoords._coordinateData;
       const hasPrimitiveData = !!(coordinateData && coordinateData.some((entry: DecorationPrimitiveEntry) => entry.type === primitiveType));
       const geometryType = graphicWithCoords.geometryType;
-      
+
       return hasPrimitiveData || geometryType === primitiveType;
     });
   }
@@ -140,25 +140,25 @@ export abstract class PrimitiveConverter {
     return false;
   }
 
-  
+
   /** Convert all decoration types using switch-based auto dispatch */
   public convertAllDecorationTypes(decorations: Decorations, scene: CesiumScene, iModel?: IModelConnection): void {
     if (decorations.world) {
       this.autoDispatchGraphics(decorations.world, 'world', scene, iModel);
     }
-    
+
     if (decorations.normal) {
       this.autoDispatchGraphics(decorations.normal, 'normal', scene, iModel);
     }
-    
+
     if (decorations.worldOverlay) {
       this.autoDispatchGraphics(decorations.worldOverlay, 'worldOverlay', scene, iModel);
     }
-    
+
     if (decorations.viewOverlay) {
       this.autoDispatchGraphics(decorations.viewOverlay, 'viewOverlay', scene, iModel);
     }
-    
+
     if (decorations.viewBackground) {
       this.autoDispatchGraphics([decorations.viewBackground], 'viewBackground', scene, iModel);
     }
@@ -168,7 +168,7 @@ export abstract class PrimitiveConverter {
     graphics.forEach((graphic) => {
       const graphicWithCoords = graphic as RenderGraphicWithCoordinates;
       const coordinateData = graphicWithCoords._coordinateData;
-      
+
       if (coordinateData && Array.isArray(coordinateData)) {
         const data = coordinateData;
         data.forEach((primitive) => {
@@ -179,56 +179,56 @@ export abstract class PrimitiveConverter {
                 pointConverter.convertDecorations([graphic], type, scene, iModel);
               }
               break;
-              
+
             case 'linestring':
               const lineConverter = PrimitiveConverterFactory.getConverter(primitive.type);
               if (lineConverter) {
                 lineConverter.convertDecorations([graphic], type, scene, iModel);
               }
               break;
-              
+
             case 'shape':
               const shapeConverter = PrimitiveConverterFactory.getConverter(primitive.type);
               if (shapeConverter) {
                 shapeConverter.convertDecorations([graphic], type, scene, iModel);
               }
               break;
-              
+
             case 'arc':
               const arcConverter = PrimitiveConverterFactory.getConverter(primitive.type);
               if (arcConverter) {
                 arcConverter.convertDecorations([graphic], type, scene, iModel);
               }
               break;
-              
+
             case 'path':
               const pathConverter = PrimitiveConverterFactory.getConverter(primitive.type);
               if (pathConverter) {
                 pathConverter.convertDecorations([graphic], type, scene, iModel);
               }
               break;
-              
+
             case 'loop':
               const loopConverter = PrimitiveConverterFactory.getConverter(primitive.type);
               if (loopConverter) {
                 loopConverter.convertDecorations([graphic], type, scene, iModel);
               }
               break;
-              
+
             case 'polyface':
               const polyfaceConverter = PrimitiveConverterFactory.getConverter(primitive.type);
               if (polyfaceConverter) {
                 polyfaceConverter.convertDecorations([graphic], type, scene, iModel);
               }
               break;
-              
+
             case 'solidPrimitive':
               const solidPrimitiveConverter = PrimitiveConverterFactory.getConverter(primitive.type);
               if (solidPrimitiveConverter) {
                 solidPrimitiveConverter.convertDecorations([graphic], type, scene, iModel);
               }
               break;
-              
+
             default:
               // Exhaustive over DecorationPrimitiveEntry discriminant; no-op for unknown
               break;
@@ -236,15 +236,6 @@ export abstract class PrimitiveConverter {
         });
       }
     });
-  }
-
-  /** Check if an ID string matches decoration naming pattern */
-  protected isDecorationId(id: string, pattern: string): boolean {
-    return id.startsWith(`world_${pattern}_`) ||
-           id.startsWith(`normal_${pattern}_`) ||
-           id.startsWith(`worldOverlay_${pattern}_`) ||
-           id.startsWith(`viewOverlay_${pattern}_`) ||
-           id.startsWith(`viewBackground_${pattern}_`);
   }
 
   /** Unified clear decorations - removes all decoration primitives from scene */
@@ -262,7 +253,7 @@ export abstract class PrimitiveConverter {
       pointsToRemove.forEach(point => pointCollection.remove(point as import('cesium').PointPrimitive));
     }
 
-    // Clear all line primitives  
+    // Clear all line primitives
     const polylineCollection = scene.polylineCollection;
     if (polylineCollection) {
       const linesToRemove: unknown[] = [];
