@@ -295,10 +295,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       if (toggle)
         this.toggleReversedFacetFlag();
       const index0 = this.addPoint(conePoint);
-      let index1 = this.findOrAddPointInLineString(ls, 0) as number;
-      let index2 : number | undefined;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      let index1 = this.findOrAddPointInLineString(ls, 0)!; // never undefined because index is valid
+      let index2 = 0;
       for (let i = 1; i < n; i++) {
-        index2 = this.findOrAddPointInLineString(ls, i) as number;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        index2 = this.findOrAddPointInLineString(ls, i)!; // never undefined because index is valid
         this.addIndexedTrianglePointIndexes(index0, index1, index2);
         index1 = index2;
       }
@@ -333,22 +335,28 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       let paramIndex1 = -1;
       let paramIndex2 = -1;
       if (packedUV) {
-        paramIndex0 = this.addParamInGrowableXYArray(packedUV, 0) as number;
-        paramIndex1 = this.addParamInGrowableXYArray(packedUV, 1) as number;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        paramIndex0 = this.addParamInGrowableXYArray(packedUV, 0)!; // never undefined because packedUV is defined and index is valid
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        paramIndex1 = this.addParamInGrowableXYArray(packedUV, 1)!; // never undefined because packedUV is defined and index is valid
       }
-      const pointIndex0 = this.findOrAddPointInLineString(ls, 0) as number;
-      let pointIndex1 = this.findOrAddPointInLineString(ls, 1) as number;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const pointIndex0 = this.findOrAddPointInLineString(ls, 0)!; // never undefined because index is valid
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      let pointIndex1 = this.findOrAddPointInLineString(ls, 1)!; // never undefined because index is valid
       let pointIndex2 = 0;
       let numEdge = n;
       if (ls.isPhysicallyClosed)
         numEdge--;
       for (let i = 2; i < numEdge; i++, pointIndex1 = pointIndex2, paramIndex1 = paramIndex2) {
-        pointIndex2 = this.findOrAddPointInLineString(ls, i) as number;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        pointIndex2 = this.findOrAddPointInLineString(ls, i)!; // never undefined because index is valid
         this.addIndexedTrianglePointIndexes(pointIndex0, pointIndex1, pointIndex2, false);
         if (normalIndex !== undefined)
           this.addIndexedTriangleNormalIndexes(normalIndex, normalIndex, normalIndex);
         if (packedUV) {
-          paramIndex2 = this.addParamInGrowableXYArray(packedUV, i) as number;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          paramIndex2 = this.addParamInGrowableXYArray(packedUV, i)!; // never undefined because packedUV is defined and index is valid
           this.addIndexedTriangleParamIndexes(paramIndex0, paramIndex1, paramIndex2);
         }
         this._polyface.terminateFacet();
@@ -563,6 +571,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         color1 = colors[1];
         color2 = colors[2];
         color3 = colors[3];
+      } else {
+        throw new Error("PolyfaceBuilder.addQuadFacet: need colors but insufficient input");
       }
     }
     if (this._options.shouldTriangulate) {
@@ -997,15 +1007,19 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     if (curves instanceof LineString3d) {
       const pointA = curves.points;
       const numPoints = pointA.length;
-      let indexA0 = this.findOrAddPointInLineString(curves, 0, transformA) as number;
-      let indexB0 = this.findOrAddPointInLineString(curves, 0, transformB) as number;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      let indexA0 = this.findOrAddPointInLineString(curves, 0, transformA)!; // never undefined because index is valid
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      let indexB0 = this.findOrAddPointInLineString(curves, 0, transformB)!; // never undefined because index is valid
       const indexA00 = indexA0;
       const indexB00 = indexB0;
       let indexA1 = 0;
       let indexB1 = 0;
       for (let i = 1; i < numPoints; i++) {
-        indexA1 = this.findOrAddPointInLineString(curves, i, transformA) as number;
-        indexB1 = this.findOrAddPointInLineString(curves, i, transformB) as number;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        indexA1 = this.findOrAddPointInLineString(curves, i, transformA)!; // never undefined because index is valid
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        indexB1 = this.findOrAddPointInLineString(curves, i, transformB)!; // never undefined because index is valid
         this.addIndexedQuadPointIndexes(indexA0, indexA1, indexB0, indexB1);
         indexA0 = indexA1;
         indexB0 = indexB1;
@@ -1235,51 +1249,60 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   private createIndicesInLineString(ls: LineString3d, vParam: number, transform?: Transform) {
     const n = ls.numPoints();
     const pointIndices = ls.ensureEmptyPointIndices();
-    const index0 = this.findOrAddPointInLineString(ls, 0, transform) as number;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const index0 = this.findOrAddPointInLineString(ls, 0, transform)!; // never undefined because index is valid
     pointIndices.push(index0);
     if (n > 1) {
       let indexA = index0;
       let indexB: number | undefined;
       for (let i = 1; i + 1 < n; i++) {
-        indexB = this.findOrAddPointInLineString(ls, i, transform, indexA) as number;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        indexB = this.findOrAddPointInLineString(ls, i, transform, indexA)!; // never undefined because index is valid
         pointIndices.push(indexB);
         indexA = indexB;
       }
       // assume last point can only repeat back to zero
-      indexB = this.findOrAddPointInLineString(ls, n - 1, transform, index0) as number;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      indexB = this.findOrAddPointInLineString(ls, n - 1, transform, index0)!; // never undefined because index is valid
       pointIndices.push(indexB);
     }
     if (this._options.needNormals && ls.packedSurfaceNormals !== undefined) {
       const normalIndices = ls.ensureEmptyNormalIndices();
-      const normalIndex0 = this.findOrAddNormalInLineString(ls, 0, transform) as number;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const normalIndex0 = this.findOrAddNormalInLineString(ls, 0, transform)!; // never undefined because index is valid
       normalIndices.push(normalIndex0);
       if (n > 1) {
         let normalIndexA = normalIndex0;
         let normalIndexB: number | undefined;
         for (let i = 1; i + 1 < n; i++) {
-          normalIndexB = this.findOrAddNormalInLineString(ls, i, transform, normalIndexA) as number;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          normalIndexB = this.findOrAddNormalInLineString(ls, i, transform, normalIndexA)!; // never undefined because index is valid
           normalIndices.push(normalIndexB);
           normalIndexA = normalIndexB;
         }
         // assume last point can only repeat back to zero
-        normalIndexB = this.findOrAddNormalInLineString(ls, n - 1, transform, normalIndex0, normalIndexA) as number;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        normalIndexB = this.findOrAddNormalInLineString(ls, n - 1, transform, normalIndex0, normalIndexA)!; // never undefined because index is valid
         normalIndices.push(normalIndexB);
       }
     }
     if (this._options.needParams && ls.packedUVParams !== undefined) {
       const uvIndices = ls.ensureEmptyUVIndices();
-      const uvIndex0 = this.findOrAddParamInLineString(ls, 0, vParam) as number;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const uvIndex0 = this.findOrAddParamInLineString(ls, 0, vParam)!; // never undefined because index is valid
       uvIndices.push(uvIndex0);
       if (n > 1) {
         let uvIndexA = uvIndex0;
         let uvIndexB: number | undefined;
         for (let i = 1; i + 1 < n; i++) {
-          uvIndexB = this.findOrAddParamInLineString(ls, i, vParam, uvIndexA) as number;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          uvIndexB = this.findOrAddParamInLineString(ls, i, vParam, uvIndexA)!; // never undefined because index is valid
           uvIndices.push(uvIndexB);
           uvIndexA = uvIndexB;
         }
         // assume last point can only repeat back to zero
-        uvIndexB = this.findOrAddParamInLineString(ls, n - 1, vParam, uvIndexA, uvIndex0) as number;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        uvIndexB = this.findOrAddParamInLineString(ls, n - 1, vParam, uvIndexA, uvIndex0)!; // never undefined because index is valid
         uvIndices.push(uvIndexB);
       }
     }
@@ -1481,12 +1504,14 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       let index = 0;
       if (!this._reversed) {
         for (let i = 0; i < numPointsToUse; i++) {
-          index = this.findOrAddPointInGrowableXYZArray(points, i) as number;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          index = this.findOrAddPointInGrowableXYZArray(points, i)!; // never undefined because index is valid
           this._polyface.addPointIndex(index);
         }
       } else {
         for (let i = numPointsToUse; --i >= 0;) {
-          index = this.findOrAddPointInGrowableXYZArray(points, i) as number;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          index = this.findOrAddPointInGrowableXYZArray(points, i)!; // never undefined because index is valid
           this._polyface.addPointIndex(index);
         }
       }
@@ -1527,14 +1552,17 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       edgeVisible = undefined;
     if (!this._reversed) {
       for (let i = 0; i < numPointsToUse; i++) {
-        index = this.findOrAddPointInGrowableXYZArray(points, i) as number;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        index = this.findOrAddPointInGrowableXYZArray(points, i)!; // never undefined because index is valid
         this._polyface.addPointIndex(index, edgeVisible ? edgeVisible[i] : true);
         if (normals) {
-          index = this.findOrAddNormalInGrowableXYZArray(normals, i) as number;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          index = this.findOrAddNormalInGrowableXYZArray(normals, i)!; // never undefined because index is valid
           this._polyface.addNormalIndex(index);
         }
         if (params) {
-          index = this.addParamInGrowableXYArray(params, i) as number;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          index = this.addParamInGrowableXYArray(params, i)!; // never undefined because index is valid
           this._polyface.addParamIndex(index);
         }
         if (colors) {
@@ -1544,14 +1572,17 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       }
     } else {
       for (let i = numPointsToUse; --i >= 0;) {
-        index = this.findOrAddPointInGrowableXYZArray(points, i) as number;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        index = this.findOrAddPointInGrowableXYZArray(points, i)!; // never undefined because index is valid
         this._polyface.addPointIndex(index);
         if (normals) {
-          index = this.findOrAddNormalInGrowableXYZArray(normals, i) as number;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          index = this.findOrAddNormalInGrowableXYZArray(normals, i)!; // never undefined because index is valid
           this._polyface.addNormalIndex(index);
         }
         if (params) {
-          index = this.addParamInGrowableXYArray(params, i) as number;
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          index = this.addParamInGrowableXYArray(params, i)!; // never undefined because index is valid
           this._polyface.addParamIndex(index);
         }
         if (colors) {

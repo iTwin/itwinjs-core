@@ -9,7 +9,6 @@
 
 // import { Point2d } from "./Geometry2d";
 import { Transform } from "../geometry3d/Transform";
-import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { NumberArray } from "../geometry3d/PointHelpers";
 // import { Geometry } from "./Geometry";
@@ -251,7 +250,6 @@ export class PolyfaceAuxData {
    * @returns true if the channels were all successfully transformed.
    */
   public tryTransformInPlace(transform: Transform): boolean {
-    let inverseRot: Matrix3d | undefined;
     const rot = transform.matrix;
     const det = rot.determinant();
     const scale = Math.pow(Math.abs(det), 1 / 3) * (det >= 0 ? 1 : -1);
@@ -264,16 +262,13 @@ export class PolyfaceAuxData {
           case AuxChannelDataType.Distance: {
             for (let i = 0; i < data.values.length; i++)
               data.values[i] *= scale;
-
             break;
           }
           case AuxChannelDataType.Normal: {
-            inverseRot = inverseRot ?? rot.inverse();
+            const inverseRot = rot.inverse();
             if (!inverseRot)
               return false;
             transformPoints(data.values, (point) => {
-              if (!inverseRot)
-                return;
               inverseRot.multiplyTransposeVectorInPlace(point);
               const dot = point.magnitudeSquared();
               const tol = 1.0e-15; // cf. GrowableXYZArray.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace

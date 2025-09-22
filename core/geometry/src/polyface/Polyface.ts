@@ -672,7 +672,7 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
         visitor.param.extendRange(faceData.paramRange);
     } while (visitor.moveToNextFacet() && visitor.currentReadIndex() < endFacetIndex);
     const param = this.data.param;
-    if (paramDefined && param && !(param.length === 0) && faceData.paramDistanceRange.isNull)
+    if (paramDefined && param && param.length !== 0 && faceData.paramDistanceRange.isNull)
       faceData.setParamDistanceRangeFromNewFaceData(this, facetStart, endFacetIndex);
     this.data.face.push(faceData);
     const faceDataIndex = this.data.face.length - 1;

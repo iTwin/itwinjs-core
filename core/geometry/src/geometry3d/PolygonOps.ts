@@ -1409,9 +1409,10 @@ export class PolygonOps {
         return undefined;
       polygonXY.push(pt);
     }
-    const pointXY = this._workXYZ = localToWorld.multiplyInverseXYZAsPoint3d(point.x, point.y, point.z, this._workXYZ);
+    const pointXY = localToWorld.multiplyInverseXYZAsPoint3d(point.x, point.y, point.z, this._workXYZ);
     if (!pointXY)
       return undefined;
+    this._workXYZ = pointXY;
     // now we know polygon orientation is ccw, its last edge has positive length, and we can ignore z-coords
     let iPrev = n - 1;
     const outwardUnitNormalOfLastEdge = this._vector0;

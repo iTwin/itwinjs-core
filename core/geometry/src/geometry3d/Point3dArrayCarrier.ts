@@ -96,7 +96,7 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
    */
   public vectorIndexIndex(indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined {
     if (this.isValidIndex(indexA) && this.isValidIndex(indexB))
-      return Vector3d.createStartEnd(this.data[indexA], this.data[indexB], result);
+      return this.vectorUncheckedIndexIndex(indexA, indexB, result);
     return undefined;
   }
     /**
@@ -119,7 +119,7 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
    */
   public vectorXYAndZIndex(origin: XYAndZ, indexB: number, result?: Vector3d): Vector3d | undefined {
     if (this.isValidIndex(indexB))
-      return Vector3d.createStartEnd(origin, this.data[indexB], result);
+      return this.vectorXYAndZUncheckedIndex(origin, indexB, result);
     return undefined;
   }
   /**
@@ -244,9 +244,8 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
    */
   public distanceSquaredIndexIndex(index0: number, index1: number): number | undefined {
     const n = this.data.length;
-    if (index0 >= 0 && index0 < n && index1 >= 0 && index1 < n) {
-      return this.data[index0].distanceSquared(this.data[index1]);
-    }
+    if (index0 >= 0 && index0 < n && index1 >= 0 && index1 < n)
+      return this.distanceSquaredUncheckedIndexIndex(index0, index1);
     return undefined;
   }
     /**
@@ -267,7 +266,7 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
   public distanceIndexIndex(index0: number, index1: number): number | undefined {
     const n = this.data.length;
     if (index0 >= 0 && index0 < n && index1 >= 0 && index1 < n) {
-      return this.data[index0].distance(this.data[index1]);
+      return this.distanceUncheckedIndexIndex(index0, index1);
     }
     return undefined;
   }
