@@ -881,6 +881,7 @@ export function getMarkerText(marker: ListMarker, num: number): string {
   let markerString = "";
 
   switch (marker.enumerator) {
+    case undefined:
     case ListMarkerEnumerator.Number:
       markerString = `${num}`;
       break;

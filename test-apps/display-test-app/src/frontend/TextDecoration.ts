@@ -629,7 +629,7 @@ export class TextDecorationTool extends Tool {
       case "list": { // args are enumerator, terminator, case, index
 
         let enumerator = inArgs[1];
-        if (enumerator in ListMarkerEnumerator) enumerator = (ListMarkerEnumerator as any)[enumerator];
+        if (enumerator !== "none" && enumerator in ListMarkerEnumerator) enumerator = (ListMarkerEnumerator as any)[enumerator];
 
         const terminator = inArgs[2] === "none" ? undefined : inArgs[2] as "period" | "parenthesis";
         const listCase = inArgs[3] === "none" ? undefined : inArgs[3] as "lower" | "upper";
