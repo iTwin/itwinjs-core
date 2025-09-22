@@ -50,9 +50,13 @@ export class AccuDrawViewportUI extends AccuDraw {
     field: {
       /** Number of visible characters to show in text input fields. */
       size: 12,
-      height: "var(--iui-component-height-small, 1.75rem)",
+      /** Height of text input fields and lock buttons. */
+      height: "var(--iui-component-height-small, 1.75em)",
+      /** Border settings for text input fields and lock buttons. */
       border: {
+        /** Border width to use for text input fields and lock buttons. */
         width: "1px",
+        /** Border style to use for text input fields and lock buttons. */
         style: "solid",
         /** Corner radius of text input fields and locks buttons. */
         radius: "var(--iui-border-radius-1, 0.25rem)",
@@ -75,22 +79,24 @@ export class AccuDrawViewportUI extends AccuDraw {
       focused: {
         /** Background color for focused text input fields. */
         backgroundColor:
-          "hsl(var(--iui-color-accent-hsl, 164 68% 30%) / var(--iui-opacity-3, 65%))",
+          "hsl(var(--iui-color-accent-hsl, 166 96% 30.7%) / var(--iui-opacity-3, 65%))",
+        /** Inner stroke for focused text input fields. */
+        innerStroke: `inset 0px 0px 0px 1px var(--iui-color-background, #333c41)`,
         /** Border settings for focused text input fields. */
         border: {
           /** Border color for focused text input fields. */
-          color: "hsl(var(--iui-color-accent-hsl, 164 68% 30%))",
+          color: "hsl(var(--iui-color-accent-hsl, 166 96% 51%))",
         },
       },
       /** Settings applied to text input fields when they do not have focus. */
       unfocused: {
         /** Background color for unfocused text input fields. */
         backgroundColor:
-          "hsl(var(--iui-color-background-hsl, 240 5% 40%) / var(--iui-opacity-3, 65%))",
+          "hsl(var(--iui-color-background-hsl, 225 6% 13%) / var(--iui-opacity-3, 65%))",
         /** Border settings for unfocused text input fields. */
         border: {
           /** Border color for unfocused text input fields. */
-          color: "var(--iui-color-border, #b3bcc1)",
+          color: "var(--iui-color-border, hsla(215, 8%, 30%))",
         },
       },
     },
@@ -104,11 +110,11 @@ export class AccuDrawViewportUI extends AccuDraw {
         color: "var(--iui-color-text-muted, #cccccc)",
         /** Background color for unlocked lock buttons. */
         backgroundColor:
-          "hsl(var(--iui-color-background-hsl, 240 5% 40%) / var(--iui-opacity-3, 65%))",
+          "hsl(var(--iui-color-background-hsl, 225 6% 13%) / var(--iui-opacity-3, 65%))",
         /** Border settings for unlocked lock buttons. */
         border: {
           /** Border color for unlocked lock buttons. */
-          color: "var(--iui-color-border, #b3bcc1)",
+          color: "var(--iui-color-border, hsla(215, 8%, 30%))",
         },
       },
       /** Settings applied to lock buttons when they are locked. */
@@ -117,20 +123,20 @@ export class AccuDrawViewportUI extends AccuDraw {
         color: "hsl(var(--iui-color-accent-hsl, 166 96% 51%))",
         /** Background color for locked lock buttons. */
         backgroundColor:
-          "hsl(var(--iui-color-accent-hsl, 164 68% 30%) / var(--iui-opacity-3, 65%))",
+          "hsl(var(--iui-color-background-hsl, 225 6% 13%) / var(--iui-opacity-3, 65%))",
         /** Border settings for locked lock buttons. */
         border: {
           /** Border color for locked lock buttons. */
-          color: "hsl(var(--iui-color-accent-hsl, 164 68% 30%))",
+          color: "hsl(var(--iui-color-accent-hsl, 166 96% 51%))",
         },
       },
     },
-    /** Spacing between controls. */
+    /** Spacing between fields within a control and between rows of controls. */
     spacing: {
-      /** Spacing between rows of controls. */
-      row: "var(--iui-size-2xs, 0.25rem)",
-      /** Spacing between columns of controls. */
-      column: "var(--iui-size-2xs, 0.25rem)",
+      /** Spacing between input field and lock button within each field group. */
+      gap: "var(--iui-size-2xs, 0.25rem)",
+      /** Spacing between field groups (distance/angle, x, y, z controls). */
+      margin: "var(--iui-size-xs, 0.50rem)",
     },
   };
 
@@ -585,11 +591,16 @@ export class AccuDrawViewportUI extends AccuDraw {
 
     const style = div.style;
     style.pointerEvents = "none";
-    style.overflow = "visible"; // Don't clip/hide outline or shadow...
     style.position = "absolute";
-    style.gap = AccuDrawViewportUI.controlProps.spacing.row;
     style.display = "flex";
-    style.flexDirection = "column";
+    const isHorizontal = AccuDrawViewportUI.controlProps.horizontalArrangement;
+    style.flexDirection = isHorizontal ? "row" : "column";
+
+    if (isHorizontal) {
+      style.columnGap = AccuDrawViewportUI.controlProps.spacing.margin;
+    } else {
+      style.rowGap = AccuDrawViewportUI.controlProps.spacing.margin;
+    }
 
     return div;
   }
@@ -676,7 +687,7 @@ export class AccuDrawViewportUI extends AccuDraw {
     itemField.onkeydown = async (ev: KeyboardEvent) => { await this.onKeyboardEvent(ev, true); };
     itemField.onkeyup = async (ev: KeyboardEvent) => { await this.onKeyboardEvent(ev, false); };
     itemField.onfocus = (ev: FocusEvent) => { this.onFocusChange(ev, item, true); };
-    itemField.onblur = (ev: FocusEvent) => { this.onFocusChange(ev, item, false); };;
+    itemField.onblur = (ev: FocusEvent) => { this.onFocusChange(ev, item, false); };
 
     return itemField;
   }
@@ -780,9 +791,8 @@ export class AccuDrawViewportUI extends AccuDraw {
         fieldWrapper.style.flexDirection = "row";
         fieldWrapper.style.alignItems = "center";
         fieldWrapper.style.justifyContent = "center";
-        fieldWrapper.style.columnGap =
-          AccuDrawViewportUI.controlProps.spacing.column;
-        fieldWrapper.style.rowGap = AccuDrawViewportUI.controlProps.spacing.row;
+        fieldWrapper.style.columnGap = AccuDrawViewportUI.controlProps.spacing.gap;
+        fieldWrapper.style.rowGap = AccuDrawViewportUI.controlProps.spacing.margin;
 
         const itemField = (itemFields[item] = this.createItemField(item));
         fieldWrapper.appendChild(itemField);
@@ -815,7 +825,7 @@ export class AccuDrawViewportUI extends AccuDraw {
 
     if (props.fixedLocation) {
       position.x = (viewRect.left + ((viewRect.width - this._controls.div.offsetWidth) * 0.5));
-      position.y = (viewRect.bottom - this._controls.div.offsetHeight);
+      position.y = (viewRect.bottom - this._controls.div.offsetHeight * 1.2);
     } else {
       position.x += Math.floor(vp.pixelsFromInches(props.cursorOffset.x)) + 0.5;
       position.y += Math.floor(vp.pixelsFromInches(props.cursorOffset.y)) + 0.5;
@@ -900,6 +910,9 @@ export class AccuDrawViewportUI extends AccuDraw {
     itemField.style.border = focusIn
       ? `${AccuDrawViewportUI.controlProps.field.border.width} ${AccuDrawViewportUI.controlProps.field.border.style} ${AccuDrawViewportUI.controlProps.input.focused.border.color}`
       : `${AccuDrawViewportUI.controlProps.field.border.width} ${AccuDrawViewportUI.controlProps.field.border.style} ${AccuDrawViewportUI.controlProps.input.unfocused.border.color}`;
+    itemField.style.boxShadow = focusIn
+      ? AccuDrawViewportUI.controlProps.input.focused.innerStroke
+      : "none";
     this.updateItemFieldKeyinStatus(itemField, item);
 
     if (!focusIn)
