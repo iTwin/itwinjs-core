@@ -46,7 +46,9 @@ export interface RunLayoutResult {
 export interface LineLayoutResult {
   /** The runs contained in the line. */
   runs: RunLayoutResult[];
-  /** The range containing the contents of the line. */
+  /** The marker run for the line, if any. It's range is separate from the line's range. */
+  marker: RunLayoutResult | undefined;
+  /** The range of all the runs (including the marker) contained in the line. */
   range: Range2dProps;
   /** Bounding box used when justifying the line. This may be smaller than [[range]]. */
   justificationRange: Range2dProps;

@@ -1249,8 +1249,64 @@ describe("layoutTextBlock", () => {
       expect(layout2.range.yLength()).to.equal(1);
     })
 
-    it("wraps list items", function () {
-      // TODO
+    it("wraps list items and applies indentation/insets for narrow text block width", () => {
+      const textBlock = TextBlock.create({ styleOverrides: { indentation: 2, tabInterval: 3, lineHeight: 1, lineSpacingFactor: 0, paragraphSpacingFactor: 0 } });
+
+      /* Final TextBlock should look like:
+        ⇥￫1.￫Lorem ipsum dolor sit amet, consectetur adipiscing elit¶     | Inset by 5
+        ⇥￫2.￫sed do¶                                                      | Inset by 5
+        ⇥→￫a.￫eiusmod tempor¶                                             | Inset by 8
+        ⇥→￫b.￫incididunt ut labore et dolore magna aliqua                 | Inset by 8
+
+        Where ↵ = LineBreak, ¶ = ParagraphBreak, → = tab, ￫ = tabInterval/2, ⇥ = indentation
+      */
+
+      // Create nested list structure
+      const list = List.create();
+      list.children.push(Paragraph.create({ children: [TextRun.create({ content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit" })] }));
+      const apples = Paragraph.create({ children: [TextRun.create({ content: "sed do" })] });
+
+      const subList = List.create({ styleOverrides: { listMarker: OrderedListMarker.aWithPeriod } });
+      subList.children.push(Paragraph.create({ children: [TextRun.create({ content: "eiusmod tempor" })] }));
+      subList.children.push(Paragraph.create({ children: [TextRun.create({ content: "incididunt ut labore et dolore magna aliqua" })] }));
+
+      apples.children.push(subList);
+      list.children.push(apples);
+
+      textBlock.appendParagraph().children.push(list);
+
+
+      function expectLayout(width: number, expected: string): void {
+        textBlock.width = width;
+        const layout = doLayout(textBlock);
+
+        // Check that each line is wrapped to width
+        const minWidth = Math.max(19, width); // 19 for the width of the longest word with inset: "⇥→￫b.￫incididunt "
+        if (width > 0) {
+          layout.lines.forEach((line) => {
+            expect(line.justificationRange.xLength() + line.offsetFromDocument.x).to.be.at.most(minWidth);
+          });
+        }
+
+
+        expect(layout.stringify()).to.equal(expected);
+
+        // Top-level items should have indentation + tabInterval
+        let inset = 2 + 3;
+        layout.lines.forEach((line) => {
+          if (line.stringify().includes("eiusmod")) inset += 3; // SubList items should have increased indentation
+
+          expect(line.offsetFromDocument.x).to.equal(inset);
+        });
+      }
+
+      // Check indentation/insets for each line, indentation: 2, tabInterval: 5
+      expectLayout(0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit\nsed do\neiusmod tempor\nincididunt ut labore et dolore magna aliqua");
+      expectLayout(70, "Lorem ipsum dolor sit amet, consectetur adipiscing elit\nsed do\neiusmod tempor\nincididunt ut labore et dolore magna aliqua");
+      expectLayout(40, "Lorem ipsum dolor sit amet, \nconsectetur adipiscing elit\nsed do\neiusmod tempor\nincididunt ut labore et dolore \nmagna aliqua");
+      // TODO: layout should not pay attention to trailing whitespace when wrapping. I'll do this in another PR.
+      expectLayout(21, "Lorem ipsum \ndolor sit amet, \nconsectetur \nadipiscing elit\nsed do\neiusmod \ntempor\nincididunt \nut labore et \ndolore magna \naliqua");
+      expectLayout(15, "Lorem \nipsum \ndolor sit \namet, \nconsectetur \nadipiscing \nelit\nsed do\neiusmod \ntempor\nincididunt \nut \nlabore \net \ndolore \nmagna \naliqua");
     });
   });
 
@@ -1785,6 +1841,4 @@ describe("produceTextBlockGeometry", () => {
 });
 
 // Ignoring the text strings from the spell checker
-// cspell:ignore jklmnop vwxyz defg hijk ghij klmno pqrstu Tanuki aabb eeff nggg amet adipiscing elit Phasellus pretium malesuada venenatis eleifend Donec sapien Nullam commodo accumsan lacinia metus enim pharetra lacus facilisis Duis suscipit quis feugiat fermentum ut augue Mauris iaculis odio rhoncus lorem viverra turpis elementum posuere Consolas अनुच्छेद cdefg cdefgh cdefghi
-
-
+// cspell:ignore jklmnop vwxyz defg hijk ghij klmno pqrstu Tanuki aabb eeff nggg amet adipiscing elit Phasellus pretium malesuada venenatis eleifend Donec sapien Nullam commodo accumsan lacinia metus enim pharetra lacus facilisis Duis suscipit quis feugiat fermentum ut augue Mauris iaculis odio rhoncus lorem viverra turpis elementum posuere Consolas अनुच्छेद cdefg cdefgh cdefghi eiusmod tempor incididunt ut labore et dolore magna aliqua sed defghi

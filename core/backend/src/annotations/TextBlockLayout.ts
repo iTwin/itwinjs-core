@@ -549,6 +549,7 @@ export class RunLayout {
 export class LineLayout {
   public source: List | Run | Paragraph;
   public range = new Range2d(0, 0, 0, 0);
+  public runRange = new Range2d(0, 0, 0, 0); // Range of all runs excluding marker.
   public justificationRange = new Range2d(0, 0, 0, 0);
   public offsetFromDocument: WritableXAndY;
   public depth: number;
@@ -592,8 +593,8 @@ export class LineLayout {
 
   /** Invoked every time a run is appended,. */
   private computeRanges(): void {
-    this.range.low.setZero();
-    this.range.high.setZero();
+    this.runRange.low.setZero();
+    this.runRange.high.setZero();
     this.lengthFromLastTab = 0;
 
     // Some runs (fractions) are taller than others.
@@ -605,11 +606,11 @@ export class LineLayout {
 
     for (const run of this._runs) {
       const runHeight = run.range.yLength();
-      const runOffset = { x: this.range.high.x, y: (lineHeight - runHeight) / 2 };
+      const runOffset = { x: this.runRange.high.x, y: (lineHeight - runHeight) / 2 };
       run.offsetFromLine = runOffset;
 
       const runLayoutRange = run.range.cloneTranslated(runOffset);
-      this.range.extendRange(runLayoutRange);
+      this.runRange.extendRange(runLayoutRange);
 
       if ("linebreak" !== run.source.type) {
         const runJustificationRange = run.justificationRange?.cloneTranslated(runOffset);
@@ -622,6 +623,8 @@ export class LineLayout {
         this.lengthFromLastTab += run.range.xLength();
       }
     }
+
+    this.range.setFrom(this.runRange);
 
     if (this._marker) {
       const indentation = this.range.low.x;
@@ -642,6 +645,7 @@ export class LineLayout {
   public toResult(): LineLayoutResult {
     return {
       runs: this.runs.map((x) => x.toResult()),
+      marker: this.marker?.toResult(),
       range: this.range.toJSON(),
       justificationRange: this.justificationRange.toJSON(),
       offsetFromDocument: this.offsetFromDocument,
@@ -807,8 +811,8 @@ export class TextBlockLayout {
     }
 
     // If not, we need to determine if we can append this run to the current line without exceeding the document width or if we need to word wrap.
-    const runWidth = run.range.xLength();
-    const lineWidth = curLine.range.xLength();
+    const runWidth = run.justificationRange?.xLength() ?? run.range.xLength();
+    const lineWidth = curLine.runRange.xLength();
     const newWidth = runWidth + lineWidth + curLine.offsetFromDocument.x;
 
     // If true, then no word wrapping is required, so we can append to the current line.
