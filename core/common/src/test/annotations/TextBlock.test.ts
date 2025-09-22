@@ -45,17 +45,14 @@ describe("TextBlockComponent", () => {
     let run: TextRun;
 
     beforeEach(() => {
-      block = TextBlock.create({ styleId: "0x42", styleOverrides: { widthFactor: 1234 }});
+      block = TextBlock.create({ styleOverrides: { widthFactor: 1234 }});
       paragraph = Paragraph.create({ styleOverrides: { lineHeight: 42 }});
       run = TextRun.create({ styleOverrides: { fontName: "Consolas" } });
       paragraph.runs.push(run);
       block.paragraphs.push(paragraph);
     });
 
-    it("sets style but does not clear overrides by default", () => {
-      block.styleId = "0x99";
-      expect(block.styleId).to.equal("0x99");
-
+    it("has overrides", () => {
       const overrides = getOverrides(block);
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
       expect(overrides.paragraph).to.deep.equal({ lineHeight: 42 });
@@ -63,8 +60,6 @@ describe("TextBlockComponent", () => {
     });
 
     it("clears children's overrides by default when clearing block overrides", () => {
-      block.styleId = "0x99";
-
       block.clearStyleOverrides();
       const overrides = getOverrides(block);
       expect(overrides.block).to.deep.equal({});
@@ -73,8 +68,6 @@ describe("TextBlockComponent", () => {
     });
 
     it("clears children's overrides by default when clearing paragraph overrides", () => {
-      block.styleId = "0x99";
-
       block.paragraphs[0].clearStyleOverrides();
       const overrides = getOverrides(block);
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
@@ -83,7 +76,6 @@ describe("TextBlockComponent", () => {
     });
 
     it("does not clear children's overrides when clearing block overrides if preserveChildrenStyles is true", () => {
-      block.styleId = "0x99";
 
       block.clearStyleOverrides({ preserveChildrenOverrides: true });
       const overrides = getOverrides(block);
@@ -93,7 +85,6 @@ describe("TextBlockComponent", () => {
     });
 
     it("does not clear children's overrides when clearing paragraph overrides if preserveChildrenStyles is true", () => {
-      block.styleId = "0x99";
 
       block.paragraphs[0].clearStyleOverrides({ preserveChildrenOverrides: true });
       const overrides = getOverrides(block);
@@ -103,12 +94,9 @@ describe("TextBlockComponent", () => {
     });
 
     it("handles empty text block", () => {
-      const empty = TextBlock.createEmpty();
-      expect(empty.styleId).to.equal("");
+      const empty = TextBlock.create();
       expect(empty.styleOverrides).to.deep.equal({});
       expect(() => empty.clearStyleOverrides()).not.to.throw();
-      expect(() => empty.styleId = "0x01").not.to.throw();
-      expect(empty.styleId).to.equal("0x01");
     });
 
     it("creates a deep copy of the style overrides", () => {
@@ -124,7 +112,6 @@ describe("TextBlockComponent", () => {
 
   it("stringifies", () => {
     const props: TextBlockProps = {
-      styleId: "",
       paragraphs: [
         makeParagraph([
           makeTextRun("abc"),
@@ -156,7 +143,7 @@ describe("TextBlockComponent", () => {
 describe("TextBlock", () => {
   describe("appendParagraph", () => {
     it("creates a paragraph with no overrides by default", () => {
-      const tb = TextBlock.create({ styleId: "0x42", styleOverrides: { lineHeight: 42 } });
+      const tb = TextBlock.create({ styleOverrides: { lineHeight: 42 } });
       const p = tb.appendParagraph();
       expect(p.styleOverrides).to.deep.equal({});
 
@@ -167,7 +154,7 @@ describe("TextBlock", () => {
     });
 
     it("uses the overrides of the last paragraph if one exists and seedFromLast is true", () => {
-      const tb = TextBlock.create({ styleId: "0x42", styleOverrides: { lineHeight: 42 } });
+      const tb = TextBlock.create({ styleOverrides: { lineHeight: 42 } });
       const p1 = Paragraph.create({ styleOverrides: { isBold: true } });
       tb.paragraphs.push(p1);
 
@@ -176,7 +163,7 @@ describe("TextBlock", () => {
     });
 
     it("creates a paragraph with no overrides if none exist even if seedFromLast is true", () => {
-      const tb = TextBlock.create({ styleId: "0x42", styleOverrides: { lineHeight: 42 } });
+      const tb = TextBlock.create({ styleOverrides: { lineHeight: 42 } });
       const p1 = tb.appendParagraph(true);
       expect(p1.styleOverrides).to.deep.equal({});
     });
@@ -184,7 +171,7 @@ describe("TextBlock", () => {
 
   describe("appendRun", () => {
     it("appends a paragraph IFF the text block is empty", () => {
-      const tb = TextBlock.create({ styleId: "0x42" });
+      const tb = TextBlock.create();
       expect(tb.paragraphs.length).to.equal(0);
 
       tb.appendRun(TextRun.create());
@@ -236,21 +223,19 @@ describe("FieldRun", () => {
     });
 
     it("deeply clones formatter", () => {
-      const formatter = { formatType: "currency", precision: 2, options: { locale: "en-US", style: "decimal" } };
+      const formatter = { prefix: "abc", bool: { trueString: "yay!", falseString: "boo!" } };
 
       const fieldRun = FieldRun.create({
         propertyHost: { elementId: "0x123", schemaName: "TestSchema", className: "TestClass" },
         propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty"] },
-        formatter,
+        formatOptions: formatter,
       });
 
       // Modify the original formatter to ensure the FieldRun's copy is unaffected
-      formatter.formatType = "percentage";
-      formatter.precision = 3;
-      formatter.options.locale = "fr-FR";
-      formatter.options.style = "percent";
+      formatter.prefix = "cba";
+      formatter.bool.trueString = "woohoo!";
 
-      expect(fieldRun.formatter).to.deep.equal({ formatType: "currency", precision: 2, options: { locale: "en-US", style: "decimal" } });
+      expect(fieldRun.formatOptions).to.deep.equal({ prefix: "abc", bool: { trueString: "yay!", falseString: "boo!" } });
     });
 
     it("deeply clones propertyHost", () => {
@@ -324,12 +309,6 @@ describe("FieldRun", () => {
         { propertyPath: { propertyName: "someProperty", accessors: [1, "nestedProperty"] } },
         { propertyPath: { propertyName: "someProperty", accessors: [0, "otherNestedProperty"] } },
         { propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty", "extraNestedProperty"] } },
-
-        { propertyPath: { propertyName: "otherProperty", accessors: [0, "nestedProperty"], jsonAccessors: ["array", 2] } },
-        { propertyPath: { propertyName: "someProperty", accessors: [1, "nestedProperty"], jsonAccessors: ["array", 2] } },
-        { propertyPath: { propertyName: "someProperty", accessors: [0, "otherNestedProperty"], jsonAccessors: ["array", 2] } },
-        { propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty", "extraNestedProperty"], jsonAccessors: ["array", 2] } },
-        { propertyPath: { propertyName: "someProperty", accessors: [0, "nestedProperty", "extraNestedProperty"], jsonAccessors: ["array", 3] } },
       ];
 
       const fieldRuns = combinations.map((combo) =>
