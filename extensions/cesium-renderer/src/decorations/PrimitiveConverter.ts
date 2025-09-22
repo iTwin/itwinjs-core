@@ -36,7 +36,7 @@ export abstract class PrimitiveConverter {
   protected convertPointsToCartesian3(points: Point3d[], iModel?: IModelConnection): Cartesian3[] {
     if (!points || points.length === 0) return [];
 
-    if (this.primitiveType === 'pointstring' && points.length > 1) {
+    if ((this.primitiveType === 'pointstring' || this.primitiveType === 'pointstring2d') && points.length > 1) {
       points = [points[0]];
     }
 
@@ -48,15 +48,12 @@ export abstract class PrimitiveConverter {
     }
   }
 
-  /** Base implementation for depth options - can be extended by subclasses */
   protected getDepthOptions(decorationType: string): Record<string, unknown> {
-    // Handle common base logic for all primitive types
     const isOverlay = decorationType === 'worldOverlay' || decorationType === 'viewOverlay';
     if (!isOverlay) {
-      return {}; // Normal depth testing case
+      return {};
     }
 
-    // Return base overlay configuration (if any common settings needed)
     return {};
   }
 
@@ -64,11 +61,8 @@ export abstract class PrimitiveConverter {
   protected extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[] | undefined, primitiveType: string): unknown {
     if (!coordinateData || !Array.isArray(coordinateData)) return undefined;
     const entries = coordinateData.filter((entry) => entry.type === primitiveType);
-    type EntriesWithPoints =
-      | import('./DecorationTypes.js').PointStringEntry
-      | import('./DecorationTypes.js').LineStringEntry
-      | import('./DecorationTypes.js').ShapeEntry;
-    const withPoints = entries.filter((e): e is EntriesWithPoints => 'points' in e);
+    type EntriesWithPoints = Extract<DecorationPrimitiveEntry, { points: unknown }>;
+    const withPoints = entries.filter((entry): entry is EntriesWithPoints => 'points' in entry);
     return withPoints.map((entry) => entry.points);
   }
 
@@ -172,67 +166,9 @@ export abstract class PrimitiveConverter {
       if (coordinateData && Array.isArray(coordinateData)) {
         const data = coordinateData;
         data.forEach((primitive) => {
-          switch (primitive.type) {
-            case 'pointstring':
-              const pointConverter = PrimitiveConverterFactory.getConverter(primitive.type);
-              if (pointConverter) {
-                pointConverter.convertDecorations([graphic], type, scene, iModel);
-              }
-              break;
-
-            case 'linestring':
-              const lineConverter = PrimitiveConverterFactory.getConverter(primitive.type);
-              if (lineConverter) {
-                lineConverter.convertDecorations([graphic], type, scene, iModel);
-              }
-              break;
-
-            case 'shape':
-              const shapeConverter = PrimitiveConverterFactory.getConverter(primitive.type);
-              if (shapeConverter) {
-                shapeConverter.convertDecorations([graphic], type, scene, iModel);
-              }
-              break;
-
-            case 'arc':
-              const arcConverter = PrimitiveConverterFactory.getConverter(primitive.type);
-              if (arcConverter) {
-                arcConverter.convertDecorations([graphic], type, scene, iModel);
-              }
-              break;
-
-            case 'path':
-              const pathConverter = PrimitiveConverterFactory.getConverter(primitive.type);
-              if (pathConverter) {
-                pathConverter.convertDecorations([graphic], type, scene, iModel);
-              }
-              break;
-
-            case 'loop':
-              const loopConverter = PrimitiveConverterFactory.getConverter(primitive.type);
-              if (loopConverter) {
-                loopConverter.convertDecorations([graphic], type, scene, iModel);
-              }
-              break;
-
-            case 'polyface':
-              const polyfaceConverter = PrimitiveConverterFactory.getConverter(primitive.type);
-              if (polyfaceConverter) {
-                polyfaceConverter.convertDecorations([graphic], type, scene, iModel);
-              }
-              break;
-
-            case 'solidPrimitive':
-              const solidPrimitiveConverter = PrimitiveConverterFactory.getConverter(primitive.type);
-              if (solidPrimitiveConverter) {
-                solidPrimitiveConverter.convertDecorations([graphic], type, scene, iModel);
-              }
-              break;
-
-            default:
-              // Exhaustive over DecorationPrimitiveEntry discriminant; no-op for unknown
-              break;
-          }
+          const converter = PrimitiveConverterFactory.getConverter(primitive.type);
+          if (converter)
+            converter.convertDecorations([graphic], type, scene, iModel);
         });
       }
     });
@@ -270,7 +206,7 @@ export abstract class PrimitiveConverter {
   /** Check if an ID is any type of decoration */
   private isAnyDecorationId(id: string): boolean {
     // Matches: <type>_(pointstring|linestring|shape)_<index>
-    return /^(world|normal|worldOverlay|viewOverlay|viewBackground)_(pointstring|linestring|shape)_/i.test(id);
+    return /^(world|normal|worldOverlay|viewOverlay|viewBackground)_(pointstring(?:2d)?|linestring(?:2d)?|shape(?:2d)?)_/i.test(id);
   }
 
   // Shared helpers to reduce duplication in converters
@@ -306,7 +242,7 @@ export abstract class PrimitiveConverter {
     return this.colorFromColorDef(sym?.color);
   }
 
-  protected extractFillOrLineColorFromGraphic(graphic: RenderGraphicWithCoordinates | undefined, type: 'shape'): Color | undefined {
+  protected extractFillOrLineColorFromGraphic(graphic: RenderGraphicWithCoordinates | undefined, type: 'shape' | 'shape2d'): Color | undefined {
     const entry = this.findEntryByType(graphic, type);
     const fill = this.colorFromColorDef(entry?.symbology?.fillColor) ?? this.colorFromColorDef(entry?.symbology?.lineColor);
     if (fill) return fill;

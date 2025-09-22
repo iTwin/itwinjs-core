@@ -11,11 +11,16 @@ import { IModelConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
- 
+
 
 /** Converts iTwin.js point decorations to Cesium PointPrimitives */
 export class PointPrimitiveConverter extends PrimitiveConverter {
-  protected readonly primitiveType = 'pointstring';
+  protected readonly primitiveType: 'pointstring' | 'pointstring2d';
+
+  public constructor(primitiveType: 'pointstring' | 'pointstring2d' = 'pointstring') {
+    super();
+    this.primitiveType = primitiveType;
+  }
 
 
   protected override getCollection(scene: CesiumScene): PointPrimitiveCollection {
@@ -32,7 +37,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     originalData?: unknown,
     type?: string
   ): PointPrimitive | null {
-    return this.createPointPrimitiveFromGraphic(graphic, primitiveId, _index, collection, iModel, originalData as Point3d[][] | undefined, type);
+    return this.createPointPrimitiveFromGraphic(graphic, primitiveId, _index, collection, iModel, originalData, type);
   }
 
   protected override getPrimitiveTypeName(): string {
@@ -60,7 +65,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     _index: number,
     pointCollection: PointPrimitiveCollection,
     iModel?: IModelConnection,
-    originalPointStrings?: Point3d[][],
+    originalPointStrings?: unknown,
     type?: string
   ): PointPrimitive | null {
     if (!graphic)
@@ -79,7 +84,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     _index: number,
     pointCollection: PointPrimitiveCollection,
     iModel?: IModelConnection,
-    originalPointStrings?: Point3d[][],
+    originalPointStrings?: unknown,
     type?: string,
     graphic?: RenderGraphicWithCoordinates
   ): PointPrimitive | null {
@@ -89,10 +94,20 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     let entityPosition: Cartesian3 | undefined;
     let realSpatialPoint: Point3d | null = null;
 
-    if (originalPointStrings && originalPointStrings.length > 0) {
-      const firstPointString = originalPointStrings[0];
-      if (firstPointString && firstPointString.length > 0)
-        realSpatialPoint = firstPointString[0];
+    if (this.primitiveType === 'pointstring2d') {
+      const entry = this.findEntryByType(graphic, 'pointstring2d');
+      const firstPoint = entry?.points[0];
+      if (firstPoint)
+        realSpatialPoint = Point3d.create(firstPoint.x, firstPoint.y, entry.zDepth);
+    }
+
+    if (!realSpatialPoint && Array.isArray(originalPointStrings) && originalPointStrings.length > 0) {
+      const firstPointString = originalPointStrings[0] as Array<{ x: number; y: number; z?: number }>;
+      if (firstPointString && firstPointString.length > 0) {
+        const candidate = firstPointString[0];
+        const z = typeof candidate.z === 'number' ? candidate.z : 0;
+        realSpatialPoint = Point3d.create(candidate.x, candidate.y, z);
+      }
     }
 
     if (!realSpatialPoint && geometries && geometries.length > 0) {
@@ -110,7 +125,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     if (!entityPosition)
       return null;
 
-    const color = this.extractLineColorFromGraphic(graphic, 'pointstring');
+    const color = this.extractLineColorFromGraphic(graphic, this.primitiveType);
     if (!color)
       return null;
     switch (geometryType) {

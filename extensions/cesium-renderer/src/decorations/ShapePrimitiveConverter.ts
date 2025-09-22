@@ -13,7 +13,12 @@ import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
  
 export class ShapePrimitiveConverter extends PrimitiveConverter {
-  protected readonly primitiveType = 'shape';
+  protected readonly primitiveType: 'shape' | 'shape2d';
+
+  public constructor(primitiveType: 'shape' | 'shape2d' = 'shape') {
+    super();
+    this.primitiveType = primitiveType;
+  }
 
   protected override getCollection(scene: CesiumScene): PrimitiveCollection {
     return scene.primitivesCollection;
@@ -29,11 +34,11 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
     originalData?: unknown,
     type?: string
   ): Primitive | null {
-    return this.createPolygonFromGraphic(graphic, primitiveId, index, collection, iModel, originalData as Point3d[][] | undefined, type);
+    return this.createPolygonFromGraphic(graphic, primitiveId, index, collection, iModel, originalData, type, graphic);
   }
 
   protected override getPrimitiveTypeName(): string {
-    return 'shape';
+    return this.primitiveType;
   }
 
   protected override shouldSkipEmptyGraphics(): boolean {
@@ -60,7 +65,7 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
     index: number,
     primitivesCollection: PrimitiveCollection,
     iModel?: IModelConnection,
-    originalShapes?: Point3d[][],
+    originalShapes?: unknown,
     type?: string
   ): Primitive | null {
     if (!graphic) {
@@ -80,9 +85,9 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
     _index: number,
     primitivesCollection: PrimitiveCollection,
     iModel?: IModelConnection,
-    originalShapes?: Point3d[][],
+    originalShapes?: unknown,
     _type?: string,
-    _graphic?: RenderGraphicWithCoordinates
+    graphic?: RenderGraphicWithCoordinates
   ): Primitive | null {
     if (!geometries || !geometryType || !primitivesCollection) {
       return null;
@@ -90,18 +95,19 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
 
     let positions: Cartesian3[] = [];
     
-    if (originalShapes && originalShapes.length > 0) {
-      const firstShape = originalShapes[0];
+    if (this.primitiveType === 'shape2d') {
+      const entry = this.findEntryByType(graphic, 'shape2d');
+      if (entry && entry.points.length > 0) {
+        const pts = entry.points.map((pt) => Point3d.create(pt.x, pt.y, entry.zDepth));
+        positions = this.convertPointsToCartesian3(pts, iModel);
+      }
+    }
+
+    if (positions.length === 0 && Array.isArray(originalShapes) && originalShapes.length > 0) {
+      const firstShape = originalShapes[0] as Array<{ x: number; y: number; z?: number }>;
       if (firstShape && firstShape.length > 0) {
-        positions = this.convertPointsToCartesian3(firstShape, iModel);
-        // For polygon, ensure the shape is properly closed
-        if (positions.length > 2) {
-          const firstPos = positions[0];
-          const lastPos = positions[positions.length - 1];
-          if (!Cartesian3.equals(firstPos, lastPos)) {
-            positions.push(firstPos);
-          }
-        }
+        const pts = firstShape.map((coord) => Point3d.create(coord.x, coord.y, typeof coord.z === 'number' ? coord.z : 0));
+        positions = this.convertPointsToCartesian3(pts, iModel);
       }
     }
     
@@ -113,14 +119,14 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
       if (hasCoords(geometry) && geometry.coordinateData.length > 0) {
         const points = geometry.coordinateData.map((coord) => new Point3d(coord.x, coord.y, coord.z));
         positions = this.convertPointsToCartesian3(points, iModel);
-        // Ensure the shape is closed
-        if (positions.length > 2) {
-          const firstPos = positions[0];
-          const lastPos = positions[positions.length - 1];
-          if (!Cartesian3.equals(firstPos, lastPos)) {
-            positions.push(firstPos);
-          }
-        }
+      }
+    }
+
+    if (positions.length > 2) {
+      const firstPos = positions[0];
+      const lastPos = positions[positions.length - 1];
+      if (!Cartesian3.equals(firstPos, lastPos)) {
+        positions.push(firstPos);
       }
     }
 
@@ -138,7 +144,7 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
         });
 
         // Determine color: prefer symbology fill, fallback by type
-        const color = this.extractFillOrLineColorFromGraphic(_graphic, 'shape');
+        const color = this.extractFillOrLineColorFromGraphic(graphic, this.primitiveType === 'shape2d' ? 'shape2d' : 'shape');
         if (!color)
           return null;
         

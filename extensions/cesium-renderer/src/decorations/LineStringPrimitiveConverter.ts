@@ -14,7 +14,12 @@ import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveCon
  
 /** Converts iTwin.js LineString decorations to Cesium Polylines */
 export class LineStringPrimitiveConverter extends PrimitiveConverter {
-  protected readonly primitiveType = 'linestring';
+  protected readonly primitiveType: 'linestring' | 'linestring2d';
+
+  public constructor(primitiveType: 'linestring' | 'linestring2d' = 'linestring') {
+    super();
+    this.primitiveType = primitiveType;
+  }
 
 
   protected override getCollection(scene: CesiumScene): PolylineCollection {
@@ -30,11 +35,11 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
     originalData?: unknown,
     type?: string
   ): Polyline | null {
-    return this.createPolylineFromGraphic(graphic, primitiveId, index, collection, iModel, originalData as Point3d[][] | undefined, type);
+    return this.createPolylineFromGraphic(graphic, primitiveId, index, collection, iModel, originalData, type);
   }
 
   protected override getPrimitiveTypeName(): string {
-    return 'linestring';
+    return this.primitiveType;
   }
 
   protected override shouldSkipEmptyGraphics(): boolean {
@@ -63,7 +68,7 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
     index: number,
     polylineCollection: PolylineCollection,
     iModel?: IModelConnection,
-    originalLineStrings?: Point3d[][],
+    originalLineStrings?: unknown,
     type?: string
   ): Polyline | null {
     if (!graphic) {
@@ -83,7 +88,7 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
     _index: number,
     polylineCollection: PolylineCollection,
     iModel?: IModelConnection,
-    originalLineStrings?: Point3d[][],
+    originalLineStrings?: unknown,
     type?: string,
     graphic?: RenderGraphicWithCoordinates
   ): Polyline | null {
@@ -91,40 +96,49 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
       return null;
     }
 
-      let positions: Cartesian3[] = [];
-      
-      // Extract real Point3d coordinates and convert to Cartesian3
-      if (originalLineStrings && originalLineStrings.length > 0) {
-        const firstLineString = originalLineStrings[0];
-        if (firstLineString && firstLineString.length > 0) {
-          positions = this.convertPointsToCartesian3(firstLineString, iModel);
-        }
-      }
-      
-      if (positions.length === 0 && geometries && geometries.length > 0) {
-        const geometry = geometries[0];
-        interface Coord { x: number; y: number; z: number }
-        const hasCoords = (g: unknown): g is { coordinateData: Coord[] } =>
-          typeof g === 'object' && g !== null && ('coordinateData' in g);
-        if (hasCoords(geometry) && Array.isArray(geometry.coordinateData) && geometry.coordinateData.length > 0) {
-          const points = geometry.coordinateData.map((coord) => new Point3d(coord.x, coord.y, coord.z));
-          positions = this.convertPointsToCartesian3(points, iModel);
-        }
-      }
+    let positions: Cartesian3[] = [];
 
-      const color = this.extractLineColorFromGraphic(graphic, 'linestring');
-      if (!color)
-        return null;
-      switch (geometryType) {
-        case 'line-string':
-        default:
-          return polylineCollection.add({
-            id: lineId,
-            positions,
-            width: 2,
-            material: Material.fromType(Material.ColorType, { color }),
-            ...this.getDepthOptions(type || 'world'),
-          });
+    if (this.primitiveType === 'linestring2d') {
+      const entry = this.findEntryByType(graphic, 'linestring2d');
+      if (entry && entry.points.length > 0) {
+        const asPoints = entry.points.map((pt) => Point3d.create(pt.x, pt.y, entry.zDepth));
+        positions = this.convertPointsToCartesian3(asPoints, iModel);
       }
+    }
+
+    if (positions.length === 0 && Array.isArray(originalLineStrings) && originalLineStrings.length > 0) {
+      const firstLineString = originalLineStrings[0] as Array<{ x: number; y: number; z?: number }>;
+      if (firstLineString && firstLineString.length > 0) {
+        const pts = firstLineString.map((coord) => Point3d.create(coord.x, coord.y, typeof coord.z === 'number' ? coord.z : 0));
+        positions = this.convertPointsToCartesian3(pts, iModel);
+      }
+    }
+
+    if (positions.length === 0 && geometries && geometries.length > 0) {
+      const geometry = geometries[0];
+      interface Coord { x: number; y: number; z: number }
+      const hasCoords = (g: unknown): g is { coordinateData: Coord[] } =>
+        typeof g === 'object' && g !== null && ('coordinateData' in g);
+      if (hasCoords(geometry) && Array.isArray(geometry.coordinateData) && geometry.coordinateData.length > 0) {
+        const points = geometry.coordinateData.map((coord) => new Point3d(coord.x, coord.y, coord.z));
+        positions = this.convertPointsToCartesian3(points, iModel);
+      }
+    }
+
+    const color = this.extractLineColorFromGraphic(graphic, this.primitiveType);
+    if (!color)
+      return null;
+
+    switch (geometryType) {
+      case 'line-string':
+      default:
+        return polylineCollection.add({
+          id: lineId,
+          positions,
+          width: 2,
+          material: Material.fromType(Material.ColorType, { color }),
+          ...this.getDepthOptions(type || 'world'),
+        });
+    }
   }
 }

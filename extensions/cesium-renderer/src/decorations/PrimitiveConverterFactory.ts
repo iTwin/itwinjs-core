@@ -23,10 +23,30 @@ export class PrimitiveConverterFactory {
   private static _converters = new Map<string, PrimitiveConverter>();
 
   static {
-    this._converters.set('pointstring', new PointPrimitiveConverter());
-    this._converters.set('linestring', new LineStringPrimitiveConverter());
-    this._converters.set('shape', new ShapePrimitiveConverter());
-    this._converters.set('arc', new ArcPrimitiveConverter());
+    this.registerDefaultConverters();
+  }
+
+  private static registerDefaultConverters(): void {
+    const pointConverter = new PointPrimitiveConverter('pointstring');
+    const point2dConverter = new PointPrimitiveConverter('pointstring2d');
+    this._converters.set('pointstring', pointConverter);
+    this._converters.set('pointstring2d', point2dConverter);
+
+    const lineConverter = new LineStringPrimitiveConverter('linestring');
+    const line2dConverter = new LineStringPrimitiveConverter('linestring2d');
+    this._converters.set('linestring', lineConverter);
+    this._converters.set('linestring2d', line2dConverter);
+
+    const shapeConverter = new ShapePrimitiveConverter('shape');
+    const shape2dConverter = new ShapePrimitiveConverter('shape2d');
+    this._converters.set('shape', shapeConverter);
+    this._converters.set('shape2d', shape2dConverter);
+
+    const arcConverter = new ArcPrimitiveConverter('arc');
+    const arc2dConverter = new ArcPrimitiveConverter('arc2d');
+    this._converters.set('arc', arcConverter);
+    this._converters.set('arc2d', arc2dConverter);
+
     this._converters.set('path', new PathPrimitiveConverter());
     this._converters.set('loop', new LoopPrimitiveConverter());
     this._converters.set('polyface', new PolyfacePrimitiveConverter());

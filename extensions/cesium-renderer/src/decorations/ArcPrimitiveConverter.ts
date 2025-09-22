@@ -7,8 +7,13 @@ import { CesiumCoordinateConverter } from "./CesiumCoordinateConverter.js";
 import { DecorationPrimitiveEntry } from "./DecorationTypes.js";
 
 export class ArcPrimitiveConverter extends PrimitiveConverter {
-  protected readonly primitiveType = 'arc';
+  protected readonly primitiveType: 'arc' | 'arc2d';
   private _currentScene?: CesiumScene;
+
+  public constructor(primitiveType: 'arc' | 'arc2d' = 'arc') {
+    super();
+    this.primitiveType = primitiveType;
+  }
 
   protected override getCollection(scene: CesiumScene): PrimitiveCollection {
     this._currentScene = scene; // Store scene reference for later use
@@ -27,33 +32,38 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
   }
 
   protected override createPrimitiveFromGraphic(
-    _graphic: RenderGraphicWithCoordinates, 
-    primitiveId: string, 
-    _index: number, 
-    _collection: PrimitiveCollection, 
-    iModel?: IModelConnection, 
-    originalData?: unknown, 
+    graphic: RenderGraphicWithCoordinates,
+    primitiveId: string,
+    _index: number,
+    _collection: PrimitiveCollection,
+    iModel?: IModelConnection,
+    originalData?: unknown,
     _type?: string
   ): Primitive | Polyline | null {
     const data = Array.isArray(originalData) ? (originalData as DecorationPrimitiveEntry[]) : undefined;
-    if (!data || data.length === 0) {
+
+    const getEntry = () => {
+      const entry = this.findEntryByType(graphic, this.primitiveType);
+      if (entry)
+        return entry;
+
+      if (!data)
+        return undefined;
+
+      return data.find((d) => d.type === this.primitiveType);
+    };
+
+    const arcData = getEntry();
+    if (!arcData)
       return null;
-    }
 
-    // Find the arc data in the array
-    let arcData: import('./DecorationTypes.js').ArcEntry | null = null;
-    for (const d of data) {
-      if (d && d.type === 'arc') {
-        arcData = d;
-        break;
-      }
-    }
-
-    if (!arcData || arcData.type !== 'arc') {
-      return null;
-    }
-
-    const { arc, isEllipse = false, filled = false } = arcData;
+    const isArc2d = this.primitiveType === 'arc2d';
+    const arc = arcData.arc.clone();
+    const isEllipse = arcData.isEllipse === true;
+    const filled = arcData.filled === true;
+    const depth = isArc2d && 'zDepth' in arcData ? arcData.zDepth : undefined;
+    if (typeof depth === 'number' && arc.center.z !== depth)
+      arc.center.z = depth;
 
     const converterIModel = iModel;
     if (!converterIModel) {
@@ -63,7 +73,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     const converter = new CesiumCoordinateConverter(converterIModel);
     
     // Determine color from graphic symbology when available; fallback by type
-    const color = this.extractLineColorFromGraphic(_graphic, 'arc');
+    const color = this.extractLineColorFromGraphic(graphic, this.primitiveType);
     if (!color)
       return null;
 
@@ -134,7 +144,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
           width: 2,
           material: Material.fromType(Material.ColorType, { color })
         });
-        
+
         return polyline;
       } else {
         return null;
@@ -143,7 +153,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
   }
 
   protected override getPrimitiveTypeName(): string {
-    return 'arc';
+    return this.primitiveType;
   }
 
   protected override shouldSkipEmptyGraphics(): boolean {

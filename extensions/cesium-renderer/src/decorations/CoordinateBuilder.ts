@@ -6,7 +6,7 @@
  * @module Cesium
  */
 
-import { Arc3d, Loop, Path, Point3d, Polyface, SolidPrimitive } from "@itwin/core-geometry";
+import { Arc3d, Loop, Path, Point2d, Point3d, Polyface, SolidPrimitive } from "@itwin/core-geometry";
 import { _implementationProhibited, CustomGraphicBuilderOptions, GraphicBuilder, GraphicTemplate, RenderGraphic, ViewportGraphicBuilderOptions } from "@itwin/core-frontend";
 import { ColorDef, LinePixels } from "@itwin/core-common";
 import { System } from "../System.js";
@@ -51,9 +51,19 @@ export class CoordinateBuilder extends GraphicBuilder {
     super.addPointString(points);
   }
 
+  public override addPointString2d(points: Point2d[], zDepth: number): void {
+    this._coordinateData.push({ type: 'pointstring2d', points: points.map((pt) => Point2d.create(pt.x, pt.y)), zDepth, symbology: this.snapshotSymbology() });
+    super.addPointString2d(points, zDepth);
+  }
+
   public override addLineString(points: Point3d[]): void {
     this._coordinateData.push({ type: 'linestring', points: [...points], symbology: this.snapshotSymbology() });
     super.addLineString(points);
+  }
+
+  public override addLineString2d(points: Point2d[], zDepth: number): void {
+    this._coordinateData.push({ type: 'linestring2d', points: points.map((pt) => Point2d.create(pt.x, pt.y)), zDepth, symbology: this.snapshotSymbology() });
+    super.addLineString2d(points, zDepth);
   }
 
   public override addShape(points: Point3d[]): void {
@@ -61,9 +71,22 @@ export class CoordinateBuilder extends GraphicBuilder {
     super.addShape(points);
   }
 
+  public override addShape2d(points: Point2d[], zDepth: number): void {
+    this._coordinateData.push({ type: 'shape2d', points: points.map((pt) => Point2d.create(pt.x, pt.y)), zDepth, symbology: this.snapshotSymbology() });
+    super.addShape2d(points, zDepth);
+  }
+
   public override addArc(arc: Arc3d, isEllipse: boolean, filled: boolean): void {
     this._coordinateData.push({ type: 'arc', arc: arc.clone(), isEllipse, filled, symbology: this.snapshotSymbology() });
     super.addArc(arc, isEllipse, filled);
+  }
+
+  public override addArc2d(arc: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void {
+    const arcClone = arc.clone();
+    if (arcClone.center.z !== zDepth)
+      arcClone.center.z = zDepth;
+    this._coordinateData.push({ type: 'arc2d', arc: arcClone, isEllipse, filled, zDepth, symbology: this.snapshotSymbology() });
+    super.addArc2d(arc, isEllipse, filled, zDepth);
   }
 
   public override addPath(path: Path): void {

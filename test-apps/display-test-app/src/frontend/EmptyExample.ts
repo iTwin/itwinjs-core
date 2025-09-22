@@ -6,7 +6,7 @@ import { assert } from "@itwin/core-bentley";
 import { ColorDef, DisplayStyle3dSettingsProps, RenderMode } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, StandardViewId } from "@itwin/core-frontend";
 import { Viewer } from "./Viewer";
-import { AngleSweep, Arc3d, Box, Cone, IndexedPolyface, LineString3d, Loop, Matrix3d, Path, Point3d, PolyfaceBuilder, Range3d, Sphere } from "@itwin/core-geometry";
+import { AngleSweep, Arc3d, Box, Cone, IndexedPolyface, LineString3d, Loop, Matrix3d, Path, Point2d, Point3d, PolyfaceBuilder, Range3d, Sphere } from "@itwin/core-geometry";
 
 export async function openEmptyExample(viewer: Viewer) {
   assert(viewer.viewport.view.is3d());
@@ -82,6 +82,15 @@ export class CesiumDecorator implements Decorator {
       builder.addPointString([point]);
       context.addDecorationFromBuilder(builder);
     });
+
+    const overlayPoints = [
+      Point2d.create(center.x - 90000, center.y + 90000),
+    ];
+    const point2dBuilder = context.createGraphic({ type: GraphicType.WorldOverlay });
+    const overlayColor = ColorDef.from(255, 215, 0); // gold to contrast with 3d points
+    point2dBuilder.setSymbology(overlayColor, overlayColor, 2);
+    point2dBuilder.addPointString2d(overlayPoints, center.z + 6000);
+    context.addDecorationFromBuilder(point2dBuilder);
   }
 
   private createLineStringDecorations(context: DecorateContext): void {
@@ -119,6 +128,19 @@ export class CesiumDecorator implements Decorator {
       builder.addLineString(line.points);
       context.addDecorationFromBuilder(builder);
     });
+
+    const overlayLinePoints = [
+      Point2d.create(center.x + 90000, center.y - 90000),
+      Point2d.create(center.x + 150000, center.y - 90000),
+      Point2d.create(center.x + 150000, center.y - 30000),
+      Point2d.create(center.x + 90000, center.y - 30000),
+      Point2d.create(center.x + 90000, center.y - 90000),
+    ];
+    const line2dBuilder = context.createGraphic({ type: GraphicType.WorldOverlay });
+    const line2dColor = ColorDef.from(0, 200, 255);
+    line2dBuilder.setSymbology(line2dColor, line2dColor, 3);
+    line2dBuilder.addLineString2d(overlayLinePoints, center.z + 8000);
+    context.addDecorationFromBuilder(line2dBuilder);
   }
 
   private createShapeDecorations(context: DecorateContext): void {
@@ -155,6 +177,19 @@ export class CesiumDecorator implements Decorator {
       builder.addShape(shape.points);
       context.addDecorationFromBuilder(builder);
     });
+
+    const overlayShapePoints = [
+      Point2d.create(center.x + 50000, center.y + 90000),
+      Point2d.create(center.x + 120000, center.y + 90000),
+      Point2d.create(center.x + 120000, center.y + 140000),
+      Point2d.create(center.x + 50000, center.y + 140000),
+      Point2d.create(center.x + 50000, center.y + 90000),
+    ];
+    const shape2dBuilder = context.createGraphic({ type: GraphicType.WorldOverlay });
+    const shape2dColor = ColorDef.from(186, 85, 211);
+    shape2dBuilder.setSymbology(shape2dColor, shape2dColor, 3);
+    shape2dBuilder.addShape2d(overlayShapePoints, center.z + 9000);
+    context.addDecorationFromBuilder(shape2dBuilder);
   }
 
   private createArcDecorations(context: DecorateContext): void {
@@ -209,6 +244,19 @@ export class CesiumDecorator implements Decorator {
       builder.addArc(arcDef.arc, arcDef.isEllipse, arcDef.filled);
       context.addDecorationFromBuilder(builder);
     });
+
+    const overlayFullEllipse = Arc3d.createScaledXYColumns(
+      new Point3d(center.x + 160000, center.y + 40000, center.z),
+      Matrix3d.createIdentity(),
+      25000,
+      40000,
+      AngleSweep.createStartSweepRadians(0, Math.PI * 2)
+    );
+    const arc2dBuilder = context.createGraphic({ type: GraphicType.WorldOverlay });
+    const arc2dColor = ColorDef.from(64, 224, 208);
+    arc2dBuilder.setSymbology(arc2dColor, arc2dColor, 2);
+    arc2dBuilder.addArc2d(overlayFullEllipse, true, true, center.z + 12000);
+    context.addDecorationFromBuilder(arc2dBuilder);
   }
 
   public static start(iModel: IModelConnection): CesiumDecorator {
