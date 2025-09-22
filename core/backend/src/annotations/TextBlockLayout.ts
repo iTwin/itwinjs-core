@@ -232,8 +232,6 @@ export class TextStyleResolver {
 
   /**
    * Resolves the effective text style settings for a given TextBlockComponent, applying block-level overrides.
-   * @param component The TextBlockComponent whose style settings are to be resolved.
-   * @returns The resolved TextStyleSettings for the component.
    */
   public resolveSettings(overrides: TextStyleSettingsProps, isLeader: boolean = false): TextStyleSettings {
     let settings = this.blockSettings;
@@ -250,10 +248,7 @@ export class TextStyleResolver {
   }
 
   /**
-   * Computes the indentation for a TextBlockComponent based on its style and nesting depth.
-   * @param component The TextBlockComponent for which to compute indentation.
-   * @param depth The nesting depth of the component.
-   * @returns The computed indentation value.
+   * Computes the indentation based on its style and nesting depth.
    */
   public resolveIndentation(styleOverrides: TextStyleSettingsProps, depth: number): number {
     const overrides = this.resolveSettings(styleOverrides);
