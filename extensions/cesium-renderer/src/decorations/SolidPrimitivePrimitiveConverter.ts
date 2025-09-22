@@ -182,7 +182,6 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
       }
     }
 
-
     // Clamp radius to reasonable bounds
     radius = Math.max(5000, Math.min(radius, 50000));
 
