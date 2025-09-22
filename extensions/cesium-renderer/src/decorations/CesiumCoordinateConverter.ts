@@ -29,7 +29,7 @@ interface CesiumCamera {
 }
 
 /**
- * Professional coordinate conversion utilities between iTwin.js and CesiumJS
+ * Coordinate conversion utilities between iTwin.js and CesiumJS
  * Handles spatial coordinate transformations, camera conversions, and ECEF mappings
  */
 export class CesiumCoordinateConverter {
@@ -39,7 +39,6 @@ export class CesiumCoordinateConverter {
   constructor(iModel: IModelConnection) {
     this._iModel = iModel;
     this._ecefLocation = iModel.ecefLocation;
-    
   }
 
   /**
@@ -88,12 +87,12 @@ export class CesiumCoordinateConverter {
     // Step 1: iTwin.js spatial → ECEF using built-in method
     const ecefPoint = this._iModel.spatialToEcef(spatial);
     const cesiumEcef = new Cartesian3(ecefPoint.x, ecefPoint.y, ecefPoint.z);
-    // Step 2: ECEF → Geographic coordinates 
+    // Step 2: ECEF → Geographic coordinates
     const cartographic = CesiumCartographic.fromCartesian(cesiumEcef);
     // Step 3: Geographic → Cartesian3 (for CesiumJS positioning)
     return Cartesian3.fromRadians(
       cartographic.longitude,
-      cartographic.latitude, 
+      cartographic.latitude,
       cartographic.height
     );
   }
@@ -120,12 +119,12 @@ export class CesiumCoordinateConverter {
     }
 
     const cesiumPositions: Cartesian3[] = [];
-    
+
     for (const point of linePoints) {
       const ecefPoint = this._iModel.spatialToEcef(point);
       cesiumPositions.push(new Cartesian3(ecefPoint.x, ecefPoint.y, ecefPoint.z));
     }
-    
+
     return cesiumPositions;
   }
 
@@ -137,13 +136,13 @@ export class CesiumCoordinateConverter {
    * @returns CesiumCamera parameters
    */
   public createCesiumCamera(
-    viewDefinition: ViewDefinition3dProps, 
-    ecefLoc?: EcefLocation, 
+    viewDefinition: ViewDefinition3dProps,
+    ecefLoc?: EcefLocation,
     modelExtents?: Range3d
   ): CesiumCamera {
     const defaultOrigin = Cartographic.fromDegrees({ longitude: 0, latitude: 0, height: 0 });
     let ecefLocation;
-    
+
     if (ecefLoc) {
       ecefLocation = ecefLoc;
     } else if (modelExtents) {
@@ -165,7 +164,7 @@ export class CesiumCoordinateConverter {
     let fov;
     let width;
     let position = new Point3d();
-    
+
     if (viewDefinition.cameraOn) {
       position = Point3d.fromJSON(viewDefinition.camera.eye);
       fov = 2.0 * Math.atan2(viewExtents.x / 2.0, viewDefinition.camera.focusDist);
@@ -203,7 +202,7 @@ export class CesiumCoordinateConverter {
    */
   public getModelExtentsInCesium(): Range3d {
     const modelExtents = this._iModel.projectExtents;
-    
+
     if (!this._iModel.isGeoLocated) {
       return modelExtents; // Return as-is if not geo-located
     }
@@ -243,17 +242,17 @@ export class CesiumCoordinateConverter {
    */
   private _getFallbackCartesian3(spatial: XYAndZ): Cartesian3 {
     const center = this._iModel.projectExtents.center;
-    
+
     // Calculate relative position from model center
     const relativeX = spatial.x - center.x;
     const relativeY = spatial.y - center.y;
     const relativeZ = spatial.z - center.z;
-    
+
     // Convert to approximate geographic coordinates
     const longitude = relativeX * 0.00001; // Rough meters to degrees
     const latitude = relativeY * 0.00001;
     const height = Math.max(relativeZ + 100, 100); // Minimum height above ground
-    
+
     return Cartesian3.fromDegrees(longitude, latitude, height);
   }
 }
