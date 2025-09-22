@@ -27,7 +27,6 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     return scene.pointCollection;
   }
 
-
   protected override createPrimitiveFromGraphic(
     graphic: RenderGraphicWithCoordinates,
     primitiveId: string,
