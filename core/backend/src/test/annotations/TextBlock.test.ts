@@ -1244,7 +1244,11 @@ describe("layoutTextBlock", () => {
       expect(layout2.range.yLength()).to.equal(1);
     })
 
-    it("wraps list items and applies indentation/insets for narrow text block width", () => {
+    it("wraps list items and applies indentation/insets for narrow text block width", function () {
+      if (!isIntlSupported()) {
+        this.skip();
+      }
+
       const textBlock = TextBlock.create({ styleOverrides: { indentation: 2, tabInterval: 3, lineHeight: 1, lineSpacingFactor: 0, paragraphSpacingFactor: 0 } });
 
       /* Final TextBlock should look like:
