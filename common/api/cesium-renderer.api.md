@@ -45,23 +45,10 @@ export interface CesiumFrustumProps {
 }
 
 // @internal (undocumented)
-export class CesiumViewManager extends ViewManager {
-    // (undocumented)
-    protected updateRenderToScreen(): void;
-}
-
-// @alpha
-export function createCesiumCameraProps(opts: {
-    viewDefinition: ViewDefinition3dProps;
-    ecefLoc?: EcefLocation;
-    modelExtents?: Range3d;
-}): CesiumCameraProps;
-
-// @internal (undocumented)
-export class System extends RenderSystem {
+export class CesiumSystem extends RenderSystem {
     protected constructor(options: RenderSystem.Options);
     // (undocumented)
-    static create(optionsIn?: RenderSystem.Options): System;
+    static create(optionsIn?: RenderSystem.Options): CesiumSystem;
     // (undocumented)
     createBatch(_graphic: RenderGraphic, _features: RenderFeatureTable, _range: ElementAlignedBox3d, _options?: BatchOptions): RenderGraphic;
     // (undocumented)
@@ -83,11 +70,24 @@ export class System extends RenderSystem {
     // (undocumented)
     doIdleWork(): boolean;
     // (undocumented)
-    static get instance(): System;
+    static get instance(): CesiumSystem;
     // (undocumented)
     get isValid(): boolean;
     get maxTextureSize(): number;
 }
+
+// @internal (undocumented)
+export class CesiumViewManager extends ViewManager {
+    // (undocumented)
+    protected updateRenderToScreen(): void;
+}
+
+// @alpha
+export function createCesiumCameraProps(opts: {
+    viewDefinition: ViewDefinition3dProps;
+    ecefLoc?: EcefLocation;
+    modelExtents?: Range3d;
+}): CesiumCameraProps;
 
 // (No @packageDocumentation comment for this package)
 
