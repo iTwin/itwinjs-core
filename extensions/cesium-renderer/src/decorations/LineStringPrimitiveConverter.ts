@@ -59,8 +59,6 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter {
     return baseOptions;
   }
 
-
-
   private createPolylineFromGraphic(
     graphic: RenderGraphicWithCoordinates,
     lineId: string,
