@@ -170,7 +170,7 @@ export type RunProps = TextRunProps | FractionRunProps | TabRunProps | LineBreak
  */
 export namespace Run { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Create a run from its JSON representation.
-   * @see [[TextRun.create]], [[FractionRun.create]], and [[LineBreakRun.create]] to create a run directly.
+   * @see [[TextRun.create]], [[FractionRun.create]], [[FieldRun.create]], [[TabRun.create]], and [[LineBreakRun.create]] to create a run directly.
    */
   export function fromJSON(props: RunProps): Run {
     switch (props.type) {
@@ -578,7 +578,7 @@ export interface ParagraphProps extends TextBlockComponentProps {
   children?: Array<ListProps | RunProps>;
 }
 
-/** A collection of [[Run]]s and [[List]]s. Paragraphs can be appended to [[List]]s
+/** A collection of [[Run]]s and [[List]]s. Paragraphs can be appended to [[List]]s and [[TextBlock]]s.
  * Each paragraph is laid out on a separate line. If included in a [[List]], the paragraph will be treated as a list item.
  * @beta
  */
@@ -728,8 +728,6 @@ export interface TextBlockProps extends TextBlockComponentProps {
 }
 
 /** Represents a formatted text document consisting of a series of [[Paragraph]]s, each laid out on a separate line and containing their own content.
- * [[Paragraph]]s and [[List]]s act as branches and can contain [[Paragraph]]s, [[List]]s, or leaf nodes in the form of [[Run]]s.
- * To modify the children, you can either directly set the [[TextBlock.children]] property or use the provided methods to append new elements.
  * No word-wrapping is applied to the document unless a [[width]] greater than zero is specified.
  * @see [[TextAnnotation]] to position a text block as an annotation in 2d or 3d space.
  * @beta
