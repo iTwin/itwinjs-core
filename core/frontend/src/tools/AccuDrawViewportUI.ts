@@ -123,7 +123,7 @@ export class AccuDrawViewportUI extends AccuDraw {
         color: "hsl(var(--iui-color-accent-hsl, 166 96% 51%))",
         /** Background color for locked lock buttons. */
         backgroundColor:
-          "hsl(var(--iui-color-background-hsl, 225 6% 13%) / var(--iui-opacity-3, 65%))",
+          "hsl(var(--iui-color-accent-hsl, 166 96% 30.7%) / var(--iui-opacity-3, 65%))",
         /** Border settings for locked lock buttons. */
         border: {
           /** Border color for locked lock buttons. */
