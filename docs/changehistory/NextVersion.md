@@ -17,7 +17,8 @@ publish: false
   - [Display](#display)
     - [Draco decoding](#draco-decoding)
   - [Geometry](#geometry)
-    - [@itwin/geometry](#itwingeometry)
+    - [Clippers for a curve chain](#clippers-for-a-curve-chain)
+  - [Electron 38 support](#electron-38-support)
 
 ## @itwin/core-ecschema-metadata
 
@@ -165,6 +166,9 @@ Below you can see the visualization of `clippers`. Each child is shown by a colo
 Here is another example for a path provided by the Civil team:
 ![Regions for curve chain children - example 2](../learning/geometry/figs/Clipping/curveChainClipping2.png "Regions for curve chain children - example 2")
 
+## Electron 38 support
+
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 38](https://www.electronjs.org/blog/electron-38-0).
 
 
 
