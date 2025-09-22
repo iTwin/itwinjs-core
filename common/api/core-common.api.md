@@ -5921,7 +5921,27 @@ export class List extends TextBlockComponent {
 }
 
 // @beta
-export type ListMarker = OrderedListMarker | UnorderedListMarker | string;
+export interface ListMarker {
+    case?: "upper" | "lower";
+    enumerator: ListMarkerEnumerator | string;
+    terminator?: "parenthesis" | "period";
+}
+
+// @beta
+export enum ListMarkerEnumerator {
+    // (undocumented)
+    Bullet = "\u2022",
+    // (undocumented)
+    Circle = "\u25CB",
+    Dash = "\u2013",
+    Letter = "A",
+    // (undocumented)
+    Number = "1",
+    // (undocumented)
+    RomanNumeral = "I",
+    // (undocumented)
+    Square = "\u25A0"
+}
 
 // @beta
 export interface ListProps extends TextBlockComponentProps {
@@ -6783,40 +6803,6 @@ export interface OrbitGtBlobProps {
     rdsUrl?: string;
     // (undocumented)
     sasToken: string;
-}
-
-// @beta
-export enum OrderedListMarker {
-    // (undocumented)
-    A = "A",
-    // (undocumented)
-    a = "a",
-    // (undocumented)
-    AWithParenthesis = "A)",
-    // (undocumented)
-    aWithParenthesis = "a)",
-    // (undocumented)
-    AWithPeriod = "A.",
-    // (undocumented)
-    aWithPeriod = "a.",
-    // (undocumented)
-    I = "I",
-    // (undocumented)
-    i = "i",
-    // (undocumented)
-    IWithParenthesis = "I)",
-    // (undocumented)
-    iWithParenthesis = "i)",
-    // (undocumented)
-    IWithPeriod = "I.",
-    // (undocumented)
-    iWithPeriod = "i.",
-    // (undocumented)
-    One = "1",
-    // (undocumented)
-    OneWithParenthesis = "1)",
-    // (undocumented)
-    OneWithPeriod = "1."
 }
 
 // @beta
@@ -11207,18 +11193,6 @@ export enum TypeOfChange {
 
 // @public
 export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
-
-// @beta
-export enum UnorderedListMarker {
-    // (undocumented)
-    Bullet = "\u2022",
-    // (undocumented)
-    Circle = "\u25CB",
-    // (undocumented)
-    Dash = "\u2013",
-    // (undocumented)
-    Square = "\u25A0"
-}
 
 // @public (undocumented)
 export type UpdateCallback = (obj: any, t: number) => void;

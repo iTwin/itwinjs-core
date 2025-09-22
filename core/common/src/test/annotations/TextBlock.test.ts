@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { beforeEach, describe, expect, it } from "vitest";
-import { FieldRun, FractionRun, FractionRunProps, LineBreakRun, List, ListProps, Paragraph, ParagraphProps, RunProps, TabRun, TextBlock, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps, traverseTextBlockComponent, UnorderedListMarker } from "../../core-common";
+import { FieldRun, FractionRun, FractionRunProps, LineBreakRun, List, ListMarkerEnumerator, ListProps, Paragraph, ParagraphProps, RunProps, TabRun, TextBlock, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps, traverseTextBlockComponent } from "../../core-common";
 
 function makeTextRun(content?: string, styleOverrides?: TextStyleSettingsProps): TextRunProps {
   return {
@@ -73,7 +73,7 @@ describe("TextBlockComponent", () => {
       const paragraph = block.appendParagraph({ styleOverrides: { lineHeight: 42 } });
       paragraph.children.push(TextRun.create({ styleOverrides: { fontName: "Consolas" } }));
 
-      const list = List.create({ styleOverrides: { listMarker: "*" } });
+      const list = List.create({ styleOverrides: { listMarker: { enumerator: "*", terminator: "period", case: "lower" } } });
       paragraph.children.push(list);
       const listParagraph = Paragraph.create({ styleOverrides: { lineHeight: 21 } });
       listParagraph.children.push(TextRun.create({ styleOverrides: { fontName: "Verdana" } }));
@@ -86,7 +86,7 @@ describe("TextBlockComponent", () => {
       expect(overrides.paragraph).to.deep.equal({ lineHeight: 42 });
       expect(overrides.run).to.deep.equal({ fontName: "Consolas" });
 
-      expect(overrides.list).to.deep.equal({ listMarker: "*" });
+      expect(overrides.list).to.deep.equal({ listMarker: { enumerator: "*", terminator: "period", case: "lower" } });
       expect(overrides.listItem).to.deep.equal({ lineHeight: 21 });
       expect(overrides.listRun).to.deep.equal({ fontName: "Verdana" });
     });
@@ -135,7 +135,7 @@ describe("TextBlockComponent", () => {
       expect(overrides.paragraph).to.deep.equal({ lineHeight: 42 });
       expect(overrides.run).to.deep.equal({ fontName: "Consolas" });
 
-      expect(overrides.list).to.deep.equal({ listMarker: "*" });
+      expect(overrides.list).to.deep.equal({ listMarker: { enumerator: "*", terminator: "period", case: "lower" } });
       expect(overrides.listItem).to.deep.equal({ lineHeight: 21 });
       expect(overrides.listRun).to.deep.equal({ fontName: "Verdana" });
     });
@@ -147,7 +147,7 @@ describe("TextBlockComponent", () => {
       expect(overrides.paragraph).to.deep.equal({});
       expect(overrides.run).to.deep.equal({ fontName: "Consolas" });
 
-      expect(overrides.list).to.deep.equal({ listMarker: "*" });
+      expect(overrides.list).to.deep.equal({ listMarker: { enumerator: "*", terminator: "period", case: "lower" } });
       expect(overrides.listItem).to.deep.equal({ lineHeight: 21 });
       expect(overrides.listRun).to.deep.equal({ fontName: "Verdana" });
     });
@@ -313,12 +313,12 @@ describe("TextBlockComponent", () => {
       expect(list.stringify({ tabsAsSpaces: 4, lineBreak: "L", fractionSeparator: "F", listMarkerBreak: "M", paragraphBreak: "P" })).to.equal("1.MloremP2.M1Fπ     def   ghiLj k lP3.M");
 
       // Unordered list marker
-      list.styleOverrides.listMarker = "*";
+      list.styleOverrides.listMarker = { enumerator: "*" };
       expect(list.stringify()).to.equal("* lorem * 1/π\t def   ghi j k l * ");
       expect(list.stringify({ tabsAsSpaces: 4, lineBreak: "L", fractionSeparator: "F", listMarkerBreak: "M", paragraphBreak: "P" })).to.equal("*MloremP*M1Fπ     def   ghiLj k lP*M");
 
       // Alphabetic list marker
-      list.styleOverrides.listMarker = "a)";
+      list.styleOverrides.listMarker = { enumerator: ListMarkerEnumerator.Letter, terminator: "parenthesis", case: "lower" };
       expect(list.stringify()).to.equal("a) lorem b) 1/π\t def   ghi j k l c) ");
       expect(list.stringify({ tabsAsSpaces: 4, lineBreak: "L", fractionSeparator: "F", listMarkerBreak: "M", paragraphBreak: "P" })).to.equal("a)MloremPb)M1Fπ     def   ghiLj k lPc)M");
     });
@@ -349,7 +349,7 @@ describe("TextBlockComponent", () => {
                 makeParagraph([
                   makeTextRun("From New Zealand"),
                 ]),
-              ], { listMarker: UnorderedListMarker.Bullet }) // •
+              ], { listMarker: { enumerator: ListMarkerEnumerator.Bullet } }) // •
             ]),
             makeParagraph([
               makeTextRun("Fiji"),
@@ -357,9 +357,9 @@ describe("TextBlockComponent", () => {
             makeParagraph([
               makeTextRun("Red Delicious"),
             ]),
-          ], { listMarker: "i." })
+          ], { listMarker: { enumerator: ListMarkerEnumerator.RomanNumeral, terminator: "period", case: "lower" } })
         ]),
-      ], { listMarker: "a." }));
+      ], { listMarker: { enumerator: ListMarkerEnumerator.Letter, terminator: "period", case: "lower" } }));
 
       expect(list.stringify()).to.equal("a. Oranges b. Apples \ti. Gala \t\t• Sweet and crisp \t\t• From New Zealand \tii. Fiji \tiii. Red Delicious");
       expect(list.stringify({ tabsAsSpaces: 3, listMarkerBreak: "M", paragraphBreak: "P" })).to.equal("a.MOrangesPb.MApplesP   i.MGalaP      •MSweet and crispP      •MFrom New ZealandP   ii.MFijiP   iii.MRed Delicious");
@@ -403,7 +403,7 @@ describe("TextBlockComponent", () => {
                     makeParagraph([
                       makeTextRun("From New Zealand"),
                     ]),
-                  ], { listMarker: UnorderedListMarker.Bullet }) // •
+                  ], { listMarker: { enumerator: ListMarkerEnumerator.Bullet } }) // •
                 ]),
                 makeParagraph([
                   makeTextRun("Fiji"),
@@ -411,9 +411,9 @@ describe("TextBlockComponent", () => {
                 makeParagraph([
                   makeTextRun("Red Delicious"),
                 ]),
-              ], { listMarker: "i." })
+              ], { listMarker: { enumerator: ListMarkerEnumerator.RomanNumeral, terminator: "period", case: "lower" } })
             ]),
-          ], { listMarker: "a." })
+          ], { listMarker: { enumerator: ListMarkerEnumerator.Letter, terminator: "period", case: "lower" } })
         ]
       });
 
@@ -592,7 +592,7 @@ describe("FieldRun", () => {
 
       // Modify the original formatter to ensure the FieldRun's copy is unaffected
       formatter.prefix = "cba";
-      formatter.bool.trueString = "woohoo!";
+      formatter.bool.trueString = "woohoo!"; // cspell: ignore woohoo
 
       expect(fieldRun.formatOptions).to.deep.equal({ prefix: "abc", bool: { trueString: "yay!", falseString: "boo!" } });
     });

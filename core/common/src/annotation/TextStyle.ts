@@ -9,47 +9,33 @@
 import { DeepReadonlyObject, DeepRequiredObject } from "@itwin/core-bentley";
 import { ColorDef, ColorDefProps } from "../ColorDef";
 
-/** Predefined markers for ordered list items in text annotations.
- * These values control the appearance of list item markers (e.g., numbers, letters, roman numerals) in ordered lists.
- *
+/** Predefined markers for list items in text annotations.
+ * These values control the appearance of list item markers (e.g., bullet, circle, square, dash, number) that denote the start of a list item in a list.
  * @beta
  */
-export enum OrderedListMarker {
-  A = "A",
-  AWithPeriod = "A.",
-  AWithParenthesis = "A)",
-  a = "a",
-  aWithPeriod = "a.",
-  aWithParenthesis = "a)",
-  I = "I",
-  IWithPeriod = "I.",
-  IWithParenthesis = "I)",
-  i = "i",
-  iWithPeriod = "i.",
-  iWithParenthesis = "i)",
-  One = "1",
-  OneWithPeriod = "1.",
-  OneWithParenthesis = "1)",
-}
-
-/** Predefined markers for unordered list items in text annotations.
- * These values control the appearance of list item markers (e.g., bullet, circle, square, dash) in unordered lists.
- *
- * @beta
- */
-export enum UnorderedListMarker {
+export enum ListMarkerEnumerator {
+  /** English Alphabet */
+  Letter = "A",
+  RomanNumeral = "I",
+  Number = "1",
   Bullet = "•",
   Circle = "○",
   Square = "■",
+  /** EM Dash */
   Dash = "–",
 }
 
-/** A string used to mark the start of a list item in a [[List]].
- * This can be either one of the predefined markers in [[OrderedListMarker]] or [[UnorderedListMarker]], or any arbitrary string.
- * If an arbitrary string is supplied, it will be used in an unordered list fashion.
+/** A settings to specify how to mark or denote the start of a list item in a [[List]].
  * @beta
  */
-export type ListMarker = OrderedListMarker | UnorderedListMarker | string;
+export interface ListMarker {
+  /** This can be either one of the predefined markers in [[ListMarkerEnumerator]], or any arbitrary string. */
+  enumerator: ListMarkerEnumerator | string,
+  /** The punctuation to follow the enumerator. */
+  terminator?: "parenthesis" | "period",
+  /** Whether to use upper or lower case for alphabetic or roman numeral enumerators. Ignored if [[enumerator]] is not alphabetic or roman numeral. */
+  case?: "upper" | "lower",
+}
 
 /** Set of predefined shapes that can be computed and drawn around the margins of a [[TextBlock]]
  * @beta
@@ -211,7 +197,7 @@ export interface TextStyleSettingsProps {
   /** The size (in meters) used to calculate the tab stops in a run.
    * These are equally spaced from the left edge of the TextBlock.
    * [[tabInterval]] is also used in lists to compute the offset of each child or [[Paragraph]].
-   * [[listMarker]]s right justified on [[indentation]] + [[tabInterval]]*(depth - 1/2).
+   * The [[listMarker]] is right justified on [[indentation]] + [[tabInterval]]*(depth - 1/2).
    * [[Paragraph]]s will start at [[indentation]] + [[tabInterval]]*depth.
    * Default: 4 meters.
    */
@@ -224,7 +210,7 @@ export interface TextStyleSettingsProps {
   frame?: TextFrameStyleProps;
   /** The offset (in meters) from the left edge of the text block to the start of the line of text.
    * In lists, the indentation is added to offset of list items.
-   * [[listMarker]]s right justified on [[indentation]] + [[tabInterval]]*(depth - 1/2).
+   * The [[listMarker]] is right justified on [[indentation]] + [[tabInterval]]*(depth - 1/2).
    * [[Paragraph]]s will start at [[indentation]] + [[tabInterval]]*depth.
    * Default: 0 meters.
    */
@@ -309,18 +295,18 @@ export class TextStyleSettings {
   /** The size (in meters) used to calculate the tab stops in a run.
    * These are equally spaced from the left edge of the TextBlock.
    * [[tabInterval]] is also used in lists to compute the offset of each child or [[Paragraph]].
-   * [[listMarker]]s right justified on [[indentation]] + [[tabInterval]]*(depth - 1/2).
+   * The [[listMarker]] is right justified on [[indentation]] + [[tabInterval]]*(depth - 1/2).
    * [[Paragraph]]s will start at [[indentation]] + [[tabInterval]]*depth.
    */
   public readonly tabInterval: number;
   /** The offset (in meters) from the left edge of the text block to the start of the line of text.
    * In lists, the indentation is added to offset of list items.
-   * [[listMarker]]s right justified on [[indentation]] + [[tabInterval]]*(depth - 1/2).
+   * The [[listMarker]] is right justified on [[indentation]] + [[tabInterval]]*(depth - 1/2).
    * [[Paragraph]]s will start at [[indentation]] + [[tabInterval]]*depth.
    */
   public readonly indentation: number;
   /** The marker used to indicate the start of a list item.
-   * Default: [[OrderedListMarker.OneWithPeriod]].
+   * Default: [[ListMarkerEnumerator.Number]].
    */
   public readonly listMarker: ListMarker;
   /** The frame settings of the [[TextAnnotation]]. */
@@ -352,7 +338,7 @@ export class TextStyleSettings {
     },
     tabInterval: 4,
     indentation: 0,
-    listMarker: OrderedListMarker.OneWithPeriod,
+    listMarker: { enumerator: "1", terminator: "period", case: "lower" },
     frame: {
       shape: "none",
       fill: "none",
@@ -457,7 +443,7 @@ export class TextStyleSettings {
       && this.subScriptOffsetFactor === other.subScriptOffsetFactor && this.subScriptScale === other.subScriptScale
       && this.superScriptOffsetFactor === other.superScriptOffsetFactor && this.superScriptScale === other.superScriptScale
       && this.tabInterval === other.tabInterval && this.indentation === other.indentation
-      && this.listMarker === other.listMarker
+      && this.listMarker.case === other.listMarker.case && this.listMarker.enumerator === other.listMarker.enumerator && this.listMarker.terminator === other.listMarker.terminator
       && this.leaderEquals(other.leader)
       && this.frameEquals(other.frame)
   }

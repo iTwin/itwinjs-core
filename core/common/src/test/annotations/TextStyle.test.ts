@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { ColorDef, TextStyleSettings, TextStyleSettingsProps } from "../../core-common";
+import { ColorDef, ListMarkerEnumerator, TextStyleSettings, TextStyleSettingsProps } from "../../core-common";
 import { DeepRequiredObject } from "@itwin/core-bentley";
 
 describe("TextStyleSettings", () => {
@@ -38,7 +38,11 @@ describe("TextStyleSettings", () => {
     },
     tabInterval: 7,
     indentation: 0.33,
-    listMarker: "1)",
+    listMarker: {
+      enumerator: ListMarkerEnumerator.Letter,
+      terminator: "parenthesis",
+      case: "lower"
+    },
   };
 
   it("returns defaults if no props provided", () => {

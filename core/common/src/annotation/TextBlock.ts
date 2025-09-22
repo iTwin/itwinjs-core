@@ -6,7 +6,7 @@
  * @module Annotation
  */
 
-import { ListMarker, OrderedListMarker, TextStyleSettings, TextStyleSettingsProps } from "./TextStyle";
+import { ListMarker, ListMarkerEnumerator, TextStyleSettings, TextStyleSettingsProps } from "./TextStyle";
 import { FieldFormatOptions, FieldPropertyHost, FieldPropertyPath } from "./TextField";
 
 /** Options supplied to [[TextBlockComponent.clearStyleOverrides]] to control how the style overrides are cleared on the component and its child components.
@@ -878,40 +878,30 @@ export function* traverseTextBlockComponent(parent: StructuralTextBlockComponent
  * @beta
  */
 export function getMarkerText(marker: ListMarker, num: number): string {
-  switch (marker) {
-    case OrderedListMarker.A:
-      return integerToAlpha(num);
-    case OrderedListMarker.AWithPeriod:
-      return `${integerToAlpha(num)}.`;
-    case OrderedListMarker.AWithParenthesis:
-      return `${integerToAlpha(num)})`;
-    case OrderedListMarker.I:
-      return integerToRoman(num);
-    case OrderedListMarker.IWithPeriod:
-      return `${integerToRoman(num)}.`;
-    case OrderedListMarker.IWithParenthesis:
-      return `${integerToRoman(num)})`;
-    case OrderedListMarker.a:
-      return integerToAlpha(num).toLowerCase();
-    case OrderedListMarker.aWithPeriod:
-      return `${integerToAlpha(num).toLowerCase()}.`;
-    case OrderedListMarker.aWithParenthesis:
-      return `${integerToAlpha(num).toLowerCase()})`;
-    case OrderedListMarker.i:
-      return integerToRoman(num).toLowerCase();
-    case OrderedListMarker.iWithPeriod:
-      return `${integerToRoman(num).toLowerCase()}.`;
-    case OrderedListMarker.iWithParenthesis:
-      return `${integerToRoman(num).toLowerCase()})`;
-    case OrderedListMarker.One:
-      return `${num}`;
-    case OrderedListMarker.OneWithPeriod:
-      return `${num}.`;
-    case OrderedListMarker.OneWithParenthesis:
-      return `${num})`;
-    default: // Return marker as-is in an unordered fashion
-      return marker;
+  let markerString = "";
+
+  switch (marker.enumerator) {
+    case ListMarkerEnumerator.Number:
+      markerString = `${num}`;
+      break;
+    case ListMarkerEnumerator.Letter:
+      markerString = integerToAlpha(num);
+      break;
+    case ListMarkerEnumerator.RomanNumeral:
+      markerString = integerToRoman(num);
+      break;
+    default:
+      markerString = marker.enumerator;
+      break;
   }
+
+  if (marker.case) {
+    markerString = marker.case === "upper" ? markerString.toUpperCase() : markerString.toLowerCase();
+  }
+
+  const terminator = marker.terminator === "period" ? "." : marker.terminator === "parenthesis" ? ")" : "";
+
+  return `${markerString}${terminator}`;
 }
 
 /**

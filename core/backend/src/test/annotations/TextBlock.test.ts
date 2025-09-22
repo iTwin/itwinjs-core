@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges, TextStyleResolver } from "../../annotations/TextBlockLayout";
 import { Geometry, Range2d } from "@itwin/core-geometry";
-import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, List, OrderedListMarker, Paragraph, ParagraphProps, Run, RunLayoutResult, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings, UnorderedListMarker } from "@itwin/core-common";
+import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, List, ListMarkerEnumerator, Paragraph, ParagraphProps, Run, RunLayoutResult, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Id64String, ProcessDetector } from "@itwin/core-bentley";
@@ -713,7 +713,7 @@ describe("layoutTextBlock", () => {
             },
             {
               type: "list",
-              styleOverrides: { listMarker: UnorderedListMarker.Bullet },
+              styleOverrides: { listMarker: { enumerator: ListMarkerEnumerator.Bullet } },
               children: [
                 {
                   children: [
@@ -731,7 +731,7 @@ describe("layoutTextBlock", () => {
                     },
                     {
                       type: "list",
-                      styleOverrides: { listMarker: OrderedListMarker.iWithPeriod },
+                      styleOverrides: { listMarker: { enumerator: ListMarkerEnumerator.RomanNumeral, case: "lower", terminator: "period" } },
                       children: [
                         {
                           children: [
@@ -1261,7 +1261,7 @@ describe("layoutTextBlock", () => {
       list.children.push(Paragraph.create({ children: [TextRun.create({ content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit" })] }));
       const apples = Paragraph.create({ children: [TextRun.create({ content: "sed do" })] });
 
-      const subList = List.create({ styleOverrides: { listMarker: OrderedListMarker.aWithPeriod } });
+      const subList = List.create({ styleOverrides: { listMarker: { enumerator: ListMarkerEnumerator.Letter, case: "lower", terminator: "period" } } });
       subList.children.push(Paragraph.create({ children: [TextRun.create({ content: "eiusmod tempor" })] }));
       subList.children.push(Paragraph.create({ children: [TextRun.create({ content: "incididunt ut labore et dolore magna aliqua" })] }));
 
@@ -1706,7 +1706,7 @@ describe("produceTextBlockGeometry", () => {
           },
           {
             type: "list",
-            styleOverrides: { listMarker: UnorderedListMarker.Bullet, color: ColorDef.red.tbgr },
+            styleOverrides: { listMarker: { enumerator: ListMarkerEnumerator.Bullet }, color: ColorDef.red.tbgr },
             children: [
               {
                 children: [
@@ -1725,7 +1725,7 @@ describe("produceTextBlockGeometry", () => {
                   },
                   {
                     type: "list",
-                    styleOverrides: { listMarker: OrderedListMarker.iWithPeriod },
+                    styleOverrides: { listMarker: { enumerator: ListMarkerEnumerator.RomanNumeral, case: "lower", terminator: "period" } },
                     children: [
                       {
                         children: [

@@ -10,7 +10,8 @@ import {
   LeaderTextPointOptions,
   LineBreakRun,
   List,
-  OrderedListMarker,
+  ListMarker,
+  ListMarkerEnumerator,
   Paragraph,
   Placement2dProps,
   Run,
@@ -27,7 +28,6 @@ import {
   TextFrameStyleProps,
   TextRun,
   TextStyleSettingsProps,
-  UnorderedListMarker
 } from "@itwin/core-common";
 import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
@@ -174,7 +174,7 @@ class TextEditor implements Decorator {
     }));
   }
 
-  public appendList(index: number = 0, listMarker?: string): void {
+  public appendList(index: number = 0, listMarker?: ListMarker): void {
     const list = List.create({ styleOverrides: { fontName: this.runStyle.fontName, ...this.runStyle, listMarker } });
 
     const path = this.pathToLastChild().filter(component => component.type === "paragraph");
@@ -626,14 +626,16 @@ export class TextDecorationTool extends Tool {
 
         break;
       }
-      case "list": {
-        const index = inArgs[2] !== undefined ? parseInt(inArgs[2], 10) : undefined;
-        let listMarker = inArgs[1];
+      case "list": { // args are enumerator, terminator, case, index
 
-        if (listMarker in OrderedListMarker) listMarker = (OrderedListMarker as any)[listMarker];
-        else if (listMarker in UnorderedListMarker) listMarker = (UnorderedListMarker as any)[listMarker];
+        let enumerator = inArgs[1];
+        if (enumerator in ListMarkerEnumerator) enumerator = (ListMarkerEnumerator as any)[enumerator];
 
-        editor.appendList(index, listMarker);
+        const terminator = inArgs[2] === "none" ? undefined : inArgs[2] as "period" | "parenthesis";
+        const listCase = inArgs[3] === "none" ? undefined : inArgs[3] as "lower" | "upper";
+
+        const index = inArgs[4] !== undefined ? parseInt(inArgs[4], 10) : undefined;
+        editor.appendList(index, { enumerator, terminator, case: listCase });
         break;
       }
       case "list-item": {

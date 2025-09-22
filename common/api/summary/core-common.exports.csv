@@ -530,7 +530,8 @@ public;namespace;LineStyle
 public;interface;LineStyleProps
 preview;interface;LineStyleProps
 beta;class;List
-beta;type;ListMarker
+beta;interface;ListMarker
+beta;enum;ListMarkerEnumerator
 beta;interface;ListProps
 public;type;LocalAlignedBox3d
 public;interface;LocalBriefcaseProps
@@ -623,7 +624,6 @@ public;interface;OpenDbKey
 public;interface;OpenSqliteArgs
 internal;const;OPERATION
 alpha;interface;OrbitGtBlobProps
-beta;enum;OrderedListMarker
 beta;enum;OverriddenBy
 public;interface;OverrideElementAppearanceOptions
 public;type;OverrideFeatureAppearanceArgs
@@ -1011,7 +1011,6 @@ preview;interface;TypeDefinitionElementProps
 internal;type;TypedGltfChunk
 public;enum;TypeOfChange
 public;type;UnitType
-beta;enum;UnorderedListMarker
 public;type;UpdateCallback
 beta;interface;UpgradeOptions
 public;interface;UrlLinkProps
