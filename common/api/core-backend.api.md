@@ -4290,6 +4290,8 @@ export class LineLayout {
     offsetFromDocument: WritableXAndY;
     // (undocumented)
     range: Range2d;
+    // (undocumented)
+    runRange: Range2d;
     get runs(): ReadonlyArray<RunLayout>;
     // (undocumented)
     source: List | Run | Paragraph;
