@@ -172,7 +172,6 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     // Use the radius from the sphere creation (which should be 15000)
     let radius = 15000; // Use the radius from CesiumDecorator
 
-
     const transform = sphere.getConstructiveFrame();
     if (transform) {
       const matrix = transform.matrix;
