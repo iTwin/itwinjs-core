@@ -945,7 +945,7 @@ function integerToRoman(num: number): string {
  * @returns The alphabetic string for the given number.
  */
 function integerToAlpha(num: number): string {
-  const letterOffset = (num - 1) % 26
+  const letterOffset = (num - 1) % 26;
   const letter = String.fromCharCode(65 + letterOffset);
   const depth = Math.ceil(num / 26);
   return letter.repeat(depth);
