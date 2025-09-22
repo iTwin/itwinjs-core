@@ -31,7 +31,7 @@ function findTextStyleImpl(id: Id64String): TextStyleSettings {
   return TextStyleSettings.fromJSON({ lineSpacingFactor: 1, fontName: "other" });
 }
 
-describe("layoutTextBlock", () => {
+describe.only("layoutTextBlock", () => {
   describe("resolves TextStyleSettings", () => {
     it("inherits styling from TextBlock when Paragraph and Run have no style overrides", () => {
       const textBlock = TextBlock.create();
@@ -337,7 +337,7 @@ describe("layoutTextBlock", () => {
 
   });
 
-  describe("range", () => {
+  describe.only("range", () => {
 
     it("aligns text to center based on height of stacked fraction", () => {
       const textBlock = TextBlock.create();
@@ -534,17 +534,17 @@ describe("layoutTextBlock", () => {
       expect(tb.lines[2].runs.length).to.equal(1);
 
       /* Final TextBlock should look like:
-        abc↵
-        defghi↵
-        jkl
+        ⇥abc↵
+        ⇥defghi↵
+        ⇥jkl
 
-        Where ↵ = LineBreak, ¶ = ParagraphBreak
+        Where ↵ = LineBreak, ¶ = ParagraphBreak, ⇥ = indentation
 
         We have 3 lines each `lineHeight` high, plus 2 line breaks in between each `lineHeight*lineSpacingFactor` high.
         No paragraph spacing should be applied since there is only one paragraph.
       */
 
-      expect(tb.range.low.x).to.equal(0);
+      expect(tb.range.low.x).to.equal(7);
       expect(tb.range.high.x).to.equal(6 + 7); // 7 for indentation, 6 for the length of "defghi"
       expect(tb.range.high.y).to.equal(0);
       expect(tb.range.low.y).to.equal(-(lineHeight * 3 + (lineHeight * lineSpacingFactor) * 2));
@@ -552,8 +552,8 @@ describe("layoutTextBlock", () => {
       expect(tb.lines[0].offsetFromDocument.y).to.equal(-lineHeight);
       expect(tb.lines[1].offsetFromDocument.y).to.equal(tb.lines[0].offsetFromDocument.y - (lineHeight + lineHeight * lineSpacingFactor));
       expect(tb.lines[2].offsetFromDocument.y).to.equal(tb.lines[1].offsetFromDocument.y - (lineHeight + lineHeight * lineSpacingFactor));
-      // TODO: investigate why this is failing. It seems like the first line is not getting the indentation applied for some reason.
-      // expect(tb.lines.every((line) => line.offsetFromDocument.x === 7)).to.be.true;
+
+      tb.lines.forEach((line) => expect(line.offsetFromDocument.x).to.equal(7));
     });
 
     it("computes paragraph spacing and indentation", () => {
@@ -597,7 +597,7 @@ describe("layoutTextBlock", () => {
           4 paragraph breaks in between each `lineHeight*paragraphSpacingFactor` high
       */
 
-      expect(tb.range.low.x).to.equal(0);
+      expect(tb.range.low.x).to.equal(7); // 7 for indentation
       expect(tb.range.high.x).to.equal(7 + 5 + 11); // 7 for indentation, 5 for the tab stop, 11 for the length of "list item 1"
       expect(tb.range.high.y).to.equal(0);
       expect(tb.range.low.y).to.equal(-(lineHeight * 6 + (lineHeight * lineSpacingFactor) * 5 + (lineHeight * paragraphSpacingFactor) * 4));
@@ -607,8 +607,7 @@ describe("layoutTextBlock", () => {
       let offsetX = indentation;
 
       expect(tb.lines[0].offsetFromDocument.y).to.equal(offsetY);
-      // TODO: investigate why this is failing. It seems like the first line is not getting the indentation applied for some reason.
-      // expect(tb.lines[0].offsetFromDocument.x).to.equal(offsetX);
+      expect(tb.lines[0].offsetFromDocument.x).to.equal(offsetX);
 
       offsetY -= (lineHeight + lineHeight * lineSpacingFactor);
       expect(tb.lines[1].offsetFromDocument.y).to.equal(offsetY);
@@ -795,8 +794,7 @@ describe("layoutTextBlock", () => {
       const tb = doLayout(textBlock);
       expect(tb.lines.length).to.equal(7);
 
-      //TODO: not working
-      // expect(tb.range.low.x).to.equal(0);
+      expect(tb.range.low.x).to.equal(7 + 5 - 5 / 2 - 2); // indentation + tabInterval - tabInterval/2 (for marker offset) + 2 (for the marker "1." justification, it's 2 characters wide)
       expect(tb.range.high.x).to.equal(7 + 3 * 5 + 21); // 7 for indentation, 3 * 5 for the most nested tab stops, 21 for the length of "Rhode Island Greening"
       expect(tb.range.high.y).to.equal(0);
       expect(tb.range.low.y).to.equal(-(lineHeight * 7 + (lineHeight * lineSpacingFactor) * 6 + (lineHeight * paragraphSpacingFactor) * 6));

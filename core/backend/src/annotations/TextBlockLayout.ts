@@ -707,7 +707,7 @@ export class TextBlockLayout {
       return;
     }
 
-    let curLine = new LineLayout(doc.children[0], doc.children[0].styleOverrides);
+    let curLine = new LineLayout(doc.children[0], doc.children[0].styleOverrides, context);
     let childIndex = 0;
     for (const child of doc.children) {
       curLine = this.populateComponent(child, childIndex++, context, doc.width, curLine, doc, doc.styleOverrides);
