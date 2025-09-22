@@ -190,6 +190,7 @@ internal;interface;CustomViewState3dProps
 public;class;CutStyle
 public;interface;CutStyleProps
 public;type;DanishSystem34Region
+beta;interface;DateTimeFieldFormatOptions
 internal;interface;DbBlobRequest
 internal;interface;DbBlobResponse
 internal;interface;DbQueryConfig
@@ -313,11 +314,15 @@ public;class;FeatureOverrides
 public;enum;FeatureOverrideType
 public;class;FeatureTable
 internal;class;FeatureTableHeader
-beta;interface;FieldFormatter
+beta;type;FieldCase
+beta;interface;FieldFormatOptions
+internal;type;FieldPrimitiveValue
 beta;interface;FieldPropertyHost
 beta;interface;FieldPropertyPath
+beta;type;FieldPropertyType
 beta;class;FieldRun
 beta;interface;FieldRunProps
+internal;interface;FieldValue
 public;interface;FilePropertyProps
 public;enum;FillDisplay
 public;enum;FillFlags
@@ -332,6 +337,7 @@ public;interface;FontMapProps
 deprecated;interface;FontMapProps
 public;interface;FontProps
 public;enum;FontType
+internal;function;formatFieldValue
 internal;interface;FormDataCommon
 beta;class;FractionRun
 beta;interface;FractionRunProps
@@ -499,6 +505,7 @@ internal;namespace;IpcWebSocketMessage
 internal;enum;IpcWebSocketMessageType
 internal;class;IpcWebSocketTransport
 public;function;isBinaryImageSource
+internal;function;isKnownFieldPropertyType
 internal;function;isKnownTileFormat
 public;function;isPlacement2dProps
 preview;function;isPlacement2dProps

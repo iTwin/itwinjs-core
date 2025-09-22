@@ -926,11 +926,14 @@ describe("Azimuth and Revolution formatting that throws error:", () => {
   });
 
   it("should throw an error if _azimuthBase is defined and _azimuthBaseUnit is undefined when revolutionUnit is defined", async () => {
-    testFormatWithAzimuthType.revolutionUnit = await unitsProvider.findUnitByName("Units.REVOLUTION"); // Set _revolutionUnit to a defined value
-    testFormatWithAzimuthType.azimuthBase = 123; // Set _azimuthBase to a defined value
-    testFormatWithAzimuthType.azimuthBaseUnit = undefined; // Ensure _azimuthBaseUnit is undefined
+    const jsonObj = {
+      type: "azimuth",
+      revolutionUnit: "Units.REVOLUTION",
+      azimuthBase: 123,
+    };
+
     try {
-      await testFormatWithAzimuthType.fromJSON(unitsProvider, { type: "azimuth" });
+      await testFormatWithAzimuthType.fromJSON(unitsProvider, jsonObj);
       expect.fail("Expected error was not thrown");
     } catch (e: any) {
       expect(e.message).toEqual("The Format testAzimuthFormat has an 'azimuthBase' attribute therefore the attribute 'azimuthBaseUnit' is required.");

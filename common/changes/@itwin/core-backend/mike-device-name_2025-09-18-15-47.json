@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Briefcase Manager now provides deviceName to acquired briefcases",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

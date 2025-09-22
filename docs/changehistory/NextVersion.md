@@ -17,7 +17,7 @@ publish: false
   - [Display](#display)
     - [Draco decoding](#draco-decoding)
   - [Geometry](#geometry)
-    - [@itwin/geometry](#itwingeometry)
+    - [Clippers for a curve chain](#clippers-for-a-curve-chain)
 
 ## @itwin/core-ecschema-metadata
 
