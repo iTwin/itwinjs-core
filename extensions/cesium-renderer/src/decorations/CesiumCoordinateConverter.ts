@@ -131,7 +131,6 @@ export class CesiumCoordinateConverter {
 
   /**
    * Create CesiumJS camera from iTwin.js ViewDefinition
-   * Based on your provided example with spatialToEcef integration
    * @param viewDefinition iTwin.js ViewDefinition3dProps
    * @param ecefLoc Optional EcefLocation override
    * @param modelExtents Optional model extents override
