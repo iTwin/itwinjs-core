@@ -56,8 +56,6 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     return baseOptions;
   }
 
-
-
   private createPointPrimitiveFromGraphic(
     graphic: RenderGraphicWithCoordinates,
     pointId: string,
