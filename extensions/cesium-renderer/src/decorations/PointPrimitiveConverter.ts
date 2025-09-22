@@ -22,7 +22,6 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     this.primitiveType = primitiveType;
   }
 
-
   protected override getCollection(scene: CesiumScene): PointPrimitiveCollection {
     return scene.pointCollection;
   }
