@@ -153,6 +153,11 @@ export class Schema implements CustomAttributeContainerProps {
   /** Returns the schema context this schema is within. */
   public get context(): SchemaContext { return this._context; }
 
+  /** Returns whether this schema is dynamic schema */
+  public get isDynamic(): boolean {
+    return this.customAttributes !== undefined && this.customAttributes.has("CoreCustomAttributes.DynamicSchema");
+  }
+
   /**
    * Returns the SchemaLoadingController for this Schema. This would only be set if the schema is
    * loaded incrementally.
