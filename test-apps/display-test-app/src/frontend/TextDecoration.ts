@@ -513,12 +513,11 @@ export class TextDecorationTool extends Tool {
         const key = inArgs[1];
         const val = inArgs[2];
         const frame: TextFrameStyleProps = editor.documentStyle.frame ?? { shape: "none" };
-        if (key === "fill") frame.fill = (val === "background" || val === "subcategory") ? val : val ? ColorDef.fromString(val).toJSON() : undefined;
-        else if (key === "border") frame.border = val ? ColorDef.fromString(val).toJSON() : undefined;
+        if (key === "fillColor") frame.fillColor = (val === "background" || val === "subcategory") ? val : val ? ColorDef.fromString(val).toJSON() : undefined;
+        else if (key === "borderColor") frame.borderColor = val ? ColorDef.fromString(val).toJSON() : undefined;
         else if (key === "borderWeight") frame.borderWeight = Number(val);
         else if (key === "shape") frame.shape = val as TextAnnotationFrameShape;
-        else throw new Error("Expected shape, fill, border, borderWeight");
-
+        else throw new Error("Expected shape, fillColor, borderColor, borderWeight");
         editor.documentStyle.frame = frame;
 
         break;

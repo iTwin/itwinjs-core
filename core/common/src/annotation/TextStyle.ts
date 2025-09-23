@@ -78,9 +78,9 @@ export interface TextFrameStyleProps {
   /** Shape of the frame. Default: "none" */
   shape?: TextAnnotationFrameShape;
   /** The color to fill the shape of the text frame. This fill is applied using [[FillDisplay.Blanking]]. Default: "none" */
-  fill?: TextAnnotationFillColor;
+  fillColor?: TextAnnotationFillColor;
   /** The color of the text frame's outline. Default: black */
-  border?: TextStyleColor;
+  borderColor?: TextStyleColor;
   /** This will be used to set the [[GeometryParams.weight]] property of the frame (in pixels). Default: 1px */
   borderWeight?: number;
 };
@@ -341,8 +341,8 @@ export class TextStyleSettings {
     listMarker: { enumerator: "1", terminator: "period", case: "lower" },
     frame: {
       shape: "none",
-      fill: "none",
-      border: ColorDef.black.toJSON(),
+      fillColor: "none",
+      borderColor: ColorDef.black.toJSON(),
       borderWeight: 1,
     },
   };
@@ -384,8 +384,8 @@ export class TextStyleSettings {
 
     const frame = {
       shape: props.frame?.shape ?? defaults.frame.shape,
-      fill: props.frame?.fill ?? defaults.frame.fill,
-      border: props.frame?.border ?? defaults.frame.border,
+      fillColor: props.frame?.fillColor ?? defaults.frame.fillColor,
+      borderColor: props.frame?.borderColor ?? defaults.frame.borderColor,
       borderWeight: props.frame?.borderWeight ?? defaults.frame.borderWeight,
     };
     // Cast to indicate to TypeScript that the frame properties are all defined
@@ -430,8 +430,8 @@ export class TextStyleSettings {
 
   public frameEquals(other: TextFrameStyleProps): boolean {
     return this.frame?.shape === other.shape
-      && this.frame?.fill === other.fill
-      && this.frame?.border === other.border
+      && this.frame?.fillColor === other.fillColor
+      && this.frame?.borderColor === other.borderColor
       && this.frame?.borderWeight === other.borderWeight;
   }
 

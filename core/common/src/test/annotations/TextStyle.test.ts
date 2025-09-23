@@ -25,8 +25,8 @@ describe("TextStyleSettings", () => {
     widthFactor: 2,
     frame: {
       shape: "rectangle",
-      fill: ColorDef.green.tbgr,
-      border: ColorDef.red.tbgr,
+      fillColor: ColorDef.green.tbgr,
+      borderColor: ColorDef.red.tbgr,
       borderWeight: 2,
     },
     leader: {
