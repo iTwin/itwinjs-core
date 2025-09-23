@@ -1460,7 +1460,8 @@ export class HalfEdgeGraph {
   private _maskManager: MaskManager;
   public constructor() {
     this.allHalfEdges = [];
-    this._maskManager = MaskManager.create(HalfEdgeMask.ALL_GRAB_DROP_MASKS) as MaskManager;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    this._maskManager = MaskManager.create(HalfEdgeMask.ALL_GRAB_DROP_MASKS)!; // guaranteed to not return undefined
   }
   /**
    * Ask for a mask (from the graph's free pool) for caller's use.

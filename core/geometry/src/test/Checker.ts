@@ -23,8 +23,6 @@ import { IModelJson } from "../serialization/IModelJsonSchema";
 import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
 import { prettyPrint } from "./testFunctions";
 
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-
 type NonUndefined<T> = T extends undefined ? never : T;
 
 export class Checker {
@@ -556,7 +554,10 @@ export class Checker {
     const range = g.range();
 
     if (!range.isNull && range.maxAbs() <= maxCoordinate) {
-      Checker._cache.push(g.clone()!);
+      const gClone = g.clone();
+      if (!gClone)
+        return;
+      Checker._cache.push(gClone);
       Checker._cache[Checker._cache.length - 1].tryTransformInPlace(Checker._transform);
     }
   }

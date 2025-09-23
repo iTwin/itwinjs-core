@@ -1248,6 +1248,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
   private createIndicesInLineString(ls: LineString3d, vParam: number, transform?: Transform) {
     const n = ls.numPoints();
+    if (n === 0)
+      return;
     const pointIndices = ls.ensureEmptyPointIndices();
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const index0 = this.findOrAddPointInLineString(ls, 0, transform)!; // never undefined because index is valid

@@ -25,8 +25,6 @@ import { BentleyGeometryFlatBuffer } from "../serialization/BentleyGeometryFlatB
 import { IModelJson } from "../serialization/IModelJsonSchema";
 import { prettyPrint } from "./testFunctions";
 
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-
 // Methods (called from other files in the test suite) for doing I/O of tests files.
 export class GeometryCoreTestIO {
   /** For debugging: set to true to enable output to console via wrapped methods. */
@@ -287,7 +285,9 @@ export class GeometryCoreTestIO {
     const centers = [];
     for (visitor.reset(); visitor.moveToNextFacet();) {
       centers.length = 0;
-      const centroid = PolygonOps.centroidAreaNormal(visitor.point)!;
+      const centroid = PolygonOps.centroidAreaNormal(visitor.point);
+      if (!centroid)
+        continue;
       for (let i = 0; i < visitor.point.length; i++) {
         visitor.point.getPoint3dAtUncheckedPointIndex(i, xyz);
         const distanceToCentroid = xyz.distance(centroid.getOriginRef());
@@ -482,8 +482,8 @@ export class GeometryCoreTestIO {
       }
     } else if (data instanceof CurveLocationDetail) {
       if (data.hasFraction1) {
-        if (data.curve) {
-          const partialCurve = data.curve.clonePartialCurve(data.fraction, data.fraction1!);
+        if (data.curve && undefined !== data.fraction1) {
+          const partialCurve = data.curve.clonePartialCurve(data.fraction, data.fraction1);
           if (partialCurve) {
             const curveB = CurveChainWireOffsetContext.createSingleOffsetPrimitiveXY(partialCurve, 0.6 * markerSize);
             this.captureGeometry(collection, curveB, dx, dy, dz);

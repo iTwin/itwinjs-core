@@ -1225,7 +1225,7 @@ export namespace IModelJson {
       const radiusB = Reader.parseNumberProperty(json, "minorRadius");
       const sweepAngle = Reader.parseAngleProperty(json, "sweepAngle", undefined);
       const capped = Reader.parseBooleanProperty(json, "capped", false);
-      if (capped !== undefined && axes !== undefined &&center
+      if (capped !== undefined && axes !== undefined && center
         && radiusA !== undefined
         && radiusB !== undefined) {
         return TorusPipe.createDgnTorusPipe(center, axes.columnX(), axes.columnY(),
@@ -1812,7 +1812,8 @@ export namespace IModelJson {
         edgeMateIndex = [];
         if (!SerializationHelpers.announceUncompressedZeroBasedReflexiveIndices(pf.data.edgeMateIndex, pf.facetStart,
           SerializationHelpers.EdgeMateIndex.BlockSeparator, SerializationHelpers.EdgeMateIndex.NoEdgeMate,
-          (i: number) => (edgeMateIndex as number[]).push(i),
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          (i: number) => (edgeMateIndex!).push(i), // edgeMateIndex is defined if we are here
         )) {
           edgeMateIndex = undefined;
         }

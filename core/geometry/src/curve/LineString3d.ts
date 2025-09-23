@@ -538,8 +538,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       return interpolatedPoint ?? Point3d.createZero();
     }
     const index0 = Math.floor(fraction / df);
-    const interpolatedPt = this._points.interpolate(index0, (fraction - index0 * df) / df, index0 + 1, result);
-    return interpolatedPt ?? Point3d.createZero();
+    return this._points.interpolate(index0, (fraction - index0 * df) / df, index0 + 1, result) ?? Point3d.createZero();
   }
   /**
    * Evaluate a point a fractional position and derivative with respect to fraction along this linestring.

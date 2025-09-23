@@ -671,9 +671,9 @@ export class BGFBReader {
       return TorusPipe.createDgnTorusPipe(center, vectorX, vectorY, majorRadius, minorRadius, Angle.createRadians(sweepRadians), detail.capped());
     } if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnExtrusion) {
       const header = variant.geometry(new BGFBAccessors.DgnExtrusion());
-      const dVector = new BGFBAccessors.DVector3d();
       if (!header)
         return undefined;
+      const dVector = new BGFBAccessors.DVector3d();
       header.extrusionVector(dVector);
       const extrusionVector = Vector3d.create(dVector.x(), dVector.y(), dVector.z());
       const baseCurve = header.baseCurve();
@@ -683,9 +683,9 @@ export class BGFBReader {
       }
     } if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnRotationalSweep) {
       const header = variant.geometry(new BGFBAccessors.DgnRotationalSweep());
-      const dAxis = new BGFBAccessors.DRay3d();
       if (!header)
         return undefined;
+      const dAxis = new BGFBAccessors.DRay3d();
       header.axis(dAxis);
       const axis = Ray3d.createXYZUVW(dAxis.x(), dAxis.y(), dAxis.z(), dAxis.ux(), dAxis.uy(), dAxis.uz());
       const sweepAngle = Angle.createRadians(header.sweepRadians());

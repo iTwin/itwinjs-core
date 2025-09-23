@@ -1008,10 +1008,7 @@ export class OffsetMeshContext {
         OffsetMeshContext.stringDebugFunction(` VERTEX LOOP   ${JSON.stringify(vertexSeed.getPoint3d().toJSON())} `);
         vertexSeed.sumAroundVertex(
           (node: HalfEdge) => {
-            const stringDebugFunction = OffsetMeshContext.stringDebugFunction;
-            if (!stringDebugFunction)
-              return 0;
-            stringDebugFunction(this.inspectMasks(node, false, true));
+            OffsetMeshContext.stringDebugFunction?.(this.inspectMasks(node, false, true));
             return 0;
           });
       }
