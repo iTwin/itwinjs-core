@@ -483,12 +483,22 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         localB.coffs[1], localB.coffs[4], localB.coffs[7], // vector90 xyw
         ellipseRadians, circleRadians,
       );
+      const tol2 = this._coincidentGeometryContext.tolerance * this._coincidentGeometryContext.tolerance;
       // the intersections are transform-invariant, so the solution angles apply directly to the input arcs
       for (let i = 0; i < ellipseRadians.length; i++) {
-        const fractionA = cpA.sweep.radiansToSignedFraction(circleRadians[i], extendA0);
-        const fractionB = cpB.sweep.radiansToSignedFraction(ellipseRadians[i], extendB0);
-        if (this.acceptFraction(extendA0, fractionA, extendA1) && this.acceptFraction(extendB0, fractionB, extendB1))
+        let fractionA = cpA.sweep.radiansToSignedFraction(circleRadians[i], extendA0);
+        let fractionB = cpB.sweep.radiansToSignedFraction(ellipseRadians[i], extendB0);
+        if (this.acceptFraction(extendA0, fractionA, extendA1) && this.acceptFraction(extendB0, fractionB, extendB1)) {
           this.recordPointWithLocalFractions(fractionA, cpA, 0, 1, fractionB, cpB, 0, 1, reversed);
+        } else { // check for endpoint intersections beyond angular tolerance but within point tolerance
+          fractionA = cpA.sweep.fractionToSignedPeriodicFraction(fractionA) < 0.5 ? 0 : 1;
+          fractionB = cpB.sweep.fractionToSignedPeriodicFraction(fractionB) < 0.5 ? 0 : 1;
+          const endPointA = cpA.fractionToPoint(fractionA, CurveCurveIntersectXY._workPointAA0);
+          const endPointB = cpB.fractionToPoint(fractionB, CurveCurveIntersectXY._workPointBB0);
+          const dist2 = endPointA.distanceSquaredXY(endPointB);
+          if (Geometry.isDistanceWithinTol(dist2, tol2))
+            this.recordPointWithLocalFractions(fractionA, cpA, 0, 1, fractionB, cpB, 0, 1, reversed);
+        }
       }
     }
   }
@@ -503,17 +513,22 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   private dispatchArcArc(
     cpA: Arc3d, extendA0: boolean, extendA1: boolean, cpB: Arc3d, extendB0: boolean, extendB1: boolean, reversed: boolean,
   ): void {
+    // overlap handling. perspective is not handled.
+    if (this._coincidentGeometryContext && !this._worldToLocalPerspective && !this._worldToLocalAffine) {
+      const pairs = this._coincidentGeometryContext.coincidentArcIntersectionXY(cpA, cpB, true);
+      if (pairs) {
+        this.recordPairs(cpA, cpB, pairs, reversed);
+        return;
+      }
+    }
+    // look for isolated intersections
     let matrixA: Matrix3d;
     let matrixB: Matrix3d;
     if (this._worldToLocalPerspective) {
       const dataA = cpA.toTransformedPoint4d(this._worldToLocalPerspective);
       const dataB = cpB.toTransformedPoint4d(this._worldToLocalPerspective);
-      matrixA = Matrix3d.createColumnsXYW(
-        dataA.vector0, dataA.vector0.w, dataA.vector90, dataA.vector90.w, dataA.center, dataA.center.w,
-      );
-      matrixB = Matrix3d.createColumnsXYW(
-        dataB.vector0, dataB.vector0.w, dataB.vector90, dataA.vector90.w, dataB.center, dataB.center.w,
-      );
+      matrixA = Matrix3d.createColumnsXYW(dataA.vector0, dataA.vector0.w, dataA.vector90, dataA.vector90.w, dataA.center, dataA.center.w);
+      matrixB = Matrix3d.createColumnsXYW(dataB.vector0, dataB.vector0.w, dataB.vector90, dataA.vector90.w, dataB.center, dataB.center.w);
     } else {
       const dataA = cpA.toTransformedVectors(this._worldToLocalAffine);
       const dataB = cpB.toTransformedVectors(this._worldToLocalAffine);
@@ -522,24 +537,14 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
     const conditionA = matrixA.conditionNumber();
     const conditionB = matrixB.conditionNumber();
-    // pick the arc that is closest to circular.
+    // the first input arc is closer to circular
     if (conditionA > conditionB)
       this.dispatchArcArcThisOrder(cpA, matrixA, extendA0, extendA1, cpB, matrixB, extendB0, extendB1, reversed);
     else
       this.dispatchArcArcThisOrder(cpB, matrixB, extendB0, extendB1, cpA, matrixA, extendA0, extendA1, !reversed);
-    // overlap handling. perspective is not handled.
-    if (!this._coincidentGeometryContext) {
-      // do nothing
-    } else if (this._worldToLocalPerspective) {
-      // do nothing
-    } else if (this._worldToLocalAffine) {
-      // do nothing
-    } else {
-      const pairs = this._coincidentGeometryContext.coincidentArcIntersectionXY(cpA, cpB, true);
-      if (pairs !== undefined)
-        this.recordPairs(cpA, cpB, pairs, reversed);
-    }
   }
+
+  /** Compute the intersection of an arc and a B-spline curve. */
   private dispatchArcBsplineCurve3d(
     cpA: Arc3d, extendA0: boolean, extendA1: boolean, cpB: BSplineCurve3d, extendB0: boolean, extendB1: boolean, reversed: boolean,
   ): void {
@@ -557,8 +562,6 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
     // The worldToLocal has moved the arc vectors into local space.
     // matrixA captures the xyw parts (ignoring z)
-    // for any point in world space,
-    // THIS CODE ONLY WORKS FOR
     const matrixAInverse = matrixA.inverse();
     if (matrixAInverse) {
       const orderF = cpB.order; // order of the beziers for simple coordinates
@@ -578,35 +581,33 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const awz = 0.0;
       const aww = matrixAInverse.at(2, 2);
 
-      if (matrixAInverse) {
-        let bezier: BezierCurve3dH | undefined;
-        for (let spanIndex = 0; ; spanIndex++) {
-          bezier = cpB.getSaturatedBezierSpan3dH(spanIndex, bezier);
-          if (!bezier) break;
-          if (this._worldToLocalPerspective)
-            bezier.tryMultiplyMatrix4dInPlace(this._worldToLocalPerspective);
-          else if (this._worldToLocalAffine)
-            bezier.tryTransformInPlace(this._worldToLocalAffine);
-          univariateBezierG.zero();
-          bezier.poleProductsXYZW(coffF, axx, axy, axz, axw);
-          univariateBezierG.addSquaredSquaredBezier(coffF, 1.0);
-          bezier.poleProductsXYZW(coffF, ayx, ayy, ayz, ayw);
-          univariateBezierG.addSquaredSquaredBezier(coffF, 1.0);
-          bezier.poleProductsXYZW(coffF, awx, awy, awz, aww);
-          univariateBezierG.addSquaredSquaredBezier(coffF, -1.0);
-          const roots = univariateBezierG.roots(0.0, true);
-          if (roots) {
-            for (const root of roots) {
-              const fractionB = bezier.fractionToParentFraction(root);
-              // The univariate bezier (which has been transformed by the view transform) evaluates into xyw space
-              const bcurvePoint4d = bezier.fractionToPoint4d(root);
-              const c = bcurvePoint4d.dotProductXYZW(axx, axy, axz, axw);
-              const s = bcurvePoint4d.dotProductXYZW(ayx, ayy, ayz, ayw);
-              const arcFraction = cpA.sweep.radiansToSignedFraction(Math.atan2(s, c), extendA0);
-              if (this.acceptFraction(extendA0, arcFraction, extendA1) &&
-                this.acceptFraction(extendB0, fractionB, extendB1)) {
-                this.recordPointWithLocalFractions(arcFraction, cpA, 0, 1, fractionB, cpB, 0, 1, reversed);
-              }
+      let bezier: BezierCurve3dH | undefined;
+      for (let spanIndex = 0; ; spanIndex++) {
+        bezier = cpB.getSaturatedBezierSpan3dH(spanIndex, bezier);
+        if (!bezier) break;
+        if (this._worldToLocalPerspective)
+          bezier.tryMultiplyMatrix4dInPlace(this._worldToLocalPerspective);
+        else if (this._worldToLocalAffine)
+          bezier.tryTransformInPlace(this._worldToLocalAffine);
+        univariateBezierG.zero();
+        bezier.poleProductsXYZW(coffF, axx, axy, axz, axw);
+        univariateBezierG.addSquaredSquaredBezier(coffF, 1.0);
+        bezier.poleProductsXYZW(coffF, ayx, ayy, ayz, ayw);
+        univariateBezierG.addSquaredSquaredBezier(coffF, 1.0);
+        bezier.poleProductsXYZW(coffF, awx, awy, awz, aww);
+        univariateBezierG.addSquaredSquaredBezier(coffF, -1.0);
+        const roots = univariateBezierG.roots(0.0, true);
+        if (roots) {
+          for (const root of roots) {
+            const fractionB = bezier.fractionToParentFraction(root);
+            // The univariate bezier (which has been transformed by the view transform) evaluates into xyw space
+            const bcurvePoint4d = bezier.fractionToPoint4d(root);
+            const c = bcurvePoint4d.dotProductXYZW(axx, axy, axz, axw);
+            const s = bcurvePoint4d.dotProductXYZW(ayx, ayy, ayz, ayw);
+            const arcFraction = cpA.sweep.radiansToSignedFraction(Math.atan2(s, c), extendA0);
+            if (this.acceptFraction(extendA0, arcFraction, extendA1) &&
+              this.acceptFraction(extendB0, fractionB, extendB1)) {
+              this.recordPointWithLocalFractions(arcFraction, cpA, 0, 1, fractionB, cpB, 0, 1, reversed);
             }
           }
         }
