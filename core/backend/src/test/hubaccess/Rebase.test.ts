@@ -724,4 +724,64 @@ describe("rebase changes & stashing api", function (this: Suite) {
     await chai.expect(b2.pushChanges({ description: `deleted child ${childId} and inserted grandchild ${grandChildId}` }))
       .to.be.rejectedWith("Foreign key conflicts in ChangeSet. Aborting rebase.");
   });
+  it.only("EDE", async () => {
+    const schema1 = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="EDE" alias="ede" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
+        <ECEntityClass typeName="Node">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="op" typeName="string" />
+            <ECProperty propertyName="var" typeName="string" />
+            <ECProperty propertyName="val" typeName="double" />
+        </ECEntityClass>
+        <ECRelationshipClass typeName="InputDrivesOutput" modifier="None" strength="referencing">
+            <BaseClass>bis:ElementOwnsChildElements</BaseClass>
+            <Source multiplicity="(0..1)" roleLabel="drives" polymorphic="true">
+                <Class class="Node"/>
+            </Source>
+            <Target multiplicity="(0..*)" roleLabel="is driven by" polymorphic="false">
+                <Class class="Node"/>
+            </Target>
+        </ECRelationshipClass>
+    </ECSchema>`;
+
+    const b1 = await testIModel.openBriefcase();
+    await  b1.importSchemaStrings([schema1]);
+    const model = testIModel.drawingModelId;
+    const category = testIModel.drawingCategoryId;
+    const code = Code.createEmpty();
+    const n1 = b1.elements.insertElement({ classFullName: "EDE:Node", model, category, code,
+      op: "", var: "n1", val: 100
+    } as NodeElementProps);
+    chai.expect(n1).to.exist;
+    const n2 = b1.elements.insertElement({ classFullName: "EDE:Node", model, category, code,
+      op: "", var: "n2", val: 200
+    } as NodeElementProps);
+    chai.expect(n2).to.exist;
+    const n3 = b1.elements.insertElement({ classFullName: "EDE:Node", model, category, code,
+      op: "sum", var: "n3", val: 0
+    } as NodeElementProps);
+    chai.expect(n3).to.exist;
+
+    b1.relationships.insertInstance({
+      classFullName: "EDE:InputDrivesOutput",
+      sourceId: n1,
+      targetId: n3,
+    });
+
+    b1.relationships.insertInstance({
+      classFullName: "EDE:InputDrivesOutput",
+      sourceId: n2,
+      targetId: n3,
+    });
+
+    b1.txns.on
+  });
 });
+
+
+interface  NodeElementProps  extends GeometricElement2dProps {
+  op: string;
+  var: string;
+  val: number;
+}
