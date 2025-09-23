@@ -58,7 +58,7 @@ class TextEditor implements Decorator {
   // Properties applied to the entire document
   public get documentStyle(): Pick<
     TextStyleSettingsProps,
-    "lineHeight" |
+    "textHeight" |
     "widthFactor" |
     "lineSpacingFactor" |
     "frame"> {
@@ -113,7 +113,7 @@ class TextEditor implements Decorator {
   }
 
   // Properties to be applied to the next run
-  public runStyle: Omit<TextStyleSettingsProps, "lineHeight" | "widthFactor" | "lineSpacingFactor"> = { fontName: "Arial" };
+  public runStyle: Omit<TextStyleSettingsProps, "widthFactor" | "lineSpacingFactor"> = { fontName: "Arial" };
   public baselineShift: BaselineShift = "none";
 
   public textBlock = TextBlock.create();
@@ -347,7 +347,6 @@ export class TextDecorationTool extends Tool {
         if (inArgs.length !== 3) {
           throw new Error("Expected numerator and denominator");
         }
-
         editor.appendFraction(inArgs[1], inArgs[2]);
         break;
       case "break":
@@ -363,8 +362,11 @@ export class TextDecorationTool extends Tool {
       case "color":
         editor.runStyle.color = ColorDef.fromString(arg).toJSON();
         break;
-      case "height":
-        editor.documentStyle.lineHeight = Number.parseFloat(arg);
+      case "docheight":
+        editor.documentStyle.textHeight = Number.parseFloat(arg);
+        break;
+      case "textheight":
+        editor.runStyle.textHeight = Number.parseFloat(arg);
         break;
       case "widthfactor":
         editor.documentStyle.widthFactor = Number.parseFloat(arg);
@@ -641,6 +643,25 @@ export class TextDecorationTool extends Tool {
       case "list-item": {
         const index = inArgs[1] !== undefined ? parseInt(inArgs[1], 10) : undefined;
         editor.appendListItem(index);
+        break;
+      }
+      case "test": {
+        editor.runStyle.fontName = "Arial";
+        editor.runStyle.textHeight = 4;
+        editor.appendText("Some text.");
+        editor.runStyle.textHeight = 3;
+        editor.appendText("more text.");
+        editor.runStyle.textHeight = 2;
+        editor.appendText("even more text");
+        editor.appendFraction("1", "2");
+        editor.runStyle.textHeight = 3;
+        editor.appendFraction("1", "2");
+        editor.runStyle.textHeight = 4;
+        editor.appendFraction("1", "2");
+        editor.runStyle.textHeight = 16;
+        editor.appendFraction("1", "2");
+        editor.runStyle.textHeight = 15;
+        editor.appendFraction("1", "2");
         break;
       }
       case "leader":

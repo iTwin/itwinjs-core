@@ -212,7 +212,7 @@ describe("TextAnnotation element", () => {
       const jobSubjectId = createJobSubjectElement(imodel, "Job").insert();
       const definitionModel = DefinitionModel.insert(imodel, jobSubjectId, "Definition");
       const { category, model } = insertSpatialModel(imodel, jobSubjectId, definitionModel);
-      const styleId = createAnnotationTextStyle(imodel, definitionModel, "test", {fontName: "Totally Real Font", lineHeight: 0.25, isItalic: true}).insert();
+      const styleId = createAnnotationTextStyle(imodel, definitionModel, "test", {fontName: "Totally Real Font", textHeight: 0.25, isItalic: true}).insert();
 
       expect(jobSubjectId).not.to.be.undefined;
       expect(category).not.to.be.undefined;
@@ -363,8 +363,8 @@ describe("TextAnnotation element", () => {
       imodel = await createIModel("DefaultTextStyle");
       const jobSubjectId = createJobSubjectElement(imodel, "Job").insert();
       const definitionModel = DefinitionModel.insert(imodel, jobSubjectId, "Definition");
-      const styleId = createAnnotationTextStyle(imodel, definitionModel, "test", {fontName: "Totally Real Font", lineHeight: 0.25, isItalic: true}).insert();
-      const differentStyleId = createAnnotationTextStyle(imodel, definitionModel, "alt", {fontName: "Karla", lineHeight: 0.5, isBold: true}).insert();
+      const styleId = createAnnotationTextStyle(imodel, definitionModel, "test", {fontName: "Totally Real Font", textHeight: 0.25, isItalic: true}).insert();
+      const differentStyleId = createAnnotationTextStyle(imodel, definitionModel, "alt", {fontName: "Karla", textHeight: 0.5, isBold: true}).insert();
 
       expect(jobSubjectId).not.to.be.undefined;
       expect(definitionModel).not.to.be.undefined;
@@ -517,7 +517,7 @@ describe("AnnotationTextStyle", () => {
     const textStyle = TextStyleSettings.fromJSON({
       fontName: "Totally Real Font",
       isUnderlined: true,
-      lineHeight: 0.5
+      textHeight: 0.5
     })
     const el0 = createAnnotationTextStyle(imodel, seedDefinitionModel, "round-trip", textStyle.toJSON());
 
@@ -542,8 +542,8 @@ describe("AnnotationTextStyle", () => {
     // font is required
     annotationTextStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "no font", { fontName: ""});
     expect(() => annotationTextStyle.insert()).to.throw();
-    // lineHeight should be positive
-    annotationTextStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "invalid lineHeight", { fontName: "Totally Real Font", lineHeight: 0 });
+    // textHeight should be positive
+    annotationTextStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "invalid textHeight", { fontName: "Totally Real Font", textHeight: 0 });
     expect(() => annotationTextStyle.insert()).to.throw();
     // stackedFractionScale should be positive
     annotationTextStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "invalid stackedFractionScale", { fontName: "Totally Real Font", stackedFractionScale: 0 });
@@ -561,9 +561,9 @@ describe("AnnotationTextStyle", () => {
 
     el1.settings = el1.settings.clone({ fontName: "" });
     expect(() => el1.update()).to.throw();
-    el1.settings = el1.settings.clone({ fontName: "Totally Real Font", lineHeight: 0 });
+    el1.settings = el1.settings.clone({ fontName: "Totally Real Font", textHeight: 0 });
     expect(() => el1.update()).to.throw();
-    el1.settings = el1.settings.clone({ lineHeight: 2, stackedFractionScale: 0 });
+    el1.settings = el1.settings.clone({ textHeight: 2, stackedFractionScale: 0 });
     expect(() => el1.update()).to.throw();
     el1.settings = el1.settings.clone({ stackedFractionScale: 0.45 });
 
@@ -603,8 +603,8 @@ describe("appendTextAnnotationGeometry", () => {
       const jobSubjectId = createJobSubjectElement(imodel, "Job").insert();
       const definitionModel = DefinitionModel.insert(imodel, jobSubjectId, "Definition");
       const { category, model } = insertDrawingModel(imodel, jobSubjectId, definitionModel);
-      const styleId = createAnnotationTextStyle(imodel, definitionModel, "test", {fontName: "Totally Real Font", lineHeight: 0.25, isItalic: true}).insert();
-      const differentStyleId = createAnnotationTextStyle(imodel, definitionModel, "alt", {fontName: "Karla", lineHeight: 0.5, isBold: true}).insert();
+      const styleId = createAnnotationTextStyle(imodel, definitionModel, "test", {fontName: "Totally Real Font", textHeight: 0.25, isItalic: true}).insert();
+      const differentStyleId = createAnnotationTextStyle(imodel, definitionModel, "alt", {fontName: "Karla", textHeight: 0.5, isBold: true}).insert();
 
       expect(jobSubjectId).not.to.be.undefined;
       expect(definitionModel).not.to.be.undefined;

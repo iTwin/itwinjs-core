@@ -30,7 +30,7 @@ export interface ComputeRangesForTextLayoutArgs {
   baselineShift: BaselineShift;
   fontId: FontId;
   widthFactor: number;
-  lineHeight: number;
+  textHeight: number;
 }
 
 /** A function that uses a font to compute the layout and justification ranges of a string of text.
@@ -157,7 +157,7 @@ function scaleRange(range: Range2d, scale: number): void {
 }
 
 /**
- * Applies block level settings (lineSpacingFactor, lineHeight, widthFactor, frame, and leader) to a [TextStyleSettings]($common).
+ * Applies block level settings (lineSpacingFactor, paragraphSpacingFactor, widthFactor, frame, and leader) to a [TextStyleSettings]($common).
  * These must be set on the block, as they are meaningless on individual paragraphs/runs.
  * However, leaders are a special case and can override the block's leader settings.
  * Setting `isLeader` to `true` makes the [TextBlock]($common) settings not override the leader's settings.
@@ -169,7 +169,7 @@ function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings
   }
 
   const lineSpacingFactor = source.lineSpacingFactor ?? target.lineSpacingFactor;
-  const lineHeight = source.lineHeight ?? target.lineHeight;
+  const paragraphSpacingFactor = source.paragraphSpacingFactor ?? target.paragraphSpacingFactor;
   const widthFactor = source.widthFactor ?? target.widthFactor;
   const frame = source.frame ?? target.frame;
   const leader = source.leader ?? target.leader;
@@ -177,14 +177,14 @@ function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings
   const leaderShouldChange = !isLeader && !target.leaderEquals(leader);
 
   if (lineSpacingFactor !== target.lineSpacingFactor ||
-    lineHeight !== target.lineHeight ||
-    widthFactor !== target.widthFactor ||
-    !target.frameEquals(frame) ||
-    leaderShouldChange
+      paragraphSpacingFactor !== target.paragraphSpacingFactor ||
+      widthFactor !== target.widthFactor ||
+      !target.frameEquals(frame) ||
+      leaderShouldChange
   ) {
     const cloneProps: TextStyleSettingsProps = {
       lineSpacingFactor,
-      lineHeight,
+      paragraphSpacingFactor,
       widthFactor,
       frame,
     };
@@ -275,7 +275,7 @@ class LayoutContext {
   public computeRangeForText(chars: string, style: TextStyleSettings, baselineShift: BaselineShift): TextLayoutRanges {
     if (chars.length === 0) {
       return {
-        layout: new Range2d(0, 0, 0, style.lineHeight),
+        layout: new Range2d(0, 0, 0, style.textHeight),
         justification: new Range2d(),
       };
     }
@@ -287,7 +287,7 @@ class LayoutContext {
       baselineShift,
       bold: style.isBold,
       italic: style.isItalic,
-      lineHeight: this.textStyleResolver.blockSettings.lineHeight,
+      textHeight: style.textHeight,
       widthFactor: this.textStyleResolver.blockSettings.widthFactor,
     });
 
@@ -295,7 +295,7 @@ class LayoutContext {
       const isSub = "subscript" === baselineShift;
       const scale = isSub ? style.subScriptScale : style.superScriptScale;
       const offsetFactor = isSub ? style.subScriptOffsetFactor : style.superScriptOffsetFactor;
-      const offset = { x: 0, y: style.lineHeight * offsetFactor };
+      const offset = { x: 0, y: style.textHeight * offsetFactor };
 
       scaleRange(layout, scale);
       layout.cloneTranslated(offset, layout);
@@ -358,7 +358,7 @@ class LayoutContext {
     const interval = source.styleOverrides.tabInterval ?? style.tabInterval;
     const tabEndX = interval - lengthFromLastTab % interval;
 
-    const range = new Range2d(0, 0, 0, style.lineHeight);
+    const range = new Range2d(0, 0, 0, style.textHeight);
     range.extendXY(tabEndX, range.low.y);
 
     return range;
@@ -455,9 +455,9 @@ export class RunLayout {
         break;
       }
       default: { // "linebreak" or "tab"
-        // "tab": Tabs rely on the context they are in, so we compute its range later.
-        // lineBreak: We do this so that blank lines space correctly without special casing later.
-        range = new Range2d(0, 0, 0, style.lineHeight);
+      // "tab": Tabs rely on the context they are in, so we compute its range later.
+      // lineBreak: We do this so that blank lines space correctly without special casing later.
+        range = new Range2d(0, 0, 0, style.textHeight);
         break;
       }
     }
@@ -592,16 +592,39 @@ export class LineLayout {
     this.runRange.high.setZero();
     this.lengthFromLastTab = 0;
 
-    // Some runs (fractions) are taller than others.
-    // We want to center each run vertically inside the line.
     let lineHeight = 0;
+    let tallestNonFractionRun: RunLayout | undefined;
     for (const run of this._runs) {
-      lineHeight = Math.max(lineHeight, run.range.yLength());
+      const runHeight = run.range.yLength();
+      lineHeight = Math.max(lineHeight, runHeight);
+      if (run.source.type !== "fraction" && (!tallestNonFractionRun || runHeight > tallestNonFractionRun.range.yLength())) {
+        tallestNonFractionRun = run;
+      }
+    }
+
+    // // The baseline for the line is the bottom of the tallest non-fraction run, centered in the line.
+    let baseline = 0;
+    if (tallestNonFractionRun) {
+      baseline = (lineHeight + tallestNonFractionRun.range.yLength()) / 2
     }
 
     for (const run of this._runs) {
       const runHeight = run.range.yLength();
-      const runOffset = { x: this.runRange.high.x, y: (lineHeight - runHeight) / 2 };
+      // Vertically align runs: normal text at baseline, fractions visually centered on text or line as appropriate.
+      let yOffset = lineHeight - baseline;
+
+      if (run.source.type === "fraction") {
+        const denominatorHeight = run.denominatorRange?.yLength() ?? 0;
+        if (tallestNonFractionRun && run.style.textHeight <= tallestNonFractionRun.style.textHeight) {
+          // Shift fraction to baseline, then down by half the denominator height so it appears centered relative to any non-fraction text of the same height.
+          yOffset = (lineHeight - baseline) - denominatorHeight / 2;
+        } else {
+          // If the fraction text height is greater than the largest non-fraction text, just center it in the line.
+          yOffset = (lineHeight - runHeight) / 2;
+        }
+      }
+
+      const runOffset = { x: this.runRange.high.x, y: yOffset };
       run.offsetFromLine = runOffset;
 
       const runLayoutRange = run.range.cloneTranslated(runOffset);
@@ -846,7 +869,7 @@ export class TextBlockLayout {
 
       if (curLine.source.type !== "linebreak") {
         const newLine = new LineLayout(next, cumulativeOverrides, context, depth);
-        newLine.offsetFromDocument.y -= context.textStyleResolver.blockSettings.paragraphSpacingFactor * context.textStyleResolver.blockSettings.lineHeight;
+        newLine.offsetFromDocument.y -= context.textStyleResolver.blockSettings.paragraphSpacingFactor * context.textStyleResolver.blockSettings.textHeight;
         return newLine;
       }
 
@@ -861,7 +884,7 @@ export class TextBlockLayout {
     // Place it below any existing lines
     if (this.lines.length > 0) {
       lineOffset.y += this._back.offsetFromDocument.y;
-      lineOffset.y -= context.textStyleResolver.blockSettings.lineSpacingFactor * context.textStyleResolver.blockSettings.lineHeight;
+      lineOffset.y -= context.textStyleResolver.blockSettings.lineSpacingFactor * context.textStyleResolver.blockSettings.textHeight;
     }
 
     curLine.offsetFromDocument = lineOffset;
@@ -872,7 +895,7 @@ export class TextBlockLayout {
     this.lines.push(curLine);
     if (newParagraph) {
       const newLine = new LineLayout(next, cumulativeOverrides, context, depth);
-      newLine.offsetFromDocument.y -= context.textStyleResolver.blockSettings.paragraphSpacingFactor * context.textStyleResolver.blockSettings.lineHeight;
+      newLine.offsetFromDocument.y -= context.textStyleResolver.blockSettings.paragraphSpacingFactor * context.textStyleResolver.blockSettings.textHeight;
       return newLine;
     }
     return new LineLayout(next, cumulativeOverrides, context, depth);

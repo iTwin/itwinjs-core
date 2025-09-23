@@ -176,9 +176,9 @@ describe("LeaderGeometry", () => {
         expect(result).to.be.true;
         const terminatorLines = builder.geometries[1] as LineString3d;
         const terminatorLength = LineSegment3d.create(terminatorLines.points[0], terminatorLines.points[1]).curveLength();
-        const lineHeight = 1;
-        const terminatorWidth = (leaders[0].styleOverrides?.leader?.terminatorWidthFactor ?? 1) * lineHeight;
-        const terminatorHeight = (leaders[0].styleOverrides?.leader?.terminatorHeightFactor ?? 1) * lineHeight;
+        const textHeight = 1;
+        const terminatorWidth = (leaders[0].styleOverrides?.leader?.terminatorWidthFactor ?? 1) * textHeight;
+        const terminatorHeight = (leaders[0].styleOverrides?.leader?.terminatorHeightFactor ?? 1) * textHeight;
         //  terminator length is calculated based on the terminator width and height factors.
         const expectedTerminatorLength = Math.sqrt(terminatorWidth * terminatorWidth + terminatorHeight * terminatorHeight);
         expect(terminatorLength).to.be.closeTo(expectedTerminatorLength, 0.01);

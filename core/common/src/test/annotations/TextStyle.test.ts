@@ -10,7 +10,7 @@ describe("TextStyleSettings", () => {
   const customProps: DeepRequiredObject<TextStyleSettingsProps> = {
     color: 0xff007f,
     fontName: "customFont",
-    lineHeight: 2,
+    textHeight: 2,
     lineSpacingFactor: 1,
     paragraphSpacingFactor: 2,
     isBold: true,
@@ -78,13 +78,13 @@ describe("TextStyleSettings", () => {
 
     const invalidSettings = validSettings.clone({
       fontName: "",
-      lineHeight: 0,
+      textHeight: 0,
       stackedFractionScale: 0,
     });
 
     const errors = invalidSettings.getValidationErrors();
     expect(errors).to.include("fontName must be provided");
-    expect(errors).to.include("lineHeight must be greater than 0");
+    expect(errors).to.include("textHeight must be greater than 0");
     expect(errors).to.include("stackedFractionScale must be greater than 0");
   });
 });

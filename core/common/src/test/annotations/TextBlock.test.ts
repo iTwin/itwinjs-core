@@ -70,12 +70,12 @@ describe("TextBlockComponent", () => {
 
     beforeEach(() => {
       block = TextBlock.create({ styleOverrides: { widthFactor: 1234 }});
-      const paragraph = block.appendParagraph({ styleOverrides: { lineHeight: 42 } });
+      const paragraph = block.appendParagraph({ styleOverrides: { textHeight: 42 } });
       paragraph.children.push(TextRun.create({ styleOverrides: { fontName: "Consolas" } }));
 
       const list = List.create({ styleOverrides: { listMarker: { enumerator: "*", terminator: "period", case: "lower" } } });
       paragraph.children.push(list);
-      const listParagraph = Paragraph.create({ styleOverrides: { lineHeight: 21 } });
+      const listParagraph = Paragraph.create({ styleOverrides: { textHeight: 21 } });
       listParagraph.children.push(TextRun.create({ styleOverrides: { fontName: "Verdana" } }));
       list.children.push(listParagraph);
     });
@@ -83,11 +83,11 @@ describe("TextBlockComponent", () => {
     it("has overrides", () => {
       const overrides = getOverrides(block);
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
-      expect(overrides.paragraph).to.deep.equal({ lineHeight: 42 });
+      expect(overrides.paragraph).to.deep.equal({ textHeight: 42 });
       expect(overrides.run).to.deep.equal({ fontName: "Consolas" });
 
       expect(overrides.list).to.deep.equal({ listMarker: { enumerator: "*", terminator: "period", case: "lower" } });
-      expect(overrides.listItem).to.deep.equal({ lineHeight: 21 });
+      expect(overrides.listItem).to.deep.equal({ textHeight: 21 });
       expect(overrides.listRun).to.deep.equal({ fontName: "Verdana" });
     });
 
@@ -119,7 +119,7 @@ describe("TextBlockComponent", () => {
       block.children[0].children[1].clearStyleOverrides();
       const overrides = getOverrides(block);
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
-      expect(overrides.paragraph).to.deep.equal({ lineHeight: 42 });
+      expect(overrides.paragraph).to.deep.equal({ textHeight: 42 });
       expect(overrides.run).to.deep.equal({ fontName: "Consolas" });
 
       expect(overrides.list).to.deep.equal({});
@@ -132,11 +132,11 @@ describe("TextBlockComponent", () => {
       const overrides = getOverrides(block);
 
       expect(overrides.block).to.deep.equal({});
-      expect(overrides.paragraph).to.deep.equal({ lineHeight: 42 });
+      expect(overrides.paragraph).to.deep.equal({ textHeight: 42 });
       expect(overrides.run).to.deep.equal({ fontName: "Consolas" });
 
       expect(overrides.list).to.deep.equal({ listMarker: { enumerator: "*", terminator: "period", case: "lower" } });
-      expect(overrides.listItem).to.deep.equal({ lineHeight: 21 });
+      expect(overrides.listItem).to.deep.equal({ textHeight: 21 });
       expect(overrides.listRun).to.deep.equal({ fontName: "Verdana" });
     });
 
@@ -148,7 +148,7 @@ describe("TextBlockComponent", () => {
       expect(overrides.run).to.deep.equal({ fontName: "Consolas" });
 
       expect(overrides.list).to.deep.equal({ listMarker: { enumerator: "*", terminator: "period", case: "lower" } });
-      expect(overrides.listItem).to.deep.equal({ lineHeight: 21 });
+      expect(overrides.listItem).to.deep.equal({ textHeight: 21 });
       expect(overrides.listRun).to.deep.equal({ fontName: "Verdana" });
     });
 
@@ -156,11 +156,11 @@ describe("TextBlockComponent", () => {
       block.children[0].children[1].clearStyleOverrides({ preserveChildrenOverrides: true });
       const overrides = getOverrides(block);
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
-      expect(overrides.paragraph).to.deep.equal({ lineHeight: 42 });
+      expect(overrides.paragraph).to.deep.equal({ textHeight: 42 });
       expect(overrides.run).to.deep.equal({ fontName: "Consolas" });
 
       expect(overrides.list).to.deep.equal({});
-      expect(overrides.listItem).to.deep.equal({ lineHeight: 21 });
+      expect(overrides.listItem).to.deep.equal({ textHeight: 21 });
       expect(overrides.listRun).to.deep.equal({ fontName: "Verdana" });
     });
 
@@ -171,12 +171,12 @@ describe("TextBlockComponent", () => {
     });
 
     it("creates a deep copy of the style overrides", () => {
-      const originalOverrides: TextStyleSettingsProps = { widthFactor: 1234, lineHeight: 42, fontName: "Consolas", frame: { shape: "rectangle" }};
+      const originalOverrides: TextStyleSettingsProps = { widthFactor: 1234, textHeight: 42, fontName: "Consolas", frame: { shape: "rectangle" }};
       block.styleOverrides = originalOverrides;
 
       originalOverrides.frame!.shape = "circle";
 
-      expect(block.styleOverrides).to.deep.equal({ widthFactor: 1234, lineHeight: 42, fontName: "Consolas", frame: { shape: "rectangle" } });
+      expect(block.styleOverrides).to.deep.equal({ widthFactor: 1234, textHeight: 42, fontName: "Consolas", frame: { shape: "rectangle" } });
       expect(originalOverrides.frame!.shape).to.equal("circle");
     });
   });
@@ -426,7 +426,7 @@ describe("TextBlockComponent", () => {
 describe("TextBlock", () => {
   describe("appendParagraph", () => {
     it("creates a paragraph with no overrides by default", () => {
-      const tb = TextBlock.create({ styleOverrides: { lineHeight: 42 } });
+      const tb = TextBlock.create({ styleOverrides: { textHeight: 42 } });
       const p = tb.appendParagraph();
       expect(p.styleOverrides).to.deep.equal({});
 
@@ -437,7 +437,7 @@ describe("TextBlock", () => {
     });
 
     it("uses the overrides of the last paragraph if one exists and seedFromLast is true", () => {
-      const tb = TextBlock.create({ styleOverrides: { lineHeight: 42 } });
+      const tb = TextBlock.create({ styleOverrides: { textHeight: 42 } });
       const p1Props = { styleOverrides: { isBold: true } };
       tb.appendParagraph(p1Props);
 
@@ -448,7 +448,7 @@ describe("TextBlock", () => {
     });
 
     it("creates a paragraph with no overrides if none exist even if seedFromLast is true", () => {
-      const tb = TextBlock.create({ styleOverrides: { lineHeight: 42 } });
+      const tb = TextBlock.create({ styleOverrides: { textHeight: 42 } });
       const p1 = tb.appendParagraph(undefined, true);
       expect(p1.styleOverrides).to.deep.equal({});
     });
