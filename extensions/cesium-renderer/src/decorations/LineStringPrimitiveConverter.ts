@@ -150,17 +150,13 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter<LineStringC
     if (!color)
       return undefined;
 
-      switch (geometryType) {
-      case 'line-string':
-      default:
-        return polylineCollection.add({
-          id: lineId,
-          positions,
-          width: 2,
-          material: Material.fromType(Material.ColorType, { color }),
-          ...this.getDepthOptions(type || 'world'),
-        });
-    }
+      return polylineCollection.add({
+        id: lineId,
+        positions,
+        width: 2,
+        material: Material.fromType(Material.ColorType, { color }),
+        ...this.getDepthOptions(type || 'world'),
+      });
 
     return undefined;
   }
