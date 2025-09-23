@@ -14,6 +14,7 @@ import * as os from "os";
 import "reflect-metadata"; // this has to be before @itwin/object-storage-* and @itwin/cloud-agnostic-core imports because those packages contain decorators that use this polyfill.
 import { NativeLibrary } from "@bentley/imodeljs-native";
 import { DependenciesConfig, Types as ExtensionTypes } from "@itwin/cloud-agnostic-core";
+import { InversifyWrapper } from "@itwin/cloud-agnostic-core/lib/inversify";
 import { AccessToken, assert, BeEvent, BentleyStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
@@ -36,7 +37,6 @@ import { TileStorage } from "./TileStorage";
 import { SettingsContainer, SettingsPriority } from "./workspace/Settings";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
 import { Workspace, WorkspaceOpts } from "./workspace/Workspace";
-import { Container } from "inversify";
 import { join, normalize as normalizeDir } from "path";
 import { constructWorkspace, OwnedWorkspace } from "./internal/workspace/WorkspaceImpl";
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
@@ -673,10 +673,9 @@ export class IModelHost {
         baseUrl: credentials.baseUrl ?? `https://${credentials.account}.blob.core.windows.net`,
       },
     };
-    const ioc: Container = new Container();
-    ioc.bind<DependenciesConfig>(ExtensionTypes.dependenciesConfig).toConstantValue(config);
-    new AzureServerStorageBindings().register(ioc, config.ServerSideStorage);
-    IModelHost.tileStorage = new TileStorage(ioc.get(ServerStorage));
+    const ioc = InversifyWrapper.create();
+    ioc.registerInstance<DependenciesConfig>(ExtensionTypes.dependenciesConfig, config);
+    IModelHost.tileStorage = new TileStorage(ioc.resolve<ServerStorage>(ExtensionTypes.serverStorage));
   }
 
   /** @internal */

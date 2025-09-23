@@ -8,7 +8,6 @@ overrides:
   rollup-plugin-copy>globby: ^11.0.0
   elliptic: ^6.6.1
   form-data: ^4.0.4
-  axios: ^1.12.0
 
 pnpmfileChecksum: avk5jcsa6uxo2n5cahoirjiuw4
 
@@ -22,14 +21,14 @@ importers:
         specifier: 5.2.16
         version: 5.2.16
       '@itwin/cloud-agnostic-core':
-        specifier: ^2.2.4
-        version: 2.2.4(inversify@6.0.1)(reflect-metadata@0.1.13)
+        specifier: ^3.0.2
+        version: 3.0.2(inversify@7.5.2(reflect-metadata@0.1.13))(reflect-metadata@0.1.13)
       '@itwin/object-storage-azure':
-        specifier: ^2.3.0
-        version: 2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)
+        specifier: ^3.0.2
+        version: 3.0.2(inversify@7.5.2(reflect-metadata@0.1.13))(reflect-metadata@0.1.13)
       '@itwin/object-storage-core':
-        specifier: ^2.3.0
-        version: 2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)
+        specifier: ^3.0.2
+        version: 3.0.2(inversify@7.5.2(reflect-metadata@0.1.13))(reflect-metadata@0.1.13)
       form-data:
         specifier: ^4.0.4
         version: 4.0.4
@@ -37,8 +36,8 @@ importers:
         specifier: ^8.1.0
         version: 8.1.0
       inversify:
-        specifier: ~6.0.1
-        version: 6.0.1
+        specifier: ^7.5.2
+        version: 7.5.2(reflect-metadata@0.1.13)
       json5:
         specifier: ^2.2.3
         version: 2.2.3
@@ -237,8 +236,8 @@ importers:
         specifier: 5.2.2-dev.2
         version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/object-storage-core':
-        specifier: ^2.3.0
-        version: 2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)
+        specifier: ^3.0.2
+        version: 3.0.2(inversify@7.5.2(reflect-metadata@0.1.13))(reflect-metadata@0.1.13)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -842,14 +841,14 @@ importers:
   ../../core/frontend:
     dependencies:
       '@itwin/cloud-agnostic-core':
-        specifier: ^2.2.4
-        version: 2.2.4(inversify@6.0.1)(reflect-metadata@0.1.13)
+        specifier: ^3.0.2
+        version: 3.0.2(inversify@7.5.2(reflect-metadata@0.1.13))(reflect-metadata@0.1.13)
       '@itwin/core-i18n':
         specifier: workspace:*
         version: link:../i18n
       '@itwin/object-storage-core':
-        specifier: ^2.3.0
-        version: 2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)
+        specifier: ^3.0.2
+        version: 3.0.2(inversify@7.5.2(reflect-metadata@0.1.13))(reflect-metadata@0.1.13)
       '@itwin/webgl-compatibility':
         specifier: workspace:*
         version: link:../webgl-compatibility
@@ -2288,10 +2287,10 @@ importers:
         version: link:../../core/ecschema-metadata
       '@itwin/imodels-access-backend':
         specifier: ^5.2.1
-        version: 5.2.1(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(inversify@6.0.1)(reflect-metadata@0.1.13)
+        version: 5.2.1(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(reflect-metadata@0.1.13)
       '@itwin/imodels-client-authoring':
         specifier: ^5.8.1
-        version: 5.8.1(inversify@6.0.1)(reflect-metadata@0.1.13)
+        version: 5.8.1(reflect-metadata@0.1.13)
       '@itwin/itwins-client':
         specifier: ^1.6.1
         version: 1.6.1
@@ -2436,13 +2435,13 @@ importers:
         version: link:../../core/hypermodeling
       '@itwin/imodels-access-backend':
         specifier: ^5.2.1
-        version: 5.2.1(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(inversify@6.0.1)(reflect-metadata@0.1.13)
+        version: 5.2.1(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(reflect-metadata@0.1.13)
       '@itwin/imodels-access-frontend':
         specifier: ^5.2.1
         version: 5.2.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-frontend@..+core+frontend)
       '@itwin/imodels-client-authoring':
         specifier: ^5.8.1
-        version: 5.8.1(inversify@6.0.1)(reflect-metadata@0.1.13)
+        version: 5.8.1(reflect-metadata@0.1.13)
       '@itwin/imodels-client-management':
         specifier: ^5.8.1
         version: 5.8.1
@@ -2484,8 +2483,8 @@ importers:
         specifier: ^1.6.1
         version: 1.6.1
       '@itwin/object-storage-core':
-        specifier: ^2.3.0
-        version: 2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)
+        specifier: ^3.0.2
+        version: 3.0.2(inversify@7.5.2(reflect-metadata@0.1.13))(reflect-metadata@0.1.13)
       '@itwin/oidc-signin-tool':
         specifier: ^4.4.1
         version: 4.4.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
@@ -2617,13 +2616,13 @@ importers:
         version: link:../../core/ecschema-rpc/impl
       '@itwin/imodels-access-backend':
         specifier: ^5.2.1
-        version: 5.2.1(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(inversify@6.0.1)(reflect-metadata@0.1.13)
+        version: 5.2.1(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(reflect-metadata@0.1.13)
       '@itwin/imodels-access-frontend':
         specifier: ^5.2.1
         version: 5.2.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-frontend@..+core+frontend)
       '@itwin/imodels-client-authoring':
         specifier: ^5.8.1
-        version: 5.8.1(inversify@6.0.1)(reflect-metadata@0.1.13)
+        version: 5.8.1(reflect-metadata@0.1.13)
       '@itwin/imodels-client-management':
         specifier: ^5.8.1
         version: 5.8.1
@@ -3018,13 +3017,13 @@ importers:
         version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/imodels-access-backend':
         specifier: ^5.2.1
-        version: 5.2.1(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(inversify@6.0.1)(reflect-metadata@0.1.13)
+        version: 5.2.1(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(reflect-metadata@0.1.13)
       '@itwin/imodels-access-frontend':
         specifier: ^5.2.1
         version: 5.2.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-frontend@..+core+frontend)
       '@itwin/imodels-client-authoring':
         specifier: ^5.8.1
-        version: 5.8.1(inversify@6.0.1)(reflect-metadata@0.1.13)
+        version: 5.8.1(reflect-metadata@0.1.13)
       '@itwin/imodels-client-management':
         specifier: ^5.8.1
         version: 5.8.1
@@ -3550,13 +3549,13 @@ importers:
         version: link:../../core/hypermodeling
       '@itwin/imodels-access-backend':
         specifier: ^5.2.1
-        version: 5.2.1(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(inversify@6.0.1)(reflect-metadata@0.1.13)
+        version: 5.2.1(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(reflect-metadata@0.1.13)
       '@itwin/imodels-access-frontend':
         specifier: ^5.2.1
         version: 5.2.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-frontend@..+core+frontend)
       '@itwin/imodels-client-authoring':
         specifier: ^5.8.1
-        version: 5.8.1(inversify@6.0.1)(reflect-metadata@0.1.13)
+        version: 5.8.1(reflect-metadata@0.1.13)
       '@itwin/imodels-client-management':
         specifier: ^5.8.1
         version: 5.8.1
@@ -3743,13 +3742,13 @@ importers:
         version: link:../../core/hypermodeling
       '@itwin/imodels-access-backend':
         specifier: ^5.2.1
-        version: 5.2.1(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(inversify@6.0.1)(reflect-metadata@0.1.13)
+        version: 5.2.1(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(reflect-metadata@0.1.13)
       '@itwin/imodels-access-frontend':
         specifier: ^5.2.1
         version: 5.2.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-frontend@..+core+frontend)
       '@itwin/imodels-client-authoring':
         specifier: ^5.8.1
-        version: 5.8.1(inversify@6.0.1)(reflect-metadata@0.1.13)
+        version: 5.8.1(reflect-metadata@0.1.13)
       '@itwin/imodels-client-management':
         specifier: ^5.8.1
         version: 5.8.1
@@ -3757,8 +3756,8 @@ importers:
         specifier: workspace:*
         version: link:../../extensions/map-layers-formats
       '@itwin/object-storage-core':
-        specifier: ^2.3.0
-        version: 2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)
+        specifier: ^3.0.2
+        version: 3.0.2(inversify@7.5.2(reflect-metadata@0.1.13))(reflect-metadata@0.1.13)
       '@itwin/reality-data-client':
         specifier: ^1.2.1
         version: 1.2.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-geometry@..+core+geometry)
@@ -4593,6 +4592,14 @@ packages:
     resolution: {integrity: sha512-SriLPKezypIsiZ+TtlFfE46uuBIap2HeaQVS78e1P7rz5OSbq0rsd52WE1mC5f7vAeLiXqv7I7oRhL3WFZEw3Q==}
     engines: {node: '>=18.0.0'}
 
+  '@azure/storage-blob@12.28.0':
+    resolution: {integrity: sha512-VhQHITXXO03SURhDiGuHhvc/k/sD2WvJUS7hqhiVNbErVCuQoLtWql7r97fleBlIRKHJaa9R7DpBjfE0pfLYcA==}
+    engines: {node: '>=20.0.0'}
+
+  '@azure/storage-common@12.0.0':
+    resolution: {integrity: sha512-QyEWXgi4kdRo0wc1rHum9/KnaWZKCdQGZK1BjU4fFL6Jtedp7KLbQihgTTVxldFy1z1ZPtuDPx8mQ5l3huPPbA==}
+    engines: {node: '>=20.0.0'}
+
   '@babel/code-frame@7.26.2':
     resolution: {integrity: sha512-RJlIHRueQgwWitWgF8OdFYGZX328Ax5BCemNGlqHfplnRT9ESi8JkFlvaVYbS+UubVY6dpv87Fs2u5M29iNFVQ==}
     engines: {node: '>=6.9.0'}
@@ -5216,6 +5223,28 @@ packages:
       '@types/node':
         optional: true
 
+  '@inversifyjs/common@1.5.0':
+    resolution: {integrity: sha512-Qj5BELk11AfI2rgZEAaLPmOftmQRLLmoCXgAjmaF0IngQN5vHomVT5ML7DZ3+CA5fgGcEVMcGbUDAun+Rz+oNg==}
+
+  '@inversifyjs/container@1.10.1':
+    resolution: {integrity: sha512-wrgiCn4R50IJQO0QBqrobdyLpzYngQCHyTAnlvgzQIfxnKrAKGGEUdDQ2bLbZXq3313GVz/Jb5C4RuW7M55cvQ==}
+    peerDependencies:
+      reflect-metadata: ~0.2.2
+
+  '@inversifyjs/core@5.3.1':
+    resolution: {integrity: sha512-cWVuKb6bsULng+1RlDx/Tuq8/u5wkpHx5sSjeLsHTbNrIhd8V0FLjhET00aSzovxJLMz1dkCIMhF8HUrnboAOQ==}
+
+  '@inversifyjs/plugin@0.2.0':
+    resolution: {integrity: sha512-R/JAdkTSD819pV1zi0HP54mWHyX+H2m8SxldXRgPQarS3ySV4KPyRdosWcfB8Se0JJZWZLHYiUNiS6JvMWSPjw==}
+
+  '@inversifyjs/prototype-utils@0.1.0':
+    resolution: {integrity: sha512-lNz1yyajMRDXBHLvJsYYX81FcmeD15e5Qz1zAZ/3zeYTl+u7ZF/GxNRKJzNOloeMPMtuR8BnvzHA1SZxjR+J9w==}
+
+  '@inversifyjs/reflect-metadata-utils@1.1.0':
+    resolution: {integrity: sha512-jmuAuC3eL1GnFAYfJGJOMKRDL9q1mgzOyrban6zxfM8Yg1FUHsj25h27bW2G7p8X1Amvhg3MLkaOuogszkrofA==}
+    peerDependencies:
+      reflect-metadata: 0.2.2
+
   '@isaacs/cliui@8.0.2':
     resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
     engines: {node: '>=12'}
@@ -5234,17 +5263,22 @@ packages:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
 
-  '@itwin/cloud-agnostic-core@2.2.4':
-    resolution: {integrity: sha512-RDo8m4wmfNQJHQGsiwoFSAzuYFHDTDtgSWE8cAyuLTVRFAUZhoIU7CTvP2auUaa3+2DwAI2Bmh1hOIS6n7AMFg==}
-    peerDependencies:
-      inversify: ^6.0.1
-      reflect-metadata: ^0.1.13
-
   '@itwin/cloud-agnostic-core@2.3.0':
     resolution: {integrity: sha512-oFSaERSqnuXtpzJ/dX61/p47eFoNoZ3NG0F9NUpndmiErVYba8aEnlVHQqXBQb5kycXBd7c9a5Ihnif1ussLLw==}
     peerDependencies:
       inversify: ^6.0.1
       reflect-metadata: ^0.1.13
+    peerDependenciesMeta:
+      inversify:
+        optional: true
+      reflect-metadata:
+        optional: true
+
+  '@itwin/cloud-agnostic-core@3.0.2':
+    resolution: {integrity: sha512-olyf+i/iWDjXBFcYHodZKa4inh5bpB54K/phi75ayhmyoViuT1dtKI34E2EHm3Xpdvlj/rUf/CK04rK9mCndNQ==}
+    peerDependencies:
+      inversify: ^7.5.2
+      reflect-metadata: ^0.2.2
     peerDependenciesMeta:
       inversify:
         optional: true
@@ -5320,11 +5354,33 @@ packages:
       reflect-metadata:
         optional: true
 
+  '@itwin/object-storage-azure@3.0.2':
+    resolution: {integrity: sha512-tsijo32kakXNLGuyz2L/V8585cuqp9+kv84L7adbQP8Jn3S//FIscC9EaqFs9DD748ZHDcTlBTl/jm1G/5oVAQ==}
+    peerDependencies:
+      inversify: ^7.5.2
+      reflect-metadata: ^0.2.2
+    peerDependenciesMeta:
+      inversify:
+        optional: true
+      reflect-metadata:
+        optional: true
+
   '@itwin/object-storage-core@2.3.0':
     resolution: {integrity: sha512-PAHaTMG7sE1hLlXBmSimxo/oZDJZJ81vS/hJ1p7QnwEu6MEtLgo5wXMU7sy7fHtOeh8ZqzKpXWkQyry5kRDXAg==}
     peerDependencies:
       inversify: ^6.0.1
       reflect-metadata: ^0.1.13
+    peerDependenciesMeta:
+      inversify:
+        optional: true
+      reflect-metadata:
+        optional: true
+
+  '@itwin/object-storage-core@3.0.2':
+    resolution: {integrity: sha512-HzLCSLyzpGFVMOlq03tqkHv+NSB3WqK14e6BsFNB8HV/v4/PvG6xUaylS3K5wNq2qRHRyK+TRY5UwOhVdo5LFw==}
+    peerDependencies:
+      inversify: ^7.5.2
+      reflect-metadata: ^0.2.2
     peerDependenciesMeta:
       inversify:
         optional: true
@@ -6501,6 +6557,12 @@ packages:
   axe-core@4.10.3:
     resolution: {integrity: sha512-Xm7bpRXnDSX2YE2YFfBk2FnF0ep6tmG7xPh8iHee8MIcrgq762Nkce856dYtJYLkuIoYZvGfTs/PbZhideTcEg==}
     engines: {node: '>=4'}
+
+  axios@0.21.4:
+    resolution: {integrity: sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==}
+
+  axios@0.27.2:
+    resolution: {integrity: sha512-t+yRIyySRTp/wua5xEr+z1q60QmLq8ABsS5O9Me1AsE5dfKqgnCFzwiCZZ/cGNd1lq4/7akDWMxdhVlucjmnOQ==}
 
   axios@1.12.2:
     resolution: {integrity: sha512-vMJzPewAlRyOgxV2dU0Cuz2O8zzzx9VYtbJOaBgXFeLc4IV/Eg50n4LowmehOOR61S8ZMpc2K5Sa7g6A4jfkUw==}
@@ -8014,8 +8076,10 @@ packages:
     resolution: {integrity: sha512-6xwYfHbajpoF0xLW+iwLkhwgvLoZDfjYfoFNu8ftMoXINzwuymNLd9u/KmwtdT2GbR+/Cz66otEGEVVUHX9QLQ==}
     engines: {node: '>=10.13.0'}
 
-  inversify@6.0.1:
-    resolution: {integrity: sha512-B3ex30927698TJENHR++8FfEaJGqoWOgI6ZY5Ht/nLUsFCwHn6akbwtnUAPCgUepAnTpe2qHxhDNjoKLyz6rgQ==}
+  inversify@7.5.2:
+    resolution: {integrity: sha512-RpI97sBhBntaUzN2gLRbAyhXmEbBpTNKZKlJJ6qPW3xB4D6AwBt9SP85ehE+glgqBoan24Eu2SzTGbSpgkxuLw==}
+    peerDependencies:
+      reflect-metadata: ~0.2.2
 
   ipaddr.js@1.9.1:
     resolution: {integrity: sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g==}
@@ -10794,7 +10858,7 @@ snapshots:
   '@azure/core-rest-pipeline@1.16.3':
     dependencies:
       '@azure/abort-controller': 2.1.2
-      '@azure/core-auth': 1.7.2
+      '@azure/core-auth': 1.9.0
       '@azure/core-tracing': 1.2.0
       '@azure/core-util': 1.11.0
       '@azure/logger': 1.1.4
@@ -10887,7 +10951,7 @@ snapshots:
   '@azure/ms-rest-js@1.11.2':
     dependencies:
       '@azure/core-auth': 1.9.0
-      axios: 1.12.2
+      axios: 0.21.4
       form-data: 4.0.4
       tough-cookie: 2.5.0
       tslib: 1.14.1
@@ -10932,6 +10996,39 @@ snapshots:
       '@azure/core-tracing': 1.2.0
       '@azure/core-util': 1.11.0
       '@azure/core-xml': 1.4.5
+      '@azure/logger': 1.1.4
+      events: 3.3.0
+      tslib: 2.8.1
+    transitivePeerDependencies:
+      - supports-color
+
+  '@azure/storage-blob@12.28.0':
+    dependencies:
+      '@azure/abort-controller': 2.1.2
+      '@azure/core-auth': 1.9.0
+      '@azure/core-client': 1.9.3
+      '@azure/core-http-compat': 2.2.0
+      '@azure/core-lro': 2.7.2
+      '@azure/core-paging': 1.6.2
+      '@azure/core-rest-pipeline': 1.19.1
+      '@azure/core-tracing': 1.2.0
+      '@azure/core-util': 1.11.0
+      '@azure/core-xml': 1.4.5
+      '@azure/logger': 1.1.4
+      '@azure/storage-common': 12.0.0
+      events: 3.3.0
+      tslib: 2.8.1
+    transitivePeerDependencies:
+      - supports-color
+
+  '@azure/storage-common@12.0.0':
+    dependencies:
+      '@azure/abort-controller': 2.1.2
+      '@azure/core-auth': 1.9.0
+      '@azure/core-http-compat': 2.2.0
+      '@azure/core-rest-pipeline': 1.19.1
+      '@azure/core-tracing': 1.2.0
+      '@azure/core-util': 1.11.0
       '@azure/logger': 1.1.4
       events: 3.3.0
       tslib: 2.8.1
@@ -11437,6 +11534,34 @@ snapshots:
     optionalDependencies:
       '@types/node': 22.13.10
 
+  '@inversifyjs/common@1.5.0': {}
+
+  '@inversifyjs/container@1.10.1(reflect-metadata@0.1.13)':
+    dependencies:
+      '@inversifyjs/common': 1.5.0
+      '@inversifyjs/core': 5.3.1(reflect-metadata@0.1.13)
+      '@inversifyjs/plugin': 0.2.0
+      '@inversifyjs/reflect-metadata-utils': 1.1.0(reflect-metadata@0.1.13)
+      reflect-metadata: 0.1.13
+
+  '@inversifyjs/core@5.3.1(reflect-metadata@0.1.13)':
+    dependencies:
+      '@inversifyjs/common': 1.5.0
+      '@inversifyjs/prototype-utils': 0.1.0
+      '@inversifyjs/reflect-metadata-utils': 1.1.0(reflect-metadata@0.1.13)
+    transitivePeerDependencies:
+      - reflect-metadata
+
+  '@inversifyjs/plugin@0.2.0': {}
+
+  '@inversifyjs/prototype-utils@0.1.0':
+    dependencies:
+      '@inversifyjs/common': 1.5.0
+
+  '@inversifyjs/reflect-metadata-utils@1.1.0(reflect-metadata@0.1.13)':
+    dependencies:
+      reflect-metadata: 0.1.13
+
   '@isaacs/cliui@8.0.2':
     dependencies:
       string-width: 5.1.2
@@ -11462,14 +11587,13 @@ snapshots:
       '@itwin/core-common': link:../../core/common
       oidc-client-ts: 2.4.1
 
-  '@itwin/cloud-agnostic-core@2.2.4(inversify@6.0.1)(reflect-metadata@0.1.13)':
-    dependencies:
-      inversify: 6.0.1
+  '@itwin/cloud-agnostic-core@2.3.0(reflect-metadata@0.1.13)':
+    optionalDependencies:
       reflect-metadata: 0.1.13
 
-  '@itwin/cloud-agnostic-core@2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)':
+  '@itwin/cloud-agnostic-core@3.0.2(inversify@7.5.2(reflect-metadata@0.1.13))(reflect-metadata@0.1.13)':
     optionalDependencies:
-      inversify: 6.0.1
+      inversify: 7.5.2(reflect-metadata@0.1.13)
       reflect-metadata: 0.1.13
 
   '@itwin/core-bentley@4.10.10': {}
@@ -11514,14 +11638,14 @@ snapshots:
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       semver: 7.7.1
 
-  '@itwin/imodels-access-backend@5.2.1(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(inversify@6.0.1)(reflect-metadata@0.1.13)':
+  '@itwin/imodels-access-backend@5.2.1(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(reflect-metadata@0.1.13)':
     dependencies:
       '@azure/abort-controller': 1.1.0
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/imodels-access-common': 5.2.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
-      '@itwin/imodels-client-authoring': 5.8.1(inversify@6.0.1)(reflect-metadata@0.1.13)
+      '@itwin/imodels-client-authoring': 5.8.1(reflect-metadata@0.1.13)
       axios: 1.12.2
     transitivePeerDependencies:
       - debug
@@ -11547,12 +11671,12 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  '@itwin/imodels-client-authoring@5.8.1(inversify@6.0.1)(reflect-metadata@0.1.13)':
+  '@itwin/imodels-client-authoring@5.8.1(reflect-metadata@0.1.13)':
     dependencies:
       '@azure/storage-blob': 12.26.0
       '@itwin/imodels-client-management': 5.8.1
-      '@itwin/object-storage-azure': 2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)
-      '@itwin/object-storage-core': 2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)
+      '@itwin/object-storage-azure': 2.3.0(reflect-metadata@0.1.13)
+      '@itwin/object-storage-core': 2.3.0(reflect-metadata@0.1.13)
     transitivePeerDependencies:
       - debug
       - inversify
@@ -11571,25 +11695,46 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  '@itwin/object-storage-azure@2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)':
+  '@itwin/object-storage-azure@2.3.0(reflect-metadata@0.1.13)':
     dependencies:
       '@azure/core-paging': 1.6.2
       '@azure/storage-blob': 12.26.0
-      '@itwin/cloud-agnostic-core': 2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)
-      '@itwin/object-storage-core': 2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)
+      '@itwin/cloud-agnostic-core': 2.3.0(reflect-metadata@0.1.13)
+      '@itwin/object-storage-core': 2.3.0(reflect-metadata@0.1.13)
     optionalDependencies:
-      inversify: 6.0.1
       reflect-metadata: 0.1.13
     transitivePeerDependencies:
       - debug
       - supports-color
 
-  '@itwin/object-storage-core@2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)':
+  '@itwin/object-storage-azure@3.0.2(inversify@7.5.2(reflect-metadata@0.1.13))(reflect-metadata@0.1.13)':
     dependencies:
-      '@itwin/cloud-agnostic-core': 2.3.0(inversify@6.0.1)(reflect-metadata@0.1.13)
+      '@azure/core-paging': 1.6.2
+      '@azure/storage-blob': 12.28.0
+      '@itwin/cloud-agnostic-core': 3.0.2(inversify@7.5.2(reflect-metadata@0.1.13))(reflect-metadata@0.1.13)
+      '@itwin/object-storage-core': 3.0.2(inversify@7.5.2(reflect-metadata@0.1.13))(reflect-metadata@0.1.13)
+    optionalDependencies:
+      inversify: 7.5.2(reflect-metadata@0.1.13)
+      reflect-metadata: 0.1.13
+    transitivePeerDependencies:
+      - debug
+      - supports-color
+
+  '@itwin/object-storage-core@2.3.0(reflect-metadata@0.1.13)':
+    dependencies:
+      '@itwin/cloud-agnostic-core': 2.3.0(reflect-metadata@0.1.13)
       axios: 1.12.2
     optionalDependencies:
-      inversify: 6.0.1
+      reflect-metadata: 0.1.13
+    transitivePeerDependencies:
+      - debug
+
+  '@itwin/object-storage-core@3.0.2(inversify@7.5.2(reflect-metadata@0.1.13))(reflect-metadata@0.1.13)':
+    dependencies:
+      '@itwin/cloud-agnostic-core': 3.0.2(inversify@7.5.2(reflect-metadata@0.1.13))(reflect-metadata@0.1.13)
+      axios: 1.12.2
+    optionalDependencies:
+      inversify: 7.5.2(reflect-metadata@0.1.13)
       reflect-metadata: 0.1.13
     transitivePeerDependencies:
       - debug
@@ -12982,6 +13127,19 @@ snapshots:
 
   axe-core@4.10.3: {}
 
+  axios@0.21.4:
+    dependencies:
+      follow-redirects: 1.15.9
+    transitivePeerDependencies:
+      - debug
+
+  axios@0.27.2:
+    dependencies:
+      follow-redirects: 1.15.9
+      form-data: 4.0.4
+    transitivePeerDependencies:
+      - debug
+
   axios@1.12.2:
     dependencies:
       follow-redirects: 1.15.9
@@ -12997,7 +13155,7 @@ snapshots:
       '@azure/ms-rest-js': 1.11.2
       applicationinsights: 2.9.6
       args: 5.0.3
-      axios: 1.12.2
+      axios: 0.27.2
       etag: 1.8.1
       express: 4.21.2
       fs-extra: 11.3.0
@@ -14768,7 +14926,12 @@ snapshots:
 
   interpret@3.1.1: {}
 
-  inversify@6.0.1: {}
+  inversify@7.5.2(reflect-metadata@0.1.13):
+    dependencies:
+      '@inversifyjs/common': 1.5.0
+      '@inversifyjs/container': 1.10.1(reflect-metadata@0.1.13)
+      '@inversifyjs/core': 5.3.1(reflect-metadata@0.1.13)
+      reflect-metadata: 0.1.13
 
   ipaddr.js@1.9.1: {}
 
