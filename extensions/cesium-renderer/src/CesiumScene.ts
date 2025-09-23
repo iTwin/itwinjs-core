@@ -3,8 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Code, EcefLocation, IModel } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
-import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler } from "cesium";
+import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion, PerspectiveFrustum, PerspectiveOffCenterFrustum, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler } from "cesium";
+import { createCesiumCameraProps } from "./CesiumCamera.js";
 
 /** Options to configure a Cesium scene.
  * @internal
@@ -186,5 +188,84 @@ export class CesiumScene {
         frustum.bottom = -frustum.top;
       }
     }
+
+    const cameraOnView = {
+      cameraOn: true,
+      origin: [-50.20252266797269, 56.989460084120665, -93.48021229168089],
+      extents: [224.2601166976935, 165.04873366794442, 249.514861628184],
+      angles: {
+        pitch: -26.15946129868821,
+        roll: -43.25863504612565,
+        yaw: 25.103938995163002,
+      },
+      camera: {
+        lens: 45.95389015950363,
+        focusDist: 264.45767738020345,
+        eye: [-37.863420740019635, -118.27234989806642, 132.40005835408053],
+      },
+      code: Code.createEmpty(),
+      model: "test",
+      classFullName: "test",
+      categorySelectorId: "@1",
+      displayStyleId: "@1",
+    };
+
+    const ecefLocProps = {
+      origin: [
+        1255641.5519893507,
+        -4732698.684827632,
+        4073546.2460685894
+      ],
+      orientation: {
+        pitch: -49.005021293968355,
+        roll: -11.823580111180991,
+        yaw: -90.642664633961
+      },
+      transform: [
+        [
+          -0.007357864592832313,
+          0.9804561979367872,
+          0.19659986204464436,
+          1255641.5519893507
+        ],
+        [
+          -0.6559516195525271,
+          0.14366280316126617,
+          -0.7410050416793829,
+          -4732698.684827632
+        ],
+        [
+          -0.75476707309941,
+          -0.13441221267127085,
+          0.6420747794842614,
+          4073546.2460685894
+        ]
+      ],
+      cartographicOrigin: {
+        latitude: 0.6972007432483922,
+        longitude: -1.311456937133241,
+        height: 4.102413240985213
+      }
+    };
+    const ecefLoc = new EcefLocation(ecefLocProps);
+
+    const cesiumCameraProps = createCesiumCameraProps({ viewDefinition: cameraOnView, ecefLoc });
+    console.log("cesiumCameraProps:", cesiumCameraProps);
+
+    this._scene.camera.frustum = new PerspectiveFrustum({
+      fov: cesiumCameraProps.frustum.fov,
+      aspectRatio: canvas.width / canvas.height,
+      near: cesiumCameraProps.frustum.near,
+      far: cesiumCameraProps.frustum.far
+    });
+    this._scene.camera.setView({
+      destination: new Cartesian3(cesiumCameraProps.position.x, cesiumCameraProps.position.y, cesiumCameraProps.position.z),
+      orientation: {
+        direction: new Cartesian3(cesiumCameraProps.direction.x, cesiumCameraProps.direction.y, cesiumCameraProps.direction.z),
+        up: new Cartesian3(cesiumCameraProps.up.x, cesiumCameraProps.up.y, cesiumCameraProps.up.z)
+      },
+    })
+
+    console.log("Camera:", this._scene.camera);
   }
 }
