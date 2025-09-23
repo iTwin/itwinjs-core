@@ -8,6 +8,8 @@
 
 import { Range2dProps } from "@itwin/core-geometry";
 import { IModelNative } from "./internal/NativePlatform";
+import { IModelDb } from "./IModelDb";
+import { GeoCoordConfig } from "./GeoCoordConfig";
 
 /** Describes a coordinate reference system produced by [[getAvailableCoordinateReferenceSystems]].
  * @beta
@@ -50,5 +52,6 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
  * @beta
  */
 export async function getAvailableCoordinateReferenceSystems(args: GetAvailableCoordinateReferenceSystemsArgs): Promise<AvailableCoordinateReferenceSystemProps[]> {
+  GeoCoordConfig.loadDefaultDatabases();
   return IModelNative.platform.GeoServices.getListOfCRS(args.extent, args.includeWorld);
 }
