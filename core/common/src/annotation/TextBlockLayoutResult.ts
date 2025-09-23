@@ -16,8 +16,6 @@ import { TextStyleSettingsProps } from "./TextStyle";
  * @beta
  */
 export interface RunLayoutResult {
-  /** The index of the Run this RunLayoutResult was generated from in [[Paragraph.runs]]. */
-  sourceRunIndex: number;
   /** The ID of the font for the run. */
   fontId: FontId;
   /**
@@ -46,11 +44,11 @@ export interface RunLayoutResult {
  * @beta
  */
 export interface LineLayoutResult {
-  /** The index of the paragraph this LineLayoutResult was generated from in [[TextBlock.paragraphs]]. */
-  sourceParagraphIndex: number;
   /** The runs contained in the line. */
   runs: RunLayoutResult[];
-  /** The range containing the contents of the line. */
+  /** The marker run for the line, if any */
+  marker: RunLayoutResult | undefined;
+  /** The range of all the runs (including the marker) contained in the line. */
   range: Range2dProps;
   /** Bounding box used when justifying the line. This may be smaller than [[range]]. */
   justificationRange: Range2dProps;
