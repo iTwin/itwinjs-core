@@ -7,7 +7,7 @@ import { Cartesian3, Color, PointPrimitive, PointPrimitiveCollection } from "ces
 import { IModelConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "../CesiumScene.js";
-import { type DecorationGeometry, PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
+import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
 import type { DecorationPrimitiveEntry, PointString2dEntry, PointStringEntry } from "./DecorationTypes.js";
 
 interface PointStringCoordinate {
@@ -95,7 +95,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter<PointStringCoord
   }
 
   private createPointFromGeometry(
-    geometries: DecorationGeometry[],
+    geometries: unknown[],
     geometryType: string,
     pointId: string,
     _index: number,
@@ -105,7 +105,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter<PointStringCoord
     type?: string,
     graphic?: RenderGraphicWithCoordinates
   ): PointPrimitive | undefined {
-    if (geometries.length === 0 || !geometryType || !pointCollection)
+    if (!geometries || !geometryType || !pointCollection)
       return undefined;
 
     let entityPosition: Cartesian3 | undefined;
@@ -127,9 +127,9 @@ export class PointPrimitiveConverter extends PrimitiveConverter<PointStringCoord
       }
     }
 
-    if (!realSpatialPoint && geometries.length > 0) {
+    if (!realSpatialPoint && geometries && geometries.length > 0) {
       const geometry = geometries[0];
-      const firstCoord = geometry.coordinateData?.[0];
+      const firstCoord = (geometry as { coordinateData?: Array<{ x: number; y: number; z: number }> })?.coordinateData?.[0];
       if (firstCoord)
         realSpatialPoint = new Point3d(firstCoord.x, firstCoord.y, firstCoord.z);
     }
