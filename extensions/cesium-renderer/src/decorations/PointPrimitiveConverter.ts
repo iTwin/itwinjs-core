@@ -120,18 +120,15 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     const color = this.extractLineColorFromGraphic(graphic, this.primitiveType);
     if (!color)
       return null;
-    switch (geometryType) {
-      case 'point-string':
-      default:
-        return pointCollection.add({
-          id: pointId,
-          position: entityPosition,
-          pixelSize: 20,
-          color,
-          outlineColor: Color.WHITE,
-          outlineWidth: 2,
-          ...this.getDepthOptions(type || 'world'),
-        });
-    }
+
+    return pointCollection.add({
+      id: pointId,
+      position: entityPosition,
+      pixelSize: 20,
+      color,
+      outlineColor: Color.WHITE,
+      outlineWidth: 2,
+      ...this.getDepthOptions(type || 'world'),
+    });
   }
 }

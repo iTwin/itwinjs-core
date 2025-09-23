@@ -47,7 +47,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     iModel?: IModelConnection,
     originalData?: unknown,
     _type?: string
-  ): Primitive | Polyline | null {
+  ): Primitive | Polyline | undefined {
     const data = Array.isArray(originalData) ? (originalData as DecorationPrimitiveEntry[]) : undefined;
 
     const getEntry = () => {
@@ -63,7 +63,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
 
     const arcData = getEntry();
     if (!arcData || (arcData.type !== 'arc' && arcData.type !== 'arc2d'))
-      return null;
+      return undefined;
 
     const isArc2d = arcData.type === 'arc2d';
     const arc = arcData.arc.clone();
@@ -75,7 +75,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
 
     const converterIModel = iModel;
     if (!converterIModel) {
-      return null;
+      return undefined;
     }
 
     const converter = new CesiumCoordinateConverter(converterIModel);
@@ -83,7 +83,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     // Determine color from graphic symbology when available; fallback by type
     const color = this.extractLineColorFromGraphic(graphic, this.primitiveType);
     if (!color)
-      return null;
+      return undefined;
 
     if (filled || isEllipse) {
       // Use iTwin.js Loop.create(arc) + SweepContour + PolyfaceBuilder for accurate filled ellipse
@@ -99,13 +99,13 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
       const polyface = pfBuilder.claimPolyface();
 
       if (!polyface || polyface.pointCount === 0) {
-        return null;
+        return undefined;
       }
 
       // Convert polyface to Cesium geometry
       const cesiumGeometry = this.createGeometryFromPolyface(polyface, converter);
       if (!cesiumGeometry) {
-        return null;
+        return undefined;
       }
 
       const geometryInstance = new GeometryInstance({
@@ -133,7 +133,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
 
       const strokes = path.getPackedStrokes(strokeOptions);
       if (!strokes) {
-        return null;
+        return undefined;
       }
 
       const arcPoints = strokes.getPoint3dArray();
@@ -155,7 +155,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
 
         return polyline;
       } else {
-        return null;
+        return undefined;
       }
     }
   }
@@ -182,9 +182,9 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     return baseOptions;
   }
 
-  private createGeometryFromPolyface(polyface: Polyface, converter: CesiumCoordinateConverter): Geometry | null {
+  private createGeometryFromPolyface(polyface: Polyface, converter: CesiumCoordinateConverter): Geometry | undefined {
     if (!polyface || !polyface.data || !polyface.data.point || polyface.data.point.length === 0) {
-      return null;
+      return undefined;
     }
 
     // Extract points from polyface.data.point
@@ -199,7 +199,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     }
 
     if (positions.length === 0) {
-      return null;
+      return undefined;
     }
 
     // Extract indices from polyface.data.pointIndex
@@ -230,7 +230,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     }
 
     if (indices.length === 0) {
-      return null;
+      return undefined;
     }
 
     // Compute bounding sphere from positions
