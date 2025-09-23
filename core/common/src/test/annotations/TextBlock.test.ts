@@ -71,12 +71,12 @@ describe("TextBlockComponent", () => {
     beforeEach(() => {
       block = TextBlock.create({ styleOverrides: { widthFactor: 1234 }});
       const paragraph = block.appendParagraph({ styleOverrides: { textHeight: 42 } });
-      paragraph.children.push(TextRun.create({ styleOverrides: { fontName: "Consolas" } }));
+      paragraph.children.push(TextRun.create({ styleOverrides: { font: { name: "Consolas" }}}));
 
       const list = List.create({ styleOverrides: { listMarker: { enumerator: "*", terminator: "period", case: "lower" } } });
       paragraph.children.push(list);
       const listParagraph = Paragraph.create({ styleOverrides: { textHeight: 21 } });
-      listParagraph.children.push(TextRun.create({ styleOverrides: { fontName: "Verdana" } }));
+      listParagraph.children.push(TextRun.create({ styleOverrides: { font: { name: "Verdana" } } }));
       list.children.push(listParagraph);
     });
 
@@ -84,11 +84,11 @@ describe("TextBlockComponent", () => {
       const overrides = getOverrides(block);
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
       expect(overrides.paragraph).to.deep.equal({ textHeight: 42 });
-      expect(overrides.run).to.deep.equal({ fontName: "Consolas" });
+      expect(overrides.run).to.deep.equal({ font: { name: "Consolas" } });
 
       expect(overrides.list).to.deep.equal({ listMarker: { enumerator: "*", terminator: "period", case: "lower" } });
       expect(overrides.listItem).to.deep.equal({ textHeight: 21 });
-      expect(overrides.listRun).to.deep.equal({ fontName: "Verdana" });
+      expect(overrides.listRun).to.deep.equal({ font: { name: "Verdana" } });
     });
 
     it("clears children's overrides by default when clearing block overrides", () => {
@@ -120,7 +120,7 @@ describe("TextBlockComponent", () => {
       const overrides = getOverrides(block);
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
       expect(overrides.paragraph).to.deep.equal({ textHeight: 42 });
-      expect(overrides.run).to.deep.equal({ fontName: "Consolas" });
+      expect(overrides.run).to.deep.equal({ font: { name: "Consolas" } });
 
       expect(overrides.list).to.deep.equal({});
       expect(overrides.listItem).to.deep.equal({});
@@ -133,11 +133,11 @@ describe("TextBlockComponent", () => {
 
       expect(overrides.block).to.deep.equal({});
       expect(overrides.paragraph).to.deep.equal({ textHeight: 42 });
-      expect(overrides.run).to.deep.equal({ fontName: "Consolas" });
+      expect(overrides.run).to.deep.equal({ font: { name: "Consolas" } });
 
       expect(overrides.list).to.deep.equal({ listMarker: { enumerator: "*", terminator: "period", case: "lower" } });
       expect(overrides.listItem).to.deep.equal({ textHeight: 21 });
-      expect(overrides.listRun).to.deep.equal({ fontName: "Verdana" });
+      expect(overrides.listRun).to.deep.equal({ font: { name: "Verdana" } });
     });
 
     it("does not clear children's overrides when clearing paragraph overrides if preserveChildrenStyles is true", () => {
@@ -145,11 +145,11 @@ describe("TextBlockComponent", () => {
       const overrides = getOverrides(block);
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
       expect(overrides.paragraph).to.deep.equal({});
-      expect(overrides.run).to.deep.equal({ fontName: "Consolas" });
+      expect(overrides.run).to.deep.equal({ font: { name: "Consolas" } });
 
       expect(overrides.list).to.deep.equal({ listMarker: { enumerator: "*", terminator: "period", case: "lower" } });
       expect(overrides.listItem).to.deep.equal({ textHeight: 21 });
-      expect(overrides.listRun).to.deep.equal({ fontName: "Verdana" });
+      expect(overrides.listRun).to.deep.equal({ font: { name: "Verdana" } });
     });
 
     it("does not clear children's overrides when clearing list overrides if preserveChildrenStyles is true", () => {
@@ -157,11 +157,11 @@ describe("TextBlockComponent", () => {
       const overrides = getOverrides(block);
       expect(overrides.block).to.deep.equal({ widthFactor: 1234 });
       expect(overrides.paragraph).to.deep.equal({ textHeight: 42 });
-      expect(overrides.run).to.deep.equal({ fontName: "Consolas" });
+      expect(overrides.run).to.deep.equal({ font: { name: "Consolas" } });
 
       expect(overrides.list).to.deep.equal({});
       expect(overrides.listItem).to.deep.equal({ textHeight: 21 });
-      expect(overrides.listRun).to.deep.equal({ fontName: "Verdana" });
+      expect(overrides.listRun).to.deep.equal({ font: { name: "Verdana" } });
     });
 
     it("handles empty text block", () => {
@@ -171,12 +171,12 @@ describe("TextBlockComponent", () => {
     });
 
     it("creates a deep copy of the style overrides", () => {
-      const originalOverrides: TextStyleSettingsProps = { widthFactor: 1234, textHeight: 42, fontName: "Consolas", frame: { shape: "rectangle" }};
+      const originalOverrides: TextStyleSettingsProps = { widthFactor: 1234, textHeight: 42, font: { name: "Consolas" }, frame: { shape: "rectangle" }};
       block.styleOverrides = originalOverrides;
 
       originalOverrides.frame!.shape = "circle";
 
-      expect(block.styleOverrides).to.deep.equal({ widthFactor: 1234, textHeight: 42, fontName: "Consolas", frame: { shape: "rectangle" } });
+      expect(block.styleOverrides).to.deep.equal({ widthFactor: 1234, textHeight: 42, font: { name: "Consolas" }, frame: { shape: "rectangle" } });
       expect(originalOverrides.frame!.shape).to.equal("circle");
     });
   });

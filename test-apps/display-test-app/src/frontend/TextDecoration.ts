@@ -106,14 +106,14 @@ class TextEditor implements Decorator {
     if (last.type === "paragraph") {
       last.children.push(run);
     } else {
-      last.children.push(Paragraph.create({ styleOverrides: { fontName: this.runStyle.fontName } }));
+      last.children.push(Paragraph.create({ styleOverrides: { font: { name: this.runStyle.font?.name ?? "Arial" } } }));
       last.children[last.children.length - 1].children.push(run);
     }
     return last;
   }
 
   // Properties to be applied to the next run
-  public runStyle: Omit<TextStyleSettingsProps, "widthFactor" | "lineSpacingFactor"> = { fontName: "Arial" };
+  public runStyle: Omit<TextStyleSettingsProps, "widthFactor" | "lineSpacingFactor"> = { font: { name: "Arial" } };
   public baselineShift: BaselineShift = "none";
 
   public textBlock = TextBlock.create();
@@ -141,7 +141,7 @@ class TextEditor implements Decorator {
     this.offset.x = this.offset.y = 0;
     this.anchor = { horizontal: "center", vertical: "middle" };
     this.debugAnchorPointAndRange = false;
-    this.runStyle = { fontName: "Arial" };
+    this.runStyle = { font: { name: "Arial" } };
     this.baselineShift = "none";
     this.leaders = [];
   }
@@ -175,7 +175,7 @@ class TextEditor implements Decorator {
   }
 
   public appendList(index: number = 0, listMarker?: ListMarker): void {
-    const list = List.create({ styleOverrides: { fontName: this.runStyle.fontName, ...this.runStyle, listMarker } });
+    const list = List.create({ styleOverrides: { font: {name: this.runStyle.font?.name ?? "Arial" }, ...this.runStyle, listMarker } });
 
     const path = this.pathToLastChild().filter(component => component.type === "paragraph");
     const child = path[index];
@@ -185,7 +185,7 @@ class TextEditor implements Decorator {
   public appendListItem(index: number = 0): void {
     const lists = this.pathToLastChild().filter(component => component.type === "list");
     const list = lists[index];
-    const item = Paragraph.create({ styleOverrides: { fontName: this.runStyle.fontName, ...this.runStyle } });
+    const item = Paragraph.create({ styleOverrides: { font: { name: this.runStyle.font?.name ?? "Arial" }, ...this.runStyle } });
     list?.children.push(item);
   }
 
@@ -338,7 +338,7 @@ export class TextDecorationTool extends Tool {
         editor.offset.y = Number(inArgs[2]);
         break;
       case "font":
-        editor.runStyle.fontName = arg;
+        editor.runStyle.font = { name: arg };
         break;
       case "text":
         editor.appendText(arg);
@@ -642,25 +642,6 @@ export class TextDecorationTool extends Tool {
       case "list-item": {
         const index = inArgs[1] !== undefined ? parseInt(inArgs[1], 10) : undefined;
         editor.appendListItem(index);
-        break;
-      }
-      case "test": {
-        editor.runStyle.fontName = "Arial";
-        editor.runStyle.textHeight = 4;
-        editor.appendText("Some text.");
-        editor.runStyle.textHeight = 3;
-        editor.appendText("more text.");
-        editor.runStyle.textHeight = 2;
-        editor.appendText("even more text");
-        editor.appendFraction("1", "2");
-        editor.runStyle.textHeight = 3;
-        editor.appendFraction("1", "2");
-        editor.runStyle.textHeight = 4;
-        editor.appendFraction("1", "2");
-        editor.runStyle.textHeight = 16;
-        editor.appendFraction("1", "2");
-        editor.runStyle.textHeight = 15;
-        editor.appendFraction("1", "2");
         break;
       }
       case "leader":

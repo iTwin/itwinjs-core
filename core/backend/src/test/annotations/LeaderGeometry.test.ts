@@ -14,12 +14,12 @@ describe("LeaderGeometry", () => {
   let builder: MockBuilder;
   let defaultParams: GeometryParams;
 
-  const textBlock = TextBlock.create({ styleOverrides: { fontName: "Arial", color: ColorDef.black.toJSON(), leader: {wantElbow: false} } });
-  textBlock.appendRun(TextRun.create({ content: "Hello", styleOverrides: { fontName: "Arial" } }));
+  const textBlock = TextBlock.create({ styleOverrides: { font: { name: "Arial" }, color: ColorDef.black.toJSON(), leader: {wantElbow: false} } });
+  textBlock.appendRun(TextRun.create({ content: "Hello", styleOverrides: { font: { name: "Arial" } } }));
   textBlock.appendRun(LineBreakRun.create({
-    styleOverrides: { fontName: "Arial" },
+    styleOverrides: { font: { name: "Arial" } },
   }));
-  textBlock.appendRun(TextRun.create({ content: "World", styleOverrides: { fontName: "Arial" } }));
+  textBlock.appendRun(TextRun.create({ content: "World", styleOverrides: { font: { name: "Arial" } } }));
 
   const frame: TextFrameStyleProps = { borderWeight: 1, shape: "rectangle" };
 
@@ -30,7 +30,7 @@ describe("LeaderGeometry", () => {
     offset: { x: 0, y: 0 },
   });
 
-  const findTextStyle = (id: Id64String) => TextStyleSettings.fromJSON(id === "0x34" ? { lineSpacingFactor: 12, fontName: "block", frame } : { lineSpacingFactor: 99, fontName: "run", frame });
+  const findTextStyle = (id: Id64String) => TextStyleSettings.fromJSON(id === "0x34" ? { lineSpacingFactor: 12, font: { name: "block" }, frame } : { lineSpacingFactor: 99, font: { name: "run" }, frame });
   const textStyleResolver = new TextStyleResolver({
     textBlock,
     textStyleId: "0x34",

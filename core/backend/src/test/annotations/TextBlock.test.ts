@@ -25,10 +25,10 @@ function isIntlSupported(): boolean {
 
 function findTextStyleImpl(id: Id64String): TextStyleSettings {
   if (id === "0x42") {
-    return TextStyleSettings.fromJSON({ lineSpacingFactor: 12, fontName: "block", isBold: true });
+    return TextStyleSettings.fromJSON({ lineSpacingFactor: 12, font: { name: "block" }, isBold: true });
   }
 
-  return TextStyleSettings.fromJSON({ lineSpacingFactor: 1, fontName: "other" });
+  return TextStyleSettings.fromJSON({ lineSpacingFactor: 1, font: { name: "other" } });
 }
 
 describe("layoutTextBlock", () => {
@@ -48,14 +48,14 @@ describe("layoutTextBlock", () => {
       expect(tb.lines[0].runs.length).to.equal(1);
 
       const runStyle = tb.lines[0].runs[0].style;
-      expect(runStyle.fontName).to.equal("block");
+      expect(runStyle.font.name).to.equal("block");
       expect(runStyle.lineSpacingFactor).to.equal(12);
       expect(runStyle.isBold).to.be.true;
     });
 
     it("inherits style overrides from Paragraph when Run has no style overrides", () => {
       const textBlock = TextBlock.create();
-      textBlock.appendParagraph({ styleOverrides: { fontName: "paragraph" } });
+      textBlock.appendParagraph({ styleOverrides: { font: { name: "paragraph" } } });
       textBlock.appendRun(TextRun.create({ content: "test" }));
 
       const tb = doLayout(textBlock, {
@@ -67,14 +67,14 @@ describe("layoutTextBlock", () => {
       expect(tb.lines[0].runs.length).to.equal(1);
 
       const runStyle = tb.lines[0].runs[0].style;
-      expect(runStyle.fontName).to.equal("paragraph");
+      expect(runStyle.font.name).to.equal("paragraph");
       expect(runStyle.isBold).to.be.true;
     });
 
     it("uses Run style overrides when Run has overrides", () => {
       const textBlock = TextBlock.create();
-      textBlock.appendParagraph({ styleOverrides: { lineSpacingFactor: 55, fontName: "paragraph" } });
-      textBlock.appendRun(TextRun.create({ content: "test", styleOverrides: { lineSpacingFactor: 99, fontName: "run" } }));
+      textBlock.appendParagraph({ styleOverrides: { lineSpacingFactor: 55, font: { name: "paragraph" } } });
+      textBlock.appendRun(TextRun.create({ content: "test", styleOverrides: { lineSpacingFactor: 99, font: { name: "run" } } }));
 
       const tb = doLayout(textBlock, {
         textStyleId: "0x42",
@@ -85,14 +85,14 @@ describe("layoutTextBlock", () => {
       expect(tb.lines[0].runs.length).to.equal(1);
 
       const runStyle = tb.lines[0].runs[0].style;
-      expect(runStyle.fontName).to.equal("run");
+      expect(runStyle.font.name).to.equal("run");
       expect(runStyle.isBold).to.be.true;
     });
 
     it("still uses TextBlock specific styles when Run has style overrides", () => {
       // Some style settings make sense on a TextBlock, so they are always applied from the TextBlock, even if the Run has a style override.
       const textBlock = TextBlock.create();
-      const run = TextRun.create({ content: "test", styleOverrides: { lineSpacingFactor: 99, fontName: "run" } });
+      const run = TextRun.create({ content: "test", styleOverrides: { lineSpacingFactor: 99, font: { name: "run" } } });
       textBlock.appendParagraph();
       textBlock.appendRun(run);
 
@@ -110,7 +110,7 @@ describe("layoutTextBlock", () => {
 
     it("inherits overrides from TextBlock, Paragraph and Run when there is no styleId", () => {
       const textBlock = TextBlock.create({ styleOverrides: { widthFactor: 34, textHeight: 3, lineSpacingFactor: 12, paragraphSpacingFactor: 2, isBold: true } });
-      const run = TextRun.create({ content: "test", styleOverrides: { widthFactor: 78, fontName: "override", leader: { wantElbow: true } } });
+      const run = TextRun.create({ content: "test", styleOverrides: { widthFactor: 78, font: { name: "override" }, leader: { wantElbow: true } } });
       textBlock.appendParagraph({ styleOverrides: { textHeight: 56, paragraphSpacingFactor: 25, color: 0xff0000, frame: { shape: "octagon" } } });
       textBlock.appendRun(run);
 
@@ -132,7 +132,7 @@ describe("layoutTextBlock", () => {
       expect(runStyle.frame.shape).to.equal("none");
       // leader settings are always taken from the TextBlock, even if the Paragraph or Run has overrides
       expect(runStyle.leader.wantElbow).to.be.false;
-      expect(runStyle.fontName).to.equal("override");
+      expect(runStyle.font.name).to.equal("override");
       expect(runStyle.color).to.equal(0xff0000);
       expect(runStyle.isBold).to.be.true;
       expect(runStyle.textHeight).to.equal(56);
@@ -140,7 +140,7 @@ describe("layoutTextBlock", () => {
 
     it("does not inherit overrides in TextBlock or Paragraph when Run has same propertied overriden - unless they are TextBlock specific settings", () => {
       const textBlock = TextBlock.create({ styleOverrides: { widthFactor: 34, textHeight: 3, lineSpacingFactor: 12, paragraphSpacingFactor: 2, isBold: true } });
-      const run = TextRun.create({ content: "test", styleOverrides: { widthFactor: 78, textHeight: 6, paragraphSpacingFactor: 25, lineSpacingFactor: 24, fontName: "override", isBold: false } });
+      const run = TextRun.create({ content: "test", styleOverrides: { widthFactor: 78, textHeight: 6, paragraphSpacingFactor: 25, lineSpacingFactor: 24, font: { name: "override" }, isBold: false } });
       textBlock.appendParagraph({ styleOverrides: { textHeight: 56, paragraphSpacingFactor: 50, color: 0xff0000 } });
       textBlock.appendRun(run);
 
@@ -159,7 +159,7 @@ describe("layoutTextBlock", () => {
       expect(runStyle.paragraphSpacingFactor).to.equal(2);
       // lineSpacingFactor is always taken from the TextBlock, even if the Run has a styleId or overrides
       expect(runStyle.lineSpacingFactor).to.equal(12);
-      expect(runStyle.fontName).to.equal("override");
+      expect(runStyle.font.name).to.equal("override");
       expect(runStyle.color).to.equal(0xff0000);
       expect(runStyle.isBold).to.be.false;
       expect(runStyle.textHeight).to.equal(6);
@@ -167,9 +167,9 @@ describe("layoutTextBlock", () => {
 
     it("takes child overrides over parent overrides", () => {
       //...unless they are TextBlock specific as covered in other tests
-      const textBlock = TextBlock.create({ styleOverrides: { fontName: "grandparent" } });
-      const run = TextRun.create({ content: "test", styleOverrides: { fontName: "child" } });
-      textBlock.appendParagraph({ styleOverrides: { fontName: "parent" } });
+      const textBlock = TextBlock.create({ styleOverrides: { font: { name: "grandparent" } } });
+      const run = TextRun.create({ content: "test", styleOverrides: { font: { name: "child" } } });
+      textBlock.appendParagraph({ styleOverrides: { font: { name: "parent" } } });
       textBlock.appendRun(run);
 
       const tb = doLayout(textBlock, {
@@ -180,7 +180,7 @@ describe("layoutTextBlock", () => {
       expect(tb.lines[0].runs.length).to.equal(1);
 
       const runStyle = tb.lines[0].runs[0].style;
-      expect(runStyle.fontName).to.equal("child");
+      expect(runStyle.font.name).to.equal("child");
     });
   });
 
@@ -190,14 +190,14 @@ describe("layoutTextBlock", () => {
     }
 
     // Initialize a new TextBlockLayout object
-    const textBlock = TextBlock.create({ width: 50, styleOverrides: { widthFactor: 34, color: 0x00ff00, fontName: "arial" } });
+    const textBlock = TextBlock.create({ width: 50, styleOverrides: { widthFactor: 34, color: 0x00ff00, font: { name: "arial" } } });
     const run0 = TextRun.create({
       content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus pretium mi sit amet magna malesuada, at venenatis ante eleifend.",
       styleOverrides: { textHeight: 56, color: 0xff0000 },
     });
     const run1 = TextRun.create({
       content: "Donec sit amet semper sapien. Nullam commodo, libero a accumsan lacinia, metus enim pharetra lacus, eu facilisis sem nisi eu dui.",
-      styleOverrides: { widthFactor: 78, fontName: "run1" },
+      styleOverrides: { widthFactor: 78, font: { name: "run1" } },
     });
     const run2 = TextRun.create({
       content: "Duis dui quam, suscipit quis feugiat id, fermentum ut augue. Mauris iaculis odio rhoncus lorem eleifend, posuere viverra turpis elementum.",
@@ -1543,7 +1543,7 @@ describe("layoutTextBlock", () => {
 
       function test(fontName: string, expectedFontId: number): void {
         const textBlock = TextBlock.create();
-        textBlock.appendRun(TextRun.create({ styleOverrides: { fontName } }));
+        textBlock.appendRun(TextRun.create({ styleOverrides: { font: { name: fontName } } }));
         const textStyleResolver = new TextStyleResolver({textBlock, textStyleId: "", iModel});
         const layout = layoutTextBlock({ textBlock, iModel, textStyleResolver });
         const run = layout.lines[0].runs[0];
@@ -1572,7 +1572,7 @@ describe("layoutTextBlock", () => {
         styleOverrides: {
           isBold: args.bold,
           isItalic: args.italic,
-          fontName: args.font ?? "Vera",
+          font: { name: args.font ?? "Vera" },
         },
       }));
 

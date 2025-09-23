@@ -3,13 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { ColorDef, ListMarkerEnumerator, TextStyleSettings, TextStyleSettingsProps } from "../../core-common";
+import { ColorDef, FontType, ListMarkerEnumerator, TextStyleSettings, TextStyleSettingsProps } from "../../core-common";
 import { DeepRequiredObject } from "@itwin/core-bentley";
 
 describe("TextStyleSettings", () => {
   const customProps: DeepRequiredObject<TextStyleSettingsProps> = {
     color: 0xff007f,
-    fontName: "customFont",
+    font: {
+      name: "customFont",
+      type: FontType.TrueType,
+    },
     textHeight: 2,
     lineSpacingFactor: 1,
     paragraphSpacingFactor: 2,
@@ -77,13 +80,15 @@ describe("TextStyleSettings", () => {
     expect(validSettings.getValidationErrors()).to.be.empty;
 
     const invalidSettings = validSettings.clone({
-      fontName: "",
+      font: {
+        name: "",
+      },
       textHeight: 0,
       stackedFractionScale: 0,
     });
 
     const errors = invalidSettings.getValidationErrors();
-    expect(errors).to.include("fontName must be provided");
+    expect(errors).to.include("font name must be provided");
     expect(errors).to.include("textHeight must be greater than 0");
     expect(errors).to.include("stackedFractionScale must be greater than 0");
   });

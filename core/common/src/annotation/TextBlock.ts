@@ -88,7 +88,7 @@ export abstract class TextBlockComponent {
   }
 
   /** Deviations in individual properties of the [[TextStyleSettings]] in the [AnnotationTextStyle]($backend).
-   * For example, if the style uses the "Arial" font, you can override that by settings `styleOverrides.fontName` to "Comic Sans".
+   * For example, if the style uses the "Arial" font, you can override that by settings `styleOverrides.font.name` to "Comic Sans".
    * @see [[clearStyleOverrides]] to reset this to an empty object.
    */
   public get styleOverrides(): TextStyleSettingsProps {
@@ -135,20 +135,9 @@ export abstract class TextBlockComponent {
 
   /** Returns true if `this` is equivalent to `other`. */
   public equals(other: TextBlockComponent): boolean {
-    const myKeys = Object.keys(this.styleOverrides);
-    const yrKeys = Object.keys(other._styleOverrides);
-    if (myKeys.length !== yrKeys.length) {
-      return false;
-    }
-
-    for (const name of myKeys) {
-      const key = name as keyof TextStyleSettingsProps;
-      if (this.styleOverrides[key] !== other.styleOverrides[key]) {
-        return false;
-      }
-    }
-
-    return true;
+    const mySettings = TextStyleSettings.fromJSON(this.styleOverrides);
+    const otherSettings = TextStyleSettings.fromJSON(other.styleOverrides);
+    return mySettings.equals(otherSettings);
   }
 }
 

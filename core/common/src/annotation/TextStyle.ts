@@ -8,6 +8,7 @@
 
 import { DeepReadonlyObject, DeepRequiredObject } from "@itwin/core-bentley";
 import { ColorDef, ColorDefProps } from "../ColorDef";
+import { FontFamilySelector, FontType } from "../Fonts";
 
 /** Predefined markers for list items in text annotations.
  * These values control the appearance of list item markers (e.g., bullet, circle, square, dash, number) that denote the start of a list item in a list.
@@ -124,10 +125,10 @@ export interface TextStyleSettingsProps {
    * Default: "subcategory".
    */
   color?: TextStyleColor;
-  /** The name of a font stored in an iModel, used to draw the contents of a [[TextRun]].
-   * Default: "" (an invalid font name).
+  /** The font stored in an iModel, used to draw the contents of a [[TextRun]].
+   * Default: { name: "" } (an invalid font name).
    */
-  fontName?: string;
+  font?: FontFamilySelector;
   /** The height of the text, in meters. Many other settings use the text height as the basis for computing their own values.
    * For example, the height and offset from baseline of a subscript [[TextRun]]  are computed as textHeight * [[subScriptScale]] and
    * textHeight * [[subScriptOffsetFactor]], respectively.
@@ -242,9 +243,9 @@ function deepFreeze<T>(obj: T) {
 export class TextStyleSettings {
   /** The color of the text. */
   public readonly color: TextStyleColor;
-  /** The name of a font stored in an iModel, used to draw the contents of a [[TextRun]].
+  /** The font stored in an iModel, used to draw the contents of a [[TextRun]].
    */
-  public readonly fontName: string;
+  public readonly font: FontFamilySelector;
   /** The height of the text, in meters. Many other settings use the text height as the basis for computing their own values.
    * For example, the height and offset from baseline of a subscript [[TextRun]]  are computed as textHeight * [[subScriptScale]] and
    * textHeight * [[subScriptOffsetFactor]], respectively.
@@ -312,10 +313,10 @@ export class TextStyleSettings {
   /** The frame settings of the [[TextAnnotation]]. */
   public readonly frame: Readonly<Required<TextFrameStyleProps>>;
 
-  /** A fully-populated JSON representation of the default settings. A real `fontName` must be provided before use. */
+  /** A fully-populated JSON representation of the default settings. A real `font` must be provided before use. */
   public static defaultProps: DeepReadonlyObject<DeepRequiredObject<TextStyleSettingsProps>> = {
     color: "subcategory",
-    fontName: "",
+    font: { name: "", type: FontType.TrueType },
     textHeight: 1,
     lineSpacingFactor: 0.5,
     paragraphSpacingFactor: 0.5,
@@ -356,7 +357,11 @@ export class TextStyleSettings {
     }
 
     this.color = props.color ?? defaults.color;
-    this.fontName = props.fontName ?? defaults.fontName;
+    const font = {
+      name: props.font?.name ?? defaults.font.name,
+      type: props.font?.type ?? defaults.font.type,
+    }
+    this.font = Object.freeze(font) as Readonly<Required<FontFamilySelector>>;
     this.textHeight = props.textHeight ?? defaults.textHeight;
     this.lineSpacingFactor = props.lineSpacingFactor ?? defaults.lineSpacingFactor;
     this.paragraphSpacingFactor = props.paragraphSpacingFactor ?? defaults.paragraphSpacingFactor;
@@ -406,6 +411,9 @@ export class TextStyleSettings {
     if (props.frame) {
       copy.frame = { ...props.frame };
     }
+    if (props.font) {
+      copy.font = { ...props.font };
+    }
     return copy;
   }
 
@@ -436,7 +444,7 @@ export class TextStyleSettings {
   }
 
   public equals(other: TextStyleSettings): boolean {
-    return this.color === other.color && this.fontName === other.fontName
+    return this.color === other.color && this.font.name === other.font.name && this.font.type === other.font.type
       && this.textHeight === other.textHeight && this.widthFactor === other.widthFactor
       && this.lineSpacingFactor === other.lineSpacingFactor && this.paragraphSpacingFactor === other.paragraphSpacingFactor
       && this.isBold === other.isBold && this.isItalic === other.isItalic && this.isUnderlined === other.isUnderlined
@@ -461,8 +469,8 @@ export class TextStyleSettings {
    */
   public getValidationErrors(): string[] {
     const errorMessages: string[] = [];
-    if (this.fontName.trim() === "") {
-      errorMessages.push("fontName must be provided");
+    if (this.font.name.trim() === "") {
+      errorMessages.push("font name must be provided");
     }
 
     if (this.textHeight <= 0) {

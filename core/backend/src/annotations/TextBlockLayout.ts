@@ -263,10 +263,10 @@ class LayoutContext {
 
   public constructor(public readonly textStyleResolver: TextStyleResolver, private readonly _computeTextRange: ComputeRangesForTextLayout, private readonly _findFontId: FindFontId) { }
 
-  public findFontId(name: string): FontId {
+  public findFontId(name: string, type?: FontType): FontId {
     let fontId = this._fontIds.get(name);
     if (undefined === fontId) {
-      this._fontIds.set(name, fontId = this._findFontId(name));
+      this._fontIds.set(name, fontId = this._findFontId(name, type));
     }
 
     return fontId;
@@ -280,7 +280,7 @@ class LayoutContext {
       };
     }
 
-    const fontId = this.findFontId(style.fontName);
+    const fontId = this.findFontId(style.font.name, style.font.type);
     const { layout, justification } = this._computeTextRange({
       chars,
       fontId,
@@ -429,7 +429,7 @@ export class RunLayout {
 
   public static create(source: Run, context: LayoutContext, cumulativeOverrides: TextStyleSettingsProps): RunLayout {
     const style = context.textStyleResolver.resolveSettings(cumulativeOverrides);
-    const fontId = context.findFontId(style.fontName);
+    const fontId = context.findFontId(style.font.name, style.font.type);
     const charOffset = 0;
     const offsetFromLine = { x: 0, y: 0 };
     let numChars = 0;
