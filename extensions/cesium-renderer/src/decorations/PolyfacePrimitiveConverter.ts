@@ -17,6 +17,7 @@ import {
   PerInstanceColorAppearance, 
   Primitive,
   PrimitiveType, 
+  PrimitiveCollection,
 } from "cesium";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
@@ -25,12 +26,12 @@ import type { DecorationPrimitiveEntry, PolyfaceEntry } from "./DecorationTypes.
 export class PolyfacePrimitiveConverter extends PrimitiveConverter {
   protected readonly primitiveType = 'polyface' as const;
 
-  protected override getCollection(scene: CesiumScene): import('cesium').PrimitiveCollection {
+  protected override getCollection(scene: CesiumScene): PrimitiveCollection {
     return scene.primitivesCollection;
   }
 
-  protected override extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[] | undefined, primitiveType: string): DecorationPrimitiveEntry[] | undefined {
-    if (!coordinateData || !Array.isArray(coordinateData))
+  protected override extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[], primitiveType: string): DecorationPrimitiveEntry[] | undefined {
+    if (!Array.isArray(coordinateData))
       return undefined;
     return coordinateData.filter((entry: DecorationPrimitiveEntry) => entry.type === primitiveType);
   }
@@ -39,13 +40,12 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
     graphic: RenderGraphicWithCoordinates,
     primitiveId: string,
     _index: number,
-    _collection: import('cesium').PrimitiveCollection,
+    _collection: PrimitiveCollection,
     iModel?: IModelConnection,
     originalData?: DecorationPrimitiveEntry[],
     _type?: string
   ): Primitive | undefined {
-    const isPolyfaceEntry = (e: DecorationPrimitiveEntry): e is PolyfaceEntry => e.type === 'polyface';
-    const polyfaceEntry = originalData?.find((e): e is PolyfaceEntry => isPolyfaceEntry(e));
+    const polyfaceEntry = originalData?.find((e): e is PolyfaceEntry => e.type === 'polyface');
     const polyface = polyfaceEntry?.polyface;
     const filled = polyfaceEntry?.filled ?? true;
     

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelConnection } from "@itwin/core-frontend";
 import { LineString3d, Loop, Point3d } from "@itwin/core-geometry";
-import { Cartesian3, ColorGeometryInstanceAttribute, GeometryInstance, PerInstanceColorAppearance, PolygonGeometry, PolygonHierarchy, Primitive } from "cesium";
+import { Cartesian3, ColorGeometryInstanceAttribute, GeometryInstance, PerInstanceColorAppearance, PolygonGeometry, PolygonHierarchy, Primitive, PrimitiveCollection } from "cesium";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
 import type { DecorationPrimitiveEntry, LoopEntry } from "./DecorationTypes.js";
@@ -13,13 +13,13 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
   protected readonly primitiveType = 'loop' as const;
   private _currentScene?: CesiumScene;
 
-  protected override getCollection(scene: CesiumScene): import('cesium').PrimitiveCollection {
+  protected override getCollection(scene: CesiumScene): PrimitiveCollection {
     this._currentScene = scene;
     return scene.primitivesCollection;
   }
 
-  protected override extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[] | undefined, primitiveType: string): DecorationPrimitiveEntry[] | undefined {
-    if (!coordinateData || !Array.isArray(coordinateData))
+  protected override extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[], primitiveType: string): DecorationPrimitiveEntry[] | undefined {
+    if (!Array.isArray(coordinateData))
       return undefined;
     return coordinateData.filter((entry: DecorationPrimitiveEntry) => entry.type === primitiveType);
   }
@@ -28,11 +28,11 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
     graphic: RenderGraphicWithCoordinates,
     primitiveId: string,
     _index: number,
-    _collection: import('cesium').PrimitiveCollection,
+    _collection: PrimitiveCollection,
     iModel?: IModelConnection,
     originalData?: DecorationPrimitiveEntry[],
     _type?: string
-  ): import('cesium').Primitive | undefined {
+  ): Primitive | undefined {
     const isLoopEntry = (e: DecorationPrimitiveEntry): e is LoopEntry => e.type === 'loop';
     const loopEntry = originalData?.find((e): e is LoopEntry => isLoopEntry(e));
     const loop: Loop | undefined = loopEntry?.loop;

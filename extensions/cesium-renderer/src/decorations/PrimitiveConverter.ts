@@ -58,8 +58,8 @@ export abstract class PrimitiveConverter<TPrimitiveData = DecorationPrimitiveEnt
   }
 
   /** Generic method to extract primitive data by type. Subclasses may override for specialized needs. */
-  protected extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[] | undefined, primitiveType: string): TPrimitiveData | undefined {
-    if (!coordinateData || !Array.isArray(coordinateData))
+  protected extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[], primitiveType: string): TPrimitiveData | undefined {
+    if (!Array.isArray(coordinateData))
       return undefined;
     const filtered = coordinateData.filter((entry) => entry.type === primitiveType);
     return filtered as unknown as TPrimitiveData;
@@ -88,7 +88,7 @@ export abstract class PrimitiveConverter<TPrimitiveData = DecorationPrimitiveEnt
       const primitiveId = `${type}_${this.getPrimitiveTypeName()}_${index}`;
       const graphicWithCoords = graphic as RenderGraphicWithCoordinates;
       const coordinateData = graphicWithCoords._coordinateData;
-      const originalData = this.extractPrimitiveData(coordinateData, primitiveType);
+      const originalData = coordinateData ? this.extractPrimitiveData(coordinateData, primitiveType) : undefined;
 
       const result = this.createPrimitiveFromGraphic(graphicWithCoords, primitiveId, index, collection, iModel, originalData, type);
 
