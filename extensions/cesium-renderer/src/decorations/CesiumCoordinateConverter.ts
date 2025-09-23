@@ -23,8 +23,7 @@ export class CesiumCoordinateConverter {
   }
 
   /**
-   * Convert iTwin.js spatial coordinates to CesiumJS Cartesian3 (ECEF coordinates)
-   * Uses iTwin.js built-in spatialToEcef method from IModel.ts:636
+   * Convert iTwin.js spatial coordinates to CesiumJS Cartesian3 (ECEF coordinates).
    * @param spatial Point in iTwin.js model spatial coordinates
    * @returns Cartesian3 position for CesiumJS
    */
@@ -32,16 +31,12 @@ export class CesiumCoordinateConverter {
     if (!this._iModel.isGeoLocated) {
       return this._getFallbackCartesian3(spatial);
     }
-    // Direct call to iTwin.js spatialToEcef method (IModel.ts:636)
-    // public spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d
     const ecefPoint = this._iModel.spatialToEcef(spatial);
-    // Convert iTwin.js Point3d ECEF to CesiumJS Cartesian3 ECEF
     return new Cartesian3(ecefPoint.x, ecefPoint.y, ecefPoint.z);
   }
 
   /**
    * Convert CesiumJS Cartesian3 (ECEF) to iTwin.js spatial coordinates
-   * Uses iTwin.js built-in ecefToSpatial method
    * @param cartesian3 Position in CesiumJS ECEF coordinates
    * @returns Point3d in iTwin.js spatial coordinates
    */
@@ -49,15 +44,12 @@ export class CesiumCoordinateConverter {
     if (!this._iModel.isGeoLocated) {
       return new Point3d(cartesian3.x, cartesian3.y, cartesian3.z);
     }
-    // Convert CesiumJS Cartesian3 to iTwin.js Point3d
     const ecefPoint = new Point3d(cartesian3.x, cartesian3.y, cartesian3.z);
-    // Use iTwin.js built-in ecefToSpatial method
     return this._iModel.ecefToSpatial(ecefPoint);
   }
 
   /**
    * Convert iTwin.js Point3d to CesiumJS geographic coordinates
-   * First converts to ECEF using spatialToEcef, then to geographic
    * @param spatial Point in iTwin.js spatial coordinates
    * @returns Cartesian3 from geographic coordinates
    */
@@ -65,12 +57,9 @@ export class CesiumCoordinateConverter {
     if (!this._iModel.isGeoLocated) {
       return this._getFallbackCartesian3(spatial);
     }
-    // Step 1: iTwin.js spatial → ECEF using built-in method
     const ecefPoint = this._iModel.spatialToEcef(spatial);
     const cesiumEcef = new Cartesian3(ecefPoint.x, ecefPoint.y, ecefPoint.z);
-    // Step 2: ECEF → Geographic coordinates
     const cartographic = CesiumCartographic.fromCartesian(cesiumEcef);
-    // Step 3: Geographic → Cartesian3 (for CesiumJS positioning)
     return Cartesian3.fromRadians(
       cartographic.longitude,
       cartographic.latitude,
