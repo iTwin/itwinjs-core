@@ -19,7 +19,7 @@ interface LineStringCoordinate {
   z?: number;
 }
 type LineStringCoordinates = LineStringCoordinate[];
- 
+
 /** Converts iTwin.js LineString decorations to Cesium Polylines */
 export class LineStringPrimitiveConverter extends PrimitiveConverter<LineStringCoordinates[]> {
   protected readonly primitiveType: 'linestring' | 'linestring2d';
@@ -74,7 +74,7 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter<LineStringC
 
   protected override getDepthOptions(decorationType: string): Record<string, unknown> {
     const baseOptions = super.getDepthOptions(decorationType);
-    
+
     const isOverlay = decorationType === 'worldOverlay' || decorationType === 'viewOverlay';
     if (isOverlay) {
       return {
@@ -150,17 +150,16 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter<LineStringC
     if (!color)
       return undefined;
 
-    if (positions.length === 0)
-      return undefined;
-
-    if (geometryType === 'line-string' || geometryType === this.primitiveType) {
-      return polylineCollection.add({
-        id: lineId,
-        positions,
-        width: 2,
-        material: Material.fromType(Material.ColorType, { color }),
-        ...this.getDepthOptions(type || 'world'),
-      });
+      switch (geometryType) {
+      case 'line-string':
+      default:
+        return polylineCollection.add({
+          id: lineId,
+          positions,
+          width: 2,
+          material: Material.fromType(Material.ColorType, { color }),
+          ...this.getDepthOptions(type || 'world'),
+        });
     }
 
     return undefined;
