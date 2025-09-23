@@ -927,49 +927,41 @@ describe("RegionBoolean", () => {
       Arc3d.create(Point3d.create(53.30649186903611, -42.44887617137283, 0), Vector3d.create(-32.79491890989654, -17.553478240211835, 0), Vector3d.create(-17.553478240211838, 32.79491890989654, 0), AngleSweep.fromJSON([-41.99668897850568,41.99668897850568])),
     );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [loopA, loopB]);
+
+
+    // Default behavior: Boolean union returns a UnionRegion of disjoint Loops, which is sort of cheating
     const union = RegionOps.regionBooleanXY(loopA, loopB, RegionBinaryOpType.Union);
+    let outerLoop: Loop | undefined;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, union);
-
-    // Test post-process
-    if (ck.testDefined(union, "Boolean returns something")) {
-      const signedLoops = RegionOps.constructAllXYRegionLoops(union);
-      if (ck.testDefined(signedLoops, "Post-process returns something")) {
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoops.map((component) => component.negativeAreaLoops).flat(), 0, 100);
-        if (ck.testExactNumber(1, signedLoops.length, "Post-process found one component..."))
-          ck.testExactNumber(1, signedLoops[0].negativeAreaLoops.length, "... with one negative area loop...");
-      }
-    }
-
-    // Current behavior is for the Boolean union to be a UnionRegion of disjoint Loops
-    if (ck.testType(union, UnionRegion, "current behavior is for Boolean union to result in, ahem, a UnionRegion...")) {
-      ck.testTrue(union.children.every((child) => child instanceof Loop), "... with Loop children...");
-      if (ck.testExactNumber(3, union.children.length, "... numbering 3...")) {
-        // Problem 2: why is the intersection the smaller loop?
-        let loop0 = union.children[1] as Loop;
-        let loop1 = union.children[2] as Loop;
-        let sliver = RegionOps.regionBooleanXY(loop0, loop1, RegionBinaryOpType.Intersection) as Loop;
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [loop0, loop1], 200);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, sliver, 200, 0, 50);
-
-        // Problem 3: why is the intersection the smaller loop?
-        loop0 = union.children[2] as Loop;
-        loop1 = union.children[0] as Loop;
-        sliver = RegionOps.regionBooleanXY(loop0, loop1, RegionBinaryOpType.Intersection) as Loop;
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [loop0, loop1], 300);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, sliver, 300, 0, 50);
-
-/* When Problems 2 and 3 are fixed use this logic to verify:
+    if (ck.testType(union, UnionRegion, "current behavior: union results in a UnionRegion.")) {
+      ck.testTrue(union.children.every((child) => child instanceof Loop), "current behavior: expect Loop children");
+      if (ck.testExactNumber(3, union.children.length, "current behavior: expect 3 children")) {
         ck.testTrue(union.children.every(
-          (child, i) => {
+          (child: Loop | ParityRegion, i: number) => { // regions i and i+1 are disjoint
             const sliver = RegionOps.regionBooleanXY(child, union.children[Geometry.cyclic3dAxis(i + 1)], RegionBinaryOpType.Intersection);
             return !sliver || Geometry.isAlmostEqualOptional(RegionOps.computeXYArea(sliver), 0.0, Geometry.smallMetricDistanceSquared);
           }),
-          "... and disjoint.");
-*/    }
+          "current behavior: expect disjoint children",
+        );
+      }
+      // test post-process
+      const signedLoops = RegionOps.constructAllXYRegionLoops(union);
+      if (ck.testDefined(signedLoops, "Post-process returns something")) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoops.map((component) => component.negativeAreaLoops).flat(), 0, 0, 100);
+        if (ck.testExactNumber(1, signedLoops.length, "Post-process found one component")) {
+          if (ck.testExactNumber(1, signedLoops[0].negativeAreaLoops.length, "Post-process found 1 negative area loop"))
+            outerLoop = signedLoops[0].negativeAreaLoops[0];
+          ck.testExactNumber(3, signedLoops[0].positiveAreaLoops.length, "Post-process found 3 positive area loops");
+          ck.testExactNumber(3, signedLoops[0].slivers.length, "Post-process found 3 slivers.");
+        }
+      }
     }
 
-    // Problem 1: add option to simplify Boolean Union to the (assembled) negative area loops
-    ck.testType(union, Loop, "user expectation is for Boolean union to result in a single Loop");
+    // Optional behavior: post-process Boolean Union to return only negative area loop(s)
+    // const simplifiedUnion = RegionOps.regionBooleanXY(loopA, loopB, RegionBinaryOpType.Union, options);
+    // if (ck.testType(simplifiedUnion, Loop, "user expectation is for Boolean union to result in a single Loop")) {
+    //  // test range and area of simplifiedUnion and outerLoop are the same
+    // }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "UnionAnomaly");
     expect(ck.getNumErrors()).toBe(0);
