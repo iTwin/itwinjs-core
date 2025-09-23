@@ -9,9 +9,9 @@
 import { Cartesian3, ColorGeometryInstanceAttribute, GeometryInstance, PerInstanceColorAppearance, PolygonGeometry, PolygonHierarchy, Primitive, PrimitiveCollection } from "cesium";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
+import type { DecorationPrimitiveEntry, Shape2dEntry, ShapeEntry } from "./DecorationTypes.js";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
-import type { DecorationPrimitiveEntry, Shape2dEntry, ShapeEntry } from "./DecorationTypes.js";
 
 interface ShapeCoordinate {
   x: number;

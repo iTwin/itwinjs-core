@@ -5,19 +5,19 @@
 
 import { IModelConnection } from "@itwin/core-frontend";
 import { Point3d, Polyface } from "@itwin/core-geometry";
-import { 
-  BoundingSphere, 
-  Cartesian3, 
-  ColorGeometryInstanceAttribute, 
-  ComponentDatatype, 
-  Geometry, 
+import {
+  BoundingSphere,
+  Cartesian3,
+  ColorGeometryInstanceAttribute,
+  ComponentDatatype,
+  Geometry,
   GeometryAttribute,
   GeometryAttributes,
-  GeometryInstance, 
-  PerInstanceColorAppearance, 
+  GeometryInstance,
+  PerInstanceColorAppearance,
   Primitive,
-  PrimitiveType, 
   PrimitiveCollection,
+  PrimitiveType,
 } from "cesium";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
@@ -48,7 +48,7 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
     const polyfaceEntry = originalData?.find((e): e is PolyfaceEntry => e.type === 'polyface');
     const polyface = polyfaceEntry?.polyface;
     const filled = polyfaceEntry?.filled ?? true;
-    
+
     if (!polyface)
       return undefined;
 
@@ -73,8 +73,8 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
       },
     });
 
-    const appearance = new PerInstanceColorAppearance({ 
-      flat: true, 
+    const appearance = new PerInstanceColorAppearance({
+      flat: true,
       translucent,
     });
 
@@ -121,10 +121,10 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
     // Use iTwin.js visitor to properly extract triangulated indices
     const visitor = polyface.createVisitor(0);
     const triangleIndices: number[] = [];
-    
+
     while (visitor.moveToNextFacet()) {
       const numVertices = visitor.pointCount;
-      
+
       if (numVertices === 3) {
         // Triangle - add directly
         triangleIndices.push(visitor.clientPointIndex(0));
@@ -136,7 +136,7 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
         const i1 = visitor.clientPointIndex(1);
         const i2 = visitor.clientPointIndex(2);
         const i3 = visitor.clientPointIndex(3);
-        
+
         // First triangle: 0,1,2
         triangleIndices.push(i0, i1, i2);
         // Second triangle: 0,2,3
@@ -162,7 +162,7 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
     if (polyface.data.normal && polyface.data.normalIndex) {
       const normals = polyface.data.normal.getArray();
       const normalData = new Float32Array(points.length * 3);
-      
+
       // Map normals using normal indices
       const normalIndices = polyface.data.normalIndex;
       let vertexIndex = 0;
@@ -175,7 +175,7 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
           vertexIndex++;
         }
       }
-      
+
       attributes.normal = new GeometryAttribute({
         componentDatatype: ComponentDatatype.FLOAT,
         componentsPerAttribute: 3,
