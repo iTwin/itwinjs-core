@@ -2,10 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module Cesium
- */
-
 import { Decorations, GraphicList, IModelConnection, RenderGeometry, RenderGraphic } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import {

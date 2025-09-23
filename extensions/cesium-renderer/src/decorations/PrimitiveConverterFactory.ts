@@ -2,10 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module Cesium
- */
-
 import { PrimitiveConverter } from "./PrimitiveConverter.js";
 import { PointPrimitiveConverter } from "./PointPrimitiveConverter.js";
 import { LineStringPrimitiveConverter } from "./LineStringPrimitiveConverter.js";

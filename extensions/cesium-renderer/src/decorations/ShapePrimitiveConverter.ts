@@ -2,10 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module Cesium
- */
-
 import { Cartesian3, ColorGeometryInstanceAttribute, GeometryInstance, PerInstanceColorAppearance, PolygonGeometry, PolygonHierarchy, Primitive, PrimitiveCollection } from "cesium";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
@@ -19,7 +15,7 @@ interface ShapeCoordinate {
   z?: number;
 }
 type ShapeCoordinates = Array<ShapeCoordinate | Point3d>;
- 
+
 export class ShapePrimitiveConverter extends PrimitiveConverter<ShapeCoordinates[]> {
   protected readonly primitiveType: 'shape' | 'shape2d';
 
@@ -74,7 +70,7 @@ export class ShapePrimitiveConverter extends PrimitiveConverter<ShapeCoordinates
 
   protected override getDepthOptions(decorationType: string): DepthOptions {
     const baseOptions = super.getDepthOptions(decorationType);
-    
+
     const isOverlay = decorationType === 'worldOverlay' || decorationType === 'viewOverlay';
     if (isOverlay) {
       return {
@@ -118,7 +114,7 @@ export class ShapePrimitiveConverter extends PrimitiveConverter<ShapeCoordinates
     }
 
     let positions: Cartesian3[] = [];
-    
+
     if (this.primitiveType === 'shape2d') {
       const entry = this.findEntryByType(graphic, 'shape2d');
       if (entry && entry.points.length > 0) {
@@ -134,7 +130,7 @@ export class ShapePrimitiveConverter extends PrimitiveConverter<ShapeCoordinates
         positions = this.convertPointsToCartesian3(pts, iModel);
       }
     }
-    
+
     if (positions.length === 0 && geometries && geometries.length > 0) {
       const geometry = geometries[0];
       interface Coord { x: number; y: number; z: number }
@@ -171,7 +167,7 @@ export class ShapePrimitiveConverter extends PrimitiveConverter<ShapeCoordinates
         const color = this.extractFillOrLineColorFromGraphic(graphic, this.primitiveType === 'shape2d' ? 'shape2d' : 'shape');
         if (!color)
           return undefined;
-        
+
         const geometryInstance = new GeometryInstance({
           geometry: polygonGeometry,
           id: shapeId,
