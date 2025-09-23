@@ -8,7 +8,6 @@
 
 import { Range2dProps } from "@itwin/core-geometry";
 import { IModelNative } from "./internal/NativePlatform";
-import { IModelDb } from "./IModelDb";
 import { GeoCoordConfig } from "./GeoCoordConfig";
 
 /** Describes a coordinate reference system produced by [[getAvailableCoordinateReferenceSystems]].
