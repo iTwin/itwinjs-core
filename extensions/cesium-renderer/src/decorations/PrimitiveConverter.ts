@@ -15,10 +15,20 @@ import { PrimitiveConverterFactory } from "./PrimitiveConverterFactory.js";
 import { CesiumCoordinateConverter } from "./CesiumCoordinateConverter.js";
 import type { DecorationPrimitiveEntry } from "./DecorationTypes.js";
 
+export interface DecorationGeometryCoordinate {
+  x: number;
+  y: number;
+  z: number;
+}
+
+export interface DecorationGeometry {
+  coordinateData?: DecorationGeometryCoordinate[];
+}
+
 export interface RenderGraphicWithCoordinates extends RenderGraphic {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   _coordinateData?: DecorationPrimitiveEntry[];
-  geometries?: unknown[];
+  geometries?: DecorationGeometry[];
   geometryType?: string;
 }
 
