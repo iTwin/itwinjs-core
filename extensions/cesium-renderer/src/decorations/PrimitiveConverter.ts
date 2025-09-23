@@ -13,7 +13,7 @@ import { ColorDef } from "@itwin/core-common";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverterFactory } from "./PrimitiveConverterFactory.js";
 import { CesiumCoordinateConverter } from "./CesiumCoordinateConverter.js";
-import { DecorationPrimitiveEntry } from "./DecorationTypes.js";
+import type { DecorationPrimitiveEntry } from "./DecorationTypes.js";
 
 export interface RenderGraphicWithCoordinates extends RenderGraphic {
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -23,9 +23,9 @@ export interface RenderGraphicWithCoordinates extends RenderGraphic {
 }
 
 /** Base class for converting iTwin.js decorations to Cesium primitives */
-export abstract class PrimitiveConverter {
+export abstract class PrimitiveConverter<TPrimitiveData = DecorationPrimitiveEntry[]> {
   // Geometry type handled by this converter
-  protected abstract readonly primitiveType: import('./DecorationTypes.js').DecorationPrimitiveEntry["type"];
+  protected abstract readonly primitiveType: DecorationPrimitiveEntry["type"];
 
   // Unified convert method that uses the subclass primitiveType
   public convertDecorations(graphics: GraphicList, type: string, scene: CesiumScene, iModel?: IModelConnection): void {
@@ -57,13 +57,12 @@ export abstract class PrimitiveConverter {
     return {};
   }
 
-  /** Generic method to extract primitive data by type. Subclasses may override and return their own shape. */
-  protected extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[] | undefined, primitiveType: string): unknown {
-    if (!coordinateData || !Array.isArray(coordinateData)) return undefined;
-    const entries = coordinateData.filter((entry) => entry.type === primitiveType);
-    type EntriesWithPoints = Extract<DecorationPrimitiveEntry, { points: unknown }>;
-    const withPoints = entries.filter((entry): entry is EntriesWithPoints => 'points' in entry);
-    return withPoints.map((entry) => entry.points);
+  /** Generic method to extract primitive data by type. Subclasses may override for specialized needs. */
+  protected extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[] | undefined, primitiveType: string): TPrimitiveData | undefined {
+    if (!coordinateData || !Array.isArray(coordinateData))
+      return undefined;
+    const filtered = coordinateData.filter((entry) => entry.type === primitiveType);
+    return filtered as unknown as TPrimitiveData;
   }
 
   /** Template method for convertDecorations - defines the algorithm structure */
@@ -121,7 +120,7 @@ export abstract class PrimitiveConverter {
     index: number,
     collection: unknown,
     iModel?: IModelConnection,
-    originalData?: unknown,
+    originalData?: TPrimitiveData,
     type?: string
   ): unknown;
   // Default primitive type name for IDs; subclasses can override for custom naming

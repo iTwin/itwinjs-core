@@ -11,8 +11,16 @@ import { IModelConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
+import type { DecorationPrimitiveEntry, Shape2dEntry, ShapeEntry } from "./DecorationTypes.js";
+
+interface ShapeCoordinate {
+  x: number;
+  y: number;
+  z?: number;
+}
+type ShapeCoordinates = Array<ShapeCoordinate | Point3d>;
  
-export class ShapePrimitiveConverter extends PrimitiveConverter {
+export class ShapePrimitiveConverter extends PrimitiveConverter<ShapeCoordinates[]> {
   protected readonly primitiveType: 'shape' | 'shape2d';
 
   public constructor(primitiveType: 'shape' | 'shape2d' = 'shape') {
@@ -24,6 +32,25 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
     return scene.primitivesCollection;
   }
 
+  protected override extractPrimitiveData(
+    coordinateData: DecorationPrimitiveEntry[] | undefined,
+    primitiveType: string
+  ): ShapeCoordinates[] | undefined {
+    if (!coordinateData)
+      return undefined;
+
+    const matches = coordinateData.filter((entry): entry is ShapeEntry | Shape2dEntry => entry.type === primitiveType);
+    if (matches.length === 0)
+      return undefined;
+
+    return matches.map(entry => {
+      if (entry.type === 'shape')
+        return entry.points.map(pt => ({ x: pt.x, y: pt.y, z: pt.z }));
+
+      return entry.points.map(pt => ({ x: pt.x, y: pt.y, z: entry.zDepth }));
+    });
+  }
+
 
   protected override createPrimitiveFromGraphic(
     graphic: RenderGraphicWithCoordinates,
@@ -31,9 +58,9 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
     index: number,
     collection: PrimitiveCollection,
     iModel?: IModelConnection,
-    originalData?: unknown,
+    originalData?: ShapeCoordinates[],
     type?: string
-  ): Primitive | null {
+  ): Primitive | undefined {
     return this.createPolygonFromGraphic(graphic, primitiveId, index, collection, iModel, originalData, type, graphic);
   }
 
@@ -65,18 +92,14 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
     index: number,
     primitivesCollection: PrimitiveCollection,
     iModel?: IModelConnection,
-    originalShapes?: unknown,
+    originalShapes?: ShapeCoordinates[],
     type?: string,
     originalGraphic?: RenderGraphicWithCoordinates
-  ): Primitive | null {
-    if (!graphic) {
-      return null;
+  ): Primitive | undefined {
+    if (!graphic?.geometries || !graphic.geometryType) {
+      return undefined;
     }
-    if (graphic.geometries && graphic.geometryType) {
-      return this.createPolygonFromGeometry(graphic.geometries, graphic.geometryType, shapeId, index, primitivesCollection, iModel, originalShapes, type, originalGraphic ?? graphic);
-    }
-
-    return null;
+    return this.createPolygonFromGeometry(graphic.geometries, graphic.geometryType, shapeId, index, primitivesCollection, iModel, originalShapes, type, originalGraphic ?? graphic);
   }
 
   private createPolygonFromGeometry(
@@ -86,12 +109,12 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
     _index: number,
     primitivesCollection: PrimitiveCollection,
     iModel?: IModelConnection,
-    originalShapes?: unknown,
+    originalShapes?: ShapeCoordinates[],
     _type?: string,
     graphic?: RenderGraphicWithCoordinates
-  ): Primitive | null {
+  ): Primitive | undefined {
     if (!geometries || !geometryType || !primitivesCollection) {
-      return null;
+      return undefined;
     }
 
     let positions: Cartesian3[] = [];
@@ -104,8 +127,8 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
       }
     }
 
-    if (positions.length === 0 && Array.isArray(originalShapes) && originalShapes.length > 0) {
-      const firstShape = originalShapes[0] as Array<{ x: number; y: number; z?: number }>;
+    if (positions.length === 0) {
+      const firstShape = originalShapes?.[0];
       if (firstShape && firstShape.length > 0) {
         const pts = firstShape.map((coord) => Point3d.create(coord.x, coord.y, typeof coord.z === 'number' ? coord.z : 0));
         positions = this.convertPointsToCartesian3(pts, iModel);
@@ -132,7 +155,7 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
     }
 
     if (positions.length < 3) {
-      return null;
+      return undefined;
     }
 
     switch (geometryType) {
@@ -147,7 +170,7 @@ export class ShapePrimitiveConverter extends PrimitiveConverter {
         // Determine color: prefer symbology fill, fallback by type
         const color = this.extractFillOrLineColorFromGraphic(graphic, this.primitiveType === 'shape2d' ? 'shape2d' : 'shape');
         if (!color)
-          return null;
+          return undefined;
         
         const geometryInstance = new GeometryInstance({
           geometry: polygonGeometry,

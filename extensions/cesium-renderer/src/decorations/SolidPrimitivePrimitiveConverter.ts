@@ -42,28 +42,27 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     _index: number,
     _collection: PrimitiveCollection,
     iModel?: IModelConnection,
-    originalData?: unknown,
+    originalData?: DecorationPrimitiveEntry[],
     _type?: string
-  ): Primitive | null {
-    const entries = Array.isArray(originalData) ? (originalData as DecorationPrimitiveEntry[]) : undefined;
-    const solidEntry = entries?.find((e): e is SolidPrimitiveEntry => e.type === 'solidPrimitive');
+  ): Primitive | undefined {
+    const solidEntry = originalData?.find((e): e is SolidPrimitiveEntry => e.type === 'solidPrimitive');
     const solidPrimitive = solidEntry?.solidPrimitive;
 
     if (!solidPrimitive) {
-      return null;
+      return undefined;
     }
 
     // Convert SolidPrimitive to appropriate Cesium geometry with positioning
     const geometryResult = this.convertSolidPrimitiveToGeometry(solidPrimitive, iModel);
     if (!geometryResult) {
-      return null;
+      return undefined;
     }
 
     const { geometry, modelMatrix } = geometryResult;
 
     const colors = this.extractFillAndLineColorsFromGraphic(graphic, 'solidPrimitive');
     if (!colors) {
-      return null;
+      return undefined;
     }
 
     const { fillColor } = colors;
@@ -105,7 +104,7 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     }
   }
 
-  private convertSolidPrimitiveToGeometry(solidPrimitive: SolidPrimitive, iModel?: IModelConnection): { geometry: BoxGeometry | SphereGeometry | CylinderGeometry; modelMatrix: Matrix4 } | null {
+  private convertSolidPrimitiveToGeometry(solidPrimitive: SolidPrimitive, iModel?: IModelConnection): { geometry: BoxGeometry | SphereGeometry | CylinderGeometry; modelMatrix: Matrix4 } | undefined {
     switch (solidPrimitive.solidPrimitiveType) {
       case 'box':
         return this.convertBoxToGeometry(solidPrimitive as Box, iModel);
@@ -114,15 +113,15 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
       case 'cone':
         return this.convertConeToGeometry(solidPrimitive as Cone, iModel);
       default:
-        return null;
+        return undefined;
     }
   }
 
-  private convertBoxToGeometry(box: Box, iModel?: IModelConnection): { geometry: BoxGeometry; modelMatrix: Matrix4 } | null {
+  private convertBoxToGeometry(box: Box, iModel?: IModelConnection): { geometry: BoxGeometry; modelMatrix: Matrix4 } | undefined {
     // Get box corner points
     const corners = box.getCorners();
     if (!corners || corners.length !== 8)
-      return null;
+      return undefined;
 
     // Calculate min and max from corners
     let minX = corners[0].x, maxX = corners[0].x;
@@ -165,7 +164,7 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     return { geometry: boxGeometry, modelMatrix };
   }
 
-  private convertSphereToGeometry(sphere: Sphere, iModel?: IModelConnection): { geometry: SphereGeometry; modelMatrix: Matrix4 } | null {
+  private convertSphereToGeometry(sphere: Sphere, iModel?: IModelConnection): { geometry: SphereGeometry; modelMatrix: Matrix4 } | undefined {
     // Get sphere properties using iTwin.js methods
     const center = sphere.cloneCenter();
 
@@ -186,7 +185,7 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     radius = Math.max(5000, Math.min(radius, 50000));
 
     if (!center || radius <= 0) {
-      return null;
+      return undefined;
     }
 
     // Create sphere geometry at origin
@@ -207,21 +206,21 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     return { geometry: sphereGeometry, modelMatrix };
   }
 
-  private convertConeToGeometry(cone: Cone, iModel?: IModelConnection): { geometry: CylinderGeometry; modelMatrix: Matrix4 } | null {
+  private convertConeToGeometry(cone: Cone, iModel?: IModelConnection): { geometry: CylinderGeometry; modelMatrix: Matrix4 } | undefined {
     const centerA = cone.getCenterA();
     const centerB = cone.getCenterB();
     const radiusA = cone.getRadiusA();
     const radiusB = cone.getRadiusB();
 
     if (!centerA || !centerB) {
-      return null;
+      return undefined;
     }
 
     // Calculate length from center points
     const length = centerA.distance(centerB);
 
     if (length <= 0) {
-      return null;
+      return undefined;
     }
 
     // Create cylinder geometry at origin

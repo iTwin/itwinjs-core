@@ -7,7 +7,7 @@ import { LineString3d, Loop, Point3d } from "@itwin/core-geometry";
 import { Cartesian3, ColorGeometryInstanceAttribute, GeometryInstance, PerInstanceColorAppearance, PolygonGeometry, PolygonHierarchy, Primitive } from "cesium";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
-import { DecorationPrimitiveEntry } from "./DecorationTypes.js";
+import type { DecorationPrimitiveEntry, LoopEntry } from "./DecorationTypes.js";
 
 export class LoopPrimitiveConverter extends PrimitiveConverter {
   protected readonly primitiveType = 'loop' as const;
@@ -30,23 +30,22 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
     _index: number,
     _collection: import('cesium').PrimitiveCollection,
     iModel?: IModelConnection,
-    originalData?: unknown,
+    originalData?: DecorationPrimitiveEntry[],
     _type?: string
-  ): import('cesium').Primitive | null {
-    const data = Array.isArray(originalData) ? (originalData as DecorationPrimitiveEntry[]) : undefined;
-    const isLoopEntry = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').LoopEntry => e.type === 'loop';
-    const loopEntry = Array.isArray(data) ? data.find((e): e is import('./DecorationTypes.js').LoopEntry => isLoopEntry(e)) : undefined;
+  ): import('cesium').Primitive | undefined {
+    const isLoopEntry = (e: DecorationPrimitiveEntry): e is LoopEntry => e.type === 'loop';
+    const loopEntry = originalData?.find((e): e is LoopEntry => isLoopEntry(e));
     const loop: Loop | undefined = loopEntry?.loop;
     if (!loop)
-      return null;
+      return undefined;
 
     const positions = this.convertLoopToPositions(loop, iModel);
     if (positions.length < 3)
-      return null;
+      return undefined;
 
     const colors = this.extractFillAndLineColorsFromGraphic(graphic, 'loop');
     if (!colors)
-      return null;
+      return undefined;
     const { fillColor, lineColor, outlineWanted } = colors;
 
     if (outlineWanted && this._currentScene) {
@@ -61,7 +60,7 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
 
     const positionsNoClose = this.removeDuplicateClosingPoint(positions);
     if (positionsNoClose.length < 3)
-      return null;
+      return undefined;
 
     const polygonGeometry = new PolygonGeometry({ polygonHierarchy: new PolygonHierarchy(positionsNoClose) });
     const translucent = fillColor.alpha < 1.0;

@@ -45,10 +45,10 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     _index: number,
     _collection: PrimitiveCollection,
     iModel?: IModelConnection,
-    originalData?: unknown,
+    originalData?: DecorationPrimitiveEntry[],
     _type?: string
   ): Primitive | Polyline | undefined {
-    const data = Array.isArray(originalData) ? (originalData as DecorationPrimitiveEntry[]) : undefined;
+    const data = originalData;
 
     const getEntry = () => {
       const entry = this.findEntryByType(graphic, this.primitiveType);

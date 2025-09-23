@@ -20,7 +20,7 @@ import {
 } from "cesium";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
-import { DecorationPrimitiveEntry } from "./DecorationTypes.js";
+import type { DecorationPrimitiveEntry, PolyfaceEntry } from "./DecorationTypes.js";
 
 export class PolyfacePrimitiveConverter extends PrimitiveConverter {
   protected readonly primitiveType = 'polyface' as const;
@@ -41,26 +41,25 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
     _index: number,
     _collection: import('cesium').PrimitiveCollection,
     iModel?: IModelConnection,
-    originalData?: unknown,
+    originalData?: DecorationPrimitiveEntry[],
     _type?: string
-  ): Primitive | null {
-    const data = Array.isArray(originalData) ? (originalData as DecorationPrimitiveEntry[]) : undefined;
-    const isPolyfaceEntry = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').PolyfaceEntry => e.type === 'polyface';
-    const polyfaceEntry = Array.isArray(data) ? data.find((e): e is import('./DecorationTypes.js').PolyfaceEntry => isPolyfaceEntry(e)) : undefined;
+  ): Primitive | undefined {
+    const isPolyfaceEntry = (e: DecorationPrimitiveEntry): e is PolyfaceEntry => e.type === 'polyface';
+    const polyfaceEntry = originalData?.find((e): e is PolyfaceEntry => isPolyfaceEntry(e));
     const polyface = polyfaceEntry?.polyface;
     const filled = polyfaceEntry?.filled ?? true;
     
     if (!polyface)
-      return null;
+      return undefined;
 
     // Convert IndexedPolyface to Cesium geometry
     const geometry = this.convertPolyfaceToGeometry(polyface, iModel);
     if (!geometry)
-      return null;
+      return undefined;
 
     const colors = this.extractFillAndLineColorsFromGraphic(graphic, 'polyface');
     if (!colors)
-      return null;
+      return undefined;
 
     const { fillColor, lineColor } = colors;
     const color = filled ? fillColor : lineColor;
@@ -101,14 +100,14 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
     }
   }
 
-  private convertPolyfaceToGeometry(polyface: Polyface, iModel?: IModelConnection): Geometry | null {
+  private convertPolyfaceToGeometry(polyface: Polyface, iModel?: IModelConnection): Geometry | undefined {
     if (!polyface.data.point || !polyface.data.pointIndex)
-      return null;
+      return undefined;
 
     // Extract vertices from polyface
     const points = polyface.data.point.getArray();
     if (!points || points.length === 0)
-      return null;
+      return undefined;
 
     // Convert to Cartesian3 positions
     const positions = new Float64Array(points.length * 3);
@@ -146,7 +145,7 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
     }
 
     if (triangleIndices.length === 0)
-      return null;
+      return undefined;
 
     // Create geometry attributes using triangulated indices
     const indices = triangleIndices;
