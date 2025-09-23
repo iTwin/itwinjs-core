@@ -7,7 +7,7 @@ import { Cartesian3, Material, Polyline, PolylineCollection } from "cesium";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Path, Point3d, StrokeOptions } from "@itwin/core-geometry";
 import { CesiumScene } from "../CesiumScene.js";
-import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
+import { type DepthOptions, PrimitiveConverter, type RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
 import type { DecorationPrimitiveEntry, PathEntry } from "./DecorationTypes.js";
 
 /** Converts iTwin.js Path decorations to Cesium Polyline primitives */
@@ -74,7 +74,7 @@ export class PathPrimitiveConverter extends PrimitiveConverter {
     return true;
   }
 
-  protected override getDepthOptions(decorationType: string): Record<string, unknown> {
+  protected override getDepthOptions(decorationType: string): DepthOptions {
     const base = super.getDepthOptions(decorationType);
     const isOverlay = decorationType === "worldOverlay" || decorationType === "viewOverlay";
     if (isOverlay) {

@@ -7,7 +7,7 @@ import { Cartesian3, Color, PointPrimitive, PointPrimitiveCollection } from "ces
 import { IModelConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "../CesiumScene.js";
-import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
+import { type DepthOptions, PrimitiveConverter, type RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
 import type { DecorationPrimitiveEntry, PointString2dEntry, PointStringEntry } from "./DecorationTypes.js";
 
 interface PointStringCoordinate {
@@ -66,7 +66,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter<PointStringCoord
     return 'decoration';
   }
 
-  protected override getDepthOptions(decorationType: string): Record<string, unknown> {
+  protected override getDepthOptions(decorationType: string): DepthOptions {
     const baseOptions = super.getDepthOptions(decorationType);
     
     const isOverlay = decorationType === 'worldOverlay' || decorationType === 'viewOverlay';

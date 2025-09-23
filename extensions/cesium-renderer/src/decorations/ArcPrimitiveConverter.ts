@@ -10,7 +10,7 @@ import { BoundingSphere, Cartesian3, ColorGeometryInstanceAttribute, ComponentDa
 import { Loop, Path, Polyface, PolyfaceBuilder, StrokeOptions, SweepContour } from "@itwin/core-geometry";
 import { IModelConnection } from "@itwin/core-frontend";
 import { CesiumScene } from "../CesiumScene.js";
-import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
+import { type DepthOptions, PrimitiveConverter, type RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
 import { CesiumCoordinateConverter } from "./CesiumCoordinateConverter.js";
 import { DecorationPrimitiveEntry } from "./DecorationTypes.js";
 
@@ -168,7 +168,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     return true;
   }
 
-  protected override getDepthOptions(decorationType: string): Record<string, unknown> {
+  protected override getDepthOptions(decorationType: string): DepthOptions {
     const baseOptions = super.getDepthOptions(decorationType);
 
     const isOverlay = decorationType === 'worldOverlay' || decorationType === 'viewOverlay';
