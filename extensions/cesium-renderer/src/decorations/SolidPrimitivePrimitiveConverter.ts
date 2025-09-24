@@ -20,7 +20,6 @@ import {
 } from "cesium";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
-import { CesiumCoordinateConverter } from "./CesiumCoordinateConverter.js";
 import { DecorationPrimitiveEntry, SolidPrimitiveEntry } from "./DecorationTypes.js";
 
 export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
@@ -155,10 +154,9 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     });
 
     // Create translation using Cesium coordinates (keep consistent with other converters)
-    const converter = iModel ? new CesiumCoordinateConverter(iModel) : undefined;
-    const cesiumCenter = converter
-      ? converter.spatialToCesiumCartesian3(new Point3d(centerX, centerY, centerZ))
-      : new Cartesian3(centerX, centerY, centerZ);
+    const [cesiumCenter] = this.convertPointsToCartesian3([Point3d.create(centerX, centerY, centerZ)], iModel);
+    if (!cesiumCenter)
+      return undefined;
     const modelMatrix = Matrix4.fromTranslation(cesiumCenter);
 
     return { geometry: boxGeometry, modelMatrix };
@@ -197,10 +195,9 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     });
 
     // Create translation using Cesium coordinates (keep consistent with other converters)
-    const converter = iModel ? new CesiumCoordinateConverter(iModel) : undefined;
-    const cesiumCenter = converter
-      ? converter.spatialToCesiumCartesian3(center)
-      : new Cartesian3(center.x, center.y, center.z);
+    const [cesiumCenter] = this.convertPointsToCartesian3([center], iModel);
+    if (!cesiumCenter)
+      return undefined;
     const modelMatrix = Matrix4.fromTranslation(cesiumCenter);
 
     return { geometry: sphereGeometry, modelMatrix };
@@ -238,10 +235,9 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     const centerZ = (centerA.z + centerB.z) / 2;
 
     // Create translation using Cesium coordinates (keep consistent with other converters)
-    const converter = iModel ? new CesiumCoordinateConverter(iModel) : undefined;
-    const cesiumCenter = converter
-      ? converter.spatialToCesiumCartesian3(new Point3d(centerX, centerY, centerZ))
-      : new Cartesian3(centerX, centerY, centerZ);
+    const [cesiumCenter] = this.convertPointsToCartesian3([Point3d.create(centerX, centerY, centerZ)], iModel);
+    if (!cesiumCenter)
+      return undefined;
     const modelMatrix = Matrix4.fromTranslation(cesiumCenter);
 
     return { geometry: cylinderGeometry, modelMatrix };
