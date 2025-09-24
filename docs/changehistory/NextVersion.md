@@ -1,7 +1,6 @@
 ---
 publish: false
 ---
-
 # NextVersion
 
 Table of contents:
@@ -11,6 +10,8 @@ Table of contents:
   - [@itwin/presentation-common](#itwinpresentation-common)
   - [@itwin/presentation-backend](#itwinpresentation-backend)
   - [@itwin/presentation-frontend](#itwinpresentation-frontend)
+- [Geometry](#geometry)
+  - [@itwin/geometry](#itwingeometry)
 
 ## Electron 36 support
 
@@ -32,6 +33,8 @@ In addition to [already supported Electron versions](../learning/SupportedPlatfo
 - The `PresentationManagerProps.schemaContextProvider` property has been deprecated. Starting with `5.0` release, `SchemaContext` is always available on [IModelConnection]($core-frontend), so this prop is no longer needed. If supplied, it will still be preferred over the iModel's schema context, until the property is removed completely in a future release.
 - The `PresentationManagerProps.defaultFormats` property has been deprecated in favor of the `FormatsProvider` now being available on [IModelApp.formatsProvider]($core-frontend).
 
+## Geometry
+
 ### @itwin/geometry
 
 - A new geometry subsystem for 2D analytic computation of lines and circles with tangency and radius restrains.
@@ -39,9 +42,9 @@ In addition to [already supported Electron versions](../learning/SupportedPlatfo
   - TangentConstruction.circlesTangentCCC (circleA, circleB, circleC) -- returns up to 8 tangent circles
   - TangentConstruction.circlesTangentLLL (lineA, lineB, lineC)
   - TangentConstruction.circlesTangentLLC (lineA, lineB, circleC)
-  - TangentConstruction.circlesTangetntCCL (circleA, circleB, lineC)
-  - TangetnConstruction.linesTangentCC, linesPerpLPerpC, linesPerpCPerpC -- lines tangent or perpendicular to lines and circles
-  - TangentConstruction.circlesTangentCCR, circlesTangentLLR, circlesTangetnCLR -- circles with given radius an d tangent to given lines and circles.
+  - TangentConstruction.circlesTangentCCL (circleA, circleB, lineC)
+  - TangentConstruction.linesTangentCC, linesPerpLPerpC, linesPerpCPerpC -- lines tangent or perpendicular to lines and circles
+  - TangentConstruction.circlesTangentCCR, circlesTangentLLR, circlesTangentCLR -- circles with given radius an d tangent to given lines and circles.
 
 This code makes two circles and a line and constructs the tangent circles:
 '''
@@ -67,7 +70,7 @@ The (new) CurveFactory class has new static methods for converting full 3D  curv
   - CurveFactory.createCurvePrimitiveFromImplicitCurve (curvePrimitive)
     - returns a CurvePrimitive for the given implicit curve.
 
-A new class ContraintSet is an array of constraints (tangent, radius, or perpendicular) it has methods to examine the array and select an appropriate circle or line tangency method (from TangentConstruction listed above).
+A new class ConstraintSet is an array of constraints (tangent, radius, or perpendicular) it has methods to examine the array and select an appropriate circle or line tangency method (from TangentConstruction listed above).
   - ConstraintSet.constructConstrainedCircles (array of constraint descriptors) -- selects an appropriate TangencyConstruction for (unordered) combination of circles, lines and radius constraints.
 - ConstraintSet.constructConstrainedLines (array of constraint descriptors) -- selects an appropriate TangencyConstruction for (unordered) combination of circles and lines.
 - The 2D geometry base class ImplicitGeometry2d which are:
@@ -87,4 +90,5 @@ A new class ContraintSet is an array of constraints (tangent, radius, or perpend
         - parabola placed by two vectors which skew and scale the uv parabola y=x^2
 - Additional construction methods for "medial axis" between pairs of circles and lines:
   - TangencyConstruction.medialCurveCircleCircle -- returns hyperbolas equidistant from 2 circles
-  - TangencyConstruction.medialCurveLineCircel -- returns parabola equidistant from line and circle.
+  - TangencyConstruction.medialCurveLineCircle -- returns parabola equidistant from line and circle.
+

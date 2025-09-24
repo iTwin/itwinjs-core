@@ -21,6 +21,7 @@ import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
 import { _cache, _elementWasCreated, _nativeDb, _verifyChannel } from "./internal/Symbols";
+import { EntityClass } from "@itwin/ecschema-metadata";
 
 /** Argument for the `Element.onXxx` static methods
  * @beta
@@ -470,6 +471,21 @@ export class Element extends Entity {
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
+
+  /** Query metadata for this entity class from the iModel's schema. Returns cached metadata if available.*/
+  public override async getMetaData(): Promise<EntityClass> {
+    if (this._metadata && EntityClass.isEntityClass(this._metadata)) {
+      return this._metadata;
+    }
+
+    const entity = await this.iModel.schemaContext.getSchemaItem(this.schemaItemKey, EntityClass);
+    if (entity !== undefined) {
+      this._metadata = entity;
+      return this._metadata;
+    } else {
+      throw new Error(`Cannot get metadata for ${this.classFullName}`);
+    }
+  }
 
   private getAllUserProperties(): any {
     if (!this.jsonProperties.UserProps)
@@ -1500,7 +1516,7 @@ export abstract class TypeDefinitionElement extends DefinitionElement {
 
   protected constructor(props: TypeDefinitionElementProps, iModel: IModelDb) {
     super(props, iModel);
-    this.recipe = this.recipe;
+    this.recipe = RelatedElement.fromJSON(props.recipe);
   }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {

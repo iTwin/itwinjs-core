@@ -1,6 +1,107 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Tue, 17 Jun 2025 18:35:12 GMT and should not be manually modified.
+This log was last generated on Wed, 17 Sep 2025 17:22:50 GMT and should not be manually modified.
+
+## 5.1.8
+Wed, 17 Sep 2025 17:17:16 GMT
+
+_Version update only_
+
+## 5.1.7
+Tue, 09 Sep 2025 19:28:04 GMT
+
+_Version update only_
+
+## 5.1.6
+Mon, 08 Sep 2025 13:53:46 GMT
+
+_Version update only_
+
+## 5.1.5
+Thu, 04 Sep 2025 13:51:08 GMT
+
+_Version update only_
+
+## 5.1.4
+Fri, 22 Aug 2025 14:22:33 GMT
+
+_Version update only_
+
+## 5.1.3
+Wed, 20 Aug 2025 13:57:10 GMT
+
+_Version update only_
+
+## 5.1.2
+Thu, 14 Aug 2025 19:38:08 GMT
+
+_Version update only_
+
+## 5.1.1
+Fri, 08 Aug 2025 18:06:10 GMT
+
+_Version update only_
+
+## 5.1.0
+Fri, 08 Aug 2025 12:51:53 GMT
+
+### Updates
+
+- Add Symbols to prevent duplicate instances of package
+- Fix applychangeset issue
+- Mark iModel edit API as @preview
+- verify changeset id before pushing
+- add unit test for concurrent query
+- Add release tag to ECChangeUnifierCache namespace
+- Fix regression when using performCheckpoint()
+- TextAnnotation elements use new BIS property `textAnnotationData`. Introduce `AnnotationTextStyle` class to TypeScript layer. Add new `TextStyleResolver` class to resolve effective text styles from inheritance chain. Drawing scale is accounted for when creating geometry.
+- Add SheetViewDefinition.create, CreateSheetViewDefinitionArgs
+- Fix recipe initialization in TypeDefinitionElement
+- optionally return world CRS from getAvailableCoordinateReferenceSystems
+- Refactoring the TextAnnotationGeometry and adding support for frames
+- Ensuring the order of geometry in FrameGeometry & adding tests
+- Added `TabRun`s to `TextBlockLayout`
+- Added IModelIncrementalSchemaLocater which is an ISchemaLocater implementation that provides asynchronous incremental loading of EC Schemas from iModels using ECSql queries.
+- Improve change unifer to handle very large changeset
+- Add cache for resolveInstanceKey
+- Clear iModelDb Caches on abandonChanges
+- Thining iModelPlatform API
+- Allow Entity.forEach to support relationship classes
+- Add support for RelationshipClasses in Entity.getMetaData
+- Updates iModelDb Error Handling
+- Reduce Model and Element Cache Size
+- Fix IModelDb coordinate conversion results to include `fromCache` and also the point array if input point array was empty.
+- Fix TextStyle.widthFactor multiplying by height instead of width during text layout.
+- Add support for text fields.
+- Added functionality to enable health stats tracking for changesets.
+- Introducing Text Annotation Leaders
+- Snapshot/StandaloneDb.createBlank - set ecefLocation and geographicCoordinateSystem if provided
+- Add Beta downloadChangeset and downloadChangesets to BriefcaseManager.
+- Make IModelHostConfiguration.hubAccess public.
+- Updated deprecation comments to new template
+
+## 5.0.5
+Wed, 06 Aug 2025 15:34:15 GMT
+
+_Version update only_
+
+## 5.0.4
+Wed, 16 Jul 2025 14:59:59 GMT
+
+_Version update only_
+
+## 5.0.3
+Fri, 11 Jul 2025 00:56:56 GMT
+
+_Version update only_
+
+## 5.0.2
+Thu, 26 Jun 2025 22:16:01 GMT
+
+### Updates
+
+- Fix recipe initialization in TypeDefinitionElement
+- Make IModelHostConfiguration.hubAccess public.
 
 ## 5.0.1
 Tue, 17 Jun 2025 18:33:51 GMT

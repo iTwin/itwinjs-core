@@ -1,7 +1,8 @@
 import { BeEvent } from "@itwin/core-bentley";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { Format, FormatDefinition, FormatsChangedArgs, FormatterSpec, MutableFormatsProvider, ParsedQuantity, ParserSpec } from "@itwin/core-quantity";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
-import {  SchemaContext,  SchemaFormatsProvider,  SchemaUnitProvider } from "@itwin/ecschema-metadata";
+import {  KindOfQuantity, SchemaContext,  SchemaFormatsProvider,  SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { assert } from "chai";
 import path from "path";
 
@@ -117,5 +118,60 @@ describe("FormatsProvider examples", () => {
     // __PUBLISH_EXTRACT_END__
 
     assert.equal(retrievedFormat, format);
+  });
+
+  it("using a KindOfQuantity to retrieve the persistenceUnit, and format", async () => {
+    // __PUBLISH_EXTRACT_START__ Quantity_Formatting.KindOfQuantityPersistenceUnitFormatting
+    const formatsProvider = new SchemaFormatsProvider(schemaContext, "metric");
+    const unitsProvider = new SchemaUnitProvider(schemaContext);
+    const kindOfQuantityName = "AecUnits.LENGTH";
+    // Get the format definition
+    const formatDef = await formatsProvider.getFormat(kindOfQuantityName);
+    if (!formatDef)
+      throw new Error(`Format not found for ${kindOfQuantityName}`);
+
+    const kindOfQuantity = await schemaContext.getSchemaItem(kindOfQuantityName, KindOfQuantity);
+    if (!kindOfQuantity)
+      throw new Error(`KindOfQuantity not found for ${kindOfQuantityName}`);
+
+    const persistenceUnit = kindOfQuantity.persistenceUnit;
+    if (!persistenceUnit)
+      throw new Error(`Persistence unit not found for ${kindOfQuantityName}`);
+
+    const persistenceUnitProps = await unitsProvider.findUnitByName(persistenceUnit.fullName);
+
+    const format = await Format.createFromJSON(formatDef.name ?? "", unitsProvider, formatDef);
+    const formatterSpec = await FormatterSpec.create(
+    formatDef.name ?? "",
+    format,
+    unitsProvider, // Use a schema units provider
+    persistenceUnitProps
+    );
+
+    const _formattedValue = formatterSpec.applyFormatting(123.45);
+    // __PUBLISH_EXTRACT_END__
+});
+
+  it("on IModelConnection open, register schema formats provider", async () => {
+    // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Schema_Fmt_Provider_on_IModelConnection_Open
+    const removeIModelConnectionListener = IModelConnection.onOpen.addListener((iModel: IModelConnection) => {
+      if (iModel.isBlankConnection()) return; // Don't register on blank connections.
+
+      const schemaFormatsProvider = new SchemaFormatsProvider(iModel.schemaContext, IModelApp.quantityFormatter.activeUnitSystem);
+      const removeUnitSystemListener = IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener((args) => {
+        schemaFormatsProvider.unitSystem = args.system;
+      });
+
+      iModel.onClose.addOnce(() => {
+        removeUnitSystemListener();
+      });
+      IModelApp.formatsProvider = schemaFormatsProvider;
+    });
+
+    IModelConnection.onClose.addOnce(() => {
+      removeIModelConnectionListener();
+      IModelApp.resetFormatsProvider();
+    });
+    // __PUBLISH_EXTRACT_END__
   });
 });

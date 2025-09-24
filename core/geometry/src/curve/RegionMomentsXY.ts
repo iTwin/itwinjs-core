@@ -84,7 +84,7 @@ export class RegionMomentsXY extends NullGeometryHandler {
     segment.endPoint(this._point1);
     momentData.accumulateTriangleMomentsXY(undefined, this._point0, this._point1);
   }
-  /** Accumulate integrals from origin to all primitives in the chain. */
+  /** Accumulate integrals from origin to all primitives in the loop. */
   public override handleLoop(loop: Loop): MomentData | undefined {
     const momentData = this._activeMomentData = MomentData.create();
     momentData.needOrigin = false;
@@ -94,7 +94,7 @@ export class RegionMomentsXY extends NullGeometryHandler {
     return momentData;
   }
   private handleAnyRegion(region: AnyRegion): MomentData | undefined {
-    // guarantee there is no overlapping children
+    // guarantee there are no overlapping children and parity loops have been properly oriented
     const merged = RegionOps.regionBooleanXY(region, undefined, RegionBinaryOpType.Union);
     if (!merged)
       return undefined;
@@ -102,9 +102,11 @@ export class RegionMomentsXY extends NullGeometryHandler {
       return this.handleLoop(merged);
     const summedMoments = MomentData.create();
     for (const child of merged.children) {
-      const childMoments = child.dispatchToGeometryHandler(this);
+      const childMoments = child.dispatchToGeometryHandler(this) as MomentData | undefined;
       if (childMoments) {
-        const sign0 = childMoments.signFactor(1.0);
+        // parity region hole sums subtract; all other regions add
+        const scale = (merged instanceof ParityRegion && childMoments.quantitySum < 0) ? -1.0 : 1.0;
+        const sign0 = childMoments.signFactor(scale);
         summedMoments.accumulateProducts(childMoments, sign0);
       }
     }

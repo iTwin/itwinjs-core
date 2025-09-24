@@ -147,6 +147,7 @@ describe("PresentationManager", () => {
           id: "",
           taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
           updateCallback: noopUpdatesHandler,
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
           contentCacheSize: undefined,
           workerConnectionCacheSize: undefined,
@@ -159,6 +160,7 @@ describe("PresentationManager", () => {
         const constructorSpy = sinon.spy(IModelNative.platform, "ECPresentationManager");
         const testThreadsCount = 999;
         const hierarchyCacheConfig = {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           mode: HierarchyCacheMode.Memory,
         };
         const formatProps = {
@@ -191,6 +193,7 @@ describe("PresentationManager", () => {
           },
         };
         const expectedCacheConfig = {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           mode: HierarchyCacheMode.Memory,
         };
         using manager = new PresentationManager(props);
@@ -210,6 +213,7 @@ describe("PresentationManager", () => {
         });
       });
 
+      /* eslint-disable @typescript-eslint/no-deprecated */
       it("creates with disk cache config", () => {
         const constructorSpy = sinon.spy(IModelNative.platform, "ECPresentationManager");
         {
@@ -293,6 +297,7 @@ describe("PresentationManager", () => {
           });
         }
       });
+      /* eslint-enable @typescript-eslint/no-deprecated */
 
       it("creates with ipc updates handler for IPC hosts", () => {
         sinon.stub(IpcHost, "isValid").get(() => true);
@@ -458,6 +463,7 @@ describe("PresentationManager", () => {
       const managerUsedSpy = sinon.spy();
       manager.onUsed.addListener(managerUsedSpy);
 
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await manager.getNodes({ imodel: imodelMock.object, rulesetOrId: "RulesetId" });
       expect(managerUsedSpy).to.be.calledOnce;
       await manager.getContent({ imodel: imodelMock.object, rulesetOrId: "RulesetId", keys: new KeySet([]), descriptor: {} });
@@ -574,6 +580,7 @@ describe("PresentationManager", () => {
         .setup((x) => x.addRuleset(moq.It.isAnyString()))
         .returns(() => ({ result: "hash" }))
         .verifiable(moq.Times.once());
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: ruleset });
       addonMock.verifyAll();
     });
@@ -588,6 +595,7 @@ describe("PresentationManager", () => {
         .setup((x) => x.addRuleset(moq.It.isAnyString()))
         .returns(() => ({ result: "hash" }))
         .verifiable(moq.Times.never());
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId });
       addonMock.verifyAll();
     });
@@ -613,6 +621,7 @@ describe("PresentationManager", () => {
         )
         .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs[0] }))
         .verifiable(moq.Times.once());
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await manager.getNodesCount({
         imodel: imodelMock.object,
         rulesetOrId: "ruleset",
@@ -659,6 +668,7 @@ describe("PresentationManager", () => {
         )
         .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs[0] }))
         .verifiable(moq.Times.once());
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset" });
       addonMock.verifyAll();
       expect(diagnosticsCallback).to.be.calledOnceWithExactly(diagnosticsResult, diagnosticsContext);
@@ -702,6 +712,7 @@ describe("PresentationManager", () => {
           });
         })
         .verifiable(moq.Times.once());
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await expect(manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset" })).to.eventually.be.rejectedWith(
         PresentationNativePlatformResponseError,
       );
@@ -757,6 +768,7 @@ describe("PresentationManager", () => {
         )
         .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult }))
         .verifiable(moq.Times.once());
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await manager.getNodesCount({
         imodel: imodelMock.object,
         rulesetOrId: "ruleset",
@@ -858,6 +870,7 @@ describe("PresentationManager", () => {
       );
     }
 
+    /* eslint-disable @typescript-eslint/no-deprecated */
     describe("getNodes", () => {
       it("returns root nodes", async () => {
         // what the addon receives
@@ -1317,6 +1330,7 @@ describe("PresentationManager", () => {
         nativePlatformMock.verify(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
       });
     });
+    /* eslint-enable @typescript-eslint/no-deprecated */
 
     describe("getContentSources", () => {
       it("returns content sources", async () => {
@@ -3171,7 +3185,6 @@ describe("PresentationManager", () => {
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
             },
             rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
-            omitFormattedValues: true,
           },
         };
 
@@ -3225,7 +3238,6 @@ describe("PresentationManager", () => {
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
             },
             rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
-            omitFormattedValues: true,
           },
         };
 
@@ -3281,7 +3293,6 @@ describe("PresentationManager", () => {
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
             },
             rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
-            omitFormattedValues: true,
           },
         };
 
@@ -3333,7 +3344,6 @@ describe("PresentationManager", () => {
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
             },
             rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
-            omitFormattedValues: true,
           },
         };
 
@@ -3374,7 +3384,6 @@ describe("PresentationManager", () => {
               contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
             },
             rulesetId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
-            omitFormattedValues: true,
           },
         };
 
@@ -3394,10 +3403,12 @@ describe("PresentationManager", () => {
 
     it("throws on invalid addon response", async () => {
       nativePlatformMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined)).returns(() => undefined as any);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const options: HierarchyRequestOptions<IModelDb, NodeKey> = {
         imodel: imodelMock.object,
         rulesetOrId: testData.rulesetOrId,
       };
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return expect(manager.getNodesCount(options)).to.eventually.be.rejectedWith(Error);
     });
 
@@ -3415,6 +3426,7 @@ describe("PresentationManager", () => {
           }),
         );
         // what the addon returns
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const addonResponse: HierarchyLevel = {
           nodes: [
             {
@@ -3430,12 +3442,14 @@ describe("PresentationManager", () => {
         setup(addonResponse);
 
         // test
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         const options: Paged<HierarchyRequestOptions<IModelDb, NodeKey>> = {
           imodel: imodelMock.object,
           rulesetOrId: testData.rulesetOrId,
           paging: testData.pageOptions,
         };
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         await manager.getNodes(options);
         sinon.assert.calledTwice(getLocalizedStringSpy);
       });

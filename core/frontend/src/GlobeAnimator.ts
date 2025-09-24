@@ -6,6 +6,7 @@
  * @module Views
  */
 
+import { expectDefined } from "@itwin/core-bentley";
 import { Arc3d, Geometry, Point3d, SmoothTransformBetweenFrusta } from "@itwin/core-geometry";
 import { Cartographic, Easing, Frustum, GlobeMode, Interpolation, Tweens } from "@itwin/core-common";
 import {
@@ -56,8 +57,8 @@ export class GlobeAnimator implements Animator {
     }
 
     // Possibly smooth the takeoff
-    if (fraction < this._fixTakeoffFraction! && this._fixTakeoffInterpolator !== undefined) {
-      this._moveFixToFraction((1.0 / this._fixTakeoffFraction!) * fraction, this._fixTakeoffInterpolator);
+    if (this._fixTakeoffFraction !== undefined && fraction < this._fixTakeoffFraction && this._fixTakeoffInterpolator !== undefined) {
+      this._moveFixToFraction((1.0 / this._fixTakeoffFraction) * fraction, this._fixTakeoffInterpolator);
       return false;
     }
 
@@ -67,7 +68,7 @@ export class GlobeAnimator implements Animator {
         const beforeLanding = vp.getWorldFrustum();
         this._fixLandingInterpolator = SmoothTransformBetweenFrusta.create(beforeLanding.points, this._afterLanding.points);
       }
-      this._moveFixToFraction((1.0 / (1.0 - this._fixLandingFraction)) * (fraction - this._fixLandingFraction), this._fixLandingInterpolator!);
+      this._moveFixToFraction((1.0 / (1.0 - this._fixLandingFraction)) * (fraction - this._fixLandingFraction), expectDefined(this._fixLandingInterpolator));
       return false;
     }
 
@@ -77,7 +78,7 @@ export class GlobeAnimator implements Animator {
     if (view.globeMode === GlobeMode.Plane)
       targetPoint = this._columbusLine[0].interpolate(fraction, this._columbusLine[1]);
     else
-      targetPoint = this._ellipsoidArc!.fractionToPoint(fraction);
+      targetPoint = expectDefined(this._ellipsoidArc).fractionToPoint(fraction);
     view.lookAtGlobalLocation(height, ViewGlobalLocationConstants.birdPitchAngleRadians, undefined, targetPoint);
     vp.setupFromView();
 
@@ -137,7 +138,7 @@ export class GlobeAnimator implements Animator {
     if (undefined === backgroundMapGeometry)
       return;
 
-    this._startHeight = eyeToCartographicOnGlobe(this._viewport, true)!.height;
+    this._startHeight = expectDefined(eyeToCartographicOnGlobe(this._viewport, true)).height;
     this._endHeight = destination.area !== undefined ? areaToEyeHeight(view, destination.area, destination.center.height) : ViewGlobalLocationConstants.birdHeightAboveEarthInMeters;
 
     // Starting cartographic position is the eye projected onto the globe.
@@ -151,15 +152,15 @@ export class GlobeAnimator implements Animator {
 
     if (view.globeMode === GlobeMode.Plane) {
       // Calculate a line segment going from the starting cartographic coordinate to the ending cartographic coordinate
-      this._columbusLine.push(view.cartographicToRoot(startCartographic)!);
-      this._columbusLine.push(view.cartographicToRoot(this._endLocation.center)!);
+      this._columbusLine.push(expectDefined(view.cartographicToRoot(startCartographic)));
+      this._columbusLine.push(expectDefined(view.cartographicToRoot(this._endLocation.center)));
       this._flightLength = this._columbusLine[0].distance(this._columbusLine[1]);
       // Set a shorter flight duration in Plane mode
       maxFlightDuration = 7000.0;
     } else {
       // Calculate a flight arc from the ellipsoid of the Earth and the starting and ending cartographic coordinates.
       const earthEllipsoid = backgroundMapGeometry.getEarthEllipsoid();
-      this._ellipsoidArc = earthEllipsoid.radiansPairToGreatArc(this._startCartographic.longitude, this._startCartographic.latitude, this._endLocation.center.longitude, this._endLocation.center.latitude)!;
+      this._ellipsoidArc = earthEllipsoid.radiansPairToGreatArc(this._startCartographic.longitude, this._startCartographic.latitude, this._endLocation.center.longitude, this._endLocation.center.latitude);
       if (this._ellipsoidArc !== undefined)
         this._flightLength = this._ellipsoidArc.curveLength();
       // Set a longer flight duration in 3D mode

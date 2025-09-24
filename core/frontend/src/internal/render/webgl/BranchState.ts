@@ -6,10 +6,10 @@
  * @module WebGL
  */
 
-import { Id64String } from "@itwin/core-bentley";
+import { expectDefined, Id64String } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import {
-  BatchType, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RealityModelDisplaySettings, RenderMode, ViewFlags,
+  BatchType, ContourDisplay, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RealityModelDisplaySettings, RenderMode, ViewFlags,
 } from "@itwin/core-common";
 import { IModelConnection } from "../../../IModelConnection";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
@@ -51,6 +51,7 @@ export interface BranchStateOptions {
    * No [ClipStyle.insideColor]($common), [ClipStyle.outsideColor]($common), or [ClipStyle.intersectionStyle]($common) will be applied.
    */
   disableClipStyle?: true;
+  contourLine?: ContourDisplay;
 }
 
 /**
@@ -72,7 +73,7 @@ export class BranchState {
   public get iModel() { return this._opts.iModel; }
   public get transformFromIModel() { return this._opts.transformFromIModel; }
   public get is3d() { return this._opts.is3d; }
-  public get frustumScale() { return this._opts.frustumScale!; }
+  public get frustumScale() { return expectDefined(this._opts.frustumScale); }
   public get appearanceProvider() { return this._opts.appearanceProvider; }
   public get secondaryClassifiers() { return this._opts.secondaryClassifiers; }
   public get realityModelDisplaySettings() { return this._opts.realityModelDisplaySettings; }
@@ -80,6 +81,7 @@ export class BranchState {
   public get inSectionDrawingAttachment() { return this._opts.inSectionDrawingAttachment; }
   public get groupNodeId() { return this._opts.groupNodeId; }
   public get disableClipStyle() { return this._opts.disableClipStyle;}
+  public get contourLine() { return this._opts.contourLine;}
 
   public get symbologyOverrides() {
     return this._opts.symbologyOverrides;
@@ -88,10 +90,11 @@ export class BranchState {
     this._opts.symbologyOverrides = ovrs;
   }
 
-  public changeRenderPlan(viewFlags: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined): void {
+  public changeRenderPlan(viewFlags: ViewFlags, is3d: boolean, hline: HiddenLine.Settings | undefined, contour?: ContourDisplay): void {
     this.viewFlags = viewFlags;
     this._opts.is3d = is3d;
     this.edgeSettings.init(hline);
+    this._opts.contourLine = contour;
   }
 
   /** Create a BranchState from a Branch. Any properties not explicitly specified by the new Branch are inherited from the previous BranchState. */
@@ -117,6 +120,7 @@ export class BranchState {
       inSectionDrawingAttachment: branch.inSectionDrawingAttachment ?? prev.inSectionDrawingAttachment,
       groupNodeId: branch.branch.groupNodeId ?? prev.groupNodeId,
       disableClipStyle: branch.disableClipStyle ?? prev.disableClipStyle,
+      contourLine: branch.contourLine ?? prev.contourLine,
     });
   }
 

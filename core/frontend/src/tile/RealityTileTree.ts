@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, BeTimePoint, Id64String, ProcessDetector } from "@itwin/core-bentley";
+import { assert, BeTimePoint, expectDefined, Id64String, ProcessDetector } from "@itwin/core-bentley";
 import {
   Matrix3d, Point3d, Range3d, Transform, Vector3d, XYZProps,
 } from "@itwin/core-geometry";
@@ -165,6 +165,7 @@ export interface RealityTileTreeParams extends TileTreeParams {
   readonly rootToEcef?: Transform;
   readonly gcsConverterAvailable: boolean;
   readonly baseUrl?: string;
+  readonly reprojectGeometry?: boolean;
 }
 
 /** Base class for a [[TileTree]] representing a reality model (e.g., a point cloud or photogrammetry mesh) or 3d terrain with map imagery.
@@ -192,6 +193,9 @@ export class RealityTileTree extends TileTree {
   protected _ecefToDb?: Transform;
   /** @internal */
   public readonly baseUrl?: string;
+  /** If set to true, tile geometry will be reprojected using the tile's reprojection transform when geometry is collected.
+   * @internal */
+  public reprojectGeometry?: boolean;
 
   /** @internal */
   public constructor(params: RealityTileTreeParams) {
@@ -211,6 +215,7 @@ export class RealityTileTree extends TileTree {
       }
     }
     this.baseUrl = params.baseUrl;
+    this.reprojectGeometry = params.reprojectGeometry;
   }
 
   /** The mapping of per-feature JSON properties from this tile tree's batch table, if one is defined.
@@ -315,7 +320,7 @@ export class RealityTileTree extends TileTree {
               clipVector.transformInPlace(args.location);
               if (!this.isTransparent)
                 for (const primitive of clipVector.clips)
-                  for (const clipPlanes of primitive.fetchClipPlanesRef()!.convexSets)
+                  for (const clipPlanes of expectDefined(primitive.fetchClipPlanesRef()).convexSets)
                     for (const plane of clipPlanes.planes)
                       plane.offsetDistance(-displayedDescendant.radius * .05);     // Overlap with existing (high resolution) tile slightly to avoid cracks.
 
@@ -376,9 +381,9 @@ export class RealityTileTree extends TileTree {
       return;
     }
 
-    const ecefToDb = this._ecefToDb!;       // Tested for undefined in doReprojectChildren
+    const ecefToDb = expectDefined(this._ecefToDb);      // Tested for undefined in doReprojectChildren
     const rootToDb = this.iModelTransform;
-    const dbToEcef = ecefToDb.inverse()!;
+    const dbToEcef = expectDefined(ecefToDb.inverse());
     const reprojectChildren = new Array<ChildReprojection>();
     for (const child of children) {
       const realityChild = child as RealityTile;
@@ -406,10 +411,10 @@ export class RealityTileTree extends TileTree {
       if (requestProps.length !== 4 * reprojectChildren.length)
         resolve(children);
       else {
-        this._gcsConverter!.getIModelCoordinatesFromGeoCoordinates(requestProps).then((response) => {
+        expectDefined(this._gcsConverter).getIModelCoordinatesFromGeoCoordinates(requestProps).then((response) => {
 
           const reprojectedCoords = response.iModelCoords;
-          const dbToRoot = rootToDb.inverse()!;
+          const dbToRoot = expectDefined(rootToDb.inverse());
           const getReprojectedPoint = (original: Point3d, reprojectedXYZ: XYZProps) => {
             scratchPoint.setFromJSON(reprojectedXYZ);
             const cartesianDistance = this.cartesianRange.distanceToPoint(scratchPoint);

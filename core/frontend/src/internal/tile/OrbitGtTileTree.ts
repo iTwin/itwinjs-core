@@ -6,7 +6,7 @@
  * @module TileTreeSupplier
  */
 
-import { assert, BeTimePoint, compareStringsOrUndefined, Id64, Id64String } from "@itwin/core-bentley";
+import { assert, BeTimePoint, compareStringsOrUndefined, expectDefined, Id64, Id64String } from "@itwin/core-bentley";
 import {
   BatchType, Cartographic, ColorDef, Feature, FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d,
   Quantization, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, ViewFlagOverrides,
@@ -30,6 +30,8 @@ import { RenderSystem } from "../../render/RenderSystem";
 import { ViewingSpace } from "../../ViewingSpace";
 import { Viewport } from "../../Viewport";
 import {
+  LayerTileTreeHandler,
+  MapLayerTreeSetting,
   RealityModelTileTree, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner,
   TileTreeParams, TileTreeSupplier, TileUsageMarker,
 } from "../../tile/internal";
@@ -226,9 +228,15 @@ export class OrbitGtTileTree extends TileTree {
   public rootTile: OrbitGtRootTile;
   public viewFlagOverrides: ViewFlagOverrides = {};
   private _tileGraphics = new Map<string, OrbitGtTileGraphic>();
+  private readonly _layerHandler: LayerTileTreeHandler;
+  public layerImageryTrees: MapLayerTreeSetting[] = [];
+
+  public override get layerHandler() { return this._layerHandler; }
 
   public constructor(treeParams: TileTreeParams, private _dataManager: OrbitGtDataManager, cloudRange: Range3d, private _centerOffset: Vector3d, private _ecefTransform: Transform) {
     super(treeParams);
+
+    this._layerHandler = new LayerTileTreeHandler(this);
 
     this._tileParams = { contentId: "0", range: cloudRange, maximumSize: 256 };
     this.rootTile = new OrbitGtRootTile(this._tileParams, this);
@@ -327,7 +335,7 @@ export class OrbitGtTileTree extends TileTree {
           colorFormat: "bgr",
         }, this.iModel);
 
-        renderGraphic = system.createBatch(renderGraphic!, PackedFeatureTable.pack(featureTable), range);
+        renderGraphic = system.createBatch(expectDefined(renderGraphic), PackedFeatureTable.pack(featureTable), range);
         args.graphics.add(renderGraphic);
         this._tileGraphics.set(key, new OrbitGtTileGraphic(renderGraphic, args.context.viewport, args.now));
       }
@@ -433,7 +441,7 @@ export namespace OrbitGtTileTree {
     const dataManager = new OrbitGtDataManager(pointCloudReader, pointCloudCRS, PointDataRaw.TYPE);
     const pointCloudBounds = dataManager.getPointCloudBounds();
     const pointCloudRange = rangeFromOrbitGt(pointCloudBounds);
-    const pointCloudCenter = pointCloudRange.localXYZToWorld(.5, .5, .5)!;
+    const pointCloudCenter = expectDefined(pointCloudRange.localXYZToWorld(.5, .5, .5));
     const addCloudCenter = Transform.createTranslation(pointCloudCenter);
     const ecefTransform = Transform.createIdentity();
     let pointCloudCenterToDb = addCloudCenter;

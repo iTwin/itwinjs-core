@@ -24,6 +24,8 @@ import { Constructor } from '@itwin/core-bentley';
 import { ConvexClipPlaneSet } from '@itwin/core-geometry';
 import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
+import { DeepReadonlyObject } from '@itwin/core-bentley';
+import { DeepRequiredObject } from '@itwin/core-bentley';
 import { GeometryQuery } from '@itwin/core-geometry';
 import { GeoServiceStatus } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
@@ -238,17 +240,17 @@ export interface AnalysisStyleThematicProps {
     thematicSettings?: ThematicGradientSettingsProps;
 }
 
+// @beta
+export interface AnnotationTextStyleProps extends DefinitionElementProps {
+    description?: string;
+    settings?: string;
+}
+
 // @public
 export interface AppearanceOverrideProps {
     color?: ColorDefProps;
     ids?: Id64Array;
     overrideType?: FeatureOverrideType;
-}
-
-// @beta
-export interface ApplyTextStyleOptions {
-    preserveOverrides?: boolean;
-    preventPropagation?: boolean;
 }
 
 // @public
@@ -1193,6 +1195,28 @@ export interface ChangesetFileProps extends ChangesetProps {
     pathname: LocalFileName;
 }
 
+// @beta
+export interface ChangesetHealthStats {
+    // (undocumented)
+    changesetId: string;
+    // (undocumented)
+    deletedRows: number;
+    // (undocumented)
+    insertedRows: number;
+    // (undocumented)
+    perStatementStats: [PerStatementHealthStats];
+    // (undocumented)
+    sha1ValidationTimeMs: number;
+    // (undocumented)
+    totalElapsedMs: number;
+    // (undocumented)
+    totalFullTableScans: number;
+    // (undocumented)
+    uncompressedSizeBytes: number;
+    // (undocumented)
+    updatedRows: number;
+}
+
 // @public
 export type ChangesetId = string;
 
@@ -1234,6 +1258,7 @@ export interface ChangesetProps {
     parentId: ChangesetId;
     pushDate: string;
     size: number;
+    uncompressedSize?: number;
     userCreated: string;
 }
 
@@ -1284,6 +1309,11 @@ export interface ClassifierTileTreeId {
     expansion: number;
     // (undocumented)
     type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
+}
+
+// @beta
+export interface ClearTextStyleOptions {
+    preserveChildrenOverrides?: boolean;
 }
 
 // @public
@@ -1698,6 +1728,7 @@ export class ColorIndex {
 
 // @public
 export enum CommonLoggerCategory {
+    Annotations = "core-common.Annotations",
     ElementProps = "core-common.ElementProps",
     Geometry = "core-common.Geometry",
     RpcInterfaceBackend = "core-backend.RpcInterface",
@@ -2117,6 +2148,12 @@ export interface CutStyleProps {
 
 // @public
 export type DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm";
+
+// @beta
+export interface DateTimeFieldFormatOptions {
+    formatOptions?: Intl.DateTimeFormatOptions;
+    locale?: Intl.UnicodeBCP47LocaleIdentifier;
+}
 
 // @internal (undocumented)
 export interface DbBlobRequest extends DbRequest, BlobOptions {
@@ -2876,6 +2913,16 @@ export enum ECSqlValueType {
 }
 
 // @internal (undocumented)
+export interface EdgeAppearanceOverrides {
+    // (undocumented)
+    color?: ColorDef;
+    // (undocumented)
+    linePixels?: LinePixels;
+    // (undocumented)
+    width?: number;
+}
+
+// @internal (undocumented)
 export class EdgeArgs {
     // (undocumented)
     clear(): void;
@@ -3559,6 +3606,72 @@ export class FeatureTableHeader {
     static sizeInBytes: number;
 }
 
+// @beta
+export type FieldCase = "as-is" | "upper" | "lower";
+
+// @beta
+export interface FieldFormatOptions {
+    case?: FieldCase;
+    dateTime?: DateTimeFieldFormatOptions;
+    prefix?: string;
+    suffix?: string;
+}
+
+// @internal
+export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
+
+// @beta
+export interface FieldPropertyHost {
+    className: string;
+    elementId: Id64String;
+    schemaName: string;
+}
+
+// @beta
+export interface FieldPropertyPath {
+    accessors?: Array<string | number>;
+    propertyName: string;
+}
+
+// @beta
+export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean" | "datetime" | "int-enum" | "string-enum";
+
+// @beta
+export class FieldRun extends TextBlockComponent {
+    get cachedContent(): string;
+    clone(): FieldRun;
+    static create(props: Omit<FieldRunProps, "type">): FieldRun;
+    equals(other: TextBlockComponent): boolean;
+    readonly formatOptions?: FieldFormatOptions;
+    static invalidContentIndicator: string;
+    // (undocumented)
+    get isEmpty(): boolean;
+    readonly propertyHost: Readonly<FieldPropertyHost>;
+    readonly propertyPath: Readonly<FieldPropertyPath>;
+    // @internal
+    setCachedContent(content: string | undefined): void;
+    stringify(): string;
+    toJSON(): FieldRunProps;
+    readonly type = "field";
+}
+
+// @beta
+export interface FieldRunProps extends TextBlockComponentProps {
+    cachedContent?: string;
+    formatOptions?: FieldFormatOptions;
+    propertyHost: FieldPropertyHost;
+    propertyPath: FieldPropertyPath;
+    readonly type: "field";
+}
+
+// @internal
+export interface FieldValue {
+    // (undocumented)
+    type: FieldPropertyType;
+    // (undocumented)
+    value: FieldPrimitiveValue;
+}
+
 // @public (undocumented)
 export interface FilePropertyProps {
     // (undocumented)
@@ -3650,6 +3763,9 @@ export enum FontType {
 }
 
 // @internal (undocumented)
+export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined): string | undefined;
+
+// @internal (undocumented)
 export interface FormDataCommon {
     // (undocumented)
     append(name: string, value: string | Blob | BackendBuffer, fileName?: string): void;
@@ -3660,10 +3776,12 @@ export class FractionRun extends TextBlockComponent {
     // (undocumented)
     clone(): FractionRun;
     // (undocumented)
-    static create(props: Omit<FractionRunProps, "type">): FractionRun;
+    static create(props?: Omit<FractionRunProps, "type">): FractionRun;
     denominator: string;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
+    // (undocumented)
+    get isEmpty(): boolean;
     numerator: string;
     stringify(options?: TextBlockStringifyOptions): string;
     // (undocumented)
@@ -4274,6 +4392,9 @@ export enum GeometrySummaryVerbosity {
     Full = 30
 }
 
+// @beta
+export function getMarkerText(marker: ListMarker, num: number): string;
+
 // @internal (undocumented)
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
 
@@ -4527,6 +4648,7 @@ export interface GroundPlaneProps {
 // @public
 export class Helmert2DWithZOffset implements Helmert2DWithZOffsetProps {
     constructor(data?: Helmert2DWithZOffsetProps);
+    convertHelmertToTransform(): Transform;
     equals(other: Helmert2DWithZOffset): boolean;
     static fromJSON(data: Helmert2DWithZOffsetProps): Helmert2DWithZOffset;
     rotDeg: number;
@@ -5565,6 +5687,9 @@ export abstract class IpcWebSocketTransport {
 // @public
 export function isBinaryImageSource(source: ImageSource): source is BinaryImageSource;
 
+// @internal (undocumented)
+export function isKnownFieldPropertyType(type: string): type is FieldPropertyType;
+
 // @internal
 export function isKnownTileFormat(format: number): boolean;
 
@@ -5588,6 +5713,21 @@ export interface JsonGeometryStream {
     data: GeometryStreamProps;
     format: "json";
 }
+
+// @beta
+export type LeaderAttachment = {
+    mode: "KeyPoint";
+    curveIndex: number;
+    fraction: number;
+} | {
+    mode: "TextPoint";
+    position: LeaderTextPointOptions;
+} | {
+    mode: "Nearest";
+};
+
+// @beta
+export type LeaderTextPointOptions = "TopLeft" | "TopRight" | "BottomLeft" | "BottomRight";
 
 // @internal
 export interface LegacyAnalysisStyleProps {
@@ -5652,9 +5792,11 @@ export class LineBreakRun extends TextBlockComponent {
     // (undocumented)
     clone(): LineBreakRun;
     // (undocumented)
-    static create(props: TextBlockComponentProps): LineBreakRun;
+    static create(props?: Omit<LineBreakRunProps, "type">): LineBreakRun;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
+    // (undocumented)
+    get isEmpty(): boolean;
     stringify(options?: TextBlockStringifyOptions): string;
     // (undocumented)
     toJSON(): LineBreakRunProps;
@@ -5669,10 +5811,10 @@ export interface LineBreakRunProps extends TextBlockComponentProps {
 // @beta
 export interface LineLayoutResult {
     justificationRange: Range2dProps;
+    marker: RunLayoutResult | undefined;
     offsetFromDocument: XAndY;
     range: Range2dProps;
     runs: RunLayoutResult[];
-    sourceParagraphIndex: number;
 }
 
 // @public
@@ -5755,6 +5897,58 @@ export interface LineStyleProps extends DefinitionElementProps {
     data: string;
     // (undocumented)
     description?: string;
+}
+
+// @beta
+export class List extends TextBlockComponent {
+    protected constructor(props?: ListProps);
+    // (undocumented)
+    readonly children: Paragraph[];
+    // (undocumented)
+    clearStyleOverrides(options?: ClearTextStyleOptions): void;
+    // (undocumented)
+    clone(): List;
+    static create(props?: Omit<ListProps, "type">): List;
+    // (undocumented)
+    equals(other: TextBlockComponent): boolean;
+    // (undocumented)
+    get isEmpty(): boolean;
+    stringify(options?: TextBlockStringifyOptions, context?: TextBlockStringifyContext): string;
+    // (undocumented)
+    toJSON(): ListProps;
+    // (undocumented)
+    readonly type = "list";
+}
+
+// @beta
+export interface ListMarker {
+    case?: "upper" | "lower";
+    enumerator: ListMarkerEnumerator | string;
+    terminator?: "parenthesis" | "period";
+}
+
+// @beta
+export enum ListMarkerEnumerator {
+    // (undocumented)
+    Bullet = "\u2022",
+    // (undocumented)
+    Circle = "\u25CB",
+    Dash = "\u2013",
+    Letter = "A",
+    // (undocumented)
+    Number = "1",
+    // (undocumented)
+    RomanNumeral = "I",
+    // (undocumented)
+    Square = "\u25A0"
+}
+
+// @beta
+export interface ListProps extends TextBlockComponentProps {
+    // (undocumented)
+    children?: ParagraphProps[];
+    // (undocumented)
+    readonly type: "list";
 }
 
 // @public
@@ -5999,7 +6193,9 @@ export class MeshEdge {
 export class MeshEdges {
     constructor();
     // (undocumented)
-    polylines: MeshPolylineList;
+    appearance?: EdgeAppearanceOverrides;
+    // (undocumented)
+    polylineGroups: MeshPolylineGroup[];
     // (undocumented)
     silhouette: MeshEdge[];
     // (undocumented)
@@ -6742,21 +6938,28 @@ export interface PackedFeatureWithIndex extends PackedFeature {
 
 // @beta
 export class Paragraph extends TextBlockComponent {
-    applyStyle(styleName: string, options?: ApplyTextStyleOptions): void;
+    // (undocumented)
+    readonly children: Array<List | Run>;
+    // (undocumented)
+    clearStyleOverrides(options?: ClearTextStyleOptions): void;
     // (undocumented)
     clone(): Paragraph;
-    static create(props: ParagraphProps): Paragraph;
+    static create(props?: Omit<ParagraphProps, "type">): Paragraph;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
-    readonly runs: Run[];
-    stringify(options?: TextBlockStringifyOptions): string;
+    // (undocumented)
+    get isEmpty(): boolean;
+    stringify(options?: TextBlockStringifyOptions, context?: TextBlockStringifyContext): string;
     // (undocumented)
     toJSON(): ParagraphProps;
+    // (undocumented)
+    readonly type = "paragraph";
 }
 
 // @beta
 export interface ParagraphProps extends TextBlockComponentProps {
-    runs?: RunProps[];
+    // (undocumented)
+    children?: Array<ListProps | RunProps>;
 }
 
 // @internal
@@ -6791,6 +6994,20 @@ export type PersistentBackgroundMapProps = Omit<BackgroundMapProps, keyof Deprec
 // @public
 export interface PersistentGraphicsRequestProps extends GraphicsRequestProps {
     readonly elementId: Id64String;
+}
+
+// @beta
+export interface PerStatementHealthStats {
+    // (undocumented)
+    dbOperation: string;
+    // (undocumented)
+    elapsedMs: number;
+    // (undocumented)
+    fullTableScans: number;
+    // (undocumented)
+    rowCount: number;
+    // (undocumented)
+    sqlStatement: string;
 }
 
 // @public @preview
@@ -7018,17 +7235,17 @@ export const POLICY: unique symbol;
 
 // @internal (undocumented)
 export class PolylineEdgeArgs {
-    constructor(lines?: PolylineIndices[]);
+    constructor(groups?: MeshPolylineGroup[]);
     // (undocumented)
     clear(): void;
     // (undocumented)
-    init(lines?: PolylineIndices[]): boolean;
+    groups?: MeshPolylineGroup[];
+    // (undocumented)
+    init(groups?: MeshPolylineGroup[]): boolean;
     // (undocumented)
     get isValid(): boolean;
     // (undocumented)
-    lines?: PolylineIndices[];
-    // (undocumented)
-    get numLines(): number;
+    get numGroups(): number;
 }
 
 // @public
@@ -7923,6 +8140,13 @@ export namespace RenderSchedule {
         position: number[];
         visible?: boolean;
     }
+    // @internal
+    export interface EditingChanges {
+        // (undocumented)
+        elements: Set<Id64String>;
+        // (undocumented)
+        timeline: ModelTimeline;
+    }
     export class ElementTimeline extends Timeline {
         // @internal (undocumented)
         addSymbologyOverrides(overrides: FeatureOverrides, time: number): void;
@@ -8079,6 +8303,8 @@ export namespace RenderSchedule {
         // @internal (undocumented)
         protected getFeatureAppearance(visibility: number, time: number): FeatureAppearance | undefined;
         getVisibility(time: number): number;
+        // @internal
+        isEditingCommitted: boolean;
         // (undocumented)
         toJSON(): TimelineProps;
         readonly transform?: TransformTimelineEntries;
@@ -8267,6 +8493,7 @@ export interface RepositoryLinkProps extends UrlLinkProps {
 export interface RequestNewBriefcaseProps {
     asOf?: IModelVersionProps;
     briefcaseId?: BriefcaseId;
+    deviceName?: string;
     readonly fileName?: LocalFileName;
     readonly iModelId: GuidString;
     readonly iTwinId: GuidString;
@@ -9072,8 +9299,8 @@ export interface RscFontEncodingProps {
     plusMinus?: number;
 }
 
-// @beta (undocumented)
-export type Run = TextRun | FractionRun | LineBreakRun;
+// @beta
+export type Run = TextRun | FractionRun | TabRun | LineBreakRun | FieldRun;
 
 // @beta
 export namespace Run {
@@ -9090,12 +9317,11 @@ export interface RunLayoutResult {
     numeratorRange?: Range2dProps;
     offsetFromLine: XAndY;
     range: Range2dProps;
-    sourceRunIndex: number;
     textStyle: TextStyleSettingsProps;
 }
 
 // @beta
-export type RunProps = TextRunProps | FractionRunProps | LineBreakRunProps;
+export type RunProps = TextRunProps | FractionRunProps | TabRunProps | LineBreakRunProps | FieldRunProps;
 
 // @public
 export enum SchemaState {
@@ -9635,6 +9861,9 @@ export type StandaloneOpenOptions = OpenDbKey;
 // @beta
 export type StorageValue = string | number | boolean | undefined | Uint8Array;
 
+// @beta
+export type StructuralTextBlockComponent = List | Paragraph | TextBlock;
+
 // @public
 export class SubCategoryAppearance {
     constructor(props?: SubCategoryAppearance.Props);
@@ -9759,6 +9988,27 @@ export enum SyncMode {
     PullOnly = 3
 }
 
+// @beta
+export class TabRun extends TextBlockComponent {
+    // (undocumented)
+    clone(): TabRun;
+    // (undocumented)
+    static create(props?: Omit<TabRunProps, "type">): TabRun;
+    // (undocumented)
+    equals(other: TextBlockComponent): boolean;
+    // (undocumented)
+    get isEmpty(): boolean;
+    stringify(options?: TextBlockStringifyOptions): string;
+    // (undocumented)
+    toJSON(): TabRunProps;
+    readonly type = "tab";
+}
+
+// @beta
+export interface TabRunProps extends TextBlockComponentProps {
+    readonly type: "tab";
+}
+
 // @public
 export enum TerrainHeightOriginMode {
     Geodetic = 0,
@@ -9812,11 +10062,11 @@ export class TestRpcManager {
 export class TextAnnotation {
     anchor: TextAnnotationAnchor;
     computeAnchorPoint(boundingBox: Range2d): Point3d;
-    computeTransform(boundingBox: Range2d): Transform;
+    computeTransform(boundingBox: Range2d, scaleFactor?: number): Transform;
     static create(args?: TextAnnotationCreateArgs): TextAnnotation;
     equals(other: TextAnnotation): boolean;
-    frame?: TextFrameStyleProps;
-    static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation;
+    static fromJSON(props?: TextAnnotationProps): TextAnnotation;
+    leaders?: TextAnnotationLeader[];
     offset: Point3d;
     orientation: YawPitchRollAngles;
     textBlock: TextBlock;
@@ -9825,20 +10075,16 @@ export class TextAnnotation {
 
 // @public @preview
 export interface TextAnnotation2dProps extends GeometricElement2dProps {
-    // (undocumented)
-    jsonProperties?: {
-        [key: string]: any;
-        annotation?: TextAnnotationProps;
-    };
+    // @beta
+    defaultTextStyle?: RelatedElementProps;
+    textAnnotationData?: string;
 }
 
 // @public @preview
 export interface TextAnnotation3dProps extends GeometricElement3dProps {
-    // (undocumented)
-    jsonProperties?: {
-        [key: string]: any;
-        annotation?: TextAnnotationProps;
-    };
+    // @beta
+    defaultTextStyle?: RelatedElementProps;
+    textAnnotationData?: string;
 }
 
 // @beta
@@ -9850,22 +10096,41 @@ export interface TextAnnotationAnchor {
 // @beta
 export interface TextAnnotationCreateArgs {
     anchor?: TextAnnotationAnchor;
-    frame?: TextFrameStyleProps;
+    leaders?: TextAnnotationLeader[];
     offset?: Point3d;
     orientation?: YawPitchRollAngles;
     textBlock?: TextBlock;
 }
 
 // @beta
-export type TextAnnotationFillColor = TextStyleColor | "background";
+export type TextAnnotationFillColor = TextStyleColor | "background" | "none";
 
 // @beta
-export type TextAnnotationFrameShape = "none" | "line" | "rectangle" | "circle" | "equilateralTriangle" | "diamond" | "square" | "pentagon" | "hexagon" | "octagon" | "capsule" | "roundedRectangle";
+export type TextAnnotationFrameShape = typeof textAnnotationFrameShapes[number];
+
+// @beta
+export const textAnnotationFrameShapes: readonly ["none", "line", "rectangle", "circle", "equilateralTriangle", "diamond", "square", "pentagon", "hexagon", "octagon", "capsule", "roundedRectangle"];
+
+// @beta
+export interface TextAnnotationLeader {
+    attachment: LeaderAttachment;
+    intermediatePoints?: Point3d[];
+    startPoint: Point3d;
+    styleOverrides?: TextStyleSettingsProps;
+}
+
+// @beta
+export interface TextAnnotationLeaderProps {
+    attachment: LeaderAttachment;
+    intermediatePoints?: XYZProps[];
+    startPoint: XYZProps;
+    styleOverrides?: TextStyleSettingsProps;
+}
 
 // @beta
 export interface TextAnnotationProps {
     anchor?: TextAnnotationAnchor;
-    frame?: TextFrameStyleProps;
+    leaders?: TextAnnotationLeaderProps[];
     offset?: XYZProps;
     orientation?: YawPitchRollProps;
     textBlock?: TextBlockProps;
@@ -9873,19 +10138,20 @@ export interface TextAnnotationProps {
 
 // @beta
 export class TextBlock extends TextBlockComponent {
-    appendParagraph(): Paragraph;
+    appendParagraph(props?: ParagraphProps, seedFromLast?: boolean): Paragraph;
     appendRun(run: Run): void;
-    applyStyle(styleName: string, options?: ApplyTextStyleOptions): void;
+    // (undocumented)
+    readonly children: Paragraph[];
+    // (undocumented)
+    clearStyleOverrides(options?: ClearTextStyleOptions): void;
     // (undocumented)
     clone(): TextBlock;
-    static create(props: TextBlockProps): TextBlock;
-    static createEmpty(): TextBlock;
+    static create(props?: Omit<TextBlockProps, "type">): TextBlock;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
     get isEmpty(): boolean;
     justification: TextBlockJustification;
     margins: TextBlockMargins;
-    readonly paragraphs: Paragraph[];
     stringify(options?: TextBlockStringifyOptions): string;
     // (undocumented)
     toJSON(): TextBlockProps;
@@ -9895,15 +10161,14 @@ export class TextBlock extends TextBlockComponent {
 // @beta
 export abstract class TextBlockComponent {
     // @internal
-    protected constructor(props: TextBlockComponentProps);
-    applyStyle(styleName: string, options?: ApplyTextStyleOptions): void;
-    clearStyleOverrides(): void;
+    protected constructor(props?: TextBlockComponentProps);
+    clearStyleOverrides(_options?: ClearTextStyleOptions): void;
     abstract clone(): TextBlockComponent;
     equals(other: TextBlockComponent): boolean;
+    abstract get isEmpty(): boolean;
+    get isWhitespace(): boolean;
     get overridesStyle(): boolean;
-    abstract stringify(options?: TextBlockStringifyOptions): string;
-    get styleName(): string;
-    set styleName(styleName: string);
+    abstract stringify(options?: TextBlockStringifyOptions, context?: TextBlockStringifyContext): string;
     get styleOverrides(): TextStyleSettingsProps;
     set styleOverrides(overrides: TextStyleSettingsProps);
     toJSON(): TextBlockComponentProps;
@@ -9911,7 +10176,6 @@ export abstract class TextBlockComponent {
 
 // @beta
 export interface TextBlockComponentProps {
-    styleName: string;
     styleOverrides?: TextStyleSettingsProps;
 }
 
@@ -9957,17 +10221,25 @@ export interface TextBlockMargins {
 
 // @beta
 export interface TextBlockProps extends TextBlockComponentProps {
+    // (undocumented)
+    children?: ParagraphProps[];
     justification?: TextBlockJustification;
     margins?: Partial<TextBlockMargins>;
-    paragraphs?: ParagraphProps[];
     width?: number;
+}
+
+// @beta
+export interface TextBlockStringifyContext {
+    depth: number;
 }
 
 // @beta
 export interface TextBlockStringifyOptions {
     fractionSeparator?: string;
     lineBreak?: string;
+    listMarkerBreak?: string;
     paragraphBreak?: string;
+    tabsAsSpaces?: number;
 }
 
 // @beta
@@ -9979,15 +10251,26 @@ export interface TextFrameStyleProps {
 }
 
 // @beta
+export interface TextLeaderStyleProps {
+    color?: TextStyleColor | "inherit";
+    elbowLength?: number;
+    terminatorHeightFactor?: number;
+    terminatorWidthFactor?: number;
+    wantElbow?: boolean;
+}
+
+// @beta
 export class TextRun extends TextBlockComponent {
     baselineShift: BaselineShift;
     // (undocumented)
     clone(): TextRun;
     content: string;
     // (undocumented)
-    static create(props: Omit<TextRunProps, "type">): TextRun;
+    static create(props?: Omit<TextRunProps, "type">): TextRun;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
+    // (undocumented)
+    get isEmpty(): boolean;
     stringify(): string;
     // (undocumented)
     toJSON(): TextRunProps;
@@ -10057,48 +10340,40 @@ export interface TextStringProps {
 }
 
 // @beta
-export class TextStyle {
-    clone(alteredSettings: TextStyleSettingsProps): TextStyle;
-    static create(name: string, settings: TextStyleSettings): TextStyle;
-    // (undocumented)
-    equals(other: TextStyle): boolean;
-    static fromJSON(json: TextStyleProps): TextStyle;
-    // (undocumented)
-    readonly name: string;
-    // (undocumented)
-    readonly settings: TextStyleSettings;
-}
-
-// @beta
 export type TextStyleColor = ColorDefProps | "subcategory";
-
-// @beta
-export interface TextStyleProps {
-    name: string;
-    settings?: TextStyleSettingsProps;
-}
 
 // @beta
 export class TextStyleSettings {
     clone(alteredProps?: TextStyleSettingsProps): TextStyleSettings;
+    static cloneProps(props: TextStyleSettingsProps): TextStyleSettingsProps;
     readonly color: TextStyleColor;
-    static defaultProps: Readonly<Required<TextStyleSettingsProps>>;
+    static defaultProps: DeepReadonlyObject<DeepRequiredObject<TextStyleSettingsProps>>;
     static defaults: TextStyleSettings;
     // (undocumented)
     equals(other: TextStyleSettings): boolean;
     readonly fontName: string;
+    readonly frame: Readonly<Required<TextFrameStyleProps>>;
+    // (undocumented)
+    frameEquals(other: TextFrameStyleProps): boolean;
     static fromJSON(props?: TextStyleSettingsProps): TextStyleSettings;
+    getValidationErrors(): string[];
+    readonly indentation: number;
     readonly isBold: boolean;
     readonly isItalic: boolean;
     readonly isUnderlined: boolean;
+    readonly leader: Readonly<Required<TextLeaderStyleProps>>;
+    leaderEquals(other: TextLeaderStyleProps): boolean;
     readonly lineHeight: number;
     readonly lineSpacingFactor: number;
+    readonly listMarker: ListMarker;
+    readonly paragraphSpacingFactor: number;
     readonly stackedFractionScale: number;
     readonly stackedFractionType: StackedFractionType;
     readonly subScriptOffsetFactor: number;
     readonly subScriptScale: number;
     readonly superScriptOffsetFactor: number;
     readonly superScriptScale: number;
+    readonly tabInterval: number;
     // (undocumented)
     toJSON(): TextStyleSettingsProps;
     readonly widthFactor: number;
@@ -10108,17 +10383,23 @@ export class TextStyleSettings {
 export interface TextStyleSettingsProps {
     color?: TextStyleColor;
     fontName?: string;
+    frame?: TextFrameStyleProps;
+    indentation?: number;
     isBold?: boolean;
     isItalic?: boolean;
     isUnderlined?: boolean;
+    leader?: TextLeaderStyleProps;
     lineHeight?: number;
     lineSpacingFactor?: number;
+    listMarker?: ListMarker;
+    paragraphSpacingFactor?: number;
     stackedFractionScale?: number;
     stackedFractionType?: StackedFractionType;
     subScriptOffsetFactor?: number;
     subScriptScale?: number;
     superScriptOffsetFactor?: number;
     superScriptScale?: number;
+    tabInterval?: number;
     widthFactor?: number;
 }
 
@@ -10725,6 +11006,12 @@ export interface TranslationOptions {
     fallbackLng?: string;
     lngs?: string[];
 }
+
+// @beta
+export function traverseTextBlockComponent(parent: StructuralTextBlockComponent): IterableIterator<{
+    parent: StructuralTextBlockComponent;
+    child: List | Paragraph | Run;
+}>;
 
 // @alpha
 export enum TreeFlags {

@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@itwin/core-bentley";
+import { assert, dispose, expectDefined } from "@itwin/core-bentley";
 import {
   ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, ScreenSpaceEffectContext, UniformArrayParams, UniformParams, UniformType, VaryingType,
 } from "../../../render/ScreenSpaceEffectBuilder";
@@ -144,7 +144,7 @@ export class ScreenSpaceEffects {
     this._effectGeometry = effectGeometry;
 
     // NB: We'll replace the texture each time we draw.
-    const copyGeometry = SingleTexturedViewportQuadGeometry.createGeometry(System.instance.lineCodeTexture!.getHandle()!, TechniqueId.CopyColor);
+    const copyGeometry = SingleTexturedViewportQuadGeometry.createGeometry(expectDefined(System.instance.lineCodeTexture?.getHandle()), TechniqueId.CopyColor);
     assert(undefined !== copyGeometry);
     this._copyGeometry = copyGeometry;
   }
@@ -200,7 +200,7 @@ export class ScreenSpaceEffects {
     const copyFbo = target.compositor.screenSpaceEffectFbo;
     for (const effect of effects) {
       // Copy the rendered image to texture as input to the effect shader.
-      this._copyGeometry.texture = system.frameBufferStack.currentColorBuffer!.getHandle()!;
+      this._copyGeometry.texture = expectDefined(system.frameBufferStack.currentColorBuffer?.getHandle());
       system.frameBufferStack.execute(copyFbo, true, false, () => {
         const copyParams = getDrawParams(target, this._copyGeometry);
         system.techniques.draw(copyParams);
@@ -224,7 +224,7 @@ export class ScreenSpaceEffects {
       for (let i = 0; i <= 1; i++) {
         // Copy the pick buffer as input to the effect shader.
         const buffer = 0 === i ? target.compositor.featureIds : target.compositor.depthAndOrder;
-        this._copyGeometry.texture = buffer.getHandle()!;
+        this._copyGeometry.texture = expectDefined(buffer.getHandle());
         system.frameBufferStack.execute(copyFbo, true, false, () => {
           const copyParams = getDrawParams(target, this._copyGeometry);
           system.techniques.draw(copyParams);

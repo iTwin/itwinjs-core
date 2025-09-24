@@ -464,6 +464,16 @@ export enum DbValueType {
 }
 
 // @public
+export type DeepReadonlyObject<T> = T extends object ? {
+    readonly [K in keyof T]: DeepReadonlyObject<T[K]>;
+} : T;
+
+// @public
+export type DeepRequiredObject<T> = T extends object ? {
+    [K in keyof T]-?: DeepRequiredObject<T[K]>;
+} : T;
+
+// @public
 export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
     [Symbol.iterator](): Iterator<DictionaryEntry<K, V>>;
     constructor(compareKeys: OrderedComparator<K>, cloneKey?: CloneFunction<K>, cloneValue?: CloneFunction<V>);
@@ -575,6 +585,12 @@ export abstract class ErrorCategory extends StatusCategory {
     // (undocumented)
     error: boolean;
 }
+
+// @internal
+export function expectDefined<T>(value: T | undefined, message?: string): T;
+
+// @internal
+export function expectNotNull<T>(value: T | null, message?: string): T;
 
 // @public
 export enum GeoServiceStatus {
@@ -1496,6 +1512,7 @@ export class ProcessDetector {
     static get isChromium(): boolean;
     static get isElectronAppBackend(): boolean;
     static get isElectronAppFrontend(): boolean;
+    static get isIEBrowser(): boolean;
     static get isIOSAppBackend(): boolean;
     static get isIOSAppFrontend(): boolean;
     static get isIOSBrowser(): boolean;

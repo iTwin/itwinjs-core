@@ -8,6 +8,7 @@
 
 import { disposeArray, Id64String } from "@itwin/core-bentley";
 import {
+  ContourDisplay,
   FeatureAppearanceProvider, HiddenLine, RealityModelDisplaySettings, ViewFlagOverrides, ViewFlags,
 } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
@@ -160,4 +161,6 @@ export interface GraphicBranchOptions {
    * No [ClipStyle.insideColor]($common), [ClipStyle.outsideColor]($common), or [ClipStyle.intersectionStyle]($common) will be applied.
    */
   disableClipStyle?: true;
+  /** @internal */
+  contours?: ContourDisplay;
 }

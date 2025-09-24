@@ -8,7 +8,7 @@
 
 import { Cartographic } from "@itwin/core-common";
 import { MapCartoRectangle, MapTilingScheme } from "../../../tile/internal";
-import { SortedArray } from "@itwin/core-bentley";
+import { expectDefined, SortedArray } from "@itwin/core-bentley";
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
 
@@ -207,15 +207,18 @@ export class TileAvailability {
 
     // Work up the tree until we find a rectangle that contains this point.
     while (node !== stopNode) {
-      const rectangles = node!.rectangles;
+      const rectangles = expectDefined(node).rectangles;
 
       // Rectangles are sorted by level, lowest first.
+      // We're looping from length - 1 to 0, so get will always return a defined value.
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       for (let i = rectangles.length - 1; i >= 0 && rectangles.get(i)!.level > maxLevel; --i) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const rectangle = rectangles.get(i)!;
         if (rectangle.containsCartographic(position))
           maxLevel = rectangle.level;
       }
-      node = node!.parent!;
+      node = node?.parent;
     }
     return maxLevel;
   }

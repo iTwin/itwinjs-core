@@ -10,7 +10,7 @@ import { Id64, Id64String } from "@itwin/core-bentley";
 import { ElementLoadOptions, EntityProps, EntityReferenceSet, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
 import type { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
-import { EntityClass, Property, SchemaItemKey } from "@itwin/ecschema-metadata";
+import { ECClass, EntityClass, Property, RelationshipClass, SchemaItemKey } from "@itwin/ecschema-metadata";
 import { _nativeDb } from "./internal/Symbols";
 
 /** Represents a row returned by an ECSql query. The row is returned as a map of property names to values.
@@ -73,7 +73,8 @@ export class Entity {
     return new SchemaItemKey(this.className, this.schema.schemaKey);
   }
 
-  private _metadata?: EntityClass;
+  /** Cached Metadata for the ECClass */
+  protected _metadata?: EntityClass | RelationshipClass;
 
   /** When working with an Entity it can be useful to set property values directly, bypassing the compiler's type checking.
    * This property makes such code slightly less tedious to read and write.
@@ -228,13 +229,15 @@ export class Entity {
    * ```
    */
   public forEach(func: PropertyHandler, includeCustom: boolean = true) {
-    const metaData = this.iModel.schemaContext.getSchemaItemSync(this.schemaItemKey, EntityClass);
-    if (!metaData)
-      throw new Error(`Cannot get metadata for ${this.classFullName}`);
+    const item = this._metadata ?? this.iModel.schemaContext.getSchemaItemSync(this.schemaItemKey);
 
-    for (const property of metaData.getPropertiesSync()) {
-      if (includeCustom || !property.customAttributes?.has(`BisCore.CustomHandledProperty`))
-        func(property.name, property);
+    if (EntityClass.isEntityClass(item) || RelationshipClass.isRelationshipClass(item)) {
+      for (const property of item.getPropertiesSync()) {
+        if (includeCustom || !property.customAttributes?.has(`BisCore.CustomHandledProperty`))
+          func(property.name, property);
+      }
+    } else {
+      throw new Error(`Cannot get metadata for ${this.classFullName}. Class is not an EntityClass or RelationshipClass.`);
     }
   }
 
@@ -249,24 +252,40 @@ export class Entity {
    */
   public get schemaItemKey(): SchemaItemKey { return this._ctor.schemaItemKey; }
 
-  /** query metadata for this entity class from the iModel's schema
+  /** Query metadata for this entity class from the iModel's schema. Returns cached metadata if available.
    * @throws [[IModelError]] if there is a problem querying the schema
    * @returns The metadata for the current entity
    * @public @preview
    */
-  public async getMetaData(): Promise<EntityClass> {
-    if (!this._metadata) {
-      this._metadata = await this.iModel.schemaContext.getSchemaItem(this.schemaItemKey, EntityClass);
+  public async getMetaData(): Promise<EntityClass | RelationshipClass> {
+    if (this._metadata) {
+      return this._metadata;
     }
 
-    if (!this._metadata) {
+    const ecClass = await this.iModel.schemaContext.getSchemaItem(this.schemaItemKey, ECClass);
+    if (EntityClass.isEntityClass(ecClass) || RelationshipClass.isRelationshipClass(ecClass)) {
+      this._metadata = ecClass;
+      return this._metadata;
+    } else {
       throw new Error(`Cannot get metadata for ${this.classFullName}`);
     }
-
-    return this._metadata;
   }
 
+  /** @internal */
+  public getMetaDataSync(): EntityClass | RelationshipClass {
+    if (this._metadata) {
+      return this._metadata;
+    }
 
+    const ecClass = this.iModel.schemaContext.getSchemaItemSync(this.schemaItemKey, ECClass);
+    if (EntityClass.isEntityClass(ecClass) || RelationshipClass.isRelationshipClass(ecClass)) {
+      this._metadata = ecClass;
+      return this._metadata;
+    } else {
+      throw new Error(`Cannot get metadata for ${this.classFullName}`);
+    }
+  }
+  
   /** @internal */
   public static get protectedOperations(): string[] { return []; }
 
