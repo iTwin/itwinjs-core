@@ -455,11 +455,7 @@
 			repositoryURL = "https://github.com/iTwin/mobile-native-ios";
 			requirement = {
 				kind = exactVersion;
-<<<<<<< HEAD
-				version = 5.2.17;
-=======
 				version = 5.3.1;
->>>>>>> ac804cd65a (Add SqliteChangesetReader.openInMemory() to allow read unsaved changes (#8555))
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
