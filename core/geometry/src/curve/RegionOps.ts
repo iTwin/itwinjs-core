@@ -54,6 +54,7 @@ import { RegionMomentsXY } from "./RegionMomentsXY";
 import { RegionBooleanContext, RegionGroupOpType, RegionOpsFaceToFaceSearch } from "./RegionOpsClassificationSweeps";
 import { StrokeOptions } from "./StrokeOptions";
 import { UnionRegion } from "./UnionRegion";
+import { sign } from "crypto";
 
 /**
  * * `properties` is a string with special characters indicating
@@ -66,7 +67,30 @@ import { UnionRegion } from "./UnionRegion";
 export type GraphCheckPointFunction = (name: string, graph: HalfEdgeGraph, properties: string, extraData?: any) => any;
 
 /**
- * Enumeration of the binary operation types for a booleans among regions
+ * * Options to control method [[RegionOps.consolidateAdjacentPrimitives]].
+ * @public
+ */
+export class ConsolidateAdjacentCurvePrimitivesOptions {
+  /** True to consolidate adjacent linear geometry into a single LineString3d. */
+  public consolidateLinearGeometry: boolean = true;
+  /** True to consolidate contiguous compatible arcs into a single Arc3d. */
+  public consolidateCompatibleArcs: boolean = true;
+  /**
+   * True to attempt consolidation of the first and last primitives of a [[Loop]] or physically closed linestring data,
+   * allowing location of the seam to change.
+   */
+  public consolidateLoopSeam?: boolean = false;
+  /** Disable LineSegment3d and LineString3d point compression. */
+  public disableLinearCompression?: boolean = false;
+  /** Tolerance for detecting identical points. */
+  public duplicatePointTolerance: number = Geometry.smallMetricDistance;
+  /** Tolerance for removing interior colinear points (if `!disableLinearCompression`). */
+  public colinearPointTolerance: number = Geometry.smallMetricDistance;
+}
+
+/**
+ * Enumeration of the binary operation types for Boolean operations.
+ * @see [[RegionOps.regionBooleanXY]], [[RegionOps.polygonBooleanXYToLoops]], [[RegionOps.polygonBooleanXYToPolyface]].
  * @public
  */
 export enum RegionBinaryOpType {
@@ -75,6 +99,20 @@ export enum RegionBinaryOpType {
   Intersection = 2,
   AMinusB = 3,
   BMinusA = 4,
+}
+
+/**
+ * Options bundle for use in [[RegionOps.regionBooleanXY]].
+ * @public
+ */
+export interface RegionBooleanXYOptions {
+  /** Absolute distance tolerance for merging loops. Default is [[Geometry.smallMetricDistance]]. */
+  mergeTolerance?: number;
+  /**
+   * Whether to post-process a Boolean Union result to return only the outer [[Loop]]s.
+   * Default value is `false`, to return the raw [[UnionRegion]] of disjoint constituent [[Loop]]s.
+   */
+  simplifyUnion?: boolean;
 }
 
 /**
@@ -353,7 +391,7 @@ export class RegionOps {
    * * Regions without children are removed.
    * * No Boolean operations are performed.
    * @param region region to simplify in place
-   * @returns reference to the updated input region
+   * @returns reference to the updated input region, or `undefined` if no children.
    * @see [[simplifyRegionType]]
    */
   public static simplifyRegion(region: AnyRegion): AnyRegion | undefined {
@@ -387,16 +425,25 @@ export class RegionOps {
    * @param loopsA first set of loops (treated as a union)
    * @param loopsB second set of loops (treated as a union)
    * @param operation indicates Union, Intersection, Parity, AMinusB, or BMinusA
-   * @param mergeTolerance absolute distance tolerance for merging loops
+   * @param mergeToleranceOrOptions absolute distance tolerance for merging loops, or multiple options settings. Default value is [[Geometry.smallMetricDistance]].
    * @returns a region resulting from merging input loops and the boolean operation.
    */
   public static regionBooleanXY(
     loopsA: AnyRegion | AnyRegion[] | undefined,
     loopsB: AnyRegion | AnyRegion[] | undefined,
     operation: RegionBinaryOpType,
-    mergeTolerance: number = Geometry.smallMetricDistance,
+    mergeToleranceOrOptions: number | RegionBooleanXYOptions = Geometry.smallMetricDistance,
   ): AnyRegion | undefined {
-    const result = UnionRegion.create();
+    let mergeTolerance: number;
+    let simplifyUnion: boolean;
+    if (typeof mergeToleranceOrOptions === "number") {
+      mergeTolerance = mergeToleranceOrOptions;
+      simplifyUnion = false;
+    } else {
+      mergeTolerance = mergeToleranceOrOptions.mergeTolerance ?? Geometry.smallMetricDistance;
+      simplifyUnion = mergeToleranceOrOptions.simplifyUnion ?? false;
+    }
+    let result = UnionRegion.create();
     const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
     context.addMembers(loopsA, loopsB);
     context.annotateAndMergeCurvesInGraph(mergeTolerance);
@@ -420,6 +467,14 @@ export class RegionOps {
       },
     );
     context.graph.dropMask(visitMask);
+    if (operation === RegionBinaryOpType.Union && simplifyUnion) {
+      const signedLoops = RegionOps.constructAllXYRegionLoops(result);
+      if (signedLoops) {
+        const outerLoops = signedLoops.map((component) => component.negativeAreaLoops).flat();
+        if (outerLoops.length > 0)
+          result = UnionRegion.create(...outerLoops);
+      }
+    }
     return this.simplifyRegion(result);
   }
   /**
@@ -1037,26 +1092,4 @@ function pushToInOnOutArrays(
     arrayNegative.push(curve);
   else
     array0.push(curve);
-}
-
-/**
- * * Options to control method `RegionOps.consolidateAdjacentPrimitives`.
- * @public
- */
-export class ConsolidateAdjacentCurvePrimitivesOptions {
-  /** True to consolidate adjacent linear geometry into a single LineString3d. */
-  public consolidateLinearGeometry: boolean = true;
-  /** True to consolidate contiguous compatible arcs into a single Arc3d. */
-  public consolidateCompatibleArcs: boolean = true;
-  /**
-   * True to attempt consolidation of the first and last primitives of a [[Loop]] or physically closed linestring data,
-   * allowing location of the seam to change.
-   */
-  public consolidateLoopSeam?: boolean = false;
-  /** Disable LineSegment3d and LineString3d point compression. */
-  public disableLinearCompression?: boolean = false;
-  /** Tolerance for detecting identical points. */
-  public duplicatePointTolerance: number = Geometry.smallMetricDistance;
-  /** Tolerance for removing interior colinear points (if `!disableLinearCompression`). */
-  public colinearPointTolerance: number = Geometry.smallMetricDistance;
 }

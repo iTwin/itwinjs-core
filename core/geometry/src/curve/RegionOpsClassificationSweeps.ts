@@ -855,8 +855,10 @@ export class GraphComponent {
       f.sumAroundFace(vertexFunction);
     }
     this.faceAreas.length = 0;
-    if (!faceAreaFunction || !this.faces.every((he) => he.edgeTag instanceof CurveLocationDetail))
-      faceAreaFunction = (node) => HalfEdgeGraphSearch.signedFaceArea(node);
+    if (faceAreaFunction === faceAreaFromCurvedEdgeData && !this.faces.every((he: HalfEdge) => he.edgeTag instanceof CurveLocationDetail))
+      faceAreaFunction = undefined; // prerequisite CurveLocationDetails are absent, fall through to default
+    if (!faceAreaFunction)
+      faceAreaFunction = (node: HalfEdge) => HalfEdgeGraphSearch.signedFaceArea(node); // polygon area
     for (const f of this.faces) {
       this.faceAreas.push(faceAreaFunction(f));
     }
