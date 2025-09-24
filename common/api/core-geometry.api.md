@@ -6324,6 +6324,9 @@ export class Vector2d extends XY implements BeJSONFunctions {
     clone(result?: Vector2d): Vector2d;
     static create(x?: number, y?: number, result?: Vector2d): Vector2d;
     static createAdd2Scaled(vectorA: XAndY, scaleA: number, vectorB: XAndY, scaleB: number, result?: Vector2d): Vector2d;
+    static createAdd2ScaledXY(ax: number, ay: number, scaleA: number, bx: number, by: number, scaleB: number, result?: Vector2d): Vector2d;
+    static createAdd3Scaled(vectorA: XAndY, scaleA: number, vectorB: XAndY, scaleB: number, vectorC: XAndY, scaleC: number, result?: Vector2d): Vector2d;
+    static createAdd3ScaledXY(ax: number, ay: number, scaleA: number, bx: number, by: number, scaleB: number, cx: number, cy: number, scaleC: number, result?: Vector2d): Vector2d;
     static createFrom(data: XAndY | Float64Array, result?: Vector2d): Vector2d;
     static createOffsetBisector(unitPerpA: Vector2d, unitPerpB: Vector2d, offset: number): Vector2d | undefined;
     static createPolar(r: number, theta: Angle): Vector2d;
