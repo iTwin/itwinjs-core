@@ -680,11 +680,6 @@ export class List extends TextBlockComponent {
   }
 }
 
-/** Describes the relative alignment of the content of a [[TextBlock]].
- * @beta
- */
-export type TextBlockJustification = "left" | "center" | "right";
-
 /** JSON representation of a [[TextBlock]].
  * @beta
  */
@@ -694,8 +689,6 @@ export interface TextBlockProps extends TextBlockComponentProps {
    * Default: 0
    */
   width?: number;
-  /** The alignment of the document content. Default: "left". */
-  justification?: TextBlockJustification;
   children?: ParagraphProps[];
 }
 
@@ -712,13 +705,10 @@ export class TextBlock extends TextBlockComponent {
    * Default: 0
    */
   public width: number;
-  /** The alignment of the document's content. */
-  public justification: TextBlockJustification;
 
   private constructor(props: TextBlockProps) {
     super(props);
     this.width = props.width ?? 0;
-    this.justification = props.justification ?? "left";
 
     this.children = props?.children?.map((para) => Paragraph.create(para)) ?? [];
   }
@@ -731,7 +721,6 @@ export class TextBlock extends TextBlockComponent {
     return {
       ...super.toJSON(),
       width: this.width,
-      justification: this.justification,
       children: this.children.map((x) => x.toJSON()),
     };
   }
@@ -785,7 +774,7 @@ export class TextBlock extends TextBlockComponent {
       return false;
     }
 
-    if (this.width !== other.width || this.justification !== other.justification) {
+    if (this.width !== other.width) {
       return false;
     }
 

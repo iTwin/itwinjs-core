@@ -157,7 +157,7 @@ function scaleRange(range: Range2d, scale: number): void {
 }
 
 /**
- * Applies block level settings (lineSpacingFactor, paragraphSpacingFactor, widthFactor, frame, margins, and leader) to a [TextStyleSettings]($common).
+ * Applies block level settings (lineSpacingFactor, paragraphSpacingFactor, widthFactor, frame, margins, justification, and leader) to a [TextStyleSettings]($common).
  * These must be set on the block, as they are meaningless on individual paragraphs/runs.
  * However, leaders are a special case and can override the block's leader settings.
  * Setting `isLeader` to `true` makes the [TextBlock]($common) settings not override the leader's settings.
@@ -171,6 +171,7 @@ function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings
   const lineSpacingFactor = source.lineSpacingFactor ?? target.lineSpacingFactor;
   const paragraphSpacingFactor = source.paragraphSpacingFactor ?? target.paragraphSpacingFactor;
   const widthFactor = source.widthFactor ?? target.widthFactor;
+  const justification = source.justification ?? target.justification;
   const frame = source.frame ?? target.frame;
   const margins = source.margins ?? target.margins;
   const leader = source.leader ?? target.leader;
@@ -180,6 +181,7 @@ function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings
   if (lineSpacingFactor !== target.lineSpacingFactor ||
       paragraphSpacingFactor !== target.paragraphSpacingFactor ||
       widthFactor !== target.widthFactor ||
+      justification !== target.justification ||
       !target.frameEquals(frame) ||
       !target.marginsEqual(margins) ||
       leaderShouldChange
@@ -188,6 +190,7 @@ function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings
       lineSpacingFactor,
       paragraphSpacingFactor,
       widthFactor,
+      justification,
       frame,
       margins,
     };
@@ -701,7 +704,7 @@ export class TextBlockLayout {
     }
 
     this.populateLines(context);
-    this.justifyLines();
+    this.justifyLines(context);
     this.applyMargins(context.textStyleResolver.blockSettings.margins);
   }
 
@@ -904,9 +907,9 @@ export class TextBlockLayout {
     return new LineLayout(next, cumulativeOverrides, context, depth);
   }
 
-  private justifyLines(): void {
+  private justifyLines(context: LayoutContext): void {
     // We don't want to justify empty text, or a single line of text whose width is 0. By default text is already left justified.
-    if (this.lines.length < 1 || (this.lines.length === 1 && this.source.width === 0) || "left" === this.source.justification) {
+    if (this.lines.length < 1 || (this.lines.length === 1 && this.source.width === 0) || "left" === context.textStyleResolver.blockSettings.justification) {
       return;
     }
 
@@ -918,7 +921,7 @@ export class TextBlockLayout {
       const lineWidth = line.justificationRange.xLength() + line.offsetFromDocument.x;
 
       let offset = docWidth - lineWidth;
-      if ("center" === this.source.justification) {
+      if ("center" === context.textStyleResolver.blockSettings.justification) {
         offset = offset / 2;
       }
 

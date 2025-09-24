@@ -22,10 +22,10 @@ import {
   TextAnnotationLeader,
   TextAnnotationProps,
   TextBlock,
-  TextBlockJustification,
   TextBlockMargins,
   TextBlockProps,
   TextFrameStyleProps,
+  TextJustification,
   TextRun,
   TextStyleSettingsProps,
 } from "@itwin/core-common";
@@ -62,7 +62,8 @@ class TextEditor implements Decorator {
     "widthFactor" |
     "lineSpacingFactor" |
     "margins" |
-    "frame"> {
+    "frame" |
+    "justification"> {
     return this.textBlock.styleOverrides;
   }
 
@@ -210,8 +211,8 @@ class TextEditor implements Decorator {
     this.textBlock.width = width;
   }
 
-  public justify(justification: TextBlockJustification): void {
-    this.textBlock.justification = justification;
+  public justify(justification: TextJustification): void {
+    this.documentStyle.justification = justification;
   }
 
   public setMargins(margins: TextBlockMargins): void {

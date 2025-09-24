@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges, TextStyleResolver } from "../../annotations/TextBlockLayout";
 import { Geometry, Range2d } from "@itwin/core-geometry";
-import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, List, ListMarkerEnumerator, Paragraph, ParagraphProps, Run, RunLayoutResult, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, List, ListMarkerEnumerator, Paragraph, ParagraphProps, Run, RunLayoutResult, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockLayoutResult, TextBlockMargins, TextJustification, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Id64String, ProcessDetector } from "@itwin/core-bentley";
@@ -139,9 +139,9 @@ describe("layoutTextBlock", () => {
     });
 
     it("does not inherit overrides in TextBlock or Paragraph when Run has same propertied overriden - unless they are TextBlock specific settings", () => {
-      const textBlock = TextBlock.create({ styleOverrides: { widthFactor: 34, margins: { left: 3 }, textHeight: 3, lineSpacingFactor: 12, paragraphSpacingFactor: 2, isBold: true } });
-      const run = TextRun.create({ content: "test", styleOverrides: { widthFactor: 78, margins: { left: 4, right: 3 }, textHeight: 6, paragraphSpacingFactor: 25, lineSpacingFactor: 24, font: { name: "override" }, isBold: false } });
-      textBlock.appendParagraph({ styleOverrides: { textHeight: 56, paragraphSpacingFactor: 50, color: 0xff0000 } });
+      const textBlock = TextBlock.create({ styleOverrides: { widthFactor: 34, margins: { left: 3 }, textHeight: 3, lineSpacingFactor: 12, paragraphSpacingFactor: 2, isBold: true, justification: "center" } });
+      const run = TextRun.create({ content: "test", styleOverrides: { widthFactor: 78, margins: { left: 4, right: 3 }, textHeight: 6, paragraphSpacingFactor: 25, lineSpacingFactor: 24, font: { name: "override" }, isBold: false, justification: "right" } });
+      textBlock.appendParagraph({ styleOverrides: { textHeight: 56, paragraphSpacingFactor: 50, color: 0xff0000, justification: "left" } });
       textBlock.appendRun(run);
 
       const tb = doLayout(textBlock, {
@@ -162,6 +162,8 @@ describe("layoutTextBlock", () => {
       // margins are always taken from the TextBlock, even if the Paragraph or Run has overrides
       expect(runStyle.margins.left).to.equal(3);
       expect(runStyle.margins.right).to.equal(0);
+      // justification is always taken from the TextBlock, even if the Paragraph or Run has overrides
+      expect(runStyle.justification).to.equal("center");
       expect(runStyle.font.name).to.equal("override");
       expect(runStyle.color).to.equal(0xff0000);
       expect(runStyle.isBold).to.be.false;
@@ -934,13 +936,17 @@ describe("layoutTextBlock", () => {
 
       const block = TextBlock.create({ styleOverrides: { lineSpacingFactor: 0 } });
 
-      function expectBlockRange(width: number, height: number): void {
-        const layout = doLayout(block);
+      function expectBlockRange(width: number, height: number, justification: TextJustification): void {
+        const layout = doLayout(block, {
+          findTextStyle: () => TextStyleSettings.fromJSON({ justification })
+        });
         expectRange(width, height, layout.range);
       }
 
-      function expectLineOffset(offset: number, lineIndex: number): void {
-        const layout = doLayout(block);
+      function expectLineOffset(offset: number, lineIndex: number, justification: TextJustification): void {
+        const layout = doLayout(block, {
+          findTextStyle: () => TextStyleSettings.fromJSON({ justification }),
+        });
         expect(layout.lines.length).least(lineIndex + 1);
 
         const line = layout.lines[lineIndex];
@@ -953,73 +959,61 @@ describe("layoutTextBlock", () => {
       block.appendRun(makeTextRun("defg"));
 
       // 1 line of text with width 0: left, right, center justification.
-      block.justification = "left";
-      expectBlockRange(7, 1);
-      expectLineOffset(0, 0);
+      expectBlockRange(7, 1, "left");
+      expectLineOffset(0, 0, "left");
 
-      block.justification = "right";
-      expectBlockRange(7, 1);
-      expectLineOffset(0, 0);
+      expectBlockRange(7, 1, "right");
+      expectLineOffset(0, 0, "right");
 
-      block.justification = "center";
-      expectBlockRange(7, 1);
-      expectLineOffset(0, 0);
+      expectBlockRange(7, 1, "center");
+      expectLineOffset(0, 0, "center");
 
       // 1 line of text from a width greater than number of characters: left, right, center justification.
       block.width = 10;
 
-      block.justification = "left";
-      expectBlockRange(10, 1);
-      expectLineOffset(0, 0);
+      expectBlockRange(10, 1, "left");
+      expectLineOffset(0, 0, "left");
 
-      block.justification = "right";
-      expectBlockRange(10, 1);
-      expectLineOffset(3, 0); // 3 = 10 - 7
+      expectBlockRange(10, 1, "right");
+      expectLineOffset(3, 0, "right"); // 3 = 10 - 7
 
-      block.justification = "center";
-      expectBlockRange(10, 1);
-      expectLineOffset(1.5, 0); // 1.5 = (10 - 7) / 2
+      expectBlockRange(10, 1, "center");
+      expectLineOffset(1.5, 0, "center"); // 1.5 = (10 - 7) / 2
 
       // 2 line of text from a width less than number of characters: left, right, center justification.
-      block.justification = "left";
       block.width = 4;
-      expectBlockRange(4, 2);
-      expectLineOffset(0, 0);
-      expectLineOffset(0, 1);
+      expectBlockRange(4, 2, "left");
+      expectLineOffset(0, 0, "left");
+      expectLineOffset(0, 1, "left");
 
-      block.justification = "right";
-      expectBlockRange(4, 2);
-      expectLineOffset(1, 0);
-      expectLineOffset(0, 1);
+      expectBlockRange(4, 2, "right");
+      expectLineOffset(1, 0, "right");
+      expectLineOffset(0, 1, "right");
 
-      block.justification = "center";
-      expectBlockRange(4, 2);
-      expectLineOffset(0.5, 0);
-      expectLineOffset(0, 1);
+      expectBlockRange(4, 2, "center");
+      expectLineOffset(0.5, 0, "center");
+      expectLineOffset(0, 1, "center");
 
       // Testing text longer the the width of the text block.
       block.width = 2;
-      block.justification = "left";
-      expectBlockRange(4, 2);
-      expectLineOffset(0, 0);
-      expectLineOffset(0, 1);
+      expectBlockRange(4, 2, "left");
+      expectLineOffset(0, 0, "left");
+      expectLineOffset(0, 1, "left");
 
-      block.justification = "right";
-      expectBlockRange(4, 2);
-      expectLineOffset(-1, 0);
-      expectLineOffset(-2, 1);
+      expectBlockRange(4, 2, "right");
+      expectLineOffset(-1, 0, "right");
+      expectLineOffset(-2, 1, "right");
 
       block.appendRun(makeTextRun("123456789"));
-      expectBlockRange(9, 3);
-      expectLineOffset(-1, 0);
-      expectLineOffset(-2, 1);
-      expectLineOffset(-7, 2);
+      expectBlockRange(9, 3, "right");
+      expectLineOffset(-1, 0, "right");
+      expectLineOffset(-2, 1, "right");
+      expectLineOffset(-7, 2, "right");
 
-      block.justification = "center";
-      expectBlockRange(9, 3);
-      expectLineOffset(-0.5, 0);
-      expectLineOffset(-1, 1);
-      expectLineOffset(-3.5, 2);
+      expectBlockRange(9, 3, "center");
+      expectLineOffset(-0.5, 0, "center");
+      expectLineOffset(-1, 1, "center");
+      expectLineOffset(-3.5, 2, "center");
     });
   });
 

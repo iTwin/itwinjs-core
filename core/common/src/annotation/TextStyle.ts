@@ -70,6 +70,11 @@ export interface TextBlockMargins {
   bottom?: number;
 };
 
+/** Describes the relative alignment of text.
+ * @beta
+*/
+export type TextJustification = "left" | "center" | "right";
+
 /** Specifies how to separate the numerator and denominator of a [[FractionRun]], by either a horizontal or diagonal bar.
  * @see [[TextStyleSettingsProps.stackedFractionType]] and [[TextStyleSettings.stackedFractionType]].
  * @beta
@@ -237,6 +242,9 @@ export interface TextStyleSettingsProps {
    * Default: "1.".
    */
   listMarker?: ListMarker;
+  /** The alignment of the text content.
+   * Default: "left". */
+  justification?: TextJustification;
 }
 
 function deepFreeze<T>(obj: T) {
@@ -331,6 +339,8 @@ export class TextStyleSettings {
   public readonly frame: Readonly<Required<TextFrameStyleProps>>;
   /** The margins to surround the document content. */
   public readonly margins: Readonly<Required<TextBlockMargins>>;
+  /** The alignment of the text content. */
+  public readonly justification: TextJustification;
 
   /** A fully-populated JSON representation of the default settings. A real `font` must be provided before use. */
   public static defaultProps: DeepReadonlyObject<DeepRequiredObject<TextStyleSettingsProps>> = {
@@ -371,6 +381,7 @@ export class TextStyleSettings {
       top: 0,
       bottom: 0
     },
+    justification: "left",
   };
 
   /** Settings initialized to all default values. */
@@ -425,6 +436,7 @@ export class TextStyleSettings {
       top: props.margins?.top ?? defaults.margins.top,
       bottom: props.margins?.bottom ?? defaults.margins.bottom,
     }) as Readonly<Required<TextBlockMargins>>;
+    this.justification = props.justification ?? defaults.justification;
   }
 
   /** Create a copy of these settings, modified according to the properties defined by `alteredProps`. */
@@ -492,6 +504,7 @@ export class TextStyleSettings {
       && this.superScriptOffsetFactor === other.superScriptOffsetFactor && this.superScriptScale === other.superScriptScale
       && this.tabInterval === other.tabInterval && this.indentation === other.indentation
       && this.listMarker.case === other.listMarker.case && this.listMarker.enumerator === other.listMarker.enumerator && this.listMarker.terminator === other.listMarker.terminator
+      && this.justification === other.justification
       && this.leaderEquals(other.leader)
       && this.frameEquals(other.frame)
       && this.marginsEqual(other.margins);

@@ -52,6 +52,7 @@ describe("TextStyleSettings", () => {
       terminator: "parenthesis",
       case: "lower"
     },
+    justification: "center",
   };
 
   it("returns defaults if no props provided", () => {
