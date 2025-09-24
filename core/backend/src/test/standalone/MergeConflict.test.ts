@@ -155,7 +155,7 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
     }[] = [];
 
     // we will not handle conflict and let the default conflict handler deal with it.
-    b2.txns.changeMergeManager.addConflictHandler({
+    b2.txns.rebaser.addConflictHandler({
       id: "custom", handler: (arg: RebaseChangesetConflictArgs) => {
         conflicts.push({
           cause: arg.cause,
@@ -274,7 +274,7 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
     }[] = [];
 
     // we will not handle conflict and let the default conflict handler deal with it.
-    b2.txns.changeMergeManager.addConflictHandler({
+    b2.txns.rebaser.addConflictHandler({
       id: "custom", handler: (arg: RebaseChangesetConflictArgs) => {
         let id;
         if (arg.cause !== "ForeignKey") {
@@ -317,7 +317,7 @@ describe.skip("Merge conflict & locking", () => { // ###TODO FLAKY https://githu
       }
     ]);
 
-    b2.txns.changeMergeManager.addConflictHandler({
+    b2.txns.rebaser.addConflictHandler({
       id: "delete_aspect_when_element_is_deleted", handler: (arg: RebaseChangesetConflictArgs) => {
         if (arg.cause === "NotFound" && arg.tableName === "bis_Element") {
           // if element does not exist any more let delete the aspects as well.

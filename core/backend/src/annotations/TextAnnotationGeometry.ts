@@ -7,7 +7,7 @@
  */
 
 import { ColorDef, ElementGeometry, FillDisplay, GeometryParams, TextAnnotation, TextAnnotationProps, TextStyleSettings } from "@itwin/core-common";
-import { TextBlockLayout, TextStyleResolver } from "./TextBlockLayout";
+import { RunLayout, TextBlockLayout, TextStyleResolver } from "./TextBlockLayout";
 import { LineString3d, PointString3d, Range2d, Transform } from "@itwin/core-geometry";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { produceTextBlockGeometry } from "./TextBlockGeometry";
@@ -26,6 +26,8 @@ export interface AppendTextAnnotationGeometryArgs {
   layout: TextBlockLayout;
   /** [[TextStyleResolver]] used to get styling and scale information for creating geometry. */
   textStyleResolver: TextStyleResolver;
+  /** The scale factor to apply to the annotation. Usually comes from the `scaleFactor` of a [[Drawing]] element. */
+  scaleFactor: number;
   /** Builder that will be added to in place */
   builder: ElementGeometry.Builder;
   /** The category the element will belong to. This will passed into the [[GeometryParams]] */
@@ -43,7 +45,7 @@ export interface AppendTextAnnotationGeometryArgs {
 export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometryArgs): boolean {
   const annotation = TextAnnotation.fromJSON(props.annotationProps);
 
-  const transform = annotation.computeTransform(props.layout.range, props.textStyleResolver.scaleFactor);
+  const transform = annotation.computeTransform(props.layout.range, props.scaleFactor);
 
   let result = true;
 
@@ -59,7 +61,7 @@ export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometry
 
   // Construct the leader geometry
   if (annotation.leaders && annotation.leaders.length > 0) {
-    result = result && appendLeadersToBuilder(props.builder, annotation.leaders, props.layout, transform.clone(), params, props.textStyleResolver);
+    result = result && appendLeadersToBuilder(props.builder, annotation.leaders, props.layout, transform.clone(), params, props.textStyleResolver, props.scaleFactor);
   }
 
   // Construct the debug geometry
@@ -137,8 +139,7 @@ function debugSnapPoints(builder: ElementGeometry.Builder, style: TextStyleSetti
  */
 function debugRunLayout(builder: ElementGeometry.Builder, layout: TextBlockLayout, documentTransform: Transform): boolean {
   let result = true; // Tracks if all geometry was appended successfully
-  let color = ColorDef.black; // Current color for the run type
-  let lastColor = color; // Last color used, to minimize param changes
+  let lastColor = ColorDef.black; // Last color used, to minimize param changes
 
   // Map run types to debug colors
   const colors = {
@@ -147,6 +148,27 @@ function debugRunLayout(builder: ElementGeometry.Builder, layout: TextBlockLayou
     "fraction": ColorDef.fromString("green"),
     "tab": ColorDef.fromString("aquamarine"),
     "field": ColorDef.fromString("purple"),
+    "marker": ColorDef.fromString("pink"),
+  }
+
+  const drawBox = (run: RunLayout, lineTransform: Transform, newColor: ColorDef) => {
+    // Only change geometry params if the color changes
+    if (lastColor !== newColor) {
+      const colorParams = new GeometryParams(Id64.invalid);
+      colorParams.lineColor = newColor;
+      colorParams.weight = run.source.type === "linebreak" ? 3 : undefined;
+      result = result && builder.appendGeometryParamsChange(colorParams);
+      lastColor = newColor;
+    }
+
+    // Apply the line's offset to the run's offset
+    const runTrans = Transform.createTranslationXYZ(run.offsetFromLine.x, run.offsetFromLine.y, 0);
+    lineTransform.multiplyTransformTransform(runTrans, runTrans);
+
+    // Draw the enclosing range for the run
+    const runCorners = run.range.corners3d(true);
+    runTrans.multiplyPoint3dArrayInPlace(runCorners);
+    result = result && builder.appendGeometryQuery(LineString3d.create(runCorners));
   }
 
   layout.lines.forEach(line => {
@@ -154,26 +176,14 @@ function debugRunLayout(builder: ElementGeometry.Builder, layout: TextBlockLayou
     const lineTrans = Transform.createTranslationXYZ(line.offsetFromDocument.x, line.offsetFromDocument.y, 0);
     documentTransform.multiplyTransformTransform(lineTrans, lineTrans);
 
+    if (line.marker) {
+      drawBox(line.marker, lineTrans, colors.marker);
+    }
+
     line.runs.forEach(run => {
       // Determine color for this run type
-      color = colors[run.source.type] ?? ColorDef.black;
-
-      // Only change geometry params if the color changes
-      if (!lastColor.equals(color)) {
-        const colorParams = new GeometryParams(Id64.invalid);
-        colorParams.lineColor = color;
-        result = result && builder.appendGeometryParamsChange(colorParams);
-        lastColor = color;
-      }
-
-      // Apply the line's offset to the run's offset
-      const runTrans = Transform.createTranslationXYZ(run.offsetFromLine.x, run.offsetFromLine.y, 0);
-      lineTrans.multiplyTransformTransform(runTrans, runTrans);
-
-      // Draw the enclosing range for the run
-      const runCorners = run.range.corners3d(true);
-      runTrans.multiplyPoint3dArrayInPlace(runCorners);
-      result = result && builder.appendGeometryQuery(LineString3d.create(runCorners));
+      const color = colors[run.source.type] ?? ColorDef.black;
+      drawBox(run, lineTrans, color);
     });
   });
 

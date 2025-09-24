@@ -154,6 +154,7 @@ import { LightLocationProps } from '@itwin/core-common';
 import { LineLayoutResult } from '@itwin/core-common';
 import { LinePixels } from '@itwin/core-common';
 import { LineStyleProps } from '@itwin/core-common';
+import { List } from '@itwin/core-common';
 import { LocalBriefcaseProps } from '@itwin/core-common';
 import { LocalDirName } from '@itwin/core-common';
 import { LocalFileName } from '@itwin/core-common';
@@ -260,6 +261,7 @@ import { TextAnnotationFrameShape } from '@itwin/core-common';
 import { TextAnnotationLeader } from '@itwin/core-common';
 import { TextAnnotationProps } from '@itwin/core-common';
 import { TextBlock } from '@itwin/core-common';
+import { TextBlockComponent } from '@itwin/core-common';
 import { TextBlockGeometryProps } from '@itwin/core-common';
 import { TextBlockLayoutResult } from '@itwin/core-common';
 import { TextFrameStyleProps } from '@itwin/core-common';
@@ -293,6 +295,7 @@ import { ViewQueryParams } from '@itwin/core-common';
 import { ViewStateLoadProps } from '@itwin/core-common';
 import { ViewStateProps } from '@itwin/core-common';
 import { ViewStoreRpc } from '@itwin/core-common';
+import { WritableXAndY } from '@itwin/core-geometry';
 import * as ws from 'ws';
 import { XAndY } from '@itwin/core-geometry';
 import { XYAndZ } from '@itwin/core-geometry';
@@ -301,6 +304,7 @@ import { YawPitchRollAngles } from '@itwin/core-geometry';
 // @public
 export interface AcquireNewBriefcaseIdArg extends IModelIdArg {
     readonly briefcaseAlias?: string;
+    readonly deviceName?: string;
 }
 
 // @public @preview
@@ -332,7 +336,7 @@ export type AnyDb = IModelDb | ECDb;
 export function appendFrameToBuilder(builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams: GeometryParams): boolean;
 
 // @beta
-export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders: TextAnnotationLeader[], layout: TextBlockLayout, transform: Transform, params: GeometryParams, textStyleResolver: TextStyleResolver): boolean;
+export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders: TextAnnotationLeader[], layout: TextBlockLayout, transform: Transform, params: GeometryParams, textStyleResolver: TextStyleResolver, scaleFactor: number): boolean;
 
 // @beta
 export function appendTextAnnotationGeometry(props: AppendTextAnnotationGeometryArgs): boolean;
@@ -343,6 +347,7 @@ export interface AppendTextAnnotationGeometryArgs {
     builder: ElementGeometry.Builder;
     categoryId: Id64String;
     layout: TextBlockLayout;
+    scaleFactor: number;
     subCategoryId?: Id64String;
     textStyleResolver: TextStyleResolver;
     wantDebugGeometry?: boolean;
@@ -462,6 +467,8 @@ export enum BackendLoggerCategory {
     Relationship = "core-backend.Relationship",
     Schemas = "core-backend.Schemas",
     // @internal
+    StashManager = "core-backend.StashManager",
+    // @internal
     ViewStateHydrator = "core-backend.ViewStateHydrator",
     // @internal (undocumented)
     Workspace = "core-backend.Workspace"
@@ -566,6 +573,10 @@ export class BriefcaseDb extends IModelDb {
     close(): void;
     // (undocumented)
     disableChangesetStatTracking(): Promise<void>;
+    // @alpha
+    discardChanges(args?: {
+        retainLocks?: true;
+    }): Promise<void>;
     // (undocumented)
     enableChangesetStatTracking(): Promise<void>;
     // @internal
@@ -620,6 +631,10 @@ export enum BriefcaseLocalValue {
 export class BriefcaseManager {
     static acquireNewBriefcaseId(arg: AcquireNewBriefcaseIdArg): Promise<BriefcaseId>;
     static get cacheDir(): LocalDirName;
+    // @internal
+    static containsRestorePoint(db: BriefcaseDb, name: string): boolean;
+    // @internal
+    static createRestorePoint(db: BriefcaseDb, name: string): Promise<StashProps>;
     static deleteBriefcaseFiles(filePath: LocalFileName, accessToken?: AccessToken): Promise<void>;
     // @internal
     static deleteChangeSetsFromLocalDisk(iModelId: string): void;
@@ -628,6 +643,8 @@ export class BriefcaseManager {
     static downloadChangeset(arg: DownloadChangesetArg): Promise<ChangesetFileProps>;
     // @beta
     static downloadChangesets(arg: DownloadChangesetRangeArg): Promise<ChangesetFileProps[]>;
+    // @internal
+    static dropRestorePoint(db: BriefcaseDb, name: string): void;
     static getBriefcaseBasePath(iModelId: GuidString): LocalDirName;
     static getCachedBriefcases(iModelId?: GuidString): LocalBriefcaseProps[];
     // @internal (undocumented)
@@ -644,6 +661,8 @@ export class BriefcaseManager {
     static initialize(cacheRootDir: LocalDirName): void;
     static isValidBriefcaseId(id: BriefcaseId): boolean;
     // @internal (undocumented)
+    static readonly PULL_MERGE_RESTORE_POINT_NAME = "$pull_merge_restore_point";
+    // @internal
     static pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void>;
     // @internal
     static pullMergePush(db: BriefcaseDb, arg: PushChangesArgs): Promise<void>;
@@ -657,6 +676,8 @@ export class BriefcaseManager {
     }): Promise<ChangesetProps[]>;
     static queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
     static releaseBriefcase(accessToken: AccessToken, briefcase: BriefcaseProps): Promise<void>;
+    // @internal
+    static restorePoint(db: BriefcaseDb, name: string): Promise<void>;
     // @internal (undocumented)
     static revertTimelineChanges(db: IModelDb, arg: RevertChangesArgs): Promise<void>;
 }
@@ -826,24 +847,6 @@ export interface ChangeInstanceKey {
     changeType: "inserted" | "updated" | "deleted";
     classFullName: string;
     id: Id64String;
-}
-
-// @internal
-export class ChangeMergeManager {
-    constructor(_iModel: BriefcaseDb | StandaloneDb);
-    // (undocumented)
-    addConflictHandler(args: {
-        id: string;
-        handler: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
-    }): void;
-    // (undocumented)
-    inProgress(): boolean;
-    // (undocumented)
-    onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
-    // (undocumented)
-    removeConflictHandler(id: string): void;
-    // (undocumented)
-    resume(): void;
 }
 
 // @beta
@@ -1583,10 +1586,10 @@ export interface ComputeFrameArgs {
 export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2d[];
 
 // @beta
-export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
+export interface ComputeGraphemeOffsetsArgs extends LayoutTextArgs {
     graphemeCharIndexes: number[];
-    paragraphIndex: number;
     runLayoutResult: RunLayoutResult;
+    source: TextBlockComponent;
 }
 
 // @beta
@@ -3536,6 +3539,8 @@ export interface ImageSourceFromImageBufferArgs {
 export abstract class IModelDb extends IModel {
     // @internal (undocumented)
     readonly [_nativeDb]: IModelJsNative.DgnDb;
+    // @internal (undocumented)
+    [_resetIModelDb](): void;
     // @internal
     protected constructor(args: {
         nativeDb: IModelJsNative.DgnDb;
@@ -3689,6 +3694,8 @@ export abstract class IModelDb extends IModel {
     // @internal @deprecated (undocumented)
     reverseTxns(numOperations: number): IModelStatus;
     saveChanges(description?: string): void;
+    // @alpha
+    saveChanges(args: SaveChangesArgs): void;
     saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void;
     // @beta
     saveSettingDictionary(name: string, dict: SettingsContainer): void;
@@ -3974,6 +3981,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
     // (undocumented)
     static defaultTileRequestTimeout: number;
     // @beta
+    disableRestorePointOnPullMerge?: true;
+    // @beta
     disableThinnedNativeInstanceWorkflow?: boolean;
     // (undocumented)
     hubAccess?: BackendHubAccess;
@@ -4002,6 +4011,8 @@ export interface IModelHostOptions {
     compressCachedTiles?: boolean;
     // @internal
     crashReportingConfig?: CrashReportingConfig;
+    // @beta
+    disableRestorePointOnPullMerge?: true;
     disableThinnedNativeInstanceWorkflow?: boolean;
     enableOpenTelemetry?: boolean;
     hubAccess?: BackendHubAccess;
@@ -4216,6 +4227,7 @@ export function isITextAnnotation(element: Element_2): element is ITextAnnotatio
 
 // @beta
 export interface ITextAnnotation {
+    defaultTextStyle?: TextAnnotationUsesTextStyleByDefault;
     getTextBlocks(): Iterable<TextBlockAndId>;
     updateTextBlocks(textBlocks: TextBlockAndId[]): void;
 }
@@ -4234,17 +4246,21 @@ export class KnownLocations {
 }
 
 // @beta
-export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout;
-
-// @beta
-export interface LayoutTextBlockArgs {
+export interface LayoutTextArgs {
     // @internal
     computeTextRange?: ComputeRangesForTextLayout;
     // @internal
     findFontId?: FindFontId;
     iModel: IModelDb;
-    textBlock: TextBlock;
     textStyleResolver: TextStyleResolver;
+}
+
+// @beta
+export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout;
+
+// @beta
+export interface LayoutTextBlockArgs extends LayoutTextArgs {
+    textBlock: TextBlock;
 }
 
 // @internal
@@ -4257,31 +4273,31 @@ export class LightLocation extends SpatialLocationElement {
 
 // @beta
 export class LineLayout {
-    constructor(source: Paragraph);
+    constructor(source: List | Run | Paragraph, style: TextStyleSettingsProps, context?: LayoutContext, depth?: number);
     // (undocumented)
     append(run: RunLayout): void;
-    // (undocumented)
     get back(): RunLayout;
     // (undocumented)
+    depth: number;
     get isEmpty(): boolean;
     // (undocumented)
     justificationRange: Range2d;
     // (undocumented)
     lengthFromLastTab: number;
+    get marker(): RunLayout | undefined;
+    set marker(value: RunLayout | undefined);
     // (undocumented)
-    offsetFromDocument: {
-        x: number;
-        y: number;
-    };
+    offsetFromDocument: WritableXAndY;
     // (undocumented)
     range: Range2d;
     // (undocumented)
+    runRange: Range2d;
     get runs(): ReadonlyArray<RunLayout>;
     // (undocumented)
-    source: Paragraph;
+    source: List | Run | Paragraph;
     stringify(): string;
     // (undocumented)
-    toResult(textBlock: TextBlock): LineLayoutResult;
+    toResult(): LineLayoutResult;
 }
 
 // @public @preview
@@ -5141,7 +5157,7 @@ export interface PushChangesArgs extends TokenArg {
     description: string;
     mergeRetryCount?: number;
     mergeRetryDelay?: BeDuration;
-    // @internal
+    // @internal @deprecated
     noFastForward?: true;
     pushRetryCount?: number;
     pushRetryDelay?: BeDuration;
@@ -5173,6 +5189,30 @@ export type QueryWorkspaceResourcesCallback = (resources: Iterable<{
     name: string;
     db: WorkspaceDb;
 }>) => void;
+
+// @alpha
+export interface RebaseHandler {
+    recompute(txn: TxnProps): Promise<void>;
+    shouldReinstate(txn: TxnProps): boolean;
+}
+
+// @alpha
+export class RebaseManager {
+    constructor(_iModel: BriefcaseDb | StandaloneDb);
+    abort(): Promise<void>;
+    addConflictHandler(args: {
+        id: string;
+        handler: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
+    }): void;
+    canAbort(): boolean;
+    inProgress(): boolean;
+    get isMerging(): boolean;
+    get isRebasing(): boolean;
+    onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
+    removeConflictHandler(id: string): void;
+    resume(): Promise<void>;
+    setCustomHandler(handler: RebaseHandler): void;
+}
 
 // @beta
 export abstract class RecipeDefinitionElement extends DefinitionElement {
@@ -5352,7 +5392,7 @@ export class RunLayout {
     // (undocumented)
     charOffset: number;
     // (undocumented)
-    static create(source: Run, parentParagraph: Paragraph, context: LayoutContext): RunLayout;
+    static create(source: Run, context: LayoutContext, cumulativeOverrides: TextStyleSettingsProps): RunLayout;
     // (undocumented)
     denominatorRange?: Range2d;
     // (undocumented)
@@ -5378,7 +5418,16 @@ export class RunLayout {
     // (undocumented)
     style: TextStyleSettings;
     // (undocumented)
-    toResult(paragraph: Paragraph): RunLayoutResult;
+    toResult(): RunLayoutResult;
+}
+
+// @alpha
+export interface SaveChangesArgs {
+    appData?: {
+        [key: string]: any;
+    };
+    description?: string;
+    source?: string;
 }
 
 // @public
@@ -5989,6 +6038,9 @@ export class SqliteChangesetReader implements Disposable {
     static openGroup(args: {
         readonly changesetFiles: string[];
     } & SqliteChangesetReaderArgs): SqliteChangesetReader;
+    static openInMemory(args: SqliteChangesetReaderArgs & {
+        db: IModelDb;
+    }): SqliteChangesetReader;
     static openLocalChanges(args: Omit<SqliteChangesetReaderArgs, "db"> & {
         db: IModelDb;
         includeInMemoryChanges?: true;
@@ -6378,8 +6430,10 @@ export class TextAnnotation2d extends AnnotationElement2d {
     protected constructor(props: TextAnnotation2dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    protected collectReferenceIds(ids: EntityReferenceSet): void;
-    static create(iModelDb: IModelDb, category: Id64String, model: Id64String, placement: Placement2dProps, textAnnotationData?: TextAnnotationProps, code?: CodeProps): TextAnnotation2d;
+    // @beta
+    static create(iModelDb: IModelDb, arg: TextAnnotation2dCreateArgs): TextAnnotation2d;
+    // @beta
+    defaultTextStyle?: TextAnnotationUsesTextStyleByDefault;
     static fromJSON(props: TextAnnotation2dProps, iModel: IModelDb): TextAnnotation2d;
     getAnnotation(): TextAnnotation | undefined;
     // @internal (undocumented)
@@ -6399,13 +6453,25 @@ export class TextAnnotation2d extends AnnotationElement2d {
     updateTextBlocks(textBlocks: TextBlockAndId[]): void;
 }
 
+// @beta
+export interface TextAnnotation2dCreateArgs {
+    category: Id64String;
+    code?: CodeProps;
+    defaultTextStyleId?: Id64String;
+    model: Id64String;
+    placement: Placement2dProps;
+    textAnnotationData?: TextAnnotationProps;
+}
+
 // @public @preview
 export class TextAnnotation3d extends GraphicalElement3d {
     protected constructor(props: TextAnnotation3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    protected collectReferenceIds(ids: EntityReferenceSet): void;
-    static create(iModelDb: IModelDb, category: Id64String, model: Id64String, placement: Placement3dProps, textAnnotationData?: TextAnnotationProps, code?: CodeProps): TextAnnotation3d;
+    // @beta
+    static create(iModelDb: IModelDb, arg: TextAnnotation3dCreateArgs): TextAnnotation3d;
+    // @beta
+    defaultTextStyle?: TextAnnotationUsesTextStyleByDefault;
     static fromJSON(props: TextAnnotation3dProps, iModel: IModelDb): TextAnnotation3d;
     getAnnotation(): TextAnnotation | undefined;
     // @internal (undocumented)
@@ -6423,6 +6489,23 @@ export class TextAnnotation3d extends GraphicalElement3d {
     protected static updateGeometry(iModelDb: IModelDb, props: TextAnnotation3dProps): void;
     // @internal (undocumented)
     updateTextBlocks(textBlocks: TextBlockAndId[]): void;
+}
+
+// @beta
+export interface TextAnnotation3dCreateArgs {
+    category: Id64String;
+    code?: CodeProps;
+    defaultTextStyleId?: Id64String;
+    model: Id64String;
+    placement: Placement3dProps;
+    textAnnotationData?: TextAnnotationProps;
+}
+
+// @beta
+export class TextAnnotationUsesTextStyleByDefault extends RelatedElement {
+    constructor(annotationTextStyleId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
 }
 
 // @beta
@@ -6457,11 +6540,10 @@ export interface TextLayoutRanges {
 export class TextStyleResolver {
     constructor(args: TextStyleResolverArgs);
     readonly blockSettings: TextStyleSettings;
-    findTextStyle(id: Id64String): TextStyleSettings;
-    resolveParagraphSettings(paragraph: Paragraph): TextStyleSettings;
-    resolveRunSettings(paragraph: Paragraph, run: Run): TextStyleSettings;
-    resolveTextAnnotationLeaderSettings(leader: TextAnnotationLeader): TextStyleSettings;
-    readonly scaleFactor: number;
+    resolveIndentation(styleOverrides: TextStyleSettingsProps, depth: number): number;
+    // (undocumented)
+    resolveMarkerText(overrides: TextStyleSettingsProps, index: number): string;
+    resolveSettings(overrides: TextStyleSettingsProps, isLeader?: boolean): TextStyleSettings;
 }
 
 // @beta
@@ -6469,8 +6551,8 @@ export interface TextStyleResolverArgs {
     // @internal
     findTextStyle?: FindTextStyle;
     iModel: IModelDb;
-    modelId?: Id64String;
     textBlock: TextBlock;
+    textStyleId: Id64String;
 }
 
 // @public @preview
@@ -6559,18 +6641,26 @@ export class TxnManager {
     appCustomConflictHandler?: (args: DbRebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     beginMultiTxnOperation(): DbResult;
     cancelTo(txnId: TxnIdString): IModelStatus;
-    // @internal (undocumented)
-    readonly changeMergeManager: ChangeMergeManager;
     deleteAllTxns(): void;
     endMultiTxnOperation(): DbResult;
     getChangeTrackingMemoryUsed(): number;
+    // @alpha
+    getCurrentSessionId(): number;
     getCurrentTxnId(): TxnIdString;
+    // @alpha
+    getLastSavedTxnProps(): TxnProps | undefined;
+    // @alpha
+    getMode(): TxnMode;
     getMultiTxnOperationDepth(): number;
     getRedoString(): string;
     getTxnDescription(txnId: TxnIdString): string;
+    // @alpha
+    getTxnProps(id: TxnIdString): TxnProps | undefined;
     getUndoString(): string;
     get hasFatalError(): boolean;
     get hasLocalChanges(): boolean;
+    // @alpha
+    get hasPendingSchemaChanges(): boolean;
     get hasPendingTxns(): boolean;
     get hasUnsavedChanges(): boolean;
     // @internal (undocumented)
@@ -6615,10 +6705,10 @@ export class TxnManager {
     protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
-    // @internal (undocumented)
-    readonly onRebaseTxnBegin: BeEvent<(txn: TxnArgs) => void>;
-    // @internal (undocumented)
-    readonly onRebaseTxnEnd: BeEvent<(txn: TxnArgs) => void>;
+    // @alpha
+    readonly onRebaseTxnBegin: BeEvent<(txn: TxnProps) => void>;
+    // @alpha
+    readonly onRebaseTxnEnd: BeEvent<(txn: TxnProps) => void>;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onReplayedExternalTxns(): void;
@@ -6632,6 +6722,10 @@ export class TxnManager {
     queryLocalChanges(args?: QueryLocalChangesArgs): Iterable<ChangeInstanceKey>;
     queryNextTxnId(txnId: TxnIdString): TxnIdString;
     queryPreviousTxnId(txnId: TxnIdString): TxnIdString;
+    // @alpha
+    queryTxns(): Generator<TxnProps>;
+    // @internal (undocumented)
+    readonly rebaser: RebaseManager;
     reinstateTxn(): IModelStatus;
     reportError(error: ValidationError): void;
     restartSession(): void;
@@ -6642,7 +6736,37 @@ export class TxnManager {
     // @internal
     touchWatchFile(): void;
     readonly validationErrors: ValidationError[];
+    // @alpha
+    withIndirectTxnMode(callback: () => void): void;
 }
+
+// @alpha
+export type TxnMode = "direct" | "indirect";
+
+// @alpha
+export interface TxnProps {
+    // (undocumented)
+    grouped: boolean;
+    // (undocumented)
+    id: TxnIdString;
+    // (undocumented)
+    nextId?: TxnIdString;
+    // (undocumented)
+    prevId?: TxnIdString;
+    // (undocumented)
+    props: SaveChangesArgs;
+    // (undocumented)
+    reversed: boolean;
+    // (undocumented)
+    sessionId: number;
+    // (undocumented)
+    timestamp: string;
+    // (undocumented)
+    type: TxnType;
+}
+
+// @alpha
+export type TxnType = "Data" | "ECSchema" | "Ddl";
 
 // @public @preview
 export abstract class TypeDefinitionElement extends DefinitionElement {

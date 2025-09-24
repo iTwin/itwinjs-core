@@ -170,7 +170,7 @@ export class TextAnnotation {
   public static create(args?: TextAnnotationCreateArgs): TextAnnotation {
     const offset = args?.offset ?? new Point3d();
     const angles = args?.orientation ?? new YawPitchRollAngles();
-    const textBlock = args?.textBlock ?? TextBlock.createEmpty();
+    const textBlock = args?.textBlock ?? TextBlock.create();
     const anchor = args?.anchor ?? { vertical: "top", horizontal: "left" };
     const leaders = args?.leaders ?? undefined;
     return new TextAnnotation(offset, angles, textBlock, anchor, leaders);
@@ -179,7 +179,7 @@ export class TextAnnotation {
   /**
    * Creates a new TextAnnotation instance from its JSON representation.
    */
-  public static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation {
+  public static fromJSON(props?: TextAnnotationProps): TextAnnotation {
     return TextAnnotation.create({
       offset: props?.offset ? Point3d.fromJSON(props.offset) : undefined,
       orientation: props?.orientation ? YawPitchRollAngles.fromJSON(props.orientation) : undefined,

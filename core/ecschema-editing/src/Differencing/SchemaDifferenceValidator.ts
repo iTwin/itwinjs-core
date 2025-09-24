@@ -99,7 +99,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
     const sourceSchemaKey = sourceSchemaReference.schemaKey;
     const targetSchemaKey = targetSchemaReference.schemaKey;
 
-    if(isDynamicSchema(targetSchemaReference) !== isDynamicSchema(sourceSchemaReference)) {
+    if(targetSchemaReference.isDynamic !== sourceSchemaReference.isDynamic) {
       return this.addConflict({
         code: ConflictCode.ConflictingReferenceDynamic,
         difference: entry,
@@ -109,7 +109,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
       });
     }
 
-    if(entry.changeType === "modify" && !isDynamicSchema(targetSchemaReference) && !areCompatible(sourceSchemaKey, targetSchemaKey)) {
+    if(entry.changeType === "modify" && !targetSchemaReference.isDynamic && !areCompatible(sourceSchemaKey, targetSchemaKey)) {
       return this.addConflict({
         code: ConflictCode.ConflictingReferenceVersion,
         difference: entry,
@@ -595,13 +595,6 @@ function resolvePropertyTypeName(property: Property) {
   if (property.isNavigation())
     return `${prefix}${property.relationshipClass.fullName}${suffix}`;
   return propertyTypeToString(property.propertyType);
-}
-
-/**
- * Checks if a schema is dynamic.
- */
-function isDynamicSchema(schema: Schema): boolean {
-  return schema.customAttributes !== undefined && schema.customAttributes.has("CoreCustomAttributes.DynamicSchema");
 }
 
 /**
