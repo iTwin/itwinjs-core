@@ -358,6 +358,7 @@ beta;function;isITextAnnotation
 beta;interface;ITextAnnotation
 public;interface;ITwinIdArg
 public;class;KnownLocations
+beta;interface;LayoutTextArgs
 beta;function;layoutTextBlock
 beta;interface;LayoutTextBlockArgs
 internal;class;LightLocation
@@ -571,8 +572,11 @@ internal;class;TemplateViewDefinition2d
 internal;class;TemplateViewDefinition3d
 public;class;TextAnnotation2d
 preview;class;TextAnnotation2d
+beta;interface;TextAnnotation2dCreateArgs
 public;class;TextAnnotation3d
 preview;class;TextAnnotation3d
+beta;interface;TextAnnotation3dCreateArgs
+beta;class;TextAnnotationUsesTextStyleByDefault
 beta;interface;TextBlockAndId
 beta;class;TextBlockLayout
 internal;interface;TextLayoutRanges

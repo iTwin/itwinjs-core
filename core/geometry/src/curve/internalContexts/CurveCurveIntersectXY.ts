@@ -38,6 +38,7 @@ import { LineSegment3d } from "../LineSegment3d";
 import { LineString3d } from "../LineString3d";
 import { Loop } from "../Loop";
 import { Path } from "../Path";
+import { ProxyCurve } from "../ProxyCurve";
 
 // cspell:word XYRR
 /**
@@ -90,7 +91,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     super();
     this._extendA0 = extendA;
     this._extendA1 = extendA;
-    this._geometryB = geometryB;
+    this._geometryB = geometryB instanceof ProxyCurve ? geometryB.proxyCurve : geometryB;
     this._extendB0 = extendB;
     this._extendB1 = extendB;
     this._worldToLocalPerspective = undefined;
@@ -582,7 +583,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         let bezier: BezierCurve3dH | undefined;
         for (let spanIndex = 0; ; spanIndex++) {
           bezier = cpB.getSaturatedBezierSpan3dH(spanIndex, bezier);
-          if (!bezier) break;
+          if (!bezier)
+            break;
           if (this._worldToLocalPerspective)
             bezier.tryMultiplyMatrix4dInPlace(this._worldToLocalPerspective);
           else if (this._worldToLocalAffine)
