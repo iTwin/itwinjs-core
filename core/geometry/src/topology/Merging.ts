@@ -355,13 +355,21 @@ export class HalfEdgeGraphMerge {
   public static isNullFace(node: HalfEdge): boolean {
     return node.isMaskSet(HalfEdgeMask.NULL_FACE) && node.faceSuccessor.isMaskSet(HalfEdgeMask.NULL_FACE) && node === node.faceSuccessor.faceSuccessor;
   }
-  /** Simplest merge algorithm:
-   * * collect array of (x,y,theta) at all nodes
-   * * lexical sort of the array.
-   * * twist all vertices together.
-   * * This effectively creates valid face loops for a planar subdivision if there are no edge crossings.
-   * * If there are edge crossings, the graph can be a (highly complicated) Klein bottle topology.
-   * * Mask.NULL_FACE is cleared throughout and applied within null faces.
+  /**
+   * Cluster the HalfEdges so that xy-coordinates within `mergeTolerance` are equated.
+   * * Note that any additional data (e.g., edgeTag, faceTag) on the HalfEdges are ignored. In particular,
+   * [[CurveLocationDetail]]s attached to clustered HalfEdges do *not* get their points adjusted.
+   * * This is a simple merge algorithm:
+   *   * untwist all edges from the vertex loops
+   *   * collect array of (x,y,theta) at all nodes
+   *   * lexical sort of the array
+   *   * twist all edges together in sort order around each vertex
+   *   * This effectively creates valid face loops for a planar subdivision if there are no edge crossings.
+   *   * If there are edge crossings, the graph can be a (highly complicated) Klein bottle topology.
+   *   * [[HalfEdgeMask.NULL_FACE]] is cleared throughout and applied within null faces.
+   * @param graph input graph
+   * @param outboundRadiansFunction optional function to compute the sort angle of an edge at its start vertex
+   * @param clusterTol optional distance tolerance for clustering vertices. Default value is [[Geometry.smallMetricDistance]].
    */
   public static clusterAndMergeXYTheta(
     graph: HalfEdgeGraph,
@@ -424,15 +432,12 @@ export class HalfEdgeGraphMerge {
     const unmatchedNullFaceNodes: HalfEdge[] = [];
     k0 = 0;
     let thetaA, thetaB;
-    // GeometryCoreTestIO.consoleLog("START VERTEX LINKS");
 
     // now pinch each neighboring pair together
     for (let k1 = 0; k1 < numK; k1++) {
       if (order[k1] === ClusterableArray.clusterTerminator) {
         // nodes identified in order[k0]..order[k1-1] are properly sorted around a vertex.
         if (k1 > k0) {
-          // const xy = clusters.getPoint2d(order[k0]);
-          // GeometryCoreTestIO.consoleLog({ k0, k1, x: xy.x, y: xy.y });
           if (k1 > k0 + 1)
             this.secondarySortAroundVertex(clusters, order, allNodes, k0, k1);
           this.doAnnounceVertexNeighborhood(clusters, order, allNodes, k0, k1);

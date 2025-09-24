@@ -54,7 +54,6 @@ import { RegionMomentsXY } from "./RegionMomentsXY";
 import { RegionBooleanContext, RegionGroupOpType, RegionOpsFaceToFaceSearch } from "./RegionOpsClassificationSweeps";
 import { StrokeOptions } from "./StrokeOptions";
 import { UnionRegion } from "./UnionRegion";
-import { sign } from "crypto";
 
 /**
  * * `properties` is a string with special characters indicating
@@ -873,13 +872,15 @@ export class RegionOps {
     if (addBridges) { // generate a temp graph to extract its bridge edges
       const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
       const regions = this.collectRegionsAndClosedPrimitives(curvesAndRegions, tolerance);
-      context.addMembers(regions, undefined);
-      context.annotateAndMergeCurvesInGraph(tolerance);
-      context.graph.announceEdges((_graph, edge: HalfEdge) => {
-        if (edge.isMaskSet(HalfEdgeMask.BRIDGE_EDGE))
-          primitives.push(LineSegment3d.create(edge.getPoint3d(), edge.faceSuccessor.getPoint3d()));
-        return true;
-      });
+      if (regions.length > 0) {
+        context.addMembers(regions, undefined);
+        context.annotateAndMergeCurvesInGraph(tolerance);
+        context.graph.announceEdges((_graph, edge: HalfEdge) => {
+          if (edge.isMaskSet(HalfEdgeMask.BRIDGE_EDGE))
+            primitives.push(LineSegment3d.create(edge.getPoint3d(), edge.faceSuccessor.getPoint3d()));
+          return true;
+        });
+      }
     }
     const intersections = CurveCurve.allIntersectionsAmongPrimitivesXY(primitives, tolerance);
     const graph = PlanarSubdivision.assembleHalfEdgeGraph(primitives, intersections, tolerance);

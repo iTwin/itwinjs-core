@@ -93,8 +93,11 @@ class MapCurvePrimitiveToCurveLocationDetailPairArray {
  */
 export class PlanarSubdivision {
   /**
-   * Create a graph from an array of curves, and an array of the curves' precomputed intersections.
-   * Z-coordinates are ignored.
+   * Create a graph from curves and precomputed intersections.
+   * * Z-coordinates are ignored.
+   * @param primitives input curves
+   * @param allPairs array of curve-curve xy-intersections
+   * @param mergeTolerance optional distance tolerance for clustering vertices. Default value is [[Geometry.smallMetricDistance]].
    */
   public static assembleHalfEdgeGraph(
     primitives: CurvePrimitive[],
