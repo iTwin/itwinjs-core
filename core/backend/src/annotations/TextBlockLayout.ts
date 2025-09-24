@@ -157,7 +157,7 @@ function scaleRange(range: Range2d, scale: number): void {
 }
 
 /**
- * Applies block level settings (lineSpacingFactor, paragraphSpacingFactor, widthFactor, frame, and leader) to a [TextStyleSettings]($common).
+ * Applies block level settings (lineSpacingFactor, paragraphSpacingFactor, widthFactor, frame, margins, and leader) to a [TextStyleSettings]($common).
  * These must be set on the block, as they are meaningless on individual paragraphs/runs.
  * However, leaders are a special case and can override the block's leader settings.
  * Setting `isLeader` to `true` makes the [TextBlock]($common) settings not override the leader's settings.
@@ -172,6 +172,7 @@ function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings
   const paragraphSpacingFactor = source.paragraphSpacingFactor ?? target.paragraphSpacingFactor;
   const widthFactor = source.widthFactor ?? target.widthFactor;
   const frame = source.frame ?? target.frame;
+  const margins = source.margins ?? target.margins;
   const leader = source.leader ?? target.leader;
 
   const leaderShouldChange = !isLeader && !target.leaderEquals(leader);
@@ -180,6 +181,7 @@ function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings
       paragraphSpacingFactor !== target.paragraphSpacingFactor ||
       widthFactor !== target.widthFactor ||
       !target.frameEquals(frame) ||
+      !target.marginsEqual(margins) ||
       leaderShouldChange
   ) {
     const cloneProps: TextStyleSettingsProps = {
@@ -187,6 +189,7 @@ function applyBlockSettings(target: TextStyleSettings, source: TextStyleSettings
       paragraphSpacingFactor,
       widthFactor,
       frame,
+      margins,
     };
 
     if (leaderShouldChange) {
@@ -699,7 +702,7 @@ export class TextBlockLayout {
 
     this.populateLines(context);
     this.justifyLines();
-    this.applyMargins(source.margins);
+    this.applyMargins(context.textStyleResolver.blockSettings.margins);
   }
 
   public toResult(): TextBlockLayoutResult {
@@ -930,7 +933,7 @@ export class TextBlockLayout {
     }
   }
 
-  private applyMargins(margins: TextBlockMargins) {
+  private applyMargins(margins: Required<TextBlockMargins>) {
     this.range = this.textRange.clone();
 
     if (this.range.isNull)

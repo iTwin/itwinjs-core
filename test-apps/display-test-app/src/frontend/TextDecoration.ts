@@ -61,6 +61,7 @@ class TextEditor implements Decorator {
     "textHeight" |
     "widthFactor" |
     "lineSpacingFactor" |
+    "margins" |
     "frame"> {
     return this.textBlock.styleOverrides;
   }
@@ -213,12 +214,12 @@ class TextEditor implements Decorator {
     this.textBlock.justification = justification;
   }
 
-  public setMargins(margins: Partial<TextBlockMargins>): void {
-    this.textBlock.margins = {
-      left: margins.left ?? this.textBlock.margins.left,
-      right: margins.right ?? this.textBlock.margins.right,
-      top: margins.top ?? this.textBlock.margins.top,
-      bottom: margins.bottom ?? this.textBlock.margins.bottom,
+  public setMargins(margins: TextBlockMargins): void {
+    this.documentStyle.margins = {
+      left: margins.left ?? 0,
+      right: margins.right ?? 0,
+      top: margins.top ?? 0,
+      bottom: margins.bottom ?? 0,
     };
   }
 

@@ -32,6 +32,12 @@ describe("TextStyleSettings", () => {
       borderColor: ColorDef.red.tbgr,
       borderWeight: 2,
     },
+    margins: {
+      left: 1,
+      right: 1,
+      top: 1,
+      bottom: 1,
+    },
     leader: {
       color: 0xff007f,
       wantElbow: false,

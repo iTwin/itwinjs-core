@@ -56,6 +56,20 @@ export type TextAnnotationFrameShape = typeof textAnnotationFrameShapes[number];
  */
 export type TextAnnotationFillColor = TextStyleColor | "background" | "none";
 
+/** Describes the margins around the content inside a [[TextBlock]]. It's measured in meters.
+ * @beta
+ */
+export interface TextBlockMargins {
+  /** The left margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
+  left?: number;
+  /** The right margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
+  right?: number;
+  /** The top margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
+  top?: number;
+  /** The bottom margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
+  bottom?: number;
+};
+
 /** Specifies how to separate the numerator and denominator of a [[FractionRun]], by either a horizontal or diagonal bar.
  * @see [[TextStyleSettingsProps.stackedFractionType]] and [[TextStyleSettings.stackedFractionType]].
  * @beta
@@ -209,6 +223,9 @@ export interface TextStyleSettingsProps {
    * Default: {shape: "none", fill: "none", border: black, borderWeight: 1} for no frame.
    */
   frame?: TextFrameStyleProps;
+  /** The margins to surround the document content.
+   * Default: 0 margins on all sides */
+  margins?: TextBlockMargins;
   /** The offset (in meters) from the left edge of the text block to the start of the line of text.
    * In lists, the indentation is added to offset of list items.
    * The [[listMarker]] is right justified on [[indentation]] + [[tabInterval]]*(depth - 1/2).
@@ -245,7 +262,7 @@ export class TextStyleSettings {
   public readonly color: TextStyleColor;
   /** The font stored in an iModel, used to draw the contents of a [[TextRun]].
    */
-  public readonly font: FontFamilySelector;
+  public readonly font: Readonly<Required<FontFamilySelector>>;
   /** The height of the text, in meters. Many other settings use the text height as the basis for computing their own values.
    * For example, the height and offset from baseline of a subscript [[TextRun]]  are computed as textHeight * [[subScriptScale]] and
    * textHeight * [[subScriptOffsetFactor]], respectively.
@@ -312,6 +329,8 @@ export class TextStyleSettings {
   public readonly listMarker: ListMarker;
   /** The frame settings of the [[TextAnnotation]]. */
   public readonly frame: Readonly<Required<TextFrameStyleProps>>;
+  /** The margins to surround the document content. */
+  public readonly margins: Readonly<Required<TextBlockMargins>>;
 
   /** A fully-populated JSON representation of the default settings. A real `font` must be provided before use. */
   public static defaultProps: DeepReadonlyObject<DeepRequiredObject<TextStyleSettingsProps>> = {
@@ -345,6 +364,12 @@ export class TextStyleSettings {
       fillColor: "none",
       borderColor: ColorDef.black.toJSON(),
       borderWeight: 1,
+    },
+    margins: {
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0
     },
   };
 
@@ -386,7 +411,6 @@ export class TextStyleSettings {
     this.tabInterval = props.tabInterval ?? defaults.tabInterval;
     this.indentation = props.indentation ?? defaults.indentation;
     this.listMarker = props.listMarker ?? defaults.listMarker;
-
     const frame = {
       shape: props.frame?.shape ?? defaults.frame.shape,
       fillColor: props.frame?.fillColor ?? defaults.frame.fillColor,
@@ -395,6 +419,12 @@ export class TextStyleSettings {
     };
     // Cast to indicate to TypeScript that the frame properties are all defined
     this.frame = Object.freeze(frame) as Readonly<Required<TextFrameStyleProps>>;
+    this.margins = Object.freeze({
+      left: props.margins?.left ?? defaults.margins.left,
+      right: props.margins?.right ?? defaults.margins.right,
+      top: props.margins?.top ?? defaults.margins.top,
+      bottom: props.margins?.bottom ?? defaults.margins.bottom,
+    }) as Readonly<Required<TextBlockMargins>>;
   }
 
   /** Create a copy of these settings, modified according to the properties defined by `alteredProps`. */
@@ -414,6 +444,9 @@ export class TextStyleSettings {
     if (props.font) {
       copy.font = { ...props.font };
     }
+    if (props.margins) {
+      copy.margins = { ...props.margins };
+    }
     return copy;
   }
 
@@ -423,7 +456,7 @@ export class TextStyleSettings {
   }
 
   public toJSON(): TextStyleSettingsProps {
-    return { ...this };
+    return TextStyleSettings.cloneProps(this);
   }
 
   /** Compare two [[TextLeaderStyleProps]] for equality.
@@ -443,6 +476,12 @@ export class TextStyleSettings {
       && this.frame?.borderWeight === other.borderWeight;
   }
 
+  public marginsEqual(other: TextBlockMargins): boolean {
+    return Object.entries(this.margins).every(([key, value]) =>
+      value === (other as any)[key]
+    );
+  }
+
   public equals(other: TextStyleSettings): boolean {
     return this.color === other.color && this.font.name === other.font.name && this.font.type === other.font.type
       && this.textHeight === other.textHeight && this.widthFactor === other.widthFactor
@@ -455,6 +494,7 @@ export class TextStyleSettings {
       && this.listMarker.case === other.listMarker.case && this.listMarker.enumerator === other.listMarker.enumerator && this.listMarker.terminator === other.listMarker.terminator
       && this.leaderEquals(other.leader)
       && this.frameEquals(other.frame)
+      && this.marginsEqual(other.margins);
   }
 
   /**

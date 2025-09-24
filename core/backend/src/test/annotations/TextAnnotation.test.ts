@@ -34,13 +34,12 @@ function mockIModel(): IModelDb {
 }
 
 function createAnnotation(textBlock?: TextBlock): TextAnnotation {
-  const styleOverrides = { font: { name: "Karla" } };
+  const styleOverrides = { font: { name: "Karla" }, margins: { left: 0, right: 1, top: 2, bottom: 3 } };
   const block = textBlock ?? TextBlock.create({ styleOverrides });
   if (!textBlock) {
     block.appendRun(TextRun.create({ content: "Run, Barry,", styleOverrides }));
     block.appendRun(TextRun.create({ content: " RUN!!! ", styleOverrides }));
     block.appendRun(FractionRun.create({ numerator: "Harrison", denominator: "Wells", styleOverrides }));
-    block.margins = { left: 0, right: 1, top: 2, bottom: 3 };
   }
 
   const annotation = TextAnnotation.fromJSON({ textBlock: block.toJSON() });
@@ -711,12 +710,12 @@ describe("appendTextAnnotationGeometry", () => {
 
   it("accounts for style overrides in the text", () => {
     const block = TextBlock.create();
+    block.styleOverrides = { margins: { left: 0, right: 1, top: 2, bottom: 3 }}
     block.appendParagraph();
     block.children[0].styleOverrides = { isBold: true };
     block.appendRun(TextRun.create({ content: "Run, Barry," }));
     block.appendParagraph();
     block.appendRun(TextRun.create({ content: " RUN!!! ", styleOverrides: { isItalic: false } }));
-    block.margins = { left: 0, right: 1, top: 2, bottom: 3 };
 
     const annotation = createAnnotation(block);
 
@@ -738,7 +737,6 @@ describe("appendTextAnnotationGeometry", () => {
   it("uses TextStyleSettings.defaults when no default style is provided", () => {
     const block = TextBlock.create();
     block.appendRun(TextRun.create({ content: "Run, Barry," }));
-    block.margins = { left: 0, right: 1, top: 2, bottom: 3 };
 
     const annotation = createAnnotation(block);
     const builder = runAppendTextAnnotationGeometry(annotation, "");

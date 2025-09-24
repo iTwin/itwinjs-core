@@ -680,25 +680,10 @@ export class List extends TextBlockComponent {
   }
 }
 
-
 /** Describes the relative alignment of the content of a [[TextBlock]].
  * @beta
  */
 export type TextBlockJustification = "left" | "center" | "right";
-
-/** Describes the margins around the content inside a [[TextBlock]]. It's measured in meters.
- * @beta
- */
-export interface TextBlockMargins {
-  /** The left margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
-  left: number;
-  /** The right margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
-  right: number;
-  /** The top margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
-  top: number;
-  /** The bottom margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
-  bottom: number;
-};
 
 /** JSON representation of a [[TextBlock]].
  * @beta
@@ -711,8 +696,6 @@ export interface TextBlockProps extends TextBlockComponentProps {
   width?: number;
   /** The alignment of the document content. Default: "left". */
   justification?: TextBlockJustification;
-  /** The margins to surround the document content. Default: 0 margins on all sides */
-  margins?: Partial<TextBlockMargins>;
   children?: ParagraphProps[];
 }
 
@@ -731,21 +714,11 @@ export class TextBlock extends TextBlockComponent {
   public width: number;
   /** The alignment of the document's content. */
   public justification: TextBlockJustification;
-  /** The margins of the document. */
-  public margins: TextBlockMargins;
 
   private constructor(props: TextBlockProps) {
     super(props);
     this.width = props.width ?? 0;
     this.justification = props.justification ?? "left";
-
-    // Assign default margins if not provided
-    this.margins = {
-      left: props.margins?.left ?? 0,
-      right: props.margins?.right ?? 0,
-      top: props.margins?.top ?? 0,
-      bottom: props.margins?.bottom ?? 0,
-    };
 
     this.children = props?.children?.map((para) => Paragraph.create(para)) ?? [];
   }
@@ -759,7 +732,6 @@ export class TextBlock extends TextBlockComponent {
       ...super.toJSON(),
       width: this.width,
       justification: this.justification,
-      margins: this.margins,
       children: this.children.map((x) => x.toJSON()),
     };
   }
@@ -816,12 +788,6 @@ export class TextBlock extends TextBlockComponent {
     if (this.width !== other.width || this.justification !== other.justification) {
       return false;
     }
-
-    const marginsAreEqual = Object.entries(this.margins).every(([key, value]) =>
-      value === (other.margins as any)[key]
-    );
-
-    if (!marginsAreEqual) return false;
 
     if (this.children && other.children) {
       if (this.children.length !== other.children.length) {

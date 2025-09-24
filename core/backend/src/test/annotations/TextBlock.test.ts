@@ -139,8 +139,8 @@ describe("layoutTextBlock", () => {
     });
 
     it("does not inherit overrides in TextBlock or Paragraph when Run has same propertied overriden - unless they are TextBlock specific settings", () => {
-      const textBlock = TextBlock.create({ styleOverrides: { widthFactor: 34, textHeight: 3, lineSpacingFactor: 12, paragraphSpacingFactor: 2, isBold: true } });
-      const run = TextRun.create({ content: "test", styleOverrides: { widthFactor: 78, textHeight: 6, paragraphSpacingFactor: 25, lineSpacingFactor: 24, font: { name: "override" }, isBold: false } });
+      const textBlock = TextBlock.create({ styleOverrides: { widthFactor: 34, margins: { left: 3 }, textHeight: 3, lineSpacingFactor: 12, paragraphSpacingFactor: 2, isBold: true } });
+      const run = TextRun.create({ content: "test", styleOverrides: { widthFactor: 78, margins: { left: 4, right: 3 }, textHeight: 6, paragraphSpacingFactor: 25, lineSpacingFactor: 24, font: { name: "override" }, isBold: false } });
       textBlock.appendParagraph({ styleOverrides: { textHeight: 56, paragraphSpacingFactor: 50, color: 0xff0000 } });
       textBlock.appendRun(run);
 
@@ -159,6 +159,9 @@ describe("layoutTextBlock", () => {
       expect(runStyle.paragraphSpacingFactor).to.equal(2);
       // lineSpacingFactor is always taken from the TextBlock, even if the Run has a styleId or overrides
       expect(runStyle.lineSpacingFactor).to.equal(12);
+      // margins are always taken from the TextBlock, even if the Paragraph or Run has overrides
+      expect(runStyle.margins.left).to.equal(3);
+      expect(runStyle.margins.right).to.equal(0);
       expect(runStyle.font.name).to.equal("override");
       expect(runStyle.color).to.equal(0xff0000);
       expect(runStyle.isBold).to.be.false;
@@ -295,45 +298,49 @@ describe("layoutTextBlock", () => {
   });
 
   it("adds margins", function () {
-    const expectMargins = (layoutRange: Range2d, marginRange: Range2d, margins: Partial<TextBlockMargins>) => {
+    const expectMargins = (layoutRange: Range2d, marginRange: Range2d, margins: TextBlockMargins) => {
       expect(marginRange.low.x).to.equal(layoutRange.low.x - (margins.left ?? 0));
       expect(marginRange.high.x).to.equal(layoutRange.high.x + (margins.right ?? 0));
       expect(marginRange.low.y).to.equal(layoutRange.low.y - (margins.bottom ?? 0));
       expect(marginRange.high.y).to.equal(layoutRange.high.y + (margins.top ?? 0));
     }
 
-    const makeTextBlock = (margins: Partial<TextBlockMargins>) => {
-      const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor: 0 }, margins });
-      textBlock.appendRun(makeTextRun("abc"));
-      textBlock.appendRun(makeTextRun("defg"));
-      return textBlock;
+    const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor: 0 } });
+    textBlock.appendRun(makeTextRun("abc"));
+    textBlock.appendRun(makeTextRun("defg"));
+
+    const marginStyleCallback = (margins: TextBlockMargins) => {
+      return () => TextStyleSettings.fromJSON({ margins: { ...margins } })
     }
 
-    let block = makeTextBlock({});
-    let layout = doLayout(block);
+    let layout = doLayout(textBlock, {
+      findTextStyle: marginStyleCallback({}),
+    });
 
     // Margins should be 0 by default
     expect(layout.range.isAlmostEqual(layout.textRange)).to.be.true;
     expectMargins(layout.textRange, layout.range, {});
 
     // All margins should be applied to the range
-    block = makeTextBlock({ left: 1, right: 2, top: 3, bottom: 4 })
-    layout = doLayout(block);
+    layout = doLayout(textBlock, {
+      findTextStyle: marginStyleCallback({ left: 1, right: 2, top: 3, bottom: 4 }),
+    });
 
     expectMargins(layout.textRange, layout.range, { left: 1, right: 2, top: 3, bottom: 4 });
 
     // Just horizontal margins should be applied
-    block = makeTextBlock({ left: 1, right: 2 });
-    layout = doLayout(block);
+    layout = doLayout(textBlock, {
+      findTextStyle: marginStyleCallback({ left: 1, right: 2 }),
+    });
 
     expectMargins(layout.textRange, layout.range, { left: 1, right: 2 });
 
     // Just vertical margins should be applied
-    block = makeTextBlock({ top: 1, bottom: 2 });
-    layout = doLayout(block);
+    layout = doLayout(textBlock, {
+      findTextStyle: marginStyleCallback({ top: 1, bottom: 2 }),
+    });
 
     expectMargins(layout.textRange, layout.range, { top: 1, bottom: 2 });
-
   });
 
   describe("range", () => {
@@ -1875,16 +1882,17 @@ describe("produceTextBlockGeometry", () => {
     function makeGeometryWithMargins(anchor: TextAnnotationAnchor, margins: TextBlockMargins): TextStringProps | undefined {
       const runs = [makeText()];
       const block = makeTextBlock(runs);
-      block.margins = margins;
       const annotation = TextAnnotation.fromJSON({ textBlock: block.toJSON() });
       annotation.anchor = anchor;
-      const layout = doLayout(block);
+      const layout = doLayout(block, {
+        findTextStyle: () => TextStyleSettings.fromJSON({ margins: { ...margins } }),
+      });
       const geom = produceTextBlockGeometry(layout, annotation.computeTransform(layout.range)).entries;
 
       return geom[1].text;
     }
 
-    function testMargins(margins: TextBlockMargins, height: number, width: number) {
+    function testMargins(margins: Required<TextBlockMargins>, height: number, width: number) {
       // We want to disregard negative margins. Note, I'm not changing the margins object itself. It gets passed into makeGeometryWithMargins as it is.
       const left = margins.left >= 0 ? margins.left : 0;
       const right = margins.right >= 0 ? margins.right : 0;
