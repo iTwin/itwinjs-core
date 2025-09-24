@@ -10,6 +10,7 @@ import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { Arc3d } from "../../curve/Arc3d";
+import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection";
 import { CurveFactory } from "../../curve/CurveFactory";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
@@ -1182,6 +1183,33 @@ describe("RegionOps", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "constructAllXYRegionLoops");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("constructAllXYRegionLoops2", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let z0 = 0;
+    const gap = 0.0304;
+    const line = LineSegment3d.create(Point3d.create(0, 9), Point3d.create(10, 1));
+    const length = line.curveLength();
+    const path = CurveChainWithDistanceIndex.createCapture(Path.create(line));
+    const curves: AnyCurve[] = [];
+    curves.push(LineSegment3d.create(Point3d.create(-1, -1), Point3d.create(6, 6)));
+    curves.push(LineString3d.create(Point3d.create(-2, 1), Point3d.create(6, -3), Point3d.create(10, 1)));
+    curves.push(LineSegment3d.create(line.startPoint(), path.moveSignedDistanceFromFraction(0, length - gap, false).point));
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curves);
+    for (const tol of [undefined, 0.1, 0.5]) {
+      const signedLoops = RegionOps.constructAllXYRegionLoops(curves, tol);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoops.map((component) => component.positiveAreaLoops).flat(), 0, 0, z0 += 10);
+      ck.testExactNumber(1, signedLoops.length, "connected curves result in one component");
+      if (tol === undefined || tol < gap)
+        ck.testExactNumber(0, signedLoops[0].positiveAreaLoops.length, `tol < gap results in no positive loops`);
+      else
+        ck.testExactNumber(1, signedLoops[0].positiveAreaLoops.length, `tol ${tol} results in 1 positive loop`);
+      // NOTE: the negative area loop has danglers! This is WAD.
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "constructAllXYRegionLoops2");
     expect(ck.getNumErrors()).toBe(0);
   });
 
