@@ -870,3 +870,22 @@ describe("Field evaluation", () => {
     });
   });
 });
+
+describe.only("Field cloning", () => {
+
+  it("remaps field hosts", () => {
+
+  });
+
+  it("invalidates field hosts and fields if source element is not cloned", () => {
+
+  });
+
+  it("remaps field host and re-evaluates fields if source element is cloned", () => {
+
+  });
+
+  it("does nothing if cloning within the same iModel", () => {
+
+  });
+});
