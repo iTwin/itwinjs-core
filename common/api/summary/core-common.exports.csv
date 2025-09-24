@@ -936,13 +936,13 @@ beta;class;TextBlockComponent
 beta;interface;TextBlockComponentProps
 beta;interface;TextBlockGeometryProps
 beta;type;TextBlockGeometryPropsEntry
-beta;type;TextBlockJustification
 beta;interface;TextBlockLayoutResult
 beta;interface;TextBlockMargins
 beta;interface;TextBlockProps
 beta;interface;TextBlockStringifyContext
 beta;interface;TextBlockStringifyOptions
 beta;interface;TextFrameStyleProps
+beta;type;TextJustification
 beta;interface;TextLeaderStyleProps
 beta;class;TextRun
 beta;interface;TextRunProps
