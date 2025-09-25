@@ -84,11 +84,11 @@ export abstract class TextBlockComponent {
 
   /** @internal */
   protected constructor(props?: TextBlockComponentProps) {
-    this._styleOverrides = TextStyleSettings.cloneProps(props?.styleOverrides ?? {});
+    this._styleOverrides = structuredClone(props?.styleOverrides ?? {});
   }
 
   /** Deviations in individual properties of the [[TextStyleSettings]] in the [AnnotationTextStyle]($backend).
-   * For example, if the style uses the "Arial" font, you can override that by settings `styleOverrides.fontName` to "Comic Sans".
+   * For example, if the style uses the "Arial" font, you can override that by settings `styleOverrides.font.name` to "Comic Sans".
    * @see [[clearStyleOverrides]] to reset this to an empty object.
    */
   public get styleOverrides(): TextStyleSettingsProps {
@@ -96,7 +96,7 @@ export abstract class TextBlockComponent {
   }
 
   public set styleOverrides(overrides: TextStyleSettingsProps) {
-    this._styleOverrides = TextStyleSettings.cloneProps(overrides);
+    this._styleOverrides = structuredClone(overrides);
   }
 
   /** Reset any [[styleOverrides]] applied to this component. */
@@ -129,26 +129,15 @@ export abstract class TextBlockComponent {
   /** Convert this component to its JSON representation. */
   public toJSON(): TextBlockComponentProps {
     return {
-      styleOverrides: TextStyleSettings.cloneProps(this.styleOverrides),
+      styleOverrides: structuredClone(this.styleOverrides),
     };
   }
 
   /** Returns true if `this` is equivalent to `other`. */
   public equals(other: TextBlockComponent): boolean {
-    const myKeys = Object.keys(this.styleOverrides);
-    const yrKeys = Object.keys(other._styleOverrides);
-    if (myKeys.length !== yrKeys.length) {
-      return false;
-    }
-
-    for (const name of myKeys) {
-      const key = name as keyof TextStyleSettingsProps;
-      if (this.styleOverrides[key] !== other.styleOverrides[key]) {
-        return false;
-      }
-    }
-
-    return true;
+    const mySettings = TextStyleSettings.fromJSON(this.styleOverrides);
+    const otherSettings = TextStyleSettings.fromJSON(other.styleOverrides);
+    return mySettings.equals(otherSettings);
   }
 }
 
@@ -691,26 +680,6 @@ export class List extends TextBlockComponent {
   }
 }
 
-
-/** Describes the relative alignment of the content of a [[TextBlock]].
- * @beta
- */
-export type TextBlockJustification = "left" | "center" | "right";
-
-/** Describes the margins around the content inside a [[TextBlock]]. It's measured in meters.
- * @beta
- */
-export interface TextBlockMargins {
-  /** The left margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
-  left: number;
-  /** The right margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
-  right: number;
-  /** The top margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
-  top: number;
-  /** The bottom margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
-  bottom: number;
-};
-
 /** JSON representation of a [[TextBlock]].
  * @beta
  */
@@ -720,10 +689,6 @@ export interface TextBlockProps extends TextBlockComponentProps {
    * Default: 0
    */
   width?: number;
-  /** The alignment of the document content. Default: "left". */
-  justification?: TextBlockJustification;
-  /** The margins to surround the document content. Default: 0 margins on all sides */
-  margins?: Partial<TextBlockMargins>;
   children?: ParagraphProps[];
 }
 
@@ -740,23 +705,10 @@ export class TextBlock extends TextBlockComponent {
    * Default: 0
    */
   public width: number;
-  /** The alignment of the document's content. */
-  public justification: TextBlockJustification;
-  /** The margins of the document. */
-  public margins: TextBlockMargins;
 
   private constructor(props: TextBlockProps) {
     super(props);
     this.width = props.width ?? 0;
-    this.justification = props.justification ?? "left";
-
-    // Assign default margins if not provided
-    this.margins = {
-      left: props.margins?.left ?? 0,
-      right: props.margins?.right ?? 0,
-      top: props.margins?.top ?? 0,
-      bottom: props.margins?.bottom ?? 0,
-    };
 
     this.children = props?.children?.map((para) => Paragraph.create(para)) ?? [];
   }
@@ -769,8 +721,6 @@ export class TextBlock extends TextBlockComponent {
     return {
       ...super.toJSON(),
       width: this.width,
-      justification: this.justification,
-      margins: this.margins,
       children: this.children.map((x) => x.toJSON()),
     };
   }
@@ -824,15 +774,9 @@ export class TextBlock extends TextBlockComponent {
       return false;
     }
 
-    if (this.width !== other.width || this.justification !== other.justification) {
+    if (this.width !== other.width) {
       return false;
     }
-
-    const marginsAreEqual = Object.entries(this.margins).every(([key, value]) =>
-      value === (other.margins as any)[key]
-    );
-
-    if (!marginsAreEqual) return false;
 
     if (this.children && other.children) {
       if (this.children.length !== other.children.length) {

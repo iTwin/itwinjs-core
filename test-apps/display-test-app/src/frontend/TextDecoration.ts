@@ -22,10 +22,10 @@ import {
   TextAnnotationLeader,
   TextAnnotationProps,
   TextBlock,
-  TextBlockJustification,
   TextBlockMargins,
   TextBlockProps,
   TextFrameStyleProps,
+  TextJustification,
   TextRun,
   TextStyleSettingsProps,
 } from "@itwin/core-common";
@@ -58,10 +58,12 @@ class TextEditor implements Decorator {
   // Properties applied to the entire document
   public get documentStyle(): Pick<
     TextStyleSettingsProps,
-    "lineHeight" |
+    "textHeight" |
     "widthFactor" |
     "lineSpacingFactor" |
-    "frame"> {
+    "margins" |
+    "frame" |
+    "justification"> {
     return this.textBlock.styleOverrides;
   }
 
@@ -106,14 +108,14 @@ class TextEditor implements Decorator {
     if (last.type === "paragraph") {
       last.children.push(run);
     } else {
-      last.children.push(Paragraph.create({ styleOverrides: { fontName: this.runStyle.fontName } }));
+      last.children.push(Paragraph.create({ styleOverrides: { font: { name: this.runStyle.font?.name ?? "Arial" } } }));
       last.children[last.children.length - 1].children.push(run);
     }
     return last;
   }
 
   // Properties to be applied to the next run
-  public runStyle: Omit<TextStyleSettingsProps, "lineHeight" | "widthFactor" | "lineSpacingFactor"> = { fontName: "Arial" };
+  public runStyle: Omit<TextStyleSettingsProps, "widthFactor" | "lineSpacingFactor"> = { font: { name: "Arial" } };
   public baselineShift: BaselineShift = "none";
 
   public textBlock = TextBlock.create();
@@ -141,7 +143,7 @@ class TextEditor implements Decorator {
     this.offset.x = this.offset.y = 0;
     this.anchor = { horizontal: "center", vertical: "middle" };
     this.debugAnchorPointAndRange = false;
-    this.runStyle = { fontName: "Arial" };
+    this.runStyle = { font: { name: "Arial" } };
     this.baselineShift = "none";
     this.leaders = [];
   }
@@ -175,7 +177,7 @@ class TextEditor implements Decorator {
   }
 
   public appendList(index: number = 0, listMarker?: ListMarker): void {
-    const list = List.create({ styleOverrides: { fontName: this.runStyle.fontName, ...this.runStyle, listMarker } });
+    const list = List.create({ styleOverrides: { font: {name: this.runStyle.font?.name ?? "Arial" }, ...this.runStyle, listMarker } });
 
     const path = this.pathToLastChild().filter(component => component.type === "paragraph");
     const child = path[index];
@@ -185,7 +187,7 @@ class TextEditor implements Decorator {
   public appendListItem(index: number = 0): void {
     const lists = this.pathToLastChild().filter(component => component.type === "list");
     const list = lists[index];
-    const item = Paragraph.create({ styleOverrides: { fontName: this.runStyle.fontName, ...this.runStyle } });
+    const item = Paragraph.create({ styleOverrides: { font: { name: this.runStyle.font?.name ?? "Arial" }, ...this.runStyle } });
     list?.children.push(item);
   }
 
@@ -209,16 +211,16 @@ class TextEditor implements Decorator {
     this.textBlock.width = width;
   }
 
-  public justify(justification: TextBlockJustification): void {
-    this.textBlock.justification = justification;
+  public justify(justification: TextJustification): void {
+    this.documentStyle.justification = justification;
   }
 
-  public setMargins(margins: Partial<TextBlockMargins>): void {
-    this.textBlock.margins = {
-      left: margins.left ?? this.textBlock.margins.left,
-      right: margins.right ?? this.textBlock.margins.right,
-      top: margins.top ?? this.textBlock.margins.top,
-      bottom: margins.bottom ?? this.textBlock.margins.bottom,
+  public setMargins(margins: TextBlockMargins): void {
+    this.documentStyle.margins = {
+      left: margins.left ?? 0,
+      right: margins.right ?? 0,
+      top: margins.top ?? 0,
+      bottom: margins.bottom ?? 0,
     };
   }
 
@@ -338,7 +340,7 @@ export class TextDecorationTool extends Tool {
         editor.offset.y = Number(inArgs[2]);
         break;
       case "font":
-        editor.runStyle.fontName = arg;
+        editor.runStyle.font = { name: arg };
         break;
       case "text":
         editor.appendText(arg);
@@ -347,7 +349,6 @@ export class TextDecorationTool extends Tool {
         if (inArgs.length !== 3) {
           throw new Error("Expected numerator and denominator");
         }
-
         editor.appendFraction(inArgs[1], inArgs[2]);
         break;
       case "break":
@@ -363,8 +364,11 @@ export class TextDecorationTool extends Tool {
       case "color":
         editor.runStyle.color = ColorDef.fromString(arg).toJSON();
         break;
-      case "height":
-        editor.documentStyle.lineHeight = Number.parseFloat(arg);
+      case "docheight":
+        editor.documentStyle.textHeight = Number.parseFloat(arg);
+        break;
+      case "textheight":
+        editor.runStyle.textHeight = Number.parseFloat(arg);
         break;
       case "widthfactor":
         editor.documentStyle.widthFactor = Number.parseFloat(arg);
@@ -511,12 +515,11 @@ export class TextDecorationTool extends Tool {
         const key = inArgs[1];
         const val = inArgs[2];
         const frame: TextFrameStyleProps = editor.documentStyle.frame ?? { shape: "none" };
-        if (key === "fill") frame.fill = (val === "background" || val === "subcategory") ? val : val ? ColorDef.fromString(val).toJSON() : undefined;
-        else if (key === "border") frame.border = val ? ColorDef.fromString(val).toJSON() : undefined;
+        if (key === "fillColor") frame.fillColor = (val === "background" || val === "subcategory") ? val : val ? ColorDef.fromString(val).toJSON() : undefined;
+        else if (key === "borderColor") frame.borderColor = val ? ColorDef.fromString(val).toJSON() : undefined;
         else if (key === "borderWeight") frame.borderWeight = Number(val);
         else if (key === "shape") frame.shape = val as TextAnnotationFrameShape;
-        else throw new Error("Expected shape, fill, border, borderWeight");
-
+        else throw new Error("Expected shape, fillColor, borderColor, borderWeight");
         editor.documentStyle.frame = frame;
 
         break;
