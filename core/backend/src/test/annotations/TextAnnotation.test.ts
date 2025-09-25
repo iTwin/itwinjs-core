@@ -204,26 +204,25 @@ describe("TextAnnotation element", () => {
     });
   });
 
-  describe.only("getReferenceIds", () => {
+  describe("getReferenceIds", () => {
     function expectReferenceIds(expected: Id64String[], element: TextAnnotation2d): void {
       const actual = Array.from(element.getReferenceIds()).sort();
 
       // reference Ids get a prefix indicating their type ('e' for 'element')
       expected = expected.map((id) => `e${id}`);
 
-      // the superclasses provide some reference Ids (code spec, model, etc)
-      const baseIds = Array.from(makeElement().getReferenceIds());
-      expect(baseIds.length).to.equal(4);
+      // the superclasses provide some reference Ids (code spec, model, category)
+      const baseIds = ["e0x12", "e0x78", "m0x34"];
       expected.push(...baseIds);
-      console.log(baseIds);
 
       expected = expected.sort();
       expect(actual).to.deep.equal(expected);
     }
 
     it("reports default text style and field hosts", () => {
+      // makeElement sets defaultTextStyle to "0x21"
       let elem = makeElement();
-      expectReferenceIds([], elem);
+      expectReferenceIds(["0x21"], elem);
 
       elem.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault("0x123");
       expectReferenceIds(["0x123"], elem);
@@ -249,6 +248,9 @@ describe("TextAnnotation element", () => {
 
     it("does not report invalid Ids", () => {
       const elem = makeElement();
+      elem.defaultTextStyle = undefined;
+      expectReferenceIds([], elem);
+
       elem.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault("0");
       expectReferenceIds([], elem);
 
