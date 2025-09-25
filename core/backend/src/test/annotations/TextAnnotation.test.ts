@@ -854,7 +854,7 @@ describe("appendTextAnnotationGeometry", () => {
   it("accounts for style overrides in the text", () => {
     const block = TextBlock.create();
     block.appendParagraph();
-    block.paragraphs[0].styleOverrides = { isBold: true };
+    block.children[0].styleOverrides = { isBold: true };
     block.appendRun(TextRun.create({ content: "Run, Barry," }));
     block.appendParagraph();
     block.appendRun(TextRun.create({ content: " RUN!!! ", styleOverrides: { isItalic: false } }));

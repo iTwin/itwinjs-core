@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Rework rebase and add stash api",
+      "comment": "load default geo coord dbs when getting available crs",
       "type": "none"
     }
   ],

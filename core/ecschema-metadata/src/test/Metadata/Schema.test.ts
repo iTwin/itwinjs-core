@@ -18,6 +18,7 @@ import { SchemaKey } from "../../SchemaKey";
 
 import { Constant, CustomAttributeClass, ECSchemaNamespaceUris, Enumeration, Format, InvertedUnit, KindOfQuantity, Phenomenon, Property, PropertyCategory, RelationshipClass, SchemaItem, Unit, UnitSystem } from "../../ecschema-metadata";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 describe("Schema", () => {
@@ -2603,6 +2604,51 @@ describe("Schema", () => {
       const testClass = new EntityClass(testSchema, "ExampleEntity");
       expect(Schema.isSchema(testClass)).to.be.false;
       expect(Schema.isSchema("A")).to.be.false;
+    });
+  });
+
+  describe("isDynamic", () => {
+    it("should return false if schema does not have any custom attributes", () => {
+      const testSchema = new Schema(new SchemaContext(), "testSchema", "ts", 1, 2, 3);
+      expect(testSchema.customAttributes).to.be.undefined;
+      expect(testSchema).has.a.property("isDynamic", false);
+    });
+
+    it("should return false if schema does not have the dynamic custom attribute", async () => {
+      const schemaContext = await BisTestHelper.getNewContext();
+      const testSchema = await Schema.fromJson({
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "TestSchema",
+        version: "1.0.0",
+        alias: "ts",
+        customAttributes: [
+          { className: "TestSchema.CAClass" },
+        ],
+        items: {
+          "CAClass": {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          }
+        }
+      }, schemaContext);
+      expect(testSchema).has.a.property("isDynamic", false);
+    });
+
+    it("should return true if schema has the dynamic custom attribute", async () => {
+      const schemaContext = await BisTestHelper.getNewContext();
+      const testSchema = await Schema.fromJson({
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "TestSchema",
+        version: "1.0.0",
+        alias: "ts",
+        references: [
+          { name: "CoreCustomAttributes", version: "01.00.01" },
+        ],
+        customAttributes: [
+          { className: "CoreCustomAttributes.DynamicSchema" },
+        ],
+      }, schemaContext);
+      expect(testSchema).has.a.property("isDynamic", true);
     });
   });
 });

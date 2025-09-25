@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Briefcase Manager now provides deviceName to acquired briefcases",
+      "comment": "Add SqliteChangesetReader.openInMemory() to allow read unsaved changes",
       "type": "none"
     }
   ],
