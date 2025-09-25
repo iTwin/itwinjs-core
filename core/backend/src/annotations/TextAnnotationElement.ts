@@ -17,6 +17,7 @@ import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "../Entit
 import * as semver from "semver";
 
 /** The version of the JSON stored in `TextAnnotation2d/3dProps.textAnnotationData` used by the code.
+ * Uses the same semantics as [ECVersion]($ecschema-metadata).
  * @internal
 */
 export const TEXT_ANNOTATION_JSON_VERSION = "1.0.0";
@@ -487,6 +488,7 @@ function updateTextBlocks(elem: TextAnnotation2d | TextAnnotation3d, textBlocks:
 }
 
 /** The version of the JSON stored in `AnnotationTextStyleProps.settings` used by the code.
+ * Uses the same semantics as [ECVersion]($ecschema-metadata).
  * @internal
 */
 export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.0";

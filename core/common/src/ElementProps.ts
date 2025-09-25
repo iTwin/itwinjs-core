@@ -657,7 +657,9 @@ export interface AnnotationTextStyleProps extends DefinitionElementProps {
  * @beta
  */
 export interface VersionedJSON<T> {
-  /** The semver version of the JSON data. */
+  /** The semver version of the JSON data.
+   * Uses the same semantics as [ECVersion]($ecschema-metadata).
+   */
   version: string;
   /** The JSON data. */
   data: T;
