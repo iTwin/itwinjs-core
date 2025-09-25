@@ -10150,8 +10150,6 @@ export class TextBlock extends TextBlockComponent {
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
     get isEmpty(): boolean;
-    justification: TextBlockJustification;
-    margins: TextBlockMargins;
     stringify(options?: TextBlockStringifyOptions): string;
     // (undocumented)
     toJSON(): TextBlockProps;
@@ -10203,9 +10201,6 @@ export type TextBlockGeometryPropsEntry = {
 };
 
 // @beta
-export type TextBlockJustification = "left" | "center" | "right";
-
-// @beta
 export interface TextBlockLayoutResult {
     lines: LineLayoutResult[];
     range: Range2dProps;
@@ -10213,18 +10208,16 @@ export interface TextBlockLayoutResult {
 
 // @beta
 export interface TextBlockMargins {
-    bottom: number;
-    left: number;
-    right: number;
-    top: number;
+    bottom?: number;
+    left?: number;
+    right?: number;
+    top?: number;
 }
 
 // @beta
 export interface TextBlockProps extends TextBlockComponentProps {
     // (undocumented)
     children?: ParagraphProps[];
-    justification?: TextBlockJustification;
-    margins?: Partial<TextBlockMargins>;
     width?: number;
 }
 
@@ -10244,11 +10237,14 @@ export interface TextBlockStringifyOptions {
 
 // @beta
 export interface TextFrameStyleProps {
-    border?: TextStyleColor;
+    borderColor?: TextStyleColor;
     borderWeight?: number;
-    fill?: TextAnnotationFillColor;
+    fillColor?: TextAnnotationFillColor;
     shape?: TextAnnotationFrameShape;
 }
+
+// @beta
+export type TextJustification = "left" | "center" | "right";
 
 // @beta
 export interface TextLeaderStyleProps {
@@ -10345,13 +10341,12 @@ export type TextStyleColor = ColorDefProps | "subcategory";
 // @beta
 export class TextStyleSettings {
     clone(alteredProps?: TextStyleSettingsProps): TextStyleSettings;
-    static cloneProps(props: TextStyleSettingsProps): TextStyleSettingsProps;
     readonly color: TextStyleColor;
     static defaultProps: DeepReadonlyObject<DeepRequiredObject<TextStyleSettingsProps>>;
     static defaults: TextStyleSettings;
     // (undocumented)
     equals(other: TextStyleSettings): boolean;
-    readonly fontName: string;
+    readonly font: Readonly<Required<FontFamilySelector>>;
     readonly frame: Readonly<Required<TextFrameStyleProps>>;
     // (undocumented)
     frameEquals(other: TextFrameStyleProps): boolean;
@@ -10361,11 +10356,14 @@ export class TextStyleSettings {
     readonly isBold: boolean;
     readonly isItalic: boolean;
     readonly isUnderlined: boolean;
+    readonly justification: TextJustification;
     readonly leader: Readonly<Required<TextLeaderStyleProps>>;
     leaderEquals(other: TextLeaderStyleProps): boolean;
-    readonly lineHeight: number;
     readonly lineSpacingFactor: number;
     readonly listMarker: ListMarker;
+    readonly margins: Readonly<Required<TextBlockMargins>>;
+    // (undocumented)
+    marginsEqual(other: TextBlockMargins): boolean;
     readonly paragraphSpacingFactor: number;
     readonly stackedFractionScale: number;
     readonly stackedFractionType: StackedFractionType;
@@ -10374,6 +10372,7 @@ export class TextStyleSettings {
     readonly superScriptOffsetFactor: number;
     readonly superScriptScale: number;
     readonly tabInterval: number;
+    readonly textHeight: number;
     // (undocumented)
     toJSON(): TextStyleSettingsProps;
     readonly widthFactor: number;
@@ -10382,16 +10381,17 @@ export class TextStyleSettings {
 // @beta
 export interface TextStyleSettingsProps {
     color?: TextStyleColor;
-    fontName?: string;
+    font?: FontFamilySelector;
     frame?: TextFrameStyleProps;
     indentation?: number;
     isBold?: boolean;
     isItalic?: boolean;
     isUnderlined?: boolean;
+    justification?: TextJustification;
     leader?: TextLeaderStyleProps;
-    lineHeight?: number;
     lineSpacingFactor?: number;
     listMarker?: ListMarker;
+    margins?: TextBlockMargins;
     paragraphSpacingFactor?: number;
     stackedFractionScale?: number;
     stackedFractionType?: StackedFractionType;
@@ -10400,6 +10400,7 @@ export interface TextStyleSettingsProps {
     superScriptOffsetFactor?: number;
     superScriptScale?: number;
     tabInterval?: number;
+    textHeight?: number;
     widthFactor?: number;
 }
 
