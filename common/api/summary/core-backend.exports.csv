@@ -358,6 +358,7 @@ beta;function;isITextAnnotation
 beta;interface;ITextAnnotation
 public;interface;ITwinIdArg
 public;class;KnownLocations
+beta;interface;LayoutTextArgs
 beta;function;layoutTextBlock
 beta;interface;LayoutTextBlockArgs
 internal;class;LightLocation

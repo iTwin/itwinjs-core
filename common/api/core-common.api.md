@@ -2149,6 +2149,12 @@ export interface CutStyleProps {
 // @public
 export type DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm";
 
+// @beta
+export interface DateTimeFieldFormatOptions {
+    formatOptions?: Intl.DateTimeFormatOptions;
+    locale?: Intl.UnicodeBCP47LocaleIdentifier;
+}
+
 // @internal (undocumented)
 export interface DbBlobRequest extends DbRequest, BlobOptions {
     // (undocumented)
@@ -3601,10 +3607,18 @@ export class FeatureTableHeader {
 }
 
 // @beta
-export interface FieldFormatter {
-    // (undocumented)
-    [k: string]: any;
+export type FieldCase = "as-is" | "upper" | "lower";
+
+// @beta
+export interface FieldFormatOptions {
+    case?: FieldCase;
+    dateTime?: DateTimeFieldFormatOptions;
+    prefix?: string;
+    suffix?: string;
 }
+
+// @internal
+export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
 
 // @beta
 export interface FieldPropertyHost {
@@ -3616,9 +3630,11 @@ export interface FieldPropertyHost {
 // @beta
 export interface FieldPropertyPath {
     accessors?: Array<string | number>;
-    jsonAccessors?: Array<string | number>;
     propertyName: string;
 }
+
+// @beta
+export type FieldPropertyType = "quantity" | "coordinate" | "string" | "boolean" | "datetime" | "int-enum" | "string-enum";
 
 // @beta
 export class FieldRun extends TextBlockComponent {
@@ -3626,8 +3642,10 @@ export class FieldRun extends TextBlockComponent {
     clone(): FieldRun;
     static create(props: Omit<FieldRunProps, "type">): FieldRun;
     equals(other: TextBlockComponent): boolean;
-    readonly formatter?: FieldFormatter;
+    readonly formatOptions?: FieldFormatOptions;
     static invalidContentIndicator: string;
+    // (undocumented)
+    get isEmpty(): boolean;
     readonly propertyHost: Readonly<FieldPropertyHost>;
     readonly propertyPath: Readonly<FieldPropertyPath>;
     // @internal
@@ -3640,10 +3658,18 @@ export class FieldRun extends TextBlockComponent {
 // @beta
 export interface FieldRunProps extends TextBlockComponentProps {
     cachedContent?: string;
-    formatter?: FieldFormatter;
+    formatOptions?: FieldFormatOptions;
     propertyHost: FieldPropertyHost;
     propertyPath: FieldPropertyPath;
     readonly type: "field";
+}
+
+// @internal
+export interface FieldValue {
+    // (undocumented)
+    type: FieldPropertyType;
+    // (undocumented)
+    value: FieldPrimitiveValue;
 }
 
 // @public (undocumented)
@@ -3737,6 +3763,9 @@ export enum FontType {
 }
 
 // @internal (undocumented)
+export function formatFieldValue(value: FieldValue, options: FieldFormatOptions | undefined): string | undefined;
+
+// @internal (undocumented)
 export interface FormDataCommon {
     // (undocumented)
     append(name: string, value: string | Blob | BackendBuffer, fileName?: string): void;
@@ -3751,6 +3780,8 @@ export class FractionRun extends TextBlockComponent {
     denominator: string;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
+    // (undocumented)
+    get isEmpty(): boolean;
     numerator: string;
     stringify(options?: TextBlockStringifyOptions): string;
     // (undocumented)
@@ -4360,6 +4391,9 @@ export enum GeometrySummaryVerbosity {
     Detailed = 20,
     Full = 30
 }
+
+// @beta
+export function getMarkerText(marker: ListMarker, num: number): string;
 
 // @internal (undocumented)
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number;
@@ -5653,6 +5687,9 @@ export abstract class IpcWebSocketTransport {
 // @public
 export function isBinaryImageSource(source: ImageSource): source is BinaryImageSource;
 
+// @internal (undocumented)
+export function isKnownFieldPropertyType(type: string): type is FieldPropertyType;
+
 // @internal
 export function isKnownTileFormat(format: number): boolean;
 
@@ -5755,9 +5792,11 @@ export class LineBreakRun extends TextBlockComponent {
     // (undocumented)
     clone(): LineBreakRun;
     // (undocumented)
-    static create(props?: TextBlockComponentProps): LineBreakRun;
+    static create(props?: Omit<LineBreakRunProps, "type">): LineBreakRun;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
+    // (undocumented)
+    get isEmpty(): boolean;
     stringify(options?: TextBlockStringifyOptions): string;
     // (undocumented)
     toJSON(): LineBreakRunProps;
@@ -5772,10 +5811,10 @@ export interface LineBreakRunProps extends TextBlockComponentProps {
 // @beta
 export interface LineLayoutResult {
     justificationRange: Range2dProps;
+    marker: RunLayoutResult | undefined;
     offsetFromDocument: XAndY;
     range: Range2dProps;
     runs: RunLayoutResult[];
-    sourceParagraphIndex: number;
 }
 
 // @public
@@ -5858,6 +5897,58 @@ export interface LineStyleProps extends DefinitionElementProps {
     data: string;
     // (undocumented)
     description?: string;
+}
+
+// @beta
+export class List extends TextBlockComponent {
+    protected constructor(props?: ListProps);
+    // (undocumented)
+    readonly children: Paragraph[];
+    // (undocumented)
+    clearStyleOverrides(options?: ClearTextStyleOptions): void;
+    // (undocumented)
+    clone(): List;
+    static create(props?: Omit<ListProps, "type">): List;
+    // (undocumented)
+    equals(other: TextBlockComponent): boolean;
+    // (undocumented)
+    get isEmpty(): boolean;
+    stringify(options?: TextBlockStringifyOptions, context?: TextBlockStringifyContext): string;
+    // (undocumented)
+    toJSON(): ListProps;
+    // (undocumented)
+    readonly type = "list";
+}
+
+// @beta
+export interface ListMarker {
+    case?: "upper" | "lower";
+    enumerator: ListMarkerEnumerator | string;
+    terminator?: "parenthesis" | "period";
+}
+
+// @beta
+export enum ListMarkerEnumerator {
+    // (undocumented)
+    Bullet = "\u2022",
+    // (undocumented)
+    Circle = "\u25CB",
+    Dash = "\u2013",
+    Letter = "A",
+    // (undocumented)
+    Number = "1",
+    // (undocumented)
+    RomanNumeral = "I",
+    // (undocumented)
+    Square = "\u25A0"
+}
+
+// @beta
+export interface ListProps extends TextBlockComponentProps {
+    // (undocumented)
+    children?: ParagraphProps[];
+    // (undocumented)
+    readonly type: "list";
 }
 
 // @public
@@ -6847,21 +6938,28 @@ export interface PackedFeatureWithIndex extends PackedFeature {
 
 // @beta
 export class Paragraph extends TextBlockComponent {
+    // (undocumented)
+    readonly children: Array<List | Run>;
+    // (undocumented)
     clearStyleOverrides(options?: ClearTextStyleOptions): void;
     // (undocumented)
     clone(): Paragraph;
-    static create(props?: ParagraphProps): Paragraph;
+    static create(props?: Omit<ParagraphProps, "type">): Paragraph;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
-    readonly runs: Run[];
-    stringify(options?: TextBlockStringifyOptions): string;
+    // (undocumented)
+    get isEmpty(): boolean;
+    stringify(options?: TextBlockStringifyOptions, context?: TextBlockStringifyContext): string;
     // (undocumented)
     toJSON(): ParagraphProps;
+    // (undocumented)
+    readonly type = "paragraph";
 }
 
 // @beta
 export interface ParagraphProps extends TextBlockComponentProps {
-    runs?: RunProps[];
+    // (undocumented)
+    children?: Array<ListProps | RunProps>;
 }
 
 // @internal
@@ -9219,7 +9317,6 @@ export interface RunLayoutResult {
     numeratorRange?: Range2dProps;
     offsetFromLine: XAndY;
     range: Range2dProps;
-    sourceRunIndex: number;
     textStyle: TextStyleSettingsProps;
 }
 
@@ -9764,6 +9861,9 @@ export type StandaloneOpenOptions = OpenDbKey;
 // @beta
 export type StorageValue = string | number | boolean | undefined | Uint8Array;
 
+// @beta
+export type StructuralTextBlockComponent = List | Paragraph | TextBlock;
+
 // @public
 export class SubCategoryAppearance {
     constructor(props?: SubCategoryAppearance.Props);
@@ -9896,6 +9996,8 @@ export class TabRun extends TextBlockComponent {
     static create(props?: Omit<TabRunProps, "type">): TabRun;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
+    // (undocumented)
+    get isEmpty(): boolean;
     stringify(options?: TextBlockStringifyOptions): string;
     // (undocumented)
     toJSON(): TabRunProps;
@@ -10036,18 +10138,20 @@ export interface TextAnnotationProps {
 
 // @beta
 export class TextBlock extends TextBlockComponent {
-    appendParagraph(seedFromLast?: boolean): Paragraph;
+    appendParagraph(props?: ParagraphProps, seedFromLast?: boolean): Paragraph;
     appendRun(run: Run): void;
+    // (undocumented)
+    readonly children: Paragraph[];
+    // (undocumented)
     clearStyleOverrides(options?: ClearTextStyleOptions): void;
     // (undocumented)
     clone(): TextBlock;
-    static create(props?: TextBlockProps): TextBlock;
+    static create(props?: Omit<TextBlockProps, "type">): TextBlock;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
     get isEmpty(): boolean;
     justification: TextBlockJustification;
     margins: TextBlockMargins;
-    readonly paragraphs: Paragraph[];
     stringify(options?: TextBlockStringifyOptions): string;
     // (undocumented)
     toJSON(): TextBlockProps;
@@ -10061,9 +10165,10 @@ export abstract class TextBlockComponent {
     clearStyleOverrides(_options?: ClearTextStyleOptions): void;
     abstract clone(): TextBlockComponent;
     equals(other: TextBlockComponent): boolean;
+    abstract get isEmpty(): boolean;
     get isWhitespace(): boolean;
     get overridesStyle(): boolean;
-    abstract stringify(options?: TextBlockStringifyOptions): string;
+    abstract stringify(options?: TextBlockStringifyOptions, context?: TextBlockStringifyContext): string;
     get styleOverrides(): TextStyleSettingsProps;
     set styleOverrides(overrides: TextStyleSettingsProps);
     toJSON(): TextBlockComponentProps;
@@ -10116,16 +10221,23 @@ export interface TextBlockMargins {
 
 // @beta
 export interface TextBlockProps extends TextBlockComponentProps {
+    // (undocumented)
+    children?: ParagraphProps[];
     justification?: TextBlockJustification;
     margins?: Partial<TextBlockMargins>;
-    paragraphs?: ParagraphProps[];
     width?: number;
+}
+
+// @beta
+export interface TextBlockStringifyContext {
+    depth: number;
 }
 
 // @beta
 export interface TextBlockStringifyOptions {
     fractionSeparator?: string;
     lineBreak?: string;
+    listMarkerBreak?: string;
     paragraphBreak?: string;
     tabsAsSpaces?: number;
 }
@@ -10157,6 +10269,8 @@ export class TextRun extends TextBlockComponent {
     static create(props?: Omit<TextRunProps, "type">): TextRun;
     // (undocumented)
     equals(other: TextBlockComponent): boolean;
+    // (undocumented)
+    get isEmpty(): boolean;
     stringify(): string;
     // (undocumented)
     toJSON(): TextRunProps;
@@ -10243,6 +10357,7 @@ export class TextStyleSettings {
     frameEquals(other: TextFrameStyleProps): boolean;
     static fromJSON(props?: TextStyleSettingsProps): TextStyleSettings;
     getValidationErrors(): string[];
+    readonly indentation: number;
     readonly isBold: boolean;
     readonly isItalic: boolean;
     readonly isUnderlined: boolean;
@@ -10250,6 +10365,8 @@ export class TextStyleSettings {
     leaderEquals(other: TextLeaderStyleProps): boolean;
     readonly lineHeight: number;
     readonly lineSpacingFactor: number;
+    readonly listMarker: ListMarker;
+    readonly paragraphSpacingFactor: number;
     readonly stackedFractionScale: number;
     readonly stackedFractionType: StackedFractionType;
     readonly subScriptOffsetFactor: number;
@@ -10267,12 +10384,15 @@ export interface TextStyleSettingsProps {
     color?: TextStyleColor;
     fontName?: string;
     frame?: TextFrameStyleProps;
+    indentation?: number;
     isBold?: boolean;
     isItalic?: boolean;
     isUnderlined?: boolean;
     leader?: TextLeaderStyleProps;
     lineHeight?: number;
     lineSpacingFactor?: number;
+    listMarker?: ListMarker;
+    paragraphSpacingFactor?: number;
     stackedFractionScale?: number;
     stackedFractionType?: StackedFractionType;
     subScriptOffsetFactor?: number;
@@ -10886,6 +11006,12 @@ export interface TranslationOptions {
     fallbackLng?: string;
     lngs?: string[];
 }
+
+// @beta
+export function traverseTextBlockComponent(parent: StructuralTextBlockComponent): IterableIterator<{
+    parent: StructuralTextBlockComponent;
+    child: List | Paragraph | Run;
+}>;
 
 // @alpha
 export enum TreeFlags {
