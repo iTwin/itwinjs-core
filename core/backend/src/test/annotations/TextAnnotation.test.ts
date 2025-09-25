@@ -204,6 +204,59 @@ describe("TextAnnotation element", () => {
     });
   });
 
+  describe.only("getReferenceIds", () => {
+    function expectReferenceIds(expected: Id64String[], element: TextAnnotation2d): void {
+      const actual = Array.from(element.getReferenceIds()).sort();
+      expected = expected.sort();
+      expect(actual).to.deep.equal(expected);
+    }
+
+    it("reports default text style and field hosts", () => {
+      let elem = makeElement();
+      expectReferenceIds([], elem);
+
+      elem.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault("0x123");
+      expectReferenceIds(["0x123"], elem);
+
+      const textBlock = TextBlock.create();
+      textBlock.appendRun(FieldRun.create({
+        propertyHost: { elementId: "0x456", schemaName: "BisCore", className: "GeometricElement3d" },
+        propertyPath: { propertyName: "CodeValue" },
+      }));
+      textBlock.appendRun(FieldRun.create({
+        propertyHost: { elementId: "0x789", schemaName: "BisCore", className: "GeometricElement3d" },
+        propertyPath: { propertyName: "LastMod" },
+      }));
+      elem.setAnnotation(TextAnnotation.create({ textBlock }));
+      expectReferenceIds(["0x123", "0x456", "0x789"], elem);
+
+      elem.defaultTextStyle = undefined;
+      expectReferenceIds(["0x456", "0x789"], elem);
+
+      elem.setAnnotation(TextAnnotation.create());
+      expectReferenceIds([], elem);
+    });
+
+    it("does not report invalid Ids", () => {
+      const elem = makeElement();
+      elem.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault("0");
+      expectReferenceIds([], elem);
+
+      const textBlock = TextBlock.create();
+      textBlock.appendRun(FieldRun.create({
+        propertyHost: { elementId: "0", schemaName: "BisCore", className: "GeometricElement3d" },
+        propertyPath: { propertyName: "CodeValue" },
+      }));
+      textBlock.appendRun(FieldRun.create({
+        propertyHost: { elementId: "0x123", schemaName: "BisCore", className: "GeometricElement3d" },
+        propertyPath: { propertyName: "LastMod" },
+      }));
+      elem.setAnnotation(TextAnnotation.create({ textBlock }));
+
+      expectReferenceIds(["0x123"], elem);
+    });
+  });
+
   describe("TextAnnotation3d Persistence", () => {
     let imodel: StandaloneDb;
     let createElement3dArgs: Omit<TextAnnotation3dCreateArgs, "placement">;
