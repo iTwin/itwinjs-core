@@ -56,7 +56,8 @@ export type TextAnnotationFrameShape = typeof textAnnotationFrameShapes[number];
  */
 export type TextAnnotationFillColor = TextStyleColor | "background" | "none";
 
-/** Describes the margins around the content inside a [[TextBlock]]. It's measured in meters.
+/** Describes the margins around the content inside a [[TextBlock]], measured in meters.
+ * All margins default to zero if `undefined`.
  * @beta
  */
 export interface TextBlockMargins {
