@@ -444,31 +444,13 @@ export class TextStyleSettings {
     return alteredProps ? new TextStyleSettings(alteredProps, this) : this;
   }
 
-  /** Creates a deep copy of the `TextStyleSettingsProps`. */
-  public static cloneProps(props: TextStyleSettingsProps): TextStyleSettingsProps {
-    const copy = { ...props };
-    if (props.leader) {
-      copy.leader = { ...props.leader };
-    }
-    if (props.frame) {
-      copy.frame = { ...props.frame };
-    }
-    if (props.font) {
-      copy.font = { ...props.font };
-    }
-    if (props.margins) {
-      copy.margins = { ...props.margins };
-    }
-    return copy;
-  }
-
   /** Create settings from their JSON representation. */
   public static fromJSON(props?: TextStyleSettingsProps): TextStyleSettings {
     return props ? new TextStyleSettings(props) : TextStyleSettings.defaults;
   }
 
   public toJSON(): TextStyleSettingsProps {
-    return TextStyleSettings.cloneProps(this);
+    return structuredClone(this);
   }
 
   /** Compare two [[TextLeaderStyleProps]] for equality.

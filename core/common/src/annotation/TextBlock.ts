@@ -84,7 +84,7 @@ export abstract class TextBlockComponent {
 
   /** @internal */
   protected constructor(props?: TextBlockComponentProps) {
-    this._styleOverrides = TextStyleSettings.cloneProps(props?.styleOverrides ?? {});
+    this._styleOverrides = structuredClone(props?.styleOverrides ?? {});
   }
 
   /** Deviations in individual properties of the [[TextStyleSettings]] in the [AnnotationTextStyle]($backend).
@@ -96,7 +96,7 @@ export abstract class TextBlockComponent {
   }
 
   public set styleOverrides(overrides: TextStyleSettingsProps) {
-    this._styleOverrides = TextStyleSettings.cloneProps(overrides);
+    this._styleOverrides = structuredClone(overrides);
   }
 
   /** Reset any [[styleOverrides]] applied to this component. */
@@ -129,7 +129,7 @@ export abstract class TextBlockComponent {
   /** Convert this component to its JSON representation. */
   public toJSON(): TextBlockComponentProps {
     return {
-      styleOverrides: TextStyleSettings.cloneProps(this.styleOverrides),
+      styleOverrides: structuredClone(this.styleOverrides),
     };
   }
 
