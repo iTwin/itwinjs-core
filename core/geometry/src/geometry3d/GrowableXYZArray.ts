@@ -187,7 +187,8 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   public compressInPlace(tolerance: number = Geometry.smallMetricDistance): GrowableXYZArray {
     return GrowableXYZArray.createCompressed(this, tolerance, this);
   }
-  /** Create an array from various point data formats.
+  /**
+   * Create an array by copying data from various point formats.
    * Valid inputs are:
    * * Point2d
    * * Point3d

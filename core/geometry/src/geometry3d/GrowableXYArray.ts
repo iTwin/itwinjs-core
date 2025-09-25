@@ -132,7 +132,8 @@ export class GrowableXYArray extends IndexedXYCollection {
     newPoints._xyInUse = this.length;
     return newPoints;
   }
-  /** Create an array populated from
+  /**
+   * Create an array by copying data from various point formats.
    * Valid inputs are:
    * * Point2d
    * * Point3d
