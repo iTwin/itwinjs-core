@@ -1629,7 +1629,7 @@ export interface ComputeRangesForTextLayoutArgs {
     // (undocumented)
     italic: boolean;
     // (undocumented)
-    lineHeight: number;
+    textHeight: number;
     // (undocumented)
     widthFactor: number;
 }

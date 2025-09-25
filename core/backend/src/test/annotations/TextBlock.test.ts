@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges, TextStyleResolver } from "../../annotations/TextBlockLayout";
 import { Geometry, Range2d } from "@itwin/core-geometry";
-import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, List, ListMarkerEnumerator, Paragraph, ParagraphProps, Run, RunLayoutResult, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockLayoutResult, TextBlockMargins, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, FontType, FractionRun, LineBreakRun, LineLayoutResult, List, ListMarkerEnumerator, Paragraph, ParagraphProps, Run, RunLayoutResult, TabRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockGeometryPropsEntry, TextBlockLayoutResult, TextBlockMargins, TextJustification, TextRun, TextStringProps, TextStyleSettings } from "@itwin/core-common";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Id64String, ProcessDetector } from "@itwin/core-bentley";
@@ -25,10 +25,10 @@ function isIntlSupported(): boolean {
 
 function findTextStyleImpl(id: Id64String): TextStyleSettings {
   if (id === "0x42") {
-    return TextStyleSettings.fromJSON({ lineSpacingFactor: 12, fontName: "block", isBold: true });
+    return TextStyleSettings.fromJSON({ lineSpacingFactor: 12, font: { name: "block" }, isBold: true });
   }
 
-  return TextStyleSettings.fromJSON({ lineSpacingFactor: 1, fontName: "other" });
+  return TextStyleSettings.fromJSON({ lineSpacingFactor: 1, font: { name: "other" } });
 }
 
 describe("layoutTextBlock", () => {
@@ -48,14 +48,14 @@ describe("layoutTextBlock", () => {
       expect(tb.lines[0].runs.length).to.equal(1);
 
       const runStyle = tb.lines[0].runs[0].style;
-      expect(runStyle.fontName).to.equal("block");
+      expect(runStyle.font.name).to.equal("block");
       expect(runStyle.lineSpacingFactor).to.equal(12);
       expect(runStyle.isBold).to.be.true;
     });
 
     it("inherits style overrides from Paragraph when Run has no style overrides", () => {
       const textBlock = TextBlock.create();
-      textBlock.appendParagraph({ styleOverrides: { fontName: "paragraph" } });
+      textBlock.appendParagraph({ styleOverrides: { font: { name: "paragraph" } } });
       textBlock.appendRun(TextRun.create({ content: "test" }));
 
       const tb = doLayout(textBlock, {
@@ -67,14 +67,14 @@ describe("layoutTextBlock", () => {
       expect(tb.lines[0].runs.length).to.equal(1);
 
       const runStyle = tb.lines[0].runs[0].style;
-      expect(runStyle.fontName).to.equal("paragraph");
+      expect(runStyle.font.name).to.equal("paragraph");
       expect(runStyle.isBold).to.be.true;
     });
 
     it("uses Run style overrides when Run has overrides", () => {
       const textBlock = TextBlock.create();
-      textBlock.appendParagraph({ styleOverrides: { lineSpacingFactor: 55, fontName: "paragraph" } });
-      textBlock.appendRun(TextRun.create({ content: "test", styleOverrides: { lineSpacingFactor: 99, fontName: "run" } }));
+      textBlock.appendParagraph({ styleOverrides: { lineSpacingFactor: 55, font: { name: "paragraph" } } });
+      textBlock.appendRun(TextRun.create({ content: "test", styleOverrides: { lineSpacingFactor: 99, font: { name: "run" } } }));
 
       const tb = doLayout(textBlock, {
         textStyleId: "0x42",
@@ -85,14 +85,14 @@ describe("layoutTextBlock", () => {
       expect(tb.lines[0].runs.length).to.equal(1);
 
       const runStyle = tb.lines[0].runs[0].style;
-      expect(runStyle.fontName).to.equal("run");
+      expect(runStyle.font.name).to.equal("run");
       expect(runStyle.isBold).to.be.true;
     });
 
     it("still uses TextBlock specific styles when Run has style overrides", () => {
       // Some style settings make sense on a TextBlock, so they are always applied from the TextBlock, even if the Run has a style override.
       const textBlock = TextBlock.create();
-      const run = TextRun.create({ content: "test", styleOverrides: { lineSpacingFactor: 99, fontName: "run" } });
+      const run = TextRun.create({ content: "test", styleOverrides: { lineSpacingFactor: 99, font: { name: "run" } } });
       textBlock.appendParagraph();
       textBlock.appendRun(run);
 
@@ -109,9 +109,9 @@ describe("layoutTextBlock", () => {
     });
 
     it("inherits overrides from TextBlock, Paragraph and Run when there is no styleId", () => {
-      const textBlock = TextBlock.create({ styleOverrides: { widthFactor: 34, lineHeight: 3, lineSpacingFactor: 12, isBold: true } });
-      const run = TextRun.create({ content: "test", styleOverrides: { widthFactor: 78, fontName: "override", leader: { wantElbow: true } } });
-      textBlock.appendParagraph({ styleOverrides: { lineHeight: 56, color: 0xff0000, frame: { shape: "octagon" } } });
+      const textBlock = TextBlock.create({ styleOverrides: { widthFactor: 34, textHeight: 3, lineSpacingFactor: 12, paragraphSpacingFactor: 2, isBold: true } });
+      const run = TextRun.create({ content: "test", styleOverrides: { widthFactor: 78, font: { name: "override" }, leader: { wantElbow: true } } });
+      textBlock.appendParagraph({ styleOverrides: { textHeight: 56, paragraphSpacingFactor: 25, color: 0xff0000, frame: { shape: "octagon" } } });
       textBlock.appendRun(run);
 
       const tb = doLayout(textBlock, {
@@ -124,23 +124,24 @@ describe("layoutTextBlock", () => {
       const runStyle = tb.lines[0].runs[0].style;
       // widthFactor is always taken from the TextBlock, even if the Run has overrides
       expect(runStyle.widthFactor).to.equal(34);
-      // lineHeight is always taken from the TextBlock, even if the Run has overrides
-      expect(runStyle.lineHeight).to.equal(3);
+      // paragraphSpacingFactor is always taken from the TextBlock, even if the Run has overrides
+      expect(runStyle.paragraphSpacingFactor).to.equal(2);
       // lineSpacingFactor is always taken from the TextBlock, even if the Run has overrides
       expect(runStyle.lineSpacingFactor).to.equal(12);
       // frame settings are always taken from the TextBlock, even if the Paragraph or Run has overrides
       expect(runStyle.frame.shape).to.equal("none");
       // leader settings are always taken from the TextBlock, even if the Paragraph or Run has overrides
       expect(runStyle.leader.wantElbow).to.be.false;
-      expect(runStyle.fontName).to.equal("override");
+      expect(runStyle.font.name).to.equal("override");
       expect(runStyle.color).to.equal(0xff0000);
       expect(runStyle.isBold).to.be.true;
+      expect(runStyle.textHeight).to.equal(56);
     });
 
     it("does not inherit overrides in TextBlock or Paragraph when Run has same propertied overriden - unless they are TextBlock specific settings", () => {
-      const textBlock = TextBlock.create({ styleOverrides: { widthFactor: 34, lineHeight: 3, lineSpacingFactor: 12, isBold: true } });
-      const run = TextRun.create({ content: "test", styleOverrides: { widthFactor: 78, lineHeight: 6, lineSpacingFactor: 24, fontName: "override", isBold: false } });
-      textBlock.appendParagraph({ styleOverrides: { lineHeight: 56, color: 0xff0000 } });
+      const textBlock = TextBlock.create({ styleOverrides: { widthFactor: 34, margins: { left: 3 }, textHeight: 3, lineSpacingFactor: 12, paragraphSpacingFactor: 2, isBold: true, justification: "center" } });
+      const run = TextRun.create({ content: "test", styleOverrides: { widthFactor: 78, margins: { left: 4, right: 3 }, textHeight: 6, paragraphSpacingFactor: 25, lineSpacingFactor: 24, font: { name: "override" }, isBold: false, justification: "right" } });
+      textBlock.appendParagraph({ styleOverrides: { textHeight: 56, paragraphSpacingFactor: 50, color: 0xff0000, justification: "left" } });
       textBlock.appendRun(run);
 
       const tb = doLayout(textBlock, {
@@ -154,20 +155,26 @@ describe("layoutTextBlock", () => {
       const runStyle = tb.lines[0].runs[0].style;
       // widthFactor is always taken from the TextBlock, even if the Run has a styleId or overrides
       expect(runStyle.widthFactor).to.equal(34);
-      // lineHeight is always taken from the TextBlock, even if the Run has a styleId or overrides
-      expect(runStyle.lineHeight).to.equal(3);
+      // paragraphSpacingFactor is always taken from the TextBlock, even if the Run has overrides
+      expect(runStyle.paragraphSpacingFactor).to.equal(2);
       // lineSpacingFactor is always taken from the TextBlock, even if the Run has a styleId or overrides
       expect(runStyle.lineSpacingFactor).to.equal(12);
-      expect(runStyle.fontName).to.equal("override");
+      // margins are always taken from the TextBlock, even if the Paragraph or Run has overrides
+      expect(runStyle.margins.left).to.equal(3);
+      expect(runStyle.margins.right).to.equal(0);
+      // justification is always taken from the TextBlock, even if the Paragraph or Run has overrides
+      expect(runStyle.justification).to.equal("center");
+      expect(runStyle.font.name).to.equal("override");
       expect(runStyle.color).to.equal(0xff0000);
       expect(runStyle.isBold).to.be.false;
+      expect(runStyle.textHeight).to.equal(6);
     });
 
     it("takes child overrides over parent overrides", () => {
       //...unless they are TextBlock specific as covered in other tests
-      const textBlock = TextBlock.create({ styleOverrides: { fontName: "grandparent" } });
-      const run = TextRun.create({ content: "test", styleOverrides: { fontName: "child" } });
-      textBlock.appendParagraph({ styleOverrides: { fontName: "parent" } });
+      const textBlock = TextBlock.create({ styleOverrides: { font: { name: "grandparent" } } });
+      const run = TextRun.create({ content: "test", styleOverrides: { font: { name: "child" } } });
+      textBlock.appendParagraph({ styleOverrides: { font: { name: "parent" } } });
       textBlock.appendRun(run);
 
       const tb = doLayout(textBlock, {
@@ -178,7 +185,7 @@ describe("layoutTextBlock", () => {
       expect(tb.lines[0].runs.length).to.equal(1);
 
       const runStyle = tb.lines[0].runs[0].style;
-      expect(runStyle.fontName).to.equal("child");
+      expect(runStyle.font.name).to.equal("child");
     });
   });
 
@@ -188,14 +195,14 @@ describe("layoutTextBlock", () => {
     }
 
     // Initialize a new TextBlockLayout object
-    const textBlock = TextBlock.create({ width: 50, styleOverrides: { widthFactor: 34, color: 0x00ff00, fontName: "arial" } });
+    const textBlock = TextBlock.create({ width: 50, styleOverrides: { widthFactor: 34, color: 0x00ff00, font: { name: "arial" } } });
     const run0 = TextRun.create({
       content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus pretium mi sit amet magna malesuada, at venenatis ante eleifend.",
-      styleOverrides: { lineHeight: 56, color: 0xff0000 },
+      styleOverrides: { textHeight: 56, color: 0xff0000 },
     });
     const run1 = TextRun.create({
       content: "Donec sit amet semper sapien. Nullam commodo, libero a accumsan lacinia, metus enim pharetra lacus, eu facilisis sem nisi eu dui.",
-      styleOverrides: { widthFactor: 78, fontName: "run1" },
+      styleOverrides: { widthFactor: 78, font: { name: "run1" } },
     });
     const run2 = TextRun.create({
       content: "Duis dui quam, suscipit quis feugiat id, fermentum ut augue. Mauris iaculis odio rhoncus lorem eleifend, posuere viverra turpis elementum.",
@@ -293,70 +300,154 @@ describe("layoutTextBlock", () => {
   });
 
   it("adds margins", function () {
-    const expectMargins = (layoutRange: Range2d, marginRange: Range2d, margins: Partial<TextBlockMargins>) => {
+    const expectMargins = (layoutRange: Range2d, marginRange: Range2d, margins: TextBlockMargins) => {
       expect(marginRange.low.x).to.equal(layoutRange.low.x - (margins.left ?? 0));
       expect(marginRange.high.x).to.equal(layoutRange.high.x + (margins.right ?? 0));
       expect(marginRange.low.y).to.equal(layoutRange.low.y - (margins.bottom ?? 0));
       expect(marginRange.high.y).to.equal(layoutRange.high.y + (margins.top ?? 0));
     }
 
-    const makeTextBlock = (margins: Partial<TextBlockMargins>) => {
-      const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor: 0 }, margins });
-      textBlock.appendRun(makeTextRun("abc"));
-      textBlock.appendRun(makeTextRun("defg"));
-      return textBlock;
+    const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor: 0 } });
+    textBlock.appendRun(makeTextRun("abc"));
+    textBlock.appendRun(makeTextRun("defg"));
+
+    const marginStyleCallback = (margins: TextBlockMargins) => {
+      return () => TextStyleSettings.fromJSON({ margins: { ...margins } })
     }
 
-    let block = makeTextBlock({});
-    let layout = doLayout(block);
+    let layout = doLayout(textBlock, {
+      findTextStyle: marginStyleCallback({}),
+    });
 
     // Margins should be 0 by default
     expect(layout.range.isAlmostEqual(layout.textRange)).to.be.true;
     expectMargins(layout.textRange, layout.range, {});
 
     // All margins should be applied to the range
-    block = makeTextBlock({ left: 1, right: 2, top: 3, bottom: 4 })
-    layout = doLayout(block);
+    layout = doLayout(textBlock, {
+      findTextStyle: marginStyleCallback({ left: 1, right: 2, top: 3, bottom: 4 }),
+    });
 
     expectMargins(layout.textRange, layout.range, { left: 1, right: 2, top: 3, bottom: 4 });
 
     // Just horizontal margins should be applied
-    block = makeTextBlock({ left: 1, right: 2 });
-    layout = doLayout(block);
+    layout = doLayout(textBlock, {
+      findTextStyle: marginStyleCallback({ left: 1, right: 2 }),
+    });
 
     expectMargins(layout.textRange, layout.range, { left: 1, right: 2 });
 
     // Just vertical margins should be applied
-    block = makeTextBlock({ top: 1, bottom: 2 });
-    layout = doLayout(block);
+    layout = doLayout(textBlock, {
+      findTextStyle: marginStyleCallback({ top: 1, bottom: 2 }),
+    });
 
     expectMargins(layout.textRange, layout.range, { top: 1, bottom: 2 });
-
   });
 
   describe("range", () => {
+    const round = (num: number, numDecimalPlaces: number) => {
+      const multiplier = Math.pow(100, numDecimalPlaces);
+      return Math.round(num * multiplier) / multiplier;
+    };
 
-    it("aligns text to center based on height of stacked fraction", () => {
+    it("aligns text of the same size on the bottom of the line", () => {
       const textBlock = TextBlock.create();
-      const fractionRun = FractionRun.create({ numerator: "1", denominator: "2" });
-      const textRun = TextRun.create({ content: "text" });
+      const run1 = TextRun.create({ content: "abc" });
+      const run2 = TextRun.create({ content: "defg" });
+      textBlock.appendRun(run1);
+      textBlock.appendRun(run2);
+
+      const layout = doLayout(textBlock);
+      const run1Layout = layout.lines[0].runs[0];
+      const run2Layout = layout.lines[0].runs[1];
+
+      expect(run1Layout.range.yLength()).to.equal(1);
+      expect(run2Layout.range.yLength()).to.equal(1);
+
+      expect(run1Layout.offsetFromLine.y).to.equal(0);
+      expect(run2Layout.offsetFromLine.y).to.equal(0);
+    });
+
+    it("aligns text of varying sizes to the baseline of the largest text", () => {
+      const textBlock = TextBlock.create();
+      const smallText = TextRun.create({ content: "small", styleOverrides: { textHeight: 1 } });
+      const largeText = TextRun.create({ content: "large", styleOverrides: { textHeight: 3 } });
+      textBlock.appendRun(smallText);
+      textBlock.appendRun(largeText);
+
+      const layout = doLayout(textBlock);
+      const smallLayout = layout.lines[0].runs[0];
+      const largeLayout = layout.lines[0].runs[1];
+
+      expect(smallLayout.range.yLength()).to.equal(1);
+      expect(largeLayout.range.yLength()).to.equal(3);
+
+      expect(largeLayout.offsetFromLine.y).to.equal(0);
+      expect(smallLayout.offsetFromLine.y).to.equal(0);
+    });
+
+    it("aligns text to center based on height of the largest stacked fraction", () => {
+      const textBlock = TextBlock.create();
+      const fractionRun = FractionRun.create({ numerator: "1", denominator: "2", styleOverrides: { textHeight: 4 } });
+      const textRun = TextRun.create({ content: "text", styleOverrides: { textHeight: 2 } });
       textBlock.appendRun(fractionRun);
       textBlock.appendRun(textRun);
 
       const layout = doLayout(textBlock);
-
       const fractionLayout = layout.lines[0].runs[0];
       const textLayout = layout.lines[0].runs[1];
 
-      const round = (num: number, numDecimalPlaces: number) => {
-        const multiplier = Math.pow(100, numDecimalPlaces);
-        return Math.round(num * multiplier) / multiplier;
-      };
+      expect(round(fractionLayout.range.yLength(), 2)).to.equal(7);
+      expect(textLayout.range.yLength()).to.equal(2);
 
-      expect(textLayout.range.yLength()).to.equal(1);
-      expect(round(fractionLayout.range.yLength(), 2)).to.equal(1.75);
+      // Fraction should be defining the line height
       expect(fractionLayout.offsetFromLine.y).to.equal(0);
-      expect(round(textLayout.offsetFromLine.y, 3)).to.equal(.375);
+      expect(round(textLayout.offsetFromLine.y, 2)).to.equal(2.5);
+    });
+
+    it("aligns the largest non-fraction text to the center based on height of stacked fraction and aligns all other text to the baseline", () => {
+      const textBlock = TextBlock.create();
+      const smallText = TextRun.create({ content: "s", styleOverrides: { textHeight: 1 } });
+      const mediumText = TextRun.create({ content: "m", styleOverrides: { textHeight: 2 } });
+      const fraction = FractionRun.create({ numerator: "1", denominator: "2", styleOverrides: { textHeight: 4 } });
+      textBlock.appendRun(smallText);
+      textBlock.appendRun(mediumText);
+      textBlock.appendRun(fraction);
+
+      const layout = doLayout(textBlock);
+      const smallLayout = layout.lines[0].runs[0];
+      const mediumLayout = layout.lines[0].runs[1];
+      const fractionLayout = layout.lines[0].runs[2];
+
+      expect(smallLayout.range.yLength()).to.equal(1);
+      expect(mediumLayout.range.yLength()).to.equal(2);
+      expect(round(fractionLayout.range.yLength(), 2)).to.equal(7);
+
+      expect(round(mediumLayout.offsetFromLine.y, 2)).to.equal(2.5);
+      expect(round(smallLayout.offsetFromLine.y, 2)).to.equal(2.5);
+      expect(fractionLayout.offsetFromLine.y).to.equal(0);
+    });
+
+    it("aligns fractions to the baseline of same sized text", () => {
+      const textBlock = TextBlock.create();
+      const text = TextRun.create({ content: "t", styleOverrides: { textHeight: 3 } });
+      const fraction = FractionRun.create({ numerator: "1", denominator: "2", styleOverrides: { textHeight: 3 } });
+
+      textBlock.appendRun(text);
+      textBlock.appendRun(fraction);
+
+      const layout = doLayout(textBlock);
+      const textLayout = layout.lines[0].runs[0];
+      const fractionLayout = layout.lines[0].runs[1];
+
+      expect(textLayout.range.yLength()).to.equal(3);
+      expect(round(fractionLayout.range.yLength(), 2)).to.equal(5.25);
+
+      expect(round(textLayout.offsetFromLine.y, 3)).to.equal(1.125);
+
+      // Slightly lower than text baseline so that the fraction appears centered on the text
+      expect(round(fractionLayout.offsetFromLine.y, 3)).to.equal(0.075);
     });
 
     it("produces one line per paragraph if document width <= 0", () => {
@@ -401,8 +492,8 @@ describe("layoutTextBlock", () => {
 
     it("produces a new line for each LineBreakRun", () => {
       const lineSpacingFactor = 0.5;
-      const lineHeight = 1;
-      const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor, lineHeight } });
+      const textHeight = 1;
+      const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor, textHeight } });
       textBlock.appendRun(TextRun.create({ content: "abc" }));
       textBlock.appendRun(LineBreakRun.create());
       textBlock.appendRun(TextRun.create({ content: "def" }));
@@ -420,13 +511,13 @@ describe("layoutTextBlock", () => {
       expect(tb.range.high.x).to.equal(6);
       expect(tb.range.high.y).to.equal(0);
       // paragraphSpacingFactor should not be applied to linebreaks, but lineSpacingFactor should.
-      expect(tb.range.low.y).to.equal(-(lineSpacingFactor * 2 + lineHeight * 3));
+      expect(tb.range.low.y).to.equal(-(lineSpacingFactor * 2 + textHeight * 3));
     });
 
     it("applies tab shifts", () => {
-      const lineHeight = 1;
+      const textHeight = 1;
       const tabInterval = 6;
-      const textBlock = TextBlock.create({ styleOverrides: { lineHeight, tabInterval } });
+      const textBlock = TextBlock.create({ styleOverrides: { textHeight, tabInterval } });
 
       // Appends a line that looks like `stringOne` TAB `stringTwo` LINEBREAK
       const appendLine = (stringOne: string, stringTwo: string, wantLineBreak: boolean = true) => {
@@ -458,9 +549,9 @@ describe("layoutTextBlock", () => {
     });
 
     it("applies consecutive tab shifts", () => {
-      const lineHeight = 1;
+      const textHeight = 1;
       const tabInterval = 6;
-      const textBlock = TextBlock.create({ styleOverrides: { lineHeight, tabInterval } });
+      const textBlock = TextBlock.create({ styleOverrides: { textHeight, tabInterval } });
 
       // line 0: ----->----->----->LINEBREAK
       textBlock.appendRun(TabRun.create({ styleOverrides: { tabInterval } }));
@@ -510,13 +601,13 @@ describe("layoutTextBlock", () => {
       expect(line3.range.xLength()).to.equal(7 + 3 + 7, `Multiple tabs with different intervals should be applied correctly`);
     });
 
-    it("computes ranges based on custom line spacing, line height, and indentation", () => {
+    it("computes ranges based on custom line spacing, text height, and indentation", () => {
       const lineSpacingFactor = 2;
-      const lineHeight = 3;
+      const textHeight = 3;
       const paragraphSpacingFactor = 13;
       const indentation = 7;
 
-      const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor, lineHeight, paragraphSpacingFactor, indentation } });
+      const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor, textHeight, paragraphSpacingFactor, indentation } });
       textBlock.appendRun(TextRun.create({ content: "abc" }));
       textBlock.appendRun(LineBreakRun.create());
       textBlock.appendRun(TextRun.create({ content: "def" }));
@@ -537,29 +628,29 @@ describe("layoutTextBlock", () => {
 
         Where ↵ = LineBreak, ¶ = ParagraphBreak, ⇥ = indentation
 
-        We have 3 lines each `lineHeight` high, plus 2 line breaks in between each `lineHeight*lineSpacingFactor` high.
+        We have 3 lines each `textHeight` high, plus 2 line breaks in between each `textHeight*lineSpacingFactor` high.
         No paragraph spacing should be applied since there is one paragraph.
       */
 
       expect(tb.range.low.x).to.equal(7);
       expect(tb.range.high.x).to.equal(6 + 7); // 7 for indentation, 6 for the length of "defghi"
       expect(tb.range.high.y).to.equal(0);
-      expect(tb.range.low.y).to.equal(-(lineHeight * 3 + (lineHeight * lineSpacingFactor) * 2));
+      expect(tb.range.low.y).to.equal(-(textHeight * 3 + (textHeight * lineSpacingFactor) * 2));
 
-      expect(tb.lines[0].offsetFromDocument.y).to.equal(-lineHeight);
-      expect(tb.lines[1].offsetFromDocument.y).to.equal(tb.lines[0].offsetFromDocument.y - (lineHeight + lineHeight * lineSpacingFactor));
-      expect(tb.lines[2].offsetFromDocument.y).to.equal(tb.lines[1].offsetFromDocument.y - (lineHeight + lineHeight * lineSpacingFactor));
+      expect(tb.lines[0].offsetFromDocument.y).to.equal(-textHeight);
+      expect(tb.lines[1].offsetFromDocument.y).to.equal(tb.lines[0].offsetFromDocument.y - (textHeight + textHeight * lineSpacingFactor));
+      expect(tb.lines[2].offsetFromDocument.y).to.equal(tb.lines[1].offsetFromDocument.y - (textHeight + textHeight * lineSpacingFactor));
 
       tb.lines.forEach((line) => expect(line.offsetFromDocument.x).to.equal(7));
     });
 
     it("computes paragraph spacing and indentation", () => {
       const lineSpacingFactor = 2;
-      const lineHeight = 3;
+      const textHeight = 3;
       const paragraphSpacingFactor = 13;
       const indentation = 7;
       const tabInterval = 5;
-      const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor, lineHeight, paragraphSpacingFactor, indentation, tabInterval } });
+      const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor, textHeight, paragraphSpacingFactor, indentation, tabInterval } });
 
       const p1 = textBlock.appendParagraph();
       p1.children.push(TextRun.create({ content: "abc" })); // Line 1
@@ -589,41 +680,41 @@ describe("layoutTextBlock", () => {
         Where ↵ = LineBreak, ¶ = ParagraphBreak, ￫ = tabInterval/2, ⇥ = indentation
 
         We have:
-          6 lines each `lineHeight` high
-          5 line breaks in between each `lineHeight*lineSpacingFactor` high
-          4 paragraph breaks in between each `lineHeight*paragraphSpacingFactor` high
+          6 lines each `textHeight` high
+          5 line breaks in between each `textHeight*lineSpacingFactor` high
+          4 paragraph breaks in between each `textHeight*paragraphSpacingFactor` high
       */
 
       expect(tb.range.low.x).to.equal(7); // 7 for indentation
       expect(tb.range.high.x).to.equal(7 + 5 + 11); // 7 for indentation, 5 for the tab stop, 11 for the length of "list item 1"
       expect(tb.range.high.y).to.equal(0);
-      expect(tb.range.low.y).to.equal(-(lineHeight * 6 + (lineHeight * lineSpacingFactor) * 5 + (lineHeight * paragraphSpacingFactor) * 4));
+      expect(tb.range.low.y).to.equal(-(textHeight * 6 + (textHeight * lineSpacingFactor) * 5 + (textHeight * paragraphSpacingFactor) * 4));
 
       // Cumulative vertical offsets to help make the test more readable.
-      let offsetY = -lineHeight;
+      let offsetY = -textHeight;
       let offsetX = indentation;
 
       expect(tb.lines[0].offsetFromDocument.y).to.equal(offsetY);
       expect(tb.lines[0].offsetFromDocument.x).to.equal(offsetX);
 
-      offsetY -= (lineHeight + lineHeight * lineSpacingFactor);
+      offsetY -= (textHeight + textHeight * lineSpacingFactor);
       expect(tb.lines[1].offsetFromDocument.y).to.equal(offsetY);
       expect(tb.lines[1].offsetFromDocument.x).to.equal(offsetX);
 
-      offsetY -= (lineHeight + lineHeight * lineSpacingFactor + lineHeight * paragraphSpacingFactor);
+      offsetY -= (textHeight + textHeight * lineSpacingFactor + textHeight * paragraphSpacingFactor);
       expect(tb.lines[2].offsetFromDocument.y).to.equal(offsetY);
       expect(tb.lines[2].offsetFromDocument.x).to.equal(offsetX);
 
       offsetX += tabInterval; // List items are indented using tabInterval.
-      offsetY -= (lineHeight + lineHeight * lineSpacingFactor + lineHeight * paragraphSpacingFactor);
+      offsetY -= (textHeight + textHeight * lineSpacingFactor + textHeight * paragraphSpacingFactor);
       expect(tb.lines[3].offsetFromDocument.y).to.equal(offsetY);
       expect(tb.lines[3].offsetFromDocument.x).to.equal(offsetX);
 
-      offsetY -= (lineHeight + lineHeight * lineSpacingFactor + lineHeight * paragraphSpacingFactor);
+      offsetY -= (textHeight + textHeight * lineSpacingFactor + textHeight * paragraphSpacingFactor);
       expect(tb.lines[4].offsetFromDocument.y).to.equal(offsetY);
       expect(tb.lines[4].offsetFromDocument.x).to.equal(offsetX);
 
-      offsetY -= (lineHeight + lineHeight * lineSpacingFactor + lineHeight * paragraphSpacingFactor);
+      offsetY -= (textHeight + textHeight * lineSpacingFactor + textHeight * paragraphSpacingFactor);
       expect(tb.lines[5].offsetFromDocument.y).to.equal(offsetY);
       expect(tb.lines[5].offsetFromDocument.x).to.equal(offsetX);
     });
@@ -638,7 +729,7 @@ describe("layoutTextBlock", () => {
         this.skip();
       }
 
-      const block = TextBlock.create({ width: 3, styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
+      const block = TextBlock.create({ width: 3, styleOverrides: { textHeight: 1, lineSpacingFactor: 0 } });
 
       function expectBlockRange(width: number, height: number): void {
         const layout = doLayout(block);
@@ -671,7 +762,7 @@ describe("layoutTextBlock", () => {
         this.skip();
       }
 
-      const block = TextBlock.create({ styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
+      const block = TextBlock.create({ styleOverrides: { textHeight: 1, lineSpacingFactor: 0 } });
 
       function expectBlockRange(width: number, height: number): void {
         const layout = doLayout(block);
@@ -691,7 +782,7 @@ describe("layoutTextBlock", () => {
 
     it("computes range for list markers and list items based on indentation", function () {
       const lineSpacingFactor = 2;
-      const lineHeight = 3;
+      const textHeight = 3;
       const paragraphSpacingFactor = 13;
       const indentation = 7;
       const tabInterval = 5;
@@ -767,7 +858,7 @@ describe("layoutTextBlock", () => {
         }
       ];
 
-      const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor, lineHeight, paragraphSpacingFactor, indentation, tabInterval } });
+      const textBlock = TextBlock.create({ styleOverrides: { lineSpacingFactor, textHeight, paragraphSpacingFactor, indentation, tabInterval } });
       const p1 = textBlock.appendParagraph();
       p1.children.push(List.create({ children: listChildren }));
 
@@ -783,9 +874,9 @@ describe("layoutTextBlock", () => {
         Where ↵ = LineBreak, ¶ = ParagraphBreak, → = tab, ￫ = tabInterval/2, ⇥ = indentation
 
         We have:
-          7 lines each `lineHeight` high
-          6 line breaks in between each `lineHeight*lineSpacingFactor` high
-          6 paragraph breaks in between each `lineHeight*paragraphSpacingFactor` high
+          7 lines each `textHeight` high
+          6 line breaks in between each `textHeight*lineSpacingFactor` high
+          6 paragraph breaks in between each `textHeight*paragraphSpacingFactor` high
       */
 
       const tb = doLayout(textBlock);
@@ -794,16 +885,16 @@ describe("layoutTextBlock", () => {
       expect(tb.range.low.x).to.equal(7 + 5 - 5 / 2 - 2); // indentation + tabInterval - tabInterval/2 (for marker offset) + 2 (for the marker "1." justification, it's 2 characters wide)
       expect(tb.range.high.x).to.equal(7 + 3 * 5 + 21); // 7 for indentation, 3 * 5 for the most nested tab stops, 21 for the length of "Rhode Island Greening"
       expect(tb.range.high.y).to.equal(0);
-      expect(tb.range.low.y).to.equal(-(lineHeight * 7 + (lineHeight * lineSpacingFactor) * 6 + (lineHeight * paragraphSpacingFactor) * 6));
+      expect(tb.range.low.y).to.equal(-(textHeight * 7 + (textHeight * lineSpacingFactor) * 6 + (textHeight * paragraphSpacingFactor) * 6));
 
       // Cumulative vertical offsets to help make the test more readable.
-      let offsetY = -lineHeight;
+      let offsetY = -textHeight;
 
       for (const line of tb.lines) {
         expect(line.offsetFromDocument.y).to.equal(offsetY);
         expect(line.marker).to.not.be.undefined;
-        expect(line.marker?.offsetFromLine.y).to.equal((lineHeight - line.marker!.range.yLength()) / 2);
-        offsetY -= (lineHeight + lineHeight * lineSpacingFactor + lineHeight * paragraphSpacingFactor);
+        expect(line.marker?.offsetFromLine.y).to.equal((textHeight - line.marker!.range.yLength()) / 2);
+        offsetY -= (textHeight + textHeight * lineSpacingFactor + textHeight * paragraphSpacingFactor);
       }
 
       let markerXLength = tb.lines[0].marker!.range.xLength();
@@ -845,13 +936,17 @@ describe("layoutTextBlock", () => {
 
       const block = TextBlock.create({ styleOverrides: { lineSpacingFactor: 0 } });
 
-      function expectBlockRange(width: number, height: number): void {
-        const layout = doLayout(block);
+      function expectBlockRange(width: number, height: number, justification: TextJustification): void {
+        const layout = doLayout(block, {
+          findTextStyle: () => TextStyleSettings.fromJSON({ justification })
+        });
         expectRange(width, height, layout.range);
       }
 
-      function expectLineOffset(offset: number, lineIndex: number): void {
-        const layout = doLayout(block);
+      function expectLineOffset(offset: number, lineIndex: number, justification: TextJustification): void {
+        const layout = doLayout(block, {
+          findTextStyle: () => TextStyleSettings.fromJSON({ justification }),
+        });
         expect(layout.lines.length).least(lineIndex + 1);
 
         const line = layout.lines[lineIndex];
@@ -864,80 +959,68 @@ describe("layoutTextBlock", () => {
       block.appendRun(makeTextRun("defg"));
 
       // 1 line of text with width 0: left, right, center justification.
-      block.justification = "left";
-      expectBlockRange(7, 1);
-      expectLineOffset(0, 0);
+      expectBlockRange(7, 1, "left");
+      expectLineOffset(0, 0, "left");
 
-      block.justification = "right";
-      expectBlockRange(7, 1);
-      expectLineOffset(0, 0);
+      expectBlockRange(7, 1, "right");
+      expectLineOffset(0, 0, "right");
 
-      block.justification = "center";
-      expectBlockRange(7, 1);
-      expectLineOffset(0, 0);
+      expectBlockRange(7, 1, "center");
+      expectLineOffset(0, 0, "center");
 
       // 1 line of text from a width greater than number of characters: left, right, center justification.
       block.width = 10;
 
-      block.justification = "left";
-      expectBlockRange(10, 1);
-      expectLineOffset(0, 0);
+      expectBlockRange(10, 1, "left");
+      expectLineOffset(0, 0, "left");
 
-      block.justification = "right";
-      expectBlockRange(10, 1);
-      expectLineOffset(3, 0); // 3 = 10 - 7
+      expectBlockRange(10, 1, "right");
+      expectLineOffset(3, 0, "right"); // 3 = 10 - 7
 
-      block.justification = "center";
-      expectBlockRange(10, 1);
-      expectLineOffset(1.5, 0); // 1.5 = (10 - 7) / 2
+      expectBlockRange(10, 1, "center");
+      expectLineOffset(1.5, 0, "center"); // 1.5 = (10 - 7) / 2
 
       // 2 line of text from a width less than number of characters: left, right, center justification.
-      block.justification = "left";
       block.width = 4;
-      expectBlockRange(4, 2);
-      expectLineOffset(0, 0);
-      expectLineOffset(0, 1);
+      expectBlockRange(4, 2, "left");
+      expectLineOffset(0, 0, "left");
+      expectLineOffset(0, 1, "left");
 
-      block.justification = "right";
-      expectBlockRange(4, 2);
-      expectLineOffset(1, 0);
-      expectLineOffset(0, 1);
+      expectBlockRange(4, 2, "right");
+      expectLineOffset(1, 0, "right");
+      expectLineOffset(0, 1, "right");
 
-      block.justification = "center";
-      expectBlockRange(4, 2);
-      expectLineOffset(0.5, 0);
-      expectLineOffset(0, 1);
+      expectBlockRange(4, 2, "center");
+      expectLineOffset(0.5, 0, "center");
+      expectLineOffset(0, 1, "center");
 
       // Testing text longer the the width of the text block.
       block.width = 2;
-      block.justification = "left";
-      expectBlockRange(4, 2);
-      expectLineOffset(0, 0);
-      expectLineOffset(0, 1);
+      expectBlockRange(4, 2, "left");
+      expectLineOffset(0, 0, "left");
+      expectLineOffset(0, 1, "left");
 
-      block.justification = "right";
-      expectBlockRange(4, 2);
-      expectLineOffset(-1, 0);
-      expectLineOffset(-2, 1);
+      expectBlockRange(4, 2, "right");
+      expectLineOffset(-1, 0, "right");
+      expectLineOffset(-2, 1, "right");
 
       block.appendRun(makeTextRun("123456789"));
-      expectBlockRange(9, 3);
-      expectLineOffset(-1, 0);
-      expectLineOffset(-2, 1);
-      expectLineOffset(-7, 2);
+      expectBlockRange(9, 3, "right");
+      expectLineOffset(-1, 0, "right");
+      expectLineOffset(-2, 1, "right");
+      expectLineOffset(-7, 2, "right");
 
-      block.justification = "center";
-      expectBlockRange(9, 3);
-      expectLineOffset(-0.5, 0);
-      expectLineOffset(-1, 1);
-      expectLineOffset(-3.5, 2);
+      expectBlockRange(9, 3, "center");
+      expectLineOffset(-0.5, 0, "center");
+      expectLineOffset(-1, 1, "center");
+      expectLineOffset(-3.5, 2, "center");
     });
   });
 
   describe("word-wrapping", () => {
 
     function expectLines(input: string, width: number, expectedLines: string[]): TextBlockLayout {
-      const textBlock = TextBlock.create({ styleOverrides: { paragraphSpacingFactor: 0, lineSpacingFactor: 0, lineHeight: 1 } });
+      const textBlock = TextBlock.create({ styleOverrides: { paragraphSpacingFactor: 0, lineSpacingFactor: 0, textHeight: 1 } });
       textBlock.width = width;
       const run = makeTextRun(input);
       textBlock.appendRun(run);
@@ -1058,8 +1141,8 @@ describe("layoutTextBlock", () => {
         this.skip();
       }
 
-      const lineHeight = 1;
-      const textBlock = TextBlock.create({ styleOverrides: { lineHeight } });
+      const textHeight = 1;
+      const textBlock = TextBlock.create({ styleOverrides: { textHeight } });
 
       // line 0:  -->-->------> LINEBREAK
       textBlock.appendRun(TabRun.create({ styleOverrides: { tabInterval: 3 } }));
@@ -1233,7 +1316,7 @@ describe("layoutTextBlock", () => {
         this.skip();
       }
 
-      const block = TextBlock.create({ styleOverrides: { lineHeight: 1, lineSpacingFactor: 0 } });
+      const block = TextBlock.create({ styleOverrides: { textHeight: 1, lineSpacingFactor: 0 } });
       block.appendRun(makeTextRun("abc defg"));
       const layout1 = doLayout(block);
       let width = layout1.range.xLength();
@@ -1249,7 +1332,7 @@ describe("layoutTextBlock", () => {
         this.skip();
       }
 
-      const textBlock = TextBlock.create({ styleOverrides: { indentation: 2, tabInterval: 3, lineHeight: 1, lineSpacingFactor: 0, paragraphSpacingFactor: 0 } });
+      const textBlock = TextBlock.create({ styleOverrides: { indentation: 2, tabInterval: 3, textHeight: 1, lineSpacingFactor: 0, paragraphSpacingFactor: 0 } });
 
       /* Final TextBlock should look like:
         ⇥￫1.￫Lorem ipsum dolor sit amet, consectetur adipiscing elit¶     | Inset by 5
@@ -1461,7 +1544,7 @@ describe("layoutTextBlock", () => {
 
       function test(fontName: string, expectedFontId: number): void {
         const textBlock = TextBlock.create();
-        textBlock.appendRun(TextRun.create({ styleOverrides: { fontName } }));
+        textBlock.appendRun(TextRun.create({ styleOverrides: { font: { name: fontName } } }));
         const textStyleResolver = new TextStyleResolver({textBlock, textStyleId: "", iModel});
         const layout = layoutTextBlock({ textBlock, iModel, textStyleResolver });
         const run = layout.lines[0].runs[0];
@@ -1480,7 +1563,7 @@ describe("layoutTextBlock", () => {
     function computeDimensions(args: { content?: string, bold?: boolean, italic?: boolean, font?: string, height?: number, width?: number }): { x: number, y: number } {
       const textBlock = TextBlock.create({
         styleOverrides: {
-          lineHeight: args.height,
+          textHeight: args.height,
           widthFactor: args.width,
         },
       });
@@ -1490,7 +1573,7 @@ describe("layoutTextBlock", () => {
         styleOverrides: {
           isBold: args.bold,
           isItalic: args.italic,
-          fontName: args.font ?? "Vera",
+          font: { name: args.font ?? "Vera" },
         },
       }));
 
@@ -1528,7 +1611,7 @@ describe("layoutTextBlock", () => {
           italic: false,
           fontId: 1,
           widthFactor: 1,
-          lineHeight: 1,
+          textHeight: 1,
           baselineShift: "none",
         });
       }
@@ -1793,16 +1876,17 @@ describe("produceTextBlockGeometry", () => {
     function makeGeometryWithMargins(anchor: TextAnnotationAnchor, margins: TextBlockMargins): TextStringProps | undefined {
       const runs = [makeText()];
       const block = makeTextBlock(runs);
-      block.margins = margins;
       const annotation = TextAnnotation.fromJSON({ textBlock: block.toJSON() });
       annotation.anchor = anchor;
-      const layout = doLayout(block);
+      const layout = doLayout(block, {
+        findTextStyle: () => TextStyleSettings.fromJSON({ margins: { ...margins } }),
+      });
       const geom = produceTextBlockGeometry(layout, annotation.computeTransform(layout.range)).entries;
 
       return geom[1].text;
     }
 
-    function testMargins(margins: TextBlockMargins, height: number, width: number) {
+    function testMargins(margins: Required<TextBlockMargins>, height: number, width: number) {
       // We want to disregard negative margins. Note, I'm not changing the margins object itself. It gets passed into makeGeometryWithMargins as it is.
       const left = margins.left >= 0 ? margins.left : 0;
       const right = margins.right >= 0 ? margins.right : 0;
