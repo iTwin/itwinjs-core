@@ -11212,6 +11212,12 @@ export interface UrlLinkProps extends ElementProps {
     url?: string;
 }
 
+// @beta
+export interface VersionedJSON<T> {
+    data: T;
+    version: string;
+}
+
 // @public
 export class VerticalCRS implements VerticalCRSProps {
     constructor(data?: VerticalCRSProps);

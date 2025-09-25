@@ -1015,6 +1015,7 @@ public;type;UpdateCallback
 beta;interface;UpgradeOptions
 public;interface;UrlLinkProps
 preview;interface;UrlLinkProps
+beta;interface;VersionedJSON
 public;class;VerticalCRS
 public;interface;VerticalCRSProps
 public;interface;ViewAttachmentLabelProps
