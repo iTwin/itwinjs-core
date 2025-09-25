@@ -1,6 +1,11 @@
 # Change Log - @itwin/rpcinterface-full-stack-tests
 
-This log was last generated on Wed, 17 Sep 2025 17:22:51 GMT and should not be manually modified.
+This log was last generated on Wed, 24 Sep 2025 17:43:58 GMT and should not be manually modified.
+
+## 5.1.9
+Wed, 24 Sep 2025 17:38:08 GMT
+
+_Version update only_
 
 ## 5.1.8
 Wed, 17 Sep 2025 17:17:16 GMT
