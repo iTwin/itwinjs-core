@@ -20,7 +20,6 @@ import {
 } from "cesium";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
-import { CesiumCoordinateConverter } from "./CesiumCoordinateConverter.js";
 import { DecorationPrimitiveEntry, SolidPrimitiveEntry } from "./DecorationTypes.js";
 
 export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
@@ -30,8 +29,8 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     return scene.primitivesCollection;
   }
 
-  protected override extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[] | undefined, primitiveType: string): DecorationPrimitiveEntry[] | undefined {
-    if (!coordinateData || !Array.isArray(coordinateData))
+  protected override extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[], primitiveType: string): DecorationPrimitiveEntry[] | undefined {
+    if (!Array.isArray(coordinateData))
       return undefined;
     return coordinateData.filter((entry: DecorationPrimitiveEntry) => entry.type === primitiveType);
   }
@@ -42,28 +41,27 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     _index: number,
     _collection: PrimitiveCollection,
     iModel?: IModelConnection,
-    originalData?: unknown,
+    originalData?: DecorationPrimitiveEntry[],
     _type?: string
-  ): Primitive | null {
-    const entries = Array.isArray(originalData) ? (originalData as DecorationPrimitiveEntry[]) : undefined;
-    const solidEntry = entries?.find((e): e is SolidPrimitiveEntry => e.type === 'solidPrimitive');
+  ): Primitive | undefined {
+    const solidEntry = originalData?.find((e): e is SolidPrimitiveEntry => e.type === 'solidPrimitive');
     const solidPrimitive = solidEntry?.solidPrimitive;
 
     if (!solidPrimitive) {
-      return null;
+      return undefined;
     }
 
     // Convert SolidPrimitive to appropriate Cesium geometry with positioning
     const geometryResult = this.convertSolidPrimitiveToGeometry(solidPrimitive, iModel);
     if (!geometryResult) {
-      return null;
+      return undefined;
     }
 
     const { geometry, modelMatrix } = geometryResult;
 
     const colors = this.extractFillAndLineColorsFromGraphic(graphic, 'solidPrimitive');
     if (!colors) {
-      return null;
+      return undefined;
     }
 
     const { fillColor } = colors;
@@ -105,7 +103,7 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     }
   }
 
-  private convertSolidPrimitiveToGeometry(solidPrimitive: SolidPrimitive, iModel?: IModelConnection): { geometry: BoxGeometry | SphereGeometry | CylinderGeometry; modelMatrix: Matrix4 } | null {
+  private convertSolidPrimitiveToGeometry(solidPrimitive: SolidPrimitive, iModel?: IModelConnection): { geometry: BoxGeometry | SphereGeometry | CylinderGeometry; modelMatrix: Matrix4 } | undefined {
     switch (solidPrimitive.solidPrimitiveType) {
       case 'box':
         return this.convertBoxToGeometry(solidPrimitive as Box, iModel);
@@ -114,15 +112,15 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
       case 'cone':
         return this.convertConeToGeometry(solidPrimitive as Cone, iModel);
       default:
-        return null;
+        return undefined;
     }
   }
 
-  private convertBoxToGeometry(box: Box, iModel?: IModelConnection): { geometry: BoxGeometry; modelMatrix: Matrix4 } | null {
+  private convertBoxToGeometry(box: Box, iModel?: IModelConnection): { geometry: BoxGeometry; modelMatrix: Matrix4 } | undefined {
     // Get box corner points
     const corners = box.getCorners();
     if (!corners || corners.length !== 8)
-      return null;
+      return undefined;
 
     // Calculate min and max from corners
     let minX = corners[0].x, maxX = corners[0].x;
@@ -156,22 +154,20 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     });
 
     // Create translation using Cesium coordinates (keep consistent with other converters)
-    const converter = iModel ? new CesiumCoordinateConverter(iModel) : undefined;
-    const cesiumCenter = converter
-      ? converter.spatialToCesiumCartesian3(new Point3d(centerX, centerY, centerZ))
-      : new Cartesian3(centerX, centerY, centerZ);
+    const [cesiumCenter] = this.convertPointsToCartesian3([Point3d.create(centerX, centerY, centerZ)], iModel);
+    if (!cesiumCenter)
+      return undefined;
     const modelMatrix = Matrix4.fromTranslation(cesiumCenter);
 
     return { geometry: boxGeometry, modelMatrix };
   }
 
-  private convertSphereToGeometry(sphere: Sphere, iModel?: IModelConnection): { geometry: SphereGeometry; modelMatrix: Matrix4 } | null {
+  private convertSphereToGeometry(sphere: Sphere, iModel?: IModelConnection): { geometry: SphereGeometry; modelMatrix: Matrix4 } | undefined {
     // Get sphere properties using iTwin.js methods
     const center = sphere.cloneCenter();
 
     // Use the radius from the sphere creation (which should be 15000)
     let radius = 15000; // Use the radius from CesiumDecorator
-
 
     const transform = sphere.getConstructiveFrame();
     if (transform) {
@@ -183,12 +179,11 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
       }
     }
 
-
     // Clamp radius to reasonable bounds
     radius = Math.max(5000, Math.min(radius, 50000));
 
     if (!center || radius <= 0) {
-      return null;
+      return undefined;
     }
 
     // Create sphere geometry at origin
@@ -200,30 +195,29 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     });
 
     // Create translation using Cesium coordinates (keep consistent with other converters)
-    const converter = iModel ? new CesiumCoordinateConverter(iModel) : undefined;
-    const cesiumCenter = converter
-      ? converter.spatialToCesiumCartesian3(center)
-      : new Cartesian3(center.x, center.y, center.z);
+    const [cesiumCenter] = this.convertPointsToCartesian3([center], iModel);
+    if (!cesiumCenter)
+      return undefined;
     const modelMatrix = Matrix4.fromTranslation(cesiumCenter);
 
     return { geometry: sphereGeometry, modelMatrix };
   }
 
-  private convertConeToGeometry(cone: Cone, iModel?: IModelConnection): { geometry: CylinderGeometry; modelMatrix: Matrix4 } | null {
+  private convertConeToGeometry(cone: Cone, iModel?: IModelConnection): { geometry: CylinderGeometry; modelMatrix: Matrix4 } | undefined {
     const centerA = cone.getCenterA();
     const centerB = cone.getCenterB();
     const radiusA = cone.getRadiusA();
     const radiusB = cone.getRadiusB();
 
     if (!centerA || !centerB) {
-      return null;
+      return undefined;
     }
 
     // Calculate length from center points
     const length = centerA.distance(centerB);
 
     if (length <= 0) {
-      return null;
+      return undefined;
     }
 
     // Create cylinder geometry at origin
@@ -241,10 +235,9 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     const centerZ = (centerA.z + centerB.z) / 2;
 
     // Create translation using Cesium coordinates (keep consistent with other converters)
-    const converter = iModel ? new CesiumCoordinateConverter(iModel) : undefined;
-    const cesiumCenter = converter
-      ? converter.spatialToCesiumCartesian3(new Point3d(centerX, centerY, centerZ))
-      : new Cartesian3(centerX, centerY, centerZ);
+    const [cesiumCenter] = this.convertPointsToCartesian3([Point3d.create(centerX, centerY, centerZ)], iModel);
+    if (!cesiumCenter)
+      return undefined;
     const modelMatrix = Matrix4.fromTranslation(cesiumCenter);
 
     return { geometry: cylinderGeometry, modelMatrix };

@@ -2,11 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module Cesium
- */
-
-import { PrimitiveConverter } from "./PrimitiveConverter.js";
 import { PointPrimitiveConverter } from "./PointPrimitiveConverter.js";
 import { LineStringPrimitiveConverter } from "./LineStringPrimitiveConverter.js";
 import { ShapePrimitiveConverter } from "./ShapePrimitiveConverter.js";
@@ -18,9 +13,19 @@ import { SolidPrimitivePrimitiveConverter } from "./SolidPrimitivePrimitiveConve
 import { CoordinateBuilder } from "./CoordinateBuilder.js";
 import { CoordinateStorage } from "./CoordinateStorage.js";
 
+type RegisteredPrimitiveConverter =
+  | PointPrimitiveConverter
+  | LineStringPrimitiveConverter
+  | ShapePrimitiveConverter
+  | ArcPrimitiveConverter
+  | PathPrimitiveConverter
+  | LoopPrimitiveConverter
+  | PolyfacePrimitiveConverter
+  | SolidPrimitivePrimitiveConverter;
+
 /** Factory for creating geometry-specific primitive converters */
 export class PrimitiveConverterFactory {
-  private static _converters = new Map<string, PrimitiveConverter>();
+  private static _converters = new Map<string, RegisteredPrimitiveConverter>();
 
   static {
     this.registerDefaultConverters();
@@ -53,11 +58,11 @@ export class PrimitiveConverterFactory {
     this._converters.set('solidPrimitive', new SolidPrimitivePrimitiveConverter());
   }
 
-  public static getConverter(geometryType?: string): PrimitiveConverter | undefined {
+  public static getConverter(geometryType?: string): RegisteredPrimitiveConverter | undefined {
     return this._converters.get(geometryType || 'pointstring');
   }
 
-  public static setConverter(geometryType: string, converter: PrimitiveConverter): void {
+  public static setConverter(geometryType: string, converter: RegisteredPrimitiveConverter): void {
     this._converters.set(geometryType, converter);
   }
 

@@ -2,9 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module Cesium
- */
 
 import { Arc3d, Loop, Path, Point2d, Point3d, Polyface, SolidPrimitive } from "@itwin/core-geometry";
 import { _implementationProhibited, CustomGraphicBuilderOptions, GraphicBuilder, GraphicTemplate, RenderGraphic, ViewportGraphicBuilderOptions } from "@itwin/core-frontend";

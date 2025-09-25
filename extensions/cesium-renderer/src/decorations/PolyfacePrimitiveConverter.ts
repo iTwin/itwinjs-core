@@ -5,32 +5,33 @@
 
 import { IModelConnection } from "@itwin/core-frontend";
 import { Point3d, Polyface } from "@itwin/core-geometry";
-import { 
-  BoundingSphere, 
-  Cartesian3, 
-  ColorGeometryInstanceAttribute, 
-  ComponentDatatype, 
-  Geometry, 
+import {
+  BoundingSphere,
+  Cartesian3,
+  ColorGeometryInstanceAttribute,
+  ComponentDatatype,
+  Geometry,
   GeometryAttribute,
   GeometryAttributes,
-  GeometryInstance, 
-  PerInstanceColorAppearance, 
+  GeometryInstance,
+  PerInstanceColorAppearance,
   Primitive,
-  PrimitiveType, 
+  PrimitiveCollection,
+  PrimitiveType,
 } from "cesium";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
-import { DecorationPrimitiveEntry } from "./DecorationTypes.js";
+import type { DecorationPrimitiveEntry, PolyfaceEntry } from "./DecorationTypes.js";
 
 export class PolyfacePrimitiveConverter extends PrimitiveConverter {
   protected readonly primitiveType = 'polyface' as const;
 
-  protected override getCollection(scene: CesiumScene): import('cesium').PrimitiveCollection {
+  protected override getCollection(scene: CesiumScene): PrimitiveCollection {
     return scene.primitivesCollection;
   }
 
-  protected override extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[] | undefined, primitiveType: string): DecorationPrimitiveEntry[] | undefined {
-    if (!coordinateData || !Array.isArray(coordinateData))
+  protected override extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[], primitiveType: string): DecorationPrimitiveEntry[] | undefined {
+    if (!Array.isArray(coordinateData))
       return undefined;
     return coordinateData.filter((entry: DecorationPrimitiveEntry) => entry.type === primitiveType);
   }
@@ -39,28 +40,26 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
     graphic: RenderGraphicWithCoordinates,
     primitiveId: string,
     _index: number,
-    _collection: import('cesium').PrimitiveCollection,
+    _collection: PrimitiveCollection,
     iModel?: IModelConnection,
-    originalData?: unknown,
+    originalData?: DecorationPrimitiveEntry[],
     _type?: string
-  ): Primitive | null {
-    const data = Array.isArray(originalData) ? (originalData as DecorationPrimitiveEntry[]) : undefined;
-    const isPolyfaceEntry = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').PolyfaceEntry => e.type === 'polyface';
-    const polyfaceEntry = Array.isArray(data) ? data.find((e): e is import('./DecorationTypes.js').PolyfaceEntry => isPolyfaceEntry(e)) : undefined;
+  ): Primitive | undefined {
+    const polyfaceEntry = originalData?.find((e): e is PolyfaceEntry => e.type === 'polyface');
     const polyface = polyfaceEntry?.polyface;
     const filled = polyfaceEntry?.filled ?? true;
-    
+
     if (!polyface)
-      return null;
+      return undefined;
 
     // Convert IndexedPolyface to Cesium geometry
     const geometry = this.convertPolyfaceToGeometry(polyface, iModel);
     if (!geometry)
-      return null;
+      return undefined;
 
     const colors = this.extractFillAndLineColorsFromGraphic(graphic, 'polyface');
     if (!colors)
-      return null;
+      return undefined;
 
     const { fillColor, lineColor } = colors;
     const color = filled ? fillColor : lineColor;
@@ -74,8 +73,8 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
       },
     });
 
-    const appearance = new PerInstanceColorAppearance({ 
-      flat: true, 
+    const appearance = new PerInstanceColorAppearance({
+      flat: true,
       translucent,
     });
 
@@ -101,14 +100,14 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
     }
   }
 
-  private convertPolyfaceToGeometry(polyface: Polyface, iModel?: IModelConnection): Geometry | null {
+  private convertPolyfaceToGeometry(polyface: Polyface, iModel?: IModelConnection): Geometry | undefined {
     if (!polyface.data.point || !polyface.data.pointIndex)
-      return null;
+      return undefined;
 
     // Extract vertices from polyface
     const points = polyface.data.point.getArray();
     if (!points || points.length === 0)
-      return null;
+      return undefined;
 
     // Convert to Cartesian3 positions
     const positions = new Float64Array(points.length * 3);
@@ -122,10 +121,10 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
     // Use iTwin.js visitor to properly extract triangulated indices
     const visitor = polyface.createVisitor(0);
     const triangleIndices: number[] = [];
-    
+
     while (visitor.moveToNextFacet()) {
       const numVertices = visitor.pointCount;
-      
+
       if (numVertices === 3) {
         // Triangle - add directly
         triangleIndices.push(visitor.clientPointIndex(0));
@@ -137,7 +136,7 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
         const i1 = visitor.clientPointIndex(1);
         const i2 = visitor.clientPointIndex(2);
         const i3 = visitor.clientPointIndex(3);
-        
+
         // First triangle: 0,1,2
         triangleIndices.push(i0, i1, i2);
         // Second triangle: 0,2,3
@@ -146,7 +145,7 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
     }
 
     if (triangleIndices.length === 0)
-      return null;
+      return undefined;
 
     // Create geometry attributes using triangulated indices
     const indices = triangleIndices;
@@ -163,7 +162,7 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
     if (polyface.data.normal && polyface.data.normalIndex) {
       const normals = polyface.data.normal.getArray();
       const normalData = new Float32Array(points.length * 3);
-      
+
       // Map normals using normal indices
       const normalIndices = polyface.data.normalIndex;
       let vertexIndex = 0;
@@ -176,7 +175,7 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
           vertexIndex++;
         }
       }
-      
+
       attributes.normal = new GeometryAttribute({
         componentDatatype: ComponentDatatype.FLOAT,
         componentsPerAttribute: 3,
