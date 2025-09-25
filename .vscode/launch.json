@@ -1135,6 +1135,21 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Run Vitest Browser Cesium",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/extensions/cesium-renderer", // necessary to pick up frontend's vitest config
+      "program": "node_modules/vitest/vitest.mjs",
+      "args": [
+        "--run",
+        "--inspect",
+        "--no-file-parallelism",
+        "--test-timeout=0"
+      ], // disable test timeout while debugging
+      "autoAttachChildProcesses": true
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Compile test worker for frontend tests",
       "console": "integratedTerminal",
       "runtimeExecutable": "pnpm",
@@ -1156,6 +1171,19 @@
         "Run Vitest Browser"
       ],
       "preLaunchTask": "Run webpack for frontend test worker",
+      "stopAll": true
+    },
+    {
+      "name": "Cesium Renderer Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 2
+      },
+      "configurations": [
+        "Attach to Vitest Browser",
+        "Run Vitest Browser Cesium"
+      ],
+      // "preLaunchTask": "Run webpack for frontend test worker",
       "stopAll": true
     },
     {

@@ -171,7 +171,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     if (isOverlay) {
       return {
         ...baseOptions,
-        extrudedHeight: 0
+        // extrudedHeight: 0
       };
     }
 
