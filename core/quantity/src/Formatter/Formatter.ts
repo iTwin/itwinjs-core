@@ -178,13 +178,26 @@ export class Formatter {
   private static formatCompositePart(compositeValue: number, isLastPart: boolean, label: string, spec: FormatterSpec): string {
     let componentText = "";
     if (!isLastPart) {
-      componentText = Formatter.integerPartToText(compositeValue, spec);
-      if(spec.format.minWidth) { // integerPartToText does not do this padding
+      // For non-last parts, handle potential negative values from unit conversions
+      if (compositeValue < 0) {
+        componentText = `-${Formatter.integerPartToText(Math.abs(compositeValue), spec)}`;
+      } else {
+        componentText = Formatter.integerPartToText(compositeValue, spec);
+      }
+      if (spec.format.minWidth) {
+        // integerPartToText does not do this padding
         componentText = this.countAndPad(componentText, spec.format.minWidth);
       }
     } else {
-      componentText = Formatter.formatMagnitude(compositeValue, spec);
+      // For the last part in composite formatting, we need to preserve sign information
+      // that may have been introduced by unit conversions (e.g., temperature conversions)
+      if (compositeValue < 0) {
+        componentText = `-${Formatter.formatMagnitude(Math.abs(compositeValue), spec)}`;
+      } else {
+        componentText = Formatter.formatMagnitude(compositeValue, spec);
+      }
     }
+
 
     if (spec.format.hasFormatTraitSet(FormatTraits.ShowUnitLabel)) {
       componentText = componentText + spec.format.uomSeparator + label;
@@ -394,42 +407,32 @@ export class Formatter {
     return value;
   }
 
-  /** Format a quantity value into a single text string based on the current format specification of this class.
-   *  @param magnitude   defines the value to spec.format.
-   *  @param spec      A FormatterSpec object the defines specification for the magnitude and unit conversions for the formatter.
+  /** Helper function to apply sign formatting based on showSignOption
+   *  @param isNegative   whether the value should be treated as negative
+   *  @param showSignOption   the sign display option
+   *  @param formatType   the format type (to handle bearing/azimuth exceptions)
+   *  @returns object containing prefix and suffix strings
    */
-  public static formatQuantity(magnitude: number, spec: FormatterSpec): string {
-    const valueIsNegative = magnitude < 0.0;
+  private static applySignFormatting(isNegative: boolean, showSignOption: ShowSignOption, formatType: FormatType): { prefix: string, suffix: string } {
     let prefix = "";
     let suffix = "";
-    let formattedValue = "";
-    if(spec.format.type === FormatType.Bearing || spec.format.type === FormatType.Azimuth) {
-      const result = this.processBearingAndAzimuth(magnitude, spec);
-      magnitude = result.magnitude;
-      prefix = result.prefix ?? "";
-      suffix = result.suffix ?? "";
-    }
 
-    switch (spec.format.showSignOption) {
+    switch (showSignOption) {
       case ShowSignOption.NegativeParentheses:
-        if (valueIsNegative) {
-          prefix += "(";
-          suffix = `)${suffix}`;
+        if (isNegative) {
+          prefix = "(";
+          suffix = ")";
         }
         break;
 
       case ShowSignOption.OnlyNegative:
-        if (valueIsNegative && spec.format.type !== FormatType.Bearing && spec.format.type !== FormatType.Azimuth)
-          prefix += "-";
-
+        if (isNegative && formatType !== FormatType.Bearing && formatType !== FormatType.Azimuth) {
+          prefix = "-";
+        }
         break;
 
       case ShowSignOption.SignAlways:
-        if (valueIsNegative)
-          prefix += "-";
-        else
-          prefix += "+";
-
+        prefix = isNegative ? "-" : "+";
         break;
 
       case ShowSignOption.NoSign:
@@ -437,10 +440,40 @@ export class Formatter {
         break;
     }
 
+    return { prefix, suffix };
+  }
+
+  /** Format a quantity value into a single text string based on the current format specification of this class.
+   *  @param magnitude   defines the value to spec.format.
+   *  @param spec      A FormatterSpec object the defines specification for the magnitude and unit conversions for the formatter.
+   */
+  public static formatQuantity(magnitude: number, spec: FormatterSpec): string {
+    let valueIsNegative = magnitude < 0.0;
+    let prefix = "";
+    let suffix = "";
+    let formattedValue = "";
+
+    // Handle bearing/azimuth special formatting
+    if (spec.format.type === FormatType.Bearing || spec.format.type === FormatType.Azimuth) {
+      const result = this.processBearingAndAzimuth(magnitude, spec);
+      magnitude = result.magnitude;
+      prefix = result.prefix ?? "";
+      suffix = result.suffix ?? "";
+    }
+
     let formattedMagnitude = "";
 
     if (spec.format.hasUnits) {
-      formattedMagnitude = Formatter.formatComposite(magnitude, spec);
+      if (spec.format.units?.length === 1) {
+        const singleResult = Formatter.formatSingle(magnitude, spec);
+        formattedMagnitude = singleResult.componentText;
+
+        // Override the sign detection with the unit conversion result
+        valueIsNegative = singleResult.isNegative;
+      } else {
+        formattedMagnitude = Formatter.formatComposite(magnitude, spec);
+        // For composite formats, keep original sign detection
+      }
     } else {
       // unitless quantity
       formattedMagnitude = Formatter.formatMagnitude(magnitude, spec);
@@ -450,7 +483,14 @@ export class Formatter {
         else
           formattedMagnitude = formattedMagnitude + spec.format.uomSeparator + spec.unitConversions[0].label;
       }
+      // For unitless quantities, keep original sign detection
     }
+
+    // Apply sign formatting based on the final determined sign
+    const signFormatting = this.applySignFormatting(valueIsNegative, spec.format.showSignOption, spec.format.type);
+    prefix += signFormatting.prefix;
+    suffix = signFormatting.suffix + suffix;
+
     // add Sign prefix and suffix as necessary
     if ((prefix.length > 0 || suffix.length > 0) && formattedMagnitude.length > 0)
       formattedValue = prefix + formattedMagnitude + suffix;
@@ -565,6 +605,64 @@ export class Formatter {
     }
 
     return converted.magnitude;
+  }
+
+  /** Format a quantity value for a single unit format, preserving sign information from unit conversions.
+   *  @param magnitude   quantity value (preserves original sign)
+   *  @param spec        FormatterSpec object
+   *  @returns object containing formatted text and whether the converted value is negative
+   */
+  private static formatSingle(magnitude: number, spec: FormatterSpec): { componentText: string, isNegative: boolean } {
+    if (!spec.unitConversions || spec.unitConversions.length === 0) {
+      throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format ${spec.format.name} has no unit conversions specified.`);
+    }
+
+    const unitConversion = spec.unitConversions[0].conversion;
+    const currentLabel = spec.unitConversions[0].label;
+
+    // Apply conversion to the original magnitude (preserving sign)
+    let unitValue = 0.0;
+    let isNegative = false;
+
+    // Handle Ratio format type specially
+    if (spec.format.type === FormatType.Ratio) {
+      if (spec.format.units && 1 !== spec.format.units.length) {
+        throw new QuantityError(QuantityStatus.InvalidCompositeFormat, `The Format '${spec.format.name}' with type 'ratio' must have exactly one unit.`);
+      }
+
+      try {
+        unitValue = applyConversion(magnitude, unitConversion) + this.FPV_MINTHRESHOLD;
+        isNegative = unitValue < 0;
+      } catch (e) {
+        // The "InvertingZero" error is thrown when the value is zero and the conversion factor is inverted.
+        // For ratio, we actually want to support this corner case and return "1:0" as the formatted value.
+        if (e instanceof QuantityError && e.errorNumber === QuantityStatus.InvertingZero) {
+          return { componentText: "1:0", isNegative: false };
+        }
+        throw e; // Re-throw if it's a different error
+      }
+
+      const ratioText = this.formatRatio(Math.abs(unitValue), spec);
+      return { componentText: ratioText, isNegative };
+    }
+
+    // Regular single unit formatting
+    unitValue = applyConversion(magnitude, unitConversion) + this.FPV_MINTHRESHOLD;
+    isNegative = unitValue < 0;
+
+    // Apply precision rounding for first/only unit
+    const precisionScale = Math.pow(10, 8);  // use a fixed round off precision of 8 to avoid loss of precision
+    unitValue = Math.floor(Math.abs(unitValue) * precisionScale + FPV_ROUNDFACTOR) / precisionScale;
+
+    // Check for zero empty trait
+    if ((Math.abs(unitValue) < 0.0001) && spec.format.hasFormatTraitSet(FormatTraits.ZeroEmpty)) {
+      return { componentText: "", isNegative: false };
+    }
+
+    // Use formatCompositePart with isLastPart = true and absolute value
+    const componentText = Formatter.formatCompositePart(unitValue, true, currentLabel, spec);
+
+    return { componentText, isNegative };
   }
 
   private static formatRatio(magnitude: number, spec: FormatterSpec): string {
