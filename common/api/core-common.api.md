@@ -10341,7 +10341,6 @@ export type TextStyleColor = ColorDefProps | "subcategory";
 // @beta
 export class TextStyleSettings {
     clone(alteredProps?: TextStyleSettingsProps): TextStyleSettings;
-    static cloneProps(props: TextStyleSettingsProps): TextStyleSettingsProps;
     readonly color: TextStyleColor;
     static defaultProps: DeepReadonlyObject<DeepRequiredObject<TextStyleSettingsProps>>;
     static defaults: TextStyleSettings;
