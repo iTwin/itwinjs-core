@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { AnnotationTextStyleProps, BisCodeSpec, Code, CodeProps, CodeScopeProps, CodeSpec, ElementGeometry, ElementGeometryBuilderParams, EntityReferenceSet, Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { AnnotationTextStyleProps, BisCodeSpec, Code, CodeProps, CodeScopeProps, CodeSpec, ElementGeometry, ElementGeometryBuilderParams, EntityReferenceSet, Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps, traverseTextBlockComponent } from "@itwin/core-common";
 import { IModelDb } from "../IModelDb";
 import { AnnotationElement2d, DefinitionElement, Drawing, GraphicalElement3d, OnElementIdArg, OnElementPropsArg } from "../Element";
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
@@ -355,6 +355,18 @@ function collectReferenceIds(elem: TextAnnotation2d | TextAnnotation3d, referenc
   const style = elem.defaultTextStyle?.id;
   if (style && Id64.isValidId64(style)) {
     referenceIds.addElement(style);
+  }
+
+  const block = elem.getAnnotation()?.textBlock;
+  if (block) {
+    for (const { child } of traverseTextBlockComponent(block)) {
+      if (child.type === "field") {
+        const hostId = child.propertyHost.elementId;
+        if (Id64.isValidId64(hostId)) {
+          referenceIds.addElement(hostId);
+        }
+      }
+    }
   }
 }
 

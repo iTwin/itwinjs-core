@@ -207,6 +207,16 @@ describe("TextAnnotation element", () => {
   describe.only("getReferenceIds", () => {
     function expectReferenceIds(expected: Id64String[], element: TextAnnotation2d): void {
       const actual = Array.from(element.getReferenceIds()).sort();
+
+      // reference Ids get a prefix indicating their type ('e' for 'element')
+      expected = expected.map((id) => `e${id}`);
+
+      // the superclasses provide some reference Ids (code spec, model, etc)
+      const baseIds = Array.from(makeElement().getReferenceIds());
+      expect(baseIds.length).to.equal(4);
+      expected.push(...baseIds);
+      console.log(baseIds);
+
       expected = expected.sort();
       expect(actual).to.deep.equal(expected);
     }
