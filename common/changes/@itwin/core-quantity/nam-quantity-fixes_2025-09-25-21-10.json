@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Handle formatting cases where after unit conversion, sign is changed",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}
