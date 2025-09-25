@@ -199,7 +199,7 @@ describe.only("EDE Tests", () => {
     HubMock.shutdown();
   });
 
-  it("should insert and count nodes", async () => {
+  it("cyclical graph creation and validation", async () => {
     const b1 = await openBriefcase();
     const { modelId, categoryId } = await Engine.initialize(b1);
 
