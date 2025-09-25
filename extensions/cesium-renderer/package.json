@@ -51,9 +51,11 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@types/node": "~20.17.0",
+    "@vitest/browser": "^3.0.6",
     "cpx2": "^8.0.0",
     "eslint": "^9.31.0",
     "internal-tools": "workspace:*",
+    "playwright": "~1.47.1",
     "rimraf": "^6.0.1",
     "typescript": "~5.6.2",
     "vitest": "^3.0.6"
