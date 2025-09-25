@@ -6,10 +6,10 @@
  * @module Elements
  */
 
-import { AnnotationTextStyleProps, BisCodeSpec, Code, CodeProps, CodeScopeProps, CodeSpec, ElementGeometry, ElementGeometryBuilderParams, Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { AnnotationTextStyleProps, BisCodeSpec, Code, CodeProps, CodeScopeProps, CodeSpec, ElementGeometry, ElementGeometryBuilderParams, EntityReferenceSet, Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { IModelDb } from "../IModelDb";
 import { AnnotationElement2d, DefinitionElement, Drawing, GraphicalElement3d, OnElementIdArg, OnElementPropsArg } from "../Element";
-import { assert, Id64String } from "@itwin/core-bentley";
+import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { layoutTextBlock, TextStyleResolver } from "./TextBlockLayout";
 import { appendTextAnnotationGeometry } from "./TextAnnotationGeometry";
 import { ElementDrivesTextAnnotation, TextAnnotationUsesTextStyleByDefault, TextBlockAndId } from "./ElementDrivesTextAnnotation";
@@ -206,6 +206,11 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
     super.onUpdated(arg);
     ElementDrivesTextAnnotation.updateFieldDependencies(arg.id, arg.iModel);
   }
+
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
+    collectReferenceIds(this, referenceIds);
+  }
 }
 
 /** An element that displays textual content within a 3d model.
@@ -338,6 +343,18 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
   public static override onUpdated(arg: OnElementIdArg): void {
     super.onUpdated(arg);
     ElementDrivesTextAnnotation.updateFieldDependencies(arg.id, arg.iModel);
+  }
+
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
+    collectReferenceIds(this, referenceIds);
+  }
+}
+
+function collectReferenceIds(elem: TextAnnotation2d | TextAnnotation3d, referenceIds: EntityReferenceSet): void {
+  const style = elem.defaultTextStyle?.id;
+  if (style && Id64.isValidId64(style)) {
+    referenceIds.addElement(style);
   }
 }
 
