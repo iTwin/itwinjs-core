@@ -278,7 +278,7 @@ export class TextStyleSettings {
    */
   public readonly textHeight: number;
   /** Multiplier used to compute the vertical distance between two lines of text.
-   * The distance is computed in meters as lineSpacingFactor * tallest [[textHeight]] in the line.
+   * The distance is computed in meters as lineSpacingFactor * [[textHeight]] of the [[TextBlock]].
    */
   public readonly lineSpacingFactor: number;
   /** Multiplier used to compute the vertical distance between two paragraphs of text.
