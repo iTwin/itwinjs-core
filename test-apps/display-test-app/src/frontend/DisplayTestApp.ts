@@ -299,6 +299,8 @@ const dtaFrontendMain = async () => {
     await uiReady; // Now wait for the HTML UI to finish loading.
     await initView(iModel);
 
+    console.log("Tool admin:", IModelApp.toolAdmin);
+
     if (configuration.startupMacro)
       await IModelApp.tools.parseAndRun(`dta macro ${configuration.startupMacro}`);
   } catch (reason) {

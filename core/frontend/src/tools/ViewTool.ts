@@ -96,6 +96,8 @@ export abstract class ViewTool extends InteractiveTool {
   public beginDynamicUpdate() { this.inDynamicUpdate = true; }
   public endDynamicUpdate() { this.inDynamicUpdate = false; }
   public override async run(..._args: any[]): Promise<boolean> {
+    console.log("Starting ViewTool");
+
     const toolAdmin = IModelApp.toolAdmin;
     if (undefined !== this.viewport && this.viewport === toolAdmin.markupView) {
       IModelApp.notifications.outputPromptByKey("iModelJs:Viewing.NotDuringMarkup");
@@ -1162,6 +1164,10 @@ class ViewPan extends HandleWithInertia {
 
     vp.setupFromView();
     this._lastPtNpc.setFrom(thisPtNpc);
+
+    console.log("Performed pan operation");
+    console.log("View definition:", vp.view.toJSON());
+
     return true;
   }
 
