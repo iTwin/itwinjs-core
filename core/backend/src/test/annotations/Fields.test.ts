@@ -76,7 +76,7 @@ function createTestElement(imodel: StandaloneDb, model: Id64String, category: Id
   return id;
 }
 
-describe.only("updateField", () => {
+describe("updateField", () => {
   const mockElementId = "0x1";
   const mockPath: FieldPropertyPath = {
     propertyName: "mockProperty",
@@ -274,7 +274,7 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
   iModel.saveChanges();
 }
 
-describe.only("Field evaluation", () => {
+describe("Field evaluation", () => {
   let imodel: StandaloneDb;
   let model: Id64String;
   let category: Id64String;
@@ -704,8 +704,9 @@ describe.only("Field evaluation", () => {
       });
     });
 
-    function expectText(expected: string, elemId: Id64String): void {
-      const elem = imodel.elements.getElement<TextAnnotation3d>(elemId);
+    function expectText(expected: string, elemId: Id64String, db?: StandaloneDb): void {
+      db = db ?? imodel;
+      const elem = db.elements.getElement<TextAnnotation3d>(elemId);
       const anno = elem.getAnnotation()!;
       const actual = anno.textBlock.stringify();
       expect(actual).to.equal(expected);
@@ -935,10 +936,6 @@ describe.only("Field evaluation", () => {
 
         ElementDrivesTextAnnotation.remapFields(elem, context);
         expectHostIds(elem, Id64.invalid, Id64.invalid);
-      });
-
-      it("remaps and re-evaluates fields in context of target iModel", () => {
-
       });
     });
   });

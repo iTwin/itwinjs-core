@@ -41,7 +41,7 @@ export interface ITextAnnotation {
   defaultTextStyle?: TextAnnotationUsesTextStyleByDefault;
   /** Obtain a collection of all of the [TextBlock]($common)s hosted by this element. */
   getTextBlocks(): Iterable<TextBlockAndId>;
-  /** Update the element to replace the contents of the specified [TextBlock]($common)s. */
+  /** Update the element in-memory to replace the contents of the specified [TextBlock]($common)s. */
   updateTextBlocks(textBlocks: TextBlockAndId[]): void;
 }
 
@@ -147,17 +147,16 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
   }
 
   public static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void {
-    if (!context.isBetweenIModels) {
-      return;
-    }
-
     const updatedBlocks = [];
     for (const block of clone.getTextBlocks()) {
       let anyUpdated = false;
       for (const { child } of traverseTextBlockComponent(block.textBlock)) {
         if (child.type === "field") {
-          child.propertyHost.elementId = context.findTargetElementId(child.propertyHost.elementId);
-          anyUpdated = true;
+          const remappedId = context.findTargetElementId(child.propertyHost.elementId);
+          if (context.isBetweenIModels || !Id64.isInvalid(remappedId)) {
+            child.propertyHost.elementId = context.findTargetElementId(child.propertyHost.elementId);
+            anyUpdated = true;
+          }
         }
       }
 

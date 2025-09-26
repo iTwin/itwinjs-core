@@ -503,5 +503,3 @@ export class AnnotationTextStyle extends DefinitionElement {
     }
   }
 }
-
-
