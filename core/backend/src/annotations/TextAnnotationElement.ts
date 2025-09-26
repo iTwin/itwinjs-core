@@ -221,6 +221,8 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
     ElementDrivesTextAnnotation.remapFields(srcElem, context);
     const anno = srcElem.getAnnotation();
     dstProps.textAnnotationData = anno ? JSON.stringify(anno.toJSON()) : undefined;
+
+    remapTextStyle(context, srcElem, dstProps);
   }
 }
 
@@ -369,7 +371,15 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
     ElementDrivesTextAnnotation.remapFields(srcElem, context);
     const anno = srcElem.getAnnotation();
     dstProps.textAnnotationData = anno ? JSON.stringify(anno.toJSON()) : undefined;
+
+    remapTextStyle(context, srcElem, dstProps);
   }
+}
+
+function remapTextStyle(context: IModelElementCloneContext, srcElem: TextAnnotation2d | TextAnnotation3d, dstProps: TextAnnotation2dProps | TextAnnotation3dProps): void {
+  const srcStyleId = srcElem.defaultTextStyle?.id;
+  const dstStyleId = undefined !== srcStyleId ? context.findTargetElementId(srcStyleId) : Id64.invalid;
+  dstProps.defaultTextStyle = Id64.isValid(dstStyleId) ? new TextAnnotationUsesTextStyleByDefault(dstStyleId).toJSON() : undefined;
 }
 
 function collectReferenceIds(elem: TextAnnotation2d | TextAnnotation3d, referenceIds: EntityReferenceSet): void {
