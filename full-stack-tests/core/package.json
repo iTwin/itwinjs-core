@@ -28,7 +28,7 @@
   },
   "repository": {},
   "dependencies": {
-    "@azure/storage-blob": "^12.26.0",
+    "@azure/storage-blob": "^12.28.0",
     "@itwin/browser-authorization": "^1.0.1",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",

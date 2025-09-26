@@ -17,6 +17,9 @@ importers:
 
   ../../core/backend:
     dependencies:
+      '@azure/storage-blob':
+        specifier: ^12.28.0
+        version: 12.28.0
       '@bentley/imodeljs-native':
         specifier: 5.2.16
         version: 5.2.16
@@ -1797,8 +1800,8 @@ importers:
   ../../example-code/snippets:
     dependencies:
       '@azure/storage-blob':
-        specifier: ^12.26.0
-        version: 12.26.0
+        specifier: ^12.28.0
+        version: 12.28.0
       '@itwin/core-backend':
         specifier: workspace:*
         version: link:../../core/backend
@@ -2217,8 +2220,8 @@ importers:
   ../../full-stack-tests/backend:
     dependencies:
       '@azure/storage-blob':
-        specifier: ^12.26.0
-        version: 12.26.0
+        specifier: ^12.28.0
+        version: 12.28.0
       '@bentley/aec-units-schema':
         specifier: ^1.0.3
         version: 1.0.3
@@ -2374,8 +2377,8 @@ importers:
   ../../full-stack-tests/core:
     dependencies:
       '@azure/storage-blob':
-        specifier: ^12.26.0
-        version: 12.26.0
+        specifier: ^12.28.0
+        version: 12.28.0
       '@itwin/browser-authorization':
         specifier: ^1.0.1
         version: 1.0.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
@@ -4586,10 +4589,6 @@ packages:
 
   '@azure/opentelemetry-instrumentation-azure-sdk@1.0.0-beta.8':
     resolution: {integrity: sha512-8R+gRqNhbK1lv6CIGt55a73LsuK9EKU54323FFrQqSpGduQjENpRa3Wy+AWzw/i5YGzTuLL8NN5vifCOJdeJcg==}
-    engines: {node: '>=18.0.0'}
-
-  '@azure/storage-blob@12.26.0':
-    resolution: {integrity: sha512-SriLPKezypIsiZ+TtlFfE46uuBIap2HeaQVS78e1P7rz5OSbq0rsd52WE1mC5f7vAeLiXqv7I7oRhL3WFZEw3Q==}
     engines: {node: '>=18.0.0'}
 
   '@azure/storage-blob@12.28.0':
@@ -10984,24 +10983,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@azure/storage-blob@12.26.0':
-    dependencies:
-      '@azure/abort-controller': 2.1.2
-      '@azure/core-auth': 1.9.0
-      '@azure/core-client': 1.9.3
-      '@azure/core-http-compat': 2.2.0
-      '@azure/core-lro': 2.7.2
-      '@azure/core-paging': 1.6.2
-      '@azure/core-rest-pipeline': 1.19.1
-      '@azure/core-tracing': 1.2.0
-      '@azure/core-util': 1.11.0
-      '@azure/core-xml': 1.4.5
-      '@azure/logger': 1.1.4
-      events: 3.3.0
-      tslib: 2.8.1
-    transitivePeerDependencies:
-      - supports-color
-
   '@azure/storage-blob@12.28.0':
     dependencies:
       '@azure/abort-controller': 2.1.2
@@ -11673,7 +11654,7 @@ snapshots:
 
   '@itwin/imodels-client-authoring@5.8.1(reflect-metadata@0.1.13)':
     dependencies:
-      '@azure/storage-blob': 12.26.0
+      '@azure/storage-blob': 12.28.0
       '@itwin/imodels-client-management': 5.8.1
       '@itwin/object-storage-azure': 2.3.0(reflect-metadata@0.1.13)
       '@itwin/object-storage-core': 2.3.0(reflect-metadata@0.1.13)

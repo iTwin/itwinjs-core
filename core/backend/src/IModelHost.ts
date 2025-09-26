@@ -13,11 +13,10 @@ import { IModelNative, loadNativePlatform } from "./internal/NativePlatform";
 import * as os from "os";
 import "reflect-metadata"; // this has to be before @itwin/object-storage-* and @itwin/cloud-agnostic-core imports because those packages contain decorators that use this polyfill.
 import { NativeLibrary } from "@bentley/imodeljs-native";
-import { DependenciesConfig, Types as ExtensionTypes } from "@itwin/cloud-agnostic-core";
-import { InversifyWrapper } from "@itwin/cloud-agnostic-core/lib/inversify";
 import { AccessToken, assert, BeEvent, BentleyStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
-import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
+import { AzureServerStorage, AzureServerStorageConfig, BlobServiceClientWrapper } from "@itwin/object-storage-azure";
+import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
 import { ServerStorage } from "@itwin/object-storage-core";
 import { BackendHubAccess, CreateNewIModelProps } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -664,18 +663,17 @@ export class IModelHost {
   }
 
   private static setupAzureTileCache(credentials: AzureBlobStorageCredentials) {
-    const config = {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      ServerSideStorage: {
-        dependencyName: "azure",
-        accountName: credentials.account,
-        accountKey: credentials.accessKey,
-        baseUrl: credentials.baseUrl ?? `https://${credentials.account}.blob.core.windows.net`,
-      },
-    };
-    const ioc = InversifyWrapper.create();
-    ioc.registerInstance<DependenciesConfig>(ExtensionTypes.dependenciesConfig, config);
-    IModelHost.tileStorage = new TileStorage(ioc.resolve<ServerStorage>(ExtensionTypes.serverStorage));
+    const storageConfig: AzureServerStorageConfig = {
+      accountName: credentials.account,
+      accountKey: credentials.accessKey,
+      baseUrl: credentials.baseUrl ?? `https://${credentials.account}.blob.core.windows.net`,
+    }
+    const blobServiceClient = new BlobServiceClient(
+      storageConfig.baseUrl,
+      new StorageSharedKeyCredential(storageConfig.accountName, storageConfig.accountKey),
+    );
+    const azureStorage: ServerStorage = new AzureServerStorage(storageConfig, new BlobServiceClientWrapper(blobServiceClient))
+    IModelHost.tileStorage = new TileStorage(azureStorage);
   }
 
   /** @internal */
