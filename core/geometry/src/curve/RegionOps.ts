@@ -415,6 +415,14 @@ export class RegionOps {
     return region;
   }
   /**
+   * Helper method to sample a z-coordinate from the input region(s).
+   * * The assumption is that the input is horizontal.
+   */
+  private static getZCoordinate(xyRegion: AnyRegion | AnyRegion[] | undefined): number {
+    const localToWorld = FrameBuilder.createRightHandedFrame(undefined, xyRegion);
+    return localToWorld ? localToWorld.origin.z : 0;
+  }
+  /**
    * Return areas defined by a boolean operation.
    * @note For best results, input regions should have correctly oriented loops. See [[sortOuterAndHoleLoopsXY]].
    * @note A common use case of this method is to split (a region with) overlapping loops into a `UnionRegion` with
@@ -446,27 +454,29 @@ export class RegionOps {
     const context = RegionBooleanContext.create(RegionGroupOpType.Union, RegionGroupOpType.Union);
     context.addMembers(loopsA, loopsB);
     context.annotateAndMergeCurvesInGraph(mergeTolerance);
+    const bridgeMask = HalfEdgeMask.BRIDGE_EDGE;
     const visitMask = context.graph.grabMask(false);
     const range = context.groupA.range().union(context.groupB.range());
     const areaTol = this.computeXYAreaTolerance(range, mergeTolerance);
-    const bridgeMask = HalfEdgeMask.BRIDGE_EDGE;
+    const z = RegionOps.getZCoordinate(operation === RegionBinaryOpType.BMinusA ? loopsB : loopsA);
+    const options: PlanarSubdivision.CreateRegionInFaceOptions = {compress: true, closureTol: mergeTolerance, bridgeMask, visitMask, z};
     context.runClassificationSweep(
       operation,
-      (_graph: HalfEdgeGraph, face: HalfEdge, faceType: -1 | 0 | 1, area: number) => {
+      (_graph, face: HalfEdge, faceType: -1 | 0 | 1, area: number) => {
         // ignore danglers and null faces, but not 2-edge "banana" faces with nonzero area
         if (face.countEdgesAroundFace() < 2)
           return;
         if (Math.abs(area) < areaTol)
           return;
         if (faceType === 1) {
-          const loopOrParityRegion = PlanarSubdivision.createLoopOrParityRegionInFace(face, bridgeMask, visitMask, mergeTolerance);
+          const loopOrParityRegion = PlanarSubdivision.createLoopOrParityRegionInFace(face, options);
           if (loopOrParityRegion)
             result.tryAddChild(loopOrParityRegion);
         }
       },
     );
     context.graph.dropMask(visitMask);
-    if (operation === RegionBinaryOpType.Union && simplifyUnion) {
+    if (simplifyUnion && operation === RegionBinaryOpType.Union) {
       const signedLoops = RegionOps.constructAllXYRegionLoops(result);
       if (signedLoops) {
         const outerLoops = signedLoops.map((component) => component.negativeAreaLoops).flat();

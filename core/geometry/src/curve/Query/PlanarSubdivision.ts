@@ -5,6 +5,7 @@
 import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../../Geometry";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Transform } from "../../geometry3d/Transform";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge } from "../../topology/Merging";
@@ -22,6 +23,26 @@ import { RegionGroupMember, RegionGroupOpType } from "../RegionOpsClassification
 /** @packageDocumentation
  * @module Curve
  */
+
+function sortAngle(curve: CurvePrimitive, fraction: number, reverse: boolean): number {
+  const ray = curve.fractionToPointAndDerivative(fraction);
+  const s = reverse ? -1.0 : 1.0;
+  return Math.atan2(s * ray.direction.y, s * ray.direction.x);
+}
+function getFractionOnCurve(pair: CurveLocationDetailPair, curve: CurvePrimitive): number | undefined {
+  if (pair.detailA.curve === curve)
+    return pair.detailA.fraction;
+  if (pair.detailB.curve === curve)
+    return pair.detailB.fraction;
+  return undefined;
+}
+function getDetailOnCurve(pair: CurveLocationDetailPair, curve: CurvePrimitive): CurveLocationDetail | undefined {
+  if (pair.detailA.curve === curve)
+    return pair.detailA;
+  if (pair.detailB.curve === curve)
+    return pair.detailB;
+  return undefined;
+}
 
 class MapCurvePrimitiveToCurveLocationDetailPairArray {
   public primitiveToPair = new Map<CurvePrimitive, CurveLocationDetailPair[]>();
@@ -217,37 +238,31 @@ export class PlanarSubdivision {
     return undefined;
   }
   /** Create the geometry for a topological edge. */
-  private static createCurveInEdge(edge: HalfEdge): CurvePrimitive | undefined {
+  private static createCurveInEdge(edge: HalfEdge, z?: number): CurvePrimitive | undefined {
+    let result: CurvePrimitive | undefined;
     const info = this.extractGeometryFromEdge(edge);
-    if (info) {
-      if (info.reversed)
-        return info.detail.curve!.clonePartialCurve(info.detail.fraction1!, info.detail.fraction);
-      return info.detail.curve!.clonePartialCurve(info.detail.fraction, info.detail.fraction1!);
+    if (info && info.detail.curve && info.detail.fraction1) {
+      const f0 = info.reversed ? info.detail.fraction1 : info.detail.fraction;
+      const f1 = info.reversed ? info.detail.fraction : info.detail.fraction1;
+      result = info.detail.curve.clonePartialCurve(f0, f1);
+      if (result && z !== undefined)
+        result.tryTransformInPlace(Transform.createRowValues(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, z));
     }
-    return undefined;
+    return result;
   }
   /**
    * Create a [[Loop]] for the given face or super face.
    * @param face a node in the face loop, or an array of HalfEdges that comprise a loop (e.g., a super face).
-   * @param announce optional callback invoked on each edge/curve of the face/Loop.
-   * @param compress whether to consolidate adjacent curves in the output Loop (default `false`).
-   * If `announce` is provided, no compression is performed, as edges and curves would no longer be in 1-1 correspondence.
-   * @param closureTol absolute xy-distance for confirming the returned Loop is closed (default [[Geometry.smallMetricDistance]]).
+   * @param options bundle of options.
    * @returns the Loop, or `undefined` if it is not closed within xy-tolerance.
    */
-  public static createLoopInFace(
-    face: HalfEdge | HalfEdge[],
-    announce?: (he: HalfEdge, curve: CurvePrimitive, loop: Loop) => void,
-    compress: boolean = false,
-    closureTol: number = Geometry.smallMetricDistance,
-  ): Loop | undefined {
-    if (announce)
-      compress = false;
+  public static createLoopInFace(face: HalfEdge | HalfEdge[], options?: PlanarSubdivision.CreateRegionInFaceOptions): Loop | undefined {
+    const consolidate = options?.announceEdge ? false : options?.compress ?? false; // can't compress if announcing
     const loop = Loop.create();
-    const addEdgeCurve = (he: HalfEdge): void => {
-      const curve = this.createCurveInEdge(he);
+    const addEdgeCurve = (edge: HalfEdge): void => {
+      const curve = this.createCurveInEdge(edge, options?.z);
       if (curve) {
-        announce?.(he, curve, loop);
+        options?.announceEdge?.(edge, curve, loop);
         loop.tryAddChild(curve);
       }
     };
@@ -255,12 +270,12 @@ export class PlanarSubdivision {
       face.forEach(addEdgeCurve);
     else
       face.announceEdgesInFace(addEdgeCurve);
-    if (compress) {
-      const options = new ConsolidateAdjacentCurvePrimitivesOptions();
-      options.consolidateLoopSeam = true;
-      RegionOps.consolidateAdjacentPrimitives(loop, options);
+    if (consolidate) {
+      const consolidateOptions = new ConsolidateAdjacentCurvePrimitivesOptions();
+      consolidateOptions.consolidateLoopSeam = true;
+      RegionOps.consolidateAdjacentPrimitives(loop, consolidateOptions);
     }
-    if (loop.isPhysicallyClosedCurve(closureTol, true))
+    if (loop.isPhysicallyClosedCurve(options?.closureTol, true))
       return loop;
     assert(() => false, "face is not physically closed");
     return undefined;
@@ -269,22 +284,19 @@ export class PlanarSubdivision {
    * Create a [[Loop]] or [[ParityRegion]] for the given face.
    * * A ParityRegion is created for a split-washer type face by removing bridge edges.
    * @param face a node in the face loop.
-   * @param bridgeMask mask preset on bridge edges (default is `HalfEdgeMask.BRIDGE_EDGE`).
-   * @param visitMask mask to use for visiting edges in the face loop (default is `HalfEdgeMask.VISITED`).
-   * @param closureTol absolute xy-distance for confirming the returned Loop is closed (default [[Geometry.smallMetricDistance]]).
-   * @returns the Loop or ParityRegion, or `undefined` if one could not be computed
+   * @param options bundle of options.
+   * @returns the Loop or ParityRegion, or `undefined` if one could not be computed.
    */
-  public static createLoopOrParityRegionInFace(
-    face: HalfEdge,
-    bridgeMask: HalfEdgeMask = HalfEdgeMask.BRIDGE_EDGE,
-    visitMask: HalfEdgeMask = HalfEdgeMask.VISITED,
-    closureTol: number = Geometry.smallMetricDistance,
-  ): Loop | ParityRegion | undefined {
+  public static createLoopOrParityRegionInFace(face: HalfEdge, options?: PlanarSubdivision.CreateRegionInFaceOptions): Loop | ParityRegion | undefined {
     let region: AnyRegion | undefined;
-    if (face.isSplitWasherFace(bridgeMask)) {
+    const visitMask = options?.visitMask ?? HalfEdgeMask.VISITED;
+    const bridgeMask = options?.bridgeMask ?? HalfEdgeMask.BRIDGE_EDGE;
+    let startBridgeEdge: HalfEdge | undefined;
+    // is it a split-washer face?
+    if (face.isSplitWasherFace(bridgeMask) && (startBridgeEdge = face.findMaskAroundFace(bridgeMask, true))) {
       const loops: Loop[] = [];
       const loopEdges: HalfEdge[] = [];
-      const bridgeStack: HalfEdge[] = [face.findMaskAroundFace(bridgeMask, true)!];
+      const bridgeStack: HalfEdge[] = [startBridgeEdge];
       const announceEdge = (he: HalfEdge) => { he.setMask(visitMask); loopEdges.push(he); };
       const announceBridge = (he: HalfEdge) => { if (!he.isMaskSet(visitMask)) bridgeStack.push(he); };
       face.clearMaskAroundFace(visitMask);
@@ -297,7 +309,7 @@ export class PlanarSubdivision {
             continue;
           loopEdges.length = 0;
           if (loopSeed.announceEdgesInSuperFace(bridgeMask, announceEdge, announceBridge)) {
-            const loop = this.createLoopInFace(loopEdges, undefined, true, closureTol);
+            const loop = this.createLoopInFace(loopEdges, options);
             if (loop) {
               loops.push(loop);
               continue;
@@ -308,7 +320,7 @@ export class PlanarSubdivision {
       region = RegionOps.sortOuterAndHoleLoopsXY(loops);
       region = RegionOps.simplifyRegion(region);
     } else {
-      region = this.createLoopInFace(face, undefined, true, closureTol);
+      region = this.createLoopInFace(face, options);
     }
     return (region && (region instanceof Loop || region instanceof ParityRegion)) ? region : undefined;
   }
@@ -345,23 +357,22 @@ export class PlanarSubdivision {
       const edges: LoopCurveLoopCurve[] = [];
       for (const faceSeed of faceSeeds) {
         const isNullFace = this.isNullFace(faceSeed);
-        const loop = this.createLoopInFace(faceSeed, (he: HalfEdge, curveC: CurvePrimitive, loopC: Loop) => {
-          if (!isNullFace) {
-            const mate = this.getNonNullEdgeMate(graph, he);
-            if (mate !== undefined) {
-              const e = edgeMap.get(mate);
-              if (e === undefined) {
-                // Record this as loopA,edgeA of a shared edge to be completed later from the other side of the edge
-                const e1 = new LoopCurveLoopCurve(loopC, curveC, undefined, undefined);
-                edgeMap.set(he, e1);
-              } else if (e instanceof LoopCurveLoopCurve) {
-                e.setB(loopC, curveC);
-                edges.push(e);
-                edgeMap.delete(mate);
-              }
+        const announceEdge = isNullFace ? () => {} : (he: HalfEdge, curveC: CurvePrimitive, loopC: Loop) => {
+          const mate = this.getNonNullEdgeMate(graph, he);
+          if (mate !== undefined) {
+            const e = edgeMap.get(mate);
+            if (e === undefined) {
+              // Record this as loopA,edgeA of a shared edge to be completed later from the other side of the edge
+              const e1 = new LoopCurveLoopCurve(loopC, curveC, undefined, undefined);
+              edgeMap.set(he, e1);
+            } else if (e instanceof LoopCurveLoopCurve) {
+              e.setB(loopC, curveC);
+              edges.push(e);
+              edgeMap.delete(mate);
             }
           }
-        });
+        };
+        const loop = this.createLoopInFace(faceSeed, { announceEdge });
         if (loop)
           this.collectSignedLoop(loop, componentAreas, zeroAreaTolerance, isNullFace);
       }
@@ -373,23 +384,35 @@ export class PlanarSubdivision {
   }
 }
 
-function sortAngle(curve: CurvePrimitive, fraction: number, reverse: boolean): number {
-  const ray = curve.fractionToPointAndDerivative(fraction);
-  const s = reverse ? -1.0 : 1.0;
-  return Math.atan2(s * ray.direction.y, s * ray.direction.x);
-}
-
-function getFractionOnCurve(pair: CurveLocationDetailPair, curve: CurvePrimitive): number | undefined {
-  if (pair.detailA.curve === curve)
-    return pair.detailA.fraction;
-  if (pair.detailB.curve === curve)
-    return pair.detailB.fraction;
-  return undefined;
-}
-function getDetailOnCurve(pair: CurveLocationDetailPair, curve: CurvePrimitive): CurveLocationDetail | undefined {
-  if (pair.detailA.curve === curve)
-    return pair.detailA;
-  if (pair.detailB.curve === curve)
-    return pair.detailB;
-  return undefined;
+/**
+ * @internal
+*/
+export namespace PlanarSubdivision {
+  /** Options bundle for [[PlanarSubdivision.createLoopInFace]] and [[PlanarSubdivision.createLoopOrParityRegionInFace]]. */
+  export interface CreateRegionInFaceOptions {
+    /**
+     * Optional callback invoked on each `edge` before its `curve` is added to `loop`.
+     * * Note that if a [[ParityRegion]] is being constructed, `curve` and `loop` may subsequently be reversed.
+     */
+    announceEdge?: (edge: HalfEdge, curve: CurvePrimitive, loop: Loop) => void;
+    /**
+     * Whether to consolidate adjacent curves in an output [[Loop]]. Default value is `false`.
+     * * If `announce` is defined, no compression is performed, as edges and curves would no longer be in 1-1 correspondence.
+     */
+    compress?: boolean;
+    /** Absolute xy-distance for confirming a returned Loop is closed. Default value is [[Geometry.smallMetricDistance]]. */
+    closureTol?: number;
+    /**
+     * Mask preset on bridge edges. Default value is `HalfEdgeMask.BRIDGE_EDGE`.
+     * * This mask is used to distinguish a split-washer type face, which can result in a [[ParityRegion]].
+     */
+    bridgeMask?: HalfEdgeMask;
+    /** Mask to use for visiting edges when creating a [[ParityRegion]] from a split-washer type face. Default value is `HalfEdgeMask.VISITED`. */
+    visitMask?: HalfEdgeMask;
+    /**
+     * Optional z-coordinate for the result region.
+     * * If undefined, graph z-coordinates are used, but this may result in a non-planar region if the graph is not planar!
+     */
+    z?: number;
+  }
 }
