@@ -813,6 +813,24 @@ describe("Field evaluation", () => {
       imodel.saveChanges();
       expectText("12.5", targetId);
     });
+
+    describe.only("clone", () => {
+      it("remaps field hosts", () => {
+
+      });
+
+      it("invalidates field host if source element not cloned", () => {
+
+      });
+
+      it("remaps and re-evaluates fields if source element is cloned", () => {
+
+      });
+
+      it("does nothing if cloning within the same iModel", () => {
+
+      });
+    });
   });
 
   describe("Format Validation", () => {

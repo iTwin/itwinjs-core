@@ -6,13 +6,14 @@
  * @module Elements
  */
 
-import { RelatedElement, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
+import { ElementProps, RelatedElement, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { ElementDrivesElement } from "../Relationship";
 import { IModelDb } from "../IModelDb";
 import { Element } from "../Element";
 import { updateElementFields } from "../internal/annotations/fields";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { ECVersion } from "@itwin/ecschema-metadata";
+import { IModelElementCloneContext } from "../IModelElementCloneContext";
 
 /** Describes one of potentially many [TextBlock]($common)s hosted by an [[ITextAnnotation]].
  * For example, a [[TextAnnotation2d]] hosts only a single text block, but an element representing a table may
@@ -142,6 +143,31 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     for (const relationshipId of staleRelationships) {
       const props = annotationElement.iModel.relationships.getInstanceProps("BisCore.ElementDrivesTextAnnotation", relationshipId);
       annotationElement.iModel.relationships.deleteInstance(props);
+    }
+  }
+
+  public static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void {
+    if (!context.isBetweenIModels) {
+      return;
+    }
+
+    const updatedBlocks = [];
+    for (const block of clone.getTextBlocks()) {
+      let anyUpdated = false;
+      for (const { child } of traverseTextBlockComponent(block.textBlock)) {
+        if (child.type === "field") {
+          child.propertyHost.elementId = context.findTargetElementId(child.propertyHost.elementId);
+          anyUpdated = true;
+        }
+      }
+
+      if (anyUpdated) {
+        updatedBlocks.push(block);
+      }
+    }
+
+    if (updatedBlocks.length > 0) {
+      clone.updateTextBlocks(updatedBlocks);
     }
   }
 }
