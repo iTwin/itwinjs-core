@@ -113,9 +113,9 @@
   },
   "dependencies": {
     "@bentley/imodeljs-native": "5.2.16",
-    "@itwin/cloud-agnostic-core": "^3.0.2",
-    "@itwin/object-storage-azure": "^3.0.2",
-    "@itwin/object-storage-core": "^3.0.2",
+    "@itwin/cloud-agnostic-core": "^3.0.3",
+    "@itwin/object-storage-azure": "^3.0.3",
+    "@itwin/object-storage-core": "^3.0.3",
     "form-data": "^4.0.4",
     "fs-extra": "^8.1.0",
     "inversify": "^7.5.2",
