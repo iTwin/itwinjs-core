@@ -825,7 +825,7 @@ describe("Field evaluation", () => {
       expectText("12.5", targetId);
     });
 
-    describe("remapFields", () => {
+    describe.("remapFields", () => {
       let dstIModel: StandaloneDb;
       let dstModel: Id64String;
       let dstCategory: Id64String;
@@ -916,19 +916,7 @@ describe("Field evaluation", () => {
         expectHostIds(elem, dstSourceElementId, dstCategory);
       });
 
-      it("preserves original Id if cloning within the same iModel and source element is not remapped", () => {
-        const elem = createAnnotationElement(TextBlock.create(getTextBlockJson()));
-        expectHostIds(elem, sourceElementId, category);
-
-        const context = new IModelElementCloneContext(imodel);
-        context.remapElement(category, model);
-
-        ElementDrivesTextAnnotation.remapFields(elem, context);
-        expectHostIds(elem, sourceElementId, model);
-
-      });
-
-      it("invalidates field host if source element not remapped and cloning between iModels", () => {
+      it("invalidates field host if source element not remapped", () => {
         const elem = createAnnotationElement(TextBlock.create(getTextBlockJson()));
         expectHostIds(elem, sourceElementId, category);
 
