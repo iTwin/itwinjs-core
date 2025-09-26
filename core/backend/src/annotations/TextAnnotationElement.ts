@@ -389,7 +389,6 @@ function updateTextBlocks(elem: TextAnnotation2d | TextAnnotation3d, textBlocks:
   annotation.textBlock = textBlocks[0].textBlock;
 
   elem.setAnnotation(annotation);
-  elem.update();
 }
 
 /**

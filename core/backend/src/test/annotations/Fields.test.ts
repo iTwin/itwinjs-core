@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldValue, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextRun } from "@itwin/core-common";
+import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldValue, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextBlockProps, TextRun } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, updateField, updateFields } from "../../internal/annotations/fields";
@@ -13,7 +13,7 @@ import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Schema, Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
 import { PhysicalElement } from "../../Element";
-import { ElementOwnsUniqueAspect, ElementUniqueAspect, FontFile, TextAnnotation3d } from "../../core-backend";
+import { ElementOwnsUniqueAspect, ElementUniqueAspect, FontFile, IModelElementCloneContext, TextAnnotation3d } from "../../core-backend";
 import { ElementDrivesTextAnnotation, TextAnnotationUsesTextStyleByDefault } from "../../annotations/ElementDrivesTextAnnotation";
 
 function isIntlSupported(): boolean {
@@ -76,7 +76,7 @@ function createTestElement(imodel: StandaloneDb, model: Id64String, category: Id
   return id;
 }
 
-describe("updateField", () => {
+describe.only("updateField", () => {
   const mockElementId = "0x1";
   const mockPath: FieldPropertyPath = {
     propertyName: "mockProperty",
@@ -274,7 +274,7 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
   iModel.saveChanges();
 }
 
-describe("Field evaluation", () => {
+describe.only("Field evaluation", () => {
   let imodel: StandaloneDb;
   let model: Id64String;
   let category: Id64String;
@@ -528,7 +528,7 @@ describe("Field evaluation", () => {
     });
   });
 
-  function insertAnnotationElement(textBlock: TextBlock | undefined): Id64String {
+  function createAnnotationElement(textBlock: TextBlock | undefined): TextAnnotation3d {
     const elem = TextAnnotation3d.fromJSON({
       model,
       category,
@@ -546,6 +546,11 @@ describe("Field evaluation", () => {
       elem.setAnnotation(annotation);
     }
 
+    return elem;
+  }
+
+  function insertAnnotationElement(textBlock: TextBlock | undefined): Id64String {
+    const elem = createAnnotationElement(textBlock);
     return elem.insert();
   }
 
@@ -819,7 +824,7 @@ describe("Field evaluation", () => {
       expectText("12.5", targetId);
     });
 
-    describe.only("remapFields", () => {
+    describe("remapFields", () => {
       let dstIModel: StandaloneDb;
       let dstModel: Id64String;
       let dstCategory: Id64String;
@@ -860,19 +865,79 @@ describe("Field evaluation", () => {
         dstIModel.close();
       });
 
+      function getTextBlockJson(): TextBlockProps {
+        return {
+          children: [{
+            children: [{
+              type: "field",
+              propertyHost: {
+                elementId: sourceElementId,
+                schemaName: "Fields",
+                className: "TestElement",
+              },
+              propertyPath: { propertyName: "intProp" },
+              cachedContent: "intProp",
+            }, {
+              type: "field",
+              propertyHost: {
+                elementId: category,
+                schemaName: "BisCore",
+                className: "Element",
+              },
+              propertyPath: { propertyName: "CodeValue" },
+              cachedContent: "CodeValue"
+            }],
+          }],
+        };
+      }
+
+      function expectHostIds(elem: TextAnnotation3d, host1: Id64String, host2: Id64String): void {
+        const anno = elem.getAnnotation()!;
+        expect(anno.textBlock.children.length).to.equal(1);
+        const para = anno.textBlock.children[0];
+        expect(para.children.length).to.equal(2);
+        expect(para.children.every((x) => x.type === "field"));
+        const field1 = para.children[0] as FieldRun;
+        expect(field1.propertyHost.elementId).to.equal(host1);
+        const field2 = para.children[1] as FieldRun;
+        expect(field2.propertyHost.elementId).to.equal(host2);
+      }
+
       it("remaps field hosts", () => {
-        
+        const elem = createAnnotationElement(TextBlock.create(getTextBlockJson()));
+        expectHostIds(elem, sourceElementId, category);
+
+        const context = new IModelElementCloneContext(imodel, dstIModel);
+        context.remapElement(sourceElementId, dstSourceElementId);
+        context.remapElement(category, dstCategory);
+
+        ElementDrivesTextAnnotation.remapFields(elem, context);
+        expectHostIds(elem, dstSourceElementId, dstCategory);
       });
 
-      it("invalidates field host if source element not remapped", () => {
+      it("preserves original Id if cloning within the same iModel and source element is not remapped", () => {
+        const elem = createAnnotationElement(TextBlock.create(getTextBlockJson()));
+        expectHostIds(elem, sourceElementId, category);
+
+        const context = new IModelElementCloneContext(imodel);
+        context.remapElement(category, model);
+
+        ElementDrivesTextAnnotation.remapFields(elem, context);
+        expectHostIds(elem, sourceElementId, model);
 
       });
 
-      it("remaps and re-evaluates fields if source element is cloned", () => {
+      it("invalidates field host if source element not remapped and cloning between iModels", () => {
+        const elem = createAnnotationElement(TextBlock.create(getTextBlockJson()));
+        expectHostIds(elem, sourceElementId, category);
 
+        const context = new IModelElementCloneContext(imodel, dstIModel);
+
+        ElementDrivesTextAnnotation.remapFields(elem, context);
+        expectHostIds(elem, Id64.invalid, Id64.invalid);
       });
 
-      it("does nothing if cloning within the same iModel", () => {
+      it("remaps and re-evaluates fields in context of target iModel", () => {
 
       });
     });
