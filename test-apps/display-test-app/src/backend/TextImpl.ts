@@ -16,9 +16,11 @@ export async function insertTextStyle(iModelKey: string, name: string, settingPr
   try {
     const annotationTextStyle = AnnotationTextStyle.create(
       iModel,
-      IModelDb.dictionaryId,
-      name,
-      settingProps,
+      {
+        definitionModelId: IModelDb.dictionaryId,
+        name,
+        settings: settingProps,
+      }
     );
 
     await iModel.locks.acquireLocks({ shared: IModelDb.dictionaryId });
@@ -89,7 +91,7 @@ export async function deleteTextStyle(iModelKey: string, name: string): Promise<
  * @returns The Id of the inserted annotation.
  * @throws If insertion fails, abandons changes and rethrows the error.
  */
-export async function insertText(iModelKey: string, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, defaultTextStyleId: Id64String, textAnnotationData?: TextAnnotationProps): Promise<Id64String> {
+export async function insertText(iModelKey: string, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, defaultTextStyleId: Id64String, textAnnotationProps?: TextAnnotationProps): Promise<Id64String> {
   const iModel = BriefcaseDb.findByKey(iModelKey);
 
   try {
@@ -100,7 +102,7 @@ export async function insertText(iModelKey: string, categoryId: Id64String, mode
         model: modelId,
         placement,
         defaultTextStyleId,
-        textAnnotationData
+        textAnnotationProps
       }
     );
 
