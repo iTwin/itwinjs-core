@@ -500,6 +500,49 @@ describe("TextAnnotation element", () => {
         expect(el1 instanceof TextAnnotation2d).to.be.true;
         expect(el1.defaultTextStyle).to.be.undefined;
       });
+
+      describe("onCloned", () => {
+        it("remaps property hosts", () => {
+          const textBlock = TextBlock.create({
+            children: [{
+              children: [{
+                type: "field",
+                propertyHost: {
+                  elementId: "0x123",
+                  schemaName: "Fields",
+                  className: "TestElement",
+                },
+                propertyPath: { propertyName: "intProp" },
+              }, {
+                type: "field",
+                propertyHost: {
+                  elementId: "0xabc",
+                  schemaName: "BisCore",
+                  className: "Element",
+                },
+                propertyPath: { propertyName: "CodeValue" },
+              }],
+            }],
+          });
+
+          const annotation = TextAnnotation.create({ textBlock });
+          const elem = createElement2d(imodel, { ...createElement2dArgs, textAnnotationData: annotation.toJSON() });
+          elem.insert();
+          imodel.saveChanges();
+
+          const context = new IModelElementCloneContext(imodel);
+          context.remapElement("0x123", "0x456");
+          context.remapElement("0xabc", "0xdef");
+          context.remapElement(createElement2dArgs.model, createElement2dArgs.model);
+
+          const props = context.cloneElement(elem) as TextAnnotation2dProps;
+          expect(props.textAnnotationData).not.to.be.undefined;
+          const anno = TextAnnotation.fromJSON(JSON.parse(props.textAnnotationData!));
+          const para = anno.textBlock.children[0];
+          expect((para.children[0] as FieldRun).propertyHost.elementId).to.equal("0x456");
+          expect((para.children[1] as FieldRun).propertyHost.elementId).to.equal("0xdef");
+        });
+      });
     });
 
     describe("TextAnnotation3d", () => {
