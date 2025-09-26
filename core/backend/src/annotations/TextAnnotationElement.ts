@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { AnnotationTextStyleProps, BisCodeSpec, Code, CodeProps, CodeScopeProps, CodeSpec, ElementGeometry, ElementGeometryBuilderParams, Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, SemverString, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps, VersionedJSON } from "@itwin/core-common";
+import { AnnotationTextStyleProps, BisCodeSpec, Code, CodeProps, CodeScopeProps, CodeSpec, ECVersionString, ElementGeometry, ElementGeometryBuilderParams, Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps, VersionedJSON } from "@itwin/core-common";
 import { IModelDb } from "../IModelDb";
 import { AnnotationElement2d, DefinitionElement, Drawing, GraphicalElement3d, OnElementIdArg, OnElementPropsArg } from "../Element";
 import { assert, Id64String } from "@itwin/core-bentley";
@@ -24,7 +24,7 @@ export const TEXT_ANNOTATION_JSON_VERSION = "1.0.0";
 
 function validateAndMigrateVersionedJSON<T>(
   json: string,
-  currentVersion: SemverString,
+  currentVersion: ECVersionString,
   migrate: (old: VersionedJSON<T>) => T
 ): VersionedJSON<T> | undefined {
   let parsed;
