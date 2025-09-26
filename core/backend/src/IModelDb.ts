@@ -1774,7 +1774,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   public computeRangesForText(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
-    const props = this[_nativeDb].computeRangesForText(args.chars, args.fontId, args.bold, args.italic, args.widthFactor, args.lineHeight);
+    const props = this[_nativeDb].computeRangesForText(args.chars, args.fontId, args.bold, args.italic, args.widthFactor, args.textHeight);
     return {
       layout: Range2d.fromJSON(props.layout),
       justification: Range2d.fromJSON(props.justification),

@@ -31,7 +31,7 @@ import { TextBlockLayout, TextStyleResolver } from "./TextBlockLayout";
  */
 export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders: TextAnnotationLeader[], layout: TextBlockLayout, transform: Transform, params: GeometryParams, textStyleResolver: TextStyleResolver, scaleFactor: number): boolean {
   let result = true;
-  const scaledLineHeight = textStyleResolver.blockSettings.lineHeight * scaleFactor;
+  const scaledBlockTextHeight = textStyleResolver.blockSettings.textHeight * scaleFactor;
   let frame: TextFrameStyleProps | undefined = textStyleResolver.blockSettings.frame;
 
   // If there is no frame, use a rectangular frame to compute the attachmentPoints for leaders.
@@ -70,7 +70,7 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
     });
 
     if (leaderStyle.leader.wantElbow) {
-      const elbowLength = leaderStyle.leader.elbowLength * scaledLineHeight;
+      const elbowLength = leaderStyle.leader.elbowLength * scaledBlockTextHeight;
       const elbowDirection = computeElbowDirection(attachmentPoint, frameCurve, elbowLength);
       if (elbowDirection)
         leaderLinePoints.push(attachmentPoint.plusScaled(elbowDirection, elbowLength))
@@ -87,8 +87,8 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
 
     const termY = terminatorDirection?.unitCrossProduct(Vector3d.unitZ());
     if (!termY || !terminatorDirection) continue; // Assuming leaders without terminators is a valid case.
-    const terminatorHeight = leaderStyle.leader.terminatorHeightFactor * scaledLineHeight;
-    const terminatorWidth = leaderStyle.leader.terminatorWidthFactor * scaledLineHeight;
+    const terminatorHeight = leaderStyle.leader.terminatorHeightFactor * scaledBlockTextHeight;
+    const terminatorWidth = leaderStyle.leader.terminatorWidthFactor * scaledBlockTextHeight;
     const basePoint = leader.startPoint.plusScaled(terminatorDirection, terminatorWidth);
     const termPointA = basePoint.plusScaled(termY, terminatorHeight);
     const termPointB = basePoint.plusScaled(termY.negate(), terminatorHeight);
