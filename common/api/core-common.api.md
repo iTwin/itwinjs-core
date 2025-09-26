@@ -2912,6 +2912,9 @@ export enum ECSqlValueType {
     StructArray = 15
 }
 
+// @beta
+export type ECVersionString = `${string}.${string}.${string}`;
+
 // @internal (undocumented)
 export interface EdgeAppearanceOverrides {
     // (undocumented)
@@ -11216,7 +11219,7 @@ export interface UrlLinkProps extends ElementProps {
 // @beta
 export interface VersionedJSON<T> {
     data: T;
-    version: string;
+    version: ECVersionString;
 }
 
 // @public
