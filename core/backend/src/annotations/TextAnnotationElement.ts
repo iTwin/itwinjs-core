@@ -13,6 +13,7 @@ import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { layoutTextBlock, TextStyleResolver } from "./TextBlockLayout";
 import { appendTextAnnotationGeometry } from "./TextAnnotationGeometry";
 import { ElementDrivesTextAnnotation, TextAnnotationUsesTextStyleByDefault, TextBlockAndId } from "./ElementDrivesTextAnnotation";
+import { IModelElementCloneContext } from "../IModelElementCloneContext";
 
 function parseTextAnnotationData(json: string | undefined): TextAnnotationProps | undefined {
   if (!json) return undefined;
@@ -211,6 +212,16 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
     super.collectReferenceIds(referenceIds);
     collectReferenceIds(this, referenceIds);
   }
+
+  /** @internal */
+  protected static override onCloned(context: IModelElementCloneContext, srcProps: TextAnnotation2dProps, dstProps: TextAnnotation2dProps): void {
+    super.onCloned(context, srcProps, dstProps);
+
+    const srcElem = TextAnnotation2d.fromJSON(srcProps, context.sourceDb);
+    ElementDrivesTextAnnotation.remapFields(srcElem, context);
+    const anno = srcElem.getAnnotation();
+    dstProps.textAnnotationData = anno ? JSON.stringify(anno.toJSON()) : undefined;
+  }
 }
 
 /** An element that displays textual content within a 3d model.
@@ -348,6 +359,16 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
     collectReferenceIds(this, referenceIds);
+  }
+
+  /** @internal */
+  protected static override onCloned(context: IModelElementCloneContext, srcProps: TextAnnotation3dProps, dstProps: TextAnnotation3dProps): void {
+    super.onCloned(context, srcProps, dstProps);
+
+    const srcElem = TextAnnotation3d.fromJSON(srcProps, context.sourceDb);
+    ElementDrivesTextAnnotation.remapFields(srcElem, context);
+    const anno = srcElem.getAnnotation();
+    dstProps.textAnnotationData = anno ? JSON.stringify(anno.toJSON()) : undefined;
   }
 }
 
