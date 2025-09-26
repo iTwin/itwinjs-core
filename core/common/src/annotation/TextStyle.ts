@@ -8,6 +8,7 @@
 
 import { DeepReadonlyObject, DeepRequiredObject } from "@itwin/core-bentley";
 import { ColorDef, ColorDefProps } from "../ColorDef";
+import { FontFamilySelector, FontType } from "../Fonts";
 
 /** Predefined markers for list items in text annotations.
  * These values control the appearance of list item markers (e.g., bullet, circle, square, dash, number) that denote the start of a list item in a list.
@@ -55,6 +56,26 @@ export type TextAnnotationFrameShape = typeof textAnnotationFrameShapes[number];
  */
 export type TextAnnotationFillColor = TextStyleColor | "background" | "none";
 
+/** Describes the margins around the content inside a [[TextBlock]], measured in meters.
+ * All margins default to zero if `undefined`.
+ * @beta
+ */
+export interface TextBlockMargins {
+  /** The left margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
+  left?: number;
+  /** The right margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
+  right?: number;
+  /** The top margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
+  top?: number;
+  /** The bottom margin measured in meters. Must be a positive number >= 0. Negative values are disregarded */
+  bottom?: number;
+};
+
+/** Describes the relative alignment of text.
+ * @beta
+*/
+export type TextJustification = "left" | "center" | "right";
+
 /** Specifies how to separate the numerator and denominator of a [[FractionRun]], by either a horizontal or diagonal bar.
  * @see [[TextStyleSettingsProps.stackedFractionType]] and [[TextStyleSettings.stackedFractionType]].
  * @beta
@@ -78,9 +99,9 @@ export interface TextFrameStyleProps {
   /** Shape of the frame. Default: "none" */
   shape?: TextAnnotationFrameShape;
   /** The color to fill the shape of the text frame. This fill is applied using [[FillDisplay.Blanking]]. Default: "none" */
-  fill?: TextAnnotationFillColor;
+  fillColor?: TextAnnotationFillColor;
   /** The color of the text frame's outline. Default: black */
-  border?: TextStyleColor;
+  borderColor?: TextStyleColor;
   /** This will be used to set the [[GeometryParams.weight]] property of the frame (in pixels). Default: 1px */
   borderWeight?: number;
 };
@@ -100,17 +121,17 @@ export interface TextLeaderStyleProps {
    */
   wantElbow?: boolean;
   /** Multiplier used to compute length of the elbow in the leader.
-   * The elbowLength is computed in meters as elbowLength * [[lineHeight]].
+   * The elbowLength is computed in meters as elbowLength * [[textHeight]].
    * Default: 1.0
    */
   elbowLength?: number;
   /** Multiplier to compute height of the leader terminator.
-   * The terminator height is computed in meters as terminatorHeight * [[lineHeight]].
+   * The terminator height is computed in meters as terminatorHeight * [[textHeight]].
    * Default: 1.0
    */
   terminatorHeightFactor?: number;
   /** Multiplier to compute width of the leader terminator.
-   * The terminator width is computed in meters as terminatorWidth * [[lineHeight]].
+   * The terminator width is computed in meters as terminatorWidth * [[textHeight]].
    * Default: 1.0
    */
   terminatorWidthFactor?: number;
@@ -124,22 +145,22 @@ export interface TextStyleSettingsProps {
    * Default: "subcategory".
    */
   color?: TextStyleColor;
-  /** The name of a font stored in an iModel, used to draw the contents of a [[TextRun]].
-   * Default: "" (an invalid font name).
+  /** The font stored in an iModel, used to draw the contents of a [[TextRun]].
+   * Default: { name: "" } (an invalid font name).
    */
-  fontName?: string;
-  /** The height each line of text, in meters. Many other settings use the line height as the basis for computing their own values.
-   * For example, the height and offset from baseline of a subscript [[TextRun]]  are computed as lineHeight * [[subScriptScale]] and
-   * lineHeight * [[subScriptOffsetFactor]], respectively.
+  font?: FontFamilySelector;
+  /** The height of the text, in meters. Many other settings use the text height as the basis for computing their own values.
+   * For example, the height and offset from baseline of a subscript [[TextRun]]  are computed as textHeight * [[subScriptScale]] and
+   * textHeight * [[subScriptOffsetFactor]], respectively.
    * Default: 1.0. */
-  lineHeight?: number;
+  textHeight?: number;
   /** Multiplier used to compute the vertical distance between two lines of text.
-   * The distance is computed in meters as lineSpacingFactor * [[lineHeight]].
+   * The distance is computed in meters as lineSpacingFactor * [[textHeight]].
    * Default: 0.5.
    */
   lineSpacingFactor?: number;
   /** Multiplier used to compute the vertical distance between two paragraphs of text.
-   * The distance is computed in meters as paragraphSpacingFactor * [[lineHeight]].
+   * The distance is computed in meters as paragraphSpacingFactor * [[textHeight]].
    * Default: 0.5.
    */
   paragraphSpacingFactor?: number;
@@ -156,7 +177,7 @@ export interface TextStyleSettingsProps {
    */
   isUnderlined?: boolean;
   /** Multiplier used to compute the height of both the numerator and denominator of a [[FractionRun]].
-   * The height is computed in meters as stackedFractionScale * [[lineHeight]].
+   * The height is computed in meters as stackedFractionScale * [[textHeight]].
    * Default: 0.7.
    */
   stackedFractionScale?: number;
@@ -165,22 +186,22 @@ export interface TextStyleSettingsProps {
    */
   stackedFractionType?: StackedFractionType;
   /** Multiplier used to compute the vertical offset from the baseline for a subscript [[TextRun]].
-   * The offset is computed in meters as subScriptOffsetFactor * [[lineHeight]].
+   * The offset is computed in meters as subScriptOffsetFactor * [[textHeight]].
    * Default: -0.15.
    */
   subScriptOffsetFactor?: number;
   /** Multiplier used to compute the height of a subscript [[TextRun]].
-   * The height is computed as subScriptScale * [[lineHeight]].
+   * The height is computed as subScriptScale * [[textHeight]].
    * Default: 2/3
    */
   subScriptScale?: number;
   /** Multiplier used to compute the vertical offset from the baseline for a super [[TextRun]].
-   * The offset is computed in meters as superScriptOffsetFactor * [[lineHeight]].
+   * The offset is computed in meters as superScriptOffsetFactor * [[textHeight]].
    * Default: -0.5.
    */
   superScriptOffsetFactor?: number;
   /** Multiplier used to compute the height of a superscript [[TextRun]].
-   * The height is computed as superScriptScale * [[lineHeight]].
+   * The height is computed as superScriptScale * [[textHeight]].
    * Default: 2/3
    */
   superScriptScale?: number;
@@ -208,6 +229,9 @@ export interface TextStyleSettingsProps {
    * Default: {shape: "none", fill: "none", border: black, borderWeight: 1} for no frame.
    */
   frame?: TextFrameStyleProps;
+  /** The margins to surround the document content.
+   * Default: 0 margins on all sides */
+  margins?: TextBlockMargins;
   /** The offset (in meters) from the left edge of the text block to the start of the line of text.
    * In lists, the indentation is added to offset of list items.
    * The [[listMarker]] is right justified on [[indentation]] + [[tabInterval]]*(depth - 1/2).
@@ -219,6 +243,9 @@ export interface TextStyleSettingsProps {
    * Default: "1.".
    */
   listMarker?: ListMarker;
+  /** The alignment of the text content.
+   * Default: "left". */
+  justification?: TextJustification;
 }
 
 function deepFreeze<T>(obj: T) {
@@ -242,20 +269,20 @@ function deepFreeze<T>(obj: T) {
 export class TextStyleSettings {
   /** The color of the text. */
   public readonly color: TextStyleColor;
-  /** The name of a font stored in an iModel, used to draw the contents of a [[TextRun]].
+  /** The font stored in an iModel, used to draw the contents of a [[TextRun]].
    */
-  public readonly fontName: string;
-  /** The height each line of text, in meters. Many other settings use the line height as the basis for computing their own values.
-   * For example, the height and offset from baseline of a subscript [[TextRun]]  are computed as lineHeight * [[subScriptScale]] and
-   * lineHeight * [[subScriptOffsetFactor]], respectively.
+  public readonly font: Readonly<Required<FontFamilySelector>>;
+  /** The height of the text, in meters. Many other settings use the text height as the basis for computing their own values.
+   * For example, the height and offset from baseline of a subscript [[TextRun]]  are computed as textHeight * [[subScriptScale]] and
+   * textHeight * [[subScriptOffsetFactor]], respectively.
    */
-  public readonly lineHeight: number;
+  public readonly textHeight: number;
   /** Multiplier used to compute the vertical distance between two lines of text.
-   * The distance is computed in meters as lineSpacingFactor * [[lineHeight]].
+   * The distance is computed in meters as lineSpacingFactor * [[textHeight]] of the [[TextBlock]].
    */
   public readonly lineSpacingFactor: number;
   /** Multiplier used to compute the vertical distance between two paragraphs of text.
-   * The distance is computed in meters as paragraphSpacingFactor * [[lineHeight]].
+   * The distance is computed in meters as paragraphSpacingFactor * the [[TextBlock]]'s [[textHeight]].
    */
   public readonly paragraphSpacingFactor: number;
   /** Specifies whether the content of a [[TextRun]] should be rendered **bold**. */
@@ -265,28 +292,28 @@ export class TextStyleSettings {
   /** Specifies whether the content of a [[TextRun]] should be underlined. */
   public readonly isUnderlined: boolean;
   /** Multiplier used to compute the height of both the numerator and denominator of a [[FractionRun]].
-   * The height is computed in meters as stackedFractionScale * [[lineHeight]].
+   * The height is computed in meters as stackedFractionScale * [[textHeight]].
    */
   public readonly stackedFractionScale: number;
   /** Specifies how to separate the numerator and denominator of a [[FractionRun]]. */
   public readonly stackedFractionType: StackedFractionType;
   /** Multiplier used to compute the vertical offset from the baseline for a subscript [[TextRun]].
-   * The offset is computed in meters as subScriptOffsetFactor * [[lineHeight]].
+   * The offset is computed in meters as subScriptOffsetFactor * [[textHeight]].
    */
   public readonly subScriptOffsetFactor: number;
   /** Multiplier used to compute the height of a subscript [[TextRun]].
-   * The height is computed as subScriptScale * [[lineHeight]].
+   * The height is computed as subScriptScale * [[textHeight]].
    */
   public readonly subScriptScale: number;
   /** Multiplier used to compute the vertical offset from the baseline for a super [[TextRun]].
-   * The offset is computed in meters as superScriptOffsetFactor * [[lineHeight]].
+   * The offset is computed in meters as superScriptOffsetFactor * [[textHeight]].
    */
   public readonly superScriptOffsetFactor: number;
   /** Multiplier used to compute the height of a superscript [[TextRun]].
-   * The height is computed as superScriptScale * [[lineHeight]].
+   * The height is computed as superScriptScale * [[textHeight]].
    */
   public readonly superScriptScale: number;
-  /** Multiplier used to compute the width of each glyph, relative to [[lineHeight]]. */
+  /** Multiplier used to compute the width of each glyph, relative to [[textHeight]]. */
   public readonly widthFactor: number;
   /** Properties describing appearance of leaders in a [[TextAnnotation]].
    * Used when producing geometry for [[TextAnnotation]].
@@ -311,12 +338,16 @@ export class TextStyleSettings {
   public readonly listMarker: ListMarker;
   /** The frame settings of the [[TextAnnotation]]. */
   public readonly frame: Readonly<Required<TextFrameStyleProps>>;
+  /** The margins to surround the document content. */
+  public readonly margins: Readonly<Required<TextBlockMargins>>;
+  /** The alignment of the text content. */
+  public readonly justification: TextJustification;
 
-  /** A fully-populated JSON representation of the default settings. A real `fontName` must be provided before use. */
+  /** A fully-populated JSON representation of the default settings. A real `font` must be provided before use. */
   public static defaultProps: DeepReadonlyObject<DeepRequiredObject<TextStyleSettingsProps>> = {
     color: "subcategory",
-    fontName: "",
-    lineHeight: 1,
+    font: { name: "", type: FontType.TrueType },
+    textHeight: 1,
     lineSpacingFactor: 0.5,
     paragraphSpacingFactor: 0.5,
     isBold: false,
@@ -341,10 +372,17 @@ export class TextStyleSettings {
     listMarker: { enumerator: "1", terminator: "period", case: "lower" },
     frame: {
       shape: "none",
-      fill: "none",
-      border: ColorDef.black.toJSON(),
+      fillColor: "none",
+      borderColor: ColorDef.black.toJSON(),
       borderWeight: 1,
     },
+    margins: {
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0
+    },
+    justification: "left",
   };
 
   /** Settings initialized to all default values. */
@@ -356,8 +394,12 @@ export class TextStyleSettings {
     }
 
     this.color = props.color ?? defaults.color;
-    this.fontName = props.fontName ?? defaults.fontName;
-    this.lineHeight = props.lineHeight ?? defaults.lineHeight;
+    const font = {
+      name: props.font?.name ?? defaults.font.name,
+      type: props.font?.type ?? defaults.font.type,
+    }
+    this.font = Object.freeze(font) as Readonly<Required<FontFamilySelector>>;
+    this.textHeight = props.textHeight ?? defaults.textHeight;
     this.lineSpacingFactor = props.lineSpacingFactor ?? defaults.lineSpacingFactor;
     this.paragraphSpacingFactor = props.paragraphSpacingFactor ?? defaults.paragraphSpacingFactor;
     this.isBold = props.isBold ?? defaults.isBold;
@@ -381,32 +423,26 @@ export class TextStyleSettings {
     this.tabInterval = props.tabInterval ?? defaults.tabInterval;
     this.indentation = props.indentation ?? defaults.indentation;
     this.listMarker = props.listMarker ?? defaults.listMarker;
-
     const frame = {
       shape: props.frame?.shape ?? defaults.frame.shape,
-      fill: props.frame?.fill ?? defaults.frame.fill,
-      border: props.frame?.border ?? defaults.frame.border,
+      fillColor: props.frame?.fillColor ?? defaults.frame.fillColor,
+      borderColor: props.frame?.borderColor ?? defaults.frame.borderColor,
       borderWeight: props.frame?.borderWeight ?? defaults.frame.borderWeight,
     };
     // Cast to indicate to TypeScript that the frame properties are all defined
     this.frame = Object.freeze(frame) as Readonly<Required<TextFrameStyleProps>>;
+    this.margins = Object.freeze({
+      left: props.margins?.left ?? defaults.margins.left,
+      right: props.margins?.right ?? defaults.margins.right,
+      top: props.margins?.top ?? defaults.margins.top,
+      bottom: props.margins?.bottom ?? defaults.margins.bottom,
+    }) as Readonly<Required<TextBlockMargins>>;
+    this.justification = props.justification ?? defaults.justification;
   }
 
   /** Create a copy of these settings, modified according to the properties defined by `alteredProps`. */
   public clone(alteredProps?: TextStyleSettingsProps): TextStyleSettings {
     return alteredProps ? new TextStyleSettings(alteredProps, this) : this;
-  }
-
-  /** Creates a deep copy of the `TextStyleSettingsProps`. */
-  public static cloneProps(props: TextStyleSettingsProps): TextStyleSettingsProps {
-    const copy = { ...props };
-    if (props.leader) {
-      copy.leader = { ...props.leader };
-    }
-    if (props.frame) {
-      copy.frame = { ...props.frame };
-    }
-    return copy;
   }
 
   /** Create settings from their JSON representation. */
@@ -415,7 +451,7 @@ export class TextStyleSettings {
   }
 
   public toJSON(): TextStyleSettingsProps {
-    return { ...this };
+    return structuredClone(this);
   }
 
   /** Compare two [[TextLeaderStyleProps]] for equality.
@@ -430,22 +466,31 @@ export class TextStyleSettings {
 
   public frameEquals(other: TextFrameStyleProps): boolean {
     return this.frame?.shape === other.shape
-      && this.frame?.fill === other.fill
-      && this.frame?.border === other.border
+      && this.frame?.fillColor === other.fillColor
+      && this.frame?.borderColor === other.borderColor
       && this.frame?.borderWeight === other.borderWeight;
   }
 
+  public marginsEqual(other: TextBlockMargins): boolean {
+    return Object.entries(this.margins).every(([key, value]) =>
+      value === (other as any)[key]
+    );
+  }
+
   public equals(other: TextStyleSettings): boolean {
-    return this.color === other.color && this.fontName === other.fontName
-      && this.lineHeight === other.lineHeight && this.lineSpacingFactor === other.lineSpacingFactor && this.paragraphSpacingFactor === other.paragraphSpacingFactor && this.widthFactor === other.widthFactor
+    return this.color === other.color && this.font.name === other.font.name && this.font.type === other.font.type
+      && this.textHeight === other.textHeight && this.widthFactor === other.widthFactor
+      && this.lineSpacingFactor === other.lineSpacingFactor && this.paragraphSpacingFactor === other.paragraphSpacingFactor
       && this.isBold === other.isBold && this.isItalic === other.isItalic && this.isUnderlined === other.isUnderlined
       && this.stackedFractionType === other.stackedFractionType && this.stackedFractionScale === other.stackedFractionScale
       && this.subScriptOffsetFactor === other.subScriptOffsetFactor && this.subScriptScale === other.subScriptScale
       && this.superScriptOffsetFactor === other.superScriptOffsetFactor && this.superScriptScale === other.superScriptScale
       && this.tabInterval === other.tabInterval && this.indentation === other.indentation
       && this.listMarker.case === other.listMarker.case && this.listMarker.enumerator === other.listMarker.enumerator && this.listMarker.terminator === other.listMarker.terminator
+      && this.justification === other.justification
       && this.leaderEquals(other.leader)
       && this.frameEquals(other.frame)
+      && this.marginsEqual(other.margins);
   }
 
   /**
@@ -460,12 +505,12 @@ export class TextStyleSettings {
    */
   public getValidationErrors(): string[] {
     const errorMessages: string[] = [];
-    if (this.fontName.trim() === "") {
-      errorMessages.push("fontName must be provided");
+    if (this.font.name.trim() === "") {
+      errorMessages.push("font name must be provided");
     }
 
-    if (this.lineHeight <= 0) {
-      errorMessages.push("lineHeight must be greater than 0");
+    if (this.textHeight <= 0) {
+      errorMessages.push("textHeight must be greater than 0");
     }
 
     if (this.stackedFractionScale <= 0) {
