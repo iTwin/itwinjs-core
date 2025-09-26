@@ -28,8 +28,9 @@ describe("CesiumSystem", () => {
 
   it("should use a CesiumSystem object to create valid targets", () => {
     const canvas = document.createElement("canvas")
-    canvas.style.height = '32px';
-    canvas.style.width = '64px';
+    canvas.width = 64;
+    canvas.height = 32;
+    document.body.appendChild(canvas);
     const onScreenTarget = cesiumSystem?.createTarget(canvas);
     expect(onScreenTarget).not.to.be.undefined;
     expect(onScreenTarget).to.be.instanceOf(CesiumOnScreenTarget);
@@ -37,6 +38,7 @@ describe("CesiumSystem", () => {
     expect(onScreenTarget?.viewRect?.top).to.equal(0);
     expect(onScreenTarget?.viewRect?.right).to.equal(64);
     expect(onScreenTarget?.viewRect?.bottom).to.equal(32);
+    document.body.removeChild(canvas);
 
     const offScreenTarget = cesiumSystem?.createOffscreenTarget(new ViewRect(0, 0, 64, 32));
     expect(offScreenTarget).not.to.be.undefined;
