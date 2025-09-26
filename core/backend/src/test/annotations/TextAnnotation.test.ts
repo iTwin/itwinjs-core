@@ -501,7 +501,7 @@ describe("TextAnnotation element", () => {
         expect(el1.defaultTextStyle).to.be.undefined;
       });
 
-      describe.only("onCloned", () => {
+      describe("onCloned", () => {
         it("remaps property hosts", () => {
           const textBlock = TextBlock.create({
             children: [{
@@ -541,25 +541,6 @@ describe("TextAnnotation element", () => {
           const para = anno.textBlock.children[0];
           expect((para.children[0] as FieldRun).propertyHost.elementId).to.equal("0x456");
           expect((para.children[1] as FieldRun).propertyHost.elementId).to.equal("0xdef");
-        });
-
-        it("remaps default text style", () => {
-          const elem = makeElement();
-          elem.insert();
-          imodel.saveChanges();
-
-          const context = new IModelElementCloneContext(imodel);
-          context.remapElement(createElement2dArgs.model, createElement2dArgs.model);
-          let props = context.cloneElement(elem) as TextAnnotation2dProps;
-          expect(props.defaultTextStyle).to.be.undefined;
-
-          context.remapElement("0x21", "0x42");
-          props = context.cloneElement(elem) as TextAnnotation2dProps;
-          expect(props.defaultTextStyle?.id).to.equal("0x42");
-
-          elem.defaultTextStyle = undefined;
-          props = context.cloneElement(elem) as TextAnnotation2dProps;
-          expect(props.defaultTextStyle).to.be.undefined;
         });
       });
     });

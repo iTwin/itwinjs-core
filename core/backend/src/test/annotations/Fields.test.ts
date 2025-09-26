@@ -825,7 +825,7 @@ describe("Field evaluation", () => {
       expectText("12.5", targetId);
     });
 
-    describe("remapFields", () => {
+    describe.("remapFields", () => {
       let dstIModel: StandaloneDb;
       let dstModel: Id64String;
       let dstCategory: Id64String;
