@@ -11,7 +11,7 @@ import { SchemaUnitProvider } from "../../UnitProvider/SchemaUnitProvider";
 import { UNIT_EXTRA_DATA } from "../UnitProvider/UnitData";
 import { Format, FormatterSpec } from "@itwin/core-quantity";
 
-describe.only("Formatting tests ", () => {
+describe("Formatting tests handling temperature conversions where sign is flipped", () => {
   let context: SchemaContext;
   let provider: SchemaUnitProvider;
 
