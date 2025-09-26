@@ -299,8 +299,11 @@ export class HalfEdgeGraphSpineContext {
             const xyzC = pC.getPoint3d();
             const xyzE = xyzB.interpolate(s, xyzC);
             if (this.splitOK(xyzA, xyzB, xyzE, xyzC, minSplitRadians)) {
+              countMasks ("before split", this._spineGraph);
               const pE = this._spineGraph.splitEdgeAtFraction(pB, s);
+              countMasks ("after split", this._spineGraph);
               const pA1 = this._spineGraph.createEdgeHalfEdgeHalfEdge(pA, 0, pE, 0);
+              countMasks ("after join", this._spineGraph);
               pA1.setXYZFrom(pA);
               pE.setXYZAroundVertex(xyzE.x, xyzE.y, xyzE.z);
               numAdd++;
@@ -457,6 +460,8 @@ export class HalfEdgeGraphSpineContext {
       const nodeB = nodeA.faceSuccessor;
       nodeA.setMask(HalfEdgeMask.BOUNDARY_EDGE);
       nodeB.setMask(HalfEdgeMask.BOUNDARY_EDGE);
+      nodeA.setMask(HalfEdgeMask.PRIMARY_EDGE);
+      nodeB.setMask(HalfEdgeMask.PRIMARY_EDGE);
       if (pPreviousB === undefined) {
         pFirstA = nodeA;
       } else {
@@ -489,7 +494,7 @@ export class HalfEdgeGraphSpineContext {
     }
   }
   private static _regularize1 = true;
-  private static _regularize2 = false;
+  private static _regularize2 = true; // This was false.  why?  EDL April 2025
   /**
    * Triangulate the graph for the edges that have been inserted.
    * @param applyParity if true ()
@@ -570,4 +575,13 @@ export class HalfEdgeGraphSpineContext {
     }
     return numDiagonal;
   }
+}
+function countMasks (_event: string, _graph: HalfEdgeGraph){
+  /*
+  const numNode = graph.countNodes ();
+  const numExterior = graph.countMask (HalfEdgeMask.EXTERIOR);
+  const numPrimary  = graph.countMask (HalfEdgeMask.PRIMARY_EDGE);
+  const numBoundary = graph.countMask (HalfEdgeMask.BOUNDARY_EDGE);
+  console.log ({event, numNode, numExterior, numPrimary, numBoundary});
+  */
 }
