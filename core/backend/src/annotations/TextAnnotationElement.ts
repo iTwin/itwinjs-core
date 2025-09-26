@@ -233,7 +233,7 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
   /**
    * TextAnnotation2d custom HandledProps include 'textAnnotationData'.
    * @inheritdoc
-   * @beta
+   * @internal
    */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "textAnnotationData", source: "Class" },
@@ -403,7 +403,7 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
   /**
    * TextAnnotation3d custom HandledProps include 'textAnnotationData'.
    * @inheritdoc
-   * @beta
+   * @internal
    */
   protected static override readonly _customHandledProps: CustomHandledProperty[] = [
     { propertyName: "textAnnotationData", source: "Class" },
