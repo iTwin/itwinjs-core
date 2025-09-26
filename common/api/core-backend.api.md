@@ -6441,7 +6441,7 @@ export class TextAnnotation2d extends AnnotationElement2d {
     static get className(): string;
     // @beta
     static create(iModelDb: IModelDb, arg: TextAnnotation2dCreateArgs): TextAnnotation2d;
-    // @beta
+    // @internal
     protected static readonly _customHandledProps: CustomHandledProperty[];
     // @beta
     defaultTextStyle?: TextAnnotationUsesTextStyleByDefault;
@@ -6486,7 +6486,7 @@ export class TextAnnotation3d extends GraphicalElement3d {
     static get className(): string;
     // @beta
     static create(iModelDb: IModelDb, arg: TextAnnotation3dCreateArgs): TextAnnotation3d;
-    // @beta
+    // @internal
     protected static readonly _customHandledProps: CustomHandledProperty[];
     // @beta
     defaultTextStyle?: TextAnnotationUsesTextStyleByDefault;
