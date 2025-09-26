@@ -2176,6 +2176,7 @@ export abstract class Viewport implements Disposable, TileUser {
     }
 
     this.synchWithView(options);
+    console.log("zoomed to new view", this.view);
     return ViewStatus.Success;
   }
 

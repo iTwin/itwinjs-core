@@ -3,10 +3,50 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Code, EcefLocation, IModel } from "@itwin/core-common";
-import { IModelApp } from "@itwin/core-frontend";
+import { Code, EcefLocation, IModel, ViewDefinition3dProps } from "@itwin/core-common";
+import { IModelApp, IModelConnection, SpatialViewState, ViewState3d } from "@itwin/core-frontend";
 import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion, PerspectiveFrustum, PerspectiveOffCenterFrustum, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler } from "cesium";
 import { createCesiumCameraProps } from "./CesiumCamera.js";
+import { Angle, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
+
+const ecefLocProps = {
+  origin: [
+    1255641.5519893507,
+    -4732698.684827632,
+    4073546.2460685894
+  ],
+  orientation: {
+    pitch: -49.005021293968355,
+    roll: -11.823580111180991,
+    yaw: -90.642664633961
+  },
+  transform: [
+    [
+      -0.007357864592832313,
+      0.9804561979367872,
+      0.19659986204464436,
+      1255641.5519893507
+    ],
+    [
+      -0.6559516195525271,
+      0.14366280316126617,
+      -0.7410050416793829,
+      -4732698.684827632
+    ],
+    [
+      -0.75476707309941,
+      -0.13441221267127085,
+      0.6420747794842614,
+      4073546.2460685894
+    ]
+  ],
+  cartographicOrigin: {
+    latitude: 0.6972007432483922,
+    longitude: -1.311456937133241,
+    height: 4.102413240985213
+  }
+};
+const ecefLoc = new EcefLocation(ecefLocProps);
 
 /** Options to configure a Cesium scene.
  * @internal
@@ -131,6 +171,14 @@ export class CesiumScene {
       const currentTime = this._clock.tick();
       this._scene.render(currentTime);
     });
+
+    IModelApp.viewManager.selectedView?.onViewportChanged.addListener((vp) => {
+      const cesiumCam = createCesiumCameraProps({
+        viewDefinition: vp?.view.toJSON() as ViewDefinition3dProps,
+        ecefLoc
+      });
+      console.log("onSelectedViewportChanged - new cesiumCam:", cesiumCam);
+    });
   }
 
   private configurePixelRatio() {
@@ -210,45 +258,6 @@ export class CesiumScene {
       displayStyleId: "@1",
     };
 
-    const ecefLocProps = {
-      origin: [
-        1255641.5519893507,
-        -4732698.684827632,
-        4073546.2460685894
-      ],
-      orientation: {
-        pitch: -49.005021293968355,
-        roll: -11.823580111180991,
-        yaw: -90.642664633961
-      },
-      transform: [
-        [
-          -0.007357864592832313,
-          0.9804561979367872,
-          0.19659986204464436,
-          1255641.5519893507
-        ],
-        [
-          -0.6559516195525271,
-          0.14366280316126617,
-          -0.7410050416793829,
-          -4732698.684827632
-        ],
-        [
-          -0.75476707309941,
-          -0.13441221267127085,
-          0.6420747794842614,
-          4073546.2460685894
-        ]
-      ],
-      cartographicOrigin: {
-        latitude: 0.6972007432483922,
-        longitude: -1.311456937133241,
-        height: 4.102413240985213
-      }
-    };
-    const ecefLoc = new EcefLocation(ecefLocProps);
-
     const cesiumCameraProps = createCesiumCameraProps({ viewDefinition: cameraOnView, ecefLoc });
     console.log("cesiumCameraProps:", cesiumCameraProps);
 
@@ -267,5 +276,37 @@ export class CesiumScene {
     })
 
     console.log("Camera:", this._scene.camera);
+
+    const vp = IModelApp.viewManager.selectedView;
+    if (vp) {
+      const oldView = vp.view;
+      const yawPitchRoll = new YawPitchRollAngles(
+        Angle.createDegrees(cameraOnView.angles.yaw),
+        Angle.createDegrees(cameraOnView.angles.pitch),
+        Angle.createDegrees(cameraOnView.angles.roll)
+      );
+
+      const newView = SpatialViewState.createBlank(
+        vp.iModel,
+        {x: cameraOnView.origin[0], y: cameraOnView.origin[1], z: cameraOnView.origin[2]},
+        {x: cameraOnView.extents[0], y: cameraOnView.extents[1], z: cameraOnView.extents[2]},
+        yawPitchRoll.toMatrix3d()
+      );
+
+      // const newView = SpatialViewState.createFromProps(
+      //   {
+      //     viewDefinitionProps: cameraOnView,
+      //     displayStyleProps: oldView.displayStyle.toJSON(),
+      //     categorySelectorProps: oldView.categorySelector.toJSON(),
+      //   },
+      //   vp.iModel
+      // );
+
+      if (newView) {
+        vp.applyViewState(newView);
+      }
+
+      console.log("New itwinjs view:", vp.view);
+    }
   }
 }
