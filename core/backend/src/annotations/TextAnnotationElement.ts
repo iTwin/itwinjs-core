@@ -185,7 +185,7 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
    */
   public static create(iModelDb: IModelDb, arg: TextAnnotation2dCreateArgs): TextAnnotation2d {
     const elementProps: TextAnnotation2dProps = {
-      classFullName: this.className,
+      classFullName: this.classFullName,
       textAnnotationData: arg.textAnnotationProps ? JSON.stringify({ version: TEXT_ANNOTATION_JSON_VERSION, data: arg.textAnnotationProps }) : undefined,
       defaultTextStyle: arg.defaultTextStyleId ? new TextAnnotationUsesTextStyleByDefault(arg.defaultTextStyleId).toJSON() : undefined,
       placement: arg.placement,
@@ -355,7 +355,7 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
    */
   public static create(iModelDb: IModelDb, arg: TextAnnotation3dCreateArgs): TextAnnotation3d {
     const elementProps: TextAnnotation3dProps = {
-      classFullName: this.className,
+      classFullName: this.classFullName,
       textAnnotationData: arg.textAnnotationProps ? JSON.stringify({ version: TEXT_ANNOTATION_JSON_VERSION, data: arg.textAnnotationProps }) : undefined,
       defaultTextStyle: arg.defaultTextStyleId ? new TextAnnotationUsesTextStyleByDefault(arg.defaultTextStyleId).toJSON() : undefined,
       placement: arg.placement,
