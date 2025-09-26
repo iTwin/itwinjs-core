@@ -1364,18 +1364,12 @@ importers:
 
   ../../core/quantity:
     devDependencies:
-      '@bentley/units-schema':
-        specifier: ^1.0.9
-        version: 1.0.9
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
       '@itwin/core-bentley':
         specifier: workspace:*
         version: link:../bentley
-      '@itwin/ecschema-metadata':
-        specifier: workspace:*
-        version: link:../ecschema-metadata
       '@itwin/eslint-plugin':
         specifier: 5.2.2-dev.2
         version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
