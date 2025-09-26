@@ -653,6 +653,11 @@ export interface AnnotationTextStyleProps extends DefinitionElementProps {
   settings?: string;
 }
 
+/** A string in the format `read.write.minor` where the semantics match those of [ECVersion]($ecschema-metadata).
+ * @beta
+ */
+export type SemverString = `${string}.${string}.${string}`
+
 /** Wrapper for versioned JSON data.
  * @beta
  */
@@ -660,7 +665,7 @@ export interface VersionedJSON<T> {
   /** The semver version of the JSON data.
    * Uses the same semantics as [ECVersion]($ecschema-metadata).
    */
-  version: string;
+  version: SemverString;
   /** The JSON data. */
   data: T;
 }
