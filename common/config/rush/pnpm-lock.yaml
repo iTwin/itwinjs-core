@@ -1379,9 +1379,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^3.0.6
         version: 3.0.6(@vitest/browser@3.0.6)(vitest@3.0.6)
-      '@xmldom/xmldom':
-        specifier: ~0.8.10
-        version: 0.8.10
       eslint:
         specifier: ^9.31.0
         version: 9.31.0

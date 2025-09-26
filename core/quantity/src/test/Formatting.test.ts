@@ -1223,5 +1223,3 @@ describe("Formatting tests:", () => {
     });
   });
 });
-
-
