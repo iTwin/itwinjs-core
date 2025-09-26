@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "load default geo coord dbs when getting available crs",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
