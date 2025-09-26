@@ -2,16 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module Cesium
- */
 
 import { Cartesian3, Material, Polyline, PolylineCollection } from "cesium";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Path, Point3d, StrokeOptions } from "@itwin/core-geometry";
 import { CesiumScene } from "../CesiumScene.js";
-import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
-import { DecorationPrimitiveEntry } from "./DecorationTypes.js";
+import { type DepthOptions, PrimitiveConverter, type RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
+import type { DecorationPrimitiveEntry, PathEntry } from "./DecorationTypes.js";
 
 /** Converts iTwin.js Path decorations to Cesium Polyline primitives */
 export class PathPrimitiveConverter extends PrimitiveConverter {
@@ -22,8 +19,8 @@ export class PathPrimitiveConverter extends PrimitiveConverter {
   }
 
   // For paths, keep the full primitive entries so we can access the Path object
-  protected override extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[] | undefined, primitiveType: string): DecorationPrimitiveEntry[] | undefined {
-    if (!coordinateData || !Array.isArray(coordinateData)) return undefined;
+  protected override extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[], primitiveType: string): DecorationPrimitiveEntry[] | undefined {
+    if (!Array.isArray(coordinateData)) return undefined;
     return coordinateData.filter((entry: DecorationPrimitiveEntry) => entry.type === primitiveType);
   }
 
@@ -33,17 +30,16 @@ export class PathPrimitiveConverter extends PrimitiveConverter {
     _index: number,
     collection: PolylineCollection,
     iModel?: IModelConnection,
-    originalData?: unknown,
+    originalData?: DecorationPrimitiveEntry[],
     type?: string
-  ): Polyline | null {
+  ): Polyline | undefined {
       // Prefer the captured Path object from coordinate data
-      const data = Array.isArray(originalData) ? (originalData as DecorationPrimitiveEntry[]) : undefined;
-      const isPathEntry = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').PathEntry => e.type === 'path';
-      const pathEntry = Array.isArray(data) ? data.find((e): e is import('./DecorationTypes.js').PathEntry => isPathEntry(e)) : undefined;
+      const isPathEntry = (e: DecorationPrimitiveEntry): e is PathEntry => e.type === 'path';
+      const pathEntry = originalData?.find((e): e is PathEntry => isPathEntry(e));
       const path: Path | undefined = pathEntry?.path;
       if (!path) {
         // No valid path found; nothing to draw
-        return null;
+        return undefined;
       }
 
       // Densify the path to a point array using iTwin stroke options
@@ -51,7 +47,7 @@ export class PathPrimitiveConverter extends PrimitiveConverter {
       strokeOptions.chordTol = 0.01;
       const strokes = path.getPackedStrokes(strokeOptions);
       const pts: Point3d[] | undefined = strokes?.getPoint3dArray();
-      if (!pts || pts.length === 0) return null;
+      if (!pts || pts.length === 0) return undefined;
 
       // Convert to Cesium coordinates using base helper
       const positions: Cartesian3[] = this.convertPointsToCartesian3(pts, iModel);
@@ -59,7 +55,7 @@ export class PathPrimitiveConverter extends PrimitiveConverter {
       // Use symbology color when available
       const matColor = this.extractLineColorFromGraphic(_graphic, 'path');
       if (!matColor)
-        return null;
+        return undefined;
 
       return collection.add({
         id: primitiveId,
@@ -68,7 +64,6 @@ export class PathPrimitiveConverter extends PrimitiveConverter {
         material: Material.fromType(Material.ColorType, { color: matColor }),
         ...this.getDepthOptions(type ?? "world"),
       });
-    return null;
   }
 
   protected override getPrimitiveTypeName(): string {
@@ -79,7 +74,7 @@ export class PathPrimitiveConverter extends PrimitiveConverter {
     return true;
   }
 
-  protected override getDepthOptions(decorationType: string): Record<string, unknown> {
+  protected override getDepthOptions(decorationType: string): DepthOptions {
     const base = super.getDepthOptions(decorationType);
     const isOverlay = decorationType === "worldOverlay" || decorationType === "viewOverlay";
     if (isOverlay) {

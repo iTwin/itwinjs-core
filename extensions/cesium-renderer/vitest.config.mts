@@ -5,6 +5,16 @@ export default defineConfig({
   },
   test: {
     dir: "src",
+    include: ["**/CesiumSystem.test.ts"],
+    browser: {
+      provider: "playwright",
+      enabled: true,
+      instances: [
+        { browser: "chromium" }
+      ],
+      headless: true,
+      screenshotFailures: false
+    },
     coverage: {
       provider: "v8",
       include: [

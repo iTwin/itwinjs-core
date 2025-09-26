@@ -89,7 +89,7 @@ export class CesiumScene {
     this._scene.backgroundColor = Color.FUCHSIA;
     this._scene.debugShowFramesPerSecond = true;
 
-    const cesiumKey = process.env.IMJS_CESIUM_ION_KEY;
+    const cesiumKey = IModelApp.tileAdmin.cesiumIonKey;
     if (cesiumKey) {
       Ion.defaultAccessToken = cesiumKey;
     }

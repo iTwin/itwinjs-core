@@ -2,30 +2,45 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module Cesium
- */
-
-import { Decorations, GraphicList, IModelConnection, RenderGraphic } from "@itwin/core-frontend";
+import { Decorations, GraphicList, IModelConnection, RenderGeometry, RenderGraphic } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
-import { Cartesian3, Color } from "cesium";
+import {
+  Cartesian3,
+  Color,
+  type DistanceDisplayCondition,
+  type PointPrimitive,
+  PointPrimitiveCollection,
+  type Polyline,
+  PolylineCollection,
+  Primitive,
+  PrimitiveCollection,
+} from "cesium";
 import { ColorDef } from "@itwin/core-common";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverterFactory } from "./PrimitiveConverterFactory.js";
 import { CesiumCoordinateConverter } from "./CesiumCoordinateConverter.js";
-import { DecorationPrimitiveEntry } from "./DecorationTypes.js";
+import type { DecorationPrimitiveEntry } from "./DecorationTypes.js";
 
 export interface RenderGraphicWithCoordinates extends RenderGraphic {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   _coordinateData?: DecorationPrimitiveEntry[];
-  geometries?: unknown[];
+  geometries?: RenderGeometry[];
   geometryType?: string;
+  symbology?: { color?: ColorDef; fillColor?: ColorDef };
 }
 
+export type DepthOptions = Partial<{
+  disableDepthTestDistance: number;
+  clampToGround: boolean;
+  distanceDisplayCondition: DistanceDisplayCondition | undefined;
+  heightReference: number;
+  extrudedHeightReference: number;
+}>;
+
 /** Base class for converting iTwin.js decorations to Cesium primitives */
-export abstract class PrimitiveConverter {
+export abstract class PrimitiveConverter<TPrimitiveData = DecorationPrimitiveEntry[]> {
   // Geometry type handled by this converter
-  protected abstract readonly primitiveType: import('./DecorationTypes.js').DecorationPrimitiveEntry["type"];
+  protected abstract readonly primitiveType: DecorationPrimitiveEntry["type"];
 
   // Unified convert method that uses the subclass primitiveType
   public convertDecorations(graphics: GraphicList, type: string, scene: CesiumScene, iModel?: IModelConnection): void {
@@ -48,7 +63,7 @@ export abstract class PrimitiveConverter {
     }
   }
 
-  protected getDepthOptions(decorationType: string): Record<string, unknown> {
+  protected getDepthOptions(decorationType: string): DepthOptions {
     const isOverlay = decorationType === 'worldOverlay' || decorationType === 'viewOverlay';
     if (!isOverlay) {
       return {};
@@ -57,13 +72,12 @@ export abstract class PrimitiveConverter {
     return {};
   }
 
-  /** Generic method to extract primitive data by type. Subclasses may override and return their own shape. */
-  protected extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[] | undefined, primitiveType: string): unknown {
-    if (!coordinateData || !Array.isArray(coordinateData)) return undefined;
-    const entries = coordinateData.filter((entry) => entry.type === primitiveType);
-    type EntriesWithPoints = Extract<DecorationPrimitiveEntry, { points: unknown }>;
-    const withPoints = entries.filter((entry): entry is EntriesWithPoints => 'points' in entry);
-    return withPoints.map((entry) => entry.points);
+  /** Generic method to extract primitive data by type. Subclasses may override for specialized needs. */
+  protected extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[], primitiveType: string): TPrimitiveData | undefined {
+    if (!Array.isArray(coordinateData))
+      return undefined;
+    const filtered = coordinateData.filter((entry) => entry.type === primitiveType);
+    return filtered as TPrimitiveData;
   }
 
   /** Template method for convertDecorations - defines the algorithm structure */
@@ -89,15 +103,12 @@ export abstract class PrimitiveConverter {
       const primitiveId = `${type}_${this.getPrimitiveTypeName()}_${index}`;
       const graphicWithCoords = graphic as RenderGraphicWithCoordinates;
       const coordinateData = graphicWithCoords._coordinateData;
-      const originalData = this.extractPrimitiveData(coordinateData, primitiveType);
+      const originalData = coordinateData ? this.extractPrimitiveData(coordinateData, primitiveType) : undefined;
 
       const result = this.createPrimitiveFromGraphic(graphicWithCoords, primitiveId, index, collection, iModel, originalData, type);
 
-      if (result && typeof result === 'object' && (result as { constructor?: { name?: string } }).constructor?.name === 'Primitive') {
-        const add = (collection as unknown as { add: (arg: unknown) => unknown }).add;
-        if (typeof add === 'function')
-          add.call(collection, result);
-      }
+      if (result && this.isPrimitiveResult(result) && this.isPrimitiveCollection(collection))
+        collection.add(result);
     });
   }
 
@@ -114,16 +125,16 @@ export abstract class PrimitiveConverter {
   }
 
   /** Abstract methods that must be implemented by subclasses */
-  protected abstract getCollection(scene: CesiumScene): unknown;
+  protected abstract getCollection(scene: CesiumScene): PointPrimitiveCollection | PolylineCollection | PrimitiveCollection | undefined;
   protected abstract createPrimitiveFromGraphic(
     graphic: RenderGraphicWithCoordinates,
     primitiveId: string,
     index: number,
-    collection: unknown,
+    collection: PointPrimitiveCollection | PolylineCollection | PrimitiveCollection,
     iModel?: IModelConnection,
-    originalData?: unknown,
+    originalData?: TPrimitiveData,
     type?: string
-  ): unknown;
+  ): Primitive | Polyline | PointPrimitive | void;
   // Default primitive type name for IDs; subclasses can override for custom naming
   protected getPrimitiveTypeName(): string {
     return this.primitiveType;
@@ -179,27 +190,25 @@ export abstract class PrimitiveConverter {
     // Clear all point primitives
     const pointCollection = scene.pointCollection;
     if (pointCollection) {
-      const pointsToRemove: unknown[] = [];
+      const pointsToRemove: PointPrimitive[] = [];
       for (let i = 0; i < pointCollection.length; i++) {
         const point = pointCollection.get(i);
-        const hasId = (p: unknown): p is { id?: unknown } => typeof p === 'object' && p !== null && 'id' in (p);
-        if (hasId(point) && typeof point.id === 'string' && this.isAnyDecorationId(point.id))
+        if (typeof point?.id === 'string' && this.isAnyDecorationId(point.id))
           pointsToRemove.push(point);
       }
-      pointsToRemove.forEach(point => pointCollection.remove(point as import('cesium').PointPrimitive));
+      pointsToRemove.forEach(point => pointCollection.remove(point));
     }
 
     // Clear all line primitives
     const polylineCollection = scene.polylineCollection;
     if (polylineCollection) {
-      const linesToRemove: unknown[] = [];
+      const linesToRemove: Polyline[] = [];
       for (let i = 0; i < polylineCollection.length; i++) {
         const line = polylineCollection.get(i);
-        const hasId = (l: unknown): l is { id?: unknown } => typeof l === 'object' && l !== null && 'id' in (l);
-        if (hasId(line) && typeof line.id === 'string' && this.isAnyDecorationId(line.id))
+        if (typeof line?.id === 'string' && this.isAnyDecorationId(line.id))
           linesToRemove.push(line);
       }
-      linesToRemove.forEach(line => polylineCollection.remove(line as import('cesium').Polyline));
+      linesToRemove.forEach(line => polylineCollection.remove(line));
     }
   }
 
@@ -223,9 +232,7 @@ export abstract class PrimitiveConverter {
   }
 
   protected getGraphicSymbology(graphic?: RenderGraphicWithCoordinates): { color?: ColorDef; fillColor?: ColorDef } | undefined {
-    interface HasSymbology { symbology?: { color?: ColorDef; fillColor?: ColorDef } }
-    const hasSymbology = (g: unknown): g is HasSymbology => typeof g === 'object' && g !== null && ('symbology' in g);
-    return hasSymbology(graphic) ? graphic.symbology : undefined;
+    return graphic?.symbology;
   }
 
   protected findEntryByType<K extends DecorationPrimitiveEntry["type"]>(graphic: RenderGraphicWithCoordinates | undefined, type: K): Extract<DecorationPrimitiveEntry, { type: K }> | undefined {
@@ -262,5 +269,13 @@ export abstract class PrimitiveConverter {
     const fill2 = this.colorFromColorDef(sym?.fillColor ?? sym?.color);
     if (!line2 || !fill2) return undefined;
     return { fillColor: fill2, lineColor: line2, outlineWanted: !Color.equals(line2, fill2) };
+  }
+
+  private isPrimitiveCollection(collection: PointPrimitiveCollection | PolylineCollection | PrimitiveCollection): collection is PrimitiveCollection {
+    return collection instanceof PrimitiveCollection;
+  }
+
+  private isPrimitiveResult(result: Primitive | Polyline | PointPrimitive | void): result is Primitive {
+    return result instanceof Primitive;
   }
 }

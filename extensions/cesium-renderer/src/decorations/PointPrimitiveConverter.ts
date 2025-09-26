@@ -2,19 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module Cesium
- */
 
 import { Cartesian3, Color, PointPrimitive, PointPrimitiveCollection } from "cesium";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "../CesiumScene.js";
-import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
+import { type DepthOptions, PrimitiveConverter, type RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
+import type { DecorationPrimitiveEntry, PointString2dEntry, PointStringEntry } from "./DecorationTypes.js";
 
+interface PointStringCoordinate {
+  x: number;
+  y: number;
+  z?: number;
+}
+type PointStringCoordinates = PointStringCoordinate[];
 
 /** Converts iTwin.js point decorations to Cesium PointPrimitives */
-export class PointPrimitiveConverter extends PrimitiveConverter {
+export class PointPrimitiveConverter extends PrimitiveConverter<PointStringCoordinates[]> {
   protected readonly primitiveType: 'pointstring' | 'pointstring2d';
 
   public constructor(primitiveType: 'pointstring' | 'pointstring2d' = 'pointstring') {
@@ -22,11 +26,29 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     this.primitiveType = primitiveType;
   }
 
-
   protected override getCollection(scene: CesiumScene): PointPrimitiveCollection {
     return scene.pointCollection;
   }
 
+  protected override extractPrimitiveData(
+    coordinateData: DecorationPrimitiveEntry[] | undefined,
+    primitiveType: string
+  ): PointStringCoordinates[] | undefined {
+    if (!coordinateData)
+      return undefined;
+
+    const matches = coordinateData.filter((entry): entry is PointStringEntry | PointString2dEntry => entry.type === primitiveType);
+    if (matches.length === 0)
+      return undefined;
+
+    return matches.map(entry => {
+      if (entry.type === 'pointstring') {
+        return entry.points.map(pt => ({ x: pt.x, y: pt.y, z: pt.z }));
+      }
+
+      return entry.points.map(pt => ({ x: pt.x, y: pt.y, z: entry.zDepth }));
+    });
+  }
 
   protected override createPrimitiveFromGraphic(
     graphic: RenderGraphicWithCoordinates,
@@ -34,9 +56,9 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     _index: number,
     collection: PointPrimitiveCollection,
     iModel?: IModelConnection,
-    originalData?: unknown,
+    originalData?: PointStringCoordinates[],
     type?: string
-  ): PointPrimitive | null {
+  ): PointPrimitive | undefined {
     return this.createPointPrimitiveFromGraphic(graphic, primitiveId, _index, collection, iModel, originalData, type);
   }
 
@@ -44,7 +66,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     return 'decoration';
   }
 
-  protected override getDepthOptions(decorationType: string): Record<string, unknown> {
+  protected override getDepthOptions(decorationType: string): DepthOptions {
     const baseOptions = super.getDepthOptions(decorationType);
     
     const isOverlay = decorationType === 'worldOverlay' || decorationType === 'viewOverlay';
@@ -57,24 +79,19 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     return baseOptions;
   }
 
-
-
   private createPointPrimitiveFromGraphic(
     graphic: RenderGraphicWithCoordinates,
     pointId: string,
     _index: number,
     pointCollection: PointPrimitiveCollection,
     iModel?: IModelConnection,
-    originalPointStrings?: unknown,
+    originalPointStrings?: PointStringCoordinates[],
     type?: string
-  ): PointPrimitive | null {
-    if (!graphic)
-      return null;
+  ): PointPrimitive | undefined {
+    if (!graphic?.geometries || !graphic.geometryType)
+      return undefined;
 
-    if (graphic.geometries && graphic.geometryType)
-      return this.createPointFromGeometry(graphic.geometries, graphic.geometryType, pointId, _index, pointCollection, iModel, originalPointStrings, type, graphic);
-
-    return null;
+    return this.createPointFromGeometry(graphic.geometries, graphic.geometryType, pointId, _index, pointCollection, iModel, originalPointStrings, type, graphic);
   }
 
   private createPointFromGeometry(
@@ -84,15 +101,15 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     _index: number,
     pointCollection: PointPrimitiveCollection,
     iModel?: IModelConnection,
-    originalPointStrings?: unknown,
+    originalPointStrings?: PointStringCoordinates[],
     type?: string,
     graphic?: RenderGraphicWithCoordinates
-  ): PointPrimitive | null {
+  ): PointPrimitive | undefined {
     if (!geometries || !geometryType || !pointCollection)
-      return null;
+      return undefined;
 
     let entityPosition: Cartesian3 | undefined;
-    let realSpatialPoint: Point3d | null = null;
+    let realSpatialPoint: Point3d | undefined;
 
     if (this.primitiveType === 'pointstring2d') {
       const entry = this.findEntryByType(graphic, 'pointstring2d');
@@ -101,8 +118,8 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
         realSpatialPoint = Point3d.create(firstPoint.x, firstPoint.y, entry.zDepth);
     }
 
-    if (!realSpatialPoint && Array.isArray(originalPointStrings) && originalPointStrings.length > 0) {
-      const firstPointString = originalPointStrings[0] as Array<{ x: number; y: number; z?: number }>;
+    if (!realSpatialPoint) {
+      const firstPointString = originalPointStrings?.[0];
       if (firstPointString && firstPointString.length > 0) {
         const candidate = firstPointString[0];
         const z = typeof candidate.z === 'number' ? candidate.z : 0;
@@ -123,23 +140,20 @@ export class PointPrimitiveConverter extends PrimitiveConverter {
     }
 
     if (!entityPosition)
-      return null;
+      return undefined;
 
     const color = this.extractLineColorFromGraphic(graphic, this.primitiveType);
     if (!color)
-      return null;
-    switch (geometryType) {
-      case 'point-string':
-      default:
-        return pointCollection.add({
-          id: pointId,
-          position: entityPosition,
-          pixelSize: 20,
-          color,
-          outlineColor: Color.WHITE,
-          outlineWidth: 2,
-          ...this.getDepthOptions(type || 'world'),
-        });
-    }
+      return undefined;
+
+    return pointCollection.add({
+      id: pointId,
+      position: entityPosition,
+      pixelSize: 20,
+      color,
+      outlineColor: Color.WHITE,
+      outlineWidth: 2,
+      ...this.getDepthOptions(type || 'world'),
+    });
   }
 }

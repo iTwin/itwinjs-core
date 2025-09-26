@@ -1,8 +1,12 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 import { BoundingSphere, Cartesian3, ColorGeometryInstanceAttribute, ComponentDatatype, Geometry, GeometryAttribute, GeometryInstance, Material, PerInstanceColorAppearance, Polyline, Primitive, PrimitiveCollection, PrimitiveType } from "cesium";
 import { Loop, Path, Polyface, PolyfaceBuilder, StrokeOptions, SweepContour } from "@itwin/core-geometry";
 import { IModelConnection } from "@itwin/core-frontend";
 import { CesiumScene } from "../CesiumScene.js";
-import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
+import { type DepthOptions, PrimitiveConverter, type RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
 import { CesiumCoordinateConverter } from "./CesiumCoordinateConverter.js";
 import { DecorationPrimitiveEntry } from "./DecorationTypes.js";
 
@@ -20,13 +24,13 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     return scene.primitivesCollection;
   }
 
-  protected override extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[] | undefined, primitiveType: string): DecorationPrimitiveEntry[] | undefined {
-    if (!coordinateData || !Array.isArray(coordinateData)) {
+  protected override extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[], primitiveType: string): DecorationPrimitiveEntry[] | undefined {
+    if (!Array.isArray(coordinateData)) {
       return undefined;
     }
-    
+
     const entries = coordinateData.filter((entry: DecorationPrimitiveEntry) => entry.type === primitiveType);
-    
+
     // For arcs, return the whole entry object, not just points
     return entries;
   }
@@ -37,10 +41,10 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     _index: number,
     _collection: PrimitiveCollection,
     iModel?: IModelConnection,
-    originalData?: unknown,
+    originalData?: DecorationPrimitiveEntry[],
     _type?: string
-  ): Primitive | Polyline | null {
-    const data = Array.isArray(originalData) ? (originalData as DecorationPrimitiveEntry[]) : undefined;
+  ): Primitive | Polyline | undefined {
+    const data = originalData;
 
     const getEntry = () => {
       const entry = this.findEntryByType(graphic, this.primitiveType);
@@ -55,7 +59,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
 
     const arcData = getEntry();
     if (!arcData || (arcData.type !== 'arc' && arcData.type !== 'arc2d'))
-      return null;
+      return undefined;
 
     const isArc2d = arcData.type === 'arc2d';
     const arc = arcData.arc.clone();
@@ -67,15 +71,15 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
 
     const converterIModel = iModel;
     if (!converterIModel) {
-      return null;
+      return undefined;
     }
-    
+
     const converter = new CesiumCoordinateConverter(converterIModel);
-    
+
     // Determine color from graphic symbology when available; fallback by type
     const color = this.extractLineColorFromGraphic(graphic, this.primitiveType);
     if (!color)
-      return null;
+      return undefined;
 
     if (filled || isEllipse) {
       // Use iTwin.js Loop.create(arc) + SweepContour + PolyfaceBuilder for accurate filled ellipse
@@ -85,19 +89,19 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
       // Create polyface from iTwin.js contour
       const facetOptions = StrokeOptions.createForFacets();
       facetOptions.chordTol = 0.01;
-      
+
       const pfBuilder = PolyfaceBuilder.create(facetOptions);
       contour?.emitFacets(pfBuilder, false);
       const polyface = pfBuilder.claimPolyface();
-      
+
       if (!polyface || polyface.pointCount === 0) {
-        return null;
+        return undefined;
       }
 
       // Convert polyface to Cesium geometry
       const cesiumGeometry = this.createGeometryFromPolyface(polyface, converter);
       if (!cesiumGeometry) {
-        return null;
+        return undefined;
       }
 
       const geometryInstance = new GeometryInstance({
@@ -116,27 +120,27 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
         }),
         asynchronous: false
       });
-      
+
       return primitive;
     } else {
       const path = Path.create(arc);
       const strokeOptions = StrokeOptions.createForCurves();
       strokeOptions.chordTol = 0.01;
-      
+
       const strokes = path.getPackedStrokes(strokeOptions);
       if (!strokes) {
-        return null;
+        return undefined;
       }
-      
+
       const arcPoints = strokes.getPoint3dArray();
-      
+
       // Convert iTwin.js points to Cesium coordinates
       const positions: Cartesian3[] = [];
       for (const point of arcPoints) {
         const cesiumPoint = converter.spatialToCesiumCartesian3(point);
         positions.push(cesiumPoint);
       }
-      
+
       // For non-filled arcs, use the stored scene reference to access polyline collection
       if (this._currentScene && this._currentScene.polylineCollection) {
         const polyline = this._currentScene.polylineCollection.add({
@@ -147,7 +151,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
 
         return polyline;
       } else {
-        return null;
+        return undefined;
       }
     }
   }
@@ -160,23 +164,24 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     return true;
   }
 
-  protected override getDepthOptions(decorationType: string): Record<string, unknown> {
+  protected override getDepthOptions(decorationType: string): DepthOptions {
     const baseOptions = super.getDepthOptions(decorationType);
-    
+
     const isOverlay = decorationType === 'worldOverlay' || decorationType === 'viewOverlay';
     if (isOverlay) {
       return {
         ...baseOptions,
-        extrudedHeight: 0
+        heightReference: 0,
+        extrudedHeightReference: 0
       };
     }
-    
+
     return baseOptions;
   }
 
-  private createGeometryFromPolyface(polyface: Polyface, converter: CesiumCoordinateConverter): Geometry | null {
+  private createGeometryFromPolyface(polyface: Polyface, converter: CesiumCoordinateConverter): Geometry | undefined {
     if (!polyface || !polyface.data || !polyface.data.point || polyface.data.point.length === 0) {
-      return null;
+      return undefined;
     }
 
     // Extract points from polyface.data.point
@@ -191,7 +196,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     }
 
     if (positions.length === 0) {
-      return null;
+      return undefined;
     }
 
     // Extract indices from polyface.data.pointIndex
@@ -210,7 +215,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
             for (let j = faceStart; j < i; j++) {
               faceIndices.push(polyface.data.pointIndex[j] - 1); // Convert to 0-based
             }
-            
+
             // Simple fan triangulation
             for (let k = 1; k < faceIndices.length - 1; k++) {
               indices.push(faceIndices[0], faceIndices[k], faceIndices[k + 1]);
@@ -222,13 +227,13 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     }
 
     if (indices.length === 0) {
-      return null;
+      return undefined;
     }
-    
+
     // Compute bounding sphere from positions
     const positionsArray = new Float64Array(positions);
     const boundingSphere = BoundingSphere.fromVertices(positions);
-    
+
     const geometry = new Geometry({
       attributes: {
         position: new GeometryAttribute({

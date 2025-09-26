@@ -4,22 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelConnection } from "@itwin/core-frontend";
 import { LineString3d, Loop, Point3d } from "@itwin/core-geometry";
-import { Cartesian3, ColorGeometryInstanceAttribute, GeometryInstance, PerInstanceColorAppearance, PolygonGeometry, PolygonHierarchy, Primitive } from "cesium";
+import { Cartesian3, ColorGeometryInstanceAttribute, GeometryInstance, PerInstanceColorAppearance, PolygonGeometry, PolygonHierarchy, Primitive, PrimitiveCollection } from "cesium";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
-import { DecorationPrimitiveEntry } from "./DecorationTypes.js";
+import type { DecorationPrimitiveEntry, LoopEntry } from "./DecorationTypes.js";
 
 export class LoopPrimitiveConverter extends PrimitiveConverter {
   protected readonly primitiveType = 'loop' as const;
   private _currentScene?: CesiumScene;
 
-  protected override getCollection(scene: CesiumScene): import('cesium').PrimitiveCollection {
+  protected override getCollection(scene: CesiumScene): PrimitiveCollection {
     this._currentScene = scene;
     return scene.primitivesCollection;
   }
 
-  protected override extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[] | undefined, primitiveType: string): DecorationPrimitiveEntry[] | undefined {
-    if (!coordinateData || !Array.isArray(coordinateData))
+  protected override extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[], primitiveType: string): DecorationPrimitiveEntry[] | undefined {
+    if (!Array.isArray(coordinateData))
       return undefined;
     return coordinateData.filter((entry: DecorationPrimitiveEntry) => entry.type === primitiveType);
   }
@@ -28,25 +28,24 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
     graphic: RenderGraphicWithCoordinates,
     primitiveId: string,
     _index: number,
-    _collection: import('cesium').PrimitiveCollection,
+    _collection: PrimitiveCollection,
     iModel?: IModelConnection,
-    originalData?: unknown,
+    originalData?: DecorationPrimitiveEntry[],
     _type?: string
-  ): import('cesium').Primitive | null {
-    const data = Array.isArray(originalData) ? (originalData as DecorationPrimitiveEntry[]) : undefined;
-    const isLoopEntry = (e: DecorationPrimitiveEntry): e is import('./DecorationTypes.js').LoopEntry => e.type === 'loop';
-    const loopEntry = Array.isArray(data) ? data.find((e): e is import('./DecorationTypes.js').LoopEntry => isLoopEntry(e)) : undefined;
+  ): Primitive | undefined {
+    const isLoopEntry = (e: DecorationPrimitiveEntry): e is LoopEntry => e.type === 'loop';
+    const loopEntry = originalData?.find((e): e is LoopEntry => isLoopEntry(e));
     const loop: Loop | undefined = loopEntry?.loop;
     if (!loop)
-      return null;
+      return undefined;
 
     const positions = this.convertLoopToPositions(loop, iModel);
     if (positions.length < 3)
-      return null;
+      return undefined;
 
     const colors = this.extractFillAndLineColorsFromGraphic(graphic, 'loop');
     if (!colors)
-      return null;
+      return undefined;
     const { fillColor, lineColor, outlineWanted } = colors;
 
     if (outlineWanted && this._currentScene) {
@@ -61,7 +60,7 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
 
     const positionsNoClose = this.removeDuplicateClosingPoint(positions);
     if (positionsNoClose.length < 3)
-      return null;
+      return undefined;
 
     const polygonGeometry = new PolygonGeometry({ polygonHierarchy: new PolygonHierarchy(positionsNoClose) });
     const translucent = fillColor.alpha < 1.0;
