@@ -152,8 +152,11 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
       let anyUpdated = false;
       for (const { child } of traverseTextBlockComponent(block.textBlock)) {
         if (child.type === "field") {
-          child.propertyHost.elementId = context.findTargetElementId(child.propertyHost.elementId);
-          anyUpdated = true;
+          const remappedId = context.findTargetElementId(child.propertyHost.elementId);
+          if (context.isBetweenIModels || !Id64.isInvalid(remappedId)) {
+            child.propertyHost.elementId = context.findTargetElementId(child.propertyHost.elementId);
+            anyUpdated = true;
+          }
         }
       }
 
