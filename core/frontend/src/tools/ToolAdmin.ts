@@ -547,6 +547,8 @@ export class ToolAdmin {
   }
 
   private async onMouseButton(event: ToolEvent, isDown: boolean): Promise<any> {
+    console.log("ToolAdmin onMouseButton", isDown, event.ev.type);
+
     const ev = event.ev as MouseEvent;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const vp = event.vp!;
@@ -799,6 +801,7 @@ export class ToolAdmin {
   /** Process the next event in the event queue, if any. */
   private async processNextEvent(): Promise<any> {
     const event = ToolAdmin.getNextEvent(); // pull first event from the queue
+    console.log("ToolAdmin processNextEvent", event);
     if (undefined === event)
       return; // nothing in queue
 
@@ -1085,6 +1088,8 @@ export class ToolAdmin {
   }
 
   private async onMotion(vp: ScreenViewport, pt2d: XAndY, inputSource: InputSource, forceStartDrag: boolean = false, movement?: XAndY): Promise<any> {
+    // console.log("ToolAdmin onMotion", inputSource, pt2d.toString());
+
     const current = this.currentInputState;
     current.onMotion(pt2d);
 

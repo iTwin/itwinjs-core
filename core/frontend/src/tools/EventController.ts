@@ -46,6 +46,7 @@ export class EventController {
       ev.preventDefault();
       ToolAdmin.addEvent(ev, vp);
     };
+    console.log("EventController.addDomListeners: ", domType);
     domType.forEach((type) => {
       element.addEventListener(type, listener, false);
       this._removals.push(() => element.removeEventListener(type, listener, false));
