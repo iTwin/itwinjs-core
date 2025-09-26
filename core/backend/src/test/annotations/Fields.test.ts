@@ -23,6 +23,59 @@ function isIntlSupported(): boolean {
   return !ProcessDetector.isMobileAppBackend;
 }
 
+function createTestElement(imodel: StandaloneDb, model: Id64String, category: Id64String, overrides?: Partial<TestElementProps>, aspectProp = 999): Id64String {
+  const props: TestElementProps = {
+    classFullName: "Fields:TestElement",
+    model,
+    category,
+    code: Code.createEmpty(),
+    intProp: 100,
+    point: { x: 1, y: 2, z: 3 },
+    strings: ["a", "b", `"name": "c"`],
+    datetime: new Date("2025-08-28T13:45:30.123Z"),
+    intEnum: 1,
+    outerStruct: {
+      innerStruct: { bool: false, doubles: [1, 2, 3] },
+      innerStructs: [{ bool: true, doubles: [] }, { bool: false, doubles: [5, 4, 3, 2, 1] }],
+    },
+    outerStructs: [{
+      innerStruct: { bool: true, doubles: [10, 9] },
+      innerStructs: [{ bool: false, doubles: [5] }],
+    }],
+    placement: {
+      origin: new Point3d(1, 2, 0),
+      angles: new YawPitchRollAngles(),
+    },
+    jsonProperties: {
+      stringProp: "abc",
+      ints: [10, 11, 12, 13],
+      bool: true,
+      zoo: {
+        address: {
+          zipcode: 12345,
+        },
+        birds: [
+          { name: "duck", sound: "quack" },
+          { name: "hawk", sound: "scree!" },
+        ],
+      },
+    },
+    ...overrides,
+  };
+
+  const id = imodel.elements.insertElement(props);
+
+  const aspectProps: TestAspectProps = {
+    classFullName: TestAspect.classFullName,
+    aspectProp,
+    element: new ElementOwnsUniqueAspect(id),
+  };
+  imodel.elements.insertAspect(aspectProps);
+
+  imodel.saveChanges();
+  return id;
+}
+
 describe("updateField", () => {
   const mockElementId = "0x1";
   const mockPath: FieldPropertyPath = {
@@ -246,56 +299,8 @@ describe("Field evaluation", () => {
     imodel.close();
   });
 
-  function insertTestElement(): Id64String {
-    const props: TestElementProps = {
-      classFullName: "Fields:TestElement",
-      model,
-      category,
-      code: Code.createEmpty(),
-      intProp: 100,
-      point: { x: 1, y: 2, z: 3 },
-      strings: ["a", "b", `"name": "c"`],
-      datetime: new Date("2025-08-28T13:45:30.123Z"),
-      intEnum: 1,
-      outerStruct: {
-        innerStruct: { bool: false, doubles: [1, 2, 3] },
-        innerStructs: [{ bool: true, doubles: [] }, { bool: false, doubles: [5, 4, 3, 2, 1] }],
-      },
-      outerStructs: [{
-        innerStruct: { bool: true, doubles: [10, 9] },
-        innerStructs: [{ bool: false, doubles: [5] }],
-      }],
-      placement: {
-        origin: new Point3d(1, 2, 0),
-        angles: new YawPitchRollAngles(),
-      },
-      jsonProperties: {
-        stringProp: "abc",
-        ints: [10, 11, 12, 13],
-        bool: true,
-        zoo: {
-          address: {
-            zipcode: 12345,
-          },
-          birds: [
-            { name: "duck", sound: "quack" },
-            { name: "hawk", sound: "scree!" },
-          ],
-        },
-      },
-    };
-
-    const id = imodel.elements.insertElement(props);
-
-    const aspectProps: TestAspectProps = {
-      classFullName: TestAspect.classFullName,
-      aspectProp: 999,
-      element: new ElementOwnsUniqueAspect(id),
-    };
-    imodel.elements.insertAspect(aspectProps);
-
-    imodel.saveChanges();
-    return id;
+  function insertTestElement(overrides?: Partial<TestElementProps>, aspectProp?: number): Id64String {
+    return createTestElement(imodel, model, category, overrides, aspectProp);
   }
 
   function evaluateField(propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String, deletedDependency = false): FieldValue | undefined {
@@ -814,12 +819,52 @@ describe("Field evaluation", () => {
       expectText("12.5", targetId);
     });
 
-    describe.only("clone", () => {
-      it("remaps field hosts", () => {
+    describe.only("remapFields", () => {
+      let dstIModel: StandaloneDb;
+      let dstModel: Id64String;
+      let dstCategory: Id64String;
+      let dstSourceElementId: Id64String;
 
+      before(async () => {
+        const path = IModelTestUtils.prepareOutputFile("RemapFields", `dst.bim`);
+        dstIModel = StandaloneDb.createEmpty(path, { rootSubject: { name: `RemapFields-dst` }, allowEdit: JSON.stringify({ txns: true })});
+        await registerTestSchema(dstIModel);
+
+        // Insert additional unused elements to ensure element Ids differ between src and dst iModels
+        for (let i = 0; i < 3; i++) {
+          IModelTestUtils.createAndInsertPhysicalPartitionAndModel(dstIModel, Code.createEmpty(), true);
+        }
+
+        const modelAndElement = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(dstIModel, Code.createEmpty(), true);
+        expect(modelAndElement[0]).to.equal(modelAndElement[1]);
+
+        dstModel = modelAndElement[1];
+        dstCategory = SpatialCategory.insert(dstIModel, StandaloneDb.dictionaryId, `dstCat`, new SubCategoryAppearance());
+        dstSourceElementId = createTestElement(dstIModel, dstModel, dstCategory, {
+          intProp: 200,
+          point: { x: -1, y: -2, z: -3 },
+          strings: ["x", "y", "z"],
+          intEnum: 2,
+        }, 1234);
+
+        await dstIModel.fonts.embedFontFile({
+          file: FontFile.createFromTrueTypeFileName(IModelTestUtils.resolveFontFile("Karla-Regular.ttf"))
+        });
+
+        expect(dstCategory).not.to.equal(category);
+        expect(dstModel).not.to.equal(model);
+        expect(dstSourceElementId).not.to.equal(sourceElementId);
       });
 
-      it("invalidates field host if source element not cloned", () => {
+      after(() => {
+        dstIModel.close();
+      });
+
+      it("remaps field hosts", () => {
+        
+      });
+
+      it("invalidates field host if source element not remapped", () => {
 
       });
 
