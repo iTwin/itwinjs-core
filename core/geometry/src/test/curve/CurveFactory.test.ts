@@ -164,10 +164,8 @@ describe("CurveFactory", () => {
     const lineString0 = LineString3d.create(points);
     points.reverse();
     const lineString1 = LineString3d.create(points);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineString0, x0, 0);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineString1, x0, 28);
     x0 += 20.0;
-    for (const filletRadius of [0.2, 0.4, 0.6, 0.8, 1.2, 2.0, 4.0, 6.0]) {
+    for (const filletRadius of [0, 0.2, 0.4, 0.6, 0.8, 1.2, 2.0, 4.0, 6.0]) {
       let y0 = 0.0;
       for (const lineString of [lineString0, lineString1]) {
         const chain0 = CurveFactory.createFilletsInLineString(lineString, filletRadius, false)!;
@@ -183,7 +181,51 @@ describe("CurveFactory", () => {
     const radii = [0, 2, 1, 0.8, 0.6, 0.4];
     const chain2 = CurveFactory.createFilletsInLineString(lineString0, radii, true)!;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain2, x0, 0.0);
+
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "FilletsInLineString");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("FilletsInPolygon", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0.0;
+    const points = [
+      Point3d.create(2, 0, 0),
+      Point3d.create(2, 5, 1),
+      Point3d.create(4, 5, 1),
+      Point3d.create(6, 2, 1),
+      Point3d.create(2, 0, 0),
+    ];
+    const lineString0 = LineString3d.create(points);
+    points.reverse();
+    const lineString1 = LineString3d.create(points);
+    x0 += 20.0;
+    for (const filletRadius of [0, 0.2, 0.4, 0.6, 0.8, 1.2, 2.0, 4.0, 6.0]) {
+      let y0 = 0.0;
+      for (const lineString of [lineString0, lineString1]) {
+        const chain0T = CurveFactory.createFilletsInLineString(lineString, filletRadius, false, true)!;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain0T, x0, y0);
+        y0 += 8.0;
+        const chain0F = CurveFactory.createFilletsInLineString(lineString, filletRadius, false, false)!;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain0F, x0, y0);
+        y0 += 20.0;
+        const chain1T = CurveFactory.createFilletsInLineString(lineString, filletRadius, true, true)!;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain1T, x0, y0);
+        y0 += 8.0;
+        const chain1F = CurveFactory.createFilletsInLineString(lineString, filletRadius, true, false)!;
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain1F, x0, y0);
+        y0 += 20.0;
+      }
+      x0 += 20.0;
+    }
+
+    const radii = [0, 2, 1, 0.8, 0.6, 0.4];
+    const chain2 = CurveFactory.createFilletsInLineString(lineString0, radii, true, true)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain2, x0, 0.0);
+    const chain3 = CurveFactory.createFilletsInLineString(lineString0, radii, true, false)!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain3, x0, 8.0);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "FilletsInPolygon");
     expect(ck.getNumErrors()).toBe(0);
   });
 });
