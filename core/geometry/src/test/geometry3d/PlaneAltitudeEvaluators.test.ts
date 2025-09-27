@@ -10,7 +10,7 @@ import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Checker } from "../Checker";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Point4d } from "../../geometry4d/Point4d";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { Plane3d } from "../../geometry3d/Plane3d";

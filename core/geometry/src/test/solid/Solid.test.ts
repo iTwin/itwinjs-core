@@ -26,7 +26,7 @@ import { Transform } from "../../geometry3d/Transform";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
 import { LinearSweep } from "../../solid/LinearSweep";

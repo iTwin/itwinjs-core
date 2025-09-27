@@ -172,7 +172,9 @@ export class HalfEdgeGraphSearch {
     // the seed face is arbitrarily assigned the parity mask
     HalfEdgeGraphSearch.pushAndMaskAllNodesInFace(faceSeed, allMasks, stack, faces);
     while (stack.length > 0) {
-      const p = stack.pop()!;
+      const p = stack.pop();
+      if (!p)
+        break;
       const mate = p.edgeMate;
       if (!mate)
         continue;

@@ -554,7 +554,10 @@ export class Checker {
     const range = g.range();
 
     if (!range.isNull && range.maxAbs() <= maxCoordinate) {
-      Checker._cache.push(g.clone()!);
+      const gClone = g.clone();
+      if (!gClone)
+        return;
+      Checker._cache.push(gClone);
       Checker._cache[Checker._cache.length - 1].tryTransformInPlace(Checker._transform);
     }
   }

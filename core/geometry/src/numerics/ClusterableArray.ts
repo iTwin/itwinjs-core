@@ -420,8 +420,8 @@ export class ClusterableArray extends GrowableBlockedArray {
         currentClusterIndex++;
         numThisCluster = 0;
       } else {
-        if (numThisCluster === 0) // This is the first encounter with a new cluster
-          result.growablePackedPoints!.pushFromGrowableXYZArray(source, k);
+        if (numThisCluster === 0 && result.growablePackedPoints) // This is the first encounter with a new cluster
+          result.growablePackedPoints.pushFromGrowableXYZArray(source, k);
         result.oldToNew[k] = currentClusterIndex;
         numThisCluster++;
       }

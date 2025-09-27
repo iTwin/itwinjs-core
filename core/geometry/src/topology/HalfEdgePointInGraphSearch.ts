@@ -67,7 +67,9 @@ export class PointSearchContext {
   public reAimFromEdge(
     edgeHit: HalfEdgePositionDetail, ray: Ray3d, targetDistance: number,
   ): HalfEdgePositionDetail {
-    const nodeA = edgeHit.node!;
+    const nodeA = edgeHit.node;
+    if (undefined === nodeA)
+      return this.panic();
     const dataA = NodeXYZUV.createNodeAndRayOrigin(nodeA, ray);
     const dataB = NodeXYZUV.createNodeAndRayOrigin(nodeA.edgeMate, ray);
     const sideA = -dataA.classifyV(0.0, this._tol);
@@ -132,9 +134,11 @@ export class PointSearchContext {
   ): HalfEdgePositionDetail {
     assert(ray.origin.isExactEqual(vertexHit));
     const vertexNode = vertexHit.node;
-    let outboundEdge = vertexNode!;
+    let outboundEdge = vertexNode;
     // lambda to handle the case where the target definitively lies in the same direction as outboundEdge
     const advancePositionAlongOutboundEdge = (rayParam: number): boolean => {
+      if (undefined === outboundEdge)
+        return false;
       if (Math.abs(rayParam - targetDistance) <= this._tol) { // direct hit at far end of outBoundEdge
         vertexHit.resetAsVertex(outboundEdge.faceSuccessor).setITag(1);
       } else if (rayParam > targetDistance) { // direct hit within outBoundEdge
@@ -147,6 +151,8 @@ export class PointSearchContext {
       return true;
     };
     do {
+      if (!outboundEdge)
+        return this.panic();
       // examine the sector at the outboundEdge node; if ray lies in this sector, return updated detail
       const data0 = NodeXYZUV.createNodeAndRayOrigin(outboundEdge.faceSuccessor, ray);
       const data1 = NodeXYZUV.createNodeAndRayOrigin(outboundEdge.facePredecessor, ray);
@@ -235,9 +241,13 @@ export class PointSearchContext {
           lastBefore.setFrom(vertexHit);
           return RayClassification.TargetOnVertex;
         }
-        if (u1 > targetDistance && u1 < firstAfter.getDTag()!)
+        const fTag = firstAfter.getDTag();
+        const lTag = lastBefore.getDTag();
+        if (undefined === fTag || undefined === lTag)
+          return RayClassification.NoHits;
+        if (u1 > targetDistance && u1 < fTag)
           firstAfter.setFrom(vertexHit);
-        if (u1 < targetDistance && u1 > lastBefore.getDTag()!)
+        if (u1 < targetDistance && u1 > lTag)
           lastBefore.setFrom(vertexHit);
       } else if (v0 * v1 < 0.0) { // ray crosses edge
         const edgeFraction = -v0 / (v1 - v0);
@@ -249,9 +259,13 @@ export class PointSearchContext {
           lastBefore.setFrom(edgeHit);
           return RayClassification.TargetOnEdge;
         }
-        if (rayFraction > targetDistance && rayFraction < firstAfter.getDTag()!)
+        const fTag = firstAfter.getDTag();
+        const lTag = lastBefore.getDTag();
+        if (undefined === fTag || undefined === lTag)
+          return RayClassification.NoHits;
+        if (rayFraction > targetDistance && rayFraction < fTag)
           firstAfter.setFrom(edgeHit);
-        if (rayFraction < targetDistance && rayFraction > lastBefore.getDTag()!)
+        if (rayFraction < targetDistance && rayFraction > lTag)
           lastBefore.setFrom(edgeHit);
       }
       data0.setFrom(data1);
