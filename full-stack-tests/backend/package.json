@@ -30,7 +30,7 @@
     "perftest:changesetPerformance": "npm run -s perftest:pre && mocha --timeout=999999999 --grep ChangesetReaderAPI \"./lib/cjs/perftest/ChangesetReader.test.js\""
   },
   "dependencies": {
-    "@azure/storage-blob": "^12.26.0",
+    "@azure/storage-blob": "^12.28.0",
     "@bentley/aec-units-schema": "^1.0.3",
     "@bentley/cif-bridge-schema": "^1.0.5",
     "@bentley/cif-common-schema": "^1.0.3",

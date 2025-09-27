@@ -403,6 +403,7 @@ describe("TileStorage", () => {
     const transferConfig: TransferConfig = {
       baseUrl: "test",
       expiration: new Date(new Date().getTime() + (1000 * 60 * 60)), // 1 hour from now
+      storageType: "azure"
     };
     const tileRpcInterfaceStub = stubTileRpcInterface(transferConfig);
     await tileStorage.downloadTile(...downloadTileParameters);
@@ -418,6 +419,7 @@ describe("TileStorage", () => {
     const transferConfig: TransferConfig = {
       baseUrl: "test",
       expiration: dateExpiration,
+      storageType: "azure"
     };
     const tileRpcInterfaceStub = stubTileRpcInterface(transferConfig);
     await tileStorage.downloadTile(...downloadTileParameters);
