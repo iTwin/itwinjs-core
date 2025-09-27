@@ -306,6 +306,17 @@ describe("CloudSqlite", () => {
     assert(stats.memoryHighwater !== undefined);
     expect(stats.memoryHighwater).to.be.greaterThanOrEqual(stats.memoryUsed);
 
+    // Make sure that values greater than or equal to 2^31 can be retrieved correctly.
+    const anyStats = stats as any;
+    expect(anyStats.bigValueTest64).to.not.be.undefined;
+    assert(anyStats.bigValueTest64 !== undefined);
+    expect(anyStats.bigValueTest32).to.not.be.undefined;
+    assert(anyStats.bigValueTest32 !== undefined);
+    // bigValueTest64 is set to 3 billion in the native addon.
+    expect(anyStats.bigValueTest64).to.equal(3_000_000_000);
+    // bigValueTest32 is set to 3 billion truncated to 32 bits in the native addon.
+    expect(anyStats.bigValueTest32).to.equal(-1_294_967_296);
+
     const dbs = container.queryDatabases();
     expect(dbs.length).to.be.greaterThanOrEqual(1);
     let db = container.queryDatabase(dbs[0]);
