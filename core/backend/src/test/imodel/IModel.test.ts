@@ -3316,27 +3316,27 @@ describe("iModel", () => {
       {
         name: "withPreparedSqliteStatement",
         operation: () => testImodel.withPreparedSqliteStatement("SELECT 1", () => { }),
-        expectedErrorMessage: "Cannot query a closed iModel"
+        expectedErrorMessage: "Cannot query a closed Db"
       },
       {
         name: "prepareSqliteStatement",
         operation: () => testImodel.prepareSqliteStatement("SELECT 1"),
-        expectedErrorMessage: "Cannot query a closed iModel"
+        expectedErrorMessage: "Cannot query a closed Db"
       },
       {
         name: "prepareStatement",
         operation: () => testImodel.prepareStatement("SELECT 1"), // eslint-disable-line @typescript-eslint/no-deprecated
-        expectedErrorMessage: "Cannot query a closed iModel"
+        expectedErrorMessage: "Cannot query a closed Db"
       },
       {
         name: "withPreparedStatement",
         operation: () => testImodel.withPreparedStatement("SELECT ECInstanceId FROM BisCore:Element LIMIT 1", () => { }), // eslint-disable-line @typescript-eslint/no-deprecated
-        expectedErrorMessage: "Cannot query a closed iModel"
+        expectedErrorMessage: "Cannot query a closed Db"
       },
       {
         name: "elements.queryChildren",
         operation: () => testImodel.elements.queryChildren(IModel.rootSubjectId),
-        expectedErrorMessage: "Cannot query a closed iModel"
+        expectedErrorMessage: "Cannot query a closed Db"
       },
       {
         name: "elements.getAspects",
