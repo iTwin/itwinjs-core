@@ -2970,7 +2970,7 @@ export class IndexedPolyfaceWalker {
 export abstract class IndexedReadWriteXYZCollection extends IndexedXYZCollection {
     abstract clear(): void;
     abstract pop(): void;
-    abstract push(data: XYAndZ): void;
+    abstract push(point: XYAndZ): void;
     abstract pushXYZ(x?: number, y?: number, z?: number): void;
     abstract reverseInPlace(): void;
 }
