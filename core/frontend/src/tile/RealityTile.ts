@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { BeTimePoint, dispose } from "@itwin/core-bentley";
+import { BeTimePoint, dispose, expectDefined } from "@itwin/core-bentley";
 import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, IndexedPolyface, Point3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, Frustum } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
@@ -413,7 +413,7 @@ export class RealityTile extends Tile {
       const traversalChildren = this.realityRoot.getTraversalChildren(this.depth);
       traversalChildren.initialize();
 
-      for (let i = 0; i < this.children!.length; i++)
+      for (let i = 0; i < expectDefined(this.children).length; i++)
         this.realityChildren[i].selectRealityTiles(context, args, traversalChildren.getChildDetail(i));
 
       traversalChildren.combine(traversalDetails);
@@ -685,7 +685,7 @@ class AdditiveRefinementStepChild extends RealityTile {
       const branchOptions: GraphicBranchOptions = {};
       if (this.rangeCorners) {
         const clipPolygon = [this.rangeCorners[0], this.rangeCorners[1], this.rangeCorners[3], this.rangeCorners[2]];
-        branchOptions.clipVolume = renderSystem.createClipVolume(ClipVector.create([ClipShape.createShape(clipPolygon, undefined, undefined, this.tree.iModelTransform)!]));
+        branchOptions.clipVolume = renderSystem.createClipVolume(ClipVector.create([expectDefined(ClipShape.createShape(clipPolygon, undefined, undefined, this.tree.iModelTransform))]));
       }
       this._graphic = renderSystem.createGraphicBranch(branch, this._reprojectionTransform, branchOptions);
     }

@@ -68,13 +68,32 @@ import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
 import { IModelDbFonts } from "./IModelDbFonts";
 import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
-import { _cache, _close, _hubAccess, _instanceKeyCache, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
+import { _cache, _close, _hubAccess, _instanceKeyCache, _nativeDb, _releaseAllLocks, _resetIModelDb } from "./internal/Symbols";
 import { ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
+
+/**
+ * Arguments for saving changes to the iModel.
+ * @alpha
+ */
+export interface SaveChangesArgs {
+  /**
+   * Optional description of the changes being saved.
+   */
+  description?: string;
+  /**
+   * Optional source of the changes being saved.
+   */
+  source?: string;
+  /**
+   * Optional application-specific data to include with the changes.
+   */
+  appData?: { [key: string]: any };
+}
 
 /** Options for [[IModelDb.Models.updateModel]]
  * @note To mark *only* the geometry as changed, use [[IModelDb.Models.updateGeometryGuid]] instead.
@@ -361,10 +380,7 @@ export abstract class IModelDb extends IModel {
 
     this[_nativeDb].setIModelDb(this);
 
-    this.loadIModelSettings();
-    GeoCoordConfig.loadForImodel(this.workspace.settings); // load gcs data specified by iModel's settings dictionaries, must be done before calling initializeIModelDb
-
-    this.initializeIModelDb();
+    this[_resetIModelDb]();
     IModelDb._openDbs.set(this._fileKey, this);
 
     if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
@@ -378,11 +394,19 @@ export abstract class IModelDb extends IModel {
       });
     }
   }
+
+  /** @internal */
+  public [_resetIModelDb] () {
+    this.loadIModelSettings();
+    GeoCoordConfig.loadForImodel(this.workspace.settings); // load gcs data specified by iModel's settings dictionaries, must be done before calling initializeIModelDb
+    this.initializeIModelDb();
+  }
+
   /**
    * Attach an iModel file to this connection and load and register its schemas.
    * @note There are some reserve tablespace names that cannot be used. They are 'main', 'schema_sync_db', 'ecchange' & 'temp'
    * @param fileName IModel file name
-   * @param alias identifier for the attached file. This identifer is used to access schema from the attached file. e.g. if alias is 'abc' then schema can be accessed using 'abc.MySchema.MyClass'
+   * @param alias identifier for the attached file. This identifier is used to access schema from the attached file. e.g. if alias is 'abc' then schema can be accessed using 'abc.MySchema.MyClass'
    *
    * *Example:*
    * ``` ts
@@ -796,18 +820,41 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Commit unsaved changes in memory as a Txn to this iModelDb.
-   * @param description Optional description of the changes
+   * @param description Optional description of the changes.
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    * @note This will not push changes to the iModelHub.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
    */
-  public saveChanges(description?: string): void {
+  public saveChanges(description?: string): void ;
+
+  /** Commit unsaved changes in memory as a Txn to this iModelDb. This is preferable for case where application like to store additional structured information with the change that could be useful later when rebasing.
+   * @alpha
+   * @param args Provide [[SaveChangesArgs]] of the changes.
+   * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
+   * @note This will not push changes to the iModelHub.
+   * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
+   */
+    public saveChanges(args: SaveChangesArgs): void;
+
+  /** Commit unsaved changes in memory as a Txn to this iModelDb.
+   * @internal
+   * @param descriptionOrArgs Optionally provide description or [[SaveChangesArgs]] args for the changes.
+   * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
+   * @note This will not push changes to the iModelHub.
+   * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
+   */
+  public saveChanges(descriptionOrArgs?: string | SaveChangesArgs): void {
     if (this.openMode === OpenMode.Readonly)
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only");
 
-    const stat = this[_nativeDb].saveChanges(description);
+    const args = typeof descriptionOrArgs === "string" ? { description: descriptionOrArgs } : descriptionOrArgs;
+    if (!this[_nativeDb].hasUnsavedChanges()) {
+      Logger.logWarning(loggerCategory, "there are no unsaved changes", () => args);
+    }
+
+    const stat = this[_nativeDb].saveChanges(args ? JSON.stringify(args) : undefined);
     if (DbResult.BE_SQLITE_OK !== stat)
-      throw new IModelError(stat, `Could not save changes (${description})`);
+      throw new IModelError(stat, `Could not save changes (${args?.description})`);
   }
 
   /** Abandon changes in memory that have not been saved as a Txn to this iModelDb.
@@ -853,6 +900,36 @@ export abstract class IModelDb extends IModel {
     return this[_nativeDb].restartTxnSession();
   }
 
+  /** Removes unused schemas from the database.
+   *
+   * If the removal was successful, the database is automatically saved to disk.
+   * @param schemaNames Array of schema names to drop
+   * @throws [IModelError]($common) if the database if the operation failed.
+   * @alpha
+   */
+  public async dropSchemas(schemaNames: string[]): Promise<void> {
+    if (schemaNames.length === 0)
+      return;
+    if (this[_nativeDb].schemaSyncEnabled())
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cannot drop schemas when schema sync is enabled");
+    if (this[_nativeDb].hasUnsavedChanges())
+      throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot drop schemas with unsaved changes");
+    if (this[_nativeDb].getITwinId() !== Guid.empty)
+      await this.acquireSchemaLock();
+
+    try {
+      this[_nativeDb].dropSchemas(schemaNames);
+      this.saveChanges(`dropped unused schemas`);
+    } catch (error: any) {
+      Logger.logError(loggerCategory, `Failed to drop schemas: ${error}`);
+      this.abandonChanges();
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Failed to drop schemas: ${error}`);
+    } finally {
+      await this.locks.releaseAllLocks();
+      this.clearCaches();
+    }
+  }
+
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
@@ -867,6 +944,15 @@ export abstract class IModelDb extends IModel {
   public async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
     if (schemaFileNames.length === 0)
       return;
+
+    if (this instanceof BriefcaseDb) {
+      if (this.txns.rebaser.isRebasing) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
+      }
+      if (this.txns.isIndirectChanges) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change transaction");
+      }
+    }
 
     const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
     if (this[_nativeDb].schemaSyncEnabled()) {
@@ -922,6 +1008,15 @@ export abstract class IModelDb extends IModel {
   public async importSchemaStrings(serializedXmlSchemas: string[]): Promise<void> {
     if (serializedXmlSchemas.length === 0)
       return;
+
+    if (this instanceof BriefcaseDb) {
+      if (this.txns.rebaser.isRebasing) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
+      }
+      if (this.txns.isIndirectChanges) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change transaction");
+      }
+    }
 
     if (this[_nativeDb].schemaSyncEnabled()) {
       await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schemaSync" }, async (syncAccess) => {
@@ -1679,7 +1774,7 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   public computeRangesForText(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
-    const props = this[_nativeDb].computeRangesForText(args.chars, args.fontId, args.bold, args.italic, args.widthFactor, args.lineHeight);
+    const props = this[_nativeDb].computeRangesForText(args.chars, args.fontId, args.bold, args.italic, args.widthFactor, args.textHeight);
     return {
       layout: Range2d.fromJSON(props.layout),
       justification: Range2d.fromJSON(props.justification),
@@ -2118,7 +2213,7 @@ export namespace IModelDb {
       const element = this.tryGetElement<T>(elementId, elementClass);
       if (undefined === element) {
         if (typeof elementId === "string" || elementId instanceof Code)
-          throw new IModelError(IModelStatus.NotFound, `Element=${elementId}`);
+          throw new IModelError(IModelStatus.NotFound, `Element=${elementId.toString()}`);
         else
           throw new IModelError(IModelStatus.NotFound, `Element={id: ${elementId.id} federationGuid: ${elementId.federationGuid}, code={spec: ${elementId.code?.spec}, scope: ${elementId.code?.scope}, value: ${elementId.code?.value}}}`);
       }
@@ -2975,6 +3070,31 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /**
+   * @alpha
+   * Permanently discards any local changes made to this briefcase, reverting the briefcase to its last synchronized state.
+   * This operation cannot be undone. By default, all locks held by this briefcase will be released unless the `retainLocks` option is specified.
+   * @Note This operation can be performed at any point including after failed rebase attempts.
+   * @param args - Options for discarding changes.
+   * @param args.retainLocks - If `true`, retains all currently held locks after discarding changes. If omitted or `false`, all locks will be released.
+   * @returns A promise that resolves when the operation is complete.
+   * @throws May throw if discarding changes fails.
+   */
+  public async discardChanges(args?: { retainLocks?: true }): Promise<void> {
+    Logger.logInfo(loggerCategory, "Discarding local changes");
+    this.clearCaches();
+    this[_nativeDb].clearECDbCache();
+    this[_nativeDb].discardLocalChanges();
+    this[_resetIModelDb]();
+    if (args?.retainLocks) {
+      return;
+    }
+
+    // attempt to release locks must happen after changes are undone successfully
+    Logger.logInfo(loggerCategory, "Releasing locks after discarding changes");
+    await this.locks.releaseAllLocks();
+  }
+
+  /**
    * The Guid that identifies the *context* that owns this iModel.
    * GuidString | undefined for the superclass, but required for BriefcaseDb
    * */
@@ -3454,7 +3574,7 @@ export class BriefcaseDb extends IModelDb {
   }
 
   public override close() {
-    if (this.isBriefcase && this.isOpen && !this.isReadonly && this.txns.changeMergeManager.inProgress()) {
+    if (this.isBriefcase && this.isOpen && !this.isReadonly && this.txns.rebaser.inProgress()) {
       this.abandonChanges();
     }
     super.close();

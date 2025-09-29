@@ -468,9 +468,13 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   }
 
   /** Return the spiral start point. */
-  public override startPoint(): Point3d { return this.activeStrokes.startPoint(); }
+  public override startPoint(result?: Point3d): Point3d {
+    return this.activeStrokes.startPoint(result);
+  }
   /** return the spiral end point. */
-  public override endPoint(): Point3d { return this.activeStrokes.endPoint(); }
+  public override endPoint(result?: Point3d): Point3d {
+    return this.activeStrokes.endPoint(result);
+  }
   /** test if the local to world transform places the spiral xy plane into `plane` */
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
     return plane.isPointInPlane(this.localToWorld.origin as Point3d)

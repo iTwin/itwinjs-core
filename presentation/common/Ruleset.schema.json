@@ -74,6 +74,7 @@
     },
     "ChildNodeRule": {
       "additionalProperties": false,
+      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Child node rules are used to define child nodes in a hierarchy.",
       "properties": {
         "condition": {
@@ -148,10 +149,12 @@
           "$ref": "#/definitions/RelatedInstanceNodesSpecification"
         }
       ],
+      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Hierarchy rule specifications that define what nodes are going to be returned by the rule."
     },
     "ClassGroup": {
       "additionalProperties": false,
+      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Base class grouping allows grouping ECInstance nodes by their base class (as opposed to the hierarchy\nspecifications' `groupByClass` attribute, which always groups by direct class).",
       "properties": {
         "baseClass": {
@@ -472,6 +475,7 @@
     },
     "CustomNodeSpecification": {
       "additionalProperties": false,
+      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Returns a static custom-defined node that's not based on an ECInstance.",
       "properties": {
         "description": {
@@ -555,6 +559,7 @@
     },
     "CustomQueryInstanceNodesSpecification": {
       "additionalProperties": false,
+      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Returns nodes for instances returned by a provided ECSQL query.",
       "properties": {
         "doNotSort": {
@@ -752,6 +757,7 @@
     },
     "ECPropertyValueQuerySpecification": {
       "additionalProperties": false,
+      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "The specification specifies the name of the parent node instance property whose value is the ECSQL\nused to query for instances.",
       "properties": {
         "class": {
@@ -823,6 +829,7 @@
     },
     "GroupingRule": {
       "additionalProperties": false,
+      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Grouping rules provide advanced ways to group instances when creating hierarchies.",
       "properties": {
         "class": {
@@ -882,6 +889,7 @@
           "$ref": "#/definitions/SameLabelInstanceGroup"
         }
       ],
+      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Grouping rule specifications."
     },
     "IdCategoryIdentifier": {
@@ -1179,6 +1187,7 @@
     },
     "InstanceNodesOfSpecificClassesSpecification": {
       "additionalProperties": false,
+      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Returns nodes for instances of specific ECClasses.",
       "properties": {
         "classes": {
@@ -1328,6 +1337,7 @@
     },
     "NodeArtifactsRule": {
       "additionalProperties": false,
+      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Node artifacts rules are used to create and assign artifacts to specific nodes. The artifacts can be\naccessed when evaluating parent node's `hideExpression` to decide whether it should be hidden or not.",
       "properties": {
         "condition": {
@@ -1589,6 +1599,7 @@
     },
     "PropertyGroup": {
       "additionalProperties": false,
+      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Property grouping allows grouping by a property of the instance by value or by given ranges of values.",
       "properties": {
         "createGroupForSingleItem": {
@@ -1633,6 +1644,7 @@
     },
     "PropertyRangeGroupSpecification": {
       "additionalProperties": false,
+      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Describes a grouping range.",
       "properties": {
         "fromValue": {
@@ -1795,6 +1807,7 @@
           "$ref": "#/definitions/ECPropertyValueQuerySpecification"
         }
       ],
+      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Query specifications used in `CustomQueryInstanceNodesSpecification`."
     },
     "RelatedInstanceByPathSpecification": {
@@ -1865,6 +1878,7 @@
     },
     "RelatedInstanceNodesSpecification": {
       "additionalProperties": false,
+      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Produces ECInstance nodes that are related to some source ECInstance. The source instance is determined\nby traversing the hierarchy upwards until an ECInstance node is encountered.",
       "properties": {
         "doNotSort": {
@@ -2196,6 +2210,7 @@
     },
     "RootNodeRule": {
       "additionalProperties": false,
+      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Root node rules are used to define nodes that are displayed at the root hierarchy level.",
       "properties": {
         "autoExpand": {
@@ -2299,6 +2314,7 @@
     },
     "SameLabelInstanceGroup": {
       "additionalProperties": false,
+      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "Allows grouping multiple instances with the same label into one ECInstances type of node. Similar to display label grouping,\nbut instead of showing a grouping node with multiple grouped ECInstance nodes, it shows a single ECInstances node which represents\nmultiple ECInstances.",
       "properties": {
         "applicationStage": {
@@ -2443,6 +2459,7 @@
     },
     "StringQuerySpecification": {
       "additionalProperties": false,
+      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "The specification contains an ECSQL query which is used to query for instances.",
       "properties": {
         "class": {
@@ -2470,6 +2487,7 @@
     },
     "SubCondition": {
       "additionalProperties": false,
+      "deprecated": "in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)\npackage for creating hierarchies.",
       "description": "This is a sub-rule which shares *placement attributes* and\nnested customization rules\nof the hierarchy rule. This means the attributes of hierarchy rule are still in effect and the sub-rules\ncan add additional condition of their own.",
       "properties": {
         "condition": {

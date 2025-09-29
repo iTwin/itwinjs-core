@@ -279,7 +279,7 @@ export class ViewCreator2d {
     if (mergedDisplayProps.jsonProperties !== undefined) {
       mergedDisplayProps.jsonProperties.styles = {
         ...mergedDisplayProps.jsonProperties.styles,
-        ...props.displayStyleProps.jsonProperties!.styles,
+        ...props.displayStyleProps.jsonProperties?.styles,
       };
     }
 

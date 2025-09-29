@@ -69,7 +69,7 @@ class ChannelAdmin implements ChannelControl {
 
   public [_verifyChannel](modelId: Id64String): void {
     // Note: indirect changes are permitted to change any channel
-    if (this._allowedModels.has(modelId) || this._iModel[_nativeDb].isIndirectChanges())
+    if (this._allowedModels.has(modelId) || this._iModel[_nativeDb].getTxnMode() === "indirect")
       return;
 
     const deniedChannel = this._deniedModels.get(modelId);

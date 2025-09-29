@@ -7,6 +7,7 @@
  * @module CartesianGeometry
  */
 
+import { OrderedComparator } from "@itwin/core-bentley";
 import { AngleSweep } from "./geometry3d/AngleSweep";
 import { Point2d, Vector2d } from "./geometry3d/Point2dVector2d";
 import { Point3d, Vector3d, XYZ } from "./geometry3d/Point3dVector3d";
@@ -489,6 +490,60 @@ export class Geometry {
     return 0;
   }
   /**
+   * Constructor for a lexical comparison with tolerance (x then y then z).
+   * @param distanceTol tolerance for comparing coordinates. Default value is [[Geometry.smallMetricDistance]].
+   * @returns comparison function useful for ordered map callbacks.
+   */
+  public static compareXYZ(distanceTol: number = Geometry.smallMetricDistance): OrderedComparator<XYAndZ> {
+    return (p0: XYAndZ, p1: XYAndZ): -1 | 0 | 1 => {
+      if (XYAndZ.almostEqual(p0, p1, distanceTol))
+        return 0;
+      if (!Geometry.isSameCoordinate(p0.x, p1.x, distanceTol)) {
+        if (p0.x < p1.x)
+          return -1;
+        if (p0.x > p1.x)
+          return 1;
+      }
+      if (!Geometry.isSameCoordinate(p0.y, p1.y, distanceTol)) {
+        if (p0.y < p1.y)
+          return -1;
+        if (p0.y > p1.y)
+          return 1;
+      }
+      if (!Geometry.isSameCoordinate(p0.z, p1.z, distanceTol)) {
+        if (p0.z < p1.z)
+          return -1;
+        if (p0.z > p1.z)
+          return 1;
+      }
+      return 0;
+    };
+  }
+  /**
+   * Constructor for a lexical comparison with tolerance (x then y).
+   * @param distanceTol tolerance for comparing coordinates. Default value is [[Geometry.smallMetricDistance]].
+   * @returns comparison function useful for ordered map callbacks.
+   */
+  public static compareXY(distanceTol: number = Geometry.smallMetricDistance): OrderedComparator<XAndY> {
+    return (p0: XAndY, p1: XAndY): -1 | 0 | 1 => {
+      if (XAndY.almostEqual(p0, p1, distanceTol))
+        return 0;
+      if (!Geometry.isSameCoordinate(p0.x, p1.x, distanceTol)) {
+        if (p0.x < p1.x)
+          return -1;
+        if (p0.x > p1.x)
+          return 1;
+      }
+      if (!Geometry.isSameCoordinate(p0.y, p1.y, distanceTol)) {
+        if (p0.y < p1.y)
+          return -1;
+        if (p0.y > p1.y)
+          return 1;
+      }
+      return 0;
+    };
+  }
+  /**
    * Test if `value` is at most [[smallFraction]] in absolute value.
    * * This is appropriate if `value` is known to be a fraction.
    */
@@ -519,7 +574,7 @@ export class Geometry {
   }
   /**
    * Toleranced equality test.
-   * @param tolerance relative tolerance. Default value is [[smallAngleRadians]].
+   * @param tolerance _relative_ tolerance. Default value is [[smallAngleRadians]].
    * @returns true if and only if `a` and `b` are almost equal.
    */
   public static isAlmostEqualNumber(a: number, b: number, tolerance: number = Geometry.smallAngleRadians): boolean {
@@ -528,17 +583,17 @@ export class Geometry {
   }
   /**
    * Toleranced test for equality to at least one of two numbers.
-   * @param tolerance relative tolerance. Default value is [[smallAngleRadians]].
+   * @param tolerance _relative_ tolerance. Default value is [[smallAngleRadians]].
    * @returns true if and only if `a` and `b` are almost equal, or `a` and `c` are almost equal.
    */
   public static isAlmostEqualEitherNumber(a: number, b: number, c: number, tolerance: number = Geometry.smallAngleRadians): boolean {
     return this.isAlmostEqualNumber(a, b, tolerance) || this.isAlmostEqualNumber(a, c, tolerance);
   }
   /**
-   * Toleranced test for equality to any of `count` numbers supplied by `iterator`.
+   * Toleranced test for equality to any value in `values`.
    * @param a value to test
    * @param values array of values to test against, or an object that provides the i_th value, where 0 <= i < length.
-   * @param tolerance relative tolerance. Default value is [[smallAngleRadians]].
+   * @param tolerance _relative_ tolerance. Default value is [[smallAngleRadians]].
    * @returns true if and only if `a` is almost equal to at least one value supplied by `iterator`.
    */
   public static isAlmostEqualAnyNumber(a: number, values: number[] | { iter: (i: number) => number, length: number }, tolerance: number = Geometry.smallAngleRadians): boolean {
@@ -549,25 +604,27 @@ export class Geometry {
     return false;
   }
   /**
-   * Toleranced equality test using tolerance `tolerance * ( 1 + abs(a.x) + abs(a.y) + abs(b.x) + abs(b.y) )`.
-   * * [[smallAngleRadians]] is used if tolerance is `undefined`.
+   * Toleranced equality test for xy points.
+   * @param a first point
+   * @param b second point
+   * @param tolerance _relative_ coordinate tolerance. Default value is [[smallAngleRadians]].
    */
   public static isAlmostEqualXAndY(a: XAndY, b: XAndY, tolerance: number = Geometry.smallAngleRadians): boolean {
     const tol = tolerance * (1.0 + Math.abs(a.x) + Math.abs(b.x) + Math.abs(a.y) + Math.abs(b.y));
     return (Math.abs(a.x - b.x) <= tol) && (Math.abs(a.y - b.y) <= tol);
   }
   /**
-   * Toleranced equality test using caller-supplied `tolerance`.
-   * * [[smallMetricDistance]] is used if tolerance is `undefined`.
+   * Test if a distance is smaller than `tolerance` (or equal).
+   * @param tolerance distance tolerance. Default value is [[smallMetricDistance]].
    */
   public static isDistanceWithinTol(distance: number, tolerance: number = Geometry.smallMetricDistance): boolean {
     return Math.abs(distance) <= tolerance;
   }
-  /** Toleranced equality test using [[smallMetricDistance]] tolerance. */
+  /** Test if a distance is smaller than [[smallMetricDistance]] (or equal). */
   public static isSmallMetricDistance(distance: number): boolean {
     return Math.abs(distance) <= Geometry.smallMetricDistance;
   }
-  /** Toleranced equality test using [[smallMetricDistanceSquared]] tolerance. */
+  /** Test if a squared distance is smaller than [[smallMetricDistanceSquared]] (or equal). */
   public static isSmallMetricDistanceSquared(distanceSquared: number): boolean {
     return Math.abs(distanceSquared) <= Geometry.smallMetricDistanceSquared;
   }
@@ -830,6 +887,13 @@ export class Geometry {
       ux * vy - uy * vx,
       result,
     );
+  }
+  /**
+   * 2D cross product of vectors with the vectors presented with common origin point, and two target points.
+   * @see crossProductXYXY for interpretations of the result.
+   */
+  public static crossProductToPointsXY(origin: XAndY, target0: XAndY, target1: XAndY): number {
+   return this.crossProductXYXY(target0.x - origin.x, target0.y - origin.y, target1.x - origin.x, target1.y - origin.y);
   }
   /** Magnitude of 3D cross product of vectors with the vectors presented as numbers. */
   public static crossProductMagnitude(
@@ -1325,11 +1389,11 @@ export class Geometry {
   public static cloneMembers<T extends Cloneable<T>>(array: T[] | undefined): T[] | undefined {
     if (array === undefined)
       return undefined;
-    const clonedArray: T[] = [];
+    const clonedArray: (T | undefined)[] = [];
     for (const element of array) {
-      clonedArray.push(element.clone()!);
+      clonedArray.push(element.clone());
     }
-    return clonedArray;
+    return clonedArray as T[];
   }
   /**
    * Clone an array whose members have the cloneable type `T`.

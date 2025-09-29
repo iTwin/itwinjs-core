@@ -380,8 +380,10 @@ export class RegionOps {
   /**
    * Return areas defined by a boolean operation.
    * @note For best results, input regions should have correctly oriented loops. See [[sortOuterAndHoleLoopsXY]].
-   * @note A common use case of this method is to convert a region with overlapping children into one with
-   * non-overlapping children: `regionOut = RegionOps.regionBooleanXY(regionIn, undefined, RegionBinaryOpType.Union)`.
+   * @note A common use case of this method is to split (a region with) overlapping loops into a `UnionRegion` with
+   * adjacent `Loop`s: `regionOut = RegionOps.regionBooleanXY(regionIn, undefined, RegionBinaryOpType.Union)`.
+   * @note The Union operation does not currently attempt to return a region with minimal loops. This may change with
+   * future development.
    * @param loopsA first set of loops (treated as a union)
    * @param loopsB second set of loops (treated as a union)
    * @param operation indicates Union, Intersection, Parity, AMinusB, or BMinusA
@@ -411,7 +413,7 @@ export class RegionOps {
         if (Math.abs(area) < areaTol)
           return;
         if (faceType === 1) {
-          const loopOrParityRegion = PlanarSubdivision.createLoopOrParityRegionInFace(face, bridgeMask, visitMask);
+          const loopOrParityRegion = PlanarSubdivision.createLoopOrParityRegionInFace(face, bridgeMask, visitMask, mergeTolerance);
           if (loopOrParityRegion)
             result.tryAddChild(loopOrParityRegion);
         }
@@ -793,7 +795,7 @@ export class RegionOps {
    * default value for `addBridges` is `true`.)
    * @param curvesAndRegions Any collection of curves. Each [[AnyRegion]] contributes its children _stripped of
    * parity context_.
-   * @param tolerance optional distance tolerance for coincidence.
+   * @param tolerance optional distance tolerance for coincidence. Default is [[Geometry.smallMetricDistance]].
    * @param addBridges whether to add line segments to connect nested input [[Loop]]s (default is `true`). When `false`,
    * no line segments are added to the input curves, but the number of output components may be greater than expected.
    * @returns array of [[SignedLoops]], each entry of which describes the areas bounded by a single connected component:
@@ -1046,7 +1048,10 @@ export class ConsolidateAdjacentCurvePrimitivesOptions {
   public consolidateLinearGeometry: boolean = true;
   /** True to consolidate contiguous compatible arcs into a single Arc3d. */
   public consolidateCompatibleArcs: boolean = true;
-  /** True to consolidate the first and last primitives of a [[Loop]], allowing the start/end point to change. */
+  /**
+   * True to attempt consolidation of the first and last primitives of a [[Loop]] or physically closed linestring data,
+   * allowing location of the seam to change.
+   */
   public consolidateLoopSeam?: boolean = false;
   /** Disable LineSegment3d and LineString3d point compression. */
   public disableLinearCompression?: boolean = false;

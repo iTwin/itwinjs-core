@@ -1991,6 +1991,9 @@ export class Cluster<T extends Marker> {
     get position(): Point3d;
 }
 
+// @internal (undocumented)
+export function collectMaskRefs(view: SpatialViewState, modelIds: OrderedId64Iterable, excludedModelIds: Set<Id64String> | undefined, maskTreeRefs: TileTreeReference[], maskRange: Range3d): void;
+
 // @public
 export type CollectTileStatus = "accept" | "reject" | "continue";
 
@@ -2777,6 +2780,7 @@ export class DynamicsContext extends RenderContext {
     // @internal (undocumented)
     add(graphic: RenderGraphic, isOverlay: boolean): void;
     addGraphic(graphic: RenderGraphic): void;
+    addOverlay(graphic: RenderGraphic): void;
     // @internal (undocumented)
     changeDynamics(): void;
     createGraphic(options: Omit<ViewportGraphicBuilderOptions, "viewport">): GraphicBuilder;
@@ -4006,6 +4010,10 @@ export abstract class GltfReader {
     protected get _nodes(): GltfDictionary<GltfNode>;
     abstract read(): Promise<GltfReaderResult>;
     // (undocumented)
+    protected readAndOctEncodeNormals(json: {
+        [k: string]: any;
+    }, accessorName: string): Uint16Array | undefined;
+    // (undocumented)
     protected readBatchTable(_mesh: Mesh, _json: GltfMeshPrimitive): void;
     // (undocumented)
     protected readBufferData(json: {
@@ -4048,11 +4056,11 @@ export abstract class GltfReader {
         [k: string]: any;
     }): boolean;
     // (undocumented)
-    protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfPrimitiveData | undefined;
-    // (undocumented)
-    protected readNormals(mesh: GltfMeshData, json: {
+    protected readMeshNormals(mesh: GltfMeshData, json: {
         [k: string]: any;
     }, accessorName: string): boolean;
+    // (undocumented)
+    protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfPrimitiveData | undefined;
     // (undocumented)
     protected readPolylines(polylines: MeshPolylineList, json: {
         [k: string]: any;
@@ -7804,6 +7812,8 @@ export class PlanarClipMaskState {
     getPlanarClipMaskSymbologyOverrides(context: SceneContext, featureSymbologySource: FeatureSymbology.Source): FeatureSymbology.Overrides | undefined;
     // (undocumented)
     getTileTrees(context: SceneContext, classifiedModelId: Id64String, maskRange: Range3d): TileTreeReference[] | undefined;
+    // @internal (undocumented)
+    get overridesModelVisibility(): boolean;
     // (undocumented)
     readonly settings: PlanarClipMaskSettings;
     // (undocumented)
@@ -8062,6 +8072,8 @@ export interface QuantityTypeDefinition {
 
 // @internal
 export class QuantityTypeFormatsProvider implements FormatsProvider {
+    // (undocumented)
+    [Symbol.dispose](): void;
     constructor();
     // (undocumented)
     getFormat(name: string): Promise<FormatDefinition | undefined>;
@@ -11650,6 +11662,7 @@ export class ToolAdmin {
     onMouseLeave(vp: ScreenViewport): void;
     // @internal (undocumented)
     onPostInstallTool(tool: InteractiveTool): Promise<void>;
+    protected onPreButtonEvent(_ev: BeButtonEvent): boolean;
     // @internal (undocumented)
     onSelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): Promise<void>;
     // @internal (undocumented)

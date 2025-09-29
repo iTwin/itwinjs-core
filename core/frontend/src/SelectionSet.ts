@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module SelectionSet
  */
-import { BeEvent, Id64, Id64Arg, Id64Array, Id64Set, Id64String } from "@itwin/core-bentley";
+import { assert, BeEvent, Id64, Id64Arg, Id64Array, Id64Set, Id64String } from "@itwin/core-bentley";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 
@@ -224,7 +224,8 @@ export class HiliteSet {
       this.#selectionChangesListener = set.onChanged.addListener((ev) => this.#processSelectionSetEvent(ev));
       this.add(set.active);
     } else {
-      this.#selectionChangesListener!();
+      assert(undefined !== this.#selectionChangesListener);
+      this.#selectionChangesListener();
       this.#selectionChangesListener = undefined;
     }
   }

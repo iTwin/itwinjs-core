@@ -88,7 +88,7 @@ describe("Google3dTilesProvider", () => {
     const table = document.createElement("table");
     await provider.addAttributions(table, {} as ScreenViewport);
 
-    expect(table.innerHTML).to.includes(`<img src="public/images/google_on_white_hdpi.png" width="64">`);
+    expect(table.innerHTML).to.includes(`<img src="public/images/GoogleMaps_Logo_Gray.svg" style="padding: 10px 10px 5px;">`);
     expect(table.innerHTML).to.includes(`<h2 class="logo-card-header">Google Photorealistic 3D Tiles</h2>`);
     expect(table.innerHTML).to.includes(`Data provided by:<br><ul><li>Google</li><li>Bentley Systems, Inc.</li></ul>`);
   });
@@ -100,9 +100,9 @@ describe("Google3dTilesProvider", () => {
 
     expect(addCanvasDecorationStub.called).to.be.true;
     expect(addHTMLDecorationStub.called).to.be.true;
-    const htmlDecorationStr = `<div style="color: white; font-size: 11px; text-wrap: wrap; position: absolute; bottom: 10px; left: 107px;"> • Google • Bentley Systems, Inc.</div>`;
+    const htmlDecorationStr = `<div style="color: white; font-size: 11px; text-wrap: wrap; position: absolute; bottom: 14px; left: 155px;"> • Google • Bentley Systems, Inc.</div>`;
     expect(addHTMLDecorationStub.firstCall.args[0].outerHTML).to.eq(htmlDecorationStr);
-    expect(getSpriteStub.firstCall.args[0]).to.eq("public/images/google_on_non_white.png");
+    expect(getSpriteStub.firstCall.args[0]).to.eq("public/images/GoogleMaps_Logo_WithDarkOutline.svg");
   });
 
   it("should not decorate attributions on screen when showCreditsOnscreen is false", async () => {

@@ -195,6 +195,7 @@ describe("PresentationManager", () => {
     it("cancels 'getNodes' request", async () => {
       using manager = new PresentationManager();
       const cancelEvent = new BeEvent<() => void>();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const promise = manager.getNodes({
         imodel,
         rulesetOrId: {
@@ -204,6 +205,7 @@ describe("PresentationManager", () => {
               ruleType: RuleTypes.RootNodes,
               specifications: [
                 {
+                  // eslint-disable-next-line @typescript-eslint/no-deprecated
                   specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
                   classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
                 },

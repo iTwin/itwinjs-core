@@ -197,12 +197,18 @@ export interface IModelHostOptions {
   allowSharedChannel?: boolean;
 
   /**
-   * Setting this to true withh revert to the previous behavior of using the native side for all CRUD operations.
+   * Setting this to true will revert to the previous behavior of using the native side for all CRUD operations.
    * While set to false, the getElement(), getModel() and getAspect() functions will use a thinned down native workflow to read the entities from the database.
    * This workflow performs work previously done on the native side in the TS side, resulting in performance improvements, if errors are detected,
    * this option can be set to true to revert to old workflow.
    */
   disableThinnedNativeInstanceWorkflow?: boolean;
+
+  /**
+   * Configuration controlling whether to disable the creation of restore points during pull/merge operations.
+   * @beta
+   */
+  disableRestorePointOnPullMerge?: true;
 }
 
 /** Configuration of core-backend.
@@ -243,6 +249,12 @@ export class IModelHostConfiguration implements IModelHostOptions {
    * @beta
   */
   public disableThinnedNativeInstanceWorkflow?: boolean;
+
+  /**
+   * Configuration controlling whether to disable the creation of restore points during pull/merge operations.
+   * @beta
+   */
+  public disableRestorePointOnPullMerge?: true;
 }
 
 /**

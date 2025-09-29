@@ -8,7 +8,7 @@ import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
 import { assert, expect } from "chai";
 import * as path from "node:path";
 import { DrawingCategory } from "../../Category";
-import { ChangedECInstance, ChangesetECAdaptor as ECChangesetAdaptor, ECChangeUnifierCache, PartialECChangeUnifier } from "../../ChangesetECAdaptor";
+import { ChangedECInstance, ChangesetECAdaptor, ChangesetECAdaptor as ECChangesetAdaptor, ECChangeUnifierCache, PartialECChangeUnifier } from "../../ChangesetECAdaptor";
 import { HubMock } from "../../internal/HubMock";
 import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { SqliteChangeOp, SqliteChangesetReader } from "../../SqliteChangesetReader";
@@ -760,7 +760,6 @@ describe("Changeset Reader API", async () => {
     assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
     rwIModel.close();
   });
-
   it("openGroup() & writeToFile()", async () => {
     const adminToken = "super manager token";
     const iModelName = "test";
@@ -1256,5 +1255,149 @@ describe("Changeset Reader API", async () => {
 
     // Cleanup
     await Promise.all([secondBriefcase.close(), firstBriefcase.close()]);
+  });
+  it("openInMemory() & step()", async () => {
+    const adminToken = "super manager token";
+    const iModelName = "test";
+    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    assert.isNotEmpty(rwIModelId);
+    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+    // 1. Import schema with class that span overflow table.
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="Test2dElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="p1" typeName="string"/>
+        </ECEntityClass>
+    </ECSchema>`;
+    await rwIModel.importSchemaStrings([schema]);
+    rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    // Create drawing model and category
+    await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
+    if (undefined === drawingCategoryId)
+      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+
+    rwIModel.saveChanges();
+    await rwIModel.pushChanges({ description: "setup category", accessToken: adminToken });
+
+    const geomArray: Arc3d[] = [
+      Arc3d.createXY(Point3d.create(0, 0), 5),
+      Arc3d.createXY(Point3d.create(5, 5), 2),
+      Arc3d.createXY(Point3d.create(-5, -5), 20),
+    ];
+
+    const geometryStream: GeometryStreamProps = [];
+    for (const geom of geomArray) {
+      const arcData = IModelJson.Writer.toIModelJson(geom);
+      geometryStream.push(arcData);
+    }
+
+    const e1 = {
+      classFullName: `TestDomain:Test2dElement`,
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      geom: geometryStream,
+      ...{ p1: "test1" },
+    };
+
+    // 2. Insert a element for the class
+    await rwIModel.locks.acquireLocks({ shared: drawingModelId });
+    const e1id = rwIModel.elements.insertElement(e1);
+    assert.isTrue(Id64.isValidId64(e1id), "insert worked");
+
+    if (true) {
+      const reader = SqliteChangesetReader.openInMemory({ db: rwIModel, disableSchemaCheck: true });
+      const adaptor = new ChangesetECAdaptor(reader);
+      const unifier = new PartialECChangeUnifier(rwIModel)
+      while (adaptor.step()) {
+        unifier.appendFrom(adaptor);
+      }
+      reader.close();
+
+      // verify the inserted element's properties
+      const instances = Array.from(unifier.instances);
+      expect(instances.length).to.equals(1);
+      const testEl = instances[0];
+      expect(testEl.$meta?.op).to.equals("Inserted");
+      expect(testEl.$meta?.classFullName).to.equals("TestDomain:Test2dElement");
+      expect(testEl.$meta?.stage).to.equals("New");
+      expect(testEl.ECClassId).to.equals("0x168");
+      expect(testEl.ECInstanceId).to.equals(e1id);
+      expect(testEl.Model.Id).to.equals(drawingModelId);
+      expect(testEl.Category.Id).to.equals(drawingCategoryId);
+      expect(testEl.Origin.X).to.equals(0);
+      expect(testEl.Origin.Y).to.equals(0);
+      expect(testEl.Rotation).to.equals(0);
+      expect(testEl.BBoxLow.X).to.equals(-25);
+      expect(testEl.BBoxLow.Y).to.equals(-25);
+      expect(testEl.BBoxHigh.X).to.equals(15);
+      expect(testEl.BBoxHigh.Y).to.equals(15);
+      expect(testEl.p1).to.equals("test1");
+    }
+
+    // save changes and verify the the txn
+    rwIModel.saveChanges();
+
+    if (true) {
+      const txnId = rwIModel.txns.getLastSavedTxnProps()?.id as string;
+      expect(txnId).to.not.be.undefined;
+      const reader = SqliteChangesetReader.openTxn({ db: rwIModel, disableSchemaCheck: true, txnId });
+      const adaptor = new ChangesetECAdaptor(reader);
+      const unifier = new PartialECChangeUnifier(rwIModel)
+      while (adaptor.step()) {
+        unifier.appendFrom(adaptor);
+      }
+      reader.close();
+
+      // verify the inserted element's properties
+      const instances = Array.from(unifier.instances);
+      expect(instances.length).to.equals(3);
+
+      // DrawingModel new instance
+      const drawingModelElNew = instances[0];
+      expect(drawingModelElNew.$meta?.op).to.equals("Updated");
+      expect(drawingModelElNew.$meta?.classFullName).to.equals("BisCore:DrawingModel");
+      expect(drawingModelElNew.$meta?.stage).to.equals("New");
+      expect(drawingModelElNew.ECClassId).to.equals("0xaa");
+      expect(drawingModelElNew.ECInstanceId).to.equals(drawingModelId);
+      expect(drawingModelElNew.LastMod).to.exist;
+      expect(drawingModelElNew.GeometryGuid).to.exist;
+
+      // DrawingModel old instance
+      const drawingModelElOld = instances[1];
+      expect(drawingModelElOld.$meta?.op).to.equals("Updated");
+      expect(drawingModelElOld.$meta?.classFullName).to.equals("BisCore:DrawingModel");
+      expect(drawingModelElOld.$meta?.stage).to.equals("Old");
+      expect(drawingModelElOld.ECClassId).to.equals("0xaa");
+      expect(drawingModelElOld.ECInstanceId).to.equals(drawingModelId);
+      expect(drawingModelElOld.LastMod).to.null;
+      expect(drawingModelElOld.GeometryGuid).to.null;
+
+      // Test element instance
+      const testEl = instances[2];
+      expect(testEl.$meta?.op).to.equals("Inserted");
+      expect(testEl.$meta?.classFullName).to.equals("TestDomain:Test2dElement");
+      expect(testEl.$meta?.stage).to.equals("New");
+      expect(testEl.ECClassId).to.equals("0x168");
+      expect(testEl.ECInstanceId).to.equals(e1id);
+      expect(testEl.Model.Id).to.equals(drawingModelId);
+      expect(testEl.Category.Id).to.equals(drawingCategoryId);
+      expect(testEl.Origin.X).to.equals(0);
+      expect(testEl.Origin.Y).to.equals(0);
+      expect(testEl.Rotation).to.equals(0);
+      expect(testEl.BBoxLow.X).to.equals(-25);
+      expect(testEl.BBoxLow.Y).to.equals(-25);
+      expect(testEl.BBoxHigh.X).to.equals(15);
+      expect(testEl.BBoxHigh.Y).to.equals(15);
+      expect(testEl.p1).to.equals("test1");
+    }
+    await rwIModel.pushChanges({ description: "insert element", accessToken: adminToken });
   });
 });

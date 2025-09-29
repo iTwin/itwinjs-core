@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose, Id64String } from "@itwin/core-bentley";
+import { assert, dispose, expectDefined, Id64String } from "@itwin/core-bentley";
 import { Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import {
     ContourDisplay,
@@ -289,10 +289,10 @@ class FrameBuffers implements WebGLDisposable {
     if (!this.initPotentialMSFbos(textures, depth, depthMS))
       return false;
 
-    this.depthAndOrder = FrameBuffer.create([textures.depthAndOrder!], depth);
-    this.contours = FrameBuffer.create([textures.contours!], depth);
-    this.hilite = FrameBuffer.create([textures.hilite!], depth);
-    this.hiliteUsingStencil = FrameBuffer.create([textures.hilite!], depth);
+    this.depthAndOrder = FrameBuffer.create([expectDefined(textures.depthAndOrder)], depth);
+    this.contours = FrameBuffer.create([expectDefined(textures.contours)], depth);
+    this.hilite = FrameBuffer.create([expectDefined(textures.hilite)], depth);
+    this.hiliteUsingStencil = FrameBuffer.create([expectDefined(textures.hilite)], depth);
 
     if (!this.depthAndOrder || !this.contours || !this.hilite || !this.hiliteUsingStencil)
       return false;
@@ -421,16 +421,22 @@ class FrameBuffers implements WebGLDisposable {
       return;
 
     if (undefined === this.stencilSet) {
+      if (undefined === textures.volClassBlend) {
+        throw new Error("Volume classifier blend texture is not defined.");
+      }
       if (undefined !== depthMS) { // if multisampling use the multisampled depth everywhere
+        if (undefined === textures.volClassBlendMsBuff) {
+          throw new Error("Volume classifier blend multisample buffer is not defined.");
+        }
         this.stencilSet = FrameBuffer.create([], depth, [], [], depthMS);
         this.altZOnly = FrameBuffer.create([], volClassDepth, [], [], volClassDepthMS);
-        this.volClassCreateBlend = FrameBuffer.create([textures.volClassBlend!], depth, [textures.volClassBlendMsBuff!], [GL.MultiSampling.Filter.Nearest], depthMS);
-        this.volClassCreateBlendAltZ = FrameBuffer.create([textures.volClassBlend!], volClassDepth, [textures.volClassBlendMsBuff!], [GL.MultiSampling.Filter.Nearest], volClassDepthMS);
+        this.volClassCreateBlend = FrameBuffer.create([textures.volClassBlend], depth, [textures.volClassBlendMsBuff], [GL.MultiSampling.Filter.Nearest], depthMS);
+        this.volClassCreateBlendAltZ = FrameBuffer.create([textures.volClassBlend], volClassDepth, [textures.volClassBlendMsBuff], [GL.MultiSampling.Filter.Nearest], volClassDepthMS);
       } else if (undefined !== volClassDepth) {
         this.stencilSet = FrameBuffer.create([], depth);
         this.altZOnly = FrameBuffer.create([], volClassDepth);
-        this.volClassCreateBlend = FrameBuffer.create([textures.volClassBlend!], depth);
-        this.volClassCreateBlendAltZ = FrameBuffer.create([textures.volClassBlend!], volClassDepth);
+        this.volClassCreateBlend = FrameBuffer.create([textures.volClassBlend], depth);
+        this.volClassCreateBlendAltZ = FrameBuffer.create([textures.volClassBlend], volClassDepth);
       }
     }
 
@@ -560,16 +566,16 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
   public init(textures: Textures): boolean {
     assert(undefined === this.composite);
     this.composite = CompositeGeometry.createGeometry(
-      textures.color!.getHandle()!,
-      textures.accumulation!.getHandle()!,
-      textures.revealage!.getHandle()!, textures.hilite!.getHandle()!);
+      expectDefined(textures.color?.getHandle()),
+      expectDefined(textures.accumulation?.getHandle()),
+      expectDefined(textures.revealage?.getHandle()), expectDefined(textures.hilite?.getHandle()));
 
     if (undefined === this.composite)
       return false;
 
     assert(undefined === this.copyPickBuffers);
 
-    this.copyPickBuffers = CopyPickBufferGeometry.createGeometry(textures.featureId!.getHandle()!, textures.depthAndOrder!.getHandle()!);
+    this.copyPickBuffers = CopyPickBufferGeometry.createGeometry(expectDefined(textures.featureId?.getHandle()), expectDefined(textures.depthAndOrder?.getHandle()));
     this.clearTranslucent = ViewportQuadGeometry.create(TechniqueId.OITClearTranslucent);
     this.clearPickAndColor = ViewportQuadGeometry.create(TechniqueId.ClearPickAndColor);
 
@@ -578,15 +584,15 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
 
   public enableOcclusion(textures: Textures, depth: DepthBuffer): void {
     assert(undefined !== textures.occlusion && undefined !== textures.occlusionBlur && undefined !== textures.depthAndOrder && undefined !== textures.occlusionBlur);
-    this.composite!.occlusion = textures.occlusion.getHandle();
-    this.occlusion = AmbientOcclusionGeometry.createGeometry(textures.depthAndOrder.getHandle()!, depth.getHandle()!);
-    this.occlusionXBlur = BlurGeometry.createGeometry(textures.occlusion.getHandle()!, textures.depthAndOrder.getHandle()!, undefined, new Vector2d(1.0, 0.0), BlurType.NoTest);
+    expectDefined(this.composite).occlusion = textures.occlusion.getHandle();
+    this.occlusion = AmbientOcclusionGeometry.createGeometry(expectDefined(textures.depthAndOrder.getHandle()), expectDefined(depth.getHandle()));
+    this.occlusionXBlur = BlurGeometry.createGeometry(expectDefined(textures.occlusion.getHandle()), expectDefined(textures.depthAndOrder.getHandle()), undefined, new Vector2d(1.0, 0.0), BlurType.NoTest);
     const depthAndOrderHidden = (undefined === textures.depthAndOrderHidden ? textures.revealage?.getHandle() : textures.depthAndOrderHidden.getHandle());
-    this.occlusionYBlur = BlurGeometry.createGeometry(textures.occlusionBlur.getHandle()!, textures.depthAndOrder.getHandle()!, depthAndOrderHidden, new Vector2d(0.0, 1.0), BlurType.TestOrder);
+    this.occlusionYBlur = BlurGeometry.createGeometry(expectDefined(textures.occlusionBlur.getHandle()), expectDefined(textures.depthAndOrder.getHandle()), depthAndOrderHidden, new Vector2d(0.0, 1.0), BlurType.TestOrder);
   }
 
   public disableOcclusion(): void {
-    this.composite!.occlusion = undefined;
+    expectDefined(this.composite).occlusion = undefined;
     this.occlusion = dispose(this.occlusion);
     this.occlusionXBlur = dispose(this.occlusionXBlur);
     this.occlusionYBlur = dispose(this.occlusionYBlur);
@@ -595,9 +601,9 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
   public enableVolumeClassifier(textures: Textures, depth: DepthBuffer): boolean {
     assert(undefined === this.volClassColorStencil && undefined === this.volClassCopyZ && undefined === this.volClassSetBlend && undefined === this.volClassBlend);
     this.volClassColorStencil = ViewportQuadGeometry.create(TechniqueId.VolClassColorUsingStencil);
-    this.volClassCopyZ = SingleTexturedViewportQuadGeometry.createGeometry(depth.getHandle()!, TechniqueId.VolClassCopyZ);
-    this.volClassSetBlend = VolumeClassifierGeometry.createVCGeometry(depth.getHandle()!);
-    this.volClassBlend = SingleTexturedViewportQuadGeometry.createGeometry(textures.volClassBlend!.getHandle()!, TechniqueId.VolClassBlend);
+    this.volClassCopyZ = SingleTexturedViewportQuadGeometry.createGeometry(expectDefined(depth.getHandle()), TechniqueId.VolClassCopyZ);
+    this.volClassSetBlend = VolumeClassifierGeometry.createVCGeometry(expectDefined(depth.getHandle()));
+    this.volClassBlend = SingleTexturedViewportQuadGeometry.createGeometry(expectDefined(textures.volClassBlend?.getHandle()), TechniqueId.VolClassBlend);
     return undefined !== this.volClassColorStencil && undefined !== this.volClassCopyZ && undefined !== this.volClassSetBlend && undefined !== this.volClassBlend;
   }
 
@@ -959,7 +965,7 @@ class Compositor extends SceneCompositor {
   public forceBufferChange(): void { this._width = this._height = -1; }
   public get featureIds(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 0 : 1); }
   public get depthAndOrder(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 1 : 2); }
-  private get _samplerFbo(): FrameBuffer { return this._readPickDataFromPingPong ? this._fbos.pingPong! : this._fbos.opaqueAll!; }
+  private get _samplerFbo(): FrameBuffer { return this._readPickDataFromPingPong ? expectDefined(this._fbos.pingPong) : expectDefined(this._fbos.opaqueAll); }
   private getSamplerTexture(index: number) { return this._samplerFbo.getColor(index); }
 
   public drawPrimitive(primitive: Primitive, exec: ShaderProgramExecutor, outputsToPick: boolean) {
@@ -969,14 +975,14 @@ class Compositor extends SceneCompositor {
   }
 
   protected clearOpaque(needComposite: boolean): void {
-    const fbo = needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!;
+    const fbo = needComposite ? expectDefined(this._fbos.opaqueAndCompositeAll) : expectDefined(this._fbos.opaqueAll);
     const system = System.instance;
     system.frameBufferStack.execute(fbo, true, this.useMsBuffers, () => {
       // Clear pick data buffers to 0's and color buffer to background color
       // (0,0,0,0) in elementID0 and ElementID1 buffers indicates invalid element id
       // (0,0,0,0) in DepthAndOrder buffer indicates render order 0 and encoded depth of 0 (= far plane)
       system.applyRenderState(this._noDepthMaskRenderState);
-      const params = getDrawParams(this.target, this._geom.clearPickAndColor!);
+      const params = getDrawParams(this.target, expectDefined(this._geom.clearPickAndColor));
       this.target.techniques.draw(params);
 
       // Clear depth buffer
@@ -987,7 +993,7 @@ class Compositor extends SceneCompositor {
   }
 
   protected renderLayers(commands: RenderCommands, needComposite: boolean, pass: RenderPass): void {
-    const fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
+    const fbo = (needComposite ? expectDefined(this._fbos.opaqueAndCompositeAll) : expectDefined(this._fbos.opaqueAll));
     const useMsBuffers = RenderPass.OpaqueLayers === pass && fbo.isMultisampled && this.useMsBuffers;
     this._readPickDataFromPingPong = !useMsBuffers;
     System.instance.frameBufferStack.execute(fbo, true, useMsBuffers, () => {
@@ -1006,7 +1012,7 @@ class Compositor extends SceneCompositor {
     const fbStack = System.instance.frameBufferStack;
 
     // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels() or ambient occlusion).
-    let fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
+    let fbo = (needComposite ? expectDefined(this._fbos.opaqueAndCompositeAll) : expectDefined(this._fbos.opaqueAll));
     const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
     this._readPickDataFromPingPong = !useMsBuffers; // if multisampling then can read pick textures directly.
     fbStack.execute(fbo, true, useMsBuffers, () => {
@@ -1023,7 +1029,7 @@ class Compositor extends SceneCompositor {
 
     // The general pass (and following) will not bother to write to pick buffers and so can read from the actual pick buffers.
     if (!renderForReadPixels) {
-      fbo = (needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!);
+      fbo = (needComposite ? expectDefined(this._fbos.opaqueAndCompositeColor) : expectDefined(this._fbos.opaqueColor));
       fbStack.execute(fbo, true, useMsBuffers, () => {
         this.drawPass(commands, RenderPass.OpaqueGeneral, false);
         this.drawPass(commands, RenderPass.HiddenEdge, false);
@@ -1039,7 +1045,7 @@ class Compositor extends SceneCompositor {
     const haveHiddenEdges = 0 !== commands.getCommands(RenderPass.HiddenEdge).length;
 
     // Output the linear, planar, and pickable surfaces to color and pick data buffers.
-    let fbo = this._fbos.opaqueAndCompositeAll!;
+    let fbo = expectDefined(this._fbos.opaqueAndCompositeAll);
     const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
     this._readPickDataFromPingPong = !useMsBuffers; // if multisampling then can read pick textures directly.
     fbStack.execute(fbo, true, useMsBuffers, () => {
@@ -1054,7 +1060,7 @@ class Compositor extends SceneCompositor {
     this._readPickDataFromPingPong = false;
 
     // Output the non-pickable surfaces and hidden edges to just the color buffer.
-    fbo = this._fbos.opaqueAndCompositeColor!;
+    fbo = expectDefined(this._fbos.opaqueAndCompositeColor);
     fbStack.execute(fbo, true, useMsBuffers, () => {
       this._primitiveDrawState = PrimitiveDrawState.NonPickable;
       this.drawPass(commands, RenderPass.OpaqueGeneral, false);
@@ -1072,16 +1078,16 @@ class Compositor extends SceneCompositor {
       // If multisampling then we will use the accumulation texture for featureIDs and a special texture for depthAndOrder since the revealage texture is not the right type for multisampling.
       // First we will need to copy what's in the pick buffers so far into the hidden pick buffers.
       System.instance.applyRenderState(this._noDepthMaskRenderState);
-      fbo = (useMsBuffers ? this._fbos.pingPongMS! : this._fbos.pingPong!);
+      fbo = (useMsBuffers ? expectDefined(this._fbos.pingPongMS) : expectDefined(this._fbos.pingPong));
       fbStack.execute(fbo, true, useMsBuffers, () => {
-        const params = getDrawParams(this.target, this._geom.copyPickBuffers!);
+        const params = getDrawParams(this.target, expectDefined(this._geom.copyPickBuffers));
         this.target.techniques.draw(params);
       });
       if (useMsBuffers)
         fbo.blitMsBuffersToTextures(false, 1); // only want to blit the depth/order target
       // Now draw the hidden edges, using an fbo which places their depth/order into the hidden pick buffers.
       // Since we are not writing to the actual pick buffers we let this._readPickDataFromPingPong remain false.
-      fbo = this._fbos.opaqueAndCompositeAllHidden!;
+      fbo = expectDefined(this._fbos.opaqueAndCompositeAllHidden);
       this._primitiveDrawState = PrimitiveDrawState.Pickable;
       fbStack.execute(fbo, true, useMsBuffers, () => {
         this.drawPass(commands, RenderPass.HiddenEdge, false);
@@ -1129,7 +1135,7 @@ class Compositor extends SceneCompositor {
     }
 
     const needComposite = CompositeFlags.None !== compositeFlags;
-    const fbo = (needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!);
+    const fbo = (needComposite ? expectDefined(this._fbos.opaqueAndCompositeColor) : expectDefined(this._fbos.opaqueColor));
     const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
     const system = System.instance;
     const fbStack = system.frameBufferStack;
@@ -1206,12 +1212,12 @@ class Compositor extends SceneCompositor {
 
     if (renderForReadPixels || needAO) {
       this._readPickDataFromPingPong = true;
-      fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!, true, this.useMsBuffers, () => {
+      fbStack.execute(needComposite ? expectDefined(this._fbos.opaqueAndCompositeAll) : expectDefined(this._fbos.opaqueAll), true, this.useMsBuffers, () => {
         this.drawPass(commands, RenderPass.OpaqueGeneral, true, RenderPass.VolumeClassifiedRealityData);
       });
     } else {
       this._readPickDataFromPingPong = false;
-      fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!, true, this.useMsBuffers, () => {
+      fbStack.execute(needComposite ? expectDefined(this._fbos.opaqueAndCompositeColor) : expectDefined(this._fbos.opaqueColor), true, this.useMsBuffers, () => {
         this.drawPass(commands, RenderPass.OpaqueGeneral, false, RenderPass.VolumeClassifiedRealityData);
       });
     }
@@ -1219,8 +1225,8 @@ class Compositor extends SceneCompositor {
 
   protected renderIndexedClassifierForReadPixels(cmds: DrawCommands, state: RenderState, renderForIntersectingVolumes: boolean, needComposite: boolean) {
     this._readPickDataFromPingPong = true;
-    const fbo = (renderForIntersectingVolumes ? (needComposite ? this._fbos.idsAndZComposite! : this._fbos.idsAndZ!)
-      : (needComposite ? this._fbos.idsAndAltZComposite! : this._fbos.idsAndAltZ!));
+    const fbo = (renderForIntersectingVolumes ? (needComposite ? expectDefined(this._fbos.idsAndZComposite) : expectDefined(this._fbos.idsAndZ))
+      : (needComposite ? expectDefined(this._fbos.idsAndAltZComposite) : expectDefined(this._fbos.idsAndAltZ)));
     System.instance.frameBufferStack.execute(fbo, true, false, () => {
       System.instance.applyRenderState(state);
       this.target.techniques.execute(this.target, cmds, RenderPass.OpaqueGeneral);
@@ -1230,31 +1236,31 @@ class Compositor extends SceneCompositor {
 
   protected clearTranslucent() {
     System.instance.applyRenderState(this._noDepthMaskRenderState);
-    System.instance.frameBufferStack.execute(this._fbos.clearTranslucent!, true, false, () => {
-      const params = getDrawParams(this.target, this._geom.clearTranslucent!);
+    System.instance.frameBufferStack.execute(expectDefined(this._fbos.clearTranslucent), true, false, () => {
+      const params = getDrawParams(this.target, expectDefined(this._geom.clearTranslucent));
       this.target.techniques.draw(params);
     });
   }
 
   protected renderTranslucent(commands: RenderCommands) {
-    System.instance.frameBufferStack.execute(this._fbos.translucent!, true, false, () => {
+    System.instance.frameBufferStack.execute(expectDefined(this._fbos.translucent), true, false, () => {
       this.drawPass(commands, RenderPass.Translucent);
     });
   }
 
   protected getBackgroundFbo(needComposite: boolean): FrameBuffer {
-    return needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!;
+    return needComposite ? expectDefined(this._fbos.opaqueAndCompositeColor) : expectDefined(this._fbos.opaqueColor);
   }
 
   protected pingPong() {
-    if (this._fbos.opaqueAll!.isMultisampled && this.useMsBuffers) {
+    if (expectDefined(this._fbos.opaqueAll).isMultisampled && this.useMsBuffers) {
       // If we are multisampling we can just blit the FeatureId and DepthAndOrder MS buffers to their textures.
-      this._fbos.opaqueAll!.blitMsBuffersToTextures(false, 1);
-      this._fbos.opaqueAll!.blitMsBuffersToTextures(false, 2);
+      this._fbos.opaqueAll?.blitMsBuffersToTextures(false, 1);
+      this._fbos.opaqueAll?.blitMsBuffersToTextures(false, 2);
     } else {
       System.instance.applyRenderState(this._noDepthMaskRenderState);
-      System.instance.frameBufferStack.execute(this._fbos.pingPong!, true, this.useMsBuffers, () => {
-        const params = getDrawParams(this.target, this._geom.copyPickBuffers!);
+      System.instance.frameBufferStack.execute(expectDefined(this._fbos.pingPong), true, this.useMsBuffers, () => {
+        const params = getDrawParams(this.target, expectDefined(this._geom.copyPickBuffers));
         this.target.techniques.draw(params);
       });
     }
@@ -1277,31 +1283,31 @@ class Compositor extends SceneCompositor {
     const system = System.instance;
 
     // Render unblurred ambient occlusion based on depth buffer
-    let fbo = this._fbos.occlusion!;
+    let fbo = expectDefined(this._fbos.occlusion);
     this.target.beginPerfMetricRecord("Compute AO");
     system.frameBufferStack.execute(fbo, true, false, () => {
       System.instance.applyRenderState(RenderState.defaults);
-      const params = getDrawParams(this.target, this._geom.occlusion!);
+      const params = getDrawParams(this.target, expectDefined(this._geom.occlusion));
       this.target.techniques.draw(params);
     });
     this.target.endPerfMetricRecord();
 
     // Render the X-blurred ambient occlusion based on unblurred ambient occlusion
-    fbo = this._fbos.occlusionBlur!;
+    fbo = expectDefined(this._fbos.occlusionBlur);
     this.target.beginPerfMetricRecord("Blur AO X");
     system.frameBufferStack.execute(fbo, true, false, () => {
       System.instance.applyRenderState(RenderState.defaults);
-      const params = getDrawParams(this.target, this._geom.occlusionXBlur!);
+      const params = getDrawParams(this.target, expectDefined(this._geom.occlusionXBlur));
       this.target.techniques.draw(params);
     });
     this.target.endPerfMetricRecord();
 
     // Render the Y-blurred ambient occlusion based on X-blurred ambient occlusion (render into original occlusion framebuffer)
-    fbo = this._fbos.occlusion!;
+    fbo = expectDefined(this._fbos.occlusion);
     this.target.beginPerfMetricRecord("Blur AO Y");
     system.frameBufferStack.execute(fbo, true, false, () => {
       System.instance.applyRenderState(RenderState.defaults);
-      const params = getDrawParams(this.target, this._geom.occlusionYBlur!);
+      const params = getDrawParams(this.target, expectDefined(this._geom.occlusionYBlur));
       this.target.techniques.draw(params);
     });
     this.target.endPerfMetricRecord();
@@ -1415,11 +1421,11 @@ class Compositor extends SceneCompositor {
           assert(false, "Failed to initialize occlusion textures");
           return false;
         }
-        if (!this._fbos.enableOcclusion(this._textures, this._depth!, this._depthMS)) {
+        if (!this._fbos.enableOcclusion(this._textures, expectDefined(this._depth), this._depthMS)) {
           assert(false, "Failed to initialize occlusion frame buffers");
           return false;
         }
-        this._geom.enableOcclusion(this._textures, this._depth!);
+        this._geom.enableOcclusion(this._textures, expectDefined(this._depth));
       } else {
         this._geom.disableOcclusion();
         this._fbos.disableOcclusion();
@@ -1440,10 +1446,10 @@ class Compositor extends SceneCompositor {
         if (!this._textures.enableVolumeClassifier(width, height, this._antialiasSamples))
           return false;
 
-        if (!this._geom.enableVolumeClassifier(this._textures, this._depth!))
+        if (!this._geom.enableVolumeClassifier(this._textures, expectDefined(this._depth)))
           return false;
 
-        this.enableVolumeClassifierFbos(this._textures, this._depth!, this._vcAltDepthStencil, this._depthMS, this._vcAltDepthStencilMS);
+        this.enableVolumeClassifierFbos(this._textures, expectDefined(this._depth), this._vcAltDepthStencil, this._depthMS, this._vcAltDepthStencilMS);
         this._haveVolumeClassifier = true;
       } else {
         this.disableVolumeClassifierFbos();
@@ -1543,7 +1549,7 @@ class Compositor extends SceneCompositor {
     this.target.endPerfMetricRecord();
 
     if (needComposite) {
-      this._geom.composite!.update(compositeFlags);
+      expectDefined(this._geom.composite).update(compositeFlags);
       this.target.beginPerfMetricRecord("Render Translucent");
       this.clearTranslucent();
       this.renderTranslucent(commands);
@@ -1639,7 +1645,7 @@ class Compositor extends SceneCompositor {
     // (If *only* overlays exist, then clearOpaque() above already took care of this).
     if (haveRenderCommands) {
       const system = System.instance;
-      system.frameBufferStack.execute(this._fbos.opaqueColor!, true, this.useMsBuffers, () => {
+      system.frameBufferStack.execute(expectDefined(this._fbos.opaqueColor), true, this.useMsBuffers, () => {
         system.applyRenderState(RenderState.defaults);
         system.context.clearDepth(1.0);
         system.context.clear(GL.BufferBit.Depth);
@@ -1958,14 +1964,14 @@ class Compositor extends SceneCompositor {
 
   private renderIndexedVolumeClassifier(cmdsByIndex: DrawCommands, needComposite: boolean) {
     // Set the stencil for the given classifier stencil volume.
-    System.instance.frameBufferStack.execute(this._fbos.stencilSet!, false, this.useMsBuffers, () => {
-      this.target.pushState(this._vcBranchState!);
-      System.instance.applyRenderState(this._vcSetStencilRenderState!);
+    System.instance.frameBufferStack.execute(expectDefined(this._fbos.stencilSet), false, this.useMsBuffers, () => {
+      this.target.pushState(expectDefined(this._vcBranchState));
+      System.instance.applyRenderState(expectDefined(this._vcSetStencilRenderState));
       this.target.techniques.executeForIndexedClassifier(this.target, cmdsByIndex, RenderPass.Classification);
       this.target.popBranch();
     });
     // Process the stencil for the pick data.
-    this.renderIndexedClassifierForReadPixels(cmdsByIndex, this._vcPickDataRenderState!, true, needComposite);
+    this.renderIndexedClassifierForReadPixels(cmdsByIndex, expectDefined(this._vcPickDataRenderState), true, needComposite);
   }
 
   private renderVolumeClassification(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {
@@ -2009,8 +2015,8 @@ class Compositor extends SceneCompositor {
           System.instance.applyRenderState(this.getRenderState(RenderPass.OpaqueGeneral));
           this.target.techniques.execute(this.target, cmds, RenderPass.OpaqueGeneral);
         } else {
-          this.target.pushState(this._vcBranchState!);
-          System.instance.applyRenderState(this._vcDebugRenderState!);
+          this.target.pushState(expectDefined(this._vcBranchState));
+          System.instance.applyRenderState(expectDefined(this._vcDebugRenderState));
           this.target.techniques.execute(this.target, cmds, RenderPass.Classification);
           this.target.popBranch();
         }
@@ -2044,7 +2050,7 @@ class Compositor extends SceneCompositor {
     const needAltZ = (doColorByElement && !doColorByElementForIntersectingVolumes) || needOutsideDraw;
     let zOnlyFbo = this._fbos.stencilSet;
     let volClassBlendFbo = this._fbos.volClassCreateBlend;
-    let volClassBlendReadZTexture = this._vcAltDepthStencil!.getHandle()!;
+    let volClassBlendReadZTexture = expectDefined(this._vcAltDepthStencil?.getHandle());
     let volClassBlendReadZTextureFbo = this._fbos.altZOnly;
     if (!needAltZ) {
       // Initialize the blend texture and the stencil.
@@ -2060,16 +2066,16 @@ class Compositor extends SceneCompositor {
       zOnlyFbo = this._fbos.altZOnly;
       volClassBlendFbo = this._fbos.volClassCreateBlendAltZ;
       assert(undefined !== volClassBlendFbo);
-      volClassBlendReadZTexture = this._depth!.getHandle()!;
+      volClassBlendReadZTexture = expectDefined(this._depth?.getHandle());
       volClassBlendReadZTextureFbo = this._fbos.stencilSet;
       if (this._antialiasSamples > 1 && undefined !== this._depthMS && this.useMsBuffers)
         volClassBlendReadZTextureFbo.blitMsBuffersToTextures(true, -1); // make sure that the Z buffer that we are about to read has been blitted
       // Copy the current Z into the Alt-Z.  At the same time go ahead and clear the stencil and the blend texture.
       fbStack.execute(volClassBlendFbo, true, this.useMsBuffers, () => {
         this.target.pushState(this.target.decorationsState);
-        System.instance.applyRenderState(this._vcCopyZRenderState!);
+        System.instance.applyRenderState(expectDefined(this._vcCopyZRenderState));
 
-        this.target.techniques.draw(getDrawParams(this.target, this._geom.volClassCopyZ!));  // This method uses the EXT_frag_depth extension
+        this.target.techniques.draw(getDrawParams(this.target, expectDefined(this._geom.volClassCopyZ)));  // This method uses the EXT_frag_depth extension
 
         System.instance.bindTexture2d(TextureUnit.Zero, undefined);
         this.target.popBranch();
@@ -2079,35 +2085,38 @@ class Compositor extends SceneCompositor {
     if (renderForReadPixels) {
       // Set the stencil for all of the classifier volumes.
       System.instance.frameBufferStack.execute(this._fbos.altZOnly, false, this.useMsBuffers, () => {
-        this.target.pushState(this._vcBranchState!);
-        System.instance.applyRenderState(this._vcSetStencilRenderState!);
+        this.target.pushState(expectDefined(this._vcBranchState));
+        System.instance.applyRenderState(expectDefined(this._vcSetStencilRenderState));
         this.target.techniques.execute(this.target, cmds, RenderPass.Classification);
         // After we create the stencil we need to clear the Z for the next step (so also must turn on z writing temporarily).
-        this._vcSetStencilRenderState!.flags.depthMask = true;
-        System.instance.applyRenderState(this._vcSetStencilRenderState!);
+        expectDefined(this._vcSetStencilRenderState).flags.depthMask = true;
+        System.instance.applyRenderState(expectDefined(this._vcSetStencilRenderState));
         System.instance.context.clearDepth(1.0);
         System.instance.context.clear(GL.BufferBit.Depth);
-        this._vcSetStencilRenderState!.flags.depthMask = false;
+        expectDefined(this._vcSetStencilRenderState).flags.depthMask = false;
         this.target.popBranch();
         System.instance.bindTexture2d(TextureUnit.Two, undefined);
         System.instance.bindTexture2d(TextureUnit.Five, undefined);
       });
-      this.target.pushState(this._vcBranchState!);
-      this._vcColorRenderState!.flags.depthTest = true;
-      this._vcColorRenderState!.flags.depthMask = true;
-      this._vcColorRenderState!.flags.cull = true;
-      this._vcColorRenderState!.flags.blend = false;
-      this.setAllStencilOps(this._vcColorRenderState!, GL.StencilOperation.Keep); // don't clear the stencil so that all classifiers behind reality mesh will still draw
-      this.target.activeVolumeClassifierTexture = this._geom.volClassCopyZ!.texture;
+      if (undefined === this._vcColorRenderState || undefined === this._vcBranchState) {
+        throw new Error("this._vcColorRenderState or this._vcBranchState is undefined");
+      }
+      this.target.pushState(this._vcBranchState);
+      this._vcColorRenderState.flags.depthTest = true;
+      this._vcColorRenderState.flags.depthMask = true;
+      this._vcColorRenderState.flags.cull = true;
+      this._vcColorRenderState.flags.blend = false;
+      this.setAllStencilOps(this._vcColorRenderState, GL.StencilOperation.Keep); // don't clear the stencil so that all classifiers behind reality mesh will still draw
+      this.target.activeVolumeClassifierTexture = this._geom.volClassCopyZ?.texture;
       if (this._antialiasSamples > 1 && undefined !== this._depthMS && this.useMsBuffers)
         this._fbos.stencilSet.blitMsBuffersToTextures(true, -1); // make sure that the Z buffer that we are about to read has been blitted
-      this.renderIndexedClassifierForReadPixels(cmds, this._vcColorRenderState!, false, needComposite);
+      this.renderIndexedClassifierForReadPixels(cmds, this._vcColorRenderState, false, needComposite);
       this.target.activeVolumeClassifierTexture = undefined;
-      this._vcColorRenderState!.flags.depthTest = false;
-      this._vcColorRenderState!.flags.depthMask = false;
-      this._vcColorRenderState!.flags.cull = false;
-      this._vcColorRenderState!.flags.blend = true;
-      this.setAllStencilOps(this._vcColorRenderState!, GL.StencilOperation.Zero);
+      this._vcColorRenderState.flags.depthTest = false;
+      this._vcColorRenderState.flags.depthMask = false;
+      this._vcColorRenderState.flags.cull = false;
+      this._vcColorRenderState.flags.blend = true;
+      this.setAllStencilOps(this._vcColorRenderState, GL.StencilOperation.Zero);
       System.instance.context.clearStencil(0); // must clear stencil afterwards since we had to draw with stencil set to KEEP
       System.instance.context.clear(GL.BufferBit.Stencil);
       this.target.popBranch();
@@ -2119,8 +2128,8 @@ class Compositor extends SceneCompositor {
       // Set the stencil using all of the volume classifiers.  This will be used to do the outside and/or the inside if they need to be done.
       // If we are not modifying the outside and the inside is using color-by-element for intersecting volumes, then the stencil will get set later.
       fbStack.execute(zOnlyFbo, false, this.useMsBuffers, () => {
-        this.target.pushState(this._vcBranchState!);
-        System.instance.applyRenderState(this._vcSetStencilRenderState!);
+        this.target.pushState(expectDefined(this._vcBranchState));
+        System.instance.applyRenderState(expectDefined(this._vcSetStencilRenderState));
         this.target.techniques.execute(this.target, cmds, RenderPass.Classification);
         this.target.popBranch();
         System.instance.bindTexture2d(TextureUnit.Two, undefined);
@@ -2131,22 +2140,25 @@ class Compositor extends SceneCompositor {
       if (this._antialiasSamples > 1 && undefined !== this._depthMS && this.useMsBuffers)
         volClassBlendReadZTextureFbo.blitMsBuffersToTextures(true, -1); // make sure that the Z buffer that we are about to read has been blitted
       fbStack.execute(volClassBlendFbo, false, this.useMsBuffers, () => {
-        this._geom.volClassSetBlend!.boundaryType = BoundaryType.Outside;
-        this._geom.volClassSetBlend!.texture = volClassBlendReadZTexture;
+        if (undefined === this._geom.volClassSetBlend || undefined === this._vcColorRenderState) {
+          throw new Error("this._geom.volClassSetBlend or this._vcColorRenderState is undefined");
+        }
+        this._geom.volClassSetBlend.boundaryType = BoundaryType.Outside;
+        this._geom.volClassSetBlend.texture = volClassBlendReadZTexture;
         this.target.pushState(this.target.decorationsState);
-        this._vcColorRenderState!.flags.blend = false;
-        this._vcColorRenderState!.stencil.frontFunction.function = GL.StencilFunction.Equal; // temp swap the functions so we get what is not set in the stencil
-        this._vcColorRenderState!.stencil.backFunction.function = GL.StencilFunction.Equal;
+        this._vcColorRenderState.flags.blend = false;
+        this._vcColorRenderState.stencil.frontFunction.function = GL.StencilFunction.Equal; // temp swap the functions so we get what is not set in the stencil
+        this._vcColorRenderState.stencil.backFunction.function = GL.StencilFunction.Equal;
         if (needInsideDraw)
-          this.setAllStencilOps(this._vcColorRenderState!, GL.StencilOperation.Keep); // don't clear the stencil since we'll use it again
-        System.instance.applyRenderState(this._vcColorRenderState!);
-        const params = getDrawParams(this.target, this._geom.volClassSetBlend!);
+          this.setAllStencilOps(this._vcColorRenderState, GL.StencilOperation.Keep); // don't clear the stencil since we'll use it again
+        System.instance.applyRenderState(this._vcColorRenderState);
+        const params = getDrawParams(this.target, this._geom.volClassSetBlend);
         this.target.techniques.draw(params);
-        this._vcColorRenderState!.flags.blend = true;
-        this._vcColorRenderState!.stencil.frontFunction.function = GL.StencilFunction.NotEqual;
-        this._vcColorRenderState!.stencil.backFunction.function = GL.StencilFunction.NotEqual;
+        this._vcColorRenderState.flags.blend = true;
+        this._vcColorRenderState.stencil.frontFunction.function = GL.StencilFunction.NotEqual;
+        this._vcColorRenderState.stencil.backFunction.function = GL.StencilFunction.NotEqual;
         if (needInsideDraw)
-          this.setAllStencilOps(this._vcColorRenderState!, GL.StencilOperation.Zero);
+          this.setAllStencilOps(this._vcColorRenderState, GL.StencilOperation.Zero);
         this.target.popBranch();
         System.instance.bindTexture2d(TextureUnit.Zero, undefined); // unbind the depth buffer that we used as a texture as we'll need it as an output later
       });
@@ -2157,14 +2169,17 @@ class Compositor extends SceneCompositor {
         if (this._antialiasSamples > 1 && undefined !== this._depthMS && this.useMsBuffers)
           volClassBlendReadZTextureFbo.blitMsBuffersToTextures(true, -1); // make sure that the Z buffer that we are about to read has been blitted
         fbStack.execute(volClassBlendFbo, false, this.useMsBuffers, () => {
-          this._geom.volClassSetBlend!.boundaryType = BoundaryType.Inside;
-          this._geom.volClassSetBlend!.texture = volClassBlendReadZTexture;
+          if (undefined === this._geom.volClassSetBlend || undefined === this._vcColorRenderState) {
+            throw new Error("this._geom.volClassSetBlend or this._vcColorRenderState is undefined");
+          }
+          this._geom.volClassSetBlend.boundaryType = BoundaryType.Inside;
+          this._geom.volClassSetBlend.texture = volClassBlendReadZTexture;
           this.target.pushState(this.target.decorationsState);
-          this._vcColorRenderState!.flags.blend = false;
-          System.instance.applyRenderState(this._vcColorRenderState!);
-          const params = getDrawParams(this.target, this._geom.volClassSetBlend!);
+          this._vcColorRenderState.flags.blend = false;
+          System.instance.applyRenderState(this._vcColorRenderState);
+          const params = getDrawParams(this.target, this._geom.volClassSetBlend);
           this.target.techniques.draw(params);
-          this._vcColorRenderState!.flags.blend = true;
+          this._vcColorRenderState.flags.blend = true;
           this.target.popBranch();
           System.instance.bindTexture2d(TextureUnit.Zero, undefined);
         });
@@ -2174,21 +2189,24 @@ class Compositor extends SceneCompositor {
           const nxtCmds = cmdsByIndex.slice(i, i + numCmdsPerClassifier);
           // Set the stencil for this one classifier.
           fbStack.execute(zOnlyFbo, false, this.useMsBuffers, () => {
-            this.target.pushState(this._vcBranchState!);
-            System.instance.applyRenderState(this._vcSetStencilRenderState!);
+            this.target.pushState(expectDefined(this._vcBranchState));
+            System.instance.applyRenderState(expectDefined(this._vcSetStencilRenderState));
             this.target.techniques.execute(this.target, nxtCmds, RenderPass.Classification);
             this.target.popBranch();
           });
           // Process the stencil. Just render the volume normally (us opaque pass), but use blending to modify the source alpha that gets written to the blend texture.
           fbStack.execute(volClassBlendFbo, true, this.useMsBuffers, () => {
-            this.target.pushState(this._vcBranchState!);
-            this._vcColorRenderState!.blend.color = [1.0, 1.0, 1.0, 0.35];
-            this._vcColorRenderState!.blend.setBlendFuncSeparate(GL.BlendFactor.One, GL.BlendFactor.ConstAlpha, GL.BlendFactor.Zero, GL.BlendFactor.Zero);
-            this._vcColorRenderState!.flags.cull = true;
-            System.instance.applyRenderState(this._vcColorRenderState!);
+            if (undefined === this._vcColorRenderState || undefined === this._vcBranchState) {
+              throw new Error("this._vcColorRenderState or this._vcBranchState is undefined");
+            }
+            this.target.pushState(this._vcBranchState);
+            this._vcColorRenderState.blend.color = [1.0, 1.0, 1.0, 0.35];
+            this._vcColorRenderState.blend.setBlendFuncSeparate(GL.BlendFactor.One, GL.BlendFactor.ConstAlpha, GL.BlendFactor.Zero, GL.BlendFactor.Zero);
+            this._vcColorRenderState.flags.cull = true;
+            System.instance.applyRenderState(this._vcColorRenderState);
             this.target.activeVolumeClassifierTexture = undefined; // make sure this texture is undefined so we do not use the planar classification shader
             this.target.techniques.execute(this.target, nxtCmds, RenderPass.OpaqueGeneral);
-            this._vcColorRenderState!.flags.cull = false;
+            this._vcColorRenderState.flags.cull = false;
             this.target.popBranch();
           });
         }
@@ -2196,28 +2214,31 @@ class Compositor extends SceneCompositor {
         if (this._antialiasSamples > 1 && undefined !== this._depthMS && this.useMsBuffers)
           this._fbos.stencilSet.blitMsBuffersToTextures(true, -1); // make sure that the Z buffer that we are about to read has been blitted
         fbStack.execute(volClassBlendFbo, false, this.useMsBuffers, () => {
+          if (undefined === this._vcColorRenderState || undefined === this._vcBranchState) {
+            throw new Error("this._vcColorRenderState or this._vcBranchState is undefined");
+          }
           // For coloring the inside by element color we will draw the inside using the the classifiers themselves.
           // To do this we need to first clear our Alt-Z.  The shader will then test and write Z and will discard
           // anything that is in front of the reality model by reading the Z texture from the standard Z buffer (which has the reality mesh Z's in it).
           // What we end up with is the closest volume behind the terrain which works if the classifier volumes do not intersect.
           // Since we need the blend texture to have alpha in it, we will use blending just to modify the alpha that gets written.
-          this.target.pushState(this._vcBranchState!);
-          this._vcColorRenderState!.blend.color = [1.0, 1.0, 1.0, 0.35];
-          this._vcColorRenderState!.blend.setBlendFuncSeparate(GL.BlendFactor.One, GL.BlendFactor.ConstAlpha, GL.BlendFactor.Zero, GL.BlendFactor.Zero);
-          this._vcColorRenderState!.flags.depthTest = true;
-          this._vcColorRenderState!.flags.depthMask = true;
-          this._vcColorRenderState!.flags.cull = true;
-          this.setAllStencilOps(this._vcColorRenderState!, GL.StencilOperation.Keep); // don't clear the stencil so that all classifiers behind reality mesh will still draw
-          System.instance.applyRenderState(this._vcColorRenderState!);
+          this.target.pushState(this._vcBranchState);
+          this._vcColorRenderState.blend.color = [1.0, 1.0, 1.0, 0.35];
+          this._vcColorRenderState.blend.setBlendFuncSeparate(GL.BlendFactor.One, GL.BlendFactor.ConstAlpha, GL.BlendFactor.Zero, GL.BlendFactor.Zero);
+          this._vcColorRenderState.flags.depthTest = true;
+          this._vcColorRenderState.flags.depthMask = true;
+          this._vcColorRenderState.flags.cull = true;
+          this.setAllStencilOps(this._vcColorRenderState, GL.StencilOperation.Keep); // don't clear the stencil so that all classifiers behind reality mesh will still draw
+          System.instance.applyRenderState(this._vcColorRenderState);
           System.instance.context.clearDepth(1.0);
           System.instance.context.clear(GL.BufferBit.Depth);
-          this.target.activeVolumeClassifierTexture = this._geom.volClassCopyZ!.texture;
+          this.target.activeVolumeClassifierTexture = this._geom.volClassCopyZ?.texture;
           this.target.techniques.execute(this.target, cmds, RenderPass.OpaqueGeneral);
           this.target.activeVolumeClassifierTexture = undefined;
-          this._vcColorRenderState!.flags.depthTest = false;
-          this._vcColorRenderState!.flags.depthMask = false;
-          this._vcColorRenderState!.flags.cull = false;
-          this.setAllStencilOps(this._vcColorRenderState!, GL.StencilOperation.Zero);
+          this._vcColorRenderState.flags.depthTest = false;
+          this._vcColorRenderState.flags.depthMask = false;
+          this._vcColorRenderState.flags.cull = false;
+          this.setAllStencilOps(this._vcColorRenderState, GL.StencilOperation.Zero);
           System.instance.context.clearStencil(0); // must clear stencil afterwards since we had to draw with stencil set to KEEP
           System.instance.context.clear(GL.BufferBit.Stencil);
           this.target.popBranch();
@@ -2236,8 +2257,8 @@ class Compositor extends SceneCompositor {
     if (!doColorByElement && cmdsSelected.length > 0 && insideFlags !== SpatialClassifierInsideDisplay.Hilite) { // assume selected ones are always hilited
       // Set the stencil using just the hilited volume classifiers.
       fbStack.execute(this._fbos.stencilSet, false, this.useMsBuffers, () => {
-        this.target.pushState(this._vcBranchState!);
-        System.instance.applyRenderState(this._vcSetStencilRenderState!);
+        this.target.pushState(expectDefined(this._vcBranchState));
+        System.instance.applyRenderState(expectDefined(this._vcSetStencilRenderState));
         if (needAltZ) {
           // If we are using the alternate Z then the stencil that goes with the original Z has not been cleared yet, so clear it here.
           System.instance.context.clearStencil(0);
@@ -2250,15 +2271,21 @@ class Compositor extends SceneCompositor {
       if (this._antialiasSamples > 1 && undefined !== this._depthMS && this.useMsBuffers)
         this._fbos.altZOnly.blitMsBuffersToTextures(true, -1); // make sure that the Z buffer that we are about to read has been blitted
 
-      fbStack.execute(this._fbos.volClassCreateBlend!, false, this.useMsBuffers, () => {
-        this._geom.volClassSetBlend!.boundaryType = BoundaryType.Selected;
-        this._geom.volClassSetBlend!.texture = this._vcAltDepthStencil!.getHandle()!; // need to attach the alt depth instead of the real one since it is bound to the frame buffer
+      if (undefined === this._fbos.volClassCreateBlend) {
+        throw new Error("this._fbos.volClassCreateBlend is undefined");
+      }
+      fbStack.execute(this._fbos.volClassCreateBlend, false, this.useMsBuffers, () => {
+        if (undefined === this._geom.volClassSetBlend || undefined === this._vcColorRenderState) {
+          throw new Error("this._geom.volClassSetBlend or this._vcColorRenderState is undefined");
+        }
+        this._geom.volClassSetBlend.boundaryType = BoundaryType.Selected;
+        this._geom.volClassSetBlend.texture = expectDefined(this._vcAltDepthStencil?.getHandle()); // need to attach the alt depth instead of the real one since it is bound to the frame buffer
         this.target.pushState(this.target.decorationsState);
-        this._vcColorRenderState!.flags.blend = false;
-        System.instance.applyRenderState(this._vcColorRenderState!);
-        const params = getDrawParams(this.target, this._geom.volClassSetBlend!);
+        this._vcColorRenderState.flags.blend = false;
+        System.instance.applyRenderState(this._vcColorRenderState);
+        const params = getDrawParams(this.target, this._geom.volClassSetBlend);
         this.target.techniques.draw(params);
-        this._vcColorRenderState!.flags.blend = true;
+        this._vcColorRenderState.flags.blend = true;
         this.target.popBranch();
         System.instance.bindTexture2d(TextureUnit.Zero, undefined);
       });
@@ -2270,10 +2297,13 @@ class Compositor extends SceneCompositor {
     }
 
     fbStack.execute(fboColorAndZ, false, this.useMsBuffers, () => {
+      if (undefined === this._vcBlendRenderState || undefined === this._geom.volClassBlend) {
+        throw new Error("this._vcBlendRenderState or this._geom.volClassBlend is undefined");
+      }
       this.target.pushState(this.target.decorationsState);
-      this._vcBlendRenderState!.blend.setBlendFuncSeparate(GL.BlendFactor.SrcAlpha, GL.BlendFactor.Zero, GL.BlendFactor.OneMinusSrcAlpha, GL.BlendFactor.One);
-      System.instance.applyRenderState(this._vcBlendRenderState!);
-      const params = getDrawParams(this.target, this._geom.volClassBlend!);
+      this._vcBlendRenderState.blend.setBlendFuncSeparate(GL.BlendFactor.SrcAlpha, GL.BlendFactor.Zero, GL.BlendFactor.OneMinusSrcAlpha, GL.BlendFactor.One);
+      System.instance.applyRenderState(this._vcBlendRenderState);
+      const params = getDrawParams(this.target, this._geom.volClassBlend);
       this.target.techniques.draw(params);
       this.target.popBranch();
       System.instance.bindTexture2d(TextureUnit.Zero, undefined);
@@ -2285,19 +2315,22 @@ class Compositor extends SceneCompositor {
     if (undefined !== flashedClassifierCmds && !doColorByElement) {
       // Set the stencil for this one classifier.
       fbStack.execute(this._fbos.stencilSet, false, this.useMsBuffers, () => {
-        this.target.pushState(this._vcBranchState!);
-        System.instance.applyRenderState(this._vcSetStencilRenderState!);
+        this.target.pushState(expectDefined(this._vcBranchState));
+        System.instance.applyRenderState(expectDefined(this._vcSetStencilRenderState));
         this.target.techniques.executeForIndexedClassifier(this.target, flashedClassifierCmds, RenderPass.OpaqueGeneral);
         this.target.popBranch();
       });
 
       // Process the stencil to flash the contents.
       fbStack.execute(fboColorAndZ, true, this.useMsBuffers, () => {
+        if (undefined === this._vcColorRenderState || undefined === this._geom.volClassColorStencil) {
+          throw new Error("this._vcColorRenderState or this._geom.volClassColorStencil is undefined");
+        }
         this.target.pushState(this.target.decorationsState);
-        this._vcColorRenderState!.blend.color = [1.0, 1.0, 1.0, this.target.flashIntensity * 0.2];
-        this._vcColorRenderState!.blend.setBlendFuncSeparate(GL.BlendFactor.ConstAlpha, GL.BlendFactor.Zero, GL.BlendFactor.One, GL.BlendFactor.One);
-        System.instance.applyRenderState(this._vcColorRenderState!);
-        const params = getDrawParams(this.target, this._geom.volClassColorStencil!);
+        this._vcColorRenderState.blend.color = [1.0, 1.0, 1.0, this.target.flashIntensity * 0.2];
+        this._vcColorRenderState.blend.setBlendFuncSeparate(GL.BlendFactor.ConstAlpha, GL.BlendFactor.Zero, GL.BlendFactor.One, GL.BlendFactor.One);
+        System.instance.applyRenderState(this._vcColorRenderState);
+        const params = getDrawParams(this.target, this._geom.volClassColorStencil);
         this.target.techniques.draw(params);
         this.target.popBranch();
       });
@@ -2306,7 +2339,7 @@ class Compositor extends SceneCompositor {
 
   private renderHilite(commands: RenderCommands) {
     const system = System.instance;
-    system.frameBufferStack.execute(this._fbos.hilite!, true, false, () => {
+    system.frameBufferStack.execute(expectDefined(this._fbos.hilite), true, false, () => {
       // Clear the hilite buffer.
       system.context.clearColor(0, 0, 0, 0);
       system.context.clear(GL.BufferBit.Color);
@@ -2317,7 +2350,7 @@ class Compositor extends SceneCompositor {
     // Process planar classifiers
     const planarClassifierCmds = commands.getCommands(RenderPass.HilitePlanarClassification);
     if (0 !== planarClassifierCmds.length) {
-      system.frameBufferStack.execute(this._fbos.hiliteUsingStencil!, true, false, () => {
+      system.frameBufferStack.execute(expectDefined(this._fbos.hiliteUsingStencil), true, false, () => {
         system.applyRenderState(this._opaqueRenderState);
         this.target.techniques.execute(this.target, planarClassifierCmds, RenderPass.HilitePlanarClassification);
       });
@@ -2327,15 +2360,15 @@ class Compositor extends SceneCompositor {
     const vcHiliteCmds = commands.getCommands(RenderPass.HiliteClassification);
     if (0 !== vcHiliteCmds.length && undefined !== this._vcBranchState) {
       // Set the stencil for the given classifier stencil volume.
-      system.frameBufferStack.execute(this._fbos.stencilSet!, false, false, () => {
-        this.target.pushState(this._vcBranchState!);
-        system.applyRenderState(this._vcSetStencilRenderState!);
+      system.frameBufferStack.execute(expectDefined(this._fbos.stencilSet), false, false, () => {
+        this.target.pushState(expectDefined(this._vcBranchState));
+        system.applyRenderState(expectDefined(this._vcSetStencilRenderState));
         this.target.techniques.execute(this.target, vcHiliteCmds, RenderPass.Hilite);
         this.target.popBranch();
       });
       // Process the stencil for the hilite data.
-      system.frameBufferStack.execute(this._fbos.hiliteUsingStencil!, true, false, () => {
-        system.applyRenderState(this._vcPickDataRenderState!);
+      system.frameBufferStack.execute(expectDefined(this._fbos.hiliteUsingStencil), true, false, () => {
+        system.applyRenderState(expectDefined(this._vcPickDataRenderState));
         this.target.techniques.execute(this.target, vcHiliteCmds, RenderPass.Hilite);
       });
     }
@@ -2343,7 +2376,7 @@ class Compositor extends SceneCompositor {
 
   private composite() {
     System.instance.applyRenderState(RenderState.defaults);
-    const params = getDrawParams(this.target, this._geom.composite!);
+    const params = getDrawParams(this.target, expectDefined(this._geom.composite));
     this.target.techniques.draw(params);
   }
 

@@ -2,6 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module Hierarchies
  */
@@ -11,6 +12,8 @@ import { Node } from "./Node.js";
 /**
  * Defines a hierarchy level that consists of an array of nodes and possibly other information.
  * @public
+ * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface HierarchyLevel {
   /** A list of nodes in a hierarchy level. */

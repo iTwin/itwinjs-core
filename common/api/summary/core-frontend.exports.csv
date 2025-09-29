@@ -94,6 +94,7 @@ public;interface;CheckboxFormatPropEditorSpec
 public;class;CheckpointConnection
 public;enum;ClipEventType
 public;class;Cluster
+internal;function;collectMaskRefs
 public;type;CollectTileStatus
 public;enum;CompassMode
 public;interface;ComputeChordToleranceArgs

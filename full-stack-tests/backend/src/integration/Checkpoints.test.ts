@@ -301,6 +301,9 @@ describe("Checkpoints", () => {
       expect(stats.activeClients).to.equal(1);
       expect(stats.attachedContainers).to.equal(1);
       expect(stats.totalClients).to.equal(1);
+      // Sanity check that we have an addon with memory stats support
+      expect(stats.memoryUsed).to.not.be.undefined;
+      expect(stats.memoryHighwater).to.not.be.undefined;
       iModel.restartDefaultTxn();
       stats = container.queryBcvStats({ addClientInformation: true });
       expect(stats.populatedCacheslots).to.equal(populatedCacheslots);

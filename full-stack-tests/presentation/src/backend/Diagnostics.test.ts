@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { IModelDb, SnapshotDb } from "@itwin/core-backend";
 import { Presentation, PresentationManager } from "@itwin/presentation-backend";
-import { ChildNodeSpecificationTypes, Diagnostics, DiagnosticsLogEntry, PresentationError, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { Diagnostics, DiagnosticsLogEntry, KeySet, PresentationError, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests.js";
 
 describe("Diagnostics", async () => {
@@ -14,16 +14,16 @@ describe("Diagnostics", async () => {
     id: "ruleset",
     rules: [
       {
-        ruleType: RuleTypes.RootNodes,
+        ruleType: RuleTypes.Content,
         specifications: [
           {
-            specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
-            classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
+            specType: "SelectedNodeInstances",
           },
         ],
       },
     ],
   };
+  const keys = new KeySet([{ classFullName: "BisCore:Subject", id: "0x1" }]);
 
   let imodel: IModelDb;
   before(async () => {
@@ -40,9 +40,11 @@ describe("Diagnostics", async () => {
   it("includes diagnostics if request takes longer than minimum duration", async () => {
     const requestDiagnosticsSpy = sinon.spy();
     using manager = new PresentationManager();
-    await manager.getNodes({
+    await manager.getContent({
       imodel,
       rulesetOrId: ruleset,
+      keys,
+      descriptor: {},
       diagnostics: {
         perf: { minimumDuration: 1 },
         handler: requestDiagnosticsSpy,
@@ -54,9 +56,11 @@ describe("Diagnostics", async () => {
   it("doesn't include diagnostics if request takes less time than minimum duration", async () => {
     const requestDiagnosticsSpy = sinon.spy();
     using manager = new PresentationManager();
-    await manager.getNodes({
+    await manager.getContent({
       imodel,
       rulesetOrId: ruleset,
+      keys,
+      descriptor: {},
       diagnostics: {
         perf: { minimumDuration: 5000 },
         handler: requestDiagnosticsSpy,
@@ -69,10 +73,13 @@ describe("Diagnostics", async () => {
     const requestDiagnosticsSpy = sinon.spy();
     using manager = new PresentationManager();
     await expect(
-      manager.getNodes({
+      manager.getContent({
         imodel,
         rulesetOrId: ruleset,
-        instanceFilter: {} as any,
+        keys,
+        descriptor: {
+          instanceFilter: {} as any,
+        },
         diagnostics: {
           dev: "error",
           handler: requestDiagnosticsSpy,
@@ -86,9 +93,11 @@ describe("Diagnostics", async () => {
     const managerDiagnosticsSpy = sinon.spy();
     const requestDiagnosticsSpy = sinon.spy();
     using manager = new PresentationManager({ diagnostics: { dev: true, editor: true, perf: true, handler: managerDiagnosticsSpy } });
-    await manager.getNodes({
+    await manager.getContent({
       imodel,
       rulesetOrId: ruleset,
+      keys,
+      descriptor: {},
       diagnostics: {
         handler: requestDiagnosticsSpy,
       },
@@ -101,9 +110,11 @@ describe("Diagnostics", async () => {
     const managerDiagnosticsSpy = sinon.spy();
     const requestDiagnosticsSpy = sinon.spy();
     using manager = new PresentationManager({ diagnostics: { handler: managerDiagnosticsSpy } });
-    await manager.getNodes({
+    await manager.getContent({
       imodel,
       rulesetOrId: ruleset,
+      keys,
+      descriptor: {},
       diagnostics: {
         dev: true,
         editor: true,
@@ -123,9 +134,11 @@ describe("Diagnostics", async () => {
     using manager = new PresentationManager({
       diagnostics: { perf: true, dev: "trace", handler: managerDiagnosticsSpy, requestContextSupplier: () => managerDiagnosticsContext },
     });
-    await manager.getNodes({
+    await manager.getContent({
       imodel,
       rulesetOrId: ruleset,
+      keys,
+      descriptor: {},
       diagnostics: {
         editor: "trace",
         handler: requestDiagnosticsSpy,

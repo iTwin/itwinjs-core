@@ -2,6 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 import { IModelConnection } from "@itwin/core-frontend";
 import { HierarchyRequestOptions, InstanceKey, Node, NodeKey, RulesetVariable } from "@itwin/presentation-common";

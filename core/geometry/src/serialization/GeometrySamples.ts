@@ -1315,7 +1315,8 @@ export class Sample {
    * @param numYVertices number of vertices in y direction
    * @param createParams true to create parameters, with parameter value `(i,j)` for point at (0 based) vertex in x,y directions
    * @param createNormals true to create a (single) normal indexed from all facets
-   * @param createColors true to create a single color on each quad.  (shared between its triangles)
+   * @param createColors true to create a single color on each quad (shared between both triangles in quad if triangulating)
+   * @param triangulate whether to triangulate the quads (default true)
    * @note edgeVisible is false only on the diagonals
    */
   public static createTriangularUnitGridPolyface(

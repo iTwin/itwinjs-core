@@ -39,6 +39,7 @@ export class NativeAppLogger {
   private static async flushBucket(messages: LogMessage[]): Promise<void> {
     try {
       while (messages.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const msg: LogMessage = messages.shift()!;
         await IpcApp.appFunctionIpc.log(msg.timestamp, msg.level, msg.category, msg.message, { ...msg.metaData });
       }

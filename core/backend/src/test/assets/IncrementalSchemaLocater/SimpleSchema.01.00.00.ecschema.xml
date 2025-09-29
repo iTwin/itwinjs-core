@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ECSchema schemaName="SimpleSchema" alias="t" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+<ECSchema schemaName="SimpleSchema" alias="t" version="01.00.00" description="A simple test schema" displayLabel="Simple Schema" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
     <ECSchemaReference name="BisCore" version="01.00.16" alias="bis"/>
     <ECSchemaReference name="CoreCustomAttributes" version="01.00.04" alias="CoreCA"/>
     <ECSchemaReference name="Formats" version="01.00.00" alias="f"/>
@@ -146,7 +146,7 @@
         </Target>
     </ECRelationshipClass>
     <KindOfQuantity typeName="KindOfQuantity_Test1" description="KindOfQuantity Test1" displayLabel="Test1" persistenceUnit="Unit_Test1" relativeError="0.001" presentationUnits="Format_Fractional(4)[Unit_Test1]"/>
-    <KindOfQuantity typeName="KindOfQuantity_Test2" description="KindOfQuantity Test2" displayLabel="Test2" persistenceUnit="u:MG" relativeError="0.0001" presentationUnits="f:DefaultRealU(2)[u:MG];f:DefaultRealU(2)[u:G]"/>
+    <KindOfQuantity typeName="KindOfQuantity_Test2" description="KindOfQuantity Test2" displayLabel="Test2" persistenceUnit="u:MG" relativeError="0.0001" presentationUnits="f:DefaultRealU(0)[u:MG];f:DefaultRealU(1)[u:G]"/>
     <PropertyCategory typeName="Category_Test" description="PropertyCategory Test" displayLabel="Test" priority="1000"/>
     <UnitSystem typeName="UnitSystem_Test" description="UnitSystem Test" displayLabel="Test"/>
     <Phenomenon typeName="Phenomenon_Test" definition="TEST" description="Phenomenon Test" displayLabel="Test"/>

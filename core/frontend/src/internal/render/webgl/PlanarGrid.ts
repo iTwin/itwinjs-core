@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, expectDefined } from "@itwin/core-bentley";
 import { Plane3dByOriginAndUnitNormal, Point2d, Transform } from "@itwin/core-geometry";
 import { Frustum, QPoint2dList, QPoint3dList } from "@itwin/core-common";
 import { GraphicBranch } from "../../../render/GraphicBranch";
@@ -50,7 +50,7 @@ export class PlanarGridGeometry extends IndexedGeometry {
   }
 
   public static create(frustum: Frustum, grid: PlanarGridProps, system: RenderSystem): RenderGraphic | undefined {
-    const plane = Plane3dByOriginAndUnitNormal.create(grid.origin, grid.rMatrix.rowZ())!;
+    const plane = expectDefined(Plane3dByOriginAndUnitNormal.create(grid.origin, grid.rMatrix.rowZ()));
     const polygon = frustum.getIntersectionWithPlane(plane);
 
     if (!polygon || polygon.length < 3)

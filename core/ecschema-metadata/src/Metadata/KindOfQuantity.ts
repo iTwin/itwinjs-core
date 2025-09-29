@@ -188,41 +188,23 @@ export class KindOfQuantity extends SchemaItem {
     super.fromJSONSync(kindOfQuantityProps);
     this._relativeError = kindOfQuantityProps.relativeError;
 
-    const persistenceUnit = this.schema.lookupItemSync(kindOfQuantityProps.persistenceUnit);
-    if (undefined === persistenceUnit)
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Unit ${kindOfQuantityProps.persistenceUnit} does not exist.`);
+    const unitItemKey = this.schema.getSchemaItemKey(kindOfQuantityProps.persistenceUnit);
+    this._persistenceUnit = new DelayedPromiseWithProps(unitItemKey, async () => {
+      const unitItem = await this.schema.lookupItem(unitItemKey, Unit)
+        || await this.schema.lookupItem(unitItemKey, InvertedUnit);
 
-    if (!Unit.isUnit(persistenceUnit) && !InvertedUnit.isInvertedUnit(persistenceUnit))
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The item ${kindOfQuantityProps.persistenceUnit} is not a Unit or InvertedUnit.`);
+      if (undefined === unitItem)
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `Unable to locate the unit ${kindOfQuantityProps.persistenceUnit}.`);
 
-    if (Unit.isUnit(persistenceUnit))
-      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
-    else
-      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+      return unitItem;
+    }) as LazyLoadedUnit | LazyLoadedInvertedUnit;
 
     if (undefined !== kindOfQuantityProps.presentationUnits)
       this.processPresentationUnitsSync(kindOfQuantityProps.presentationUnits);
   }
 
   public override async fromJSON(kindOfQuantityProps: KindOfQuantityProps): Promise<void> {
-    await super.fromJSON(kindOfQuantityProps);
-    this._relativeError = kindOfQuantityProps.relativeError;
-
-    const persistenceUnit = await this.schema.lookupItem(kindOfQuantityProps.persistenceUnit);
-    if (undefined === persistenceUnit)
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Unit ${kindOfQuantityProps.persistenceUnit} does not exist.`);
-
-    if (!Unit.isUnit(persistenceUnit) && !InvertedUnit.isInvertedUnit(persistenceUnit))
-      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The item ${kindOfQuantityProps.persistenceUnit} is not a Unit or InvertedUnit.`);
-
-    if (Unit.isUnit(persistenceUnit))
-      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
-    else
-      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
-
-
-    if (undefined !== kindOfQuantityProps.presentationUnits)
-      await this.processPresentationUnits(kindOfQuantityProps.presentationUnits);
+    this.fromJSONSync(kindOfQuantityProps);
   }
 
   /**

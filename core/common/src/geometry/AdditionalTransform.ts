@@ -147,6 +147,7 @@ export class AdditionalTransform implements AdditionalTransformProps {
     if ((this.helmert2DWithZOffset === undefined) !== (other.helmert2DWithZOffset === undefined))
       return false;
 
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (this.helmert2DWithZOffset && !this.helmert2DWithZOffset.equals(other.helmert2DWithZOffset!))
       return false;
 

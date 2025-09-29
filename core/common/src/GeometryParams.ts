@@ -189,6 +189,7 @@ export class GeometryParams {
 
     if ((this.lineColor === undefined) !== (other.lineColor === undefined))
       return false;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (this.lineColor && !this.lineColor.equals(other.lineColor!))
       return false;
 
@@ -197,11 +198,13 @@ export class GeometryParams {
 
     if ((this.materialId === undefined) !== (other.materialId === undefined))
       return false;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (this.materialId && this.materialId !== other.materialId!)
       return false;
 
     if ((this.styleInfo === undefined) !== (other.styleInfo === undefined))
       return false;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (this.styleInfo && !this.styleInfo.equals(other.styleInfo!))
       return false;
 
@@ -211,6 +214,7 @@ export class GeometryParams {
     if (this.fillDisplay !== undefined && this.fillDisplay !== FillDisplay.Never) {
       if ((this.gradient === undefined) !== (other.gradient === undefined))
         return false;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (this.gradient && !this.gradient.equals(other.gradient!))
         return false;
       if (this.backgroundFill !== other.backgroundFill)
@@ -218,6 +222,7 @@ export class GeometryParams {
       if (this.backgroundFill === undefined || this.backgroundFill === BackgroundFill.None) {
         if ((this.fillColor === undefined) !== (other.fillColor === undefined))
           return false;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         if (this.fillColor && !this.fillColor.equals(other.fillColor!))
           return false;
       }
@@ -225,6 +230,7 @@ export class GeometryParams {
 
     if ((this.pattern === undefined) !== (other.pattern === undefined))
       return false;
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     if (this.pattern && !this.pattern.equals(other.pattern!))
       return false;
 

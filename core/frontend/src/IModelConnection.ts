@@ -7,19 +7,19 @@
  */
 
 import {
-  assert, BeEvent, CompressedId64Set, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, IModelStatus, Logger, OneAtATimeAction, OpenMode,
+  assert, BeEvent, CompressedId64Set, expectDefined, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, IModelStatus, Logger, OneAtATimeAction, OpenMode,
   PickAsyncMethods, TransientIdSequence,
 } from "@itwin/core-bentley";
 import {
   Cartographic, CodeProps, CodeScopeSpec, CodeSpec, CodeSpecProperties, DbQueryRequest, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions, ElementMeshRequestProps,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeographicCRSProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps,
-  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelProps, ModelQueryParams, Placement, Placement2d,
+  MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps, ModelIdAndGeometryGuid, ModelProps, ModelQueryParams, Placement, Placement2d,
   Placement3d, QueryBinder, QueryOptions, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps,
   SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ViewDefinitionProps,
   ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
-import { Point3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
+import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
@@ -188,7 +188,6 @@ export abstract class IModelConnection extends IModel {
       return ctor;
 
     // it's not registered, we need to query its class hierarchy.
-    ctor = defaultClass; // in case we cant find a registered class that handles this class
 
     // wait until we get the full list of base classes from backend
     if (this.isOpen) {
@@ -210,13 +209,13 @@ export abstract class IModelConnection extends IModel {
         return true; // stop
       });
     }
-    return ctor; // either the baseClass handler or defaultClass if we didn't find a registered baseClass
+    return ctor ?? defaultClass; // either the baseClass handler or defaultClass if we didn't find a registered baseClass
   }
 
   /** @internal */
   protected constructor(iModelProps: IModelConnectionProps) {
     super(iModelProps);
-    super.initialize(iModelProps.name!, iModelProps);
+    super.initialize(iModelProps.name ?? "<undefined>", iModelProps);
     this.models = new IModelConnection.Models(this);
     this.elements = new IModelConnection.Elements(this);
     this.codeSpecs = new IModelConnection.CodeSpecs(this);
@@ -388,7 +387,7 @@ export abstract class IModelConnection extends IModel {
     if (!this.isGeoLocated && this.noGcsDefined)
       throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
-    const geoConverter = this.geoServices.getConverter()!;
+    const geoConverter = expectDefined(this.geoServices.getConverter());
     const coordResponse = await geoConverter.getGeoCoordinatesFromIModelCoordinates([spatial]);
 
     if (1 !== coordResponse.geoCoords.length || GeoCoordStatus.NoGCSDefined === coordResponse.geoCoords[0].s)
@@ -482,7 +481,7 @@ export abstract class IModelConnection extends IModel {
     if (!this.isGeoLocated && this.noGcsDefined)
       throw new IModelError(GeoServiceStatus.NoGeoLocation, "iModel is not GeoLocated");
 
-    const geoConverter = this.geoServices.getConverter()!;
+    const geoConverter = expectDefined(this.geoServices.getConverter());
     const geoCoord = Point3d.create(cartographic.longitudeDegrees, cartographic.latitudeDegrees, cartographic.height); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
     const coordResponse = await geoConverter.getIModelCoordinatesFromGeoCoordinates([geoCoord]);
 
@@ -699,7 +698,7 @@ export class SnapshotConnection extends IModelConnection {
   public override isSnapshotConnection(): this is SnapshotConnection { return true; }
 
   /** The Guid that identifies this iModel. */
-  public override get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the superclass, but required for SnapshotConnection
+  public override get iModelId(): GuidString { return expectDefined(super.iModelId); } // GuidString | undefined for the superclass, but required for SnapshotConnection
 
   /** Returns `true` if [[close]] has already been called. */
   public get isClosed(): boolean { return this._isClosed ? true : false; }
@@ -779,6 +778,76 @@ export namespace IModelConnection {
 
   /** The collection of loaded ModelState objects for an [[IModelConnection]]. */
   export class Models implements Iterable<ModelState> {
+    private readonly _modelExtentsQuery = `
+      SELECT
+        Model.Id AS ECInstanceId,
+        iModel_bbox_union(
+          iModel_placement_aabb(
+            iModel_placement(
+              iModel_point(Origin.X, Origin.Y, 0),
+              iModel_angles(Rotation, 0, 0),
+              iModel_bbox(
+                BBoxLow.X, BBoxLow.Y, -1,
+                BBoxHigh.X, BBoxHigh.Y, 1
+              )
+            )
+          )
+        ) AS bbox
+      FROM bis.GeometricElement2d
+      WHERE InVirtualSet(:ids64, Model.Id) AND Origin.X IS NOT NULL
+      GROUP BY Model.Id
+      UNION
+      SELECT
+        ge.Model.Id AS ECInstanceId,
+        iModel_bbox(
+          min(i.MinX), min(i.MinY), min(i.MinZ),
+          max(i.MaxX), max(i.MaxY), max(i.MaxZ)
+        ) AS bbox
+      FROM bis.SpatialIndex AS i, bis.GeometricElement3d AS ge, bis.GeometricModel3d AS gm
+      WHERE InVirtualSet(:ids64, ge.Model.Id) AND ge.ECInstanceId=i.ECInstanceId AND InVirtualSet(:ids64, gm.ECInstanceId) AND (gm.$->isNotSpatiallyLocated?=false OR gm.$->isNotSpatiallyLocated? IS NULL)
+      GROUP BY ge.Model.Id
+      UNION
+      SELECT
+        ge.Model.Id AS ECInstanceId,
+        iModel_bbox_union(
+          iModel_placement_aabb(
+            iModel_placement(
+              iModel_point(ge.Origin.X, ge.Origin.Y, ge.Origin.Z),
+              iModel_angles(ge.Yaw, ge.Pitch, ge.Roll),
+              iModel_bbox(
+                ge.BBoxLow.X, ge.BBoxLow.Y, ge.BBoxLow.Z,
+                ge.BBoxHigh.X, ge.BBoxHigh.Y, ge.BBoxHigh.Z
+              )
+            )
+          )
+        ) AS bbox
+      FROM bis.GeometricElement3d AS ge, bis.GeometricModel3d as gm
+      WHERE InVirtualSet(:ids64, ge.Model.Id) AND ge.Origin.X IS NOT NULL AND InVirtualSet(:ids64, gm.ECInstanceId) AND gm.$->isNotSpatiallyLocated?=true
+      GROUP BY ge.Model.Id`;
+
+    private readonly _modelExistenceQuery = `
+      WITH
+      GeometricModels AS(
+        SELECT
+          ECInstanceId
+        FROM bis.GeometricModel
+        WHERE InVirtualSet(: ids64, ECInstanceId)
+      )
+      SELECT
+        ECInstanceId,
+        true AS isGeometricModel
+      FROM GeometricModels
+      UNION ALL
+      SELECT
+        ECInstanceId,
+        false AS isGeometricModel
+      FROM bis.Model
+      WHERE InVirtualSet(: ids64, ECInstanceId)
+      AND ECInstanceId NOT IN(SELECT ECInstanceId FROM GeometricModels)`;
+
+    private _loadedExtents: ModelExtentsProps[] = [];
+    private _geometryChangedListener?: (changes: readonly ModelIdAndGeometryGuid[]) => void;
+
     private _loaded = new Map<string, ModelState>();
 
     /** @internal */
@@ -790,7 +859,24 @@ export namespace IModelConnection {
     }
 
     /** @internal */
-    constructor(private _iModel: IModelConnection) { }
+    constructor(private _iModel: IModelConnection) {
+      IModelConnection.onOpen.addListener(() => {
+        if (this._iModel.isBriefcaseConnection()) {
+          this._geometryChangedListener = (changes) => {
+            this._loadedExtents = this._loadedExtents.filter((extent) => !changes.some((change) => change.id === extent.id));
+          };
+
+          this._iModel.txns.onModelGeometryChanged.addListener(this._geometryChangedListener);
+        }
+      });
+
+      IModelConnection.onClose.addListener(() => {
+        if (this._iModel.isBriefcaseConnection() && this._geometryChangedListener) {
+          this._iModel.txns.onModelGeometryChanged.removeListener(this._geometryChangedListener);
+          this._geometryChangedListener = undefined;
+        }
+      });
+    }
 
     /** The Id of the [RepositoryModel]($backend). */
     public get repositoryModelId(): string { return "0x1"; }
@@ -851,8 +937,8 @@ export namespace IModelConnection {
       try {
         for (const props of modelProps) {
           const ctor = await this._iModel.findClassFor(props.classFullName, ModelState);
-          if (undefined === this.getLoaded(props.id!)) { // do not overwrite if someone else loads it while we await
-            const modelState = new ctor!(props, this._iModel); // create a new instance of the appropriate ModelState subclass
+          if (undefined !== ctor && undefined !== props.id && undefined === this.getLoaded(props.id)) { // do not overwrite if someone else loads it while we await
+            const modelState = new ctor(props, this._iModel); // create a new instance of the appropriate ModelState subclass
             this._loaded.set(modelState.id, modelState); // save it in loaded set
           }
         }
@@ -876,8 +962,13 @@ export namespace IModelConnection {
      * @see [[queryExtents]] for a similar function that does not throw and produces a deterministically-ordered result.
      */
     public async queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]> {
-      const iModel = this._iModel;
-      return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryModelRanges(iModel.getRpcProps(), [...Id64.toIdSet(modelIds)]) : [];
+      const results = await this.queryExtents([...Id64.toIdSet(modelIds)]);
+
+      if (results.length === 1 && results[0].status !== IModelStatus.Success) {
+        throw new IModelError(results[0].status, "error querying model range");
+      }
+
+      return results.filter((x) => x.status === IModelStatus.Success).map((x) => x.extents);
     }
 
     /** For each [GeometricModel]($backend) specified by Id, attempts to obtain the union of the volumes of all geometric elements within that model.
@@ -887,14 +978,84 @@ export namespace IModelConnection {
      * why the extents could not be obtained (e.g., because the Id did not identify a [GeometricModel]($backend)).
      */
     public async queryExtents(modelIds: Id64String | Id64String[]): Promise<ModelExtentsProps[]> {
-      const iModel = this._iModel;
-      if (!iModel.isOpen)
+      if (!this._iModel.isOpen)
         return [];
 
       if (typeof modelIds === "string")
         modelIds = [modelIds];
 
-      return IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryModelExtents(iModel.getRpcProps(), modelIds);
+      const modelExtents: ModelExtentsProps[] = [];
+
+      for (const modelId of modelIds) {
+        if (!Id64.isValidId64(modelId)) {
+          modelExtents.push({ id: modelId, extents: Range3d.createNull(), status: IModelStatus.InvalidId });
+        }
+      }
+
+      const getUnloadedModelIds = () => modelIds.filter((modelId) => !modelExtents.some((loadedExtent) => loadedExtent.id === modelId));
+
+      let remainingModelIds = getUnloadedModelIds();
+      for (const modelId of remainingModelIds) {
+        const modelExtent = this._loadedExtents.find((extent) => modelId === extent.id);
+        if (modelExtent) {
+          modelExtents.push(modelExtent);
+        }
+      }
+
+      remainingModelIds = getUnloadedModelIds();
+      if (remainingModelIds.length > 0) {
+        const params = new QueryBinder();
+        params.bindIdSet("ids64", remainingModelIds);
+
+        const extentsQueryReader = this._iModel.createQueryReader(this._modelExtentsQuery, params, {
+          rowFormat: QueryRowFormat.UseECSqlPropertyNames,
+        });
+
+        for await (const row of extentsQueryReader) {
+          const byteArray = new Uint8Array(Object.values(row.bbox));
+          const extents = Range3d.fromArrayBuffer(byteArray.buffer);
+
+          const extent = { id: row.ECInstanceId, extents, status: IModelStatus.Success };
+          modelExtents.push(extent);
+          this._loadedExtents.push(extent);
+        }
+      }
+
+      remainingModelIds = getUnloadedModelIds();
+      if (remainingModelIds.length > 0) {
+        const params = new QueryBinder();
+        params.bindIdSet("ids64", remainingModelIds);
+
+        const modelExistenceQueryReader = this._iModel.createQueryReader(this._modelExistenceQuery, params, {
+          rowFormat: QueryRowFormat.UseECSqlPropertyNames,
+        });
+
+        for await (const row of modelExistenceQueryReader) {
+          let extent: ModelExtentsProps;
+          if (row.isGeometricModel) {
+            extent = { id: row.ECInstanceId, extents: Range3d.createNull(), status: IModelStatus.Success };
+          } else {
+            extent = { id: row.ECInstanceId, extents: Range3d.createNull(), status: IModelStatus.WrongModel };
+          }
+          modelExtents.push(extent);
+          this._loadedExtents.push(extent);
+        }
+      }
+
+      return modelIds.map((modelId) => {
+        let extent = modelExtents.find((loadedExtent) => loadedExtent.id === modelId);
+
+        if (extent === undefined) {
+          extent = { id: modelId, extents: Range3d.createNull(), status: IModelStatus.NotFound };
+          this._loadedExtents.push(extent);
+          return extent;
+        } else if (extent.status === IModelStatus.InvalidId) {
+          extent.id = "0";
+          return extent;
+        }
+
+        return extent;
+      });
     }
 
     /** Query for a set of ModelProps of the specified ModelQueryParams.
@@ -1232,7 +1393,7 @@ export namespace IModelConnection {
       const views: ViewSpec[] = [];
       const viewProps: ViewDefinitionProps[] = await this.queryProps(queryParams);
       viewProps.forEach((viewProp) => {
-        views.push({ id: viewProp.id as string, name: viewProp.code.value!, class: viewProp.classFullName });
+        views.push({ id: viewProp.id as string, name: viewProp.code.value ?? "", class: viewProp.classFullName });
       });
 
       return views;
@@ -1271,7 +1432,7 @@ export namespace IModelConnection {
       if (undefined === ctor)
         throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", () => viewProps);
 
-      const viewState = ctor.createFromProps(viewProps, this._iModel)!;
+      const viewState = expectDefined(ctor.createFromProps(viewProps, this._iModel));
       await viewState.load(); // loads models for ModelSelector
 
       return viewState;

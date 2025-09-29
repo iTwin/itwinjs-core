@@ -57,4 +57,4 @@ To enable the development of desktop applications, iTwin.js supports the latest 
 The following minimum versions of mobile operating systems are supported:
 
 - iOS 17: Minimum supported [iPhones](https://support.apple.com/guide/iphone/supported-models-iphe3fa5df43/17.0/ios/17.0) and [iPads](https://support.apple.com/guide/ipad/supported-models-ipad213a25b2/17.0/ipados/17.0)
-- Android 9.0 (API Level 28)
+- Android 12.0 (API Level 31)

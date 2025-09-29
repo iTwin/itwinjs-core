@@ -160,7 +160,7 @@ export class ClassRegistry {
     const className = name[1];
 
     if (0 === entityMetaData.baseClasses.length) // metadata must contain a superclass
-      throw new IModelError(IModelStatus.BadArg, `class ${name} has no superclass`);
+      throw new IModelError(IModelStatus.BadArg, `class ${entityMetaData.ecclass} has no superclass`);
 
     // make sure schema exists
     let schema = iModel.schemaMap.get(domainName) ?? Schemas.getRegisteredSchema(domainName);
@@ -170,7 +170,7 @@ export class ClassRegistry {
     const superClassFullName = entityMetaData.baseClasses[0].toLowerCase();
     const superclass = iModel.jsClassMap.get(superClassFullName) ?? this._globalClassMap.get(superClassFullName);
     if (undefined === superclass)
-      throw new IModelError(IModelStatus.NotFound, `cannot find superclass for class ${name}`);
+      throw new IModelError(IModelStatus.NotFound, `cannot find superclass for class ${entityMetaData.ecclass}`);
 
     // user defined class hierarchies may skip a class in the hierarchy, and therefore their JS base class cannot
     // be used to tell if there are any generated classes in the hierarchy
