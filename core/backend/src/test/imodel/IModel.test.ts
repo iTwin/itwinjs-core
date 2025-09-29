@@ -1860,10 +1860,10 @@ describe("iModel", () => {
       for (let numPts = 0; numPts < 3; numPts++) {
         const geoResponse = await imodel5.getGeoCoordinatesFromIModelCoordinates({ target: "WGS84", iModelCoords });
         expect(geoResponse.geoCoords.length).to.equal(numPts);
-        
+
         const iModelResponse = await imodel5.getIModelCoordinatesFromGeoCoordinates({ source: "WGS84", geoCoords });
         expect(iModelResponse.iModelCoords.length).to.equal(numPts);
-        
+
         iModelCoords.push(new Point3d());
         geoCoords.push(new Point3d());
       }
@@ -1875,11 +1875,11 @@ describe("iModel", () => {
       for (let numPts = 0; numPts < 3; numPts++) {
         const geoResponse = await imodel5.getGeoCoordinatesFromIModelCoordinates({ target: "WGS84", iModelCoords });
         expect(geoResponse.fromCache).to.equal(0);
-        
+
         const iModelResponse = await imodel5.getIModelCoordinatesFromGeoCoordinates({ source: "WGS84", geoCoords });
         expect(iModelResponse.iModelCoords.length).to.equal(numPts);
         expect(iModelResponse.fromCache).to.equal(0);
-        
+
         iModelCoords.push(new Point3d());
         geoCoords.push(new Point3d());
       }
@@ -2485,7 +2485,7 @@ describe("iModel", () => {
   it("Standalone iModel properties", () => {
     const standaloneRootSubjectName = "Standalone";
     const standaloneFile1 = IModelTestUtils.prepareOutputFile("IModel", "Standalone1.bim");
-    const ecefLocation =  new EcefLocation({ origin: [1, 2, 3], orientation: { yaw: 0, pitch: 0, roll: 0 } })
+    const ecefLocation = new EcefLocation({ origin: [1, 2, 3], orientation: { yaw: 0, pitch: 0, roll: 0 } })
     const geographicCoordinateSystem = {
       horizontalCRS: { id: "10TM115-27" },
     }
@@ -2522,7 +2522,7 @@ describe("iModel", () => {
     const snapshotFile2 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot2.bim");
     const snapshotFile3 = IModelTestUtils.prepareOutputFile("IModel", "Snapshot3.bim");
     const imodel = await generateTestSnapshot("test_for_snapshot.bim", "test.bim");
-    const ecefLocation =  new EcefLocation({ origin: [1, 2, 3], orientation: { yaw: 0, pitch: 0, roll: 0 } })
+    const ecefLocation = new EcefLocation({ origin: [1, 2, 3], orientation: { yaw: 0, pitch: 0, roll: 0 } })
     const geographicCoordinateSystem = {
       horizontalCRS: { id: "10TM115-27" },
     }
@@ -3063,10 +3063,10 @@ describe("iModel", () => {
     expect(() => imodel1.elements.updateElement(updateProps)).throws(`Error updating element [missing id], id: ${updateProps.id}`).to.have.property("iTwinErrorId");
     expect(() => imodel1.elements.deleteElement(updateProps.id!)).throws(`Error deleting element [missing id], id: ${updateProps.id}`).to.have.property("iTwinErrorId");
 
-    expect(() => imodel1.models.insertModel({classFullName: DefinitionModel.classFullName, modeledElement: { id: "0x10000000bad" }})).throws("Error inserting model [error=10004], class=BisCore:DefinitionModel").to.have.property("iTwinErrorId");
+    expect(() => imodel1.models.insertModel({ classFullName: DefinitionModel.classFullName, modeledElement: { id: "0x10000000bad" } })).throws("Error inserting model [error=10004], class=BisCore:DefinitionModel").to.have.property("iTwinErrorId");
     expect(() => imodel1.models.updateModel({
       id: Id64.fromString("0x111111"),
-      modeledElement: { id: Id64.fromString("0x111111")},
+      modeledElement: { id: Id64.fromString("0x111111") },
       classFullName: ""
     })).throws(`Error updating model [missing id], id: ${Id64.fromString("0x111111")}`).to.have.property("iTwinErrorId");
     expect(() => imodel1.models.deleteModel(Id64.fromString("0x111111"))).throws(`Error deleting model [missing id], id: ${Id64.fromString("0x111111")}`).to.have.property("iTwinErrorId");
@@ -3119,7 +3119,7 @@ describe("iModel", () => {
     imodel.close();
   });
 
-    function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String, className: string): GeometricElementProps {
+  function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String, className: string): GeometricElementProps {
     // Create props
     const elementProps: GeometricElementProps = {
       classFullName: className,
@@ -3268,22 +3268,22 @@ describe("iModel", () => {
 
       // If insert succeeded, test update and delete scenarios
       if (expectedRows === 1 && idA !== undefined) {
-        validateNavProp(testImodel,  { id: idB, relClassName: "TestRelationSchema.ADrivesB" });
+        validateNavProp(testImodel, { id: idB, relClassName: "TestRelationSchema.ADrivesB" });
 
         const editElem: any = testImodel.elements.getElement(idA);
         editElem.navPropChildB = new RelatedElement({ id: idB, relClassName: "trs.FakeClass" });
-        editElem.name= "ChildAElementUpdated";
+        editElem.name = "ChildAElementUpdated";
         testImodel.elements.updateElement(editElem);
 
         validateADrivesBRowCount(testImodel, 1);
-        validateNavProp(testImodel,  { id: idB, relClassName: "TestRelationSchema.ADrivesB" });
+        validateNavProp(testImodel, { id: idB, relClassName: "TestRelationSchema.ADrivesB" });
 
         const editedElem: any = testImodel.elements.getElement(idA);
         assert.equal(editedElem.name, "ChildAElementUpdated", `Expected name to be "ChildAElementUpdated" after update, but got "${editedElem.name}"`);
         assert.strictEqual(editedElem.navPropChildB.relClassName, "TestRelationSchema.ADrivesB", `Expected navPropChildB to be "TestRelationSchema.ADrivesB" after update, but got "${editedElem.navPropChildB}"`);
 
         // Set the nav prop value to null
-        editElem.name= "ChildAElementNulled";
+        editElem.name = "ChildAElementNulled";
         editElem.navPropChildB = null;
         testImodel.elements.updateElement(editElem);
 
@@ -3302,5 +3302,68 @@ describe("iModel", () => {
       testImodel.abandonChanges();
     }
     testImodel.close();
+  });
+
+  it("should provide meaningful error when querying a closed iModel", async () => {
+    const testImodel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "QueryingClosedImodel.bim"), { rootSubject: { name: "QueryClosedTest" } });
+    assert.isTrue(testImodel.isOpen);
+
+    // Close the iModel for the tests
+    testImodel.close();
+    assert.isFalse(testImodel.isOpen);
+
+    const queryOperations = [
+      {
+        name: "withPreparedSqliteStatement",
+        operation: () => testImodel.withPreparedSqliteStatement("SELECT 1", () => { }),
+        expectedErrorMessage: "Cannot query a closed iModel"
+      },
+      {
+        name: "prepareSqliteStatement",
+        operation: () => testImodel.prepareSqliteStatement("SELECT 1"),
+        expectedErrorMessage: "Cannot query a closed iModel"
+      },
+      {
+        name: "prepareStatement",
+        operation: () => testImodel.prepareStatement("SELECT 1"), // eslint-disable-line @typescript-eslint/no-deprecated
+        expectedErrorMessage: "Cannot query a closed iModel"
+      },
+      {
+        name: "withPreparedStatement",
+        operation: () => testImodel.withPreparedStatement("SELECT ECInstanceId FROM BisCore:Element LIMIT 1", () => { }), // eslint-disable-line @typescript-eslint/no-deprecated
+        expectedErrorMessage: "Cannot query a closed iModel"
+      },
+      {
+        name: "elements.queryChildren",
+        operation: () => testImodel.elements.queryChildren(IModel.rootSubjectId),
+        expectedErrorMessage: "Cannot query a closed iModel"
+      },
+      {
+        name: "elements.getAspects",
+        operation: () => testImodel.elements.getAspects("0x1", "WrongSchema:WrongClass"),
+        expectedErrorMessage: "db is not open"
+      }
+    ];
+
+    for (const testCase of queryOperations) {
+      try {
+        testCase.operation();
+        assert.fail(`${testCase.name} should have thrown an error`);
+      } catch (error: any) {
+        // Verify error message
+        assert.include(error.message, testCase.expectedErrorMessage,
+          `${testCase.name} should contain "${testCase.expectedErrorMessage}" in message, got "${error.message}"`);
+      }
+    }
+
+    // Test createQueryReader (async operation)
+    const asyncError = await getIModelError((async () => {
+      const reader = testImodel.createQueryReader("SELECT 1");
+      await reader.step();
+    })());
+
+    assert.isDefined(asyncError, "createQueryReader should throw an error");
+    assert.equal(asyncError!.errorNumber, DbResult.BE_SQLITE_ERROR);
+    assert.include(asyncError!.message, "db not open");
   });
 });
