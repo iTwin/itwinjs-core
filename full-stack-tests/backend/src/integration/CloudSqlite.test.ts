@@ -288,15 +288,15 @@ describe("CloudSqlite", () => {
     checkOptionalReturnValues(stats, false);
     expect(cache.isDaemon).to.be.false;
     // daemonless is always 0 locked blocks.
-    expect(stats.lockedCacheslots).to.equal(0);
+    expect(parseInt(stats.lockedCacheslots, 16)).to.equal(0);
     // we haven't opened any databases yet, so have 0 entries in the cache.
-    expect(stats.populatedCacheslots).to.equal(0);
+    expect(parseInt(stats.populatedCacheslots, 16)).to.equal(0);
     // 10 gb in bytes, current cache size defined by this test suite.
     const tenGb = 10 * (1024 * 1024 * 1024);
     // 64 kb, current block size defined by this test suite.
     const blockSize = 64 * 1024;
     // totalCacheslots is the number of entries allowed in the cachefile.
-    expect(stats.totalCacheslots).to.equal(tenGb / blockSize);
+    expect(parseInt(stats.totalCacheslots, 16)).to.equal(tenGb / blockSize);
 
     // memoryUsed is the amount of memory used by sqlite.
     expect(stats.memoryUsed).to.not.be.undefined;
@@ -304,18 +304,7 @@ describe("CloudSqlite", () => {
     // memoryHighwater is the high water amount for sqlite memory usage.
     expect(stats.memoryHighwater).to.not.be.undefined;
     assert(stats.memoryHighwater !== undefined);
-    expect(stats.memoryHighwater).to.be.greaterThanOrEqual(stats.memoryUsed);
-
-    // Make sure that values greater than or equal to 2^31 can be retrieved correctly.
-    const anyStats = stats as any;
-    expect(anyStats.bigValueTest64).to.not.be.undefined;
-    assert(anyStats.bigValueTest64 !== undefined);
-    expect(anyStats.bigValueTest32).to.not.be.undefined;
-    assert(anyStats.bigValueTest32 !== undefined);
-    // bigValueTest64 is set to 3 billion in the native addon.
-    expect(anyStats.bigValueTest64).to.equal(3_000_000_000);
-    // bigValueTest32 is set to 3 billion truncated to 32 bits in the native addon.
-    expect(anyStats.bigValueTest32).to.equal(-1_294_967_296);
+    expect(parseInt(stats.memoryHighwater, 16)).to.be.greaterThanOrEqual(parseInt(stats.memoryUsed, 16));
 
     const dbs = container.queryDatabases();
     expect(dbs.length).to.be.greaterThanOrEqual(1);
@@ -329,16 +318,16 @@ describe("CloudSqlite", () => {
     expect(db!.localBlocks).to.equal(db!.totalBlocks);
     stats = container.queryBcvStats({ addClientInformation: true });
     checkOptionalReturnValues(stats, true);
-    expect(stats.lockedCacheslots).to.equal(0);
-    expect(stats.populatedCacheslots).to.equal(db!.totalBlocks);
-    expect(stats.totalCacheslots).to.equal(tenGb / blockSize);
+    expect(parseInt(stats.lockedCacheslots, 16)).to.equal(0);
+    expect(parseInt(stats.populatedCacheslots, 16)).to.equal(db!.totalBlocks);
+    expect(parseInt(stats.totalCacheslots, 16)).to.equal(tenGb / blockSize);
     // memoryUsed is the amount of memory used by sqlite.
     expect(stats.memoryUsed).to.not.be.undefined;
     assert(stats.memoryUsed !== undefined);
     // memoryHighwater is the high water amount for sqlite memory usage.
     expect(stats.memoryHighwater).to.not.be.undefined;
     assert(stats.memoryHighwater !== undefined);
-    expect(stats.memoryHighwater).to.be.greaterThanOrEqual(stats.memoryUsed);
+    expect(parseInt(stats.memoryHighwater, 16)).to.be.greaterThanOrEqual(parseInt(stats.memoryUsed, 16));
     container.disconnect({ detach: true });
   });
 
