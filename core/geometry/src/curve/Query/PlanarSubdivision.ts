@@ -167,16 +167,32 @@ export class PlanarSubdivision {
     HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph, (he: HalfEdge) => he.sortAngle ?? 0, mergeTolerance);
     return graph;
   }
+
   /**
-   * Create a pair of mated half edges referencing an interval of a primitive.
-   * * no action if start and end points are identical.
+   * Filter for trivial curve fragment: fast computation if line segment; otherwise clip, flatten, and measure.
+   * * Different metrics are employed for expedience.
+  */
+  private static isCurveTrivialXY(p: CurvePrimitive, point0: Point3d, fraction0: number, point1: Point3d, fraction1: number, mergeTolerance: number): boolean {
+    if (Geometry.isSmallRelative(fraction0 - fraction1))
+      return true;
+    if (!(p instanceof LineSegment3d)) {
+      const p0 = p.clonePartialCurve(fraction0, fraction1);
+      if (p0?.tryTransformInPlace(Transform.createRowValues(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0))) // flatten
+        return p0.curveLength() <= mergeTolerance; // Euclidean
+    }
+    return point0.isAlmostEqualXY(point1, mergeTolerance); // Manhattan
+  }
+
+  /**
+   * Create a pair of mated half edges referencing a non-trivial interval of a primitive.
    * @param graph containing graph
    * @param p the curve
    * @param point0 start point
    * @param fraction0 starting fraction
    * @param point1 end point
    * @param fraction1 end fraction
-   * @returns end point and fraction, or start point and fraction if no action
+   * @param mergeTolerance optional maximum xy-length of a trivial edge
+   * @returns end point and fraction
    */
   private static addHalfEdge(
     graph: HalfEdgeGraph,
@@ -187,20 +203,20 @@ export class PlanarSubdivision {
     fraction1: number,
     mergeTolerance: number = Geometry.smallMetricDistance,
   ): { point: Point3d, fraction: number } {
-    if (point0.isAlmostEqualXY(point1, mergeTolerance))
-      return { point: point0, fraction: fraction0 };
-    const halfEdge = graph.createEdgeXYAndZ(point0, 0, point1, 0);
-    if (p.parent && p.parent instanceof RegionGroupMember && p.parent.parentGroup.groupOpType === RegionGroupOpType.NonBounding)
-      halfEdge.setMaskAroundEdge(HalfEdgeMask.BRIDGE_EDGE);
-    const detail01 = CurveLocationDetail.createCurveEvaluatedFractionFraction(p, fraction0, fraction1);
-    const mate = halfEdge.edgeMate;
-    halfEdge.edgeTag = detail01;
-    halfEdge.sortData = 1.0;
-    mate.edgeTag = detail01;
-    mate.sortData = -1.0;
-    halfEdge.sortAngle = sortAngle(p, fraction0, false);
-    mate.sortAngle = sortAngle(p, fraction1, true);
-    return { point: point1, fraction: fraction1 };
+    if (!this.isCurveTrivialXY(p, point0, fraction0, point1, fraction1, mergeTolerance)) {
+      const halfEdge = graph.createEdgeXYAndZ(point0, 0, point1, 0);
+      if (p.parent && p.parent instanceof RegionGroupMember && p.parent.parentGroup.groupOpType === RegionGroupOpType.NonBounding)
+        halfEdge.setMaskAroundEdge(HalfEdgeMask.BRIDGE_EDGE);
+      const detail01 = CurveLocationDetail.createCurveEvaluatedFractionFraction(p, fraction0, fraction1);
+      const mate = halfEdge.edgeMate;
+      halfEdge.edgeTag = detail01;
+      halfEdge.sortData = 1.0;
+      mate.edgeTag = detail01;
+      mate.sortData = -1.0;
+      halfEdge.sortAngle = sortAngle(p, fraction0, false);
+      mate.sortAngle = sortAngle(p, fraction1, true);
+    }
+    return { point: point1, fraction: fraction1 }; // where the next curve fragment starts
   }
   /**
    * Based on computed (and toleranced) area, push the loop (pointer) onto the appropriate array of positive, negative,

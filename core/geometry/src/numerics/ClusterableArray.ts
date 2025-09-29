@@ -150,7 +150,6 @@ export class ClusterableArray extends GrowableBlockedArray {
     let barrierU = 0.0;
     let i = 0;
     let j = 0;
-
     const k0 = 1;   // beginning of active column for distance
     const k1 = 1 + this._numCoordinatePerPoint;
     for (i = 0; i < n; i++) {
@@ -163,8 +162,8 @@ export class ClusterableArray extends GrowableBlockedArray {
         for (j = i + 1; j < n; j++) {
           candidateBlockIndex = firstSort[j];
           if (candidateBlockIndex === ClusterableArray.clusterTerminator) continue; // nearby in sort direction but already in a cluster.
-          if (this.component(candidateBlockIndex, 0) >= barrierU) break;
-          if (this.distanceBetweenSubBlocks(clusterStartBlockIndex, candidateBlockIndex, k0, k1) < clusterTolerance) {
+          if (this.component(candidateBlockIndex, 0) > barrierU) break;
+          if (this.distanceBetweenSubBlocks(clusterStartBlockIndex, candidateBlockIndex, k0, k1) <= clusterTolerance) {
             clusterIndices[m++] = candidateBlockIndex;            // The candidate is in the block
             firstSort[j] = ClusterableArray.clusterTerminator;  // and it will not be reused as future block base
           }

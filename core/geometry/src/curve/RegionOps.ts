@@ -151,8 +151,12 @@ export class RegionOps {
    * @param distanceTolerance optional absolute distance tolerance.
   */
   public static computeXYAreaTolerance(range: Range3d, distanceTolerance: number = Geometry.smallMetricDistance): number {
-    // if A = bh and e is distance tolerance, then A' := (b+e/2)(h+e/2) = A + e/2(b+h+e/2), so A'-A = e/2(b+h+e/2).
-    const halfDistTol = 0.5 * distanceTolerance;
+    // ensure the result is nonzero: we never want to report a zero-area loop as a signed-area loop
+    if (distanceTolerance === 0)
+      return Geometry.smallFloatingPoint * 10; // observed area 2e-15 computed for a zero-area loop
+    // If A = bh and e is distance tolerance, let A' be the region with b and h extended by half the tolerance.
+    // Then A' := (b+e/2)(h+e/2) = A + e/2(b+h+e/2), which motivates our area tol = A'-A = e/2(b+h+e/2).
+    const halfDistTol = 0.5 * Math.abs(distanceTolerance);
     return halfDistTol * (range.xLength() + range.yLength() + halfDistTol);
   }
   /**
