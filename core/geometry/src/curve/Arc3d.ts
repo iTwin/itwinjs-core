@@ -1462,7 +1462,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const radians1 = this._sweep.fractionToRadians(fraction1);
     const alpha = 0.5 * (radians1 - radians0); // signed area of local sector
     // Compute signed area of local triangle ("wedge") formed by origin and arc endpoints p0, p1:
-    // cos(a)sin(a) = sin(r1-r0)/2 = (cos(r0)sin(r1)-cos(r1)sin(r0))/2 = (p0 x p1)/2
+    // (p0 x p1)/2 = (cos(r0)sin(r1)-cos(r1)sin(r0))/2 = sin(r1-r0)/2 = cos(a)sin(a)
     const wedgeArea = Math.cos(alpha) * Math.sin(alpha);
     return (alpha - wedgeArea) * detJ; // to world
   }
