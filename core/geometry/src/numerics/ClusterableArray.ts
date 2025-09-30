@@ -161,8 +161,10 @@ export class ClusterableArray extends GrowableBlockedArray {
         firstSort[i] = ClusterableArray.clusterTerminator;
         for (j = i + 1; j < n; j++) {
           candidateBlockIndex = firstSort[j];
-          if (candidateBlockIndex === ClusterableArray.clusterTerminator) continue; // nearby in sort direction but already in a cluster.
-          if (this.component(candidateBlockIndex, 0) > barrierU) break;
+          if (candidateBlockIndex === ClusterableArray.clusterTerminator)
+            continue; // nearby in sort direction but already in a cluster.
+          if (this.component(candidateBlockIndex, 0) > barrierU)
+            break;
           if (this.distanceBetweenSubBlocks(clusterStartBlockIndex, candidateBlockIndex, k0, k1) <= clusterTolerance) {
             clusterIndices[m++] = candidateBlockIndex;            // The candidate is in the block
             firstSort[j] = ClusterableArray.clusterTerminator;  // and it will not be reused as future block base
