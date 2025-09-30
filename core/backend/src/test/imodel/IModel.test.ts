@@ -3304,7 +3304,7 @@ describe("iModel", () => {
     testImodel.close();
   });
 
-  it("should provide meaningful error when querying a closed iModel", async () => {
+  it("should provide meaningful error when querying a closed iModel", () => {
     const testImodel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "QueryingClosedImodel.bim"), { rootSubject: { name: "QueryClosedTest" } });
     assert.isTrue(testImodel.isOpen);
 
