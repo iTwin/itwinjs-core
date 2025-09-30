@@ -10,7 +10,7 @@
 import "./IModelDb"; // DO NOT REMOVE OR MOVE THIS LINE!
 
 import { IModelNative, loadNativePlatform } from "./internal/NativePlatform";
-import * as os from "os";
+import * as os from "node:os";
 import "reflect-metadata"; // this has to be before @itwin/object-storage-* and @itwin/cloud-agnostic-core imports because those packages contain decorators that use this polyfill.
 import { NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, assert, BeEvent, BentleyStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
