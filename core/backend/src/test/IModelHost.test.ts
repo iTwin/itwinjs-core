@@ -151,6 +151,7 @@ describe("IModelHost", () => {
     assert.isDefined(IModelHost.tileStorage);
     assert.isDefined(IModelHost.tileStorage!.storage);
     assert.instanceOf(IModelHost.tileStorage!.storage, AzureServerStorage);
+    assert.equal((IModelHost.tileStorage?.storage as any)._config.baseUrl, `https://${config.tileCacheAzureCredentials.account}.blob.core.windows.net`)
   });
 
   it("should set Azure cloud storage provider for tile cache with custom baseUrl", async () => {
@@ -166,6 +167,7 @@ describe("IModelHost", () => {
     assert.isDefined(IModelHost.tileStorage);
     assert.isDefined(IModelHost.tileStorage!.storage);
     assert.instanceOf(IModelHost.tileStorage!.storage, AzureServerStorage);
+    assert.equal((IModelHost.tileStorage?.storage as any)._config.baseUrl, config.tileCacheAzureCredentials.baseUrl)
   });
 
   it("should set custom cloud storage provider for tile cache", async () => {
