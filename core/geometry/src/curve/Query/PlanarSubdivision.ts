@@ -24,7 +24,7 @@ import { RegionGroupMember, RegionGroupOpType } from "../RegionOpsClassification
  * @module Curve
  */
 
-function sortAngle(curve: CurvePrimitive, fraction: number, reverse: boolean): number {
+function computeSortAngle(curve: CurvePrimitive, fraction: number, reverse: boolean): number {
   const ray = curve.fractionToPointAndDerivative(fraction);
   const s = reverse ? -1.0 : 1.0;
   return Math.atan2(s * ray.direction.y, s * ray.direction.x);
@@ -213,8 +213,8 @@ export class PlanarSubdivision {
       halfEdge.sortData = 1.0;
       mate.edgeTag = detail01;
       mate.sortData = -1.0;
-      halfEdge.sortAngle = sortAngle(p, fraction0, false);
-      mate.sortAngle = sortAngle(p, fraction1, true);
+      halfEdge.sortAngle = computeSortAngle(p, fraction0, false);
+      mate.sortAngle = computeSortAngle(p, fraction1, true);
     }
     return { point: point1, fraction: fraction1 }; // where the next curve fragment starts
   }
