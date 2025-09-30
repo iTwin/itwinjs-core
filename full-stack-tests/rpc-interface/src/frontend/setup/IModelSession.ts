@@ -9,7 +9,7 @@ import { IModelData } from "../../common/Settings";
 import { IModelVersion } from "@itwin/core-common";
 import { AccessToken } from "@itwin/core-bentley";
 import { IModelsClient } from "@itwin/imodels-client-management";
-import { AccessTokenAdapter } from "@itwin/imodels-access-frontend";
+import { AccessTokenAdapter } from "@itwin/imodels-access-common";
 
 export class IModelSession {
 

@@ -283,6 +283,10 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/imodels-access-common",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
       "name": "@itwin/imodels-access-frontend",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
