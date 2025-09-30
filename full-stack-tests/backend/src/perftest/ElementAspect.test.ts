@@ -12,7 +12,9 @@ import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { Reporter } from "@itwin/perf-tools";
 import { DictionaryModel, ElementAspect, IModelDb, IModelHost, IModelHostOptions, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
+import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
+import { createDefaultClientStorage } from "@itwin/imodels-access-backend/lib/cjs/DefaultClientStorage";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -40,7 +42,8 @@ describe("ElementAspectPerformance", () => {
     const imodelId = configData.basicTest.aspectIModelId;
 
     const iModelHost: IModelHostOptions = {};
-    iModelHost.hubAccess = new BackendIModelsAccess({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+    const iModelClient = new IModelsClient({ cloudStorage: createDefaultClientStorage(), api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+    iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
     iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir
     await IModelHost.startup(iModelHost);
 

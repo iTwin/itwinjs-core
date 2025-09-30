@@ -8,6 +8,7 @@ import { Guid, Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
+import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { appendTextAnnotationGeometry, Drawing, IModelDb, IModelHost, IModelHostOptions, layoutTextBlock, LocalhostIpcHost, TextStyleResolver } from "@itwin/core-backend";
 import {
   DynamicGraphicsRequest2dProps, ElementGeometry, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, Placement2dProps, RpcInterfaceDefinition, RpcManager, TextAnnotation, TextAnnotationProps,
@@ -254,7 +255,8 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   Logger.setLevelDefault(logLevel);
   Logger.setLevel("SVT", LogLevel.Trace);
 
-  const hubAccess = new BackendIModelsAccess({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  const hubAccess = new BackendIModelsAccess(iModelClient);
 
   const iModelHost: IModelHostOptions = {
     logTileLoadTimeThreshold: 3,

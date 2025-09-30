@@ -11,7 +11,9 @@ import { IModelHost } from "@itwin/core-backend";
 import { BentleyCloudRpcManager, RpcConfiguration, RpcManager } from "@itwin/core-common";
 import { getRpcInterfaces } from "../common/Settings";
 import * as fs from "fs";
+import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
+import { createDefaultClientStorage } from "@itwin/imodels-access-backend/lib/cjs/DefaultClientStorage";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 
@@ -35,7 +37,8 @@ void (async () => {
   RpcConfiguration.developmentMode = true;
 
   // Start the backend
-  const hubAccess = new BackendIModelsAccess({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  const iModelClient = new IModelsClient({ cloudStorage: createDefaultClientStorage(),  api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  const hubAccess = new BackendIModelsAccess(iModelClient);
   await IModelHost.startup({ hubAccess, cacheDir: path.join(__dirname, ".cache") });
 
   const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "schema-rpc-test", version: "v1.0" } }, getRpcInterfaces());
