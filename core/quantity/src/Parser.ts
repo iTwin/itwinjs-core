@@ -617,7 +617,7 @@ export class Parser {
     const defaultUnit = format.units && format.units.length > 0 ? format.units[0][0] : undefined;
     try {
       defaultUnitConversion = defaultUnitConversion ? defaultUnitConversion : Parser.getDefaultUnitConversion(tokens, unitsConversions, defaultUnit);
-    } catch (e: unknown) {
+    } catch (e) {
       // If we failed to get the default unit conversion, we need to return an error.
       if (e instanceof QuantityError && e.errorNumber === QuantityStatus.UnitLabelSuppliedButNotMatched)
         return { ok: false, error: ParseError.UnitLabelSuppliedButNotMatched };
