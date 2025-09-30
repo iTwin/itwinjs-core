@@ -248,7 +248,24 @@ export class TopologicalSorter {
   }
 }
 
-
+class ElementDrivesElementEventMonitor {
+  public readonly onRootChanged: [string, string][] = [];
+  public readonly onAllInputsHandled: string[] = [];
+  public readonly onBeforeOutputsHandled: string[] = [];
+  public readonly onDeletedDependency: [string, string][] = [];
+  constructor(public iModelDb: IModelDb) {
+    InputDrivesOutput.events.onDeletedDependency.addListener((props: RelationshipProps) => this.onDeletedDependency.push([this.iModelDb.elements.tryGetElement<NodeElement>(props.sourceId)?.userLabel as string, this.iModelDb.elements.tryGetElement<NodeElement>(props.targetId)?.userLabel as string]));
+    InputDrivesOutput.events.onRootChanged.addListener((props: RelationshipProps) => this.onRootChanged.push([this.iModelDb.elements.tryGetElement<NodeElement>(props.sourceId)?.userLabel as string, this.iModelDb.elements.tryGetElement<NodeElement>(props.targetId)?.userLabel as string]));
+    NodeElement.events.onAllInputsHandled.addListener((id: Id64String) => this.onAllInputsHandled.push(this.iModelDb.elements.tryGetElement<NodeElement>(id)?.userLabel as string));
+    NodeElement.events.onBeforeOutputsHandled.addListener((id: Id64String) => this.onBeforeOutputsHandled.push(this.iModelDb.elements.tryGetElement<NodeElement>(id)?.userLabel as string));
+  }
+  public clear() {
+    this.onRootChanged.length = 0;
+    this.onAllInputsHandled.length = 0;
+    this.onBeforeOutputsHandled.length = 0;
+    this.onDeletedDependency.length = 0;
+  }
+}
 export interface InputDrivesOutputProps extends ElementDrivesElementProps {
   prop: string
 }
@@ -560,9 +577,8 @@ describe.only("EDE Tests", () => {
 
   it("local: cycle detection (suppress cycles)", async () => {
     const graph = new Graph<string>();
-
     // Graph structure:
-    // 1 --> 2 --> 3
+    // 1 --> 2 <-- 3
     // ^           |
     // |-----------|
     graph.addEdge("1", ["2"]);
@@ -580,6 +596,8 @@ describe.only("EDE Tests", () => {
   it("local: cycle detection (throw)", async () => {
     const graph = new Graph<string>();
     // Graph structure:
+    // A---B---C
+    //.  \ D /
     // 1 --> 2 --> 3
     // ^           |
     // |-----------|
@@ -590,6 +608,45 @@ describe.only("EDE Tests", () => {
     chai.expect(() => TopologicalSorter.sortDepthFirst(graph)).to.throw(
       "Graph has a cycle"
     );
+  });
+  it("local: build system dependencies", async () => {
+    const graph = new Graph<string>();
+    /*
+      Example: Build system dependencies
+
+      - Compile main.c and util.c to main.o and util.o
+      - Link main.o and util.o to produce app.exe
+      - app.exe depends on config.json
+      - test.exe depends on main.o, util.o, and test.c
+
+      Graph:
+        main.c   util.c   test.c   config.json
+          |        |        |           |
+          v        v        |           |
+        main.o   util.o     |           |
+          \      /          |           |
+            \  /            |           |
+           app.exe        test.exe      |
+             |                |         |
+             +----------------+---------+
+    */
+
+    graph.addEdge("main.c", ["main.o"]);
+    graph.addEdge("util.c", ["util.o"]);
+    graph.addEdge("test.c", ["test.exe"]);
+    graph.addEdge("main.o", ["app.exe", "test.exe"]);
+    graph.addEdge("util.o", ["app.exe", "test.exe"]);
+    graph.addEdge("config.json", ["app.exe"]);
+
+    // Topological sort (depth-first)
+    const df = TopologicalSorter.sortDepthFirst(graph);
+    chai.expect(TopologicalSorter.validate(graph, df)).to.be.true;
+
+    // Topological sort (breadth-first)
+    const bf = TopologicalSorter.sortBreadthFirst(graph);
+    chai.expect(TopologicalSorter.validate(graph, bf)).to.be.true;
+    chai.expect(df).to.deep.equal(["config.json", "test.c", "util.c", "util.o", "main.c", "main.o", "test.exe", "app.exe"]);
+    chai.expect(bf).to.deep.equal(["main.c", "util.c", "test.c", "config.json", "main.o", "util.o", "app.exe", "test.exe"]);
   });
   it("local: complex, subset", async () => {
     const graph = new Graph<string>();
@@ -637,50 +694,47 @@ describe.only("EDE Tests", () => {
     const { modelId, } = await Engine.initialize(b1);
     const graph = new Graph<string>();
 
-    graph.addEdge("1", ["2", "3"]);
-    graph.addEdge("2", ["5", "4"]);
-    graph.addEdge("3", ["4"]);
-    graph.addEdge("4", ["5"]);
-
+    // Graph structure:
+    //   A
+    //  / \
+    // B   C
+    // |\   \
+    // | \   \
+    // E  D   D
+    //  \     /
+    //   \   /
+    //     E
+    graph.addEdge("A", ["B", "C"]);
+    graph.addEdge("B", ["E", "D"]);
+    graph.addEdge("C", ["D"]);
+    graph.addEdge("D", ["E"]);
     await Engine.createGraph(b1, modelId, graph);
-    const onRootChanged: [string, string][] = [];
-    const onAllInputsHandled: string[] = [];
-    const onBeforeOutputsHandled: string[] = [];
-    const onDeletedDependency: [string, string][] = [];
-
-    InputDrivesOutput.events.onDeletedDependency.addListener((props: RelationshipProps) => onDeletedDependency.push([b1.elements.tryGetElement<NodeElement>(props.sourceId)?.userLabel as string, b1.elements.tryGetElement<NodeElement>(props.targetId)?.userLabel as string]));
-    InputDrivesOutput.events.onRootChanged.addListener((props: RelationshipProps) => onRootChanged.push([b1.elements.tryGetElement<NodeElement>(props.sourceId)?.userLabel as string, b1.elements.tryGetElement<NodeElement>(props.targetId)?.userLabel as string]));
-    NodeElement.events.onAllInputsHandled.addListener((id: Id64String) => onAllInputsHandled.push(b1.elements.tryGetElement<NodeElement>(id)?.userLabel as string));
-    NodeElement.events.onBeforeOutputsHandled.addListener((id: Id64String) => onBeforeOutputsHandled.push(b1.elements.tryGetElement<NodeElement>(id)?.userLabel as string));
+    const monitor = new ElementDrivesElementEventMonitor(b1);
 
     b1.saveChanges();
-    chai.expect(onRootChanged).to.deep.equal([
-      ["1", "2"],
-      ["1", "3"],
-      ["2", "5"],
-      ["2", "4"],
-      ["3", "4"],
-      ["4", "5"]]);
-    chai.expect(onAllInputsHandled).to.deep.equal(["2", "3", "4", "5"]);
-    chai.expect(onBeforeOutputsHandled).to.deep.equal(["1"]);
-    chai.expect(onDeletedDependency).to.deep.equal([]);
+    chai.expect(monitor.onRootChanged).to.deep.equal([
+      ["A", "B"],
+      ["A", "C"],
+      ["B", "E"],
+      ["B", "D"],
+      ["C", "D"],
+      ["D", "E"]]);
+    chai.expect(monitor.onAllInputsHandled).to.deep.equal(["B", "C", "D", "E"]);
+    chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal(["A"]);
+    chai.expect(monitor.onDeletedDependency).to.deep.equal([]);
 
-    onRootChanged.length = 0;
-    onAllInputsHandled.length = 0;
-    onBeforeOutputsHandled.length = 0;
-    onDeletedDependency.length = 0;
+    monitor.clear();
 
-    await Engine.updateNodeWithName(b1, "2");
+    await Engine.updateNodeWithName(b1, "B");
     b1.saveChanges();
 
-    chai.expect(onRootChanged).to.deep.equal([
-      ["2", "5"],
-      ["2", "4"],
-      ["4", "5"]]);
-    chai.expect(onAllInputsHandled).to.deep.equal(["4", "5"]);
-    chai.expect(onBeforeOutputsHandled).to.deep.equal(["2"]);
-    chai.expect(onDeletedDependency).to.deep.equal([]);
-
+    chai.expect(monitor.onRootChanged).to.deep.equal([
+      ["B", "E"],
+      ["B", "D"],
+      ["D", "E"]]);
+    chai.expect(monitor.onAllInputsHandled).to.deep.equal(["D", "E"]);
+    chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal(["B"]);
+    chai.expect(monitor.onDeletedDependency).to.deep.equal([]);
   });
 });
 
