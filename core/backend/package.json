@@ -119,11 +119,9 @@
     "@azure/storage-blob": "^12.28.0",
     "form-data": "^4.0.4",
     "fs-extra": "^8.1.0",
-    "inversify": "^7.5.2",
     "json5": "^2.2.3",
     "linebreak": "^1.1.0",
     "multiparty": "^4.2.1",
-    "reflect-metadata": "^0.2.2",
     "semver": "^7.5.2",
     "touch": "^3.1.0",
     "ws": "^7.5.10"

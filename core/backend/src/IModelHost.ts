@@ -11,7 +11,6 @@ import "./IModelDb"; // DO NOT REMOVE OR MOVE THIS LINE!
 
 import { IModelNative, loadNativePlatform } from "./internal/NativePlatform";
 import * as os from "node:os";
-import "reflect-metadata"; // this has to be before @itwin/object-storage-* and @itwin/cloud-agnostic-core imports because those packages contain decorators that use this polyfill.
 import { NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, assert, BeEvent, BentleyStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
@@ -44,7 +43,7 @@ import { _getHubAccess, _hubAccess, _setHubAccess } from "./internal/Symbols";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
-// cspell:ignore nodereport fatalerror apicall alicloud rpcs inversify
+// cspell:ignore nodereport fatalerror apicall alicloud rpcs
 
 /** @internal */
 export interface CrashReportingConfigNameValuePair {
