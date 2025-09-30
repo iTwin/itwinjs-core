@@ -36,7 +36,7 @@
     "@itwin/map-layers-formats": "workspace:*",
     "@itwin/service-authorization": "^1.0.0",
     "@xmldom/xmldom": "~0.8.10",
-    "azurite": "^3.34.0",
+    "azurite": "^3.35.0",
     "fs-extra": "^8.1.0",
     "get-system-fonts": "^2.0.2"
   },
