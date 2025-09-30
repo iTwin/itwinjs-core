@@ -13,7 +13,7 @@ import { getRpcInterfaces } from "../common/Settings";
 import * as fs from "fs";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
-import { createDefaultClientStorage } from "@itwin/imodels-access-backend/lib/cjs/DefaultClientStorage";
+import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 
@@ -37,7 +37,7 @@ void (async () => {
   RpcConfiguration.developmentMode = true;
 
   // Start the backend
-  const iModelClient = new IModelsClient({ cloudStorage: createDefaultClientStorage(),  api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  const iModelClient = new IModelsClient({ cloudStorage: new AzureClientStorage(new BlockBlobClientWrapperFactory()),  api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
   const hubAccess = new BackendIModelsAccess(iModelClient);
   await IModelHost.startup({ hubAccess, cacheDir: path.join(__dirname, ".cache") });
 

@@ -6,7 +6,7 @@ import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { AuthorizationClient, BriefcaseId } from "@itwin/core-common";
 import { FrontendHubAccess, IModelIdArg } from "@itwin/core-frontend";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
-import { createDefaultClientStorage } from "@itwin/imodels-access-backend/lib/cjs/DefaultClientStorage";
+import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
 import { IModelsClient as AuthorIModelsClient, ReleaseBriefcaseParams } from "@itwin/imodels-client-authoring";
 import { Briefcase, IModelsClient as FrontendIModelsClient, GetBriefcaseListParams, GetIModelListParams, IModelScopedOperationParams, MinimalIModel, SPECIAL_VALUES_ME, toArray } from "@itwin/imodels-client-management";
 import { ITwinAccessClientWrapper } from "../../common/ITwinAccessClientWrapper";
@@ -76,7 +76,7 @@ export class TestHubFrontend extends FrontendIModelsAccess {
     };
 
     // Need to use the IModelsClient from the authoring package to be able to release the briefcase.
-    const iModelClient = new AuthorIModelsClient({ cloudStorage: createDefaultClientStorage(), api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+    const iModelClient = new AuthorIModelsClient({ cloudStorage: new AzureClientStorage(new BlockBlobClientWrapperFactory()), api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
     return iModelClient.briefcases.release(releaseBriefcaseParams);
   }
 }

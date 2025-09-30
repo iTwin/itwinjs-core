@@ -2291,9 +2291,15 @@ importers:
       '@itwin/imodels-access-backend':
         specifier: ^6.0.2
         version: 6.0.2(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(inversify@7.5.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)
+      '@itwin/imodels-client-authoring':
+        specifier: ^6.0.2
+        version: 6.0.2(inversify@7.5.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)
       '@itwin/itwins-client':
         specifier: ^1.6.1
         version: 1.6.1
+      '@itwin/object-storage-azure':
+        specifier: ^3.0.4
+        version: 3.0.4(inversify@7.5.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)
       '@itwin/oidc-signin-tool':
         specifier: ^4.4.1
         version: 4.4.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
@@ -2445,6 +2451,9 @@ importers:
       '@itwin/imodels-client-management':
         specifier: ^6.0.2
         version: 6.0.2
+      '@itwin/object-storage-azure':
+        specifier: ^3.0.4
+        version: 3.0.4(inversify@7.5.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)
       '@itwin/reality-data-client':
         specifier: ^1.2.1
         version: 1.2.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-geometry@..+core+geometry)
@@ -2620,9 +2629,15 @@ importers:
       '@itwin/imodels-access-frontend':
         specifier: ^6.0.2
         version: 6.0.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-frontend@..+core+frontend)
+      '@itwin/imodels-client-authoring':
+        specifier: ^6.0.2
+        version: 6.0.2(inversify@7.5.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)
       '@itwin/imodels-client-management':
         specifier: ^6.0.2
         version: 6.0.2
+      '@itwin/object-storage-azure':
+        specifier: ^3.0.4
+        version: 3.0.4(inversify@7.5.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)
       '@itwin/oidc-signin-tool':
         specifier: ^4.4.1
         version: 4.4.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
@@ -3018,9 +3033,15 @@ importers:
       '@itwin/imodels-access-frontend':
         specifier: ^6.0.2
         version: 6.0.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-frontend@..+core+frontend)
+      '@itwin/imodels-client-authoring':
+        specifier: ^6.0.2
+        version: 6.0.2(inversify@7.5.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)
       '@itwin/imodels-client-management':
         specifier: ^6.0.2
         version: 6.0.2
+      '@itwin/object-storage-azure':
+        specifier: ^3.0.4
+        version: 3.0.4(inversify@7.5.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)
       '@itwin/oidc-signin-tool':
         specifier: ^4.4.1
         version: 4.4.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)

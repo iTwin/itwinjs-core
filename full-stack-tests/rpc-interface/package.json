@@ -37,6 +37,8 @@
     "@itwin/imodels-access-backend": "^6.0.2",
     "@itwin/imodels-access-frontend": "^6.0.2",
     "@itwin/imodels-client-management": "^6.0.2",
+    "@itwin/imodels-client-authoring": "^6.0.2",
+    "@itwin/object-storage-azure": "^3.0.4",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
