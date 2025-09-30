@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BoundingSphere, Cartesian3, ColorGeometryInstanceAttribute, ComponentDatatype, Geometry, GeometryAttribute, GeometryInstance, Material, PerInstanceColorAppearance, Polyline, Primitive, PrimitiveCollection, PrimitiveType } from "cesium";
+import { BoundingSphere, ColorGeometryInstanceAttribute, ComponentDatatype, Geometry, GeometryAttribute, GeometryInstance, Material, PerInstanceColorAppearance, Polyline, Primitive, PrimitiveCollection, PrimitiveType } from "@cesium/engine";
 import { Loop, Path, Polyface, PolyfaceBuilder, StrokeOptions, SweepContour } from "@itwin/core-geometry";
 import { IModelConnection } from "@itwin/core-frontend";
 import { CesiumScene } from "../CesiumScene.js";
 import { type DepthOptions, PrimitiveConverter, type RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
-import { CesiumCoordinateConverter } from "./CesiumCoordinateConverter.js";
 import { DecorationPrimitiveEntry } from "./DecorationTypes.js";
+import { CesiumCoordinateConverter } from "./CesiumCoordinateConverter.js";
 
 export class ArcPrimitiveConverter extends PrimitiveConverter {
   protected readonly primitiveType: 'arc' | 'arc2d';
@@ -135,18 +135,15 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
       const arcPoints = strokes.getPoint3dArray();
 
       // Convert iTwin.js points to Cesium coordinates
-      const positions: Cartesian3[] = [];
-      for (const point of arcPoints) {
-        const cesiumPoint = converter.spatialToCesiumCartesian3(point);
-        positions.push(cesiumPoint);
-      }
+      const positions = this.convertPointsToCartesian3(arcPoints, converterIModel);
 
       // For non-filled arcs, use the stored scene reference to access polyline collection
       if (this._currentScene && this._currentScene.polylineCollection) {
         const polyline = this._currentScene.polylineCollection.add({
           positions,
           width: 2,
-          material: Material.fromType(Material.ColorType, { color })
+          material: Material.fromType(Material.ColorType, { color }),
+          ...this.getDepthOptions(_type ?? "world"),
         });
 
         return polyline;

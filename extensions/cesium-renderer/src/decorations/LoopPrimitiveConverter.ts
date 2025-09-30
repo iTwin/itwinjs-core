@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelConnection } from "@itwin/core-frontend";
 import { LineString3d, Loop, Point3d } from "@itwin/core-geometry";
-import { Cartesian3, ColorGeometryInstanceAttribute, GeometryInstance, PerInstanceColorAppearance, PolygonGeometry, PolygonHierarchy, Primitive, PrimitiveCollection } from "cesium";
+import { Cartesian3, ColorGeometryInstanceAttribute, GeometryInstance, PerInstanceColorAppearance, PolygonGeometry, PolygonHierarchy, Primitive, PrimitiveCollection } from "@cesium/engine";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
 import type { DecorationPrimitiveEntry, LoopEntry } from "./DecorationTypes.js";
@@ -107,7 +107,7 @@ export class LoopPrimitiveConverter extends PrimitiveConverter {
 
   private convertLoopToPositions(loop: Loop, iModel?: IModelConnection): Cartesian3[] {
     const points: Point3d[] = [];
-    
+
     // Process each child curve in the loop
     if (loop.children && Array.isArray(loop.children)) {
       for (const curve of loop.children) {

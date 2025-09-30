@@ -17,7 +17,7 @@ import {
   PrimitiveCollection,
   SphereGeometry,
   VertexFormat,
-} from "cesium";
+} from "@cesium/engine";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
 import { DecorationPrimitiveEntry, SolidPrimitiveEntry } from "./DecorationTypes.js";
@@ -65,7 +65,7 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     }
 
     const { fillColor } = colors;
-    const translucent = false; // Force opaque for debugging
+    const translucent = false;
 
     const geometryInstance = new GeometryInstance({
       geometry,

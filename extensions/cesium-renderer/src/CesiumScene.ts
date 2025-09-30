@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+<<<<<<< HEAD
 import { Code, EcefLocation, IModel, ViewDefinition3dProps } from "@itwin/core-common";
 import { IModelApp, IModelConnection, SpatialViewState, ViewState3d } from "@itwin/core-frontend";
 import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion, PerspectiveFrustum, PerspectiveOffCenterFrustum, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler } from "cesium";
@@ -47,6 +48,10 @@ const ecefLocProps = {
   }
 };
 const ecefLoc = new EcefLocation(ecefLocProps);
+=======
+import { IModelApp } from "@itwin/core-frontend";
+import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler } from "@cesium/engine";
+>>>>>>> cesium-renderer
 
 /** Options to configure a Cesium scene.
  * @internal

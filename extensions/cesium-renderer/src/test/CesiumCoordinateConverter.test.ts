@@ -7,7 +7,7 @@ import { describe, expect, it, vi } from "vitest";
 import { EcefLocation } from "@itwin/core-common";
 import { Point3d, Range3d, XYAndZ } from "@itwin/core-geometry";
 import type { IModelConnection } from "@itwin/core-frontend";
-import { Cartesian3 } from "cesium";
+import { Cartesian3 } from "@cesium/engine";
 import { CesiumCoordinateConverter } from "../decorations/CesiumCoordinateConverter.js";
 
 type SpatialToEcefFn = (point: XYAndZ) => Point3d;

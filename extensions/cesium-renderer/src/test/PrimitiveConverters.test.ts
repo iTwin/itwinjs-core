@@ -16,7 +16,7 @@ vi.mock("../decorations/PrimitiveConverterFactory.js", () => {
   return { PrimitiveConverterFactory: factoryStub };
 });
 
-import { Material, type PointPrimitive, type PointPrimitiveCollection, type Polyline, type PolylineCollection } from "cesium";
+import { Material, type PointPrimitive, type PointPrimitiveCollection, type Polyline, type PolylineCollection } from "@cesium/engine";
 import { ColorDef } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
 import type { RenderGraphic } from "@itwin/core-frontend";

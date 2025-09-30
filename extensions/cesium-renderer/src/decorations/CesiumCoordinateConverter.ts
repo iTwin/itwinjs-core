@@ -6,7 +6,7 @@
 import { EcefLocation, ViewDefinition3dProps } from "@itwin/core-common";
 import { Point3d, Range3d, XYAndZ } from "@itwin/core-geometry";
 import { IModelConnection } from "@itwin/core-frontend";
-import { Cartesian3, Cartographic as CesiumCartographic } from "cesium";
+import { Cartesian3, Cartographic as CesiumCartographic } from "@cesium/engine";
 import { CesiumCameraProps, createCesiumCameraProps } from "../CesiumCamera.js";
 
 /**

@@ -14,7 +14,7 @@ import {
   PolylineCollection,
   Primitive,
   PrimitiveCollection,
-} from "cesium";
+} from "@cesium/engine";
 import { ColorDef } from "@itwin/core-common";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverterFactory } from "./PrimitiveConverterFactory.js";
