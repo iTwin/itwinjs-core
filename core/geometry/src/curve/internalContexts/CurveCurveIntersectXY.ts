@@ -548,7 +548,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
     const conditionA = matrixA.conditionNumber();
     const conditionB = matrixB.conditionNumber();
-    // the first input arc is closer to circular
+    // order the arcs so that the first one we pass in is closer to circular
     if (conditionA > conditionB)
       this.dispatchArcArcThisOrder(cpA, matrixA, extendA0, extendA1, cpB, matrixB, extendB0, extendB1, reversed);
     else
