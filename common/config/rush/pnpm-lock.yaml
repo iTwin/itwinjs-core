@@ -1917,11 +1917,10 @@ importers:
         version: 5.6.2
 
   ../../extensions/cesium-renderer:
-    dependencies:
-      cesium:
-        specifier: 1.133.0
-        version: 1.133.0
     devDependencies:
+      '@cesium/engine':
+        specifier: 20.0.1
+        version: 20.0.1
       '@itwin/build-tools':
         specifier: workspace:*
         version: link:../../tools/build
@@ -3691,6 +3690,9 @@ importers:
       '@bentley/icons-generic-webfont':
         specifier: ^1.0.34
         version: 1.0.34
+      '@cesium/engine':
+        specifier: 20.0.1
+        version: 20.0.1
       '@itwin/appui-abstract':
         specifier: workspace:*
         version: link:../../ui/appui-abstract
@@ -4817,10 +4819,6 @@ packages:
 
   '@cesium/wasm-splats@0.1.0-alpha.2':
     resolution: {integrity: sha512-t9pMkknv31hhIbLpMa8yPvmqfpvs5UkUjgqlQv9SeO8VerCXOYnyP8/486BDaFrztM0A7FMbRjsXtNeKvqQghA==}
-
-  '@cesium/widgets@13.1.1':
-    resolution: {integrity: sha512-EIZCSLLJzG0BeNcKjDfQcNv+9KiI9TqqN0RveuZIu++FCs2kL29neImicWEZlSfX38xxQLaogmhZLh2pO73NPg==}
-    engines: {node: '>=20.19.0'}
 
   '@colors/colors@1.6.0':
     resolution: {integrity: sha512-Ir+AOibqzrIsL6ajt3Rz3LskB7OiMVHqltZmspbW/TJuTVuyOMirVqAkjfY6JISiLHgyNqicAC8AyHHGzNd/dA==}
@@ -6831,10 +6829,6 @@ packages:
 
   ccount@2.0.1:
     resolution: {integrity: sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg==}
-
-  cesium@1.133.0:
-    resolution: {integrity: sha512-6/MascpyDz2aMZE6k2sMgRZhg7HGpIs0Kois2GCuRuAT1y9ZnGp2BWMLPXXXIygvhVajz7wWaTicyGeF4BCTpw==}
-    engines: {node: '>=20.19.0'}
 
   chai-as-promised@7.1.1:
     resolution: {integrity: sha512-azL6xMoi+uxu6z4rhWQ1jbdUhOMhis2PvscD/xjLqNMkv3BPPp2JyyuTHOrf9BOosGpNQ11v6BKv/g57RXbiaA==}
@@ -9062,9 +9056,6 @@ packages:
   normalize-url@8.1.0:
     resolution: {integrity: sha512-X06Mfd/5aKsRHc0O0J5CUedwnPmnDtLF2+nq+KN9KSDlJHkPuh0JUviWjEWMe0SW/9TDdSLVPuk7L5gGTIA1/w==}
     engines: {node: '>=14.16'}
-
-  nosleep.js@0.12.0:
-    resolution: {integrity: sha512-9d1HbpKLh3sdWlhXMhU6MMH+wQzKkrgfRkYV0EBdvt99YJfj0ilCJrWRDYG2130Tm4GXbEoTCx5b34JSaP+HhA==}
 
   npm-normalize-package-bin@4.0.0:
     resolution: {integrity: sha512-TZKxPvItzai9kN9H/TkmCtx/ZN/hvr3vUycjlfmH0ootY9yFBzNOpiXAdIn1Iteqsvk4lQn6B5PTrt+n6h8k/w==}
@@ -11416,11 +11407,6 @@ snapshots:
 
   '@cesium/wasm-splats@0.1.0-alpha.2': {}
 
-  '@cesium/widgets@13.1.1':
-    dependencies:
-      '@cesium/engine': 20.0.1
-      nosleep.js: 0.12.0
-
   '@colors/colors@1.6.0': {}
 
   '@cspotcode/source-map-support@0.8.1':
@@ -12434,13 +12420,13 @@ snapshots:
   '@types/body-parser@1.19.6':
     dependencies:
       '@types/connect': 3.4.38
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/cacheable-request@6.0.3':
     dependencies:
       '@types/http-cache-semantics': 4.0.4
       '@types/keyv': 3.1.4
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
       '@types/responselike': 1.0.3
 
   '@types/chai-as-promised@7.1.0':
@@ -12590,11 +12576,11 @@ snapshots:
 
   '@types/jsonwebtoken@8.5.9':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/keyv@3.1.4':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/lodash@4.14.202': {}
 
@@ -12644,18 +12630,18 @@ snapshots:
 
   '@types/readable-stream@4.0.21':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/responselike@1.0.3':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/semver@7.3.10': {}
 
   '@types/send@0.17.5':
     dependencies:
       '@types/mime': 1.3.5
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   '@types/serve-static@1.15.8':
     dependencies:
@@ -12733,7 +12719,7 @@ snapshots:
 
   '@types/yauzl@2.10.3':
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
     optional: true
 
   '@typescript-eslint/eslint-plugin@8.44.1(@typescript-eslint/parser@8.44.1(eslint@9.31.0)(typescript@5.6.2))(eslint@9.31.0)(typescript@5.6.2)':
@@ -13631,11 +13617,6 @@ snapshots:
   canonical-path@1.0.0: {}
 
   ccount@2.0.1: {}
-
-  cesium@1.133.0:
-    dependencies:
-      '@cesium/engine': 20.0.1
-      '@cesium/widgets': 13.1.1
 
   chai-as-promised@7.1.1(chai@4.3.10):
     dependencies:
@@ -15489,7 +15470,7 @@ snapshots:
 
   jest-worker@27.5.1:
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
       merge-stream: 2.0.0
       supports-color: 8.1.1
 
@@ -16152,8 +16133,6 @@ snapshots:
 
   normalize-url@8.1.0: {}
 
-  nosleep.js@0.12.0: {}
-
   npm-normalize-package-bin@4.0.0: {}
 
   npm-run-all2@7.0.2:
@@ -16545,7 +16524,7 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
       long: 5.3.2
 
   protocols@2.0.2: {}
@@ -18102,7 +18081,7 @@ snapshots:
 
   wkx@0.5.0:
     dependencies:
-      '@types/node': 20.17.0
+      '@types/node': 20.17.58
 
   wms-capabilities@0.4.0:
     dependencies:

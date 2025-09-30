@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelApp } from "@itwin/core-frontend";
-import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler } from "cesium";
+import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler } from "@cesium/engine";
 
 /** Options to configure a Cesium scene.
  * @internal

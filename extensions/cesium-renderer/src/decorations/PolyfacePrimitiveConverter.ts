@@ -18,7 +18,7 @@ import {
   Primitive,
   PrimitiveCollection,
   PrimitiveType,
-} from "cesium";
+} from "@cesium/engine";
 import { CesiumScene } from "../CesiumScene.js";
 import { PrimitiveConverter, RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
 import type { DecorationPrimitiveEntry, PolyfaceEntry } from "./DecorationTypes.js";

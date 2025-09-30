@@ -1,9 +1,9 @@
-import { Cartesian3 } from "cesium";
+import { Cartesian3 } from "@cesium/engine";
 import { CesiumScene } from "../CesiumScene.js";
 
 export class CesiumCameraHelpers {
-  
-  /** 
+
+  /**
    * Ctrl + Arrow keys: Move camera position
    * Ctrl + W/S: Move forward/backward
    * Ctrl + A/D: Rotate view left/right
@@ -75,12 +75,12 @@ export class CesiumCameraHelpers {
     const currentHeading = camera.heading;
     const currentPitch = camera.pitch;
     const currentRoll = camera.roll;
-    
+
     let newHeading = currentHeading - rotateAmount;
     if (newHeading < -Math.PI) {
       newHeading += 2 * Math.PI;
     }
-    
+
     camera.setView({
       destination: currentPosition,
       orientation: {
@@ -98,12 +98,12 @@ export class CesiumCameraHelpers {
     const currentHeading = camera.heading;
     const currentPitch = camera.pitch;
     const currentRoll = camera.roll;
-    
+
     let newHeading = currentHeading + rotateAmount;
     if (newHeading > Math.PI) {
       newHeading -= 2 * Math.PI;
     }
-    
+
     camera.setView({
       destination: currentPosition,
       orientation: {
@@ -157,12 +157,12 @@ export class CesiumCameraHelpers {
     const currentHeading = camera.heading;
     const currentPitch = camera.pitch;
     const currentRoll = camera.roll;
-    
+
     let newHeading = currentHeading - rotateAmount;
     if (newHeading < -Math.PI) {
       newHeading += 2 * Math.PI;
     }
-    
+
     camera.setView({
       destination: currentPosition,
       orientation: {
@@ -180,12 +180,12 @@ export class CesiumCameraHelpers {
     const currentHeading = camera.heading;
     const currentPitch = camera.pitch;
     const currentRoll = camera.roll;
-    
+
     let newHeading = currentHeading + rotateAmount;
     if (newHeading > Math.PI) {
       newHeading -= 2 * Math.PI;
     }
-    
+
     camera.setView({
       destination: currentPosition,
       orientation: {

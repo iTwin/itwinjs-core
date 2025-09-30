@@ -9,8 +9,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "copy:cesium-assets": "cpx \"./node_modules/cesium/Build/Cesium/ThirdParty/**/*\" ./lib/public/cesium/ThirdParty/ && cpx \"./node_modules/cesium/Build/Cesium/Workers/**/*\" ./lib/public/cesium/Workers/ && cpx \"./node_modules/cesium/Build/Cesium/Assets/**/*\" ./lib/public/cesium/Assets/ && cpx \"./node_modules/cesium/Build/Cesium/Widgets/**/*\" ./lib/public/cesium/Widgets/",
-    "build": "npm run -s build:cjs && npm run -s build:esm && npm run -s copy:cesium-assets",
+    "build": "npm run -s build:cjs && npm run -s build:esm",
     "build:cjs": "internal-tools build-cjs",
     "build:esm": "tsc 1>&2 --outDir lib/esm",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json",
@@ -38,12 +37,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
+    "@cesium/engine": "20.0.1",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-bentley": "workspace:*"
   },
   "devDependencies": {
+    "@cesium/engine": "20.0.1",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
@@ -59,8 +60,5 @@
     "rimraf": "^6.0.1",
     "typescript": "~5.6.2",
     "vitest": "^3.0.6"
-  },
-  "dependencies": {
-    "cesium": "1.133.0"
   }
 }

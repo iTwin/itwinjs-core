@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Cartesian3, Color, PointPrimitive, PointPrimitiveCollection } from "cesium";
+import { Cartesian3, Color, PointPrimitive, PointPrimitiveCollection } from "@cesium/engine";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "../CesiumScene.js";
@@ -68,7 +68,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter<PointStringCoord
 
   protected override getDepthOptions(decorationType: string): DepthOptions {
     const baseOptions = super.getDepthOptions(decorationType);
-    
+
     const isOverlay = decorationType === 'worldOverlay' || decorationType === 'viewOverlay';
     if (isOverlay) {
       return {

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Cartesian3, Material, Polyline, PolylineCollection } from "cesium";
+import { Cartesian3, Material, Polyline, PolylineCollection } from "@cesium/engine";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Path, Point3d, StrokeOptions } from "@itwin/core-geometry";
 import { CesiumScene } from "../CesiumScene.js";

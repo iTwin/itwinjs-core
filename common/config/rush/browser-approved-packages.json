@@ -139,6 +139,10 @@
       "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
+      "name": "@cesium/engine",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
       "name": "@itwin/appui-abstract",
       "allowedCategories": [ "edit", "extensions", "frontend", "internal" ]
     },

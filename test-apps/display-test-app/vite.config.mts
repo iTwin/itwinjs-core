@@ -15,6 +15,7 @@ import path from "path";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
+const cesiumEngineDir = "node_modules/@cesium/engine/";
 // This is the base url for static files that CesiumJS needs to load.
 // Set to an empty string to place the files at the site's root path
 // In our case, it is "cesium", because the cesium-renderer package copies the assets to "lib/public/cesium"
@@ -125,6 +126,9 @@ export default defineConfig(() => {
               return regex.exec(fullPath)![2];
             },
           },
+          { src: `${cesiumEngineDir}/Build/Workers`, dest: cesiumBaseUrl },
+          { src: `${cesiumEngineDir}/Build/ThirdParty`, dest: cesiumBaseUrl },
+          { src: `${cesiumEngineDir}/Source/Assets`, dest: cesiumBaseUrl },
         ],
         overwrite: true,
         copyOnce: true, // only during initial build or on change
