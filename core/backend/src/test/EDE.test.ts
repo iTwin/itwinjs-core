@@ -387,6 +387,7 @@ export class Engine {
     return outGraph;
   }
   public static countNodes(iModelDb: IModelDb): number {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return iModelDb.withPreparedStatement("SELECT COUNT(*) FROM Network.Node", (stmt) => {
       if (stmt.step() === DbResult.BE_SQLITE_ROW) {
         return stmt.getValue(0).getInteger();
@@ -395,7 +396,8 @@ export class Engine {
     });
   }
   public static countEdges(iModelDb: IModelDb): number {
-    return iModelDb.withPreparedStatement("SELECT COUNT(*) FROM Network.InputDrivesOutput", (stmt) => {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    return iModelDb.withPreparedStatement("SELECT COUNT(*) FROM [Network].[InputDrivesOutput]", (stmt) => {
       if (stmt.step() === DbResult.BE_SQLITE_ROW) {
         return stmt.getValue(0).getInteger();
       }
@@ -404,6 +406,7 @@ export class Engine {
   }
   public static queryEdgesForSource(iModelDb: IModelDb, sourceId: Id64String): InputDrivesOutputProps[] {
     const edges: InputDrivesOutputProps[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModelDb.withPreparedStatement("SELECT [ECInstanceId], [SourceECInstanceId], [TargetECInstanceId], [prop], [Status], [Priority] FROM [Network].[InputDrivesOutput] WHERE [SourceECInstanceId] = ?", (stmt) => {
       stmt.bindId(1, sourceId);
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -422,6 +425,7 @@ export class Engine {
   }
   public static queryEdgesForTarget(iModelDb: IModelDb, targetId: Id64String): InputDrivesOutputProps[] {
     const edges: InputDrivesOutputProps[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModelDb.withPreparedStatement("SELECT [ECInstanceId], [SourceECInstanceId], [TargetECInstanceId], [prop], [Status], [Priority] FROM [Network].[InputDrivesOutput] WHERE [TargetECInstanceId] = ?", (stmt) => {
       stmt.bindId(1, targetId);
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -492,11 +496,12 @@ export class Engine {
     await iModelDb.locks.acquireLocks({ exclusive: nodeId });
     return iModelDb.elements.deleteElement(nodeId);
   }
-  public static async updateNode(iModelDb: IModelDb, props: Partial<NodeElementProps>) {
+  public static async updateNodeProps(iModelDb: IModelDb, props: Partial<NodeElementProps>) {
     await iModelDb.locks.acquireLocks({ exclusive: props.id });
     return iModelDb.elements.updateElement(props);
   }
-  public static async updateNodeWithName(iModelDb: IModelDb, userLabel: string) {
+  public static async updateNode(iModelDb: IModelDb, userLabel: string) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const id = iModelDb.withPreparedStatement("SELECT [ECInstanceId] FROM [Network].[Node] WHERE [UserLabel] = ?", (stmt) => {
       stmt.bindString(1, userLabel);
       if (stmt.step() === DbResult.BE_SQLITE_ROW)
@@ -506,7 +511,31 @@ export class Engine {
     if (!id) {
       throw new Error(`Node with userLabel ${userLabel} not found`);
     }
-    await this.updateNode(iModelDb, { id });
+    await this.updateNodeProps(iModelDb, { id });
+  }
+  public static async deleteEdge(iModelDb: IModelDb, from: string, to: string) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    const edge = iModelDb.withPreparedStatement(`
+      SELECT [IDo].[ECInstanceId], [IDo].[SourceECInstanceId], [IDo].[TargetECInstanceId]
+      FROM [Network].[InputDrivesOutput] [IDo]
+      JOIN [Network].[Node] [Src] ON [Src].[ECInstanceId] = [IDo].[SourceECInstanceId]
+      JOIN [Network].[Node] [Tgt] ON [Tgt].[ECInstanceId] = [IDo].[TargetECInstanceId]
+      WHERE [Src].[UserLabel] = ? AND [Tgt].[UserLabel] = ?`, (stmt) => {
+      stmt.bindString(1, from);
+      stmt.bindString(2, to);
+      if (stmt.step() === DbResult.BE_SQLITE_ROW)
+        return {
+          id: stmt.getValue(0).getId(),
+          classFullName: InputDrivesOutput.classFullName,
+          sourceId: stmt.getValue(1).getId(),
+          targetId: stmt.getValue(2).getId(),
+        } as RelationshipProps;
+      return undefined;
+    });
+    if (!edge) {
+      throw new Error(`Edge from ${from} to ${to} not found`);
+    }
+    iModelDb.relationships.deleteInstance(edge);
   }
   public static async insertEdge(iModelDb: IModelDb, sourceId: Id64String, targetId: Id64String, prop: string) {
     const props: InputDrivesOutputProps = {
@@ -518,10 +547,6 @@ export class Engine {
       priority: 0
     };
     return iModelDb.relationships.insertInstance(props);
-  }
-  public static async deleteEdge(iModelDb: IModelDb, edgeId: Id64String) {
-    const edge = iModelDb.relationships.getInstanceProps(InputDrivesOutput.classFullName, edgeId);
-    return iModelDb.relationships.deleteInstance(edge);
   }
 }
 
@@ -708,9 +733,10 @@ describe.only("EDE Tests", () => {
     graph.addEdge("B", ["E", "D"]);
     graph.addEdge("C", ["D"]);
     graph.addEdge("D", ["E"]);
-    await Engine.createGraph(b1, modelId, graph);
     const monitor = new ElementDrivesElementEventMonitor(b1);
 
+    // create a network
+    await Engine.createGraph(b1, modelId, graph);
     b1.saveChanges();
     chai.expect(monitor.onRootChanged).to.deep.equal([
       ["A", "B"],
@@ -722,12 +748,11 @@ describe.only("EDE Tests", () => {
     chai.expect(monitor.onAllInputsHandled).to.deep.equal(["B", "C", "D", "E"]);
     chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal(["A"]);
     chai.expect(monitor.onDeletedDependency).to.deep.equal([]);
-
     monitor.clear();
 
-    await Engine.updateNodeWithName(b1, "B");
+    // update a node in network
+    await Engine.updateNode(b1, "B");
     b1.saveChanges();
-
     chai.expect(monitor.onRootChanged).to.deep.equal([
       ["B", "E"],
       ["B", "D"],
@@ -735,7 +760,14 @@ describe.only("EDE Tests", () => {
     chai.expect(monitor.onAllInputsHandled).to.deep.equal(["D", "E"]);
     chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal(["B"]);
     chai.expect(monitor.onDeletedDependency).to.deep.equal([]);
+    monitor.clear();
+
+    // delete edge in network
+    await Engine.deleteEdge(b1, "B", "E");
+    b1.saveChanges();
+    chai.expect(monitor.onRootChanged).to.deep.equal([]);
+    chai.expect(monitor.onAllInputsHandled).to.deep.equal([]);
+    chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal([]);
+    chai.expect(monitor.onDeletedDependency).to.deep.equal([["B", "E"]]);
   });
 });
-
-
