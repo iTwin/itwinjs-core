@@ -3312,58 +3312,16 @@ describe("iModel", () => {
     testImodel.close();
     assert.isFalse(testImodel.isOpen);
 
-    const queryOperations = [
-      {
-        name: "withPreparedSqliteStatement",
-        operation: () => testImodel.withPreparedSqliteStatement("SELECT 1", () => { }),
-        expectedErrorMessage: "Cannot query a closed Db"
-      },
-      {
-        name: "prepareSqliteStatement",
-        operation: () => testImodel.prepareSqliteStatement("SELECT 1"),
-        expectedErrorMessage: "Cannot query a closed Db"
-      },
-      {
-        name: "prepareStatement",
-        operation: () => testImodel.prepareStatement("SELECT 1"), // eslint-disable-line @typescript-eslint/no-deprecated
-        expectedErrorMessage: "Cannot query a closed Db"
-      },
-      {
-        name: "withPreparedStatement",
-        operation: () => testImodel.withPreparedStatement("SELECT ECInstanceId FROM BisCore:Element LIMIT 1", () => { }), // eslint-disable-line @typescript-eslint/no-deprecated
-        expectedErrorMessage: "Cannot query a closed Db"
-      },
-      {
-        name: "elements.queryChildren",
-        operation: () => testImodel.elements.queryChildren(IModel.rootSubjectId),
-        expectedErrorMessage: "Cannot query a closed Db"
-      },
-      {
-        name: "elements.getAspects",
-        operation: () => testImodel.elements.getAspects("0x1", "WrongSchema:WrongClass"),
-        expectedErrorMessage: "db is not open"
-      }
-    ];
-
-    for (const testCase of queryOperations) {
-      try {
-        testCase.operation();
-        assert.fail(`${testCase.name} should have thrown an error`);
-      } catch (error: any) {
-        // Verify error message
-        assert.include(error.message, testCase.expectedErrorMessage,
-          `${testCase.name} should contain "${testCase.expectedErrorMessage}" in message, got "${error.message}"`);
-      }
-    }
-
-    // Test createQueryReader (async operation)
-    const asyncError = await getIModelError((async () => {
-      const reader = testImodel.createQueryReader("SELECT 1");
-      await reader.step();
-    })());
-
-    assert.isDefined(asyncError, "createQueryReader should throw an error");
-    assert.equal(asyncError!.errorNumber, DbResult.BE_SQLITE_ERROR);
-    assert.include(asyncError!.message, "db not open");
+    const closedDbError = "Cannot query a closed Db";
+    expect(() => testImodel.withPreparedSqliteStatement("SELECT 1", () => { })).to.throw(closedDbError);
+    expect(() => testImodel.withPreparedSqliteStatement("SELECT 1", () => { })).to.throw(closedDbError);
+    expect(() => testImodel.prepareSqliteStatement("SELECT 1")).to.throw(closedDbError);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect(() => testImodel.prepareStatement("SELECT 1")).to.throw(closedDbError);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    expect(() => testImodel.withPreparedStatement("SELECT ECInstanceId FROM BisCore:Element LIMIT 1", () => { })).to.throw(closedDbError);
+    expect(() => testImodel.elements.queryChildren(IModel.rootSubjectId)).to.throw(closedDbError);
+    expect(() => testImodel.elements.getAspects("0x1", "WrongSchema:WrongClass")).to.throw("db is not open");
+    expect(() => testImodel.createQueryReader("SELECT 1")).to.throw("db not open");
   });
 });
