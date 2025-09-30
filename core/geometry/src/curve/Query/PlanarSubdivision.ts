@@ -373,7 +373,7 @@ export class PlanarSubdivision {
       const edges: LoopCurveLoopCurve[] = [];
       for (const faceSeed of faceSeeds) {
         const isNullFace = this.isNullFace(faceSeed);
-        const announceEdge = isNullFace ? () => {} : (he: HalfEdge, curveC: CurvePrimitive, loopC: Loop) => {
+        const announceEdge = isNullFace ? undefined : (he: HalfEdge, curveC: CurvePrimitive, loopC: Loop) => {
           const mate = this.getNonNullEdgeMate(graph, he);
           if (mate !== undefined) {
             const e = edgeMap.get(mate);
