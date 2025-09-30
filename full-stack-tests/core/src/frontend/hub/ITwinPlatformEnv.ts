@@ -6,7 +6,6 @@ import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { AuthorizationClient, BriefcaseId } from "@itwin/core-common";
 import { FrontendHubAccess, IModelIdArg } from "@itwin/core-frontend";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
-import { AccessTokenAdapter } from "@itwin/imodels-access-common";
 import { createDefaultClientStorage } from "@itwin/imodels-access-backend/lib/cjs/DefaultClientStorage";
 import { IModelsClient as AuthorIModelsClient, ReleaseBriefcaseParams } from "@itwin/imodels-client-authoring";
 import { Briefcase, IModelsClient as FrontendIModelsClient, GetBriefcaseListParams, GetIModelListParams, IModelScopedOperationParams, MinimalIModel, SPECIAL_VALUES_ME, toArray } from "@itwin/imodels-client-management";
@@ -32,14 +31,20 @@ export interface TestFrontendHubAccess extends FrontendHubAccess {
 export class TestHubFrontend extends FrontendIModelsAccess {
   private getScopedOperationParams(arg: IModelIdArg): IModelScopedOperationParams {
     return {
-      authorization: AccessTokenAdapter.toAuthorizationCallback(async () => arg.accessToken),
+      authorization: async () => {
+        const [scheme, token] = arg.accessToken.split(" ");
+        return Promise.resolve({ scheme, token });
+      },
       iModelId: arg.iModelId,
     };
   }
 
   public async queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined> {
     const getIModelListParams: GetIModelListParams = {
-      authorization: AccessTokenAdapter.toAuthorizationCallback(async () => arg.accessToken),
+      authorization: async () => {
+        const [scheme, token] = arg.accessToken.split(" ");
+        return Promise.resolve({ scheme, token });
+      },
       urlParams: {
         iTwinId: arg.iTwinId,
         name: arg.iModelName,

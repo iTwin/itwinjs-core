@@ -50,7 +50,6 @@
     "@itwin/hypermodeling-frontend": "workspace:*",
     "@itwin/imodels-access-backend": "^6.0.2",
     "@itwin/imodels-access-frontend": "^6.0.2",
-    "@itwin/imodels-access-common": "^6.0.2",
     "@itwin/imodels-client-authoring": "^6.0.2",
     "@itwin/imodels-client-management": "^6.0.2",
     "@itwin/reality-data-client": "^1.2.1",

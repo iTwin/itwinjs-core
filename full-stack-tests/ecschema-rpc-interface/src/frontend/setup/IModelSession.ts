@@ -8,7 +8,6 @@ import { IModelsClient } from "@itwin/imodels-client-management";
 import { ITwin, ITwinsAccessClient, ITwinsAPIResponse, ITwinSubClass } from "@itwin/itwins-client";
 import { IModelData } from "../../common/Settings";
 import { AccessToken } from "@itwin/core-bentley";
-import { AccessTokenAdapter } from "@itwin/imodels-access-common";
 
 export class IModelSession {
 
@@ -50,7 +49,10 @@ export class IModelSession {
     if (iModelData.useName) {
       const imodelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
       const iModels = imodelClient.iModels.getRepresentationList({
-        authorization: AccessTokenAdapter.toAuthorizationCallback(async () => accessToken),
+        authorization: async () => {
+          const [scheme, token] = accessToken.split(" ");
+          return Promise.resolve({ scheme, token });
+        },
         urlParams: {
           iTwinId,
           name: iModelData.name,
