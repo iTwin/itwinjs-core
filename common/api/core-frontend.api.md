@@ -8072,6 +8072,8 @@ export interface QuantityTypeDefinition {
 
 // @internal
 export class QuantityTypeFormatsProvider implements FormatsProvider {
+    // (undocumented)
+    [Symbol.dispose](): void;
     constructor();
     // (undocumented)
     getFormat(name: string): Promise<FormatDefinition | undefined>;
