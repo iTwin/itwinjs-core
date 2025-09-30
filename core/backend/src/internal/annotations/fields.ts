@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECSqlValueType, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, RelationshipProps, TextBlock } from "@itwin/core-common";
+import { ECSqlValueType, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
 import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
@@ -257,11 +257,9 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
 // of fields whose display strings changed as a result.
 export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext): number {
   let numUpdated = 0;
-  for (const paragraph of textBlock.paragraphs) {
-    for (const run of paragraph.runs) {
-      if (run.type === "field" && updateField(run, context)) {
-        ++numUpdated;
-      }
+  for (const { child } of traverseTextBlockComponent(textBlock)) {
+    if (child.type === "field" && updateField(child, context)) {
+      ++numUpdated;
     }
   }
 

@@ -154,6 +154,7 @@ import { LightLocationProps } from '@itwin/core-common';
 import { LineLayoutResult } from '@itwin/core-common';
 import { LinePixels } from '@itwin/core-common';
 import { LineStyleProps } from '@itwin/core-common';
+import { List } from '@itwin/core-common';
 import { LocalBriefcaseProps } from '@itwin/core-common';
 import { LocalDirName } from '@itwin/core-common';
 import { LocalFileName } from '@itwin/core-common';
@@ -260,6 +261,7 @@ import { TextAnnotationFrameShape } from '@itwin/core-common';
 import { TextAnnotationLeader } from '@itwin/core-common';
 import { TextAnnotationProps } from '@itwin/core-common';
 import { TextBlock } from '@itwin/core-common';
+import { TextBlockComponent } from '@itwin/core-common';
 import { TextBlockGeometryProps } from '@itwin/core-common';
 import { TextBlockLayoutResult } from '@itwin/core-common';
 import { TextFrameStyleProps } from '@itwin/core-common';
@@ -293,6 +295,7 @@ import { ViewQueryParams } from '@itwin/core-common';
 import { ViewStateLoadProps } from '@itwin/core-common';
 import { ViewStateProps } from '@itwin/core-common';
 import { ViewStoreRpc } from '@itwin/core-common';
+import { WritableXAndY } from '@itwin/core-geometry';
 import * as ws from 'ws';
 import { XAndY } from '@itwin/core-geometry';
 import { XYAndZ } from '@itwin/core-geometry';
@@ -1583,10 +1586,10 @@ export interface ComputeFrameArgs {
 export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2d[];
 
 // @beta
-export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
+export interface ComputeGraphemeOffsetsArgs extends LayoutTextArgs {
     graphemeCharIndexes: number[];
-    paragraphIndex: number;
     runLayoutResult: RunLayoutResult;
+    source: TextBlockComponent;
 }
 
 // @beta
@@ -1626,7 +1629,7 @@ export interface ComputeRangesForTextLayoutArgs {
     // (undocumented)
     italic: boolean;
     // (undocumented)
-    lineHeight: number;
+    textHeight: number;
     // (undocumented)
     widthFactor: number;
 }
@@ -4243,17 +4246,21 @@ export class KnownLocations {
 }
 
 // @beta
-export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout;
-
-// @beta
-export interface LayoutTextBlockArgs {
+export interface LayoutTextArgs {
     // @internal
     computeTextRange?: ComputeRangesForTextLayout;
     // @internal
     findFontId?: FindFontId;
     iModel: IModelDb;
-    textBlock: TextBlock;
     textStyleResolver: TextStyleResolver;
+}
+
+// @beta
+export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout;
+
+// @beta
+export interface LayoutTextBlockArgs extends LayoutTextArgs {
+    textBlock: TextBlock;
 }
 
 // @internal
@@ -4266,31 +4273,31 @@ export class LightLocation extends SpatialLocationElement {
 
 // @beta
 export class LineLayout {
-    constructor(source: Paragraph);
+    constructor(source: List | Run | Paragraph, style: TextStyleSettingsProps, context?: LayoutContext, depth?: number);
     // (undocumented)
     append(run: RunLayout): void;
-    // (undocumented)
     get back(): RunLayout;
     // (undocumented)
+    depth: number;
     get isEmpty(): boolean;
     // (undocumented)
     justificationRange: Range2d;
     // (undocumented)
     lengthFromLastTab: number;
+    get marker(): RunLayout | undefined;
+    set marker(value: RunLayout | undefined);
     // (undocumented)
-    offsetFromDocument: {
-        x: number;
-        y: number;
-    };
+    offsetFromDocument: WritableXAndY;
     // (undocumented)
     range: Range2d;
     // (undocumented)
+    runRange: Range2d;
     get runs(): ReadonlyArray<RunLayout>;
     // (undocumented)
-    source: Paragraph;
+    source: List | Run | Paragraph;
     stringify(): string;
     // (undocumented)
-    toResult(textBlock: TextBlock): LineLayoutResult;
+    toResult(): LineLayoutResult;
 }
 
 // @public @preview
@@ -5385,7 +5392,7 @@ export class RunLayout {
     // (undocumented)
     charOffset: number;
     // (undocumented)
-    static create(source: Run, parentParagraph: Paragraph, context: LayoutContext): RunLayout;
+    static create(source: Run, context: LayoutContext, cumulativeOverrides: TextStyleSettingsProps): RunLayout;
     // (undocumented)
     denominatorRange?: Range2d;
     // (undocumented)
@@ -5411,7 +5418,7 @@ export class RunLayout {
     // (undocumented)
     style: TextStyleSettings;
     // (undocumented)
-    toResult(paragraph: Paragraph): RunLayoutResult;
+    toResult(): RunLayoutResult;
 }
 
 // @alpha
@@ -6031,6 +6038,9 @@ export class SqliteChangesetReader implements Disposable {
     static openGroup(args: {
         readonly changesetFiles: string[];
     } & SqliteChangesetReaderArgs): SqliteChangesetReader;
+    static openInMemory(args: SqliteChangesetReaderArgs & {
+        db: IModelDb;
+    }): SqliteChangesetReader;
     static openLocalChanges(args: Omit<SqliteChangesetReaderArgs, "db"> & {
         db: IModelDb;
         includeInMemoryChanges?: true;
@@ -6530,9 +6540,10 @@ export interface TextLayoutRanges {
 export class TextStyleResolver {
     constructor(args: TextStyleResolverArgs);
     readonly blockSettings: TextStyleSettings;
-    resolveParagraphSettings(paragraph: Paragraph): TextStyleSettings;
-    resolveRunSettings(paragraph: Paragraph, run: Run): TextStyleSettings;
-    resolveTextAnnotationLeaderSettings(leader: TextAnnotationLeader): TextStyleSettings;
+    resolveIndentation(styleOverrides: TextStyleSettingsProps, depth: number): number;
+    // (undocumented)
+    resolveMarkerText(overrides: TextStyleSettingsProps, index: number): string;
+    resolveSettings(overrides: TextStyleSettingsProps, isLeader?: boolean): TextStyleSettings;
 }
 
 // @beta

@@ -10,7 +10,7 @@ import { Id64String } from "@itwin/core-bentley";
 
 
 export function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
-  const range = new Range2d(0, 0, args.chars.length, args.lineHeight);
+  const range = new Range2d(0, 0, args.chars.length, args.textHeight);
   return { layout: range, justification: range };
 }
 

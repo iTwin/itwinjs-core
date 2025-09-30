@@ -404,6 +404,7 @@ public;type;GeometryStreamProps
 public;interface;GeometrySummaryOptions
 public;interface;GeometrySummaryRequestProps
 public;enum;GeometrySummaryVerbosity
+beta;function;getMarkerText
 internal;function;getMaximumMajorTileFormatVersion
 internal;const;getPullChangesIpcChannel
 internal;function;getTileObjectReference
@@ -528,6 +529,10 @@ public;enum;LinePixels
 public;namespace;LineStyle
 public;interface;LineStyleProps
 preview;interface;LineStyleProps
+beta;class;List
+beta;interface;ListMarker
+beta;enum;ListMarkerEnumerator
+beta;interface;ListProps
 public;type;LocalAlignedBox3d
 public;interface;LocalBriefcaseProps
 public;type;LocalDirName
@@ -894,6 +899,7 @@ beta;namespace;SqliteError
 beta;type;StackedFractionType
 public;type;StandaloneOpenOptions
 beta;type;StorageValue
+beta;type;StructuralTextBlockComponent
 public;class;SubCategoryAppearance
 public;namespace;SubCategoryAppearance
 public;class;SubCategoryOverride
@@ -930,12 +936,13 @@ beta;class;TextBlockComponent
 beta;interface;TextBlockComponentProps
 beta;interface;TextBlockGeometryProps
 beta;type;TextBlockGeometryPropsEntry
-beta;type;TextBlockJustification
 beta;interface;TextBlockLayoutResult
 beta;interface;TextBlockMargins
 beta;interface;TextBlockProps
+beta;interface;TextBlockStringifyContext
 beta;interface;TextBlockStringifyOptions
 beta;interface;TextFrameStyleProps
+beta;type;TextJustification
 beta;interface;TextLeaderStyleProps
 beta;class;TextRun
 beta;interface;TextRunProps
@@ -990,6 +997,7 @@ internal;interface;TileTreeMetadata
 internal;interface;TileTreeProps
 public;interface;TileVersionInfo
 public;interface;TranslationOptions
+beta;function;traverseTextBlockComponent
 alpha;enum;TreeFlags
 public;class;Tween
 public;type;TweenCallback

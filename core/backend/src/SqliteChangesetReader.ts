@@ -133,6 +133,17 @@ export class SqliteChangesetReader implements Disposable {
     return reader;
   }
   /**
+   * Open in-memory changes for the given iModel.
+   * @param args - The arguments for opening in-memory changes.
+   * @returns SqliteChangesetReader instance
+   */
+  public static openInMemory(args: SqliteChangesetReaderArgs & { db: IModelDb }): SqliteChangesetReader {
+    const reader = new SqliteChangesetReader(args.db);
+    reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
+    reader._nativeReader.openInMemoryChanges(args.db[_nativeDb], args.invert ?? false);
+    return reader;
+  }
+  /**
    * Writes the changeset to a file.
    * @note can be use with openGroup() or openLocalChanges() to persist changeset.
    * @param args - The arguments for writing to the file.

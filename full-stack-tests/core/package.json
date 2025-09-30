@@ -56,7 +56,7 @@
     "azurite": "^3.34.0",
     "chai-as-promised": "^7.1.1",
     "chai": "^4.3.10",
-    "electron": "^37.2.0",
+    "electron": "^38.1.2",
     "fs-extra": "^8.1.0",
     "sinon-chai": "^3.7.0",
     "sinon": "^17.0.2"

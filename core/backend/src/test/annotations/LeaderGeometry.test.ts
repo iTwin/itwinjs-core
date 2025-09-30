@@ -14,12 +14,12 @@ describe("LeaderGeometry", () => {
   let builder: MockBuilder;
   let defaultParams: GeometryParams;
 
-  const textBlock = TextBlock.create({ styleOverrides: { fontName: "Arial", color: ColorDef.black.toJSON(), leader: {wantElbow: false} } });
-  textBlock.appendRun(TextRun.create({ content: "Hello", styleOverrides: { fontName: "Arial" } }));
+  const textBlock = TextBlock.create({ styleOverrides: { font: { name: "Arial" }, color: ColorDef.black.toJSON(), leader: {wantElbow: false} } });
+  textBlock.appendRun(TextRun.create({ content: "Hello", styleOverrides: { font: { name: "Arial" } } }));
   textBlock.appendRun(LineBreakRun.create({
-    styleOverrides: { fontName: "Arial" },
+    styleOverrides: { font: { name: "Arial" } },
   }));
-  textBlock.appendRun(TextRun.create({ content: "World", styleOverrides: { fontName: "Arial" } }));
+  textBlock.appendRun(TextRun.create({ content: "World", styleOverrides: { font: { name: "Arial" } } }));
 
   const frame: TextFrameStyleProps = { borderWeight: 1, shape: "rectangle" };
 
@@ -30,7 +30,7 @@ describe("LeaderGeometry", () => {
     offset: { x: 0, y: 0 },
   });
 
-  const findTextStyle = (id: Id64String) => TextStyleSettings.fromJSON(id === "0x34" ? { lineSpacingFactor: 12, fontName: "block", frame } : { lineSpacingFactor: 99, fontName: "run", frame });
+  const findTextStyle = (id: Id64String) => TextStyleSettings.fromJSON(id === "0x34" ? { lineSpacingFactor: 12, font: { name: "block" }, frame } : { lineSpacingFactor: 99, font: { name: "run" }, frame });
   const textStyleResolver = new TextStyleResolver({
     textBlock,
     textStyleId: "0x34",
@@ -176,9 +176,9 @@ describe("LeaderGeometry", () => {
         expect(result).to.be.true;
         const terminatorLines = builder.geometries[1] as LineString3d;
         const terminatorLength = LineSegment3d.create(terminatorLines.points[0], terminatorLines.points[1]).curveLength();
-        const lineHeight = 1;
-        const terminatorWidth = (leaders[0].styleOverrides?.leader?.terminatorWidthFactor ?? 1) * lineHeight;
-        const terminatorHeight = (leaders[0].styleOverrides?.leader?.terminatorHeightFactor ?? 1) * lineHeight;
+        const textHeight = 1;
+        const terminatorWidth = (leaders[0].styleOverrides?.leader?.terminatorWidthFactor ?? 1) * textHeight;
+        const terminatorHeight = (leaders[0].styleOverrides?.leader?.terminatorHeightFactor ?? 1) * textHeight;
         //  terminator length is calculated based on the terminator width and height factors.
         const expectedTerminatorLength = Math.sqrt(terminatorWidth * terminatorWidth + terminatorHeight * terminatorHeight);
         expect(terminatorLength).to.be.closeTo(expectedTerminatorLength, 0.01);
