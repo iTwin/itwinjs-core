@@ -37,8 +37,6 @@ pull_request_rules:
     actions:
       backport:
         branches:
-          # Automatically backport to all active release branches
-          # Update these branch names as needed for your project
           - "release/5.2.x"
           - "release/5.0.x"
           - "release/4.9.x"
