@@ -307,15 +307,15 @@ describe("Checkpoints", () => {
       iModel.restartDefaultTxn();
       stats = container.queryBcvStats({ addClientInformation: true });
       expect(stats.populatedCacheslots).to.equal(populatedCacheslots);
-      expect(stats.lockedCacheslots).to.equal(0);
-      expect(stats.activeClients).to.equal(0);
-      expect(stats.totalClients).to.equal(1);
+      expect(parseInt(stats.lockedCacheslots, 16)).to.equal(0);
+      expect(parseInt(stats.activeClients ?? "0xffffffffffffffff", 16)).to.equal(0);
+      expect(parseInt(stats.totalClients ?? "0x0", 16)).to.equal(1);
       const prefetch = CloudSqlite.startCloudPrefetch(container, `${testChangeSet.id}.bim`);
       stats = container.queryBcvStats({ addClientInformation: true });
-      expect(stats.ongoingPrefetches).to.equal(1);
+      expect(parseInt(stats.ongoingPrefetches ?? "0x0", 16)).to.equal(1);
       prefetch.cancel();
       stats = container.queryBcvStats({ addClientInformation: true });
-      expect(stats.ongoingPrefetches).to.equal(0);
+      expect(parseInt(stats.ongoingPrefetches ?? "0xffffffffffffffff", 16)).to.equal(0);
 
       // Open multiple imodels from same container
       const iModel2 = await SnapshotDb.openCheckpointFromRpc({
@@ -325,21 +325,21 @@ describe("Checkpoints", () => {
         changeset: testChangeSetFirstVersion,
       });
       stats = container.queryBcvStats({ addClientInformation: true });
-      expect(stats.totalClients).to.equal(2);
-      expect(stats.activeClients).to.equal(1);
-      expect(stats.attachedContainers).to.equal(1);
+      expect(parseInt(stats.totalClients ?? "0x0", 16)).to.equal(2);
+      expect(parseInt(stats.activeClients ?? "0x0", 16)).to.equal(1);
+      expect(parseInt(stats.attachedContainers ?? "0x0", 16)).to.equal(1);
       iModel2.restartDefaultTxn();
       stats = container.queryBcvStats({ addClientInformation: true });
-      expect(stats.activeClients).to.equal(0);
-      expect(stats.totalClients).to.equal(2);
+      expect(parseInt(stats.activeClients ?? "0xffffffffffffffff", 16)).to.equal(0);
+      expect(parseInt(stats.totalClients ?? "0x0", 16)).to.equal(2);
 
       iModel.close();
       stats = container.queryBcvStats({ addClientInformation: true });
-      expect(stats.totalClients).to.equal(1);
+      expect(parseInt(stats.totalClients ?? "0x0", 16)).to.equal(1);
 
       iModel2.close();
       stats = container.queryBcvStats({ addClientInformation: true });
-      expect(stats.totalClients).to.equal(0);
+      expect(parseInt(stats.totalClients ?? "0xffffffffffffffff", 16)).to.equal(0);
     });
 
     it("should be able to open multiple checkpoints in same container when sas expires", async () => {
