@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Return bad values when unit labels aren't matched during quantity parsing",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}

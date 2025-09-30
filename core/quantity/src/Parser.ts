@@ -556,6 +556,8 @@ export class Parser {
         if (unitConversion !== undefined)
           return unitConversion;
       }
+      // if there were unique unit labels but not matched to any units, throw an error
+      if (uniqueUnitLabels.length > 0) throw new QuantityError(QuantityStatus.UnitLabelSuppliedButNotMatched, `The unit label(s) ${uniqueUnitLabels.join(", ")} could not be matched to a known unit.`);
     }
     return unitConversion;
   }
@@ -613,7 +615,13 @@ export class Parser {
     }
 
     const defaultUnit = format.units && format.units.length > 0 ? format.units[0][0] : undefined;
-    defaultUnitConversion = defaultUnitConversion ? defaultUnitConversion : Parser.getDefaultUnitConversion(tokens, unitsConversions, defaultUnit);
+    try {
+      defaultUnitConversion = defaultUnitConversion ? defaultUnitConversion : Parser.getDefaultUnitConversion(tokens, unitsConversions, defaultUnit);
+    } catch (e: unknown) {
+      // If we failed to get the default unit conversion, we need to return an error.
+      if (e instanceof QuantityError && e.errorNumber === QuantityStatus.UnitLabelSuppliedButNotMatched)
+        return { ok: false, error: ParseError.UnitLabelSuppliedButNotMatched };
+    }
 
     if (format.type === FormatType.Bearing && format.units !== undefined && format.units.length > 0) {
       const units = format.units;
