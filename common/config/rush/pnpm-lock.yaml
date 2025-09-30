@@ -2291,9 +2291,6 @@ importers:
       '@itwin/imodels-access-backend':
         specifier: ^6.0.2
         version: 6.0.2(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(inversify@7.5.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)
-      '@itwin/imodels-client-authoring':
-        specifier: ^6.0.2
-        version: 6.0.2(inversify@7.5.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)
       '@itwin/itwins-client':
         specifier: ^1.6.1
         version: 1.6.1
@@ -2623,9 +2620,6 @@ importers:
       '@itwin/imodels-access-frontend':
         specifier: ^6.0.2
         version: 6.0.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-frontend@..+core+frontend)
-      '@itwin/imodels-client-authoring':
-        specifier: ^6.0.2
-        version: 6.0.2(inversify@7.5.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)
       '@itwin/imodels-client-management':
         specifier: ^6.0.2
         version: 6.0.2
@@ -3024,9 +3018,6 @@ importers:
       '@itwin/imodels-access-frontend':
         specifier: ^6.0.2
         version: 6.0.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-frontend@..+core+frontend)
-      '@itwin/imodels-client-authoring':
-        specifier: ^6.0.2
-        version: 6.0.2(inversify@7.5.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)
       '@itwin/imodels-client-management':
         specifier: ^6.0.2
         version: 6.0.2
@@ -3556,9 +3547,6 @@ importers:
       '@itwin/imodels-access-frontend':
         specifier: ^6.0.2
         version: 6.0.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-frontend@..+core+frontend)
-      '@itwin/imodels-client-authoring':
-        specifier: ^6.0.2
-        version: 6.0.2(inversify@7.5.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)
       '@itwin/imodels-client-management':
         specifier: ^6.0.2
         version: 6.0.2
@@ -3749,9 +3737,6 @@ importers:
       '@itwin/imodels-access-frontend':
         specifier: ^6.0.2
         version: 6.0.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-frontend@..+core+frontend)
-      '@itwin/imodels-client-authoring':
-        specifier: ^6.0.2
-        version: 6.0.2(inversify@7.5.2(reflect-metadata@0.2.2))(reflect-metadata@0.2.2)
       '@itwin/imodels-client-management':
         specifier: ^6.0.2
         version: 6.0.2

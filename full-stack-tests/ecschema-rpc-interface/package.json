@@ -39,7 +39,6 @@
     "@itwin/ecschema-rpcinterface-impl": "workspace:*",
     "@itwin/imodels-access-backend": "^6.0.2",
     "@itwin/imodels-access-frontend": "^6.0.2",
-    "@itwin/imodels-client-authoring": "^6.0.2",
     "@itwin/imodels-client-management": "^6.0.2",
     "@itwin/oidc-signin-tool": "^4.4.1",
     "@itwin/presentation-common": "workspace:*",

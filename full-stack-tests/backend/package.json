@@ -54,7 +54,6 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/imodels-access-backend": "^6.0.2",
-    "@itwin/imodels-client-authoring": "^6.0.2",
     "@itwin/itwins-client": "^1.6.1",
     "@itwin/oidc-signin-tool": "^4.4.1",
     "@itwin/perf-tools": "workspace:*",
