@@ -27,3 +27,18 @@ pull_request_rules:
         message: |
           This pull request is now in conflicts. Could you fix it @{{author}}? 🙏
           To fixup this pull request, you can check out it locally. See documentation: https://help.github.com/articles/checking-out-pull-requests-locally/
+
+  - name: Automatic backport for Security fixes
+    conditions:
+      - and:
+          - merged
+          - base=master
+          - label="Security"
+    actions:
+      backport:
+        branches:
+          # Automatically backport to all active release branches
+          # Update these branch names as needed for your project
+          - "release/5.2.x"
+          - "release/5.0.x"
+          - "release/4.9.x"
