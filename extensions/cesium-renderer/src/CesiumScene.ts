@@ -5,7 +5,7 @@
 
 import { Code, EcefLocation, IModel, ViewDefinition3dProps } from "@itwin/core-common";
 import { IModelApp, IModelConnection, SpatialViewState, ViewState3d } from "@itwin/core-frontend";
-import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion, PerspectiveFrustum, PerspectiveOffCenterFrustum, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler } from "cesium";
+import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion, PerspectiveFrustum, PerspectiveOffCenterFrustum, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler } from "@cesium/engine";
 import { createCesiumCameraProps } from "./CesiumCamera.js";
 import { Angle, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
 
