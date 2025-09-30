@@ -9,7 +9,6 @@ import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { IModelHost, IModelHostOptions } from "@itwin/core-backend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
-import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { AuthorizationClient, IModelReadRpcInterface, IModelTileRpcInterface } from "@itwin/core-common";
 import { TestBrowserAuthorizationClient } from "@itwin/oidc-signin-tool";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
@@ -34,8 +33,7 @@ export async function initializeBackend() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
 
   const iModelHost: IModelHostOptions = { profileName: "display-performance-test-app" };
-  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
-  iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
+  iModelHost.hubAccess = new BackendIModelsAccess({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
   iModelHost.cacheDir = process.env.BRIEFCASE_CACHE_LOCATION;
   iModelHost.authorizationClient = await initializeAuthorizationClient();
 

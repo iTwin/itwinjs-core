@@ -22,9 +22,7 @@ import {
   SpatialCategory,
 } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
-import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
-import { createDefaultClientStorage } from "@itwin/imodels-access-backend/lib/cjs/DefaultClientStorage";
 import * as path from "path";
 import { Reporter } from "@itwin/perf-tools";
 
@@ -82,8 +80,7 @@ describe("CloseIModalTest", () => {
 
     // Preliminary setup required for the test
     const iModelHost: IModelHostOptions = {};
-    const iModelClient = new IModelsClient({ cloudStorage: createDefaultClientStorage(), api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
-    iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
+    iModelHost.hubAccess = new BackendIModelsAccess({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
     iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir
     await IModelHost.startup(iModelHost);
     // write schema to disk as we do not have api to import xml directly

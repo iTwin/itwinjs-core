@@ -4,9 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelHost, IModelHostOptions } from "@itwin/core-backend";
-import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
-import { createDefaultClientStorage } from "@itwin/imodels-access-backend/lib/cjs/DefaultClientStorage";
-import { IModelsClient } from "@itwin/imodels-client-authoring";
+import { BackendIModelsAccess, BackendIModelsAccessOptions } from "@itwin/imodels-access-backend";
 import { emptyDirSync, mkdirsSync } from "fs-extra";
 import * as fs from "fs";
 import * as path from "path";
@@ -31,8 +29,8 @@ loadEnv(path.join(__dirname, "..", "..", "..", ".env"));
 export async function startupForIntegration(cfg?: IModelHostOptions) {
   cfg = cfg ?? {};
   cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
-  const iModelClient = new IModelsClient({ cloudStorage: createDefaultClientStorage(), api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
-  cfg.hubAccess = new BackendIModelsAccess(iModelClient);
+  const backendIModelsAccessOptions: BackendIModelsAccessOptions = { api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } };
+  cfg.hubAccess = new BackendIModelsAccess(backendIModelsAccessOptions);
   mkdirsSync(cfg.cacheDir);
   emptyDirSync(cfg.cacheDir);
   return IModelHost.startup(cfg);
