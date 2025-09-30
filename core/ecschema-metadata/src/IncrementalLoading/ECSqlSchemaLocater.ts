@@ -56,7 +56,10 @@ interface SchemaItemStubRow {
 }
 
 interface SchemaRow {
-  schema: string
+  ecSpecMajorVersion: number,
+  ecSpecMinorVersion: number,
+  customAttributes: string,
+  items: string,
 }
 
 interface SchemaItemRow {
@@ -160,18 +163,24 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
 
   /**
    * Gets the [[SchemaProps]] without schemaItems for the given schema name.
-   * @param schemaName The name of the Schema.
+   * @param schemaKey The key of the Schema.
    * @param context The [[SchemaContext]] to use for resolving references.
    * @returns
    * @internal
    */
-  private async getSchemaNoItems(schemaName: string, context: SchemaContext): Promise<SchemaProps | undefined> {
-    const schemaRows = await this.executeQuery<SchemaRow>(FullSchemaQueries.schemaNoItemsQuery, { parameters: { schemaName } });
+  private async getSchemaNoItems(schemaKey: SchemaKey, context: SchemaContext): Promise<SchemaProps | undefined> {
+    const schemaRows = await this.executeQuery<SchemaRow>(FullSchemaQueries.schemaNoItemsQuery, { parameters: { schemaName: schemaKey.name } });
     const schemaRow = schemaRows[0];
     if (schemaRow === undefined)
       return undefined;
 
-    const schema = JSON.parse(schemaRow.schema) as SchemaProps;
+    const schema = {
+      ... await this.createSchemaProps(schemaKey, context),
+      ecSpecMajorVersion: schemaRow.ecSpecMajorVersion,
+      ecSpecMinorVersion: schemaRow.ecSpecMinorVersion,
+      customAttributes: JSON.parse(schemaRow.customAttributes),
+    };
+    
     const schemaInfos = await this._schemaInfoCache.getSchemasByContext(context) ?? [];
     return SchemaParser.parse(schema, schemaInfos);
   }
@@ -462,18 +471,20 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
     if (schemaRow === undefined)
       return undefined;
 
-    // Map SchemaItemRow array, [{item: SchemaItemProps}], to array of SchemaItemProps.
-    const schema = JSON.parse(schemaRow.schema) as SchemaProps;
-    if (schema.items) {
-      (schema as any).items = (schema.items as any).map((itemRow: SchemaItemRow) => { return itemRow.item; });
-    }
+    const schema = {
+      ... await this.createSchemaProps(schemaKey, context),
+      ecSpecMajorVersion: schemaRow.ecSpecMajorVersion,
+      ecSpecMinorVersion: schemaRow.ecSpecMinorVersion,
+      customAttributes: JSON.parse(schemaRow.customAttributes),
+      items: JSON.parse(schemaRow.items),
+    };
 
     const schemaInfos = await this._schemaInfoCache.getSchemasByContext(context) ?? [];
     return SchemaParser.parse(schema, schemaInfos);
   }
 
   private async getFullSchemaMultipleQueries(schemaKey: SchemaKey, context: SchemaContext): Promise<SchemaProps | undefined> {
-    const schema = await this.getSchemaNoItems(schemaKey.name, context) as MutableSchemaProps;
+    const schema = await this.getSchemaNoItems(schemaKey, context) as MutableSchemaProps;
     if (!schema)
       return undefined;
 

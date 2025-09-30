@@ -192,7 +192,7 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
       description: schemaInfo.description,
       label: schemaInfo.label,
       references: schemaReferences,
-      items: {}
+      items: undefined,
     };
 
     schemaInfo.references.forEach((ref) => {
