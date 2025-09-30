@@ -193,7 +193,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
     for (const ref of vp.getTileTreeRefs()) {
       const tree = ref.treeOwner.load();
       if (tree?.modelId === modelId) {
-        return ref.createGeometryTreeReference();
+        return ref.createGeometryTreeReference({ reprojectGeometry: true });
       }
     }
 
