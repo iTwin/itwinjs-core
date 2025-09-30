@@ -65,7 +65,7 @@ export class SolidPrimitivePrimitiveConverter extends PrimitiveConverter {
     }
 
     const { fillColor } = colors;
-    const translucent = false; // Force opaque for debugging
+    const translucent = false;
 
     const geometryInstance = new GeometryInstance({
       geometry,
