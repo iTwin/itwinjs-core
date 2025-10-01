@@ -154,6 +154,7 @@ import { LightLocationProps } from '@itwin/core-common';
 import { LineLayoutResult } from '@itwin/core-common';
 import { LinePixels } from '@itwin/core-common';
 import { LineStyleProps } from '@itwin/core-common';
+import { List } from '@itwin/core-common';
 import { LocalBriefcaseProps } from '@itwin/core-common';
 import { LocalDirName } from '@itwin/core-common';
 import { LocalFileName } from '@itwin/core-common';
@@ -260,6 +261,7 @@ import { TextAnnotationFrameShape } from '@itwin/core-common';
 import { TextAnnotationLeader } from '@itwin/core-common';
 import { TextAnnotationProps } from '@itwin/core-common';
 import { TextBlock } from '@itwin/core-common';
+import { TextBlockComponent } from '@itwin/core-common';
 import { TextBlockGeometryProps } from '@itwin/core-common';
 import { TextBlockLayoutResult } from '@itwin/core-common';
 import { TextFrameStyleProps } from '@itwin/core-common';
@@ -293,6 +295,7 @@ import { ViewQueryParams } from '@itwin/core-common';
 import { ViewStateLoadProps } from '@itwin/core-common';
 import { ViewStateProps } from '@itwin/core-common';
 import { ViewStoreRpc } from '@itwin/core-common';
+import { WritableXAndY } from '@itwin/core-geometry';
 import * as ws from 'ws';
 import { XAndY } from '@itwin/core-geometry';
 import { XYAndZ } from '@itwin/core-geometry';
@@ -316,12 +319,15 @@ export class AnnotationTextStyle extends DefinitionElement {
     protected constructor(props: AnnotationTextStyleProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, settings?: TextStyleSettingsProps, description?: string): AnnotationTextStyle;
+    static create(iModelDb: IModelDb, arg: TextStyleCreateArgs): AnnotationTextStyle;
     static createCode(iModel: IModelDb, definitionModelId: CodeScopeProps, name: string): Code;
+    protected static readonly _customHandledProps: CustomHandledProperty[];
     description?: string;
+    static deserialize(props: DeserializeEntityArgs): AnnotationTextStyleProps;
     static fromJSON(props: AnnotationTextStyleProps, iModel: IModelDb): AnnotationTextStyle;
     protected static onInsert(arg: OnElementPropsArg): void;
     protected static onUpdate(arg: OnElementPropsArg): void;
+    static serialize(props: AnnotationTextStyleProps, iModel: IModelDb): ECSqlRow;
     settings: TextStyleSettings;
     toJSON(): AnnotationTextStyleProps;
 }
@@ -1050,15 +1056,15 @@ export namespace CloudSqlite {
     }
     // @internal
     export interface BcvStats {
-        readonly activeClients?: number;
-        readonly attachedContainers?: number;
-        readonly lockedCacheslots: number;
-        readonly memoryHighwater?: number;
-        readonly memoryUsed?: number;
-        readonly ongoingPrefetches?: number;
-        readonly populatedCacheslots: number;
-        readonly totalCacheslots: number;
-        readonly totalClients?: number;
+        readonly activeClients?: string;
+        readonly attachedContainers?: string;
+        readonly lockedCacheslots: string;
+        readonly memoryHighwater?: string;
+        readonly memoryUsed?: string;
+        readonly ongoingPrefetches?: string;
+        readonly populatedCacheslots: string;
+        readonly totalCacheslots: string;
+        readonly totalClients?: string;
     }
     // @internal
     export interface BcvStatsFilterOptions {
@@ -1583,10 +1589,10 @@ export interface ComputeFrameArgs {
 export function computeGraphemeOffsets(args: ComputeGraphemeOffsetsArgs): Range2d[];
 
 // @beta
-export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
+export interface ComputeGraphemeOffsetsArgs extends LayoutTextArgs {
     graphemeCharIndexes: number[];
-    paragraphIndex: number;
     runLayoutResult: RunLayoutResult;
+    source: TextBlockComponent;
 }
 
 // @beta
@@ -1626,7 +1632,7 @@ export interface ComputeRangesForTextLayoutArgs {
     // (undocumented)
     italic: boolean;
     // (undocumented)
-    lineHeight: number;
+    textHeight: number;
     // (undocumented)
     widthFactor: number;
 }
@@ -4243,17 +4249,21 @@ export class KnownLocations {
 }
 
 // @beta
-export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout;
-
-// @beta
-export interface LayoutTextBlockArgs {
+export interface LayoutTextArgs {
     // @internal
     computeTextRange?: ComputeRangesForTextLayout;
     // @internal
     findFontId?: FindFontId;
     iModel: IModelDb;
-    textBlock: TextBlock;
     textStyleResolver: TextStyleResolver;
+}
+
+// @beta
+export function layoutTextBlock(args: LayoutTextBlockArgs): TextBlockLayout;
+
+// @beta
+export interface LayoutTextBlockArgs extends LayoutTextArgs {
+    textBlock: TextBlock;
 }
 
 // @internal
@@ -4266,31 +4276,31 @@ export class LightLocation extends SpatialLocationElement {
 
 // @beta
 export class LineLayout {
-    constructor(source: Paragraph);
+    constructor(source: List | Run | Paragraph, style: TextStyleSettingsProps, context?: LayoutContext, depth?: number);
     // (undocumented)
     append(run: RunLayout): void;
-    // (undocumented)
     get back(): RunLayout;
     // (undocumented)
+    depth: number;
     get isEmpty(): boolean;
     // (undocumented)
     justificationRange: Range2d;
     // (undocumented)
     lengthFromLastTab: number;
+    get marker(): RunLayout | undefined;
+    set marker(value: RunLayout | undefined);
     // (undocumented)
-    offsetFromDocument: {
-        x: number;
-        y: number;
-    };
+    offsetFromDocument: WritableXAndY;
     // (undocumented)
     range: Range2d;
     // (undocumented)
+    runRange: Range2d;
     get runs(): ReadonlyArray<RunLayout>;
     // (undocumented)
-    source: Paragraph;
+    source: List | Run | Paragraph;
     stringify(): string;
     // (undocumented)
-    toResult(textBlock: TextBlock): LineLayoutResult;
+    toResult(): LineLayoutResult;
 }
 
 // @public @preview
@@ -5385,7 +5395,7 @@ export class RunLayout {
     // (undocumented)
     charOffset: number;
     // (undocumented)
-    static create(source: Run, parentParagraph: Paragraph, context: LayoutContext): RunLayout;
+    static create(source: Run, context: LayoutContext, cumulativeOverrides: TextStyleSettingsProps): RunLayout;
     // (undocumented)
     denominatorRange?: Range2d;
     // (undocumented)
@@ -5411,7 +5421,7 @@ export class RunLayout {
     // (undocumented)
     style: TextStyleSettings;
     // (undocumented)
-    toResult(paragraph: Paragraph): RunLayoutResult;
+    toResult(): RunLayoutResult;
 }
 
 // @alpha
@@ -6031,6 +6041,9 @@ export class SqliteChangesetReader implements Disposable {
     static openGroup(args: {
         readonly changesetFiles: string[];
     } & SqliteChangesetReaderArgs): SqliteChangesetReader;
+    static openInMemory(args: SqliteChangesetReaderArgs & {
+        db: IModelDb;
+    }): SqliteChangesetReader;
     static openLocalChanges(args: Omit<SqliteChangesetReaderArgs, "db"> & {
         db: IModelDb;
         includeInMemoryChanges?: true;
@@ -6415,6 +6428,12 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
     static get className(): string;
 }
 
+// @internal
+export const TEXT_ANNOTATION_JSON_VERSION = "1.0.0";
+
+// @internal
+export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.0";
+
 // @public @preview
 export class TextAnnotation2d extends AnnotationElement2d {
     protected constructor(props: TextAnnotation2dProps, iModel: IModelDb);
@@ -6422,8 +6441,12 @@ export class TextAnnotation2d extends AnnotationElement2d {
     static get className(): string;
     // @beta
     static create(iModelDb: IModelDb, arg: TextAnnotation2dCreateArgs): TextAnnotation2d;
+    // @internal
+    protected static readonly _customHandledProps: CustomHandledProperty[];
     // @beta
     defaultTextStyle?: TextAnnotationUsesTextStyleByDefault;
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): TextAnnotation2dProps;
     static fromJSON(props: TextAnnotation2dProps, iModel: IModelDb): TextAnnotation2d;
     getAnnotation(): TextAnnotation | undefined;
     // @internal (undocumented)
@@ -6436,11 +6459,14 @@ export class TextAnnotation2d extends AnnotationElement2d {
     protected static onUpdate(arg: OnElementPropsArg): void;
     // @internal (undocumented)
     static onUpdated(arg: OnElementIdArg): void;
+    // @beta
+    static serialize(props: TextAnnotation2dProps, iModel: IModelDb): ECSqlRow;
     setAnnotation(annotation: TextAnnotation): void;
     toJSON(): TextAnnotation2dProps;
-    protected static updateGeometry(iModelDb: IModelDb, props: TextAnnotation2dProps): void;
     // @internal (undocumented)
     updateTextBlocks(textBlocks: TextBlockAndId[]): void;
+    // @beta
+    protected static validateVersionAndUpdateGeometry(arg: OnElementPropsArg): void;
 }
 
 // @beta
@@ -6450,7 +6476,7 @@ export interface TextAnnotation2dCreateArgs {
     defaultTextStyleId?: Id64String;
     model: Id64String;
     placement: Placement2dProps;
-    textAnnotationData?: TextAnnotationProps;
+    textAnnotationProps?: TextAnnotationProps;
 }
 
 // @public @preview
@@ -6460,8 +6486,12 @@ export class TextAnnotation3d extends GraphicalElement3d {
     static get className(): string;
     // @beta
     static create(iModelDb: IModelDb, arg: TextAnnotation3dCreateArgs): TextAnnotation3d;
+    // @internal
+    protected static readonly _customHandledProps: CustomHandledProperty[];
     // @beta
     defaultTextStyle?: TextAnnotationUsesTextStyleByDefault;
+    // @beta
+    static deserialize(props: DeserializeEntityArgs): TextAnnotation3dProps;
     static fromJSON(props: TextAnnotation3dProps, iModel: IModelDb): TextAnnotation3d;
     getAnnotation(): TextAnnotation | undefined;
     // @internal (undocumented)
@@ -6474,11 +6504,14 @@ export class TextAnnotation3d extends GraphicalElement3d {
     protected static onUpdate(arg: OnElementPropsArg): void;
     // @internal (undocumented)
     static onUpdated(arg: OnElementIdArg): void;
+    // @beta
+    static serialize(props: TextAnnotation3dProps, iModel: IModelDb): ECSqlRow;
     setAnnotation(annotation: TextAnnotation): void;
     toJSON(): TextAnnotation3dProps;
-    protected static updateGeometry(iModelDb: IModelDb, props: TextAnnotation3dProps): void;
     // @internal (undocumented)
     updateTextBlocks(textBlocks: TextBlockAndId[]): void;
+    // @beta
+    protected static validateVersionAndUpdateGeometry(arg: OnElementPropsArg): void;
 }
 
 // @beta
@@ -6488,7 +6521,7 @@ export interface TextAnnotation3dCreateArgs {
     defaultTextStyleId?: Id64String;
     model: Id64String;
     placement: Placement3dProps;
-    textAnnotationData?: TextAnnotationProps;
+    textAnnotationProps?: TextAnnotationProps;
 }
 
 // @beta
@@ -6527,12 +6560,21 @@ export interface TextLayoutRanges {
 }
 
 // @beta
+export interface TextStyleCreateArgs {
+    definitionModelId: Id64String;
+    description?: string;
+    name: string;
+    settings?: TextStyleSettingsProps;
+}
+
+// @beta
 export class TextStyleResolver {
     constructor(args: TextStyleResolverArgs);
     readonly blockSettings: TextStyleSettings;
-    resolveParagraphSettings(paragraph: Paragraph): TextStyleSettings;
-    resolveRunSettings(paragraph: Paragraph, run: Run): TextStyleSettings;
-    resolveTextAnnotationLeaderSettings(leader: TextAnnotationLeader): TextStyleSettings;
+    resolveIndentation(styleOverrides: TextStyleSettingsProps, depth: number): number;
+    // (undocumented)
+    resolveMarkerText(overrides: TextStyleSettingsProps, index: number): string;
+    resolveSettings(overrides: TextStyleSettingsProps, isLeader?: boolean): TextStyleSettings;
 }
 
 // @beta

@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { RelatedElement, RelationshipProps, TextBlock } from "@itwin/core-common";
+import { RelatedElement, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { ElementDrivesElement } from "../Relationship";
 import { IModelDb } from "../IModelDb";
 import { Element } from "../Element";
@@ -110,12 +110,11 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
     const sourceToRelationship = new Map<Id64String, Id64String | null>();
     const blocks = annotationElement.getTextBlocks();
+
     for (const block of blocks) {
-      for (const paragraph of block.textBlock.paragraphs) {
-        for (const run of paragraph.runs) {
-          if (run.type === "field" && isValidSourceId(run.propertyHost.elementId)) {
-            sourceToRelationship.set(run.propertyHost.elementId, null);
-          }
+      for (const { child } of traverseTextBlockComponent(block.textBlock)) {
+        if (child.type === "field" && isValidSourceId(child.propertyHost.elementId)) {
+          sourceToRelationship.set(child.propertyHost.elementId, null);
         }
       }
     }

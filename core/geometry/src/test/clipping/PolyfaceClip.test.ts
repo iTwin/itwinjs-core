@@ -1273,7 +1273,7 @@ describe("PolyfaceClip", () => {
             const area = knownAreaXY ? knownAreaXY : RegionOps.computeXYArea(regionXY);
             if (ck.testDefined(area, `${label}: region area computed`)) {
               const projectedArea = PolyfaceQuery.sumFacetAreas(drapeMesh, sweepDir ? sweepDir : regionNormal);
-              ck.testCoordinateWithToleranceFactor(Math.abs(area), Math.abs(projectedArea), 1000, `${label}: projected area of draped mesh agrees with tool region area`);
+              ck.testNearNumber(Math.abs(area), Math.abs(projectedArea), 0.005, `${label}: projected area of draped mesh agrees with tool region area`);
             }
           }
         }

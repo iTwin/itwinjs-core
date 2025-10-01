@@ -10,6 +10,7 @@ import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { Arc3d } from "../../curve/Arc3d";
+import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection";
 import { CurveFactory } from "../../curve/CurveFactory";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
@@ -1182,6 +1183,48 @@ describe("RegionOps", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "constructAllXYRegionLoops");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("constructAllXYRegionLoops2", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const testCases: AnyCurve[][] = [];
+    // original test case: at tol=0.5, the left end of line1 sits inside a Manhattan tol-ball at the intersection with line0, and is skipped from the graph
+    const line0 = LineString3d.create([[30.55100017538586, 18.348248783237576, 10.984954476606127], [34.18540073622215, 16.104189376546724, 10.984954476606127]]);
+    const line1 = LineString3d.create([[30.66028077796634, 17.53205103504317, 10.984954476606127], [34.03919883795024, 20.6730171189719, 10.984954476606127]]);
+    const line2 = LineString3d.create([[32.86823543229491, 20.519132339710257, 10.984954476606127], [36.50191586768882, 18.048229643642387, 10.984954476606127]]);
+    const line3 = LineString3d.create([[36.527027943203905, 18.031153432292136, 10.984954476606127], [34.18540073622215, 16.10418937654672, 10.984954476606127]]);
+    const curves0: AnyCurve[] = [line0, line1, line2, line3];
+    testCases.push(curves0);
+    // this is why tol=0 graph has only 7 edges; the last edge touches no others, and so is ignored:
+    ck.testLT(0, line0.endPoint().distance(line3.endPoint()), "lines 0 and 3 do not end in the same point");
+    // manufactured test case
+    const gap = 0.0304;
+    const line = LineSegment3d.create(Point3d.create(0, 9), Point3d.create(10, 1));
+    const length = line.curveLength();
+    const path = CurveChainWithDistanceIndex.createCapture(Path.create(line));
+    const curves1: AnyCurve[] = [];
+    curves1.push(LineSegment3d.create(Point3d.create(-1, -1), Point3d.create(6, 6)));
+    curves1.push(LineString3d.create(Point3d.create(-2, 1), Point3d.create(6, -3), Point3d.create(10, 1)));
+    curves1.push(LineSegment3d.create(line.startPoint(), path.moveSignedDistanceFromFraction(0, length - gap, false).point));
+    testCases.push(curves1);
+    for (const testCase of testCases) {
+      x0 = 0;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, testCase, x0);
+      for (const tol of [0.0, undefined, 0.1, 0.5]) {
+        const signedLoops = RegionOps.constructAllXYRegionLoops(testCase, tol);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoops.map((component) => component.positiveAreaLoops).flat(), x0 += 10);
+        ck.testExactNumber(1, signedLoops.length, `tol ${tol} results in one component`);
+        if (tol === undefined || tol < gap)
+          ck.testExactNumber(0, signedLoops[0].positiveAreaLoops.length, `tol ${tol} < gap ${gap} results in no positive loops`);
+        else
+          ck.testExactNumber(1, signedLoops[0].positiveAreaLoops.length, `tol ${tol} results in 1 positive loop`);
+        // NOTE: the negative area loop has danglers! This is WAD.
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "constructAllXYRegionLoops2");
     expect(ck.getNumErrors()).toBe(0);
   });
 

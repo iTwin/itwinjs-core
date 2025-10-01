@@ -252,6 +252,7 @@ public;class;RecurseToCurvesGeometryHandler
 public;class;RecursiveCurveProcessor
 public;class;RecursiveCurveProcessorWithStack
 public;enum;RegionBinaryOpType
+public;interface;RegionBooleanXYOptions
 internal;class;RegionMomentsXY
 public;class;RegionOps
 public;class;ReusableObjectCache
