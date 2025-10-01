@@ -177,7 +177,7 @@ jobs:
             displayName: rush lint-deprecation
 
           # We need to rebuild presentation-common after running the lint-deprecation rule
-          # to ensure that post-process-json-schema.json is updated correctly.
+          # to ensure that ruleset.schema.json is updated correctly.
           - bash: node common/scripts/install-run-rush.js build --to @itwin/presentation-common
             displayName: rush build to presentation-common
             env:
