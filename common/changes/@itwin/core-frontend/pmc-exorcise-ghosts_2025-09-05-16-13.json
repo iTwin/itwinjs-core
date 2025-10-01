@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix 'ghost' elements when using GraphicalEditingScope with model masking.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

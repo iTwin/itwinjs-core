@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/analytical-backend",
+      "comment": "Revert analytical-backend from pure esm to cjs/esm",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/analytical-backend"
+}

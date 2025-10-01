@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Improve frame rate during interactive editing.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
