@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix an exception when terrain is enabled.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -13,7 +13,7 @@ import { NodeKey } from "./Key.js";
 /**
  * Data structure that describes a tree node.
  * @public
- * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export interface Node {
@@ -51,7 +51,7 @@ export interface Node {
 /**
  * Partial node definition.
  * @public
- * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export type PartialNode = AllOrNone<Partial<Node>, "key" | "label">;

@@ -1,172 +1,181 @@
 
-# 5.2.0 Change Notes
+# 4.10.0 Change Notes
 
-- [5.2.0 Change Notes](#5.2.0 Change Notes)
-  - [@itwin/core-ecschema-metadata](#itwincore-ecschema-metadata)
-    - [Additions](#additions)
-    - [Changes](#changes)
-  - [Presentation](#presentation)
-    - [Deprecation of hierarchy-related APIs](#deprecation-of-hierarchy-related-apis)
-  - [API deprecations](#api-deprecations)
-    - [@itwin/presentation-common](#itwinpresentation-common)
-    - [@itwin/presentation-backend](#itwinpresentation-backend)
-    - [@itwin/presentation-frontend](#itwinpresentation-frontend)
+Table of contents:
+
+- [4.10.0 Change Notes](#4100-change-notes)
+  - [Revert timeline changes](#revert-timeline-changes)
   - [Display](#display)
-    - [Draco decoding](#draco-decoding)
-  - [Geometry](#geometry)
-    - [Clippers for a curve chain](#clippers-for-a-curve-chain)
-  - [Electron 38 support](#electron-38-support)
+    - [Instancing](#instancing)
+    - [Overriding line color](#overriding-line-color)
+    - [Context Reality model visibility](#context-reality-model-visibility)
+    - [Contour Display](#contour-display)
+  - [Interactive Tools](#interactive-tools)
+    - [Element Locate](#element-locate)
+    - [Snapping within section drawings](#snapping-within-section-drawings)
+  - [Presentation](#presentation)
+    - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
+  - [Quantity](#quantity)
+  - [Node 22 support](#node-22-support)
+  - [Electron 33 support](#electron-33-support)
+  - [API deprecations](#api-deprecations)
+    - [@itwin/appui-abstract](#itwinappui-abstract)
+    - [@itwin/core-backend](#itwincore-backend)
+    - [@itwin/core-frontend](#itwincore-frontend)
+    - [@itwin/core-quantity](#itwincore-quantity)
+    - [@itwin/presentation-common](#itwinpresentation-common)
 
-## @itwin/core-ecschema-metadata
+## Revert timeline changes
 
-### Additions
+At present, the sole method to reverse a defective changeset is to remove it from the iModel hub, which can lead to numerous side effects. A preferable approach would be to reverse the changeset in the timeline and introduce it as a new changeset. Although this method remains intrusive and necessitates a schema lock, it is safer because it allows for the reversal to restore previous changes, ensuring that nothing is permanently lost from the timeline.
 
-- Added [FormatSetFormatsProvider]($ecschema-metadata) class that implements [MutableFormatsProvider]($quantity) to manage format definitions within a format set. This provider supports adding and removing formats at runtime and automatically updates the underlying format set when changes are made.
+[BriefcaseDb.revertAndPushChanges]($backend) Allow to push a single changeset that undo all changeset from tip to specified changeset in history.
 
-### Changes
+Some detail and requirements are as following.
 
-- Added  `unitSystem` property to [FormatSet]($ecschema-metadata) interface, using [UnitSystemKey]($quantity) type. This will help move APIs away from relying on `activeUnitSystem` in `quantityFormatter`, as they move to the new formatting APIs using `IModelApp.formatsProvider`. Looking ahead, tools and components that use formatting APIs can then listen to just the `onFormatsChanged` event from `IModelApp.formatsProvider` instead of `IModelApp.quantityFormatter.onActiveUnitSystemChanged`.
-- Added optional `description` property to [FormatSet]($ecschema-metadata) interface. This property allows for additional descriptive text to be associated with a format set, providing better documentation and user context for format set purposes.
-- Changed interface for formats in `FormatSet` from [SchemaItemFormatProps]($ecschema-metadata) to [FormatDefinition]($quantity). FormatSet just uses the `name`, `label`, `description` field from `SchemaItemFormatProps`, which `FormatDefinition` already has.
-
-## Presentation
-
-### Deprecation of hierarchy-related APIs
-
-All hierarchies-related APIs have been deprecated in favor of the new-generation hierarchy building APIs, provided with the [`@itwin/presentation-hierarchies` package](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md). See the [learning section](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md#learning) and [migration guide](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/learning/PresentationRulesMigrationGuide.md) for details on how to create similar hierarchies using those APIs. See the [API deprecations](#api-deprecations) section for a list of specific APIs that have been deprecated.
-
-## API deprecations
-
-### @itwin/presentation-common
-
-Deprecated all hierarchy-related types (see [Deprecation of hierarchy-related APIs](#deprecation-of-hierarchy-related-apis) section for more details).
-
-- Presentation rule types:
-  - `ChildNodeRule`
-  - `ChildNodeSpecification`
-  - `ChildNodeSpecificationBase`
-  - `ChildNodeSpecificationTypes`
-  - `ClassGroup`
-  - `CustomNodeSpecification`
-  - `CustomQueryInstanceNodesSpecification`
-  - `DefaultGroupingPropertiesContainer`
-  - `ECPropertyValueQuerySpecification`
-  - `GroupingRule`
-  - `GroupingSpecification`
-  - `GroupingSpecificationBase`
-  - `GroupingSpecificationTypes`
-  - `InstanceNodesOfSpecificClassesSpecification`
-  - `NavigationRule`
-  - `NavigationRuleBase`
-  - `NodeArtifactsRule`
-  - `PropertyGroup`
-  - `PropertyRangeGroupSpecification`
-  - `QuerySpecification`
-  - `QuerySpecificationBase`
-  - `QuerySpecificationTypes`
-  - `RelatedInstanceNodesSpecification`
-  - `RootNodeRule`
-  - `SameLabelInstanceGroup`
-  - `SameLabelInstanceGroupApplicationStage`
-  - `StringQuerySpecification`
-  - `SubCondition`
-- Node key types:
-  - `BaseNodeKey`
-  - `ECClassGroupingNodeKey`
-  - `ECInstancesNodeKey`
-  - `ECPropertyGroupingNodeKey`
-  - `GroupingNodeKey`
-  - `LabelGroupingNodeKey`
-  - `NodeKey`
-  - `NodeKeyPath`
-  - `KeySet.nodeKeys`, `KeySet.nodeKeysCount`, `KeySetJSON.nodeKeys`
-- Node types:
-  - `Node`
-  - `NodePathElement`
-  - `NodePathFilteringData`
-  - `PartialNode`
-  - `StandardNodeTypes`
-- Presentation manager prop and return types:
-  - `FilterByInstancePathsHierarchyRequestOptions`
-  - `FilterByInstancePathsHierarchyRpcRequestOptions`
-  - `FilterByTextHierarchyRequestOptions`
-  - `FilterByTextHierarchyRpcRequestOptions`
-  - `HierarchyCompareInfo`
-  - `HierarchyCompareOptions`
-  - `HierarchyLevel`
-  - `HierarchyLevelDescriptorRequestOptions`
-  - `HierarchyLevelDescriptorRpcRequestOptions`
-  - `HierarchyRequestOptions`
-  - `HierarchyRpcRequestOptions`
-  - `HierarchyUpdateInfo`
-  - `NodeDeletionInfo`
-  - `NodeInsertionInfo`
-  - `NodeUpdateInfo`
-  - `PartialHierarchyModification`
-
-### @itwin/presentation-backend
-
-Deprecated all hierarchy-related types (see [Deprecation of hierarchy-related APIs](#deprecation-of-hierarchy-related-apis) section for more details).
-
-- Hierarchy cache configuration:
-  - `DiskHierarchyCacheConfig`
-  - `HierarchyCacheConfig`
-  - `HierarchyCacheMode`
-  - `HybridCacheConfig`
-  - `MemoryHierarchyCacheConfig`
-  - `PresentationManagerCachingConfig.hierarchies`
-- `PresentationManager` methods:
-  - `PresentationManager.compareHierarchies`
-  - `PresentationManager.getFilteredNodePaths`
-  - `PresentationManager.getNodePaths`
-  - `PresentationManager.getNodes`
-  - `PresentationManager.getNodesCount`
-  - `PresentationManager.getNodesDescriptor`
-
-### @itwin/presentation-frontend
-
-Deprecated all hierarchy-related types (see [Deprecation of hierarchy-related APIs](#deprecation-of-hierarchy-related-apis) section for more details).
-
-- `GetNodesRequestOptions`
-- `IModelHierarchyChangeEventArgs`
-- `PresentationManager` methods & members:
-  - `PresentationManager.getFilteredNodePaths`
-  - `PresentationManager.getNodePaths`
-  - `PresentationManager.getNodesCount`
-  - `PresentationManager.getNodesDescriptor`
-  - `PresentationManager.getNodesIterator`
-  - `PresentationManager.onIModelHierarchyChanged`
+- When invoking the iModel, it must not have any local modifications.
+- The operation is atomic; if it fails, the database will revert to its previous state.
+- The revert operation necessitates a schema lock (an exclusive lock on the iModel) because it does not lock each individual element affected by the revert.
+- If no description is provided after a revert, a default description for the changeset will be created and pushed, which releases the schema lock.
+- Schema changes are not reverted during SchemaSync, or they can be optionally skipped when SchemaSync is not utilized.
 
 ## Display
 
-### Draco decoding
+### Instancing
 
-Draco decoding in iTwin.js has been changed so that the loaders.gl dependency will no longer use a CDN to request the draco-decoder source files. Instead, we now bundle those resources into iTwin.js from a new draco3d dependency. We ask the loaders.gl library to locally use those resources.
+Some scenarios involve displaying the same basic graphic repeatedly. For example, imagine you are writing a [Decorator]($frontend) that displays stop signs at many intersections along a road network. You might create one [RenderGraphic]($frontend) for each individual stop sign and draw them all, but doing so would waste a lot of memory by duplicating the same geometry many times, and negatively impact your frame rate by invoking many draw calls.
 
-## Geometry
+WebGL provides [instanced rendering](https://webglfundamentals.org/webgl/lessons/webgl-instanced-drawing.html) to more efficiently support this kind of use case. You can define a single representation of the stop sign graphic, and then tell the renderer to draw it many times at different locations, orientations, and scales. iTwin.js now provides APIs that make it easy for you to create instanced graphics:
 
-### Clippers for a curve chain
+- [GraphicTemplate]($frontend) defines what the graphic should look like. You can obtain a template from [GraphicBuilder.finishTemplate]($frontend), [RenderSystem.createTemplateFromDescription]($frontend), or [readGltfTemplate]($frontend).
+- [RenderInstances]($frontend) defines the set of instances of the template to draw. In addition to a [Transform]($geometry), each instance can also override aspects of the template's appearance like color and line width, along with a unique [Feature]($common) to permit each instance to behave as a discrete entity. You can create a `RenderInstances` using [RenderInstancesParamsBuilder]($frontend).
+- [RenderSystem.createGraphicFromTemplate]($frontend) produces a [RenderGraphic]($frontend) from a graphic template and a set of instances.
 
-Added a new API **ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY** to the clip utilities class to create clippers for regions closest to the children of a curve chain.
+`GraphicTemplate` and `RenderInstances` are both reusable - you can produce multiple sets of instances of a given template, and use the same set of instances with multiple different templates.
 
-The API takes a curve chain (z-coordinate is ignored) and other optional inputs (which control the accuracy and xy-range of the returned clippers) and returns an ordered array of clippers, each of which represents the region closest to the corresponding primitive in the input curve chain.
+For the stop sign example described above, you might have a [glTF model](https://en.wikipedia.org/wiki/GlTF) representing a stop sign and an array containing the position of each stop sign. You could then use a function like the following to produce a graphic that draws the stop sign at each of those positions.
 
-**Examples**<br>
-A custom path is generated and passed along with control options to the API:
 ```ts
-const bbox = Range2d.createXYXY(70250, 1209900, 70950, 1210500);
-const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(path, strokeOptions, distanceTol, bbox);
+[[include:Gltf_Instancing]]
 ```
-Below you can see the visualization of `clippers`. Each child is shown by a color and the corresponding region to that child is shown by a similar color. Note that regions crossed the curve chain exactly at the joins.
-![Regions for curve chain children - example 1](../learning/geometry/figs/Clipping/curveChainClipping1.png "Regions for curve chain children - example 1")
 
-Here is another example for a path provided by the Civil team:
-![Regions for curve chain children - example 2](../learning/geometry/figs/Clipping/curveChainClipping2.png "Regions for curve chain children - example 2")
+### Overriding line color
 
-## Electron 38 support
+iTwin.js allows you to [dynamically override](https://www.itwinjs.org/learning/display/symbologyoverrides/) aspects of the appearance of geometry at display time. However, unlike [SubCategoryAppearance]($common) and [GeometryParams]($common), which can distinguish between "line color" and "fill color", [FeatureAppearance]($common) only provides a single color override that applies to both types of geometry.
 
-In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 38](https://www.electronjs.org/blog/electron-38-0).
+To address this discrepancy, we've [added](https://github.com/iTwin/itwinjs-core/pull/7251) a way to dynamically override the color and transparency of linear geometry independently from the rest of the geometry. Linear geometry includes open curves, line strings, point strings, and the outlines of planar regions. [FeatureAppearance.lineRgb]($common) controls the color of linear geometry, and [FeatureAppearance.lineTransparency]($common) controls the transparency. Both of these properties can be `undefined`, in which case the existing `rgb` or `transparency` property affects linear geometry - just as it always has. Or, they can be `false`, indicating that no color/transparency override is applied to linear geometry. Or, they can specify a transparency value or `RgbColor` that applies only to linear geometry.
 
+### Context Reality model visibility
 
+Context reality models that have been attached using `DisplayStyleState.attachRealityModel`, can now be hidden by turning ON the `ContextRealityModel.invisible` flag. Previous implementation requiered context reality models to be detached in order to hide it from the scene.
 
+### Contour Display
 
+A new rendering technique has been added to iTwin.js which allows a user to apply specific contour line renderings to subcategories within a scene.
+
+iTwin.js now provides the following API to use this feature:
+
+- [DisplayStyle3dSettings]($common) now has a `contours` property which contains all of the subcategories-to-styling association data necessary to enable this feature. That object is of type [ContourDisplay]($common).
+- [ContourDisplay]($common) defines how contours are displayed in the iModel based on a list of [ContourGroup]($common) objects in the `groups` property. Whether or not contours will be displayed in the viewport is controlled by this object's `displayContours` property, which defaults to false.
+- [ContourGroup]($common) describes an association of subcategories to contour styling. It contains a set of subcategory IDs titled `subCategories`. Those subcategories will have the contour styling within the same group's [Contour]($common) `contourDef` object applied to them.
+- [Contour]($common) describes the rendering settings that apply to a specific set of subcategories within a [ContourGroup]($common). This actually describes stylings for two sets of contours: major and minor. These stylings are separate from each other. The minor contour occurs at a defined interval in meters. These intervals draw at a fixed height; they are not dependent on the range of the geometry to which they are applied. The major contour is dependent on the minor contour. The interval of its occurence is not measured directly in meters; rather its occurence is determined by the major interval count thusly: every nth contour will be styled as a major contour where n = the major interval count. For example, if you set this number to 1, every contour will be styled as a major contour. When it is 2, every other contour will be styled as a major contour, and so on. The properties describing how major and minor contours are styled are listed here:
+  - `majorStyle` is the style that a major contour line will use. Defaults to an instantation of [ContourStyle]($common) using `pixelWidth` of 2 and default values for the other properties.
+  - `minorStyle` is the style that a minor contour line will use. Defaults to an instantation of [ContourStyle]($common) using default values for the properties.
+  - `minorInterval` is the interval for the minor contour occurrence in meters; these can be specified as fractional. Defaults to 1. If a value <= 0 is specified, this will be treated as 1 meter.
+  - `majorIntervalCount` is the count of minor contour intervals that define a major interval (integer > 0). A value of 1 means no minor contours will be shown, only major contours. Defaults to 5. If a value < 1 is specified, this will be treated as 1. If a non-integer value is specified, it will be treated as if it were rounded to the nearest integer.
+  - `showGeometry`, if true, shows underlying geometry along with the associated contours. If false, only shows the contours, not the underlying geometry. Defaults to true.
+- [ContourStyle]($common) describes the style settings used by either a major or minor contour. It contains the following properties:
+  - `color` is a color used by the major or minor contour of type [RgbColor]($common). Defaults to black.
+  - `pixelWidth` is the width in pixels of a major or minor contour line, using range 1 to 8.5 in 0.5 increments. Defaults to 1.
+  - `pattern` is the line pattern applied to a major or minor contour line of type [LinePixels]($common). Defaults to [LinePixels.Solid]($common).
+
+Consult the following code for an example of enabling and configuring contour display in iTwin.js:
+
+```ts
+[[include:Setup_ContourDisplay]]
+```
+
+Here is a sample screenshot of applying some contour display settings to a terrain iModel:
+
+![contour display example](./assets/contour-display.png "Example of applying contour line settings to an iModel of some terrain")
+
+## Interactive Tools
+
+### Element Locate
+
+After calling [ElementLocateManager.doLocate]($frontend), Reset may now be used to accept some elements that were obscured by another element. Previously Reset would only choose between visible elements within the locate aperture.
+
+![locate example](./assets/element-locate.png "Example of using reset to accept obscured element")
+
+### Snapping within section drawings
+
+A [SectionDrawing]($backend) view renders the contents of a [SpatialViewDefinition]($backend) in the context of a [DrawingViewDefinition]($backend). Tools that operate on the drawing view may want to be able to snap to geometry within the "attached" spatial view. For example, you may wish to attach an annotation to a spatial element. [AccuSnap]($frontend) [now automatically snaps](https://github.com/iTwin/itwinjs-core/pull/7291) to the geometry based on the current snap settings when mousing over geometry within the section drawing attachment. This works when viewing the drawing directly, or indirectly through a [ViewAttachment]($backend) on a sheet.
+
+You can access the [HitPath]($frontend) describing the [ViewAttachment]($backend) and/or [SectionDrawing]($backend) through which a hit was obtained via [[HitDetail.path]].
+
+## Presentation
+
+### Calculated properties specification enhancements
+
+A new optional [`extendedData`]($docs/presentation/content/CalculatedPropertiesSpecification.md#attribute-extendeddata) attribute has been added to [calculated properties specification]($docs/presentation/content/CalculatedPropertiesSpecification.md). The attribute allows associating resulting calculated properties field with some extra information, which may be especially useful for dynamically created calculated properties.
+
+## Quantity
+
+- Add support for 'Ratio' format type (e.g. "1:2")
+  - Example: Formatting a Ratio
+  - Assuming that a `UnitsProvider` has been registered and initialized, here's how to format a ratio:
+
+```ts
+const ratioFormatProps: FormatProps = {
+    type: "Ratio",
+    ratioType: "OneToN",  // Formats the ratio in "1:N" form
+    composite: {
+        includeZero: true,
+        units: [
+            { name: "Units.HORIZONTAL_PER_VERTICAL" },
+        ],
+    },
+};
+
+const ratioFormat = new Format("Ratio");
+ratioFormat.fromJSON(unitsProvider, ratioFormatProps).catch(() => {});
+```
+
+- Add support for unit inversion during unit conversion
+
+- Change azimuth and bearing logic from working with east-based counterclockwise persisted values to working with north-based clockwise values.
+- The previous applies to azimuthBase as well, if provided.
+
+## Node 22 support
+
+iTwin.js now officially supports Node 22 starting with LTS version of 22.11.0. Node 22 support is in addition to Node 18 and 20, not a replacement.
+
+## Electron 33 support
+
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 33](https://www.electronjs.org/blog/electron-33-0).
+
+## API deprecations
+
+### @itwin/appui-abstract
+
+- `LayoutFragmentProps`, `ContentLayoutProps`, `LayoutSplitPropsBase`, `LayoutHorizontalSplitProps`, `LayoutVerticalSplitProps`, and `StandardContentLayouts` have been deprecated. Use the same APIs from `@itwin/appui-react` instead.
+
+- `BackendItemsManager` is internal and should never have been consumed. It has been deprecated and will be removed in 5.0.0. Use `UiFramework.backstage` from `@itwin/appui-react` instead.
+
+### @itwin/core-backend
+
+- [IModelHost.snapshotFileNameResolver]($backend) and [FileNameResolver]($backend) have been deprecated. Make sure to provide resolved file path to [SnapshotConnection.openFile]($frontend).
+
+### @itwin/core-frontend
+
+- [SnapshotConnection.openRemote]($frontend) has been deprecated. Use [CheckpointConnection.openRemote]($frontend) to open a connection to an iModel within web application.
+
+### @itwin/core-quantity
+
+- Refactored `FormatType`, `ScientificType`, `ShowSignOption` from int enums to string enums and added `RatioType` as a string enum. Relevant toString functions, including [formatTypeToString]($quantity), [scientificTypeToString]($quantity), and [showSignOptionToString]($quantity), have been deprecated because they don't need serialization methods.
+
+- [Parser.parseToQuantityValue]($quantity) have been deprecated. Use the existing method [Parser.parseQuantityString]($quantity) instead.
+
+### @itwin/presentation-common
+
+- All public methods of [PresentationRpcInterface]($presentation-common) have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as [PresentationManager]($presentation-frontend) should be used instead.

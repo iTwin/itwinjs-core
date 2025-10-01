@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Update Google Maps attribution",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
