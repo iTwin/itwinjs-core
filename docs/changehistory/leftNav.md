@@ -10,6 +10,7 @@ closedPanels: ["Previous Versions", "Changelogs"]
 
 ### Versions
 
+- [5.2.0](./5.2.0.md)
 - [5.1.0](./5.1.0.md)
 
 - [5.0.0](./5.0.0.md)
@@ -79,3 +80,4 @@ closedPanels: ["Previous Versions", "Changelogs"]
 - [core-common](../reference/core-common/changelog)
 - [core-geometry](../reference/core-geometry/changelog)
 - [core-bentley](../reference/core-bentley/changelog)
+

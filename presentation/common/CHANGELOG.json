@@ -2,6 +2,27 @@
   "name": "@itwin/presentation-common",
   "entries": [
     {
+      "version": "5.2.0",
+      "tag": "@itwin/presentation-common_v5.2.0",
+      "date": "Wed, 01 Oct 2025 14:53:46 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed content formatting failure when struct property value has members with `undefined` value."
+          },
+          {
+            "comment": "Deprecated hierarchies-related APIs"
+          },
+          {
+            "comment": "Fix `ContentTraverser` droping metadata available for struct member properties."
+          },
+          {
+            "comment": "Add ability to override format used by `FormatterSpec`/`ParserSpec` created by `KoqPropertyValueFormatter`."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.1.9",
       "tag": "@itwin/presentation-common_v5.1.9",
       "date": "Wed, 24 Sep 2025 17:38:08 GMT",

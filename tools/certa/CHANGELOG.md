@@ -1,6 +1,13 @@
 # Change Log - @itwin/certa
 
-This log was last generated on Wed, 24 Sep 2025 17:42:18 GMT and should not be manually modified.
+This log was last generated on Wed, 01 Oct 2025 14:53:46 GMT and should not be manually modified.
+
+## 5.2.0
+Wed, 01 Oct 2025 14:53:46 GMT
+
+### Updates
+
+- Add support for Electron 38
 
 ## 5.1.9
 Wed, 24 Sep 2025 17:38:08 GMT

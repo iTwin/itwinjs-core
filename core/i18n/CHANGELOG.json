@@ -2,6 +2,12 @@
   "name": "@itwin/core-i18n",
   "entries": [
     {
+      "version": "5.2.0",
+      "tag": "@itwin/core-i18n_v5.2.0",
+      "date": "Wed, 01 Oct 2025 14:53:46 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.1.9",
       "tag": "@itwin/core-i18n_v5.1.9",
       "date": "Wed, 24 Sep 2025 17:38:08 GMT",
