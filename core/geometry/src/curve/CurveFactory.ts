@@ -7,6 +7,7 @@
  * @module Curve
  */
 
+import { assert } from "@itwin/core-bentley";
 import { AxisIndex, AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { AngleSweep } from "../geometry3d/AngleSweep";
@@ -141,9 +142,11 @@ export class CurveFactory {
    *  * A zero radius for any point indicates to leave the as a simple corner.
    * @param points point source.
    * @param radius fillet radius or array of radii indexed to correspond to the points.
-   * @param allowBackupAlongEdge true to allow edges to be created going "backwards" along edges if needed to create the blend.
-   * @param filletAtTheSeam if true and the line string is closed, create fillet at the seam (first/last point). If false,
-   * no fillet is constructed at the first or last point and therefore, those entries in `radius[]` are never referenced.
+   * @param allowBackupAlongEdge true (default) to allow creation of retrograde edges to join large-radius fillets (this
+   * results in cusps in the output path). If false, such a fillet is disallowed, resulting in a simple corner.
+   * @param filletAtTheSeam if true, treat `points` as a polygon (closure point optional) and create a fillet at the
+   * start point. If false (default), the first and last points receive no fillet and their respective entries in the
+   * radius array are ignored.
    */
   public static createFilletsInLineString(
     points: LineString3d | IndexedXYZCollection | Point3d[],
@@ -155,95 +158,52 @@ export class CurveFactory {
       return this.createFilletsInLineString(new Point3dArrayCarrier(points), radius, allowBackupAlongEdge, filletAtTheSeam);
     if (points instanceof LineString3d)
       return this.createFilletsInLineString(points.packedPoints, radius, allowBackupAlongEdge, filletAtTheSeam);
-    const firstPoint = points.getPoint3dAtCheckedPointIndex(0)!;
-    const lastPoint = points.getPoint3dAtCheckedPointIndex(points.length - 1)!;
-    if (!firstPoint.isAlmostEqual(lastPoint)) // line string is not closed
-      filletAtTheSeam = false;
-    const n = points.length;
+    let n = points.length;
+    if (filletAtTheSeam && points.almostEqualIndexIndex(0, n - 1))
+      n--; // ignore closure point
     if (n <= 1)
       return undefined;
-    const pointA = points.getPoint3dAtCheckedPointIndex(0)!;
-    const pointB = points.getPoint3dAtCheckedPointIndex(1)!;
-    // remark: n=2 and n=3 cases should fall out from loop logic
+    const pointA = Point3d.create();
+    const pointB = Point3d.create();
+    const pointC = Point3d.create();
     const blendArray: ArcBlendData[] = [];
-    // build one-sided blends at each end
-    blendArray.push({ fraction10: 0.0, fraction12: 0.0, point: pointA.clone() });
-    for (let i = 1; i + 1 < n; i++) {
-      const pointC = points.getPoint3dAtCheckedPointIndex(i + 1)!;
-      let thisRadius = 0;
-      if (Array.isArray(radius)) {
-        if (i < radius.length)
-          thisRadius = radius[i];
-      } else if (Number.isFinite(radius)) {
-        thisRadius = radius;
-      }
-      if (thisRadius !== 0.0)
-        blendArray.push(Arc3d.createFilletArc(pointA, pointB, pointC, thisRadius));
-      else
-        blendArray.push({ fraction10: 0.0, fraction12: 0.0, point: pointB.clone() });
-      pointA.setFromPoint3d(pointB);
-      pointB.setFromPoint3d(pointC);
-    }
-    // build blend with points at indices n-1, 0, and 1
-    if (filletAtTheSeam) {
-      let thisRadius = 0;
-      if (Array.isArray(radius)) {
-        thisRadius = radius[1];
-      } else if (Number.isFinite(radius))
-        thisRadius = radius;
-      if (thisRadius !== 0.0) {
-        const pointC = points.getPoint3dAtCheckedPointIndex(1)!;
-        blendArray.push(Arc3d.createFilletArc(pointA, pointB, pointC, thisRadius));
+    // remark: n=2 and n=3 cases should fall out from loop logic
+    for (let i = 0; i < n; i++) {
+      let thisRadius = Math.abs(Array.isArray(radius) ? (i < radius.length ? radius[i] : 0) : radius);
+      if (!Number.isFinite(thisRadius))
+        thisRadius = 0;
+      if (thisRadius === 0 || (!filletAtTheSeam && (i === 0 || i === n - 1))) {
+        blendArray.push({ fraction10: 0, fraction12: 0, point: points.getPoint3dAtUncheckedPointIndex(i) });
       } else {
-        blendArray.push({ fraction10: 0.0, fraction12: 0.0, point: pointB.clone() });
+        points.getPoint3dAtUncheckedPointIndex(Geometry.modulo(i - 1, n), pointA);
+        points.getPoint3dAtUncheckedPointIndex(i, pointB);
+        points.getPoint3dAtUncheckedPointIndex(Geometry.modulo(i + 1, n), pointC);
+        blendArray.push(Arc3d.createFilletArc(pointA, pointB, pointC, thisRadius));
       }
-    } else {
-      blendArray.push({ fraction10: 0.0, fraction12: 0.0, point: pointB.clone() });
     }
-    // suppress arcs that have overlap with both neighbors or flood either neighbor
+    assert(blendArray.length === n);
     if (!allowBackupAlongEdge) {
-      for (let i = 1; i + 1 < n; i++) {
-        const b = blendArray[i];
-        if (b.fraction10 > 1.0
-          || b.fraction12 > 1.0
-          || 1.0 - b.fraction10 < blendArray[i - 1].fraction12
-          || b.fraction12 > 1.0 - blendArray[i + 1].fraction10) {
-          b.fraction10 = 0.0;
-          b.fraction12 = 0.0;
-          blendArray[i].arc = undefined;
-        }
-      }
-      if (filletAtTheSeam) {
-        const b = blendArray[n - 1];
-        if (b.fraction10 > 1.0
-          || b.fraction12 > 1.0
-          || 1.0 - b.fraction10 < blendArray[n - 2].fraction12
-          || b.fraction12 > 1.0 - blendArray[1].fraction10) {
-          b.fraction10 = 0.0;
-          b.fraction12 = 0.0;
-          blendArray[n - 1].arc = undefined;
+      // suppress arcs that overlap a neighboring arc, or that consume the entire segment
+      for (let i = 0; i < n; i++) {
+        const bB = blendArray[i];
+        if (!bB.arc)
+          continue;
+        const bA = blendArray[Geometry.modulo(i - 1, n)];
+        const bC = blendArray[Geometry.modulo(i + 1, n)];
+        if (bB.fraction10 > 1 || bB.fraction12 > 1 || 1 - bB.fraction10 < bA.fraction12 || bB.fraction12 > 1 - bC.fraction10) {
+          bB.fraction10 = bB.fraction12 = 0;
+          bB.arc = undefined;
         }
       }
     }
     const path = Path.create();
-    if (!filletAtTheSeam)
-      this.addPartialSegment(
-        path, allowBackupAlongEdge,
-        blendArray[0].point, blendArray[1].point,
-        blendArray[0].fraction12, 1.0 - blendArray[1].fraction10,
-      );
-    // add each path and successor edge
-    for (let i = 1; i + 1 < points.length; i++) {
+    for (let i = 0; i < n; i++) {
       const b0 = blendArray[i];
-      const b1 = blendArray[i + 1];
       path.tryAddChild(b0.arc);
-      this.addPartialSegment(path, allowBackupAlongEdge, b0.point, b1.point, b0.fraction12, 1.0 - b1.fraction10);
-    }
-    if (filletAtTheSeam) {
-      const b0 = blendArray[n - 1];
-      const b1 = blendArray[1];
-      path.tryAddChild(b0.arc);
-      this.addPartialSegment(path, allowBackupAlongEdge, b0.point, b1.point, b0.fraction12, 1.0 - b1.fraction10);
+      if (i + 1 < n || filletAtTheSeam) {
+        const b1 = blendArray[Geometry.modulo(i + 1, n)];
+        this.addPartialSegment(path, allowBackupAlongEdge, b0.point, b1.point, b0.fraction12, 1 - b1.fraction10);
+      }
     }
     return path;
   }
