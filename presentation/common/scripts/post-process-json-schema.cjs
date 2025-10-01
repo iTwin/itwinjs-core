@@ -46,7 +46,8 @@ const processedSchema = handleObject(schema);
 fs.writeFileSync(schemaPath, JSON.stringify(processedSchema, undefined, 2));
 
 const isCI = process.env.TF_BUILD;
-if (isCI) {
+const isVersionBump = process.env.VERSION_BUMP === "True";
+if (isCI && !isVersionBump) {
   // break CI builds if the schema file changes during the build
   const schemaFileDiff = execSync(`git diff "${yargs.path}"`).toString().trim();
   if (schemaFileDiff !== "") {
