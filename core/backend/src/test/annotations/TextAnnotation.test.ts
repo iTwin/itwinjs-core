@@ -543,23 +543,41 @@ describe("TextAnnotation element", () => {
           expect((para.children[1] as FieldRun).propertyHost.elementId).to.equal("0xdef");
         });
 
-        it("remaps default text style", () => {
-          const elem = makeElement();
+        function insertStyledElement(styleId: Id64String | undefined): TextAnnotation2d {
+          let args = { ...createElement2dArgs, defaultTextStyleId: styleId }
+          const elem = createElement2d(imodel, args);
           elem.insert();
           imodel.saveChanges();
+          return elem;
+        }
 
-          const context = new IModelElementCloneContext(imodel);
-          context.remapElement(createElement2dArgs.model, createElement2dArgs.model);
-          let props = context.cloneElement(elem) as TextAnnotation2dProps;
-          expect(props.defaultTextStyle).to.be.undefined;
+        it("leaves default text style intact if copying within same iModel", () => {
+          function clone(styleId: Id64String | undefined, expectedStyleId: Id64String | undefined): void {
+            const context = new IModelElementCloneContext(imodel);
+            context.remapElement(createElement2dArgs.model, createElement2dArgs.model);
+            const elem = insertStyledElement(styleId);
+            const props = context.cloneElement(elem) as TextAnnotation2dProps;
+            expect(props.defaultTextStyle?.id).to.equal(expectedStyleId);
+          }
 
-          context.remapElement("0x21", "0x42");
-          props = context.cloneElement(elem) as TextAnnotation2dProps;
-          expect(props.defaultTextStyle?.id).to.equal("0x42");
+          clone(seedStyleId, seedStyleId);
+          clone(undefined, undefined);
+          clone(Id64.invalid, undefined);
+        });
 
-          elem.defaultTextStyle = undefined;
-          props = context.cloneElement(elem) as TextAnnotation2dProps;
-          expect(props.defaultTextStyle).to.be.undefined;
+        it("sets default text style to undefined if source style does not exist", () => {
+
+        });
+
+        it("remaps to an existing text style with the same code if present", () => {
+        });
+
+        it("imports default text style if necessary", () => {
+
+        });
+
+        it("remaps multiple occurrences of same style to same Id", () => {
+
         });
       });
     });
