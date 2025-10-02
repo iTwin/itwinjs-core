@@ -414,6 +414,7 @@ beta;interface;OnSubModelPropsArg
 public;type;OpenBriefcaseArgs
 public;class;OrthographicViewDefinition
 preview;class;OrthographicViewDefinition
+internal;function;parseTextAnnotationData
 beta;class;PartialECChangeUnifier
 public;class;PhysicalElement
 preview;class;PhysicalElement
