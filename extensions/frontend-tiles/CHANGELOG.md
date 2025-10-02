@@ -1,6 +1,13 @@
 # Change Log - @itwin/frontend-tiles
 
-This log was last generated on Wed, 24 Sep 2025 17:43:58 GMT and should not be manually modified.
+This log was last generated on Thu, 02 Oct 2025 14:56:13 GMT and should not be manually modified.
+
+## 5.2.0
+Wed, 01 Oct 2025 20:22:54 GMT
+
+### Updates
+
+- Improve performance of model masking when using pregenerated tiles.
 
 ## 5.1.9
 Wed, 24 Sep 2025 17:38:08 GMT
