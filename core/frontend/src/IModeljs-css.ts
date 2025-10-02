@@ -32,7 +32,7 @@ let iModelJsCss: string | undefined = `
 }
 
 .logo-card-logo {
-  width:124px;
+  width:144px;
   overflow:hidden;
   vertical-align:text-top;
   text-align:center
