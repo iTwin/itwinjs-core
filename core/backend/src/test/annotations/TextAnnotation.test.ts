@@ -543,9 +543,9 @@ describe("TextAnnotation element", () => {
           expect((para.children[1] as FieldRun).propertyHost.elementId).to.equal("0xdef");
         });
 
-        function insertStyledElement(styleId: Id64String | undefined): TextAnnotation2d {
+        function insertStyledElement(styleId: Id64String | undefined, db: IModelDb): TextAnnotation2d {
           let args = { ...createElement2dArgs, defaultTextStyleId: styleId }
-          const elem = createElement2d(imodel, args);
+          const elem = createElement2d(db, args);
           elem.insert();
           imodel.saveChanges();
           return elem;
@@ -553,31 +553,68 @@ describe("TextAnnotation element", () => {
 
         it("leaves default text style intact if copying within same iModel", () => {
           function clone(styleId: Id64String | undefined, expectedStyleId: Id64String | undefined): void {
+            const elem = insertStyledElement(styleId, imodel);
             const context = new IModelElementCloneContext(imodel);
             context.remapElement(createElement2dArgs.model, createElement2dArgs.model);
-            const elem = insertStyledElement(styleId);
             const props = context.cloneElement(elem) as TextAnnotation2dProps;
             expect(props.defaultTextStyle?.id).to.equal(expectedStyleId);
+
+            if (styleId) {
+              // Even an explicit remapping is ignored when cloning within a single iModel
+              // (per the examples set by most other elements, excluding RenderMaterial).
+              context.remapElement(styleId, "0x99887");
+              const props2 = context.cloneElement(elem) as TextAnnotation2dProps;
+              expect(props2.defaultTextStyle?.id).to.equal(expectedStyleId);
+            }
           }
 
           clone(seedStyleId, seedStyleId);
           clone(undefined, undefined);
+          clone("0x12345", "0x12345");
           clone(Id64.invalid, undefined);
         });
 
-        it("sets default text style to undefined if source style does not exist", () => {
+        describe("between imodels", () => {
+          let dstDb: StandaloneDb;
+          let dstDefModel: Id64String;
+          let dstElemArgs: Omit<TextAnnotation2dCreateArgs, "placement">;
 
-        });
+          before(async () => {
+            dstDb = await createIModel("CloneTarget");
+            const jobSubjectId = createJobSubjectElement(dstDb, "Job").insert();
+            dstDefModel = DefinitionModel.insert(dstDb, jobSubjectId, "Definition");
 
-        it("remaps to an existing text style with the same code if present", () => {
-        });
+            const { category, model } = insertDrawingModel(dstDb, jobSubjectId, dstDefModel);
+            expect(category).not.to.equal(createElement2dArgs.category);
+            expect(model).not.to.equal(createElement2dArgs.model);
 
-        it("imports default text style if necessary", () => {
+            dstElemArgs = { category, model };
+          });
 
-        });
+          after(() => dstDb.close());
 
-        it("remaps multiple occurrences of same style to same Id", () => {
+          it("sets default text style to undefined if source style does not exist", () => {
+            const elem = insertStyledElement("0x12345", imodel);
+            const context = new IModelElementCloneContext(imodel, dstDb);
+            context.remapElement(createElement2dArgs.model, dstElemArgs.model);
+            const props = context.cloneElement(elem) as TextAnnotation2dProps;
+            expect(props.defaultTextStyle).to.be.undefined;
+          });
 
+          it("remaps to an existing text style with the same code if present", () => {
+          });
+
+          it("imports default text style if necessary", () => {
+
+          });
+
+          it("sets default text style to undefined if definition model is not remapped", () => {
+
+          });
+
+          it("remaps multiple occurrences of same style to same Id", () => {
+
+          });
         });
       });
     });
