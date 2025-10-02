@@ -376,10 +376,48 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
   }
 }
 
-function remapTextStyle(context: IModelElementCloneContext, srcElem: TextAnnotation2d | TextAnnotation3d, dstProps: TextAnnotation2dProps | TextAnnotation3dProps): void {
+function remapTextStyle(
+  context: IModelElementCloneContext,
+  srcElem: TextAnnotation2d | TextAnnotation3d,
+  dstProps: TextAnnotation2dProps | TextAnnotation3dProps
+): void {
+  const dstStyleId = getRemappedTextStyleId(context, srcElem);
+  dstProps.defaultTextStyle = dstStyleId && Id64.isValid(dstStyleId) ? new TextAnnotationUsesTextStyleByDefault(dstStyleId).toJSON() : undefined;
+}
+
+function getRemappedTextStyleId(
+  context: IModelElementCloneContext,
+  srcElem: TextAnnotation2d | TextAnnotation3d
+): Id64String | undefined {
+  // No remapping necessary if there's no text style or we're not copying to a different iModel.
   const srcStyleId = srcElem.defaultTextStyle?.id;
-  const dstStyleId = undefined !== srcStyleId ? context.findTargetElementId(srcStyleId) : Id64.invalid;
-  dstProps.defaultTextStyle = Id64.isValid(dstStyleId) ? new TextAnnotationUsesTextStyleByDefault(dstStyleId).toJSON() : undefined;
+  if (undefined === srcStyleId || !context.isBetweenIModels) {
+    return srcStyleId;
+  }
+
+  // If the style's already been remapped, we're finished.
+  let dstStyleId: Id64String | undefined = context.findTargetElementId(srcStyleId);
+  if (Id64.isValid(dstStyleId)) {
+    return dstStyleId;
+  }
+
+  // Look up the style. It really ought to exist.
+  const srcStyle = context.sourceDb.elements.tryGetElement<AnnotationTextStyle>(srcStyleId);
+  if (!srcStyle) {
+    return undefined;
+  }
+
+  // If a style with the same code exists in the target iModel, remap to that one.
+  dstStyleId = context.targetDb.elements.queryElementIdByCode(srcStyle.code);
+  if (undefined !== dstStyleId) {
+    return dstStyleId;
+  }
+
+  // Copy the style into the target iModel and remap its Id.
+  const dstStyleProps = context.cloneElement(srcStyle);
+  dstStyleId = context.targetDb.elements.insertElement(dstStyleProps);
+  context.remapElement(srcStyleId, dstStyleId);
+  return dstStyleId;
 }
 
 function collectReferenceIds(elem: TextAnnotation2d | TextAnnotation3d, referenceIds: EntityReferenceSet): void {
