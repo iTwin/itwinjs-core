@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Angle, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { FieldRun, FractionRun, Placement2dProps, Placement3dProps, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { AnnotationTextStyleProps, FieldRun, FractionRun, Placement2dProps, Placement3dProps, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { AnnotationTextStyle, TEXT_ANNOTATION_JSON_VERSION, TEXT_STYLE_SETTINGS_JSON_VERSION, TextAnnotation2d, TextAnnotation2dCreateArgs, TextAnnotation3d, TextAnnotation3dCreateArgs } from "../../annotations/TextAnnotationElement";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -588,7 +588,7 @@ describe("TextAnnotation element", () => {
             });
 
             const annotation = TextAnnotation.create({ textBlock });
-            const elem = createElement2d(imodel, { ...createElement2dArgs, textAnnotationData: annotation.toJSON() });
+            const elem = createElement2d(imodel, { ...createElement2dArgs, textAnnotationProps: annotation.toJSON() });
             elem.insert();
             imodel.saveChanges();
 
@@ -673,7 +673,7 @@ describe("TextAnnotation element", () => {
             });
 
             const annotation = TextAnnotation.create({ textBlock });
-            const elem = createElement2d(imodel, { ...createElement2dArgs, textAnnotationData: annotation.toJSON() });
+            const elem = createElement2d(imodel, { ...createElement2dArgs, textAnnotationProps: annotation.toJSON() });
             elem.insert();
             imodel.saveChanges();
 
@@ -699,7 +699,7 @@ describe("TextAnnotation element", () => {
           });
 
           it("remaps to an existing text style with the same code if present", () => {
-            const dstStyleId = createAnnotationTextStyle(dstDb, dstDefModel, "test", {fontName: "Totally Real Font", lineHeight: 0.25, isItalic: true}).insert();
+            const dstStyleId = createAnnotationTextStyle(dstDb, dstDefModel, "test").insert();
             expect(dstStyleId).not.to.equal(seedStyleId);
 
             const srcElem = insertStyledElement(seedStyleId, imodel);
@@ -732,7 +732,7 @@ describe("TextAnnotation element", () => {
           });
 
           it("remaps multiple occurrences of same style to same Id", () => {
-            const srcStyleId = createAnnotationTextStyle(dstDb, dstDefModel, "styyyle", {fontName: "Totally Real Font", lineHeight: 0.25, isItalic: true}).insert();
+            const srcStyleId = createAnnotationTextStyle(dstDb, dstDefModel, "styyyle").insert();
             const srcElem1 = insertStyledElement(srcStyleId, imodel);
             const srcElem2 = insertStyledElement(srcStyleId, imodel);
             const srcElem3 = insertStyledElement(srcStyleId, imodel);
