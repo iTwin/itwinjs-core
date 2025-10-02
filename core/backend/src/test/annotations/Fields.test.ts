@@ -585,7 +585,7 @@ describe("Field evaluation", () => {
       }
 
       return FieldRun.create({
-        styleOverrides: { fontName: "Karla" },
+        styleOverrides: { font: { name: "Karla" } },
         propertyHost,
         cachedContent,
         propertyPath: { propertyName, accessors },
@@ -669,7 +669,7 @@ describe("Field evaluation", () => {
 
         anno.textBlock.children.length = 0;
         anno.textBlock.appendRun(TextRun.create({
-          styleOverrides: { fontName: "Karla" },
+          styleOverrides: { font: { name: "Karla" } },
           content: "not a field",
         }));
         target.setAnnotation(anno);
