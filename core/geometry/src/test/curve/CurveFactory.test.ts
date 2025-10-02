@@ -204,10 +204,10 @@ describe("CurveFactory", () => {
     const lineString1 = LineString3d.create(points);
 
     const verifyGeometry = (chain: Path, filletClosure: boolean, radius: number) => {
-      if (radius <= 0 || radius > minSegmentLength / 2.0)
+      if (radius <= 0)
         return;
       ck.testPoint3d(chain.startPoint()!, chain.endPoint()!, "fillet polygon should be closed");
-      if (filletClosure) {
+      if (filletClosure && radius < minSegmentLength / 2.0) {
         const arc = chain.getChild(0);
         ck.testTrue(arc instanceof Arc3d, "expect arc at start of fillet polygon if filletClosure is true");
       }
