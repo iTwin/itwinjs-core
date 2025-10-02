@@ -630,7 +630,7 @@ describe("TextAnnotation element", () => {
           });
         });
 
-        describe.only("between iModels", () => {
+        describe("between iModels", () => {
           let dstDb: StandaloneDb;
           let dstDefModel: Id64String;
           let dstElemArgs: Omit<TextAnnotation2dCreateArgs, "placement">;
@@ -732,7 +732,7 @@ describe("TextAnnotation element", () => {
           });
 
           it("remaps multiple occurrences of same style to same Id", () => {
-            const srcStyleId = createAnnotationTextStyle(dstDb, dstDefModel, "styyyle", {font: { name: "Karla" } }).insert();
+            const srcStyleId = createAnnotationTextStyle(imodel, seedDefinitionModelId, "styyyle", {font: { name: "Karla" } }).insert();
             const srcElem1 = insertStyledElement(srcStyleId, imodel);
             const srcElem2 = insertStyledElement(srcStyleId, imodel);
             const srcElem3 = insertStyledElement(srcStyleId, imodel);
