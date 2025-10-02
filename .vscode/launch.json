@@ -1137,7 +1137,7 @@
       "request": "launch",
       "name": "Run Vitest Browser Cesium",
       "console": "integratedTerminal",
-      "cwd": "${workspaceFolder}/extensions/cesium-renderer", // necessary to pick up frontend's vitest config
+      "cwd": "${workspaceFolder}/extensions/cesium-renderer", // necessary to pick up cesium-renderer's vitest config
       "program": "node_modules/vitest/vitest.mjs",
       "args": [
         "--run",
@@ -1183,7 +1183,6 @@
         "Attach to Vitest Browser",
         "Run Vitest Browser Cesium"
       ],
-      // "preLaunchTask": "Run webpack for frontend test worker",
       "stopAll": true
     },
     {
