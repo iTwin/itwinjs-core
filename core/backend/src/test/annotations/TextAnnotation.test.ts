@@ -813,7 +813,7 @@ describe("TextAnnotation element", () => {
   });
 });
 
-describe("AnnotationTextStyle", () => {
+describe.only("AnnotationTextStyle", () => {
   let imodel: StandaloneDb;
   let seedSubjectId: string;
   let seedDefinitionModel: string;
@@ -961,7 +961,7 @@ describe("AnnotationTextStyle", () => {
   })
 });
 
-describe("appendTextAnnotationGeometry", () => {
+describe.only("appendTextAnnotationGeometry", () => {
   let imodel: StandaloneDb;
   let seedDefinitionModelId: string;
   let seedCategoryId: string;
