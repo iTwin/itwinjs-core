@@ -9,7 +9,7 @@ import { SchemaProps } from "../../Deserialization/JsonProps";
 import { SchemaInfo } from "../../Interfaces";
 import { SchemaKey } from "../../SchemaKey";
 import { SchemaContext } from "../../Context";
-import { IncrementalSchemaLocater } from "../../IncrementalLoading/IncrementalSchemaLocater";
+import { enableIncrementalSchemaLoading, IncrementalSchemaLocater } from "../../IncrementalLoading/IncrementalSchemaLocater";
 import { SchemaMatchType } from "../../ECObjects";
 import { ECSchemaNamespaceUris } from "../../Constants";
 import { Schema } from "../../Metadata/Schema";
@@ -35,6 +35,14 @@ class TestSchemaLocater extends IncrementalSchemaLocater {
 describe("IncrementalSchemaLocater Tests", () => {
   let context: SchemaContext;
   let locater: TestSchemaLocater;
+
+  before(() => {
+    enableIncrementalSchemaLoading(true);
+  });
+
+  after(() => {
+    enableIncrementalSchemaLoading(false);
+  });
 
   beforeEach(() => {
     sinon.restore();
@@ -355,5 +363,37 @@ describe("IncrementalSchemaLocater Tests", () => {
 
     expect(getPartialSpy.callCount).to.be.equal(0, "getSchemaPartials should not be called.");
     expect(getJsonSpy.callCount).to.be.equal(1, "getSchemaJson should be called once.");
+  });
+
+  it("getSchemaInfo, incremental schema loading is disabled, returns undefined", async () => {
+    try {
+      enableIncrementalSchemaLoading(false);
+      const schemaKey = new SchemaKey("SchemaA", 1, 0, 0);
+      const spy = sinon.stub(locater, "loadSchemaInfos").resolves([
+        { schemaKey, references: [], alias: "SchemaA" },
+      ]);
+      const schemaInfo = await locater.getSchemaInfo(schemaKey, SchemaMatchType.Exact, context);
+      expect(schemaInfo).to.be.undefined;
+      expect(spy.callCount).to.be.equal(0);
+    }
+    finally {
+      enableIncrementalSchemaLoading(true);
+    }
+  });
+
+  it("getSchema, incremental schema loading is disabled, returns undefined", async () => {
+    try {
+      enableIncrementalSchemaLoading(false);
+      const schemaKey = new SchemaKey("SchemaD", 1, 0, 0);
+      const spy = sinon.stub(locater, "loadSchemaInfos").resolves([
+        { schemaKey, references: [], alias: "SchemaA" },
+      ]);
+      const schema = await locater.getSchema(schemaKey, SchemaMatchType.Exact, context);
+      expect(schema).to.be.undefined;
+      expect(spy.callCount).to.be.equal(0);
+    }
+    finally {
+      enableIncrementalSchemaLoading(true);
+    }
   });
 });
