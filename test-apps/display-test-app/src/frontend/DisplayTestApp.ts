@@ -194,6 +194,7 @@ const dtaFrontendMain = async () => {
   let tileAdminProps: TileAdmin.Props;
   let renderSystemOptions: RenderSystem.Options | RenderSystem;
   let viewManager: ViewManager | undefined;
+  // eslint-disable-next-line prefer-const
   [renderSystemOptions, tileAdminProps, viewManager] = setConfigurationResults();
   await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps, viewManager);
   if (false !== configuration.enableDiagnostics)
