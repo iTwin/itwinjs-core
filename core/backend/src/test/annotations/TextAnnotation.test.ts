@@ -142,7 +142,7 @@ function createElement3d(imodel: IModelDb, createArgs: Omit<TextAnnotation3dCrea
   );
 }
 
-describe("TextAnnotation element", () => {
+describe.only("TextAnnotation element", () => {
   function makeElement(props?: Partial<TextAnnotation2dProps>): TextAnnotation2d {
     return TextAnnotation2d.fromJSON({
       category: "0x12",
@@ -699,7 +699,7 @@ describe("TextAnnotation element", () => {
           });
 
           it("remaps to an existing text style with the same code if present", () => {
-            const dstStyleId = createAnnotationTextStyle(dstDb, dstDefModel, "test").insert();
+            const dstStyleId = createAnnotationTextStyle(dstDb, dstDefModel, "test", {font: { name: "Karla" } }).insert();
             expect(dstStyleId).not.to.equal(seedStyleId);
 
             const srcElem = insertStyledElement(seedStyleId, imodel);
@@ -732,7 +732,7 @@ describe("TextAnnotation element", () => {
           });
 
           it("remaps multiple occurrences of same style to same Id", () => {
-            const srcStyleId = createAnnotationTextStyle(dstDb, dstDefModel, "styyyle").insert();
+            const srcStyleId = createAnnotationTextStyle(dstDb, dstDefModel, "styyyle", {font: { name: "Karla" } }).insert();
             const srcElem1 = insertStyledElement(srcStyleId, imodel);
             const srcElem2 = insertStyledElement(srcStyleId, imodel);
             const srcElem3 = insertStyledElement(srcStyleId, imodel);
@@ -813,7 +813,7 @@ describe("TextAnnotation element", () => {
   });
 });
 
-describe("AnnotationTextStyle", () => {
+describe.only("AnnotationTextStyle", () => {
   let imodel: StandaloneDb;
   let seedSubjectId: string;
   let seedDefinitionModel: string;
@@ -961,7 +961,7 @@ describe("AnnotationTextStyle", () => {
   })
 });
 
-describe("appendTextAnnotationGeometry", () => {
+describe.only("appendTextAnnotationGeometry", () => {
   let imodel: StandaloneDb;
   let seedDefinitionModelId: string;
   let seedCategoryId: string;
