@@ -488,7 +488,7 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
     const srcElem = TextAnnotation3d.fromJSON(srcProps, context.sourceDb);
     ElementDrivesTextAnnotation.remapFields(srcElem, context);
     const anno = srcElem.getAnnotation();
-    dstProps.textAnnotationData = anno ? JSON.stringify(anno.toJSON()) : undefined;
+    dstProps.textAnnotationData = anno ? JSON.stringify({ version: TEXT_ANNOTATION_JSON_VERSION, data: anno.toJSON() } : undefined;
 
     remapTextStyle(context, srcElem, dstProps);
   }
