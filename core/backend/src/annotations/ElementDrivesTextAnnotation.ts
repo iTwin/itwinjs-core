@@ -147,6 +147,10 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
   }
 
   public static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void {
+    if (!context.isBetweenIModels) {
+      return;
+    }
+
     const updatedBlocks = [];
     for (const block of clone.getTextBlocks()) {
       let anyUpdated = false;

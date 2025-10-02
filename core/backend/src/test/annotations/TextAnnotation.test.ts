@@ -501,7 +501,7 @@ describe("TextAnnotation element", () => {
         expect(el1.defaultTextStyle).to.be.undefined;
       });
 
-      describe.only("onCloned", () => {
+      describe("onCloned", () => {
         function insertStyledElement(styleId: Id64String | undefined, db: IModelDb): TextAnnotation2d {
           let args = { ...createElement2dArgs, defaultTextStyleId: styleId }
           const elem = createElement2d(db, args);
