@@ -12,7 +12,7 @@ import { IModelHost, IModelHostOptions, KnownLocations } from "../IModelHost";
 import { Schemas } from "../Schema";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { AzureServerStorage } from "@itwin/object-storage-azure";
-import { ServerStorage } from "@itwin/object-storage-core";
+import type { ServerStorage } from "@itwin/object-storage-core";
 import { TestUtils } from "./TestUtils";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";

@@ -16,7 +16,7 @@ import { AccessToken, assert, BeEvent, BentleyStatus, DbResult, Guid, GuidString
 import { AuthorizationClient, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { AzureServerStorage, AzureServerStorageConfig, BlobServiceClientWrapper } from "@itwin/object-storage-azure";
 import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
-import { ServerStorage } from "@itwin/object-storage-core";
+import type { ServerStorage } from "@itwin/object-storage-core";
 import { BackendHubAccess, CreateNewIModelProps } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
