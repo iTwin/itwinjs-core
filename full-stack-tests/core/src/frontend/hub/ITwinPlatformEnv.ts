@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, GuidString } from "@itwin/core-bentley";
+import { AccessToken, GuidString, ITwinError } from "@itwin/core-bentley";
 import { AuthorizationClient, BriefcaseId } from "@itwin/core-common";
 import { FrontendHubAccess, IModelIdArg } from "@itwin/core-frontend";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
 import { IModelsClient as AuthorIModelsClient, ReleaseBriefcaseParams } from "@itwin/imodels-client-authoring";
-import { Briefcase, IModelsClient as FrontendIModelsClient, GetBriefcaseListParams, GetIModelListParams, IModelScopedOperationParams, MinimalIModel, SPECIAL_VALUES_ME, toArray } from "@itwin/imodels-client-management";
+import { Briefcase, IModelsClient as FrontendIModelsClient, GetBriefcaseListParams, GetIModelListParams, IModelScopedOperationParams, IModelsErrorCode, IModelsErrorScope, MinimalIModel, SPECIAL_VALUES_ME, toArray } from "@itwin/imodels-client-management";
 import { ITwinAccessClientWrapper } from "../../common/ITwinAccessClientWrapper";
 
 export interface IModelNameArg {
@@ -33,6 +33,14 @@ export class TestHubFrontend extends FrontendIModelsAccess {
     return {
       authorization: async () => {
         const [scheme, token] = arg.accessToken.split(" ");
+        if (!scheme || !token)
+          ITwinError.throwError({
+            iTwinErrorId: {
+              key: IModelsErrorCode.InvalidIModelsRequest,
+              scope: IModelsErrorScope,
+            },
+            message: "Unsupported access token format",
+          });
         return Promise.resolve({ scheme, token });
       },
       iModelId: arg.iModelId,
@@ -43,6 +51,14 @@ export class TestHubFrontend extends FrontendIModelsAccess {
     const getIModelListParams: GetIModelListParams = {
       authorization: async () => {
         const [scheme, token] = arg.accessToken.split(" ");
+        if (!scheme || !token)
+          ITwinError.throwError({
+            iTwinErrorId: {
+              key: IModelsErrorCode.InvalidIModelsRequest,
+              scope: IModelsErrorScope,
+            },
+            message: "Unsupported access token format",
+          });
         return Promise.resolve({ scheme, token });
       },
       urlParams: {

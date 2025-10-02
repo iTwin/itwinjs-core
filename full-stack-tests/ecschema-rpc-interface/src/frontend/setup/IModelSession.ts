@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { CheckpointConnection } from "@itwin/core-frontend";
-import { IModelsClient } from "@itwin/imodels-client-management";
+import { IModelsClient, IModelsErrorCode, IModelsErrorScope } from "@itwin/imodels-client-management";
 import { ITwin, ITwinsAccessClient, ITwinsAPIResponse, ITwinSubClass } from "@itwin/itwins-client";
 import { IModelData } from "../../common/Settings";
-import { AccessToken } from "@itwin/core-bentley";
+import { AccessToken, ITwinError } from "@itwin/core-bentley";
 
 export class IModelSession {
 
@@ -51,6 +51,14 @@ export class IModelSession {
       const iModels = imodelClient.iModels.getRepresentationList({
         authorization: async () => {
           const [scheme, token] = accessToken.split(" ");
+          if (!scheme || !token)
+            ITwinError.throwError({
+              iTwinErrorId: {
+                key: IModelsErrorCode.InvalidIModelsRequest,
+                scope: IModelsErrorScope,
+              },
+              message: "Unsupported access token format",
+            });
           return Promise.resolve({ scheme, token });
         },
         urlParams: {
