@@ -1,14 +1,14 @@
-import { ECClass, Schema, SchemaContext, SchemaInfo, SchemaItem, SchemaItemKey,
+import { ECClass, enableIncrementalSchemaLoading, Schema, SchemaContext, SchemaInfo, SchemaItem, SchemaItemKey,
   SchemaItemType, SchemaJsonLocater, SchemaKey, SchemaMatchType, SchemaProps, WithSchemaKey }
   from "@itwin/ecschema-metadata";
 import { expect } from "chai";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { IModelIncrementalSchemaLocater } from "../../IModelIncrementalSchemaLocater";
+import { IncrementalTestHelper } from "./utils/IncrementalTestHelper";
 
 import oldConfiguration from "../assets/IncrementalSchemaLocater/configs/old.config";
 import simpleConfiguration from "../assets/IncrementalSchemaLocater/configs/simple.config";
-import { IncrementalTestHelper } from "./utils/IncrementalTestHelper";
 
 chai.use(chaiAsPromised);
 
@@ -18,20 +18,21 @@ function parseSchemaItemKey(itemKey: string): SchemaItemKey {
   return new SchemaItemKey(itemName, schemaKey);
 }
 
-describe("Incremental Schema Loading", function () {
+describe.only("Incremental Schema Loading", function () {
   describe ("Simple iModel Incremental Loading Tests", () => {
     let testSchemaKey: SchemaKey;
     let testSchemaConfiguration: any;
 
     before("Setup", async function () {
+      enableIncrementalSchemaLoading(true);
       await IncrementalTestHelper.setup();
       testSchemaConfiguration = simpleConfiguration.schemas[0];
       testSchemaKey = new SchemaKey(testSchemaConfiguration.name, 1, 0, 0);
       await IncrementalTestHelper.importSchema(testSchemaKey);
-
     });
 
     after(async () => {
+      enableIncrementalSchemaLoading(false);
       await IncrementalTestHelper.close();
     });
 
@@ -167,10 +168,7 @@ describe("Incremental Schema Loading", function () {
     });
 
     it("Get Schema full schema stack (incremental - backend)", async () => {
-      const locater = new IModelIncrementalSchemaLocater(IncrementalTestHelper.iModel);
-      const schemaContext = new SchemaContext();
-      schemaContext.addLocater(locater);
-
+      const schemaContext = IncrementalTestHelper.iModel.schemaContext;
       const schema = await schemaContext.getSchema(testSchemaKey) as Schema;
       expect(schema).to.be.not.undefined;
       expect(schema).to.have.property("name", testSchemaKey.name);
@@ -216,20 +214,19 @@ describe("Incremental Schema Loading", function () {
     }
 
     before("Setup", async function () {
+      enableIncrementalSchemaLoading(true);
       await IncrementalTestHelper.setup(oldConfiguration.bimFile);
       testSchemaConfiguration = oldConfiguration.schemas[0];
       testSchemaKey = await resolveSchemaKey(testSchemaConfiguration.name);
     });
 
     after(async () => {
+      enableIncrementalSchemaLoading(false);
       await IncrementalTestHelper.close();
     });
 
     it("Incremental Loading still succeeds.", async () => {
-      const locater = new IModelIncrementalSchemaLocater(IncrementalTestHelper.iModel);
-      const schemaContext = new SchemaContext();
-      schemaContext.addLocater(locater);
-
+      const schemaContext = IncrementalTestHelper.iModel.schemaContext;
       const schema = await schemaContext.getSchema(testSchemaKey) as Schema;
       expect(schema).to.be.not.undefined;
       expect(schema).to.have.property("name", testSchemaKey.name);
