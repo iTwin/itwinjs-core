@@ -18,7 +18,7 @@ function parseSchemaItemKey(itemKey: string): SchemaItemKey {
   return new SchemaItemKey(itemName, schemaKey);
 }
 
-describe.only("Incremental Schema Loading", function () {
+describe("Incremental Schema Loading", function () {
   describe ("Simple iModel Incremental Loading Tests", () => {
     let testSchemaKey: SchemaKey;
     let testSchemaConfiguration: any;
