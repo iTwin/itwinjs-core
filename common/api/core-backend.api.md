@@ -327,6 +327,7 @@ export class AnnotationTextStyle extends DefinitionElement {
     static fromJSON(props: AnnotationTextStyleProps, iModel: IModelDb): AnnotationTextStyle;
     protected static onInsert(arg: OnElementPropsArg): void;
     protected static onUpdate(arg: OnElementPropsArg): void;
+    static remapTextStyleId(sourceTextStyleId: Id64String, context: IModelElementCloneContext): Id64String;
     static serialize(props: AnnotationTextStyleProps, iModel: IModelDb): ECSqlRow;
     settings: TextStyleSettings;
     toJSON(): AnnotationTextStyleProps;
@@ -2542,6 +2543,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     static onDeletedDependency(props: RelationshipProps, iModel: IModelDb): void;
     // @internal (undocumented)
     static onRootChanged(props: RelationshipProps, iModel: IModelDb): void;
+    static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void;
     static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void;
 }
 
@@ -6439,6 +6441,8 @@ export class TextAnnotation2d extends AnnotationElement2d {
     protected constructor(props: TextAnnotation2dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // @beta
     static create(iModelDb: IModelDb, arg: TextAnnotation2dCreateArgs): TextAnnotation2d;
     // @internal
@@ -6451,6 +6455,8 @@ export class TextAnnotation2d extends AnnotationElement2d {
     getAnnotation(): TextAnnotation | undefined;
     // @internal (undocumented)
     getTextBlocks(): Iterable<TextBlockAndId>;
+    // @internal (undocumented)
+    protected static onCloned(context: IModelElementCloneContext, srcProps: TextAnnotation2dProps, dstProps: TextAnnotation2dProps): void;
     // @beta
     protected static onInsert(arg: OnElementPropsArg): void;
     // @internal (undocumented)
@@ -6484,6 +6490,8 @@ export class TextAnnotation3d extends GraphicalElement3d {
     protected constructor(props: TextAnnotation3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // @beta
     static create(iModelDb: IModelDb, arg: TextAnnotation3dCreateArgs): TextAnnotation3d;
     // @internal
@@ -6496,6 +6504,8 @@ export class TextAnnotation3d extends GraphicalElement3d {
     getAnnotation(): TextAnnotation | undefined;
     // @internal (undocumented)
     getTextBlocks(): Iterable<TextBlockAndId>;
+    // @internal (undocumented)
+    protected static onCloned(context: IModelElementCloneContext, srcProps: TextAnnotation3dProps, dstProps: TextAnnotation3dProps): void;
     // @beta
     protected static onInsert(arg: OnElementPropsArg): void;
     // @internal (undocumented)

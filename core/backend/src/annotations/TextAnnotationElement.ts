@@ -499,43 +499,8 @@ function remapTextStyle(
   srcElem: TextAnnotation2d | TextAnnotation3d,
   dstProps: TextAnnotation2dProps | TextAnnotation3dProps
 ): void {
-  const dstStyleId = getRemappedTextStyleId(context, srcElem);
-  dstProps.defaultTextStyle = dstStyleId && Id64.isValid(dstStyleId) ? new TextAnnotationUsesTextStyleByDefault(dstStyleId).toJSON() : undefined;
-}
-
-function getRemappedTextStyleId(
-  context: IModelElementCloneContext,
-  srcElem: TextAnnotation2d | TextAnnotation3d
-): Id64String | undefined {
-  // No remapping necessary if there's no text style or we're not copying to a different iModel.
-  const srcStyleId = srcElem.defaultTextStyle?.id;
-  if (undefined === srcStyleId || !context.isBetweenIModels) {
-    return srcStyleId;
-  }
-
-  // If the style's already been remapped, we're finished.
-  let dstStyleId: Id64String | undefined = context.findTargetElementId(srcStyleId);
-  if (Id64.isValid(dstStyleId)) {
-    return dstStyleId;
-  }
-
-  // Look up the style. It really ought to exist.
-  const srcStyle = context.sourceDb.elements.tryGetElement<AnnotationTextStyle>(srcStyleId);
-  if (!srcStyle) {
-    return undefined;
-  }
-
-  // If a style with the same code exists in the target iModel, remap to that one.
-  dstStyleId = context.targetDb.elements.queryElementIdByCode(srcStyle.code);
-  if (undefined !== dstStyleId) {
-    return dstStyleId;
-  }
-
-  // Copy the style into the target iModel and remap its Id.
-  const dstStyleProps = context.cloneElement(srcStyle);
-  dstStyleId = context.targetDb.elements.insertElement(dstStyleProps);
-  context.remapElement(srcStyleId, dstStyleId);
-  return dstStyleId;
+  const dstStyleId = AnnotationTextStyle.remapTextStyleId(srcElem.defaultTextStyle?.id ?? Id64.invalid, context);
+  dstProps.defaultTextStyle = Id64.isValid(dstStyleId) ? new TextAnnotationUsesTextStyleByDefault(dstStyleId).toJSON() : undefined;
 }
 
 function collectReferenceIds(elem: TextAnnotation2d | TextAnnotation3d, referenceIds: EntityReferenceSet): void {
@@ -748,5 +713,43 @@ export class AnnotationTextStyle extends DefinitionElement {
   private static parseTextStyleSettings(json: string | undefined): VersionedJSON<TextStyleSettingsProps> | undefined {
     if (!json) return undefined;
     return validateAndMigrateVersionedJSON<TextStyleSettingsProps>(json, TEXT_STYLE_SETTINGS_JSON_VERSION, migrateTextStyleSettings);
+  }
+
+  /** When copying an element from one iModel to another, returns the Id of the AnnotationTextStyle in the `context`'s target iModel
+   * corresponding to `sourceTextStyleId`, or [Id64.invalid]($bentley) if no corresponding text style exists.
+   * If a text style with the same [Code]($common) exists in the target iModel, the style Id will be remapped to refer to that style.
+   * Otherwise, a copy of the style will be imported into the target iModel and its element Id returned.
+   * Implementations of [[ITextAnnotation]] should invoke this function when implementing their [[Element._onCloned]] method.
+   * @throws Error if an attempt to import the text style failed.
+   */
+  public static remapTextStyleId(sourceTextStyleId: Id64String, context: IModelElementCloneContext): Id64String {
+    // No remapping necessary if there's no text style or we're not copying to a different iModel.
+    if (!Id64.isValid(sourceTextStyleId) || !context.isBetweenIModels) {
+      return sourceTextStyleId;
+    }
+
+    // If the style's already been remapped, we're finished.
+    let dstStyleId: Id64String | undefined = context.findTargetElementId(sourceTextStyleId);
+    if (Id64.isValid(dstStyleId)) {
+      return dstStyleId;
+    }
+
+    // Look up the style. It really ought to exist.
+    const srcStyle = context.sourceDb.elements.tryGetElement<AnnotationTextStyle>(sourceTextStyleId);
+    if (!srcStyle) {
+      return Id64.invalid;
+    }
+
+    // If a style with the same code exists in the target iModel, remap to that one.
+    dstStyleId = context.targetDb.elements.queryElementIdByCode(srcStyle.code);
+    if (undefined !== dstStyleId) {
+      return dstStyleId;
+    }
+
+    // Copy the style into the target iModel and remap its Id.
+    const dstStyleProps = context.cloneElement(srcStyle);
+    dstStyleId = context.targetDb.elements.insertElement(dstStyleProps);
+    context.remapElement(sourceTextStyleId, dstStyleId);
+    return dstStyleId;
   }
 }
