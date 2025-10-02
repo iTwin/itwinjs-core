@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Angle, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { AnnotationTextStyleProps, FieldRun, FractionRun, Placement2dProps, Placement3dProps, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
-import { AnnotationTextStyle, TEXT_ANNOTATION_JSON_VERSION, TEXT_STYLE_SETTINGS_JSON_VERSION, TextAnnotation2d, TextAnnotation2dCreateArgs, TextAnnotation3d, TextAnnotation3dCreateArgs } from "../../annotations/TextAnnotationElement";
+import { AnnotationTextStyle, parseTextAnnotationData, TEXT_ANNOTATION_JSON_VERSION, TEXT_STYLE_SETTINGS_JSON_VERSION, TextAnnotation2d, TextAnnotation2dCreateArgs, TextAnnotation3d, TextAnnotation3dCreateArgs } from "../../annotations/TextAnnotationElement";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { GeometricElement2d, GeometricElement3d, Subject } from "../../Element";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
@@ -599,7 +599,7 @@ describe("TextAnnotation element", () => {
 
             const props = context.cloneElement(elem) as TextAnnotation2dProps;
             expect(props.textAnnotationData).not.to.be.undefined;
-            const anno = TextAnnotation.fromJSON(JSON.parse(props.textAnnotationData!));
+            const anno = TextAnnotation.fromJSON(parseTextAnnotationData(props.textAnnotationData)?.data);
             const para = anno.textBlock.children[0];
             expect((para.children[0] as FieldRun).propertyHost.elementId).to.equal("0x123");
             expect((para.children[1] as FieldRun).propertyHost.elementId).to.equal("0xabc");
@@ -684,7 +684,7 @@ describe("TextAnnotation element", () => {
 
             const props = context.cloneElement(elem) as TextAnnotation2dProps;
             expect(props.textAnnotationData).not.to.be.undefined;
-            const anno = TextAnnotation.fromJSON(JSON.parse(props.textAnnotationData!));
+            const anno = TextAnnotation.fromJSON(parseTextAnnotationData(props.textAnnotationData)?.data);
             const para = anno.textBlock.children[0];
             expect((para.children[0] as FieldRun).propertyHost.elementId).to.equal("0x456");
             expect((para.children[1] as FieldRun).propertyHost.elementId).to.equal("0xdef");

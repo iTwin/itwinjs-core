@@ -282,6 +282,7 @@ import { TypeDefinitionElementProps } from '@itwin/core-common';
 import { UpgradeOptions } from '@itwin/core-common';
 import { UrlLinkProps } from '@itwin/core-common';
 import { Vector3d } from '@itwin/core-geometry';
+import { VersionedJSON } from '@itwin/core-common';
 import { ViewAttachmentLabelProps } from '@itwin/core-common';
 import { ViewAttachmentProps } from '@itwin/core-common';
 import { ViewDefinition2dProps } from '@itwin/core-common';
@@ -4948,6 +4949,9 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView?: StandardViewIndex): Id64String;
     setRange(range: Range3d): void;
 }
+
+// @internal
+export function parseTextAnnotationData(json: string | undefined): VersionedJSON<TextAnnotationProps> | undefined;
 
 // @beta
 export class PartialECChangeUnifier implements Disposable {

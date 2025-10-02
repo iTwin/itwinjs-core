@@ -63,8 +63,10 @@ function migrateTextAnnotationData(oldData: VersionedJSON<TextAnnotationProps>):
   throw new Error(`Migration for textAnnotationData from version ${oldData.version} to ${TEXT_ANNOTATION_JSON_VERSION} failed.`);
 }
 
-/** Parses, validates, and potentially migrates the text annotation data from a JSON string. */
-function parseTextAnnotationData(json: string | undefined): VersionedJSON<TextAnnotationProps> | undefined {
+/** Parses, validates, and potentially migrates the text annotation data from a JSON string.
+ * @internal
+ */
+export function parseTextAnnotationData(json: string | undefined): VersionedJSON<TextAnnotationProps> | undefined {
   if (!json) return undefined;
 
   return validateAndMigrateVersionedJSON<TextAnnotationProps>(json, TEXT_ANNOTATION_JSON_VERSION, migrateTextAnnotationData);
