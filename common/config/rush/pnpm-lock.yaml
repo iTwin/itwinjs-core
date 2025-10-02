@@ -835,15 +835,9 @@ importers:
 
   ../../core/frontend:
     dependencies:
-      '@itwin/cloud-agnostic-core':
-        specifier: ^3.0.4
-        version: 3.0.4
       '@itwin/core-i18n':
         specifier: workspace:*
         version: link:../i18n
-      '@itwin/object-storage-core':
-        specifier: ^3.0.4
-        version: 3.0.4
       '@itwin/webgl-compatibility':
         specifier: workspace:*
         version: link:../webgl-compatibility
@@ -890,6 +884,9 @@ importers:
       '@itwin/eslint-plugin':
         specifier: 5.2.2-dev.2
         version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+      '@itwin/object-storage-core':
+        specifier: ^3.0.4
+        version: 3.0.4
       '@types/chai-as-promised':
         specifier: ^7
         version: 7.1.0
