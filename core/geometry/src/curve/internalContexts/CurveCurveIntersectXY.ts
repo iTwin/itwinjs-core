@@ -375,7 +375,9 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     reversed: boolean,
   ): void {
     const tol2 = this._coincidentGeometryContext.tolerance * this._coincidentGeometryContext.tolerance;
-    let dist2: number | undefined;
+    const cosines = new GrowableFloat64Array(2);
+    const sines = new GrowableFloat64Array(2);
+    const radians = new GrowableFloat64Array(2);
     // Arc: X = C + cU + sV
     // Line:  contains points A0,A1
     // Arc point colinear with line if det (A0, A1, X) = 0
@@ -395,26 +397,30 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const alpha = Geometry.tripleProductPoint4dXYW(pointA0H, pointA1H, data.center);
       const beta = Geometry.tripleProductPoint4dXYW(pointA0H, pointA1H, data.vector0);
       const gamma = Geometry.tripleProductPoint4dXYW(pointA0H, pointA1H, data.vector90);
-      const cosines = new GrowableFloat64Array(2);
-      const sines = new GrowableFloat64Array(2);
-      const radians = new GrowableFloat64Array(2);
-      const numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, cosines, sines, radians);
-      if (numRoots <= 0)
-        return;
+      let numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, cosines, sines, radians);
+      const closeApproach = (0 === numRoots);
+      if (closeApproach)
+        numRoots = 1; // we returned the arc's closest approach as the first "root"; if within tolerance and at endpoints, we record it
+      const acceptSolution = (iRoot: number, checkOnlyEndPointDistance: boolean = false): {fLine: number, fArc: number} | undefined => {
+        const arcPoint = data.center.plus2Scaled(data.vector0, cosines.atUncheckedIndex(iRoot), data.vector90, sines.atUncheckedIndex(iRoot));
+        let fArc = data.sweep.radiansToSignedFraction(radians.atUncheckedIndex(iRoot), extendB0);
+        let fLine = SmallSystem.lineSegment3dHXYClosestPointUnbounded(pointA0H, pointA1H, arcPoint);
+        if (fLine === undefined)
+          return undefined;
+        if (!checkOnlyEndPointDistance && this.acceptFraction(extendA0, fLine, extendA1) && this.acceptFraction(extendB0, fArc, extendB1))
+          return {fLine, fArc};
+        // check for an endpoint intersection that is beyond parametric tolerance but within point tolerance
+        fLine = fLine < 0.5 ? 0 : 1;
+        fArc = data.sweep.fractionToSignedPeriodicFraction(fArc) < 0.5 ? 0 : 1;
+        const pointAH = fLine ? pointA1H : pointA0H;
+        const pointBH = fArc ? pointB1H : pointB0H;
+        const dist2 = pointAH.realDistanceSquaredXY(pointBH);
+        return (dist2 !== undefined && Geometry.isDistanceWithinTol(dist2, tol2)) ? {fLine, fArc} : undefined;
+      };
       for (let i = 0; i < numRoots; i++) {
-        const arcPoint = data.center.plus2Scaled(data.vector0, cosines.atUncheckedIndex(i), data.vector90, sines.atUncheckedIndex(i));
-        let arcFraction = data.sweep.radiansToSignedFraction(radians.atUncheckedIndex(i), extendB0);
-        const lineFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(pointA0H, pointA1H, arcPoint);
-        if (lineFraction !== undefined) {
-          if (this.acceptFraction(extendA0, lineFraction, extendA1) && this.acceptFraction(extendB0, arcFraction, extendB1)) {
-            this.recordPointWithLocalFractions(lineFraction, cpA, fractionA0, fractionA1, arcFraction, arc, 0, 1, reversed);
-          } else { // check for endpoint intersections beyond parametric tolerance but within point tolerance
-            const pointAH = lineFraction < 0.5 ? pointA0H : pointA1H;
-            const pointBH = (arcFraction = data.sweep.fractionToSignedPeriodicFraction(arcFraction)) < 0.5 ? pointB0H : pointB1H;
-            if ((dist2 = pointAH.realDistanceSquaredXY(pointBH)) !== undefined && Geometry.isDistanceWithinTol(dist2, tol2))
-              this.recordPointWithLocalFractions(lineFraction < 0.5 ? 0 : 1, cpA, fractionA0, fractionA1, arcFraction < 0.5 ? 0 : 1, arc, 0, 1, reversed);
-          }
-        }
+        const result = acceptSolution(i, closeApproach);
+        if (result)
+          this.recordPointWithLocalFractions(result.fLine, cpA, fractionA0, fractionA1, result.fArc, arc, 0, 1, reversed);
       }
     } else {
       const data = arc.toTransformedVectors(this._worldToLocalAffine);
@@ -431,26 +437,30 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const alpha = Geometry.tripleProductXYW(pointA0Local, 1, pointA1Local, 1, data.center, 1);
       const beta = Geometry.tripleProductXYW(pointA0Local, 1, pointA1Local, 1, data.vector0, 0);
       const gamma = Geometry.tripleProductXYW(pointA0Local, 1, pointA1Local, 1, data.vector90, 0);
-      const cosines = new GrowableFloat64Array(2);
-      const sines = new GrowableFloat64Array(2);
-      const radians = new GrowableFloat64Array(2);
-      const numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, cosines, sines, radians);
-      if (numRoots <= 0)
-        return;
+      let numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, cosines, sines, radians);
+      const closeApproach = (0 === numRoots);
+      if (closeApproach)
+        numRoots = 1; // we returned the arc's closest approach as the first "root"; if within tolerance and at endpoints, we record it
+      const acceptSolution = (iRoot: number, checkOnlyEndPointDistance: boolean = false): {fLine: number, fArc: number} | undefined => {
+        const arcPoint = data.center.plus2Scaled(data.vector0, cosines.atUncheckedIndex(iRoot), data.vector90, sines.atUncheckedIndex(iRoot));
+        let fArc = data.sweep.radiansToSignedFraction(radians.atUncheckedIndex(iRoot), extendB0);
+        let fLine = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0Local, pointA1Local, arcPoint);
+        if (fLine === undefined)
+          return undefined;
+        if (!checkOnlyEndPointDistance && this.acceptFraction(extendA0, fLine, extendA1) && this.acceptFraction(extendB0, fArc, extendB1))
+          return {fLine, fArc};
+        // check for an endpoint intersection that is beyond parametric tolerance but within point tolerance
+        fLine = fLine < 0.5 ? 0 : 1;
+        fArc = data.sweep.fractionToSignedPeriodicFraction(fArc) < 0.5 ? 0 : 1;
+        const pointALocal = fLine ? pointA1Local : pointA0Local;
+        const pointBLocal = fArc ? pointB1Local : pointB0Local;
+        const dist2 = pointALocal.distanceSquaredXY(pointBLocal);
+        return Geometry.isDistanceWithinTol(dist2, tol2) ? {fLine, fArc} : undefined;
+      };
       for (let i = 0; i < numRoots; i++) {
-        const arcPoint = data.center.plus2Scaled(data.vector0, cosines.atUncheckedIndex(i), data.vector90, sines.atUncheckedIndex(i));
-        let arcFraction = data.sweep.radiansToSignedFraction(radians.atUncheckedIndex(i), extendB0);
-        const lineFraction = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0Local, pointA1Local, arcPoint);
-        if (lineFraction !== undefined) {
-          if (this.acceptFraction(extendA0, lineFraction, extendA1) && this.acceptFraction(extendB0, arcFraction, extendB1)) {
-            this.recordPointWithLocalFractions(lineFraction, cpA, fractionA0, fractionA1, arcFraction, arc, 0, 1, reversed);
-          } else { // check for endpoint intersections beyond parametric tolerance but within point tolerance
-            const pointALocal = lineFraction < 0.5 ? pointA0Local : pointA1Local;
-            const pointBLocal = (arcFraction = data.sweep.fractionToSignedPeriodicFraction(arcFraction)) < 0.5 ? pointB0Local : pointB1Local;
-            if ((dist2 = pointALocal.distanceSquaredXY(pointBLocal)) !== undefined && Geometry.isDistanceWithinTol(dist2, tol2))
-              this.recordPointWithLocalFractions(lineFraction < 0.5 ? 0 : 1, cpA, fractionA0, fractionA1, arcFraction < 0.5 ? 0 : 1, arc, 0, 1, reversed);
-          }
-        }
+        const result = acceptSolution(i, closeApproach);
+        if (result)
+          this.recordPointWithLocalFractions(result.fLine, cpA, fractionA0, fractionA1, result.fArc, arc, 0, 1, reversed);
       }
     }
   }
@@ -484,12 +494,22 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         localB.coffs[1], localB.coffs[4], localB.coffs[7], // vector90 xyw
         ellipseRadians, circleRadians,
       );
+      const tol2 = this._coincidentGeometryContext.tolerance * this._coincidentGeometryContext.tolerance;
       // the intersections are transform-invariant, so the solution angles apply directly to the input arcs
       for (let i = 0; i < ellipseRadians.length; i++) {
-        const fractionA = cpA.sweep.radiansToSignedFraction(circleRadians[i], extendA0);
-        const fractionB = cpB.sweep.radiansToSignedFraction(ellipseRadians[i], extendB0);
-        if (this.acceptFraction(extendA0, fractionA, extendA1) && this.acceptFraction(extendB0, fractionB, extendB1))
+        let fractionA = cpA.sweep.radiansToSignedFraction(circleRadians[i], extendA0);
+        let fractionB = cpB.sweep.radiansToSignedFraction(ellipseRadians[i], extendB0);
+        if (this.acceptFraction(extendA0, fractionA, extendA1) && this.acceptFraction(extendB0, fractionB, extendB1)) {
           this.recordPointWithLocalFractions(fractionA, cpA, 0, 1, fractionB, cpB, 0, 1, reversed);
+        } else { // check for endpoint intersection beyond angular tolerance but within point tolerance
+          fractionA = cpA.sweep.fractionToSignedPeriodicFraction(fractionA) < 0.5 ? 0 : 1;
+          fractionB = cpB.sweep.fractionToSignedPeriodicFraction(fractionB) < 0.5 ? 0 : 1;
+          const endPointA = cpA.fractionToPoint(fractionA, CurveCurveIntersectXY._workPointAA0);
+          const endPointB = cpB.fractionToPoint(fractionB, CurveCurveIntersectXY._workPointBB0);
+          const dist2 = endPointA.distanceSquaredXY(endPointB);
+          if (Geometry.isDistanceWithinTol(dist2, tol2))
+            this.recordPointWithLocalFractions(fractionA, cpA, 0, 1, fractionB, cpB, 0, 1, reversed);
+        }
       }
     }
   }
@@ -504,17 +524,22 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   private dispatchArcArc(
     cpA: Arc3d, extendA0: boolean, extendA1: boolean, cpB: Arc3d, extendB0: boolean, extendB1: boolean, reversed: boolean,
   ): void {
+    // overlap handling. perspective is not handled.
+    if (this._coincidentGeometryContext && !this._worldToLocalPerspective && !this._worldToLocalAffine) {
+      const pairs = this._coincidentGeometryContext.coincidentArcIntersectionXY(cpA, cpB, true);
+      if (pairs) {
+        this.recordPairs(cpA, cpB, pairs, reversed);
+        return;
+      }
+    }
+    // look for isolated intersections
     let matrixA: Matrix3d;
     let matrixB: Matrix3d;
     if (this._worldToLocalPerspective) {
       const dataA = cpA.toTransformedPoint4d(this._worldToLocalPerspective);
       const dataB = cpB.toTransformedPoint4d(this._worldToLocalPerspective);
-      matrixA = Matrix3d.createColumnsXYW(
-        dataA.vector0, dataA.vector0.w, dataA.vector90, dataA.vector90.w, dataA.center, dataA.center.w,
-      );
-      matrixB = Matrix3d.createColumnsXYW(
-        dataB.vector0, dataB.vector0.w, dataB.vector90, dataA.vector90.w, dataB.center, dataB.center.w,
-      );
+      matrixA = Matrix3d.createColumnsXYW(dataA.vector0, dataA.vector0.w, dataA.vector90, dataA.vector90.w, dataA.center, dataA.center.w);
+      matrixB = Matrix3d.createColumnsXYW(dataB.vector0, dataB.vector0.w, dataB.vector90, dataA.vector90.w, dataB.center, dataB.center.w);
     } else {
       const dataA = cpA.toTransformedVectors(this._worldToLocalAffine);
       const dataB = cpB.toTransformedVectors(this._worldToLocalAffine);
@@ -523,24 +548,14 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
     const conditionA = matrixA.conditionNumber();
     const conditionB = matrixB.conditionNumber();
-    // pick the arc that is closest to circular.
+    // order the arcs so that the first one we pass in is closer to circular
     if (conditionA > conditionB)
       this.dispatchArcArcThisOrder(cpA, matrixA, extendA0, extendA1, cpB, matrixB, extendB0, extendB1, reversed);
     else
       this.dispatchArcArcThisOrder(cpB, matrixB, extendB0, extendB1, cpA, matrixA, extendA0, extendA1, !reversed);
-    // overlap handling. perspective is not handled.
-    if (!this._coincidentGeometryContext) {
-      // do nothing
-    } else if (this._worldToLocalPerspective) {
-      // do nothing
-    } else if (this._worldToLocalAffine) {
-      // do nothing
-    } else {
-      const pairs = this._coincidentGeometryContext.coincidentArcIntersectionXY(cpA, cpB, true);
-      if (pairs !== undefined)
-        this.recordPairs(cpA, cpB, pairs, reversed);
-    }
   }
+
+  /** Compute the intersection of an arc and a B-spline curve. */
   private dispatchArcBsplineCurve3d(
     cpA: Arc3d, extendA0: boolean, extendA1: boolean, cpB: BSplineCurve3d, extendB0: boolean, extendB1: boolean, reversed: boolean,
   ): void {
@@ -558,8 +573,6 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
     // The worldToLocal has moved the arc vectors into local space.
     // matrixA captures the xyw parts (ignoring z)
-    // for any point in world space,
-    // THIS CODE ONLY WORKS FOR
     const matrixAInverse = matrixA.inverse();
     if (matrixAInverse) {
       const orderF = cpB.order; // order of the beziers for simple coordinates
@@ -579,36 +592,34 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const awz = 0.0;
       const aww = matrixAInverse.at(2, 2);
 
-      if (matrixAInverse) {
-        let bezier: BezierCurve3dH | undefined;
-        for (let spanIndex = 0; ; spanIndex++) {
-          bezier = cpB.getSaturatedBezierSpan3dH(spanIndex, bezier);
-          if (!bezier)
+      let bezier: BezierCurve3dH | undefined;
+      for (let spanIndex = 0; ; spanIndex++) {
+        bezier = cpB.getSaturatedBezierSpan3dH(spanIndex, bezier);
+        if (!bezier)
             break;
-          if (this._worldToLocalPerspective)
-            bezier.tryMultiplyMatrix4dInPlace(this._worldToLocalPerspective);
-          else if (this._worldToLocalAffine)
-            bezier.tryTransformInPlace(this._worldToLocalAffine);
-          univariateBezierG.zero();
-          bezier.poleProductsXYZW(coffF, axx, axy, axz, axw);
-          univariateBezierG.addSquaredSquaredBezier(coffF, 1.0);
-          bezier.poleProductsXYZW(coffF, ayx, ayy, ayz, ayw);
-          univariateBezierG.addSquaredSquaredBezier(coffF, 1.0);
-          bezier.poleProductsXYZW(coffF, awx, awy, awz, aww);
-          univariateBezierG.addSquaredSquaredBezier(coffF, -1.0);
-          const roots = univariateBezierG.roots(0.0, true);
-          if (roots) {
-            for (const root of roots) {
-              const fractionB = bezier.fractionToParentFraction(root);
-              // The univariate bezier (which has been transformed by the view transform) evaluates into xyw space
-              const bcurvePoint4d = bezier.fractionToPoint4d(root);
-              const c = bcurvePoint4d.dotProductXYZW(axx, axy, axz, axw);
-              const s = bcurvePoint4d.dotProductXYZW(ayx, ayy, ayz, ayw);
-              const arcFraction = cpA.sweep.radiansToSignedFraction(Math.atan2(s, c), extendA0);
-              if (this.acceptFraction(extendA0, arcFraction, extendA1) &&
-                this.acceptFraction(extendB0, fractionB, extendB1)) {
-                this.recordPointWithLocalFractions(arcFraction, cpA, 0, 1, fractionB, cpB, 0, 1, reversed);
-              }
+        if (this._worldToLocalPerspective)
+          bezier.tryMultiplyMatrix4dInPlace(this._worldToLocalPerspective);
+        else if (this._worldToLocalAffine)
+          bezier.tryTransformInPlace(this._worldToLocalAffine);
+        univariateBezierG.zero();
+        bezier.poleProductsXYZW(coffF, axx, axy, axz, axw);
+        univariateBezierG.addSquaredSquaredBezier(coffF, 1.0);
+        bezier.poleProductsXYZW(coffF, ayx, ayy, ayz, ayw);
+        univariateBezierG.addSquaredSquaredBezier(coffF, 1.0);
+        bezier.poleProductsXYZW(coffF, awx, awy, awz, aww);
+        univariateBezierG.addSquaredSquaredBezier(coffF, -1.0);
+        const roots = univariateBezierG.roots(0.0, true);
+        if (roots) {
+          for (const root of roots) {
+            const fractionB = bezier.fractionToParentFraction(root);
+            // The univariate bezier (which has been transformed by the view transform) evaluates into xyw space
+            const bcurvePoint4d = bezier.fractionToPoint4d(root);
+            const c = bcurvePoint4d.dotProductXYZW(axx, axy, axz, axw);
+            const s = bcurvePoint4d.dotProductXYZW(ayx, ayy, ayz, ayw);
+            const arcFraction = cpA.sweep.radiansToSignedFraction(Math.atan2(s, c), extendA0);
+            if (this.acceptFraction(extendA0, arcFraction, extendA1) &&
+              this.acceptFraction(extendB0, fractionB, extendB1)) {
+              this.recordPointWithLocalFractions(arcFraction, cpA, 0, 1, fractionB, cpB, 0, 1, reversed);
             }
           }
         }
