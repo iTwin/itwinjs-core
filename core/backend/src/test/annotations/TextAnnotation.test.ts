@@ -274,7 +274,7 @@ describe("TextAnnotation element", () => {
 
     it("reports default text style and field hosts", () => {
       // makeElement sets defaultTextStyle to "0x21"
-      let elem = makeElement();
+      const elem = makeElement();
       expectReferenceIds(["0x21"], elem);
 
       elem.defaultTextStyle = new TextAnnotationUsesTextStyleByDefault("0x123");
@@ -556,7 +556,7 @@ describe("TextAnnotation element", () => {
 
       describe("onCloned", () => {
         function insertStyledElement(styleId: Id64String | undefined, db: IModelDb): TextAnnotation2d {
-          let args = { ...createElement2dArgs, defaultTextStyleId: styleId }
+          const args = { ...createElement2dArgs, defaultTextStyleId: styleId }
           const elem = createElement2d(db, args);
           elem.insert();
           imodel.saveChanges();
@@ -748,9 +748,9 @@ describe("TextAnnotation element", () => {
             expect(props2.defaultTextStyle?.id).to.equal(props1.defaultTextStyle?.id);
 
             const context2 = new IModelElementCloneContext(imodel, dstDb);
-            context.remapElement(createElement2dArgs.model, dstElemArgs.model);
-            context.remapElement(seedDefinitionModelId, dstDefModel);
-            const props3 = context.cloneElement(srcElem3) as TextAnnotation2dProps;
+            context2.remapElement(createElement2dArgs.model, dstElemArgs.model);
+            context2.remapElement(seedDefinitionModelId, dstDefModel);
+            const props3 = context2.cloneElement(srcElem3) as TextAnnotation2dProps;
             expect(props3.defaultTextStyle?.id).to.equal(props1.defaultTextStyle?.id);
           });
         });
