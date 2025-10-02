@@ -301,7 +301,7 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
     const srcElem = TextAnnotation2d.fromJSON(srcProps, context.sourceDb);
     ElementDrivesTextAnnotation.remapFields(srcElem, context);
     const anno = srcElem.getAnnotation();
-    dstProps.textAnnotationData = anno ? JSON.stringify(anno.toJSON()) : undefined;
+dstProps.textAnnotationData = anno ? JSON.stringify({ version: TEXT_ANNOTATION_JSON_VERSION, data: anno.toJSON() }) : undefined;
 
     remapTextStyle(context, srcElem, dstProps);
   }
