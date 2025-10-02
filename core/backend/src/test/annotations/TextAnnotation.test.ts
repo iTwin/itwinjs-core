@@ -501,7 +501,7 @@ describe("TextAnnotation element", () => {
         expect(el1.defaultTextStyle).to.be.undefined;
       });
 
-      describe.only("onCloned", () => {
+      describe("onCloned", () => {
         it("remaps property hosts", () => {
           const textBlock = TextBlock.create({
             children: [{
@@ -602,18 +602,59 @@ describe("TextAnnotation element", () => {
           });
 
           it("remaps to an existing text style with the same code if present", () => {
+            const dstStyleId = createAnnotationTextStyle(dstDb, dstDefModel, "test", {fontName: "Totally Real Font", lineHeight: 0.25, isItalic: true}).insert();
+            expect(dstStyleId).not.to.equal(seedStyleId);
+
+            const srcElem = insertStyledElement(seedStyleId, imodel);
+            const context = new IModelElementCloneContext(imodel, dstDb);
+            context.remapElement(createElement2dArgs.model, dstElemArgs.model);
+
+            const props = context.cloneElement(srcElem) as TextAnnotation2dProps;
+            expect(props.defaultTextStyle?.id).to.equal(dstStyleId);
+          });
+
+          it("throws an error if definition model is not remapped", () => {
+            const srcElem = insertStyledElement(seedStyleId2, imodel);
+            const context = new IModelElementCloneContext(imodel, dstDb);
+            context.remapElement(createElement2dArgs.model, dstElemArgs.model);
+
+            expect(() => context.cloneElement(srcElem)).to.throw("Invalid target model");
           });
 
           it("imports default text style if necessary", () => {
+            const srcElem = insertStyledElement(seedStyleId2, imodel);
+            const context = new IModelElementCloneContext(imodel, dstDb);
+            context.remapElement(createElement2dArgs.model, dstElemArgs.model);
+            context.remapElement(seedDefinitionModelId, dstDefModel);
 
-          });
-
-          it("sets default text style to undefined if definition model is not remapped", () => {
-
+            const props = context.cloneElement(srcElem) as TextAnnotation2dProps;
+            const dstStyleId = props.defaultTextStyle!.id;
+            expect(dstStyleId).not.to.be.undefined;
+            expect(dstStyleId).not.to.equal(seedStyleId2);
+            expect(dstDb.elements.tryGetElement(dstStyleId)).not.to.be.undefined;
           });
 
           it("remaps multiple occurrences of same style to same Id", () => {
+            const srcStyleId = createAnnotationTextStyle(dstDb, dstDefModel, "styyyle", {fontName: "Totally Real Font", lineHeight: 0.25, isItalic: true}).insert();
+            const srcElem1 = insertStyledElement(srcStyleId, imodel);
+            const srcElem2 = insertStyledElement(srcStyleId, imodel);
+            const srcElem3 = insertStyledElement(srcStyleId, imodel);
 
+            const context = new IModelElementCloneContext(imodel, dstDb);
+            context.remapElement(createElement2dArgs.model, dstElemArgs.model);
+            context.remapElement(seedDefinitionModelId, dstDefModel);
+
+            const props1 = context.cloneElement(srcElem1) as TextAnnotation2dProps;
+            const props2 = context.cloneElement(srcElem2) as TextAnnotation2dProps;
+            expect(props1.defaultTextStyle).not.to.be.undefined;
+            expect(props1.defaultTextStyle?.id).not.to.equal(srcStyleId);
+            expect(props2.defaultTextStyle?.id).to.equal(props1.defaultTextStyle?.id);
+
+            const context2 = new IModelElementCloneContext(imodel, dstDb);
+            context.remapElement(createElement2dArgs.model, dstElemArgs.model);
+            context.remapElement(seedDefinitionModelId, dstDefModel);
+            const props3 = context.cloneElement(srcElem3) as TextAnnotation2dProps;
+            expect(props3.defaultTextStyle?.id).to.equal(props1.defaultTextStyle?.id);
           });
         });
       });
