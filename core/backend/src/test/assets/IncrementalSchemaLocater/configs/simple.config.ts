@@ -5,6 +5,8 @@ export default {
   "schemas": [
     {
       "name": "SimpleSchema",
+      "description": "A simple test schema",
+      "label": "Simple Schema",
       "references": [
         "BisCore",
         "CoreCustomAttributes",
@@ -460,8 +462,8 @@ export default {
             "relativeError": 0.0001,
             "persistenceUnit": "Units.MG",
             "presentationUnits": [
-              "Formats.DefaultRealU(2)[Units.MG]",
-              "Formats.DefaultRealU(2)[Units.G]"
+              "Formats.DefaultRealU[Units.MG]",
+              "Formats.DefaultRealU(1)[Units.G]"
             ]
           }
         },
@@ -808,6 +810,22 @@ export default {
                 }
               ]
             }
+          }
+        },
+        {
+          "item": "BisCore.Drawing",
+          "properties": {
+            "schemaItemType": "EntityClass",
+            "baseClass": "BisCore.Document",
+            "description": "A bis:Drawing is a bis:Document of a 2D drawing.",
+            "customAttributes": [
+              {
+                "className": "BisCore.ClassHasHandler"
+              }
+            ],
+            "mixins": [
+              "BisCore.ISubModeledElement"
+            ]
           }
         }
       ]

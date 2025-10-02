@@ -71,14 +71,11 @@ export class GeometryCoreTestIO {
   public static saveGeometry(geometry: any, directoryName: string | undefined, fileName: string) {
     if (!this.enableSave)
       return;
-
     const path = this.makeOutputDir(directoryName);
     let fullPath = `${path}/${fileName}`;
     if (fileName.search(`\\.imjs$`) === -1)   // tricky: escape the escape char for the regex
       fullPath = `${fullPath}.imjs`;
-
     this.consoleLog(`saveGeometry:: ${fullPath}`);
-
     const imjs = IModelJson.Writer.toIModelJson(geometry);
     fs.writeFileSync(fullPath, prettyPrint(imjs));
   }

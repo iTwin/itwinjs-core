@@ -1,6 +1,68 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 14 Aug 2025 19:42:13 GMT and should not be manually modified.
+This log was last generated on Thu, 02 Oct 2025 14:56:13 GMT and should not be manually modified.
+
+## 5.2.0
+Wed, 01 Oct 2025 20:22:54 GMT
+
+### Updates
+
+- Update Google Maps attribution
+- fix: allow IModelApp.publicPath to be passed without a trailing slash `/`
+- Changed queryExtents to use ECSqlReader
+- Draco-decoding resources are now bundled locally into iTwin.js, rather than querying them from a CDN.
+- Add support for new KindOfQuantity for coordinate length
+- Improve performance of model masking when using pregenerated tiles.
+- Add DynamicsContext.addOverlay
+- Improve frame rate during interactive editing.
+- Fix 'ghost' elements when using GraphicalEditingScope with model masking.
+- A model drawn as only contour lines will only mask the background map where the contour lines draw.
+- Fix an exception when terrain is enabled.
+
+## 5.1.9
+Wed, 24 Sep 2025 17:38:08 GMT
+
+### Updates
+
+- Improve performance of model masking when using pregenerated tiles.
+
+## 5.1.8
+Wed, 17 Sep 2025 17:17:16 GMT
+
+### Updates
+
+- Update Google Maps attribution
+
+## 5.1.7
+Tue, 09 Sep 2025 19:28:04 GMT
+
+_Version update only_
+
+## 5.1.6
+Mon, 08 Sep 2025 13:53:47 GMT
+
+### Updates
+
+- Fix 'ghost' elements when using GraphicalEditingScope with model masking.
+
+## 5.1.5
+Thu, 04 Sep 2025 13:51:08 GMT
+
+### Updates
+
+- Add DynamicsContext.addOverlay
+
+## 5.1.4
+Fri, 22 Aug 2025 14:22:33 GMT
+
+### Updates
+
+- A model drawn as only contour lines will only mask the background map where the contour lines draw.
+
+## 5.1.3
+Wed, 20 Aug 2025 13:57:10 GMT
+
+_Version update only_
 
 ## 5.1.2
 Thu, 14 Aug 2025 19:38:08 GMT

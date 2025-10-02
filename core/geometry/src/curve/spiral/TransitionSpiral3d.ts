@@ -7,6 +7,7 @@
  * @module Curve
  */
 
+import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Geometry } from "../../Geometry";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Range1d, Range3d } from "../../geometry3d/Range";
@@ -21,7 +22,6 @@ import { TransitionConditionalProperties } from "./TransitionConditionalProperti
 
 import type { Vector3d } from "../../geometry3d/Point3dVector3d";
 import type { Ray3d } from "../../geometry3d/Ray3d";
-
 /**
  * This is the set of valid type names for "integrated" spirals
  * * Behavior is expressed by a `NormalizedTransition` snap function.
@@ -199,7 +199,7 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
    *   for an aggregate instance (e.g., LineString3d, CurveChainWithDistanceIndex), use RegionOps.constructCurveXYOffset() instead.
    * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
    */
-  public override constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+  public override constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): BSplineCurve3d | undefined {
     const options = OffsetOptions.create(offsetDistanceOrOptions);
     const handler = new CurveOffsetXYHandler(this, options.leftOffsetDistance);
     this.emitStrokableParts(handler, options.strokeOptions);

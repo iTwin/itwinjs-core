@@ -373,10 +373,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   public pushBatch(batch: Batch) {
-    this.uniforms.batch.setCurrentBatch(batch);
+    this.uniforms.batch.setCurrentBatch(batch, this.currentBranch);
   }
   public popBatch() {
-    this.uniforms.batch.setCurrentBatch(undefined);
+    this.uniforms.batch.clearCurrentBatch();
   }
 
   public addBatch(batch: Batch) {

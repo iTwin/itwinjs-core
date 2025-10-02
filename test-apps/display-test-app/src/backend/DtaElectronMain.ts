@@ -55,12 +55,12 @@ class DtaHandler extends IpcHandler implements DtaIpcInterface {
     return deleteTextStyle(iModelKey, name);
   }
 
-  public async insertText(iModelKey: string, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, textAnnotationData?: TextAnnotationProps): Promise<Id64String> {
-    return insertText(iModelKey, categoryId, modelId, placement, textAnnotationData);
+  public async insertText(iModelKey: string, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, defaultTextStyleId: Id64String, textAnnotationProps?: TextAnnotationProps): Promise<Id64String> {
+    return insertText(iModelKey, categoryId, modelId, placement, defaultTextStyleId, textAnnotationProps);
   }
 
-  public async updateText(iModelKey: string, elementId: Id64String, categoryId?: Id64String, placement?: Placement2dProps, textAnnotationProps?: TextAnnotationProps): Promise<void> {
-    return updateText(iModelKey, elementId, categoryId, placement, textAnnotationProps);
+  public async updateText(iModelKey: string, elementId: Id64String, categoryId?: Id64String, placement?: Placement2dProps, defaultTextStyleId?: Id64String, textAnnotationProps?: TextAnnotationProps): Promise<void> {
+    return updateText(iModelKey, elementId, categoryId, placement, defaultTextStyleId, textAnnotationProps);
   }
 
   public async deleteText(iModelKey: string, elementId: Id64String): Promise<void> {

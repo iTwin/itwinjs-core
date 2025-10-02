@@ -1,6 +1,51 @@
 # Change Log - @itwin/ecschema-metadata
 
-This log was last generated on Thu, 14 Aug 2025 19:42:13 GMT and should not be manually modified.
+This log was last generated on Thu, 02 Oct 2025 14:56:13 GMT and should not be manually modified.
+
+## 5.2.0
+Wed, 01 Oct 2025 20:22:54 GMT
+
+### Updates
+
+- Added isDynamic property on Schema instances to indicate if the schema instance represents a dynamic schema.
+- Add optional 'description' property to FormatSet
+- Add FormatSetFormatsProvider
+- Add required UnitSystem field to FormatSet interface
+
+## 5.1.9
+Wed, 24 Sep 2025 17:38:08 GMT
+
+_Version update only_
+
+## 5.1.8
+Wed, 17 Sep 2025 17:17:16 GMT
+
+_Version update only_
+
+## 5.1.7
+Tue, 09 Sep 2025 19:28:04 GMT
+
+_Version update only_
+
+## 5.1.6
+Mon, 08 Sep 2025 13:53:47 GMT
+
+_Version update only_
+
+## 5.1.5
+Thu, 04 Sep 2025 13:51:09 GMT
+
+_Version update only_
+
+## 5.1.4
+Fri, 22 Aug 2025 14:22:33 GMT
+
+_Version update only_
+
+## 5.1.3
+Wed, 20 Aug 2025 13:57:10 GMT
+
+_Version update only_
 
 ## 5.1.2
 Thu, 14 Aug 2025 19:38:08 GMT

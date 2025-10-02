@@ -59,12 +59,12 @@ export interface DtaIpcInterface {
   /**
    * Inserts a text annotation into the specified iModel.
    */
-  insertText(iModelKey: string, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, textAnnotationData?: TextAnnotationProps): Promise<Id64String>;
+  insertText(iModelKey: string, categoryId: Id64String, modelId: Id64String, placement: Placement2dProps, defaultTextStyleId: Id64String, textAnnotationProps?: TextAnnotationProps): Promise<Id64String>;
 
   /**
    * Updates an existing text annotation in the specified iModel.
    */
-  updateText(iModelKey: string, elementId: Id64String, categoryId?: Id64String, placement?: Placement2dProps, textAnnotationProps?: TextAnnotationProps): Promise<void>;
+  updateText(iModelKey: string, elementId: Id64String, categoryId?: Id64String, placement?: Placement2dProps, defaultTextStyleId?: Id64String, textAnnotationProps?: TextAnnotationProps): Promise<void>;
 
   /**
    * Deletes an existing text annotation in the specified iModel.

@@ -92,7 +92,7 @@ export class SchemaMerger {
       throw error;
     });
 
-    if (!schema.customAttributes || !schema.customAttributes.has("CoreCustomAttributes.DynamicSchema")) {
+    if (!schema.isDynamic) {
       throw new Error(`The target schema '${targetSchemaKey.name}' is not dynamic. Only dynamic schemas are supported for merging.`);
     }
 

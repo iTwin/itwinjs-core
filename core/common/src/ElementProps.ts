@@ -168,11 +168,16 @@ export interface GeometricElement3dProps extends GeometricElementProps {
  * @extensions
  */
 export interface TextAnnotation3dProps extends GeometricElement3dProps {
-  /** The stringified JSON representation of the text annotation.
-   * @see [[TextAnnotationProps]] for the JSON representation.
+  /** The stringified versioned JSON representation of the text annotation.
+   * @see [[VersionedJSON]] for the JSON representation.
+   * @see [[TextAnnotationProps]] for the data model.
    * @note Don't set this property directly - use [TextAnnotation3d.setAnnotation]($backend) instead.
    */
   textAnnotationData?: string;
+  /** The default [AnnotationTextStyle]($backend) element used by the text annotation.
+   * @beta
+   */
+  defaultTextStyle?: RelatedElementProps;
 }
 
 /** Properties that define a [PhysicalElement]($backend)
@@ -255,11 +260,16 @@ export interface GeometricElement2dProps extends GeometricElementProps {
  * @extensions
  */
 export interface TextAnnotation2dProps extends GeometricElement2dProps {
-  /** The stringified JSON representation of the text annotation.
-   * @see [[TextAnnotationProps]] for the JSON representation.
+  /** The stringified versioned JSON representation of the text annotation.
+   * @see [[VersionedJSON]] for the JSON representation.
+   * @see [[TextAnnotationProps]] for the data model.
    * @note Don't set this property directly - use [TextAnnotation2d.setAnnotation]($backend) instead.
    */
   textAnnotationData?: string;
+  /** The default [AnnotationTextStyle]($backend) element used by the text annotation.
+   * @beta
+   */
+  defaultTextStyle?: RelatedElementProps;
 }
 
 /** Properties of a [GeometryPart]($backend)
@@ -636,8 +646,26 @@ export interface SheetReferenceProps extends SheetIndexEntryProps {
 export interface AnnotationTextStyleProps extends DefinitionElementProps {
   /** An optional human-readable description of the text style.*/
   description?: string;
-  /** The stringified JSON representation of the text style.
-   * @see [[TextStyleSettingsProps]]
+  /** The stringified versioned JSON representation of the text style.
+   * @see [[VersionedJSON]] for the JSON representation.
+   * @see [[TextStyleSettingsProps]] for the data model.
    */
   settings?: string;
+}
+
+/** A string in the format `read.write.minor` where the semantics match those of [ECVersion]($ecschema-metadata).
+ * @beta
+ */
+export type ECVersionString = `${string}.${string}.${string}`
+
+/** Wrapper for versioned JSON data.
+ * @beta
+ */
+export interface VersionedJSON<T> {
+  /** The semver version of the JSON data.
+   * Uses the same semantics as [ECVersion]($ecschema-metadata).
+   */
+  version: ECVersionString;
+  /** The JSON data. */
+  data: T;
 }

@@ -19,11 +19,11 @@ SELECT
     'schemaItemType', 'KindOfQuantity',
     'name', [koq].[Name],
     'label', [koq].[DisplayLabel],
-    'description', [koq].[Description]
+    'description', [koq].[Description],
+    'relativeError', [koq].[RelativeError],
+    'persistenceUnit', [koq].[PersistenceUnit]
     ${singleSchema ? `
-    ,'relativeError', [koq].[RelativeError],
-    'persistenceUnit', [koq].[PersistenceUnit],
-    'presentationUnits', (
+    ,'presentationUnits', (
         SELECT json_group_array(js."value")
         FROM [meta].[KindOfQuantityDef] [koq1], json1.json_each([PresentationUnits]) js
         WHERE [koq1].[ECInstanceId] = [koq].[ECInstanceId]

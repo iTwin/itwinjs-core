@@ -218,7 +218,7 @@ export class TileAvailability {
         if (rectangle.containsCartographic(position))
           maxLevel = rectangle.level;
       }
-      node = expectDefined(node?.parent);
+      node = node?.parent;
     }
     return maxLevel;
   }

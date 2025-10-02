@@ -152,7 +152,7 @@ export class BackgroundMapDrape extends TextureDrape {
     const prevPlan = target.plan;
     const drawingParams = PlanarTextureProjection.getTextureDrawingParams(target);
     const stack = new BranchStack();
-    stack.changeRenderPlan(drawingParams.viewFlags, prevPlan.is3d, prevPlan.hline);
+    stack.changeRenderPlan(drawingParams.viewFlags, prevPlan.is3d, prevPlan.hline, prevPlan.contours);
     stack.setSymbologyOverrides(this._symbologyOverrides);
 
     const batchState = new BatchState(stack);

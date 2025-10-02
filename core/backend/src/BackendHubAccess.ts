@@ -111,6 +111,8 @@ export interface IModelIdArg extends TokenArg {
 export interface AcquireNewBriefcaseIdArg extends IModelIdArg {
   /** A string to be reported to other users to identify this briefcase, for example in the case of conflicts or lock collisions. */
   readonly briefcaseAlias?: string;
+  /** A string to represent the device that holds the briefcase. */
+  readonly deviceName?: string;
 }
 
 /** Argument for methods that must supply an IModel name and iTwinId

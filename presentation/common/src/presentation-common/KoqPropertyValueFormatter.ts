@@ -60,6 +60,8 @@ export interface FormatOptions {
   koqName: string;
   /** Unit system to use for formatting. */
   unitSystem?: UnitSystemKey;
+  /** Optional overrides for the format used to parse or format values. */
+  formatOverride?: Partial<Omit<FormatProps, "type">>;
 }
 
 /**
@@ -130,7 +132,7 @@ export class KoqPropertyValueFormatter {
     }
     const { formatProps, persistenceUnitName } = formattingProps;
     const persistenceUnit = await this._unitsProvider.findUnitByName(persistenceUnitName);
-    const format = await Format.createFromJSON("", this._unitsProvider, formatProps);
+    const format = await Format.createFromJSON("", this._unitsProvider, { ...formatProps, ...options.formatOverride });
     return FormatterSpec.create("", format, this._unitsProvider, persistenceUnit);
   }
 
@@ -141,7 +143,7 @@ export class KoqPropertyValueFormatter {
     }
     const { formatProps, persistenceUnitName } = formattingProps;
     const persistenceUnit = await this._unitsProvider.findUnitByName(persistenceUnitName);
-    const format = await Format.createFromJSON("", this._unitsProvider, formatProps);
+    const format = await Format.createFromJSON("", this._unitsProvider, { ...formatProps, ...options.formatOverride });
     return ParserSpec.create(format, this._unitsProvider, persistenceUnit);
   }
 
