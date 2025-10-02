@@ -501,48 +501,7 @@ describe("TextAnnotation element", () => {
         expect(el1.defaultTextStyle).to.be.undefined;
       });
 
-      describe("onCloned", () => {
-        it("remaps property hosts", () => {
-          const textBlock = TextBlock.create({
-            children: [{
-              children: [{
-                type: "field",
-                propertyHost: {
-                  elementId: "0x123",
-                  schemaName: "Fields",
-                  className: "TestElement",
-                },
-                propertyPath: { propertyName: "intProp" },
-              }, {
-                type: "field",
-                propertyHost: {
-                  elementId: "0xabc",
-                  schemaName: "BisCore",
-                  className: "Element",
-                },
-                propertyPath: { propertyName: "CodeValue" },
-              }],
-            }],
-          });
-
-          const annotation = TextAnnotation.create({ textBlock });
-          const elem = createElement2d(imodel, { ...createElement2dArgs, textAnnotationData: annotation.toJSON() });
-          elem.insert();
-          imodel.saveChanges();
-
-          const context = new IModelElementCloneContext(imodel);
-          context.remapElement("0x123", "0x456");
-          context.remapElement("0xabc", "0xdef");
-          context.remapElement(createElement2dArgs.model, createElement2dArgs.model);
-
-          const props = context.cloneElement(elem) as TextAnnotation2dProps;
-          expect(props.textAnnotationData).not.to.be.undefined;
-          const anno = TextAnnotation.fromJSON(JSON.parse(props.textAnnotationData!));
-          const para = anno.textBlock.children[0];
-          expect((para.children[0] as FieldRun).propertyHost.elementId).to.equal("0x456");
-          expect((para.children[1] as FieldRun).propertyHost.elementId).to.equal("0xdef");
-        });
-
+      describe.only("onCloned", () => {
         function insertStyledElement(styleId: Id64String | undefined, db: IModelDb): TextAnnotation2d {
           let args = { ...createElement2dArgs, defaultTextStyleId: styleId }
           const elem = createElement2d(db, args);
@@ -551,30 +510,74 @@ describe("TextAnnotation element", () => {
           return elem;
         }
 
-        it("leaves default text style intact if copying within same iModel", () => {
-          function clone(styleId: Id64String | undefined, expectedStyleId: Id64String | undefined): void {
-            const elem = insertStyledElement(styleId, imodel);
+        describe("within a single iModel", () => {
+          it("leaves property hosts intact", () => {
+            const textBlock = TextBlock.create({
+              children: [{
+                children: [{
+                  type: "field",
+                  propertyHost: {
+                    elementId: "0x123",
+                    schemaName: "Fields",
+                    className: "TestElement",
+                  },
+                  propertyPath: { propertyName: "intProp" },
+                }, {
+                  type: "field",
+                  propertyHost: {
+                    elementId: "0xabc",
+                    schemaName: "BisCore",
+                    className: "Element",
+                  },
+                  propertyPath: { propertyName: "CodeValue" },
+                }],
+              }],
+            });
+
+            const annotation = TextAnnotation.create({ textBlock });
+            const elem = createElement2d(imodel, { ...createElement2dArgs, textAnnotationData: annotation.toJSON() });
+            elem.insert();
+            imodel.saveChanges();
+
             const context = new IModelElementCloneContext(imodel);
+            context.remapElement("0x123", "0x456");
+            context.remapElement("0xabc", "0xdef");
             context.remapElement(createElement2dArgs.model, createElement2dArgs.model);
+
             const props = context.cloneElement(elem) as TextAnnotation2dProps;
-            expect(props.defaultTextStyle?.id).to.equal(expectedStyleId);
+            expect(props.textAnnotationData).not.to.be.undefined;
+            const anno = TextAnnotation.fromJSON(JSON.parse(props.textAnnotationData!));
+            const para = anno.textBlock.children[0];
+            expect((para.children[0] as FieldRun).propertyHost.elementId).to.equal("0x123");
+            expect((para.children[1] as FieldRun).propertyHost.elementId).to.equal("0xabc");
 
-            if (styleId) {
-              // Even an explicit remapping is ignored when cloning within a single iModel
-              // (per the examples set by most other elements, excluding RenderMaterial).
-              context.remapElement(styleId, "0x99887");
-              const props2 = context.cloneElement(elem) as TextAnnotation2dProps;
-              expect(props2.defaultTextStyle?.id).to.equal(expectedStyleId);
+          });
+
+          it("leaves default text style intact", () => {
+            function clone(styleId: Id64String | undefined, expectedStyleId: Id64String | undefined): void {
+              const elem = insertStyledElement(styleId, imodel);
+              const context = new IModelElementCloneContext(imodel);
+              context.remapElement(createElement2dArgs.model, createElement2dArgs.model);
+              const props = context.cloneElement(elem) as TextAnnotation2dProps;
+              expect(props.defaultTextStyle?.id).to.equal(expectedStyleId);
+
+              if (styleId) {
+                // Even an explicit remapping is ignored when cloning within a single iModel
+                // (per the examples set by most other elements, excluding RenderMaterial).
+                context.remapElement(styleId, "0x99887");
+                const props2 = context.cloneElement(elem) as TextAnnotation2dProps;
+                expect(props2.defaultTextStyle?.id).to.equal(expectedStyleId);
+              }
             }
-          }
 
-          clone(seedStyleId, seedStyleId);
-          clone(undefined, undefined);
-          clone("0x12345", "0x12345");
-          clone(Id64.invalid, undefined);
+            clone(seedStyleId, seedStyleId);
+            clone(undefined, undefined);
+            clone("0x12345", "0x12345");
+            clone(Id64.invalid, undefined);
+          });
         });
 
-        describe("between imodels", () => {
+        describe("between iModels", () => {
           let dstDb: StandaloneDb;
           let dstDefModel: Id64String;
           let dstElemArgs: Omit<TextAnnotation2dCreateArgs, "placement">;
@@ -592,6 +595,47 @@ describe("TextAnnotation element", () => {
           });
 
           after(() => dstDb.close());
+
+          it("remaps property hosts", () => {
+            const textBlock = TextBlock.create({
+              children: [{
+                children: [{
+                  type: "field",
+                  propertyHost: {
+                    elementId: "0x123",
+                    schemaName: "Fields",
+                    className: "TestElement",
+                  },
+                  propertyPath: { propertyName: "intProp" },
+                }, {
+                  type: "field",
+                  propertyHost: {
+                    elementId: "0xabc",
+                    schemaName: "BisCore",
+                    className: "Element",
+                  },
+                  propertyPath: { propertyName: "CodeValue" },
+                }],
+              }],
+            });
+
+            const annotation = TextAnnotation.create({ textBlock });
+            const elem = createElement2d(imodel, { ...createElement2dArgs, textAnnotationData: annotation.toJSON() });
+            elem.insert();
+            imodel.saveChanges();
+
+            const context = new IModelElementCloneContext(imodel, dstDb);
+            context.remapElement("0x123", "0x456");
+            context.remapElement("0xabc", "0xdef");
+            context.remapElement(createElement2dArgs.model, dstElemArgs.model);
+
+            const props = context.cloneElement(elem) as TextAnnotation2dProps;
+            expect(props.textAnnotationData).not.to.be.undefined;
+            const anno = TextAnnotation.fromJSON(JSON.parse(props.textAnnotationData!));
+            const para = anno.textBlock.children[0];
+            expect((para.children[0] as FieldRun).propertyHost.elementId).to.equal("0x456");
+            expect((para.children[1] as FieldRun).propertyHost.elementId).to.equal("0xdef");
+          });
 
           it("sets default text style to undefined if source style does not exist", () => {
             const elem = insertStyledElement("0x12345", imodel);
