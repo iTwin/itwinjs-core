@@ -55,7 +55,7 @@ describe("CesiumCoordinateConverter", () => {
     expect(result.z).toBeCloseTo(303);
   });
 
-  it("falls back to approximate conversion when the model is not geo-located", () => {
+  it("falls back to Null Island when the model is not geo-located", () => {
     const projectExtents = Range3d.createXYZXYZ(10, 20, 30, 20, 30, 40);
     const spatialToEcef = vi.fn<SpatialToEcefFn>(() => Point3d.createZero());
     const { converter } = createConverter({ isGeoLocated: false, projectExtents, spatialToEcef });
@@ -65,11 +65,19 @@ describe("CesiumCoordinateConverter", () => {
 
     expect(spatialToEcef).not.toHaveBeenCalled();
 
-    const center = projectExtents.center;
-    const longitude = (spatial.x - center.x) * 0.00001;
-    const latitude = (spatial.y - center.y) * 0.00001;
-    const height = Math.max(spatial.z - center.z + 100, 100);
-    const expected = Cartesian3.fromDegrees(longitude, latitude, height);
+    const expected = Cartesian3.fromDegrees(0, 0, 0);
+
+    expect(result.x).toBeCloseTo(expected.x);
+    expect(result.y).toBeCloseTo(expected.y);
+    expect(result.z).toBeCloseTo(expected.z);
+  });
+
+  it("places the project center at Null Island when the model is not geo-located", () => {
+    const projectExtents = Range3d.createXYZXYZ(100, 200, -50, 200, 300, 50);
+    const { converter } = createConverter({ isGeoLocated: false, projectExtents });
+
+    const result = converter.spatialToCesiumCartesian3(projectExtents.center);
+    const expected = Cartesian3.fromDegrees(0, 0, 0);
 
     expect(result.x).toBeCloseTo(expected.x);
     expect(result.y).toBeCloseTo(expected.y);
