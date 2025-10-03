@@ -3645,12 +3645,12 @@ export class FieldRun extends TextBlockComponent {
     clone(): FieldRun;
     static create(props: Omit<FieldRunProps, "type">): FieldRun;
     equals(other: TextBlockComponent): boolean;
-    readonly formatOptions?: FieldFormatOptions;
+    formatOptions?: FieldFormatOptions;
     static invalidContentIndicator: string;
     // (undocumented)
     get isEmpty(): boolean;
-    readonly propertyHost: Readonly<FieldPropertyHost>;
-    readonly propertyPath: Readonly<FieldPropertyPath>;
+    propertyHost: FieldPropertyHost;
+    propertyPath: FieldPropertyPath;
     // @internal
     setCachedContent(content: string | undefined): void;
     stringify(): string;
