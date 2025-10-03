@@ -244,11 +244,13 @@ export function edgeParamsFromImdl(imdl: Imdl.EdgeParams): EdgeParams {
       ...imdl.silhouettes,
       indices: new VertexIndices(imdl.silhouettes.indices),
     } : undefined,
-    polylines: imdl.polylines ? {
-      ...imdl.polylines,
-      indices: new VertexIndices(imdl.polylines.indices),
-      prevIndices: new VertexIndices(imdl.polylines.prevIndices),
-    } : undefined,
+    polylineGroups: imdl.polylines ? [{
+      polyline: {
+        ...imdl.polylines,
+        indices: new VertexIndices(imdl.polylines.indices),
+        prevIndices: new VertexIndices(imdl.polylines.prevIndices),
+      },
+    }] : undefined,
     indexed: imdl.indexed ? {
       indices: new VertexIndices(imdl.indexed.indices),
       edges: imdl.indexed.edges,
@@ -268,10 +270,10 @@ export function edgeParamsToImdl(params: EdgeParams): Imdl.EdgeParams {
       ...params.silhouettes,
       indices: params.silhouettes.indices.data,
     } : undefined,
-    polylines: params.polylines ? {
-      ...params.polylines,
-      indices: params.polylines.indices.data,
-      prevIndices: params.polylines.prevIndices.data,
+    polylines: params.polylineGroups?.length === 1 ? {
+      ...params.polylineGroups[0].polyline,
+      indices: params.polylineGroups[0].polyline.indices.data,
+      prevIndices: params.polylineGroups[0].polyline.prevIndices.data,
     } : undefined,
     indexed: params.indexed ? {
       indices: params.indexed.indices.data,

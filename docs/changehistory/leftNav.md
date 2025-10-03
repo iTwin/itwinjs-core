@@ -10,6 +10,14 @@ closedPanels: ["Previous Versions", "Changelogs"]
 
 ### Versions
 
+- [5.2.0](./5.2.0.md)
+
+- [5.1.0](./5.1.0.md)
+
+- [5.0.0](./5.0.0.md)
+
+### Previous Versions
+
 - [4.11.0](./4.11.0.md)
 - [4.10.0](./4.10.0.md)
 - [4.9.0](./4.9.0.md)
@@ -22,9 +30,6 @@ closedPanels: ["Previous Versions", "Changelogs"]
 - [4.2.0](./4.2.0.md)
 - [4.1.0](./4.1.0.md)
 - [4.0.0](./4.0.0.md)
-
-### Previous Versions
-
 - [3.7.0](./3.7.0.md)
 - [3.6.0](./3.6.0.md)
 - [3.5.0](./3.5.0.md)

@@ -366,6 +366,7 @@ class GraphicsTile extends Tile {
       smoothPolyfaceEdges: this.tree.edgeOptions && this.tree.edgeOptions.smooth,
       clipToProjectExtents: this.tree.is3d,
       sectionCut: this.tree.stringifiedSectionClip,
+      useAbsolutePositions: true,
     };
 
     return IModelApp.tileAdmin.requestElementGraphics(this.tree.iModel, props);

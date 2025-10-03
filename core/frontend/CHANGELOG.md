@@ -1,6 +1,130 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Mon, 16 Jun 2025 15:03:02 GMT and should not be manually modified.
+This log was last generated on Thu, 02 Oct 2025 14:56:13 GMT and should not be manually modified.
+
+## 5.2.0
+Wed, 01 Oct 2025 20:22:54 GMT
+
+### Updates
+
+- Update Google Maps attribution
+- fix: allow IModelApp.publicPath to be passed without a trailing slash `/`
+- Changed queryExtents to use ECSqlReader
+- Draco-decoding resources are now bundled locally into iTwin.js, rather than querying them from a CDN.
+- Add support for new KindOfQuantity for coordinate length
+- Improve performance of model masking when using pregenerated tiles.
+- Add DynamicsContext.addOverlay
+- Improve frame rate during interactive editing.
+- Fix 'ghost' elements when using GraphicalEditingScope with model masking.
+- A model drawn as only contour lines will only mask the background map where the contour lines draw.
+- Fix an exception when terrain is enabled.
+
+## 5.1.9
+Wed, 24 Sep 2025 17:38:08 GMT
+
+### Updates
+
+- Improve performance of model masking when using pregenerated tiles.
+
+## 5.1.8
+Wed, 17 Sep 2025 17:17:16 GMT
+
+### Updates
+
+- Update Google Maps attribution
+
+## 5.1.7
+Tue, 09 Sep 2025 19:28:04 GMT
+
+_Version update only_
+
+## 5.1.6
+Mon, 08 Sep 2025 13:53:47 GMT
+
+### Updates
+
+- Fix 'ghost' elements when using GraphicalEditingScope with model masking.
+
+## 5.1.5
+Thu, 04 Sep 2025 13:51:08 GMT
+
+### Updates
+
+- Add DynamicsContext.addOverlay
+
+## 5.1.4
+Fri, 22 Aug 2025 14:22:33 GMT
+
+### Updates
+
+- A model drawn as only contour lines will only mask the background map where the contour lines draw.
+
+## 5.1.3
+Wed, 20 Aug 2025 13:57:10 GMT
+
+_Version update only_
+
+## 5.1.2
+Thu, 14 Aug 2025 19:38:08 GMT
+
+### Updates
+
+- Improve frame rate during interactive editing.
+
+## 5.1.1
+Fri, 08 Aug 2025 18:06:10 GMT
+
+_Version update only_
+
+## 5.1.0
+Fri, 08 Aug 2025 12:51:53 GMT
+
+### Updates
+
+- Add support for EXT_mesh_primitive_edge_visibility glTF extension.
+- Made QuadIdProps public
+- Fix issue with WMTS server using ResourceURL
+- Added new `MapLayerSessionManager` API.  Minor additions to `MapCartoRectangle` and `QuadId` classes.
+- Support Contour Line on Section Drawing
+- Support Google Photorealistic 3D Tiles.
+- Changed IModelReadRpcInterface.getAllCodeSpecs to use ECSqlReader. Added CodeSpecs tests.
+- Add support for new KindOfQuantity for coordinate length
+- Add `@itwin/ecschema-metadata`, `@itwin/ecschema-rpcinterface-common` peer dependencies. Make iModel-specific `SchemaContext` available on `IModelConnection` through the new `schemaContext` getter.
+- Deprecate `quantityType` getters for subclasses of `FormattedQuantityDescription` and allow passing in `kindOfQuantityName` to constructor
+- Add `formatsProvider` property to `IModelApp` and `IModelAppOptions`, new `QuantityFormatter` helper methods to help consumers supply their own format specifications for formatting numeric values.
+- Add support for glTF EXT_mesh_primitive_restart extension.
+- Add Viewport.backgroundMapTileTreeReference
+- Honor maximumScreenSpaceError specified in tileset.
+- Added TileAdmin.Options.disablePolyfaceDecimation.
+- HitDetail and Viewport.readPixels include contour line information.
+- schedule script editing mode
+- new reprojectGeometry option available when creating a geometry tile tree reference.
+- Updated deprecation comments to new template
+
+## 5.0.5
+Wed, 06 Aug 2025 15:34:15 GMT
+
+_Version update only_
+
+## 5.0.4
+Wed, 16 Jul 2025 14:59:59 GMT
+
+_Version update only_
+
+## 5.0.3
+Fri, 11 Jul 2025 00:56:56 GMT
+
+_Version update only_
+
+## 5.0.2
+Thu, 26 Jun 2025 22:16:01 GMT
+
+_Version update only_
+
+## 5.0.1
+Tue, 17 Jun 2025 18:33:52 GMT
+
+_Version update only_
 
 ## 5.0.0
 Fri, 13 Jun 2025 20:25:38 GMT

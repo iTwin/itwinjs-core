@@ -12,7 +12,7 @@ interface ITaskResult {
   error?: any;
 }
 
-interface ISenario {
+interface IScenario {
   name: string;
   config?: DbQueryConfig;
   totalBatches: number;
@@ -20,9 +20,8 @@ interface ISenario {
   createReader: (db: ECDb | IModelDb) => ECSqlReader;
 }
 
-
 class LoadSimulator {
-  constructor(public db: ECDb | IModelDb, public senario: ISenario) { }
+  constructor(public db: ECDb | IModelDb, public scenario: IScenario) { }
   private async runQueryTask(reader: ECSqlReader): Promise<ITaskResult> {
     try {
       while (await reader.step()) { }
@@ -34,24 +33,24 @@ class LoadSimulator {
 
   public async run() {
     ConcurrentQuery.shutdown(this.db[_nativeDb]);
-    if (this.senario.config) {
-      const config = ConcurrentQuery.resetConfig(this.db[_nativeDb], this.senario.config);
+    if (this.scenario.config) {
+      const config = ConcurrentQuery.resetConfig(this.db[_nativeDb], this.scenario.config);
       // eslint-disable-next-line no-console
       console.log(config);
     }
-    const overalTime = new StopWatch();
-    overalTime.start();
+    const overallTime = new StopWatch();
+    overallTime.start();
     const results: ITaskResult[] = [];
-    for (let i = 0; i < this.senario.totalBatches; ++i) {
+    for (let i = 0; i < this.scenario.totalBatches; ++i) {
       const promises: Promise<ITaskResult>[] = [];
-      const readerTasks = Array(this.senario.taskPerBatch).fill(undefined).map(() => this.senario.createReader(this.db));
+      const readerTasks = Array(this.scenario.taskPerBatch).fill(undefined).map(() => this.scenario.createReader(this.db));
       readerTasks.forEach((reader) => {
         promises.push(this.runQueryTask(reader));
       });
       results.push(... await Promise.all(promises));
 
     }
-    overalTime.stop();
+    overallTime.stop();
     const errors = results.filter((x) => x.error !== undefined);
     const errorsMap = new Map<string, number>();
     errors.forEach((x) => {
@@ -107,7 +106,7 @@ class LoadSimulator {
         retryCount,
         prepareTime,
       },
-      overalTimeInSec: overalTime.currentSeconds,
+      overallTimeInSec: overallTime.currentSeconds,
       errorCount,
       totalQueries: results.length,
       errorMap: errorsMap
@@ -115,40 +114,27 @@ class LoadSimulator {
 
   }
 }
-
 describe.skip("ConcurrentQueryLoad", () => {
   it("should run", async () => {
     Logger.initializeToConsole();
     Logger.setLevel("ECDb.ConcurrentQuery", LogLevel.Trace);
-    // {
-    //   workerThreads: 4,
-    //   requestQueueSize: 2000,
-    //   ignorePriority: false,
-    //   ignoreDelay: true,
-    //   doNotUsePrimaryConnToPrepare: false,
-    //   autoShutdowWhenIdlelForSeconds: 300,
-    //   statementCacheSizePerWorker: 40,
-    //   monitorPollInterval: 1000,
-    //   memoryMapFileSize: 0,
-    //   allowTestingArgs: false,
-    //   globalQuota: { time: 60, memory: 8388608 }
-    // }
 
-    const senario: ISenario = {
+    const scenario: IScenario = {
       name: "ConcurrentQueryLoad",
       config: {
-
+        globalQuota: { time: 1, memory: 8388608 },
+        workerThreads: 1,
       },
       totalBatches: 1,
       taskPerBatch: 1,
       createReader: (dbs: ECDb | IModelDb) => {
-        const quries = [
+        const queries = [
           {
             sql: `
             WITH sequence(n) AS (
               SELECT  1
               UNION ALL
-              SELECT n + 1 FROM sequence WHERE n < 10000
+              SELECT n + 1 FROM sequence WHERE n < 10000000
             )
             SELECT  COUNT(*)
             FROM bis.SpatialIndex i, sequence s
@@ -160,7 +146,7 @@ describe.skip("ConcurrentQueryLoad", () => {
             WITH sequence(n) AS (
               SELECT  1
               UNION ALL
-              SELECT n + 1 FROM sequence WHERE n < 1000000
+              SELECT n + 1 FROM sequence WHERE n < 10000000
             )
             SELECT  COUNT(*) FROM sequence`
           },
@@ -168,19 +154,18 @@ describe.skip("ConcurrentQueryLoad", () => {
             sql: "SELECT $ FROM bis.Element LIMIT 10000"
           }
         ];
-        const idx = Math.floor(Math.random() * quries.length);
-        return dbs.createQueryReader(quries[idx].sql);
+        const idx = Math.floor(Math.random() * queries.length);
+        return dbs.createQueryReader(queries[idx].sql);
       }
     };
 
     const verySmallFile = IModelTestUtils.resolveAssetFile("test.bim");
     const db = SnapshotDb.openFile(verySmallFile);
-    const simulator = new LoadSimulator(db, senario);
+    const simulator = new LoadSimulator(db, scenario);
     const result = await simulator.run();
     // eslint-disable-next-line no-console
     console.log(result);
     db.close();
     expect(result.errorCount).to.be.equal(0);
   });
-
 });

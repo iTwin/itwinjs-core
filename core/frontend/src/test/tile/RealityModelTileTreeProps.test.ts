@@ -78,7 +78,7 @@ describe("RealityTileTreeProps", () => {
 
   it("uses max SSE from RealityDataSource", () => {
     expectMaxSSE(123, true, 123);
-    expectMaxSSE(1, true, undefined);
+    expectMaxSSE(16, true, undefined);
   });
 
   it("uses max SSE from tileset", () => {

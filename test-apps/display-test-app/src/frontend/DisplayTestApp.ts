@@ -265,8 +265,9 @@ const dtaFrontendMain = async () => {
         setTitle(iModel);
       } catch (error) {
         configuration.standalone = origStandalone;
-        // eslint-disable-next-line no-console
-        console.error(`Error opening snapshot iModel: ${error}`);
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        console.error(`Error opening snapshot iModel: ${error}`); // eslint-disable-line no-console
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         alert(`Error opening snapshot iModel: ${error}`);
       }
     } else {
@@ -280,8 +281,9 @@ const dtaFrontendMain = async () => {
         }
       } catch (error) {
         configuration.standalone = origStandalone;
-        // eslint-disable-next-line no-console
-        console.error(`Error getting hub iModel: ${error}`);
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        console.error(`Error getting hub iModel: ${error}`); // eslint-disable-line no-console
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         alert(`Error getting hub iModel: ${error}`);
       }
     }

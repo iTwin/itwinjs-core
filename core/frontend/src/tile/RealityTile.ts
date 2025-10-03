@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { BeTimePoint, dispose } from "@itwin/core-bentley";
+import { BeTimePoint, dispose, expectDefined } from "@itwin/core-bentley";
 import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, IndexedPolyface, Point3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, Frustum } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
@@ -43,6 +43,7 @@ export interface RealityTileGeometry {
 /** @internal */
 export interface RealityTileContent extends TileContent {
   geometry?: RealityTileGeometry;
+  copyright?: string;
 }
 
 const scratchLoadedChildren = new Array<RealityTile>();
@@ -72,6 +73,14 @@ export class RealityTile extends Tile {
   protected _reprojectionTransform?: Transform;
   private _reprojectedGraphic?: RenderGraphic;
   private readonly _geometricError?: number;
+  /** @internal */
+  protected _copyright?: string;
+  /** @internal */
+  public override readonly tree: RealityTileTree;
+  /** @internal */
+  public get reprojectionTransform(): Transform | undefined {
+    return this._reprojectionTransform;
+  }
 
   /** @internal */
   public constructor(props: RealityTileParams, tree: RealityTileTree) {
@@ -82,6 +91,7 @@ export class RealityTile extends Tile {
     this.rangeCorners = props.rangeCorners;
     this.region = props.region;
     this._geometricError = props.geometricError;
+    this.tree = tree;
 
     if (undefined === this.transformToRoot)
       return;
@@ -101,6 +111,7 @@ export class RealityTile extends Tile {
   public override setContent(content: RealityTileContent): void {
     super.setContent(content);
     this._geometry = content.geometry;
+    this._copyright = content.copyright;
   }
 
   /** @internal */
@@ -117,7 +128,7 @@ export class RealityTile extends Tile {
   /** @internal */
   public get realityParent(): RealityTile { return this.parent as RealityTile; }
   /** @internal */
-  public get realityRoot(): RealityTileTree { return this.tree as RealityTileTree; }
+  public get realityRoot(): RealityTileTree { return this.tree; }
   /** @internal */
   public get graphicType(): TileGraphicType | undefined { return undefined; }     // If undefined, use tree type.
   /** @internal */
@@ -130,6 +141,8 @@ export class RealityTile extends Tile {
    * This property is only available when using [[TileGeometryCollector]].
    */
   public get geometry(): RealityTileGeometry | undefined { return this._geometry; }
+  /** @internal */
+  public get copyright(): string | undefined { return this._copyright; }
 
   /** @internal */
   public override get isDisplayable(): boolean {
@@ -400,7 +413,7 @@ export class RealityTile extends Tile {
       const traversalChildren = this.realityRoot.getTraversalChildren(this.depth);
       traversalChildren.initialize();
 
-      for (let i = 0; i < this.children!.length; i++)
+      for (let i = 0; i < expectDefined(this.children).length; i++)
         this.realityChildren[i].selectRealityTiles(context, args, traversalChildren.getChildDetail(i));
 
       traversalChildren.combine(traversalDetails);
@@ -672,7 +685,7 @@ class AdditiveRefinementStepChild extends RealityTile {
       const branchOptions: GraphicBranchOptions = {};
       if (this.rangeCorners) {
         const clipPolygon = [this.rangeCorners[0], this.rangeCorners[1], this.rangeCorners[3], this.rangeCorners[2]];
-        branchOptions.clipVolume = renderSystem.createClipVolume(ClipVector.create([ClipShape.createShape(clipPolygon, undefined, undefined, this.tree.iModelTransform)!]));
+        branchOptions.clipVolume = renderSystem.createClipVolume(ClipVector.create([expectDefined(ClipShape.createShape(clipPolygon, undefined, undefined, this.tree.iModelTransform))]));
       }
       this._graphic = renderSystem.createGraphicBranch(branch, this._reprojectionTransform, branchOptions);
     }

@@ -7,7 +7,7 @@
  * @module WebGL
  */
 
-import { BeEvent, dispose } from "@itwin/core-bentley";
+import { BeEvent, dispose, expectDefined } from "@itwin/core-bentley";
 import {
   ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, TextureTransparency,
 } from "@itwin/core-common";
@@ -213,7 +213,7 @@ abstract class CombineTexturesFrameBuffer extends SingleTextureFrameBuffer {
 
 class ClassifierCombinationBuffer extends CombineTexturesFrameBuffer {
   public static create(width: number, height: number, classifierColor: Texture, classifierFeature: Texture): ClassifierAndMaskCombinationBuffer | undefined {
-    const combineGeom = CombineTexturesGeometry.createGeometry(classifierColor.texture.getHandle()!, classifierFeature.texture.getHandle()!);
+    const combineGeom = CombineTexturesGeometry.createGeometry(expectDefined(classifierColor.texture.getHandle()), expectDefined(classifierFeature.texture.getHandle()));
     if (undefined === combineGeom)
       return undefined;
 
@@ -223,7 +223,7 @@ class ClassifierCombinationBuffer extends CombineTexturesFrameBuffer {
 }
 class ClassifierAndMaskCombinationBuffer extends CombineTexturesFrameBuffer {
   public static create(width: number, height: number, classifierColor: Texture, classifierFeature: Texture, mask: Texture): ClassifierAndMaskCombinationBuffer | undefined {
-    const combineGeom = Combine3TexturesGeometry.createGeometry(classifierColor.texture.getHandle()!, classifierFeature.texture.getHandle()!, mask.texture.getHandle()!);
+    const combineGeom = Combine3TexturesGeometry.createGeometry(expectDefined(classifierColor.texture.getHandle()), expectDefined(classifierFeature.texture.getHandle()), expectDefined(mask.texture.getHandle()));
     if (undefined === combineGeom)
       return undefined;
 
@@ -252,7 +252,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _anyOpaque = false;
   private _anyTranslucent = false;
   private _classifier?: ActiveSpatialClassifier;
-  private readonly _plane = Plane3dByOriginAndUnitNormal.create(new Point3d(0, 0, 0), new Vector3d(0, 0, 1))!;    // TBD -- Support other planes - default to X-Y for now.
+  private readonly _plane = expectDefined(Plane3dByOriginAndUnitNormal.create(new Point3d(0, 0, 0), new Vector3d(0, 0, 1)));    // TBD -- Support other planes - default to X-Y for now.
   private readonly _renderState = new RenderState();
   private readonly _renderCommands: RenderCommands;
   private readonly _branchStack = new BranchStack();
@@ -260,6 +260,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _planarClipMask?: PlanarClipMaskState;
   private _classifierTreeRef?: SpatialClassifierTileTreeReference;
   private _planarClipMaskOverrides?: FeatureSymbology.Overrides;
+  private _overridesDirty = true;
   private _contentMode: PlanarClassifierContent = PlanarClassifierContent.None;
   private _removeMe?: () => void;
   private _featureSymbologySource: FeatureSymbology.Source = {
@@ -312,7 +313,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   public get isClassifyingPointCloud(): boolean { return true === this._isClassifyingPointCloud; }
 
   public addGraphic(graphic: RenderGraphic) {
-    this._graphics!.push(graphic);
+    expectDefined(this._graphics).push(graphic);
   }
 
   public static create(properties: ActiveSpatialClassifier | undefined, target: Target): PlanarClassifier {
@@ -429,13 +430,17 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._projectionMatrix = projection.projectionMatrix;
     this._frustum = projection.textureFrustum;
     this._debugFrustum = projection.debugFrustum;
-    this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides(context, this._featureSymbologySource);
+    if (this._overridesDirty) {
+      this._overridesDirty = false;
+      this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides(context, this._featureSymbologySource);
+    }
+
     if (!this._planarClipMask?.usingViewportOverrides && this._removeMe) {
       this._removeMe();
       this._removeMe = undefined;
     } else if (this._planarClipMask?.usingViewportOverrides && !this._removeMe) {
       this._removeMe = context.viewport.onFeatureOverridesChanged.addListener(() => {
-        this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides(context, this._featureSymbologySource);
+        this._overridesDirty = true;
         context.viewport.requestRedraw();
       });
     }
@@ -443,7 +448,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const drawTree = (treeRef: TileTreeReference, graphics: RenderGraphic[]) => {
       this._graphics = graphics;
       const frustumPlanes = this._frustum ? FrustumPlanes.fromFrustum(this._frustum) : FrustumPlanes.createEmpty();
-      const drawArgs = GraphicsCollectorDrawArgs.create(context, this, treeRef, frustumPlanes, projection.worldToViewMap!);
+      const drawArgs = GraphicsCollectorDrawArgs.create(context, this, treeRef, frustumPlanes, expectDefined(projection.worldToViewMap));
       if (undefined !== drawArgs)
         treeRef.draw(drawArgs);
 
@@ -465,14 +470,14 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       builder.setSymbology(ColorDef.green, ColorDef.green, 2);
       builder.addFrustum(context.viewingSpace.getFrustum());
       builder.setSymbology(ColorDef.red, ColorDef.red, 2);
-      builder.addFrustum(this._debugFrustum!);
+      builder.addFrustum(expectDefined(this._debugFrustum));
       builder.setSymbology(ColorDef.blue, ColorDef.blue, 2);
       builder.addFrustum(this._frustum);
 
       builder.setSymbology(ColorDef.from(0, 200, 0, 222), ColorDef.from(0, 200, 0, 222), 2);
       builder.addFrustumSides(context.viewingSpace.getFrustum());
       builder.setSymbology(ColorDef.from(200, 0, 0, 222), ColorDef.from(200, 0, 0, 222), 2);
-      builder.addFrustumSides(this._debugFrustum!);
+      builder.addFrustumSides(expectDefined(this._debugFrustum));
       builder.setSymbology(ColorDef.from(0, 0, 200, 222), ColorDef.from(0, 0, 200, 222), 2);
       builder.addFrustumSides(this._frustum);
       this._debugFrustumGraphic = builder.finish();
@@ -556,7 +561,7 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
 
     const prevProjMatrix = target.uniforms.frustum.projectionMatrix;
     target.uniforms.frustum.changeProjectionMatrix(PlanarClassifier._postProjectionMatrix.multiplyMatrixMatrix(prevProjMatrix));
-    target.uniforms.branch.changeRenderPlan(vf, target.plan.is3d, target.plan.hline);
+    target.uniforms.branch.changeRenderPlan(vf, target.plan.is3d, target.plan.hline, target.plan.contours);
 
     const addCmds = (oldCmds: DrawCommands, newCmds: DrawCommands) => {
       if (undefined === newCmds)
@@ -575,6 +580,17 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const getDrawCommands = (graphics: RenderGraphic[]) => {
       this._batchState.reset();
       renderCommands.reset(target, this._branchStack, this._batchState);
+      if (this._planarClipMask?.overridesModelVisibility) {
+        // We're using batched tiles and the mask is overriding which models are visible versus those visible in the view.
+        // We don't want the BatchedTileTreeReference to hide models that belong in the mask.
+        // The target's root branch's symbology overrides are set up correctly for the mask, and we never push branches to the target
+        // (we have a separate branch stack), so just use the root branch as the appearance provider instead of the branch stack.
+        // NOTE: this doesn't work if we're inside a GraphicalEditingScope displaying temporary graphics for some elements, because those
+        // elements are hidden in the tiles by a FeatureAppearanceProvider. But we'll never use a GraphicalEditingScope with batched tiles,
+        // and non-batched tiles never hide models using symbology overrides.
+        renderCommands.appearanceProvider = target.currentBranch;
+      }
+
       renderCommands.collectGraphicsForPlanarProjection(graphics);
 
       // Draw the classifiers into our attachments.
@@ -605,8 +621,11 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
         this._classifierBuffers.drawHilite(hiliteCommands, target);
     }
     if (this._maskGraphics.length > 0 && this._maskBuffer) {
-      if (this._planarClipMaskOverrides)
+      if (this._planarClipMaskOverrides) {
         target.overrideFeatureSymbology(this._planarClipMaskOverrides);
+        this._branchStack.setSymbologyOverrides(this._planarClipMaskOverrides);
+      }
+
       if (this._planarClipMask && this._planarClipMask.settings.transparency !== undefined && this._planarClipMask.settings.transparency > 0.0)
         this._anyTranslucent = true;
 

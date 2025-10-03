@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { dispose } from "@itwin/core-bentley";
+import { dispose, disposeArray } from "@itwin/core-bentley";
 import { Point3d, Range3d } from "@itwin/core-geometry";
 import { MeshParams } from "../../../common/internal/render/MeshParams";
 import { SurfaceType } from "../../../common/internal/render/SurfaceParams";
@@ -32,7 +32,7 @@ export class MeshRenderGeometry implements RenderGeometry {
   public readonly surface?: SurfaceGeometry;
   public readonly segmentEdges?: EdgeGeometry;
   public readonly silhouetteEdges?: SilhouetteEdgeGeometry;
-  public readonly polylineEdges?: PolylineEdgeGeometry;
+  public readonly polylineEdges?: PolylineEdgeGeometry[];
   public readonly indexedEdges?: IndexedEdgeGeometry;
   public readonly range: Range3d;
 
@@ -51,8 +51,15 @@ export class MeshRenderGeometry implements RenderGeometry {
     if (edges.segments)
       this.segmentEdges = EdgeGeometry.create(data, edges.segments);
 
-    if (edges.polylines)
-      this.polylineEdges = PolylineEdgeGeometry.create(data, edges.polylines);
+    if (edges.polylineGroups) {
+      this.polylineEdges = [];
+      for (const group of edges.polylineGroups) {
+        const polyline = PolylineEdgeGeometry.create(data, group);
+        if (polyline) {
+          this.polylineEdges.push(polyline);
+        }
+      }
+    }
 
     if (edges.indexed)
       this.indexedEdges = IndexedEdgeGeometry.create(data, edges.indexed);
@@ -72,7 +79,7 @@ export class MeshRenderGeometry implements RenderGeometry {
     dispose(this.surface);
     dispose(this.segmentEdges);
     dispose(this.silhouetteEdges);
-    dispose(this.polylineEdges);
+    disposeArray(this.polylineEdges);
     dispose(this.indexedEdges);
   }
 
@@ -81,7 +88,7 @@ export class MeshRenderGeometry implements RenderGeometry {
       (!this.surface || this.surface.isDisposed) &&
       (!this.segmentEdges || this.segmentEdges.isDisposed) &&
       (!this.silhouetteEdges || this.silhouetteEdges.isDisposed) &&
-      (!this.polylineEdges || this.polylineEdges.isDisposed) &&
+      (!this.polylineEdges || this.polylineEdges.every((x) => x.isDisposed)) &&
       (!this.indexedEdges || this.indexedEdges.isDisposed);
   }
 
@@ -90,7 +97,7 @@ export class MeshRenderGeometry implements RenderGeometry {
     this.surface?.collectStatistics(stats);
     this.segmentEdges?.collectStatistics(stats);
     this.silhouetteEdges?.collectStatistics(stats);
-    this.polylineEdges?.collectStatistics(stats);
+    this.polylineEdges?.forEach((x) => x.collectStatistics(stats));
     this.indexedEdges?.collectStatistics(stats);
   }
 
@@ -131,8 +138,8 @@ export class MeshGraphic extends Graphic {
     this.addPrimitive(geometry.surface);
     this.addPrimitive(geometry.segmentEdges);
     this.addPrimitive(geometry.silhouetteEdges);
-    this.addPrimitive(geometry.polylineEdges);
     this.addPrimitive(geometry.indexedEdges);
+    geometry.polylineEdges?.forEach((x) => this.addPrimitive(x));
   }
 
   public get isDisposed(): boolean { return this.meshData.isDisposed && 0 === this._primitives.length; }

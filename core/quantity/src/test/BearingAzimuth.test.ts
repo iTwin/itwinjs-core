@@ -109,22 +109,22 @@ describe("Bearing format tests:", () => {
 
     const degreesToRadians = (degrees: number): number => degrees * (Math.PI / 180);
     const testData: TestData[] = [
-      { input: 0.0,     unit: rad, dms: "N00:00:00E", dmsWithLabel: "N00°00'00\"E", decimal: "N00.000°E" },
-      { input: 5.0,     unit: rad, dms: "N05:00:00E", dmsWithLabel: "N05°00'00\"E", decimal: "N05.000°E" },
-      { input: 45.0,    unit: rad, dms: "N45:00:00E", dmsWithLabel: "N45°00'00\"E", decimal: "N45.000°E" },
+      { input: 0.0, unit: rad, dms: "N00:00:00E", dmsWithLabel: "N00°00'00\"E", decimal: "N00.000°E" },
+      { input: 5.0, unit: rad, dms: "N05:00:00E", dmsWithLabel: "N05°00'00\"E", decimal: "N05.000°E" },
+      { input: 45.0, unit: rad, dms: "N45:00:00E", dmsWithLabel: "N45°00'00\"E", decimal: "N45.000°E" },
       { input: 45.5028, unit: rad, dms: "N45:30:10E", dmsWithLabel: "N45°30'10\"E", decimal: "N45.503°E" },
-      { input: 90.0,    unit: rad, dms: "N90:00:00E", dmsWithLabel: "N90°00'00\"E", decimal: "N90.000°E" },
-      { input: 135.0,   unit: rad, dms: "S45:00:00E", dmsWithLabel: "S45°00'00\"E", decimal: "S45.000°E" },
-      { input: 180.0,   unit: rad, dms: "S00:00:00E", dmsWithLabel: "S00°00'00\"E", decimal: "S00.000°E" },
-      { input: 225.0,   unit: rad, dms: "S45:00:00W", dmsWithLabel: "S45°00'00\"W", decimal: "S45.000°W" },
-      { input: 234.4972,unit: rad, dms: "S54:29:50W", dmsWithLabel: "S54°29'50\"W", decimal: "S54.497°W" },
-      { input: 270.0,   unit: rad, dms: "N90:00:00W", dmsWithLabel: "N90°00'00\"W", decimal: "N90.000°W" },
-      { input: 315.0,   unit: rad, dms: "N45:00:00W", dmsWithLabel: "N45°00'00\"W", decimal: "N45.000°W" },
-      { input: 0.0,     unit: rad, dms: "N00:00:00E", dmsWithLabel: "N00°00'00\"E", decimal: "N00.000°E" },
-      { input: 52.0,    unit: rad, dms: "N52:00:00E", dmsWithLabel: "N52°00'00\"E", decimal: "N52.000°E" },
-      { input: 110.0,   unit: rad, dms: "S70:00:00E", dmsWithLabel: "S70°00'00\"E", decimal: "S70.000°E" },
-      { input: 580.0,   unit: rad, dms: "S40:00:00W", dmsWithLabel: "S40°00'00\"W", decimal: "S40.000°W" },
-      { input: 1000.0,  unit: rad, dms: "N80:00:00W", dmsWithLabel: "N80°00'00\"W", decimal: "N80.000°W" },
+      { input: 90.0, unit: rad, dms: "N90:00:00E", dmsWithLabel: "N90°00'00\"E", decimal: "N90.000°E" },
+      { input: 135.0, unit: rad, dms: "S45:00:00E", dmsWithLabel: "S45°00'00\"E", decimal: "S45.000°E" },
+      { input: 180.0, unit: rad, dms: "S00:00:00E", dmsWithLabel: "S00°00'00\"E", decimal: "S00.000°E" },
+      { input: 225.0, unit: rad, dms: "S45:00:00W", dmsWithLabel: "S45°00'00\"W", decimal: "S45.000°W" },
+      { input: 234.4972, unit: rad, dms: "S54:29:50W", dmsWithLabel: "S54°29'50\"W", decimal: "S54.497°W" },
+      { input: 270.0, unit: rad, dms: "N90:00:00W", dmsWithLabel: "N90°00'00\"W", decimal: "N90.000°W" },
+      { input: 315.0, unit: rad, dms: "N45:00:00W", dmsWithLabel: "N45°00'00\"W", decimal: "N45.000°W" },
+      { input: 0.0, unit: rad, dms: "N00:00:00E", dmsWithLabel: "N00°00'00\"E", decimal: "N00.000°E" },
+      { input: 52.0, unit: rad, dms: "N52:00:00E", dmsWithLabel: "N52°00'00\"E", decimal: "N52.000°E" },
+      { input: 110.0, unit: rad, dms: "S70:00:00E", dmsWithLabel: "S70°00'00\"E", decimal: "S70.000°E" },
+      { input: 580.0, unit: rad, dms: "S40:00:00W", dmsWithLabel: "S40°00'00\"W", decimal: "S40.000°W" },
+      { input: 1000.0, unit: rad, dms: "N80:00:00W", dmsWithLabel: "N80°00'00\"W", decimal: "N80.000°W" },
     ];
 
     for (const entry of testData) {
@@ -161,10 +161,10 @@ describe("Bearing format tests:", () => {
     const bearingDMSParser = await ParserSpec.create(bearingDMS, unitsProvider, degree);
 
     const testData = [
-      { input: "N45:00:00E", expected:  45.0 },
-      { input: "n45:00:00e", expected:  45.0 },
-      { input: "s45:00:00w", expected:  225.0 },
-      { input: "S45:00:00E", expected:  135.0 },
+      { input: "N45:00:00E", expected: 45.0 },
+      { input: "n45:00:00e", expected: 45.0 },
+      { input: "s45:00:00w", expected: 225.0 },
+      { input: "S45:00:00E", expected: 135.0 },
     ];
 
     for (const entry of testData) {
@@ -176,26 +176,170 @@ describe("Bearing format tests:", () => {
     }
   });
 
-  it("should handle special formats for bearing strings", async () => {
-    const bearingDMSParser = await ParserSpec.create(bearingDMS, unitsProvider, degree);
+  it("correctly parse and format supported bearing strings, reject unsupported strings, using Units.RAD and Units.ARC_DEG", async () => {
+    const bearingFormatProps: FormatProps = {
+      minWidth: 2,
+      precision: 0,
+      type: "Bearing",
+      revolutionUnit: "Units.REVOLUTION",
+      formatTraits: ["showUnitLabel"],
+      uomSeparator: "",
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          { name: "Units.ARC_DEG", label: "°" },
+          { name: "Units.ARC_MINUTE", label: "'" },
+          { name: "Units.ARC_SECOND", label: "\"" },
+        ],
+      },
+    };
+
+    const bearingFormat = new Format("bearing-flexible-parser");
+    await bearingFormat.fromJSON(unitsProvider, bearingFormatProps);
+    const bearingParserDeg = await ParserSpec.create(bearingFormat, unitsProvider, degree);
+    const bearingFormatterDeg = await FormatterSpec.create("bearing-flexible-formatter", bearingFormat, unitsProvider, degree);
+    const bearingParserRad = await ParserSpec.create(bearingFormat, unitsProvider, rad);
+    const bearingFormatterRad = await FormatterSpec.create("bearing-flexible-formatter", bearingFormat, unitsProvider, rad);
+
+    const validTestData = [
+      { input: "N45 45 45E", expected:  45.7625, expectedText: "N45°45'45\"E" },
+      { input: "N45 45 45e", expected:  45.7625, expectedText: "N45°45'45\"E" },
+      { input: "n45 45 45E", expected:  45.7625, expectedText: "N45°45'45\"E" },
+      { input: "n45 45 45e", expected:  45.7625, expectedText: "N45°45'45\"E" },
+      { input: "n 45 45 45 e", expected: 45.7625, expectedText: "N45°45'45\"E" },
+      { input: "n45.4545e", expected:  45.765, expectedText: "N45°45'45\"E" },
+      { input: "n 45.4545 e", expected:  45.765, expectedText: "N45°45'45\"E" },
+      { input: "n65.4545e",  expected:  65.7625, expectedText: "N65°45'45\"E" },
+      { input: "n65 45 45e", expected:  65.7625, expectedText: "N65°45'45\"E" },
+      { input: "n35 45 45.101e", expected: 35.762528, expectedText: "N35°45'45\"E" },
+      { input: "n85 45 45.9e", expected: 85.76275, expectedText: "N85°45'46\"E" },
+      { input: "n85 45 45e", expected: 85.7625, expectedText: "N85°45'45\"E" },
+      { input: "n85 60 60e", expected: 86.0167, expectedText: "N86°01'00\"E" },
+      { input: "n85 45 65e", expected: 85.76275, expectedText: "N85°46'05\"E" },
+      { input: "s65:40:00w", expected: 245.667, expectedText: "S65°40'00\"W" },
+      { input: "s45e", expected: 135, expectedText: "S45°00'00\"E" },
+      { input: "S45E", expected: 135, expectedText: "S45°00'00\"E" },
+      { input: "s45.45e",    expected: 134.25, expectedText: "S45°45'00\"E" },
+      { input: "s45 45 00e", expected: 134.25, expectedText: "S45°45'00\"E" },
+      { input: "s 45 45 00 e", expected: 134.25, expectedText: "S45°45'00\"E" },
+      { input: "s45d45m45se", expected: 134.2375, expectedText: "S45°45'45\"E" },
+      { input: "s45d45m45.0se", expected: 134.2375, expectedText: "S45°45'45\"E" },
+      { input: "s45d45m45.0e", expected: 134.2375, expectedText: "S45°45'45\"E" },
+      { input: "NE", expected: 45.0, expectedText: "N45°00'00\"E" },
+      { input: "SE", expected: 135.0, expectedText: "S45°00'00\"E" },
+      { input: "SW", expected: 225.0, expectedText: "S45°00'00\"W" },
+      { input: "NW", expected: 315.0, expectedText: "N45°00'00\"W" },
+      { input: "N45E", expected: 45.0, expectedText: "N45°00'00\"E" },
+      { input: "S45W", expected: 225.0, expectedText: "S45°00'00\"W" },
+      { input: "N45W", expected: 315.0, expectedText: "N45°00'00\"W" },
+      { input: "S45E", expected: 135.0, expectedText: "S45°00'00\"E" },
+      { input: "nE", expected: 45.0, expectedText: "N45°00'00\"E" },
+      { input: "sW", expected: 225.0, expectedText: "S45°00'00\"W" },
+      { input: "nW", expected: 315.0, expectedText: "N45°00'00\"W" },
+      { input: "sE", expected: 135.0, expectedText: "S45°00'00\"E" },
+      { input: "n45e", expected: 45.0, expectedText: "N45°00'00\"E" },
+      { input: "s45w", expected: 225.0, expectedText: "S45°00'00\"W" },
+      { input: "n45w", expected: 315.0, expectedText: "N45°00'00\"W" },
+      { input: "s45e", expected: 135.0, expectedText: "S45°00'00\"E" },
+      { input: "N", expected: 0.0, expectedText: "N00°00'00\"E" },
+      { input: "S", expected: 180.0, expectedText: "S00°00'00\"E" },
+      { input: "n", expected: 0.0, expectedText: "N00°00'00\"E" },
+      { input: "s", expected: 180.0, expectedText: "S00°00'00\"E" },
+    ];
+
+    const validateRoundTrip = (input: string, expected: number, expectedText: string, formatSpec: FormatterSpec, parserSpec: ParserSpec) => {
+      const result = Parser.parseQuantityString(input, parserSpec);
+      if (!Parser.isParsedQuantity(result)) {
+        expect.fail(`Expected a parsed quantity for input "${input}"`);
+      }
+      expect(result.value).to.be.closeTo(expected, 0.01);
+      const formatted = Formatter.formatQuantity(result.value, formatSpec);
+      expect(formatted).to.equal(expectedText);
+    }
+
+    for (const { input, expected, expectedText } of validTestData) {
+      validateRoundTrip(input, expected, expectedText, bearingFormatterDeg, bearingParserDeg);
+
+      const radians = expected * (Math.PI / 180);
+      const normalizedAngle = radians % (2 * Math.PI);
+      validateRoundTrip(input, normalizedAngle, expectedText, bearingFormatterRad, bearingParserRad);
+
+    }
+    const unsupportedInputs = [
+      "s45+45+45e",
+      "s45/45/45e",
+      "s45*45*45e",
+      "s45-45-45e",
+    ];
+    for (const input of unsupportedInputs) {
+      const result = Parser.parseQuantityString(input, bearingParserDeg);
+      expect(Parser.isParsedQuantity(result)).to.be.false;
+    }
+  });
+
+  it("should correctly parse bearing using RAD units", async () => {
+    const bearingRadJson: FormatProps = {
+      minWidth: 2,
+      precision: 0,
+      type: "Bearing",
+      revolutionUnit: "Units.REVOLUTION",
+      composite: {
+        includeZero: true,
+        units: [
+          { name: "Units.RAD" },
+        ],
+      },
+    };
+
+    const bearingRad = new Format("BearingRad");
+    await bearingRad.fromJSON(unitsProvider, bearingRadJson);
+    expect(bearingRad.hasUnits).to.be.true;
+
+    const bearingRadParser = await ParserSpec.create(bearingRad, unitsProvider, rad);
 
     const testData = [
-      { input: "N", expected: 0.0 },
-      { input: "NE", expected: 45.0 },
-      { input: "E", expected: 90.0 },
-      { input: "SE", expected: 135.0 },
-      { input: "S", expected: 180.0 },
-      { input: "SW", expected: 225.0 },
-      { input: "W", expected: 270.0 },
-      { input: "NW", expected: 315.0 },
+      { input: "N0.785398E", expected: 0.785398 }, // 45 degrees in radians
+      { input: "S0.785398E", expected: 2.35619 }, // 135 degrees in radians
+      { input: "S0.785398W", expected: 3.92699 }, // 225 degrees in radians
     ];
 
     for (const entry of testData) {
-      const parseResult = Parser.parseQuantityString(entry.input, bearingDMSParser);
+      const parseResult = Parser.parseQuantityString(entry.input, bearingRadParser);
       if (!Parser.isParsedQuantity(parseResult)) {
         expect.fail(`Expected a parsed quantity for input ${entry.input}`);
       }
-      expect(parseResult.value).to.be.eql(entry.expected); ;
+      expect(parseResult.value).to.be.closeTo(entry.expected, 0.01);
+    }
+  });
+
+  it("should handle special formats for bearing strings", async () => {
+    const bearingDMSParser = await ParserSpec.create(bearingDMS, unitsProvider, degree);
+    const bearingDMSParserRadOut = await ParserSpec.create(bearingDMS, unitsProvider, rad);
+
+    const testData = [
+      { input: "N", expectedDeg: 0.0, expectedRad: 0.0 },
+      { input: "NE", expectedDeg: 45.0, expectedRad: 0.785398 },
+      { input: "E", expectedDeg: 90.0, expectedRad: 1.570796 },
+      { input: "SE", expectedDeg: 135.0, expectedRad: 2.356194 },
+      { input: "S", expectedDeg: 180.0, expectedRad: 3.141592 },
+      { input: "SW", expectedDeg: 225.0, expectedRad: 3.926990 },
+      { input: "W", expectedDeg: 270.0, expectedRad: 4.712388 },
+      { input: "NW", expectedDeg: 315.0, expectedRad: 5.497787 },
+    ];
+
+    for (const entry of testData) {
+      const parseResultDeg = Parser.parseQuantityString(entry.input, bearingDMSParser);
+      if (!Parser.isParsedQuantity(parseResultDeg)) {
+        expect.fail(`Expected a parsed quantity for input ${entry.input}`);
+      }
+      expect(parseResultDeg.value).closeTo(entry.expectedDeg, 0.01);
+
+      const parseResultRad = Parser.parseQuantityString(entry.input, bearingDMSParserRadOut);
+      if (!Parser.isParsedQuantity(parseResultRad)) {
+        expect.fail(`Expected a parsed quantity for input ${entry.input}`);
+      }
+      expect(parseResultRad.value).closeTo(entry.expectedRad, 0.01);
     }
   });
 
@@ -203,8 +347,8 @@ describe("Bearing format tests:", () => {
     const bearingDMSParser = await ParserSpec.create(bearingDMS, unitsProvider, degree);
 
     const testData = [
-      {input: "N-45:00:00E", expected: 315.0},
-      {input: "S45:99:00E", expected: 133.35}, // 180 - 45 - 99/60 = 133.35
+      { input: "N-45:00:00E", expected: 315.0 },
+      { input: "S45:99:00E", expected: 133.35 }, // 180 - 45 - 99/60 = 133.35
     ]
 
     for (const entry of testData) {
@@ -304,7 +448,7 @@ describe("Bearing format tests:", () => {
       if (!Parser.isParsedQuantity(result)) {
         expect.fail(`Expected a parsed quantity for input "${input}"`);
       }
-    expect(result.value).to.be.closeTo(expected, 0.01);
+      expect(result.value).to.be.closeTo(expected, 0.01);
     }
 
     // Invalid inputs
@@ -329,7 +473,7 @@ describe("Bearing format tests:", () => {
 
     for (const input of invalidTestData) {
       const result = Parser.parseQuantityString(input, bearingParser);
-    expect(Parser.isParsedQuantity(result), `Expected input "${input}" to be invalid`).to.be.false;
+      expect(Parser.isParsedQuantity(result), `Expected input "${input}" to be invalid`).to.be.false;
     }
   });
 
@@ -378,44 +522,44 @@ describe("Bearing format tests:", () => {
     const bearingDecimalParser = await ParserSpec.create(bearingDecimal, unitsProvider, rad);
 
     const testData = [
-      {dms: "S4", dmsWithLabel: "S4", decimal: "S4"},
-      {dms: "S45", dmsWithLabel: "S45", decimal: "S45"},
-      {dms: "S45:", dmsWithLabel: "S45°", decimal: "S45."},
-      {dms: "S45:0", dmsWithLabel: "S45°0'", decimal: "S45.0"},
-      {dms: "S45:00", dmsWithLabel: "S45°00'", decimal: "S45.00"},
-      {dms: "S45:00:", dmsWithLabel: "S45°00'", decimal: "S45.000"},
-      {dms: "S45:00:0", dmsWithLabel: "S45°00'0", decimal: "S45.000°"},
-      {dms: "S45:00:00", dmsWithLabel: "S45°00'00"},
-      {dmsWithLabel: "S45°00'00\""},
+      { dms: "S4", dmsWithLabel: "S4", decimal: "S4" },
+      { dms: "S45", dmsWithLabel: "S45", decimal: "S45" },
+      { dms: "S45:", dmsWithLabel: "S45°", decimal: "S45." },
+      { dms: "S45:0", dmsWithLabel: "S45°0'", decimal: "S45.0" },
+      { dms: "S45:00", dmsWithLabel: "S45°00'", decimal: "S45.00" },
+      { dms: "S45:00:", dmsWithLabel: "S45°00'", decimal: "S45.000" },
+      { dms: "S45:00:0", dmsWithLabel: "S45°00'0", decimal: "S45.000°" },
+      { dms: "S45:00:00", dmsWithLabel: "S45°00'00" },
+      { dmsWithLabel: "S45°00'00\"" },
 
-      {dms: "00:00:00E", dmsWithLabel: "00°00'00\"E", decimal: "00.000°E"},
-      {dms: "0:00:00E", dmsWithLabel: "0°00'00\"E", decimal: "0.000°E"},
-      {dms: ":00:00E", dmsWithLabel: "°00'00\"E", decimal: ".000°E"},
-      {dms: "00:00E", dmsWithLabel: "00'00\"E", decimal: "000°E"},
-      {dms: "0:00E", dmsWithLabel: "0'00\"E", decimal: "00°E"},
-      {dms: ":00E", dmsWithLabel: "'00\"E", decimal: "0°E"},
-      {dms: "00E", dmsWithLabel: "00\"E", decimal: "°E"},
-      {dms: "0E", dmsWithLabel: "0\"E"},
-      {dmsWithLabel: "\"E"},
+      { dms: "00:00:00E", dmsWithLabel: "00°00'00\"E", decimal: "00.000°E" },
+      { dms: "0:00:00E", dmsWithLabel: "0°00'00\"E", decimal: "0.000°E" },
+      { dms: ":00:00E", dmsWithLabel: "°00'00\"E", decimal: ".000°E" },
+      { dms: "00:00E", dmsWithLabel: "00'00\"E", decimal: "000°E" },
+      { dms: "0:00E", dmsWithLabel: "0'00\"E", decimal: "00°E" },
+      { dms: ":00E", dmsWithLabel: "'00\"E", decimal: "0°E" },
+      { dms: "00E", dmsWithLabel: "00\"E", decimal: "°E" },
+      { dms: "0E", dmsWithLabel: "0\"E" },
+      { dmsWithLabel: "\"E" },
 
-      {dms: "00:00:00", dmsWithLabel: "00°00'00\"", decimal: "00.000°"},
+      { dms: "00:00:00", dmsWithLabel: "00°00'00\"", decimal: "00.000°" },
 
     ]
 
     for (const entry of testData) {
-      if (entry.dms){
+      if (entry.dms) {
         const parseResult = Parser.parseQuantityString(entry.dms, bearingDMSParser);
         if (Parser.isParseError(parseResult))
           expect(parseResult.error).to.be.eql(ParseError.BearingPrefixOrSuffixMissing);
       }
 
-      if (entry.dmsWithLabel){
+      if (entry.dmsWithLabel) {
         const parseResult = Parser.parseQuantityString(entry.dmsWithLabel, bearingDMSWithLabelParser);
         if (Parser.isParseError(parseResult))
           expect(parseResult.error).to.be.eql(ParseError.BearingPrefixOrSuffixMissing);
       }
 
-      if (entry.decimal){
+      if (entry.decimal) {
         const parseResult = Parser.parseQuantityString(entry.decimal, bearingDecimalParser);
         if (Parser.isParseError(parseResult))
           expect(parseResult.error).to.be.eql(ParseError.BearingPrefixOrSuffixMissing);
@@ -428,8 +572,8 @@ describe("Bearing format tests:", () => {
     const bearingDMSParser = await ParserSpec.create(bearingDMS, unitsProvider, degree);
 
     const testData = [
-      {input: "NFE", expected: ParseError.NoValueOrUnitFoundInString},
-      {input: "S45:00:-99W", expected: ParseError.MathematicOperationFoundButIsNotAllowed}, // only putting negative sign on first number is allowed
+      { input: "NFE", expected: ParseError.NoValueOrUnitFoundInString },
+      { input: "S45:00:-99W", expected: ParseError.MathematicOperationFoundButIsNotAllowed }, // only putting negative sign on first number is allowed
     ]
 
     for (const entry of testData) {
@@ -503,22 +647,22 @@ describe("Azimuth format tests:", () => {
 
     const degreesToRadians = (degrees: number): number => degrees * (Math.PI / 180);
     const testData: TestData[] = [
-      { input: 0.0,     unit: rad, dms: "00:00:00", decimal: "00.000°"},
-      { input: 5.0,     unit: rad, dms: "05:00:00", decimal: "05.000°"},
-      { input: 45.0,    unit: rad, dms: "45:00:00", decimal: "45.000°"},
-      { input: 45.5028, unit: rad, dms: "45:30:10", decimal: "45.503°"},
-      { input: 90.0,    unit: rad, dms: "90:00:00", decimal: "90.000°"},
-      { input: 135.0,   unit: rad, dms: "135:00:00", decimal: "135.000°"},
-      { input: 180.0,   unit: rad, dms: "180:00:00", decimal: "180.000°"},
-      { input: 225.0,   unit: rad, dms: "225:00:00", decimal: "225.000°"},
-      { input: 234.4972,unit: rad, dms: "234:29:50", decimal: "234.497°"},
-      { input: 270.0,   unit: rad, dms: "270:00:00", decimal: "270.000°"},
-      { input: 315.0,   unit: rad, dms: "315:00:00", decimal: "315.000°"},
-      { input: 0.0,     unit: rad, dms: "00:00:00", decimal: "00.000°"},
-      { input: 52.0,    unit: rad, dms: "52:00:00", decimal: "52.000°"},
-      { input: 110.0,   unit: rad, dms: "110:00:00", decimal: "110.000°"},
-      { input: 580.0,   unit: rad, dms: "220:00:00", decimal: "220.000°"},
-      { input: 1000.0,  unit: rad, dms: "280:00:00", decimal: "280.000°"},
+      { input: 0.0, unit: rad, dms: "00:00:00", decimal: "00.000°" },
+      { input: 5.0, unit: rad, dms: "05:00:00", decimal: "05.000°" },
+      { input: 45.0, unit: rad, dms: "45:00:00", decimal: "45.000°" },
+      { input: 45.5028, unit: rad, dms: "45:30:10", decimal: "45.503°" },
+      { input: 90.0, unit: rad, dms: "90:00:00", decimal: "90.000°" },
+      { input: 135.0, unit: rad, dms: "135:00:00", decimal: "135.000°" },
+      { input: 180.0, unit: rad, dms: "180:00:00", decimal: "180.000°" },
+      { input: 225.0, unit: rad, dms: "225:00:00", decimal: "225.000°" },
+      { input: 234.4972, unit: rad, dms: "234:29:50", decimal: "234.497°" },
+      { input: 270.0, unit: rad, dms: "270:00:00", decimal: "270.000°" },
+      { input: 315.0, unit: rad, dms: "315:00:00", decimal: "315.000°" },
+      { input: 0.0, unit: rad, dms: "00:00:00", decimal: "00.000°" },
+      { input: 52.0, unit: rad, dms: "52:00:00", decimal: "52.000°" },
+      { input: 110.0, unit: rad, dms: "110:00:00", decimal: "110.000°" },
+      { input: 580.0, unit: rad, dms: "220:00:00", decimal: "220.000°" },
+      { input: 1000.0, unit: rad, dms: "280:00:00", decimal: "280.000°" },
     ];
 
     for (const entry of testData) {
@@ -590,24 +734,24 @@ describe("Azimuth format tests:", () => {
     }
 
     const testData: TestData[] = [
-      { input: 0.0, base: 0.0,   counterClockwise: false, result: "00.0°" },
+      { input: 0.0, base: 0.0, counterClockwise: false, result: "00.0°" },
       { input: 260.0, base: 180.0, counterClockwise: false, result: "80.0°" },
       { input: 0.0, base: 175.0, counterClockwise: false, result: "185.0°" },
       { input: 0.0, base: 175.0, counterClockwise: true, result: "175.0°" },
-      { input: 0.0, base: 185.0, counterClockwise: true,  result: "185.0°" },
-      { input: 0.0, base: 95.0,  counterClockwise: false, result: "265.0°" },
-      { input: 0.0, base: 85.0,  counterClockwise: false, result: "275.0°" },
+      { input: 0.0, base: 185.0, counterClockwise: true, result: "185.0°" },
+      { input: 0.0, base: 95.0, counterClockwise: false, result: "265.0°" },
+      { input: 0.0, base: 85.0, counterClockwise: false, result: "275.0°" },
       { input: 0.0, base: 270.0, counterClockwise: false, result: "90.0°" },
-      { input: 0.0, base: 270.0, counterClockwise: true,  result: "270.0°" },
-      { input: 90.0,  base: 0.0,   counterClockwise: false, result: "90.0°" },
-      { input: 90.0,  base: 180.0, counterClockwise: false, result: "270.0°" },
-      { input: 90.0,  base: 175.0, counterClockwise: false, result: "275.0°" },
+      { input: 0.0, base: 270.0, counterClockwise: true, result: "270.0°" },
+      { input: 90.0, base: 0.0, counterClockwise: false, result: "90.0°" },
+      { input: 90.0, base: 180.0, counterClockwise: false, result: "270.0°" },
+      { input: 90.0, base: 175.0, counterClockwise: false, result: "275.0°" },
       { input: 80.0, base: 175.0, counterClockwise: false, result: "265.0°" },
-      { input: 90.0,  base: 185.0, counterClockwise: true,  result: "95.0°" },
-      { input: 90.0,  base: 95.0,  counterClockwise: false, result: "355.0°" },
-      { input: 90.0,  base: 85.0,  counterClockwise: false, result: "05.0°" },
-      { input: 90.0,  base: 270.0, counterClockwise: false, result: "180.0°" },
-      { input: 90.0,  base: 270.0, counterClockwise: true,  result: "180.0°" },
+      { input: 90.0, base: 185.0, counterClockwise: true, result: "95.0°" },
+      { input: 90.0, base: 95.0, counterClockwise: false, result: "355.0°" },
+      { input: 90.0, base: 85.0, counterClockwise: false, result: "05.0°" },
+      { input: 90.0, base: 270.0, counterClockwise: false, result: "180.0°" },
+      { input: 90.0, base: 270.0, counterClockwise: true, result: "180.0°" },
     ];
 
     for (const entry of testData) {
@@ -782,11 +926,14 @@ describe("Azimuth and Revolution formatting that throws error:", () => {
   });
 
   it("should throw an error if _azimuthBase is defined and _azimuthBaseUnit is undefined when revolutionUnit is defined", async () => {
-    testFormatWithAzimuthType.revolutionUnit = await unitsProvider.findUnitByName("Units.REVOLUTION"); // Set _revolutionUnit to a defined value
-    testFormatWithAzimuthType.azimuthBase = 123; // Set _azimuthBase to a defined value
-    testFormatWithAzimuthType.azimuthBaseUnit = undefined; // Ensure _azimuthBaseUnit is undefined
+    const jsonObj = {
+      type: "azimuth",
+      revolutionUnit: "Units.REVOLUTION",
+      azimuthBase: 123,
+    };
+
     try {
-      await testFormatWithAzimuthType.fromJSON(unitsProvider, { type: "azimuth" });
+      await testFormatWithAzimuthType.fromJSON(unitsProvider, jsonObj);
       expect.fail("Expected error was not thrown");
     } catch (e: any) {
       expect(e.message).toEqual("The Format testAzimuthFormat has an 'azimuthBase' attribute therefore the attribute 'azimuthBaseUnit' is required.");

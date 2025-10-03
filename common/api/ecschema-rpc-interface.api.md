@@ -4,6 +4,9 @@
 
 ```ts
 
+import { ECSqlQueryOptions } from '@itwin/ecschema-metadata';
+import { ECSqlSchemaLocater } from '@itwin/ecschema-metadata';
+import { ECSqlSchemaLocaterOptions } from '@itwin/ecschema-metadata';
 import { IModelRpcProps } from '@itwin/core-common';
 import { ISchemaLocater } from '@itwin/ecschema-metadata';
 import { RpcInterface } from '@itwin/core-common';
@@ -18,7 +21,7 @@ import { SchemaProps } from '@itwin/ecschema-metadata';
 // @internal
 export abstract class ECSchemaRpcInterface extends RpcInterface {
     static getClient(): ECSchemaRpcInterface;
-    getSchemaJSON(_tokenProps: IModelRpcProps, _schemaName: string): Promise<SchemaProps>;
+    getSchemaJSON(_tokenProps: IModelRpcProps, _schemaName: string): Promise<SchemaProps | undefined>;
     getSchemaKeys(_tokenProps: IModelRpcProps): Promise<SchemaKeyProps[]>;
     // (undocumented)
     static readonly interfaceName = "ECSchemaRpcInterface";
@@ -36,6 +39,13 @@ export class ECSchemaRpcLocater implements ISchemaLocater {
     getSchemaSync(_schemaKey: SchemaKey, _matchType: SchemaMatchType, _context: SchemaContext): Schema | undefined;
     // @internal (undocumented)
     readonly token: IModelRpcProps;
+}
+
+// @beta
+export class RpcIncrementalSchemaLocater extends ECSqlSchemaLocater {
+    constructor(iModelProps: IModelRpcProps, options?: ECSqlSchemaLocaterOptions);
+    protected executeQuery<TRow>(query: string, options?: ECSqlQueryOptions): Promise<ReadonlyArray<TRow>>;
+    protected getSchemaProps(schemaKey: SchemaKey): Promise<SchemaProps | undefined>;
 }
 
 // (No @packageDocumentation comment for this package)

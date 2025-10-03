@@ -335,6 +335,10 @@ export class IndexedPolyfaceWalker {
    *   * `walkerD.nextAroundVertex()` moves from kD back to kA.
    */
   public static buildEdgeMateIndices(polyface: IndexedPolyface): void {
+    if (polyface.isEmpty) {
+      polyface.data.edgeMateIndex = undefined;
+      return;
+    }
     const matcher = new IndexedEdgeMatcher();
     const numFacet = polyface.facetCount;
     for (let facetIndex = 0; facetIndex < numFacet; facetIndex++) {

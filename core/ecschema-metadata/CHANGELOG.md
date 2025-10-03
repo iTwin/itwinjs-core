@@ -1,6 +1,100 @@
 # Change Log - @itwin/ecschema-metadata
 
-This log was last generated on Mon, 16 Jun 2025 15:03:02 GMT and should not be manually modified.
+This log was last generated on Thu, 02 Oct 2025 14:56:13 GMT and should not be manually modified.
+
+## 5.2.0
+Wed, 01 Oct 2025 20:22:54 GMT
+
+### Updates
+
+- Added isDynamic property on Schema instances to indicate if the schema instance represents a dynamic schema.
+- Add optional 'description' property to FormatSet
+- Add FormatSetFormatsProvider
+- Add required UnitSystem field to FormatSet interface
+
+## 5.1.9
+Wed, 24 Sep 2025 17:38:08 GMT
+
+_Version update only_
+
+## 5.1.8
+Wed, 17 Sep 2025 17:17:16 GMT
+
+_Version update only_
+
+## 5.1.7
+Tue, 09 Sep 2025 19:28:04 GMT
+
+_Version update only_
+
+## 5.1.6
+Mon, 08 Sep 2025 13:53:47 GMT
+
+_Version update only_
+
+## 5.1.5
+Thu, 04 Sep 2025 13:51:09 GMT
+
+_Version update only_
+
+## 5.1.4
+Fri, 22 Aug 2025 14:22:33 GMT
+
+_Version update only_
+
+## 5.1.3
+Wed, 20 Aug 2025 13:57:10 GMT
+
+_Version update only_
+
+## 5.1.2
+Thu, 14 Aug 2025 19:38:08 GMT
+
+_Version update only_
+
+## 5.1.1
+Fri, 08 Aug 2025 18:06:10 GMT
+
+_Version update only_
+
+## 5.1.0
+Fri, 08 Aug 2025 12:51:53 GMT
+
+### Updates
+
+- Both buildPropertyCache and buildPropertyCacheSync, take no parameters and build the cache in house and return the cache map. Additionally, mergeProperties is now removed.
+- Introduced internal incremental schema loading API to be consumed by IModelIncrementalSchemaLocater in core/backend and RpcIncrementalSchemaLocater in core/ecschema-rpc packages.
+- Use the latest released version 1.0.9 of units schema
+- Handle SI and METRIC unit systems as one unit system in SchemaFormatsProvider
+- Gracefully handle errors, including rpc, when retrieving schema items in `SchemaFormatsProvider`
+- Add support for `stationBaseFactor` in `Format`
+- Use labels and descriptions from KindOfQuantity when using it's presentation unit in SchemaFormatsProvider
+- Updated deprecation comments to new template
+
+## 5.0.5
+Wed, 06 Aug 2025 15:34:15 GMT
+
+_Version update only_
+
+## 5.0.4
+Wed, 16 Jul 2025 14:59:59 GMT
+
+_Version update only_
+
+## 5.0.3
+Fri, 11 Jul 2025 00:56:56 GMT
+
+_Version update only_
+
+## 5.0.2
+Thu, 26 Jun 2025 22:16:01 GMT
+
+_Version update only_
+
+## 5.0.1
+Tue, 17 Jun 2025 18:33:52 GMT
+
+_Version update only_
 
 ## 5.0.0
 Fri, 13 Jun 2025 20:25:38 GMT

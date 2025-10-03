@@ -503,7 +503,9 @@ export class AccuSnap implements Decorator {
     this.errorKey = out.reason;
     this.errorIcon.deactivate();
 
-    const vp = ev.viewport!;
+    const vp = ev.viewport;
+    if (undefined === vp)
+      return;
     let errorSprite: Sprite | undefined;
     switch (out.snapStatus) {
       case SnapStatus.FilteredByApp:
@@ -968,9 +970,11 @@ export class AccuSnap implements Decorator {
     // points not on the grid. This causes them to be "pulled" off the grid when they are accepted. On
     // the other hand, when NOT locating, we need to use the raw point so we can snap to elements
     // away from the grid.
+    const vp = ev.viewport;
+    if (undefined === vp)
+      return SnapStatus.NoElements;
 
     const testPoint = this.isLocateEnabled ? ev.point : ev.rawPoint;
-    const vp = ev.viewport!;
     const picker = IModelApp.locateManager.picker;
     const options = IModelApp.locateManager.options.clone(); // Copy to avoid changing out from under active Tool...
 
@@ -1019,7 +1023,9 @@ export class AccuSnap implements Decorator {
       }
     }
 
-    const thisList = this.aSnapHits!;
+    const thisList = this.aSnapHits;
+    if (undefined === thisList)
+      return undefined;
     let thisHit: HitDetail | undefined;
     let firstRejected;
     const filterResponse = new LocateResponse();
@@ -1060,7 +1066,7 @@ export class AccuSnap implements Decorator {
       // if we don't have any more candidate hits, get a new list at the current location
       if (!this.aSnapHits || (0 === this.aSnapHits.length)) {
         out.snapStatus = this.findHits(ev);
-        hit = (SnapStatus.Success !== out.snapStatus) ? undefined : await this.getAccuSnapDetail(this.aSnapHits!, out);
+        hit = (SnapStatus.Success !== out.snapStatus || undefined === this.aSnapHits) ? undefined : await this.getAccuSnapDetail(this.aSnapHits, out);
       } else {
         // drop the current hit from the list and then retest the list (without the dropped hit) to find the new snap
         this.aSnapHits.removeCurrentHit();
@@ -1088,6 +1094,11 @@ export class AccuSnap implements Decorator {
    */
   public async onMotion(ev: BeButtonEvent): Promise<void> {
     this.clearToolTip(ev);
+
+    const vp = ev.viewport;
+    if (undefined === vp)
+      return;
+
     const out = new LocateResponse();
     out.snapStatus = SnapStatus.Disabled;
 
@@ -1095,7 +1106,7 @@ export class AccuSnap implements Decorator {
     if (this.isActive) {
       if (this._doSnapping) {
         out.snapStatus = this.findHits(ev);
-        hit = (SnapStatus.Success !== out.snapStatus) ? undefined : await this.getAccuSnapDetail(this.aSnapHits!, out);
+        hit = (SnapStatus.Success !== out.snapStatus || undefined === this.aSnapHits) ? undefined : await this.getAccuSnapDetail(this.aSnapHits, out);
         if (!this._doSnapping)
           hit = undefined; // Snap no longer requested...
       } else if (this.isLocateEnabled) {
@@ -1111,7 +1122,7 @@ export class AccuSnap implements Decorator {
 
     // set up active error before calling displayToolTip to indicate error or show locate message...
     this.showSnapError(out, ev);
-    this.displayToolTip(ev.viewPoint, ev.viewport!, ev.rawPoint);
+    this.displayToolTip(ev.viewPoint, vp, ev.rawPoint);
 
     if (undefined !== this.touchCursor && InputSource.Mouse === ev.inputSource) {
       this.touchCursor = undefined;

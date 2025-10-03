@@ -384,6 +384,17 @@ export abstract class CurveChain extends CurveCollection {
       return undefined;
   }
   /**
+   * Whether the chain start and end points are defined and within tolerance.
+   * * Does not check for planarity or degeneracy.
+   * @param tolerance optional distance tolerance (default is [[Geometry.smallMetricDistance]])
+   * @param xyOnly if true, ignore z coordinate (default is `false`)
+   */
+  public isPhysicallyClosedCurve(tolerance: number = Geometry.smallMetricDistance, xyOnly: boolean = false): boolean {
+    const p0 = this.startPoint();
+    const p1 = this.endPoint();
+    return p0 !== undefined && p1 !== undefined && (xyOnly ? p0.isAlmostEqualXY(p1, tolerance) : p0.isAlmostEqual(p1, tolerance));
+  }
+  /**
    * Return the start point and derivative of the first child of the curve chain.
    * * For queries interior to the chain, use [[CurveChainWithDistanceIndex.fractionToPointAndDerivative]].
    */
@@ -409,6 +420,7 @@ export abstract class CurveChain extends CurveCollection {
    * Return the curve primitive at the given `index`, optionally using `modulo` to map `index` to the cyclic indexing.
    * * In particular, `-1` is the final curve.
    * @param index cyclic index
+   * @param cyclic whether to employ modulo operator for wrap-around indexing. Default is `true`.
    */
   public cyclicCurvePrimitive(index: number, cyclic: boolean = true): CurvePrimitive | undefined {
     const n = this.children.length;

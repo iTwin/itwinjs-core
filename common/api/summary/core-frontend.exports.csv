@@ -94,6 +94,7 @@ public;interface;CheckboxFormatPropEditorSpec
 public;class;CheckpointConnection
 public;enum;ClipEventType
 public;class;Cluster
+internal;function;collectMaskRefs
 public;type;CollectTileStatus
 public;enum;CompassMode
 public;interface;ComputeChordToleranceArgs
@@ -106,7 +107,6 @@ public;function;connectViewportViews
 internal;enum;ContextMode
 public;class;ContextRealityModelState
 public;enum;ContextRotationId
-beta;interface;ContourHit
 internal;class;CoordinateConverter
 internal;interface;CoordinateConverterOptions
 public;enum;CoordinateLockOverrides
@@ -218,6 +218,7 @@ public;class;GeometricModel2dState
 public;class;GeometricModel3dState
 public;class;GeometricModelState
 public;interface;GeometryTileTreeReference
+public;interface;GeometryTileTreeReferenceOptions
 public;class;GeoServices
 internal;type;GeoServicesOptions
 internal;interface;GetAttachmentViewportArgs
@@ -225,6 +226,7 @@ public;function;getCenteredViewRect
 public;function;getCesiumAssetUrl
 public;function;getCompressedJpegFromCanvas
 internal;function;getFrustumPlaneIntersectionDepthRange
+beta;function;getGoogle3dTilesUrl
 public;function;getImageSourceFormatForMimeType
 public;function;getImageSourceMimeType
 public;interface;GetPixelDataWorldPointArgs
@@ -241,6 +243,9 @@ internal;interface;GltfReaderArgs
 internal;interface;GltfReaderResult
 beta;interface;GltfTemplate
 internal;interface;GLTimerResult
+beta;class;Google3dTilesProvider
+beta;type;Google3dTilesProviderOptions
+internal;class;GoogleMapsDecorator
 public;type;GpuMemoryLimit
 public;interface;GpuMemoryLimits
 public;class;GraphicalEditingScope
@@ -346,6 +351,7 @@ public;enum;LocateFilterStatus
 public;class;LocateOptions
 public;class;LocateResponse
 internal;enum;LockedStates
+internal;class;LogoDecoration
 public;class;LookAndMoveTool
 public;interface;LookAtArgs
 public;interface;LookAtOrthoArgs
@@ -410,6 +416,7 @@ public;class;MeasureLengthTool
 public;class;MeasureLocationTool
 public;class;MeasureVolumeTool
 public;interface;MeshArgs
+public;type;MeshArgsPositions
 public;enum;MessageBoxIconType
 public;enum;MessageBoxType
 public;enum;MessageBoxValue
@@ -507,8 +514,8 @@ alpha;function;createKeyFromBlobUrl
 alpha;function;createKeyFromOrbitGtBlobProps
 alpha;function;createOrbitGtBlobPropsFromKey
 alpha;function;fromKey
-alpha;interface;RealityDataSourceProvider
-alpha;class;RealityDataSourceProviderRegistry
+beta;interface;RealityDataSourceProvider
+beta;class;RealityDataSourceProviderRegistry
 public;interface;RealityMeshParams
 public;namespace;RealityMeshParams
 internal;function;fromGltfMesh

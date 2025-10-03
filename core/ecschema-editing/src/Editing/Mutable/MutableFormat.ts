@@ -21,6 +21,7 @@ export abstract class MutableFormat extends Format {
   public abstract override setStationSeparator(separator: string): void;
   public abstract override setMinWidth(minWidth: number): void;
   public abstract override setStationOffsetSize(stationOffsetSize: number): void;
+  public abstract override setStationBaseFactor(stationBaseFactor: number): void;
   public abstract override setScientificType(scientificType: ScientificType): void;
   public abstract override setSpacer(spacer: string): void;
   public abstract override setIncludeZero(includeZero: boolean): void;

@@ -3,14 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { TextStyleSettings, TextStyleSettingsProps } from "../../core-common";
+import { ColorDef, FontType, ListMarkerEnumerator, TextStyleSettings, TextStyleSettingsProps } from "../../core-common";
+import { DeepRequiredObject } from "@itwin/core-bentley";
 
 describe("TextStyleSettings", () => {
-  const customProps: Required<TextStyleSettingsProps> = {
+  const customProps: DeepRequiredObject<TextStyleSettingsProps> = {
     color: 0xff007f,
-    fontName: "customFont",
-    lineHeight: 2,
+    font: {
+      name: "customFont",
+      type: FontType.TrueType,
+    },
+    textHeight: 2,
     lineSpacingFactor: 1,
+    paragraphSpacingFactor: 2,
     isBold: true,
     isItalic: true,
     isUnderlined: true,
@@ -21,6 +26,33 @@ describe("TextStyleSettings", () => {
     superScriptOffsetFactor: 0.6,
     superScriptScale: 0.5,
     widthFactor: 2,
+    frame: {
+      shape: "rectangle",
+      fillColor: ColorDef.green.tbgr,
+      borderColor: ColorDef.red.tbgr,
+      borderWeight: 2,
+    },
+    margins: {
+      left: 1,
+      right: 1,
+      top: 1,
+      bottom: 1,
+    },
+    leader: {
+      color: 0xff007f,
+      wantElbow: false,
+      elbowLength: 0.5,
+      terminatorHeightFactor: 0.5,
+      terminatorWidthFactor: 0.5,
+    },
+    tabInterval: 7,
+    indentation: 0.33,
+    listMarker: {
+      enumerator: ListMarkerEnumerator.Letter,
+      terminator: "parenthesis",
+      case: "lower"
+    },
+    justification: "center",
   };
 
   it("returns defaults if no props provided", () => {
@@ -40,7 +72,7 @@ describe("TextStyleSettings", () => {
 
     for (const propName of Object.keys(customProps)) {
       const key = propName as keyof TextStyleSettingsProps;
-      const props: TextStyleSettingsProps = { };
+      const props: TextStyleSettingsProps = {};
       (props as any)[key] = customProps[key];
 
       const settings = TextStyleSettings.fromJSON(props);
@@ -48,5 +80,23 @@ describe("TextStyleSettings", () => {
     }
 
     expect(TextStyleSettings.fromJSON(customProps).equals(TextStyleSettings.fromJSON(customProps))).to.be.true;
+  });
+
+  it("returns validation error messages for invalid values", () => {
+    const validSettings = TextStyleSettings.fromJSON(customProps);
+    expect(validSettings.getValidationErrors()).to.be.empty;
+
+    const invalidSettings = validSettings.clone({
+      font: {
+        name: "",
+      },
+      textHeight: 0,
+      stackedFractionScale: 0,
+    });
+
+    const errors = invalidSettings.getValidationErrors();
+    expect(errors).to.include("font name must be provided");
+    expect(errors).to.include("textHeight must be greater than 0");
+    expect(errors).to.include("stackedFractionScale must be greater than 0");
   });
 });

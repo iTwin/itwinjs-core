@@ -1,29 +1,23 @@
 {
   "name": "@itwin/physical-material-backend",
-  "version": "5.1.0-dev.40",
+  "version": "5.3.0-dev.8",
   "main": "lib/cjs/physical-material-backend.js",
   "module": "lib/esm/physical-material-backend.js",
   "typings": "lib/cjs/physical-material-backend",
-  "type": "module",
-  "exports": {
-    ".": {
-      "import": "./lib/esm/physical-material-backend.js",
-      "require": "./lib/cjs/physical-material-backend.js"
-    }
-  },
   "license": "MIT",
   "engines": {
     "node": "^20.0.0 || ^22.0.0"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s build:esm",
-    "build:cjs": "internal-tools build-cjs",
-    "build:esm": "tsc 1>&2 --outDir lib/esm",
+    "build:cjs": "tsc 1>&2 --outDir lib/cjs",
+    "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "cover": "nyc npm -s test",
     "docs": "betools docs --json=../../../generated-docs/domains/physical-material-backend/file.json --tsIndexFile=./physical-material-backend.ts --onlyJson",
     "extract-api": "betools extract-api --entry=physical-material-backend",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": "mocha"
   },
   "repository": {
@@ -54,13 +48,12 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
     "@types/node": "~20.17.0",
     "chai": "^4.3.10",
-    "eslint": "^9.13.0",
-    "internal-tools": "workspace:*",
+    "eslint": "^9.31.0",
     "mocha": "^11.1.0",
     "nyc": "^17.1.0",
     "rimraf": "^6.0.1",

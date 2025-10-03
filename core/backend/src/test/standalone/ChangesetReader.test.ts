@@ -8,7 +8,7 @@ import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
 import { assert, expect } from "chai";
 import * as path from "node:path";
 import { DrawingCategory } from "../../Category";
-import { ChangedECInstance, ChangesetECAdaptor as ECChangesetAdaptor, ECChangeUnifierCache, PartialECChangeUnifier } from "../../ChangesetECAdaptor";
+import { ChangedECInstance, ChangesetECAdaptor, ChangesetECAdaptor as ECChangesetAdaptor, ECChangeUnifierCache, PartialECChangeUnifier } from "../../ChangesetECAdaptor";
 import { HubMock } from "../../internal/HubMock";
 import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { SqliteChangeOp, SqliteChangesetReader } from "../../SqliteChangesetReader";
@@ -760,7 +760,6 @@ describe("Changeset Reader API", async () => {
     assert.deepEqual(Object.getOwnPropertyNames(rwIModel.getMetaData("TestDomain:Test2dElement").properties), ["p1", "p2", "p3"]);
     rwIModel.close();
   });
-
   it("openGroup() & writeToFile()", async () => {
     const adminToken = "super manager token";
     const iModelName = "test";
@@ -1143,5 +1142,262 @@ describe("Changeset Reader API", async () => {
 
     // Cleanup
     await Promise.all([secondBriefCase.close(), firstBriefCase.close()]);
+  });
+
+  it("Track changeset health stats", async () => {
+    const adminToken = "super manager token";
+    const iModelName = "test";
+    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    assert.isNotEmpty(rwIModelId);
+
+    // Open two briefcases for the same iModel
+    const [firstBriefcase, secondBriefcase] = await Promise.all([
+      HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken }),
+      HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken })
+    ]);
+
+    [firstBriefcase, secondBriefcase].forEach(briefcase => briefcase.channels.addAllowedChannel(ChannelControl.sharedChannelName));
+
+    await firstBriefcase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
+        <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
+
+        <ECCustomAttributes>
+          <DynamicSchema xmlns = 'CoreCustomAttributes.1.0.0' />
+        </ECCustomAttributes>
+
+        <ECEntityClass typeName="TestClass">
+          <BaseClass>bis:PhysicalElement</BaseClass>
+        </ECEntityClass>
+      </ECSchema>`]);
+    firstBriefcase.saveChanges("import initial schema");
+
+    // Enable changeset tracking for both briefcases
+    await Promise.all([firstBriefcase.enableChangesetStatTracking(), secondBriefcase.enableChangesetStatTracking()]);
+
+    await firstBriefcase.pushChanges({ description: "push initial schema changeset", accessToken: adminToken });
+    await secondBriefcase.pullChanges({ accessToken: adminToken });
+
+    // Schema upgrade
+    await secondBriefcase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema" alias="ts" version="2.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
+        <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
+
+        <ECCustomAttributes>
+          <DynamicSchema xmlns = 'CoreCustomAttributes.1.0.0' />
+        </ECCustomAttributes>
+
+        <ECEntityClass typeName="TestClass">
+          <BaseClass>bis:PhysicalElement</BaseClass>
+          <ECProperty propertyName="TestProperty" typeName="string"/>
+        </ECEntityClass>
+
+        <ECEnumeration typeName="TestEnum" backingTypeName="int" isStrict="true">
+          <ECEnumerator name="Enumerator1" value="1" displayLabel="TestEnumerator1"/>
+          <ECEnumerator name="Enumerator2" value="2" displayLabel="TestEnumerator2"/>
+        </ECEnumeration>
+      </ECSchema>`]);
+    secondBriefcase.saveChanges("imported schema");
+
+    await secondBriefcase.pushChanges({ description: "Added a property to TestClass and an enum", accessToken: adminToken });
+    await firstBriefcase.pullChanges({ accessToken: adminToken });
+
+    // Major schema change
+    await firstBriefcase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema" alias="ts" version="2.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
+
+        <ECCustomAttributes>
+          <DynamicSchema xmlns = 'CoreCustomAttributes.1.0.0' />
+        </ECCustomAttributes>
+
+        <ECEnumeration typeName="TestEnum" backingTypeName="int" isStrict="true">
+          <ECEnumerator name="Enumerator1" value="1" displayLabel="TestEnumerator1"/>
+          <ECEnumerator name="Enumerator2" value="2" displayLabel="TestEnumerator2"/>
+        </ECEnumeration>
+      </ECSchema>`]);
+    firstBriefcase.saveChanges("imported schema");
+
+    await firstBriefcase.pushChanges({ description: "Deleted TestClass", accessToken: adminToken });
+    await secondBriefcase.pullChanges({ accessToken: adminToken });
+
+    const firstBriefcaseChangesets = await firstBriefcase.getAllChangesetHealthData();
+    const secondBriefcaseChangesets = await secondBriefcase.getAllChangesetHealthData();
+
+    assert.equal(firstBriefcaseChangesets.length, 1);
+    const firstBriefcaseChangeset = firstBriefcaseChangesets[0];
+
+    expect(firstBriefcaseChangeset.uncompressedSizeBytes).to.be.greaterThan(300);
+    expect(firstBriefcaseChangeset.insertedRows).to.be.greaterThanOrEqual(4);
+    expect(firstBriefcaseChangeset.updatedRows).to.be.greaterThanOrEqual(1);
+    expect(firstBriefcaseChangeset.deletedRows).to.be.eql(0);
+    expect(firstBriefcaseChangeset.totalFullTableScans).to.be.eql(0);
+    expect(firstBriefcaseChangeset.perStatementStats.length).to.be.eql(5);
+
+    assert.equal(secondBriefcaseChangesets.length, 2);
+    const [secondBriefcaseChangeset1, secondBriefcaseChangeset2] = secondBriefcaseChangesets;
+
+    expect(secondBriefcaseChangeset1.uncompressedSizeBytes).to.be.greaterThan(40000);
+    expect(secondBriefcaseChangeset1.insertedRows).to.be.greaterThanOrEqual(52);
+    expect(secondBriefcaseChangeset1.updatedRows).to.be.greaterThanOrEqual(921);
+    expect(secondBriefcaseChangeset1.deletedRows).to.be.eql(0);
+    expect(secondBriefcaseChangeset1.totalFullTableScans).to.be.eql(0);
+    expect(secondBriefcaseChangeset1.perStatementStats.length).to.be.eql(11);
+
+    expect(secondBriefcaseChangeset2.uncompressedSizeBytes).to.be.greaterThan(40000);
+    expect(secondBriefcaseChangeset2.insertedRows).to.be.eql(0);
+    expect(secondBriefcaseChangeset2.updatedRows).to.be.greaterThanOrEqual(921);
+    expect(secondBriefcaseChangeset2.deletedRows).to.be.greaterThanOrEqual(52);
+    expect(secondBriefcaseChangeset2.totalFullTableScans).to.be.eql(0);
+    expect(secondBriefcaseChangeset2.perStatementStats.length).to.be.eql(11);
+
+    // Cleanup
+    await Promise.all([secondBriefcase.close(), firstBriefcase.close()]);
+  });
+  it("openInMemory() & step()", async () => {
+    const adminToken = "super manager token";
+    const iModelName = "test";
+    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    assert.isNotEmpty(rwIModelId);
+    const rwIModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken });
+    // 1. Import schema with class that span overflow table.
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestDomain" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+        <ECEntityClass typeName="Test2dElement">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="p1" typeName="string"/>
+        </ECEntityClass>
+    </ECSchema>`;
+    await rwIModel.importSchemaStrings([schema]);
+    rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    // Create drawing model and category
+    await rwIModel.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
+    if (undefined === drawingCategoryId)
+      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+
+    rwIModel.saveChanges();
+    await rwIModel.pushChanges({ description: "setup category", accessToken: adminToken });
+
+    const geomArray: Arc3d[] = [
+      Arc3d.createXY(Point3d.create(0, 0), 5),
+      Arc3d.createXY(Point3d.create(5, 5), 2),
+      Arc3d.createXY(Point3d.create(-5, -5), 20),
+    ];
+
+    const geometryStream: GeometryStreamProps = [];
+    for (const geom of geomArray) {
+      const arcData = IModelJson.Writer.toIModelJson(geom);
+      geometryStream.push(arcData);
+    }
+
+    const e1 = {
+      classFullName: `TestDomain:Test2dElement`,
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      geom: geometryStream,
+      ...{ p1: "test1" },
+    };
+
+    // 2. Insert a element for the class
+    await rwIModel.locks.acquireLocks({ shared: drawingModelId });
+    const e1id = rwIModel.elements.insertElement(e1);
+    assert.isTrue(Id64.isValidId64(e1id), "insert worked");
+
+    if (true) {
+      const reader = SqliteChangesetReader.openInMemory({ db: rwIModel, disableSchemaCheck: true });
+      const adaptor = new ChangesetECAdaptor(reader);
+      const unifier = new PartialECChangeUnifier(rwIModel)
+      while (adaptor.step()) {
+        unifier.appendFrom(adaptor);
+      }
+      reader.close();
+
+      // verify the inserted element's properties
+      const instances = Array.from(unifier.instances);
+      expect(instances.length).to.equals(1);
+      const testEl = instances[0];
+      expect(testEl.$meta?.op).to.equals("Inserted");
+      expect(testEl.$meta?.classFullName).to.equals("TestDomain:Test2dElement");
+      expect(testEl.$meta?.stage).to.equals("New");
+      expect(testEl.ECClassId).to.equals("0x168");
+      expect(testEl.ECInstanceId).to.equals(e1id);
+      expect(testEl.Model.Id).to.equals(drawingModelId);
+      expect(testEl.Category.Id).to.equals(drawingCategoryId);
+      expect(testEl.Origin.X).to.equals(0);
+      expect(testEl.Origin.Y).to.equals(0);
+      expect(testEl.Rotation).to.equals(0);
+      expect(testEl.BBoxLow.X).to.equals(-25);
+      expect(testEl.BBoxLow.Y).to.equals(-25);
+      expect(testEl.BBoxHigh.X).to.equals(15);
+      expect(testEl.BBoxHigh.Y).to.equals(15);
+      expect(testEl.p1).to.equals("test1");
+    }
+
+    // save changes and verify the the txn
+    rwIModel.saveChanges();
+
+    if (true) {
+      const txnId = rwIModel.txns.getLastSavedTxnProps()?.id as string;
+      expect(txnId).to.not.be.undefined;
+      const reader = SqliteChangesetReader.openTxn({ db: rwIModel, disableSchemaCheck: true, txnId });
+      const adaptor = new ChangesetECAdaptor(reader);
+      const unifier = new PartialECChangeUnifier(rwIModel)
+      while (adaptor.step()) {
+        unifier.appendFrom(adaptor);
+      }
+      reader.close();
+
+      // verify the inserted element's properties
+      const instances = Array.from(unifier.instances);
+      expect(instances.length).to.equals(3);
+
+      // DrawingModel new instance
+      const drawingModelElNew = instances[0];
+      expect(drawingModelElNew.$meta?.op).to.equals("Updated");
+      expect(drawingModelElNew.$meta?.classFullName).to.equals("BisCore:DrawingModel");
+      expect(drawingModelElNew.$meta?.stage).to.equals("New");
+      expect(drawingModelElNew.ECClassId).to.equals("0xaa");
+      expect(drawingModelElNew.ECInstanceId).to.equals(drawingModelId);
+      expect(drawingModelElNew.LastMod).to.exist;
+      expect(drawingModelElNew.GeometryGuid).to.exist;
+
+      // DrawingModel old instance
+      const drawingModelElOld = instances[1];
+      expect(drawingModelElOld.$meta?.op).to.equals("Updated");
+      expect(drawingModelElOld.$meta?.classFullName).to.equals("BisCore:DrawingModel");
+      expect(drawingModelElOld.$meta?.stage).to.equals("Old");
+      expect(drawingModelElOld.ECClassId).to.equals("0xaa");
+      expect(drawingModelElOld.ECInstanceId).to.equals(drawingModelId);
+      expect(drawingModelElOld.LastMod).to.null;
+      expect(drawingModelElOld.GeometryGuid).to.null;
+
+      // Test element instance
+      const testEl = instances[2];
+      expect(testEl.$meta?.op).to.equals("Inserted");
+      expect(testEl.$meta?.classFullName).to.equals("TestDomain:Test2dElement");
+      expect(testEl.$meta?.stage).to.equals("New");
+      expect(testEl.ECClassId).to.equals("0x168");
+      expect(testEl.ECInstanceId).to.equals(e1id);
+      expect(testEl.Model.Id).to.equals(drawingModelId);
+      expect(testEl.Category.Id).to.equals(drawingCategoryId);
+      expect(testEl.Origin.X).to.equals(0);
+      expect(testEl.Origin.Y).to.equals(0);
+      expect(testEl.Rotation).to.equals(0);
+      expect(testEl.BBoxLow.X).to.equals(-25);
+      expect(testEl.BBoxLow.Y).to.equals(-25);
+      expect(testEl.BBoxHigh.X).to.equals(15);
+      expect(testEl.BBoxHigh.Y).to.equals(15);
+      expect(testEl.p1).to.equals("test1");
+    }
+    await rwIModel.pushChanges({ description: "insert element", accessToken: adminToken });
   });
 });

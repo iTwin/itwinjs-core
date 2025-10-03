@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, expectDefined } from "@itwin/core-bentley";
 import { DebugShaderFile } from "../RenderSystemDebugControl";
 import { AttributeDetails } from "./AttributeMap";
 import { WebGLDisposable } from "./Disposable";
@@ -154,7 +154,7 @@ export class ShaderProgram implements WebGLDisposable {
   public [Symbol.dispose](): void {
     if (!this.isDisposed) {
       assert(!this._inUse);
-      System.instance.context.deleteProgram(this._glProgram!);
+      System.instance.context.deleteProgram(expectDefined(this._glProgram));
       this._glProgram = undefined;
       this._status = CompileStatus.Uncompiled;
     }
@@ -205,9 +205,9 @@ export class ShaderProgram implements WebGLDisposable {
 
     // bind attribute locations before final linking
     if (this._attrMap !== undefined) {
-      this._attrMap.forEach((attr: AttributeDetails, key: string) => {
-        gl.bindAttribLocation(this._glProgram!, attr.location, key);
-      });
+      for (const [key, attr] of this._attrMap) {
+        gl.bindAttribLocation(this._glProgram, attr.location, key);
+      }
     }
 
     gl.linkProgram(this._glProgram);

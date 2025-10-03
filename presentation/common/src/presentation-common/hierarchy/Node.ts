@@ -2,6 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module Hierarchies
  */
@@ -12,6 +13,8 @@ import { NodeKey } from "./Key.js";
 /**
  * Data structure that describes a tree node.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface Node {
   /** A key that uniquely identifies a node. */
@@ -22,7 +25,7 @@ export interface Node {
   description?: string;
   /**
    * Image ID
-   * @deprecated in 3.x - might be removed in next major version. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details. Will
+   * @deprecated in 3.3.0 - might be removed in next major version. Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details. Will
    * be removed with [[PropertyGroup.imageId]] and [[PropertyRangeGroupSpecification.imageId]].
    */
   imageId?: string;
@@ -48,6 +51,8 @@ export interface Node {
 /**
  * Partial node definition.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export type PartialNode = AllOrNone<Partial<Node>, "key" | "label">;
 

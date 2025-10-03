@@ -335,7 +335,10 @@ export class ViewClipTool extends PrimitiveTool {
           zHigh = projection;
       }
     }
-    return Range1d.createXX(zLow!, zHigh!);
+
+    if (undefined === zLow || undefined === zHigh)
+      return Range1d.createNull();
+    return Range1d.createXX(zLow, zHigh);
   }
 
   /** @internal */
@@ -678,8 +681,12 @@ export class ViewClipByShapeTool extends ViewClipTool {
     if (undefined === this._matrix)
       return points;
 
+    const vp = ev.viewport;
+    if (undefined === vp)
+      return points;
+
     const normal = this._matrix.getColumn(2);
-    let currentPt = AccuDrawHintBuilder.projectPointToPlaneInView(ev.point, points[0], normal, ev.viewport!, true);
+    let currentPt = AccuDrawHintBuilder.projectPointToPlaneInView(ev.point, points[0], normal, vp, true);
     if (undefined === currentPt)
       currentPt = ev.point.clone();
     if (2 === points.length && !ev.isControlKey) {
@@ -688,7 +695,7 @@ export class ViewClipByShapeTool extends ViewClipTool {
       xDir.normalizeInPlace();
       const yDir = xDir.crossProduct(normal);
       yDir.normalizeInPlace();
-      const cornerPt = AccuDrawHintBuilder.projectPointToLineInView(currentPt, points[1], yDir, ev.viewport!, true);
+      const cornerPt = AccuDrawHintBuilder.projectPointToLineInView(currentPt, points[1], yDir, vp, true);
       if (undefined !== cornerPt) {
         points.push(cornerPt);
         cornerPt.plusScaled(xDir, -xLen, currentPt);
@@ -770,7 +777,8 @@ export class ViewClipByShapeTool extends ViewClipTool {
 
     const currPt = ev.point.clone();
     if (this._points.length > 0) {
-      const planePt = AccuDrawHintBuilder.projectPointToPlaneInView(currPt, this._points[0], this._matrix.getColumn(2), ev.viewport!, true);
+      const vp = ev.viewport;
+      const planePt = (vp ? AccuDrawHintBuilder.projectPointToPlaneInView(currPt, this._points[0], this._matrix.getColumn(2), vp, true) : undefined);
       if (undefined !== planePt)
         currPt.setFrom(planePt);
     }
@@ -1367,7 +1375,9 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
         const compressed = PolylineOps.compressByChordError(clipShape.polygon, 1.0e-5);
         if (compressed.length < clipShape.polygon.length) {
           clip = clip.clone();
-          clipShape = ViewClipTool.isSingleClipShape(clip)!;
+          clipShape = ViewClipTool.isSingleClipShape(clip);
+          if (undefined === clipShape)
+            return false;
           clipShape.setPolygon(compressed);
           this._clipView.view.setViewClip(clip);
         }
@@ -1852,7 +1862,7 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
       return;
 
     if (undefined !== this._clipShape) {
-      ViewClipTool.drawClipShape(context, this._clipShape, this._clipShapeExtents!, EditManipulator.HandleUtils.adjustForBackgroundColor(ColorDef.white, vp), 3, this._clipId);
+      ViewClipTool.drawClipShape(context, this._clipShape, this._clipShapeExtents ?? Range1d.createNull(), EditManipulator.HandleUtils.adjustForBackgroundColor(ColorDef.white, vp), 3, this._clipId);
     } else if (undefined !== this._clipPlanes) {
       if (undefined !== this._clipPlanesLoops)
         ViewClipTool.drawClipPlanesLoops(context, this._clipPlanesLoops, EditManipulator.HandleUtils.adjustForBackgroundColor(ColorDef.white, vp), 3, false, EditManipulator.HandleUtils.adjustForBackgroundColor(ColorDef.from(0, 255, 255, 225), vp), this._clipId);
@@ -1898,9 +1908,12 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
               }
             }
           }
-        } else if (undefined !== this._controls[iFace].floatingOrigin && vp.isPointVisibleXY(this._controls[iFace].floatingOrigin!, CoordSystem.World, 0.1)) {
-          this._controls[iFace].origin.setFrom(this._controls[iFace].floatingOrigin);
-          this._controls[iFace].floatingOrigin = undefined;
+        } else {
+          const floatingOrigin = this._controls[iFace].floatingOrigin;
+          if (undefined !== floatingOrigin && vp.isPointVisibleXY(floatingOrigin, CoordSystem.World, 0.1)) {
+            this._controls[iFace].origin.setFrom(this._controls[iFace].floatingOrigin);
+            this._controls[iFace].floatingOrigin = undefined;
+          }
         }
       }
 

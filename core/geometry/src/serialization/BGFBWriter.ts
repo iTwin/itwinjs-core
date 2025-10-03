@@ -6,7 +6,6 @@
  * @module Serialization
  */
 import { flatbuffers } from "flatbuffers";
-import { assert } from "@itwin/core-bentley";
 import { AkimaCurve3d } from "../bspline/AkimaCurve3d";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
@@ -589,13 +588,12 @@ export class BGFBWriter {
 
       if (mesh.data.edgeMateIndex) {
         indexArray.length = 0;
-        if (!SerializationHelpers.announceUncompressedZeroBasedReflexiveIndices(mesh.data.edgeMateIndex,
-          mesh.facetStart, SerializationHelpers.EdgeMateIndex.BlockSeparator,
-          SerializationHelpers.EdgeMateIndex.NoEdgeMate, (i: number) => indexArray.push(i),
-        )){
-          assert(false, "unable to serialize edgeMateIndex array to flatbuffer");
+        if (SerializationHelpers.announceUncompressedZeroBasedReflexiveIndices(mesh.data.edgeMateIndex, mesh.facetStart,
+          SerializationHelpers.EdgeMateIndex.BlockSeparator, SerializationHelpers.EdgeMateIndex.NoEdgeMate,
+          (i: number) => indexArray.push(i),
+        )) {
+          edgeMateIndexOffset = BGFBAccessors.Polyface.createEdgeMateIndexVector(this.builder, indexArray);
         }
-        edgeMateIndexOffset = BGFBAccessors.Polyface.createEdgeMateIndexVector(this.builder, indexArray);
       }
 
       // NOTE: mesh.data.face is not persistent

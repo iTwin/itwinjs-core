@@ -8,7 +8,7 @@
 
 import { BeDuration, BeTimePoint, dispose, Id64String } from "@itwin/core-bentley";
 import { Matrix4d, Range3d, Transform } from "@itwin/core-geometry";
-import { ElementAlignedBox3d, FrustumPlanes, ViewFlagOverrides } from "@itwin/core-common";
+import { ElementAlignedBox3d, FrustumPlanes, RenderSchedule, ViewFlagOverrides } from "@itwin/core-common";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -203,5 +203,19 @@ export abstract class TileTree {
    */
   public collectTileGeometry(_collector: TileGeometryCollector): void {
   }
+
+  /**
+   * Invoked when a schedule script is edited.
+   * Override to handle updates for affected elements or timelines.
+   *
+   * @internal
+   */
+  public async onScheduleEditingChanged(_changes: RenderSchedule.EditingChanges[]): Promise<void> {}
+  /**
+   * Invoked when a schedule script is committed during editing.
+   * Override in specific tile tree types to handle the change.
+   * @internal
+   */
+  public onScheduleEditingCommitted(): void {}
 }
 

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ==================================================================================
+|  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+|  * See LICENSE.md in the project root for license terms and full copyright notice.
+======================================================================================= -->
+<ECSchema schemaName="EnumerationTest" alias="enumt" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  <ECEnumeration typeName="IntEnumeration" backingTypeName="int" isStrict="true" displayLabel="Int Enumeration" description="Test Enumeration">
+    <ECEnumerator value="0" name="None" displayLabel="None" description="None description"/>
+    <ECEnumerator value="1" name="Select" displayLabel="Select" description="Select description"/>
+    <ECEnumerator value="2" name="Insert" displayLabel="Insert" description="Insert description"/>
+  </ECEnumeration>
+
+  <ECEnumeration typeName="StringEnumeration" backingTypeName="string" isStrict="false" displayLabel="String Enumeration" description="Test Enumeration">
+    <ECEnumerator value="alpha" name="Alpha" displayLabel="First" description="Alpha description"/>
+    <ECEnumerator value="beta" name="Beta" displayLabel="Second" description="Beta description"/>
+    <ECEnumerator value="omega" name="Omega" displayLabel="Last" description="Omega description"/>
+    <ECEnumerator value="noLabelDescription" name="NoLabelOrDescription"/>
+  </ECEnumeration>
+</ECSchema>

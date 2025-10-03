@@ -1257,7 +1257,7 @@ describe("PolyfaceClip", () => {
     const mesh = Sample.createMeshFromFrankeSurface(30, surfaceOptions);
     if (ck.testType(mesh, IndexedPolyface, "test mesh is defined")) {
       const regionOptions = StrokeOptions.createForCurves();
-      regionOptions.angleTol = Angle.createDegrees(5);
+      regionOptions.angleTol = Angle.createDegrees(0.5);
 
       const facetAndDrapeRegion = (label: string, regionXY: AnyRegion, knownAreaXY?: number, sweepDir?: Vector3d): IndexedPolyface | undefined => {
         let regionFacets: IndexedPolyface | undefined;
@@ -1273,7 +1273,7 @@ describe("PolyfaceClip", () => {
             const area = knownAreaXY ? knownAreaXY : RegionOps.computeXYArea(regionXY);
             if (ck.testDefined(area, `${label}: region area computed`)) {
               const projectedArea = PolyfaceQuery.sumFacetAreas(drapeMesh, sweepDir ? sweepDir : regionNormal);
-              ck.testCoordinateWithToleranceFactor(Math.abs(area), Math.abs(projectedArea), 1000, `${label}: projected area of draped mesh agrees with tool region area`);
+              ck.testNearNumber(Math.abs(area), Math.abs(projectedArea), 0.005, `${label}: projected area of draped mesh agrees with tool region area`);
             }
           }
         }

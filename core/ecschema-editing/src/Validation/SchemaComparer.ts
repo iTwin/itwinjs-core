@@ -60,10 +60,8 @@ export interface ISchemaComparer {
   areEqualByName(itemKeyA?: Readonly<SchemaItemKey> | SchemaItem, itemKeyB?: Readonly<SchemaItemKey> | SchemaItem): boolean;
 }
 
-function labelsMatch(label1?: string, label2?: string) {
-  label1 = label1 === undefined ? "" : label1;
-  label2 = label2 === undefined ? "" : label2;
-  return label1 === label2;
+ function areStringsEqual(lhs?: string, rhs?: string): boolean {
+  return (lhs ?? "") === (rhs ?? "");
 }
 
 /**
@@ -156,7 +154,7 @@ export class SchemaComparer {
     if (schemaA.alias !== schemaB.alias)
       promises.push(this._reporter.reportSchemaDelta(schemaA, "alias", schemaA.alias, schemaB.alias, this._compareDirection));
 
-    if (schemaA.description !== schemaB.description)
+    if (!areStringsEqual(schemaA.description, schemaB.description))
       promises.push(this._reporter.reportSchemaDelta(schemaA, "description", schemaA.description, schemaB.description, this._compareDirection));
 
     if (schemaA.label !== schemaB.label)
@@ -189,10 +187,10 @@ export class SchemaComparer {
       return;
     }
 
-    if (schemaItemA.description !== schemaItemB.description)
+    if (!areStringsEqual(schemaItemA.description, schemaItemB.description))
       promises.push(this._reporter.reportSchemaItemDelta(schemaItemA, "description", schemaItemA.description, schemaItemB.description, this._compareDirection));
 
-    if (!labelsMatch(schemaItemA.label, schemaItemB.label))
+    if (!areStringsEqual(schemaItemA.label, schemaItemB.label))
       promises.push(this._reporter.reportSchemaItemDelta(schemaItemA, "label", schemaItemA.label, schemaItemB.label, this._compareDirection));
 
     await Promise.all(promises);
@@ -257,10 +255,10 @@ export class SchemaComparer {
       return;
     }
 
-    if (!labelsMatch(propertyA.label, propertyB.label))
+    if (!areStringsEqual(propertyA.label, propertyB.label))
       promises.push(this._reporter.reportPropertyDelta(propertyA, "label", propertyA.label, propertyB.label, this._compareDirection));
 
-    if (propertyA.description !== propertyB.description)
+    if (!areStringsEqual(propertyA.description, propertyB.description))
       promises.push(this._reporter.reportPropertyDelta(propertyA, "description", propertyA.description, propertyB.description, this._compareDirection));
 
     if (propertyA.isReadOnly !== propertyB.isReadOnly)
@@ -834,10 +832,10 @@ export class SchemaComparer {
   private async compareEnumerators(enumeratorA: AnyEnumerator, enumeratorB: AnyEnumerator, enumA: Enumeration, enumB: Enumeration): Promise<void> {
     const promises: Array<Promise<void>> = [];
 
-    if (enumeratorA.description !== enumeratorB.description)
+    if (!areStringsEqual(enumeratorA.description, enumeratorB.description))
       promises.push(this._reporter.reportEnumeratorDelta(enumA, enumeratorA, "description", enumeratorA.description, enumeratorB.description, this._compareDirection));
 
-    if (!labelsMatch(enumeratorA.label, enumeratorB.label))
+    if (!areStringsEqual(enumeratorA.label, enumeratorB.label))
       promises.push(this._reporter.reportEnumeratorDelta(enumA, enumeratorA, "label", enumeratorA.label, enumeratorB.label, this._compareDirection));
 
     // No need to compare values if the type is different (which will be reported separately)

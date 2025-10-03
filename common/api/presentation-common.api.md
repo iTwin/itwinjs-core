@@ -66,7 +66,7 @@ export interface ArrayTypeDescription extends BaseTypeDescription {
     valueFormat: PropertyValueFormat.Array;
 }
 
-// @public
+// @public @deprecated
 export interface BaseNodeKey {
     instanceKeysSelectQuery?: PresentationQuery;
     pathFromRoot: string[];
@@ -135,15 +135,15 @@ export interface CategoryDescriptionJSON {
 // @public
 export type CategoryIdentifier = ParentCategoryIdentifier | RootCategoryIdentifier | IdCategoryIdentifier | SchemaCategoryIdentifier;
 
-// @public
+// @public @deprecated
 export interface ChildNodeRule extends NavigationRuleBase {
     ruleType: "ChildNodes";
 }
 
-// @public
+// @public @deprecated
 export type ChildNodeSpecification = CustomNodeSpecification | InstanceNodesOfSpecificClassesSpecification | RelatedInstanceNodesSpecification | CustomQueryInstanceNodesSpecification;
 
-// @public
+// @public @deprecated
 export interface ChildNodeSpecificationBase {
     doNotSort?: boolean;
     hasChildren?: "Always" | "Never" | "Unknown";
@@ -157,7 +157,7 @@ export interface ChildNodeSpecificationBase {
     suppressSimilarAncestorsCheck?: boolean;
 }
 
-// @public
+// @public @deprecated
 export enum ChildNodeSpecificationTypes {
     // (undocumented)
     CustomNode = "CustomNode",
@@ -169,7 +169,7 @@ export enum ChildNodeSpecificationTypes {
     RelatedInstanceNodes = "RelatedInstanceNodes"
 }
 
-// @public
+// @public @deprecated
 export interface ClassGroup extends GroupingSpecificationBase {
     baseClass?: SingleSchemaClassSpecification;
     createGroupForSingleItem?: boolean;
@@ -374,7 +374,7 @@ export function createFieldHierarchies(fields: Field[], ignoreCategories?: boole
 // @public
 export type CustomizationRule = InstanceLabelOverride | GroupingRule | SortingRule | ExtendedDataRule | NodeArtifactsRule;
 
-// @public
+// @public @deprecated
 export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
     description?: string;
     // @deprecated
@@ -384,7 +384,7 @@ export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
     type: string;
 }
 
-// @public
+// @public @deprecated
 export interface CustomQueryInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
     queries?: QuerySpecification[];
     specType: "CustomQueryInstanceNodes";
@@ -407,7 +407,7 @@ export enum DefaultContentDisplayTypes {
     Viewport = "Graphics"
 }
 
-// @public
+// @public @deprecated
 export interface DefaultGroupingPropertiesContainer {
     groupByClass?: boolean;
     groupByLabel?: boolean;
@@ -624,21 +624,21 @@ export interface DistinctValuesRequestOptions<TIModel, TDescriptor, TKeySet, TRu
 // @public
 export type DistinctValuesRpcRequestOptions = PresentationRpcRequestOptions<DistinctValuesRequestOptions<never, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>>;
 
-// @public
+// @public @deprecated
 export interface ECClassGroupingNodeKey extends GroupingNodeKey {
     className: string;
     // (undocumented)
     type: StandardNodeTypes.ECClassGroupingNode;
 }
 
-// @public
+// @public @deprecated
 export interface ECInstancesNodeKey extends BaseNodeKey {
     instanceKeys: InstanceKey[];
     // (undocumented)
     type: StandardNodeTypes.ECInstancesNode;
 }
 
-// @public
+// @public @deprecated
 export interface ECPropertyGroupingNodeKey extends GroupingNodeKey {
     className: string;
     groupingValues: any[];
@@ -647,7 +647,7 @@ export interface ECPropertyGroupingNodeKey extends GroupingNodeKey {
     type: StandardNodeTypes.ECPropertyGroupingNode;
 }
 
-// @public
+// @public @deprecated
 export interface ECPropertyValueQuerySpecification extends QuerySpecificationBase {
     parentPropertyName: string;
     specType: "ECPropertyValue";
@@ -838,25 +838,26 @@ export interface FieldHierarchy {
 // @public
 export type FieldJSON<TClassInfoJSON = ClassInfo> = BaseFieldJSON | PropertiesFieldJSON<TClassInfoJSON> | ArrayPropertiesFieldJSON<TClassInfoJSON> | StructPropertiesFieldJSON<TClassInfoJSON> | NestedContentFieldJSON<TClassInfoJSON>;
 
-// @public
+// @public @deprecated
 export interface FilterByInstancePathsHierarchyRequestOptions<TIModel, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
     instancePaths: InstanceKey[][];
     markedIndex?: number;
 }
 
-// @public
+// @public @deprecated
 export type FilterByInstancePathsHierarchyRpcRequestOptions = PresentationRpcRequestOptions<FilterByInstancePathsHierarchyRequestOptions<never, RulesetVariableJSON>>;
 
-// @public
+// @public @deprecated
 export interface FilterByTextHierarchyRequestOptions<TIModel, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
     filterText: string;
 }
 
-// @public
+// @public @deprecated
 export type FilterByTextHierarchyRpcRequestOptions = PresentationRpcRequestOptions<FilterByTextHierarchyRequestOptions<never, RulesetVariableJSON>>;
 
 // @public
 export interface FormatOptions {
+    formatOverride?: Partial<Omit<FormatProps, "type">>;
     koqName: string;
     unitSystem?: UnitSystemKey;
 }
@@ -870,12 +871,12 @@ export interface FormatsMap {
 // @public
 export const getInstancesCount: (keys: Readonly<KeySet>) => number;
 
-// @public
+// @public @deprecated
 export interface GroupingNodeKey extends BaseNodeKey {
     groupedInstancesCount: number;
 }
 
-// @public
+// @public @deprecated
 export interface GroupingRule extends RuleBase {
     class: SingleSchemaClassSpecification;
     condition?: string;
@@ -883,15 +884,15 @@ export interface GroupingRule extends RuleBase {
     ruleType: "Grouping";
 }
 
-// @public
+// @public @deprecated
 export type GroupingSpecification = ClassGroup | PropertyGroup | SameLabelInstanceGroup;
 
-// @public
+// @public @deprecated
 export interface GroupingSpecificationBase {
     specType: `${GroupingSpecificationTypes}`;
 }
 
-// @public
+// @public @deprecated
 export enum GroupingSpecificationTypes {
     // (undocumented)
     Class = "Class",
@@ -901,7 +902,7 @@ export enum GroupingSpecificationTypes {
     SameLabelInstance = "SameLabelInstance"
 }
 
-// @public
+// @public @deprecated
 export interface HierarchyCompareInfo {
     changes: PartialHierarchyModification[];
     continuationToken?: {
@@ -910,7 +911,7 @@ export interface HierarchyCompareInfo {
     };
 }
 
-// @public
+// @public @deprecated
 export interface HierarchyCompareOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
     // (undocumented)
     continuationToken?: {
@@ -928,31 +929,31 @@ export interface HierarchyCompareOptions<TIModel, TNodeKey, TRulesetVariable = R
     resultSetSize?: number;
 }
 
-// @public
+// @public @deprecated
 export interface HierarchyLevel {
     nodes: Node_2[];
     supportsFiltering?: boolean;
 }
 
-// @public
+// @public @deprecated
 export interface HierarchyLevelDescriptorRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
     parentKey?: TNodeKey;
 }
 
-// @public
+// @public @deprecated
 export type HierarchyLevelDescriptorRpcRequestOptions = PresentationRpcRequestOptions<HierarchyLevelDescriptorRequestOptions<never, NodeKey, RulesetVariableJSON>>;
 
-// @public
+// @public @deprecated
 export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
     instanceFilter?: InstanceFilterDefinition;
     parentKey?: TNodeKey;
     sizeLimit?: number;
 }
 
-// @public
+// @public @deprecated
 export type HierarchyRpcRequestOptions = PresentationRpcRequestOptions<HierarchyRequestOptions<never, NodeKey, RulesetVariableJSON>>;
 
-// @public
+// @public @deprecated
 export type HierarchyUpdateInfo = typeof UPDATE_FULL;
 
 // @public
@@ -1154,7 +1155,7 @@ export enum InstanceLabelOverrideValueSpecificationType {
     String = "String"
 }
 
-// @public
+// @public @deprecated
 export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
     classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
     excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
@@ -1229,9 +1230,10 @@ export type Key = Readonly<NodeKey> | Readonly<InstanceKey> | Readonly<EntityPro
 
 // @public (undocumented)
 export namespace Key {
-    export function isEntityProps(key: Key): key is EntityProps;
-    export function isInstanceKey(key: Key): key is InstanceKey;
-    export function isNodeKey(key: Key): key is NodeKey;
+    export function isEntityProps(key: Key): key is Extract<Key, Readonly<EntityProps>>;
+    export function isInstanceKey(key: Key): key is Extract<Key, Readonly<InstanceKey>>;
+    // @deprecated
+    export function isNodeKey(key: Key): key is Extract<Key, Readonly<NodeKey>>;
 }
 
 // @public
@@ -1253,7 +1255,9 @@ export class KeySet {
     get instanceKeys(): Map<string, Set<InstanceId>>;
     get instanceKeysCount(): number;
     get isEmpty(): boolean;
+    // @deprecated
     get nodeKeys(): Set<NodeKey>;
+    // @deprecated
     get nodeKeysCount(): number;
     get size(): number;
     some(callback: (key: Key) => boolean): boolean;
@@ -1263,6 +1267,7 @@ export class KeySet {
 // @public
 export interface KeySetJSON {
     instanceKeys: Array<[string, string]>;
+    // @deprecated
     nodeKeys: NodeKey[];
 }
 
@@ -1313,7 +1318,7 @@ export namespace LabelDefinition {
     };
 }
 
-// @public
+// @public @deprecated
 export interface LabelGroupingNodeKey extends GroupingNodeKey {
     label: string;
     // (undocumented)
@@ -1388,10 +1393,10 @@ export interface NavigationPropertyValue {
     label: LabelDefinition;
 }
 
-// @public
+// @public @deprecated
 export type NavigationRule = RootNodeRule | ChildNodeRule;
 
-// @public
+// @public @deprecated
 export interface NavigationRuleBase extends RuleBase {
     condition?: string;
     customizationRules?: CustomizationRule[];
@@ -1459,7 +1464,7 @@ export interface NoCategoryIdentifier {
     type: "None";
 }
 
-// @public
+// @public @deprecated
 interface Node_2 {
     description?: string;
     extendedData?: {
@@ -1477,7 +1482,7 @@ interface Node_2 {
 }
 export { Node_2 as Node }
 
-// @public
+// @public @deprecated
 export interface NodeArtifactsRule extends RuleBase {
     condition?: string;
     items: {
@@ -1486,7 +1491,7 @@ export interface NodeArtifactsRule extends RuleBase {
     ruleType: "NodeArtifacts";
 }
 
-// @public
+// @public @deprecated
 export interface NodeDeletionInfo {
     parent?: NodeKey;
     position: number;
@@ -1494,7 +1499,7 @@ export interface NodeDeletionInfo {
     type: "Delete";
 }
 
-// @public
+// @public @deprecated
 export interface NodeInsertionInfo {
     node: Node_2;
     parent?: NodeKey;
@@ -1503,10 +1508,10 @@ export interface NodeInsertionInfo {
     type: "Insert";
 }
 
-// @public
+// @public @deprecated
 export type NodeKey = BaseNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
 
-// @public (undocumented)
+// @public @deprecated (undocumented)
 export namespace NodeKey {
     export function equals(lhs: NodeKey, rhs: NodeKey): boolean;
     export function isClassGroupingNodeKey(key: NodeKey): key is ECClassGroupingNodeKey;
@@ -1516,10 +1521,10 @@ export namespace NodeKey {
     export function isPropertyGroupingNodeKey(key: NodeKey): key is ECPropertyGroupingNodeKey;
 }
 
-// @public
+// @public @deprecated
 export type NodeKeyPath = NodeKey[];
 
-// @public
+// @public @deprecated
 export interface NodePathElement {
     children: NodePathElement[];
     filteringData?: NodePathFilteringData;
@@ -1528,13 +1533,13 @@ export interface NodePathElement {
     node: Node_2;
 }
 
-// @public
+// @public @deprecated
 export interface NodePathFilteringData {
     childMatchesCount: number;
     matchesCount: number;
 }
 
-// @public
+// @public @deprecated
 export interface NodeUpdateInfo {
     changes: PartialNode;
     target: NodeKey;
@@ -1582,10 +1587,10 @@ export function parseCombinedFieldNames(combinedName: string): string[];
 // @public
 export type PartialBy<T, K extends keyof T> = Omit_2<T, K> & Partial<Pick<T, K>>;
 
-// @public
+// @public @deprecated
 export type PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo;
 
-// @public
+// @public @deprecated
 export type PartialNode = AllOrNone<Partial<Node_2>, "key" | "label">;
 
 // @public
@@ -1840,7 +1845,7 @@ export interface PropertyEditorSpecification {
     parameters?: PropertyEditorParameters[];
 }
 
-// @public
+// @public @deprecated
 export interface PropertyGroup extends GroupingSpecificationBase {
     createGroupForSingleItem?: boolean;
     createGroupForUnspecifiedValues?: boolean;
@@ -1905,7 +1910,7 @@ export interface PropertyOverrides {
     renderer?: CustomRendererSpecification;
 }
 
-// @public
+// @public @deprecated
 export interface PropertyRangeGroupSpecification {
     fromValue: string;
     // @deprecated
@@ -1936,16 +1941,16 @@ export enum PropertyValueFormat {
     Struct = "Struct"
 }
 
-// @public
+// @public @deprecated
 export type QuerySpecification = StringQuerySpecification | ECPropertyValueQuerySpecification;
 
-// @public
+// @public @deprecated
 export interface QuerySpecificationBase {
     class: SingleSchemaClassSpecification;
     specType: `${QuerySpecificationTypes}`;
 }
 
-// @public
+// @public @deprecated
 export enum QuerySpecificationTypes {
     // (undocumented)
     ECPropertyValue = "ECPropertyValue",
@@ -2043,7 +2048,7 @@ export interface RelatedInstanceByTargetInstancesSpecification extends RelatedIn
     };
 }
 
-// @public
+// @public @deprecated
 export interface RelatedInstanceNodesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
     instanceFilter?: string;
     relationshipPaths: RepeatableRelationshipPathSpecification[];
@@ -2152,7 +2157,7 @@ export interface RootCategoryIdentifier {
     type: "Root";
 }
 
-// @public
+// @public @deprecated
 export interface RootNodeRule extends NavigationRuleBase {
     autoExpand?: boolean;
     ruleType: "RootNodes";
@@ -2236,13 +2241,13 @@ export enum RuleTypes {
     StyleOverride = "StyleOverride"
 }
 
-// @public
+// @public @deprecated
 export interface SameLabelInstanceGroup extends GroupingSpecificationBase {
     applicationStage?: `${SameLabelInstanceGroupApplicationStage}`;
     specType: "SameLabelInstance";
 }
 
-// @public
+// @public @deprecated
 export enum SameLabelInstanceGroupApplicationStage {
     PostProcess = "PostProcess",
     Query = "Query"
@@ -2362,7 +2367,7 @@ export interface SortingRuleBase extends RuleBase {
     isPolymorphic?: boolean;
 }
 
-// @public
+// @public @deprecated
 export enum StandardNodeTypes {
     // (undocumented)
     DisplayLabelGroupingNode = "DisplayLabelGroupingNode",
@@ -2421,7 +2426,7 @@ export interface StringPropertyValueConstraints {
     minimumLength?: number;
 }
 
-// @public
+// @public @deprecated
 export interface StringQuerySpecification extends QuerySpecificationBase {
     query: string;
     specType: "String";
@@ -2492,7 +2497,7 @@ export interface StructTypeDescription extends BaseTypeDescription {
     valueFormat: PropertyValueFormat.Struct;
 }
 
-// @public
+// @public @deprecated
 export interface SubCondition {
     condition?: string;
     requiredSchemas?: RequiredSchemaSpecification[];

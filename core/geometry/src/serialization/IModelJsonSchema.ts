@@ -1005,13 +1005,12 @@ export namespace IModelJson {
 
         if (data.hasOwnProperty("edgeMateIndex") && Array.isArray(data.edgeMateIndex)) {
           const edgeMateIndex: Array<number | undefined> = [];
-          if (!SerializationHelpers.announceCompressedZeroBasedReflexiveIndices(data.edgeMateIndex, numPerFace,
+          if (SerializationHelpers.announceCompressedZeroBasedReflexiveIndices(data.edgeMateIndex, numPerFace,
             SerializationHelpers.EdgeMateIndex.BlockSeparator, SerializationHelpers.EdgeMateIndex.NoEdgeMate,
             (i: number | undefined) => edgeMateIndex.push(i),
           )) {
-            assert(false, "unable to deserialize json edgeMateIndex array");
+            polyface.data.edgeMateIndex = edgeMateIndex;
           }
-          polyface.data.edgeMateIndex = edgeMateIndex;
         }
 
         if (!polyface.validateAllIndices())
@@ -1770,8 +1769,6 @@ export namespace IModelJson {
       const normalIndex: number[] = [];
       const paramIndex: number[] = [];
       const colorIndex: number[] = [];
-      const edgeMateIndex: number[] = [];
-
       let n;
       while (visitor.moveToNextFacet()) {
         n = visitor.indexCount;
@@ -1803,12 +1800,14 @@ export namespace IModelJson {
         taggedNumericData = this.handleTaggedNumericData(pf.data.taggedNumericData);
       }
 
+      let edgeMateIndex: number[] | undefined;
       if (pf.data.edgeMateIndex) {
-        if (!SerializationHelpers.announceUncompressedZeroBasedReflexiveIndices(pf.data.edgeMateIndex,
-          pf.facetStart, SerializationHelpers.EdgeMateIndex.BlockSeparator,
-          SerializationHelpers.EdgeMateIndex.NoEdgeMate, (i: number) => edgeMateIndex.push(i),
+        edgeMateIndex = [];
+        if (!SerializationHelpers.announceUncompressedZeroBasedReflexiveIndices(pf.data.edgeMateIndex, pf.facetStart,
+          SerializationHelpers.EdgeMateIndex.BlockSeparator, SerializationHelpers.EdgeMateIndex.NoEdgeMate,
+          (i: number) => edgeMateIndex!.push(i),
         )) {
-          assert(false, "unable to serialize edgeMateIndex array to json");
+          edgeMateIndex = undefined;
         }
       }
 

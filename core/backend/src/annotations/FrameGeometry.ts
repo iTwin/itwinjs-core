@@ -13,33 +13,32 @@ import { Angle, AngleSweep, Arc3d, LineString3d, Loop, Path, Point3d, Range2d, T
 /**
  * Based on the frame style, this method will construct and append [[GeometryParams]] (for line style) and a [[Loop]] (for the frame shape) to the builder.
  * @param builder that will be appended to in place
- * @param category to which the frame belongs, used for the [[GeometryParams]].
  * @param frame
  * @param range to enclose with the frame
- * @param transform that transform the range to world coordinates
+ * @param transform that transforms the range to world coordinates
  * @returns `true` if any geometry was appended to the builder
 * @beta
  */
 export function appendFrameToBuilder(builder: ElementGeometry.Builder, frame: TextFrameStyleProps, range: Range2d, transform: Transform, geomParams: GeometryParams): boolean {
-  if (undefined === frame.shape || frame.shape === "none") {
+  if (frame.shape === "none" || frame.shape === undefined) {
     return false;
   }
 
   const params = geomParams.clone();
 
-  if (frame.fill === undefined) {
+  if (frame.fillColor === "none" || frame.fillColor === undefined) {
     params.fillDisplay = FillDisplay.Never;
-  } else if (frame.fill === "background") {
+  } else if (frame.fillColor === "background") {
     params.backgroundFill = BackgroundFill.Solid;
     params.fillDisplay = FillDisplay.Blanking;
-  } else if (frame.fill !== "subcategory") {
-    params.fillColor = ColorDef.fromJSON(frame.fill);
+  } else if (frame.fillColor !== "subcategory") {
+    params.fillColor = ColorDef.fromJSON(frame.fillColor);
     params.lineColor = params.fillColor;
     params.fillDisplay = FillDisplay.Blanking;
   }
 
-  if (frame.border !== "subcategory") {
-    params.lineColor = ColorDef.fromJSON(frame.border);
+  if (frame.borderColor !== "subcategory") {
+    params.lineColor = ColorDef.fromJSON(frame.borderColor);
     params.weight = frame.borderWeight;
   }
 
@@ -166,9 +165,9 @@ const computeRoundedRectangle = (range: Range2d, transform: Transform, radiusFac
 
 
   const curves = [
-    LineString3d.create([Point3d.create(inLeft, exTop), Point3d.create(inRight, exTop)]),         // top
+    LineString3d.create([Point3d.create(inRight, exTop), Point3d.create(inLeft, exTop)]),         // top
     Arc3d.createXY(Point3d.create(inLeft, inTop), radius, q2),                                    // top left
-    LineString3d.create([Point3d.create(exLeft, inBottom), Point3d.create(exLeft, inTop)]),       // left
+    LineString3d.create([Point3d.create(exLeft, inTop), Point3d.create(exLeft, inBottom)]),       // left
     Arc3d.createXY(Point3d.create(inLeft, inBottom), radius, q3),                                 // bottom left
     LineString3d.create([Point3d.create(inLeft, exBottom), Point3d.create(inRight, exBottom)]),   // bottom
     Arc3d.createXY(Point3d.create(inRight, inBottom), radius, q4),                                // bottom right
@@ -275,7 +274,7 @@ const computeCapsule = (range: Range2d, transform: Transform): Loop => {
   const rightHalfCircle = AngleSweep.createStartEndDegrees(-90, 90);
 
   const curves = [
-    LineString3d.create([Point3d.create(inLeft, exTop), Point3d.create(inRight, exTop)]),       // top
+    LineString3d.create([Point3d.create(inRight, exTop), Point3d.create(inLeft, exTop)]),       // top
     Arc3d.createXY(Point3d.create(inLeft, range.center.y), radius, leftHalfCircle),             // left
     LineString3d.create([Point3d.create(inLeft, exBottom), Point3d.create(inRight, exBottom)]), // bottom
     Arc3d.createXY(Point3d.create(inRight, range.center.y), radius, rightHalfCircle),           // right

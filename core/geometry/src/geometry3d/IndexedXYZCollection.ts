@@ -36,8 +36,8 @@ class PointsIterator implements Iterator<Point3d>, Iterable<Point3d> {
   public [Symbol.iterator](): Iterator<Point3d> { return this; }
 }
 /**
- * abstract base class for read-only access to XYZ data with indexed reference.
- * * This allows algorithms to work with Point3d[] or GrowableXYZ.
+ * Abstract base class for read-only access to XYZ data with indexed reference.
+ * * This allows algorithms to work with Point3d[] or [[GrowableXYZArray]].
  *   * GrowableXYZArray implements these for its data.
  *   * Point3dArrayCarrier carries a (reference to) a Point3d[] and implements the methods with calls on that array reference.
  * * In addition to "point by point" accessors, other abstract members compute commonly useful vector data "between points".
@@ -339,6 +339,7 @@ export abstract class IndexedXYZCollection {
    * @param index0 index of first point
    * @param index1 index of second point
    * @param tolerance max coordinate difference to be considered equal. For exact test, pass 0. Defaults to `Geometry.smallMetricDistance`.
+   * @returns whether the points are equal within tolerance, or `undefined` if either index is invalid.
    */
   public almostEqualIndexIndex(index0: number, index1: number, tolerance = Geometry.smallMetricDistance): boolean | undefined {
     if (index0 < 0 || index0 >= this.length || index1 < 0 || index1 >= this.length)
@@ -347,28 +348,34 @@ export abstract class IndexedXYZCollection {
       && Geometry.isSameCoordinate(this.getYAtUncheckedPointIndex(index0), this.getYAtUncheckedPointIndex(index1), tolerance)
       && Geometry.isSameCoordinate(this.getZAtUncheckedPointIndex(index0), this.getZAtUncheckedPointIndex(index1), tolerance);
   }
+  /**
+   * Test whether the xy-coordinates of the indexed points are equal within tolerance. The z-coordinates are ignored.
+   * @param index0 index of first point
+   * @param index1 index of second point
+   * @param tolerance max coordinate difference to be considered equal. For exact test, pass 0. Defaults to `Geometry.smallMetricDistance`.
+   * @returns whether the xy-coordinates of the points are equal within tolerance, or `undefined` if either index is invalid.
+   */
+  public almostEqualXYIndexIndex(index0: number, index1: number, tolerance = Geometry.smallMetricDistance): boolean | undefined {
+    if (index0 < 0 || index0 >= this.length || index1 < 0 || index1 >= this.length)
+      return undefined;
+    return Geometry.isSameCoordinate(this.getXAtUncheckedPointIndex(index0), this.getXAtUncheckedPointIndex(index1), tolerance)
+      && Geometry.isSameCoordinate(this.getYAtUncheckedPointIndex(index0), this.getYAtUncheckedPointIndex(index1), tolerance);
+  }
 }
 /**
- * abstract base class extends IndexedXYZCollection, adding methods to push, peek, and pop, and rewrite.
+ * Abstract base class extends [[IndexedXYZCollection]] with methods that modify the collection.
  * @public
  */
 export abstract class IndexedReadWriteXYZCollection extends IndexedXYZCollection {
-  /** push a (clone of) point onto the collection
-   * * point itself is not pushed -- xyz data is extracted into the native form of the collection.
-   */
-  public abstract push(data: XYAndZ): void;
-  /**
-   * push a new point (given by coordinates) onto the collection
-   * @param x x coordinate
-   * @param y y coordinate
-   * @param z z coordinate
-   */
+  /** Push a (clone of) point onto the collection. */
+  public abstract push(point: XYAndZ): void;
+  /** Push a new point (given by xyz coordinates) onto the collection. */
   public abstract pushXYZ(x?: number, y?: number, z?: number): void;
-  /** remove the final point. */
+  /** Remove the final point. */
   public abstract pop(): void;
-  /**  clear all entries */
+  /** Remove all entries. */
   public abstract clear(): void;
-  /** reverse the points in place. */
+  /** Reverse the points in place. */
   public abstract reverseInPlace(): void;
 }
 

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/express-server",
-  "version": "5.1.0-dev.40",
+  "version": "5.3.0-dev.8",
   "description": "iTwin.js express utilities",
   "main": "lib/cjs/express-server.js",
   "module": "lib/esm/express-server.js",
@@ -17,6 +17,7 @@
     "docs": "betools docs --json=../../generated-docs/core/express-server/file.json --tsIndexFile=./express-server.ts --onlyJson",
     "extract-api": "betools extract-api --entry=express-server",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": "mocha",
     "cover": "nyc npm -s test"
   },
@@ -40,7 +41,7 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-backend": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "4.3.1",
     "@types/express": "^4.17.20",
@@ -50,7 +51,7 @@
     "@types/supertest": "^6.0.2",
     "@types/express-ws": "^3.0.3",
     "chai": "^4.3.10",
-    "eslint": "^9.13.0",
+    "eslint": "^9.31.0",
     "mocha": "^11.1.0",
     "nyc": "^17.1.0",
     "rimraf": "^6.0.1",

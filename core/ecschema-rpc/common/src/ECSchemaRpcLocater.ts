@@ -37,6 +37,9 @@ export class ECSchemaRpcLocater implements ISchemaLocater {
     */
   public async getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
     const schemaJson = await ECSchemaRpcInterface.getClient().getSchemaJSON(this.token, schemaKey.name);
+    if (!schemaJson)
+      return undefined;
+
     const schemaInfo = await Schema.startLoadingFromJson(schemaJson, context || new SchemaContext());
     if (schemaInfo !== undefined && schemaInfo.schemaKey.matches(schemaKey, matchType)) {
       return schemaInfo;
@@ -51,7 +54,7 @@ export class ECSchemaRpcLocater implements ISchemaLocater {
    * @param _matchType How to match key against candidate schemas
    * @param _context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
    * @throws Error Always throws an error indicating this method is not supported.
-   * @deprecated in 5.0. Use the asynchronous `getSchema` method for schema retrieval.
+   * @deprecated in 5.0 - will not be removed until after 2026-08-08. Use the asynchronous `getSchema` method for schema retrieval.
   */
   public getSchemaSync(_schemaKey: SchemaKey, _matchType: SchemaMatchType, _context: SchemaContext): Schema | undefined {
     throw new Error("getSchemaSync is not supported. Use the asynchronous getSchema method instead.");

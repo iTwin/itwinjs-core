@@ -1315,7 +1315,8 @@ export class Sample {
    * @param numYVertices number of vertices in y direction
    * @param createParams true to create parameters, with parameter value `(i,j)` for point at (0 based) vertex in x,y directions
    * @param createNormals true to create a (single) normal indexed from all facets
-   * @param createColors true to create a single color on each quad.  (shared between its triangles)
+   * @param createColors true to create a single color on each quad (shared between both triangles in quad if triangulating)
+   * @param triangulate whether to triangulate the quads (default true)
    * @note edgeVisible is false only on the diagonals
    */
   public static createTriangularUnitGridPolyface(
@@ -2583,7 +2584,7 @@ export class Sample {
   }
 
   // cspell:word creat
-  /** @deprecated in 4.x - will not be removed until after 2026-06-13. Use createVerticalStaggerPolygon instead. */
+  /** @deprecated in 4.0.0 - will not be removed until after 2026-06-13. Use createVerticalStaggerPolygon instead. */
   public static creatVerticalStaggerPolygon(
     dy1: number, dy2: number, dy3: number, dy4: number, ax: number, ay: number, dx1: number, dx4: number,
   ): Point3d[] {

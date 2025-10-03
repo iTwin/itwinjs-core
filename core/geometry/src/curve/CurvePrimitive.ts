@@ -776,6 +776,18 @@ export abstract class CurvePrimitive extends GeometryQuery {
   public endPoint(result?: Point3d): Point3d {
     return this.fractionToPoint(1.0, result);
   }
+  /**
+   * Whether the start and end points are defined and within tolerance.
+   * * Does not check for planarity or degeneracy.
+   * @param tolerance optional distance tolerance (default is [[Geometry.smallMetricDistance]])
+   * @param xyOnly if true, ignore z coordinate (default is `false`)
+   */
+  public isPhysicallyClosedCurve(tolerance: number = Geometry.smallMetricDistance, xyOnly: boolean = false): boolean {
+    const p0 = this.startPoint();
+    const p1 = this.endPoint();
+    return p0 !== undefined && p1 !== undefined && (xyOnly ? p0.isAlmostEqualXY(p1, tolerance) : p0.isAlmostEqual(p1, tolerance));
+  }
+
   /** Append stroke points to caller-supplied linestring. */
   public abstract emitStrokes(dest: LineString3d, options?: StrokeOptions): void;
   /**

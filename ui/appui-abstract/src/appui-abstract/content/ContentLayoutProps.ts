@@ -10,7 +10,7 @@
 
 /** Base interface for layout split properties
  * @public
- * @deprecated in 4.10.x - will not be removed until after 2026-06-13. Use `LayoutSplitPropsBase` from `@itwin/appui-react`.
+ * @deprecated in 4.10.0 - will not be removed until after 2026-06-13. Use `LayoutSplitPropsBase` from `@itwin/appui-react`.
  */
 export interface LayoutSplitPropsBase {
   /** The id used to save the current state of the splitter */
@@ -23,7 +23,7 @@ export interface LayoutSplitPropsBase {
 
 /** Properties for a layout fragment
  * @public
- * @deprecated in 4.10.x - will not be removed until after 2026-06-13. Use `LayoutFragmentProps` from `@itwin/appui-react`.
+ * @deprecated in 4.10.0 - will not be removed until after 2026-06-13. Use `LayoutFragmentProps` from `@itwin/appui-react`.
  */
 export interface LayoutFragmentProps {
   /** Vertical split layout properties */
@@ -36,7 +36,7 @@ export interface LayoutFragmentProps {
  * When a member is a [[LayoutFragmentProps]], it creates a nested split pane.
  * When a number, it represents an index into a [[ContentGroup]].
  * @public
- * @deprecated in 4.10.x - will not be removed until after 2026-06-13. Use `LayoutVerticalSplitProps` from `@itwin/appui-react`.
+ * @deprecated in 4.10.0 - will not be removed until after 2026-06-13. Use `LayoutVerticalSplitProps` from `@itwin/appui-react`.
  */
 export interface LayoutVerticalSplitProps extends LayoutSplitPropsBase {
   /** Left layout fragment properties. */
@@ -54,7 +54,7 @@ export interface LayoutVerticalSplitProps extends LayoutSplitPropsBase {
  * When a member is a [[LayoutFragmentProps]], it creates a nested split pane.
  * When a number, it represents an index into a [[ContentGroup]].
  * @public
- * @deprecated in 4.10.x - will not be removed until after 2026-06-13. Use `LayoutHorizontalSplitProps` from `@itwin/appui-react`.
+ * @deprecated in 4.10.0 - will not be removed until after 2026-06-13. Use `LayoutHorizontalSplitProps` from `@itwin/appui-react`.
  */
 export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
   /** Top layout fragment properties. */
@@ -70,7 +70,7 @@ export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
 
 /** Properties for a [[ContentLayoutDef]]
  * @public
- * @deprecated in 4.10.x - will not be removed until after 2026-06-13. Use `ContentLayoutProps` from `@itwin/appui-react`.
+ * @deprecated in 4.10.0 - will not be removed until after 2026-06-13. Use `ContentLayoutProps` from `@itwin/appui-react`.
  */
 export interface ContentLayoutProps extends LayoutFragmentProps {
   /** ID for this Content Layout */

@@ -143,6 +143,9 @@ jobs:
     condition: and(in(dependencies.CreateBranch.result, 'Succeeded', 'Skipped'), in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'))
     variables:
       releaseBranchName: $[ dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'] ]
+      deprecationCommentChangesMade: "false"
+      needsPR: "false"
+
     steps:
       - checkout: self
 
@@ -168,6 +171,67 @@ jobs:
 
       - bash: node common/scripts/install-run-rush.js audit
         displayName: rush audit
+
+      - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
+          - bash: node common/scripts/install-run-rush.js lint-deprecation
+            displayName: rush lint-deprecation
+
+          # We need to rebuild after running the lint-deprecation rule to ensure that files like ruleset.schema.json in presentation-common are updated correctly.
+          - bash: node common/scripts/install-run-rush.js build
+            displayName: rush build
+            env:
+              VERSION_BUMP: "true"
+
+          - bash: |
+              if git diff --exit-code; then
+                echo "No deprecation comment changes were made"
+              else
+                echo "Deprecation comment changes were made"
+                git add .
+                echo "##vso[task.setvariable variable=deprecationCommentChangesMade]true"
+              fi
+            displayName: Determine whether ESLint rule made any changes
+
+          - bash: |
+              git commit -m "Apply deprecation date rule"
+            displayName: Commit deprecation comment changes to release branch
+            condition: eq(variables['deprecationCommentChangesMade'], 'true')
+
+          - bash: |
+              deprecationDateCommitHash=$(git log -1 --format=%H)
+              echo "##vso[task.setvariable variable=hash;isOutput=true]$deprecationDateCommitHash"
+            displayName: Save SHA-1 hash of the commit
+            name: deprecationCommit
+            condition: eq(variables['deprecationCommentChangesMade'], 'true')
+
+          - bash: |
+              git fetch https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core master:master
+              git checkout master
+            displayName: Checkout to master
+            condition: eq(variables['deprecationCommentChangesMade'], 'true')
+
+          - bash: |
+              commitHash=$(deprecationCommit.hash)
+              echo "Attempting to cherry-pick commit: $commitHash"
+              if git cherry-pick $commitHash; then
+                git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:master
+                echo "Successfully applied deprecation comment updates to master"
+              else
+                git cherry-pick --abort
+                echo "##vso[task.setvariable variable=needsPR]true"
+                echo "Failed applying deprecation comment updates to master. A PR will be created for manual resolution."
+              fi
+
+            displayName: Perform cherry-pick operation for deprecation changes
+            continueOnError: true
+            env:
+              GH_TOKEN: $(GITHUBTOKEN)
+            name: applyDeprecation
+            condition: eq(variables['deprecationCommentChangesMade'], 'true')
+
+          - bash: git checkout $(deprecationCommit.hash)
+            displayName: Checkout back to branch that ran the pipeline
+            condition: eq(variables['deprecationCommentChangesMade'], 'true')
 
       # Can be run on any branch to do a standard version bump. Which is currently -dev bumps.
       - ? ${{ if or(eq(parameters.BumpType, 'nightly'), eq(parameters.BumpType, 'releaseCandidate')) }}
@@ -234,13 +298,64 @@ jobs:
 
       - bash: |
           echo Committing version bump $(getVersion.version)...
-
-          git commit -m "$(getVersion.version)" --author="imodeljs-admin <imodeljs-admin@users.noreply.github.com>"
+          if [ "$(deprecationCommentChangesMade)" = "true" ]; then
+            echo "Amending previous deprecation commit with version bump changes"
+            git commit --amend -m "$(getVersion.version)" --author="imodeljs-admin <imodeljs-admin@users.noreply.github.com>"
+          else
+            git commit -m "$(getVersion.version)" --author="imodeljs-admin <imodeljs-admin@users.noreply.github.com>"
+          fi
         displayName: Commit version bump
 
-      - ? ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}
-        : - bash: 'git tag -a release/$(getVersion.version) -m "v$(getVersion.version)"'
+      - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
+          - bash: |
+              # Merge conflicts: Create branch, set up PR for manual resolution.
+              echo "##[warning] Cherry-pick operation on master failed (most likely due to merge conflicts). Manual intervention required"
+
+              # Create and checkout to conflict handling branch
+              conflictBranchName="cherry-pick-conflict-$(getVersion.version)"
+              echo "##[warning] Creating new branch '$conflictBranchName' for manual resolution"
+              git checkout -b $conflictBranchName
+
+              # Cherry-pick changes onto conflict handling branch
+              git cherry-pick $(deprecationCommit.hash)
+
+              # Add, commit and push all ESLint deprecation changes (including conflicts) to conflict handling branch for manual resolution.
+              git add .
+              git commit -m "Add deprecation rule changes with all merge conflicts"
+              git push --set-upstream https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $conflictBranchName
+              echo "##[warning] Branch '$conflictBranchName' created and pushed. It contains all ESLint deprecation changes and cherry-pick conflicts. Manually fix conflicts inside branch and merge changes into master. Draft PR will be created now"
+
+              # Create a PR with new conflict branch
+              gh pr create --title "Merge deprecation comment changes for version $(getVersion.version) into master" --body "This PR contains all changes after running lint-deprecation ESLint rule and merging with master. Manual intervention required: solve conflicts in this branch and merge PR into master. This happened because deprecation comments in master and in release branch could not be merged automatically." --draft --head $conflictBranchName
+            displayName: Create PR for manual resolution of deprecation comment changes
+            condition: eq(variables['needsPR'], 'true')
+            env:
+              GH_TOKEN: $(GITHUBTOKEN)
+
+      - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
+          - bash: 'git tag -a release/$(getVersion.version) -m "v$(getVersion.version)"'
             displayName: Create git tag
+
+      - bash: git fetch https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core refs/notes/commits:refs/notes/commits
+        displayName: git fetch refs/notes/commits
+        continueOnError: true
+
+      - bash: |
+          latestCommit=$(git log -1 --format=%H)
+          echo "Applying SHOULD_PUBLISH note to commit $latestCommit"
+          git notes append -m "SHOULD_PUBLISH" $latestCommit
+        displayName: Mark commit for release
+
+      - bash: |
+          latestCommit=$(git log -1 --format=%H)
+          echo "Applying DEPRECATION_COMMENT_CHANGES note to commit $latestCommit"
+          git notes append -m "DEPRECATION_COMMENT_CHANGES" $latestCommit
+        displayName: Mark commit for eslint rule changes
+        condition: eq(variables['deprecationCommentChangesMade'], 'true')
+
+      - bash: |
+          git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core refs/notes/commits
+        displayName: git push refs/notes/commits
 
       - bash: "git push --follow-tags https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(releaseBranchName)"
         displayName: Push version bump for release candidate

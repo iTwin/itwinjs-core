@@ -83,6 +83,7 @@ export const initialize = async (props?: {
     workerThreadsCount: 1,
     caching: {
       hierarchies: {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         mode: HierarchyCacheMode.Memory,
       },
     },
@@ -196,6 +197,7 @@ async function terminatePresentation(frontendApp = IModelApp) {
     return;
   }
 
+  /* eslint-disable @typescript-eslint/no-deprecated */
   // store directory that needs to be cleaned-up
   let hierarchiesCacheDirectory: string | undefined;
   const hierarchiesCacheConfig = PresentationBackend.initProps?.caching?.hierarchies;
@@ -204,6 +206,7 @@ async function terminatePresentation(frontendApp = IModelApp) {
   } else if (hierarchiesCacheConfig?.mode === HierarchyCacheMode.Hybrid) {
     hierarchiesCacheDirectory = hierarchiesCacheConfig?.disk?.directory;
   }
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
   // terminate backend
   PresentationBackend.terminate();

@@ -71,6 +71,13 @@ export class Box extends SolidPrimitive {
     if (transform.matrix.isSingular())
       return false;
     transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
+    if (transform.matrix.determinant() < 0.0) {
+      // if mirror, reverse z-axis (origin and direction) to preserve outward normals
+      this._localToWorld.origin.addInPlace(this._localToWorld.matrix.columnZ());
+      this._localToWorld.matrix.scaleColumnsInPlace(1, 1, -1);
+      [this._baseX, this._topX] = [this._topX, this._baseX];
+      [this._baseY, this._topY] = [this._topY, this._baseY];
+    }
     return true;
   }
   /**

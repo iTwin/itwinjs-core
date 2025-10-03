@@ -136,6 +136,8 @@ public;class;GrowableBlockedArray
 public;class;GrowableFloat64Array
 public;class;GrowableXYArray
 public;class;GrowableXYZArray
+public;class;GrowableXYZArrayCache
+internal;namespace;HalfEdgeGraphSearch
 public;type;HasZ
 public;interface;HoleFillOptions
 public;interface;ICloneable
@@ -202,6 +204,7 @@ internal;class;PascalCoefficients
 public;class;Path
 public;class;PathFragment
 public;interface;PerpParallelOptions
+public;interface;PlanarColinearOptions
 public;class;Plane3d
 public;class;Plane3dByOriginAndUnitNormal
 public;class;Plane3dByOriginAndVectors
@@ -249,8 +252,10 @@ public;class;RecurseToCurvesGeometryHandler
 public;class;RecursiveCurveProcessor
 public;class;RecursiveCurveProcessorWithStack
 public;enum;RegionBinaryOpType
+public;interface;RegionBooleanXYOptions
 internal;class;RegionMomentsXY
 public;class;RegionOps
+public;class;ReusableObjectCache
 public;class;RotationalSweep
 public;class;RuledSweep
 alpha;class;Sample
@@ -307,6 +312,7 @@ public;interface;WritableXAndY
 public;interface;WritableXYAndZ
 public;interface;WriteableHasZ
 public;type;XAndY
+public;namespace;XAndY
 public;class;XY
 public;type;XYAndZ
 public;namespace;XYAndZ

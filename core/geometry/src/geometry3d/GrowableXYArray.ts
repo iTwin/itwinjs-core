@@ -132,7 +132,8 @@ export class GrowableXYArray extends IndexedXYCollection {
     newPoints._xyInUse = this.length;
     return newPoints;
   }
-  /** Create an array populated from
+  /**
+   * Create an array by copying data from various point formats.
    * Valid inputs are:
    * * Point2d
    * * Point3d
@@ -156,7 +157,7 @@ export class GrowableXYArray extends IndexedXYCollection {
   }
 
   /** Restructure MultiLineStringDataVariant as array of GrowableXYZArray
-   * @deprecated in 4.x - will not be removed until after 2026-06-13. Moved to GrowableXYZArray class.
+   * @deprecated in 4.2.0 - will not be removed until after 2026-06-13. Moved to GrowableXYZArray class.
    */
   public static createArrayOfGrowableXYZArray(data: MultiLineStringDataVariant): GrowableXYZArray[] | undefined {
     return GrowableXYZArray.createArrayOfGrowableXYZArray(data);

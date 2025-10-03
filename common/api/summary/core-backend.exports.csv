@@ -3,8 +3,10 @@ Release Tag;API Item Type;API Item Name
 public;interface;AcquireNewBriefcaseIdArg
 public;class;AnnotationElement2d
 preview;class;AnnotationElement2d
+beta;class;AnnotationTextStyle
 beta;type;AnyDb
 beta;function;appendFrameToBuilder
+beta;function;appendLeadersToBuilder
 beta;function;appendTextAnnotationGeometry
 beta;interface;AppendTextAnnotationGeometryArgs
 public;class;AuxCoordSystem
@@ -40,7 +42,6 @@ beta;interface;ChangedECInstance
 internal;class;ChangedElementsDb
 beta;interface;ChangeFormatArgs
 beta;interface;ChangeInstanceKey
-internal;class;ChangeMergeManager
 beta;interface;ChangeMetaData
 public;interface;ChangesetArg
 beta;class;ChangesetECAdaptor
@@ -71,6 +72,7 @@ internal;interface;FontIndexProps
 public;class;CodeSpecs
 preview;class;CodeSpecs
 public;interface;ComputedProjectExtents
+beta;function;computeElbowDirection
 beta;function;computeFrame
 beta;interface;ComputeFrameArgs
 beta;function;computeGraphemeOffsets
@@ -78,6 +80,7 @@ beta;interface;ComputeGraphemeOffsetsArgs
 beta;function;computeIntervalPoints
 beta;interface;ComputeIntervalPointsArgs
 beta;function;computeLayoutTextBlockResult
+beta;function;computeLeaderAttachmentPoint
 public;interface;ComputeProjectExtentsOptions
 internal;type;ComputeRangesForTextLayout
 internal;interface;ComputeRangesForTextLayoutArgs
@@ -180,6 +183,7 @@ public;class;ElementAspect
 preview;class;ElementAspect
 beta;class;ElementDrivesElement
 beta;interface;ElementDrivesElementProps
+beta;class;ElementDrivesTextAnnotation
 public;class;ElementEncapsulatesElements
 public;class;ElementGroupsMembers
 public;interface;ElementGroupsMembersProps
@@ -350,8 +354,11 @@ beta;interface;InstanceChange
 public;class;IpcHandler
 public;class;IpcHost
 public;interface;IpcHostOpts
+beta;function;isITextAnnotation
+beta;interface;ITextAnnotation
 public;interface;ITwinIdArg
 public;class;KnownLocations
+beta;interface;LayoutTextArgs
 beta;function;layoutTextBlock
 beta;interface;LayoutTextBlockArgs
 internal;class;LightLocation
@@ -407,6 +414,7 @@ beta;interface;OnSubModelPropsArg
 public;type;OpenBriefcaseArgs
 public;class;OrthographicViewDefinition
 preview;class;OrthographicViewDefinition
+internal;function;parseTextAnnotationData
 beta;class;PartialECChangeUnifier
 public;class;PhysicalElement
 preview;class;PhysicalElement
@@ -438,6 +446,8 @@ beta;interface;QueryLocalChangesArgs
 beta;interface;QueryMappedFamiliesArgs
 beta;interface;QueryWorkspaceResourcesArgs
 beta;type;QueryWorkspaceResourcesCallback
+alpha;interface;RebaseHandler
+alpha;class;RebaseManager
 beta;class;RecipeDefinitionElement
 public;class;Relationship
 public;class;Relationships
@@ -459,6 +469,7 @@ public;class;RoleModel
 preview;class;RoleModel
 public;class;RpcTrace
 beta;class;RunLayout
+alpha;interface;SaveChangesArgs
 public;class;Schema
 public;interface;SchemaImportOptions
 internal;type;SchemaKey
@@ -560,12 +571,21 @@ beta;class;TemplateRecipe2d
 beta;class;TemplateRecipe3d
 internal;class;TemplateViewDefinition2d
 internal;class;TemplateViewDefinition3d
+internal;const;TEXT_ANNOTATION_JSON_VERSION
+internal;const;TEXT_STYLE_SETTINGS_JSON_VERSION
 public;class;TextAnnotation2d
 preview;class;TextAnnotation2d
+beta;interface;TextAnnotation2dCreateArgs
 public;class;TextAnnotation3d
 preview;class;TextAnnotation3d
+beta;interface;TextAnnotation3dCreateArgs
+beta;class;TextAnnotationUsesTextStyleByDefault
+beta;interface;TextBlockAndId
 beta;class;TextBlockLayout
 internal;interface;TextLayoutRanges
+beta;interface;TextStyleCreateArgs
+beta;class;TextStyleResolver
+beta;interface;TextStyleResolverArgs
 public;class;Texture
 preview;class;Texture
 beta;interface;TextureCreateProps
@@ -581,6 +601,9 @@ public;type;TxnIdString
 preview;type;TxnIdString
 public;class;TxnManager
 preview;class;TxnManager
+alpha;type;TxnMode
+alpha;interface;TxnProps
+alpha;type;TxnType
 public;class;TypeDefinitionElement
 preview;class;TypeDefinitionElement
 public;interface;UpdateModelOptions

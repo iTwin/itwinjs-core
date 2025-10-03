@@ -10,7 +10,7 @@ import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLo
 import { GuidString, Id64, StopWatch } from "@itwin/core-bentley";
 import { Code, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import * as path from "node:path";
 
 describe("ChangesetReaderAPI", async () => {
@@ -202,5 +202,79 @@ describe("ChangesetReaderAPI", async () => {
       reporter.addEntry("ChangesetReaderAPI", "Unifier-SqliteBackedCache", "Execution time (seconds)", watch.elapsedSeconds, { iModelId: rwIModelId, changesetId: changesets[testCase.testCaseNum].id, changesetInserts: testCase.numElements });
     }
     rwIModel.close();
+  });
+
+  it("Track changeset health stats", async () => {
+    const adminToken = "super manager token";
+    const iModelName = "LargeChangesetPullTest";
+    const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
+    assert.isNotEmpty(rwIModelId);
+
+    // Open two briefcases for the same iModel
+    const [firstBriefcase, secondBriefcase] = await Promise.all([
+      HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken }),
+      HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId: rwIModelId, accessToken: adminToken })
+    ]);
+
+    // Import schema
+    await firstBriefcase.importSchemaStrings([`<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
+          <ECEntityClass typeName="TestElement">
+              <BaseClass>bis:GraphicalElement2d</BaseClass>
+          </ECEntityClass>
+      </ECSchema>`]);
+    firstBriefcase.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+
+    // Create drawing model and category
+    const codeProps = Code.createEmpty();
+    codeProps.value = "DrawingModel";
+    await firstBriefcase.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(firstBriefcase, codeProps, true);
+    let drawingCategoryId = DrawingCategory.queryCategoryIdByName(firstBriefcase, IModel.dictionaryId, "MyDrawingCategory");
+    if (undefined === drawingCategoryId)
+      drawingCategoryId = DrawingCategory.insert(firstBriefcase, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance());
+
+    firstBriefcase.saveChanges();
+
+    await Promise.all([firstBriefcase.enableChangesetStatTracking(), secondBriefcase.enableChangesetStatTracking()]);
+
+    await firstBriefcase.pushChanges({ description: "Initial Test Data Setup", accessToken: adminToken });
+
+    // Insert a large number of elements and push as a single changeset
+    const numElements = 100000;
+    const elementPropsTemplate = {
+      classFullName: "TestSchema:TestElement",
+      model: drawingModelId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+    };
+    await firstBriefcase.locks.acquireLocks({ shared: drawingModelId });
+    for (let i = 0; i < numElements; i++) {
+      const elementProps = {
+        ...elementPropsTemplate,
+        name: `Element_${i}`,
+      };
+      assert.isTrue(Id64.isValidId64(firstBriefcase.elements.insertElement(elementProps)));
+    }
+    firstBriefcase.saveChanges();
+    await firstBriefcase.pushChanges({ description: `Large changeset with ${numElements} inserts`, accessToken: adminToken });
+    await secondBriefcase.pullChanges({ accessToken: adminToken });
+
+    const firstBriefcaseChangesets = await firstBriefcase.getAllChangesetHealthData();
+    assert.equal(firstBriefcaseChangesets.length, 0); // No new changes to be pulled
+    const secondBriefcaseChangesets = await secondBriefcase.getAllChangesetHealthData();
+    assert.equal(secondBriefcaseChangesets.length, 2); // Schema import followed by element insert
+
+    const secondBriefcaseChangeset2 = secondBriefcaseChangesets[1];
+    expect(secondBriefcaseChangeset2.insertedRows).to.be.eql(numElements * 2); // 100k in bis_Element + 100k in bis_GeometricElement2d
+    expect(secondBriefcaseChangeset2.updatedRows).to.be.eql(2);
+    expect(secondBriefcaseChangeset2.totalElapsedMs).to.be.greaterThan(0); // Ensure it took some time
+    expect(secondBriefcaseChangeset2.perStatementStats.length).to.be.eql(4);
+
+    reporter.addEntry("ChangesetReaderAPI", "ChangesetHealthStats", "Execution time (ms)", secondBriefcaseChangeset2.totalElapsedMs, { changesetId: secondBriefcaseChangeset2.changesetId, statementsExecuted: secondBriefcaseChangeset2.perStatementStats.length });
+
+    // Cleanup
+    await Promise.all([firstBriefcase.close(), secondBriefcase.close()]);
   });
 });

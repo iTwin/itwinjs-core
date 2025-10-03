@@ -282,4 +282,46 @@ describe("Schedule script (#integration)", () => {
     await style.load();
     expect(style.scheduleScript).not.to.be.undefined;
   });
+
+  it("sets schedule script in editing mode without triggering tile tree refresh", async () => {
+    const view = await dbNew.views.load(viewId) as SpatialViewState;
+    const style = view.displayStyle;
+
+    const original = style.scheduleScript!;
+    const edited = RenderSchedule.Script.fromJSON(original.toJSON())!;
+    style.setScheduleEditing(edited);
+
+    expect(style.scheduleScript).to.not.be.undefined;
+    expect(style.scheduleScript!.modelTimelines.every(t => t.isEditingCommitted === false)).to.be.true;
+
+    expect(countTileTrees(view)).to.equal(2);
+  });
+
+  it("commits edited schedule script and updates tile tree owner", async () => {
+    const view = await dbNew.views.load(viewId) as SpatialViewState;
+    const style = view.displayStyle;
+
+    const edited = RenderSchedule.Script.fromJSON(style.scheduleScript!.toJSON())!;
+    style.setScheduleEditing(edited);
+    style.commitScheduleEditing();
+
+    expect(style.scheduleScript!.modelTimelines.every(t => t.isEditingCommitted)).to.be.true;
+  });
+
+  it("fires editing and commit events when using editing mode", async () => {
+    const style = await loadDisplayStyle(embedStyleId, dbNew);
+    const script = RenderSchedule.Script.fromJSON(style.scheduleScript!.toJSON())!;
+
+    let editingChangedFired = false;
+    let committedFired = false;
+
+    style.onScheduleEditingChanged.addOnce(() => editingChangedFired = true);
+    style.onScheduleEditingCommitted.addOnce(() => committedFired = true);
+
+    style.setScheduleEditing(script);
+    expect(editingChangedFired).to.be.true;
+
+    style.commitScheduleEditing();
+    expect(committedFired).to.be.true;
+  });
 });

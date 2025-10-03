@@ -45,8 +45,8 @@ export abstract class ECSchemaRpcInterface extends RpcInterface {
    * @returns                 The SchemaProps.
    */
   @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
-  public async getSchemaJSON(_tokenProps: IModelRpcProps, _schemaName: string): Promise<SchemaProps> {
-    return this.forward.apply(this, [arguments]) as Promise<SchemaProps>;
+  public async getSchemaJSON(_tokenProps: IModelRpcProps, _schemaName: string): Promise<SchemaProps | undefined> {
+    return this.forward.apply(this, [arguments]) as Promise<SchemaProps | undefined>;
   }
 
 }

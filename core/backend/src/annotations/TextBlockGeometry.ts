@@ -26,12 +26,12 @@ function setColor(color: TextStyleColor, context: GeometryContext): void {
 function createTextString(text: string, run: RunLayout, origin?: Point3d): TextString {
   assert(text.length > 0);
 
-  const { lineHeight, widthFactor, isBold, isItalic, isUnderlined } = run.style;
+  const { textHeight, widthFactor, isBold, isItalic, isUnderlined } = run.style;
 
   return new TextString({
     text,
     font: run.fontId,
-    height: lineHeight,
+    height: textHeight,
     widthFactor,
     bold: isBold,
     italic: isItalic,
@@ -63,6 +63,20 @@ function processTextRun(run: RunLayout, transform: Transform, context: GeometryC
   context.entries.push({ text: ts });
 }
 
+function processFieldRun(run: RunLayout, transform: Transform, context: GeometryContext): void {
+  assert(run.source.type === "field");
+  const text = run.source.cachedContent.substring(run.charOffset, run.charOffset + run.numChars);
+  if (text.length === 0) {
+    return;
+  }
+
+  const ts = createTextString(text, run);
+  ts.transformInPlace(transform);
+
+  setColor(run.style.color, context);
+  context.entries.push({ text: ts });
+}
+
 function createFractionTextString(text: string, run: RunLayout, origin: Point3d, transform: Transform): TextString {
   const ts = createTextString(text, run, origin);
   assert(undefined !== ts.widthFactor);
@@ -84,7 +98,7 @@ function processFractionRun(run: RunLayout, transform: Transform, context: Geome
 
   assert(undefined !== run.numeratorRange && undefined !== run.denominatorRange);
 
-  const fontSize = new Vector2d(run.style.lineHeight * run.style.widthFactor, run.style.lineHeight);
+  const fontSize = new Vector2d(run.style.textHeight * run.style.widthFactor, run.style.textHeight);
   fontSize.scale(run.style.stackedFractionScale, fontSize);
 
   const numeratorOffset = new Point3d(run.numeratorRange.low.x, run.numeratorRange.low.y, 0);
@@ -136,8 +150,20 @@ export function produceTextBlockGeometry(layout: TextBlockLayout, documentTransf
   const context: GeometryContext = { entries: [] };
   for (const line of layout.lines) {
     const lineTrans = Transform.createTranslationXYZ(line.offsetFromDocument.x, line.offsetFromDocument.y, 0);
+
+    // Create geometry for list markers if present
+    if (line.marker) {
+      const markerTrans = Transform.createTranslationXYZ(line.marker.offsetFromLine.x, line.marker.offsetFromLine.y, 0);
+      lineTrans.multiplyTransformTransform(markerTrans, markerTrans);
+      documentTransform.multiplyTransformTransform(markerTrans, markerTrans);
+
+      processTextRun(line.marker, markerTrans, context);
+    }
+
+    // Create geometry for runs
     for (const run of line.runs) {
-      if ("linebreak" === run.source.type) {
+      // Skip runs that are solely whitespace
+      if (run.source.isWhitespace) {
         continue;
       }
 
@@ -146,8 +172,10 @@ export function produceTextBlockGeometry(layout: TextBlockLayout, documentTransf
       documentTransform.multiplyTransformTransform(runTrans, runTrans);
       if ("text" === run.source.type) {
         processTextRun(run, runTrans, context);
-      } else {
+      } else if ("fraction" === run.source.type) {
         processFractionRun(run, runTrans, context);
+      } else {
+        processFieldRun(run, runTrans, context);
       }
     }
   }

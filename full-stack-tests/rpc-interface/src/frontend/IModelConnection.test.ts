@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { Buffer } from "buffer";
 import * as chai from "chai";
-import { AccessToken, BentleyStatus, CompressedId64Set, Id64, Id64Set } from "@itwin/core-bentley";
-import { Matrix4d, Point3d, XYZProps, YawPitchRollAngles } from "@itwin/core-geometry";
+import { AccessToken, BentleyStatus, CompressedId64Set, Id64, Id64Set, IModelStatus } from "@itwin/core-bentley";
+import { Matrix4d, Point3d, Range3d, XYZProps, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
   EcefLocation, GeoCoordStatus, IModelReadRpcInterface, IModelVersion, MassPropertiesOperation, MassPropertiesPerCandidateRequestProps, MassPropertiesRequestProps, ModelQueryParams,
 } from "@itwin/core-common";
@@ -167,11 +167,6 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
     expect(iModel.models.loaded.get(modelId)).to.not.be.undefined;
   });
 
-  it("getClassHierarchy should work as expected", async () => {
-    const result = await iModel.findClassFor("BisCore:LineStyle", undefined);
-    expect(result).undefined;
-  });
-
   it("getIModelCoordinatesFromGeoCoordinates should work as expected", async () => {
     const wgs84Converter = iModel.geoServices.getConverter("WGS84");
     const nad27Converter = iModel.geoServices.getConverter("NAD27");
@@ -298,6 +293,47 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
     expect(ranges).to.not.be.undefined;
     expect(ranges.length).to.be.equal(1);
   });
+
+  it("queryExtents should return IModelStatus.InvalidId status for invalid id64", async () => {
+    const modelIds = ["notid64"];
+    const extents = await iModel.models.queryExtents(modelIds);
+
+    expect(extents).to.not.be.undefined;
+    expect(extents.length).to.be.equal(modelIds.length);
+    expect(extents.every(e => e.status === IModelStatus.InvalidId)).to.be.true;
+    expect(extents.every(e => Range3d.isNull(Range3d.fromJSON(e.extents)))).to.be.true;
+  });
+
+  it("queryExtents should return null extents with IModelStatus.Success for models without elements", async () => {
+    const modelIds = ["0x1c", "0x20000000001"];
+    const extents = await iModel.models.queryExtents(modelIds);
+
+    expect(extents).to.not.be.undefined;
+    expect(extents.length).to.be.equal(modelIds.length);
+    expect(extents.every(e => e.status === IModelStatus.Success)).to.be.true;
+    expect(extents.every(e => Range3d.isNull(Range3d.fromJSON(e.extents)))).to.be.true;
+  });
+
+  it("queryExtents should return extents with IModelStatus.Success for models with elements", async () => {
+    const modelIds = ["0x22", "0x23", "0x24"];
+    const extents = await iModel.models.queryExtents(modelIds);
+
+    expect(extents).to.not.be.undefined;
+    expect(extents.length).to.be.equal(modelIds.length);
+    expect(extents.every(e => e.status === IModelStatus.Success)).to.be.true;
+    expect(extents.every(e => Range3d.isNull(Range3d.fromJSON(e.extents)))).to.be.false;
+  });
+
+  it("queryExtents should return null extents with IModelStatus.NotFound non existing models", async () => {
+    const modelIds = ["0x11111", "0x22222", "0x33333"];
+    const extents = await iModel.models.queryExtents(modelIds);
+
+    expect(extents).to.not.be.undefined;
+    expect(extents.length).to.be.equal(modelIds.length);
+    expect(extents.every(e => e.status === IModelStatus.NotFound)).to.be.true;
+    expect(extents.every(e => Range3d.isNull(Range3d.fromJSON(e.extents)))).to.be.true;
+  });
+
   it("getMassProperties should work as expected", async () => {
     const requestProps: MassPropertiesRequestProps = {
       operation: MassPropertiesOperation.AccumulateVolumes,

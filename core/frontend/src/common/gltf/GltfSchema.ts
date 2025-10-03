@@ -12,6 +12,7 @@
 export enum GltfMeshMode {
   Points = 0,
   Lines = 1,
+  LineLoop = 2,
   LineStrip = 3,
   Triangles = 4,
   /** Not currently supported. */
@@ -179,6 +180,16 @@ export interface GltfMeshPrimitive extends GltfProperty {
        */
       indices?: GltfId;
     };
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    EXT_mesh_primitive_edge_visibility?: {
+      visibility: GltfId;
+      silhouetteNormals?: GltfId;
+      material?: GltfId;
+      lineStrings?: Array<{
+        indices: GltfId;
+        material?: GltfId;
+      }>;
+    };
     /** The [KHR_draco_mesh_compression](https://github.com/KhronosGroup/glTF/blob/main/extensions/2.0/Khronos/KHR_draco_mesh_compression/README.md) extension
      * allows glTF to support geometry compressed with Draco geometry compression.
      */
@@ -198,6 +209,15 @@ export interface GltfMesh extends GltfChildOfRootProperty {
   primitives?: GltfMeshPrimitive[];
   /** For morph targets - currently unsupported. */
   weights?: number[];
+  extensions?: GltfExtensions & {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    EXT_mesh_primitive_restart?: {
+      primitiveGroups: Array<{
+        primitives: number[];
+        indices: number;
+      }>;
+    }
+  };
 }
 
 /** Properties common to [[Gltf1Node]] and [[Gltf2Node]]. @internal */

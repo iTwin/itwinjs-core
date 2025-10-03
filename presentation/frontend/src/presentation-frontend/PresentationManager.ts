@@ -72,11 +72,14 @@ import { StreamedResponseGenerator } from "./StreamedResponseGenerator.js";
 /**
  * Data structure that describes IModel hierarchy change event arguments.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface IModelHierarchyChangeEventArgs {
   /** Id of ruleset that was used to create hierarchy. */
   rulesetId: string;
   /** Hierarchy changes info. */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   updateInfo: HierarchyUpdateInfo;
   /** Key of iModel that was used to create hierarchy. It matches [[IModelConnection.key]] property. */
   imodelKey: string;
@@ -117,6 +120,8 @@ export type MultipleValuesRequestOptions = Paged<{
 /**
  * Options for requests that retrieve nodes.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export type GetNodesRequestOptions = HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute;
 
@@ -176,7 +181,7 @@ export interface PresentationManagerProps {
    * Callback that provides [SchemaContext]($ecschema-metadata) for supplied [IModelConnection]($core-frontend).
    * [SchemaContext]($ecschema-metadata) is used for getting metadata required for values formatting.
    *
-   * @deprecated in 5.1. [IModelConnection.schemaContext]($core-frontend) is now used by default instead.
+   * @deprecated in 5.1 - will not be removed until after 2026-08-08. By default [IModelConnection.schemaContext]($core-frontend) is now used instead.
    */
   schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
 
@@ -186,7 +191,7 @@ export interface PresentationManagerProps {
    *
    * @note Only has effect when frontend value formatting is enabled by supplying the `schemaContextProvider` prop.
    *
-   * @deprecated in 5.1. All formats' logic is now handled by [IModelApp.formatsProvider]($core-frontend). Until the prop is removed, when
+   * @deprecated in 5.1 - will not be removed until after 2026-08-08. All formats' logic is now handled by [IModelApp.formatsProvider]($core-frontend). Until the prop is removed, when
    * supplied, this map will be used as a fallback if IModelApp's formats provider doesn't return anything for requested format.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -218,8 +223,12 @@ export class PresentationManager implements Disposable {
   private _ipcRequestsHandler?: IpcRequestsHandler;
 
   /**
-   * An event raised when hierarchies created using specific ruleset change
+   * An event raised when hierarchies created using specific ruleset change.
+   *
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public onIModelHierarchyChanged = new BeEvent<(args: IModelHierarchyChangeEventArgs) => void>();
 
   /**
@@ -310,7 +319,9 @@ export class PresentationManager implements Disposable {
         if (updateInfo.content) {
           this.onIModelContentChanged.raiseEvent({ rulesetId, updateInfo: updateInfo.content, imodelKey });
         }
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         if (updateInfo.hierarchy) {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           this.onIModelHierarchyChanged.raiseEvent({ rulesetId, updateInfo: updateInfo.hierarchy, imodelKey });
         }
       }
@@ -404,7 +415,13 @@ export class PresentationManager implements Disposable {
     return { ...options, rulesetOrId: foundRulesetOrId, rulesetVariables: variables };
   }
 
-  /** Returns an iterator that polls nodes asynchronously. */
+  /* eslint-disable @typescript-eslint/no-deprecated */
+
+  /**
+   * Returns an iterator that polls nodes asynchronously.
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
+   */
   public async getNodesIterator(
     requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions,
   ): Promise<{ total: number; items: AsyncIterableIterator<Node> }> {
@@ -427,7 +444,7 @@ export class PresentationManager implements Disposable {
   }
 
   /**
-   * Retrieves nodes
+   * Retrieves nodes.
    * @deprecated in 4.5 - will not be removed until after 2026-06-13. Use [[getNodesIterator]] instead.
    */
   public async getNodes(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<Node[]> {
@@ -435,7 +452,11 @@ export class PresentationManager implements Disposable {
     return collect(result.items);
   }
 
-  /** Retrieves nodes count. */
+  /**
+   * Retrieves nodes count.
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
+   */
   public async getNodesCount(requestOptions: GetNodesRequestOptions): Promise<number> {
     startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
@@ -458,6 +479,8 @@ export class PresentationManager implements Disposable {
   /**
    * Retrieves hierarchy level descriptor.
    * @public
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
    */
   public async getNodesDescriptor(
     requestOptions: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute,
@@ -474,7 +497,11 @@ export class PresentationManager implements Disposable {
     }
   }
 
-  /** Retrieves paths from root nodes to children nodes according to specified keys. Intersecting paths will be merged. */
+  /**
+   * Retrieves paths from root nodes to children nodes according to specified keys. Intersecting paths will be merged.
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
+   */
   public async getNodePaths(
     requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<NodePathElement[]> {
@@ -485,7 +512,11 @@ export class PresentationManager implements Disposable {
     return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
 
-  /** Retrieves paths from root nodes to nodes containing filter text in their label. */
+  /**
+   * Retrieves paths from root nodes to nodes containing filter text in their label.
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
+   */
   public async getFilteredNodePaths(
     requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute,
   ): Promise<NodePathElement[]> {
@@ -494,6 +525,8 @@ export class PresentationManager implements Disposable {
     const result = await this._requestsHandler.getFilteredNodePaths(this.toRpcTokenOptions(options));
     return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
+
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
   /**
    * Get information about the sources of content when building it for specific ECClasses. Sources involve classes of the primary select instance,

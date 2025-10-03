@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { TextAnnotation, TextAnnotationAnchor, TextFrameStyleProps } from "../../annotation/TextAnnotation";
+import { TextAnnotation, TextAnnotationAnchor, TextAnnotationLeader } from "../../annotation/TextAnnotation";
 import { Angle, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { ColorDef } from "../../ColorDef";
 
 describe("TextAnnotation", () => {
   describe("computeAnchorPoint", () => {
@@ -40,8 +39,8 @@ describe("TextAnnotation", () => {
         for (const vertical of verticals) {
           const annotation = TextAnnotation.fromJSON({ anchor: { horizontal, vertical } });
 
-          const expectAnchorAtOrigin = () => {
-            const transform = annotation.computeTransform(extents);
+          const expectAnchorAtOrigin = (scale: number = 1) => {
+            const transform = annotation.computeTransform(extents, scale);
             const anchor = annotation.computeAnchorPoint(extents);
             const transformed = transform.multiplyPoint3d(anchor);
             const expected = annotation.offset;
@@ -51,18 +50,24 @@ describe("TextAnnotation", () => {
           // No offset nor rotation
           expectAnchorAtOrigin();
 
+          // Scale only
+          expectAnchorAtOrigin(2);
+
           // Rotation only
           annotation.orientation = new YawPitchRollAngles(Angle.createDegrees(45));
           expectAnchorAtOrigin();
 
           // Offset only
-          annotation.orientation = new YawPitchRollAngles();;
+          annotation.orientation = new YawPitchRollAngles();
           annotation.offset = new Point3d(4, -6, 0);
           expectAnchorAtOrigin();
 
           // Offset and rotation
           annotation.orientation = new YawPitchRollAngles(Angle.createDegrees(45));
           expectAnchorAtOrigin();
+
+          // Offset and scale and rotation
+          expectAnchorAtOrigin(2);
         }
       }
     });
@@ -97,7 +102,7 @@ describe("TextAnnotation", () => {
       expect(actual.isAlmostEqual(expected)).to.equal(true, `expected ${JSON.stringify(expected)} actual ${JSON.stringify(actual)}`);
     }
 
-    it("should produce identity transform for identity orientation and zero origin", () => {
+    it("should produce identity transform for identity orientation, zero origin, and 1 scaling", () => {
       for (const vertical of verticals) {
         for (const horizontal of horizontals) {
           expectTransformedRange([0, -10, 20, 0], { anchor: { vertical, horizontal } });
@@ -132,7 +137,7 @@ describe("TextAnnotation", () => {
         rotation: 90,
       });
       expectTransformedRange([10, -10, 20, 10], {
-        anchor: { horizontal: "center", vertical: "top"},
+        anchor: { horizontal: "center", vertical: "top" },
         rotation: 90,
       });
       expectTransformedRange([0, -20, 10, 0], {
@@ -171,23 +176,137 @@ describe("TextAnnotation", () => {
         origin: [0, 100],
       });
     });
+
+    describe("scaling", () => {
+      function expectScaledTransform(expectedRange: [number, number, number, number], options?: {
+        anchor?: TextAnnotationAnchor;
+        origin?: number[];
+        rotation?: number;
+        scale?: number;
+      }): void {
+        const annotation = TextAnnotation.fromJSON({
+          anchor: options?.anchor,
+          offset: options?.origin,
+          orientation: options?.rotation ? new YawPitchRollAngles(Angle.createDegrees(options.rotation)) : undefined,
+        });
+
+        // NB: In TextBlock coordinates, the origin is at the top-left.
+        const dimensions = { x: 20, y: 10 };
+        const extents = new Range3d(0, -dimensions.y, 0, dimensions.x, 0, 0);
+        const transform = annotation.computeTransform(new Range2d(0, -dimensions.y, dimensions.x, 0), options?.scale);
+        const expected = Range3d.createRange2d(new Range2d(expectedRange[0], expectedRange[1], expectedRange[2], expectedRange[3]));
+        const actual = transform.multiplyRange(extents);
+        expect(actual.isAlmostEqual(expected)).to.equal(true, `expected ${JSON.stringify(expected)} actual ${JSON.stringify(actual)}`);
+      };
+
+      it("should scale about fixed anchor point", () => {
+        expectScaledTransform([0, -20, 40, 0], {
+          anchor: { horizontal: "left", vertical: "top" },
+          scale: 2,
+        });
+
+        expectScaledTransform([0, 0, 40, 20], {
+          anchor: { horizontal: "left", vertical: "bottom" },
+          scale: 2,
+        });
+
+        expectScaledTransform([0, -10, 40, 10], {
+          anchor: { horizontal: "left", vertical: "middle" },
+          scale: 2,
+        });
+
+        expectScaledTransform([-20, -10, 20, 10], {
+          anchor: { horizontal: "center", vertical: "middle" },
+          scale: 2,
+        });
+
+        expectScaledTransform([-20, -20, 20, 0], {
+          anchor: { horizontal: "center", vertical: "top"},
+          scale: 2,
+        });
+
+        expectScaledTransform([-20, 0, 20, 20], {
+          anchor: { horizontal: "center", vertical: "bottom" },
+          scale: 2,
+        });
+
+        expectScaledTransform([-40, -20, 0, 0], {
+          anchor: { horizontal: "right", vertical: "top" },
+          scale: 2,
+        });
+
+        expectScaledTransform([-40, 0, 0, 20], {
+          anchor: { horizontal: "right", vertical: "bottom" },
+          scale: 2,
+        });
+
+        expectScaledTransform([-40, -10, 0, 10], {
+          anchor: { horizontal: "right", vertical: "middle" },
+          scale: 2,
+        });
+      });
+
+      it("should rotate, then scale, then apply translation", () => {
+        // scale then translate
+        expectScaledTransform([-5, 0, 35, 20], {
+          anchor: { horizontal: "left", vertical: "top" },
+          origin: [-5, 20],
+          scale: 2,
+        });
+
+        // rotation then scale
+        expectScaledTransform([0, 0, 20, 40], {
+          anchor: { horizontal: "left", vertical: "top" },
+          rotation: 90,
+          scale: 2,
+        });
+
+        // rotation, scale, then translate
+        expectScaledTransform([-5, 20, 15, 60], {
+          anchor: { horizontal: "left", vertical: "top" },
+          rotation: 90,
+          origin: [-5, 20],
+          scale: 2,
+        });
+
+        // rotation, scale, and offset with center middle anchor
+        expectScaledTransform([-15, -10, 5, 30], {
+          anchor: { horizontal: "center", vertical: "middle" },
+          rotation: 90,
+          origin: [-5, 10],
+          scale: 2,
+        });
+
+        // rotation, scale, and offset with left bottom anchor
+        expectScaledTransform([-21, 2, -1, 42], {
+          anchor: { horizontal: "left", vertical: "bottom" },
+          rotation: 90,
+          origin: [-1, 2],
+          scale: 2,
+        });
+
+        // rotation, scale, and offset with right top anchor
+       expectScaledTransform([0, 60, 20, 100], {
+          anchor: { horizontal: "right", vertical: "top" },
+          rotation: 90,
+          origin: [0, 100],
+          scale: 2,
+        });
+      });
+    });
   });
 
-  describe("frame", () => {
-    it("should return undefined for frame when no frame is set", () => {
+  describe("leaders", () => {
+    it("should return undefined for leaders when no leaders are set", () => {
       const annotation = TextAnnotation.fromJSON({});
-      expect(annotation.frame).to.equal(undefined);
+      expect(annotation.leaders).to.equal(undefined);
     });
 
-    it("should return frame when set", () => {
-      const frame: TextFrameStyleProps = { shape: "rectangle", border: ColorDef.red.tbgr, borderWeight: 2, fill: ColorDef.green.tbgr };
-      const annotation = TextAnnotation.fromJSON({ frame });
-      expect(annotation.frame).to.deep.equal(frame);
-    });
-
-    it("should set rectangle as default shape", () => {
-      const annotation = TextAnnotation.fromJSON({ frame: {} });
-      expect(annotation.frame?.shape).to.equal("rectangle");
+    it("should return leaders when set", () => {
+      const leader: TextAnnotationLeader = { startPoint: Point3d.createZero(), attachment: { mode: "Nearest" }, styleOverrides: undefined, intermediatePoints: undefined };
+      const leaderProps = { ...leader, startPoint: leader.startPoint.toJSON() };
+      const annotation = TextAnnotation.fromJSON({ leaders: [leaderProps] });
+      expect(annotation.leaders).to.deep.equal([leader]);
     });
   });
 });

@@ -48,7 +48,7 @@ export class QuantityConstants {
 
     QuantityConstants._LOCALE_THOUSAND_SEPARATOR = ",";
     const matches = (12345.6789).toLocaleString().match(/12(.*)345/);
-    if (matches && matches.length > 0)
+    if (matches && matches.length > 1 && matches[1] !== "")
       QuantityConstants._LOCALE_THOUSAND_SEPARATOR = matches[1];
 
     return QuantityConstants._LOCALE_THOUSAND_SEPARATOR;

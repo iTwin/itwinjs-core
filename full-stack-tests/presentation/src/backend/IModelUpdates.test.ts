@@ -178,6 +178,7 @@ describe("Reacting to IModel data changes", () => {
           });
         });
       }
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const nodes = await Presentation.getManager().getNodes(createNodesRequestProps(imodel));
       expect(nodes)
         .to.have.lengthOf(1)

@@ -52,6 +52,8 @@ export interface ParsedQuantity {
 enum Operator {
   addition = "+",
   subtraction = "-",
+  multiplication = "*", // unsupported but we recognize it during parsing
+  division = "/" // unsupported but we recognize it during parsing
 }
 
 function isOperator(char: number | string): boolean {
@@ -283,6 +285,15 @@ export class Parser {
                 processingNumber = false;
                 wipToken = "";
               }
+              else if (format.type === FormatType.Bearing && wipToken.length > 0) {
+                if (signToken.length > 0) {
+                  wipToken = signToken + wipToken;
+                  signToken = "";
+                }
+                tokens.push(new ParseToken(parseFloat(wipToken))); // Create token for the current number
+                processingNumber = false;
+                wipToken = "";
+              }
               continue;
             } else {
               // an "E" or "e" may signify scientific notation
@@ -380,7 +391,6 @@ export class Parser {
         tokens.push(new ParseToken(wipToken));
       }
     }
-
     return tokens;
   }
 
@@ -605,14 +615,33 @@ export class Parser {
     const defaultUnit = format.units && format.units.length > 0 ? format.units[0][0] : undefined;
     defaultUnitConversion = defaultUnitConversion ? defaultUnitConversion : Parser.getDefaultUnitConversion(tokens, unitsConversions, defaultUnit);
 
+    if (format.type === FormatType.Bearing && format.units !== undefined && format.units.length > 0) {
+      const units = format.units;
+      const desiredNumberOfTokens = units.length;
+      if (tokens.length < desiredNumberOfTokens && tokens[0].isNumber && desiredNumberOfTokens <= 3) {
+        // handle the special XX.YYZZ format which is common for bearings. It uses no separators, so we need to split based on numeric indexes. We support up to 3 units
+        const value: number = tokens[0].value as number;
+        const firstToken = Math.floor(value);
+        tokens.pop();
+        tokens.push(new ParseToken(firstToken)); // Add the first token back to the list.
+        if (desiredNumberOfTokens >= 2) {
+          const remaining = (value - firstToken) * 100;
+          const secondToken = Math.floor(remaining);
+          tokens.push(new ParseToken(secondToken));
+          if (desiredNumberOfTokens === 3) {
+            const thirdToken = (remaining - secondToken) * 100;
+            tokens.push(new ParseToken(thirdToken));
+          }
+        }
+      }
+    }
+
     let tokenPair: ParseToken[] | undefined;
     let increment: number = 1;
     let mag = 0.0;
     // The sign is saved outside from the loop for cases like this. '-1m 50cm 10mm + 2m 30cm 40mm' => -1.51m + 2.34m
     let sign: 1 | -1 = 1;
-
     let compositeUnitIndex = 0;
-
 
     for (let i = 0; i < tokens.length; i = i + increment) {
       tokenPair = this.getNextTokenPair(i, tokens);
@@ -730,6 +759,17 @@ export class Parser {
     return this.parseAndProcessTokens(inString, format, unitsConversions);
   }
 
+  /** The value of special direction is always in degrees, try to find the unit conversion for that. */
+  private static processSpecialBearingDirection(mag: number, spec: ParserSpec): QuantityParseResult {
+    const specialDirUnit = spec.unitConversions.find((unitConversion) => unitConversion.name === "Units.ARC_DEG");
+    if (!specialDirUnit)
+      return { ok: false, error: ParseError.UnknownUnit };
+    const preferredUnit = spec.outUnit;
+    const conversion = this.tryFindUnitConversion(specialDirUnit.label, spec.unitConversions, preferredUnit);
+    if (!conversion) return { ok: true, value: mag };
+    return { ok: true, value: applyConversion(mag, conversion) };
+  }
+
   private static parseBearingFormat(inString: string, spec: ParserSpec): QuantityParseResult {
     const specialDirections: Record<string, number> = {
       n: 0,
@@ -776,7 +816,7 @@ export class Parser {
       const suffix = matchedSuffix?.toLowerCase() || "";
       const specialDirection = specialDirections[`${prefix}${suffix}`];
       if (specialDirection !== undefined)
-        return { ok: true, value: specialDirection };
+        return this.processSpecialBearingDirection(specialDirection, spec);
     }
 
     if (matchedPrefix === null || matchedSuffix === null) {

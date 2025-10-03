@@ -18,7 +18,7 @@ Appearance overrides can be applied on the basis of any combination of model, el
 - [FeatureAppearanceProvider]($common)s supplied by tile trees;
 - Any number of [FeatureOverrideProvider]($frontend)s registered with the [Viewport]($frontend).
 
-Many applications make use of the higher-level but more limited [EmphasizeElements]($frontend) API to apply appearance overrides. [This sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=emphasize-elements-sample&imodel=Retail+Building+Sample) demonstrates some of the capabilities.
+Many applications make use of the higher-level but more limited [EmphasizeElements]($frontend) API to apply appearance overrides. [This sample](https://www.itwinjs.org/sandboxes/iTwinPlatform/Emphasize%20Elements/) demonstrates some of the capabilities.
 
 In the image below, [EmphasizeElements]($frontend) has applied emphasis to a handful of elements while fading out the rest of the elements by overriding their color and transparency:
 

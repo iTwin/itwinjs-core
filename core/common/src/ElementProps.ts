@@ -16,7 +16,6 @@ import { ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart } fro
 import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { IModelError } from "./IModelError";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
-import { TextAnnotationProps } from "./annotation/TextAnnotation";
 
 /** Properties of a NavigationProperty.
  * @public @preview
@@ -169,11 +168,16 @@ export interface GeometricElement3dProps extends GeometricElementProps {
  * @extensions
  */
 export interface TextAnnotation3dProps extends GeometricElement3dProps {
-  jsonProperties?: {
-    [key: string]: any;
-    /** @beta */
-    annotation?: TextAnnotationProps;
-  };
+  /** The stringified versioned JSON representation of the text annotation.
+   * @see [[VersionedJSON]] for the JSON representation.
+   * @see [[TextAnnotationProps]] for the data model.
+   * @note Don't set this property directly - use [TextAnnotation3d.setAnnotation]($backend) instead.
+   */
+  textAnnotationData?: string;
+  /** The default [AnnotationTextStyle]($backend) element used by the text annotation.
+   * @beta
+   */
+  defaultTextStyle?: RelatedElementProps;
 }
 
 /** Properties that define a [PhysicalElement]($backend)
@@ -251,16 +255,21 @@ export interface GeometricElement2dProps extends GeometricElementProps {
   typeDefinition?: RelatedElementProps;
 }
 
-/** JSON representation of a [TextAnnotation2d]($backend).
+/** Properties that define a [TextAnnotation2d]($backend).
  * @public @preview
  * @extensions
  */
 export interface TextAnnotation2dProps extends GeometricElement2dProps {
-  jsonProperties?: {
-    [key: string]: any;
-    /** @beta */
-    annotation?: TextAnnotationProps;
-  };
+  /** The stringified versioned JSON representation of the text annotation.
+   * @see [[VersionedJSON]] for the JSON representation.
+   * @see [[TextAnnotationProps]] for the data model.
+   * @note Don't set this property directly - use [TextAnnotation2d.setAnnotation]($backend) instead.
+   */
+  textAnnotationData?: string;
+  /** The default [AnnotationTextStyle]($backend) element used by the text annotation.
+   * @beta
+   */
+  defaultTextStyle?: RelatedElementProps;
 }
 
 /** Properties of a [GeometryPart]($backend)
@@ -629,4 +638,34 @@ export interface SheetIndexReferenceProps extends SheetIndexEntryProps {
 export interface SheetReferenceProps extends SheetIndexEntryProps {
   /** The bis:Sheet that this bis:SheetReference is pointing to. */
   sheet?: RelatedElementProps;
+}
+
+/** Properties that define an [AnnotationTextStyle]($backend).
+ * @beta
+ */
+export interface AnnotationTextStyleProps extends DefinitionElementProps {
+  /** An optional human-readable description of the text style.*/
+  description?: string;
+  /** The stringified versioned JSON representation of the text style.
+   * @see [[VersionedJSON]] for the JSON representation.
+   * @see [[TextStyleSettingsProps]] for the data model.
+   */
+  settings?: string;
+}
+
+/** A string in the format `read.write.minor` where the semantics match those of [ECVersion]($ecschema-metadata).
+ * @beta
+ */
+export type ECVersionString = `${string}.${string}.${string}`
+
+/** Wrapper for versioned JSON data.
+ * @beta
+ */
+export interface VersionedJSON<T> {
+  /** The semver version of the JSON data.
+   * Uses the same semantics as [ECVersion]($ecschema-metadata).
+   */
+  version: ECVersionString;
+  /** The JSON data. */
+  data: T;
 }

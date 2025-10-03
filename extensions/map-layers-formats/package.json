@@ -1,6 +1,6 @@
 {
   "name": "@itwin/map-layers-formats",
-  "version": "5.1.0-dev.40",
+  "version": "5.3.0-dev.8",
   "description": "Enables additional map-layers formats in iTwin.js",
   "main": "lib/cjs/map-layers-formats.js",
   "module": "lib/esm/map-layers-formats.js",
@@ -10,7 +10,8 @@
     ".": {
       "import": "./lib/esm/map-layers-formats.js",
       "require": "./lib/cjs/map-layers-formats.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "license": "MIT",
   "scripts": {
@@ -23,6 +24,7 @@
     "docs": "betools docs --json=../../generated-docs/core/map-layers-formats/file.json --tsIndexFile=./map-layers-formats.ts --onlyJson --excludes=**/ArcGisFeature/*.ts,**/*.gen.ts",
     "extract-api": "betools extract-api --entry=map-layers-formats",
     "lint": "eslint \"./src/**/*.{ts,tsx}\" 1>&2",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "pseudolocalize": "betools pseudolocalize --englishDir=./src/public/locales/en --out=./src/public/locales/en-PSEUDO",
     "test": "mocha",
     "rebuild": "npm run -s clean && npm run -s build"
@@ -49,7 +51,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/geojson": "~7946.0.14",
@@ -61,7 +63,7 @@
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "cpx2": "^8.0.0",
-    "eslint": "^9.13.0",
+    "eslint": "^9.31.0",
     "internal-tools": "workspace:*",
     "jsdom": "^26.0.0",
     "mocha": "^11.1.0",

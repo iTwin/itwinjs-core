@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { IModelStatus } from "@itwin/core-bentley";
+import { expectDefined, IModelStatus } from "@itwin/core-bentley";
 import { Cartographic, ImageMapLayerSettings, MapSubLayerSettings, ServerError } from "@itwin/core-common";
 import { Point2d } from "@itwin/core-geometry";
 import {
@@ -194,7 +194,7 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     if (layerString.length === 0)
       return;
     const rectangle = tree.getTileRectangle(quadId);
-    const fraction = rectangle.worldToLocal(Point2d.create(carto.longitude, carto.latitude, scratchPoint2d))!;
+    const fraction = expectDefined(rectangle.worldToLocal(Point2d.create(carto.longitude, carto.latitude, scratchPoint2d)));
     const x = Math.floor(.5 + fraction.x * this.tileSize);
     const y = Math.floor(.5 + (1.0 - fraction.y) * this.tileSize);
     const coordinateString =  this._capabilities?.isVersion13 ? `&i=${x}&j=${y}` : `&x=${x}&y=${y}`;

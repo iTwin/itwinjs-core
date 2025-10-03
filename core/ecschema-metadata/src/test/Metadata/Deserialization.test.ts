@@ -1205,4 +1205,69 @@ describe("Full Schema Deserialization", () => {
       assert.strictEqual(testProp.customAttributes!.get("ValidSchema.TestCAClassC")!.Example2Attribute, "example");
     });
   });
+
+  describe("SchemaReadHelper readSchema and readSchemaItem tests", () => {
+
+    it("readSchema, addSchemaToCache is true, schema added to context", async () => {
+      const parser = new DOMParser();
+      const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+        <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        </ECSchema>`;
+      const document = parser.parseFromString(schemaXml);
+      const context = new SchemaContext();
+      let schema: Schema = new Schema(context);
+      const reader = new SchemaReadHelper(XmlParser, context);
+
+      schema = await reader.readSchema(schema, document);
+      expect(schema).to.not.be.undefined;
+      await expect(context.getCachedSchema(schema.schemaKey)).to.eventually.equal(schema);
+    });
+
+    it("readSchema, addSchemaToCache is false, schema not added to context", async () => {
+      const parser = new DOMParser();
+      const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+        <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        </ECSchema>`;
+      const document = parser.parseFromString(schemaXml);
+      const context = new SchemaContext();
+      let schema: Schema = new Schema(context);
+      const reader = new SchemaReadHelper(XmlParser, context);
+
+      schema = await reader.readSchema(schema, document, false);
+      expect(schema).to.not.be.undefined;
+      await expect(context.getCachedSchema(schema.schemaKey)).to.eventually.be.undefined;
+    });
+
+    it("readSchemaInfo, addSchemaToCache is true, schema added to context", async () => {
+      const parser = new DOMParser();
+      const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+        <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        </ECSchema>`;
+      const document = parser.parseFromString(schemaXml);
+      const context = new SchemaContext();
+      const schema: Schema = new Schema(context);
+      const reader = new SchemaReadHelper(XmlParser, context);
+
+      const schemaInfo = await reader.readSchemaInfo(schema, document);
+      expect(schemaInfo.schemaKey).to.equal(schema.schemaKey);
+      await expect(context.getCachedSchema(schema.schemaKey)).to.eventually.equal(schema);
+    });
+
+    it("readSchemaInfo, addSchemaToCache is false, schema not added to context", async () => {
+      const parser = new DOMParser();
+      const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+        <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        </ECSchema>`;
+      const document = parser.parseFromString(schemaXml);
+      const context = new SchemaContext();
+      const schema: Schema = new Schema(context);
+      const reader = new SchemaReadHelper(XmlParser, context);
+
+      const schemaInfo = await reader.readSchemaInfo(schema, document, false);
+      expect(schemaInfo).to.not.be.undefined;
+      expect(schemaInfo.schemaKey).to.equal(schema.schemaKey);
+      await expect(context.getCachedSchema(schema.schemaKey)).to.eventually.be.undefined;
+    });
+
+  });
 });

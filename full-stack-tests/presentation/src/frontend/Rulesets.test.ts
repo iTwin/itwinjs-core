@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { IModelConnection } from "@itwin/core-frontend";
-import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { initialize, resetBackend, terminate } from "../IntegrationTests.js";
 import { collect } from "../Utils.js";
@@ -14,12 +14,12 @@ const RULESET_1: Ruleset = {
   id: "ruleset_1",
   rules: [
     {
-      ruleType: RuleTypes.RootNodes,
+      ruleType: RuleTypes.Content,
       specifications: [
         {
-          specType: ChildNodeSpecificationTypes.CustomNode,
-          type: "test 1",
-          label: "label 1",
+          specType: "ContentInstancesOfSpecificClasses",
+          classes: { schemaName: "BisCore", classNames: ["Subject"], arePolymorphic: true },
+          instanceFilter: "this.ECInstanceId = 0x1",
         },
       ],
     },
@@ -30,12 +30,12 @@ const RULESET_2: Ruleset = {
   id: "ruleset_2",
   rules: [
     {
-      ruleType: RuleTypes.RootNodes,
+      ruleType: "Content",
       specifications: [
         {
-          specType: ChildNodeSpecificationTypes.CustomNode,
-          type: "test 2",
-          label: "label 2",
+          specType: "ContentInstancesOfSpecificClasses",
+          classes: { schemaName: "BisCore", classNames: ["Model"], arePolymorphic: true },
+          instanceFilter: "this.ECInstanceId = 0x1",
         },
       ],
     },
@@ -56,21 +56,27 @@ describe("Rulesets", async () => {
     await terminate();
   });
 
-  it("creates ruleset from json and gets root node using it", async () => {
+  it("creates ruleset from json and gets content item using it", async () => {
     using _registered = await Presentation.presentation.rulesets().add(RULESET_1);
-    const rootNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: RULESET_1.id }).then(async (x) => collect(x.items));
-    expect(rootNodes.length).to.be.equal(1);
-    expect(rootNodes[0].label.displayValue).to.equal("label 1");
+    const items = await Presentation.presentation
+      .getContentIterator({ imodel, rulesetOrId: RULESET_1.id, keys: new KeySet(), descriptor: {} })
+      .then(async (x) => collect(x!.items));
+    expect(items.length).to.be.equal(1);
+    expect(items[0].primaryKeys).to.deep.equal([{ className: "BisCore:Subject", id: "0x1" }]);
   });
 
   it("removes ruleset", async () => {
     const registeredRuleset = await Presentation.presentation.rulesets().add(RULESET_1);
-    let rootNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: RULESET_1.id }).then(async (x) => collect(x.items));
-    expect(rootNodes.length).to.be.equal(1);
+    let items = await Presentation.presentation
+      .getContentIterator({ imodel, rulesetOrId: RULESET_1.id, keys: new KeySet(), descriptor: {} })
+      .then(async (x) => collect(x!.items));
+    expect(items.length).to.be.equal(1);
 
     expect(await Presentation.presentation.rulesets().remove(registeredRuleset)).to.be.true;
-    rootNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: RULESET_1.id }).then(async (x) => collect(x.items));
-    expect(rootNodes.length).to.be.equal(0);
+    items = await Presentation.presentation
+      .getContentIterator({ imodel, rulesetOrId: RULESET_1.id, keys: new KeySet(), descriptor: {} })
+      .then(async (x) => (x ? collect(x.items) : []));
+    expect(items.length).to.be.equal(0);
 
     expect(await Presentation.presentation.rulesets().remove(registeredRuleset)).to.be.false;
   });
@@ -85,12 +91,14 @@ describe("Rulesets", async () => {
 
   it("clears rulesets from frontend", async () => {
     await Presentation.presentation.rulesets().add(RULESET_1);
-    let rootNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: RULESET_1.id }).then(async (x) => collect(x.items));
-    expect(rootNodes.length).to.be.equal(1);
+    const items = await Presentation.presentation
+      .getContentIterator({ imodel, rulesetOrId: RULESET_1.id, keys: new KeySet(), descriptor: {} })
+      .then(async (x) => collect(x!.items));
+    expect(items.length).to.be.equal(1);
 
     await Presentation.presentation.rulesets().clear();
-    rootNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: RULESET_1.id }).then(async (x) => collect(x.items));
-    expect(rootNodes.length).to.be.equal(0);
+    const content = await Presentation.presentation.getContentIterator({ imodel, rulesetOrId: RULESET_1.id, keys: new KeySet(), descriptor: {} });
+    expect(content).to.be.undefined;
   });
 
   describe("Multiple frontends for one backend", async () => {
@@ -118,9 +126,13 @@ describe("Rulesets", async () => {
 
       const registeredRulesets = await Promise.all(frontends.map(async (f, i) => f.rulesets().add(rulesets[i])));
 
-      const nodes = await Promise.all(frontends.map(async (f) => f.getNodesIterator({ imodel, rulesetOrId: "test" }).then(async (x) => collect(x.items))));
+      const items = await Promise.all(
+        frontends.map(async (f) =>
+          f.getContentIterator({ imodel, rulesetOrId: "test", keys: new KeySet(), descriptor: {} }).then(async (x) => collect(x!.items)),
+        ),
+      );
       frontends.forEach((_f, i) => {
-        expect(nodes[i][0].label.displayValue).to.eq(`label ${i + 1}`);
+        expect(items[i][0].primaryKeys).to.deep.equal([{ className: i === 0 ? "BisCore:Subject" : "BisCore:RepositoryModel", id: "0x1" }]);
       });
 
       registeredRulesets.forEach((r) => r[Symbol.dispose]());
@@ -139,18 +151,16 @@ describe("Rulesets", async () => {
     });
 
     it("can use the same frontend-registered ruleset after backend is reset", async () => {
-      const props = { imodel, rulesetOrId: RULESET_1.id };
+      const props = { imodel, rulesetOrId: RULESET_1.id, keys: new KeySet(), descriptor: {} };
       using _registered = await frontend.rulesets().add(RULESET_1);
-      const rootNodes1 = await frontend.getNodesIterator(props).then(async (x) => collect(x.items));
-      expect(rootNodes1.length).to.be.equal(1);
-      expect(rootNodes1[0].label.displayValue).to.be.equal("label 1");
+      const items1 = await frontend.getContentIterator(props).then(async (x) => collect(x!.items));
+      expect(items1.length).to.be.equal(1);
+      expect(items1[0].primaryKeys).to.deep.equal([{ className: "BisCore:Subject", id: "0x1" }]);
 
       resetBackend();
 
-      const rootNodes2 = await frontend.getNodesIterator(props).then(async (x) => collect(x.items));
-      expect(rootNodes2.length).to.be.equal(1);
-      expect(rootNodes2[0].label.displayValue).to.be.equal("label 1");
-      expect(rootNodes2).to.deep.eq(rootNodes1);
+      const items2 = await frontend.getContentIterator(props).then(async (x) => collect(x!.items));
+      expect(items2).to.deep.eq(items1);
     });
   });
 });

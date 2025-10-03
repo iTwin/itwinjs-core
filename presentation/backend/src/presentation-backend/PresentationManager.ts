@@ -75,9 +75,12 @@ import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetV
 import { SelectionScopesHelper } from "./SelectionScopesHelper.js";
 import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, getLocalizedStringEN } from "./Utils.js";
 
+/* eslint-disable @typescript-eslint/no-deprecated */
 /**
  * Presentation hierarchy cache mode.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export enum HierarchyCacheMode {
   /**
@@ -101,12 +104,16 @@ export enum HierarchyCacheMode {
 /**
  * Configuration for hierarchy cache.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;
 
 /**
  * Base interface for all [[HierarchyCacheConfig]] implementations.
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface HierarchyCacheConfigBase {
   mode: HierarchyCacheMode;
@@ -117,6 +124,8 @@ export interface HierarchyCacheConfigBase {
  *
  * @see [Memory cache documentation page]($docs/presentation/advanced/Caching.md#memory-cache)
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
   mode: HierarchyCacheMode.Memory;
@@ -127,6 +136,8 @@ export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
  *
  * @see [Disk cache documentation page]($docs/presentation/advanced/Caching.md#disk-cache)
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
   mode: HierarchyCacheMode.Disk;
@@ -153,6 +164,8 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
  *
  * @see [Hybrid cache documentation page]($docs/presentation/advanced/Caching.md#hybrid-cache)
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface HybridCacheConfig extends HierarchyCacheConfigBase {
   mode: HierarchyCacheMode.Hybrid;
@@ -160,6 +173,7 @@ export interface HybridCacheConfig extends HierarchyCacheConfigBase {
   /** Configuration for disk cache used to persist hierarchies. */
   disk?: DiskHierarchyCacheConfig;
 }
+/* eslint-enable @typescript-eslint/no-deprecated */
 
 /**
  * Configuration for content cache.
@@ -185,7 +199,10 @@ export interface PresentationManagerCachingConfig {
    * Hierarchies-related caching options.
    *
    * @see [Hierarchies cache documentation page]($docs/presentation/advanced/Caching.md#hierarchies-cache)
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   hierarchies?: HierarchyCacheConfig;
 
   /**
@@ -289,7 +306,7 @@ export interface PresentationManagerProps {
    * A map of default unit formats to use for formatting properties that don't have a presentation format
    * in requested unit system.
    *
-   * @deprecated in 5.1. Use `formatsProvider` instead. Still used as a fallback if `formatsProvider` is not supplied.
+   * @deprecated in 5.1 - will not be removed until after 2026-08-08. Use `formatsProvider` instead. Still used as a fallback if `formatsProvider` is not supplied.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   defaultFormats?: FormatsMap;
@@ -337,7 +354,7 @@ export interface PresentationManagerProps {
    * Callback that provides [SchemaContext]($ecschema-metadata) for supplied [IModelDb]($core-backend).
    * [SchemaContext]($ecschema-metadata) is used for getting metadata required for values formatting.
    *
-   * @deprecated in 5.1. [IModelDb.schemaContext]($core-backend) is now used by default instead.
+   * @deprecated in 5.1 - will not be removed until after 2026-08-08. By default [IModelDb.schemaContext]($core-backend) is now used instead.
    */
   schemaContextProvider?: (imodel: IModelDb) => SchemaContext;
 
@@ -427,9 +444,13 @@ export class PresentationManager {
     return this._detail.getRulesetId(rulesetOrId);
   }
 
+  /* eslint-disable @typescript-eslint/no-deprecated */
+
   /**
    * Retrieves nodes
    * @public
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
    */
   public async getNodes(
     requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute,
@@ -442,6 +463,8 @@ export class PresentationManager {
   /**
    * Retrieves nodes count
    * @public
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
    */
   public async getNodesCount(
     requestOptions: WithCancelEvent<Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute,
@@ -452,6 +475,8 @@ export class PresentationManager {
   /**
    * Retrieves hierarchy level descriptor
    * @public
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
    */
   public async getNodesDescriptor(
     requestOptions: WithCancelEvent<Prioritized<HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute,
@@ -465,6 +490,8 @@ export class PresentationManager {
    * Retrieves paths from root nodes to children nodes according to specified instance key paths. Intersecting paths will be merged.
    * TODO: Return results in pages
    * @public
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
    */
   public async getNodePaths(
     requestOptions: WithCancelEvent<Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute,
@@ -477,6 +504,8 @@ export class PresentationManager {
    * Retrieves paths from root nodes to nodes containing filter text in their label.
    * TODO: Return results in pages
    * @public
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
    */
   public async getFilteredNodePaths(
     requestOptions: WithCancelEvent<Prioritized<FilterByTextHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute,
@@ -484,6 +513,8 @@ export class PresentationManager {
     const result = await this._detail.getFilteredNodePaths(requestOptions);
     return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
+
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
   /**
    * Get information about the sources of content when building it for specific ECClasses. Sources involve classes of the primary select instance,
@@ -540,7 +571,7 @@ export class PresentationManager {
   public async getContentSet(
     requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute,
   ): Promise<Item[]> {
-    let items = await this._detail.getContentSet(requestOptions);
+    let items = await this._detail.getContentSet({ ...requestOptions, omitFormattedValues: true });
 
     if (!requestOptions.omitFormattedValues) {
       const formatter = this.createContentFormatter(requestOptions);
@@ -558,7 +589,7 @@ export class PresentationManager {
     requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> &
       BackendDiagnosticsAttribute,
   ): Promise<Content | undefined> {
-    const content = await this._detail.getContent(requestOptions);
+    const content = await this._detail.getContent({ ...requestOptions, omitFormattedValues: true });
     if (!content) {
       return undefined;
     }
@@ -757,7 +788,10 @@ export class PresentationManager {
   /**
    * Compares two hierarchies specified in the request options
    * @public
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
    */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public async compareHierarchies(requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo> {
     if (!requestOptions.prev.rulesetOrId && !requestOptions.prev.rulesetVariables) {
       return { changes: [] };
