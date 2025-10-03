@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "vitest";
-import { compareBooleans, compareNumbers, comparePossiblyUndefined, Dictionary, Id64String, SortedArray } from "@itwin/core-bentley";
+import { Dictionary, Id64String, SortedArray } from "@itwin/core-bentley";
 import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
 import { BlankConnection } from "../IModelConnection";
 import { ScreenViewport, Viewport } from "../Viewport";
