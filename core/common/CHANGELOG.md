@@ -1,6 +1,20 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Wed, 24 Sep 2025 17:43:58 GMT and should not be manually modified.
+This log was last generated on Thu, 02 Oct 2025 14:56:13 GMT and should not be manually modified.
+
+## 5.2.0
+Wed, 01 Oct 2025 20:22:54 GMT
+
+### Updates
+
+- Added new `VersionedJSON<T>` interface for wrapping JSON data that should be versioned.
+- Removing `styleId` property from `TextBlock`.
+- Multiple changes were made to the `TextStyleSettings` class. `lineHeight` is replaced with `textHeight`. Frame style names were changed to be more descriptive. `fontName` is now `font` and has both the font's name and type. `justification` and `margins` were moved from the `TextBlock` into `TextStyleSettings`.
+- Adding support for lists to TextBlock
+- fix bug where iModel crs extent latitude would always be 0 on desktop
+- Briefcase Manager now provides deviceName to acquired briefcases
+- Add support for formatting text fields.
+- Fix spurious assertions in FeatureAppearance.equals.
 
 ## 5.1.9
 Wed, 24 Sep 2025 17:38:08 GMT
