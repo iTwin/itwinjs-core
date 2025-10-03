@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { EcefLocation, ViewDefinition3dProps } from "@itwin/core-common";
+import { EcefLocation } from "@itwin/core-common";
 import { Point3d, Range3d, XYAndZ } from "@itwin/core-geometry";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Cartesian3, Cartographic as CesiumCartographic } from "@cesium/engine";
-import { CesiumCameraProps, createCesiumCameraProps } from "../CesiumCamera.js";
 
 /**
  * Coordinate conversion utilities between iTwin.js and CesiumJS
@@ -96,21 +95,6 @@ export class CesiumCoordinateConverter {
     }
 
     return cesiumPositions;
-  }
-
-  /**
-   * Create CesiumJS camera props from iTwin.js ViewDefinition.
-   * @param viewDefinition iTwin.js ViewDefinition3dProps
-   * @param ecefLoc Optional EcefLocation override
-   * @param modelExtents Optional model extents override
-   * @returns CesiumCameraProps for CesiumJS camera creation
-   */
-  public createCesiumCamera(
-    viewDefinition: ViewDefinition3dProps,
-    ecefLoc?: EcefLocation,
-    modelExtents?: Range3d
-  ): CesiumCameraProps {
-    return createCesiumCameraProps({ viewDefinition, ecefLoc, modelExtents });
   }
 
   /**
