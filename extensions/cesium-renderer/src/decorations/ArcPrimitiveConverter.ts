@@ -24,17 +24,6 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
     return scene.primitivesCollection;
   }
 
-  protected override extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[], primitiveType: string): DecorationPrimitiveEntry[] | undefined {
-    if (!Array.isArray(coordinateData)) {
-      return undefined;
-    }
-
-    const entries = coordinateData.filter((entry: DecorationPrimitiveEntry) => entry.type === primitiveType);
-
-    // For arcs, return the whole entry object, not just points
-    return entries;
-  }
-
   protected override createPrimitiveFromGraphic(
     graphic: RenderGraphicWithCoordinates,
     primitiveId: string,

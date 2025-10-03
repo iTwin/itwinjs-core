@@ -18,12 +18,6 @@ export class PathPrimitiveConverter extends PrimitiveConverter {
     return scene.polylineCollection;
   }
 
-  // For paths, keep the full primitive entries so we can access the Path object
-  protected override extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[], primitiveType: string): DecorationPrimitiveEntry[] | undefined {
-    if (!Array.isArray(coordinateData)) return undefined;
-    return coordinateData.filter((entry: DecorationPrimitiveEntry) => entry.type === primitiveType);
-  }
-
   protected override createPrimitiveFromGraphic(
     _graphic: RenderGraphicWithCoordinates,
     primitiveId: string,
