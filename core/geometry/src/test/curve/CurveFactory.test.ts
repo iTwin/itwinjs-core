@@ -16,6 +16,7 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { Path } from "../../curve/Path";
+import { RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { AxisOrder, Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
@@ -267,6 +268,7 @@ describe("CurveFactory", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0);
     for (const c of chain.children)
       ck.testTrue(c instanceof Arc3d, "expect only arcs in the square with s = radius/2");
+    RegionOps.consolidateAdjacentPrimitives(chain);
     chain = CurveFactory.createFilletsInLineString(square, radius, { allowCusp: false, filletClosure: true })!;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0, 8);
     for (const c of chain.children)
