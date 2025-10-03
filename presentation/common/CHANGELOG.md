@@ -1,6 +1,16 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Wed, 24 Sep 2025 17:43:58 GMT and should not be manually modified.
+This log was last generated on Thu, 02 Oct 2025 14:56:13 GMT and should not be manually modified.
+
+## 5.2.0
+Wed, 01 Oct 2025 20:22:54 GMT
+
+### Updates
+
+- Fixed content formatting failure when struct property value has members with `undefined` value.
+- Deprecated hierarchies-related APIs
+- Fix `ContentTraverser` droping metadata available for struct member properties.
+- Add ability to override format used by `FormatterSpec`/`ParserSpec` created by `KoqPropertyValueFormatter`.
 
 ## 5.1.9
 Wed, 24 Sep 2025 17:38:08 GMT

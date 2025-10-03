@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "5.3.0-dev.7",
+  "version": "5.3.0-dev.8",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "module": "lib/esm/core-backend.js",
@@ -76,6 +76,7 @@
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecsql-common": "workspace:*",
     "@itwin/eslint-plugin": "5.2.2-dev.2",
+    "@itwin/object-storage-core": "^3.0.4",
     "@opentelemetry/api": "1.0.4",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
@@ -112,17 +113,14 @@
     "webpack": "^5.97.1"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "5.3.6",
-    "@itwin/cloud-agnostic-core": "^2.2.4",
-    "@itwin/object-storage-azure": "^2.3.0",
-    "@itwin/object-storage-core": "^2.3.0",
+    "@bentley/imodeljs-native": "5.3.8",
+    "@itwin/object-storage-azure": "^3.0.4",
+    "@azure/storage-blob": "^12.28.0",
     "form-data": "^4.0.4",
     "fs-extra": "^8.1.0",
-    "inversify": "~6.0.1",
     "json5": "^2.2.3",
     "linebreak": "^1.1.0",
     "multiparty": "^4.2.1",
-    "reflect-metadata": "^0.1.13",
     "semver": "^7.5.2",
     "touch": "^3.1.0",
     "ws": "^7.5.10"
