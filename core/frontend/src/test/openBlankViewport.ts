@@ -12,7 +12,6 @@ import { ViewRect } from "../common/ViewRect";
 import { SpatialViewState } from "../SpatialViewState";
 import { Pixel } from "../render/Pixel";
 import { createBlankConnection } from "./createBlankConnection";
-import { ContourHit } from "../HitDetail";
 
 /** Options for openBlankViewport.
  * @internal
@@ -106,12 +105,6 @@ function compareFeatures(lhs?: Feature, rhs?: Feature): number {
     return lhs.compare(rhs);
 }
 
-function compareContours(lhs?: ContourHit, rhs?: ContourHit): number {
-  return comparePossiblyUndefined((a, b) =>
-    compareBooleans(a.isMajor, b.isMajor) || compareNumbers(a.elevation, b.elevation) || a.group.compare(b.group),
-    lhs, rhs);
-}
-
 function comparePixelData(lhs: Pixel.Data, rhs: Pixel.Data): number {
   let diff = lhs.distanceFraction - rhs.distanceFraction;
   if (0 === diff) {
@@ -120,9 +113,6 @@ function comparePixelData(lhs: Pixel.Data, rhs: Pixel.Data): number {
       diff = lhs.planarity - rhs.planarity;
       if (0 === diff) {
         diff = compareFeatures(lhs.feature, rhs.feature);
-        if (0 === diff) {
-          diff = compareContours(lhs.contour, rhs.contour);
-        }
       }
     }
   }
