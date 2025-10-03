@@ -19,7 +19,7 @@
   },
   "repository": {},
   "dependencies": {
-    "@azure/storage-blob": "^12.24.0",
+    "@azure/storage-blob": "^12.28.0",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
@@ -33,9 +33,10 @@
     "@itwin/imodel-transformer": "^0.4.2",
     "@itwin/itwins-client": "^1.6.1",
     "@itwin/service-authorization": "^1.0.0",
-    "@xmldom/xmldom": "~0.8.5",
-    "azurite": "^3.34.0",
-    "fs-extra": "^8.1.0"
+    "@xmldom/xmldom": "~0.8.10",
+    "azurite": "^3.35.0",
+    "fs-extra": "^8.1.0",
+    "get-system-fonts": "^2.0.2"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",

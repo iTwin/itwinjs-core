@@ -60,22 +60,22 @@ export class DisplayPerfTestApp {
     if (iModelApp.tileAdmin === undefined) {
       iModelApp.tileAdmin = {
         minimumSpatialTolerance: 0,
-        cesiumIonKey: process.env.IMJS_CESIUM_ION_KEY,
+        cesiumIonKey: import.meta.env.IMJS_CESIUM_ION_KEY,
       };
     } else {
       iModelApp.tileAdmin.minimumSpatialTolerance = 0;
-      iModelApp.tileAdmin.cesiumIonKey = process.env.IMJS_CESIUM_ION_KEY;
+      iModelApp.tileAdmin.cesiumIonKey = import.meta.env.IMJS_CESIUM_ION_KEY;
     }
 
     /* eslint-disable @typescript-eslint/naming-convention */
     iModelApp.mapLayerOptions = {
-      MapboxImagery: process.env.IMJS_MAPBOX_KEY ? { key: "access_token", value: process.env.IMJS_MAPBOX_KEY } : undefined,
-      BingMaps: process.env.IMJS_BING_MAPS_KEY ? { key: "key", value: process.env.IMJS_BING_MAPS_KEY } : undefined,
+      MapboxImagery: import.meta.env.IMJS_MAPBOX_KEY ? { key: "access_token", value: import.meta.env.IMJS_MAPBOX_KEY } : undefined,
+      BingMaps: import.meta.env.IMJS_BING_MAPS_KEY ? { key: "key", value: import.meta.env.IMJS_BING_MAPS_KEY } : undefined,
     };
     /* eslint-enable @typescript-eslint/naming-convention */
 
-    iModelApp.hubAccess = process.env.IMJS_URL_PREFIX
-      ? new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/imodels` } }))
+    iModelApp.hubAccess = import.meta.env.IMJS_URL_PREFIX
+      ? new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl: `https://${import.meta.env.IMJS_URL_PREFIX}api.bentley.com/imodels` } }))
       : new FrontendIModelsAccess();
 
     iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]; // eslint-disable-line @typescript-eslint/no-deprecated
@@ -138,18 +138,18 @@ export class DisplayPerfTestApp {
 }
 
 async function signIn(): Promise<void> {
-  if (process.env.IMJS_OIDC_HEADLESS)
+  if (import.meta.env.IMJS_OIDC_HEADLESS)
     return;
   let authorizationClient;
   if (ProcessDetector.isElectronAppFrontend)
     authorizationClient = new ElectronRendererAuthorization({
-      clientId: process.env.IMJS_OIDC_CLIENT_ID!,
+      clientId: import.meta.env.IMJS_OIDC_CLIENT_ID!,
     });
   else
     authorizationClient = new BrowserAuthorizationClient({
-      clientId: process.env.IMJS_OIDC_CLIENT_ID!,
-      scope: process.env.IMJS_OIDC_SCOPE!,
-      redirectUri: process.env.IMJS_OIDC_REDIRECT_URI!,
+      clientId: import.meta.env.IMJS_OIDC_CLIENT_ID!,
+      scope: import.meta.env.IMJS_OIDC_SCOPE!,
+      redirectUri: import.meta.env.IMJS_OIDC_REDIRECT_URI!,
     });
   await authorizationClient.signIn();
   IModelApp.authorizationClient = authorizationClient;
