@@ -18,6 +18,7 @@ import { BasicManipulationCommand, EditCommandAdmin } from "@itwin/editor-backen
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { WebEditServer } from "@itwin/express-server";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
+import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import * as fs from "fs";
 import * as path from "path";
@@ -219,7 +220,7 @@ async function init() {
   RpcConfiguration.developmentMode = true;
 
   const iModelHost: IModelHostOptions = {};
-  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  const iModelClient = new IModelsClient({ cloudStorage: new AzureClientStorage(new BlockBlobClientWrapperFactory()), api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
   iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir
 
