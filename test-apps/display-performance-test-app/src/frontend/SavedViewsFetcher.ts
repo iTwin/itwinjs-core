@@ -70,7 +70,7 @@ interface SavedViewResponse {
  * */
 async function fetchSavedViewsList(projectId: string, iModelId: string, accessToken: string): Promise<SavedViewListResponse> {
   return fetch(
-    `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/savedviews/?projectId=${projectId}&iModelId=${iModelId}`,
+    `https://${import.meta.env.IMJS_URL_PREFIX}api.bentley.com/savedviews/?projectId=${projectId}&iModelId=${iModelId}`,
     {
       method: "GET",
       headers: {
@@ -82,7 +82,7 @@ async function fetchSavedViewsList(projectId: string, iModelId: string, accessTo
 /** Returns the saved view with the actual view data */
 async function fetchSavedView(savedViewId: string, accessToken: string): Promise<SavedViewResponse> {
   return fetch(
-    `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/savedviews/${savedViewId}`,
+    `https://${import.meta.env.IMJS_URL_PREFIX}api.bentley.com/savedviews/${savedViewId}`,
     {
       method: "GET",
       headers: {

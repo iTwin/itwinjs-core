@@ -166,7 +166,7 @@ import { LRUMap } from '@itwin/core-bentley';
 import { MarkRequired } from '@itwin/core-bentley';
 import { MassPropertiesRequestProps } from '@itwin/core-common';
 import { MassPropertiesResponseProps } from '@itwin/core-common';
-import { Metadata } from '@itwin/object-storage-core';
+import type { Metadata } from '@itwin/object-storage-core';
 import { ModelExtentsProps } from '@itwin/core-common';
 import { ModelGeometryChangesProps } from '@itwin/core-common';
 import { ModelIdAndGeometryGuid } from '@itwin/core-common';
@@ -233,7 +233,7 @@ import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
 import { SectionType } from '@itwin/core-common';
-import { ServerStorage } from '@itwin/object-storage-core';
+import type { ServerStorage } from '@itwin/object-storage-core';
 import { SessionProps } from '@itwin/core-common';
 import { SheetBorderTemplateProps } from '@itwin/core-common';
 import { SheetIndexEntryProps } from '@itwin/core-common';
@@ -274,7 +274,7 @@ import { TextureMapProps } from '@itwin/core-common';
 import { TextureProps } from '@itwin/core-common';
 import { ThumbnailFormatProps } from '@itwin/core-common';
 import { ThumbnailProps } from '@itwin/core-common';
-import { TransferConfig } from '@itwin/object-storage-core';
+import type { TransferConfig } from '@itwin/object-storage-core';
 import { Transform } from '@itwin/core-geometry';
 import { TxnNotifications } from '@itwin/core-common';
 import { TypeDefinition } from '@itwin/core-common';
@@ -282,6 +282,7 @@ import { TypeDefinitionElementProps } from '@itwin/core-common';
 import { UpgradeOptions } from '@itwin/core-common';
 import { UrlLinkProps } from '@itwin/core-common';
 import { Vector3d } from '@itwin/core-geometry';
+import { VersionedJSON } from '@itwin/core-common';
 import { ViewAttachmentLabelProps } from '@itwin/core-common';
 import { ViewAttachmentProps } from '@itwin/core-common';
 import { ViewDefinition2dProps } from '@itwin/core-common';
@@ -327,6 +328,7 @@ export class AnnotationTextStyle extends DefinitionElement {
     static fromJSON(props: AnnotationTextStyleProps, iModel: IModelDb): AnnotationTextStyle;
     protected static onInsert(arg: OnElementPropsArg): void;
     protected static onUpdate(arg: OnElementPropsArg): void;
+    static remapTextStyleId(sourceTextStyleId: Id64String, context: IModelElementCloneContext): Id64String;
     static serialize(props: AnnotationTextStyleProps, iModel: IModelDb): ECSqlRow;
     settings: TextStyleSettings;
     toJSON(): AnnotationTextStyleProps;
@@ -1056,15 +1058,15 @@ export namespace CloudSqlite {
     }
     // @internal
     export interface BcvStats {
-        readonly activeClients?: number;
-        readonly attachedContainers?: number;
-        readonly lockedCacheslots: number;
-        readonly memoryHighwater?: number;
-        readonly memoryUsed?: number;
-        readonly ongoingPrefetches?: number;
-        readonly populatedCacheslots: number;
-        readonly totalCacheslots: number;
-        readonly totalClients?: number;
+        readonly activeClients?: string;
+        readonly attachedContainers?: string;
+        readonly lockedCacheslots: string;
+        readonly memoryHighwater?: string;
+        readonly memoryUsed?: string;
+        readonly ongoingPrefetches?: string;
+        readonly populatedCacheslots: string;
+        readonly totalCacheslots: string;
+        readonly totalClients?: string;
     }
     // @internal
     export interface BcvStatsFilterOptions {
@@ -2542,6 +2544,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     static onDeletedDependency(props: RelationshipProps, iModel: IModelDb): void;
     // @internal (undocumented)
     static onRootChanged(props: RelationshipProps, iModel: IModelDb): void;
+    static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void;
     static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void;
 }
 
@@ -4947,6 +4950,9 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
     setRange(range: Range3d): void;
 }
 
+// @internal
+export function parseTextAnnotationData(json: string | undefined): VersionedJSON<TextAnnotationProps> | undefined;
+
 // @beta
 export class PartialECChangeUnifier implements Disposable {
     [Symbol.dispose](): void;
@@ -6439,6 +6445,8 @@ export class TextAnnotation2d extends AnnotationElement2d {
     protected constructor(props: TextAnnotation2dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // @beta
     static create(iModelDb: IModelDb, arg: TextAnnotation2dCreateArgs): TextAnnotation2d;
     // @internal
@@ -6451,6 +6459,8 @@ export class TextAnnotation2d extends AnnotationElement2d {
     getAnnotation(): TextAnnotation | undefined;
     // @internal (undocumented)
     getTextBlocks(): Iterable<TextBlockAndId>;
+    // @internal (undocumented)
+    protected static onCloned(context: IModelElementCloneContext, srcProps: TextAnnotation2dProps, dstProps: TextAnnotation2dProps): void;
     // @beta
     protected static onInsert(arg: OnElementPropsArg): void;
     // @internal (undocumented)
@@ -6484,6 +6494,8 @@ export class TextAnnotation3d extends GraphicalElement3d {
     protected constructor(props: TextAnnotation3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+    // (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
     // @beta
     static create(iModelDb: IModelDb, arg: TextAnnotation3dCreateArgs): TextAnnotation3d;
     // @internal
@@ -6496,6 +6508,8 @@ export class TextAnnotation3d extends GraphicalElement3d {
     getAnnotation(): TextAnnotation | undefined;
     // @internal (undocumented)
     getTextBlocks(): Iterable<TextBlockAndId>;
+    // @internal (undocumented)
+    protected static onCloned(context: IModelElementCloneContext, srcProps: TextAnnotation3dProps, dstProps: TextAnnotation3dProps): void;
     // @beta
     protected static onInsert(arg: OnElementPropsArg): void;
     // @internal (undocumented)

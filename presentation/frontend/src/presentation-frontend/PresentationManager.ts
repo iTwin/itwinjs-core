@@ -72,7 +72,7 @@ import { StreamedResponseGenerator } from "./StreamedResponseGenerator.js";
 /**
  * Data structure that describes IModel hierarchy change event arguments.
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export interface IModelHierarchyChangeEventArgs {
@@ -120,7 +120,7 @@ export type MultipleValuesRequestOptions = Paged<{
 /**
  * Options for requests that retrieve nodes.
  * @public
- * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
  * package for creating hierarchies.
  */
 export type GetNodesRequestOptions = HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute;
@@ -225,7 +225,7 @@ export class PresentationManager implements Disposable {
   /**
    * An event raised when hierarchies created using specific ruleset change.
    *
-   * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
    * package for creating hierarchies.
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -419,7 +419,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Returns an iterator that polls nodes asynchronously.
-   * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
    * package for creating hierarchies.
    */
   public async getNodesIterator(
@@ -454,7 +454,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Retrieves nodes count.
-   * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
    * package for creating hierarchies.
    */
   public async getNodesCount(requestOptions: GetNodesRequestOptions): Promise<number> {
@@ -479,7 +479,7 @@ export class PresentationManager implements Disposable {
   /**
    * Retrieves hierarchy level descriptor.
    * @public
-   * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
    * package for creating hierarchies.
    */
   public async getNodesDescriptor(
@@ -499,7 +499,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Retrieves paths from root nodes to children nodes according to specified keys. Intersecting paths will be merged.
-   * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
    * package for creating hierarchies.
    */
   public async getNodePaths(
@@ -514,7 +514,7 @@ export class PresentationManager implements Disposable {
 
   /**
    * Retrieves paths from root nodes to nodes containing filter text in their label.
-   * @deprecated in 5.2. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
    * package for creating hierarchies.
    */
   public async getFilteredNodePaths(
