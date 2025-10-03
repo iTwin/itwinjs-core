@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Cartesian3, Color, PointPrimitive, PointPrimitiveCollection } from "@cesium/engine";
-import { IModelConnection } from "@itwin/core-frontend";
+import { IModelConnection, RenderGeometry } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "../CesiumScene.js";
 import { type DepthOptions, PrimitiveConverter, type RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
@@ -16,6 +16,12 @@ interface PointStringCoordinate {
   z?: number;
 }
 type PointStringCoordinates = PointStringCoordinate[];
+
+interface CoordinateTuple {
+  x: number;
+  y: number;
+  z: number;
+}
 
 /** Converts iTwin.js point decorations to Cesium PointPrimitives */
 export class PointPrimitiveConverter extends PrimitiveConverter<PointStringCoordinates[]> {
@@ -95,8 +101,8 @@ export class PointPrimitiveConverter extends PrimitiveConverter<PointStringCoord
   }
 
   private createPointFromGeometry(
-    geometries: unknown[],
-    geometryType: string,
+    geometries: RenderGeometry[],
+    _geometryType: string,
     pointId: string,
     _index: number,
     pointCollection: PointPrimitiveCollection,
@@ -105,7 +111,7 @@ export class PointPrimitiveConverter extends PrimitiveConverter<PointStringCoord
     type?: string,
     graphic?: RenderGraphicWithCoordinates
   ): PointPrimitive | undefined {
-    if (!geometries || !geometryType || !pointCollection)
+    if (geometries.length === 0)
       return undefined;
 
     let entityPosition: Cartesian3 | undefined;
@@ -127,9 +133,11 @@ export class PointPrimitiveConverter extends PrimitiveConverter<PointStringCoord
       }
     }
 
-    if (!realSpatialPoint && geometries && geometries.length > 0) {
+    if (!realSpatialPoint) {
       const geometry = geometries[0];
-      const firstCoord = (geometry as { coordinateData?: Array<{ x: number; y: number; z: number }> })?.coordinateData?.[0];
+      const hasCoordinateData = (g: RenderGeometry): g is RenderGeometry & { coordinateData: CoordinateTuple[] } =>
+        typeof g === 'object' && g !== undefined && Array.isArray((g as { coordinateData?: CoordinateTuple[] }).coordinateData);
+      const firstCoord = hasCoordinateData(geometry) ? geometry.coordinateData[0] : undefined;
       if (firstCoord)
         realSpatialPoint = new Point3d(firstCoord.x, firstCoord.y, firstCoord.z);
     }

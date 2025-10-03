@@ -5,7 +5,7 @@
 
 import { Arc3d, Loop, Path, Point2d, Point3d, Polyface, SolidPrimitive } from "@itwin/core-geometry";
 import { _implementationProhibited, CustomGraphicBuilderOptions, GraphicBuilder, GraphicTemplate, RenderGraphic, ViewportGraphicBuilderOptions } from "@itwin/core-frontend";
-import { ColorDef, LinePixels } from "@itwin/core-common";
+import { ColorDef, Gradient, LinePixels } from "@itwin/core-common";
 import { CesiumSystem } from "../System.js";
 import { CoordinateStorage } from "./CoordinateStorage.js";
 import { DecorationPrimitiveEntry, SymbologySnapshot } from "./DecorationTypes.js";
@@ -30,7 +30,7 @@ export class CoordinateBuilder extends GraphicBuilder {
     return this._system;
   }
 
-  public override resolveGradient(_gradient: unknown): undefined {
+  public override resolveGradient(_gradient: Gradient.Symb): undefined {
     // No-op for coordinate builder
     return undefined;
   }
