@@ -5851,6 +5851,8 @@ export interface MapLayerAccessTokenParams {
     // (undocumented)
     password?: string;
     // (undocumented)
+    portal?: string;
+    // (undocumented)
     userName?: string;
 }
 
