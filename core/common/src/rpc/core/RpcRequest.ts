@@ -43,6 +43,7 @@ export class ResponseLike implements Response {
   public get trailer(): Promise<Headers> { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
   public get type(): "basic" | "cors" | "default" | "error" | "opaque" | "opaqueredirect" { return "basic"; }
   public get url() { return ""; }
+  public async bytes(): Promise<Uint8Array> { return new Uint8Array(); }
   public clone() { return { ...this }; }
 
   public constructor(data: any) {

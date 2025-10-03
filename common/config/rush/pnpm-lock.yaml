@@ -242,6 +242,9 @@ importers:
       '@types/node':
         specifier: ~20.17.0
         version: 20.17.0
+      '@types/web':
+        specifier: 0.0.235
+        version: 0.0.235
       '@vitest/coverage-v8':
         specifier: ^3.0.6
         version: 3.0.6(@vitest/browser@3.0.6)(vitest@3.0.6)
@@ -6045,6 +6048,9 @@ packages:
 
   '@types/validator@13.12.2':
     resolution: {integrity: sha512-6SlHBzUW8Jhf3liqrGGXyTJSIFe4nqlJ5A5KaMZ2l/vbM3Wh3KSybots/wfWVzNLK4D1NZluDlSQIbIEPx6oyA==}
+
+  '@types/web@0.0.235':
+    resolution: {integrity: sha512-AAiPus7NkFGIEadalaZP/JLRKDb32eTIqpsNYhjtTKgKeMefvrh2brg0Zrfc5NxusGbKmpUcNcW9gzuY6w+FyQ==}
 
   '@types/ws@7.2.0':
     resolution: {integrity: sha512-HnqczxiZ828df9FUh9OyY7vSOelpQNaj+SLEnDvU74rYijp61ggV7dhmDlMky0oYXKLdVuIG4KvExk8DEqzJgQ==}
@@ -12661,6 +12667,8 @@ snapshots:
   '@types/unist@3.0.3': {}
 
   '@types/validator@13.12.2': {}
+
+  '@types/web@0.0.235': {}
 
   '@types/ws@7.2.0':
     dependencies:

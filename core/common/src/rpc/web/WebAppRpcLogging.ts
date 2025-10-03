@@ -132,11 +132,6 @@ export abstract class WebAppRpcLogging {
   }
 }
 
-declare global {
-   
-  var window: any;
-}
-
 class WebAppRpcLoggingFrontend extends WebAppRpcLogging {
   protected override async logProtocolEvent(event: RpcProtocolEvent, object: WebAppRpcRequest): Promise<void> {
     switch (event) {
