@@ -24,6 +24,7 @@ import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { BentleyGeometryFlatBuffer } from "../serialization/BentleyGeometryFlatBuffer";
 import { IModelJson } from "../serialization/IModelJsonSchema";
 import { prettyPrint } from "./testFunctions";
+import { Point2d } from "../geometry3d/Point2dVector2d";
 
 // Methods (called from other files in the test suite) for doing I/O of tests files.
 export class GeometryCoreTestIO {
@@ -203,7 +204,7 @@ export class GeometryCoreTestIO {
    */
   public static captureCloneGeometry(
     collection: GeometryQuery[],
-    newGeometry: GeometryQuery | GeometryQuery[] | IndexedXYZCollection | Point3d[] | Point3d[][] | IndexedXYZCollection[] | undefined,
+    newGeometry: GeometryQuery | GeometryQuery[] | IndexedXYZCollection | Point3d[] | Point3d[][] | Point2d[] | IndexedXYZCollection[] | undefined,
     dx: number = 0,
     dy: number = 0,
     dz: number = 0,
@@ -222,7 +223,7 @@ export class GeometryCoreTestIO {
       return;
     }
     if (Array.isArray(newGeometry) && newGeometry.length > 0) {
-      if (newGeometry[0] instanceof Point3d) {
+      if (newGeometry[0] instanceof Point3d || newGeometry[0] instanceof Point2d) {
         const linestring = LineString3d.create(newGeometry);
         this.captureGeometry(collection, linestring, dx, dy, dz);
         return;
@@ -299,6 +300,7 @@ export class GeometryCoreTestIO {
       }
     }
   }
+
   /**
    * Create a marker (or many markers) given center and size  Save in collection, shifted by [dx,dy,dz]
    * * marker = 0 is a circle
@@ -314,7 +316,7 @@ export class GeometryCoreTestIO {
   public static createAndCaptureXYMarker(
     collection: GeometryQuery[],
     markerId: number,
-    center: Point3d | Point3d[],
+    center: Point3d | Point2d | Point3d[] | Point2d[],
     a: number,
     dx: number = 0,
     dy: number = 0,
@@ -323,14 +325,15 @@ export class GeometryCoreTestIO {
     if (Array.isArray(center)) {
       for (const c of center)
         if (markerId === 0)
-          this.createAndCaptureXYCircle(collection, c, a, dx, dy, dz);
+          this.createAndCaptureXYCircle(collection, clone3d(c), a, dx, dy, dz);
         else
           this.createAndCaptureXYMarker(collection, markerId, c, a, dx, dy, dz);
       return;
     }
-    const x = center.x + dx;
-    const y = center.y + dy;
-    const z = center.z + dz;
+    const myCenter = clone3d(center);
+    const x = myCenter.x + dx;
+    const y = myCenter.y + dy;
+    const z = myCenter.z + dz;
     const n = Math.abs(markerId);
     if (markerId > 0 && n <= 10) {
       const linestring = LineString3d.create();
@@ -358,7 +361,7 @@ export class GeometryCoreTestIO {
       }
       collection.push(linestring);
     } else
-      this.createAndCaptureXYCircle(collection, center, a, dx, dy, dz);
+      this.createAndCaptureXYCircle(collection, myCenter, a, dx, dy, dz);
   }
   /**
    * Create transformed edges of a range.
@@ -384,9 +387,13 @@ export class GeometryCoreTestIO {
         const corners = range.corners();
         if (placement)
           placement.multiplyPoint3dArrayInPlace(corners);
-        if (!Geometry.isSameCoordinate(range.high.z, range.low.z))
-          this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0, 4, 5, 7, 6, 4, 2, 6, 3, 7, 1, 5]), dx, dy, dz);
-        else
+        if (!Geometry.isSameCoordinate(range.high.z, range.low.z)) {
+          this.captureGeometry(
+            collection,
+            LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0, 4, 5, 1, 5, 7, 3, 7, 6, 2, 6, 4]),
+            dx, dy, dz,
+          );
+        } else
           this.captureGeometry(collection, LineString3d.createIndexedPoints(corners, [0, 1, 3, 2, 0]), dx, dy, dz);
       } else if (range instanceof Range2d) {
         const corners = range.corners3d(true, 0);
@@ -535,4 +542,9 @@ export class GeometryCoreTestIO {
     }
     return undefined;
   }
+}
+function clone3d(point: Point2d | Point3d): Point3d {
+  if (point instanceof Point3d)
+    return point.clone()
+  return Point3d.create(point.x, point.y, 0);
 }

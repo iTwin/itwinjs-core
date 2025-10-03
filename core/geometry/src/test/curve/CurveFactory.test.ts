@@ -35,6 +35,7 @@ import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { RuledSweep } from "../../solid/RuledSweep";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { ImplicitCurve2d } from "../../curve/internalContexts/geometry2d/implicitCurve2d";
 
 describe("CurveFactory", () => {
   it("CreateFilletsOnLineString", () => {
@@ -780,6 +781,36 @@ describe("PipeConnections", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createMiteredSweepSectionsTangentOption");
     expect(ck.getNumErrors()).toBe(0);
   });
+  it("createImplicitCurve2d", () => {
+    const ck = new Checker(false, false);
+    const allGeometry: GeometryQuery[] = [];
+    const threeDCurves = [
+      LineSegment3d.createXYZXYZ(1, 2, 0, 4, 3, 0),
+      Arc3d.create(Point3d.create(-1, 2, 0), Vector3d.create(2, 0, 0), Vector3d.create(0, 2, 0)),
+      Arc3d.create(Point3d.create(1, 2, 0), Vector3d.create(2, 0, 0), Vector3d.create(0, 3, 0)),
+      Arc3d.createXY(Point3d.create(0.5, 2), 3),
+    ];
+    let x0 = 0;
+    const y0 = 0;
+    for (const curveA of threeDCurves) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveA, x0, y0);
+      const curveB = CurveFactory.createImplicitCurve2dFromCurvePrimitiveXY(curveA);
+      if (ck.testType(curveB, ImplicitCurve2d, "Expected single curve")) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry,
+          CurveFactory.createCurvePrimitiveFromImplicitCurve(curveB, 2.0), x0, y0);
+        // confirm that points on the 3d curve are on 2d.
+        for (const fraction of [0, 0.2, 0.4, 0.6, 0.9, 1.0]) {  
+          const pointM = curveA.fractionToPoint(fraction);
+          const f = curveB.functionValue(pointM);
+          ck.testCoordinate(0, f, "curve3d point is on curve2d", { curveA, curveB, f, pointM })
+        }
+      }
+        x0 += 10;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createImplicitCurve2d");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
 });
 
 function isGeometryInPlane(geometry: GeometryQuery, plane: Plane3dByOriginAndUnitNormal): boolean {
