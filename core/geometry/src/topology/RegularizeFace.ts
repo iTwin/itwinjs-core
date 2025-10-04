@@ -234,8 +234,8 @@ export class RegularizationContext {
   private downwardConnectionFromBottomPeak(node: HalfEdge): HalfEdge | undefined {
     let connectTo;
     const upFunction = (a: HalfEdge, b: HalfEdge) => HalfEdgeGraphOps.compareNodesYXUp(a, b);
-    const upEdgeBase = this.findTopVisibleEdge(node, this.upEdges, 1.0)!;
-    const downEdgeBase = this.findTopVisibleEdge(node, this.downEdges, -1.0)!;
+    const upEdgeBase = this.findTopVisibleEdge(node, this.upEdges, 1.0);
+    const downEdgeBase = this.findTopVisibleEdge(node, this.downEdges, -1.0);
     connectTo = this.updateMaxNode(connectTo, upEdgeBase, upFunction);
     if (downEdgeBase)
       connectTo = this.updateMaxNode(connectTo, downEdgeBase.faceSuccessor, upFunction);
