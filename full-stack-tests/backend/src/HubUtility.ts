@@ -278,7 +278,7 @@ export class HubUtility {
 
     const nativeDb = new IModelNative.platform.DgnDb();
     nativeDb.openIModel(iModelPathname, OpenMode.ReadWrite);
-    nativeDb.deleteAllTxns();
+    nativeDb.clearAllTxns();
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     if (nativeDb.queryLocalValue("StandaloneEdit"))
       nativeDb.deleteLocalValue("StandaloneEdit");
