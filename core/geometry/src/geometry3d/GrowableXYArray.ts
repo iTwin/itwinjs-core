@@ -41,7 +41,7 @@ export class GrowableXYArray extends IndexedReadWriteXYCollection {
     super();
     this._data = data || new Float64Array(numPoints * 2); // 2 values per point
     this._xyInUse = 0;
-    this._xyCapacity = (data && data.length > 0) ? data.length / 2 : numPoints;
+    this._xyCapacity = data ? data.length / 2 : numPoints;
     this._growthFactor = (undefined !== growthFactor && growthFactor >= 1.0) ? growthFactor : 1.5;
   }
   /**
@@ -100,8 +100,12 @@ export class GrowableXYArray extends IndexedReadWriteXYCollection {
   /** If necessary, increase the capacity to a new pointCount. Current coordinates and point count (length) are unchanged. */
   public ensureCapacity(pointCapacity: number, applyGrowthFactor: boolean = true) {
     if (pointCapacity > this._xyCapacity) {
+      console.log(this._growthFactor);
+      console.log(pointCapacity);
       if (applyGrowthFactor)
-        pointCapacity = Math.trunc(pointCapacity * this._growthFactor);
+        pointCapacity *= this._growthFactor;
+      console.log(pointCapacity);
+      // pointCapacity = Math.trunc(pointCapacity * this._growthFactor);
       const prevData = this._data;
       if (this._data.buffer instanceof ArrayBuffer)
         this._data = new Float64Array(new ArrayBuffer(pointCapacity * 2 * this._data.BYTES_PER_ELEMENT));

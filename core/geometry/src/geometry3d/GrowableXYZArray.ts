@@ -20,7 +20,7 @@ import { Transform } from "./Transform";
 import { XYAndZ } from "./XYZProps";
 
 /**
- * `GrowableXYArray` manages a (possibly growing) Float64Array to pack xy coordinates.
+ * `GrowableXYZArray` manages a (possibly growing) Float64Array to pack xyz coordinates.
  * @public
  */
 export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
@@ -42,7 +42,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     super();
     this._data = data || new Float64Array(numPoints * 3); // 3 values per point
     this._xyzInUse = 0;
-    this._xyzCapacity = (data && data.length > 0) ? data.length / 3 : numPoints;
+    this._xyzCapacity = data ? data.length / 3 : numPoints;
     this._growthFactor = (undefined !== growthFactor && growthFactor >= 1.0) ? growthFactor : 1.5;
   }
   /**
