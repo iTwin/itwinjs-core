@@ -27,7 +27,7 @@ export interface MapLayerAccessToken {
 
 /** @beta */
 export interface MapLayerAccessTokenParams {
-  /* @deprecated in 5.2.x use `portal` instead */
+  /* @deprecated in 5.2.0. Use `portal` instead */
   mapLayerUrl: URL;
 
   /**
