@@ -6,13 +6,14 @@
  * @module Elements
  */
 
-import { RelatedElement, RelationshipProps, TextBlock } from "@itwin/core-common";
+import { RelatedElement, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { ElementDrivesElement } from "../Relationship";
 import { IModelDb } from "../IModelDb";
 import { Element } from "../Element";
 import { updateElementFields } from "../internal/annotations/fields";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { ECVersion } from "@itwin/ecschema-metadata";
+import { IModelElementCloneContext } from "../IModelElementCloneContext";
 
 /** Describes one of potentially many [TextBlock]($common)s hosted by an [[ITextAnnotation]].
  * For example, a [[TextAnnotation2d]] hosts only a single text block, but an element representing a table may
@@ -40,7 +41,7 @@ export interface ITextAnnotation {
   defaultTextStyle?: TextAnnotationUsesTextStyleByDefault;
   /** Obtain a collection of all of the [TextBlock]($common)s hosted by this element. */
   getTextBlocks(): Iterable<TextBlockAndId>;
-  /** Update the element to replace the contents of the specified [TextBlock]($common)s. */
+  /** Update the element in-memory to replace the contents of the specified [TextBlock]($common)s. */
   updateTextBlocks(textBlocks: TextBlockAndId[]): void;
 }
 
@@ -110,12 +111,11 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
     const sourceToRelationship = new Map<Id64String, Id64String | null>();
     const blocks = annotationElement.getTextBlocks();
+
     for (const block of blocks) {
-      for (const paragraph of block.textBlock.paragraphs) {
-        for (const run of paragraph.runs) {
-          if (run.type === "field" && isValidSourceId(run.propertyHost.elementId)) {
-            sourceToRelationship.set(run.propertyHost.elementId, null);
-          }
+      for (const { child } of traverseTextBlockComponent(block.textBlock)) {
+        if (child.type === "field" && isValidSourceId(child.propertyHost.elementId)) {
+          sourceToRelationship.set(child.propertyHost.elementId, null);
         }
       }
     }
@@ -143,6 +143,35 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     for (const relationshipId of staleRelationships) {
       const props = annotationElement.iModel.relationships.getInstanceProps("BisCore.ElementDrivesTextAnnotation", relationshipId);
       annotationElement.iModel.relationships.deleteInstance(props);
+    }
+  }
+
+  /** When copying an [[ITextAnnotation]] from one iModel into another, remaps the element Ids in any [FieldPropertyHost]($common) within the cloned element
+   * so that they refer to elements in the `context`'s target iModel, and sets any Ids that cannot be remapped to [Id64.invalid]($bentley).
+   * Implementations of `ITextAnnotation` should invoke this function from their implementations of [[Element._onCloned]].
+   */
+  public static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void {
+    if (!context.isBetweenIModels) {
+      return;
+    }
+
+    const updatedBlocks = [];
+    for (const block of clone.getTextBlocks()) {
+      let anyUpdated = false;
+      for (const { child } of traverseTextBlockComponent(block.textBlock)) {
+        if (child.type === "field") {
+          child.propertyHost.elementId = context.findTargetElementId(child.propertyHost.elementId);
+          anyUpdated = true;
+        }
+      }
+
+      if (anyUpdated) {
+        updatedBlocks.push(block);
+      }
+    }
+
+    if (updatedBlocks.length > 0) {
+      clone.updateTextBlocks(updatedBlocks);
     }
   }
 }

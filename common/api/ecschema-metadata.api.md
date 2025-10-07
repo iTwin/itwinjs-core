@@ -1831,6 +1831,7 @@ export class Schema implements CustomAttributeContainerProps {
     getStructClass(name: string): Promise<StructClass | undefined>;
     getUnit(name: string): Promise<Unit | undefined>;
     getUnitSystem(name: string): Promise<UnitSystem | undefined>;
+    get isDynamic(): boolean;
     // @internal (undocumented)
     static isSchema(object: any): object is Schema;
     // (undocumented)
