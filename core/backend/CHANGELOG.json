@@ -2,6 +2,48 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "5.2.0",
+      "tag": "@itwin/core-backend_v5.2.0",
+      "date": "Wed, 01 Oct 2025 20:22:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add SqliteChangesetReader.openInMemory() to allow read unsaved changes"
+          },
+          {
+            "comment": "Rework rebase and add stash api"
+          },
+          {
+            "comment": "`TextAnnotation2d/3d` and `AnnotationTextStyle` now persist a stringified `VersionedJSON<T>` in their JSON properties. This bundles a version number with the JSON data to allow data version checking and migration."
+          },
+          {
+            "comment": "Introducing new navigation property `defaultTextStyle` on the `TextAnnotation2d/3d` elements. Separating `scaleFactor` logic from `TextStyleResolver`."
+          },
+          {
+            "comment": "`justification` and `margins` are now text block level text style properties. `textHeight` replaces `lineHeight` allowing multi-sized text and changing the baseline that text vertically aligns to in a line."
+          },
+          {
+            "comment": "added new dropSchemas method"
+          },
+          {
+            "comment": "Adding support for lists in layoutTextBlock"
+          },
+          {
+            "comment": "Briefcase Manager now provides deviceName to acquired briefcases"
+          },
+          {
+            "comment": "Add support for formatting text fields."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.1.9",
+      "tag": "@itwin/core-backend_v5.1.9",
+      "date": "Wed, 24 Sep 2025 17:38:08 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.1.8",
       "tag": "@itwin/core-backend_v5.1.8",
       "date": "Wed, 17 Sep 2025 17:17:16 GMT",

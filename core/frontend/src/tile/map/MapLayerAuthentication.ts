@@ -27,7 +27,13 @@ export interface MapLayerAccessToken {
 
 /** @beta */
 export interface MapLayerAccessTokenParams {
+  /* @deprecated in 5.2.0. Use `portal` instead */
   mapLayerUrl: URL;
+
+  /**
+   * Optional portal URL for ArcGIS services. If set overrides the portal inferred from the mapLayerUrl
+   */
+  portal?: string;
 
   // credentials are used to generate non-oauth tokens (i.e ArcGIS legacy tokens)
   userName?: string;

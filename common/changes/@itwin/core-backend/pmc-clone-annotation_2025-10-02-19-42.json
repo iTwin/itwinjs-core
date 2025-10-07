@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Remap fields and text styles when cloning text annotation elements between iModels.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
