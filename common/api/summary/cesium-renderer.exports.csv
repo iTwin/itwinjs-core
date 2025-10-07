@@ -2,6 +2,6 @@ sep=;
 Release Tag;API Item Type;API Item Name
 alpha;interface;CesiumCameraProps
 alpha;interface;CesiumFrustumProps
-internal;class;CesiumSystem
-internal;class;CesiumViewManager
 alpha;function;createCesiumCameraProps
+internal;function;createCesiumRenderSystem
+internal;function;createCesiumViewManager

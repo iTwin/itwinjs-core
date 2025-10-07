@@ -21,7 +21,7 @@ import { Surface } from "./Surface";
 import { setTitle } from "./Title";
 import { showStatus } from "./Utils";
 import { Dock } from "./Window";
-import { CesiumSystem, CesiumViewManager } from "@itwin/cesium-renderer";
+import { createCesiumRenderSystem, createCesiumViewManager } from "@itwin/cesium-renderer";
 
 const configuration: DtaConfiguration = {};
 
@@ -92,8 +92,8 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options |
   let viewManager: ViewManager | undefined;
 
   if (true === configuration.useCesium) {
-    renderSystemOptions = CesiumSystem.create();
-    viewManager = new CesiumViewManager();
+    renderSystemOptions = createCesiumRenderSystem();
+    viewManager = createCesiumViewManager();
   } else
     renderSystemOptions = {
       disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],

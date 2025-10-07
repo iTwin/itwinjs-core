@@ -4,29 +4,13 @@
 
 ```ts
 
-import { BatchOptions } from '@itwin/core-frontend';
-import { CreateGraphicFromTemplateArgs } from '@itwin/core-frontend';
-import { CustomGraphicBuilderOptions } from '@itwin/core-frontend';
 import { EcefLocation } from '@itwin/core-common';
-import { ElementAlignedBox3d } from '@itwin/core-common';
-import { GraphicBranch } from '@itwin/core-frontend';
-import { GraphicBranchOptions } from '@itwin/core-frontend';
-import { GraphicBuilder } from '@itwin/core-frontend';
-import { InstancedGraphicParams } from '@itwin/core-frontend';
 import { Point3d } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
-import { RenderAreaPattern } from '@itwin/core-frontend';
-import { RenderFeatureTable } from '@itwin/core-common';
-import { RenderGeometry } from '@itwin/core-frontend';
-import { RenderGraphic } from '@itwin/core-frontend';
 import { RenderSystem } from '@itwin/core-frontend';
-import { RenderTarget } from '@itwin/core-frontend';
-import { Transform } from '@itwin/core-geometry';
 import { Vector3d } from '@itwin/core-geometry';
 import { ViewDefinition3dProps } from '@itwin/core-common';
 import { ViewManager } from '@itwin/core-frontend';
-import { ViewportGraphicBuilderOptions } from '@itwin/core-frontend';
-import { ViewRect } from '@itwin/core-frontend';
 
 // @alpha
 export interface CesiumCameraProps {
@@ -44,50 +28,18 @@ export interface CesiumFrustumProps {
     width?: number;
 }
 
-// @internal (undocumented)
-export class CesiumSystem extends RenderSystem {
-    protected constructor(options: RenderSystem.Options);
-    // (undocumented)
-    static create(optionsIn?: RenderSystem.Options): CesiumSystem;
-    // (undocumented)
-    createBatch(_graphic: RenderGraphic, _features: RenderFeatureTable, _range: ElementAlignedBox3d, _options?: BatchOptions): RenderGraphic;
-    // (undocumented)
-    createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions): GraphicBuilder;
-    // (undocumented)
-    createGraphicBranch(_branch: GraphicBranch, _transform: Transform, _options?: GraphicBranchOptions): RenderGraphic;
-    // (undocumented)
-    createGraphicFromTemplate(args: CreateGraphicFromTemplateArgs): RenderGraphic;
-    // (undocumented)
-    createGraphicList(_primitives: RenderGraphic[]): RenderGraphic;
-    // (undocumented)
-    createOffscreenTarget(rect: ViewRect): RenderTarget;
-    // (undocumented)
-    createRenderGraphic(geometry: RenderGeometry, _instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined;
-    // (undocumented)
-    createTarget(canvas: HTMLCanvasElement): RenderTarget;
-    // (undocumented)
-    dispose(): void;
-    // (undocumented)
-    doIdleWork(): boolean;
-    // (undocumented)
-    static get instance(): CesiumSystem;
-    // (undocumented)
-    get isValid(): boolean;
-    get maxTextureSize(): number;
-}
-
-// @internal (undocumented)
-export class CesiumViewManager extends ViewManager {
-    // (undocumented)
-    protected updateRenderToScreen(): void;
-}
-
 // @alpha
 export function createCesiumCameraProps(opts: {
     viewDefinition: ViewDefinition3dProps;
     ecefLoc?: EcefLocation;
     modelExtents?: Range3d;
 }): CesiumCameraProps;
+
+// @internal (undocumented)
+export function createCesiumRenderSystem(optionsIn?: RenderSystem.Options): RenderSystem;
+
+// @internal (undocumented)
+export function createCesiumViewManager(): ViewManager;
 
 // (No @packageDocumentation comment for this package)
 
