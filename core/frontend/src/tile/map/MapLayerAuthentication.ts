@@ -31,7 +31,7 @@ export interface MapLayerAccessTokenParams {
   mapLayerUrl: URL;
 
   /**
-   * Optional portal URL for ArcGIS services. If set overrides the portal inferred from the mapLayerUrl.
+   * Optional portal URL for ArcGIS services. If set overrides the portal inferred from the mapLayerUrl
    */
   portal?: string;
 
