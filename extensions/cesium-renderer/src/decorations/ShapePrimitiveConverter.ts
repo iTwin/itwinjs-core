@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Cartesian3, ColorGeometryInstanceAttribute, GeometryInstance, PerInstanceColorAppearance, PolygonGeometry, PolygonHierarchy, Primitive, PrimitiveCollection } from "@cesium/engine";
-import { IModelConnection } from "@itwin/core-frontend";
+import { IModelConnection, RenderGeometry } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import type { DecorationPrimitiveEntry, Shape2dEntry, ShapeEntry } from "./DecorationTypes.js";
 import { CesiumScene } from "../CesiumScene.js";
@@ -99,7 +99,7 @@ export class ShapePrimitiveConverter extends PrimitiveConverter<ShapeCoordinates
   }
 
   private createPolygonFromGeometry(
-    geometries: unknown[],
+    geometries: RenderGeometry[],
     geometryType: string,
     shapeId: string,
     _index: number,
@@ -109,9 +109,8 @@ export class ShapePrimitiveConverter extends PrimitiveConverter<ShapeCoordinates
     _type?: string,
     graphic?: RenderGraphicWithCoordinates
   ): Primitive | undefined {
-    if (!geometries || !geometryType || !primitivesCollection) {
+    if (geometries.length === 0)
       return undefined;
-    }
 
     let positions: Cartesian3[] = [];
 
@@ -131,11 +130,11 @@ export class ShapePrimitiveConverter extends PrimitiveConverter<ShapeCoordinates
       }
     }
 
-    if (positions.length === 0 && geometries && geometries.length > 0) {
+    if (positions.length === 0) {
       const geometry = geometries[0];
       interface Coord { x: number; y: number; z: number }
-      const hasCoords = (g: unknown): g is { coordinateData: Coord[] } =>
-        typeof g === 'object' && g !== null && ('coordinateData' in g);
+      const hasCoords = (g: RenderGeometry): g is RenderGeometry & { coordinateData: Coord[] } =>
+        typeof g === 'object' && g !== null && Array.isArray((g as { coordinateData?: Coord[] }).coordinateData);
       if (hasCoords(geometry) && geometry.coordinateData.length > 0) {
         const points = geometry.coordinateData.map((coord) => new Point3d(coord.x, coord.y, coord.z));
         positions = this.convertPointsToCartesian3(points, iModel);

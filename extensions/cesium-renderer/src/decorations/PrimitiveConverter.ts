@@ -74,8 +74,6 @@ export abstract class PrimitiveConverter<TPrimitiveData = DecorationPrimitiveEnt
 
   /** Generic method to extract primitive data by type. Subclasses may override for specialized needs. */
   protected extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[], primitiveType: string): TPrimitiveData | undefined {
-    if (!Array.isArray(coordinateData))
-      return undefined;
     const filtered = coordinateData.filter((entry) => entry.type === primitiveType);
     return filtered as TPrimitiveData;
   }

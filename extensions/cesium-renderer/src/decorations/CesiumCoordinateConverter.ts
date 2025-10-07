@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { EcefLocation, ViewDefinition3dProps } from "@itwin/core-common";
+import { EcefLocation } from "@itwin/core-common";
 import { Point3d, Range3d, XYAndZ } from "@itwin/core-geometry";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Cartesian3, Cartographic as CesiumCartographic } from "@cesium/engine";
-import { CesiumCameraProps, createCesiumCameraProps } from "../CesiumCamera.js";
 
 /**
  * Coordinate conversion utilities between iTwin.js and CesiumJS
@@ -29,7 +28,7 @@ export class CesiumCoordinateConverter {
    */
   public spatialToCesiumCartesian3(spatial: XYAndZ): Cartesian3 {
     if (!this._iModel.isGeoLocated) {
-      return this._getFallbackCartesian3(spatial);
+      return this._getFallbackCartesian3();
     }
     const ecefPoint = this._iModel.spatialToEcef(spatial);
     return new Cartesian3(ecefPoint.x, ecefPoint.y, ecefPoint.z);
@@ -55,7 +54,7 @@ export class CesiumCoordinateConverter {
    */
   public spatialToGeographic(spatial: XYAndZ): Cartesian3 {
     if (!this._iModel.isGeoLocated) {
-      return this._getFallbackCartesian3(spatial);
+      return this._getFallbackCartesian3();
     }
     const ecefPoint = this._iModel.spatialToEcef(spatial);
     const cesiumEcef = new Cartesian3(ecefPoint.x, ecefPoint.y, ecefPoint.z);
@@ -85,7 +84,7 @@ export class CesiumCoordinateConverter {
    */
   public convertLineStringToCesium(linePoints: Point3d[]): Cartesian3[] {
     if (!this._iModel.isGeoLocated) {
-      return linePoints.map(point => this._getFallbackCartesian3(point));
+      return linePoints.map(() => this._getFallbackCartesian3());
     }
 
     const cesiumPositions: Cartesian3[] = [];
@@ -96,21 +95,6 @@ export class CesiumCoordinateConverter {
     }
 
     return cesiumPositions;
-  }
-
-  /**
-   * Create CesiumJS camera props from iTwin.js ViewDefinition.
-   * @param viewDefinition iTwin.js ViewDefinition3dProps
-   * @param ecefLoc Optional EcefLocation override
-   * @param modelExtents Optional model extents override
-   * @returns CesiumCameraProps for CesiumJS camera creation
-   */
-  public createCesiumCamera(
-    viewDefinition: ViewDefinition3dProps,
-    ecefLoc?: EcefLocation,
-    modelExtents?: Range3d
-  ): CesiumCameraProps {
-    return createCesiumCameraProps({ viewDefinition, ecefLoc, modelExtents });
   }
 
   /**
@@ -153,24 +137,11 @@ export class CesiumCoordinateConverter {
   }
 
   /**
-   * Fallback positioning when spatialToEcef is not available
-   * @param spatial iTwin.js spatial point
-   * @returns Approximate CesiumJS Cartesian3
+   * Fallback positioning when spatialToEcef is not available.
+   * Anchors non-geolocated models at Null Island.
    */
-  private _getFallbackCartesian3(spatial: XYAndZ): Cartesian3 {
-    const center = this._iModel.projectExtents.center;
-
-    // Calculate relative position from model center
-    const relativeX = spatial.x - center.x;
-    const relativeY = spatial.y - center.y;
-    const relativeZ = spatial.z - center.z;
-
-    // Convert to approximate geographic coordinates
-    const longitude = relativeX * 0.00001; // Rough meters to degrees
-    const latitude = relativeY * 0.00001;
-    const height = Math.max(relativeZ + 100, 100); // Minimum height above ground
-
-    return Cartesian3.fromDegrees(longitude, latitude, height);
+  private _getFallbackCartesian3(): Cartesian3 {
+    return Cartesian3.fromDegrees(0.0, 0.0, 0.0);
   }
 }
 

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Cartesian3, Material, Polyline, PolylineCollection } from "@cesium/engine";
-import { IModelConnection } from "@itwin/core-frontend";
+import { IModelConnection, RenderGeometry } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { CesiumScene } from "../CesiumScene.js";
 import { type DepthOptions, PrimitiveConverter, type RenderGraphicWithCoordinates } from "./PrimitiveConverter.js";
@@ -99,8 +99,8 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter<LineStringC
   }
 
   private createPolylineFromGeometry(
-    geometries: unknown[],
-    geometryType: string,
+    geometries: RenderGeometry[],
+    _geometryType: string,
     lineId: string,
     _index: number,
     polylineCollection: PolylineCollection,
@@ -109,7 +109,7 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter<LineStringC
     type?: string,
     graphic?: RenderGraphicWithCoordinates
   ): Polyline | undefined {
-    if (!geometries || !geometryType || !polylineCollection) {
+    if (geometries.length === 0) {
       return undefined;
     }
 
@@ -131,12 +131,12 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter<LineStringC
       }
     }
 
-    if (positions.length === 0 && geometries.length > 0) {
+    if (positions.length === 0) {
       const geometry = geometries[0];
       interface Coord { x: number; y: number; z: number }
-      const hasCoords = (g: unknown): g is { coordinateData: Coord[] } =>
-        typeof g === 'object' && g !== null && ('coordinateData' in g);
-      if (hasCoords(geometry) && Array.isArray(geometry.coordinateData) && geometry.coordinateData.length > 0) {
+      const hasCoords = (g: RenderGeometry): g is RenderGeometry & { coordinateData: Coord[] } =>
+        typeof g === 'object' && g !== null && Array.isArray((g as { coordinateData?: Coord[] }).coordinateData);
+      if (hasCoords(geometry) && geometry.coordinateData.length > 0) {
         const points = geometry.coordinateData.map((coord) => new Point3d(coord.x, coord.y, coord.z));
         positions = this.convertPointsToCartesian3(points, iModel);
       }
@@ -146,14 +146,12 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter<LineStringC
     if (!color)
       return undefined;
 
-      return polylineCollection.add({
-        id: lineId,
-        positions,
-        width: 2,
-        material: Material.fromType(Material.ColorType, { color }),
-        ...this.getDepthOptions(type || 'world'),
-      });
-
-    return undefined;
+    return polylineCollection.add({
+      id: lineId,
+      positions,
+      width: 2,
+      material: Material.fromType(Material.ColorType, { color }),
+      ...this.getDepthOptions(type || 'world'),
+    });
   }
 }

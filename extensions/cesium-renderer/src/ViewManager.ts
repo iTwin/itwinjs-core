@@ -6,6 +6,11 @@
 import { ViewManager } from "@itwin/core-frontend";
 
 /** @internal */
-export class CesiumViewManager extends ViewManager {
+export function createCesiumViewManager(): ViewManager {
+  return new CesiumViewManager();
+}
+
+/** @internal */
+class CesiumViewManager extends ViewManager {
   protected override updateRenderToScreen() { }
 }

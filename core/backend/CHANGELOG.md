@@ -1,6 +1,21 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Wed, 24 Sep 2025 17:43:57 GMT and should not be manually modified.
+This log was last generated on Thu, 02 Oct 2025 14:56:13 GMT and should not be manually modified.
+
+## 5.2.0
+Wed, 01 Oct 2025 20:22:54 GMT
+
+### Updates
+
+- Add SqliteChangesetReader.openInMemory() to allow read unsaved changes
+- Rework rebase and add stash api
+- `TextAnnotation2d/3d` and `AnnotationTextStyle` now persist a stringified `VersionedJSON<T>` in their JSON properties. This bundles a version number with the JSON data to allow data version checking and migration.
+- Introducing new navigation property `defaultTextStyle` on the `TextAnnotation2d/3d` elements. Separating `scaleFactor` logic from `TextStyleResolver`.
+- `justification` and `margins` are now text block level text style properties. `textHeight` replaces `lineHeight` allowing multi-sized text and changing the baseline that text vertically aligns to in a line.
+- added new dropSchemas method
+- Adding support for lists in layoutTextBlock
+- Briefcase Manager now provides deviceName to acquired briefcases
+- Add support for formatting text fields.
 
 ## 5.1.9
 Wed, 24 Sep 2025 17:38:08 GMT

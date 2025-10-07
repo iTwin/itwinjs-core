@@ -281,6 +281,7 @@ export function updateElementFields(props: RelationshipProps, iModel: IModelDb, 
 
       if (updatedBlocks.length > 0) {
         target.updateTextBlocks(updatedBlocks);
+        target.update();
       }
     }
   } catch (err) {

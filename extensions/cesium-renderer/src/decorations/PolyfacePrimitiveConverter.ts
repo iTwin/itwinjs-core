@@ -30,12 +30,6 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
     return scene.primitivesCollection;
   }
 
-  protected override extractPrimitiveData(coordinateData: DecorationPrimitiveEntry[], primitiveType: string): DecorationPrimitiveEntry[] | undefined {
-    if (!Array.isArray(coordinateData))
-      return undefined;
-    return coordinateData.filter((entry: DecorationPrimitiveEntry) => entry.type === primitiveType);
-  }
-
   protected override createPrimitiveFromGraphic(
     graphic: RenderGraphicWithCoordinates,
     primitiveId: string,

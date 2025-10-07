@@ -11,6 +11,11 @@ import { CesiumGraphic } from "./Graphic.js";
 import { PrimitiveConverterFactory } from "./decorations/PrimitiveConverterFactory.js";
 
 /** @internal */
+export function createCesiumRenderSystem(optionsIn?: RenderSystem.Options): RenderSystem {
+  return CesiumSystem.create(optionsIn);
+}
+
+/** @internal */
 export class CesiumSystem extends RenderSystem {
   private _removeEventListener?: () => void;
 

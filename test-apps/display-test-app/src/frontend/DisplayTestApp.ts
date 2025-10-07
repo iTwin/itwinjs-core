@@ -21,7 +21,7 @@ import { Surface } from "./Surface";
 import { setTitle } from "./Title";
 import { showStatus } from "./Utils";
 import { Dock } from "./Window";
-import { CesiumSystem, CesiumViewManager } from "@itwin/cesium-renderer";
+import { createCesiumRenderSystem, createCesiumViewManager } from "@itwin/cesium-renderer";
 
 const configuration: DtaConfiguration = {};
 
@@ -92,8 +92,8 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options |
   let viewManager: ViewManager | undefined;
 
   if (true === configuration.useCesium) {
-    renderSystemOptions = CesiumSystem.create();
-    viewManager = new CesiumViewManager();
+    renderSystemOptions = createCesiumRenderSystem();
+    viewManager = createCesiumViewManager();
   } else
     renderSystemOptions = {
       disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],
@@ -194,6 +194,7 @@ const dtaFrontendMain = async () => {
   let tileAdminProps: TileAdmin.Props;
   let renderSystemOptions: RenderSystem.Options | RenderSystem;
   let viewManager: ViewManager | undefined;
+  // eslint-disable-next-line prefer-const
   [renderSystemOptions, tileAdminProps, viewManager] = setConfigurationResults();
   await DisplayTestApp.startup(configuration, renderSystemOptions, tileAdminProps, viewManager);
   if (false !== configuration.enableDiagnostics)
@@ -275,8 +276,9 @@ const dtaFrontendMain = async () => {
         setTitle(iModel);
       } catch (error) {
         configuration.standalone = origStandalone;
-        // eslint-disable-next-line no-console
-        console.error(`Error opening snapshot iModel: ${error}`);
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        console.error(`Error opening snapshot iModel: ${error}`); // eslint-disable-line no-console
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         alert(`Error opening snapshot iModel: ${error}`);
       }
     } else {
@@ -290,8 +292,9 @@ const dtaFrontendMain = async () => {
         }
       } catch (error) {
         configuration.standalone = origStandalone;
-        // eslint-disable-next-line no-console
-        console.error(`Error getting hub iModel: ${error}`);
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+        console.error(`Error getting hub iModel: ${error}`); // eslint-disable-line no-console
+        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
         alert(`Error getting hub iModel: ${error}`);
       }
     }
