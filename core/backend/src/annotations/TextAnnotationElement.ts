@@ -754,4 +754,23 @@ export class AnnotationTextStyle extends DefinitionElement {
     context.remapElement(sourceTextStyleId, dstStyleId);
     return dstStyleId;
   }
+
+  protected static override onCloned(context: IModelElementCloneContext, srcProps: AnnotationTextStyleProps, dstProps: AnnotationTextStyleProps): void {
+    super.onCloned(context, srcProps, dstProps);
+    if (!context.isBetweenIModels) {
+      return;
+    }
+
+    const settingsProps = AnnotationTextStyle.parseTextStyleSettings(srcProps.settings);
+    const font = TextStyleSettings.fromJSON(settingsProps?.data).font;
+
+    const fontsToEmbed = [];
+    for (const file of context.sourceDb.fonts.queryEmbeddedFontFiles()) {
+      if (file.type === font.type && file.faces.some((face) => face.familyName === font.name)) {
+        fontsToEmbed.push(file);
+      }
+    }
+
+    await Promise.all(fontsToEmbed.map((file) => context.targetDb.fonts.embedFontFile({ file })));
+  }
 }
