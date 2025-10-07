@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Angle, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { AnnotationTextStyleProps, FieldRun, FractionRun, Placement2dProps, Placement3dProps, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { AnnotationTextStyleProps, FieldRun, FontType, FractionRun, Placement2dProps, Placement3dProps, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { AnnotationTextStyle, parseTextAnnotationData, TEXT_ANNOTATION_JSON_VERSION, TEXT_STYLE_SETTINGS_JSON_VERSION, TextAnnotation2d, TextAnnotation2dCreateArgs, TextAnnotation3d, TextAnnotation3dCreateArgs } from "../../annotations/TextAnnotationElement";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -20,7 +20,7 @@ import { TextAnnotationUsesTextStyleByDefault } from "../../annotations/ElementD
 import { layoutTextBlock, TextStyleResolver } from "../../annotations/TextBlockLayout";
 import { appendTextAnnotationGeometry } from "../../annotations/TextAnnotationGeometry";
 import { IModelElementCloneContext } from "../../IModelElementCloneContext";
-
+import * as fs from "fs";
 
 function mockIModel(): IModelDb {
   const iModel: Pick<IModelDb, "fonts" | "computeRangesForText" | "forEachMetaData"> = {
@@ -959,6 +959,63 @@ describe("AnnotationTextStyle", () => {
       })).to.throw(`Migration for settings from version 0.0.1 to ${TEXT_STYLE_SETTINGS_JSON_VERSION} failed.`);
     });
   })
+
+  describe.only("onCloned", () => {
+    let targetDb: StandaloneDb;
+    let targetDefModel: string;
+
+    before(async () => {
+      // The source and target iModel will both contain the Karla font family.
+      targetDb = await createIModel("AnnotationTextStyleTargetDb");
+      const jobSubjectId = createJobSubjectElement(targetDb, "Job").insert();
+      targetDefModel = DefinitionModel.insert(targetDb, jobSubjectId, "Definition");
+
+      // Embed a font into the source iModel that doesn't exist in the target iModel.
+      const shxName = IModelTestUtils.resolveFontFile("Cdm.shx");
+      const shxBlob = fs.readFileSync(shxName);
+      const shxFile = FontFile.createFromShxFontBlob({ blob: shxBlob, familyName: "Cdm" });
+      await imodel.fonts.embedFontFile({ file: shxFile });
+    });
+
+    after(() => targetDb.close());
+
+    it("embeds font into target Db if not already embedded", async () => {
+      const getFontCounts = () => {
+        let files = 0;
+        for (const _ of targetDb.fonts.queryEmbeddedFontFiles()) {
+          files++;
+        }
+
+        let families = 0;
+        for (const _ of targetDb.fonts.queryMappedFamilies()) {
+          families++;
+        }
+
+        return { files, families };
+      }
+
+      const initialCounts = getFontCounts();
+
+      const karlaStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "karla-style", TextStyleSettings.fromJSON({ font: { name: "Karla" }}));
+      karlaStyle.insert();
+      const cdmStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "cdm-style", TextStyleSettings.fromJSON({ font: { name: "Cdm", type: FontType.Shx }}));
+      cdmStyle.insert();
+
+      const context = new IModelElementCloneContext(imodel, targetDb);
+      context.remapElement(seedDefinitionModel, targetDefModel);
+
+      expect(targetDb.fonts.findId({ name: "Karla" })).not.to.be.undefined;
+      context.cloneElement(karlaStyle);
+      expect(getFontCounts()).to.deep.equal(initialCounts);
+
+      expect(targetDb.fonts.findId({ name: "Cdm", type: FontType.Shx })).to.be.undefined;
+      context.cloneElement(cdmStyle);
+      expect(targetDb.fonts.findId({ name: "Cdm", type: FontType.Shx })).not.to.be.undefined;
+      const finalCounts = getFontCounts();
+      expect(finalCounts.files).greaterThan(initialCounts.files);
+      expect(finalCounts.families).greaterThan(initialCounts.families);
+    });
+  });
 });
 
 describe("appendTextAnnotationGeometry", () => {
