@@ -5,7 +5,7 @@
 
 import { Code, EcefLocation, IModel, ViewDefinition3dProps } from "@itwin/core-common";
 import { IModelApp, IModelConnection, SpatialViewState, ViewState3d } from "@itwin/core-frontend";
-import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion, PerspectiveFrustum, PerspectiveOffCenterFrustum, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler } from "@cesium/engine";
+import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion, PerspectiveFrustum, PerspectiveOffCenterFrustum, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceCameraController, ScreenSpaceEventHandler } from "@cesium/engine";
 import { createCesiumCameraProps } from "./CesiumCamera.js";
 import { Angle, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
 
@@ -172,12 +172,23 @@ export class CesiumScene {
       this._scene.render(currentTime);
     });
 
-    IModelApp.viewManager.selectedView?.onViewportChanged.addListener((vp) => {
-      const cesiumCam = createCesiumCameraProps({
-        viewDefinition: vp?.view.toJSON() as ViewDefinition3dProps,
-        ecefLoc
+    IModelApp.viewManager.onViewOpen.addListener((vp) => {
+
+      vp.onViewChanged.addListener((viewport) => {
+        const cesiumCam = createCesiumCameraProps({
+          viewDefinition: viewport.view.toJSON() as ViewDefinition3dProps,
+          ecefLoc
+        });
+        // console.log("View changed:", cesiumCam.position);
+
+        this._scene.camera.setView({
+          destination: new Cartesian3(cesiumCam.position.x, cesiumCam.position.y, cesiumCam.position.z),
+          orientation: {
+            direction: new Cartesian3(cesiumCam.direction.x, cesiumCam.direction.y, cesiumCam.direction.z),
+            up: new Cartesian3(cesiumCam.up.x, cesiumCam.up.y, cesiumCam.up.z)
+          },
+        });
       });
-      console.log("onSelectedViewportChanged - new cesiumCam:", cesiumCam);
     });
   }
 
@@ -273,7 +284,7 @@ export class CesiumScene {
         direction: new Cartesian3(cesiumCameraProps.direction.x, cesiumCameraProps.direction.y, cesiumCameraProps.direction.z),
         up: new Cartesian3(cesiumCameraProps.up.x, cesiumCameraProps.up.y, cesiumCameraProps.up.z)
       },
-    })
+    });
 
     console.log("Camera:", this._scene.camera);
 
@@ -292,15 +303,6 @@ export class CesiumScene {
         {x: cameraOnView.extents[0], y: cameraOnView.extents[1], z: cameraOnView.extents[2]},
         yawPitchRoll.toMatrix3d()
       );
-
-      // const newView = SpatialViewState.createFromProps(
-      //   {
-      //     viewDefinitionProps: cameraOnView,
-      //     displayStyleProps: oldView.displayStyle.toJSON(),
-      //     categorySelectorProps: oldView.categorySelector.toJSON(),
-      //   },
-      //   vp.iModel
-      // );
 
       if (newView) {
         vp.applyViewState(newView);
