@@ -120,14 +120,14 @@ export class AccuDrawViewportUI extends AccuDraw {
       /** Settings applied to lock buttons when they are locked. */
       locked: {
         /** Text color for locked lock buttons. */
-        color: "hsl(var(--iui-color-accent-hsl, 166 96% 51%))",
+        color: "hsla(0, 0%, 100%, 1)",
         /** Background color for locked lock buttons. */
         backgroundColor:
-          "hsl(var(--iui-color-accent-hsl, 166 96% 30.7%) / var(--iui-opacity-2, 85%))",
+          "hsla(0, 0%, 100%, 0.16)",
         /** Border settings for locked lock buttons. */
         border: {
           /** Border color for locked lock buttons. */
-          color: "hsl(var(--iui-color-accent-hsl, 166 96% 51%))",
+          color: "hsla(0, 0%, 100%, 1)",
         },
       },
     },
@@ -136,7 +136,7 @@ export class AccuDrawViewportUI extends AccuDraw {
       /** Spacing between input field and lock button within each field group. */
       gap: "var(--iui-size-2xs, 0.25rem)",
       /** Spacing between field groups (distance/angle, x, y, z controls). */
-      margin: "var(--iui-size-2xs, 0.25rem)",
+      margin: "var(--iui-size-s, 0.75rem)",
     },
   };
 
