@@ -14,8 +14,8 @@ export class ConcurrentQuery {
   public static async executeQueryRequest(conn: IModelJsNative.ECDb | IModelJsNative.DgnDb, request: DbQueryRequest): Promise<DbQueryResponse> {
     return new Promise<DbQueryResponse>((resolve) => {
       request.kind = DbRequestKind.ECSql;
-      conn.concurrentQueryExecute(request as any, (response: any) => {
-        resolve(response as DbQueryResponse);
+      conn.concurrentQueryExecute(request, (response) => {
+        resolve({...response, meta: response.meta ?? [], data: response.data ?? [], rowCount: response.rowCount ?? 0});
       });
     });
   }
@@ -23,8 +23,8 @@ export class ConcurrentQuery {
   public static async executeBlobRequest(conn: IModelJsNative.ECDb | IModelJsNative.DgnDb, request: DbBlobRequest): Promise<DbBlobResponse> {
     return new Promise<DbBlobResponse>((resolve) => {
       request.kind = DbRequestKind.BlobIO;
-      conn.concurrentQueryExecute(request as any, (response: any) => {
-        resolve(response as DbBlobResponse);
+      conn.concurrentQueryExecute(request, (response) => {
+        resolve({...response, rawBlobSize: response.rawBlobSize ?? 0});
       });
     });
   }
