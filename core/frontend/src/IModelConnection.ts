@@ -440,7 +440,8 @@ export abstract class IModelConnection extends IModel {
       let img: TextureIModelRead;
 
       try {
-        img = await this._iModelReadApi.getTexture(TextureMapping.mapTextureLoadPropsRPCToIModelRead(textureLoadProps));
+        const {textureId, textureOptions} = TextureMapping.mapTextureLoadPropsToApiParams(textureLoadProps);
+        img = await this._iModelReadApi.getTexture(textureId, textureOptions);
       } catch (error: unknown) {
         if (error instanceof TextureNotFoundError) {
           return undefined;
