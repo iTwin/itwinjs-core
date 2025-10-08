@@ -30,7 +30,6 @@ import {
   MeshesNotFoundError,
   type QueryArgs,
   TextureData as TextureDataIModelRead,
-  TextureNameInvalidId64StringError,
   TextureNotFoundError,
 } from "@itwin/imodelread-common";
 import { IpcIModelRead } from "@itwin/imodelread-client-ipc";
@@ -431,6 +430,10 @@ export abstract class IModelConnection extends IModel {
    * @public
    */
   public async queryTextureData(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined> {
+    if(!Id64.isValid(textureLoadProps.name)) {
+      throw new Error("name property must be a valid Id64String");
+    }
+
     if (this.isOpen) {
       let img: TextureDataIModelRead;
 
@@ -439,8 +442,6 @@ export abstract class IModelConnection extends IModel {
       } catch (error: unknown) {
         if (error instanceof TextureNotFoundError) {
           return undefined;
-        } else if (error instanceof TextureNameInvalidId64StringError) {
-          throw new Error("name property must be a valid Id64String");
         } else if (error instanceof MaxTextureSizeNotAPositiveNumberError){
           throw new Error("maxTextureSize property must be a positive number");
         }
