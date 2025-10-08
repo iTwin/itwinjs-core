@@ -954,6 +954,7 @@ export class CopyPickBufferGeometry extends TexturedViewportQuadGeometry {
 
   public get featureId() { return this._textures[0]; }
   public get depthAndOrder() { return this._textures[1]; }
+  public get elementIndex() { return this._textures[2]; }
 
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
     super(params, TechniqueId.CopyPickBuffers, textures);

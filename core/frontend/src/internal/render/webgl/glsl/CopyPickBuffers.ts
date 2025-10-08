@@ -18,6 +18,7 @@ const computeBaseColor = "return vec4(1.0);";
 const assignFragData = `
   FragColor0 = TEXTURE(u_pickFeatureId, v_texCoord);
   FragColor1 = TEXTURE(u_pickDepthAndOrder, v_texCoord);
+  FragColor2 = TEXTURE(u_pickElementIndex, v_texCoord);
 `;
 
 /** @internal */
@@ -39,7 +40,13 @@ export function createCopyPickBuffersProgram(context: WebGL2RenderingContext): S
     });
   }, VariablePrecision.High);
 
-  frag.addDrawBuffersExtension(2);
+  frag.addUniform("u_pickElementIndex", VariableType.Sampler2D, (prog) => {
+    prog.addGraphicUniform("u_pickElementIndex", (uniform, params) => {
+      Texture2DHandle.bindSampler(uniform, (params.geometry as CopyPickBufferGeometry).elementIndex, TextureUnit.Two);
+    });
+  }, VariablePrecision.High);
+
+  frag.addDrawBuffersExtension(3);
   frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
 
   builder.vert.headerComment = "//!V! CopyPickBuffers";
