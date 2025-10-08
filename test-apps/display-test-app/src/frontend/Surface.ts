@@ -166,7 +166,7 @@ export class Surface {
 
     tb.addItem(createToolButton({
       iconUnicode: "\ue9f4",
-      tooltip: "Empty Example",
+      tooltip: "Cesium Renderer Example",
       click: async () => {
         const viewer = await this.openBlankConnection({
           name: "Empty Example",

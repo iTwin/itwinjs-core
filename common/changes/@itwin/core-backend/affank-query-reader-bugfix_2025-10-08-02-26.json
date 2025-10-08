@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "ECSqlReader/ConcurrentQuery unable to see modification to file",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
