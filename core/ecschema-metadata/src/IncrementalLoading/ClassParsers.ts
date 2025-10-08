@@ -4,7 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { AnyPropertyProps, ClassProps, CustomAttributeClassProps, MixinProps, RelationshipClassProps, RelationshipConstraintProps } from "../Deserialization/JsonProps";
+import { ECName } from "../ECName";
 import { containerTypeToString, CustomAttributeContainerType } from "../ECObjects";
+import { IncrementalSchemaInfo } from "./IncrementalSchemaLocater";
 import { SchemaItemParser } from "./SchemaItemParsers";
 import { parseCustomAttribute } from "./SchemaParser";
 
@@ -23,6 +25,8 @@ type MutableClassProps = {
  * @internal
  */
 export class ClassParser extends SchemaItemParser {
+  private _schemaECXmlVersionLessThan: boolean | undefined = undefined;
+
   /**
    * Parses the given ClassProps JSON returned from an ECSql query.
    * @param data The ClassProps JSON as returned from an iModelDb.
@@ -30,6 +34,7 @@ export class ClassParser extends SchemaItemParser {
    */
   public override async parse(data: ClassProps): Promise<ClassProps> {
     const props = await super.parse(data) as MutableClassProps;
+    this.decodeNameToDisplayLabel(props);
     if (props.properties) {
       if (props.properties.length === 0)
         delete props.properties;
@@ -42,10 +47,38 @@ export class ClassParser extends SchemaItemParser {
 
   private parseProperties(propertyProps: AnyPropertyProps[]) {
     for (const props of propertyProps as MutablePropertyProps[]) {
+      this.decodeNameToDisplayLabel(props);
       props.customAttributes = props.customAttributes && props.customAttributes.length > 0 ? props.customAttributes.map((attr: any) => { return parseCustomAttribute(attr); }) : undefined;
       if (!props.customAttributes)
         delete props.customAttributes;
     }
+  }
+  
+  private decodeNameToDisplayLabel(props: MutableClassProps | MutablePropertyProps) {
+    const ecNameRegex = /__x([0-9a-fA-F]{4})__/g;
+
+    if (!props.label && props.name && ecNameRegex.test(props.name)) {
+      this._schemaECXmlVersionLessThan = this.getSchemaECXmlVersionLessThan(3.1);
+      if (this._schemaECXmlVersionLessThan) {
+        props.label = new ECName(props.name).decode();
+      }
+    }
+  }
+
+  private getSchemaECXmlVersionLessThan(version: number): boolean | undefined {
+    if (this._schemaECXmlVersionLessThan !== undefined)
+      return this._schemaECXmlVersionLessThan;
+
+    for (const schemaInfo of this._schemaInfos) {
+      const incrementalSchemaInfo = schemaInfo as IncrementalSchemaInfo;
+      if (incrementalSchemaInfo.schemaKey.compareByName(this._schema)) {
+        if (incrementalSchemaInfo.ecSpecMajorVersion === undefined || incrementalSchemaInfo.ecSpecMinorVersion === undefined)
+          return true;
+        const currentVersion = Number(`${incrementalSchemaInfo.ecSpecMajorVersion}.${incrementalSchemaInfo.ecSpecMinorVersion}`);
+        return currentVersion < version;
+      }
+    }
+    return undefined;
   }
 }
 

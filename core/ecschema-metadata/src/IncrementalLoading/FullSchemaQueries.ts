@@ -534,8 +534,6 @@ SchemaItems AS (
  */
 const schemaNoItemsQuery = `
 SELECT
-  [schemaDef].[OriginalECXmlVersionMajor] as ecSpecMajorVersion,
-  [schemaDef].[OriginalECXmlVersionMinor] as ecSpecMinorVersion,
   (${schemaCustomAttribute("schemaDef")}) as customAttributes
 FROM
   [meta].[ECSchemaDef] [schemaDef] WHERE [Name] = :schemaName
@@ -551,8 +549,6 @@ WITH
   ${withRelationshipConstraints},
   ${withSchemaItems}
 SELECT
-  [schemaDef].[OriginalECXmlVersionMajor] as ecSpecMajorVersion,
-  [schemaDef].[OriginalECXmlVersionMinor] as ecSpecMinorVersion,
   (${schemaCustomAttribute("schemaDef")}) as customAttributes,
   (
     SELECT

@@ -26,7 +26,9 @@ interface SchemaInfoRow {
   readonly version: string;
   readonly alias: string;
   readonly label: string;
-  readonly description: string;  
+  readonly description: string;
+  readonly ecSpecMajorVersion: number;
+  readonly ecSpecMinorVersion: number;  
   readonly references: string;
 }
 
@@ -176,8 +178,6 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
 
     const schema = {
       ... await this.createSchemaProps(schemaKey, context),
-      ecSpecMajorVersion: schemaRow.ecSpecMajorVersion,
-      ecSpecMinorVersion: schemaRow.ecSpecMinorVersion,
       customAttributes: JSON.parse(schemaRow.customAttributes),
     };
     
@@ -367,6 +367,8 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
         alias: schemaRow.alias,
         description: schemaRow.description,
         label: schemaRow.label,
+        ecSpecMajorVersion: schemaRow.ecSpecMajorVersion,
+        ecSpecMinorVersion: schemaRow.ecSpecMinorVersion,
         schemaKey: SchemaKey.parseString(`${schemaRow.name}.${schemaRow.version}`),
         references: Array.from(JSON.parse(schemaRow.references), parseSchemaReference),
       }
@@ -473,8 +475,6 @@ export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
 
     const schema = {
       ... await this.createSchemaProps(schemaKey, context),
-      ecSpecMajorVersion: schemaRow.ecSpecMajorVersion,
-      ecSpecMinorVersion: schemaRow.ecSpecMinorVersion,
       customAttributes: JSON.parse(schemaRow.customAttributes),
       items: JSON.parse(schemaRow.items),
     };

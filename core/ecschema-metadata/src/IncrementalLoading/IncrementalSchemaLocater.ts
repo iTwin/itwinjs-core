@@ -14,9 +14,11 @@ import { SchemaKey } from "../SchemaKey";
 import { SchemaLoadingController } from "../utils/SchemaLoadingController";
 import { IncrementalSchemaReader } from "./IncrementalSchemaReader";
 
-interface IncrementalSchemaInfo extends SchemaInfo {
+export interface IncrementalSchemaInfo extends SchemaInfo {
   readonly description?: string;
   readonly label?: string;
+  readonly ecSpecMajorVersion?: number;
+  readonly ecSpecMinorVersion?: number;
 }
 
 type LoadSchemaInfoHandler = (context: SchemaContext) => Promise<Iterable<SchemaInfo>>;
@@ -191,6 +193,8 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
       version: schemaInfo.schemaKey.version.toString(),
       description: schemaInfo.description,
       label: schemaInfo.label,
+      ecSpecMajorVersion: schemaInfo.ecSpecMajorVersion,
+      ecSpecMinorVersion: schemaInfo.ecSpecMinorVersion,
       references: schemaReferences,
       items: undefined,
     };
