@@ -26,7 +26,7 @@ import {
   type IModelReadIpcAPI,
   mapTextureDataIModelReadToRPC,
   mapTextureLoadPropsRPCToIModelRead,
-  MaxTextureSizeNotAPositiveNumberError,
+  MaxTextureSizeNotGreaterThanZeroError,
   MeshesNotFoundError,
   type QueryArgs,
   TextureData as TextureDataIModelRead,
@@ -445,7 +445,7 @@ export abstract class IModelConnection extends IModel {
       } catch (error: unknown) {
         if (error instanceof TextureNotFoundError) {
           return undefined;
-        } else if (error instanceof MaxTextureSizeNotAPositiveNumberError){
+        } else if (error instanceof MaxTextureSizeNotGreaterThanZeroError){
           throw new Error("maxTextureSize property must be a positive number");
         }
 
