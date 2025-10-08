@@ -19,18 +19,10 @@ import {
   SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ViewDefinitionProps,
   ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
-import { Point3d, Range3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
+import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import {
-  ElementNotFoundError,
-  type IModelReadAPI,
-  type IModelReadIpcAPI,
-  MaxTextureSizeNotGreaterThanZeroError,
-  MeshesNotFoundError,
-  type QueryArgs,
-  Texture as TextureIModelRead,
-  TextureMapping,
-  TextureNotFoundError,
-  TextureOptions,
+  ElementNotFoundError, type IModelReadAPI, type IModelReadIpcAPI, MaxTextureSizeNotGreaterThanZeroError, MeshesNotFoundError, type QueryArgs, Texture as TextureIModelRead, TextureMapping,
+  TextureNotFoundError, TextureOptions,
 } from "@itwin/imodelread-common";
 import { IpcIModelRead } from "@itwin/imodelread-client-ipc";
 import { BriefcaseConnection } from "./BriefcaseConnection";
@@ -433,28 +425,27 @@ export abstract class IModelConnection extends IModel {
     if (!this.isOpen)
       return undefined;
 
-    if(!Id64.isValidId64(textureLoadProps.name)) {
+    if (!Id64.isValidId64(textureLoadProps.name))
       throw new Error("name property must be a valid Id64String");
-    }
 
-      const textureId = textureLoadProps.name;
-      const options: TextureOptions = textureLoadProps.maxTextureSize ? { maxTextureSize: textureLoadProps.maxTextureSize } : { maxTextureSize: undefined };
+    const textureId = textureLoadProps.name;
+    const options: TextureOptions = textureLoadProps.maxTextureSize ? { maxTextureSize: textureLoadProps.maxTextureSize } : { maxTextureSize: undefined };
 
-      let img: TextureIModelRead;
+    let img: TextureIModelRead;
 
-      try {
-        img = await this._iModelReadApi.getTexture(textureId, options);
-      } catch (error: unknown) {
-        if (error instanceof TextureNotFoundError) {
-          return undefined;
-        } else if (error instanceof MaxTextureSizeNotGreaterThanZeroError){
-          throw new Error("maxTextureSize property must be a positive number");
-        }
-
-        throw error;
+    try {
+      img = await this._iModelReadApi.getTexture(textureId, options);
+    } catch (error: unknown) {
+      if (error instanceof TextureNotFoundError) {
+        return undefined;
+      } else if (error instanceof MaxTextureSizeNotGreaterThanZeroError) {
+        throw new Error("maxTextureSize property must be a positive number");
       }
 
-      return TextureMapping.mapTextureIModelReadToRPC(img);
+      throw error;
+    }
+
+    return TextureMapping.mapTextureIModelReadToRPC(img);
   }
 
   /** Request element mass properties from the backend. */
