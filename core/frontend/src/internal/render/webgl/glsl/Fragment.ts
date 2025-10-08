@@ -57,18 +57,23 @@ const computePickBufferOutputs = `${multiplyAlpha}
   vec4 output1 = vec4(feature_id_i) / 255.0;
   float linearDepth = computeLinearDepth(v_eyeSpace.z);
   vec4 output2 = vec4(renderOrder * 0.0625, encodeDepthRgb(linearDepth)); // near=1, far=0
+  
+  // ###TODO
+  vec4 output3 = vec4(0.0);
 `;
 
 const computeAltPickBufferOutputs = `${multiplyAlpha}
   vec4 output0 = baseColor;
   vec4 output1 = vec4(0.0);
   vec4 output2 = vec4(0.0);
+  vec4 output3 = vec4(0.0);
 `;
 
 const assignPickBufferOutputsMRT = `
   FragColor0 = output0;
   FragColor1 = output1;
   FragColor2 = output2;
+  FragColor3 = output3;
 `;
 
 const reassignFeatureId = "  output1 = overrideFeatureId(output1);";
@@ -102,7 +107,7 @@ export function addPickBufferOutputs(frag: FragmentShaderBuilder): void {
   }
 
   addRenderPass(frag);
-  frag.addDrawBuffersExtension(3);
+  frag.addDrawBuffersExtension(4);
   frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMRT);
 }
 
@@ -118,7 +123,7 @@ export function addAltPickBufferOutputs(frag: FragmentShaderBuilder): void {
   }
 
   addRenderPass(frag);
-  frag.addDrawBuffersExtension(3);
+  frag.addDrawBuffersExtension(4);
   frag.set(FragmentShaderComponent.AssignFragData, prelude.source + assignPickBufferOutputsMRT);
 }
 
