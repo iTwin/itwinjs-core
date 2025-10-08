@@ -56,6 +56,50 @@ function collectMsBufferStatistics(msBuff: RenderBufferMultiSample | undefined, 
     stats.addTextureAttachment(msBuff.bytesUsed);
 }
 
+const msBufferKeys = [
+  "color", "featureId", "featureIdHidden", "depthAndOrder", "depthAndOrderHidden", "hilite", "volClassBlend",
+] as const;
+
+// multi-sample render buffers used when MSAA is enabled.
+class MsBuffers implements WebGLDisposable, RenderMemory.Consumer {
+  public color?: RenderBufferMultiSample;
+  public featureId?: RenderBufferMultiSample;
+  public featureIdHidden?: RenderBufferMultiSample;
+  public depthAndOrder?: RenderBufferMultiSample;
+  public depthAndOrderHidden?: RenderBufferMultiSample;
+  public hilite?: RenderBufferMultiSample;
+  public volClassBlend?: RenderBufferMultiSample;
+
+  public init(width: number, height: number, numSamples: number): boolean {
+    for (const key of msBufferKeys) {
+      const buf = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
+      if (!buf) {
+        return false;
+      }
+
+      this[key] = buf;
+    }
+
+    return true;
+  }
+
+  public get isDisposed(): boolean {
+    return msBufferKeys.every((key) => this[key] === undefined);
+  }
+
+  public [Symbol.dispose](): void {
+    for (const key of msBufferKeys) {
+      this[key] = dispose(this[key]);
+    }
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    for (const key of msBufferKeys) {
+      collectMsBufferStatistics(this[key], stats);
+    }
+  }
+}
+
 // Maintains the textures used by a SceneCompositor. The textures are reallocated when the dimensions of the viewport change.
 class Textures implements WebGLDisposable, RenderMemory.Consumer {
   public accumulation?: TextureHandle;
