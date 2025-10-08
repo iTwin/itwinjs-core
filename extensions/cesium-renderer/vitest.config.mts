@@ -5,7 +5,7 @@ export default defineConfig({
   },
   test: {
     dir: "src",
-    include: ["**/CesiumSystem.test.ts"],
+    // include: ["**/<insert-file-name-here>.test.ts"],
     browser: {
       provider: "playwright",
       enabled: true,
