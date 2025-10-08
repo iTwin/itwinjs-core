@@ -56,22 +56,32 @@ function collectMsBufferStatistics(msBuff: RenderBufferMultiSample | undefined, 
     stats.addTextureAttachment(msBuff.bytesUsed);
 }
 
-const msBufferKeys = [
-  "color", "featureId", "featureIdHidden", "depthAndOrder", "depthAndOrderHidden", "hilite", "volClassBlend",
+// buffers that must always be defined when MSAA is used.
+const defaultMsBufferKeys = [
+  "_color", "_featureId", "_featureIdHidden", "_depthAndOrder", "_depthAndOrderHidden", "_hilite",
 ] as const;
+
+const allMsBufferKeys = [...defaultMsBufferKeys, "volClassBlend"] as const;
 
 // multi-sample render buffers used when MSAA is enabled.
 class MsBuffers implements WebGLDisposable, RenderMemory.Consumer {
-  public color?: RenderBufferMultiSample;
-  public featureId?: RenderBufferMultiSample;
-  public featureIdHidden?: RenderBufferMultiSample;
-  public depthAndOrder?: RenderBufferMultiSample;
-  public depthAndOrderHidden?: RenderBufferMultiSample;
-  public hilite?: RenderBufferMultiSample;
+  private _color?: RenderBufferMultiSample;
+  private _featureId?: RenderBufferMultiSample;
+  private _featureIdHidden?: RenderBufferMultiSample;
+  private _depthAndOrder?: RenderBufferMultiSample;
+  private _depthAndOrderHidden?: RenderBufferMultiSample;
+  private _hilite?: RenderBufferMultiSample;
   public volClassBlend?: RenderBufferMultiSample;
 
-  public init(width: number, height: number, numSamples: number): boolean {
-    for (const key of msBufferKeys) {
+  public get color(): RenderBufferMultiSample { return this._color!; }
+  public get featureId(): RenderBufferMultiSample { return this._featureId!; }
+  public get featureIdHidden(): RenderBufferMultiSample { return this._featureIdHidden!; }
+  public get depthAndOrder(): RenderBufferMultiSample { return this._depthAndOrder!; }
+  public get depthAndOrderHidden(): RenderBufferMultiSample { return this._depthAndOrderHidden!; };
+  public get hilite(): RenderBufferMultiSample { return this._hilite!; }
+
+  private init(width: number, height: number, numSamples: number): boolean {
+    for (const key of defaultMsBufferKeys) {
       const buf = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
       if (!buf) {
         return false;
@@ -83,22 +93,34 @@ class MsBuffers implements WebGLDisposable, RenderMemory.Consumer {
     return true;
   }
 
+  public static create(width: number, height: number, numSamples: number): MsBuffers | undefined {
+    const buffers = new MsBuffers();
+    return buffers.init(width, height, numSamples) ? buffers : undefined;
+  }
+
   public get isDisposed(): boolean {
-    return msBufferKeys.every((key) => this[key] === undefined);
+    return allMsBufferKeys.every((key) => this[key] === undefined);
   }
 
   public [Symbol.dispose](): void {
-    for (const key of msBufferKeys) {
+    for (const key of allMsBufferKeys) {
       this[key] = dispose(this[key]);
     }
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    for (const key of msBufferKeys) {
+    for (const key of allMsBufferKeys) {
       collectMsBufferStatistics(this[key], stats);
     }
   }
 }
+
+// textures that must always be defined.
+const requiredTextureKeys = [
+  "accumulation", "revealage", "color", "featureId", "depthAndOrder", "hilite",
+] as const;
+
+const allTextureKeys = [...requiredTextureKeys, "volClassBlend", "depthAndOrderHidden", "occlusion", "occlusionBlur"] as const;
 
 // Maintains the textures used by a SceneCompositor. The textures are reallocated when the dimensions of the viewport change.
 class Textures implements WebGLDisposable, RenderMemory.Consumer {
@@ -112,72 +134,24 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
   public occlusion?: TextureHandle;
   public occlusionBlur?: TextureHandle;
   public volClassBlend?: TextureHandle;
-  public colorMsBuff?: RenderBufferMultiSample;
-  public featureIdMsBuff?: RenderBufferMultiSample;
-  public featureIdMsBuffHidden?: RenderBufferMultiSample;
-  public depthAndOrderMsBuff?: RenderBufferMultiSample;
-  public depthAndOrderMsBuffHidden?: RenderBufferMultiSample;
-  public hiliteMsBuff?: RenderBufferMultiSample;
-  public volClassBlendMsBuff?: RenderBufferMultiSample;
+  public msBuffers?: MsBuffers;
 
   public get isDisposed(): boolean {
-    return undefined === this.accumulation
-      && undefined === this.revealage
-      && undefined === this.color
-      && undefined === this.featureId
-      && undefined === this.depthAndOrder
-      && undefined === this.depthAndOrderHidden
-      && undefined === this.hilite
-      && undefined === this.occlusion
-      && undefined === this.occlusionBlur
-      && undefined === this.volClassBlend
-      && undefined === this.colorMsBuff
-      && undefined === this.featureIdMsBuff
-      && undefined === this.featureIdMsBuffHidden
-      && undefined === this.depthAndOrderMsBuff
-      && undefined === this.depthAndOrderMsBuffHidden
-      && undefined === this.hiliteMsBuff
-      && undefined === this.volClassBlendMsBuff;
+    return undefined === this.msBuffers && allTextureKeys.every((key) => undefined === this[key]);
   }
 
   public [Symbol.dispose]() {
-    this.accumulation = dispose(this.accumulation);
-    this.revealage = dispose(this.revealage);
-    this.color = dispose(this.color);
-    this.featureId = dispose(this.featureId);
-    this.depthAndOrder = dispose(this.depthAndOrder);
-    this.depthAndOrderHidden = dispose(this.depthAndOrderHidden);
-    this.hilite = dispose(this.hilite);
-    this.occlusion = dispose(this.occlusion);
-    this.occlusionBlur = dispose(this.occlusionBlur);
-    this.colorMsBuff = dispose(this.colorMsBuff);
-    this.featureIdMsBuff = dispose(this.featureIdMsBuff);
-    this.featureIdMsBuffHidden = dispose(this.featureIdMsBuffHidden);
-    this.depthAndOrderMsBuff = dispose(this.depthAndOrderMsBuff);
-    this.depthAndOrderMsBuffHidden = dispose(this.depthAndOrderMsBuffHidden);
-    this.hiliteMsBuff = dispose(this.hiliteMsBuff);
-    this.volClassBlend = dispose(this.volClassBlend);
-    this.volClassBlendMsBuff = dispose(this.volClassBlendMsBuff);
+    for (const key of allTextureKeys) {
+      this[key] = dispose(this[key]);
+    }
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    collectTextureStatistics(this.accumulation, stats);
-    collectTextureStatistics(this.revealage, stats);
-    collectTextureStatistics(this.color, stats);
-    collectTextureStatistics(this.featureId, stats);
-    collectTextureStatistics(this.depthAndOrder, stats);
-    collectTextureStatistics(this.depthAndOrderHidden, stats);
-    collectTextureStatistics(this.hilite, stats);
-    collectTextureStatistics(this.occlusion, stats);
-    collectTextureStatistics(this.occlusionBlur, stats);
-    collectTextureStatistics(this.volClassBlend, stats);
-    collectMsBufferStatistics(this.colorMsBuff, stats);
-    collectMsBufferStatistics(this.featureIdMsBuff, stats);
-    collectMsBufferStatistics(this.featureIdMsBuffHidden, stats);
-    collectMsBufferStatistics(this.depthAndOrderMsBuff, stats);
-    collectMsBufferStatistics(this.depthAndOrderMsBuffHidden, stats);
-    collectMsBufferStatistics(this.hiliteMsBuff, stats);
-    collectMsBufferStatistics(this.volClassBlendMsBuff, stats);
+    for (const key of allTextureKeys) {
+      collectTextureStatistics(this[key], stats);
+    }
+
+    this.msBuffers?.collectStatistics(stats);
   }
 
   public init(width: number, height: number, numSamples: number): boolean {
@@ -211,13 +185,7 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
     this.featureId = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
     this.depthAndOrder = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
 
-    let rVal = undefined !== this.accumulation
-      && undefined !== this.revealage
-      && undefined !== this.color
-      && undefined !== this.featureId
-      && undefined !== this.depthAndOrder
-      && undefined !== this.hilite;
-
+    let rVal = requiredTextureKeys.every((key) => undefined !== this[key]);
     if (rVal && numSamples > 1) {
       rVal = this.enableMultiSampling(width, height, numSamples);
     }
@@ -250,39 +218,29 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
     this.volClassBlend = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
     let rVal = undefined !== this.volClassBlend;
     if (rVal && undefined !== numSamples && numSamples > 1) {
-      this.volClassBlendMsBuff = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
-      rVal = undefined !== this.volClassBlendMsBuff;
+      assert(undefined !== this.msBuffers);
+      rVal = undefined !== (this.msBuffers.volClassBlend = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples));
     }
+
     return rVal;
   }
 
   public disableVolumeClassifier(): void {
     this.volClassBlend = dispose(this.volClassBlend);
-    this.volClassBlendMsBuff = dispose(this.volClassBlendMsBuff);
+    if (this.msBuffers) {
+      this.msBuffers.volClassBlend = dispose(this.msBuffers.volClassBlend);
+    }
   }
 
   public enableMultiSampling(width: number, height: number, numSamples: number): boolean {
-    this.colorMsBuff = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
-    this.featureIdMsBuff = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
-    this.featureIdMsBuffHidden = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
-    this.depthAndOrderMsBuff = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
-    this.depthAndOrderMsBuffHidden = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
-    this.hiliteMsBuff = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
-    return undefined !== this.colorMsBuff
-      && undefined !== this.featureIdMsBuff
-      && undefined !== this.featureIdMsBuffHidden
-      && undefined !== this.depthAndOrderMsBuff
-      && undefined !== this.depthAndOrderMsBuffHidden
-      && undefined !== this.hiliteMsBuff;
+    assert(undefined === this.msBuffers);
+    this.msBuffers = MsBuffers.create(width, height, numSamples);
+    return undefined !== this.msBuffers;
   }
 
   public disableMultiSampling(): boolean {
-    this.colorMsBuff = dispose(this.colorMsBuff);
-    this.featureIdMsBuff = dispose(this.featureIdMsBuff);
-    this.featureIdMsBuffHidden = dispose(this.featureIdMsBuffHidden);
-    this.depthAndOrderMsBuff = dispose(this.depthAndOrderMsBuff);
-    this.depthAndOrderMsBuffHidden = dispose(this.depthAndOrderMsBuffHidden);
-    this.hiliteMsBuff = dispose(this.hiliteMsBuff);
+    assert(undefined !== this.msBuffers);
+    this.msBuffers = dispose(this.msBuffers);
     return true;
   }
 }
@@ -354,9 +312,9 @@ class FrameBuffers implements WebGLDisposable {
       this.opaqueColor = FrameBuffer.create([boundColor], depth);
       this.opaqueAndCompositeColor = FrameBuffer.create([textures.color], depth);
     } else {
-      assert(undefined !== textures.colorMsBuff);
-      this.opaqueColor = FrameBuffer.create([boundColor], depth, [textures.colorMsBuff], [GL.MultiSampling.Filter.Linear], depthMS);
-      this.opaqueAndCompositeColor = FrameBuffer.create([textures.color], depth, [textures.colorMsBuff], [GL.MultiSampling.Filter.Linear], depthMS);
+      assert(undefined !== textures.msBuffers);
+      this.opaqueColor = FrameBuffer.create([boundColor], depth, [textures.msBuffers.color], [GL.MultiSampling.Filter.Linear], depthMS);
+      this.opaqueAndCompositeColor = FrameBuffer.create([textures.color], depth, [textures.msBuffers.color], [GL.MultiSampling.Filter.Linear], depthMS);
     }
     return undefined !== this.opaqueColor
       && undefined !== this.opaqueAndCompositeColor;
@@ -379,14 +337,9 @@ class FrameBuffers implements WebGLDisposable {
       colorAndPick[0] = textures.color;
       this.opaqueAndCompositeAll = FrameBuffer.create(colorAndPick, depth);
     } else {
-      assert(
-        undefined !== textures.colorMsBuff &&
-        undefined !== textures.featureIdMsBuff &&
-        undefined !== textures.featureIdMsBuffHidden &&
-        undefined !== textures.depthAndOrderMsBuff &&
-        undefined !== textures.depthAndOrderMsBuffHidden
-      );
-      const colorAndPickMsBuffs = [textures.colorMsBuff, textures.featureIdMsBuff, textures.depthAndOrderMsBuff];
+      const bufs = textures.msBuffers;
+      assert(undefined !== bufs);
+      const colorAndPickMsBuffs = [bufs.color, bufs.featureId, bufs.depthAndOrder];
       const colorAndPickFilters = [GL.MultiSampling.Filter.Linear, GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest];
       this.opaqueAll = FrameBuffer.create(colorAndPick, depth, colorAndPickMsBuffs, colorAndPickFilters, depthMs);
       colorAndPick[0] = textures.color;
@@ -414,14 +367,15 @@ class FrameBuffers implements WebGLDisposable {
       // so instead use a special depthAndOrderHidden texture just for this purpose.
       // The featureId texture is not needed for hidden edges, so the accumulation texture can be used for it if we don't blit from the multisample bufffer into it.
       assert(undefined !== textures.color && undefined !== textures.accumulation && undefined !== textures.depthAndOrderHidden);
-      assert(undefined !== textures.colorMsBuff && undefined !== textures.featureIdMsBuffHidden && undefined !== textures.depthAndOrderMsBuffHidden);
+      const bufs = textures.msBuffers;
+      assert(undefined !== bufs);
       const colorAndPick = [textures.color, textures.accumulation, textures.depthAndOrderHidden];
-      const colorAndPickMsBuffs = [textures.colorMsBuff, textures.featureIdMsBuffHidden, textures.depthAndOrderMsBuffHidden];
+      const colorAndPickMsBuffs = [bufs.color, bufs.featureIdHidden, bufs.depthAndOrderHidden];
       const colorAndPickFilters = [GL.MultiSampling.Filter.Linear, GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest];
       this.opaqueAndCompositeAllHidden = FrameBuffer.create(colorAndPick, depth, colorAndPickMsBuffs, colorAndPickFilters, depthMs);
       // We will also need a frame buffer for copying the real pick data buffers into these hidden edge pick data buffers.
       const pingPong = [textures.accumulation, textures.depthAndOrderHidden];
-      const pingPongMSBuffs = [textures.featureIdMsBuffHidden, textures.depthAndOrderMsBuffHidden];
+      const pingPongMSBuffs = [bufs.featureIdHidden, bufs.depthAndOrderHidden];
       const pingPongFilters = [GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest];
       this.pingPongMS = FrameBuffer.create(pingPong, depth, pingPongMSBuffs, pingPongFilters, depthMs);
       rVal = rVal && undefined !== this.opaqueAndCompositeAllHidden && (undefined === depthMs || undefined !== this.pingPongMS);
@@ -450,13 +404,13 @@ class FrameBuffers implements WebGLDisposable {
         throw new Error("Volume classifier blend texture is not defined.");
       }
       if (undefined !== depthMS) { // if multisampling use the multisampled depth everywhere
-        if (undefined === textures.volClassBlendMsBuff) {
+        if (undefined === textures.msBuffers?.volClassBlend) {
           throw new Error("Volume classifier blend multisample buffer is not defined.");
         }
         this.stencilSet = FrameBuffer.create([], depth, [], [], depthMS);
         this.altZOnly = FrameBuffer.create([], volClassDepth, [], [], volClassDepthMS);
-        this.volClassCreateBlend = FrameBuffer.create([textures.volClassBlend], depth, [textures.volClassBlendMsBuff], [GL.MultiSampling.Filter.Nearest], depthMS);
-        this.volClassCreateBlendAltZ = FrameBuffer.create([textures.volClassBlend], volClassDepth, [textures.volClassBlendMsBuff], [GL.MultiSampling.Filter.Nearest], volClassDepthMS);
+        this.volClassCreateBlend = FrameBuffer.create([textures.volClassBlend], depth, [textures.msBuffers.volClassBlend], [GL.MultiSampling.Filter.Nearest], depthMS);
+        this.volClassCreateBlendAltZ = FrameBuffer.create([textures.volClassBlend], volClassDepth, [textures.msBuffers.volClassBlend], [GL.MultiSampling.Filter.Nearest], volClassDepthMS);
       } else if (undefined !== volClassDepth) {
         this.stencilSet = FrameBuffer.create([], depth);
         this.altZOnly = FrameBuffer.create([], volClassDepth);
@@ -1142,12 +1096,12 @@ class Compositor extends SceneCompositor {
           let drawColBufs;
           if (undefined !== this._fbos.edlDrawCol)
             drawColBufs = this._fbos.edlDrawCol.getColorTargets(useMsBuffers, 0);
-          if (undefined === this._fbos.edlDrawCol || this._textures.hilite !== drawColBufs?.tex || this._textures.hiliteMsBuff !== drawColBufs.msBuf) {
+          if (undefined === this._fbos.edlDrawCol || this._textures.hilite !== drawColBufs?.tex || this._textures.msBuffers?.hilite !== drawColBufs.msBuf) {
             this._fbos.edlDrawCol = dispose(this._fbos.edlDrawCol);
             const filters = [GL.MultiSampling.Filter.Linear];
             if (useMsBuffers)
               this._fbos.edlDrawCol = FrameBuffer.create([this._textures.hilite], this._depth,
-                useMsBuffers && this._textures.hiliteMsBuff ? [this._textures.hiliteMsBuff] : undefined, filters, this._depthMS);
+                useMsBuffers && this._textures.msBuffers?.hilite ? [this._textures.msBuffers?.hilite] : undefined, filters, this._depthMS);
             else
               this._fbos.edlDrawCol = FrameBuffer.create([this._textures.hilite], this._depth);
           }
