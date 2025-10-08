@@ -207,9 +207,3 @@ describe("LineStringPrimitiveConverter", () => {
   });
 });
 
-
-
-
-
-
-
