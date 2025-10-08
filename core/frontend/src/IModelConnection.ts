@@ -240,7 +240,7 @@ export abstract class IModelConnection extends IModel {
     this.hilited = new HiliteSet(this);
 
     this.tiles = new Tiles(this);
-    this.geoServices = GeoServices.createForIModel(this);
+    this.geoServices = GeoServices.createForIModel(this, this._iModelReadApi);
 
     this.hilited.onModelSubCategoryModeChanged.addListener(() => {
       IModelApp.viewManager.onSelectionSetChanged(this);
@@ -769,6 +769,8 @@ export class BlankConnection extends IModelConnection {
       getConnectionProps: async () => props,
       getTooltipMessage: async () => ({ lines: [] }),
       getElementMeshes: () => { throw new IModelError(IModelStatus.BadRequest, "getElementMeshes not available for blank connection") },
+      convertGeoCoordinatesToIModelCoordinates: () => { throw new IModelError(IModelStatus.BadRequest, "convertGeoCoordinatesToIModelCoordinates not available for blank connection") },
+      convertIModelCoordinatesToGeoCoordinates: () => { throw new IModelError(IModelStatus.BadRequest, "convertIModelCoordinatesToGeoCoordinates not available for blank connection") },
       getTexture: () => { throw new IModelError(IModelStatus.BadRequest, "getTexture not available for blank connection") },
       runQuery: () => new ECSqlReader({ execute: async () => ECSqlReader.createDbResponseFromRows([], DbResponseStatus.Done)}, ""),
     }
