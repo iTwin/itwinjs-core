@@ -308,18 +308,22 @@ export class CurrentInputState {
     if (!state.isDown)
       return false;
 
-    if ((Date.now() - state.downTime) <= ToolSettings.startDragDelay.milliseconds)
+
+    if ((Date.now() - state.downTime) <= ToolSettings.startDragDelay.milliseconds) {
       return false;
+    }
 
     const vp = this.viewport;
-    if (undefined === vp)
+    if (undefined === vp) {
       return false;
+    }
 
     const viewPt = vp.worldToView(state.downRawPt);
     const deltaX = Math.abs(this._viewPoint.x - viewPt.x);
     const deltaY = Math.abs(this._viewPoint.y - viewPt.y);
 
-    return ((deltaX + deltaY) > vp.pixelsFromInches(ToolSettings.startDragDistanceInches));
+    const test = ((deltaX + deltaY) > vp.pixelsFromInches(ToolSettings.startDragDistanceInches));
+    return test;
   }
 }
 
@@ -547,8 +551,6 @@ export class ToolAdmin {
   }
 
   private async onMouseButton(event: ToolEvent, isDown: boolean): Promise<any> {
-    console.log("ToolAdmin onMouseButton", isDown, event.ev.type);
-
     const ev = event.ev as MouseEvent;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const vp = event.vp!;
@@ -801,14 +803,16 @@ export class ToolAdmin {
   /** Process the next event in the event queue, if any. */
   private async processNextEvent(): Promise<any> {
     const event = ToolAdmin.getNextEvent(); // pull first event from the queue
-    console.log("ToolAdmin processNextEvent", event);
     if (undefined === event)
       return; // nothing in queue
 
     switch (event.ev.type) {
       case "mousedown": return this.onMouseButton(event, true);
       case "mouseup": return this.onMouseButton(event, false);
+      case "pointerdown": return this.onMouseButton(event, true);
+      case "pointerup": return this.onMouseButton(event, false);
       case "mousemove": return this.onMouseMove(event);
+      case "pointermove": return this.onMouseMove(event);
       case "mouseover": return this.onMouseEnter(event);
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       case "mouseout": return this.onMouseLeave(event.vp!);
@@ -1414,8 +1418,9 @@ export class ToolAdmin {
     current.onButtonUp(button);
     current.toEvent(ev, true);
 
-    if (wasDragging)
+    if (wasDragging) {
       return this.sendEndDragEvent(ev);
+    }
 
     current.changeButtonToDownPoint(ev);
     return this.sendButtonEvent(ev);

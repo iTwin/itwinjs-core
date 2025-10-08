@@ -25,21 +25,28 @@ export class EventController {
 
     // Put events  on the parentDiv to allows us to stopPropagation of events to the view canvas when they are meant for a sibling of view canvas (markup canvas, for example).
     this.addDomListeners(["mousedown", "mouseup", "mousemove", "mouseover", "mouseout", "wheel", "touchstart", "touchend", "touchcancel", "touchmove"], element);
-    if (element.parentElement) {
-      this.addDomListeners(["mousedown", "mouseup"], element.parentElement);
-    }
+    this.addDomListeners(["pointerup", "pointerdown", "pointermove"], element);
+    // if (element.parentElement) {
+    //   this.addDomListeners(["mousedown", "mouseup"], element.parentElement);
+    // }
 
     // const el = document.getElementsByClassName("cesium-credit-lightbox-overlay")[0] as HTMLElement;
     // // el.style.zIndex = "-1";
     // // el.remove();
     // this.addDomListeners(["mousedown", "mouseup"], el);
 
-    document.addEventListener("mousedown", (event) => {
-      console.log("mouse down test", event);
-    });
-    document.addEventListener("mousemove", (event) => {
-      console.log("mouse MOVE test", event);
-    });
+    // document.addEventListener("mousedown", (event) => {
+    //   event.preventDefault();
+    //   console.log("mouse DOWN test", event);
+    // });
+    // document.addEventListener("mousemove", (event) => {
+    //   event.preventDefault();
+    //   console.log("mouse MOVE test", event);
+    // });
+    // document.addEventListener("dblclick", (event) => {
+    //   event.preventDefault();
+    //   console.log("dblclick", event);
+    // });
 
     element.oncontextmenu = element.onselectstart = () => false;
   }
@@ -61,7 +68,7 @@ export class EventController {
       ev.preventDefault();
       ToolAdmin.addEvent(ev, vp);
     };
-    console.log("EventController.addDomListeners: ", domType);
+    // console.log("EventController.addDomListeners: ", domType);
     domType.forEach((type) => {
       element.addEventListener(type, listener, false);
       this._removals.push(() => element.removeEventListener(type, listener, false));

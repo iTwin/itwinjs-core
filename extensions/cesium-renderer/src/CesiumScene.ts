@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Code, EcefLocation, IModel, ViewDefinition3dProps } from "@itwin/core-common";
-import { IModelApp, IModelConnection, SpatialViewState, ViewState3d } from "@itwin/core-frontend";
-import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion, PerspectiveFrustum, PerspectiveOffCenterFrustum, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceCameraController, ScreenSpaceEventHandler } from "@cesium/engine";
+import { Code, EcefLocation, ViewDefinition3dProps } from "@itwin/core-common";
+import { IModelApp, SpatialViewState } from "@itwin/core-frontend";
+import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion, PerspectiveFrustum, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler } from "@cesium/engine";
 import { createCesiumCameraProps } from "./CesiumCamera.js";
-import { Angle, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Angle, YawPitchRollAngles } from "@itwin/core-geometry";
 
 const ecefLocProps = {
   origin: [
@@ -159,8 +159,6 @@ export class CesiumScene {
     this._scene.renderError.addEventListener(onRenderError);
 
     IModelApp.viewManager.onBeginRender.addListener(() => {
-      // console.log("cesium scene render");
-
       this.resize();
 
       // ###TODO figure out how to handle the need to call `initializeFrame` in Cesium.
@@ -270,7 +268,6 @@ export class CesiumScene {
     };
 
     const cesiumCameraProps = createCesiumCameraProps({ viewDefinition: cameraOnView, ecefLoc });
-    console.log("cesiumCameraProps:", cesiumCameraProps);
 
     this._scene.camera.frustum = new PerspectiveFrustum({
       fov: cesiumCameraProps.frustum.fov,
@@ -286,7 +283,6 @@ export class CesiumScene {
       },
     });
 
-    console.log("Camera:", this._scene.camera);
 
     const vp = IModelApp.viewManager.selectedView;
     if (vp) {
@@ -308,7 +304,7 @@ export class CesiumScene {
         vp.applyViewState(newView);
       }
 
-      console.log("New itwinjs view:", vp.view);
+      // console.log("New itwinjs view:", vp.view);
     }
   }
 }
