@@ -943,10 +943,10 @@ export class CompositeGeometry extends TexturedViewportQuadGeometry {
  * @internal
  */
 export class CopyPickBufferGeometry extends TexturedViewportQuadGeometry {
-  public static createGeometry(featureId: WebGLTexture, depthAndOrder: WebGLTexture) {
+  public static createGeometry(featureId: WebGLTexture, depthAndOrder: WebGLTexture, elementIndex: WebGLTexture) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined !== params) {
-      return new CopyPickBufferGeometry(params, [featureId, depthAndOrder]);
+      return new CopyPickBufferGeometry(params, [featureId, depthAndOrder, elementIndex]);
     } else {
       return undefined;
     }

@@ -121,10 +121,10 @@ class MsBuffers implements WebGLDisposable, RenderMemory.Consumer {
 
 // textures that must always be defined.
 const requiredTextureKeys = [
-  "accumulation", "revealage", "color", "featureId", "depthAndOrder", "hilite", "elementIndex", "elementIndexHidden",
+  "accumulation", "revealage", "color", "featureId", "depthAndOrder", "hilite", "elementIndex",
 ] as const;
 
-const allTextureKeys = [...requiredTextureKeys, "volClassBlend", "depthAndOrderHidden", "occlusion", "occlusionBlur"] as const;
+const allTextureKeys = [...requiredTextureKeys, "volClassBlend", "depthAndOrderHidden", "elementIndexHidden", "occlusion", "occlusionBlur"] as const;
 
 // Maintains the textures used by a SceneCompositor. The textures are reallocated when the dimensions of the viewport change.
 class Textures implements WebGLDisposable, RenderMemory.Consumer {
@@ -190,6 +190,7 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
 
     this.featureId = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
     this.depthAndOrder = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    this.elementIndex = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
 
     let rVal = requiredTextureKeys.every((key) => undefined !== this[key]);
     if (rVal && numSamples > 1) {
@@ -207,7 +208,8 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
     if (numSamples > 1) {
       // If multisampling then we need a texture for storing depth and order for hidden edges.
       this.depthAndOrderHidden = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-      rVal = rVal && undefined !== this.depthAndOrderHidden;
+      this.elementIndexHidden = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+      rVal = rVal && undefined !== this.elementIndexHidden;
     }
     return rVal;
   }
@@ -217,6 +219,7 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
     this.occlusion = dispose(this.occlusion);
     this.occlusionBlur = dispose(this.occlusionBlur);
     this.depthAndOrderHidden = dispose(this.depthAndOrderHidden);
+    this.elementIndexHidden = dispose(this.elementIndexHidden);
   }
 
   public enableVolumeClassifier(width: number, height: number, numSamples: number): boolean {
@@ -333,10 +336,11 @@ class FrameBuffers implements WebGLDisposable {
       undefined !== textures.color &&
       undefined !== textures.featureId &&
       undefined !== textures.depthAndOrder &&
+      undefined !== textures.elementIndex &&
       undefined !== textures.accumulation &&
       undefined !== textures.revealage
     );
-    const colorAndPick = [boundColor, textures.featureId, textures.depthAndOrder];
+    const colorAndPick = [boundColor, textures.featureId, textures.depthAndOrder, textures.elementIndex];
 
     if (undefined === depthMs) {
       this.opaqueAll = FrameBuffer.create(colorAndPick, depth);
@@ -345,7 +349,7 @@ class FrameBuffers implements WebGLDisposable {
     } else {
       const bufs = textures.msBuffers;
       assert(undefined !== bufs);
-      const colorAndPickMsBuffs = [bufs.color, bufs.featureId, bufs.depthAndOrder];
+      const colorAndPickMsBuffs = [bufs.color, bufs.featureId, bufs.depthAndOrder, bufs.elementIndex];
       const colorAndPickFilters = [GL.MultiSampling.Filter.Linear, GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest];
       this.opaqueAll = FrameBuffer.create(colorAndPick, depth, colorAndPickMsBuffs, colorAndPickFilters, depthMs);
       colorAndPick[0] = textures.color;
@@ -372,16 +376,16 @@ class FrameBuffers implements WebGLDisposable {
       // If multisampling then we cannot use the revealage texture for depthAndOrder for the hidden edges since it is of the wrong type for blitting,
       // so instead use a special depthAndOrderHidden texture just for this purpose.
       // The featureId texture is not needed for hidden edges, so the accumulation texture can be used for it if we don't blit from the multisample bufffer into it.
-      assert(undefined !== textures.color && undefined !== textures.accumulation && undefined !== textures.depthAndOrderHidden);
+      assert(undefined !== textures.color && undefined !== textures.accumulation && undefined !== textures.depthAndOrderHidden && undefined !== textures.elementIndexHidden);
       const bufs = textures.msBuffers;
       assert(undefined !== bufs);
-      const colorAndPick = [textures.color, textures.accumulation, textures.depthAndOrderHidden];
-      const colorAndPickMsBuffs = [bufs.color, bufs.featureIdHidden, bufs.depthAndOrderHidden];
+      const colorAndPick = [textures.color, textures.accumulation, textures.depthAndOrderHidden, textures.elementIndexHidden];
+      const colorAndPickMsBuffs = [bufs.color, bufs.featureIdHidden, bufs.depthAndOrderHidden, bufs.elementIndexHidden];
       const colorAndPickFilters = [GL.MultiSampling.Filter.Linear, GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest];
       this.opaqueAndCompositeAllHidden = FrameBuffer.create(colorAndPick, depth, colorAndPickMsBuffs, colorAndPickFilters, depthMs);
       // We will also need a frame buffer for copying the real pick data buffers into these hidden edge pick data buffers.
-      const pingPong = [textures.accumulation, textures.depthAndOrderHidden];
-      const pingPongMSBuffs = [bufs.featureIdHidden, bufs.depthAndOrderHidden];
+      const pingPong = [textures.accumulation, textures.depthAndOrderHidden, textures.elementIndexHidden];
+      const pingPongMSBuffs = [bufs.featureIdHidden, bufs.depthAndOrderHidden, bufs.elementIndexHidden];
       const pingPongFilters = [GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest];
       this.pingPongMS = FrameBuffer.create(pingPong, depth, pingPongMSBuffs, pingPongFilters, depthMs);
       rVal = rVal && undefined !== this.opaqueAndCompositeAllHidden && (undefined === depthMs || undefined !== this.pingPongMS);
@@ -559,7 +563,11 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
 
     assert(undefined === this.copyPickBuffers);
 
-    this.copyPickBuffers = CopyPickBufferGeometry.createGeometry(expectDefined(textures.featureId?.getHandle()), expectDefined(textures.depthAndOrder?.getHandle()));
+    this.copyPickBuffers = CopyPickBufferGeometry.createGeometry(
+      expectDefined(textures.featureId?.getHandle()),
+      expectDefined(textures.depthAndOrder?.getHandle()),
+      expectDefined(textures.elementIndex?.getHandle()),
+    );
     this.clearTranslucent = ViewportQuadGeometry.create(TechniqueId.OITClearTranslucent);
     this.clearPickAndColor = ViewportQuadGeometry.create(TechniqueId.ClearPickAndColor);
 
