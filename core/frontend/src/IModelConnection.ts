@@ -30,6 +30,7 @@ import {
   Texture as TextureIModelRead,
   TextureMapping,
   TextureNotFoundError,
+  TextureOptions,
 } from "@itwin/imodelread-common";
 import { IpcIModelRead } from "@itwin/imodelread-client-ipc";
 import { BriefcaseConnection } from "./BriefcaseConnection";
@@ -429,20 +430,20 @@ export abstract class IModelConnection extends IModel {
    * @public
    */
   public async queryTextureData(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined> {
+    if (!this.isOpen)
+      return undefined;
+
     if(!Id64.isValidId64(textureLoadProps.name)) {
       throw new Error("name property must be a valid Id64String");
     }
-    if(textureLoadProps.maxTextureSize !== undefined && textureLoadProps.maxTextureSize <= 0) {
-      throw new Error("maxTextureSize property must be a positive number");
-    }
 
-    if (this.isOpen) {
+      const textureId = textureLoadProps.name;
+      const options: TextureOptions = textureLoadProps.maxTextureSize ? { maxTextureSize: textureLoadProps.maxTextureSize } : { maxTextureSize: undefined };
+
       let img: TextureIModelRead;
 
       try {
-        const textureId = textureLoadProps.name;
-        const textureOptions = textureLoadProps.maxTextureSize ? { maxTextureSize: textureLoadProps.maxTextureSize } : undefined;
-        img = await this._iModelReadApi.getTexture(textureId, textureOptions);
+        img = await this._iModelReadApi.getTexture(textureId, options);
       } catch (error: unknown) {
         if (error instanceof TextureNotFoundError) {
           return undefined;
@@ -454,8 +455,6 @@ export abstract class IModelConnection extends IModel {
       }
 
       return TextureMapping.mapTextureIModelReadToRPC(img);
-    }
-    return undefined;
   }
 
   /** Request element mass properties from the backend. */
