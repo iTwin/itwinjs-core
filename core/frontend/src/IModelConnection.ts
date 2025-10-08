@@ -433,6 +433,9 @@ export abstract class IModelConnection extends IModel {
     if(!Id64.isValidId64(textureLoadProps.name)) {
       throw new Error("name property must be a valid Id64String");
     }
+    if(textureLoadProps.maxTextureSize !== undefined && textureLoadProps.maxTextureSize <= 0) {
+      throw new Error("maxTextureSize property must be a positive number");
+    }
 
     if (this.isOpen) {
       let img: TextureDataIModelRead;
