@@ -152,7 +152,7 @@ You can use these environment variables to alter the default behavior of various
   * If defined, shader source code will be preserved as internal strings, useful for debugging purposes.
 * IMJS_TILETREE_EXPIRATION_SECONDS
   * If defined, the number of seconds after a TileTree has been most recently drawn before purging it.
-* IMJS_TILE_EXPIRATION_SECONDS
+* IMJS_TILE_EXPIRATION_SECONDSF
   * If defined, the number of seconds after a Tile has been most recently used before pruning it.
 * IMJS_DISABLE_LOG_Z
   * If defined, the logarithmic depth buffer will not be used.
@@ -166,6 +166,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, do not allow visible or hidden edges to be displayed, and also do not create any UI related to them.
 * IMJS_USE_WEBGL2
   * Unless set to "0" or "false", the system will attempt to create a WebGL2 context before possibly falling back to WebGL1.
+* IMJS_USE_CESIUM
+  * If defined, display-test-app will use a prototype CesiumJS-based renderer from the cesium-renderer package for rendering graphics on the screen.
 * IMJS_DISABLE_UNIFORM_ERRORS
   * If defined, do not throw an error for missing shader uniforms, and call Logger instead.
 * IMJS_MAX_TILES_TO_SKIP
