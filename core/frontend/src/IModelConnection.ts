@@ -19,8 +19,20 @@ import {
   SnapshotIModelRpcInterface, SubCategoryAppearance, SubCategoryResultRow, TextureData, TextureLoadProps, ViewDefinitionProps,
   ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
-import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
-import { ElementNotFoundError, type IModelReadAPI, type IModelReadIpcAPI, MeshesNotFoundError, QueryArgs } from "@itwin/imodelread-common";
+import { Point3d, Range3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
+import {
+  ElementNotFoundError,
+  type IModelReadAPI,
+  type IModelReadIpcAPI,
+  mapTextureDataIModelReadToRPC,
+  mapTextureLoadPropsRPCToIModelRead,
+  MaxTextureSizeNotAPositiveNumberError,
+  MeshesNotFoundError,
+  type QueryArgs,
+  TextureData as TextureDataIModelRead,
+  TextureNameInvalidId64StringError,
+  TextureNotFoundError,
+} from "@itwin/imodelread-common";
 import { IpcIModelRead } from "@itwin/imodelread-client-ipc";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";
@@ -420,9 +432,23 @@ export abstract class IModelConnection extends IModel {
    */
   public async queryTextureData(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined> {
     if (this.isOpen) {
-      const rpcClient = IModelReadRpcInterface.getClientForRouting(this.routingContext.token);
-      const img = rpcClient.queryTextureData(this.getRpcProps(), textureLoadProps);
-      return img;
+      let img: TextureDataIModelRead;
+
+      try {
+        img = await this._iModelReadApi.getTextureData(mapTextureLoadPropsRPCToIModelRead(textureLoadProps));
+      } catch (error: unknown) {
+        if (error instanceof TextureNotFoundError) {
+          return undefined;
+        } else if (error instanceof TextureNameInvalidId64StringError) {
+          throw new Error("name property must be a valid Id64String");
+        } else if (error instanceof MaxTextureSizeNotAPositiveNumberError){
+          throw new Error("maxTextureSize property must be a positive number");
+        }
+
+        throw error;
+      }
+
+      return mapTextureDataIModelReadToRPC(img);
     }
     return undefined;
   }
@@ -739,6 +765,7 @@ export class BlankConnection extends IModelConnection {
       getConnectionProps: async () => props,
       getTooltipMessage: async () => ({ lines: [] }),
       getElementMeshes: () => { throw new IModelError(IModelStatus.BadRequest, "getElementMeshes not available for blank connection") },
+      getTextureData: () => { throw new IModelError(IModelStatus.BadRequest, "getElementMeshes not available for blank connection") },
       runQuery: () => new ECSqlReader({ execute: async () => ECSqlReader.createDbResponseFromRows([], DbResponseStatus.Done)}, ""),
     }
 
