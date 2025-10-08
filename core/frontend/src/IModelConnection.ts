@@ -24,12 +24,12 @@ import {
   ElementNotFoundError,
   type IModelReadAPI,
   type IModelReadIpcAPI,
-  mapTextureDataIModelReadToRPC,
+  mapTextureIModelReadToRPC,
   mapTextureLoadPropsRPCToIModelRead,
   MaxTextureSizeNotGreaterThanZeroError,
   MeshesNotFoundError,
   type QueryArgs,
-  TextureData as TextureDataIModelRead,
+  Texture as TextureIModelRead,
   TextureNotFoundError,
 } from "@itwin/imodelread-common";
 import { IpcIModelRead } from "@itwin/imodelread-client-ipc";
@@ -438,10 +438,10 @@ export abstract class IModelConnection extends IModel {
     }
 
     if (this.isOpen) {
-      let img: TextureDataIModelRead;
+      let img: TextureIModelRead;
 
       try {
-        img = await this._iModelReadApi.getTextureData(mapTextureLoadPropsRPCToIModelRead(textureLoadProps));
+        img = await this._iModelReadApi.getTexture(mapTextureLoadPropsRPCToIModelRead(textureLoadProps));
       } catch (error: unknown) {
         if (error instanceof TextureNotFoundError) {
           return undefined;
@@ -452,7 +452,7 @@ export abstract class IModelConnection extends IModel {
         throw error;
       }
 
-      return mapTextureDataIModelReadToRPC(img);
+      return mapTextureIModelReadToRPC(img);
     }
     return undefined;
   }
