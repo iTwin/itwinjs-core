@@ -27,17 +27,12 @@ describe("createElementIndexLUT", () => {
     await IModelApp.shutdown();
   });
 
-  it("allocates indices as non-zero multiples of 0x100", () => {
+  it("allocates consecutive indices beginning at 1", () => {
     const ft = makeFeatureTable(["0x1", "0x2", "0x345", "0x4"]);
     const bytes = createElementIndexLUT(ft, 100, true)!.handle.dataBytes!;
-    expect(bytes.length).to.equal(16);
-    for (let i = 0; i < 16; i += 4) {
-      expect(bytes[i]).to.equal(0);
-    }
-
     const indices = new Uint32Array(bytes.buffer);
     for (let i = 0; i < 4; i++) {
-      expect(indices[i]).to.equal(0x100 * (i + 1));
+      expect(indices[i]).to.equal(i + 1);
     }
   });
 
@@ -56,7 +51,7 @@ describe("createElementIndexLUT", () => {
     ]);
 
     const indices = new Uint32Array(createElementIndexLUT(ft, 100, true)!.handle.dataBytes!.buffer);
-    const expectedIndices = [ 1, 1, 1, 2, 3, 2, 1, 4, 1, 3 ].map((index) => 0x100 * index);
+    const expectedIndices = [ 1, 1, 1, 2, 3, 2, 1, 4, 1, 3 ];
     expect(indices.length).to.equal(expectedIndices.length);
     for (let i = 0; i < indices.length; i++) {
       expect(indices[i]).to.equal(expectedIndices[i]);
