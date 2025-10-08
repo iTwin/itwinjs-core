@@ -430,7 +430,7 @@ export abstract class IModelConnection extends IModel {
    * @public
    */
   public async queryTextureData(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined> {
-    if(!Id64.isValid(textureLoadProps.name)) {
+    if(!Id64.isValidId64(textureLoadProps.name)) {
       throw new Error("name property must be a valid Id64String");
     }
 
