@@ -751,25 +751,25 @@ describe("rebase changes & stashing api", function (this: Suite) {
     await runQueryParallel(`SELECT $ FROM BisCore.Element`, 10);
 
     const e1 = await testIModel.insertElement(b1);
-    const eProps1 = await findElement(e1);
-    chai.expect(eProps1?.prop1).to.be.undefined;
+    chai.expect(await findElement(e1)).to.be.undefined;
     b1.saveChanges("insert element");
 
-    const eProp2 = await findElement(e1);
-    chai.expect(eProp2).to.exist;
-
+    const e1Props = await findElement(e1);
+    chai.expect(e1Props).to.exist;
     await runQueryParallel(`SELECT $ FROM BisCore.Element`, 10);
     const e2 = await testIModel.insertElement(b1);
+    chai.expect(await findElement(e2)).to.be.undefined;
     b1.saveChanges("insert second element");
 
-    const eProp3 = await findElement(e2);
-    chai.expect(eProp3).to.exist;
+    const e2Props = await findElement(e2);
+    chai.expect(e2Props).to.exist;
 
     await runQueryParallel(`SELECT $ FROM BisCore.Element`, 10);
     const e3 = await testIModel.insertElement(b1);
+    chai.expect(await findElement(e3)).to.be.undefined;
     b1.saveChanges("insert third element");
 
-    const eProp4 = await findElement(e3);
-    chai.expect(eProp4).to.exist;
+    const e3Props = await findElement(e3);
+    chai.expect(e3Props).to.exist;
   });
 });
