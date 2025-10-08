@@ -58,7 +58,7 @@ function collectMsBufferStatistics(msBuff: RenderBufferMultiSample | undefined, 
 
 // buffers that must always be defined when MSAA is used.
 const defaultMsBufferKeys = [
-  "_color", "_featureId", "_featureIdHidden", "_depthAndOrder", "_depthAndOrderHidden", "_hilite",
+  "_color", "_featureId", "_featureIdHidden", "_depthAndOrder", "_depthAndOrderHidden", "_hilite", "_elementIndex", "_elementIndexHidden",
 ] as const;
 
 const allMsBufferKeys = [...defaultMsBufferKeys, "volClassBlend"] as const;
@@ -71,6 +71,8 @@ class MsBuffers implements WebGLDisposable, RenderMemory.Consumer {
   private _depthAndOrder?: RenderBufferMultiSample;
   private _depthAndOrderHidden?: RenderBufferMultiSample;
   private _hilite?: RenderBufferMultiSample;
+  private _elementIndex?: RenderBufferMultiSample;
+  private _elementIndexHidden?: RenderBufferMultiSample;
   public volClassBlend?: RenderBufferMultiSample;
 
   public get color(): RenderBufferMultiSample { return this._color!; }
@@ -79,6 +81,8 @@ class MsBuffers implements WebGLDisposable, RenderMemory.Consumer {
   public get depthAndOrder(): RenderBufferMultiSample { return this._depthAndOrder!; }
   public get depthAndOrderHidden(): RenderBufferMultiSample { return this._depthAndOrderHidden!; };
   public get hilite(): RenderBufferMultiSample { return this._hilite!; }
+  public get elementIndex() { return this._elementIndex!; }
+  public get elementIndexHidden() { return this._elementIndexHidden! }
 
   private init(width: number, height: number, numSamples: number): boolean {
     for (const key of defaultMsBufferKeys) {
@@ -117,7 +121,7 @@ class MsBuffers implements WebGLDisposable, RenderMemory.Consumer {
 
 // textures that must always be defined.
 const requiredTextureKeys = [
-  "accumulation", "revealage", "color", "featureId", "depthAndOrder", "hilite",
+  "accumulation", "revealage", "color", "featureId", "depthAndOrder", "hilite", "elementIndex", "elementIndexHidden",
 ] as const;
 
 const allTextureKeys = [...requiredTextureKeys, "volClassBlend", "depthAndOrderHidden", "occlusion", "occlusionBlur"] as const;
@@ -130,6 +134,8 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
   public featureId?: TextureHandle;
   public depthAndOrder?: TextureHandle;
   public depthAndOrderHidden?: TextureHandle; // only used if AO and multisampling
+  public elementIndex?: TextureHandle;
+  public elementIndexHidden?: TextureHandle;
   public hilite?: TextureHandle;
   public occlusion?: TextureHandle;
   public occlusionBlur?: TextureHandle;
