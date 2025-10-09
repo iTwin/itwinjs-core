@@ -958,22 +958,56 @@ export class AccuDrawViewportUI extends AccuDraw {
         };
         simplifiedInput: boolean;
         mathOperations: boolean;
-        fieldSize: number;
-        rowSpacingFactor: number;
-        columnSpacingFactor: number;
-        borderRadius: string;
-        backgroundColor: string;
-        text: {
-            fontFamily: string;
-            fontSize: string;
+        field: {
+            size: number;
+            height: string;
+            border: {
+                width: string;
+                style: string;
+                radius: string;
+            };
+            text: {
+                fontFamily: string;
+                fontSize: string;
+            };
+        };
+        input: {
             color: string;
-            focusColor: string;
+            padding: string;
+            focused: {
+                backgroundColor: string;
+                innerStroke: string;
+                border: {
+                    color: string;
+                };
+            };
+            unfocused: {
+                backgroundColor: string;
+                border: {
+                    color: string;
+                };
+            };
         };
         button: {
-            pressedColor: string;
+            padding: string;
+            unlocked: {
+                color: string;
+                backgroundColor: string;
+                border: {
+                    color: string;
+                };
+            };
+            locked: {
+                color: string;
+                backgroundColor: string;
+                border: {
+                    color: string;
+                };
+            };
+        };
+        spacing: {
+            gap: string;
             margin: string;
-            outlineWidth: string;
-            shadow: string;
         };
     };
     protected currentControlRect(vp: ScreenViewport): ViewRect | undefined;
@@ -5850,6 +5884,7 @@ export interface MapLayerAccessTokenParams {
     mapLayerUrl: URL;
     // (undocumented)
     password?: string;
+    portal?: string;
     // (undocumented)
     userName?: string;
 }
