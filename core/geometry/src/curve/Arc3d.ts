@@ -1530,7 +1530,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   /**
    * Compute the intersection of the tangent vectors at two fractional parameters along the arc.
    * * In the civil design context of filleting a line string, the default values yield a fillet arc's "point of
-   * intersection", aka _PI_ point. This point is the line string vertex that was rounded by the fillet arc placed
+   * intersection", aka _PI_. This point is the line string vertex that was rounded by the fillet arc placed
    * between the vertex's adjacent segments. In other words, the original line string vertices can be recovered
    * from the fillets with this method.
    * @param f0 fractional parameter of one tangent. Default is 0 (the arc's start tangent).
