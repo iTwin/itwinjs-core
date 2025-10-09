@@ -334,20 +334,6 @@ describe.only("Field evaluation", () => {
   }
 
   describe("getProperty", () => {
-    it("evaluates ECView property", () => {
-      const sql = "SELECT ECInstanceId, StringProp FROM Fields.TestElementStringProp";
-      let stringProp: string | undefined;
-      let ecinstanceId: string | undefined;
-      imodel.withPreparedStatement(sql, (stmt) => {
-        expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
-        ecinstanceId = stmt.getValue(0).getId();
-        stringProp = stmt.getValue(1).getString();
-      });
-
-      expect(ecinstanceId).to.equal(sourceElementId);
-      expect(stringProp).to.equal("abc");
-    });
-
     function expectValue(expected: any, propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String, deletedDependency = false): void {
       expect(evaluateField(propertyPath, propertyHost, deletedDependency)?.value).to.deep.equal(expected);
     }
@@ -375,6 +361,10 @@ describe.only("Field evaluation", () => {
       expectValue("a", { propertyName: "strings", accessors: [-3] }, sourceElementId);
       expectValue("b", { propertyName: "strings", accessors: [-2] }, sourceElementId);
       expectValue(`"name": "c"`, { propertyName: "strings", accessors: [-1] }, sourceElementId);
+    });
+
+    it("supports properties of EC views", () => {
+      expectValue("abc", { propertyName: "stringProp" }, { schemaName: "Fields", className: "TestElementStringProp", elementId: sourceElementId });
     });
 
     it("returns undefined if the dependency was deleted", () => {
@@ -853,6 +843,42 @@ describe.only("Field evaluation", () => {
       source.update();
       imodel.saveChanges();
       expectText("12.5", targetId);
+    });
+
+    it("updates EC view fields when the element changes if the EC view queries the element directly", () => {
+      const sourceId = insertTestElement();
+      const block = TextBlock.create();
+      block.appendRun(createField({
+        elementId: sourceId, schemaName: "Fields", className: "TestElementStringProp",
+      }, "cached-content", "StringProp"));
+
+      const targetId = insertAnnotationElement(block);
+      imodel.saveChanges();
+
+      const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
+      expect(target.getAnnotation()).not.to.be.undefined;
+
+      expectText("abc", targetId);
+
+      let source = imodel.elements.getElement<TestElement>(sourceId);
+      source.jsonProperties.stringProp = "zyx";
+      source.update();
+
+      expectText("abc", targetId);
+
+      imodel.saveChanges();
+      expectText("zyx", targetId);
+
+      source = imodel.elements.getElement<TestElement>(sourceId);
+      expect(source.jsonProperties.stringProp).to.equal("zyx");
+
+      expectText("zyx", targetId);
+
+      imodel.elements.deleteElement(sourceId);
+      expectText("zyx", targetId);
+
+      imodel.saveChanges();
+      expectText(FieldRun.invalidContentIndicator, targetId);
     });
 
     describe("remapFields", () => {
