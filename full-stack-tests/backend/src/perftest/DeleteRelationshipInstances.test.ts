@@ -7,7 +7,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { Id64String } from "@itwin/core-bentley";
 import { Code, GeometricElementProps, IModel, QueryBinder, RelationshipProps, SubCategoryAppearance } from "@itwin/core-common";
-import { IModelDb, SpatialCategory, IModelHost, IModelJsFs, StandaloneDb } from "@itwin/core-backend";
+import { IModelDb, IModelHost, IModelJsFs, SpatialCategory, StandaloneDb } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 import { Reporter } from "@itwin/perf-tools";
 
@@ -67,8 +67,8 @@ describe("PerformanceTest: Delete Multiple Relationship Instances", () => {
 
       const relationshipProps: RelationshipProps = {
         classFullName: relationshipClass,
-        sourceId: sourceId,
-        targetId: targetId,
+        sourceId,
+        targetId,
       };
 
       const relationshipId = iModel.relationships.insertInstance(relationshipProps);
@@ -256,56 +256,56 @@ describe("PerformanceTest: Delete Multiple Relationship Instances", () => {
         // Test 1: Individual deleteInstance() calls
         {
           const testFileName1 = IModelTestUtils.prepareOutputFile("deleteInstances", "iModel1.bim");
-          const iModel1 = StandaloneDb.createEmpty(testFileName1, { rootSubject: { name: "Delete Instance Test" } });
+          const deleteInstanceiModel = StandaloneDb.createEmpty(testFileName1, { rootSubject: { name: "Delete Instance Test" } });
 
-          const relationships = setupTestData(iModel1, relCount);
+          const relationships = setupTestData(deleteInstanceiModel, relCount);
 
           // Verify relationships exist before deletion
-          assert.equal(relCount, await getRelationshipCount(iModel1, "BisCore.ElementGroupsMembers"));
+          assert.equal(relCount, await getRelationshipCount(deleteInstanceiModel, "BisCore.ElementGroupsMembers"));
 
           // Measure performance of individual deleteInstance() calls
           const startTime = process.hrtime.bigint();
 
           relationships.forEach((relationship) => {
-            iModel1.relationships.deleteInstance(relationship);
+            deleteInstanceiModel.relationships.deleteInstance(relationship);
           });
 
           const endTime = process.hrtime.bigint();
           deleteInstanceResult = Number(endTime - startTime);
 
-          iModel1.saveChanges();
+          deleteInstanceiModel.saveChanges();
 
           // Verify all relationships were deleted
-          assert.equal(0, await getRelationshipCount(iModel1, "BisCore.ElementGroupsMembers"), "All relationships should be deleted");
+          assert.equal(0, await getRelationshipCount(deleteInstanceiModel, "BisCore.ElementGroupsMembers"), "All relationships should be deleted");
 
-          iModel1.close();
+          deleteInstanceiModel.close();
           IModelJsFs.unlinkSync(testFileName1);
         }
 
         // Test 2: Single deleteInstances() call
         {
           const testFileName2 = IModelTestUtils.prepareOutputFile("deleteInstances", "iModel2.bim");
-          const iModel2 = StandaloneDb.createEmpty(testFileName2, { rootSubject: { name: "Delete Instances Test" } });
+          const deleteInstancesiModel = StandaloneDb.createEmpty(testFileName2, { rootSubject: { name: "Delete Instances Test" } });
 
-          const relationships = setupTestData(iModel2, relCount);
+          const relationships = setupTestData(deleteInstancesiModel, relCount);
 
           // Verify relationships exist before deletion
-          assert.equal(relCount, await getRelationshipCount(iModel2, "BisCore.ElementGroupsMembers"));
+          assert.equal(relCount, await getRelationshipCount(deleteInstancesiModel, "BisCore.ElementGroupsMembers"));
 
           // Measure performance of deleteInstances() call
           const startTime = process.hrtime.bigint();
 
-          iModel2.relationships.deleteInstances(relationships);
+          deleteInstancesiModel.relationships.deleteInstances(relationships);
 
           const endTime = process.hrtime.bigint();
           deleteInstancesResult = Number(endTime - startTime);
 
-          iModel2.saveChanges();
+          deleteInstancesiModel.saveChanges();
 
           // Verify all relationships were deleted
-          assert.equal(0, await getRelationshipCount(iModel2, "BisCore.ElementGroupsMembers"), "All relationships should be deleted");
+          assert.equal(0, await getRelationshipCount(deleteInstancesiModel, "BisCore.ElementGroupsMembers"), "All relationships should be deleted");
 
-          iModel2.close();
+          deleteInstancesiModel.close();
           IModelJsFs.unlinkSync(testFileName2);
         }
 
@@ -329,63 +329,63 @@ describe("PerformanceTest: Delete Multiple Relationship Instances", () => {
         // Test 1: Individual deleteInstance() calls
         {
           const testFileName1 = IModelTestUtils.prepareOutputFile("deleteInstances()", "iModel1.bim");
-          const iModel1 = StandaloneDb.createEmpty(testFileName1, { rootSubject: { name: "Delete Instance Test" } });
+          const deleteInstanceiModel = StandaloneDb.createEmpty(testFileName1, { rootSubject: { name: "Delete Instance Test" } });
 
-          const relationships = setupTestData(iModel1, relCount, true);
+          const relationships = setupTestData(deleteInstanceiModel, relCount, true);
 
           // Verify relationships exist before deletion
-          assert.isTrue(await getRelationshipCount(iModel1, "BisCore.ElementGroupsMembers") >= Math.floor(relCount / 3));
-          assert.isTrue(await getRelationshipCount(iModel1, "BisCore.ElementDrivesElement") >= Math.floor(relCount / 3));
-          assert.isTrue(await getRelationshipCount(iModel1, "BisCore.ElementRefersToDocuments") >= Math.floor(relCount / 3));
+          assert.isTrue(await getRelationshipCount(deleteInstanceiModel, "BisCore.ElementGroupsMembers") >= Math.floor(relCount / 3));
+          assert.isTrue(await getRelationshipCount(deleteInstanceiModel, "BisCore.ElementDrivesElement") >= Math.floor(relCount / 3));
+          assert.isTrue(await getRelationshipCount(deleteInstanceiModel, "BisCore.ElementRefersToDocuments") >= Math.floor(relCount / 3));
 
           // Measure performance of individual deleteInstance() calls
           const startTime = process.hrtime.bigint();
           relationships.forEach((relationship) => {
-            iModel1.relationships.deleteInstance(relationship);
+            deleteInstanceiModel.relationships.deleteInstance(relationship);
           });
 
           const endTime = process.hrtime.bigint();
           deleteInstanceResult = Number(endTime - startTime);
 
-          iModel1.saveChanges();
+          deleteInstanceiModel.saveChanges();
 
           // Verify all relationships were deleted
-          assert.equal(0, await getRelationshipCount(iModel1, "BisCore.ElementGroupsMembers"), "All ElementGroupsMembers relationships should be deleted");
-          assert.equal(0, await getRelationshipCount(iModel1, "BisCore.ElementDrivesElement"), "All ElementDrivesElement relationships should be deleted");
-          assert.equal(0, await getRelationshipCount(iModel1, "BisCore.ElementRefersToDocuments"), "All ElementRefersToDocuments relationships should be deleted");
+          assert.equal(0, await getRelationshipCount(deleteInstanceiModel, "BisCore.ElementGroupsMembers"), "All ElementGroupsMembers relationships should be deleted");
+          assert.equal(0, await getRelationshipCount(deleteInstanceiModel, "BisCore.ElementDrivesElement"), "All ElementDrivesElement relationships should be deleted");
+          assert.equal(0, await getRelationshipCount(deleteInstanceiModel, "BisCore.ElementRefersToDocuments"), "All ElementRefersToDocuments relationships should be deleted");
 
-          iModel1.close();
+          deleteInstanceiModel.close();
           IModelJsFs.unlinkSync(testFileName1);
         }
 
         // Test 2: deleteInstances() call
         {
           const testFileName2 = IModelTestUtils.prepareOutputFile("deleteInstances()", "iModel2.bim");
-          const iModel2 = StandaloneDb.createEmpty(testFileName2, { rootSubject: { name: "Delete Instances Test" } });
+          const deleteInstancesiModel = StandaloneDb.createEmpty(testFileName2, { rootSubject: { name: "Delete Instances Test" } });
 
-          const relationships = setupTestData(iModel2, relCount, true);
+          const relationships = setupTestData(deleteInstancesiModel, relCount, true);
 
           // Verify relationships exist before deletion
-          assert.isTrue(await getRelationshipCount(iModel2, "BisCore.ElementGroupsMembers") >= Math.floor(relCount / 3));
-          assert.isTrue(await getRelationshipCount(iModel2, "BisCore.ElementDrivesElement") >= Math.floor(relCount / 3));
-          assert.isTrue(await getRelationshipCount(iModel2, "BisCore.ElementRefersToDocuments") >= Math.floor(relCount / 3));
+          assert.isTrue(await getRelationshipCount(deleteInstancesiModel, "BisCore.ElementGroupsMembers") >= Math.floor(relCount / 3));
+          assert.isTrue(await getRelationshipCount(deleteInstancesiModel, "BisCore.ElementDrivesElement") >= Math.floor(relCount / 3));
+          assert.isTrue(await getRelationshipCount(deleteInstancesiModel, "BisCore.ElementRefersToDocuments") >= Math.floor(relCount / 3));
 
           // Measure performance of deleteInstances() call
           const startTime = process.hrtime.bigint();
 
-          iModel2.relationships.deleteInstances(relationships);
+          deleteInstancesiModel.relationships.deleteInstances(relationships);
 
           const endTime = process.hrtime.bigint();
           deleteInstancesResult = Number(endTime - startTime);
 
-          iModel2.saveChanges();
+          deleteInstancesiModel.saveChanges();
 
           // Verify all relationships were deleted
-          assert.equal(0, await getRelationshipCount(iModel2, "BisCore.ElementGroupsMembers"), "All ElementGroupsMembers relationships should be deleted");
-          assert.equal(0, await getRelationshipCount(iModel2, "BisCore.ElementDrivesElement"), "All ElementDrivesElement relationships should be deleted");
-          assert.equal(0, await getRelationshipCount(iModel2, "BisCore.ElementRefersToDocuments"), "All ElementRefersToDocuments relationships should be deleted");
+          assert.equal(0, await getRelationshipCount(deleteInstancesiModel, "BisCore.ElementGroupsMembers"), "All ElementGroupsMembers relationships should be deleted");
+          assert.equal(0, await getRelationshipCount(deleteInstancesiModel, "BisCore.ElementDrivesElement"), "All ElementDrivesElement relationships should be deleted");
+          assert.equal(0, await getRelationshipCount(deleteInstancesiModel, "BisCore.ElementRefersToDocuments"), "All ElementRefersToDocuments relationships should be deleted");
 
-          iModel2.close();
+          deleteInstancesiModel.close();
           IModelJsFs.unlinkSync(testFileName2);
         }
 
