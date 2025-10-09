@@ -180,8 +180,14 @@ jobs:
           - bash: node common/scripts/install-run-rush.js lint-deprecation
             displayName: rush lint-deprecation
 
+          # We need to rebuild after running the lint-deprecation rule to ensure that files like ruleset.schema.json in presentation-common are updated correctly.
+          - bash: node common/scripts/install-run-rush.js build
+            displayName: rush build
+            env:
+              VERSION_BUMP: "true"
+
           - bash: |
-              if git diff --quiet; then
+              if git diff --exit-code; then
                 echo "No deprecation comment changes were made"
               else
                 echo "Deprecation comment changes were made"
