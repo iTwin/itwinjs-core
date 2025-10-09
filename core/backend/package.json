@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "module": "lib/esm/core-backend.js",

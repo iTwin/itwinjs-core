@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "description": "Frontend of iModel.js Presentation library",
   "license": "MIT",
   "repository": {
