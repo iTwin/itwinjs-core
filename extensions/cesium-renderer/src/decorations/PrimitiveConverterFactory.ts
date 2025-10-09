@@ -12,6 +12,7 @@ import { PolyfacePrimitiveConverter } from "./PolyfacePrimitiveConverter.js";
 import { SolidPrimitivePrimitiveConverter } from "./SolidPrimitivePrimitiveConverter.js";
 import { CoordinateBuilder } from "./CoordinateBuilder.js";
 import { CoordinateStorage } from "./CoordinateStorage.js";
+import { setPrimitiveConverterLookup } from "./PrimitiveConverterRegistry.js";
 
 type RegisteredPrimitiveConverter =
   | PointPrimitiveConverter
@@ -28,7 +29,8 @@ export class PrimitiveConverterFactory {
   private static _converters = new Map<string, RegisteredPrimitiveConverter>();
 
   static {
-    this.registerDefaultConverters();
+    PrimitiveConverterFactory.registerDefaultConverters();
+    setPrimitiveConverterLookup((geometryType) => PrimitiveConverterFactory.getConverter(geometryType));
   }
 
   private static registerDefaultConverters(): void {

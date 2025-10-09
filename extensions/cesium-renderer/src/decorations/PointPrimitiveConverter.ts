@@ -94,10 +94,10 @@ export class PointPrimitiveConverter extends PrimitiveConverter<PointStringCoord
     originalPointStrings?: PointStringCoordinates[],
     type?: string
   ): PointPrimitive | undefined {
-    if (!graphic?.geometries || !graphic.geometryType)
-      return undefined;
+    const geometries = graphic?.geometries ?? [];
+    const geometryType = graphic?.geometryType ?? this.primitiveType;
 
-    return this.createPointFromGeometry(graphic.geometries, graphic.geometryType, pointId, _index, pointCollection, iModel, originalPointStrings, type, graphic);
+    return this.createPointFromGeometry(geometries, geometryType, pointId, _index, pointCollection, iModel, originalPointStrings, type, graphic);
   }
 
   private createPointFromGeometry(
@@ -111,9 +111,6 @@ export class PointPrimitiveConverter extends PrimitiveConverter<PointStringCoord
     type?: string,
     graphic?: RenderGraphicWithCoordinates
   ): PointPrimitive | undefined {
-    if (geometries.length === 0)
-      return undefined;
-
     let entityPosition: Cartesian3 | undefined;
     let realSpatialPoint: Point3d | undefined;
 
@@ -134,6 +131,22 @@ export class PointPrimitiveConverter extends PrimitiveConverter<PointStringCoord
     }
 
     if (!realSpatialPoint) {
+      const entry = this.findEntryByType(graphic, this.primitiveType);
+      if (entry) {
+        const firstPoint = entry.points[0];
+        if (firstPoint) {
+          if (entry.type === "pointstring2d") {
+            realSpatialPoint = Point3d.create(firstPoint.x, firstPoint.y, entry.zDepth);
+          } else if ("z" in firstPoint && typeof firstPoint.z === "number") {
+            realSpatialPoint = Point3d.create(firstPoint.x, firstPoint.y, firstPoint.z);
+          } else {
+            realSpatialPoint = Point3d.create(firstPoint.x, firstPoint.y, 0);
+          }
+        }
+      }
+    }
+
+    if (!realSpatialPoint && geometries.length > 0) {
       const geometry = geometries[0];
       const hasCoordinateData = (g: RenderGeometry): g is RenderGeometry & { coordinateData: CoordinateTuple[] } =>
         typeof g === 'object' && g !== undefined && Array.isArray((g as { coordinateData?: CoordinateTuple[] }).coordinateData);
