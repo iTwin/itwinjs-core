@@ -92,10 +92,9 @@ export class ShapePrimitiveConverter extends PrimitiveConverter<ShapeCoordinates
     type?: string,
     originalGraphic?: RenderGraphicWithCoordinates
   ): Primitive | undefined {
-    if (!graphic?.geometries || !graphic.geometryType) {
-      return undefined;
-    }
-    return this.createPolygonFromGeometry(graphic.geometries, graphic.geometryType, shapeId, index, primitivesCollection, iModel, originalShapes, type, originalGraphic ?? graphic);
+    const geometries = graphic?.geometries ?? [];
+    const geometryType = graphic?.geometryType ?? this.primitiveType;
+    return this.createPolygonFromGeometry(geometries, geometryType, shapeId, index, primitivesCollection, iModel, originalShapes, type, originalGraphic ?? graphic);
   }
 
   private createPolygonFromGeometry(
@@ -109,9 +108,6 @@ export class ShapePrimitiveConverter extends PrimitiveConverter<ShapeCoordinates
     _type?: string,
     graphic?: RenderGraphicWithCoordinates
   ): Primitive | undefined {
-    if (geometries.length === 0)
-      return undefined;
-
     let positions: Cartesian3[] = [];
 
     if (this.primitiveType === 'shape2d') {

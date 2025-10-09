@@ -91,11 +91,9 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter<LineStringC
     originalLineStrings?: LineStringCoordinates[],
     type?: string
   ): Polyline | undefined {
-    if (!graphic?.geometries || !graphic.geometryType) {
-      return undefined;
-    }
-
-    return this.createPolylineFromGeometry(graphic.geometries, graphic.geometryType, lineId, index, polylineCollection, iModel, originalLineStrings, type, graphic);
+    const geometries = graphic?.geometries ?? [];
+    const geometryType = graphic?.geometryType ?? this.primitiveType;
+    return this.createPolylineFromGeometry(geometries, geometryType, lineId, index, polylineCollection, iModel, originalLineStrings, type, graphic);
   }
 
   private createPolylineFromGeometry(
@@ -109,10 +107,6 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter<LineStringC
     type?: string,
     graphic?: RenderGraphicWithCoordinates
   ): Polyline | undefined {
-    if (geometries.length === 0) {
-      return undefined;
-    }
-
     let positions: Cartesian3[] = [];
 
     if (this.primitiveType === 'linestring2d') {
@@ -141,6 +135,9 @@ export class LineStringPrimitiveConverter extends PrimitiveConverter<LineStringC
         positions = this.convertPointsToCartesian3(points, iModel);
       }
     }
+
+    if (positions.length === 0)
+      return undefined;
 
     const color = this.extractLineColorFromGraphic(graphic, this.primitiveType);
     if (!color)

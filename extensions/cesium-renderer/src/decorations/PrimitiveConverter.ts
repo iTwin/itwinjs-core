@@ -17,9 +17,9 @@ import {
 } from "@cesium/engine";
 import { ColorDef } from "@itwin/core-common";
 import { CesiumScene } from "../CesiumScene.js";
-import { PrimitiveConverterFactory } from "./PrimitiveConverterFactory.js";
 import { CesiumCoordinateConverter } from "./CesiumCoordinateConverter.js";
 import type { DecorationPrimitiveEntry } from "./DecorationTypes.js";
+import { getPrimitiveConverterLookup } from "./PrimitiveConverterRegistry.js";
 
 export interface RenderGraphicWithCoordinates extends RenderGraphic {
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -105,7 +105,10 @@ export abstract class PrimitiveConverter<TPrimitiveData = DecorationPrimitiveEnt
 
       const result = this.createPrimitiveFromGraphic(graphicWithCoords, primitiveId, index, collection, iModel, originalData, type);
 
-      if (result && this.isPrimitiveResult(result) && this.isPrimitiveCollection(collection))
+      if (!result)
+        return;
+
+      if (this.isPrimitiveResult(result) && this.isPrimitiveCollection(collection))
         collection.add(result);
     });
   }
@@ -168,6 +171,10 @@ export abstract class PrimitiveConverter<TPrimitiveData = DecorationPrimitiveEnt
   }
 
   private autoDispatchGraphics(graphics: GraphicList, type: string, scene: CesiumScene, iModel?: IModelConnection): void {
+    const lookup = getPrimitiveConverterLookup();
+    if (!lookup)
+      return;
+
     graphics.forEach((graphic) => {
       const graphicWithCoords = graphic as RenderGraphicWithCoordinates;
       const coordinateData = graphicWithCoords._coordinateData;
@@ -175,7 +182,7 @@ export abstract class PrimitiveConverter<TPrimitiveData = DecorationPrimitiveEnt
       if (coordinateData && Array.isArray(coordinateData)) {
         const data = coordinateData;
         data.forEach((primitive) => {
-          const converter = PrimitiveConverterFactory.getConverter(primitive.type);
+          const converter = lookup(primitive.type);
           if (converter)
             converter.convertDecorations([graphic], type, scene, iModel);
         });
