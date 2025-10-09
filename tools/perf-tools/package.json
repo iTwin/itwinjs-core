@@ -1,6 +1,6 @@
 {
   "name": "@itwin/perf-tools",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "description": "Tools for collecting and reporting performance data",
   "main": "lib/cjs/perf-tools.js",
   "typings": "lib/cjs/perf-tools",

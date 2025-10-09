@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-i18n",
-  "version": "5.2.0",
+  "version": "5.2.1",
   "description": "iTwin.js localization code",
   "main": "lib/cjs/core-i18n.js",
   "module": "lib/esm/core-i18n.js",
