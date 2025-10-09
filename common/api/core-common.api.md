@@ -11363,6 +11363,7 @@ export interface ViewFlagProps {
     ambientOcclusion?: boolean;
     backgroundMap?: boolean;
     clipVol?: boolean;
+    // @deprecated (undocumented)
     forceSurfaceDiscard?: boolean;
     grid?: boolean;
     hidEdges?: boolean;
@@ -11402,6 +11403,7 @@ export class ViewFlags {
     edgesRequired(): boolean;
     equals(other: Readonly<ViewFlagsProperties>): boolean;
     readonly fill: boolean;
+    // @deprecated (undocumented)
     readonly forceSurfaceDiscard: boolean;
     static fromJSON(json?: ViewFlagProps): ViewFlags;
     readonly grid: boolean;

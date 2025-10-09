@@ -101,12 +101,7 @@ export interface ViewFlagProps {
   thematicDisplay?: boolean;
   /** If true, overlay surfaces with wiremesh to reveal their triangulation. */
   wiremesh?: boolean;
-  /** Controls whether surface discard is always applied regardless of other ViewFlags.
-   * Surface shaders contain complicated logic to ensure that the edges of a surface always draw in front of the surface, and that planar surfaces sketched coincident with
-   * non-planar surfaces always draw in front of those non-planar surfaces.
-   * When this view flag is set to false (the default), then for 3d views if the render mode is wireframe (only edges are displayed) or smooth shader with visible edges turned off (only surfaces are displayed),
-   * that logic does not execute, potentially improving performance for no degradation in visual quality. In some scenarios - such as wireframe views containing many planar regions with interior fill, or smooth views containing many coincident planar and non-planar surfaces - enabling this view flag improves display quality by forcing that logic to execute.
-   */
+  /** @deprecated This flag no longer has any effect. */
   forceSurfaceDiscard?: boolean;
   /** Disables the "white-on-white reversal" employed by some CAD applications.
    * @see [[ViewFlags.whiteOnWhiteReversal]].
@@ -206,12 +201,7 @@ export class ViewFlags {
   public readonly thematicDisplay: boolean;
   /** If true, overlay surfaces with wiremesh to reveal their triangulation. */
   public readonly wiremesh: boolean;
-  /** Controls whether surface discard is always applied regardless of other ViewFlags.
-   * Surface shaders contain complicated logic to ensure that the edges of a surface always draw in front of the surface, and that planar surfaces sketched coincident with
-   * non-planar surfaces always draw in front of those non-planar surfaces.
-   * When this view flag is set to false (the default), then for 3d views if the render mode is wireframe (only edges are displayed) or smooth shader with visible edges turned off (only surfaces are displayed),
-   * that logic does not execute, potentially improving performance for no degradation in visual quality. In some scenarios - such as wireframe views containing many planar regions with interior fill, or smooth views containing many coincident planar and non-planar surfaces - enabling this view flag improves display quality by forcing that logic to execute.
-   */
+  /** @deprecated This flag no longer has any effect. */
   public readonly forceSurfaceDiscard: boolean;
   /** Whether to apply white-on-white reversal.
    * Some CAD applications use this to cause white geometry to be drawn as black if the view's background color is white.
@@ -251,6 +241,7 @@ export class ViewFlags {
     this.ambientOcclusion = flags?.ambientOcclusion ?? false;
     this.thematicDisplay = flags?.thematicDisplay ?? false;
     this.wiremesh = flags?.wiremesh ?? false;
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     this.forceSurfaceDiscard = flags?.forceSurfaceDiscard ?? false;
     this.whiteOnWhiteReversal = flags?.whiteOnWhiteReversal ?? true;
     this.lighting = flags?.lighting ?? false;
@@ -409,8 +400,12 @@ export class ViewFlags {
       out.thematicDisplay = true;
     if (this.wiremesh)
       out.wiremesh = true;
-    if (this.forceSurfaceDiscard)
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    if (this.forceSurfaceDiscard) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       out.forceSurfaceDiscard = true;
+    }
+
     if (!this.whiteOnWhiteReversal)
       out.noWhiteOnWhiteReversal = true;
 
@@ -445,6 +440,7 @@ export class ViewFlags {
       ambientOcclusion: this.ambientOcclusion,
       thematicDisplay: this.thematicDisplay,
       wiremesh: this.wiremesh,
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       forceSurfaceDiscard: this.forceSurfaceDiscard,
       noWhiteOnWhiteReversal: !this.whiteOnWhiteReversal,
     };
@@ -505,6 +501,7 @@ export class ViewFlags {
       ambientOcclusion: JsonUtils.asBool(json.ambientOcclusion),
       thematicDisplay: JsonUtils.asBool(json.thematicDisplay),
       wiremesh: JsonUtils.asBool(json.wiremesh),
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       forceSurfaceDiscard: JsonUtils.asBool(json.forceSurfaceDiscard),
       whiteOnWhiteReversal: !JsonUtils.asBool(json.noWhiteOnWhiteReversal),
     });
@@ -537,6 +534,7 @@ export class ViewFlags {
       && this.ambientOcclusion === other.ambientOcclusion
       && this.thematicDisplay === other.thematicDisplay
       && this.wiremesh === other.wiremesh
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       && this.forceSurfaceDiscard === other.forceSurfaceDiscard
       && this.whiteOnWhiteReversal === other.whiteOnWhiteReversal;
   }
