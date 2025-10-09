@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added deleteInstances to delete multiple relationship instances",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
