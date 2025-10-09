@@ -4,12 +4,13 @@ plugins {
 }
 
 android {
-    compileSdkVersion 34
+    namespace "com.bentley.imodeljs_test_app"
+    compileSdkVersion 35
 
     defaultConfig {
         applicationId "com.bentley.imodeljs_test_app"
         minSdkVersion 31
-        targetSdkVersion 34
+        targetSdkVersion 35
         versionCode 1
         versionName "1.0"
 
