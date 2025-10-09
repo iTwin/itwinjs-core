@@ -100,12 +100,8 @@ export class GrowableXYArray extends IndexedReadWriteXYCollection {
   /** If necessary, increase the capacity to a new pointCount. Current coordinates and point count (length) are unchanged. */
   public ensureCapacity(pointCapacity: number, applyGrowthFactor: boolean = true) {
     if (pointCapacity > this._xyCapacity) {
-      console.log(this._growthFactor);
-      console.log(pointCapacity);
       if (applyGrowthFactor)
-        pointCapacity *= this._growthFactor;
-      console.log(pointCapacity);
-      // pointCapacity = Math.trunc(pointCapacity * this._growthFactor);
+        pointCapacity = Math.trunc(pointCapacity * this._growthFactor);
       const prevData = this._data;
       if (this._data.buffer instanceof ArrayBuffer)
         this._data = new Float64Array(new ArrayBuffer(pointCapacity * 2 * this._data.BYTES_PER_ELEMENT));
