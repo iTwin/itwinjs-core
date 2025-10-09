@@ -76,7 +76,7 @@ function createTestElement(imodel: StandaloneDb, model: Id64String, category: Id
   return id;
 }
 
-describe("updateField", () => {
+describe.only("updateField", () => {
   const mockElementId = "0x1";
   const mockPath: FieldPropertyPath = {
     propertyName: "mockProperty",
@@ -182,6 +182,7 @@ const fieldsSchemaXml = `
 <?xml version="1.0" encoding="UTF-8"?>
 <ECSchema schemaName="Fields" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
   <ECSchemaReference name="BisCore" version="01.00.04" alias="bis"/>
+  <ECSchemaReference name='ECDbMap' version='02.00.04' alias='ecdbmap' />
 
   <ECEnumeration typeName="IntEnum" backingTypeName="int">
     <ECEnumerator name="one" displayLabel="One" value="1" />
@@ -213,6 +214,21 @@ const fieldsSchemaXml = `
   <ECEntityClass typeName="TestAspect" modifier="None">
     <BaseClass>bis:ElementUniqueAspect</BaseClass>
     <ECProperty propertyName="aspectProp" typeName="int"/>
+  </ECEntityClass>
+
+  <ECEntityClass typeName="TestElementStringProp" modifier="Abstract">
+    <ECCustomAttributes>
+      <QueryView xmlns="ECDbMap.02.00.04">
+        <Query>
+          SELECT
+            jo.ECInstanceId,
+            ec_classid('Fields', 'TestElementStringProp') [ECClassId],
+            json_extract(jo.jsonProperties, '$.stringProp') [StringProp]
+          FROM Fields.TestElement jo
+        </Query>
+      </QueryView>
+    </ECCustomAttributes>
+    <ECProperty propertyName="StringProp" typeName="string" />
   </ECEntityClass>
 </ECSchema>
 `;
@@ -274,7 +290,7 @@ async function registerTestSchema(iModel: IModelDb): Promise<void> {
   iModel.saveChanges();
 }
 
-describe("Field evaluation", () => {
+describe.only("Field evaluation", () => {
   let imodel: StandaloneDb;
   let model: Id64String;
   let category: Id64String;
