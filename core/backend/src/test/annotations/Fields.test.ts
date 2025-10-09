@@ -334,6 +334,20 @@ describe.only("Field evaluation", () => {
   }
 
   describe("getProperty", () => {
+    it("evaluates ECView property", () => {
+      const sql = "SELECT ECInstanceId, StringProp FROM Fields.TestElementStringProp";
+      let stringProp: string | undefined;
+      let ecinstanceId: string | undefined;
+      imodel.withPreparedStatement(sql, (stmt) => {
+        expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
+        ecinstanceId = stmt.getValue(0).getId();
+        stringProp = stmt.getValue(1).getString();
+      });
+
+      expect(ecinstanceId).to.equal(sourceElementId);
+      expect(stringProp).to.equal("abc");
+    });
+
     function expectValue(expected: any, propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String, deletedDependency = false): void {
       expect(evaluateField(propertyPath, propertyHost, deletedDependency)?.value).to.deep.equal(expected);
     }
