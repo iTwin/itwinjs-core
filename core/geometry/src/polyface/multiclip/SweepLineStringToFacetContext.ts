@@ -186,7 +186,9 @@ export class ClipSweptLineStringContext {
       if (localToWorldMatrix === undefined)
         localToWorldMatrix = Matrix3d.createIdentity();
       const localToWorld = Transform.createOriginAndMatrix(point, localToWorldMatrix);
-      const worldToLocal = localToWorld.inverse()!;
+      const worldToLocal = localToWorld.inverse();
+      if (!worldToLocal)
+        return undefined;
       const localRange = xyz.getRange(worldToLocal);
       for (let i = 1; i < xyz.length; i++) {
         xyz.getPoint3dAtUncheckedPointIndex(i, newPoint);

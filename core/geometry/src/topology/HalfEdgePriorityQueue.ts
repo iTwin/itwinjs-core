@@ -31,7 +31,9 @@ export class HalfEdgePriorityQueueWithPartnerArray {
   public popQueueToArray(): HalfEdge | undefined {
     if (this.priorityQueue.isEmpty)
       return undefined;
-    const x = this.priorityQueue.pop()!;
+    const x = this.priorityQueue.pop();
+    if (!x)
+      return undefined;
     this.activeEdges.push(x);
     return x;
   }
@@ -43,7 +45,9 @@ export class HalfEdgePriorityQueueWithPartnerArray {
   public popArrayToArrayIndex(i: number) {
     const n = this.activeEdges.length;
     if (i < n) {
-      const x = this.activeEdges.pop()!;
+      const x = this.activeEdges.pop();
+      if (!x)
+        return;
       this.activeEdges[i] = x;
     }
   }

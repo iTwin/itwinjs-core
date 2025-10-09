@@ -17,7 +17,7 @@ import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
 import { HalfEdgeGraphSpineContext } from "../../topology/HalfEdgeGraphSpineContext";

@@ -96,8 +96,19 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
    */
   public vectorIndexIndex(indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined {
     if (this.isValidIndex(indexA) && this.isValidIndex(indexB))
-      return Vector3d.createStartEnd(this.data[indexA], this.data[indexB], result);
+      return this.vectorUncheckedIndexIndex(indexA, indexB, result);
     return undefined;
+  }
+    /**
+   * Return a vector from the point at indexA to the point at indexB
+   * * This method does not check for index validity. Use [[Point3dArrayCarrier.vectorIndexIndex]] to have validity test.
+   * @param indexA index of point within the array
+   * @param indexB index of point within the array
+   * @param result caller-allocated vector.
+   * @returns undefined if either index is out of bounds
+   */
+  public vectorUncheckedIndexIndex(indexA: number, indexB: number, result?: Vector3d): Vector3d {
+    return Vector3d.createStartEnd(this.data[indexA], this.data[indexB], result);
   }
   /**
    * Return a vector from given origin to point at indexB
@@ -108,8 +119,18 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
    */
   public vectorXYAndZIndex(origin: XYAndZ, indexB: number, result?: Vector3d): Vector3d | undefined {
     if (this.isValidIndex(indexB))
-      return Vector3d.createStartEnd(origin, this.data[indexB], result);
+      return this.vectorXYAndZUncheckedIndex(origin, indexB, result);
     return undefined;
+  }
+  /**
+   * Return a vector from given origin to point at indexB
+   * * This method does not check for index validity. Use [[Point3dArrayCarrier.vectorXYAndZIndex]] to have validity test.
+   * @param origin origin for vector
+   * @param indexB index of point within the array
+   * @param result caller-allocated vector.
+   */
+  public vectorXYAndZUncheckedIndex(origin: XYAndZ, indexB: number, result?: Vector3d): Vector3d {
+    return Vector3d.createStartEnd(origin, this.data[indexB], result);
   }
   /**
    * Return the cross product of vectors from origin to points at indexA and indexB
@@ -223,10 +244,19 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
    */
   public distanceSquaredIndexIndex(index0: number, index1: number): number | undefined {
     const n = this.data.length;
-    if (index0 >= 0 && index0 < n && index1 >= 0 && index1 < n) {
-      return this.data[index0].distanceSquared(this.data[index1]);
-    }
+    if (index0 >= 0 && index0 < n && index1 >= 0 && index1 < n)
+      return this.distanceSquaredUncheckedIndexIndex(index0, index1);
     return undefined;
+  }
+    /**
+   * Return distance squared between indicated points.
+   * * This method does not check for index validity. Use [[Point3dArrayCarrier.distanceSquaredIndexIndex]] to have
+   * validity test.
+   * @param index0 first point index
+   * @param index1 second point index
+   */
+  public distanceSquaredUncheckedIndexIndex(index0: number, index1: number): number {
+    return this.data[index0].distanceSquared(this.data[index1]);
   }
   /**
    * Return distance between indicated points.
@@ -236,9 +266,18 @@ export class Point3dArrayCarrier extends IndexedReadWriteXYZCollection {
   public distanceIndexIndex(index0: number, index1: number): number | undefined {
     const n = this.data.length;
     if (index0 >= 0 && index0 < n && index1 >= 0 && index1 < n) {
-      return this.data[index0].distance(this.data[index1]);
+      return this.distanceUncheckedIndexIndex(index0, index1);
     }
     return undefined;
+  }
+    /**
+   * Return distance between indicated points.
+   * * This method does not check for index validity. Use [[Point3dArrayCarrier.distanceIndexIndex]] to have validity test.
+   * @param index0 first point index
+   * @param index1 second point index
+   */
+  public distanceUncheckedIndexIndex(index0: number, index1: number): number {
+    return this.data[index0].distance(this.data[index1]);
   }
   /** Adjust index into range by modulo with the length. */
   public override cyclicIndex(i: number): number {

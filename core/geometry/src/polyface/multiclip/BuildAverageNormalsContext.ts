@@ -153,7 +153,9 @@ export class BuildAverageNormalsContext {
     }
     // emplace the indices
     for (const sector of sectors) {
-      polyface.data.normalIndex.push(sector.sectorClusterData!.index);
+      if (!sector.sectorClusterData)
+        continue;
+      polyface.data.normalIndex.push(sector.sectorClusterData.index);
     }
   }
   /**

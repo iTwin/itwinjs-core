@@ -31,7 +31,7 @@ import { Matrix4d } from "../../geometry4d/Matrix4d";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
 import { LinearSweep } from "../../solid/LinearSweep";

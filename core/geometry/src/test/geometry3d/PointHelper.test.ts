@@ -27,7 +27,7 @@ import { XAndY, XYZProps } from "../../geometry3d/XYZProps";
 import { Matrix4d } from "../../geometry4d/Matrix4d";
 import { MomentData } from "../../geometry4d/MomentData";
 import { Point4d } from "../../geometry4d/Point4d";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { HalfEdgeGraph } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { Triangulator } from "../../topology/Triangulation";

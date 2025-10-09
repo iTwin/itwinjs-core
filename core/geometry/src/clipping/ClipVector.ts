@@ -243,8 +243,10 @@ export class ClipVector implements Clipper {
           let invTrans = Transform.createIdentity();
 
           if (firstClipShape.transformValid && clip.transformValid) {
-            fwdTrans = clip.transformFromClip!.clone();
-            invTrans = firstClipShape.transformToClip!.clone();
+            if (undefined === clip.transformFromClip || undefined === firstClipShape.transformToClip)
+              return [];
+            fwdTrans = clip.transformFromClip.clone();
+            invTrans = firstClipShape.transformToClip.clone();
           }
           deltaTrans.setFrom(invTrans.multiplyTransformTransform(fwdTrans));
         }
@@ -255,13 +257,13 @@ export class ClipVector implements Clipper {
         if (clip.polygon !== undefined) {
           clipM = ClipMaskXYZRangePlanes.XAndY;
 
-          if (clip.zHighValid) {
+          if (clip.zHighValid && undefined !== clip.zHigh) {
             clipM = clipM | ClipMaskXYZRangePlanes.ZHigh;
-            zFront = clip.zHigh!;
+            zFront = clip.zHigh;
           }
-          if (clip.zLowValid) {
+          if (clip.zLowValid && undefined !== clip.zLow) {
             clipM = clipM | ClipMaskXYZRangePlanes.ZLow;
-            zBack = clip.zLow!;
+            zBack = clip.zLow;
           }
 
           for (const point of clip.polygon)
@@ -274,8 +276,8 @@ export class ClipVector implements Clipper {
     retVal.push(clipM);
     retVal.push(zBack);
     retVal.push(zFront);
-    if (transform && firstClipShape)
-      transform.setFrom(firstClipShape.transformFromClip!);
+    if (transform && firstClipShape && undefined !== firstClipShape.transformFromClip)
+      transform.setFrom(firstClipShape.transformFromClip);
     return retVal;
   }
   /** Sets this ClipVector and all of its members to the visibility specified. */
