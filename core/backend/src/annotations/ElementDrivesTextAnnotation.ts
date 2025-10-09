@@ -140,9 +140,11 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
       }
     }
 
-    for (const relationshipId of staleRelationships) {
-      const props = annotationElement.iModel.relationships.getInstanceProps("BisCore.ElementDrivesTextAnnotation", relationshipId);
-      annotationElement.iModel.relationships.deleteInstance(props);
+    if (staleRelationships.size > 0) {
+      const staleRelationshipProps = Array.from(staleRelationships).map(relationshipId =>
+        annotationElement.iModel.relationships.getInstanceProps("BisCore.ElementDrivesTextAnnotation", relationshipId)
+      );
+      annotationElement.iModel.relationships.deleteInstances(staleRelationshipProps);
     }
   }
 
