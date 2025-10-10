@@ -5259,6 +5259,7 @@ export class Relationships {
     constructor(iModel: IModelDb);
     createInstance(props: RelationshipProps): Relationship;
     deleteInstance(props: RelationshipProps): void;
+    deleteInstances(props: ReadonlyArray<RelationshipProps>): void;
     getInstance<T extends Relationship>(relClassSqlName: string, criteria: Id64String | SourceAndTarget): T;
     getInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T;
     insertInstance(props: RelationshipProps): Id64String;
