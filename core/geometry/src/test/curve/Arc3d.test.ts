@@ -1857,7 +1857,22 @@ describe("Arc3dTangents", () => {
     ck.testUndefined(arc.computeTangentIntersection(), "no intersection for close sweeps");
 
     // fillet
-    
+    x0 += 10;
+    const lineString = LineString3d.create([0, 0], [2, 0], [5, 3], [5, 5], [3, 5]);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineString, x0);
+    for (const p of lineString.points)
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, p, 0.1, x0);
+    const radius = 1.0;
+    const chain = CurveFactory.createFilletsInLineString(lineString, radius, { allowCusp: false, filletClosure: false })!;
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0);
+    for (const index of [1, 2, 3]) {
+      ck.testPoint3d(
+        lineString.points[index],
+        (chain.children[index] as Arc3d).computeTangentIntersection()!,
+        `fillet tangents at lineString point[${index}]`,
+      );
+    }
+
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3dTangents", "TangentIntersection");
     expect(ck.getNumErrors()).toBe(0);
