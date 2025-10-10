@@ -1536,22 +1536,22 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param f0 fractional parameter of one tangent. Default is 0 (the arc's start tangent).
    * @param f1 fractional parameter of the other tangent. Default is 1 (the arc's end tangent).
    * @param result optional point to populate and return.
-   * @returns intersection point, or undefined if tangents are undefined or parallel.
+   * @returns intersection point, or undefined if tangents are zero or parallel.
    */
   public computeTangentIntersection(f0: number = 0, f1: number = 1, result?: Point3d): Point3d | undefined {
-    if (Angle.isAlmostEqualRadiansAllowPeriodShift(this.sweep.fractionToRadians(f0), this.sweep.fractionToRadians(f1)))
-      return undefined; // filter more almost-parallel tangents than SmallSystem
-    const worldRay0 = this.fractionToPointAndDerivative(f0, Arc3d._workRay2);
-    const localRay0 = worldRay0.clone(Arc3d._workRay0);
+    const localRay0 = this.fractionToPointAndDerivative(f0, Arc3d._workRay0);
     const localRay1 = this.fractionToPointAndDerivative(f1, Arc3d._workRay1);
+    if (localRay0.direction.isParallelTo(localRay1.direction, true, true))
+      return undefined;
+    const worldRay0 = localRay0.clone(Arc3d._workRay2);
     if ( this.matrixRef.multiplyInverseXYZAsPoint3d(localRay0.origin.x, localRay0.origin.y, localRay0.origin.z, localRay0.origin)
       && this.matrixRef.multiplyInverseXYZAsPoint3d(localRay1.origin.x, localRay1.origin.y, localRay1.origin.z, localRay1.origin)
       && this.matrixRef.multiplyInverseXYZAsVector3d(localRay0.direction.x, localRay0.direction.y, localRay0.direction.z, localRay0.direction)
       && this.matrixRef.multiplyInverseXYZAsVector3d(localRay1.direction.x, localRay1.direction.y, localRay1.direction.z, localRay1.direction)
-    ) { // now we can ignore z
+    ) { // conversion to local coordinates allows us to intersect without z
       const intersection = SmallSystem.lineXYUVTransverseIntersection(localRay0.origin, localRay0.direction, localRay1.origin, localRay1.direction);
       if (intersection)
-        return worldRay0.fractionToPoint(intersection.x, result); // intersection parameter is invariant
+        return worldRay0.fractionToPoint(intersection.x, result); // intersection parameter is an affine invariant
     }
     return undefined;
   }
