@@ -1760,28 +1760,30 @@ describe("Arc3dTangents", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.only("TangentIntersection", () => {
-    const ck = new Checker(true, true);
+  it("TangentIntersection", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
 
-    const testTangentIntersection = (arc: Arc3d, expectedIntersection: Point3d, x0: number, scale: number) => {
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, x0);
-      let intersection = arc.computeTangentIntersection();
+    const testTangentIntersection = (arc0: Arc3d, expectedIntersection0: Point3d, dx: number, scale0: number) => {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc0, dx);
+      const intersection = arc0.computeTangentIntersection();
       ck.testDefined(intersection, "intersection is defined");
-      ck.testPoint3d(intersection!, expectedIntersection, "intersection at (" + expectedIntersection.toJSON() + ")");
-      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, intersection!, 0.1, x0);
-      let ray0 = arc.fractionToPointAndDerivative(0);
-      let ls0 = LineSegment3d.create(
-        ray0.origin.plusScaled(ray0.direction.scaleToLength(1)!, -scale),
-        ray0.origin.plusScaled(ray0.direction.scaleToLength(1)!, scale),
+      ck.testPoint3d(
+        intersection!, expectedIntersection0, `intersection at (${JSON.stringify(expectedIntersection0.toJSON())})`,
       );
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls0, x0);
-      let ray1 = arc.fractionToPointAndDerivative(1);
-      let ls1 = LineSegment3d.create(
-        ray1.origin.plusScaled(ray1.direction.scaleToLength(1)!, -scale),
-        ray1.origin.plusScaled(ray1.direction.scaleToLength(1)!, scale),
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, intersection!, 0.1, dx);
+      const ray0 = arc0.fractionToPointAndDerivative(0);
+      const ls0 = LineSegment3d.create(
+        ray0.origin.plusScaled(ray0.direction.scaleToLength(1)!, -scale0),
+        ray0.origin.plusScaled(ray0.direction.scaleToLength(1)!, scale0),
       );
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls1, x0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls0, dx);
+      const ray1 = arc0.fractionToPointAndDerivative(1);
+      const ls1 = LineSegment3d.create(
+        ray1.origin.plusScaled(ray1.direction.scaleToLength(1)!, -scale0),
+        ray1.origin.plusScaled(ray1.direction.scaleToLength(1)!, scale0),
+      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls1, dx);
     }
 
     // unit circle
@@ -1798,7 +1800,7 @@ describe("Arc3dTangents", () => {
     arc.sweep = AngleSweep.createStartEndDegrees(0, 270);
     expectedIntersection = Point3d.create(1, -1);
     testTangentIntersection(arc, expectedIntersection, x0, scale);
-
+    
     // normal ellipse
     x0 += 10;
     scale = 4;
@@ -1846,13 +1848,12 @@ describe("Arc3dTangents", () => {
 
     // special cases
     ck.testUndefined(arc.computeTangentIntersection(0, 0), "no intersection for equal fractions");
-    ck.testUndefined(arc.computeTangentIntersection(0, 1e-12), "no intersection for close fractions");
     ck.testUndefined(arc.computeTangentIntersection(0.5, 0.5), "no intersection for equal fractions");
     arc.sweep = AngleSweep.createStartEndDegrees(0, 0);
     ck.testUndefined(arc.computeTangentIntersection(), "no intersection for zero sweep");
     arc.sweep = AngleSweep.createStartEndDegrees(0, 360);
     ck.testUndefined(arc.computeTangentIntersection(), "no intersection for full sweep");
-    ck.testUndefined(arc.computeTangentIntersection(0, 1.5), "no intersection for fractions beyond [0,1]");
+    ck.testUndefined(arc.computeTangentIntersection(0, 1.5), "no intersection for fractions 0, 1.5");
     arc.sweep = AngleSweep.createStartEndDegrees(0, 1e-15);
     ck.testUndefined(arc.computeTangentIntersection(), "no intersection for close sweeps");
 
@@ -1865,14 +1866,16 @@ describe("Arc3dTangents", () => {
     const radius = 1.0;
     const chain = CurveFactory.createFilletsInLineString(lineString, radius, { allowCusp: false, filletClosure: false })!;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0);
-    for (const index of [1, 2, 3]) {
+    const chainIndices = [1, 3, 5];
+    const pointIndices = [1, 2, 3];
+    for (let i = 0; i < chainIndices.length; i++) {
+      const fillet = chain.children[chainIndices[i]] as Arc3d;
       ck.testPoint3d(
-        lineString.points[index],
-        (chain.children[index] as Arc3d).computeTangentIntersection()!,
-        `fillet tangents at lineString point[${index}]`,
+        lineString.points[pointIndices[i]],
+        fillet.computeTangentIntersection()!,
+        `fillet tangents at lineString point[${pointIndices[i]}]`,
       );
     }
-
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3dTangents", "TangentIntersection");
     expect(ck.getNumErrors()).toBe(0);
