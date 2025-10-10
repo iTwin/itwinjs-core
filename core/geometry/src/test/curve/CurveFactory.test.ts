@@ -215,7 +215,7 @@ describe("CurveFactory", () => {
 
     const verifyFilletedPolygon = (chain0: Path, options: CreateFilletsInLineStringOptions, radius0: number) => {
       ck.testPoint3d(chain0.startPoint()!, chain0.endPoint()!, "fillet polygon should be closed");
-      ck.testBoolean((options.filletClosure ?? false) && ((options.allowCusp ?? true) || (radius0 > 0 && radius0 <= maxRadiusAtSeam)), chain0.getChild(0) instanceof Arc3d, "necessary and sufficient condition for output to start with fillet");
+      ck.testBoolean(radius0 > 0 && (options.filletClosure ?? false) && ((options.allowCusp ?? true) || radius0 <= maxRadiusAtSeam), chain0.getChild(0) instanceof Arc3d, "necessary and sufficient condition for output to start with fillet");
       for (const child of chain0.children) {
         if (child instanceof Arc3d) {
           ck.testTrue(child.isCircular, "expect fillet to be circular");
