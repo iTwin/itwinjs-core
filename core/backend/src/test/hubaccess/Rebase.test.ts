@@ -9,7 +9,7 @@ import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
 import { BriefcaseDb, BriefcaseManager, ChannelControl, DrawingCategory, IModelHost, SqliteChangesetReader, TxnProps } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { Suite } from "mocha";
-import { Code, GeometricElement2dProps, IModel, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import { Code, GeometricElement2dProps, IModel, QueryBinder, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Guid, Id64String } from "@itwin/core-bentley";
 import { StashManager } from "../../StashManager";
 chai.use(chaiAsPromised);
@@ -723,5 +723,53 @@ describe("rebase changes & stashing api", function (this: Suite) {
     // should fail to pull and rebase changes.
     await chai.expect(b2.pushChanges({ description: `deleted child ${childId} and inserted grandchild ${grandChildId}` }))
       .to.be.rejectedWith("Foreign key conflicts in ChangeSet. Aborting rebase.");
+  });
+
+  it("ECSqlReader unable to read updates after saveChanges()", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const findElement = async (id: Id64String) => {
+      const reader = b1.createQueryReader(`SELECT ECInstanceId, ec_className(ECClassId), Prop1 FROM ts.A1 WHERE ECInstanceId = ${id}`, QueryBinder.from([id]));
+      if(await reader.step())
+        return { id: reader.current[0], className: reader.current[1], prop1: reader.current[2] };
+      return undefined;
+    }
+
+    const runQuery  = async (query: string) => {
+      const reader = b1.createQueryReader(query);
+      let rows = 0;
+      while (await reader.step()) {
+        rows++;
+      }
+      return rows;
+    }
+    const runQueryParallel = async (query: string, times: number = 1) => {
+      return Promise.all(new Array(times).fill(query).map(runQuery));
+    }
+
+    // Following query have open cached statement against BisCore.Element that will prevent
+    // updates from being visible until the statement is finalized.
+    await runQueryParallel(`SELECT $ FROM BisCore.Element`, 10);
+
+    const e1 = await testIModel.insertElement(b1);
+    chai.expect(await findElement(e1)).to.be.undefined;
+    b1.saveChanges("insert element");
+
+    const e1Props = await findElement(e1);
+    chai.expect(e1Props).to.exist;
+    await runQueryParallel(`SELECT $ FROM BisCore.Element`, 10);
+    const e2 = await testIModel.insertElement(b1);
+    chai.expect(await findElement(e2)).to.be.undefined;
+    b1.saveChanges("insert second element");
+
+    const e2Props = await findElement(e2);
+    chai.expect(e2Props).to.exist;
+
+    await runQueryParallel(`SELECT $ FROM BisCore.Element`, 10);
+    const e3 = await testIModel.insertElement(b1);
+    chai.expect(await findElement(e3)).to.be.undefined;
+    b1.saveChanges("insert third element");
+
+    const e3Props = await findElement(e3);
+    chai.expect(e3Props).to.exist;
   });
 });
