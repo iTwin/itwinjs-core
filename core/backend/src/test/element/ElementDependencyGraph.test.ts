@@ -148,7 +148,7 @@ describe("ElementDependencyGraph", () => {
       schemaLockHeld: true,
     };
     nativeDb.openIModel(pathname, OpenMode.ReadWrite, upgradeOptions);
-    nativeDb.deleteAllTxns();
+    nativeDb.clearAllTxns();
     nativeDb.closeFile();
   };
 
@@ -168,7 +168,7 @@ describe("ElementDependencyGraph", () => {
     const spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "EDGTestSpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
     dbInfo = { physicalModelId, codeSpecId, spatialCategoryId, seedFileName: testFileName };
     imodel.saveChanges("");
-    imodel[_nativeDb].deleteAllTxns();
+    imodel[_nativeDb].clearAllTxns();
     imodel.close();
   });
 

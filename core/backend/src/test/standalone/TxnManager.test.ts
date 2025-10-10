@@ -34,7 +34,7 @@ describe("TxnManager", () => {
       schemaLockHeld: true,
     };
     nativeDb.openIModel(pathname, OpenMode.ReadWrite, upgradeOptions);
-    nativeDb.deleteAllTxns();
+    nativeDb.clearAllTxns();
     nativeDb.closeFile();
   };
 
@@ -67,7 +67,7 @@ describe("TxnManager", () => {
     };
 
     imodel.saveChanges("schema change");
-    imodel[_nativeDb].deleteAllTxns();
+    imodel[_nativeDb].clearAllTxns();
     roImodel = StandaloneDb.openFile(testFileName, OpenMode.Readonly);
   });
 
@@ -933,7 +933,7 @@ describe("TxnManager", () => {
       expect(imodel.txns.hasPendingTxns).to.be.false;
       expect(imodel.txns.hasUnsavedChanges).to.be.true;
 
-      imodel.txns.deleteAllTxns();
+      imodel[_nativeDb].deleteAllTxns();
       expect(imodel.txns.hasLocalChanges).to.be.false;
 
       imodel.elements.insertElement(props);
@@ -942,7 +942,7 @@ describe("TxnManager", () => {
       expect(imodel.txns.hasPendingTxns).to.be.true;
       expect(imodel.txns.hasUnsavedChanges).to.be.false;
 
-      imodel.txns.deleteAllTxns();
+      imodel[_nativeDb].deleteAllTxns();
       expect(imodel.txns.hasLocalChanges).to.be.false;
 
       imodel.elements.insertElement(props);
@@ -952,8 +952,46 @@ describe("TxnManager", () => {
       expect(imodel.txns.hasPendingTxns).to.be.true;
       expect(imodel.txns.hasUnsavedChanges).to.be.true;
 
-      imodel.txns.deleteAllTxns();
+      imodel[_nativeDb].deleteAllTxns();
       expect(imodel.txns.hasLocalChanges).to.be.false;
+    });
+
+    it("TxnManager.deleteAllTxns should revert local changes", () => {
+      // Insert and save an element
+      const elId = imodel.elements.insertElement(props);
+      imodel.saveChanges();
+
+      // Confirm element exists
+      assert.isDefined(imodel.elements.tryGetElement(elId));
+
+      // Delete all txns
+      imodel[_nativeDb].deleteAllTxns();
+
+      // Close and reopen the briefcase
+      imodel.close();
+      imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
+
+      // The element should NOT exist if deleteAllTxns truly reverted the briefcase
+      assert.isUndefined(imodel.elements.tryGetElement(elId));
+    });
+
+    it("TxnManager.clearAllTxns should not revert local changes", () => {
+      // Insert and save an element
+      const elId = imodel.elements.insertElement(props);
+      imodel.saveChanges();
+
+      // Confirm element exists
+      assert.isDefined(imodel.elements.tryGetElement(elId));
+
+      // Clear all txns
+      imodel[_nativeDb].clearAllTxns();
+
+      // Close and reopen the briefcase
+      imodel.close();
+      imodel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
+
+      // The element will exist as clearAllTxns will only clear the txn history, without reverting the changes
+      assert.isDefined(imodel.elements.tryGetElement(elId));
     });
 
     it("clears undo/redo history", () => {
@@ -964,7 +1002,7 @@ describe("TxnManager", () => {
       imodel.saveChanges();
       expect(imodel.txns.isUndoPossible).to.be.true;
 
-      imodel.txns.deleteAllTxns();
+      imodel[_nativeDb].deleteAllTxns();
       expect(imodel.txns.isUndoPossible).to.be.false;
 
       imodel.elements.insertElement(props);
@@ -972,7 +1010,7 @@ describe("TxnManager", () => {
       imodel.txns.reverseSingleTxn();
       expect(imodel.txns.isRedoPossible).to.be.true;
 
-      imodel.txns.deleteAllTxns();
+      imodel[_nativeDb].deleteAllTxns();
       expect(imodel.txns.isRedoPossible).to.be.false;
     });
   });
