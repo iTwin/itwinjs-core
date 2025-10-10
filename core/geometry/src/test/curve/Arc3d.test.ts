@@ -1789,9 +1789,7 @@ describe("Arc3dTangents", () => {
     // unit circle
     let x0 = 0;
     let scale = 1;
-    let arc = Arc3d.create(
-      Point3d.create(0, 0), Vector3d.create(1, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(0, 90),
-    );
+    let arc = Arc3d.createXY(Point3d.createZero(), 1, AngleSweep.createStartEndDegrees(0, 90));
     let expectedIntersection = Point3d.create(1, 1);
     testTangentIntersection(arc, expectedIntersection, x0, scale);
     arc.sweep = AngleSweep.createStartEndDegrees(0, 180);
@@ -1800,7 +1798,7 @@ describe("Arc3dTangents", () => {
     arc.sweep = AngleSweep.createStartEndDegrees(0, 270);
     expectedIntersection = Point3d.create(1, -1);
     testTangentIntersection(arc, expectedIntersection, x0, scale);
-    
+
     // normal ellipse
     x0 += 10;
     scale = 4;
@@ -1827,6 +1825,10 @@ describe("Arc3dTangents", () => {
     arc.sweep = AngleSweep.createStartEndDegrees(0, 180);
     ck.testUndefined(arc.computeTangentIntersection(), "no intersection on semi-ellipse");
     x0 += 10;
+    arc.sweep = AngleSweep.createStartEndDegrees(179.99, 0);
+    expectedIntersection = Point3d.create(11460.15587355, 11459.15587355);
+    testTangentIntersection(arc, expectedIntersection, x0, scale);
+    x0 += 10;
     arc.sweep = AngleSweep.createStartEndDegrees(0, 270);
     expectedIntersection = Point3d.create(0, -1);
     testTangentIntersection(arc, expectedIntersection, x0, scale);
@@ -1852,28 +1854,28 @@ describe("Arc3dTangents", () => {
     arc.sweep = AngleSweep.createStartEndDegrees(0, 0);
     ck.testUndefined(arc.computeTangentIntersection(), "no intersection for zero sweep");
     arc.sweep = AngleSweep.createStartEndDegrees(0, 360);
-    ck.testUndefined(arc.computeTangentIntersection(), "no intersection for full sweep");
-    ck.testUndefined(arc.computeTangentIntersection(0, 1.5), "no intersection for fractions 0, 1.5");
+    ck.testUndefined(arc.computeTangentIntersection(), "no intersection for full sweep at default fractions");
+    ck.testUndefined(arc.computeTangentIntersection(0, 1.5), "no intersection for full sweep at fractions 0, 1.5");
     arc.sweep = AngleSweep.createStartEndDegrees(0, 1e-15);
-    ck.testUndefined(arc.computeTangentIntersection(), "no intersection for close sweeps");
+    ck.testUndefined(arc.computeTangentIntersection(), "no intersection for close fractions");
 
     // fillet
     x0 += 10;
-    const lineString = LineString3d.create([0, 0], [2, 0], [5, 3], [5, 5], [3, 5]);
+    const lineString = LineString3d.create([0, 0, -1], [2, 0], [5, 3], [5, 5, 1], [3, 5]);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineString, x0);
     for (const p of lineString.points)
       GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, p, 0.1, x0);
     const radius = 1.0;
-    const chain = CurveFactory.createFilletsInLineString(lineString, radius, { allowCusp: false, filletClosure: false })!;
+    const chain = CurveFactory.createFilletsInLineString(lineString, radius)!;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain, x0);
-    const chainIndices = [1, 3, 5];
-    const pointIndices = [1, 2, 3];
-    for (let i = 0; i < chainIndices.length; i++) {
-      const fillet = chain.children[chainIndices[i]] as Arc3d;
+    const filletIndicesInChain = [1, 3, 5];
+    const filletedIndicesInLineString = [1, 2, 3];
+    for (let i = 0; i < filletIndicesInChain.length; i++) {
+      const fillet = chain.children[filletIndicesInChain[i]] as Arc3d;
       ck.testPoint3d(
-        lineString.points[pointIndices[i]],
+        lineString.points[filletedIndicesInLineString[i]],
         fillet.computeTangentIntersection()!,
-        `fillet tangents at lineString point[${pointIndices[i]}]`,
+        `fillet tangents at lineString point[${filletedIndicesInLineString[i]}]`,
       );
     }
 
