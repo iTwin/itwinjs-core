@@ -100,27 +100,8 @@ export class TechniqueFlags {
       this.featureMode = target.uniforms.batch.featureMode;
 
       // Determine if we should use the shaders which support discarding surfaces in favor of their edges (and discarding non-planar surfaces in favor of coincident planar surfaces).
-      // These are only useful if the geometry defines feature Ids.
-      // In 3d, if we're only displaying surfaces or edges, not both, don't bother, unless forceSurfaceDiscard is true.
+      // These are only useful if the geometry defines feature Ids, because without feature Ids we can't determine which edges belong to which surfaces.
       this.isEdgeTestNeeded = this.hasFeatures ? (this.isClassified ? IsEdgeTestNeeded.No : IsEdgeTestNeeded.Yes) : IsEdgeTestNeeded.No;
-      if (!target.currentViewFlags.forceSurfaceDiscard && target.is3d && !target.isReadPixelsInProgress && this.isEdgeTestNeeded) {
-        switch (target.currentViewFlags.renderMode) {
-          case RenderMode.Wireframe:
-            // We're only displaying edges (ignoring filled planar regions)
-            this.isEdgeTestNeeded = IsEdgeTestNeeded.No;
-            break;
-          case RenderMode.SmoothShade:
-            if (!target.currentViewFlags.visibleEdges && !target.wantAmbientOcclusion && pass !== RenderPass.PlanarClassification) {
-              // We're only displaying surfaces (ignoring filled planar regions).
-              // NB: Filled text (blanking region) is handled by adjusting the depth in the surface vertex shader.
-              this.isEdgeTestNeeded = IsEdgeTestNeeded.No;
-            }
-            break;
-          default:
-            // SolidFill and HiddenLine always display edges and surfaces.
-            break;
-        }
-      }
     }
   }
 

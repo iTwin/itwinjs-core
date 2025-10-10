@@ -578,6 +578,17 @@ export class Texture2DHandle extends TextureHandle {
   }
 }
 
+export class LookupTexture {
+  public readonly handle: Texture2DHandle;
+  public readonly params = new Float32Array(2);
+
+  public constructor(handle: Texture2DHandle) {
+    this.handle = handle;
+    this.params[0] = handle.width;
+    this.params[1] = handle.height;
+  }
+}
+
 /** @internal */
 export type ExternalTextureLoadCallback = (req: ExternalTextureRequest, data: TextureData) => void;
 

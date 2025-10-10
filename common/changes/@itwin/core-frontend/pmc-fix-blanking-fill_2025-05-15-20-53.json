@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix blanking regions inappropriately drawing behind unrelated geometry.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

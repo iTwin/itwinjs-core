@@ -150,20 +150,10 @@ export class SurfaceGeometry extends MeshGeometry {
   protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {
     const system = System.instance;
 
-    // If we can't write depth in the fragment shader, use polygonOffset to force blanking regions to draw behind.
-    const offset = RenderOrder.BlankingRegion === this.renderOrder && !system.supportsLogZBuffer;
-    if (offset) {
-      system.context.enable(GL.POLYGON_OFFSET_FILL);
-      system.context.polygonOffset(1.0, 1.0);
-    }
-
     const bufs = instanceBuffersContainer !== undefined ? instanceBuffersContainer : this._buffers;
     bufs.bind();
     system.drawArrays(GL.PrimitiveType.Triangles, 0, this._numIndices, numInstances);
     bufs.unbind();
-
-    if (offset)
-      system.context.disable(GL.POLYGON_OFFSET_FILL);
   }
 
   public override wantMixMonochromeColor(target: Target): boolean {
@@ -197,7 +187,9 @@ export class SurfaceGeometry extends MeshGeometry {
     if (this.isClassifier)
       return "classification";
 
-    let opaquePass: Pass = this.isPlanar ? "opaque-planar" : "opaque";
+    // Blanking regions are planar, but should draw in non-planar pass so that non-blanking geometry belonging to
+    // same element draw in front of them.
+    let opaquePass: Pass = this.isPlanar && this.renderOrder !== RenderOrder.BlankingRegion ? "opaque-planar" : "opaque";
 
     // When reading pixels, glyphs are always opaque. Otherwise always transparent (for anti-aliasing).
     if (this.isGlyph)

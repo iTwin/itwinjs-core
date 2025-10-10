@@ -116,6 +116,7 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
   public get hasFeatures(): boolean { return false; }
   public get viewIndependentOrigin(): Point3d | undefined { return undefined; }
   public get isViewIndependent(): boolean { return undefined !== this.viewIndependentOrigin; }
+  public get hasBlankingFill(): boolean { return RenderOrder.BlankingRegion === this.renderOrder; }
 
   public get supportsThematicDisplay() { return false; }
 
@@ -942,10 +943,10 @@ export class CompositeGeometry extends TexturedViewportQuadGeometry {
  * @internal
  */
 export class CopyPickBufferGeometry extends TexturedViewportQuadGeometry {
-  public static createGeometry(featureId: WebGLTexture, depthAndOrder: WebGLTexture) {
+  public static createGeometry(featureId: WebGLTexture, depthAndOrder: WebGLTexture, elementIndex: WebGLTexture) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined !== params) {
-      return new CopyPickBufferGeometry(params, [featureId, depthAndOrder]);
+      return new CopyPickBufferGeometry(params, [featureId, depthAndOrder, elementIndex]);
     } else {
       return undefined;
     }
@@ -953,6 +954,7 @@ export class CopyPickBufferGeometry extends TexturedViewportQuadGeometry {
 
   public get featureId() { return this._textures[0]; }
   public get depthAndOrder() { return this._textures[1]; }
+  public get elementIndex() { return this._textures[2]; }
 
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
     super(params, TechniqueId.CopyPickBuffers, textures);
