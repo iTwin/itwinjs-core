@@ -1499,6 +1499,12 @@ export class CoordinateXYZ extends GeometryQuery {
 }
 
 // @public
+export interface CreateFilletsInLineStringOptions {
+    allowCusp?: boolean;
+    filletClosure?: boolean;
+}
+
+// @public
 export abstract class CurveChain extends CurveCollection {
     protected constructor();
     childIndex(target: CurvePrimitive | undefined, alsoSearchProxies?: boolean): number | undefined;
