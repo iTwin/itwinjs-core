@@ -22,6 +22,10 @@ A clear description of the security issue being addressed.
 
 Brief explanation of what caused the security issue.
 
+### Link to Security Notice
+
+Link to CVE/GHAS notice.
+
 ### Solution
 
 Describe the fix implemented and why this approach was chosen.

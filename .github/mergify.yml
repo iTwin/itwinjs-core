@@ -2,7 +2,7 @@
 
 # Branch variables for backport targets
 latestMinor: &latestMinor "release/5.2.x"
-previousMajor: &previousMajor "release/4.9.x"
+previousMajor: &previousMajor "release/4.11.x"
 
 defaults:
   actions:
