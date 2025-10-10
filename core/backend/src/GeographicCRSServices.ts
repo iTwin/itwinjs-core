@@ -44,6 +44,12 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
    * @default false
    */
   includeWorld?: boolean;
+  /**
+   * If provided, filter coordinate reference systems by unit name. While this is a case-insensitive search,
+   * unit names can have different spellings (i.e. "Meter" vs "Metre"), which will not match.
+   * Use [[getAvailableCRSUnits]] to get a list of valid unit names.
+   */
+  unit?: string;
 }
 
 /** Get a list of Geographic Coordinate Reference Systems.
@@ -57,10 +63,15 @@ export async function getAvailableCoordinateReferenceSystems(
   GeoCoordConfig.loadDefaultDatabases();
   return IModelNative.platform.GeoServices.getListOfCRS(
     args.extent,
-    args.includeWorld
+    args.includeWorld,
+    args.unit
   );
 }
 
-export function getAvailableCRSUnits() {
+/** Get a list of units used by Geographic Coordinate Reference Systems in iTwin.js.
+ * @returns An array of unit names.
+ * @beta
+ */
+export function getAvailableCRSUnits(): string[] {
   return IModelNative.platform.GeoServices.getAvailableUnitNames();
 }

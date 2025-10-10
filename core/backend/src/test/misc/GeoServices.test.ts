@@ -915,6 +915,49 @@ describe("GeoServices", () => {
       }
       assert.equal(nbFound, 5);
     });
+
+    it("check CRS units", () => {
+      const NUM_CRS_UNITS = 80;
+
+      const definitiveListOfUnits = getAvailableCRSUnits();
+      assert.lengthOf(definitiveListOfUnits, NUM_CRS_UNITS);
+    });
+
+    it("can filter by CRS unit - degree and meter", async () => {
+      const NUM_CRS_IN_DEGREE = 1044;
+      const NUM_CRS_IN_METERS = 8461;
+
+      let listOfCRS = await getAvailableCoordinateReferenceSystems({
+        includeWorld: true,
+        unit: "Degree",
+      });
+
+
+      for (const crs of listOfCRS) {
+        assert.equal(
+          crs.unit.toLowerCase(),
+          "degree",
+          `CRS "${crs.name}" has unexpected unit "${crs.unit}" (expected "Degree")`
+        );
+      }
+
+      assert.isTrue(listOfCRS.length === NUM_CRS_IN_DEGREE);
+
+      listOfCRS = await getAvailableCoordinateReferenceSystems({
+        includeWorld: true,
+        unit: "Meter",
+      });
+
+      for (const crs of listOfCRS) {
+        assert.equal(
+          crs.unit.toLowerCase(),
+          "meter",
+          `CRS "${crs.name}" has unexpected unit "${crs.unit}" (expected "Meter")`
+        );
+      }
+
+      assert.isTrue(listOfCRS.length === NUM_CRS_IN_METERS);
+    });
   });
 
   it("should not be able to interpret an invalid GeographicCRS", async () => {
@@ -959,33 +1002,5 @@ describe("GeoServices", () => {
     for (let i = 0; i < expectedCoffs.length; ++i) {
       assert(Math.abs(actualCoffs[i] - expectedCoffs[i]) < 1e-12, `Matrix coefficient at index ${i} differs: expected ${expectedCoffs[i]}, got ${actualCoffs[i]}`);
     }
-  });
-
-  it.only("check all units", async () => {
-    // Get all CRS, then get all unique units, and add the number crs for each unit
-    try {
-      const definitiveListOfUnits = getAvailableCRSUnits();
-      assert.lengthOf(definitiveListOfUnits, 55);
-    } catch (e: unknown) {
-      assert.fail(`Exception getting list of units: ${e}`);
-      return;
-    }
-
-    const listOfCRS = await getAvailableCoordinateReferenceSystems({
-      includeWorld: true,
-    });
-    const uniqueUnitsToCount = new Map<string, number>();
-    for (const crs of listOfCRS) {
-      if (crs.unit) {
-        if (uniqueUnitsToCount.has(crs.unit)) {
-          const currentCount = uniqueUnitsToCount.get(crs.unit);
-          uniqueUnitsToCount.set(crs.unit, currentCount! + 1);
-        } else {
-          uniqueUnitsToCount.set(crs.unit, 1);
-        }
-      }
-    }
-
-    assert(true);
   });
 });
