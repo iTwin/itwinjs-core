@@ -11,7 +11,7 @@ import {
 import { IModelNative } from "../../internal/NativePlatform";
 import { Geometry, Point3d, Range2d, Range2dProps } from "@itwin/core-geometry";
 import { GeoCoordConfig } from "../../GeoCoordConfig";
-import { getAvailableCoordinateReferenceSystems } from "../../GeographicCRSServices";
+import { getAvailableCoordinateReferenceSystems, getAvailableCRSUnits } from "../../GeographicCRSServices";
 
 // spell-checker: disable
 
@@ -959,5 +959,33 @@ describe("GeoServices", () => {
     for (let i = 0; i < expectedCoffs.length; ++i) {
       assert(Math.abs(actualCoffs[i] - expectedCoffs[i]) < 1e-12, `Matrix coefficient at index ${i} differs: expected ${expectedCoffs[i]}, got ${actualCoffs[i]}`);
     }
+  });
+
+  it.only("check all units", async () => {
+    // Get all CRS, then get all unique units, and add the number crs for each unit
+    try {
+      const definitiveListOfUnits = getAvailableCRSUnits();
+      assert.lengthOf(definitiveListOfUnits, 55);
+    } catch (e: unknown) {
+      assert.fail(`Exception getting list of units: ${e}`);
+      return;
+    }
+
+    const listOfCRS = await getAvailableCoordinateReferenceSystems({
+      includeWorld: true,
+    });
+    const uniqueUnitsToCount = new Map<string, number>();
+    for (const crs of listOfCRS) {
+      if (crs.unit) {
+        if (uniqueUnitsToCount.has(crs.unit)) {
+          const currentCount = uniqueUnitsToCount.get(crs.unit);
+          uniqueUnitsToCount.set(crs.unit, currentCount! + 1);
+        } else {
+          uniqueUnitsToCount.set(crs.unit, 1);
+        }
+      }
+    }
+
+    assert(true);
   });
 });
