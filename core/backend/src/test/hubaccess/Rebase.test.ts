@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Guid, Id64String } from "@itwin/core-bentley";
-import { Code, GeometricElement2dProps, IModel, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import { Code, GeometricElement2dProps, IModel, QueryBinder, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { Suite } from "mocha";
