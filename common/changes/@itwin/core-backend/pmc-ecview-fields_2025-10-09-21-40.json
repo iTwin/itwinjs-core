@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add support for text fields referring to properties of EC views.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
