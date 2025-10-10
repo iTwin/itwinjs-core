@@ -1417,7 +1417,6 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param point1 second point of path (the point of inflection).
    * @param point2 third point of path (the point after the point of inflection).
    * @param radius arc radius.
-   *
    */
   public static createFilletArc(point0: Point3d, point1: Point3d, point2: Point3d, radius: number): ArcBlendData {
     const vector10 = Vector3d.createStartEnd(point1, point0);
@@ -1431,9 +1430,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
         // vector10, vector12, and bisector are UNIT vectors
         // bisector splits the angle between vector10 and vector12
         const perpendicular = vector12.minus(vector10);
-        const perpendicularMagnitude = perpendicular.magnitude();  // == 2 * sin(theta)
+        const perpendicularMagnitude = perpendicular.magnitude(); // == 2 * sin(theta)
         const sinTheta = 0.5 * perpendicularMagnitude;
-        if (!Geometry.isSmallAngleRadians(sinTheta)) {  // (for small theta, sinTheta is almost equal to theta)
+        if (!Geometry.isSmallAngleRadians(sinTheta)) {  // for small theta, sinTheta is almost equal to theta
           const cosTheta = Math.sqrt(1 - sinTheta * sinTheta);
           const tanTheta = sinTheta / cosTheta;
           const alphaRadians = Math.acos(sinTheta);
@@ -1444,7 +1443,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
           const center = point1.plusScaled(bisector, distanceToCenter);
           bisector.scaleInPlace(-radius);
           perpendicular.scaleInPlace(radius / perpendicularMagnitude);
-          const arc02 = Arc3d.create(center, bisector, perpendicular, AngleSweep.createStartEndRadians(-alphaRadians, alphaRadians));
+          const arc02 = Arc3d.create(
+            center, bisector, perpendicular, AngleSweep.createStartEndRadians(-alphaRadians, alphaRadians),
+          );
           return { arc: arc02, fraction10: f10, fraction12: f12, point: point1.clone() };
         }
       }
@@ -1526,7 +1527,6 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       return (this.sweep.isFullCircle && options.forcePath) ? Path.create(this) : this;
     return result;
   }
-
   /**
    * Compute the intersection of the tangent vectors at two fractional parameters along the arc.
    * * In the civil design context of filleting a line string, the default values yield a fillet arc's "point of
@@ -1544,7 +1544,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     if (localRay0.direction.isParallelTo(localRay1.direction, true, true))
       return undefined;
     const worldRay0 = localRay0.clone(Arc3d._workRay2);
-    if ( this.matrixRef.multiplyInverseXYZAsPoint3d(localRay0.origin.x, localRay0.origin.y, localRay0.origin.z, localRay0.origin)
+    if (this.matrixRef.multiplyInverseXYZAsPoint3d(localRay0.origin.x, localRay0.origin.y, localRay0.origin.z, localRay0.origin)
       && this.matrixRef.multiplyInverseXYZAsPoint3d(localRay1.origin.x, localRay1.origin.y, localRay1.origin.z, localRay1.origin)
       && this.matrixRef.multiplyInverseXYZAsVector3d(localRay0.direction.x, localRay0.direction.y, localRay0.direction.z, localRay0.direction)
       && this.matrixRef.multiplyInverseXYZAsVector3d(localRay1.direction.x, localRay1.direction.y, localRay1.direction.z, localRay1.direction)

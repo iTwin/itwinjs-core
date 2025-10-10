@@ -182,6 +182,7 @@ const fieldsSchemaXml = `
 <?xml version="1.0" encoding="UTF-8"?>
 <ECSchema schemaName="Fields" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
   <ECSchemaReference name="BisCore" version="01.00.04" alias="bis"/>
+  <ECSchemaReference name='ECDbMap' version='02.00.04' alias='ecdbmap' />
 
   <ECEnumeration typeName="IntEnum" backingTypeName="int">
     <ECEnumerator name="one" displayLabel="One" value="1" />
@@ -213,6 +214,21 @@ const fieldsSchemaXml = `
   <ECEntityClass typeName="TestAspect" modifier="None">
     <BaseClass>bis:ElementUniqueAspect</BaseClass>
     <ECProperty propertyName="aspectProp" typeName="int"/>
+  </ECEntityClass>
+
+  <ECEntityClass typeName="TestElementStringProp" modifier="Abstract">
+    <ECCustomAttributes>
+      <QueryView xmlns="ECDbMap.02.00.04">
+        <Query>
+          SELECT
+            jo.ECInstanceId,
+            ec_classid('Fields', 'TestElementStringProp') [ECClassId],
+            json_extract(jo.jsonProperties, '$.stringProp') [StringProp]
+          FROM Fields.TestElement jo
+        </Query>
+      </QueryView>
+    </ECCustomAttributes>
+    <ECProperty propertyName="StringProp" typeName="string" />
   </ECEntityClass>
 </ECSchema>
 `;
@@ -345,6 +361,10 @@ describe("Field evaluation", () => {
       expectValue("a", { propertyName: "strings", accessors: [-3] }, sourceElementId);
       expectValue("b", { propertyName: "strings", accessors: [-2] }, sourceElementId);
       expectValue(`"name": "c"`, { propertyName: "strings", accessors: [-1] }, sourceElementId);
+    });
+
+    it("supports properties of EC views", () => {
+      expectValue("abc", { propertyName: "stringProp" }, { schemaName: "Fields", className: "TestElementStringProp", elementId: sourceElementId });
     });
 
     it("returns undefined if the dependency was deleted", () => {
@@ -823,6 +843,42 @@ describe("Field evaluation", () => {
       source.update();
       imodel.saveChanges();
       expectText("12.5", targetId);
+    });
+
+    it("updates EC view fields when the element changes if the EC view queries the element directly", () => {
+      const sourceId = insertTestElement();
+      const block = TextBlock.create();
+      block.appendRun(createField({
+        elementId: sourceId, schemaName: "Fields", className: "TestElementStringProp",
+      }, "cached-content", "StringProp"));
+
+      const targetId = insertAnnotationElement(block);
+      imodel.saveChanges();
+
+      const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
+      expect(target.getAnnotation()).not.to.be.undefined;
+
+      expectText("abc", targetId);
+
+      let source = imodel.elements.getElement<TestElement>(sourceId);
+      source.jsonProperties.stringProp = "zyx";
+      source.update();
+
+      expectText("abc", targetId);
+
+      imodel.saveChanges();
+      expectText("zyx", targetId);
+
+      source = imodel.elements.getElement<TestElement>(sourceId);
+      expect(source.jsonProperties.stringProp).to.equal("zyx");
+
+      expectText("zyx", targetId);
+
+      imodel.elements.deleteElement(sourceId);
+      expectText("zyx", targetId);
+
+      imodel.saveChanges();
+      expectText(FieldRun.invalidContentIndicator, targetId);
     });
 
     describe("remapFields", () => {
