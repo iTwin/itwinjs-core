@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Expose unit on list of available GCS; allow filtering GCS by unit",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
