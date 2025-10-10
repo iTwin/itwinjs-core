@@ -9,7 +9,6 @@ import { CesiumScene } from "./CesiumScene.js";
 import { CesiumSystem } from "./System.js";
 import { PrimitiveConverterFactory } from "./decorations/PrimitiveConverterFactory.js";
 import { CesiumCameraHelpers } from "./decorations/CesiumCameraHelpers.js";
-import { XAndY } from "@itwin/core-geometry";
 
 /** A Target that renders to a canvas on the screen using Cesium.
  * @internal
@@ -98,11 +97,6 @@ export class CesiumOnScreenTarget extends RenderTarget {
   public readPixels(_rect: ViewRect, _selector: Pixel.Selector, _receiver: Pixel.Receiver, _excludeNonLocatable: boolean, _excludedElements?: Iterable<Id64String>) {
     // ###TODO Implement pixel reading logic for Cesium
     // NB: `rect` is specified in *CSS* pixels.
-  }
-
-  public override pickOverlayDecoration(_pt: XAndY) {
-    // console.log("CesiumOnScreenTarget.pickOverlayDecoration");
-    return undefined;
   }
 }
 
