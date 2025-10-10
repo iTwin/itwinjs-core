@@ -148,6 +148,7 @@ public;class;IndexedPolyface
 public;class;IndexedPolyfaceSubsetVisitor
 public;class;IndexedPolyfaceVisitor
 public;class;IndexedPolyfaceWalker
+public;class;IndexedReadWriteXYCollection
 public;class;IndexedReadWriteXYZCollection
 public;class;IndexedXYCollection
 public;class;IndexedXYZCollection
@@ -252,6 +253,7 @@ public;class;RecurseToCurvesGeometryHandler
 public;class;RecursiveCurveProcessor
 public;class;RecursiveCurveProcessorWithStack
 public;enum;RegionBinaryOpType
+public;interface;RegionBooleanXYOptions
 internal;class;RegionMomentsXY
 public;class;RegionOps
 public;class;ReusableObjectCache

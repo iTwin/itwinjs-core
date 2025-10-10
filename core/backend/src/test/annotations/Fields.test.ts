@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldValue, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextRun } from "@itwin/core-common";
+import { Code, ElementAspectProps, FieldPropertyHost, FieldPropertyPath, FieldPropertyType, FieldRun, FieldValue, PhysicalElementProps, SubCategoryAppearance, TextAnnotation, TextBlock, TextBlockProps, TextRun } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { createUpdateContext, updateField, updateFields } from "../../internal/annotations/fields";
@@ -13,7 +13,7 @@ import { Point3d, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Schema, Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
 import { PhysicalElement } from "../../Element";
-import { ElementOwnsUniqueAspect, ElementUniqueAspect, FontFile, TextAnnotation3d } from "../../core-backend";
+import { ElementOwnsUniqueAspect, ElementUniqueAspect, FontFile, IModelElementCloneContext, TextAnnotation3d } from "../../core-backend";
 import { ElementDrivesTextAnnotation, TextAnnotationUsesTextStyleByDefault } from "../../annotations/ElementDrivesTextAnnotation";
 
 function isIntlSupported(): boolean {
@@ -21,6 +21,59 @@ function isIntlSupported(): boolean {
   // users are not expected to do any editing, but long term we will attempt to find a better
   // solution.
   return !ProcessDetector.isMobileAppBackend;
+}
+
+function createTestElement(imodel: StandaloneDb, model: Id64String, category: Id64String, overrides?: Partial<TestElementProps>, aspectProp = 999): Id64String {
+  const props: TestElementProps = {
+    classFullName: "Fields:TestElement",
+    model,
+    category,
+    code: Code.createEmpty(),
+    intProp: 100,
+    point: { x: 1, y: 2, z: 3 },
+    strings: ["a", "b", `"name": "c"`],
+    datetime: new Date("2025-08-28T13:45:30.123Z"),
+    intEnum: 1,
+    outerStruct: {
+      innerStruct: { bool: false, doubles: [1, 2, 3] },
+      innerStructs: [{ bool: true, doubles: [] }, { bool: false, doubles: [5, 4, 3, 2, 1] }],
+    },
+    outerStructs: [{
+      innerStruct: { bool: true, doubles: [10, 9] },
+      innerStructs: [{ bool: false, doubles: [5] }],
+    }],
+    placement: {
+      origin: new Point3d(1, 2, 0),
+      angles: new YawPitchRollAngles(),
+    },
+    jsonProperties: {
+      stringProp: "abc",
+      ints: [10, 11, 12, 13],
+      bool: true,
+      zoo: {
+        address: {
+          zipcode: 12345,
+        },
+        birds: [
+          { name: "duck", sound: "quack" },
+          { name: "hawk", sound: "scree!" },
+        ],
+      },
+    },
+    ...overrides,
+  };
+
+  const id = imodel.elements.insertElement(props);
+
+  const aspectProps: TestAspectProps = {
+    classFullName: TestAspect.classFullName,
+    aspectProp,
+    element: new ElementOwnsUniqueAspect(id),
+  };
+  imodel.elements.insertAspect(aspectProps);
+
+  imodel.saveChanges();
+  return id;
 }
 
 describe("updateField", () => {
@@ -129,6 +182,7 @@ const fieldsSchemaXml = `
 <?xml version="1.0" encoding="UTF-8"?>
 <ECSchema schemaName="Fields" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
   <ECSchemaReference name="BisCore" version="01.00.04" alias="bis"/>
+  <ECSchemaReference name='ECDbMap' version='02.00.04' alias='ecdbmap' />
 
   <ECEnumeration typeName="IntEnum" backingTypeName="int">
     <ECEnumerator name="one" displayLabel="One" value="1" />
@@ -160,6 +214,21 @@ const fieldsSchemaXml = `
   <ECEntityClass typeName="TestAspect" modifier="None">
     <BaseClass>bis:ElementUniqueAspect</BaseClass>
     <ECProperty propertyName="aspectProp" typeName="int"/>
+  </ECEntityClass>
+
+  <ECEntityClass typeName="TestElementStringProp" modifier="Abstract">
+    <ECCustomAttributes>
+      <QueryView xmlns="ECDbMap.02.00.04">
+        <Query>
+          SELECT
+            jo.ECInstanceId,
+            ec_classid('Fields', 'TestElementStringProp') [ECClassId],
+            json_extract(jo.jsonProperties, '$.stringProp') [StringProp]
+          FROM Fields.TestElement jo
+        </Query>
+      </QueryView>
+    </ECCustomAttributes>
+    <ECProperty propertyName="StringProp" typeName="string" />
   </ECEntityClass>
 </ECSchema>
 `;
@@ -246,56 +315,8 @@ describe("Field evaluation", () => {
     imodel.close();
   });
 
-  function insertTestElement(): Id64String {
-    const props: TestElementProps = {
-      classFullName: "Fields:TestElement",
-      model,
-      category,
-      code: Code.createEmpty(),
-      intProp: 100,
-      point: { x: 1, y: 2, z: 3 },
-      strings: ["a", "b", `"name": "c"`],
-      datetime: new Date("2025-08-28T13:45:30.123Z"),
-      intEnum: 1,
-      outerStruct: {
-        innerStruct: { bool: false, doubles: [1, 2, 3] },
-        innerStructs: [{ bool: true, doubles: [] }, { bool: false, doubles: [5, 4, 3, 2, 1] }],
-      },
-      outerStructs: [{
-        innerStruct: { bool: true, doubles: [10, 9] },
-        innerStructs: [{ bool: false, doubles: [5] }],
-      }],
-      placement: {
-        origin: new Point3d(1, 2, 0),
-        angles: new YawPitchRollAngles(),
-      },
-      jsonProperties: {
-        stringProp: "abc",
-        ints: [10, 11, 12, 13],
-        bool: true,
-        zoo: {
-          address: {
-            zipcode: 12345,
-          },
-          birds: [
-            { name: "duck", sound: "quack" },
-            { name: "hawk", sound: "scree!" },
-          ],
-        },
-      },
-    };
-
-    const id = imodel.elements.insertElement(props);
-
-    const aspectProps: TestAspectProps = {
-      classFullName: TestAspect.classFullName,
-      aspectProp: 999,
-      element: new ElementOwnsUniqueAspect(id),
-    };
-    imodel.elements.insertAspect(aspectProps);
-
-    imodel.saveChanges();
-    return id;
+  function insertTestElement(overrides?: Partial<TestElementProps>, aspectProp?: number): Id64String {
+    return createTestElement(imodel, model, category, overrides, aspectProp);
   }
 
   function evaluateField(propertyPath: FieldPropertyPath, propertyHost: FieldPropertyHost | Id64String, deletedDependency = false): FieldValue | undefined {
@@ -340,6 +361,10 @@ describe("Field evaluation", () => {
       expectValue("a", { propertyName: "strings", accessors: [-3] }, sourceElementId);
       expectValue("b", { propertyName: "strings", accessors: [-2] }, sourceElementId);
       expectValue(`"name": "c"`, { propertyName: "strings", accessors: [-1] }, sourceElementId);
+    });
+
+    it("supports properties of EC views", () => {
+      expectValue("abc", { propertyName: "stringProp" }, { schemaName: "Fields", className: "TestElementStringProp", elementId: sourceElementId });
     });
 
     it("returns undefined if the dependency was deleted", () => {
@@ -523,7 +548,7 @@ describe("Field evaluation", () => {
     });
   });
 
-  function insertAnnotationElement(textBlock: TextBlock | undefined): Id64String {
+  function createAnnotationElement(textBlock: TextBlock | undefined): TextAnnotation3d {
     const elem = TextAnnotation3d.fromJSON({
       model,
       category,
@@ -541,6 +566,11 @@ describe("Field evaluation", () => {
       elem.setAnnotation(annotation);
     }
 
+    return elem;
+  }
+
+  function insertAnnotationElement(textBlock: TextBlock | undefined): Id64String {
+    const elem = createAnnotationElement(textBlock);
     return elem.insert();
   }
 
@@ -585,7 +615,7 @@ describe("Field evaluation", () => {
       }
 
       return FieldRun.create({
-        styleOverrides: { fontName: "Karla" },
+        styleOverrides: { font: { name: "Karla" } },
         propertyHost,
         cachedContent,
         propertyPath: { propertyName, accessors },
@@ -669,7 +699,7 @@ describe("Field evaluation", () => {
 
         anno.textBlock.children.length = 0;
         anno.textBlock.appendRun(TextRun.create({
-          styleOverrides: { fontName: "Karla" },
+          styleOverrides: { font: { name: "Karla" } },
           content: "not a field",
         }));
         target.setAnnotation(anno);
@@ -694,8 +724,9 @@ describe("Field evaluation", () => {
       });
     });
 
-    function expectText(expected: string, elemId: Id64String): void {
-      const elem = imodel.elements.getElement<TextAnnotation3d>(elemId);
+    function expectText(expected: string, elemId: Id64String, db?: StandaloneDb): void {
+      db = db ?? imodel;
+      const elem = db.elements.getElement<TextAnnotation3d>(elemId);
       const anno = elem.getAnnotation()!;
       const actual = anno.textBlock.stringify();
       expect(actual).to.equal(expected);
@@ -812,6 +843,144 @@ describe("Field evaluation", () => {
       source.update();
       imodel.saveChanges();
       expectText("12.5", targetId);
+    });
+
+    it("updates EC view fields when the element changes if the EC view queries the element directly", () => {
+      const sourceId = insertTestElement();
+      const block = TextBlock.create();
+      block.appendRun(createField({
+        elementId: sourceId, schemaName: "Fields", className: "TestElementStringProp",
+      }, "cached-content", "StringProp"));
+
+      const targetId = insertAnnotationElement(block);
+      imodel.saveChanges();
+
+      const target = imodel.elements.getElement<TextAnnotation3d>(targetId);
+      expect(target.getAnnotation()).not.to.be.undefined;
+
+      expectText("abc", targetId);
+
+      let source = imodel.elements.getElement<TestElement>(sourceId);
+      source.jsonProperties.stringProp = "zyx";
+      source.update();
+
+      expectText("abc", targetId);
+
+      imodel.saveChanges();
+      expectText("zyx", targetId);
+
+      source = imodel.elements.getElement<TestElement>(sourceId);
+      expect(source.jsonProperties.stringProp).to.equal("zyx");
+
+      expectText("zyx", targetId);
+
+      imodel.elements.deleteElement(sourceId);
+      expectText("zyx", targetId);
+
+      imodel.saveChanges();
+      expectText(FieldRun.invalidContentIndicator, targetId);
+    });
+
+    describe("remapFields", () => {
+      let dstIModel: StandaloneDb;
+      let dstModel: Id64String;
+      let dstCategory: Id64String;
+      let dstSourceElementId: Id64String;
+
+      before(async () => {
+        const path = IModelTestUtils.prepareOutputFile("RemapFields", `dst.bim`);
+        dstIModel = StandaloneDb.createEmpty(path, { rootSubject: { name: `RemapFields-dst` }, allowEdit: JSON.stringify({ txns: true })});
+        await registerTestSchema(dstIModel);
+
+        // Insert additional unused elements to ensure element Ids differ between src and dst iModels
+        for (let i = 0; i < 3; i++) {
+          IModelTestUtils.createAndInsertPhysicalPartitionAndModel(dstIModel, Code.createEmpty(), true);
+        }
+
+        const modelAndElement = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(dstIModel, Code.createEmpty(), true);
+        expect(modelAndElement[0]).to.equal(modelAndElement[1]);
+
+        dstModel = modelAndElement[1];
+        dstCategory = SpatialCategory.insert(dstIModel, StandaloneDb.dictionaryId, `dstCat`, new SubCategoryAppearance());
+        dstSourceElementId = createTestElement(dstIModel, dstModel, dstCategory, {
+          intProp: 200,
+          point: { x: -1, y: -2, z: -3 },
+          strings: ["x", "y", "z"],
+          intEnum: 2,
+        }, 1234);
+
+        await dstIModel.fonts.embedFontFile({
+          file: FontFile.createFromTrueTypeFileName(IModelTestUtils.resolveFontFile("Karla-Regular.ttf"))
+        });
+
+        expect(dstCategory).not.to.equal(category);
+        expect(dstModel).not.to.equal(model);
+        expect(dstSourceElementId).not.to.equal(sourceElementId);
+      });
+
+      after(() => {
+        dstIModel.close();
+      });
+
+      function getTextBlockJson(): TextBlockProps {
+        return {
+          children: [{
+            children: [{
+              type: "field",
+              propertyHost: {
+                elementId: sourceElementId,
+                schemaName: "Fields",
+                className: "TestElement",
+              },
+              propertyPath: { propertyName: "intProp" },
+              cachedContent: "intProp",
+            }, {
+              type: "field",
+              propertyHost: {
+                elementId: category,
+                schemaName: "BisCore",
+                className: "Element",
+              },
+              propertyPath: { propertyName: "CodeValue" },
+              cachedContent: "CodeValue"
+            }],
+          }],
+        };
+      }
+
+      function expectHostIds(elem: TextAnnotation3d, host1: Id64String, host2: Id64String): void {
+        const anno = elem.getAnnotation()!;
+        expect(anno.textBlock.children.length).to.equal(1);
+        const para = anno.textBlock.children[0];
+        expect(para.children.length).to.equal(2);
+        expect(para.children.every((x) => x.type === "field"));
+        const field1 = para.children[0] as FieldRun;
+        expect(field1.propertyHost.elementId).to.equal(host1);
+        const field2 = para.children[1] as FieldRun;
+        expect(field2.propertyHost.elementId).to.equal(host2);
+      }
+
+      it("remaps field hosts", () => {
+        const elem = createAnnotationElement(TextBlock.create(getTextBlockJson()));
+        expectHostIds(elem, sourceElementId, category);
+
+        const context = new IModelElementCloneContext(imodel, dstIModel);
+        context.remapElement(sourceElementId, dstSourceElementId);
+        context.remapElement(category, dstCategory);
+
+        ElementDrivesTextAnnotation.remapFields(elem, context);
+        expectHostIds(elem, dstSourceElementId, dstCategory);
+      });
+
+      it("invalidates field host if source element not remapped", () => {
+        const elem = createAnnotationElement(TextBlock.create(getTextBlockJson()));
+        expectHostIds(elem, sourceElementId, category);
+
+        const context = new IModelElementCloneContext(imodel, dstIModel);
+
+        ElementDrivesTextAnnotation.remapFields(elem, context);
+        expectHostIds(elem, Id64.invalid, Id64.invalid);
+      });
     });
   });
 

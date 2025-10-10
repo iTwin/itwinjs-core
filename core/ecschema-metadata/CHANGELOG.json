@@ -2,6 +2,45 @@
   "name": "@itwin/ecschema-metadata",
   "entries": [
     {
+      "version": "5.2.2",
+      "tag": "@itwin/ecschema-metadata_v5.2.2",
+      "date": "Fri, 10 Oct 2025 14:49:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.2.1",
+      "tag": "@itwin/ecschema-metadata_v5.2.1",
+      "date": "Thu, 09 Oct 2025 17:10:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.2.0",
+      "tag": "@itwin/ecschema-metadata_v5.2.0",
+      "date": "Wed, 01 Oct 2025 20:22:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added isDynamic property on Schema instances to indicate if the schema instance represents a dynamic schema."
+          },
+          {
+            "comment": "Add optional 'description' property to FormatSet"
+          },
+          {
+            "comment": "Add FormatSetFormatsProvider"
+          },
+          {
+            "comment": "Add required UnitSystem field to FormatSet interface"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.1.9",
+      "tag": "@itwin/ecschema-metadata_v5.1.9",
+      "date": "Wed, 24 Sep 2025 17:38:08 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.1.8",
       "tag": "@itwin/ecschema-metadata_v5.1.8",
       "date": "Wed, 17 Sep 2025 17:17:16 GMT",
