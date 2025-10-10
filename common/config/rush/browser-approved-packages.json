@@ -139,6 +139,10 @@
       "allowedCategories": [ "backend", "common", "internal" ]
     },
     {
+      "name": "@cesium/engine",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
       "name": "@itwin/appui-abstract",
       "allowedCategories": [ "edit", "extensions", "frontend", "internal" ]
     },
@@ -453,6 +457,10 @@
     {
       "name": "case-sensitive-paths-webpack-plugin",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "cesium",
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "chai",
