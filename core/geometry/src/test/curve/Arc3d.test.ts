@@ -1759,4 +1759,107 @@ describe("Arc3dTangents", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3dTangents", "LineTangentPointCircle");
     expect(ck.getNumErrors()).toBe(0);
   });
+
+  it.only("TangentIntersection", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+
+    const testTangentIntersection = (arc: Arc3d, expectedIntersection: Point3d, x0: number, scale: number) => {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, x0);
+      let intersection = arc.computeTangentIntersection();
+      ck.testDefined(intersection, "intersection is defined");
+      ck.testPoint3d(intersection!, expectedIntersection, "intersection at (" + expectedIntersection.toJSON() + ")");
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, intersection!, 0.1, x0);
+      let ray0 = arc.fractionToPointAndDerivative(0);
+      let ls0 = LineSegment3d.create(
+        ray0.origin.plusScaled(ray0.direction.scaleToLength(1)!, -scale),
+        ray0.origin.plusScaled(ray0.direction.scaleToLength(1)!, scale),
+      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls0, x0);
+      let ray1 = arc.fractionToPointAndDerivative(1);
+      let ls1 = LineSegment3d.create(
+        ray1.origin.plusScaled(ray1.direction.scaleToLength(1)!, -scale),
+        ray1.origin.plusScaled(ray1.direction.scaleToLength(1)!, scale),
+      );
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls1, x0);
+    }
+
+    // unit circle
+    let x0 = 0;
+    let scale = 1;
+    let arc = Arc3d.create(
+      Point3d.create(0, 0), Vector3d.create(1, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(0, 90),
+    );
+    let expectedIntersection = Point3d.create(1, 1);
+    testTangentIntersection(arc, expectedIntersection, x0, scale);
+    arc.sweep = AngleSweep.createStartEndDegrees(0, 180);
+    ck.testUndefined(arc.computeTangentIntersection(), "no intersection on semi-circle");
+    x0 += 10;
+    arc.sweep = AngleSweep.createStartEndDegrees(0, 270);
+    expectedIntersection = Point3d.create(1, -1);
+    testTangentIntersection(arc, expectedIntersection, x0, scale);
+
+    // normal ellipse
+    x0 += 10;
+    scale = 4;
+    arc = Arc3d.create(
+      Point3d.create(0, 0), Vector3d.create(2, 0), Vector3d.create(0, 3), AngleSweep.createStartEndDegrees(0, 90),
+    );
+    expectedIntersection = Point3d.create(2, 3);
+    testTangentIntersection(arc, expectedIntersection, x0, scale);
+    arc.sweep = AngleSweep.createStartEndDegrees(0, 180);
+    ck.testUndefined(arc.computeTangentIntersection(), "no intersection on semi-ellipse");
+    x0 += 10;
+    arc.sweep = AngleSweep.createStartEndDegrees(0, 270);
+    expectedIntersection = Point3d.create(2, -3);
+    testTangentIntersection(arc, expectedIntersection, x0, scale);
+
+    // tilted ellipse
+    x0 += 10;
+    scale = 2;
+    arc = Arc3d.create(
+      Point3d.create(0, 0), Vector3d.create(1, 0), Vector3d.create(1, 1), AngleSweep.createStartEndDegrees(0, 90),
+    );
+    expectedIntersection = Point3d.create(2, 1);
+    testTangentIntersection(arc, expectedIntersection, x0, scale);
+    arc.sweep = AngleSweep.createStartEndDegrees(0, 180);
+    ck.testUndefined(arc.computeTangentIntersection(), "no intersection on semi-ellipse");
+    x0 += 10;
+    arc.sweep = AngleSweep.createStartEndDegrees(0, 270);
+    expectedIntersection = Point3d.create(0, -1);
+    testTangentIntersection(arc, expectedIntersection, x0, scale);
+
+    // non-xy ellipse
+    x0 += 10;
+    scale = 2;
+    arc = Arc3d.create(
+      Point3d.create(0, 0), Vector3d.create(1, 0), Vector3d.create(0, 0, 1), AngleSweep.createStartEndDegrees(0, 90),
+    );
+    expectedIntersection = Point3d.create(1, 0, 1);
+    testTangentIntersection(arc, expectedIntersection, x0, scale);
+    arc.sweep = AngleSweep.createStartEndDegrees(0, 180);
+    ck.testUndefined(arc.computeTangentIntersection(), "no intersection on semi-ellipse");
+    x0 += 10;
+    arc.sweep = AngleSweep.createStartEndDegrees(0, 270);
+    expectedIntersection = Point3d.create(1, 0, -1);
+    testTangentIntersection(arc, expectedIntersection, x0, scale);
+
+    // special cases
+    ck.testUndefined(arc.computeTangentIntersection(0, 0), "no intersection for equal fractions");
+    ck.testUndefined(arc.computeTangentIntersection(0, 1e-12), "no intersection for close fractions");
+    ck.testUndefined(arc.computeTangentIntersection(0.5, 0.5), "no intersection for equal fractions");
+    arc.sweep = AngleSweep.createStartEndDegrees(0, 0);
+    ck.testUndefined(arc.computeTangentIntersection(), "no intersection for zero sweep");
+    arc.sweep = AngleSweep.createStartEndDegrees(0, 360);
+    ck.testUndefined(arc.computeTangentIntersection(), "no intersection for full sweep");
+    ck.testUndefined(arc.computeTangentIntersection(0, 1.5), "no intersection for fractions beyond [0,1]");
+    arc.sweep = AngleSweep.createStartEndDegrees(0, 1e-15);
+    ck.testUndefined(arc.computeTangentIntersection(), "no intersection for close sweeps");
+
+    // fillet
+    
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3dTangents", "TangentIntersection");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });
