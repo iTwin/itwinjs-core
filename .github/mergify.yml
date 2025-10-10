@@ -38,7 +38,7 @@ pull_request_rules:
       - and:
           - merged
           - base=master
-          - label="Security"
+          - label="security"
     actions:
       backport:
         branches:
