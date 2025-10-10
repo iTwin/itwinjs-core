@@ -1,5 +1,5 @@
 import { BeEvent, DbResult, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { Code, ElementProps, EntityProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, IModelError, RelatedElement, RelationshipProps } from "@itwin/core-common";
+import { Code, ElementProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, IModelError, RelatedElement, RelationshipProps } from "@itwin/core-common";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
@@ -15,7 +15,6 @@ import { ElementDrivesElement, ElementDrivesElementProps } from "../Relationship
 import { Schema, Schemas } from "../Schema";
 import { HubWrappers } from "./IModelTestUtils";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { on } from "node:events";
 chai.use(chaiAsPromised);
 /**
   1. What is Change Propagation?**
@@ -187,8 +186,8 @@ export class TopologicalSorter {
     for (const node of graph.nodes()) {
       inDegree.set(node, 0);
     }
-    for (const { from, to } of graph.edges()) {
-      inDegree.set(to, (inDegree.get(to) ?? 0) + 1);
+    for (const edge of graph.edges()) {
+      inDegree.set(edge.to, (inDegree.get(edge.to) ?? 0) + 1);
     }
 
     if (updated) {
