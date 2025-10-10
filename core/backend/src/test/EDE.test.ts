@@ -267,7 +267,7 @@ class ElementDrivesElementEventMonitor {
   }
 }
 export interface InputDrivesOutputProps extends ElementDrivesElementProps {
-  prop: string
+  prop: number;
 }
 
 export interface NodeElementProps extends GeometricElement3dProps {
@@ -381,7 +381,7 @@ export class Engine {
     for (const edge of graph.edges()) {
       const fromId = nodes.get(edge.from)!.id;
       const toId = nodes.get(edge.to)!.id;
-      await this.insertEdge(iModelDb, fromId, toId, "");
+      await this.insertEdge(iModelDb, fromId, toId, 0);
       outGraph.addEdge(nodes.get(edge.from)!, nodes.get(edge.to)!);
     }
     return outGraph;
@@ -415,7 +415,7 @@ export class Engine {
           classFullName: InputDrivesOutput.classFullName,
           sourceId: stmt.getValue(1).getId(),
           targetId: stmt.getValue(2).getId(),
-          prop: stmt.getValue(3).getString(),
+          prop: stmt.getValue(3).getDouble(),
           status: stmt.getValue(4).getInteger(),
           priority: stmt.getValue(5).getInteger(),
         });
@@ -434,7 +434,7 @@ export class Engine {
           classFullName: InputDrivesOutput.classFullName,
           sourceId: stmt.getValue(1).getId(),
           targetId: stmt.getValue(2).getId(),
-          prop: stmt.getValue(3).getString(),
+          prop: stmt.getValue(3).getDouble(),
           status: stmt.getValue(4).getInteger(),
           priority: stmt.getValue(5).getInteger(),
         });
@@ -537,7 +537,7 @@ export class Engine {
     }
     iModelDb.relationships.deleteInstance(edge);
   }
-  public static async insertEdge(iModelDb: IModelDb, sourceId: Id64String, targetId: Id64String, prop: string) {
+  public static async insertEdge(iModelDb: IModelDb, sourceId: Id64String, targetId: Id64String, prop: number) {
     const props: InputDrivesOutputProps = {
       classFullName: InputDrivesOutput.classFullName,
       sourceId,
@@ -714,7 +714,7 @@ describe.only("EDE Tests", () => {
     chai.expect(sorted8).to.deep.equal(["Watch"]);
   });
 
-  it.only("EDE: basic graph operations", async () => {
+  it("EDE: basic graph operations", async () => {
     const b1 = await openBriefcase();
     const { modelId, } = await Engine.initialize(b1);
     const graph = new Graph<string>();
@@ -769,5 +769,29 @@ describe.only("EDE Tests", () => {
     chai.expect(monitor.onAllInputsHandled).to.deep.equal([]);
     chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal([]);
     chai.expect(monitor.onDeletedDependency).to.deep.equal([["B", "E"]]);
+  });
+  it.only("EDE: cyclical throw exception", async () => {
+    const b1 = await openBriefcase();
+    const { modelId, } = await Engine.initialize(b1);
+    const graph = new Graph<string>();
+    // Graph structure with a cycle:
+    //   A
+    //  / \
+    // B - C
+
+    graph.addEdge("A", ["B"]);
+    graph.addEdge("B", ["C"]);
+    graph.addEdge("C", ["A"]);
+
+    const monitor = new ElementDrivesElementEventMonitor(b1);
+    // create a network
+    await Engine.createGraph(b1, modelId, graph);
+    chai.expect(() => b1.saveChanges()).to.throw("Could not save changes due to propagation failure.");
+    b1.abandonChanges();
+    chai.expect(monitor.onRootChanged).to.deep.equal([["B", "C"], ["C", "A"], ["A", "B"]]);
+    chai.expect(monitor.onAllInputsHandled).to.deep.equal(["C", "A", "B"]);
+    chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal([]);
+    chai.expect(monitor.onDeletedDependency).to.deep.equal([]);
+    monitor.clear();
   });
 });
