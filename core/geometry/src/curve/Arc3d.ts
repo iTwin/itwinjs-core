@@ -1539,6 +1539,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @returns intersection point, or undefined if tangents are undefined or parallel.
    */
   public computeTangentIntersection(f0: number = 0, f1: number = 1, result?: Point3d): Point3d | undefined {
+    if (Angle.isAlmostEqualRadiansAllowPeriodShift(this.sweep.fractionToRadians(f0), this.sweep.fractionToRadians(f1)))
+      return undefined; // filter more almost-parallel tangents than SmallSystem
     const worldRay0 = this.fractionToPointAndDerivative(f0, Arc3d._workRay2);
     const localRay0 = worldRay0.clone(Arc3d._workRay0);
     const localRay1 = this.fractionToPointAndDerivative(f1, Arc3d._workRay1);
