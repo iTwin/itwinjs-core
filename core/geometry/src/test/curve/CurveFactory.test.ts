@@ -204,49 +204,49 @@ describe("CurveFactory", () => {
     points.reverse();
     const lineString1 = LineString3d.create(points);
 
-    const verifyGeometry = (chain: Path, filletClosure: boolean, radius: number) => {
-      if (radius <= 0)
+    const verifyGeometry = (chain0: Path, filletClosure: boolean, radius0: number) => {
+      if (radius0 <= 0)
         return;
-      ck.testPoint3d(chain.startPoint()!, chain.endPoint()!, "fillet polygon should be closed");
-      if (filletClosure && radius < minSegmentLength / 2.0) {
-        const arc = chain.getChild(0);
+      ck.testPoint3d(chain0.startPoint()!, chain0.endPoint()!, "fillet polygon should be closed");
+      if (filletClosure && radius0 < minSegmentLength / 2.0) {
+        const arc = chain0.getChild(0);
         ck.testTrue(arc instanceof Arc3d, "expect arc at start of fillet polygon if filletClosure is true");
       }
-      for (let arc of chain.children) {
+      for (const arc of chain0.children) {
         if (arc instanceof Arc3d) {
           ck.testTrue(arc.isCircular, "expect fillet to be circular");
-          ck.testCoordinate(arc.circularRadius()!, radius, "expect fillet radius === radius");
+          ck.testCoordinate(arc.circularRadius()!, radius0, "expect fillet radius === radius");
         }
       }
     }
 
     // single radius, all combinations of allowCusp and filletClosure
-    for (const radius of [0, 0.2, 0.4, 0.6, 0.8, 1.2, 2.0, 4.0, 6.0]) {
+    for (const radius0 of [0, 0.2, 0.4, 0.6, 0.8, 1.2, 2.0, 4.0, 6.0]) {
       let y0 = 0;
       for (const lineString of [lineString0, lineString1]) {
         let allowCusp = false;
         let filletClosure = true;
-        const chain0T = CurveFactory.createFilletsInLineString(lineString, radius, { allowCusp, filletClosure })!;
+        const chain0T = CurveFactory.createFilletsInLineString(lineString, radius0, { allowCusp, filletClosure })!;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain0T, x0, y0);
-        verifyGeometry(chain0T, filletClosure, radius);
+        verifyGeometry(chain0T, filletClosure, radius0);
         y0 += 8;
         allowCusp = false;
         filletClosure = false;
-        const chain0F = CurveFactory.createFilletsInLineString(lineString, radius, { allowCusp, filletClosure })!;
+        const chain0F = CurveFactory.createFilletsInLineString(lineString, radius0, { allowCusp, filletClosure })!;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain0F, x0, y0);
-        verifyGeometry(chain0F, filletClosure, radius);
+        verifyGeometry(chain0F, filletClosure, radius0);
         y0 += 20;
         allowCusp = true;
         filletClosure = true;
-        const chain1T = CurveFactory.createFilletsInLineString(lineString, radius, { allowCusp, filletClosure })!;
+        const chain1T = CurveFactory.createFilletsInLineString(lineString, radius0, { allowCusp, filletClosure })!;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain1T, x0, y0);
-        verifyGeometry(chain1T, filletClosure, radius);
+        verifyGeometry(chain1T, filletClosure, radius0);
         y0 += 8;
         allowCusp = true;
         filletClosure = false;
-        const chain1F = CurveFactory.createFilletsInLineString(lineString, radius, { allowCusp, filletClosure })!;
+        const chain1F = CurveFactory.createFilletsInLineString(lineString, radius0, { allowCusp, filletClosure })!;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain1F, x0, y0);
-        verifyGeometry(chain0T, filletClosure, radius);
+        verifyGeometry(chain0T, filletClosure, radius0);
         y0 += 20;
       }
       x0 += 20;
@@ -264,9 +264,9 @@ describe("CurveFactory", () => {
     const s = 5;
     const square = LineString3d.create([0, 0], [s, 0], [s, s], [0, s]);
     let radius = s / 2;
-    const verifyCircle = (chain: Path) => {
-      ck.testCoordinate(chain.children.length, 1, "expect one child after consolidateAdjacentPrimitives");
-      const circle = chain.children[0] as Arc3d;
+    const verifyCircle = (chain0: Path) => {
+      ck.testCoordinate(chain0.children.length, 1, "expect one child after consolidateAdjacentPrimitives");
+      const circle = chain0.children[0] as Arc3d;
       ck.testTrue(circle instanceof Arc3d, "expect a single arc after call to consolidateAdjacentPrimitives");
       ck.testTrue(circle.isCircular, "expect arc to be circular");
       ck.testTrue(circle.sweep.isFullCircle, "expect arc to be full circle");
