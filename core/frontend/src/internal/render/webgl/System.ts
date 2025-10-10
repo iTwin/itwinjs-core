@@ -71,7 +71,7 @@ import { RenderInstancesParams } from "../../../common/render/RenderInstancesPar
 import { _batch, _branch, _featureTable, _nodes } from "../../../common/internal/Symbols";
 import { RenderInstancesParamsImpl } from "../../../internal/render/RenderInstancesParamsImpl";
 import { RenderSkyBoxParams } from "../RenderSkyBoxParams";
-import { RenderAreaPattern } from "../RenderAreaPattern";
+import { RenderAreaPattern } from "../../../internal/render/RenderAreaPattern";
 
 /* eslint-disable no-restricted-syntax */
 
