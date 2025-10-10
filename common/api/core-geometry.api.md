@@ -2405,8 +2405,8 @@ export class GrowableFloat64Array {
 }
 
 // @public
-export class GrowableXYArray extends IndexedXYCollection {
-    constructor(numPoints?: number, growthFactor?: number);
+export class GrowableXYArray extends IndexedReadWriteXYCollection {
+    constructor(numPoints?: number, growthFactor?: number, data?: Float64Array);
     areaXY(): number;
     back(result?: Point2d): Point2d | undefined;
     clear(): void;
@@ -2420,6 +2420,7 @@ export class GrowableXYArray extends IndexedXYCollection {
     static create(data: any, result?: GrowableXYArray): GrowableXYArray;
     // @deprecated
     static createArrayOfGrowableXYZArray(data: MultiLineStringDataVariant): GrowableXYZArray[] | undefined;
+    static createCapture(data: Float64Array): GrowableXYArray;
     static createFromGrowableXYZArray(source: GrowableXYZArray, transform?: Transform, dest?: GrowableXYArray): GrowableXYArray;
     crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number): number | undefined;
     crossProductXAndYIndexIndex(origin: XAndY, targetAIndex: number, targetBIndex: number): number | undefined;
@@ -2469,7 +2470,7 @@ export class GrowableXYArray extends IndexedXYCollection {
 
 // @public
 export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
-    constructor(numPoints?: number, growthFactor?: number);
+    constructor(numPoints?: number, growthFactor?: number, data?: Float64Array);
     accumulateCrossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result: Vector3d): void;
     accumulateScaledXYZ(index: number, scale: number, sum: Point3d): void;
     addSteppedPoints(other: GrowableXYZArray, pointIndex0: number, step: number, numAdd: number): void;
@@ -2486,6 +2487,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     };
     static create(data: any, result?: GrowableXYZArray): GrowableXYZArray;
     static createArrayOfGrowableXYZArray(data: MultiLineStringDataVariant): GrowableXYZArray[] | undefined;
+    static createCapture(data: Float64Array): GrowableXYZArray;
     static createCompressed(source: IndexedXYZCollection, tolerance?: number, result?: GrowableXYZArray): GrowableXYZArray;
     crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined;
     crossProductXYAndZIndexIndex(origin: XYAndZ, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined;
@@ -2964,6 +2966,15 @@ export class IndexedPolyfaceWalker {
     get polyface(): IndexedPolyface;
     previousAroundFacet(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
     previousAroundVertex(result?: IndexedPolyfaceWalker): IndexedPolyfaceWalker;
+}
+
+// @public
+export abstract class IndexedReadWriteXYCollection extends IndexedXYCollection {
+    abstract clear(): void;
+    abstract pop(): void;
+    abstract push(point: XAndY): void;
+    abstract pushXY(x?: number, y?: number): void;
+    abstract reverseInPlace(): void;
 }
 
 // @public

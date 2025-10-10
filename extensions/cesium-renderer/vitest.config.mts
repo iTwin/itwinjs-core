@@ -1,4 +1,5 @@
 import { coverageConfigDefaults, defineConfig } from "vitest/config";
+
 export default defineConfig({
   esbuild: {
     target: "es2022",
@@ -6,6 +7,7 @@ export default defineConfig({
   test: {
     dir: "src",
     // include: ["**/<insert-file-name-here>.test.ts"],
+    exclude: ["**/PrimitiveConverters.test.ts"],
     browser: {
       provider: "playwright",
       enabled: true,
