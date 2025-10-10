@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Remove beta support for reading contour line information from the GPU.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

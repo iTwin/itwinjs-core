@@ -324,12 +324,17 @@ export interface UnitFormattingSettingsProvider {
  */
 export class QuantityTypeFormatsProvider implements FormatsProvider {
   public onFormatsChanged = new BeEvent<(args: FormatsChangedArgs) => void>();
-
+  private _removeListeners: (() => void)[] = [];
   public constructor() {
-    IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener(() => {
+    this._removeListeners.push(IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener(() => {
       this.onFormatsChanged.raiseEvent({ formatsChanged: "all" });
-    });
+    }));
   }
+
+  public [Symbol.dispose]() {
+    this._removeListeners.forEach(listener => listener());
+  }
+
   private _kindOfQuantityMap = new Map<string, QuantityType>([
     ["AecUnits.LENGTH", QuantityType.Length],
     ["AecUnits.ANGLE", QuantityType.Angle],

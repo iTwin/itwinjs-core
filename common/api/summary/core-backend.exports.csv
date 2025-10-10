@@ -414,6 +414,7 @@ beta;interface;OnSubModelPropsArg
 public;type;OpenBriefcaseArgs
 public;class;OrthographicViewDefinition
 preview;class;OrthographicViewDefinition
+internal;function;parseTextAnnotationData
 beta;class;PartialECChangeUnifier
 public;class;PhysicalElement
 preview;class;PhysicalElement
@@ -570,6 +571,8 @@ beta;class;TemplateRecipe2d
 beta;class;TemplateRecipe3d
 internal;class;TemplateViewDefinition2d
 internal;class;TemplateViewDefinition3d
+internal;const;TEXT_ANNOTATION_JSON_VERSION
+internal;const;TEXT_STYLE_SETTINGS_JSON_VERSION
 public;class;TextAnnotation2d
 preview;class;TextAnnotation2d
 beta;interface;TextAnnotation2dCreateArgs
@@ -580,6 +583,7 @@ beta;class;TextAnnotationUsesTextStyleByDefault
 beta;interface;TextBlockAndId
 beta;class;TextBlockLayout
 internal;interface;TextLayoutRanges
+beta;interface;TextStyleCreateArgs
 beta;class;TextStyleResolver
 beta;interface;TextStyleResolverArgs
 public;class;Texture
