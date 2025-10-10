@@ -25,7 +25,8 @@ export class EventController {
 
     // Put events  on the parentDiv to allows us to stopPropagation of events to the view canvas when they are meant for a sibling of view canvas (markup canvas, for example).
     this.addDomListeners(["mousedown", "mouseup", "mousemove", "mouseover", "mouseout", "wheel", "touchstart", "touchend", "touchcancel", "touchmove"], element);
-    this.addDomListeners(["pointerup", "pointerdown", "pointermove"], element);
+    // this.addDomListeners(["pointerup", "pointerdown", "pointermove"], element);
+
     // if (element.parentElement) {
     //   this.addDomListeners(["mousedown", "mouseup"], element.parentElement);
     // }

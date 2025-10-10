@@ -5,7 +5,7 @@
 
 import { Code, EcefLocation, ViewDefinition3dProps } from "@itwin/core-common";
 import { IModelApp, SpatialViewState } from "@itwin/core-frontend";
-import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion, PerspectiveFrustum, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler } from "@cesium/engine";
+import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion, PerspectiveFrustum, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler, ScreenSpaceEventType } from "@cesium/engine";
 import { createCesiumCameraProps } from "./CesiumCamera.js";
 import { Angle, YawPitchRollAngles } from "@itwin/core-geometry";
 
@@ -304,7 +304,8 @@ export class CesiumScene {
         vp.applyViewState(newView);
       }
 
-      // console.log("New itwinjs view:", vp.view);
+      this._screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.LEFT_CLICK);
+      this._screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.RIGHT_CLICK);
     }
   }
 }

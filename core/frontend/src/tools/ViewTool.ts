@@ -1164,8 +1164,8 @@ class ViewPan extends HandleWithInertia {
     vp.setupFromView();
     this._lastPtNpc.setFrom(thisPtNpc);
 
-    console.log("Performed pan operation");
-    console.log("View definition:", vp.view.toJSON());
+    // console.log("Performed pan operation");
+    // console.log("View definition:", vp.view.toJSON());
 
     return true;
   }
