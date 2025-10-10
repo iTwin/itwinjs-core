@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-quantity",
-  "version": "5.2.1",
+  "version": "5.2.2",
   "description": "Quantity parsing, formatting and conversions for iModel.js",
   "main": "lib/cjs/core-quantity.js",
   "module": "lib/esm/core-quantity.js",

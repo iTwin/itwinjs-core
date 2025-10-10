@@ -1,6 +1,6 @@
 {
   "name": "@itwin/linear-referencing-common",
-  "version": "5.2.1",
+  "version": "5.2.2",
   "main": "lib/cjs/linear-referencing-common.js",
   "module": "lib/esm/linear-referencing-common.js",
   "typings": "lib/cjs/linear-referencing-common",
