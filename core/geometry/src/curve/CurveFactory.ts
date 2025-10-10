@@ -109,17 +109,23 @@ interface SmoothCurveData {
 
 /**
  * Interface bundling options for [[CurveFactory.createFilletsInLineString]].
- * This option has 2 elements: `allowCusp` and `filletClosure`. If `allowCusp` is `true` it allows creation of retrograde
- * edges to join large-radius fillets (this results in cusps in the output path). If `false`, such a fillet is disallowed,
- * resulting in a simple corner. Also if `filletClosure` is true, treat `points` as a polygon (closure point optional but
- * the returned path will be closed) and create a fillet at the start point. If `false` (default), the first and last
- * points receive no fillet and their respective entries in the radius array are ignored.
  * @public
  */
 export interface CreateFilletsInLineStringOptions {
-  /** Allow creation of retrograde edges to join large-radius fillets. */
+  /**
+   * Allow creation of retrograde edges to join large-radius fillets.
+   * * If `true` (default), cusps are present in the output `Path` when the radius is too large.
+   * * If `false`, a fillet with overly large radius is disallowed, resulting in a simple corner.
+  */
   allowCusp?: boolean;
-  /** Fillet at the closure. */
+  /**
+   * Whether to fillet the closure.
+   * * If `true`, the input line string is treated as a polygon (closure point optional), and the output `Path` is
+   * closed and has a fillet at its start point. If both first and last input points are identical, the last point's
+   * entry in the radius array is ignored.
+   * * If `false` (default), the first and last points receive no fillet and their respective entries in the radius
+   * array are ignored.
+   */
   filletClosure?: boolean;
 }
 
@@ -158,8 +164,7 @@ export class CurveFactory {
    *  * A zero radius for any point indicates to leave the as a simple corner.
    * @param points point source.
    * @param radius fillet radius or array of radii indexed to correspond to the points.
-   * @param allowCuspOrOptions either `true` (default) or `false` to allow or disallow retrograde arcs, or an options
-   * object with `allowCusp` and `filletClosure` properties. See [[CreateFilletsInLineStringOptions]] for details.
+   * @param allowCuspOrOptions flag to allow cusps in output (default `true`), or a list of extended options.
    */
   public static createFilletsInLineString(
     points: LineString3d | IndexedXYZCollection | Point3d[],
