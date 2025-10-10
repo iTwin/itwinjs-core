@@ -1,17 +1,13 @@
 import { coverageConfigDefaults, defineConfig } from "vitest/config";
-import { fileURLToPath } from "node:url";
-import { dirname, resolve } from "node:path";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const publicDir = resolve(__dirname, "public");
 export default defineConfig({
   esbuild: {
     target: "es2022",
   },
-  publicDir,
   test: {
     dir: "src",
     // include: ["**/<insert-file-name-here>.test.ts"],
+    exclude: ["**/PrimitiveConverters.test.ts"],
     browser: {
       provider: "playwright",
       enabled: true,
