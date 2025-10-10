@@ -2,7 +2,7 @@
 Please rename the PR to follow the following convention:
 PR Title: "Security Fix: <Short Description of Changes>"
 
-Please add the "securty" label to the PR.
+Please add the "security" label to the PR.
 -->
 
 ## Security Fix
