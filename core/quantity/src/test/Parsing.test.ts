@@ -986,6 +986,34 @@ describe("Synchronous Parsing tests:", async () => {
     }
   });
 
+  it("parse returns a bad value with ParseError.UnitLabelSuppliedButNotMatched", async () => {
+    const formatDataUnitless = {
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 8,
+      type: "Fractional",
+      uomSeparator: "",
+      allowMathematicOperations: true,
+    };
+    const formatUnitless = new Format("test");
+    await formatUnitless.fromJSON(unitsProvider, formatDataUnitless);
+    const unitlessParserSpec = await ParserSpec.create(formatUnitless, unitsProvider, outUnit, unitsProvider);
+
+    const testData = [
+      "100 INVALIDUNIT",
+      "50 BADLABEL",
+      "25.5 UNKNOWNUNIT",
+      "1.5 NOTFOUND",
+      "1metera + 123 + 1.65"
+    ];
+
+    for (const testEntry of testData) {
+      const parseResult = Parser.parseQuantityString(testEntry, unitlessParserSpec);
+      expect(Parser.isParseError(parseResult)).to.be.true;
+      if (Parser.isParseError(parseResult)) {
+        expect(parseResult.error).toEqual(ParseError.UnitLabelSuppliedButNotMatched);
+      }
+    }
+  });
   it("Parse into length values using custom parse labels", () => {
     const testData = [
       // if no quantity is provided then the format unit is used to determine unit
