@@ -255,6 +255,8 @@ export namespace CloudSqlite {
     readonly memoryUsed?: string;
     /** The maximum value of memoryUsed since high-water mark was last reset, in bytes. */
     readonly memoryHighwater?: string;
+    /** The total amount of memory used for the manifests for each attached container, in bytes. */
+    readonly memoryManifest?: string;
   }
 
   /** The base name of a CloudSqlite database, without any version information.

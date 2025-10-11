@@ -305,6 +305,10 @@ describe("CloudSqlite", () => {
     expect(stats.memoryHighwater).to.not.be.undefined;
     assert(stats.memoryHighwater !== undefined);
     expect(parseInt(stats.memoryHighwater, 16)).to.be.greaterThanOrEqual(parseInt(stats.memoryUsed, 16));
+    // memoryManifest is the amount of memory used for the manifests for each attached container.
+    expect(stats.memoryManifest).to.not.be.undefined;
+    assert(stats.memoryManifest !== undefined);
+    expect(parseInt(stats.memoryManifest, 16)).to.be.greaterThan(0);
 
     const dbs = container.queryDatabases();
     expect(dbs.length).to.be.greaterThanOrEqual(1);
