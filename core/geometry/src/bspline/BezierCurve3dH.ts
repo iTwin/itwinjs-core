@@ -6,6 +6,7 @@
  * @module Bspline
  */
 
+import { expectDefined } from "@itwin/core-bentley";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
@@ -219,21 +220,20 @@ export class BezierCurve3dH extends BezierCurveBase {
    * * This assumes this bezier is saturated.
    * @param spacePoint point being projected
    * @param detail pre-allocated detail to record (evolving) closest point.
-   * @returns true if an updated occurred, false if either (a) no perpendicular projections or (b) perpendiculars were
-   * not closer or (c) Bezier order is too low.
+   * @returns true if an updated occurred, false if either (a) no perpendicular projections or (b) perpendiculars were not closer.
    */
   public updateClosestPointByTruePerpendicular(spacePoint: Point3d, detail: CurveLocationDetail,
     testAt0: boolean = false,
     testAt1: boolean = false): boolean {
     let numUpdates = 0;
     let roots: number[] | undefined;
+    if (this.order < 2)
+      return false;
     if (this.isUnitWeight()) {
       // unweighted !!!
       const productOrder = 2 * this.order - 2;
       this.allocateAndZeroBezierWorkData(productOrder, 0, 0);
-      const bezier = this._workBezier;
-      if (!bezier)
-        return false;
+      const bezier = expectDefined(this._workBezier);
       // closestPoint condition is:
       //   (spacePoint - curvePoint) DOT curveTangent = 0;
       // Each product (x,y,z) of the DOT is the product of two bezier polynomials
@@ -251,11 +251,9 @@ export class BezierCurve3dH extends BezierCurveBase {
       const orderB = 2 * this.order - 2; // products of component and component difference.
       const productOrder = orderA + orderB - 1;
       this.allocateAndZeroBezierWorkData(productOrder, orderA, orderB);
-      const bezier = this._workBezier;
-      const workA = this._workCoffsA;
-      const workB = this._workCoffsB;
-      if (!bezier || !workA || !workB)
-        return false;
+      const bezier = expectDefined(this._workBezier);
+      const workA = expectDefined(this._workCoffsA);
+      const workB = expectDefined(this._workCoffsB);
       const packedData = this._polygon.packedData;
       for (let i = 0; i < 3; i++) {
         // x representing loop pass:   (w * spacePoint.x - curve.x(s)) * (curveDelta.x(s) * curve.w(s) - curve.x(s) * curveDelta.w(s))
@@ -296,11 +294,11 @@ export class BezierCurve3dH extends BezierCurveBase {
    */
   public extendRange(rangeToExtend: Range3d, transform?: Transform) {
     const order = this.order;
+    if (order < 2)
+      return;
     if (!transform) {
       this.allocateAndZeroBezierWorkData(order * 2 - 2, 0, 0);
-      const bezier = this._workBezier;
-      if (!bezier)
-        return;
+      const bezier = expectDefined(this._workBezier);
       const data = this._polygon.packedData;
       this.getPolePoint3d(0, this._workPoint0);
       rangeToExtend.extend(this._workPoint0);
@@ -338,11 +336,9 @@ export class BezierCurve3dH extends BezierCurveBase {
       }
     } else {
       this.allocateAndZeroBezierWorkData(order * 2 - 2, order, order);
-      const componentCoffs = this._workCoffsA;   // to hold transformed copy of x,y,z in turn.
-      const weightCoffs = this._workCoffsB;    // to hold weights
-      const bezier = this._workBezier;
-      if (!bezier || !componentCoffs || !weightCoffs)
-        return;
+      const componentCoffs = expectDefined(this._workCoffsA);   // to hold transformed copy of x,y,z in turn.
+      const weightCoffs = expectDefined(this._workCoffsB);    // to hold weights
+      const bezier = expectDefined(this._workBezier);
       this.getPolePoint3d(0, this._workPoint0);
       rangeToExtend.extendTransformedPoint(transform, this._workPoint0);
       this.getPolePoint3d(order - 1, this._workPoint0);
