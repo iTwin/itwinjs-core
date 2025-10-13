@@ -297,8 +297,8 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
   }
 
   /** @internal */
-  protected static override onCloned(context: IModelElementCloneContext, srcProps: TextAnnotation2dProps, dstProps: TextAnnotation2dProps): void {
-    super.onCloned(context, srcProps, dstProps);
+  protected static override async onCloned(context: IModelElementCloneContext, srcProps: TextAnnotation2dProps, dstProps: TextAnnotation2dProps): Promise<void> {
+    await super.onCloned(context, srcProps, dstProps);
 
     const srcElem = TextAnnotation2d.fromJSON(srcProps, context.sourceDb);
     ElementDrivesTextAnnotation.remapFields(srcElem, context);
@@ -484,8 +484,8 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
   }
 
   /** @internal */
-  protected static override onCloned(context: IModelElementCloneContext, srcProps: TextAnnotation3dProps, dstProps: TextAnnotation3dProps): void {
-    super.onCloned(context, srcProps, dstProps);
+  protected static override async onCloned(context: IModelElementCloneContext, srcProps: TextAnnotation3dProps, dstProps: TextAnnotation3dProps): Promise<void> {
+    await super.onCloned(context, srcProps, dstProps);
 
     const srcElem = TextAnnotation3d.fromJSON(srcProps, context.sourceDb);
     ElementDrivesTextAnnotation.remapFields(srcElem, context);
@@ -721,7 +721,7 @@ export class AnnotationTextStyle extends DefinitionElement {
    * corresponding to `sourceTextStyleId`, or [Id64.invalid]($bentley) if no corresponding text style exists.
    * If a text style with the same [Code]($common) exists in the target iModel, the style Id will be remapped to refer to that style.
    * Otherwise, a copy of the style will be imported into the target iModel and its element Id returned.
-   * Implementations of [[ITextAnnotation]] should invoke this function when implementing their [[Element._onCloned]] method.
+   * Implementations of [[ITextAnnotation]] should invoke this function when implementing their [[Element.onCloned]] method.
    * @throws Error if an attempt to import the text style failed.
    */
   public static remapTextStyleId(sourceTextStyleId: Id64String, context: IModelElementCloneContext): Id64String {
@@ -755,8 +755,8 @@ export class AnnotationTextStyle extends DefinitionElement {
     return dstStyleId;
   }
 
-  protected static override onCloned(context: IModelElementCloneContext, srcProps: AnnotationTextStyleProps, dstProps: AnnotationTextStyleProps): void {
-    super.onCloned(context, srcProps, dstProps);
+  protected static override async onCloned(context: IModelElementCloneContext, srcProps: AnnotationTextStyleProps, dstProps: AnnotationTextStyleProps): Promise<void> {
+    await super.onCloned(context, srcProps, dstProps);
     if (!context.isBetweenIModels) {
       return;
     }
@@ -771,6 +771,6 @@ export class AnnotationTextStyle extends DefinitionElement {
       }
     }
 
-    await Promise.all(fontsToEmbed.map((file) => context.targetDb.fonts.embedFontFile({ file })));
+    await Promise.all(fontsToEmbed.map(async (file) => context.targetDb.fonts.embedFontFile({ file })));
   }
 }
