@@ -316,6 +316,7 @@ internal;class;IModelFrameLifecycle
 public;interface;IModelIdArg
 public;class;IModelRoutingContext
 internal;class;IModelTileTree
+internal;const;_implementationProhibited
 public;class;InputCollector
 public;enum;InputSource
 beta;interface;Instance
@@ -530,9 +531,11 @@ public;class;RealityTileTree
 beta;function;registerWorker
 alpha;class;RemoteExtensionProvider
 alpha;interface;RemoteExtensionProviderProps
+internal;interface;RenderAreaPattern
 public;class;RenderClipVolume
 public;class;RenderContext
 internal;enum;RenderDiagnostics
+internal;interface;RenderGeometry
 public;class;RenderGraphic
 public;class;RenderGraphicOwner
 beta;interface;RenderGraphicTileTreeArgs
@@ -547,6 +550,7 @@ internal;enum;BufferType
 internal;interface;Consumer
 internal;class;Consumers
 internal;enum;ConsumerType
+internal;interface;RenderPlan
 public;class;RenderSystem
 public;namespace;RenderSystem
 internal;interface;RenderSystemDebugControl
