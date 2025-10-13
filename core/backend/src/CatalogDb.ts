@@ -149,7 +149,7 @@ class EditableCatalogDbImpl extends CatalogDbImpl implements EditableCatalogDb {
       }
 
       // when saved, CatalogIModels should never have any Txns. If we wanted to create a changeset, we'd have to do it here.
-      this[_nativeDb].clearAllTxns();
+      this[_nativeDb].deleteAllTxns();
     } catch { } // ignore errors attempting to update
 
     // might also want to vacuum here?
@@ -181,7 +181,7 @@ export namespace CatalogDb {
       nativeDb.setITwinId(Guid.empty); // catalogs must be a StandaloneDb
       nativeDb.setIModelId(Guid.createValue()); // make sure its iModelId is unique
       updateManifest(nativeDb, args.manifest); // store the manifest inside the Catalog
-      nativeDb.clearAllTxns(); // Catalogs should never have Txns (and, this must be empty before resetting BriefcaseId)
+      nativeDb.deleteAllTxns(); // Catalogs should never have Txns (and, this must be empty before resetting BriefcaseId)
       nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned); // catalogs should always be unassigned
       nativeDb.saveChanges(); // save change to briefcaseId
       nativeDb.vacuum();

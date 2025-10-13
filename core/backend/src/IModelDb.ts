@@ -396,7 +396,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public [_resetIModelDb] () {
+  public [_resetIModelDb]() {
     this.loadIModelSettings();
     GeoCoordConfig.loadForImodel(this.workspace.settings); // load gcs data specified by iModel's settings dictionaries, must be done before calling initializeIModelDb
     this.initializeIModelDb();
@@ -825,7 +825,7 @@ export abstract class IModelDb extends IModel {
    * @note This will not push changes to the iModelHub.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
    */
-  public saveChanges(description?: string): void ;
+  public saveChanges(description?: string): void;
 
   /** Commit unsaved changes in memory as a Txn to this iModelDb. This is preferable for case where application like to store additional structured information with the change that could be useful later when rebasing.
    * @alpha
@@ -834,7 +834,7 @@ export abstract class IModelDb extends IModel {
    * @note This will not push changes to the iModelHub.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
    */
-    public saveChanges(args: SaveChangesArgs): void;
+  public saveChanges(args: SaveChangesArgs): void;
 
   /** Commit unsaved changes in memory as a Txn to this iModelDb.
    * @internal
@@ -3720,7 +3720,7 @@ export class SnapshotDb extends IModelDb {
 
     nativeDb.deleteLocalValue(BriefcaseLocalValue.StandaloneEdit);
     nativeDb.saveChanges();
-    nativeDb.clearAllTxns();
+    nativeDb.deleteAllTxns();
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
 
     const snapshotDb = new SnapshotDb(nativeDb, Guid.createValue());
@@ -3936,7 +3936,7 @@ export class StandaloneDb extends BriefcaseDb {
     nativeDb.openIModel(iModelFileName, OpenMode.ReadWrite);
     nativeDb.setITwinId(Guid.empty); // empty iTwinId means "standalone"
     nativeDb.saveChanges(); // save change to iTwinId
-    nativeDb.clearAllTxns(); // necessary before resetting briefcaseId
+    nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned); // standalone iModels should always have BriefcaseId unassigned
     nativeDb.saveLocalValue("StandaloneEdit", JSON.stringify({ txns: true }));
     nativeDb.saveChanges(); // save change to briefcaseId

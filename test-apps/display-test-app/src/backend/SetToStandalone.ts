@@ -51,7 +51,7 @@ function setToStandalone(iModelName: string) {
     nativeDb.enableWalMode();
     nativeDb.setITwinId(Guid.empty); // empty iTwinId means "standalone"
     nativeDb.saveChanges(); // save change to iTwinId
-    nativeDb.clearAllTxns(); // necessary before resetting briefcaseId
+    nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned); // standalone iModels should always have BriefcaseId unassigned
     nativeDb.saveChanges(); // save change to briefcaseId
     nativeDb.closeFile();

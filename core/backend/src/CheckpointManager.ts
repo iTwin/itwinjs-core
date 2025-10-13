@@ -307,7 +307,7 @@ export class CheckpointManager {
 
         if (nativeDb.hasPendingTxns()) {
           Logger.logWarning(loggerCategory, "Checkpoint with Txns found - deleting them", () => traceInfo);
-          nativeDb.clearAllTxns();
+          nativeDb.deleteAllTxns();
         }
 
         if (nativeDb.getBriefcaseId() !== BriefcaseIdValue.Unassigned)

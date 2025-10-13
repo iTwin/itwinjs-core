@@ -130,8 +130,8 @@ describe("Discarding local txns test", async () => {
     }
   }
 
-  describe("deleteAllTxns", () => {
-    it("deleteAllTxns should revert local changes", async () => {
+  describe("discardChanges", () => {
+    it("discardChanges should revert local changes", async () => {
       // Basic data setup where both briefcases have a single element inserted
       await setupTestSchemaAndModel();
       assert.equal(briefcases.length, 2, "Two briefcases should be opened");
@@ -161,8 +161,8 @@ describe("Discarding local txns test", async () => {
       testElement(secondBriefcase, el2Id);
       testElement(secondBriefcase, el3Id);
 
-      // Delete all transactions and verify rollback
-      firstBriefcase[_nativeDb].deleteAllTxns();
+      // Discard all transactions and verify rollback
+      await firstBriefcase.discardChanges();
 
       testElement(firstBriefcase, el1Id, "Inserted");
       testElement(secondBriefcase, el1Id, "Inserted");
@@ -182,13 +182,13 @@ describe("Discarding local txns test", async () => {
       testElement(firstBriefcase, el1Id, "Inserted");
       testElement(secondBriefcase, el1Id);
 
-      secondBriefcase[_nativeDb].deleteAllTxns();
+      await secondBriefcase.discardChanges();
 
       testElement(firstBriefcase, el1Id, "Inserted");
       testElement(secondBriefcase, el1Id, "Inserted");
     });
 
-    it("Should only push changes made after txns are deleted", async () => {
+    it("Should only push changes made after local changes are discarded", async () => {
       // Basic data setup where both briefcases have a single element inserted
       await setupTestSchemaAndModel();
       assert.equal(briefcases.length, 2, "Two briefcases should be opened");
@@ -204,7 +204,7 @@ describe("Discarding local txns test", async () => {
 
       await updateElementState(secondBriefcase, el1Id, "First Update");
 
-      secondBriefcase[_nativeDb].deleteAllTxns();
+      await secondBriefcase.discardChanges();
 
       await updateElementState(secondBriefcase, el1Id, "Another Update");
 
@@ -232,7 +232,7 @@ describe("Discarding local txns test", async () => {
 
       await deleteElement(secondBriefcase, el1Id);
 
-      secondBriefcase[_nativeDb].deleteAllTxns();
+      await secondBriefcase.discardChanges();
 
       await updateElementState(secondBriefcase, el1Id, "First Update");
 
@@ -258,7 +258,7 @@ describe("Discarding local txns test", async () => {
 
       [el1Id, el2Id].forEach(id => { assert.isDefined(briefcase.elements.getElement(id)); });
 
-      briefcase[_nativeDb].deleteAllTxns();
+      await briefcase.discardChanges();
 
       // Insert a relationship between the two elements
       const relProps = {
@@ -305,8 +305,8 @@ describe("Discarding local txns test", async () => {
       await updateElementState(firstBriefcase, el2Id, "Temporary Update");
 
       // Change of plans !
-      // Delete all txns since the last push
-      firstBriefcase[_nativeDb].deleteAllTxns();
+      // Discard all the changes made since the last push
+      await firstBriefcase.discardChanges();
 
       // Update the second element with it's final value
       await updateElementState(firstBriefcase, el2Id, "Final Update");
@@ -326,10 +326,10 @@ describe("Discarding local txns test", async () => {
       testElement(secondBriefcase, el1Id, "Updated");
       testElement(secondBriefcase, el2Id, "Final Update");
 
-      // If TxnManager.ClearAllTxns() is called, the third element would be present in the first briefcase.
+      // If TxnManager.DeleteAllTxns() is called, the third element would be present in the first briefcase.
       // But since the txn which inserted was cleared, it would not get pushed to the second briefcase.
       // And both briefcases would have been out-of-sync.
-      // Since TxnManager.DeleteAllTxns() reverses the changes made, the third element would not exist in both briefcases.
+      // Since discardChanges() reverses the changes made, the third element would not exist in both briefcases.
       testElement(secondBriefcase, el3Id);
     });
 
@@ -364,15 +364,15 @@ describe("Discarding local txns test", async () => {
       await updateElementState(firstBriefcase, el1Id, "Another Update");
 
       // Reverse all the changes made since the last push
-      firstBriefcase[_nativeDb].deleteAllTxns();
+      await firstBriefcase.discardChanges();
 
       testElement(firstBriefcase, el1Id, "Inserted");
       testElement(firstBriefcase, el2Id);
     });
   });
 
-  describe("clearAllTxns", () => {
-    it("clearAllTxns should not revert local changes", async () => {
+  describe("DeleteAllTxns", () => {
+    it("DeleteAllTxns will not revert local changes", async () => {
       // Basic data setup where both briefcases have a single element inserted
       await setupTestSchemaAndModel();
       assert.equal(briefcases.length, 2, "Two briefcases should be opened");
@@ -400,8 +400,8 @@ describe("Discarding local txns test", async () => {
       testElement(secondBriefcase, el2Id);
       testElement(secondBriefcase, el3Id);
 
-      // Clear all transactions
-      firstBriefcase[_nativeDb].clearAllTxns();
+      // Clear the Txns table
+      firstBriefcase[_nativeDb].deleteAllTxns();
 
       // The local changes should not be reverted
       testElement(firstBriefcase, el1Id, "Updated");
@@ -429,8 +429,8 @@ describe("Discarding local txns test", async () => {
       // Delete element from the second briefcase
       await deleteElement(secondBriefcase, el1Id);
 
-      // Clear all transactions without reverting any local change
-      secondBriefcase[_nativeDb].clearAllTxns();
+      // Clear the Txns table
+      secondBriefcase[_nativeDb].deleteAllTxns();
 
       // Update should throw as the element was deleted and won't be found
       await updateElementState(secondBriefcase, el1Id, "", true);

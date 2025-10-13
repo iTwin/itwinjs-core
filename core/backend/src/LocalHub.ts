@@ -125,7 +125,7 @@ export class LocalHub {
       nativeDb.setITwinId(this.iTwinId);
       nativeDb.setIModelId(this.iModelId);
       nativeDb.saveChanges();
-      nativeDb.clearAllTxns(); // necessary before resetting briefcaseId
+      nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
       nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
       nativeDb.saveLocalValue(BriefcaseLocalValue.NoLocking, arg.noLocks ? "true" : undefined);
       nativeDb.saveChanges();
