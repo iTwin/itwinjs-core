@@ -225,6 +225,40 @@ jobs:
       # The publish script identifies any new packages not previously published and tags the build
       - template: ../templates/publish.yaml
 
+  #If
+  - job: CreateReleaseTag
+    displayName: Create Release Tag
+    dependsOn:
+      - Build
+      - ParseCommitNotes
+    condition: and(succeeded('Build'), eq(dependencies.ParseCommitNotes.outputs['publishNote.shouldPublish'], 'true'), ne(variables['Build.Reason'], 'PullRequest'))
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+      - checkout: self
+        persistCredentials: true
+
+      - bash: |
+          git config --local user.email imodeljs-admin@users.noreply.github.com
+          git config --local user.name imodeljs-admin
+        displayName: Setup Git
+
+      - bash: |
+          # Get version from version-policies.json
+          version=$(jq -r '.[] | .version' common/config/rush/version-policies.json)
+          echo "Creating release tag for version: $version"
+          echo "##vso[task.setvariable variable=releaseVersion]$version"
+        displayName: Get release version
+
+      - bash: |
+          # Create and push the release tag
+          git tag -a "release/$(releaseVersion)" -m "v$(releaseVersion)"
+          git push origin "release/$(releaseVersion)"
+          echo "Successfully created and pushed release tag: release/$(releaseVersion)"
+        displayName: Create and push release tag
+        env:
+          GITHUB_TOKEN: $(GH_TOKEN)
+
   - job: PostResult
     dependsOn:
       - CheckLinkedPR
