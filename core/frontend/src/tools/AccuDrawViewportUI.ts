@@ -46,39 +46,97 @@ export class AccuDrawViewportUI extends AccuDraw {
     simplifiedInput: true,
     /** Enable simple math operations not supported by quantity parser. */
     mathOperations: true,
-    /** Number of visible characters to show in text input fields. */
-    fieldSize: 12,
-    /** Row spacing of text input fields for vertical arrangement. */
-    rowSpacingFactor: 1.2,
-    /** Column spacing of text input fields and buttons for horizontal arrangement. */
-    columnSpacingFactor: 1.1,
-    /** Corner radius of text input fields and locks buttons. */
-    borderRadius: "0.5em",
-    /** Background color of unfocused text input fields and unlocked buttons. */
-    backgroundColor: "rgba(150, 150, 150, 0.5)",
-
-    /** Settings specific to text input fields and lock button labels. */
-    text: {
-      /** Font family to use for text input field values and button labels. */
-      fontFamily: "sans-serif",
-      /** Font size to use for text input field values and button labels. */
-      fontSize: "9pt",
-      /** Font color to use for text input field values and button labels. */
-      color: "white",
-      /** Background color of focused text input field. */
-      focusColor: "rgba(50, 50, 200, 0.75)",
+    /** Settings that apply to both text input fields and lock buttons. */
+    field: {
+      /** Number of visible characters to show in text input fields. */
+      size: 12,
+      /** Height of text input fields and lock buttons. */
+      height: "var(--iui-component-height-small, 1.75em)",
+      /** Border settings for text input fields and lock buttons. */
+      border: {
+        /** Border width to use for text input fields and lock buttons. */
+        width: "1px",
+        /** Border style to use for text input fields and lock buttons. */
+        style: "solid",
+        /** Corner radius of text input fields and locks buttons. */
+        radius: "var(--iui-border-radius-1, 0.25rem)",
+      },
+      /** Settings specific to text input fields and lock button labels. */
+      text: {
+        /** Font family to use for text input field values and button labels. */
+        fontFamily: "var(--iui-font-sans, sans-serif)",
+        /** Font size to use for text input field values and button labels. */
+        fontSize: "var(--iui-font-size-1, 0.875rem)",
+      },
     },
-
+    /** Settings specific to text input fields. */
+    input: {
+      /** Font color to use for text input field values. */
+      color: "var(--iui-color-white, white)",
+      /** Padding applied to text input fields. */
+      padding: "0 var(--iui-size-s, 0.5rem)",
+      /** Settings applied to text input fields when they have focus. */
+      focused: {
+        /** Background color for focused text input fields. */
+        backgroundColor:
+          "hsl(var(--iui-color-accent-hsl, 166 96% 30.7%) / var(--iui-opacity-2, 85%))",
+        /** Inner stroke for focused text input fields. */
+        innerStroke: `inset 0px 0px 0px 1px var(--iui-color-background, #333c41)`,
+        /** Border settings for focused text input fields. */
+        border: {
+          /** Border color for focused text input fields. */
+          color: "hsl(var(--iui-color-accent-hsl, 166 96% 51%))",
+        },
+      },
+      /** Settings applied to text input fields when they do not have focus. */
+      unfocused: {
+        /** Background color for unfocused text input fields. */
+        backgroundColor:
+          "hsl(var(--iui-color-background-hsl, 203 6% 21.25%) / var(--iui-opacity-2, 85%))",
+        /** Border settings for unfocused text input fields. */
+        border: {
+          /** Border color for unfocused text input fields. */
+          color: "var(--iui-color-border, hsla(215, 8%, 30%))",
+        },
+      },
+    },
     /** Settings specific to lock buttons. */
     button: {
-      /** Background color of locked buttons. */
-      pressedColor: "rgba(50, 50, 50, 0.75)",
-      /** Margin to use on left and right to position relative to text input field. */
-      margin: "0.25em",
-      /** Width of border outline. */
-      outlineWidth: "thin",
-      /** Shadow shown when unlocked to make it appear raised. */
-      shadow: "0.25em 0.25em 0.2em rgb(75, 75, 75)",
+      /** Padding applied to lock buttons. */
+      padding: "var(--iui-size-2xs, 0.25rem)",
+      /** Settings applied to lock buttons when they are unlocked. */
+      unlocked: {
+        /** Text color for unlocked lock buttons. */
+        color: "var(--iui-color-text-muted, #cccccc)",
+        /** Background color for unlocked lock buttons. */
+        backgroundColor:
+          "hsl(var(--iui-color-background-hsl, 203 6% 21.25%) / var(--iui-opacity-2, 85%))",
+        /** Border settings for unlocked lock buttons. */
+        border: {
+          /** Border color for unlocked lock buttons. */
+          color: "var(--iui-color-border, hsla(215, 8%, 30%))",
+        },
+      },
+      /** Settings applied to lock buttons when they are locked. */
+      locked: {
+        /** Text color for locked lock buttons. */
+        color: "hsla(0, 0%, 100%, 1)",
+        /** Background color for locked lock buttons. */
+        backgroundColor:
+          "hsla(0, 0%, 100%, 0.16)",
+        /** Border settings for locked lock buttons. */
+        border: {
+          /** Border color for locked lock buttons. */
+          color: "hsla(0, 0%, 100%, 1)",
+        },
+      },
+    },
+    /** Spacing between fields within a control and between rows of controls. */
+    spacing: {
+      /** Spacing between input field and lock button within each field group. */
+      gap: "var(--iui-size-2xs, 0.25rem)",
+      /** Spacing between field groups (distance/angle, x, y, z controls). */
+      margin: "var(--iui-size-s, 0.75rem)",
     },
   };
 
@@ -395,7 +453,9 @@ export class AccuDrawViewportUI extends AccuDraw {
           break;
 
         // Treat expression operator string as a single character when moving the text insertion cursor...
-        itemField.selectionStart = itemField.selectionEnd = (moveLeft ? operatorPosIns : operatorPosIns + this._expression.operator.length);
+        itemField.selectionStart = itemField.selectionEnd = moveLeft
+          ? operatorPosIns
+          : operatorPosIns + this._expression.operator.length;
         ev.preventDefault();
         return true;
 
@@ -531,10 +591,19 @@ export class AccuDrawViewportUI extends AccuDraw {
 
     const style = div.style;
     style.pointerEvents = "none";
-    style.overflow = "visible"; // Don't clip/hide outline or shadow...
     style.position = "absolute";
-    style.top = style.left = "0";
-    style.height = style.width = "100%";
+    style.display = "flex";
+    const isHorizontal = AccuDrawViewportUI.controlProps.horizontalArrangement;
+    style.flexDirection = isHorizontal ? "row" : "column";
+
+    if (isHorizontal) {
+      // Make the space between each control group bigger than the space between fields within a group
+      style.columnGap = AccuDrawViewportUI.controlProps.spacing.margin;
+    }
+    else {
+      // Make the space between each control group equal than the space between fields within a group
+      style.rowGap = AccuDrawViewportUI.controlProps.spacing.gap;
+    }
 
     return div;
   }
@@ -556,31 +625,63 @@ export class AccuDrawViewportUI extends AccuDraw {
 
   private updateItemFieldLock(itemLock: HTMLButtonElement, item: ItemField) {
     const locked = this.getFieldLock(item);
-    itemLock.style.outlineStyle = locked ? "inset" : "outset";
-    itemLock.style.boxShadow = locked ? "none" : AccuDrawViewportUI.controlProps.button.shadow;
-    itemLock.style.backgroundColor = locked ? AccuDrawViewportUI.controlProps.button.pressedColor : AccuDrawViewportUI.controlProps.backgroundColor;
+    itemLock.style.backgroundColor = locked
+      ? AccuDrawViewportUI.controlProps.button.locked.backgroundColor
+      : AccuDrawViewportUI.controlProps.button.unlocked.backgroundColor;
+    itemLock.style.border = `${AccuDrawViewportUI.controlProps.field.border.width} ${
+      AccuDrawViewportUI.controlProps.field.border.style
+    } ${
+      locked
+        ? AccuDrawViewportUI.controlProps.button.locked.border.color
+        : AccuDrawViewportUI.controlProps.button.unlocked.border.color
+    }`;
+    itemLock.style.color = locked
+      ? AccuDrawViewportUI.controlProps.button.locked.color
+      : AccuDrawViewportUI.controlProps.button.unlocked.color;
   }
 
   private initializeItemStyle(style: CSSStyleDeclaration, isButton: boolean): void {
     style.pointerEvents = "none"; // Don't receive pointer events...
-    style.position = "absolute";
     style.textWrap = "nowrap";
     style.textAnchor = "top";
-    style.textAlign = isButton ? "center" : "left";
+    style.boxSizing = "border-box";
 
     const controlProps = AccuDrawViewportUI.controlProps;
-    style.fontFamily = controlProps.text.fontFamily;
-    style.fontSize = controlProps.text.fontSize;
-    style.color = controlProps.text.color;
-    style.backgroundColor = controlProps.backgroundColor;
-    style.borderRadius = controlProps.borderRadius;
+
+    style.height = controlProps.field.height;
+    const baseBorder = `${controlProps.field.border.width} ${controlProps.field.border.style} `;
+
+    switch (isButton) {
+      case true:
+        style.display = "flex";
+        style.justifyContent = "center";
+        style.alignItems = "center";
+        style.backgroundColor = controlProps.button.unlocked.backgroundColor;
+        style.padding = controlProps.button.padding;
+        style.border = baseBorder + controlProps.button.unlocked.border.color;
+        style.color = controlProps.button.unlocked.color;
+        style.aspectRatio = "1";
+        break;
+      case false:
+        style.backgroundColor = controlProps.input.unfocused.backgroundColor;
+        style.outline = "none";
+        style.padding = controlProps.input.padding;
+        style.border = baseBorder + controlProps.input.unfocused.border.color;
+        style.color = controlProps.input.color;
+        style.width = "120px";
+        break;
+    }
+
+    style.fontFamily = controlProps.field.text.fontFamily;
+    style.fontSize = controlProps.field.text.fontSize;
+    style.borderRadius = controlProps.field.border.radius;
   }
 
   private createItemField(item: ItemField): HTMLInputElement {
     const itemField = document.createElement("input");
 
     itemField.contentEditable = "true";
-    itemField.size = AccuDrawViewportUI.controlProps.fieldSize;
+    itemField.size = AccuDrawViewportUI.controlProps.field.size;
 
     const style = itemField.style;
     this.initializeItemStyle(style, false);
@@ -589,7 +690,7 @@ export class AccuDrawViewportUI extends AccuDraw {
     itemField.onkeydown = async (ev: KeyboardEvent) => { await this.onKeyboardEvent(ev, true); };
     itemField.onkeyup = async (ev: KeyboardEvent) => { await this.onKeyboardEvent(ev, false); };
     itemField.onfocus = (ev: FocusEvent) => { this.onFocusChange(ev, item, true); };
-    itemField.onblur = (ev: FocusEvent) => { this.onFocusChange(ev, item, false); };;
+    itemField.onblur = (ev: FocusEvent) => { this.onFocusChange(ev, item, false); };
 
     return itemField;
   }
@@ -623,11 +724,6 @@ export class AccuDrawViewportUI extends AccuDraw {
     this.initializeItemStyle(style, true);
     this.updateItemFieldLock(itemLock, item);
 
-    const button = AccuDrawViewportUI.controlProps.button;
-    style.paddingLeft = style.paddingRight = "0";
-    style.marginLeft = style.marginRight = button.margin;
-    style.outlineWidth = button.outlineWidth;
-
     return itemLock;
   }
 
@@ -653,26 +749,27 @@ export class AccuDrawViewportUI extends AccuDraw {
   }
 
   private updateControlVisibility(isPolar: boolean, is3d?: boolean): void {
-    if (undefined === this._controls)
-      return;
+    if (undefined === this._controls) return;
 
-    this._controls.itemFields[ItemField.ANGLE_Item].hidden = !isPolar;
-    this._controls.itemLocks[ItemField.ANGLE_Item].hidden = !isPolar;
+    const angleWrapper = this._controls.itemFields[ItemField.ANGLE_Item]
+      .parentElement as HTMLDivElement;
+    const distWrapper = this._controls.itemFields[ItemField.DIST_Item]
+      .parentElement as HTMLDivElement;
+    const xWrapper = this._controls.itemFields[ItemField.X_Item]
+      .parentElement as HTMLDivElement;
+    const yWrapper = this._controls.itemFields[ItemField.Y_Item]
+      .parentElement as HTMLDivElement;
+    const zWrapper = this._controls.itemFields[ItemField.Z_Item]
+      .parentElement as HTMLDivElement;
 
-    this._controls.itemFields[ItemField.DIST_Item].hidden = !isPolar;
-    this._controls.itemLocks[ItemField.DIST_Item].hidden = !isPolar;
+    angleWrapper.style.display = !isPolar ? "none" : "flex";
+    distWrapper.style.display = !isPolar ? "none" : "flex";
+    xWrapper.style.display = isPolar ? "none" : "flex";
+    yWrapper.style.display = isPolar ? "none" : "flex";
 
-    this._controls.itemFields[ItemField.X_Item].hidden = isPolar;
-    this._controls.itemLocks[ItemField.X_Item].hidden = isPolar;
+    if (undefined === is3d) return;
 
-    this._controls.itemFields[ItemField.Y_Item].hidden = isPolar;
-    this._controls.itemLocks[ItemField.Y_Item].hidden = isPolar;
-
-    if (undefined === is3d)
-      return;
-
-    this._controls.itemFields[ItemField.Z_Item].hidden = !is3d;
-    this._controls.itemLocks[ItemField.Z_Item].hidden = !is3d;
+    zWrapper.style.display = !is3d ? "none" : "flex";
   }
 
   private updateControls(ev: BeButtonEvent): void {
@@ -688,58 +785,35 @@ export class AccuDrawViewportUI extends AccuDraw {
     if (undefined === this._controls) {
       const overlay = vp.addNewDiv("accudraw-overlay", true, 35);
       const div = this.createControlDiv();
-      const is3dLayout = this.is3dCompass(vp);
-      const isHorizontalLayout = props.horizontalArrangement;
 
       overlay.appendChild(div);
 
       const createFieldAndLock = (item: ItemField) => {
-        const itemField = itemFields[item] = this.createItemField(item);
-        itemField.style.top = isHorizontalLayout ? "0" : `${rowOffset}px`;
-        itemField.style.left = isHorizontalLayout ? `${columnOffset}px` : "0";
+        const fieldWrapper = document.createElement("div");
+        fieldWrapper.style.display = "flex";
+        fieldWrapper.style.flexDirection = "row";
+        fieldWrapper.style.alignItems = "center";
+        fieldWrapper.style.justifyContent = "center";
+        fieldWrapper.style.columnGap = AccuDrawViewportUI.controlProps.spacing.gap;
+        fieldWrapper.style.rowGap = AccuDrawViewportUI.controlProps.spacing.gap;
 
-        div.appendChild(itemField);
+        const itemField = (itemFields[item] = this.createItemField(item));
+        fieldWrapper.appendChild(itemField);
 
-        if (is3dLayout || ItemField.Z_Item !== item)
-          rowOffset += itemField.offsetHeight * props.rowSpacingFactor;
+        const itemLock = (itemLocks[item] = this.createItemFieldLock(item));
+        fieldWrapper.appendChild(itemLock);
 
-        itemWidth = itemField.offsetWidth;
-        itemHeight = itemField.offsetHeight;
-
-        const itemLock = itemLocks[item] = this.createItemFieldLock(item);
-        itemLock.style.top = itemField.style.top;
-        itemLock.style.left = isHorizontalLayout ? `${columnOffset + itemWidth}px` : `${itemWidth}px`;
-        itemLock.style.width = itemLock.style.height = `${itemHeight}px`; // Make square of same height as text field...
-
-        div.appendChild(itemLock);
-
-        lockWidth = itemLock.offsetWidth;
-
-        if (is3dLayout || ItemField.Z_Item !== item)
-          columnOffset += (itemWidth + lockWidth) * props.columnSpacingFactor;
+        div.appendChild(fieldWrapper);
       };
-
-      let rowOffset = 0;
-      let columnOffset = 0;
-      let itemWidth = 0;
-      let itemHeight = 0;
-      let lockWidth = 0;
 
       const itemFields: HTMLInputElement[] = [];
       const itemLocks: HTMLButtonElement[] = [];
 
       createFieldAndLock(ItemField.DIST_Item);
       createFieldAndLock(ItemField.ANGLE_Item);
-
-      rowOffset = 0;
-      columnOffset = 0;
-
       createFieldAndLock(ItemField.X_Item);
       createFieldAndLock(ItemField.Y_Item);
       createFieldAndLock(ItemField.Z_Item); // Both polar and rectangular modes support Z in 3d views...
-
-      div.style.width = isHorizontalLayout ? `${columnOffset}px` : `${itemWidth + lockWidth + 5}px`;
-      div.style.height = isHorizontalLayout ? `${itemHeight * props.rowSpacingFactor}px` : `${rowOffset}px`;
 
       this._controls = { overlay, div, itemFields, itemLocks };
       this.updateControlVisibility(CompassMode.Polar === this.compassMode, this.is3dCompass(vp));
@@ -754,7 +828,7 @@ export class AccuDrawViewportUI extends AccuDraw {
 
     if (props.fixedLocation) {
       position.x = (viewRect.left + ((viewRect.width - this._controls.div.offsetWidth) * 0.5));
-      position.y = (viewRect.bottom - this._controls.div.offsetHeight);
+      position.y = (viewRect.bottom - this._controls.div.offsetHeight * 1.2);
     } else {
       position.x += Math.floor(vp.pixelsFromInches(props.cursorOffset.x)) + 0.5;
       position.y += Math.floor(vp.pixelsFromInches(props.cursorOffset.y)) + 0.5;
@@ -833,7 +907,15 @@ export class AccuDrawViewportUI extends AccuDraw {
 
     // NOTE: Using "setSelectionRange" while value is changing in dynamics isn't pretty, use background+caret color instead...
     const itemField = this._controls.itemFields[item];
-    itemField.style.backgroundColor = (focusIn ? AccuDrawViewportUI.controlProps.text.focusColor : AccuDrawViewportUI.controlProps.backgroundColor);
+    itemField.style.backgroundColor = focusIn
+      ? AccuDrawViewportUI.controlProps.input.focused.backgroundColor
+      : AccuDrawViewportUI.controlProps.input.unfocused.backgroundColor;
+    itemField.style.border = focusIn
+      ? `${AccuDrawViewportUI.controlProps.field.border.width} ${AccuDrawViewportUI.controlProps.field.border.style} ${AccuDrawViewportUI.controlProps.input.focused.border.color}`
+      : `${AccuDrawViewportUI.controlProps.field.border.width} ${AccuDrawViewportUI.controlProps.field.border.style} ${AccuDrawViewportUI.controlProps.input.unfocused.border.color}`;
+    itemField.style.boxShadow = focusIn
+      ? AccuDrawViewportUI.controlProps.input.focused.innerStroke
+      : "none";
     this.updateItemFieldKeyinStatus(itemField, item);
 
     if (!focusIn)
