@@ -4,7 +4,7 @@
   "packages": [
     {
       "name": "@azure/storage-blob",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "@bentley/aec-units-schema",
@@ -137,6 +137,10 @@
     {
       "name": "@bentley/units-schema",
       "allowedCategories": [ "backend", "common", "internal" ]
+    },
+    {
+      "name": "@cesium/engine",
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@itwin/appui-abstract",
@@ -308,7 +312,7 @@
     },
     {
       "name": "@itwin/object-storage-azure",
-      "allowedCategories": [ "backend" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/object-storage-core",
@@ -453,6 +457,10 @@
     {
       "name": "case-sensitive-paths-webpack-plugin",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "cesium",
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "chai",

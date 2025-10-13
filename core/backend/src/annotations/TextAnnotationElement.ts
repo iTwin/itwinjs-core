@@ -6,13 +6,14 @@
  * @module Elements
  */
 
-import { AnnotationTextStyleProps, BisCodeSpec, Code, CodeProps, CodeScopeProps, CodeSpec, ECVersionString, ElementGeometry, ElementGeometryBuilderParams, Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps, VersionedJSON } from "@itwin/core-common";
+import { AnnotationTextStyleProps, BisCodeSpec, Code, CodeProps, CodeScopeProps, CodeSpec, ECVersionString, ElementGeometry, ElementGeometryBuilderParams, EntityReferenceSet, Placement2d, Placement2dProps, Placement3d, Placement3dProps, PlacementProps, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextAnnotationProps, TextStyleSettings, TextStyleSettingsProps, traverseTextBlockComponent, VersionedJSON } from "@itwin/core-common";
 import { IModelDb } from "../IModelDb";
 import { AnnotationElement2d, DefinitionElement, Drawing, GraphicalElement3d, OnElementIdArg, OnElementPropsArg } from "../Element";
-import { assert, Id64String } from "@itwin/core-bentley";
+import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { layoutTextBlock, TextStyleResolver } from "./TextBlockLayout";
 import { appendTextAnnotationGeometry } from "./TextAnnotationGeometry";
 import { ElementDrivesTextAnnotation, TextAnnotationUsesTextStyleByDefault, TextBlockAndId } from "./ElementDrivesTextAnnotation";
+import { IModelElementCloneContext } from "../IModelElementCloneContext";
 import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "../Entity";
 import * as semver from "semver";
 
@@ -62,8 +63,10 @@ function migrateTextAnnotationData(oldData: VersionedJSON<TextAnnotationProps>):
   throw new Error(`Migration for textAnnotationData from version ${oldData.version} to ${TEXT_ANNOTATION_JSON_VERSION} failed.`);
 }
 
-/** Parses, validates, and potentially migrates the text annotation data from a JSON string. */
-function parseTextAnnotationData(json: string | undefined): VersionedJSON<TextAnnotationProps> | undefined {
+/** Parses, validates, and potentially migrates the text annotation data from a JSON string.
+ * @internal
+ */
+export function parseTextAnnotationData(json: string | undefined): VersionedJSON<TextAnnotationProps> | undefined {
   if (!json) return undefined;
 
   return validateAndMigrateVersionedJSON<TextAnnotationProps>(json, TEXT_ANNOTATION_JSON_VERSION, migrateTextAnnotationData);
@@ -287,6 +290,23 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
     super.onUpdated(arg);
     ElementDrivesTextAnnotation.updateFieldDependencies(arg.id, arg.iModel);
   }
+
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
+    collectReferenceIds(this, referenceIds);
+  }
+
+  /** @internal */
+  protected static override onCloned(context: IModelElementCloneContext, srcProps: TextAnnotation2dProps, dstProps: TextAnnotation2dProps): void {
+    super.onCloned(context, srcProps, dstProps);
+
+    const srcElem = TextAnnotation2d.fromJSON(srcProps, context.sourceDb);
+    ElementDrivesTextAnnotation.remapFields(srcElem, context);
+    const anno = srcElem.getAnnotation();
+dstProps.textAnnotationData = anno ? JSON.stringify({ version: TEXT_ANNOTATION_JSON_VERSION, data: anno.toJSON() }) : undefined;
+
+    remapTextStyle(context, srcElem, dstProps);
+  }
 }
 
 /** An element that displays textual content within a 3d model.
@@ -457,6 +477,51 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
     super.onUpdated(arg);
     ElementDrivesTextAnnotation.updateFieldDependencies(arg.id, arg.iModel);
   }
+
+  protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceIds(referenceIds);
+    collectReferenceIds(this, referenceIds);
+  }
+
+  /** @internal */
+  protected static override onCloned(context: IModelElementCloneContext, srcProps: TextAnnotation3dProps, dstProps: TextAnnotation3dProps): void {
+    super.onCloned(context, srcProps, dstProps);
+
+    const srcElem = TextAnnotation3d.fromJSON(srcProps, context.sourceDb);
+    ElementDrivesTextAnnotation.remapFields(srcElem, context);
+    const anno = srcElem.getAnnotation();
+    dstProps.textAnnotationData = anno ? JSON.stringify({ version: TEXT_ANNOTATION_JSON_VERSION, data: anno.toJSON() }) : undefined;
+
+    remapTextStyle(context, srcElem, dstProps);
+  }
+}
+
+function remapTextStyle(
+  context: IModelElementCloneContext,
+  srcElem: TextAnnotation2d | TextAnnotation3d,
+  dstProps: TextAnnotation2dProps | TextAnnotation3dProps
+): void {
+  const dstStyleId = AnnotationTextStyle.remapTextStyleId(srcElem.defaultTextStyle?.id ?? Id64.invalid, context);
+  dstProps.defaultTextStyle = Id64.isValid(dstStyleId) ? new TextAnnotationUsesTextStyleByDefault(dstStyleId).toJSON() : undefined;
+}
+
+function collectReferenceIds(elem: TextAnnotation2d | TextAnnotation3d, referenceIds: EntityReferenceSet): void {
+  const style = elem.defaultTextStyle?.id;
+  if (style && Id64.isValidId64(style)) {
+    referenceIds.addElement(style);
+  }
+
+  const block = elem.getAnnotation()?.textBlock;
+  if (block) {
+    for (const { child } of traverseTextBlockComponent(block)) {
+      if (child.type === "field") {
+        const hostId = child.propertyHost.elementId;
+        if (Id64.isValidId64(hostId)) {
+          referenceIds.addElement(hostId);
+        }
+      }
+    }
+  }
 }
 
 function getTextBlocks(elem: TextAnnotation2d | TextAnnotation3d): Iterable<TextBlockAndId> {
@@ -478,7 +543,6 @@ function updateTextBlocks(elem: TextAnnotation2d | TextAnnotation3d, textBlocks:
   annotation.textBlock = textBlocks[0].textBlock;
 
   elem.setAnnotation(annotation);
-  elem.update();
 }
 
 /** The version of the JSON stored in `AnnotationTextStyleProps.settings` used by the code.
@@ -651,5 +715,43 @@ export class AnnotationTextStyle extends DefinitionElement {
   private static parseTextStyleSettings(json: string | undefined): VersionedJSON<TextStyleSettingsProps> | undefined {
     if (!json) return undefined;
     return validateAndMigrateVersionedJSON<TextStyleSettingsProps>(json, TEXT_STYLE_SETTINGS_JSON_VERSION, migrateTextStyleSettings);
+  }
+
+  /** When copying an element from one iModel to another, returns the Id of the AnnotationTextStyle in the `context`'s target iModel
+   * corresponding to `sourceTextStyleId`, or [Id64.invalid]($bentley) if no corresponding text style exists.
+   * If a text style with the same [Code]($common) exists in the target iModel, the style Id will be remapped to refer to that style.
+   * Otherwise, a copy of the style will be imported into the target iModel and its element Id returned.
+   * Implementations of [[ITextAnnotation]] should invoke this function when implementing their [[Element._onCloned]] method.
+   * @throws Error if an attempt to import the text style failed.
+   */
+  public static remapTextStyleId(sourceTextStyleId: Id64String, context: IModelElementCloneContext): Id64String {
+    // No remapping necessary if there's no text style or we're not copying to a different iModel.
+    if (!Id64.isValid(sourceTextStyleId) || !context.isBetweenIModels) {
+      return sourceTextStyleId;
+    }
+
+    // If the style's already been remapped, we're finished.
+    let dstStyleId: Id64String | undefined = context.findTargetElementId(sourceTextStyleId);
+    if (Id64.isValid(dstStyleId)) {
+      return dstStyleId;
+    }
+
+    // Look up the style. It really ought to exist.
+    const srcStyle = context.sourceDb.elements.tryGetElement<AnnotationTextStyle>(sourceTextStyleId);
+    if (!srcStyle) {
+      return Id64.invalid;
+    }
+
+    // If a style with the same code exists in the target iModel, remap to that one.
+    dstStyleId = context.targetDb.elements.queryElementIdByCode(srcStyle.code);
+    if (undefined !== dstStyleId) {
+      return dstStyleId;
+    }
+
+    // Copy the style into the target iModel and remap its Id.
+    const dstStyleProps = context.cloneElement(srcStyle);
+    dstStyleId = context.targetDb.elements.insertElement(dstStyleProps);
+    context.remapElement(sourceTextStyleId, dstStyleId);
+    return dstStyleId;
   }
 }
