@@ -1023,7 +1023,6 @@ export class TxnManager {
     this._nativeDb.deleteAllTxns();
   }
 
-
   /** Obtain a list of the EC instances that have been changed locally by the [[BriefcaseDb]] associated with this `TxnManager` and have not yet been pushed to the iModel.
    * @beta
   */

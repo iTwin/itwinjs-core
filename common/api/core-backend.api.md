@@ -6686,8 +6686,6 @@ export class TxnManager {
     appCustomConflictHandler?: (args: DbRebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     beginMultiTxnOperation(): DbResult;
     cancelTo(txnId: TxnIdString): IModelStatus;
-    // @internal (undocumented)
-    readonly changeMergeManager: ChangeMergeManager;
     deleteAllTxns(): void;
     endMultiTxnOperation(): DbResult;
     getChangeTrackingMemoryUsed(): number;

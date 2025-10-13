@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "TxnManager.deleteAllTxns now reverts local changes when clearing the txns. Added TxnManager.clearAllTxns which clears the local txns without reverting them.",
+      "comment": "",
       "type": "none"
     }
   ],

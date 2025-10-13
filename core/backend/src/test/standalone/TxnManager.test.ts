@@ -956,7 +956,7 @@ describe("TxnManager", () => {
       expect(imodel.txns.hasLocalChanges).to.be.false;
     });
 
-    it("TxnManager.discardChanges should revert local changes", async () => {
+    it("discardChanges should revert local changes", async () => {
       // Insert and save an element
       const elId = imodel.elements.insertElement(props);
       imodel.saveChanges();
