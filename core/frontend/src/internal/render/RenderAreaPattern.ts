@@ -11,6 +11,7 @@ import { RenderMemory } from "../../render/RenderMemory";
 
 /** An opaque representation of instructions for repeatedly drawing a [[RenderGeometry]] to pattern a planar region,
  * to be supplied to [[RenderSystem.createRenderGraphic]].
+ * @internal
  */
 export interface RenderAreaPattern extends Disposable, RenderMemory.Consumer {
   readonly [_implementationProhibited]: "renderAreaPattern";
