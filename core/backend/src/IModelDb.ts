@@ -2334,6 +2334,11 @@ export namespace IModelDb {
      */
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
       try {
+        this[_instanceKeyCache].delete({
+          partialKey: { id: elProps.id!, baseClassName: elProps.classFullName! },
+          federationGuid: elProps.federationGuid,
+          code: elProps.code,
+        });
         this[_cache].delete({
           id: elProps.id,
           federationGuid: elProps.federationGuid,

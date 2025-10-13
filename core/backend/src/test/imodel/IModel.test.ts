@@ -3337,6 +3337,14 @@ describe("iModel", () => {
     categoryB.update();
     categoryA.code.value = "B";
     categoryA.update();
+    imodelDb.saveChanges();
+
+    categoryA = imodelDb.elements.getElement(
+      SpatialCategory.createCode(imodelDb, IModel.dictionaryId, "A")
+    );
+    categoryB = imodelDb.elements.getElement(
+      SpatialCategory.createCode(imodelDb, IModel.dictionaryId, "B")
+    );
 
     expect(categoryA.userLabel).to.equal("B", `categoryA.userlabel mismatch in ${imodelDb.name}`);
     expect(categoryB.userLabel).to.equal("A", `categoryB.userlabel mismatch in ${imodelDb.name}`);
