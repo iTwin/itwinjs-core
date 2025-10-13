@@ -236,7 +236,6 @@ jobs:
       vmImage: ubuntu-latest
     steps:
       - checkout: self
-        persistCredentials: true
 
       - bash: |
           git config --local user.email imodeljs-admin@users.noreply.github.com
@@ -253,10 +252,8 @@ jobs:
       - bash: |
           # Create and push the release tag
           git tag -a "release/$(releaseVersion)" -m "v$(releaseVersion)"
-          git push origin "release/$(releaseVersion)"
+          git push https://$(GH_TOKEN)@github.com/iTwin/itwinjs-core "release/$(releaseVersion)"
         displayName: Create and push release tag
-        env:
-          GITHUB_TOKEN: $(GH_TOKEN)
 
   - job: PostResult
     dependsOn:
