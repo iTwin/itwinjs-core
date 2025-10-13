@@ -254,7 +254,6 @@ jobs:
           # Create and push the release tag
           git tag -a "release/$(releaseVersion)" -m "v$(releaseVersion)"
           git push origin "release/$(releaseVersion)"
-          echo "Successfully created and pushed release tag: release/$(releaseVersion)"
         displayName: Create and push release tag
         env:
           GITHUB_TOKEN: $(GH_TOKEN)
