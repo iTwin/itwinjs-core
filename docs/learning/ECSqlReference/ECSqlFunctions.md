@@ -9,7 +9,7 @@ ECSQL allows use of these built-in functions:
 1. [`regexp()`](#regexp--regex-value) - test if a text matches a regex.
 1. [`regexp_extract()`](#regexp_extract--value-regex--rewrite) - extract and rewrite matching regex group from a string value.
 1. [`strToGuid()`](#strtoguid-guid-string) - covert string guid to binary guid.
-1. [`guidToStr()`](#guidtostring-binary-guid) - covert binary guid to string guid.
+1. [`guidToStr()`](#guidtostr-binary-guid) - covert binary guid to string guid.
 1. [`navigation_value()`](#navigation_value-ecnavigationproperty-path-id--RelECClassId) - Constructs an ECNavigation value, given ECNavigation property, Id and optionaly, RelECClassId.
 
 ## ec_classname( _ecclassId_ [, _format-string_ | _format-id_] )
@@ -147,12 +147,12 @@ When `GUID` is stored as a binary, it needs to be converted for comparison purpo
 SELECT * FROM [BisCore].[Element] WHERE FederationGuid = StrToGuid('407bfa18-944d-11ee-b9d1-0242ac120002')
 ```
 
-## GuidToString( _binary-guid_ )
+## GuidToStr( _binary-guid_ )
 
 When `GUID` is stored as a binary, it needs to be converted for comparison purpose.
 
 ```sql
-SELECT * FROM [BisCore].[Element] WHERE GuidToString(FederationGuid) = '407bfa18-944d-11ee-b9d1-0242ac120002'
+SELECT * FROM [BisCore].[Element] WHERE GuidToStr(FederationGuid) = '407bfa18-944d-11ee-b9d1-0242ac120002'
 ```
 
 ## NAVIGATION_VALUE( _ECNavigationProperty-path_, _Id_ [, _RelECClassId_] )
