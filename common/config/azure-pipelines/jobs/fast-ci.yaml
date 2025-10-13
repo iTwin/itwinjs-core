@@ -225,7 +225,6 @@ jobs:
       # The publish script identifies any new packages not previously published and tags the build
       - template: ../templates/publish.yaml
 
-  #If
   - job: CreateReleaseTag
     displayName: Create Release Tag
     dependsOn:
