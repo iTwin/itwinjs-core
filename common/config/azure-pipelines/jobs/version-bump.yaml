@@ -260,15 +260,15 @@ jobs:
 
       - ${{ if eq(parameters.BumpType, 'minor') }}:
 
-          # When creating a minor release, the mergify.yml file needs to be updated to change the "latestMinor" branch for security fixes
+          # When creating a minor release, the mergify.yml file needs to be updated to change the hardcoded branch names for security fixes
           - bash: |
               mergifyPath=".github/mergify.yml"
               version=$(echo $(getVersion.version) | sed 's/\([0-9]*\.[0-9]*\)\.[0-9]*/\1.x/')
               releaseBranch="release/$version"
               echo "Updating mergify.yml to use $releaseBranch as the recent minor branch for security fixes"
 
-              # Update the latestMinor variable in mergify.yml
-              sed -i "s|^latestMinor: \&latestMinor \"release/[0-9]*\.[0-9]*\.x\"$|latestMinor: \&latestMinor \"$releaseBranch\"|" "$mergifyPath"
+              # Update the latest minor backporting release branch in mergify.yml
+              sed -i "0,/\"release\/[0-9]*\.[0-9]*\.x\"/ s|\"release/[0-9]*\.[0-9]*\.x\"|\"$releaseBranch\"|" "$mergifyPath"
 
             displayName: Update mergify.yml for new minor release
             condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))

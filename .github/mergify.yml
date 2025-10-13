@@ -1,9 +1,5 @@
 # Configuration file for mergify
 
-# Branch variables for backport targets
-latestMinor: &latestMinor "release/5.2.x"
-previousMajor: &previousMajor "release/4.11.x"
-
 defaults:
   actions:
     backport:
@@ -42,5 +38,5 @@ pull_request_rules:
     actions:
       backport:
         branches:
-          - *latestMinor
-          - *previousMajor
+          - "release/5.2.x"
+          - "release/4.11.x"
