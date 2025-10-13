@@ -386,29 +386,70 @@ export class ClipShape extends ClipPrimitive {
   public override get invisible(): boolean {
     return this._invisible;
   }
-  /** Return this transformFromClip, which may be undefined. */
+  /** Return local to world transform, which may be undefined. */
   public get transformFromClip(): Transform | undefined {
     return this._transformFromClip;
   }
-  /** Return this transformToClip, which may be undefined. */
+  /** Return world to local transform, which may be undefined. */
   public get transformToClip(): Transform | undefined {
     return this._transformToClip;
   }
-  /** Returns true if this ClipShape's transforms are currently set. */
+  /**
+   * Returns true if this ClipShape has a local to world transform.
+   * @see type guards [[hasTransformFromClip]], [[hasTransformToClip]], and [[hasTransforms]].
+  */
   public get transformValid(): boolean {
-    return this.transformFromClip !== undefined;
+    return this._transformFromClip !== undefined;
   }
-  /** Returns true if this ClipShape's lower z boundary is set. */
+  /**
+   * Returns true if this ClipShape's lower z boundary is set.
+   * @see type guard [[hasZLow]].
+   */
   public get zLowValid(): boolean {
     return this._zLow !== undefined;
   }
-  /** Returns true if this ClipShape's upper z boundary is set. */
+  /**
+   * Returns true if this ClipShape's upper z boundary is set.
+   * @see type guard [[hasZHigh]].
+   */
   public get zHighValid(): boolean {
     return this._zHigh !== undefined;
   }
-  /** Return true if this ClipShape has a local to world transform */
+  /**
+   * Return true if this ClipShape has a local to world transform
+   * @deprecated Use duplicate property [[transformValid]] or type guard [[hasTransformFromClip]] instead.
+   */
   public get transformIsValid(): boolean {
     return this._transformFromClip !== undefined;
+  }
+  /** Type guard for [[zLow]]. */
+  public hasZLow(): this is {zLow: number} {
+    return this._zLow !== undefined;
+  }
+  /** Type guard for [[zHigh]]. */
+  public hasZHigh(): this is {zHigh: number} {
+    return this._zHigh !== undefined;
+  }
+  /**
+   * Type guard for [[transformFromClip]].
+   * @see related type guards [[hasTransformToClip]] and [[hasTransforms]].
+   */
+  public hasTransformFromClip(): this is {transformFromClip: Transform} {
+    return this._transformFromClip !== undefined;
+  }
+  /**
+   * Type guard for [[transformToClip]].
+   * @see related type guards [[hasTransformFromClip]] and [[hasTransforms]].
+   */
+  public hasTransformToClip(): this is {transformToClip: Transform} {
+    return this._transformToClip !== undefined;
+  }
+  /**
+   * Type guard for both [[transformFromClip]] and [[transformToClip]].
+   * @see individual type guards [[hasTransformFromClip]] and [[hasTransformToClip]].
+   */
+  public hasTransforms(): this is {transformFromClip: Transform, transformToClip: Transform} {
+    return this._transformFromClip !== undefined && this._transformToClip !== undefined;
   }
   /** Return this zLow, which may be undefined. */
   public get zLow(): number | undefined {

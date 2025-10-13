@@ -701,7 +701,7 @@ export function exerciseClipPrimitive(ck: Checker, allGeometry: GeometryQuery[],
   const range2 = Range3d.createArray(polygonToClip);
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, polygonToClip, x0, y0);
   if (primitive instanceof ClipShape) {
-    if (primitive.transformIsValid) {
+    if (primitive.transformValid) {
       const transformedPolygon = primitive.transformFromClip!.multiplyPoint3dArray(primitive.polygon);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, transformedPolygon, x0, y0);
     } else {
