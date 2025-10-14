@@ -960,7 +960,7 @@ describe("AnnotationTextStyle", () => {
     });
   })
 
-  describe.only("onCloned", () => {
+  describe("onCloned", () => {
     let targetDb: StandaloneDb;
     let targetDefModel: string;
 
