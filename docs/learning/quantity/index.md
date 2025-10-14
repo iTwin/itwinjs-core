@@ -12,6 +12,7 @@
       - [Formats Provider](#formats-provider)
       - [Units Provider](#units-provider)
       - [Unit Conversion](#unit-conversion)
+      - [Parser Behavior](#parser-behavior)
   - [Persistence](#persistence)
     - [FormatSet](#formatset)
   - [Using KindOfQuantities to Retrieve Formats](#using-kindofquantities-to-retrieve-formats)
@@ -120,7 +121,7 @@ The [Parser]($quantity) converts text strings into numeric quantity values by to
    - Alternate labels defined through the `AlternateUnitLabelsProvider`
 
 3. __Error Handling__: The parser's behavior when encountering unrecognized unit labels depends on the format configuration:
-   - __Unitless Format__ (no units defined in format): If a unit label is provided but cannot be matched to any known unit, the parser returns [`ParseError.UnitLabelSuppliedButNotMatched`]($quantity). This prevents silent failures where typos like "12 im" (instead of "12 in") would incorrectly parse as "12 meters" when the persistence unit is meters.
+   - __Unitless Format__ (no units defined in format): If a unit label is provided but cannot be matched to any known unit, the parser returns `ParseError.UnitLabelSuppliedButNotMatched`. This prevents silent failures where typos like "12 im" (instead of "12 in") would incorrectly parse as "12 meters" when the persistence unit is meters.
    - __Format with Units__ (units explicitly defined): If an unrecognized unit label is provided (e.g., "12 ABCDEF"), the parser falls back to the format's default unit for backward compatibility. For example, with a feet format, "12 ABCDEF" would parse as "12 feet".
 
 4. __Default Unit Behavior__: If no unit label is provided in the input (e.g., just "12"), the parser uses the default unit specified in the format. For unitless formats, if the input contains multiple unit labels, the first successfully matched unit becomes the default for subsequent unitless values in the same expression.
