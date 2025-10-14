@@ -23,6 +23,7 @@ packageClassification:
           "hypermodeling-frontend",
           "webgl-compatibility",
           "map-layers-formats",
+          "frontend-tiles",
         ],
     },
     {

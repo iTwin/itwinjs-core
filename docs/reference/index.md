@@ -20,6 +20,7 @@ The iTwin.js library is organized into the following separately downloadable [np
   - ($hypermodeling)
   - ($markup)
   - ($map-layers-formats)
+  - ($frontend-tiles)
 - Backend
   - ($backend)
   - ($transformer)
