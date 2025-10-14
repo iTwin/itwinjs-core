@@ -1,4 +1,4 @@
-import { BeEvent, DbResult, Id64String, IModelStatus } from "@itwin/core-bentley";
+import { BeEvent, DbResult, Id64String, IModelStatus, StopWatch } from "@itwin/core-bentley";
 import { Code, ElementProps, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, IModelError, RelatedElement, RelationshipProps } from "@itwin/core-common";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import * as chai from "chai";
@@ -549,7 +549,7 @@ export class Engine {
   }
 }
 
-describe.only("EDE Tests", () => {
+describe("EDE Tests", () => {
   const briefcases: BriefcaseDb[] = [];
   let iModelId: string;
   async function openBriefcase(): Promise<BriefcaseDb> {
@@ -633,7 +633,7 @@ describe.only("EDE Tests", () => {
       "Graph has a cycle"
     );
   });
-  it("local: build system dependencies", async () => {
+  it("EDE/local: build system dependencies", async () => {
     const graph = new Graph<string>();
     /*
       Example: Build system dependencies
@@ -662,6 +662,40 @@ describe.only("EDE Tests", () => {
     graph.addEdge("util.o", ["app.exe", "test.exe"]);
     graph.addEdge("config.json", ["app.exe"]);
 
+    // create graph
+    const b1 = await openBriefcase();
+    const { modelId, } = await Engine.initialize(b1);
+    const monitor = new ElementDrivesElementEventMonitor(b1);
+    await Engine.createGraph(b1, modelId, graph);
+    b1.saveChanges();
+    b1.saveChanges();
+    chai.expect(monitor.onRootChanged).to.deep.equal([
+      ["main.c", "main.o"],
+      ["main.o", "test.exe"],
+      ["main.o", "app.exe"],
+      ["util.c", "util.o"],
+      ["util.o", "test.exe"],
+      ["util.o", "app.exe"],
+      ["test.c", "test.exe"],
+      ["config.json", "app.exe"]
+    ]);
+    chai.expect(monitor.onAllInputsHandled).to.deep.equal(["main.o", "util.o", "test.exe", "app.exe"]);
+    chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal(["main.c", "util.c", "test.c", "config.json"]);
+    chai.expect(monitor.onDeletedDependency).to.deep.equal([]);
+
+    // update main.c
+    monitor.clear();
+    await Engine.updateNode(b1, "main.c");
+    b1.saveChanges();
+    chai.expect(monitor.onRootChanged).to.deep.equal([
+      ["main.c", "main.o"],
+      ["main.o", "test.exe"],
+      ["main.o", "app.exe"],
+    ]);
+    chai.expect(monitor.onAllInputsHandled).to.deep.equal(["main.o", "test.exe", "app.exe"]);
+    chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal(["main.c"]);
+    chai.expect(monitor.onDeletedDependency).to.deep.equal([]);
+
     // Topological sort (depth-first)
     const df = TopologicalSorter.sortDepthFirst(graph);
     chai.expect(TopologicalSorter.validate(graph, df)).to.be.true;
@@ -672,8 +706,18 @@ describe.only("EDE Tests", () => {
     chai.expect(df).to.deep.equal(["config.json", "test.c", "util.c", "util.o", "main.c", "main.o", "test.exe", "app.exe"]);
     chai.expect(bf).to.deep.equal(["main.c", "util.c", "test.c", "config.json", "main.o", "util.o", "app.exe", "test.exe"]);
   });
-  it("local: complex, subset", async () => {
+  it("EDE/local: complex, subset", async () => {
     const graph = new Graph<string>();
+    /*
+    Adjacency:
+      Socks -> Shoes
+      Underwear -> Shoes, Pants
+      Pants -> Belt, Shoes
+      Shirt -> Belt, Tie
+      Tie -> Jacket
+      Belt -> Jacket
+      Watch (isolated)
+    */
 
     graph.addEdge("Socks", ["Shoes"]);
     graph.addEdge("Underwear", ["Shoes", "Pants"]);
@@ -682,6 +726,37 @@ describe.only("EDE Tests", () => {
     graph.addEdge("Tie", ["Jacket"]);
     graph.addEdge("Belt", ["Jacket"]);
     graph.addNode("Watch");
+
+    // Test using EDE
+    const b1 = await openBriefcase();
+    const { modelId, } = await Engine.initialize(b1);
+    const monitor = new ElementDrivesElementEventMonitor(b1);
+    await Engine.createGraph(b1, modelId, graph);
+    b1.saveChanges();
+    chai.expect(monitor.onRootChanged).to.deep.equal([
+      ["Socks", "Shoes"],
+      ["Underwear", "Shoes"],
+      ["Underwear", "Pants"],
+      ["Pants", "Shoes"],
+      ["Pants", "Belt"],
+      ["Shirt", "Belt"],
+      ["Belt", "Jacket"],
+      ["Shirt", "Tie"],
+      ["Tie", "Jacket"]
+    ]);
+
+    // Watch is missing as it is not connected to any other node.
+    chai.expect(monitor.onAllInputsHandled).to.deep.equal(["Pants", "Shoes", "Belt", "Tie", "Jacket"]);
+    chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal(["Socks", "Underwear", "Shirt"]);
+    chai.expect(monitor.onDeletedDependency).to.deep.equal([]);
+
+    monitor.clear();
+    await Engine.updateNode(b1, "Socks");
+    b1.saveChanges();
+    chai.expect(monitor.onRootChanged).to.deep.equal([["Socks", "Shoes"]]);
+    chai.expect(monitor.onAllInputsHandled).to.deep.equal(["Shoes"]);
+    chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal(["Socks"]);
+    chai.expect(monitor.onDeletedDependency).to.deep.equal([]);
 
     const sorted = TopologicalSorter.sortDepthFirst(graph);
     chai.expect(TopologicalSorter.validate(graph, sorted)).to.be.true;
@@ -769,7 +844,7 @@ describe.only("EDE Tests", () => {
     chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal([]);
     chai.expect(monitor.onDeletedDependency).to.deep.equal([["B", "E"]]);
   });
-  it.only("EDE: cyclical throw exception", async () => {
+  it("EDE: cyclical throw exception", async () => {
     const b1 = await openBriefcase();
     const { modelId, } = await Engine.initialize(b1);
     const graph = new Graph<string>();
@@ -792,5 +867,81 @@ describe.only("EDE Tests", () => {
     chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal([]);
     chai.expect(monitor.onDeletedDependency).to.deep.equal([]);
     monitor.clear();
+  });
+  it("EDE: cyclical graph can start propagation with no clear starting element", async () => {
+    const b1 = await openBriefcase();
+    const { modelId, } = await Engine.initialize(b1);
+    const graph = new Graph<string>();
+    // Graph structure with a cycle:
+    //   A
+    //  / \
+    // B - C
+
+    // order of insertion effect graph with cycles.
+    graph.addNode("B");
+    graph.addNode("A");
+    graph.addNode("C");
+
+    graph.addEdge("A", ["B"]);
+    graph.addEdge("B", ["C"]);
+    graph.addEdge("C", ["A"]);
+
+    const monitor = new ElementDrivesElementEventMonitor(b1);
+    // create a network
+    await Engine.createGraph(b1, modelId, graph);
+    chai.expect(() => b1.saveChanges()).to.throw("Could not save changes due to propagation failure.");
+    b1.abandonChanges();
+    chai.expect(monitor.onRootChanged).to.deep.equal([["C", "A"], ["A", "B"], ["B", "C"]]);
+    chai.expect(monitor.onAllInputsHandled).to.deep.equal(["A", "B", "C"]);
+    chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal([]);
+    chai.expect(monitor.onDeletedDependency).to.deep.equal([]);
+    monitor.clear();
+  });
+  it("EDE: performance", async () => {
+    const b1 = await openBriefcase();
+    const { modelId, } = await Engine.initialize(b1);
+    const graph = new Graph<string>();
+
+    const createTree = (depth: number, breadth: number, prefix: string) => {
+      if (depth === 0)
+        return;
+      for (let i = 0; i < breadth; i++) {
+        const node = `${prefix}${i}`;
+        graph.addNode(node);
+        if (depth > 1) {
+          for (let j = 0; j < breadth; j++) {
+            const child = `${prefix}${i}${j}`;
+            graph.addEdge(node, [child]);
+            createTree(depth - 1, breadth, `${prefix}${i}${j}`);
+          }
+        }
+      }
+    };
+
+    const stopWatch0 = new StopWatch("create graph", true);
+    createTree(5, 3, "N");
+    await Engine.createGraph(b1, modelId, graph);
+    stopWatch0.stop();
+    const createGraphTime = stopWatch0.elapsed.seconds;
+
+    let onRootChangedCount = 0;
+    let onDeletedDependencyCount = 0;
+    let onAllInputsHandledCount = 0;
+    let onBeforeOutputsHandledCount = 0;
+    InputDrivesOutput.events.onRootChanged.addListener(() => { onRootChangedCount++; });
+    InputDrivesOutput.events.onDeletedDependency.addListener(() => { onDeletedDependencyCount++; });
+    NodeElement.events.onAllInputsHandled.addListener((_id: Id64String) => { onAllInputsHandledCount++; });
+    NodeElement.events.onBeforeOutputsHandled.addListener(() => { onBeforeOutputsHandledCount++; });
+
+    const stopWatch1 = new StopWatch("save changes", true);
+    b1.saveChanges();
+    stopWatch1.stop();
+    const saveChangesTime = stopWatch1.elapsed.seconds;
+    chai.expect(onRootChangedCount).to.be.equals(7380);
+    chai.expect(onDeletedDependencyCount).to.equal(0);
+    chai.expect(onAllInputsHandledCount).to.be.equals(7380);
+    chai.expect(onBeforeOutputsHandledCount).to.equal(2460);
+    chai.expect(createGraphTime).to.be.lessThan(3);
+    chai.expect(saveChangesTime).to.be.lessThan(3);
   });
 });
