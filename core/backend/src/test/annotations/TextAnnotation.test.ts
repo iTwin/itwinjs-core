@@ -715,7 +715,7 @@ describe("TextAnnotation element", () => {
             const context = new IModelElementCloneContext(imodel, dstDb);
             context.remapElement(createElement2dArgs.model, dstElemArgs.model);
 
-            expect(async () => context.cloneElement(srcElem)).to.be.rejectedWith("Invalid target model");
+            await expect(context.cloneElement(srcElem)).to.be.rejectedWith("Invalid target model");
           });
 
           it("imports default text style if necessary", async () => {
