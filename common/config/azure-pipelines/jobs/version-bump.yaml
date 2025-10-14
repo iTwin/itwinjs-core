@@ -344,10 +344,10 @@ jobs:
 
       - bash: |
           latestCommit=$(git log -1 --format=%H)
-          echo "Applying DEPRECATION_COMMENT_CHANGES note to commit $latestCommit"
-          git notes append -m "DEPRECATION_COMMENT_CHANGES" $latestCommit
+          echo "Applying DEPRECATION_COMMENT_CHANGES_PR note to commit $latestCommit"
+          git notes append -m "DEPRECATION_COMMENT_CHANGES_PR" $latestCommit
         displayName: Mark commit for eslint rule changes
-        condition: eq(variables['deprecationCommentChangesMade'], 'true')
+        condition: eq(variables['needsPR'], 'true')
 
       - bash: |
           git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core refs/notes/commits
