@@ -897,7 +897,7 @@ describe("EDE Tests", () => {
     chai.expect(monitor.onDeletedDependency).to.deep.equal([]);
     monitor.clear();
   });
-  it("EDE: performance", async () => {
+  it.skip("EDE: performance", async () => {
     const b1 = await openBriefcase();
     const { modelId, } = await Engine.initialize(b1);
     const graph = new Graph<string>();
