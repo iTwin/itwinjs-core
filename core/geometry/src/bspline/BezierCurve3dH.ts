@@ -6,7 +6,7 @@
  * @module Bspline
  */
 
-import { expectDefined } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
@@ -227,13 +227,14 @@ export class BezierCurve3dH extends BezierCurveBase {
     testAt1: boolean = false): boolean {
     let numUpdates = 0;
     let roots: number[] | undefined;
-    if (this.order < 2)
+    if (this.order < 2) // guarantee the work arrays are allocated below
       return false;
     if (this.isUnitWeight()) {
       // unweighted !!!
       const productOrder = 2 * this.order - 2;
       this.allocateAndZeroBezierWorkData(productOrder, 0, 0);
-      const bezier = expectDefined(this._workBezier);
+      const bezier = this._workBezier;
+      assert(bezier !== undefined);
       // closestPoint condition is:
       //   (spacePoint - curvePoint) DOT curveTangent = 0;
       // Each product (x,y,z) of the DOT is the product of two bezier polynomials
@@ -251,9 +252,12 @@ export class BezierCurve3dH extends BezierCurveBase {
       const orderB = 2 * this.order - 2; // products of component and component difference.
       const productOrder = orderA + orderB - 1;
       this.allocateAndZeroBezierWorkData(productOrder, orderA, orderB);
-      const bezier = expectDefined(this._workBezier);
-      const workA = expectDefined(this._workCoffsA);
-      const workB = expectDefined(this._workCoffsB);
+      const bezier = this._workBezier;
+      const workA = this._workCoffsA;
+      const workB = this._workCoffsB;
+      assert(bezier !== undefined);
+      assert(workA !== undefined);
+      assert(workB !== undefined);
       const packedData = this._polygon.packedData;
       for (let i = 0; i < 3; i++) {
         // x representing loop pass:   (w * spacePoint.x - curve.x(s)) * (curveDelta.x(s) * curve.w(s) - curve.x(s) * curveDelta.w(s))
@@ -276,16 +280,16 @@ export class BezierCurve3dH extends BezierCurveBase {
       }
     }
     if (testAt0)
-      numUpdates += this.updateDetailAtFraction (detail, 0.0, spacePoint) ? 1 : 0;
+      numUpdates += this.updateDetailAtFraction(detail, 0.0, spacePoint) ? 1 : 0;
     if (testAt1)
-      numUpdates += this.updateDetailAtFraction (detail, 1.0, spacePoint) ? 1 : 0;
+      numUpdates += this.updateDetailAtFraction(detail, 1.0, spacePoint) ? 1 : 0;
     return numUpdates > 0;
   }
-  private updateDetailAtFraction(detail: CurveLocationDetail, fraction: number, spacePoint: Point3d): boolean{
+  private updateDetailAtFraction(detail: CurveLocationDetail, fraction: number, spacePoint: Point3d): boolean {
     const xyz = this.fractionToPoint(fraction);
     const a = xyz.distance(spacePoint);
-    return detail.updateIfCloserCurveFractionPointDistance (this, fraction, xyz, a);
-      }
+    return detail.updateIfCloserCurveFractionPointDistance(this, fraction, xyz, a);
+  }
   /** Extend `rangeToExtend`, using candidate extrema at
    * * both end points
    * * any internal extrema in x,y,z
@@ -294,11 +298,12 @@ export class BezierCurve3dH extends BezierCurveBase {
    */
   public extendRange(rangeToExtend: Range3d, transform?: Transform) {
     const order = this.order;
-    if (order < 2)
+    if (order < 2) // guarantee the work arrays are allocated below
       return;
     if (!transform) {
       this.allocateAndZeroBezierWorkData(order * 2 - 2, 0, 0);
-      const bezier = expectDefined(this._workBezier);
+      const bezier = this._workBezier;
+      assert(bezier !== undefined);
       const data = this._polygon.packedData;
       this.getPolePoint3d(0, this._workPoint0);
       rangeToExtend.extend(this._workPoint0);
@@ -336,9 +341,12 @@ export class BezierCurve3dH extends BezierCurveBase {
       }
     } else {
       this.allocateAndZeroBezierWorkData(order * 2 - 2, order, order);
-      const componentCoffs = expectDefined(this._workCoffsA);   // to hold transformed copy of x,y,z in turn.
-      const weightCoffs = expectDefined(this._workCoffsB);    // to hold weights
-      const bezier = expectDefined(this._workBezier);
+      const bezier = this._workBezier;
+      const componentCoffs = this._workCoffsA;   // to hold transformed copy of x,y,z in turn.
+      const weightCoffs = this._workCoffsB;    // to hold weights
+      assert(bezier !== undefined);
+      assert(componentCoffs !== undefined);
+      assert(weightCoffs !== undefined);
       this.getPolePoint3d(0, this._workPoint0);
       rangeToExtend.extendTransformedPoint(transform, this._workPoint0);
       this.getPolePoint3d(order - 1, this._workPoint0);

@@ -6,7 +6,7 @@
  * @module Bspline
  */
 
-import { expectDefined } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
 import { LineString3d } from "../curve/LineString3d";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
@@ -162,11 +162,12 @@ export class BezierCurve3d extends BezierCurveBase {
    */
   public extendRange(rangeToExtend: Range3d, transform?: Transform) {
     const order = this.order;
-    if (order < 2)
+    if (order < 2) // guarantee the work arrays are allocated below
       return;
     if (!transform) {
       this.allocateAndZeroBezierWorkData(order - 1, 0, 0);
-      const bezier = expectDefined(this._workBezier);
+      const bezier = this._workBezier;
+      assert(bezier !== undefined);
       this.getPolePoint3d(0, this._workPoint0);
       rangeToExtend.extend(this._workPoint0);
       this.getPolePoint3d(order - 1, this._workPoint0);
@@ -183,8 +184,10 @@ export class BezierCurve3d extends BezierCurveBase {
       }
     } else {
       this.allocateAndZeroBezierWorkData(order - 1, order, 0);
-      const bezier = expectDefined(this._workBezier);
-      const componentCoffs = expectDefined(this._workCoffsA);   // to hold transformed copy of x,y,z in turn.
+      const bezier = this._workBezier;
+      const componentCoffs = this._workCoffsA;   // to hold transformed copy of x,y,z in turn.
+      assert(bezier !== undefined);
+      assert(componentCoffs !== undefined);
       this.getPolePoint3d(0, this._workPoint0);
       rangeToExtend.extendTransformedPoint(transform, this._workPoint0);
       this.getPolePoint3d(order - 1, this._workPoint0);

@@ -304,12 +304,11 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
    */
   public getPlane3d(): Plane3dByOriginAndUnitNormal {
     const d = this._distanceFromOrigin;
-    // normal should be normalized, will not return undefined
-    const plane = Plane3dByOriginAndUnitNormal.create(
-      Point3d.create(this._inwardNormal.x * d, this._inwardNormal.y * d, this._inwardNormal.z * d),
-      this._inwardNormal,
-    );
-    return plane ?? Plane3dByOriginAndUnitNormal.createXYPlane();
+    const origin = Point3d.create(this._inwardNormal.x * d, this._inwardNormal.y * d, this._inwardNormal.z * d);
+    const plane = Plane3dByOriginAndUnitNormal.createXYPlane();
+    // inwardNormal should be normalized, will not return undefined
+    Plane3dByOriginAndUnitNormal.create(origin, this._inwardNormal, plane);
+    return plane;
   }
   /**
    * Return the Point4d d form of the plane.

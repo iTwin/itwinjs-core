@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Geometry } from "../../Geometry";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { UnionOfConvexClipPlaneSets } from "../UnionOfConvexClipPlaneSets";
-import { ConvexClipPlaneSet } from "../ConvexClipPlaneSet";
-import { ClipPlane } from "../ClipPlane";
 import { IndexedXYZCollection } from "../../geometry3d/IndexedXYZCollection";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { ClipPlane } from "../ClipPlane";
+import { ConvexClipPlaneSet } from "../ConvexClipPlaneSet";
+import { UnionOfConvexClipPlaneSets } from "../UnionOfConvexClipPlaneSets";
+
 /**
  * Class for building clip sets for offset regions.
  * @internal
@@ -168,10 +168,7 @@ export class LineStringOffsetClipperContext {
     const context = new LineStringOffsetClipperContext(positiveOffsetLeft, positiveOffsetRight);
     const result = UnionOfConvexClipPlaneSets.createEmpty();
     if (points.length > 1) {
-      const distance = points.distanceIndexIndex(0, points.length - 1);
-      if (undefined === distance)
-        return result;
-      const closed = Geometry.isSmallMetricDistance(distance);
+      const closed = points.almostEqualUncheckedIndexIndex(0, points.length - 1);
       for (let i = 0; i + 1 < points.length; i++) {
         const unitVectorA = this.createUnit(points, i - 1, closed);
         const unitVectorB = this.createUnit(points, i, closed);
@@ -185,7 +182,7 @@ export class LineStringOffsetClipperContext {
     } else {
       // make a singleton clipper with the z values.
       const clipSet = ConvexClipPlaneSet.createEmpty();
-      clipSet?.addZClipPlanes(false, z0, z1);
+      clipSet.addZClipPlanes(false, z0, z1);
       if (clipSet.planes.length > 0)
         result.addConvexSet(clipSet);
     }

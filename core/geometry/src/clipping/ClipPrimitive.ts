@@ -7,7 +7,7 @@
  * @module CartesianGeometry
  */
 
-import { assert, expectDefined } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
 import { Arc3d } from "../curve/Arc3d";
 import { AnnounceNumberNumber, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { Geometry } from "../Geometry";
@@ -423,32 +423,32 @@ export class ClipShape extends ClipPrimitive {
     return this._transformFromClip !== undefined;
   }
   /** Type guard for [[zLow]]. */
-  public hasZLow(): this is {zLow: number} {
+  public hasZLow(): this is { zLow: number } {
     return this._zLow !== undefined;
   }
   /** Type guard for [[zHigh]]. */
-  public hasZHigh(): this is {zHigh: number} {
+  public hasZHigh(): this is { zHigh: number } {
     return this._zHigh !== undefined;
   }
   /**
    * Type guard for [[transformFromClip]].
    * @see related type guards [[hasTransformToClip]] and [[hasTransforms]].
    */
-  public hasTransformFromClip(): this is {transformFromClip: Transform} {
+  public hasTransformFromClip(): this is { transformFromClip: Transform } {
     return this._transformFromClip !== undefined;
   }
   /**
    * Type guard for [[transformToClip]].
    * @see related type guards [[hasTransformFromClip]] and [[hasTransforms]].
    */
-  public hasTransformToClip(): this is {transformToClip: Transform} {
+  public hasTransformToClip(): this is { transformToClip: Transform } {
     return this._transformToClip !== undefined;
   }
   /**
    * Type guard for both [[transformFromClip]] and [[transformToClip]].
    * @see individual type guards [[hasTransformFromClip]] and [[hasTransformToClip]].
    */
-  public hasTransforms(): this is {transformFromClip: Transform, transformToClip: Transform} {
+  public hasTransforms(): this is { transformFromClip: Transform, transformToClip: Transform } {
     return this._transformFromClip !== undefined && this._transformToClip !== undefined;
   }
   /** Return this zLow, which may be undefined. */
@@ -598,15 +598,17 @@ export class ClipShape extends ClipPrimitive {
     blockPoints[1].x = blockPoints[2].x = high.x;
     blockPoints[0].y = blockPoints[1].y = blockPoints[4].y = low.y;
     blockPoints[2].y = blockPoints[3].y = high.y;
-    return expectDefined(ClipShape.createShape(
-      blockPoints, // length = 5 >= 3 so the return is only undefined if out-of-memory
+    const shape = ClipShape.createShape(
+      blockPoints,
       (ClipMaskXYZRangePlanes.None !== (clipMask & ClipMaskXYZRangePlanes.ZLow)) ? low.z : undefined,
       (ClipMaskXYZRangePlanes.None !== (clipMask & ClipMaskXYZRangePlanes.ZHigh)) ? high.z : undefined,
       transform,
       isMask,
       invisible,
       result,
-    ));
+    );
+    assert(shape !== undefined, "expect defined because blockPoints.length > 2");
+    return shape;
   }
   /** Creates a new ClipShape with undefined members and a polygon points array of zero length. */
   public static createEmpty(
@@ -667,30 +669,30 @@ export class ClipShape extends ClipPrimitive {
     if (!normal.normalize(normal))
       return false; // filter out trivial edge
     if (cameraFocalLength === 0.0)
-      cameraFocalLength = undefined; // ensure when camera is defined, start/end3d !== nonzero
+      cameraFocalLength = undefined; // ensure when camera is defined, vecStart/End3d are nonzero
     const convexSet = ConvexClipPlaneSet.createEmpty();
     if (cameraFocalLength === undefined) {
       // normal and perp are nonzero, so ClipPlane creation can only fail on out-of-memory
       const perp = Vector2d.create(-normal.y, normal.x);
-      convexSet.planes.push(expectDefined(ClipPlane.createNormalAndPoint(Vector3d.create(normal.x, normal.y), start, this._invisible)));
-      convexSet.planes.push(expectDefined(ClipPlane.createNormalAndPoint(Vector3d.create(-normal.x, -normal.y), end, this._invisible)));
-      convexSet.planes.push(expectDefined(ClipPlane.createNormalAndPoint(Vector3d.create(perp.x, perp.y), start, this._invisible)));
-      convexSet.planes.push(expectDefined(ClipPlane.createNormalAndPoint(Vector3d.create(-perp.x, -perp.y), start, this._invisible)));
+      convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndPoint(Vector3d.create(normal.x, normal.y), start, this._invisible));
+      convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndPoint(Vector3d.create(-normal.x, -normal.y), end, this._invisible));
+      convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndPoint(Vector3d.create(perp.x, perp.y), start, this._invisible));
+      convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndPoint(Vector3d.create(-perp.x, -perp.y), start, this._invisible));
     } else {
-      // The cross products are nonzero because their inputs are nonzero and nonparallel (because start/end are
-      // xy-distinct). Thus ClipPlane creation can only fail on out-of-memory.
+      // The cross products are nonzero because their inputs are nonzero and nonparallel (because start/end are xy-distinct).
+      // Thus ClipPlane creation can only fail on out-of-memory.
       const vecStart3d = Vector3d.create(start.x, start.y, -cameraFocalLength);
       const vecEnd3d = Vector3d.create(end.x, end.y, -cameraFocalLength);
       const perpendicular = Vector3d.createZero();
       const endNormal = Vector3d.createZero();
       vecEnd3d.crossProduct(vecStart3d, perpendicular).normalize(perpendicular);
       vecStart3d.crossProduct(perpendicular, endNormal).normalize(endNormal);
-      convexSet.planes.push(expectDefined(ClipPlane.createNormalAndDistance(perpendicular, 0.0, this._invisible)));
-      convexSet.planes.push(expectDefined(ClipPlane.createNormalAndDistance(endNormal, 0.0, this._invisible)));
+      convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(perpendicular, 0.0, this._invisible));
+      convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(endNormal, 0.0, this._invisible));
       perpendicular.negate(perpendicular);
       vecEnd3d.crossProduct(perpendicular, endNormal).normalize(endNormal);
-      convexSet.planes.push(expectDefined(ClipPlane.createNormalAndDistance(perpendicular, 0.0, this._invisible)));
-      convexSet.planes.push(expectDefined(ClipPlane.createNormalAndDistance(endNormal, 0.0, this._invisible)));
+      convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(perpendicular, 0.0, this._invisible));
+      convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(endNormal, 0.0, this._invisible));
     }
     convexSet.addZClipPlanes(this._invisible, this._zLow, this._zHigh);
     set.addConvexSet(convexSet);
@@ -717,7 +719,7 @@ export class ClipShape extends ClipPrimitive {
     const edges: PolyEdge[] = [];
     const reverse = direction < 0;
     if (cameraFocalLength === 0.0)
-      cameraFocalLength = undefined; // ensure when camera is defined, edges[].pointA/B !== zero
+      cameraFocalLength = undefined; // ensure when camera is defined, edges[].pointA/B are nonzero
     const z = (cameraFocalLength === undefined) ? 0.0 : -cameraFocalLength;
     for (let i = 0; i < polygon.length - 1; i++) {
       const dir = Vector2d.createStartEnd(polygon[i], polygon[i + 1]); // xy only!
@@ -747,10 +749,10 @@ export class ClipShape extends ClipPrimitive {
         // * We could define the region with only two planes per edge, but then we wouldn't be able to designate the "interior" status accurately.
         // * Silently ignore undefined bisector normal. This can happen if input violates the convexity assumption with a pair of backtracking edges.
         if (previousPerpendicular)
-          convexSet.planes.push(expectDefined(ClipPlane.createNormalAndPoint(previousPerpendicular, edge.pointA, this._invisible, true)));
-        convexSet.planes.push(expectDefined(ClipPlane.createNormalAndPoint(edge.normal, edge.pointB, this._invisible, false)));
+          convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndPoint(previousPerpendicular, edge.pointA, this._invisible, true));
+        convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndPoint(edge.normal, edge.pointB, this._invisible, false));
         if (nextPerpendicular)
-          convexSet.planes.push(expectDefined(ClipPlane.createNormalAndPoint(nextPerpendicular, nextEdge.pointA, this._invisible, true)));
+          convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndPoint(nextPerpendicular, nextEdge.pointA, this._invisible, true));
         set.addConvexSet(convexSet);
         set.addOutsideZClipSets(this._invisible, this._zLow, this._zHigh);
       }
@@ -758,18 +760,18 @@ export class ClipShape extends ClipPrimitive {
       const convexSet = ConvexClipPlaneSet.createEmpty();
       if (cameraFocalLength === undefined) {
         for (const edge of edges)
-          convexSet.planes.push(expectDefined(ClipPlane.createNormalAndPoint(edge.normal, edge.pointA)));
+          convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndPoint(edge.normal, edge.pointA));
       } else {
         const cross = Vector3d.createZero();
         if (reverse) {
           for (const edge of edges) {
             Vector3d.createFrom(edge.pointA).crossProduct(Vector3d.createFrom(edge.pointB), cross).normalize(cross);
-            convexSet.planes.push(expectDefined(ClipPlane.createNormalAndDistance(cross, 0.0)));
+            convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(cross, 0.0));
           }
         } else {
           for (const edge of edges) {
             Vector3d.createFrom(edge.pointB).crossProduct(Vector3d.createFrom(edge.pointA), cross).normalize(cross);
-            convexSet.planes.push(expectDefined(ClipPlane.createNormalAndDistance(cross, 0.0)));
+            convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(cross, 0.0));
           }
         }
       }

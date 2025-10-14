@@ -6,6 +6,7 @@
  * @module Bspline
  */
 
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
@@ -867,8 +868,8 @@ export namespace BSplineCurveOps {
         if (undefined !== (poles = this.solveNearTridiagonal(options.fitPoints, alpha, beta, gamma))) {
           if (poles.length > 2) {
             const pole = poles.pop();
-            if (pole)
-              poles.unshift(pole); // shift poles right to line up with the knots
+            assert(pole !== undefined);
+            poles.unshift(pole); // shift poles right to line up with the knots
             for (let i = 0; i < options.order - 1; ++i)
               poles.push(poles[i].clone()); // periodically extend (the modern way)
           }

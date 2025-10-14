@@ -130,22 +130,21 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     highZ: boolean = true,
   ): ConvexClipPlaneSet {
     const result = ConvexClipPlaneSet.createEmpty();
-    let clipPlane: ClipPlane | undefined;
+    // all normals are nonzero, so ClipPlane creation can only fail on out-of-memory
+    if (lowX)
+      result.addPlaneToConvexSet(ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, range.low.x, 0, 0));
+    if (highX)
+      result.addPlaneToConvexSet(ClipPlane.createNormalAndPointXYZXYZ(-1, 0, 0, range.high.x, 0, 0));
 
-    if (lowX && (clipPlane = ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, range.low.x, 0, 0)) !== undefined)
-      result.planes.push(clipPlane);
-    if (highX && (clipPlane = ClipPlane.createNormalAndPointXYZXYZ(-1, 0, 0, range.high.x, 0, 0)) !== undefined)
-      result.planes.push(clipPlane);
+    if (lowY)
+      result.addPlaneToConvexSet(ClipPlane.createNormalAndPointXYZXYZ(0, 1, 0, 0, range.low.y, 0));
+    if (highY)
+      result.addPlaneToConvexSet(ClipPlane.createNormalAndPointXYZXYZ(0, -1, 0, 0, range.high.y, 0));
 
-    if (lowY && (clipPlane = ClipPlane.createNormalAndPointXYZXYZ(0, 1, 0, 0, range.low.y, 0)) !== undefined)
-      result.planes.push(clipPlane);
-    if (highY && (clipPlane = ClipPlane.createNormalAndPointXYZXYZ(0, -1, 0, 0, range.high.y, 0)) !== undefined)
-      result.planes.push(clipPlane);
-
-    if (lowZ && (clipPlane = ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, range.low.z)) !== undefined)
-      result.planes.push(clipPlane);
-    if (highZ && (clipPlane = ClipPlane.createNormalAndPointXYZXYZ(0, 0, -1, 0, 0, range.high.z)) !== undefined)
-      result.planes.push(clipPlane);
+    if (lowZ)
+      result.addPlaneToConvexSet(ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, range.low.z));
+    if (highZ)
+      result.addPlaneToConvexSet(ClipPlane.createNormalAndPointXYZXYZ(0, 0, -1, 0, 0, range.high.z));
 
     return result;
   }
@@ -238,8 +237,6 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * Set (or reset) a plane and ConvexClipPlaneSet for a convex array, such as a convex facet used for xy clip.
    * * The planeOfPolygon is (re)initialized with the normal from 3 points, but not otherwise referenced.
    * * The ConvexClipPlaneSet is filled with outward normals of the facet edges as viewed to xy plane.
-   * @param points
-   * @param result
    */
   public static setPlaneAndXYLoopCCW(points: GrowableXYZArray, planeOfPolygon: ClipPlane, frustum: ConvexClipPlaneSet) {
     const i0 = points.length - 1;
@@ -710,7 +707,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * @param transform (optional) transform to apply to the accepted points.
    * @param testContainment if true, test each point to see if it is within the convex set. (send false if confident
    * that the convex set is rectilinear set such as a slab. Send true if chiseled corners are possible).
-   * @returns number of points. If computation fails, return 0.
+   * @returns number of points.
    */
   public computePlanePlanePlaneIntersections(
     points: Point3d[] | undefined,
@@ -720,6 +717,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
   ): number {
     const normalRows = Matrix3d.createIdentity();
     const allPlanes = this._planes;
+    const xyz = Point3d.createZero();
     const n = allPlanes.length;
     let numPoints = 0; // explicitly count points -- can't wait to end for points.length because it may be an optional output.
     for (let i = 0; i < n; i++) {
@@ -731,15 +729,13 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
             allPlanes[k].inwardNormalRef.x, allPlanes[k].inwardNormalRef.y, allPlanes[k].inwardNormalRef.z,
             normalRows);
           if (normalRows.computeCachedInverse(false)) {
-            const xyz = normalRows.multiplyInverseXYZAsPoint3d(allPlanes[i].distance, allPlanes[j].distance, allPlanes[k].distance);
-            if (undefined === xyz)
-              return 0;
+            normalRows.multiplyInverseXYZAsPoint3d(allPlanes[i].distance, allPlanes[j].distance, allPlanes[k].distance, xyz);
             if (!testContainment || this.isPointOnOrInside(xyz, Geometry.smallMetricDistance)) {
               numPoints++;
               if (transform)
                 transform.multiplyPoint3d(xyz, xyz);
               if (points)
-                points.push(xyz);
+                points.push(xyz.clone());
               if (rangeToExtend)
                 rangeToExtend.extendPoint(xyz);
             }
@@ -764,13 +760,10 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * @param zHigh high z value.  The plane clips out points with z above this.
    */
   public addZClipPlanes(invisible: boolean, zLow?: number, zHigh?: number) {
-    let clipPlane: ClipPlane | undefined;
-    if (zLow !== undefined &&
-      (clipPlane = ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, 1), zLow, invisible)) !== undefined)
-      this._planes.push(clipPlane);
-    if (zHigh !== undefined &&
-      (clipPlane = ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, -1), -zHigh, invisible)) !== undefined)
-      this._planes.push(clipPlane);
+    if (zLow !== undefined)
+      this.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, 1), zLow, invisible));
+    if (zHigh !== undefined)
+      this.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(Vector3d.create(0, 0, -1), -zHigh, invisible));
   }
   /**
    * Implement appendPolygonClip, as defined in interface PolygonClipper.
@@ -811,16 +804,16 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     if (PolyfaceQuery.isPolyfaceClosedByEdgePairing(convexMesh))
       vol = PolyfaceQuery.sumTetrahedralVolumes(convexMesh);
     const scale = vol > 0.0 ? -1.0 : 1.0; // point clipper normals inward if mesh normals point outward
-    const normal = Vector3d.create();
+    const origin = Point3d.createZero();
+    const normal = Vector3d.createZero();
     const plane = Plane3dByOriginAndUnitNormal.createXYPlane();
     const visitor = convexMesh instanceof Polyface ? convexMesh.createVisitor(0) : convexMesh;
     visitor.setNumWrap(0);
     for (visitor.reset(); visitor.moveToNextFacet();) {
-      if (undefined !== PolygonOps.areaNormalGo(visitor.point, normal)) {
+      if (PolygonOps.areaNormalGo(visitor.point, normal)) {
         normal.scaleInPlace(scale);
-        const front = visitor.point.front();
-        if (undefined !== front && undefined !== Plane3dByOriginAndUnitNormal.create(front, normal, plane))
-          result.addPlaneToConvexSet(plane);
+        visitor.point.front(origin); // won't fail because we computed a normal
+        result.addPlaneToConvexSet(Plane3dByOriginAndUnitNormal.create(origin, normal, plane)); // all inputs cloned
       }
     }
     return { clipper: result, volume: vol };
