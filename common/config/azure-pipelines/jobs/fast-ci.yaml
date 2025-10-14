@@ -232,6 +232,10 @@ jobs:
     dependsOn:
       - Build
       - ParseCommitNotes
+    # Only run if:
+    # 1. The Build job succeeded
+    # 2. The ParseCommitNotes job output 'publishNote.shouldPublish' is 'true'
+    # 3. The build reason is not 'PullRequest'
     condition: and(succeeded('Build'), eq(dependencies.ParseCommitNotes.outputs['publishNote.shouldPublish'], 'true'), ne(variables['Build.Reason'], 'PullRequest'))
     pool:
       vmImage: ubuntu-latest
