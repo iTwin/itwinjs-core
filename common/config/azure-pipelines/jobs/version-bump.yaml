@@ -114,8 +114,12 @@ jobs:
           # e.g. if this release is `release/5.0.x`, value in `gather-docs.yaml`
           # should be `release/4.<whatever_last_minor_release_version_was>.x`
           # additionally if major version bump, the `mergify.yml` also needs to be edited manually
-          # if this release is `release/5.0.x`,change the `latestMinor` variable to `release/5.0.x`
-          # and the `previousMajor` variable to `release/4.<whatever_last_minor_release_version_was>.x`
+          # if this release is `release/5.0.x`, the branches under actions/backport should be updated to look like:
+          #     branches:
+          #       # current minor release branch
+          #       - "release/5.0.x"
+          #       # previous major release branch
+          #       - `release/4.<whatever_last_minor_release_version_was>.x`
 
           if [ $((previousMinorVersion)) -lt 0 ]
           then
