@@ -53,6 +53,7 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
+    "@itwin/editor-backend": "workspace:*",
     "@itwin/imodels-access-backend": "^6.0.2",
     "@itwin/imodels-client-authoring": "^6.0.2",
     "@itwin/object-storage-azure": "^3.0.4",
