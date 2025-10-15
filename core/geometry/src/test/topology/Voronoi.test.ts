@@ -115,9 +115,22 @@ function verifyVoronoiTopology(ck: Checker, v: Voronoi, testName?: string): void
     const vRange = HalfEdgeGraphOps.graphRangeXY(v.getVoronoiGraph);
     const dRange = v.getInputGraphRange;
     const testPoints: Point2d[] = [];
-    for (let i = 0; i < 50; i++) { // concentrate test points in the input graph range
-      testPoints.push(Point2d.create(getRandomNumber(vRange.low.x, vRange.high.x), getRandomNumber(vRange.low.y, vRange.high.y)));
-      testPoints.push(Point2d.create(getRandomNumber(dRange.low.x, dRange.high.x), getRandomNumber(dRange.low.y, dRange.high.y)));
+    if (GeometryCoreTestIO.enableLongTests) {
+      for (let i = 0; i < 50; i++) { // concentrate random test points in the input graph range
+        testPoints.push(
+          Point2d.create(getRandomNumber(vRange.low.x, vRange.high.x), getRandomNumber(vRange.low.y, vRange.high.y)),
+        );
+        testPoints.push(
+          Point2d.create(getRandomNumber(dRange.low.x, dRange.high.x), getRandomNumber(dRange.low.y, dRange.high.y)),
+        );
+      }
+    } else { //  concentrate fixed test points in the input graph range
+      for (let i = 0.1; i <= 0.9; i += 0.2) {
+        for (let j = 0.1; j <= 0.9; j += 0.2) {
+          testPoints.push(vRange.fractionToPoint(i, j));
+          testPoints.push(dRange.fractionToPoint(i, j));
+        }
+      }
     }
     // verify the Voronoi condition via Monte Carlo method
     const vFaces = HalfEdgeGraphSearch.findContainingFaceXY(v.getVoronoiGraph, testPoints) as (HalfEdge | undefined)[] | undefined;
@@ -314,7 +327,7 @@ describe("Voronoi", () => {
       visualizeGraphEdges(allGeometry, voronoiGraph, dx);
       ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 4, "voronoiGraph should have 4 faces");
       ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 10, "voronoiGraph should have 10 edges");
-      verifyVoronoiTopology(ck, voronoi, "ColinearPoints4");
+      verifyVoronoiTopology(ck, voronoi, "ColinearPoints5");
     }
     dx += 11;
     points = [[-1, -1], [1, 1], [4, 4]];
@@ -332,7 +345,7 @@ describe("Voronoi", () => {
       visualizeGraphEdges(allGeometry, voronoiGraph, dx);
       ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 4, "voronoiGraph should have 4 faces");
       ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 10, "voronoiGraph should have 10 edges");
-      verifyVoronoiTopology(ck, voronoi, "ColinearPoints5");
+      verifyVoronoiTopology(ck, voronoi, "ColinearPoints6");
     }
 
     dx += 9;
@@ -353,7 +366,7 @@ describe("Voronoi", () => {
       visualizeGraphEdges(allGeometry, voronoiGraph, dx);
       ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 5, "voronoiGraph should have 5 faces");
       ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 13, "voronoiGraph should have 13 edges");
-      verifyVoronoiTopology(ck, voronoi, "ColinearPoints6");
+      verifyVoronoiTopology(ck, voronoi, "ColinearPoints7");
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "ColinearPoints");
