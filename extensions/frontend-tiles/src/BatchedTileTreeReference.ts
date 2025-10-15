@@ -16,6 +16,7 @@ import { Range3d, Transform } from "@itwin/core-geometry";
 import { BatchedModels } from "./BatchedModels.js";
 import { ModelGroup, ModelGroupInfo } from "./ModelGroup.js";
 
+//ADD DOCUMENTATION
 export interface BatchedTileTreeReferenceArgs {
   readonly models: BatchedModels;
   readonly groups: ReadonlyArray<ModelGroupInfo>;
@@ -26,6 +27,7 @@ export interface BatchedTileTreeReferenceArgs {
   readonly iModel: IModelConnection;
 }
 
+//ADD DOCUMENTATION
 export class BatchedTileTreeReference extends TileTreeReference implements FeatureAppearanceProvider {
   private readonly _args: BatchedTileTreeReferenceArgs;
   private readonly _groupIndex: number;

@@ -8,6 +8,7 @@ import { SpatialViewState } from "@itwin/core-frontend";
 import { Range3d } from "@itwin/core-geometry";
 import { ModelMetadata } from "./BatchedTilesetReader.js";
 
+//ADD DOCUMENTATION
 export class BatchedModels {
   private _viewedModels!: Set<Id64String>;
   private readonly _projectExtents: Range3d;
