@@ -549,7 +549,7 @@ export class Engine {
   }
 }
 
-describe("EDE Tests", () => {
+describe.only("ElementDrivesElement Tests", () => {
   const briefcases: BriefcaseDb[] = [];
   let iModelId: string;
   async function openBriefcase(): Promise<BriefcaseDb> {
@@ -575,16 +575,6 @@ describe("EDE Tests", () => {
   });
   it("local: topological sort", async () => {
     const graph = new Graph<string>();
-    // Graph structure:
-    //   1
-    //  / \
-    // 2   3
-    // |\   \
-    // | \   \
-    // 4  5   4
-    //  \     /
-    //   \   /
-    //     5
 
     graph.addEdge("1", ["2", "3"]);
     graph.addEdge("2", ["5", "4"]);
@@ -612,16 +602,10 @@ describe("EDE Tests", () => {
     const df = TopologicalSorter.sortDepthFirst(graph, [], false);
     chai.expect(TopologicalSorter.validate(graph, df)).to.be.false;
     chai.expect(df).to.deep.equal(["1", "2", "3"]);
-
-    // const bf = TopologicalSorter.sortBreadthFirst(graph, [], false);
-    // chai.expect(TopologicalSorter.validate(graph, bf)).to.be.false;
-    // chai.expect(bf).to.deep.equal(["1", "2", "3"]);
   });
   it("local: cycle detection (throw)", async () => {
     const graph = new Graph<string>();
     // Graph structure:
-    // A---B---C
-    //.  \ D /
     // 1 --> 2 --> 3
     // ^           |
     // |-----------|
@@ -660,7 +644,8 @@ describe("EDE Tests", () => {
     graph.addEdge("test.c", ["test.exe"]);
     graph.addEdge("main.o", ["app.exe", "test.exe"]);
     graph.addEdge("util.o", ["app.exe", "test.exe"]);
-    graph.addEdge("config.json", ["app.exe"]);
+    graph.addEdge("config.json", ["app.exe", "test.exe"]);
+
 
     // create graph
     const b1 = await openBriefcase();
@@ -677,7 +662,8 @@ describe("EDE Tests", () => {
       ["util.o", "test.exe"],
       ["util.o", "app.exe"],
       ["test.c", "test.exe"],
-      ["config.json", "app.exe"]
+      ["config.json", "test.exe"],
+      ["config.json", "app.exe"],
     ]);
     chai.expect(monitor.onAllInputsHandled).to.deep.equal(["main.o", "util.o", "test.exe", "app.exe"]);
     chai.expect(monitor.onBeforeOutputsHandled).to.deep.equal(["main.c", "util.c", "test.c", "config.json"]);
@@ -709,14 +695,14 @@ describe("EDE Tests", () => {
   it("EDE/local: complex, subset", async () => {
     const graph = new Graph<string>();
     /*
-    Adjacency:
-      Socks -> Shoes
-      Underwear -> Shoes, Pants
-      Pants -> Belt, Shoes
-      Shirt -> Belt, Tie
-      Tie -> Jacket
-      Belt -> Jacket
-      Watch (isolated)
+    Graph shows what must be put on before other items:
+    - Socks before Shoes
+    - Underwear before Shoes and Pants
+    - Pants before Belt and Shoes
+    - Shirt before Belt and Tie
+    - Tie before Jacket
+    - Belt before Jacket
+    - Watch has no dependencies
     */
 
     graph.addEdge("Socks", ["Shoes"]);
@@ -794,15 +780,16 @@ describe("EDE Tests", () => {
     const graph = new Graph<string>();
 
     // Graph structure:
-    //   A
-    //  / \
-    // B   C
-    // |\   \
-    // | \   \
-    // E  D   D
-    //  \     /
-    //   \   /
-    //     E
+    //     A
+    //    / \
+    //   B   C
+    //  /|   |
+    // E |   |
+    //   |   |
+    //   D <-+
+    //   |
+    //   v
+    //   E
     graph.addEdge("A", ["B", "C"]);
     graph.addEdge("B", ["E", "D"]);
     graph.addEdge("C", ["D"]);
