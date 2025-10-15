@@ -9,7 +9,8 @@ import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, Proce
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { BatchType, ChangedEntities, ElementGeometryChange, IModelError, RenderSchedule } from "@itwin/core-common";
 import {
-  BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, OnScreenTarget, TileLoadPriority
+  BriefcaseConnection, GeometricModel3dState, GraphicalEditingScope, OnScreenTarget, StandardViewId, TileLoadPriority,
+  ViewCreator3d
 } from "@itwin/core-frontend";
 import { DynamicIModelTile } from "@itwin/core-frontend/lib/cjs/internal/tile/DynamicIModelTile";
 import { IModelTileTree, IModelTileTreeParams } from "@itwin/core-frontend/lib/cjs/internal/tile/IModelTileTree";
@@ -561,18 +562,41 @@ describe("GraphicalEditingScope", () => {
 
       await imodel.saveChanges();
 
-      // Set up a view of the model.
+      // Set up a view of the model
+      const viewCreator = new ViewCreator3d(imodel);
+      const view = await viewCreator.createDefaultView({
+        cameraOn: false,
+        skyboxOn: false,
+        standardViewId: StandardViewId.Top,
+        useSeedView: false,
+      }, [modelId]);
+      view.categorySelector.categories.clear();
+      view.categorySelector.categories.add(category);
+      view.displayStyle.viewFlags = view.displayStyle.viewFlags.copy({ backgroundMap: false });
+
+      await testOnScreenViewport(view, imodel, 100, 100, async (vp) => {
+        await vp.waitForAllTilesToRender();
+        let tileTree: IModelTileTree | undefined;
+        for (const ref of vp.getTileTreeRefs()) {
+          expect(tileTree).to.be.undefined;
+          tileTree = ref.treeOwner.tileTree as IModelTileTree;
+          expect(tileTree).not.to.be.undefined;
+          expect(tileTree).instanceof(IModelTileTree);
+        }
+
+        expect(tileTree).not.to.be.undefined;
+      });
     }
 
-    it.only("refreshes viewport contents when geometry is added to a non-empty model", () => {
-      testViewportRefresh(async (bc, model, category) => {
+    it.only("refreshes viewport contents when geometry is added to a non-empty model", async () => {
+      await testViewportRefresh(async (bc, model, category) => {
         await insertLineElement(bc, model, category, makeLineSegment(new Point3d(0, 0, 0), new Point3d(10, 0, 0)));
       });
     });
 
 
-    it.only("refreshes viewport contents when geometry is added to an empty model", () => {
-      testViewportRefresh();
+    it.only("refreshes viewport contents when geometry is added to an empty model", async () => {
+      await testViewportRefresh();
     });
   }
 });
