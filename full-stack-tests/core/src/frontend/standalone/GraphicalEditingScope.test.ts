@@ -16,7 +16,7 @@ import { DynamicIModelTile } from "@itwin/core-frontend/lib/cjs/internal/tile/Dy
 import { IModelTileTree, IModelTileTreeParams } from "@itwin/core-frontend/lib/cjs/internal/tile/IModelTileTree";
 import { addAllowedChannel, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
-import { testOnScreenViewport } from "../TestViewport";
+import { readUniqueElements, testOnScreenViewport } from "../TestViewport";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -548,7 +548,7 @@ describe("GraphicalEditingScope", () => {
       await scope.exit();
     });
 
-    async function testViewportRefresh(prep?: (bc: BriefcaseConnection, model: string, category: string) => Promise<void>) {
+    async function testViewportRefresh(numInitialElements = 0, prep?: (bc: BriefcaseConnection, model: string, category: string) => Promise<void>) {
       imodel = await openWritable();
 
       // Set up an empty geometric model.
@@ -578,6 +578,8 @@ describe("GraphicalEditingScope", () => {
       await testOnScreenViewport(view, bc, 100, 100, async (vp) => {
         await vp.waitForAllTilesToRender();
         expect(vp.sceneValid).to.be.true;
+        expect(readUniqueElements(vp).length).to.equal(numInitialElements);
+
         let tileTree: IModelTileTree | undefined;
         for (const ref of vp.getTileTreeRefs()) {
           expect(tileTree).to.be.undefined;
@@ -605,13 +607,14 @@ describe("GraphicalEditingScope", () => {
         await vp.waitForAllTilesToRender();
         expect(vp.sceneValid).to.be.true;
         expect(tileTree!.dynamicElements.length).to.equal(1);
+        expect(readUniqueElements(vp).length).to.equal(numInitialElements + 1);
 
         await scope.exit();
       });
     }
 
     it.only("refreshes viewport contents when geometry is added to a non-empty model", async () => {
-      await testViewportRefresh(async (bc, model, category) => {
+      await testViewportRefresh(1, async (bc, model, category) => {
         await insertLineElement(bc, model, category, makeLineSegment(new Point3d(0, 0, 0), new Point3d(10, 0, 0)));
       });
     });

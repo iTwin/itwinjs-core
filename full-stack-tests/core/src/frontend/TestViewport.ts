@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Id64String, SortedArray } from "@itwin/core-bentley";
+import { Id64, Id64String, SortedArray } from "@itwin/core-bentley";
 import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
 import {
   IModelApp, IModelConnection, OffScreenViewport, Pixel, ScreenViewport, Tile, TileTreeLoadStatus, Viewport, ViewRect,
@@ -126,6 +126,11 @@ function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocata
   }, excludeNonLocatable);
 
   return set;
+}
+
+export function readUniqueElements(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false): Id64String[] {
+  const pixels = Array.from(readUniquePixelData(vp, readRect, excludeNonLocatable)).filter((x) => x.elementId !== undefined && Id64.isValid(x.elementId));
+  return pixels.map((x) => x.elementId!);
 }
 
 function readPixel(vp: Viewport, x: number, y: number, excludeNonLocatable?: boolean): Pixel.Data {
