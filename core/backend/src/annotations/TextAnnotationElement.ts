@@ -297,15 +297,15 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
   }
 
   /** @internal */
-  protected static override onCloned(context: IModelElementCloneContext, srcProps: TextAnnotation2dProps, dstProps: TextAnnotation2dProps): void {
-    super.onCloned(context, srcProps, dstProps);
+  protected static override async onCloned(context: IModelElementCloneContext, srcProps: TextAnnotation2dProps, dstProps: TextAnnotation2dProps): Promise<void> {
+    await super.onCloned(context, srcProps, dstProps);
 
     const srcElem = TextAnnotation2d.fromJSON(srcProps, context.sourceDb);
     ElementDrivesTextAnnotation.remapFields(srcElem, context);
     const anno = srcElem.getAnnotation();
 dstProps.textAnnotationData = anno ? JSON.stringify({ version: TEXT_ANNOTATION_JSON_VERSION, data: anno.toJSON() }) : undefined;
 
-    remapTextStyle(context, srcElem, dstProps);
+    return remapTextStyle(context, srcElem, dstProps);
   }
 }
 
@@ -484,24 +484,24 @@ export class TextAnnotation3d extends GraphicalElement3d /* implements ITextAnno
   }
 
   /** @internal */
-  protected static override onCloned(context: IModelElementCloneContext, srcProps: TextAnnotation3dProps, dstProps: TextAnnotation3dProps): void {
-    super.onCloned(context, srcProps, dstProps);
+  protected static override async onCloned(context: IModelElementCloneContext, srcProps: TextAnnotation3dProps, dstProps: TextAnnotation3dProps): Promise<void> {
+    await super.onCloned(context, srcProps, dstProps);
 
     const srcElem = TextAnnotation3d.fromJSON(srcProps, context.sourceDb);
     ElementDrivesTextAnnotation.remapFields(srcElem, context);
     const anno = srcElem.getAnnotation();
     dstProps.textAnnotationData = anno ? JSON.stringify({ version: TEXT_ANNOTATION_JSON_VERSION, data: anno.toJSON() }) : undefined;
 
-    remapTextStyle(context, srcElem, dstProps);
+    return remapTextStyle(context, srcElem, dstProps);
   }
 }
 
-function remapTextStyle(
+async function remapTextStyle(
   context: IModelElementCloneContext,
   srcElem: TextAnnotation2d | TextAnnotation3d,
   dstProps: TextAnnotation2dProps | TextAnnotation3dProps
-): void {
-  const dstStyleId = AnnotationTextStyle.remapTextStyleId(srcElem.defaultTextStyle?.id ?? Id64.invalid, context);
+): Promise<void> {
+  const dstStyleId = await AnnotationTextStyle.remapTextStyleId(srcElem.defaultTextStyle?.id ?? Id64.invalid, context);
   dstProps.defaultTextStyle = Id64.isValid(dstStyleId) ? new TextAnnotationUsesTextStyleByDefault(dstStyleId).toJSON() : undefined;
 }
 
@@ -721,10 +721,10 @@ export class AnnotationTextStyle extends DefinitionElement {
    * corresponding to `sourceTextStyleId`, or [Id64.invalid]($bentley) if no corresponding text style exists.
    * If a text style with the same [Code]($common) exists in the target iModel, the style Id will be remapped to refer to that style.
    * Otherwise, a copy of the style will be imported into the target iModel and its element Id returned.
-   * Implementations of [[ITextAnnotation]] should invoke this function when implementing their [[Element._onCloned]] method.
+   * Implementations of [[ITextAnnotation]] should invoke this function when implementing their [[Element.onCloned]] method.
    * @throws Error if an attempt to import the text style failed.
    */
-  public static remapTextStyleId(sourceTextStyleId: Id64String, context: IModelElementCloneContext): Id64String {
+  public static async remapTextStyleId(sourceTextStyleId: Id64String, context: IModelElementCloneContext): Promise<Id64String> {
     // No remapping necessary if there's no text style or we're not copying to a different iModel.
     if (!Id64.isValid(sourceTextStyleId) || !context.isBetweenIModels) {
       return sourceTextStyleId;
@@ -749,9 +749,28 @@ export class AnnotationTextStyle extends DefinitionElement {
     }
 
     // Copy the style into the target iModel and remap its Id.
-    const dstStyleProps = context.cloneElement(srcStyle);
+    const dstStyleProps = await context.cloneElement(srcStyle);
     dstStyleId = context.targetDb.elements.insertElement(dstStyleProps);
     context.remapElement(sourceTextStyleId, dstStyleId);
     return dstStyleId;
+  }
+
+  protected static override async onCloned(context: IModelElementCloneContext, srcProps: AnnotationTextStyleProps, dstProps: AnnotationTextStyleProps): Promise<void> {
+    await super.onCloned(context, srcProps, dstProps);
+    if (!context.isBetweenIModels) {
+      return;
+    }
+
+    const settingsProps = AnnotationTextStyle.parseTextStyleSettings(srcProps.settings);
+    const font = TextStyleSettings.fromJSON(settingsProps?.data).font;
+
+    const fontsToEmbed = [];
+    for (const file of context.sourceDb.fonts.queryEmbeddedFontFiles()) {
+      if (file.type === font.type && file.faces.some((face) => face.familyName === font.name)) {
+        fontsToEmbed.push(file);
+      }
+    }
+
+    await Promise.all(fontsToEmbed.map(async (file) => context.targetDb.fonts.embedFontFile({ file })));
   }
 }

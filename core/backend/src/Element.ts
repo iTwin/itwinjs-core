@@ -387,7 +387,7 @@ export class Element extends Entity {
    * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onCloned(_context: IModelElementCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void { }
+  protected static onCloned(_context: IModelElementCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): Promise<void> | void { }
 
   /** Called when a *root* element in a subgraph is changed and before its outputs are processed.
    * This special callback is made when:
@@ -2167,8 +2167,8 @@ export class RenderTimeline extends InformationRecordElement {
   }
 
   /** @alpha */
-  protected static override onCloned(context: IModelElementCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): void {
-    super.onCloned(context, sourceProps, targetProps);
+  protected static override async onCloned(context: IModelElementCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): Promise<void> {
+    await super.onCloned(context, sourceProps, targetProps);
     if (context.isBetweenIModels)
       targetProps.script = JSON.stringify(this.remapScript(context, this.parseScriptProps(targetProps.script)));
   }
