@@ -577,6 +577,7 @@ describe("GraphicalEditingScope", () => {
       const bc = imodel;
       await testOnScreenViewport(view, bc, 100, 100, async (vp) => {
         await vp.waitForAllTilesToRender();
+        expect(vp.sceneValid).to.be.true;
         let tileTree: IModelTileTree | undefined;
         for (const ref of vp.getTileTreeRefs()) {
           expect(tileTree).to.be.undefined;
@@ -598,6 +599,10 @@ describe("GraphicalEditingScope", () => {
         const waitTime = 150;
         await BeDuration.wait(waitTime);
         expect(tileTree!.tileState).to.equal("dynamic");
+        expect(vp.sceneValid).to.be.false;
+
+        await vp.waitForAllTilesToRender();
+        expect(vp.sceneValid).to.be.true;
 
         await scope.exit();
       });
