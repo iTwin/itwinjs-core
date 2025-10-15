@@ -549,7 +549,7 @@ export class Engine {
   }
 }
 
-describe.only("ElementDrivesElement Tests", () => {
+describe("ElementDrivesElement Tests", () => {
   const briefcases: BriefcaseDb[] = [];
   let iModelId: string;
   async function openBriefcase(): Promise<BriefcaseDb> {
