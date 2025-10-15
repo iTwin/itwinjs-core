@@ -269,10 +269,11 @@ jobs:
               mergifyPath=".github/mergify.yml"
               version=$(echo $(getVersion.version) | sed 's/\([0-9]*\.[0-9]*\)\.[0-9]*/\1.x/')
               releaseBranch="release/$version"
-              echo "Updating mergify.yml to use $releaseBranch as the recent minor branch for security fixes"
+              majorVersion=$(echo $version | cut -d. -f1)
+              echo "Updating mergify.yml to backport to $releaseBranch for security fixes"
 
-              # Update the latest minor backporting release branch in mergify.yml
-              sed -i "0,/\"release\/[0-9]*\.[0-9]*\.x\"/ s|\"release/[0-9]*\.[0-9]*\.x\"|\"$releaseBranch\"|" "$mergifyPath"
+              # Update the backporting release branch matching the major version number of the new version
+              sed -i "/\"release\/$majorVersion\.[0-9]*\.x\"/ s|\"release/$majorVersion\.[0-9]*\.x\"|\"$releaseBranch\"|" "$mergifyPath"
 
             displayName: Update mergify.yml for new minor release
             condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
