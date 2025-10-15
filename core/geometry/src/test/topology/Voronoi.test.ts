@@ -3,7 +3,7 @@ import * as fs from "fs";
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { describe, expect, it, test } from "vitest";
+import { describe, expect, it } from "vitest";
 import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
 import { ClipUtilities } from "../../clipping/ClipUtils";
 import { Arc3d } from "../../curve/Arc3d";
