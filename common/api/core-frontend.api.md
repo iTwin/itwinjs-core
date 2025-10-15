@@ -4907,6 +4907,8 @@ export class IModelApp {
     static get hasRenderSystem(): boolean;
     static get hubAccess(): FrontendHubAccess | undefined;
     static get initialized(): boolean;
+    // @internal
+    static get isEventLoopStarted(): boolean;
     static get localization(): Localization;
     // (undocumented)
     static get locateManager(): ElementLocateManager;
