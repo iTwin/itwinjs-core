@@ -588,6 +588,7 @@ describe("GraphicalEditingScope", () => {
 
         expect(tileTree).not.to.be.undefined;
         expect(tileTree!.tileState).to.equal("static");
+        expect(tileTree!.dynamicElements.length).to.equal(0);
 
         const scope = await bc.enterEditingScope();
         expect(tileTree!.tileState).to.equal("interactive");
@@ -603,6 +604,7 @@ describe("GraphicalEditingScope", () => {
 
         await vp.waitForAllTilesToRender();
         expect(vp.sceneValid).to.be.true;
+        expect(tileTree!.dynamicElements.length).to.equal(1);
 
         await scope.exit();
       });
