@@ -546,6 +546,33 @@ describe("GraphicalEditingScope", () => {
 
       await scope.exit();
     });
-  }
 
+    async function testViewportRefresh(prep?: (bc: BriefcaseConnection, model: string, category: string) => Promise<void>) {
+      imodel = await openWritable();
+
+      // Set up an empty geometric model.
+      const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
+      const dictModelId = await imodel.models.getDictionaryModel();
+      const category = await coreFullStackTestIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
+
+      if (prep) {
+        await prep(imodel, modelId, category);
+      }
+
+      await imodel.saveChanges();
+
+      // Set up a view of the model.
+    }
+
+    it.only("refreshes viewport contents when geometry is added to a non-empty model", () => {
+      testViewportRefresh(async (bc, model, category) => {
+        await insertLineElement(bc, model, category, makeLineSegment(new Point3d(0, 0, 0), new Point3d(10, 0, 0)));
+      });
+    });
+
+
+    it.only("refreshes viewport contents when geometry is added to an empty model", () => {
+      testViewportRefresh();
+    });
+  }
 });
