@@ -525,6 +525,11 @@ export class IModelApp {
       }, IModelApp.animationInterval.milliseconds);
   }
 
+  /** Return true if the main event processing loop has been started.
+   * @internal
+   */
+  public static get isEventLoopStarted() { return IModelApp._wantEventLoop; }
+
   /** @internal */
   public static startEventLoop() {
     if (!IModelApp._wantEventLoop) {
