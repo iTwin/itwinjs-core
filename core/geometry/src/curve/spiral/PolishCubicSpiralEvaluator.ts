@@ -96,8 +96,8 @@ export class PolishCubicEvaluator extends CubicEvaluator {
     // multiply each coefficient by its original power:
     // 0.1 ==> 0.5
     // 1/72 ==>  9/72 = 1/8
-    // 1/208 ==> 13/208=1/16
-    // 1/2176 ==> 17/2176= 1/128
+    // 1/208 ==> 13/208 = 1/16
+    // 1/2176 ==> 17/2176 = 1/128
     const ds = (1.0 + ax4 * (0.5 + ax4 * (-1.0 / 8.0 + ax4 * (1.0 / 16.0 - 5.0 * ax4 / 128.0))));
     return ds;
   }

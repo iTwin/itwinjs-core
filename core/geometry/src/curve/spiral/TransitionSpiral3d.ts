@@ -51,7 +51,7 @@ export type DirectSpiralTypeName =
   | "AustralianRailCorp" // cubic with high accuracy distance series
   | "WesternAustralian"  // simple cubic -- 2 terms of x series, 1 term of y series
   | "Czech"              // simple cubic with two term distance approximation
-  | "MXCubicAlongArc"    // x obtained from fractional distance via 2-terms from series, y = x^3/ (6RL)
+  | "MXCubicAlongArc"    // x obtained from fractional distance via 2-terms from series, y = x^3 / (6RL)
   | "Polish"
   | "Italian"
   ;
@@ -108,11 +108,11 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
   public get spiralType(): string {
     return this._spiralType;
   }
-  /** Return 1/r with convention that if zero is given as radius, curvature is returned as 0 (straight line). */
+  /** Return 1/r with convention that exact zero input returns 0 (straight line, zero curvature, infinite radius). */
   public static radiusToCurvature(radius: number): number {
     return (radius === 0.0) ? 0.0 : 1.0 / radius;
   }
-  /** Return 1/k with convention that if near-zero is given as curvature, radius is returned as 0. */
+  /** Return 1/k with convention that near-zero input returns 0 (straight line, zero curvature, infinite radius). */
   public static curvatureToRadius(curvature: number): number {
     if (Math.abs(curvature) < Geometry.smallAngleRadians)
       return 0.0;
@@ -152,7 +152,7 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
   /**
    * Given two radii (or zeros for 0 curvature) return the curvature at the given fraction.
    * @param r0 start radius, or 0 for line.
-   * @param fraction fractional position between r0 and r1
+   * @param fraction fractional position between the curvatures defined by r0 and r1.
    * @param r1 end radius, or 0 for line.
    */
   public static interpolateCurvatureR0R1(r0: number, fraction: number, r1: number): number {
@@ -218,8 +218,7 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
   }
   /** Extend the range by the strokes of the spiral. */
   public override extendRange(rangeToExtend: Range3d, transform?: Transform): void {
-    const thisRange = this.rangeBetweenFractions(0.0, 1.0, transform);
-    rangeToExtend.extendRange(thisRange);
+    rangeToExtend.extendRange(this.rangeBetweenFractions(0.0, 1.0, transform));
   }
   /**
    * Return the range of spiral between fractions of the activeStrokes.

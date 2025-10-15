@@ -29,8 +29,8 @@ import { GeometryQuery } from "../GeometryQuery";
  * An IntegratedSpiral3d is a curve defined by integrating its curvature.
  * * The first integral of curvature (with respect to distance along the curve) is the bearing angle (in radians).
  * * Integrating (cos(theta), sin(theta)) gives displacement from the start point, and thus the actual curve position.
- * * The curvature functions of interest are all symmetric snap functions in the `NormalizedTransition` class.
- * * `TransitionConditionalProperties` implements the computations of the interrelationship of radii, bearing, and length.
+ * * The curvature functions of interest are all symmetric snap functions in the [[NormalizedTransition]] class.
+ * * [[TransitionConditionalProperties]] implements the computations of the interrelationship of radii, bearing, and length.
  * @public
  */
 export class IntegratedSpiral3d extends TransitionSpiral3d {
@@ -170,9 +170,9 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
       if (this._activeStrokes === undefined)
         this._activeStrokes = LineString3d.create();
       this._activeStrokes.clear();
-      // finer strokes in the active interval; same fraction step, but mapped.
-      // This assumes factionToPoint acts normally within refreshComputedProperties
-      // that depends on the global strokes we just computed, but not on the active strokes
+      // The active interval has finer strokes: it's the same fraction step but mapped to a sub-interval.
+      // Below assumes fractionToPoint depends upon the global strokes we just computed, and not
+      // on the active strokes we are computing.
       for (let i = 0; i <= numInterval; i++) {
         const localFraction = i * fractionStep;
         this._activeStrokes.addPoint(this.fractionToPoint(localFraction));

@@ -91,7 +91,6 @@ export class TransitionConditionalProperties {
   public tryResolveAnySingleUnknown(): boolean {
     if (this.getIsValidCompleteSet())
       return true;
-    // both bearings defined
     if (this.bearing0 && this.bearing1) {
       const sweepRadians = this.bearing1.radians - this.bearing0.radians;
       if (this.curveLength === undefined && this.radius0 !== undefined && this.radius1 !== undefined) {

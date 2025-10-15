@@ -77,11 +77,13 @@ export abstract class XYCurveEvaluator {
   }
   /** Invert the fractionToX function for given X. */
   public abstract xToFraction(x: number): number | undefined;
-  /** Initialize class level work arrays for 5 point Gaussian Quadrature. */
-  // class resources for integration; these static variables are reused on calls to integrateFromStartFraction
   protected static _gaussX: Float64Array;
   protected static _gaussWeight: Float64Array;
   protected static _gaussMapper: (xA: number, xB: number, arrayX: Float64Array, arrayW: Float64Array) => number;
+  /**
+   * Initialize class level work arrays for 5 point Gaussian quadrature.
+   * * These static variables are reused on calls to [[integrateDistanceBetweenFractions]].
+   */
   public static initWorkSpace(): void {
     XYCurveEvaluator._gaussX = new Float64Array(5);
     XYCurveEvaluator._gaussWeight = new Float64Array(5);
