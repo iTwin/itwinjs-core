@@ -125,8 +125,8 @@ function verifyVoronoiTopology(ck: Checker, v: Voronoi, testName?: string): void
         );
       }
     } else { //  concentrate fixed test points in the input graph range
-      for (let i = 0.1; i <= 0.9; i += 0.2) {
-        for (let j = 0.1; j <= 0.9; j += 0.2) {
+      for (let i = 0.1; i <= 0.9; i += 0.1) {
+        for (let j = 0.1; j <= 0.9; j += 0.1) {
           testPoints.push(vRange.fractionToPoint(i, j));
           testPoints.push(dRange.fractionToPoint(i, j));
         }
