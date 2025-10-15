@@ -19,7 +19,7 @@
     "build:esm": "tsc 1>&2 --outDir lib/esm",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "cover": "npm -s test",
-    "docs": "betools docs --json=../../generated-docs/core/frontend-tiles/file.json --tsIndexFile=frontend-tiles.ts --onlyJson",
+    "docs": "",
     "extract-api": "betools extract-api --entry=frontend-tiles",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
