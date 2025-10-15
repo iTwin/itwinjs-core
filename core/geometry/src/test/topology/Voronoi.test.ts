@@ -3,7 +3,7 @@ import * as fs from "fs";
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, test } from "vitest";
 import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
 import { ClipUtilities } from "../../clipping/ClipUtils";
 import { Arc3d } from "../../curve/Arc3d";
@@ -62,10 +62,20 @@ function visualizeGraphEdges(allGeometry: GeometryQuery[], graph: HalfEdgeGraph,
  * @param showDelaunay whether to visualize the Delaunay triangulation.
  * @param showClippers whether to visualize the curve-based Voronoi super faces as UnionRegions derived from the clippers instead.
  */
-function visualizeAndVerifyCurveBasedVoronoiDiagram(ck: Checker, allGeometry: GeometryQuery[], path: CurveChain, strokeOptions?: StrokeOptions, distanceTol?: number, bbox?: LowAndHighXY, showDelaunay?: boolean, showClippers?: boolean): void {
+function visualizeAndVerifyCurveBasedVoronoiDiagram(
+  ck: Checker,
+  allGeometry: GeometryQuery[],
+  path: CurveChain,
+  strokeOptions?: StrokeOptions,
+  distanceTol?: number,
+  bbox?: LowAndHighXY,
+  showDelaunay?: boolean,
+  showClippers?: boolean,
+  testName?: string,
+): void {
   const voronoi = Voronoi.createFromCurveChain(path, strokeOptions, distanceTol, bbox);
   if (ck.testDefined(voronoi, "created Voronoi instance")) {
-    verifyVoronoiTopology(ck, voronoi);
+    verifyVoronoiTopology(ck, voronoi, testName);
     ck.testTrue(voronoi.isCurveBased, "Voronoi instance is curve-based");
     if (showDelaunay)
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(voronoi.getInputGraph, undefined, undefined, () => true));
@@ -98,7 +108,7 @@ function visualizeAndVerifyCurveBasedVoronoiDiagram(ck: Checker, allGeometry: Ge
 }
 
 /** Verify the faces of the Voronoi graph consist of points closest to the expected Delaunay vertex. */
-function verifyVoronoiTopology(ck: Checker, v: Voronoi): void {
+function verifyVoronoiTopology(ck: Checker, v: Voronoi, testName?: string): void {
   const dVertices = v.getInputGraph.collectVertexLoops();
   const searcher = Point3dArrayRangeTreeContext.createCapture(dVertices, undefined, undefined, true);
   if (ck.testDefined(searcher, "searcher for Delaunay vertices is defined")) {
@@ -115,7 +125,11 @@ function verifyVoronoiTopology(ck: Checker, v: Voronoi): void {
       if (ck.testExactNumber(vFaces.length, testPoints.length, "findContainingFaceXY returned one entry per point")) {
         for (let i = 0; i < vFaces.length; i++) {
           const vFace = vFaces[i];
-          if (ck.testDefined(vFace, `expect point ${JSON.stringify(testPoints[i].toJSON())} to be found in an interior Voronoi face`)) {
+          const errorMessage =
+            testName ?
+              `expect point ${JSON.stringify(testPoints[i].toJSON())} to be found in an interior Voronoi face for test ${testName}` :
+              `expect point ${JSON.stringify(testPoints[i].toJSON())} to be found in an interior Voronoi face`;
+          if (ck.testDefined(vFace, errorMessage)) {
             const dGenerator = v.getInputGraph.allHalfEdges[vFace.faceTag];
             let closestPoints = searcher.searchForClosestPoint(testPoints[i], Number.POSITIVE_INFINITY) as CurveLocationDetail[] | undefined;
             if (ck.testDefined(closestPoints, "closest Delaunay vertex found")) {
@@ -212,7 +226,7 @@ describe("Voronoi", () => {
       visualizeGraphEdges(allGeometry, voronoiGraph);
       ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 3, "voronoiGraph should have 3 faces");
       ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 7, "voronoiGraph should have 7 edges");
-      verifyVoronoiTopology(ck, voronoi);
+      verifyVoronoiTopology(ck, voronoi, "ColinearPoints0");
     }
 
     let dx = 6;
@@ -229,7 +243,7 @@ describe("Voronoi", () => {
       visualizeGraphEdges(allGeometry, voronoiGraph, dx);
       ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 3, "voronoiGraph should have 3 faces");
       ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 7, "voronoiGraph should have 7 edges");
-      verifyVoronoiTopology(ck, voronoi);
+      verifyVoronoiTopology(ck, voronoi, "ColinearPoints1");
     }
 
     dx += 5;
@@ -246,7 +260,7 @@ describe("Voronoi", () => {
       visualizeGraphEdges(allGeometry, voronoiGraph, dx);
       ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 3, "voronoiGraph should have 3 faces");
       ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 5, "voronoiGraph should have 5 edges");
-      verifyVoronoiTopology(ck, voronoi);
+      verifyVoronoiTopology(ck, voronoi, "ColinearPoints2");
     }
 
     dx += 6;
@@ -263,7 +277,7 @@ describe("Voronoi", () => {
       visualizeGraphEdges(allGeometry, voronoiGraph, dx);
       ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 3, "voronoiGraph should have 3 faces");
       ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 7, "voronoiGraph should have 7 edges");
-      verifyVoronoiTopology(ck, voronoi);
+      verifyVoronoiTopology(ck, voronoi, "ColinearPoints3");
     }
 
     // 3d single edge graph
@@ -281,7 +295,7 @@ describe("Voronoi", () => {
       visualizeGraphEdges(allGeometry, voronoiGraph, dx);
       ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 3, "voronoiGraph should have 3 faces");
       ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 7, "voronoiGraph should have 7 edges");
-      verifyVoronoiTopology(ck, voronoi);
+      verifyVoronoiTopology(ck, voronoi, "ColinearPoints4");
     }
 
     dx += 9;
@@ -300,7 +314,7 @@ describe("Voronoi", () => {
       visualizeGraphEdges(allGeometry, voronoiGraph, dx);
       ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 4, "voronoiGraph should have 4 faces");
       ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 10, "voronoiGraph should have 10 edges");
-      verifyVoronoiTopology(ck, voronoi);
+      verifyVoronoiTopology(ck, voronoi, "ColinearPoints4");
     }
     dx += 11;
     points = [[-1, -1], [1, 1], [4, 4]];
@@ -318,7 +332,7 @@ describe("Voronoi", () => {
       visualizeGraphEdges(allGeometry, voronoiGraph, dx);
       ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 4, "voronoiGraph should have 4 faces");
       ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 10, "voronoiGraph should have 10 edges");
-      verifyVoronoiTopology(ck, voronoi);
+      verifyVoronoiTopology(ck, voronoi, "ColinearPoints5");
     }
 
     dx += 9;
@@ -339,7 +353,7 @@ describe("Voronoi", () => {
       visualizeGraphEdges(allGeometry, voronoiGraph, dx);
       ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 5, "voronoiGraph should have 5 faces");
       ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 13, "voronoiGraph should have 13 edges");
-      verifyVoronoiTopology(ck, voronoi);
+      verifyVoronoiTopology(ck, voronoi, "ColinearPoints6");
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "ColinearPoints");
@@ -372,7 +386,7 @@ describe("Voronoi", () => {
       visualizeGraphEdges(allGeometry, voronoiGraph);
       ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 4, "voronoiGraph should have 4 faces");
       ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 10, "voronoiGraph should have 10 edges");
-      verifyVoronoiTopology(ck, voronoi);
+      verifyVoronoiTopology(ck, voronoi, "GraphWith1Triangle0");
     }
 
     const dy = 8;
@@ -399,7 +413,7 @@ describe("Voronoi", () => {
         visualizeGraphEdges(allGeometry, voronoiGraph, dx);
         ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 4, "voronoiGraph from points should have 4 faces");
         ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 10, "voronoiGraph from points should have 10 edges");
-        verifyVoronoiTopology(ck, voronoi);
+        verifyVoronoiTopology(ck, voronoi, "GraphWith1Triangle1");
       }
     }
 
@@ -416,7 +430,7 @@ describe("Voronoi", () => {
         visualizeGraphEdges(allGeometry, voronoiGraph, dx);
         ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 4, "voronoiGraph  for 3d should have 4 faces");
         ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 10, "voronoiGraph  for 3d should have 10 edges");
-        verifyVoronoiTopology(ck, voronoi);
+        verifyVoronoiTopology(ck, voronoi, "GraphWith1Triangle2");
       }
     }
 
@@ -433,7 +447,7 @@ describe("Voronoi", () => {
         visualizeGraphEdges(allGeometry, voronoiGraph, dx);
         ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 4, "voronoiGraph from points should have 4 faces");
         ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 10, "voronoiGraph from points should have 10 edges");
-        verifyVoronoiTopology(ck, voronoi);
+        verifyVoronoiTopology(ck, voronoi, "GraphWith1Triangle3");
       }
     }
 
@@ -475,7 +489,7 @@ describe("Voronoi", () => {
       visualizeGraphEdges(allGeometry, voronoiGraph);
       ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 5, "voronoiGraph should have 5 faces");
       ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 13, "voronoiGraph should have 13 edges");
-      verifyVoronoiTopology(ck, voronoi);
+      verifyVoronoiTopology(ck, voronoi, "GraphWith2Triangles0");
     }
 
     const dy = 11;
@@ -502,7 +516,7 @@ describe("Voronoi", () => {
         visualizeGraphEdges(allGeometry, voronoiGraph, dx);
         ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 5, "voronoiGraph should have 5 faces");
         ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 13, "voronoiGraph should have 13 edges");
-        verifyVoronoiTopology(ck, voronoi);
+        verifyVoronoiTopology(ck, voronoi, "GraphWith2Triangles1");
       }
     }
 
@@ -518,7 +532,7 @@ describe("Voronoi", () => {
         visualizeGraphEdges(allGeometry, voronoiGraph, dx);
         ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 5, "voronoiGraph should have 5 faces");
         ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 12, "voronoiGraph should have 12 edges");
-        verifyVoronoiTopology(ck, voronoi);
+        verifyVoronoiTopology(ck, voronoi, "GraphWith2Triangles2");
       }
     }
 
@@ -535,7 +549,7 @@ describe("Voronoi", () => {
         visualizeGraphEdges(allGeometry, voronoiGraph, dx);
         ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 5, "voronoiGraph for 3d should have 5 faces");
         ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 12, "voronoiGraph for 3d should have 12 edges");
-        verifyVoronoiTopology(ck, voronoi);
+        verifyVoronoiTopology(ck, voronoi, "GraphWith2Triangles3");
       }
     }
 
@@ -552,7 +566,7 @@ describe("Voronoi", () => {
         visualizeGraphEdges(allGeometry, voronoiGraph, dx);
         ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 5, "voronoiGraph from points should have 5 faces");
         ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 13, "voronoiGraph from points should have 13 edges");
-        verifyVoronoiTopology(ck, voronoi);
+        verifyVoronoiTopology(ck, voronoi, "GraphWith2Triangles4");
       }
     }
 
@@ -569,7 +583,7 @@ describe("Voronoi", () => {
         visualizeGraphEdges(allGeometry, voronoiGraph, dx);
         ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 5, "voronoiGraph from points should have 5 faces");
         ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 13, "voronoiGraph from points should have 13 edges");
-        verifyVoronoiTopology(ck, voronoi);
+        verifyVoronoiTopology(ck, voronoi, "GraphWith2Triangles5");
       }
     }
 
@@ -595,7 +609,7 @@ describe("Voronoi", () => {
         visualizeGraphEdges(allGeometry, voronoiGraph);
         ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 6, "voronoiGraph should have 6 faces");
         ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 16, "voronoiGraph should have 16 edges");
-        verifyVoronoiTopology(ck, voronoi);
+        verifyVoronoiTopology(ck, voronoi, "GraphWith3Triangles0");
       }
     }
 
@@ -612,7 +626,7 @@ describe("Voronoi", () => {
         visualizeGraphEdges(allGeometry, voronoiGraph, dx);
         ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 6, "voronoiGraph for 3d should have 6 faces");
         ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 16, "voronoiGraph for 3d should have 16 edges");
-        verifyVoronoiTopology(ck, voronoi);
+        verifyVoronoiTopology(ck, voronoi, "GraphWith3Triangles1");
       }
     }
 
@@ -629,7 +643,7 @@ describe("Voronoi", () => {
         visualizeGraphEdges(allGeometry, voronoiGraph, dx);
         ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 6, "voronoiGraph should have 6 faces");
         ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 16, "voronoiGraph should have 16 edges");
-        verifyVoronoiTopology(ck, voronoi);
+        verifyVoronoiTopology(ck, voronoi, "GraphWith3Triangles2");
       }
     }
 
@@ -655,7 +669,7 @@ describe("Voronoi", () => {
         visualizeGraphEdges(allGeometry, voronoiGraph);
         ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 6, "voronoiGraph should have 6 faces");
         ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 16, "voronoiGraph should have 16 edges");
-        verifyVoronoiTopology(ck, voronoi);
+        verifyVoronoiTopology(ck, voronoi, "GraphWith4Triangles0");
       }
     }
 
@@ -672,7 +686,7 @@ describe("Voronoi", () => {
         visualizeGraphEdges(allGeometry, voronoiGraph, dx);
         ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 6, "voronoiGraph for 3d should have 6 faces");
         ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 16, "voronoiGraph for 3d should have 16 edges");
-        verifyVoronoiTopology(ck, voronoi);
+        verifyVoronoiTopology(ck, voronoi, "GraphWith4Triangles1");
       }
     }
 
@@ -689,7 +703,7 @@ describe("Voronoi", () => {
         visualizeGraphEdges(allGeometry, voronoiGraph, dx);
         ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 6, "voronoiGraph should have 6 faces");
         ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 16, "voronoiGraph should have 16 edges");
-        verifyVoronoiTopology(ck, voronoi);
+        verifyVoronoiTopology(ck, voronoi, "GraphWith4Triangles2");
       }
     }
 
@@ -715,7 +729,7 @@ describe("Voronoi", () => {
         visualizeGraphEdges(allGeometry, voronoiGraph);
         ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 11, "voronoiGraph should have 11 faces");
         ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 31, "voronoiGraph should have 31 edges");
-        verifyVoronoiTopology(ck, voronoi);
+        verifyVoronoiTopology(ck, voronoi, "GraphWithManyTriangles0");
       }
     }
 
@@ -735,7 +749,7 @@ describe("Voronoi", () => {
         visualizeGraphEdges(allGeometry, voronoiGraph, dx);
         ck.testExactNumber(voronoiGraph.collectFaceLoops().length, 11, "voronoiGraph for 3d should have 11 faces");
         ck.testExactNumber(voronoiGraph.allHalfEdges.length / 2, 31, "voronoiGraph for 3d should have 31 edges");
-        verifyVoronoiTopology(ck, voronoi);
+        verifyVoronoiTopology(ck, voronoi, "GraphWithManyTriangles1");
       }
     }
 
