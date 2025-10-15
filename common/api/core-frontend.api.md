@@ -958,22 +958,56 @@ export class AccuDrawViewportUI extends AccuDraw {
         };
         simplifiedInput: boolean;
         mathOperations: boolean;
-        fieldSize: number;
-        rowSpacingFactor: number;
-        columnSpacingFactor: number;
-        borderRadius: string;
-        backgroundColor: string;
-        text: {
-            fontFamily: string;
-            fontSize: string;
+        field: {
+            size: number;
+            height: string;
+            border: {
+                width: string;
+                style: string;
+                radius: string;
+            };
+            text: {
+                fontFamily: string;
+                fontSize: string;
+            };
+        };
+        input: {
             color: string;
-            focusColor: string;
+            padding: string;
+            focused: {
+                backgroundColor: string;
+                innerStroke: string;
+                border: {
+                    color: string;
+                };
+            };
+            unfocused: {
+                backgroundColor: string;
+                border: {
+                    color: string;
+                };
+            };
         };
         button: {
-            pressedColor: string;
+            padding: string;
+            unlocked: {
+                color: string;
+                backgroundColor: string;
+                border: {
+                    color: string;
+                };
+            };
+            locked: {
+                color: string;
+                backgroundColor: string;
+                border: {
+                    color: string;
+                };
+            };
+        };
+        spacing: {
+            gap: string;
             margin: string;
-            outlineWidth: string;
-            shadow: string;
         };
     };
     protected currentControlRect(vp: ScreenViewport): ViewRect | undefined;
@@ -5286,6 +5320,9 @@ export class IModelTileTree extends TileTree {
     get viewFlagOverrides(): {};
 }
 
+// @internal (undocumented)
+export const _implementationProhibited: unique symbol;
+
 // @public
 export abstract class InputCollector extends InteractiveTool {
     // (undocumented)
@@ -8541,6 +8578,12 @@ export interface RemoteExtensionProviderProps {
     manifestUrl: string;
 }
 
+// @internal
+export interface RenderAreaPattern extends Disposable, RenderMemory.Consumer {
+    // (undocumented)
+    readonly [_implementationProhibited]: "renderAreaPattern";
+}
+
 // @public
 export abstract class RenderClipVolume {
     protected constructor(clipVector: ClipVector);
@@ -8573,6 +8616,19 @@ export enum RenderDiagnostics {
     DebugOutput = 2,
     None = 0,
     WebGL = 4
+}
+
+// @internal
+export interface RenderGeometry extends Disposable, RenderMemory.Consumer {
+    // (undocumented)
+    computeRange(out?: Range3d): Range3d;
+    // (undocumented)
+    readonly isDisposed: boolean;
+    // (undocumented)
+    readonly isInstanceable: boolean;
+    noDispose: boolean;
+    // (undocumented)
+    readonly renderGeometryType: "mesh" | "polyline" | "point-string" | "point-cloud" | "reality-mesh";
 }
 
 // @public
@@ -8828,6 +8884,64 @@ export namespace RenderMemory {
         // @internal (undocumented)
         get vertexTables(): Consumers;
     }
+}
+
+// @internal
+export interface RenderPlan {
+    // (undocumented)
+    readonly analysisStyle?: AnalysisStyle;
+    // (undocumented)
+    readonly analysisTexture?: RenderTexture;
+    // (undocumented)
+    readonly ao?: AmbientOcclusion.Settings;
+    // (undocumented)
+    readonly atmosphere?: Atmosphere.Settings;
+    // (undocumented)
+    readonly backgroundMapOn: boolean;
+    // (undocumented)
+    readonly bgColor: ColorDef;
+    // (undocumented)
+    readonly clip?: ClipVector;
+    // (undocumented)
+    readonly clipStyle: ClipStyle;
+    // (undocumented)
+    readonly contours?: ContourDisplay;
+    // (undocumented)
+    readonly ellipsoid?: RenderPlanEllipsoid;
+    // (undocumented)
+    readonly emphasisSettings: Hilite.Settings;
+    // (undocumented)
+    readonly flashSettings: FlashSettings;
+    // (undocumented)
+    readonly fraction: number;
+    // (undocumented)
+    readonly frustum: Frustum;
+    // (undocumented)
+    readonly globalViewTransition: number;
+    // (undocumented)
+    readonly hiliteSettings: Hilite.Settings;
+    // (undocumented)
+    readonly hline?: HiddenLine.Settings;
+    // (undocumented)
+    readonly is3d: boolean;
+    // (undocumented)
+    readonly isFadeOutActive: boolean;
+    // (undocumented)
+    readonly isGlobeMode3D: boolean;
+    // (undocumented)
+    readonly lights?: LightSettings;
+    // (undocumented)
+    readonly monochromeMode: MonochromeMode;
+    // (undocumented)
+    readonly monoColor: ColorDef;
+    // (undocumented)
+    readonly thematic?: ThematicDisplay;
+    // (undocumented)
+    readonly upVector: Vector3d;
+    // (undocumented)
+    readonly viewFlags: ViewFlags;
+    // (undocumented)
+    readonly whiteOnWhiteReversal: WhiteOnWhiteReversalSettings;
 }
 
 // @public
@@ -12885,6 +12999,8 @@ export class ViewManager implements Iterable<ScreenViewport> {
     setViewCursor(cursor?: string): void;
     // @internal (undocumented)
     readonly toolTipProviders: ToolTipProvider[];
+    // @internal
+    protected updateRenderToScreen(): void;
     // @internal (undocumented)
     validateViewportScenes(): void;
     // (undocumented)

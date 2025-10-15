@@ -2,6 +2,18 @@
   "name": "@itwin/ecschema-metadata",
   "entries": [
     {
+      "version": "5.2.2",
+      "tag": "@itwin/ecschema-metadata_v5.2.2",
+      "date": "Fri, 10 Oct 2025 14:49:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.2.1",
+      "tag": "@itwin/ecschema-metadata_v5.2.1",
+      "date": "Thu, 09 Oct 2025 17:10:26 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.2.0",
       "tag": "@itwin/ecschema-metadata_v5.2.0",
       "date": "Wed, 01 Oct 2025 20:22:54 GMT",
