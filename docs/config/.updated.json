@@ -1,8 +1,8 @@
 {
   "index.html": {
     "filename": "index.html",
-    "hash": "71f076ebe37c5c5bbe085b9eae1b051e9be48fb6",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "a0273c9a840c0a21b131e218baf99d14948c81b9",
+    "updated": "2024-05-15T19:23:41.662Z"
   },
   "bis\\.vscode\\settings.json": {
     "filename": "bis\\.vscode\\settings.json",
@@ -226,13 +226,13 @@
   },
   "bis\\guide\\media\\external-sources-classes.cmap": {
     "filename": "bis\\guide\\media\\external-sources-classes.cmap",
-    "hash": "0d8b349c80849ef66c9e28c290c076f83129d64e",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "489a0ad86ee495809cf6425d5ba911d0cc12df15",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\media\\external-sources-classes-synclink.png": {
     "filename": "bis\\guide\\media\\external-sources-classes-synclink.png",
-    "hash": "2710ab9191ed5f03d5003607fa11ca2f1a41cd6f",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "8e15d6850e3409ddce8d120c49e26a4c7e5f863f",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\media\\external-sources-classes.png": {
     "filename": "bis\\guide\\media\\external-sources-classes.png",
@@ -241,13 +241,13 @@
   },
   "bis\\guide\\media\\external-sources-synclink.png": {
     "filename": "bis\\guide\\media\\external-sources-synclink.png",
-    "hash": "b5b83ddb8779fd6703110eaedd4f84f454df52c4",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "29ba20ede53d28f2cd0292d4395386a4715d9bcc",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\media\\external-sources.cmap": {
     "filename": "bis\\guide\\media\\external-sources.cmap",
-    "hash": "e859cd4c40c0a02fd427b42bde4f3e2bdb11f291",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "ffd910d0f13df27fd2928a44c48ad8d53c25f8f2",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\media\\external-sources.png": {
     "filename": "bis\\guide\\media\\external-sources.png",
@@ -281,8 +281,8 @@
   },
   "bis\\guide\\media\\imodel-connector-repository-organization.cmap": {
     "filename": "bis\\guide\\media\\imodel-connector-repository-organization.cmap",
-    "hash": "ecd3e073c108513a64d7708218157874b70319e4",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "ea5cb2c83ec0ca9bb399f012e033810b6ae6ef5a",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\media\\heterogeneous-assemblies.png": {
     "filename": "bis\\guide\\media\\heterogeneous-assemblies.png",
@@ -311,8 +311,8 @@
   },
   "bis\\guide\\media\\information-hierarchy.cmap": {
     "filename": "bis\\guide\\media\\information-hierarchy.cmap",
-    "hash": "c785efe54557d4e8510b366e3f429d17007f4b5a",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "84d101fd40b29dae12a804493d21dda838b63798",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\media\\instance-diagram-colors-elements.png": {
     "filename": "bis\\guide\\media\\instance-diagram-colors-elements.png",
@@ -346,8 +346,8 @@
   },
   "bis\\guide\\media\\organizing-models-and-elements-01.png": {
     "filename": "bis\\guide\\media\\organizing-models-and-elements-01.png",
-    "hash": "461d81c3dde76b99859950ec4d1e7665b9ba35b2",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "88da472553ab2ce1adca8594491029fbe5073a01",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\media\\person-lawyer-father-son-2.png": {
     "filename": "bis\\guide\\media\\person-lawyer-father-son-2.png",
@@ -356,8 +356,8 @@
   },
   "bis\\guide\\media\\organizing-models-and-elements-03.png": {
     "filename": "bis\\guide\\media\\organizing-models-and-elements-03.png",
-    "hash": "a82993b2ba1802ba43e4a3649f464794f57da42d",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "8fd6220865a8155781d5253797241aa0126fa042",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\media\\organizing-models-and-elements-02.webp": {
     "filename": "bis\\guide\\media\\organizing-models-and-elements-02.webp",
@@ -3296,13 +3296,13 @@
   },
   "reference\\leftnav\\index.html": {
     "filename": "reference\\leftnav\\index.html",
-    "hash": "ff46affaf69aebb2a1b3512182dc856dbe082e45",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "c9fcb6c7afc8e449f548a27e2af5b1e266dbd375",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "reference\\index\\index.html": {
     "filename": "reference\\index\\index.html",
-    "hash": "cecb26c91133a6fce87ce97c3e52a5cf684dd547",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "7b14e71b75608759dfcd737fc69facd5f33b91e7",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "getting-started\\leftnav\\index.html": {
     "filename": "getting-started\\leftnav\\index.html",
@@ -3336,773 +3336,773 @@
   },
   "bis\\index\\index.html": {
     "filename": "bis\\index\\index.html",
-    "hash": "34acbb8f7b8abefe498d65884b26ef6306791b47",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "816f3e28b4aa608eefe841cfc1e99bd7269ef43f",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\leftnav\\index.html": {
     "filename": "bis\\leftnav\\index.html",
-    "hash": "9b098629d67b2a3c8369bddad14fc930299dd7fb",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "02725dfec6e6a73ed6087ac97b66fb5a3949aa56",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\customattribute-container-types\\index.html": {
     "filename": "bis\\ec\\customattribute-container-types\\index.html",
-    "hash": "56c63ba6845bf19b13745a2a6a2fa3e175362c6a",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "f3d7c61aa1c49ef04f49f06534e6f6bd08d73934",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\differences-between-ec2-and-ec3\\index.html": {
     "filename": "bis\\ec\\differences-between-ec2-and-ec3\\index.html",
-    "hash": "111c8f49c1814497da55cbf069cad5954ca12964",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "9dea8ba38879587e98ac67aee4b11f3f67eb7dc8",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\ec-class\\index.html": {
     "filename": "bis\\ec\\ec-class\\index.html",
-    "hash": "9bc6a865221a58649acc08b84528ba200bc0cb90",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "2bf1467dee4d99346a8ba6f4035491bcde9633fd",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\ec-constant\\index.html": {
     "filename": "bis\\ec\\ec-constant\\index.html",
-    "hash": "f4c079c4d3d013d777400e70b8b092d29b15efd8",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "d364e94a508af11c0123afe8f4096296f94f078f",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\ec-custom-attribute-class\\index.html": {
     "filename": "bis\\ec\\ec-custom-attribute-class\\index.html",
-    "hash": "2109f7789575b0f36ac8ac7dd283653d3790e795",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "ed61e156fb428f840fbfc637d121c44051b2da5f",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\ec-custom-attributes\\index.html": {
     "filename": "bis\\ec\\ec-custom-attributes\\index.html",
-    "hash": "c7b5a6a3a50e21845b2733313a890bddca30bab9",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "d88ad7cfae353f9447e9a7d23487baf94db626a3",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\ec-enumeration\\index.html": {
     "filename": "bis\\ec\\ec-enumeration\\index.html",
-    "hash": "fbd01375c36888109ff43544db829ebb4cbdf307",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "27800fc10644fba06d1bfac62ffd2fa52d2b278e",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\ec-entity-class\\index.html": {
     "filename": "bis\\ec\\ec-entity-class\\index.html",
-    "hash": "9ebad2bf675e9216ce23d313ddbec9c712b2abd6",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "4d6a91510e2266060b6dcbf83e47a270cf408432",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\ec-name\\index.html": {
     "filename": "bis\\ec\\ec-name\\index.html",
-    "hash": "6b20012308c6e35beb53123155596805a2524cd6",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "e6754cb972b7d9b1dcf5ae5843fec3f0c589a7d0",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\ec-format\\index.html": {
     "filename": "bis\\ec\\ec-format\\index.html",
-    "hash": "a931daf14586fbf7041087e350b775c98c33a2f1",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "27ec727b431823d66a83d0fc53b2ddb84d092302",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\ec-mixin-class\\index.html": {
     "filename": "bis\\ec\\ec-mixin-class\\index.html",
-    "hash": "16f595b9b7e172c34c277a284e375a335fa5e900",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "14b84608e66e23de0be2f70a2e30f3b98c56515c",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\ec-phenomenon\\index.html": {
     "filename": "bis\\ec\\ec-phenomenon\\index.html",
-    "hash": "a1d2d95fd1fe0c11f935cf8547a8550b4d75f465",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "190ae74ea5d20bc863126696db96a2f130c12125",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\ec-property\\index.html": {
     "filename": "bis\\ec\\ec-property\\index.html",
-    "hash": "03c7496408c61131016e1c7062db90c54c733e4a",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "8f2b68ef2af591a1f0e8a8a9086ddbadf2447224",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\ec-relationship-class\\index.html": {
     "filename": "bis\\ec\\ec-relationship-class\\index.html",
-    "hash": "0488959db2041c587719ca115cdf2f6281700e9b",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "c3fa26af0b4dd05f7681f0fc98cb7c03a5a29426",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\ec-schema\\index.html": {
     "filename": "bis\\ec\\ec-schema\\index.html",
-    "hash": "b7d56ad8ae701aa6288c736af19be22b25e45d1b",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "062fff2161d254666ed831c7f114bdf8a9e01f33",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\ec-relationships\\index.html": {
     "filename": "bis\\ec\\ec-relationships\\index.html",
-    "hash": "0243196597b294aff745810ffbeb17b42b7a13e8",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "fb853fdac64e592559c13065a92a1678981c79f9",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\ec-schema-validation\\index.html": {
     "filename": "bis\\ec\\ec-schema-validation\\index.html",
-    "hash": "608a033e7fcfbaa5226858853eafa3c308c43976",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "6ec9290af8de36bcef7b0ebd1cfb9ba4754776f7",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\ec-unit\\index.html": {
     "filename": "bis\\ec\\ec-unit\\index.html",
-    "hash": "5b0169ee10de7a08457e532469d44e6bc02d4c29",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "45d1e30dae8bbb369aadd2d4801d22c4f8196cf1",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\ec-struct-class\\index.html": {
     "filename": "bis\\ec\\ec-struct-class\\index.html",
-    "hash": "8c5a1559096cf3c8d40ac4bd81767f3d35d519b4",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "8f532360233cf2e9beebe1723d76039d683802f8",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\ec-unitsystem\\index.html": {
     "filename": "bis\\ec\\ec-unitsystem\\index.html",
-    "hash": "cbb8cda17cc4b9aac3223bc687913fd6efa37ff0",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "e2ab2e61be829d6919d02badb78ce8508fbf05d1",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\index\\index.html": {
     "filename": "bis\\ec\\index\\index.html",
-    "hash": "661e8996b04d5ce7e97240a87ec1c576ccdec962",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "ebdd3b2c66bd02cf6ae6cb8f8d0af8ed4c7081b5",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\kindofquantity\\index.html": {
     "filename": "bis\\ec\\kindofquantity\\index.html",
-    "hash": "ea62be4014ba962d6346095f73f8241850230a7a",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "535439ba3153d29e71b8e2cdbcd493b51cb12b35",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\primitive-types\\index.html": {
     "filename": "bis\\ec\\primitive-types\\index.html",
-    "hash": "f0035a2cb16f228afcb355ee67d15cb678fb9ff9",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "6dad9a2c6986d468359f0a57629e221ee883ff63",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\ec\\property-category\\index.html": {
     "filename": "bis\\ec\\property-category\\index.html",
-    "hash": "bb0f1e8746746e4621fa813c2f85221bfd2b26bd",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "56a75e0e7aeb452980c0cbed18847ed4dfa12a74",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\domains\\provenance-in-bis\\index.html": {
     "filename": "bis\\domains\\provenance-in-bis\\index.html",
-    "hash": "6713728fc3ff4a624d8c6cb846f21d51b70a3106",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "f0cce3aa942fde4fe28eb83b7c3057674e309404",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\domains\\core-domains\\index.html": {
     "filename": "bis\\domains\\core-domains\\index.html",
-    "hash": "ca4cfbdefeab10a06d1f7354e049986ef2429ef2",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "df46d2280143198a252201a9503df2b2ef31c3bf",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\domains\\common-domains\\index.html": {
     "filename": "bis\\domains\\common-domains\\index.html",
-    "hash": "5db228c2f2f40e7a105be2932676c70bcb2b4254",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "1643fbc804dc3aa9d7f25f5820e4ce65c860daee",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\domains\\discipline-other-domains\\index.html": {
     "filename": "bis\\domains\\discipline-other-domains\\index.html",
-    "hash": "9b165f6700c0c2b8ce0adb61a38824e07cb4feb2",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "bf05a1a2af62b7a46df2faa14d38b47d2da6215b",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\domains\\standard-schemas\\index.html": {
     "filename": "bis\\domains\\standard-schemas\\index.html",
-    "hash": "c00a18864591e38d03c8af5924611e77500a11be",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "5fb79759efe4924372b4348c04b7af5737d3fafd",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\domains\\discipline-physical-domains\\index.html": {
     "filename": "bis\\domains\\discipline-physical-domains\\index.html",
-    "hash": "0c526a5dbac9143c3ea3ea75a8f2f11deccfb1d1",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "45ec03352b8eb622b376db5a2631525554a84ba0",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\domains\\index\\index.html": {
     "filename": "bis\\domains\\index\\index.html",
-    "hash": "5fb484f4ac58ae5723cb436da02ca32e6a871436",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "f5eb2bbd8f7c9ca65131f748f998f2be99dbbc0c",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\domains\\discipline-other-domains\\structural-domains\\index.html": {
     "filename": "bis\\domains\\discipline-other-domains\\structural-domains\\index.html",
-    "hash": "0baae802947fb19020ab1b9b9020bd351a44c10d",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "d4f393def9b696529cceb9e0f1d7b71da2e5a620",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\domains\\discipline-physical-domains\\civil-domains\\index.html": {
     "filename": "bis\\domains\\discipline-physical-domains\\civil-domains\\index.html",
-    "hash": "fadf62f7b2116efd1be8e8695832ae1cdc34e8d9",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "d0eb61299cc2ea5cf3f91e189d26b7268226444b",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\domains\\discipline-physical-domains\\structural-domains\\index.html": {
     "filename": "bis\\domains\\discipline-physical-domains\\structural-domains\\index.html",
-    "hash": "1d742522aaa0c918a9643065199c00f9ea033652",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "679f8148b4857551f71eaf38641b55bf66fc6b5b",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\domains\\discipline-physical-domains\\building-domains\\index.html": {
     "filename": "bis\\domains\\discipline-physical-domains\\building-domains\\index.html",
-    "hash": "6d1056f8b02ec17d75afbb1162f9169d13500a9f",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "e3546ad1f25d63cca8b6c737e7e3e60ce59f1528",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\index\\index.html": {
     "filename": "bis\\guide\\index\\index.html",
-    "hash": "2ebab952ce1096adcc7af8c7df99e4dd67a841e3",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "b7b6ae4a77a6d415ee868d77ea910fbec2ef4f3d",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\data-organization\\information-hierarchy\\index.html": {
     "filename": "bis\\guide\\data-organization\\information-hierarchy\\index.html",
-    "hash": "0ba744c21b4bf0622e7c10aced6b9a2f7fcab73f",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "16684360a3a185169b56322acaac2ed91dc6fe0c",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\data-organization\\index\\index.html": {
     "filename": "bis\\guide\\data-organization\\index\\index.html",
-    "hash": "9e78c51bdef273771db8b2afa3328f6dc8e6149e",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "ebee0f5de50bc3bcd5797015fbb92425bcd63488",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\data-organization\\modeling-systems\\index.html": {
     "filename": "bis\\guide\\data-organization\\modeling-systems\\index.html",
-    "hash": "dd8bf98d6dcc14d5e3fba302108a2ce3ccf61d7d",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "5092ecc039cd0fd507e0dcf5ace11462a2452198",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\data-organization\\modeling-perspectives\\index.html": {
     "filename": "bis\\guide\\data-organization\\modeling-perspectives\\index.html",
-    "hash": "b6dd29504c3c5b42ea82d4db46063916d4b62b95",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "310748e1ef9838ed75cca679a96a9d1ff5e203f1",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\data-organization\\organizing-definition-elements\\index.html": {
     "filename": "bis\\guide\\data-organization\\organizing-definition-elements\\index.html",
-    "hash": "17c72cb9dfd6f9d5a9b827d2d2fef65ebec3462a",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "0364fdaf748b4ce721b93ff82d15090cf965f645",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\data-organization\\organizing-models-and-elements\\index.html": {
     "filename": "bis\\guide\\data-organization\\organizing-models-and-elements\\index.html",
-    "hash": "925e30e16312661c9f5effc14f69eaea4fe887df",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "dc38c62ef0ff6f62df8b63b621bc91fc398376e2",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\data-organization\\overlapping-systems\\index.html": {
     "filename": "bis\\guide\\data-organization\\overlapping-systems\\index.html",
-    "hash": "889251ae303b7df67541e3b75e3848b23a748c9b",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "0b3d3e29be93ce0c141fb48e98d3e994b7bea71e",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\data-organization\\top-of-the-world\\index.html": {
     "filename": "bis\\guide\\data-organization\\top-of-the-world\\index.html",
-    "hash": "5b5b6122bcffc41e28a360633fc608cb07e0e648",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "075520e6c59792bdd49074084702aa927a8aa20a",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\data-organization\\spatial-composition\\index.html": {
     "filename": "bis\\guide\\data-organization\\spatial-composition\\index.html",
-    "hash": "6ccf2e45afd5beed81a7b84409a6a9ba322fdddc",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "752f9b985b0317cc2c25cdc050a78487976a3f16",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\data-organization\\srpp\\index.html": {
     "filename": "bis\\guide\\data-organization\\srpp\\index.html",
-    "hash": "5d56bd607952fd645212f66194dd8782ea3f3529",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "3b965ab4907f97476b02106e5c30dcc08123d3e4",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\fundamentals\\codes\\index.html": {
     "filename": "bis\\guide\\fundamentals\\codes\\index.html",
-    "hash": "7980c501accbf6eb5238d062dc4fb01bcc23990a",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "e5666541efa00e0fdfd627fd327e5fcbdba9dfbb",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\fundamentals\\categories\\index.html": {
     "filename": "bis\\guide\\fundamentals\\categories\\index.html",
-    "hash": "535249fc3aa9fe9331bdfd0eefc8f55bf5d8d55d",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "1a42193390817cd277c6d58073144d38077f9dc9",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\fundamentals\\elementaspect-fundamentals\\index.html": {
     "filename": "bis\\guide\\fundamentals\\elementaspect-fundamentals\\index.html",
-    "hash": "5329f0aea9116af6ebf0497411f2f2abfd2886b3",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "4249c200363898661ce8301d01b15c379270daf5",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\fundamentals\\data-classification\\index.html": {
     "filename": "bis\\guide\\fundamentals\\data-classification\\index.html",
-    "hash": "d0d50f21b7c8b45f81f0a65ed284db4cac12658b",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "cda22ed93bd832bb85f25fe2c36021015551ea6d",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\fundamentals\\element-fundamentals\\index.html": {
     "filename": "bis\\guide\\fundamentals\\element-fundamentals\\index.html",
-    "hash": "1ca5686db19dadc0d3f3529b070e0ee1a6b3c288",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "1c39316dce4ed73b29a110a4641e741e33bebbb8",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\fundamentals\\index\\index.html": {
     "filename": "bis\\guide\\fundamentals\\index\\index.html",
-    "hash": "5d02ef54d5f09c9cc13a0dd33bf151b2c1847bb7",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "b7ecddfe7a7241245622d5248f2eadcac3f3dc87",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\fundamentals\\mixins\\index.html": {
     "filename": "bis\\guide\\fundamentals\\mixins\\index.html",
-    "hash": "3cbd1ecfd5fd37c647a6b443100b341d90064be7",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "833b1b6c262030ad470c1776e845d344f4a47df0",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\fundamentals\\model-fundamentals\\index.html": {
     "filename": "bis\\guide\\fundamentals\\model-fundamentals\\index.html",
-    "hash": "d30d0c21c05dc4586d3d1a13f171a016ef12a506",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "68a5bbcf95d350561593dfb90161ccef02e2a942",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\fundamentals\\relationship-fundamentals\\index.html": {
     "filename": "bis\\guide\\fundamentals\\relationship-fundamentals\\index.html",
-    "hash": "33f69968e8437228d44ef824acfc1ebe2102670a",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "e02dbbb728f70622a3bf8cb6e9e8162913ca6a57",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\fundamentals\\schemas-domains\\index.html": {
     "filename": "bis\\guide\\fundamentals\\schemas-domains\\index.html",
-    "hash": "8ce9e12c07e6a2833628a51ab8ce40145a6e97f5",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "8b60b31b769eaab05d9b7ad0c3a39b35a9c58a67",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\fundamentals\\type-definitions\\index.html": {
     "filename": "bis\\guide\\fundamentals\\type-definitions\\index.html",
-    "hash": "f35a53646020ce81e6fa8bfb240dcc0bea5f7d52",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "cb6e36cc4bc473386f0400ae0972b383eaf24b91",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\intro\\fabric-of-the-universe\\index.html": {
     "filename": "bis\\guide\\intro\\fabric-of-the-universe\\index.html",
-    "hash": "6d10a5cddfeabe0805b129293826590620b557b0",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "5a84eed5b2295debec967443f45de936f106f826",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\intro\\index\\index.html": {
     "filename": "bis\\guide\\intro\\index\\index.html",
-    "hash": "54c2f4a94d55f04f8800558353f4d79fad55c893",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "c30ab882b325c00b9eec4cc41a76aa18abb30531",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\intro\\federated-digital-twins\\index.html": {
     "filename": "bis\\guide\\intro\\federated-digital-twins\\index.html",
-    "hash": "da2c8cfc4f14033fb0d86abb609ad60f98f735e2",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "c9a4b50246a14995175fc83a8e51c90ee50d1b85",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\intro\\bis-organization\\index.html": {
     "filename": "bis\\guide\\intro\\bis-organization\\index.html",
-    "hash": "560b966dbb6a97c7c230b8e7a313a1860b54ecfc",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "c75b3da51b625873f2368125066f0f49ccd4559a",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\intro\\modeling-with-bis\\index.html": {
     "filename": "bis\\guide\\intro\\modeling-with-bis\\index.html",
-    "hash": "462b2ec52de47d307b692f4fbc6d979582f525fb",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "cfb6bad7321d2b25cbbe3b72e740f7ceac851f53",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\intro\\overview\\index.html": {
     "filename": "bis\\guide\\intro\\overview\\index.html",
-    "hash": "8c8a5985fcb9fc54d171031af1f6842a11505b53",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "b2395a2b42c80186a62ddfd32599d5342751ac0e",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\other-topics\\bis-schema-validation\\index.html": {
     "filename": "bis\\guide\\other-topics\\bis-schema-validation\\index.html",
-    "hash": "d175203e81e134ab8440f9de5a2ad51c776e9f62",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "1de02e5a5b3b553653277460417cf471f5af3937",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\other-topics\\index\\index.html": {
     "filename": "bis\\guide\\other-topics\\index\\index.html",
-    "hash": "db045a18609e7edb7e04f0519b7fbd2eef5a460f",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "434626b1a9785da641c52ee4d059487d4b65287b",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\other-topics\\units\\index.html": {
     "filename": "bis\\guide\\other-topics\\units\\index.html",
-    "hash": "32238fb451def64453b005a3feeafaed5444b8d8",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "31cfd95e86b9cd414edb2045a2c217a26f8da7f2",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\other-topics\\kindofquantities\\index.html": {
     "filename": "bis\\guide\\other-topics\\kindofquantities\\index.html",
-    "hash": "edd0c24285302d352c4939fcac10019c5f5f3ffb",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "8ad19d7da86c2cedb31ac2401d8790ca47765170",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\naming-guidelines\\index\\index.html": {
     "filename": "bis\\guide\\naming-guidelines\\index\\index.html",
-    "hash": "5f5a08a92a458d5065a32871af02f3cba208c013",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "dccbbf462f85d9b92f6902efc27c681aad8ea941",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\naming-guidelines\\special-terms\\index.html": {
     "filename": "bis\\guide\\naming-guidelines\\special-terms\\index.html",
-    "hash": "253f67e95fc2de22c8ec6ef22c5ae83dcbe22d37",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "7b690200ea36207f015822d04870c64d0a32da5c",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\naming-guidelines\\standard-abbreviations-and-acronyms\\index.html": {
     "filename": "bis\\guide\\naming-guidelines\\standard-abbreviations-and-acronyms\\index.html",
-    "hash": "db18370a5e1b9e20bac65b0681a67604bb2bf929",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "66f5b42420dcd21aa3dc93a3da239a7e1e17821f",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\naming-guidelines\\rules-and-recommendations\\index.html": {
     "filename": "bis\\guide\\naming-guidelines\\rules-and-recommendations\\index.html",
-    "hash": "0cea929a49b5f87e88452b0517a5de9dcb411ccf",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "25c94910991732d6365881940905579a768f43b8",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\naming-guidelines\\summary-of-exceptions\\index.html": {
     "filename": "bis\\guide\\naming-guidelines\\summary-of-exceptions\\index.html",
-    "hash": "9b9b63162d1a2121e17fb00721e1e89d0b702b84",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "68e26150945e7bceca5ca649a6cf44b001ef7bd8",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\naming-guidelines\\standard-relationship-strengths-names\\index.html": {
     "filename": "bis\\guide\\naming-guidelines\\standard-relationship-strengths-names\\index.html",
-    "hash": "886912c75c04e5e444d77c6c73029fc29180f375",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "4928fd8da820a09a1fb497f8d82d85eed36482dc",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\naming-guidelines\\terms-with-specific-semantic-meaning\\index.html": {
     "filename": "bis\\guide\\naming-guidelines\\terms-with-specific-semantic-meaning\\index.html",
-    "hash": "f1fa8b2179c5c4bf34161a08d6b5d4732303c036",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "e8d08f20bcb9cba2548ac41987df77739bd0e998",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\other-perspectives\\analysis-models-and-elements\\index.html": {
     "filename": "bis\\guide\\other-perspectives\\analysis-models-and-elements\\index.html",
-    "hash": "8e8c2847d2a54b7dacb725fab66f60f79bff6d43",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "713626a6bed1bb5536c466707595242789d4465d",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\other-perspectives\\functional-models-and-elements\\index.html": {
     "filename": "bis\\guide\\other-perspectives\\functional-models-and-elements\\index.html",
-    "hash": "b6bab25f4bf9d4d28a909e6bfe737c6cc3342d4e",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "09efb3eefe4b3c73750d38d847f26538e78f72f4",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\other-perspectives\\index\\index.html": {
     "filename": "bis\\guide\\other-perspectives\\index\\index.html",
-    "hash": "10b46e837d1d645265c93d52fbb40c1df3d99396",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "9773ddcb33c5a01443807997e7696cc54f90ab06",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\other-perspectives\\information-models-and-elements\\index.html": {
     "filename": "bis\\guide\\other-perspectives\\information-models-and-elements\\index.html",
-    "hash": "f5d340076c083461b977f83628e06b2bc75bfa0f",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "e0f4057786e8269da07aa89b70e228d70cc28af6",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\references\\index\\index.html": {
     "filename": "bis\\guide\\references\\index\\index.html",
-    "hash": "0006c30dad9f1fb68abd98cfeb371cc45429b54d",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "7293d8da79d029c28d9229b5385caebcdd6787c8",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\references\\class-diagram-conventions\\index.html": {
     "filename": "bis\\guide\\references\\class-diagram-conventions\\index.html",
-    "hash": "88d9ab0c97b554125a191389b548aecae4f7d084",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "0374888b238d28a199eddbfd0ddf91f77bedfde7",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\references\\instance-diagram-conventions\\index.html": {
     "filename": "bis\\guide\\references\\instance-diagram-conventions\\index.html",
-    "hash": "7951f8dce9c4b70598dcb675fb8c477aee946c3d",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "5db0a3cfba5c6c763f802555306de0411d4b5cb3",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\references\\glossary\\index.html": {
     "filename": "bis\\guide\\references\\glossary\\index.html",
-    "hash": "79f043de6a07952031cc407388fb27d557bd5dbb",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "a00bc3f5d6b30cc181a7a941d3ec7e383ac01fcf",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\physical-perspective\\3d-guidance\\index.html": {
     "filename": "bis\\guide\\physical-perspective\\3d-guidance\\index.html",
-    "hash": "ab322ed83f0d675fdec976cf693bc8eae4c79d74",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "0906a3974c9fe5112e81b6d4eb5b5ae10ff4e160",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\physical-perspective\\physical-hierarchy-organization\\index.html": {
     "filename": "bis\\guide\\physical-perspective\\physical-hierarchy-organization\\index.html",
-    "hash": "65719f1908b50ee822cbf4262b11340d1c7b9c0e",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "18059542e0d17df0f65d2763b874624dddb31f5b",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\physical-perspective\\index\\index.html": {
     "filename": "bis\\guide\\physical-perspective\\index\\index.html",
-    "hash": "11bf077262583838648c907408132fc07ba5c456",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "97df959b60da71260056870425370e7d61766f7c",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\physical-perspective\\physical-materials\\index.html": {
     "filename": "bis\\guide\\physical-perspective\\physical-materials\\index.html",
-    "hash": "6da34f2c1219ba7e989f4c3f3859449d2a977a03",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "c7020ed6704cadb11b26fa36e9b0ae0d90802d2a",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\physical-perspective\\qto-guidelines\\index.html": {
     "filename": "bis\\guide\\physical-perspective\\qto-guidelines\\index.html",
-    "hash": "5223401d46f4f9408d9386996765f8e62ac5606c",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "64ce1ccb05504bbc92e5b86d5e34e23800529cb5",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\physical-perspective\\physical-models-and-elements\\index.html": {
     "filename": "bis\\guide\\physical-perspective\\physical-models-and-elements\\index.html",
-    "hash": "77c4f44dc1ece977a7759b3a1474709793d42679",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "f60ecd44b833e770722972c30e81c4943505f8c4",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\schema-evolution\\data-evolution-across-time\\index.html": {
     "filename": "bis\\guide\\schema-evolution\\data-evolution-across-time\\index.html",
-    "hash": "1b91a084c134cc9d58c9720340d06e1d58a1419a",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "6a14905aca29dcb2348c3d4276e5e10c281b1c01",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\schema-evolution\\index\\index.html": {
     "filename": "bis\\guide\\schema-evolution\\index\\index.html",
-    "hash": "ddf20df0d24ea8d8b12e773783a094e9830a98d9",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "b1be1e927dab283d5952f11bdab2ad8959286f1d",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\schema-evolution\\schema-customization\\index.html": {
     "filename": "bis\\guide\\schema-evolution\\schema-customization\\index.html",
-    "hash": "b6dcbecf16ccfed317de968f891efe3e0f7538ee",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "644277e516db3d334820300e28f99a406ddff943",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\schema-evolution\\schema-design-guidelines\\index.html": {
     "filename": "bis\\guide\\schema-evolution\\schema-design-guidelines\\index.html",
-    "hash": "5435dcdd5ade0e9a4162be94ed1dc2914333e5de",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "9fa3b03ead1200c01299a93dec9eade1d323a7d2",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\schema-evolution\\schema-versioning-and-generations\\index.html": {
     "filename": "bis\\guide\\schema-evolution\\schema-versioning-and-generations\\index.html",
-    "hash": "33e6f5eec219ebfa77c20853a8587b055cef9c42",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "24b09b9e45c53ed67f701aeb1f70b70566758803",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "bis\\guide\\schema-evolution\\schema-production-status\\index.html": {
     "filename": "bis\\guide\\schema-evolution\\schema-production-status\\index.html",
-    "hash": "6f931b25bfacf60f9341aaef16ccd6927036dbbf",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "ae59a1a857a1acfd307473c583dd0aee2adc97db",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\1.1.0\\index.html": {
     "filename": "changehistory\\1.1.0\\index.html",
-    "hash": "a2d5d87b24cbda0b5d9e9085b388d6e2c28851b9",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "d13d7b5a66e31024a8bc1ed662801986bdbd3b1c",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\1.0.0\\index.html": {
     "filename": "changehistory\\1.0.0\\index.html",
-    "hash": "c56b0fe143b754bd2998a558976dd0275ab68150",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "5da6bf0f3a48acf63bde89d2c3b56d06c053ca9b",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\1.10.0\\index.html": {
     "filename": "changehistory\\1.10.0\\index.html",
-    "hash": "a25045deea8a57ad0efdf436d17c4549772fb7f7",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "30c79150bd524e22ca9b92084ba5b4f0b76c98c3",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\1.11.0\\index.html": {
     "filename": "changehistory\\1.11.0\\index.html",
-    "hash": "7aec641b569a0eb4ae733c57061a0d7e3dee9f1f",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "5e2f68a0000915c6da1a3d7f7cbe5419de0572fd",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\1.12.0\\index.html": {
     "filename": "changehistory\\1.12.0\\index.html",
-    "hash": "0e1c821178062bc1682e98a28bb4d65b329272e2",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "860c207fef6b9b1bd70218c756850a6e73dda498",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\1.14.0\\index.html": {
     "filename": "changehistory\\1.14.0\\index.html",
-    "hash": "693018b2387c83075a350816a145e07800a1ec4f",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "18c384db910f798ec1829250615c5907262c9be4",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\1.13.0\\index.html": {
     "filename": "changehistory\\1.13.0\\index.html",
-    "hash": "ab4b70ac7dbf65eed0698b4998c02630bd7d4863",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "f199c4a0a24f05c490a4b5dd6dc96b7cb0b04576",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\1.3.0\\index.html": {
     "filename": "changehistory\\1.3.0\\index.html",
-    "hash": "95f5f045318a1fe104bd91e122d0431baf92ded8",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "f15e98f7c09c9f1f2580064b849318d8d9f30736",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\1.2.0\\index.html": {
     "filename": "changehistory\\1.2.0\\index.html",
-    "hash": "9b5d9c6ed76b37416576ec9c99d65d62bf8cbbca",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "2c6f48a832f8d897c76cd27367cee1bb975c306e",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\1.6.0\\index.html": {
     "filename": "changehistory\\1.6.0\\index.html",
-    "hash": "02fcf92863906538eb3fe400d1e5d7174dbbf47b",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "fd0b656dfed083a33429fe547a8282d6a8a290cc",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\1.7.0\\index.html": {
     "filename": "changehistory\\1.7.0\\index.html",
-    "hash": "0459722b198c7c57b86768076481973efb3d531f",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "aa75a8543003bc78523e5b0acb62f8990c67680c",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\1.5.0\\index.html": {
     "filename": "changehistory\\1.5.0\\index.html",
-    "hash": "ccdb53bf81536f2d4211367729ab891562cb270e",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "c5044aaec4c4352e12b99097f4c854fdedff23bd",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\1.4.0\\index.html": {
     "filename": "changehistory\\1.4.0\\index.html",
-    "hash": "9532fe314a5d98f8b3d7c8ff6730a0666d2a4103",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "92cf86c0029a3deb6efe02d2860b79bef88f51c7",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\1.8.0\\index.html": {
     "filename": "changehistory\\1.8.0\\index.html",
-    "hash": "47a2482c5990cb6c64c74f8f2cf7f83a562ad153",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "814f33b29c3156dc185d485466e487d840ea51ad",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\1.9.0\\index.html": {
     "filename": "changehistory\\1.9.0\\index.html",
-    "hash": "635fdc8b0411692bcaa769bab933c3c59fb04860",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "2fe67095b6c10b3609f6cd9acfb89c90559b903e",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\2.10.0\\index.html": {
     "filename": "changehistory\\2.10.0\\index.html",
-    "hash": "85fe1c64546fce063dc1e83ddf08079ebc6adb41",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "f2bf37fe04bdf25ba92a9462831022a4da8dceb4",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\2.0.0\\index.html": {
     "filename": "changehistory\\2.0.0\\index.html",
-    "hash": "a9877eba1c58d335dbcedd7fb47586d5da157324",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "1c285851892d656c7ced09cfaf5c9c36e8c9f72b",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\2.1.0\\index.html": {
     "filename": "changehistory\\2.1.0\\index.html",
-    "hash": "e5c1116650f133332aee9e60dae7674267854bcb",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "cf1434add1e91d2aea0c046b5d003f144a0332d3",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\2.11.0\\index.html": {
     "filename": "changehistory\\2.11.0\\index.html",
-    "hash": "6a07c7763184d15b2c375d9dd60644a8a5fd1649",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "25c2968d80537b43ecd6adb2cbe1ac4a36112a64",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\2.12.0\\index.html": {
     "filename": "changehistory\\2.12.0\\index.html",
-    "hash": "ff2f26fd6bca583336233d02c750fa18c0faed07",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "1084cee2072a8cb259f4615506300202c7905120",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\2.13.0\\index.html": {
     "filename": "changehistory\\2.13.0\\index.html",
-    "hash": "a67882458616ceb8017b7a430cade0332bcef4e9",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "ebc4568950e09a5394686e141a3124954c6bddf5",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\2.15.0\\index.html": {
     "filename": "changehistory\\2.15.0\\index.html",
-    "hash": "340176cb6cd0901a2667b50b050192228b88c31f",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "57db2591174146dc08a0a3af20a4242311b9c538",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\2.14.0\\index.html": {
     "filename": "changehistory\\2.14.0\\index.html",
-    "hash": "655d72c77fcc64568c8639c4fccdcf49935d9263",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "c2fa1a20c340afa6b566dd0f5eef75a8376f8350",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\2.17.0\\index.html": {
     "filename": "changehistory\\2.17.0\\index.html",
-    "hash": "1ba5c88da4a8ef41b99e5f6e95af98463f16a4b3",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "39f9fbc679448361f3ed5d1b94f3d64ab4bac77d",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\2.18.0\\index.html": {
     "filename": "changehistory\\2.18.0\\index.html",
-    "hash": "9999555b0016cf96232b2c08a17e1526764c4154",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "eb76af99524b278e74dc05b7283ec071c4e6b834",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\2.2.0\\index.html": {
     "filename": "changehistory\\2.2.0\\index.html",
-    "hash": "65d3ff118f2eabf761ef2230ee95c8e87ae2bf10",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "4fac5664379efe8b35ea9e9ec6fa87fb14723a14",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\2.16.0\\index.html": {
     "filename": "changehistory\\2.16.0\\index.html",
-    "hash": "ed90f0c9f34f5191177baefa8bbd72dabc829393",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "61172f7e94ff6fb1c4dc5e92720afca277cab7a4",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\2.3.0\\index.html": {
     "filename": "changehistory\\2.3.0\\index.html",
-    "hash": "3bcbd1db6f5a143e760070ef78466ce35f3c5d8b",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "8e57d79f7c902d16afcd523662ae24ad9db67787",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\2.19.0\\index.html": {
     "filename": "changehistory\\2.19.0\\index.html",
-    "hash": "b1d24f7f55f65c82d7e0f1ff02188502a1972187",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "53e455993bbc18a7b72935a81566b8465b4d64f2",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\2.4.0\\index.html": {
     "filename": "changehistory\\2.4.0\\index.html",
-    "hash": "1afb098c4e8221ec998610f9fdb65179517bdcc4",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "ad4dbe26ef229f8e70a7d2a5d8578de62949ad66",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\2.6.0\\index.html": {
     "filename": "changehistory\\2.6.0\\index.html",
-    "hash": "ca8c8ff0b49312ce6ef518534230d0464a6b8359",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "6aff7d1a425b21885ac21466e7119de3dd3e639c",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\2.5.0\\index.html": {
     "filename": "changehistory\\2.5.0\\index.html",
-    "hash": "08654ad8d6ad8fd60af27ad92f4abb92ee35edf4",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "e81d0dd775f4559708fbf1048bcecbf0dbd8b6a4",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\2.8.0\\index.html": {
     "filename": "changehistory\\2.8.0\\index.html",
-    "hash": "38dd25750ddda6942af04ba37109bc1f472258a9",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "7233636f67c94b628b79bfce46a1e9f43d2879b8",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\2.9.0\\index.html": {
     "filename": "changehistory\\2.9.0\\index.html",
-    "hash": "22a3581bdc44fde6e96adacab09090aec8a2e5c1",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "434005a62efd36e3e6f20b65406c29e25fcd2974",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\2.7.0\\index.html": {
     "filename": "changehistory\\2.7.0\\index.html",
-    "hash": "2ac8832dea667d3bb09032cc50d126a48df77fe1",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "93c0888ecb01da71d544d49f3547736fd48540cb",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\3.1.0\\index.html": {
     "filename": "changehistory\\3.1.0\\index.html",
-    "hash": "a6aefa4a87e99af31ab66bb63062a86d33de997a",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "3bae7d39825244fafc37de717d21fd157ce63a68",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\3.2.0\\index.html": {
     "filename": "changehistory\\3.2.0\\index.html",
-    "hash": "ecff99e1524ba6ec812c1b5964e13f31cfbe53ec",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "72656d608620f9e1f81280bb80e8333e9b285af7",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\3.0.0\\index.html": {
     "filename": "changehistory\\3.0.0\\index.html",
-    "hash": "b6e95c4da87ee56907023cb3fe0afb4a58780e3c",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "8cf114df2feb8965aa30becc28985b803ae46546",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\3.4.0\\index.html": {
     "filename": "changehistory\\3.4.0\\index.html",
-    "hash": "f49ead5ba778841924c32651cf3134bd2668e064",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "96f6e6d6167d8cf5b38393ecb5cb1792db83aaa3",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\3.3.0\\index.html": {
     "filename": "changehistory\\3.3.0\\index.html",
-    "hash": "6cadce25bd72b492e4ed0107d097c662a2a628f5",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "1b31003e4f6ab484ab11b24e7edbef4bb96bea43",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\3.5.0\\index.html": {
     "filename": "changehistory\\3.5.0\\index.html",
-    "hash": "12c86ee3a18555bffb2f5d8caca43c3aab8c4450",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "bafde71b6c5fab24abd78d2a2f7962fa56ddedad",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\changelogs\\index.html": {
     "filename": "changehistory\\changelogs\\index.html",
-    "hash": "1317f485e5dca5e03e45aaaf747c57f8bee491e6",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "1b5f35e189d58492e335e118067b398521f9552b",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\roadmap\\index.html": {
     "filename": "changehistory\\roadmap\\index.html",
-    "hash": "07dd288b9e7af05b3b4ec09853cebbacd6d9f3b5",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "37f7fcfe301f72b03e7ff277e4074615f49415d8",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\nextversion\\index.html": {
     "filename": "changehistory\\nextversion\\index.html",
-    "hash": "bbea9bf7ce96b0582fb5ea3a6235c76ad08c427f",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "5bd39ac42438e7b9e866484a89525411e241bf84",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\3.6.0\\index.html": {
     "filename": "changehistory\\3.6.0\\index.html",
-    "hash": "f99c4d0cba9f6856763c6e327fa393a597cf8c64",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "9a0ae2eec5d88e171e7b77d64d34e2c29b68d067",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\index\\index.html": {
     "filename": "changehistory\\index\\index.html",
-    "hash": "ee46bc36cef9a430d8c5c71a75dcf4c4282b05cd",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "9a0ae2eec5d88e171e7b77d64d34e2c29b68d067",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\leftnav\\index.html": {
     "filename": "changehistory\\leftnav\\index.html",
-    "hash": "9a22d1df5c31fccb5ceb2e57bb8e5ddaf992ff17",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "3878b721d0953d77c7b68c2acbd1a245ca89eb49",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "changehistory\\migration-guides\\migratingbuildsystems\\index.html": {
     "filename": "changehistory\\migration-guides\\migratingbuildsystems\\index.html",
-    "hash": "1360e1ed8b87691a47e02e779b5c4e36ea4e0017",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "73f816279c40c738cb8b495e89be2f59e49f2dc3",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\multischemaclassesspecification\\index.html": {
     "filename": "presentation\\multischemaclassesspecification\\index.html",
-    "hash": "057f760b4d0ffe2a2367d5a0e7e7e3b9a7aaedef",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "b36dd40d4bb3d373d858ab082575aa2d02cbd618",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\relatedinstancespecification\\index.html": {
     "filename": "presentation\\relatedinstancespecification\\index.html",
-    "hash": "14fa9f95d10d74f4cb975f9f39d411c6b74fece8",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "d14d65b806a2ea1e4da582fc920e9bf324ed48b5",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\repeatablerelationshippathspecification\\index.html": {
     "filename": "presentation\\repeatablerelationshippathspecification\\index.html",
-    "hash": "a66d2c6438b5235ed37d2cf4ba03b36d9e31b9c1",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "7dd221ab63be1a704ce4a45052f8b65f85ac2ff1",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\relationshippathspecification\\index.html": {
     "filename": "presentation\\relationshippathspecification\\index.html",
-    "hash": "fadd061ec54f7f52097c9f723b3cd0b3c0299c06",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "ec75ada9f86261c897d00305789b31aecd769a16",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\requiredschemaspecification\\index.html": {
     "filename": "presentation\\requiredschemaspecification\\index.html",
-    "hash": "66dca71132d97445caf33d5d38486c1bd058398b",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "d28bb68950a0b2ee6e3054e59648ed8506da0d7f",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\singleschemaclassspecification\\index.html": {
     "filename": "presentation\\singleschemaclassspecification\\index.html",
-    "hash": "316070da2bb472080750e5f8b150503c3e5b108f",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "307507ffdc5dead4b781c727f1acd882e66d7523",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\leftnav\\index.html": {
     "filename": "presentation\\leftnav\\index.html",
-    "hash": "4998cff0ecc568be4c0a7e73f2d636f49b162d15",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "3059c7c0f4b6a66bad00ca80337f7d526a821d57",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\index\\index.html": {
     "filename": "presentation\\index\\index.html",
-    "hash": "eaafc019b0cd2cf8eba55268ea2ec18e7dc3dcd8",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "a93645a76c172a4224c088681ae6e3833647fb7f",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\setup\\index\\index.html": {
     "filename": "presentation\\setup\\index\\index.html",
-    "hash": "9e51f09d5621a1bc38d18795952cc1e6947bbe66",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "2ab8b222bb0aeea7973f0c080bdf5f0f27d2d574",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\unified-selection\\index\\index.html": {
     "filename": "presentation\\unified-selection\\index\\index.html",
-    "hash": "304d98f7108833eb58079c994e9f15f19c7a8180",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "44efdb63627180a58e2680b156259e50d7c06f58",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\customization\\checkboxrule\\index.html": {
     "filename": "presentation\\customization\\checkboxrule\\index.html",
@@ -4111,23 +4111,23 @@
   },
   "presentation\\customization\\ecexpressions\\index.html": {
     "filename": "presentation\\customization\\ecexpressions\\index.html",
-    "hash": "3b35bfb8d19f22d1e1d65dd7a8d3e8cf35278aa6",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "69ee2ece39b688d75144073a94abb323c0e38b61",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\customization\\extendeddatausage\\index.html": {
     "filename": "presentation\\customization\\extendeddatausage\\index.html",
-    "hash": "37c6b6982a0a66765a179409da1f1eaa15999f4a",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "7efbb1a54148a3885ddd3c4580ad29b47296b8ed",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\customization\\extendeddatarule\\index.html": {
     "filename": "presentation\\customization\\extendeddatarule\\index.html",
-    "hash": "7dc1fc732477f77ebc6aa599deb1adbef002880a",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "d5f79517148daa698b1168f0efe1bbc9135cfb1f",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\customization\\instancelabeloverride\\index.html": {
     "filename": "presentation\\customization\\instancelabeloverride\\index.html",
-    "hash": "c591d28af12ece0845547600bced2c109700d31b",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "f582e498c409b93c684fe35380746bf88a34e3d8",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\customization\\labeloverride\\index.html": {
     "filename": "presentation\\customization\\labeloverride\\index.html",
@@ -4141,8 +4141,8 @@
   },
   "presentation\\customization\\sortingrule\\index.html": {
     "filename": "presentation\\customization\\sortingrule\\index.html",
-    "hash": "3ea14bb857b458c4b7214faa7a7737484262cb45",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "23806851fb0b0ba1a02f69d67660da2a22d0d45b",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\customization\\styleoverride\\index.html": {
     "filename": "presentation\\customization\\styleoverride\\index.html",
@@ -4151,303 +4151,303 @@
   },
   "presentation\\customization\\index\\index.html": {
     "filename": "presentation\\customization\\index\\index.html",
-    "hash": "482a397362001b67601e87368a19a9e98807c43c",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "6d2573918d0471020b7dd2e9a6857c8f6735b2d8",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\hierarchies\\childnoderule\\index.html": {
     "filename": "presentation\\hierarchies\\childnoderule\\index.html",
-    "hash": "74a3c4354e93f5f46fa5868291bcfaa69d434619",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "d4377e2cd8a1ecd760bd04abbefde4536d83bd3d",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\hierarchies\\customnode\\index.html": {
     "filename": "presentation\\hierarchies\\customnode\\index.html",
-    "hash": "6bfbaf84cb1b7ba936b39bac9a124fb46c2af446",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "c4c176018948a626a47d0a3c5594ed39e034b48a",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\hierarchies\\customqueryinstancenodes\\index.html": {
     "filename": "presentation\\hierarchies\\customqueryinstancenodes\\index.html",
-    "hash": "f2312cfd0a1612cd360de29ab206a7b0cdfe3c93",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "ab66f37ba0fad46bf6c1d831250a1038879e20f5",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\hierarchies\\groupingrule\\index.html": {
     "filename": "presentation\\hierarchies\\groupingrule\\index.html",
-    "hash": "eb2090719fc7bda5783be5243dcb433fa8da2bd1",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "293a71fd30432d85987d8cdb695a470d74c3e928",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\hierarchies\\ecexpressions\\index.html": {
     "filename": "presentation\\hierarchies\\ecexpressions\\index.html",
-    "hash": "0147719e14b2d758621f92b75bd4e66de39183fa",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "e3fa2ea6e46992997fd3b7b6b25f1dabb83bc2cd",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\hierarchies\\infinitehierarchiesprevention\\index.html": {
     "filename": "presentation\\hierarchies\\infinitehierarchiesprevention\\index.html",
-    "hash": "81555ecea1fcdbbff6dc39482ee7cd0caf25394a",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "995a19b14537c0f791c98499bc1aa9c088df0e96",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\hierarchies\\nodeartifactsrule\\index.html": {
     "filename": "presentation\\hierarchies\\nodeartifactsrule\\index.html",
-    "hash": "d1bb45a146527b52ef085765a7b27d10025e14e0",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "4a483cd7bc83219d8dab290ede8df18ca7c6c860",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\hierarchies\\relatedinstancenodes\\index.html": {
     "filename": "presentation\\hierarchies\\relatedinstancenodes\\index.html",
-    "hash": "532ce04cb47ad15e9a729919e7ef9b7d58bfb224",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "c1641c470c91627a9096557144ea20eadcebc43b",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\hierarchies\\rootnoderule\\index.html": {
     "filename": "presentation\\hierarchies\\rootnoderule\\index.html",
-    "hash": "4ab0f894e9e6927cf4732bdb1542a5245971f9b0",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "fc18ffb7d9ef24bc7c732802cf3ecfb63d869c5b",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\hierarchies\\instancenodesofspecificclasses\\index.html": {
     "filename": "presentation\\hierarchies\\instancenodesofspecificclasses\\index.html",
-    "hash": "40096121b475fcca58520864a6d94cb0eb0adc2b",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "9b2bb8b074492b8c02bae1d72314154da7627952",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\hierarchies\\terminology\\index.html": {
     "filename": "presentation\\hierarchies\\terminology\\index.html",
-    "hash": "b7c20f387cf45dac9f82d881cbaa342b67f9da0d",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "cdb63f096bedbe4a4fbe4c11ddb0548038824b4c",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\hierarchies\\index\\index.html": {
     "filename": "presentation\\hierarchies\\index\\index.html",
-    "hash": "2e9672df74f8ea690c79563fd8e5a870adac05c6",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "a14ff05e826f7ca69f1b94af804ab871b51268db",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\motivation\\index\\index.html": {
     "filename": "presentation\\motivation\\index\\index.html",
-    "hash": "9e1646a16da87e2abb411c28d2181fa6c3f125e4",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "4987eca45ec4247efbe4ccfb43fdcd02c67d35c2",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\advanced\\caching\\index.html": {
     "filename": "presentation\\advanced\\caching\\index.html",
-    "hash": "ee5d2b5f47a2dc77c38f647319bd2fa6e37aac10",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "12f3e746bbc0dcbcf5727f019dc5cd445804dada",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\advanced\\defaultbisrules\\index.html": {
     "filename": "presentation\\advanced\\defaultbisrules\\index.html",
-    "hash": "055e46efb8417f6881e294fe54a66c5f0d733f06",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "119ba8a70377d9275cf5f92a3036a4dc1998e2bb",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\advanced\\diagnostics\\index.html": {
     "filename": "presentation\\advanced\\diagnostics\\index.html",
-    "hash": "5655f302dad4fc854823d833550384340fc1bebd",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "bb3ce08c118bd0f3a63d35a66176f671e42f2caf",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\advanced\\ecexpressions\\index.html": {
     "filename": "presentation\\advanced\\ecexpressions\\index.html",
-    "hash": "e8737cdb8c181c3c25d2f600ee3f289e314e71ca",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "ef0e0a52f048bfa0e4010958f4ca635e6a08ed12",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\advanced\\localization\\index.html": {
     "filename": "presentation\\advanced\\localization\\index.html",
-    "hash": "b5323bae20d3dd824a6674a78b46f311f0774db8",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "51546ec666611fad2ce050a1d4e30cc84eef2811",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\advanced\\performance\\index.html": {
     "filename": "presentation\\advanced\\performance\\index.html",
-    "hash": "74f6fafd3ec5fa5770bde0015eb5d4ecb3ed7aff",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "71f84f88ef4bee40a6362b2eda471973c8120cfa",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\advanced\\rulesetsupplementation\\index.html": {
     "filename": "presentation\\advanced\\rulesetsupplementation\\index.html",
-    "hash": "31e74d6981c48f0864f6c59f42abcd64e9745271",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "9249054af5b3656c7fbc50af5c4750ec48f631ee",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\advanced\\testing\\index.html": {
     "filename": "presentation\\advanced\\testing\\index.html",
-    "hash": "c46b0fa9cd4aa0fcf448c93c76dd99891adabfaa",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "500ca93bbe6836db8cb5c84cd92c6cf07b468d3b",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\advanced\\rulesetvariables\\index.html": {
     "filename": "presentation\\advanced\\rulesetvariables\\index.html",
-    "hash": "4ae84059ed72c51c8cdd6edab511f3ae6cb08020",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "20dc358af223535063e4413a0c5d1a06a877debe",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\advanced\\index\\index.html": {
     "filename": "presentation\\advanced\\index\\index.html",
-    "hash": "baed31d500a3529478c30f3cc2339f213be2d635",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "ee00faf428f001e29520954b0f0e7982e957f180",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\content\\contentinstancesofspecificclasses\\index.html": {
     "filename": "presentation\\content\\contentinstancesofspecificclasses\\index.html",
-    "hash": "0f6d4649aca406d333e48d2006db53e7327a3d4d",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "3caed49f615c133f6576e1b8e2ea685de2de15cc",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\content\\calculatedpropertiesspecification\\index.html": {
     "filename": "presentation\\content\\calculatedpropertiesspecification\\index.html",
-    "hash": "1cbace920534c4e6f916e90a38c714c1b4dbf4d2",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "f89c821fffdd88da93801ff6f79f425a736530c8",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\content\\contentmodifier\\index.html": {
     "filename": "presentation\\content\\contentmodifier\\index.html",
-    "hash": "c7fe1fe50382aaf856b5f2c197756683abdc1c83",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "7223996f8a12be64876e91a1816340cabf932001",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\content\\contentrelatedinstances\\index.html": {
     "filename": "presentation\\content\\contentrelatedinstances\\index.html",
-    "hash": "83ae215d56881bbcc3b4779d3bff0fa8e584a3a9",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "4edae7171dacb60a90f25af7345d97dfe951a739",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\content\\contentrule\\index.html": {
     "filename": "presentation\\content\\contentrule\\index.html",
-    "hash": "59a3c3fd8e59f953b4b857e2d1ba8a54e90f8da2",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "a42c0825c4b42b76c15eab3dd9b2a9eeade668f4",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\content\\defaultpropertycategoryoverride\\index.html": {
     "filename": "presentation\\content\\defaultpropertycategoryoverride\\index.html",
-    "hash": "cc6db6f54a9d22f35df101c2ab3a1849b6c65518",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "0e005d1738f63279bfe3e4b337467f76abdc0811",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\content\\ecexpressions\\index.html": {
     "filename": "presentation\\content\\ecexpressions\\index.html",
-    "hash": "fc5653f02567b617698ff21e9b425245871bcd11",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "48fc3674cc49e5fa879f70567e7c44703ba0acd6",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\content\\propertycategorization\\index.html": {
     "filename": "presentation\\content\\propertycategorization\\index.html",
-    "hash": "194128ff519e6ab5443887b9a3c2370555aeae8d",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "a93ad1f7dd4712a1fdace5e8e833bfdb9267de14",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\content\\propertycategoryrenderers\\index.html": {
     "filename": "presentation\\content\\propertycategoryrenderers\\index.html",
-    "hash": "ac8703788114af0617fcdb0ad0dbdea799fdbda4",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "d2dfcf2b20dea30887ae26073132921142f9214d",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\content\\propertycategoryspecification\\index.html": {
     "filename": "presentation\\content\\propertycategoryspecification\\index.html",
-    "hash": "cb3f2f7dcaadc9b01ed5414a408fb3ef74b1043c",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "c370ef5fa333e6bbe5ea8277b5862989d083fa7c",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\content\\propertyeditorspecification\\index.html": {
     "filename": "presentation\\content\\propertyeditorspecification\\index.html",
-    "hash": "238765129dfcac2d7f539720d4c9b8de084d64e0",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "2e4ffa3cd6f9f7d51fb10503f79871acae7e547f",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\content\\propertyspecification\\index.html": {
     "filename": "presentation\\content\\propertyspecification\\index.html",
-    "hash": "5280bc11c8535a02a054be0c04f28b135f657700",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "a07609152848924f77bb5421a5b11c41f98a1038",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\content\\propertyvaluerenderers\\index.html": {
     "filename": "presentation\\content\\propertyvaluerenderers\\index.html",
-    "hash": "c701ca322da63aa1fbae2aab5ce08849ef52d0db",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "94c78e7f5615bdf1b098213767079c0083bd25b9",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\content\\relatedpropertiesspecification\\index.html": {
     "filename": "presentation\\content\\relatedpropertiesspecification\\index.html",
-    "hash": "1d00e9c1772a7d3774d9185fb7fe46eca8a10449",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "ccd87cff8ce23252684e09c207c7407105a423a5",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\content\\rendererspecification\\index.html": {
     "filename": "presentation\\content\\rendererspecification\\index.html",
-    "hash": "a98477f93560049957d376c884995bf8e96c9ef6",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "02e5468bba1e3c66dc1c325ddc402d85d0fc3c55",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\content\\selectednodeinstances\\index.html": {
     "filename": "presentation\\content\\selectednodeinstances\\index.html",
-    "hash": "69bca7544c2adaef80fdeaf63fff11b184f1b430",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "20fe6775acde4711603e52551f500b8ccf5fc1ae",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\content\\index\\index.html": {
     "filename": "presentation\\content\\index\\index.html",
-    "hash": "461acac174e6783a7d78693ea1c7948b4f2cbbc0",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "e7000ea29077756b666180e96034dad951ffaab9",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "presentation\\content\\terminology\\index.html": {
     "filename": "presentation\\content\\terminology\\index.html",
-    "hash": "2cc775ca51377058601f39287f693444196ced69",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "7d25eeae82b2a4cad144d4cfc5dc8baf13af6836",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\app\\index.html": {
     "filename": "learning\\app\\index.html",
-    "hash": "1ef7d820f803e3411ed232b520cc9cb72e56f64e",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "f895e230a575180b84eaee1bae7626df7b5b8855",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\changesummaries\\index.html": {
     "filename": "learning\\changesummaries\\index.html",
-    "hash": "b360ce220c3e404294f640b9ba4341a8be52a202",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "a92c96526c94a2b48434f76cb3bf3806eadf4305",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\apptailoring\\index.html": {
     "filename": "learning\\apptailoring\\index.html",
-    "hash": "348157b0e35e8f4559f00c82aad04a3a186e3337",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "67cbd66b819e3fdb43cd93c5fcfe86a1edecb7d0",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\commontableexp\\index.html": {
     "filename": "learning\\commontableexp\\index.html",
-    "hash": "2e673eab6037be02ffc9c56bb7b3985f18afc664",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "15e0ba4836219bd519cc87ce0a55d6496beaa1fd",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\ecdbchange.ecschema\\index.html": {
     "filename": "learning\\ecdbchange.ecschema\\index.html",
-    "hash": "eaff687515faebd05043b5c8ec600e7777f389a3",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "2b9b9c56bc60a01a289fc93d61723a05c9371271",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\communityresources\\index.html": {
     "filename": "learning\\communityresources\\index.html",
-    "hash": "8fe3f6b189374478349821e6647c053eb05f8de6",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "faf282c38a141d6433c2c0ba8b199686964b3fe8",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\ecsqlparametertypes\\index.html": {
     "filename": "learning\\ecsqlparametertypes\\index.html",
-    "hash": "c8162c094bfdaf17fff7ddca8b0af4b0c69eabb3",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "7316b9b5c45482dbb0aa70c409bbc9d388866a9f",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\ecsql\\index.html": {
     "filename": "learning\\ecsql\\index.html",
-    "hash": "9b2ba4843ba6533c6f0c26de1fef6b07eb759fdd",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "1bf57bc8f77b0375819909e4f1b851e8a80613e3",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\ecdbmeta.ecschema\\index.html": {
     "filename": "learning\\ecdbmeta.ecschema\\index.html",
-    "hash": "1f6815b8fd755f7560efb49cc1732d1434c82c39",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "027bf8eda6dead711a8167b1bea209fcc5fda25e",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\ecsqlrowformat\\index.html": {
     "filename": "learning\\ecsqlrowformat\\index.html",
-    "hash": "e8fbb191716d019e9f95b5226e1a0107f0eaf4bd",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "f1dcdd3623bd32506ced3c01e5c9690c95954d3e",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geolocation\\index.html": {
     "filename": "learning\\geolocation\\index.html",
-    "hash": "dfe5645ac89e27ae5899d13e5e376e3777fc3e67",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "712310f1878d478dc217acdfee26785f6b260547",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\imodelchange.ecschema\\index.html": {
     "filename": "learning\\imodelchange.ecschema\\index.html",
-    "hash": "7cde9515a2064fd1c9b16663c56531cd95dab4d8",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "6b90f5318eee5f021ff0b1c403e96bc9711c6111",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\glossary\\index.html": {
     "filename": "learning\\glossary\\index.html",
-    "hash": "4ce7d8090f62a8591178b5fa03b9d993d85bc561",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "ab65aaf26d31005e7732b7bb700dca43b195e906",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geometrysqlfuncs\\index.html": {
     "filename": "learning\\geometrysqlfuncs\\index.html",
-    "hash": "ff045ab70b24400d44367dda04db69c96fde3dc5",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "2182904edd795c26b531d0493098cf63ed810825",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\interactiveediting\\index.html": {
     "filename": "learning\\interactiveediting\\index.html",
-    "hash": "1286ac507349dcf77463163efc8abc7ac3132490",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "2ff6999003c04970840b9d6b0a7702040c8ac89f",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\implementadynamicschema\\index.html": {
     "filename": "learning\\implementadynamicschema\\index.html",
-    "hash": "4712b13a3db2fbd02e963837318c58d54c9d186a",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "fa101214be3874ab62277efd9206699a92429ce0",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\ipcinterface\\index.html": {
     "filename": "learning\\ipcinterface\\index.html",
-    "hash": "3e5533d398ed94cb28d734e2174766a39f312214",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "c08789f040535f5538fcde239d11df062d2ffab7",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\nativeapps\\index.html": {
     "filename": "learning\\nativeapps\\index.html",
-    "hash": "d073c6a0ce4197eaaa128a4ac760ff74d7c3aa90",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "1252b1f42efe440c16402c1c746c3e10190c99f2",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\packageanddeploytotheweb\\index.html": {
     "filename": "learning\\packageanddeploytotheweb\\index.html",
@@ -4456,103 +4456,103 @@
   },
   "learning\\portability\\index.html": {
     "filename": "learning\\portability\\index.html",
-    "hash": "7485e5ee2712b99babf2ad5a471087dd823fc95a",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "d1d6e9db5a759f74f4ebab0da835d9892a1fc095",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\rpcinterface\\index.html": {
     "filename": "learning\\rpcinterface\\index.html",
-    "hash": "ddaf7c84023ab777856856d5e871c82b5c7cae58",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "09a4748c57dbbd87b2a8e7242ddc2eea44ee8613",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\rpcvsipc\\index.html": {
     "filename": "learning\\rpcvsipc\\index.html",
-    "hash": "2efba6fd3256e84f364b8d3f013d6d0d265af0e1",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "47260316cbe4ec8733c94bc16a5df2c78a6acead",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\softwarearchitecture\\index.html": {
     "filename": "learning\\softwarearchitecture\\index.html",
-    "hash": "728e38761b490311a77185ebbd68af1123d1b60d",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "ae646e02203eb1d3cf73c194a9adb7e7ce60fea3",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\supportedplatforms\\index.html": {
     "filename": "learning\\supportedplatforms\\index.html",
-    "hash": "7f89166c19abba61252035f91722372a53f4d664",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "fe6eeac1482fd9dfad94efe0c06ce84faf9b1a5a",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\spatialqueries\\index.html": {
     "filename": "learning\\spatialqueries\\index.html",
-    "hash": "8d64d3b6b2153fc980e2bd7ebe033b05cae609ef",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "c4077fa39eed445e1a5d0362064e5dece2c2b26b",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\wireformat\\index.html": {
     "filename": "learning\\wireformat\\index.html",
-    "hash": "803683bb92e273ede437ceb769cab6cd0137f7a6",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "883aa1289d5b887049801725565b5f760e3700fe",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\writeaconnector\\index.html": {
     "filename": "learning\\writeaconnector\\index.html",
-    "hash": "204438762386c44bfa9c2ae5e34136ed4fcd6cb9",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "77442dc340391df3c5b1cc0c8a7f4f078f55a1a9",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\writeawebagent\\index.html": {
     "filename": "learning\\writeawebagent\\index.html",
-    "hash": "a7a6488943532d7c6a86e9a3d6de13a06d1d8527",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "b55f2822ed977cbfe0c6cbdabaf391b6a7af167e",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\writeaninteractiveapp\\index.html": {
     "filename": "learning\\writeaninteractiveapp\\index.html",
-    "hash": "7c23dc18d5281bf2607c5a47bdf8012c027d5202",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "c2218ce1b88ae9cc7acdc69d283ade2eb2154ae8",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\writeawebservice\\index.html": {
     "filename": "learning\\writeawebservice\\index.html",
-    "hash": "53f910fcb93c22f4732250e48e20ae3b4a8ccb39",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "61d5d645426bd66064f048a5b475f06776a5ba97",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\writeaninteractivedesktopapp\\index.html": {
     "filename": "learning\\writeaninteractivedesktopapp\\index.html",
-    "hash": "1771e34692568e7bfa85c4082ec6fe00341179bf",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "9c2f547945c90328d722aa25173c9a530aa7c768",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\writeaninteractivewebapp\\index.html": {
     "filename": "learning\\writeaninteractivewebapp\\index.html",
-    "hash": "b3a45a40a6c5ae57931953b129ebc07bd84ac17a",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "3162ed1b209c718f2d3283826ca72fe4998cda3e",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\writeaninteractivemobileapp\\index.html": {
     "filename": "learning\\writeaninteractivemobileapp\\index.html",
-    "hash": "b0f969b7331f0d8446dccef029e32a0667a50f91",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "ccfae8e8df52513268cc15cf4881785dab60ae63",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\api-support-policies\\index.html": {
     "filename": "learning\\api-support-policies\\index.html",
-    "hash": "c843dc8418463150169bc9efe09300ca58ba2227",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "491b0fe4db940f720a202847e830d07aecd3aa7c",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\imodels\\index.html": {
     "filename": "learning\\imodels\\index.html",
-    "hash": "30d84eeb0fdcc28c94ca001d391700e40bd4dcc4",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "d8c05526baaebf4690991e2435c3e98cd4960d3f",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\imodel-connectors\\index.html": {
     "filename": "learning\\imodel-connectors\\index.html",
-    "hash": "8f2ec756f1a1ffa8e50830716a201abbc24a6fa6",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "8b563202ba1a3c66bf48caf6b820802114071ee1",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\index\\index.html": {
     "filename": "learning\\index\\index.html",
-    "hash": "738990e20a1f5135c8257c58adff71a0196b9fbf",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "de7b0a740db81a5f646bab8568f958107e0e3ab0",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\leftnav\\index.html": {
     "filename": "learning\\leftnav\\index.html",
-    "hash": "7014711c542f6a195f7d2e4cb3eb5459ff7b08a1",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "86a8a23522951803d8180b4ad20787a468bf69fc",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\serializing-xml-schemas\\index.html": {
     "filename": "learning\\serializing-xml-schemas\\index.html",
-    "hash": "e216e87fc811465e04c5ac9f2684d38e86c3b9b3",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "0a7ed98c994a3ddfc687854e2c89b6772e867fc4",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\ecsqltutorial\\builtinfunctions\\index.html": {
     "filename": "learning\\ecsqltutorial\\builtinfunctions\\index.html",
@@ -4561,13 +4561,13 @@
   },
   "learning\\ecsqltutorial\\changesummaryqueries\\index.html": {
     "filename": "learning\\ecsqltutorial\\changesummaryqueries\\index.html",
-    "hash": "87923dabf20fe39b91494e72a800fecc4b493327",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "31cf57da0880f85ea330f151d7743e9756a648c9",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\ecsqltutorial\\classfilter\\index.html": {
     "filename": "learning\\ecsqltutorial\\classfilter\\index.html",
-    "hash": "d42e91213a2ad98438c2e06fa818b0f43484a512",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "b420396654dda4bf3f70282f3e61a1644dcdd882",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\ecsqltutorial\\conditionalexpr\\index.html": {
     "filename": "learning\\ecsqltutorial\\conditionalexpr\\index.html",
@@ -4576,178 +4576,178 @@
   },
   "learning\\ecsqltutorial\\ecsqldatatypes\\index.html": {
     "filename": "learning\\ecsqltutorial\\ecsqldatatypes\\index.html",
-    "hash": "f657728cf0ea6467d58fea72863c8c4c9f99aee6",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "685c6109e29508feb7208ba5fc76b8b2fbdd0119",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\ecsqltutorial\\firstexamples\\index.html": {
     "filename": "learning\\ecsqltutorial\\firstexamples\\index.html",
-    "hash": "d72c9278c47d36c68991c604a1d854aa2ba6821b",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "3759c8a61c3d285fd1067d4ea6dde0c490614362",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\ecsqltutorial\\keytoecsql\\index.html": {
     "filename": "learning\\ecsqltutorial\\keytoecsql\\index.html",
-    "hash": "174fea1ba703b02644c74c7095fdb3cf17a06ce8",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "4351efe73bb3cf241cf32ac9d8f62293dbda3381",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\ecsqltutorial\\joins\\index.html": {
     "filename": "learning\\ecsqltutorial\\joins\\index.html",
-    "hash": "11ab0d11f4dfc739578aac17913adfe5f81649e0",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "fe7f5c60779324277430bd6aaeb6e5030e5edf7f",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\ecsqltutorial\\metaqueries\\index.html": {
     "filename": "learning\\ecsqltutorial\\metaqueries\\index.html",
-    "hash": "5c23204ae1c4de9183a2d3526f64b596e4af8612",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "5e1fd122d73b666b57df226706c25d6c1bf446ce",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\ecsqltutorial\\mydomain.ecschema\\index.html": {
     "filename": "learning\\ecsqltutorial\\mydomain.ecschema\\index.html",
-    "hash": "5c46bc36eff03cf9de119d5fff75958dc4e922e1",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "e8ac1b5a4e010132561a7216bb6fda1f9e89ac31",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\ecsqltutorial\\polymorphicqueries\\index.html": {
     "filename": "learning\\ecsqltutorial\\polymorphicqueries\\index.html",
-    "hash": "e9f4a206e9f48dffcae50834605310f9b97caed0",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "6d82a72c0a4293bbf4086b03296e5ed6eeab70c1",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\ecsqltutorial\\index\\index.html": {
     "filename": "learning\\ecsqltutorial\\index\\index.html",
-    "hash": "6220840a1aa7784648201f981c913d4fa10a95ad",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "a78c21f38f6e95d95e8ed4eaedc7f56395266e58",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\ecsqltutorial\\spatialqueries\\index.html": {
     "filename": "learning\\ecsqltutorial\\spatialqueries\\index.html",
-    "hash": "05eb2baf82555b1e63db93e0650e5279a30d1928",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "8b433116e44eda96d9e4f6177e3b4aa9f35cba77",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\accesselementaspects\\index.html": {
     "filename": "learning\\backend\\accesselementaspects\\index.html",
-    "hash": "8a3c73aaeb4d3fa08d0a1de97259e91506c339d5",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "ee0f5c57b2723e19ed1580f0b48813b322f27951",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\accessmodels\\index.html": {
     "filename": "learning\\backend\\accessmodels\\index.html",
-    "hash": "4128c9c31746fbabb804458392d63b6c3d8e6af3",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "a1a57790abfb59f1503c6681cc30b24ff5eac137",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\accesselements\\index.html": {
     "filename": "learning\\backend\\accesselements\\index.html",
-    "hash": "b207189b28ff52d6f79be697050104c7806062c5",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "236748fad8c7dfb91c2a3f6ead503962cd1c71ec",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\bestpractices\\index.html": {
     "filename": "learning\\backend\\bestpractices\\index.html",
-    "hash": "a1944708b265b0ab07b2051c1a6b3ecc99201d12",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "602b09a13a549155aa3339594c871faa5d7ae072",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\accessingimodels\\index.html": {
     "filename": "learning\\backend\\accessingimodels\\index.html",
-    "hash": "23da34856952d894ef4117c9991ee40afc5e7a4e",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "37c97eaadac2c5fb6a45da6893a29beb9d3296b3",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\channel\\index.html": {
     "filename": "learning\\backend\\channel\\index.html",
-    "hash": "2361605e19f964b58b5b962df412d080dc835024",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "db6a8bfe0bf5e1e8bafa4714f7de73fd77298317",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\concurrencycontrol\\index.html": {
     "filename": "learning\\backend\\concurrencycontrol\\index.html",
-    "hash": "501f111eb2bdd08f6fbc85ff8762eae0930af5ab",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "8f32b6705b70c024bd0f7325a5695cf4152db9c6",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\codeservice\\index.html": {
     "filename": "learning\\backend\\codeservice\\index.html",
-    "hash": "5c7c65282224954d5644bef6a21da0cbf2ffcc26",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "64e8d2282dfe729ff87a1aee458527b7045383d8",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\crashreporting\\index.html": {
     "filename": "learning\\backend\\crashreporting\\index.html",
-    "hash": "0f788a603750762fe6837fe4c30c9f58a49f345d",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "c9a70b3559ad826222f82789f5d9611a74839d12",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\createelements\\index.html": {
     "filename": "learning\\backend\\createelements\\index.html",
-    "hash": "e71c2d3deaadca5f6e3aa6a22341523071dc3842",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "a3ca8a6183549add09a3964bdf0f2339e785fe55",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\createelementaspects\\index.html": {
     "filename": "learning\\backend\\createelementaspects\\index.html",
-    "hash": "d3faa764a519ace365f1de3adf546253a218c8c9",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "b4c5343d468f2a7081d0e430b1435a643b5fd79b",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\createmodels\\index.html": {
     "filename": "learning\\backend\\createmodels\\index.html",
-    "hash": "83c99a0e5956c81ddff59ada5d1844741a3b7d96",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "e5ee0ffe782b4e2b370a8f9d7498d0ed37143f4b",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\ecsql-queries\\index.html": {
     "filename": "learning\\backend\\ecsql-queries\\index.html",
-    "hash": "7cbb43ba34d0997415b5cc5c0991cdf1302d26c1",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "e27c03f060ab986fb6aa975eef99df00a74903cd",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\ecsqlcodeexamples\\index.html": {
     "filename": "learning\\backend\\ecsqlcodeexamples\\index.html",
-    "hash": "11ff8e53694e1e1cfc6d7a182fb97ea17de4a0fa",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "567a5cf29aafc2860263acb92d8dfb7fcd7cd897",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\executingecsql\\index.html": {
     "filename": "learning\\backend\\executingecsql\\index.html",
-    "hash": "1d0814c73f37f8fb930330c1602762873615dd44",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "e3696836eae98c85f52978078b4e924b62d78eb6",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\imodelcontents\\index.html": {
     "filename": "learning\\backend\\imodelcontents\\index.html",
-    "hash": "5b66bd083b36fe4eb40b1b0ac294e58967bfda8d",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "64e9e241b60de94eda5c3aeb4618d353a8a05ca1",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\fonts\\index.html": {
     "filename": "learning\\backend\\fonts\\index.html",
-    "hash": "fb0c5b7067286f5694fa8eee1cc567f0021646b6",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "0ada475f03cca0ec4291d24d8ac1c329228d5e58",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\imodeldbreadwrite\\index.html": {
     "filename": "learning\\backend\\imodeldbreadwrite\\index.html",
-    "hash": "f8dc31066bc62256477fb134ee7c5d6a6dcbbec4",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "e119d767e7813510d3309741a42dc6a50aeae5b8",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\imodeldb\\index.html": {
     "filename": "learning\\backend\\imodeldb\\index.html",
-    "hash": "332cad0d4c79d9aef591eeb45dfd8ebf7cf45177",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "12c996d5e524383f4417c291dd7715d2170c4c6f",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\imodeldbsync\\index.html": {
     "filename": "learning\\backend\\imodeldbsync\\index.html",
-    "hash": "5202550ac587aaf6557f131b578eef4f30e02b5f",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "9ba62070b8dca4abfc1db79a761d0f5913cd089c",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\imodelhost\\index.html": {
     "filename": "learning\\backend\\imodelhost\\index.html",
-    "hash": "282e6f2c0bf7486d7493bd1175ec6ef2d421ae42",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "8ce2c9bd14a7c0fa2d3f5024bb388f2ffcfc6dc5",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\propertystore\\index.html": {
     "filename": "learning\\backend\\propertystore\\index.html",
-    "hash": "05d142f29d05b8dba05a06f92aad785de0af9fe6",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "d8c72f5ca39f2daf0359af95eb6f20c5eaa68d77",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\reservecodes\\index.html": {
     "filename": "learning\\backend\\reservecodes\\index.html",
-    "hash": "3049dbe87b9551b73a9608749e0ef0cacada0351",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "e61c1c23e85c29ccf70dcafed80c8776fee6bcf0",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\workspace\\index.html": {
     "filename": "learning\\backend\\workspace\\index.html",
-    "hash": "296d48738dcbe53b215f5f559fa6f398091655e3",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "eb42c69c5cd31317705c58191d961045ef5d194c",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\schemasandelementsintypescript\\index.html": {
     "filename": "learning\\backend\\schemasandelementsintypescript\\index.html",
-    "hash": "2e8e73cf4829a639a67b979e722ddc263374ca33",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "8a0bdf7c980d28981d4c6eea72f720ec6ad18ef1",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\backend\\index\\index.html": {
     "filename": "learning\\backend\\index\\index.html",
-    "hash": "837e3384366e2fdf39283cec0e768d61a2b4eb5e",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "44ba83911900691b0721d4adf9baba9637e0793a",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\clients\\itwinservice\\index.html": {
     "filename": "learning\\clients\\itwinservice\\index.html",
@@ -4761,303 +4761,303 @@
   },
   "learning\\common\\accesstoken\\index.html": {
     "filename": "learning\\common\\accesstoken\\index.html",
-    "hash": "19af2be8513522ae905d27e86780d4d22028d414",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "143ee5196521120805914af4997fe25259f43802",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\common\\id64\\index.html": {
     "filename": "learning\\common\\id64\\index.html",
-    "hash": "26e1f73715873f979adf9d82464f4fbbeed90e7c",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "b65392fa3e3b9c7b0d213e8c26b3b86868042165",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\common\\logging\\index.html": {
     "filename": "learning\\common\\logging\\index.html",
-    "hash": "4c5da1a4bfa36da70dd1070b8c79e74c6340c164",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "d942c33c6409d73119bd2b4650a63f4b2ef8c2cf",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\common\\geometrystream\\index.html": {
     "filename": "learning\\common\\geometrystream\\index.html",
-    "hash": "f9fdbd0ef1397f2e8bc863491e45bbe47871d7f8",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "377d76e8d8054816660d81ee479b1527e497d8f9",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\common\\index\\index.html": {
     "filename": "learning\\common\\index\\index.html",
-    "hash": "c3bc65d13cbebe63aae1ac54fb057d21b1c71b35",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "3937cb7673c84170d5c40da890daef1b72352174",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\frontend\\blankconnection\\index.html": {
     "filename": "learning\\frontend\\blankconnection\\index.html",
-    "hash": "f6092facdc528b63c7e757ef8405ebef6ecbc08a",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "a65c7b6bdee687a458a45ef4f2ecb0ca1c2bbae7",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\frontend\\ecsqlcodeexamples\\index.html": {
     "filename": "learning\\frontend\\ecsqlcodeexamples\\index.html",
-    "hash": "079cd47f440f9536a52790be18e8b8318e0d1ad4",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "726bf351c53a4ae37be074c40d34ef1afb675bb0",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\frontend\\drawingaids\\index.html": {
     "filename": "learning\\frontend\\drawingaids\\index.html",
-    "hash": "985b622a0c166991ace7ff22c33588c37fbcdf95",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "fb91852ea6f770411529f7ddd408fd041a929baf",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\frontend\\executingecsql\\index.html": {
     "filename": "learning\\frontend\\executingecsql\\index.html",
-    "hash": "e91e1f3619a529db2ec557191af017173cf92feb",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "fd5d69ddb2bad71d7a69594c95e1705f9180ede3",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\frontend\\imodelapp\\index.html": {
     "filename": "learning\\frontend\\imodelapp\\index.html",
-    "hash": "56f90fe5bd3d735205bf364cb69365b693986e04",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "4db332e5c19b1c8862f477ca3beaf4ba97e79e3d",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\frontend\\extensions\\index.html": {
     "filename": "learning\\frontend\\extensions\\index.html",
-    "hash": "bbc53ed3f24dca65785dedf7d02f8c07c751de9f",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "dc146b263fe591a8c1890527ecaa548bd2300fab",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\frontend\\imodelconnection\\index.html": {
     "filename": "learning\\frontend\\imodelconnection\\index.html",
-    "hash": "b3cacbbf601ba1aa17becc4740d79ca6407fc766",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "b45e1631999cb3b7f4b2a68801b70db20276df2e",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\frontend\\localization\\index.html": {
     "filename": "learning\\frontend\\localization\\index.html",
-    "hash": "7e48c355e7bfbe491f44129b59f1e780ab05a433",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "6a0a590bfab5ed7e1015531e8de7d9192d125273",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\frontend\\logocards\\index.html": {
     "filename": "learning\\frontend\\logocards\\index.html",
-    "hash": "aabe9ace15ba188b874a44e86df78a0a4d8b6a9f",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "d7301ce0524611e91644a85906b29317822ddba1",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\frontend\\primitivetools\\index.html": {
     "filename": "learning\\frontend\\primitivetools\\index.html",
-    "hash": "8feb7f6461ae7f6d425c1d892189b332af324e9e",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "9de51c842889e85caf8ed21ff92e410b06b7370c",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\frontend\\preferences\\index.html": {
     "filename": "learning\\frontend\\preferences\\index.html",
-    "hash": "3d1a5b0294bfae0d486b1e488bb9806d9894ca66",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "56c02870f664c730c06426c620022f15f74b0535",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\frontend\\markers\\index.html": {
     "filename": "learning\\frontend\\markers\\index.html",
-    "hash": "6440133141cd0d58209ef0327f1a2e99aea65fdb",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "b7d042b41e1a55248ba94a2fab93345f2ffa0a83",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\frontend\\quantityformatting\\index.html": {
     "filename": "learning\\frontend\\quantityformatting\\index.html",
-    "hash": "55798345f3752ab074ca5f9f0c8c5b4c54d8e7b8",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "6ed0045e0583c15b5e9714541fa8f73ff3ba5945",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\frontend\\tools\\index.html": {
     "filename": "learning\\frontend\\tools\\index.html",
-    "hash": "aafce4694c297987e668d6b213735021633d0da4",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "bbf8df37685fcd9a1be4ce030715415321953d36",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\frontend\\viewdecorations\\index.html": {
     "filename": "learning\\frontend\\viewdecorations\\index.html",
-    "hash": "80a2c31ad42bf0adb6cdc8ae59e8e7a906ae1f82",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "5fb86e893f7d91e52e1ff42e343d0b516b5cc99e",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\frontend\\views\\index.html": {
     "filename": "learning\\frontend\\views\\index.html",
-    "hash": "50fd09ab1e94bc292292472db7f903561686f0d5",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "029615e5548c6f2f54b8f5364d9ab20192d643e9",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\frontend\\index\\index.html": {
     "filename": "learning\\frontend\\index\\index.html",
-    "hash": "a8a9ea85ccc9c9633e99833f113ef91dc9dbcbef",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "f7334ff80cca6d0ce4adc5c9ffcea58dcec700bf",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\guidelines\\index\\index.html": {
     "filename": "learning\\guidelines\\index\\index.html",
-    "hash": "c32aa56f6ddcb0a8d3b2b40094700ca519a174db",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "87d70315b726aeba05e2bc109da4d186d49ff4a1",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\guidelines\\npm-scripts-guidelines\\index.html": {
     "filename": "learning\\guidelines\\npm-scripts-guidelines\\index.html",
-    "hash": "396a54aacc7b2d4e5554db7d0a6965ba0c03710c",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "b23641b38ebfef1b65e1fab3e3b4e6ab2a69ff37",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\guidelines\\markdown-intro\\index.html": {
     "filename": "learning\\guidelines\\markdown-intro\\index.html",
-    "hash": "b4e51eacf928e24902a9c6db0fa7e124ae2166f8",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "0dcdc71f5379a86d31a3bd25c757808bfcc5cfca",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\guidelines\\typescript-coding-guidelines\\index.html": {
     "filename": "learning\\guidelines\\typescript-coding-guidelines\\index.html",
-    "hash": "f2fe4ec09e179c9964282c3c7a855eeda29d6bd3",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "63757d56e77e9ba6377dadc4c83ee2b8497e10e5",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\guidelines\\documentation-link-syntax\\index.html": {
     "filename": "learning\\guidelines\\documentation-link-syntax\\index.html",
-    "hash": "755648a636f12fe2bf8bcba03c84da2b23b49815",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "446cda4cce911cdfaec0a878f688252705279e2f",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\guidelines\\release-tags-guidelines\\index.html": {
     "filename": "learning\\guidelines\\release-tags-guidelines\\index.html",
-    "hash": "30b74dee3280212d5dbf3e127b8adbdd92ac4110",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "0b77e8034ace99aa7ae1ccf967602abd4da9562a",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\transformer\\branching-imodels\\index.html": {
     "filename": "learning\\transformer\\branching-imodels\\index.html",
-    "hash": "eb7f838192774a2b42ae0c08acbf49c8f50a8dd8",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "a5219b5fb494a6fffdb0f398263c93dc358f4128",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\transformer\\index\\index.html": {
     "filename": "learning\\transformer\\index\\index.html",
-    "hash": "68cc87e8f25a324682ff8835566c948663e19b05",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "4b5d6db087dbf8599157297e690c464723b28e87",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\display\\clipping\\index.html": {
     "filename": "learning\\display\\clipping\\index.html",
-    "hash": "3aa4c9a994fca0275e2420601c593c7e7b010692",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "4a1223edb54e65af3bbbd015bf2026c4b6c67e1f",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\display\\classification\\index.html": {
     "filename": "learning\\display\\classification\\index.html",
-    "hash": "c751749fd42edf11e10e61e37ae7914fe2eae61c",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "6e997bb95f2debc569bc0dd3a470b44a9101cab0",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\display\\drawingsandsheets\\index.html": {
     "filename": "learning\\display\\drawingsandsheets\\index.html",
-    "hash": "c0e63c11a488a112b65a3bf390a568df33fc563c",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "75f8ffb142c97c5b83b39d55128b3b087d9fb38c",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\display\\elementgraphics\\index.html": {
     "filename": "learning\\display\\elementgraphics\\index.html",
-    "hash": "f8953901388eb625912e504a42ad58985a46f0c4",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "ffb1e48f446451c60479a3de186b679d48c853fe",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\display\\edgedisplay\\index.html": {
     "filename": "learning\\display\\edgedisplay\\index.html",
-    "hash": "11e964a4d3c7a91cebe801627e47860e7f5323ca",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "fa10e1791d9c367cbc48cf2dc5e5948924e85b5a",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\display\\hypermodeling\\index.html": {
     "filename": "learning\\display\\hypermodeling\\index.html",
-    "hash": "23e145637cc33e6b140fc19e23820728336595bf",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "f7e343471c514e8dbba2c6991adac4decc3b0a47",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\display\\msaa\\index.html": {
     "filename": "learning\\display\\msaa\\index.html",
-    "hash": "b2600743406db99ff531d5afb41b27e2a68dbb8e",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "436f1da6d9da56f43bec6fd6f9a5cb633af93a5f",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\display\\lighting\\index.html": {
     "filename": "learning\\display\\lighting\\index.html",
-    "hash": "10db2dd48fea1bb45006d7d5e6b131b1befcef0a",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "c9434e9b44b2c68c6b768a56fb31f9eb163617ac",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\display\\particleeffects\\index.html": {
     "filename": "learning\\display\\particleeffects\\index.html",
-    "hash": "839810d5d58433b44f3968b3a0ffcf88f97c1059",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "5accfaf1d1b27de0897802a110383faab8ef9bcd",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\display\\screenspaceeffects\\index.html": {
     "filename": "learning\\display\\screenspaceeffects\\index.html",
-    "hash": "3322006be16b3bc52e597f94aaa1d6d62823e00d",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "3b560bdcdd4ab1291c7f2808db6d8c7cb1d47a5f",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\display\\symbologyoverrides\\index.html": {
     "filename": "learning\\display\\symbologyoverrides\\index.html",
-    "hash": "9a088251bc8da523cacffc202a8b09ecaed36129",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "d55461ce377164050261f8340a7a57862b9d0334",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\display\\thematicdisplay\\index.html": {
     "filename": "learning\\display\\thematicdisplay\\index.html",
-    "hash": "1501469522cde409900e2a0517003663bea3e604",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "cc9ed106d99d3a61137f487a3e57ac0cd10ce044",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\display\\tileformat\\index.html": {
     "filename": "learning\\display\\tileformat\\index.html",
-    "hash": "732a0ea9cd0aed80b6a1b4f7bb62602c1ca6e34f",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "390d95ce35f2474bf390a0cac5cf9407544599e4",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\display\\tilecache\\index.html": {
     "filename": "learning\\display\\tilecache\\index.html",
-    "hash": "702e6594aac45007228c18e90df7ca489dde82e3",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "94b497d25b63487511d570cffd7597e13267d020",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\display\\tiledgraphicsprovider\\index.html": {
     "filename": "learning\\display\\tiledgraphicsprovider\\index.html",
-    "hash": "656f2096505e21797455056c046fd969eebae379",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "6a03248fb8c6d0cb19d37803a73491d8bd2f0bee",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\display\\tiles\\index.html": {
     "filename": "learning\\display\\tiles\\index.html",
-    "hash": "174b9a9fa9aedf21933246bf003a23df78199d21",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "09d12734f2661bf959ec45a57c5a95f458936f49",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\display\\timelineanimation\\index.html": {
     "filename": "learning\\display\\timelineanimation\\index.html",
-    "hash": "3c638f7a4e98df4d846f2f05c1717c048725db56",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "3fcad21bf88f6dab2c62988abd7117e22c5c4064",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\display\\index\\index.html": {
     "filename": "learning\\display\\index\\index.html",
-    "hash": "da9e9ff34a493278658a6db1942f8ffc314feb20",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "f67fe2f5ff443b7a762bb4438c18f2b87d5aefa9",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\display\\wiremesh\\index.html": {
     "filename": "learning\\display\\wiremesh\\index.html",
-    "hash": "ba57c6dc0d26f145706d7270912b6db0ae6a97cc",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "52848fdbda345c193688a121642dd5fc531457d5",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\imodelhub\\briefcases\\index.html": {
     "filename": "learning\\imodelhub\\briefcases\\index.html",
-    "hash": "758c6b2fe691c3514e487275d1ea6e584df28c41",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "d3981ea9dcd61e208bc7ae84a767a5c825e3480b",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\imodelhub\\events\\index.html": {
     "filename": "learning\\imodelhub\\events\\index.html",
-    "hash": "54efe9b0780a9ac2666a29731ff692cc70a19c08",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "b147f3e4b83b982261ddb5d0bf92d97d45f825b8",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\imodelhub\\permissions\\index.html": {
     "filename": "learning\\imodelhub\\permissions\\index.html",
-    "hash": "c14924fb5325e640a6e06227895b22a7c8411c0a",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "f9e879d73f0dce099e1f244f636b547bc1ac4e39",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\imodelhub\\versions\\index.html": {
     "filename": "learning\\imodelhub\\versions\\index.html",
-    "hash": "024dc77792f9554e8beffd7cbf6a48bbf25841ce",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "5f75a9551b157ef867db115986f35a1537a4b246",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\imodelhub\\workingwith\\index.html": {
     "filename": "learning\\imodelhub\\workingwith\\index.html",
-    "hash": "7c649fd9273f035967a3b69cd784527e51d6dea0",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "2b96950840e5b4fd27d589b99a17df759bfe620b",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\imodelhub\\index\\index.html": {
     "filename": "learning\\imodelhub\\index\\index.html",
-    "hash": "e9ee0ec35527099da58fc20b41e3f33a1a0c0eb0",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "241286c851d2515e519926ea945d013f0cb2e399",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\imodelhub\\imodels\\getimodel\\index.html": {
     "filename": "learning\\imodelhub\\imodels\\getimodel\\index.html",
-    "hash": "965ccde599fb4bd7689771fa6dbb25400c424029",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "5957785fbbbebebaca6c6b13c1fdadd6fe7e4ee2",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\imodelhub\\imodels\\index\\index.html": {
     "filename": "learning\\imodelhub\\imodels\\index\\index.html",
-    "hash": "a11384d34a04389f07e8566d14fe0703a05a9be4",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "9507c1651c48d5e9d9b8880659e7e906868e1635",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\imodelhub\\imodels\\createimodel\\index.html": {
     "filename": "learning\\imodelhub\\imodels\\createimodel\\index.html",
-    "hash": "efb19bcf6209682882adb0e455187e427d0670bd",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "185b9ea4f1bf228ca7c879e1223ad13f0ca9a296",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\tutorials\\create-test-imodel-sample\\index.html": {
     "filename": "learning\\tutorials\\create-test-imodel-sample\\index.html",
-    "hash": "9e1bc2d01c5cff58f1e8b0f9ddaedb2c34035d07",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "8857784497dd0c1495048c72b8ae33800c9043c2",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\tutorials\\develop-agent\\index.html": {
     "filename": "learning\\tutorials\\develop-agent\\index.html",
-    "hash": "0d83c5522ea8a24308a270373352fb54aa99b45f",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "c4a23d05bc3bf07145deb821164c31de14372b36",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\tutorials\\create-test-imodel-offline\\index.html": {
     "filename": "learning\\tutorials\\create-test-imodel-offline\\index.html",
@@ -5066,43 +5066,43 @@
   },
   "learning\\tutorials\\develop-desktop-viewer\\index.html": {
     "filename": "learning\\tutorials\\develop-desktop-viewer\\index.html",
-    "hash": "8971075285d86207de5f715c0042b9d98ff50f50",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "f0dc3e8bade29f5680d09b445905ee03e9c15e80",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\tutorials\\develop-web-viewer\\index.html": {
     "filename": "learning\\tutorials\\develop-web-viewer\\index.html",
-    "hash": "9f0f807547ad4b67fd6cbdfa890c7ea8b7d45af3",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "823cbb8aa261978fe2cbf35c724acb1b456a0ff5",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\tutorials\\create-test-imodel-itwin-sync\\index.html": {
     "filename": "learning\\tutorials\\create-test-imodel-itwin-sync\\index.html",
-    "hash": "b4a33bc215649d9e6bb0e0f855b5baa06ae1f3b2",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "c0e30fb6b5039890bea5e65a890849ec5379d5a5",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\tutorials\\development-prerequisites\\index.html": {
     "filename": "learning\\tutorials\\development-prerequisites\\index.html",
-    "hash": "70915f8ef092a646dbf79a8e11ca2d613d6768e5",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "70cd6c642474f75b71070438af4fe99fbbd96d18",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\tutorials\\explore-schema-browser\\index.html": {
     "filename": "learning\\tutorials\\explore-schema-browser\\index.html",
-    "hash": "66a0c111932fd9fcb0b31409fcff4f621e718021",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "c11a5174ec1e5108ceb055d912e57fcda980f7f8",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\tutorials\\explore-imodel-console\\index.html": {
     "filename": "learning\\tutorials\\explore-imodel-console\\index.html",
-    "hash": "5dff0a4085b26a89b34eb8e48a3a62cb6deddfee",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "ce4bb997544322ea41d5769b46f10a03742232f5",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\tutorials\\hello-world-viewer\\index.html": {
     "filename": "learning\\tutorials\\hello-world-viewer\\index.html",
-    "hash": "812a07ba712de005aef499353e9c46679c9a3741",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "477b26df8972f56a45cb99b56ab837f6885cae7d",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\tutorials\\index\\index.html": {
     "filename": "learning\\tutorials\\index\\index.html",
-    "hash": "e2b3b55ce9d98a8d987d3c0e9610dc24ae9fcd1d",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "011ae465f9be46535ab9ddeece79a07260f5bef7",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\tutorials\\itwin-snapshot-app\\index.html": {
     "filename": "learning\\tutorials\\itwin-snapshot-app\\index.html",
@@ -5111,18 +5111,18 @@
   },
   "learning\\tutorials\\registering-applications\\index.html": {
     "filename": "learning\\tutorials\\registering-applications\\index.html",
-    "hash": "a0da483a59c88958f3b4d88e7c4b02206490bf10",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "119d4e545ba2f756a2a4e5d953e78ce10edd16bf",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\tutorials\\showcase-to-viewer\\index.html": {
     "filename": "learning\\tutorials\\showcase-to-viewer\\index.html",
-    "hash": "6607fa4090f662a9477a81fbb499b5109094f0ac",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "577c0fbaef34281a1e3966c0c6ab08ea97fa42ae",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\tutorials\\use-existing-imodel\\index.html": {
     "filename": "learning\\tutorials\\use-existing-imodel\\index.html",
-    "hash": "3b7eb146f8c779d7da2bbdb72663268b8df8713b",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "a47c5759b2eb761c1c7b19a6f9c9fb5e5c3662b3",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\ui\\augmentingui\\index.html": {
     "filename": "learning\\ui\\augmentingui\\index.html",
@@ -5461,113 +5461,113 @@
   },
   "learning\\geometry\\angle\\index.html": {
     "filename": "learning\\geometry\\angle\\index.html",
-    "hash": "fbd0a8566aecbe3e7c4993cf2acfc25d627e9117",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "aa51f4bf91388105d4b799612e8a2f9934f0e957",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geometry\\clipplaneandlargerclipstructures\\index.html": {
     "filename": "learning\\geometry\\clipplaneandlargerclipstructures\\index.html",
-    "hash": "c9f1178414dc17029d9ebf66ddd1323edc8ba85e",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "ccab23eb85690bc8f0c931ed1726b5a6cce473bd",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geometry\\curvecollection\\index.html": {
     "filename": "learning\\geometry\\curvecollection\\index.html",
-    "hash": "f6c7ccebbc0af2174a9acba98acb58a1e032046b",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "a558370f8dcdd8fad7ffbe106f2a564f25d64016",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geometry\\curvefactory\\index.html": {
     "filename": "learning\\geometry\\curvefactory\\index.html",
-    "hash": "ed93cd4510e68b7e4392eb25e2440649338383bf",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "a3beeb59af361e2c1a372f53332c080976fb086e",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geometry\\curveprimitive\\index.html": {
     "filename": "learning\\geometry\\curveprimitive\\index.html",
-    "hash": "ebbe74174632d62dcdcdf2430c88719e1b1a9255",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "2d6d9ad4ab3a45d2d0d5d3769b65660edc8c64c0",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geometry\\ellipsoidpaths\\index.html": {
     "filename": "learning\\geometry\\ellipsoidpaths\\index.html",
-    "hash": "9e0dc77009b1e89302d75b0a030f6f43ed3360ea",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "caca12b98fd34eb4be684967f5932575150391da",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geometry\\imodeljsongeometryschema\\index.html": {
     "filename": "learning\\geometry\\imodeljsongeometryschema\\index.html",
-    "hash": "86061df0d97552f983bc73bd07f66e96918a7efa",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "4c977d041dfd63c27a26315eff4c4ec4299adda4",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geometry\\facetnormals\\index.html": {
     "filename": "learning\\geometry\\facetnormals\\index.html",
-    "hash": "2d92096003412c337ff1ab311f3fd70e2a346cee",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "3f6f62ccfafd7c244db5c01ea8656471214ce568",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geometry\\pointvector\\index.html": {
     "filename": "learning\\geometry\\pointvector\\index.html",
-    "hash": "6ee5767fe6f234caa6c92dfcf5acde9aa608ba69",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "e4afec3265bcff013219c15b3b694ec1a0424e52",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geometry\\planarsubdivision\\index.html": {
     "filename": "learning\\geometry\\planarsubdivision\\index.html",
-    "hash": "acd1f180401c48cb51135bae73fcafda50d0f02e",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "93ad09d921ae632f48ff240285b63f5364056021",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geometry\\polyfaceauxdata\\index.html": {
     "filename": "learning\\geometry\\polyfaceauxdata\\index.html",
-    "hash": "a4a422c16efaaee91230d3df1bb6f264c8bd3ce3",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "2b43ef7dab216f2db56b9092efa2eeb22a24e57c",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geometry\\polyfaceclip\\index.html": {
     "filename": "learning\\geometry\\polyfaceclip\\index.html",
-    "hash": "d31b0878fcf4c895cfd6fac36ada5111e3ff10b6",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "dff3e2ac5e46176a5416038559435f66b9c1e13b",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geometry\\polyfacequery\\index.html": {
     "filename": "learning\\geometry\\polyfacequery\\index.html",
-    "hash": "497f3c148145ca91ad93abeba7af1e7dbf809727",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "8d005f7876eadd8090aca74452370b6ab8b74201",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geometry\\polyfaceindexpairing\\index.html": {
     "filename": "learning\\geometry\\polyfaceindexpairing\\index.html",
-    "hash": "9e27f764691b0c60d853728d0985e505a0d8aeb4",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "60ef85d1d88ca1b9ac7329d79114bc1d788b537d",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geometry\\polyfacebuilder\\index.html": {
     "filename": "learning\\geometry\\polyfacebuilder\\index.html",
-    "hash": "ebf4934245fd5bf0eb3b96342f195ae6613ac6df",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "50cb53656874d3898f7a087bf43c4f5e003d2e35",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geometry\\regionops\\index.html": {
     "filename": "learning\\geometry\\regionops\\index.html",
-    "hash": "b4777b0c13e3d799bd8184d0544778f32c3a8ec6",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "25381ed59f80968a936da8ee5cfb44c4fc808506",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geometry\\spiralconstructions\\index.html": {
     "filename": "learning\\geometry\\spiralconstructions\\index.html",
-    "hash": "347db948ffc34392c95aa263d49a46a9b71439f4",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "966747c18c34a909d2d83ec802133a25cde3fb89",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geometry\\spiraltypes\\index.html": {
     "filename": "learning\\geometry\\spiraltypes\\index.html",
-    "hash": "ef7ff0a9b03e5822d44bc308a7e3467d2a9b4b46",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "bd066cd8b54e6bfcd81c374219b09b55a8d9edbe",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geometry\\strokeoptions\\index.html": {
     "filename": "learning\\geometry\\strokeoptions\\index.html",
-    "hash": "8bbe6e8d61e22858f34168d9a2aecadbd63d1bff",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "a3dc5ce1cd091bf03cef30614c12d39fb63d2b54",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geometry\\transform\\index.html": {
     "filename": "learning\\geometry\\transform\\index.html",
-    "hash": "3eb95c9241e64de46702b73e22091c6cebf559f0",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "a7f5d18281c7153a8dea73249d5579ff2fe51e9d",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geometry\\triangulation\\index.html": {
     "filename": "learning\\geometry\\triangulation\\index.html",
-    "hash": "caef54542f74cc621de8e8fe7b28bf44a9244786",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "fbadcfa735a97d623e6f07677fd88f6fdd9e4403",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "learning\\geometry\\index\\index.html": {
     "filename": "learning\\geometry\\index\\index.html",
-    "hash": "00875d8e2a04fa9ab781ed10ec7a88d740aa581c",
-    "updated": "2025-10-10T19:53:36.982Z"
+    "hash": "262386c2a82a38c0b321b67972dd205b36f7fb29",
+    "updated": "2023-03-01T21:47:09.067Z"
   },
   "reference/.ds_store": {
     "filename": "reference/.ds_store",
@@ -13413,830 +13413,5 @@
     "filename": "ui/images/toolbar.png",
     "hash": "9106aa7ba2cbc8c58de07d40bbb3a9442b42bb34",
     "updated": "2024-05-21T21:14:37.563Z"
-  },
-  "bis\\guide\\media\\drawings-classes.png": {
-    "filename": "bis\\guide\\media\\drawings-classes.png",
-    "hash": "ec6e08c28970d14dcf7833b88e23d86a2c5683f6",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "bis\\guide\\media\\drawings-sectiondrawinglocation-classes.png": {
-    "filename": "bis\\guide\\media\\drawings-sectiondrawinglocation-classes.png",
-    "hash": "6c44ad8b3f393548d908922efe205c06849a57b3",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "bis\\guide\\media\\drawings-sheets-core-classes.png": {
-    "filename": "bis\\guide\\media\\drawings-sheets-core-classes.png",
-    "hash": "b6ea9dd121c3d373e3a252997a6669f62b3a367b",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "bis\\guide\\media\\drawings-sheets.cmap": {
-    "filename": "bis\\guide\\media\\drawings-sheets.cmap",
-    "hash": "0252c3870d57922dcfdaf9cb7e21d4ca7ab49142",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "bis\\guide\\media\\imodel-connector-repository-organization.png": {
-    "filename": "bis\\guide\\media\\imodel-connector-repository-organization.png",
-    "hash": "e12a305c3e067f60a33827a45fa4c7de85d550b9",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "bis\\guide\\media\\information-hierarchy.png": {
-    "filename": "bis\\guide\\media\\information-hierarchy.png",
-    "hash": "7a8485300d95ec7bf348634fe8cf27e4cd9e5fe1",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "bis\\guide\\media\\sheet-viewattachment-classes.png": {
-    "filename": "bis\\guide\\media\\sheet-viewattachment-classes.png",
-    "hash": "207431be2b8efc94777fd62aced3a12276410eae",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "bis\\guide\\media\\sheetindex-classes.png": {
-    "filename": "bis\\guide\\media\\sheetindex-classes.png",
-    "hash": "275c083de31c41fb3114c5399e5e8b24d1401fba",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "bis\\guide\\media\\sheets-classes.png": {
-    "filename": "bis\\guide\\media\\sheets-classes.png",
-    "hash": "94cf9d9776ebece50190501280eb49e10e1521b2",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "bis\\guide\\media\\top-of-the-world.cmap": {
-    "filename": "bis\\guide\\media\\top-of-the-world.cmap",
-    "hash": "22cb9f6c83661a6f83d475db4eccc22916c1a7f9",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "bis\\guide\\media\\top-of-the-world.png": {
-    "filename": "bis\\guide\\media\\top-of-the-world.png",
-    "hash": "11776d5f02b87009eb02a0f0ab926a38efbb0aa3",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\constantlod.gif": {
-    "filename": "changehistory\\assets\\constantlod.gif",
-    "hash": "37a533585b98e9b5f0b100d2f2204c45b5f296b2",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\constantlod.jpg": {
-    "filename": "changehistory\\assets\\constantlod.jpg",
-    "hash": "0cb09eeeb3c013e2ddd47d5363c0432dcebb8272",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\intersectionstyle-altered.jpg": {
-    "filename": "changehistory\\assets\\intersectionstyle-altered.jpg",
-    "hash": "1efdef68d10b022a1e80b5aee4f23862b0a31a83",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\intersectionstyle-default.jpg": {
-    "filename": "changehistory\\assets\\intersectionstyle-default.jpg",
-    "hash": "282988afa0a9b11588583d32a66e1798178aab9a",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\intersectionstyle-off.jpg": {
-    "filename": "changehistory\\assets\\intersectionstyle-off.jpg",
-    "hash": "870ca43207881426af79ca008404357b3879e973",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\maplayersinfotooldrape.png": {
-    "filename": "changehistory\\assets\\maplayersinfotooldrape.png",
-    "hash": "f858e7d072460bbd6a54f0cd59b32229390d6484",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\snapperpendicularpoint.png": {
-    "filename": "changehistory\\assets\\snapperpendicularpoint.png",
-    "hash": "60c3730a1e2c31ce27a141d4a056ac1d0ccd890f",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\snaptangentpoint.png": {
-    "filename": "changehistory\\assets\\snaptangentpoint.png",
-    "hash": "cbfd5997ef0e6fdd9aaccbfa7487603cb64edf45",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\sweeplinstringtofacetsnonvertical.png": {
-    "filename": "changehistory\\assets\\sweeplinstringtofacetsnonvertical.png",
-    "hash": "cff5e85400ad8eea81f895ee876234aa135dabdb",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\sweeplinestringtofacetsverticalsweep.png": {
-    "filename": "changehistory\\assets\\sweeplinestringtofacetsverticalsweep.png",
-    "hash": "9f5671fceb3d04e43b3332174c57f7ee5692a94f",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\arcgisfeature-uniquevaluerenderer.png": {
-    "filename": "changehistory\\assets\\arcgisfeature-uniquevaluerenderer.png",
-    "hash": "bbdd9d3a2a5a535e332545ef01129eb33a260978",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\atmosphere_distance.jpg": {
-    "filename": "changehistory\\assets\\atmosphere_distance.jpg",
-    "hash": "a8b9c7cbef30852e2da5b2e7f023a088ead60984",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\atmosphere_globe.jpg": {
-    "filename": "changehistory\\assets\\atmosphere_globe.jpg",
-    "hash": "0d33dffd3c53b4a0307b644f934f667467724cdf",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\atmosphere_space.jpg": {
-    "filename": "changehistory\\assets\\atmosphere_space.jpg",
-    "hash": "a20dd826f236e1180e70101470648591293b7891",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\atmosphere_sunset.jpg": {
-    "filename": "changehistory\\assets\\atmosphere_sunset.jpg",
-    "hash": "14ab353ea5afb63911ef83852fb09068feb675c1",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\baythymetric_terrain.jpg": {
-    "filename": "changehistory\\assets\\baythymetric_terrain.jpg",
-    "hash": "13ca3125a61ae142b18b563adaec6b6285f1a397",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\clip-parity-region.jpg": {
-    "filename": "changehistory\\assets\\clip-parity-region.jpg",
-    "hash": "a461ee0eaf2b2280871819cc9b53da26d86b44dc",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\clip-union-region.jpg": {
-    "filename": "changehistory\\assets\\clip-union-region.jpg",
-    "hash": "2e45afe368571fa5702303af7926d8493c3e29b8",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\contour-display.png": {
-    "filename": "changehistory\\assets\\contour-display.png",
-    "hash": "b3f2d2c8ddd8c55019ff0ed16afe0023d514a9b6",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\createmiteredsweepsections.jpg": {
-    "filename": "changehistory\\assets\\createmiteredsweepsections.jpg",
-    "hash": "7d0865e48737e4997429b00167c07a3705cf9001",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\draperegion.jpg": {
-    "filename": "changehistory\\assets\\draperegion.jpg",
-    "hash": "6a5fcecbc03eda77a4d2a150b09890b92f8586ac",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\element-locate.png": {
-    "filename": "changehistory\\assets\\element-locate.png",
-    "hash": "aed2642699f241d059308ef9d9cf24a46d2b320b",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\map-layer-info.png": {
-    "filename": "changehistory\\assets\\map-layer-info.png",
-    "hash": "322dca2192ddbe8f90e3979fe515b1cfc1e819ba",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\model-draping-onto-reality.jpg": {
-    "filename": "changehistory\\assets\\model-draping-onto-reality.jpg",
-    "hash": "4712e6af7180307a59b7f07debfa72d987137e94",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\models-draping-onto-models.jpg": {
-    "filename": "changehistory\\assets\\models-draping-onto-models.jpg",
-    "hash": "49d5b91fe9857d29e2ee19d8b097518fef992d06",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\assets\\sweepsequence.png": {
-    "filename": "changehistory\\assets\\sweepsequence.png",
-    "hash": "ded4894ab7a6aac63a829c45ac2b18548f7077b7",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\advanced\\media\\error-handling\\example-console-error.png": {
-    "filename": "presentation\\advanced\\media\\error-handling\\example-console-error.png",
-    "hash": "71808adeea97bd92db6cf0622fe7dfc8f078a8c8",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\advanced\\media\\error-handling\\property-grid-error.png": {
-    "filename": "presentation\\advanced\\media\\error-handling\\property-grid-error.png",
-    "hash": "87206aac7cef6c7ee895c32861803c7f5c4b64fc",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\advanced\\media\\error-handling\\property-grid-no-error.png": {
-    "filename": "presentation\\advanced\\media\\error-handling\\property-grid-no-error.png",
-    "hash": "a2721633403d489fc1886e1e91b3e2d3a2f95a6c",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\advanced\\media\\error-handling\\table-error.png": {
-    "filename": "presentation\\advanced\\media\\error-handling\\table-error.png",
-    "hash": "8e542236905d39dbdf48b5d6fca84eb966c333d2",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\advanced\\media\\error-handling\\table-no-error.png": {
-    "filename": "presentation\\advanced\\media\\error-handling\\table-no-error.png",
-    "hash": "b043af6a6f93b2da65d1de03b5d0b6c3a5aa17e7",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\advanced\\media\\error-handling\\tree-child-nodes-error.png": {
-    "filename": "presentation\\advanced\\media\\error-handling\\tree-child-nodes-error.png",
-    "hash": "d3c8a0b81923841e4a90bf2944469fa3a21938ab",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\advanced\\media\\error-handling\\tree-no-error.png": {
-    "filename": "presentation\\advanced\\media\\error-handling\\tree-no-error.png",
-    "hash": "2fc64d2fe7927901034f95d3bfd4424b3389ecba",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\advanced\\media\\error-handling\\tree-root-nodes-error.png": {
-    "filename": "presentation\\advanced\\media\\error-handling\\tree-root-nodes-error.png",
-    "hash": "490b70a762b1c17cc30328fc3f2aad2b8736c7b8",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\content\\media\\calculatedpropertiesspecification-with-categoryid-attribute.png": {
-    "filename": "presentation\\content\\media\\calculatedpropertiesspecification-with-categoryid-attribute.png",
-    "hash": "69d2ead90de1df5663248859c1d1d35115c62105",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\content\\media\\calculatedpropertiesspecification-with-type-attribute.png": {
-    "filename": "presentation\\content\\media\\calculatedpropertiesspecification-with-type-attribute.png",
-    "hash": "a84b3978726dc1ab5963ceeac7e1676cd1dff945",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\content\\media\\modifier-with-applyonnestedcontent-attribute-false.png": {
-    "filename": "presentation\\content\\media\\modifier-with-applyonnestedcontent-attribute-false.png",
-    "hash": "28123fb2633a66a34c3048b28b7863f81dacb804",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\content\\media\\modifier-with-applyonnestedcontent-attribute-true.png": {
-    "filename": "presentation\\content\\media\\modifier-with-applyonnestedcontent-attribute-true.png",
-    "hash": "ba9101340bacc58ebcf63dc240b199ef7bba23d5",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\content\\media\\property-grid-example-custom-categories-with-createclasscategory-attribute.png": {
-    "filename": "presentation\\content\\media\\property-grid-example-custom-categories-with-createclasscategory-attribute.png",
-    "hash": "84505dd8f9b07278d406be8743cfc07ce25cdfc8",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\content\\media\\propertyspecification-with-isdisplayed-attribute-ecexpression-false.png": {
-    "filename": "presentation\\content\\media\\propertyspecification-with-isdisplayed-attribute-ecexpression-false.png",
-    "hash": "ba4580a77521b4f00b30cf2854bf271ea94f055e",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\content\\media\\propertyspecification-with-isdisplayed-attribute-ecexpression-true.png": {
-    "filename": "presentation\\content\\media\\propertyspecification-with-isdisplayed-attribute-ecexpression-true.png",
-    "hash": "fff7ed996dfe07709434d9ce50078f5d2f1a575b",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\hierarchies\\media\\filtering-limiting-problem.png": {
-    "filename": "presentation\\hierarchies\\media\\filtering-limiting-problem.png",
-    "hash": "34a00527670fb60537ae91865c689b0d95edbde5",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\hierarchies\\media\\filtering-limiting-too-many-nodes.png": {
-    "filename": "presentation\\hierarchies\\media\\filtering-limiting-too-many-nodes.png",
-    "hash": "732a29d502822abdd265dc0a0f44947e1fc01016",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\hierarchies\\media\\filtering-limiting-workflow-1.png": {
-    "filename": "presentation\\hierarchies\\media\\filtering-limiting-workflow-1.png",
-    "hash": "5c38c1ddf7ad85566b1002e0db29c427d403f07c",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\hierarchies\\media\\filtering-limiting-workflow-2.png": {
-    "filename": "presentation\\hierarchies\\media\\filtering-limiting-workflow-2.png",
-    "hash": "f0c0eaee3b550a7fb77b8316f9b1ec430f9618a2",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\hierarchies\\media\\filtering-limiting-workflow-3.png": {
-    "filename": "presentation\\hierarchies\\media\\filtering-limiting-workflow-3.png",
-    "hash": "a1f9ad7bd67a155e05809f7923607bfab23fc798",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\hierarchies\\media\\filtering-limiting-workflow-4.png": {
-    "filename": "presentation\\hierarchies\\media\\filtering-limiting-workflow-4.png",
-    "hash": "624a47389ed69e403c5e324b617112b65cb5ed30",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\backend\\workspace-anatomy.jpg": {
-    "filename": "learning\\backend\\workspace-anatomy.jpg",
-    "hash": "a3f03d216536761411ee746bcd515d37814b0601",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-compass-mode.png": {
-    "filename": "learning\\frontend\\accudraw-compass-mode.png",
-    "hash": "324feec86e73f978606e788ae6747b726502cabd",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-distance-roundoff.png": {
-    "filename": "learning\\frontend\\accudraw-distance-roundoff.png",
-    "hash": "4aa1390d2997a3a455adbb8a723a26b0f8aa2923",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-expressions.png": {
-    "filename": "learning\\frontend\\accudraw-expressions.png",
-    "hash": "f63ffa520d9760ed5e448833fc5cda95a44aa774",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-focus-accudraw.png": {
-    "filename": "learning\\frontend\\accudraw-focus-accudraw.png",
-    "hash": "83ed476b0a920bb7374280b362d1ad0a3f725b8b",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-focus-home.png": {
-    "filename": "learning\\frontend\\accudraw-focus-home.png",
-    "hash": "f7fa831cbc591707ee3163ac394b6c7ea7e87fe3",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-focus-other.png": {
-    "filename": "learning\\frontend\\accudraw-focus-other.png",
-    "hash": "01fcebf1ea25fcc75230f13b56be069ec0686480",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-focus-xy.png": {
-    "filename": "learning\\frontend\\accudraw-focus-xy.png",
-    "hash": "5b740a60ab41ba4d6650d78623dbafa6fc51ce22",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-horizontal-fixed.png": {
-    "filename": "learning\\frontend\\accudraw-horizontal-fixed.png",
-    "hash": "c08e4420cc63708d7ff699cadbb14f839c134ff2",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-lock-index.png": {
-    "filename": "learning\\frontend\\accudraw-lock-index.png",
-    "hash": "28d014c05798a40b12edacc507a71da5319ba59b",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-lock-smart.png": {
-    "filename": "learning\\frontend\\accudraw-lock-smart.png",
-    "hash": "42fbaad299ea3a0ba11d7aabde207d52b53d5372",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-nearest-axis.png": {
-    "filename": "learning\\frontend\\accudraw-nearest-axis.png",
-    "hash": "a3c25fbaf8687e4dc70597ef2c777df29bf0cd0d",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-nearest-distance.png": {
-    "filename": "learning\\frontend\\accudraw-nearest-distance.png",
-    "hash": "e10fd8b8484f1c1a0875d68676bbd746c550748e",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-new-input.png": {
-    "filename": "learning\\frontend\\accudraw-new-input.png",
-    "hash": "bfbd23b339ed065318b09c401dd55220c7afe43c",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-polar.png": {
-    "filename": "learning\\frontend\\accudraw-polar.png",
-    "hash": "10e5f4afdbf7ec52c6ed3a62469cc181eb3c88c1",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-rectangular.png": {
-    "filename": "learning\\frontend\\accudraw-rectangular.png",
-    "hash": "f652229317ffd6c1e3c5dad35f92da1794d7bab5",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-rotate-element.png": {
-    "filename": "learning\\frontend\\accudraw-rotate-element.png",
-    "hash": "4cc7c6efa794f7cffba0221b646287229821ec3a",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-rotate-quick.png": {
-    "filename": "learning\\frontend\\accudraw-rotate-quick.png",
-    "hash": "35f43b78f96eb51bd72e241ac10b8cd3abf2cdaa",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-saved-values.png": {
-    "filename": "learning\\frontend\\accudraw-saved-values.png",
-    "hash": "a8322b1d270de9af383bdf19f87fdf280749a6e7",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-set-origin.png": {
-    "filename": "learning\\frontend\\accudraw-set-origin.png",
-    "hash": "936f1bd67194577be1f4be086630f69f63d4bfd7",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-snap-indexing.png": {
-    "filename": "learning\\frontend\\accudraw-snap-indexing.png",
-    "hash": "92569a1beca1674173e04b219157f75f4ba3cf12",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-standard-rotations.png": {
-    "filename": "learning\\frontend\\accudraw-standard-rotations.png",
-    "hash": "cffdb5d536963798995c7d461862578b8fb1d6a9",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-text-cursor.png": {
-    "filename": "learning\\frontend\\accudraw-text-cursor.png",
-    "hash": "78b81b3e6d64556966080c3db60f5fe23275b2b3",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudraw-vertical-cursor.png": {
-    "filename": "learning\\frontend\\accudraw-vertical-cursor.png",
-    "hash": "013f8adc1f5169b090262711040b79394a7b6319",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accusnap-indicators.png": {
-    "filename": "learning\\frontend\\accusnap-indicators.png",
-    "hash": "a22de40b20ea129fdb32a0460a61b16e23118698",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\event-routing.png": {
-    "filename": "learning\\frontend\\event-routing.png",
-    "hash": "4f96eac1723623981121858888ef6441f45a9600",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\google-photorealistic-3d-tiles-1.jpg": {
-    "filename": "learning\\frontend\\google-photorealistic-3d-tiles-1.jpg",
-    "hash": "2c0d2e4d42c39b984b0a312edc677d0e62c36e3f",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\google-photorealistic-3d-tiles-2.jpg": {
-    "filename": "learning\\frontend\\google-photorealistic-3d-tiles-2.jpg",
-    "hash": "1dc43cf0b7cc5de4ef33bfc16a50b1c0d47f7ada",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\rotated-acs.png": {
-    "filename": "learning\\frontend\\rotated-acs.png",
-    "hash": "ff22918393f7710ca99bdc0beb8f45f49eed2fe4",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\tentative-intersection.png": {
-    "filename": "learning\\frontend\\tentative-intersection.png",
-    "hash": "ae873c5ce2a541f37ee1d22cb37f52088079139c",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\geometry\\figs\\clipping\\clipplane.jpg": {
-    "filename": "learning\\geometry\\figs\\clipping\\clipplane.jpg",
-    "hash": "ce7bde26b3910b6818a4af8b31a4dee1179b1471",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\geometry\\figs\\clipping\\createxybox.jpg": {
-    "filename": "learning\\geometry\\figs\\clipping\\createxybox.jpg",
-    "hash": "37eb739a7b43f58154202832937e7c672643b228",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\geometry\\figs\\clipping\\curvechainclipping1.png": {
-    "filename": "learning\\geometry\\figs\\clipping\\curvechainclipping1.png",
-    "hash": "56f26aa52ca9a8155439aa1b68412ab080974559",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\geometry\\figs\\clipping\\curvechainclipping2.png": {
-    "filename": "learning\\geometry\\figs\\clipping\\curvechainclipping2.png",
-    "hash": "2adf960dd444699d35a027c1a83bedba506b7c4d",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\geometry\\figs\\curvecurve\\visitorpattern.png": {
-    "filename": "learning\\geometry\\figs\\curvecurve\\visitorpattern.png",
-    "hash": "ba2b2b40196019fc7f36614ab9ae3b25b17fc427",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\geometry\\figs\\matrix\\jacobieignevaluealgorithm.jpg": {
-    "filename": "learning\\geometry\\figs\\matrix\\jacobieignevaluealgorithm.jpg",
-    "hash": "cb280ad20eaeaf2de9db0e842e6faddf23d2ff2e",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\geometry\\figs\\matrix\\matrixinverse.jpg": {
-    "filename": "learning\\geometry\\figs\\matrix\\matrixinverse.jpg",
-    "hash": "d8ab49e6fb2c716d6148c2bd8da0d0a718aeed3a",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "bis\\domains\\drawings-sheets\\index.html": {
-    "filename": "bis\\domains\\drawings-sheets\\index.html",
-    "hash": "28e36f4727eb5ebf54f196eeb142f5f7e34f0d2d",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "bis\\ec\\update-koq-on-property\\index.html": {
-    "filename": "bis\\ec\\update-koq-on-property\\index.html",
-    "hash": "9d13c91867d6dda43f2046b311edc9d21842bd8d",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "bis\\guide\\fundamentals\\federationguids\\index.html": {
-    "filename": "bis\\guide\\fundamentals\\federationguids\\index.html",
-    "hash": "89f700db2cfb42aadf86fea7e7bf16d64bcd5120",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\3.7.0\\index.html": {
-    "filename": "changehistory\\3.7.0\\index.html",
-    "hash": "bbb76b361c0edbee8dc7b88ba9071817dceed99b",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\3.8.0\\index.html": {
-    "filename": "changehistory\\3.8.0\\index.html",
-    "hash": "c01dc3ed5cb86164d7297148fb2e80f347c86e49",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\4.0.0\\index.html": {
-    "filename": "changehistory\\4.0.0\\index.html",
-    "hash": "1174718ddd9c0e60cbb709ba9e2ebc954d604842",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\4.1.0\\index.html": {
-    "filename": "changehistory\\4.1.0\\index.html",
-    "hash": "2a26e81da34178e43300c3dae7360c7968aebd4c",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\4.10.0\\index.html": {
-    "filename": "changehistory\\4.10.0\\index.html",
-    "hash": "ee46bc36cef9a430d8c5c71a75dcf4c4282b05cd",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\4.11.0\\index.html": {
-    "filename": "changehistory\\4.11.0\\index.html",
-    "hash": "1ff057051265194b0ae5ab9bea034e076aa4d7c0",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\4.2.0\\index.html": {
-    "filename": "changehistory\\4.2.0\\index.html",
-    "hash": "8b5b78cfd750472e9b4c5516fe6a0753090d42bb",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\4.3.0\\index.html": {
-    "filename": "changehistory\\4.3.0\\index.html",
-    "hash": "e5d62045789cdbc4b36e940e0e8b481ca7943744",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\4.4.0\\index.html": {
-    "filename": "changehistory\\4.4.0\\index.html",
-    "hash": "bbd59f5a3d07c4528c17849bcc0b4d4d3b31f51a",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\4.5.0\\index.html": {
-    "filename": "changehistory\\4.5.0\\index.html",
-    "hash": "e425e66798453397ae5266fe99dce24bd558611a",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\4.6.0\\index.html": {
-    "filename": "changehistory\\4.6.0\\index.html",
-    "hash": "16a02fb8b17525bc4bdd25d76fe23b8bc90b5648",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\4.7.0\\index.html": {
-    "filename": "changehistory\\4.7.0\\index.html",
-    "hash": "467bcbe0d702fcc48e3580625db3822775c5c256",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\4.8.0\\index.html": {
-    "filename": "changehistory\\4.8.0\\index.html",
-    "hash": "4b3f317ca3b31079b876c0a2586dbb8bc92e634c",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\4.9.0\\index.html": {
-    "filename": "changehistory\\4.9.0\\index.html",
-    "hash": "509b87324ee06352db596c04e5ad19485d9cc24b",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\5.0.0\\index.html": {
-    "filename": "changehistory\\5.0.0\\index.html",
-    "hash": "881c9ff2e9b8c1c390cacfa6db476ba74ff25c6d",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\5.1.0\\index.html": {
-    "filename": "changehistory\\5.1.0\\index.html",
-    "hash": "26014d9e42340c3d5674aecd17554421b650b95e",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "changehistory\\5.2.0\\index.html": {
-    "filename": "changehistory\\5.2.0\\index.html",
-    "hash": "8e56e419c95c26d3715bf750d7835db963420977",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlcodeexamples\\index.html": {
-    "filename": "learning\\ecsqlcodeexamples\\index.html",
-    "hash": "817ecea49f902b780f405735a718fffc71bb6b40",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlnullbehaviors\\index.html": {
-    "filename": "learning\\ecsqlnullbehaviors\\index.html",
-    "hash": "48f1517d5a2a919c973b2d1453e01247f95a8e46",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\case\\index.html": {
-    "filename": "learning\\ecsqlreference\\case\\index.html",
-    "hash": "60b5b0c88ebaaf26965969ec9d005f8f180141d8",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\cast\\index.html": {
-    "filename": "learning\\ecsqlreference\\cast\\index.html",
-    "hash": "499f4090c4e6a2f0a173de31de6faaa1c16cda7f",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\cte\\index.html": {
-    "filename": "learning\\ecsqlreference\\cte\\index.html",
-    "hash": "806d5924db8db78552ab46acc04ea3183eb2232e",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\compoundselect\\index.html": {
-    "filename": "learning\\ecsqlreference\\compoundselect\\index.html",
-    "hash": "ec73fc90d496ea431b6f255d16152b008e1e280d",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\dateandtime\\index.html": {
-    "filename": "learning\\ecsqlreference\\dateandtime\\index.html",
-    "hash": "609f30819fdf2cdfbdc2b95c4f26ae110bdb984a",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\ecclassfilter\\index.html": {
-    "filename": "learning\\ecsqlreference\\ecclassfilter\\index.html",
-    "hash": "ad1a959346589d51d2e7b99953117f5be7064219",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\ecsqlfunctions\\index.html": {
-    "filename": "learning\\ecsqlreference\\ecsqlfunctions\\index.html",
-    "hash": "c428951af0218178ab8b95e1d2106ce2c39f396c",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\ecsqlkeywords\\index.html": {
-    "filename": "learning\\ecsqlreference\\ecsqlkeywords\\index.html",
-    "hash": "abe65d563507d44c4c071bcce088726485703498",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\ecsqloptions\\index.html": {
-    "filename": "learning\\ecsqlreference\\ecsqloptions\\index.html",
-    "hash": "69f17c909e88e03ca86a98b29dbebfeed23a18fb",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\ecsqlparameters\\index.html": {
-    "filename": "learning\\ecsqlreference\\ecsqlparameters\\index.html",
-    "hash": "55f745a3b2489d08b7f480ec105d1b0e6d2a9df6",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\groupby\\index.html": {
-    "filename": "learning\\ecsqlreference\\groupby\\index.html",
-    "hash": "e24a56e27b25b9cf95d15f175595f206f2b75d18",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\iif\\index.html": {
-    "filename": "learning\\ecsqlreference\\iif\\index.html",
-    "hash": "afa6e5482e82d9d56876edfdadbab4c40488c2eb",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\idset\\index.html": {
-    "filename": "learning\\ecsqlreference\\idset\\index.html",
-    "hash": "4654b4c54a52c200bd8833d620a400cea9b79f81",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\instancequery\\index.html": {
-    "filename": "learning\\ecsqlreference\\instancequery\\index.html",
-    "hash": "1af3dd717e3f8cc317b5ef65c779fe4c96444254",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\join\\index.html": {
-    "filename": "learning\\ecsqlreference\\join\\index.html",
-    "hash": "e55061511ca5dc20741b79ce56ab1fcbba370402",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\json1virtualclasses\\index.html": {
-    "filename": "learning\\ecsqlreference\\json1virtualclasses\\index.html",
-    "hash": "8a6c2d509996a6c600ba3b9799f87ff9eb7fab46",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\like\\index.html": {
-    "filename": "learning\\ecsqlreference\\like\\index.html",
-    "hash": "67b34d309ad3ab5149c04e849ee009448cd1fab0",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\limit\\index.html": {
-    "filename": "learning\\ecsqlreference\\limit\\index.html",
-    "hash": "9257a4df723637bb718efd6fb472568f79c15654",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\literals\\index.html": {
-    "filename": "learning\\ecsqlreference\\literals\\index.html",
-    "hash": "bfa09e697fb6f491462779bf378d4d47f9c66839",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\metaqueries\\index.html": {
-    "filename": "learning\\ecsqlreference\\metaqueries\\index.html",
-    "hash": "75d7dd4b2d609d55d9e6fd2deb22cf424a84d486",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\orderby\\index.html": {
-    "filename": "learning\\ecsqlreference\\orderby\\index.html",
-    "hash": "a963d13aa038078f8ba81630c4dc1d952ade9db3",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\operators\\index.html": {
-    "filename": "learning\\ecsqlreference\\operators\\index.html",
-    "hash": "4b883e790bdfa28c2aaebb2792068ed9818ed50b",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\polymorphicandnonpolymorphicquery\\index.html": {
-    "filename": "learning\\ecsqlreference\\polymorphicandnonpolymorphicquery\\index.html",
-    "hash": "05a4a6a25bca0b47bf2b98e8d26a81336918d1f7",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\pragmas\\index.html": {
-    "filename": "learning\\ecsqlreference\\pragmas\\index.html",
-    "hash": "cf5e3659d9fad5bb6be2193f579a2f90f60cd5fc",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\sqlitescalarfunctions\\index.html": {
-    "filename": "learning\\ecsqlreference\\sqlitescalarfunctions\\index.html",
-    "hash": "a30be58e2165d35eca8096627f50339c5543a45d",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\views\\index.html": {
-    "filename": "learning\\ecsqlreference\\views\\index.html",
-    "hash": "a964cebf3c23a5e4bdd83f65b2a93bcf8c5dd0f5",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\windowfunctions\\index.html": {
-    "filename": "learning\\ecsqlreference\\windowfunctions\\index.html",
-    "hash": "3cff366bd80ab6dc21766b8c7b30b815a43496cb",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\ecsqlreference\\index\\index.html": {
-    "filename": "learning\\ecsqlreference\\index\\index.html",
-    "hash": "22567a74eae0a49fd9d8b71b8378ebb2a8b7ae2d",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\backend\\handlingunknownschemaelements\\index.html": {
-    "filename": "learning\\backend\\handlingunknownschemaelements\\index.html",
-    "hash": "dc4f51adb6498c1e6943b7b17a8d88c7ba264fdf",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\backend\\pullmerge\\index.html": {
-    "filename": "learning\\backend\\pullmerge\\index.html",
-    "hash": "cf03ee8b93b965934c45231a404da636ba78e4d4",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\display\\contourdisplay\\index.html": {
-    "filename": "learning\\display\\contourdisplay\\index.html",
-    "hash": "7fb1a0f3ee45d9fbc65db89fbaca127c05b67a43",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudrawshortcuts\\index.html": {
-    "filename": "learning\\frontend\\accudrawshortcuts\\index.html",
-    "hash": "74ecc84fc2dc23888d7e9aa16538d80cf804c263",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\accudrawui\\index.html": {
-    "filename": "learning\\frontend\\accudrawui\\index.html",
-    "hash": "f0a83d9c2235fb118a3fad44afe676fdfb9e034c",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\googlephotorealistic3dtiles\\index.html": {
-    "filename": "learning\\frontend\\googlephotorealistic3dtiles\\index.html",
-    "hash": "1f8e9131e7992d249be40f53028ccc67a9797dba",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\frontend\\workerproxy\\index.html": {
-    "filename": "learning\\frontend\\workerproxy\\index.html",
-    "hash": "3e4af79af5a7a67428bd2c5930df56ae03df352d",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\geometry\\bspline\\index.html": {
-    "filename": "learning\\geometry\\bspline\\index.html",
-    "hash": "e20bee6f0783eb500b430a0b265e4beca2286b6b",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\geometry\\clipping\\index.html": {
-    "filename": "learning\\geometry\\clipping\\index.html",
-    "hash": "c64b928e3ae6d61e626edf08daa8cf2d11f6a7b6",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\geometry\\curvecurve\\index.html": {
-    "filename": "learning\\geometry\\curvecurve\\index.html",
-    "hash": "d9bacf437fc3fc698bde3f5e78407abdd1ac154e",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\geometry\\matrix\\index.html": {
-    "filename": "learning\\geometry\\matrix\\index.html",
-    "hash": "8e7a86984fa24f58dc538eb0042b718bc7da2eec",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\metadata\\index\\index.html": {
-    "filename": "learning\\metadata\\index\\index.html",
-    "hash": "f1ef42f670f1617c2ba9758c3cdae88faf1c580a",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\quantity\\index\\index.html": {
-    "filename": "learning\\quantity\\index\\index.html",
-    "hash": "2518b9cc09850550b3f20ede5bf66e6d47e590bc",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "learning\\schema-xml-file-locaters\\index.html": {
-    "filename": "learning\\schema-xml-file-locaters\\index.html",
-    "hash": "cb891fc3e397b2ff9b770020dc1a2da31e55d92a",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\advanced\\errorhandling\\index.html": {
-    "filename": "presentation\\advanced\\errorhandling\\index.html",
-    "hash": "44e2750669e8c3f94f42b19a822b7134546141e2",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\hierarchies\\filteringlimiting\\index.html": {
-    "filename": "presentation\\hierarchies\\filteringlimiting\\index.html",
-    "hash": "60ab90bd0eaf96b60f4c9e161976d1aa5206161e",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\unified-selection\\propertygrid\\index.html": {
-    "filename": "presentation\\unified-selection\\propertygrid\\index.html",
-    "hash": "02cbc20f038cc2d0756a5f95a127f2651967ee73",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\unified-selection\\table\\index.html": {
-    "filename": "presentation\\unified-selection\\table\\index.html",
-    "hash": "b7e995f107713bc306ee17947205df59ef6ab2d6",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\unified-selection\\tree\\index.html": {
-    "filename": "presentation\\unified-selection\\tree\\index.html",
-    "hash": "b63ea46620eee4e53f3c54cff4062e53819a5f99",
-    "updated": "2025-10-10T19:53:36.982Z"
-  },
-  "presentation\\unified-selection\\viewport\\index.html": {
-    "filename": "presentation\\unified-selection\\viewport\\index.html",
-    "hash": "caa8fbf2b0204c0e22aae7aed939978e1feff238",
-    "updated": "2025-10-10T19:53:36.982Z"
   }
 }
