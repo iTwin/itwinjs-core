@@ -574,7 +574,8 @@ describe("GraphicalEditingScope", () => {
       view.categorySelector.categories.add(category);
       view.displayStyle.viewFlags = view.displayStyle.viewFlags.copy({ backgroundMap: false });
 
-      await testOnScreenViewport(view, imodel, 100, 100, async (vp) => {
+      const bc = imodel;
+      await testOnScreenViewport(view, bc, 100, 100, async (vp) => {
         await vp.waitForAllTilesToRender();
         let tileTree: IModelTileTree | undefined;
         for (const ref of vp.getTileTreeRefs()) {
@@ -585,6 +586,20 @@ describe("GraphicalEditingScope", () => {
         }
 
         expect(tileTree).not.to.be.undefined;
+        expect(tileTree!.tileState).to.equal("static");
+
+        const scope = await bc.enterEditingScope();
+        expect(tileTree!.tileState).to.equal("interactive");
+
+        await insertLineElement(bc, modelId, category);
+        await bc.saveChanges();
+
+        // ###TODO: After we switch from polling for native events, we should not need to wait for changed events to be fetched here...
+        const waitTime = 150;
+        await BeDuration.wait(waitTime);
+        expect(tileTree!.tileState).to.equal("dynamic");
+
+        await scope.exit();
       });
     }
 
