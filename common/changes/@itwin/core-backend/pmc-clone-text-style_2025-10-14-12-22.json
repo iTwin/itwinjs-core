@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Element.onCloned can now invoke asynchronous operations.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
