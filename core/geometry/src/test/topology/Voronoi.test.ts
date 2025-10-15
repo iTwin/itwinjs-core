@@ -115,7 +115,7 @@ function verifyVoronoiTopology(ck: Checker, v: Voronoi): void {
       if (ck.testExactNumber(vFaces.length, testPoints.length, "findContainingFaceXY returned one entry per point")) {
         for (let i = 0; i < vFaces.length; i++) {
           const vFace = vFaces[i];
-          if (ck.testDefined(vFace, "interior point containing face found")) {
+          if (ck.testDefined(vFace, `expect point ${JSON.stringify(testPoints[i].toJSON())} to be found in an interior Voronoi face`)) {
             const dGenerator = v.getInputGraph.allHalfEdges[vFace.faceTag];
             let closestPoints = searcher.searchForClosestPoint(testPoints[i], Number.POSITIVE_INFINITY) as CurveLocationDetail[] | undefined;
             if (ck.testDefined(closestPoints, "closest Delaunay vertex found")) {
@@ -926,7 +926,7 @@ describe("Voronoi", () => {
       const graph = PolyfaceQuery.convertToHalfEdgeGraph(mesh);
       const testPoints: Point3d[] = [];
       for (let i = 0; i < 100; i++) // sample some interior points
-        testPoints.push(Point3d.create(getRandomNumberScaled(side, 1/side), getRandomNumberScaled(side, 1/side)));
+        testPoints.push(Point3d.create(getRandomNumberScaled(side, 1 / side), getRandomNumberScaled(side, 1 / side)));
       testPoints.push(Point3d.create(-1, -1)); // and one exterior point
       GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, testPoints, 0.1);
       const containingFaces = HalfEdgeGraphSearch.findContainingFaceXY(graph, testPoints) as (HalfEdge | undefined)[] | undefined;
