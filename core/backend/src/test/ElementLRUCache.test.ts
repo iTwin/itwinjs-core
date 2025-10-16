@@ -373,6 +373,13 @@ describe('InstanceKeyLRUCache', () => {
     expect(retrievedResultByCode).to.equal(testResults[0]);
   });
 
+  it('should not store undefined in the cache', () => {
+    const cache = new InstanceKeyLRUCache(3);
+    const badResult: IModelJsNative.ResolveInstanceKeyResult = undefined as any;
+    cache.set(testArgs1, badResult);
+    expect(cache.size).to.equal(0);
+  });
+
   it('should delete least used element', () => {
     const cache = new InstanceKeyLRUCache(3);
     cache.set(testArgs1, testResults[0]);
