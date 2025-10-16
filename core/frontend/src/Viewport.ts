@@ -1192,6 +1192,11 @@ export abstract class Viewport implements Disposable, TileUser {
     this.registerViewListeners();
     this.view.attachToViewport(this);
     this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this.viewportId, this.displayStyle);
+
+    // ViewState.load loads all the subcategories for the categories in its category selector.
+    // But the set of categories may have changed since loading the view.
+    // Ensure we fill the cache for the current set of categories.
+    this.updateSubCategories(this.view.categorySelector.categories, false);
   }
 
   private registerViewListeners(): void {
@@ -1205,7 +1210,7 @@ export abstract class Viewport implements Disposable, TileUser {
     removals.push(view.details.onClipVectorChanged.addListener(() => this.invalidateRenderPlan()));
 
     removals.push(view.onViewedCategoriesChanged.addListener(() => {
-      this._changeFlags.setViewedCategories();
+      this.updateSubCategories(view.categorySelector.categories, false);
       this.maybeInvalidateScene();
     }));
 
