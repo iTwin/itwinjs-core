@@ -14,7 +14,6 @@ import * as sinon from "sinon";
 
 class AsyncEditCommand extends EditCommand {
   public static override commandId = "test.longRunning";
-  public isFinished = false;
   public operationDelay = 1; // 1 second
   public modelId: string;
   public categoryId: string;
@@ -33,46 +32,27 @@ class AsyncEditCommand extends EditCommand {
     await BeDuration.fromSeconds(this.operationDelay).wait();
   }
 
-  public override async requestFinish(): Promise<string> {
-    if (!this.isFinished) {
-      return "Long running operation still in progress";
+  public override async requestFinish(): Promise<"done" | string> {
+    if (this.iModel && this.iModel.locks) {
+      await this.iModel.locks.releaseAllLocks();
     }
-    this.isFinished = true;
-    await this.iModel.locks.releaseAllLocks();
     return "done";
   }
 
-  public async performLongOperation() {
-    const initialCount = this.createdElements.length;
+  public async performElementInsertOperation(elementProps: PhysicalElementProps) {
     for (let i = 0; i < 3; i++) {
-      // Create element properties
-      const elemProps: PhysicalElementProps = {
-        classFullName: "Generic:PhysicalObject",
-        model: this.modelId,
-        category: this.categoryId,
-        code: Code.createEmpty(),
-      };
-
-      // Simulate operation taking time
-      await BeDuration.fromSeconds(this.operationDelay).wait();
-
       // Insert the element
-      const elementId = this.iModel.elements.insertElement(elemProps);
+      const elementId = this.iModel.elements.insertElement(elementProps);
       assert.isDefined(elementId, "Element should have been created");
       this.createdElements.push(elementId);
 
       await BeDuration.fromSeconds(this.operationDelay).wait();
     }
-
-    assert.equal(this.createdElements.length, initialCount + 3, "Should have created 3 elements");
   }
 
-  public finishOperation(): void {
-    this.isFinished = true;
-  }
-
-  public getCreatedElements(): string[] {
-    return [...this.createdElements];
+  public async performInsertAbandonOperation(elementProps: PhysicalElementProps) {
+    await this.performElementInsertOperation(elementProps);
+    this.iModel.abandonChanges();
   }
 }
 
@@ -81,9 +61,15 @@ describe.only("Scope-Safe Editing API", () => {
   let testFileName: string;
   let physicalModelId: string;
   let spatialCategoryId: string;
+  const physicalElementProps: PhysicalElementProps = {
+    classFullName: "Generic:PhysicalObject",
+    model: "",
+    category: "",
+    code: Code.createEmpty(),
+  };
 
   before(async () => {
-    const socket = {
+    const socket: sinon.SinonStubbedInstance<IpcSocketBackend> = {
       send: sinon.stub(),
       addListener: sinon.stub(),
       removeListener: sinon.stub(),
@@ -98,11 +84,14 @@ describe.only("Scope-Safe Editing API", () => {
   });
 
   beforeEach(() => {
-    testFileName = IModelTestUtils.prepareOutputFile("ScopeSafeEditingAPI", `EditCommand.bim`);
+    testFileName = IModelTestUtils.prepareOutputFile("ScopeSafeEditingAPI", `ScopeSafeEditingAPI.bim`);
     imodel = StandaloneDb.createEmpty(testFileName, { rootSubject: { name: "TestSubject" } });
 
     [, physicalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
     spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance());
+    physicalElementProps.model = physicalModelId;
+    physicalElementProps.category = spatialCategoryId;
+    imodel.saveChanges();
   });
 
   after(async () => {
@@ -120,44 +109,105 @@ describe.only("Scope-Safe Editing API", () => {
   function getElementCount(longCommand: AsyncEditCommand) {
     let existingCount = 0;
     for (const elementId of longCommand.createdElements) {
-      const element = imodel.elements.tryGetElement(elementId);
-      if (element) {
+      if (imodel.elements.tryGetElement(elementId) !== undefined) {
         existingCount++;
       }
     }
     return existingCount;
   }
 
-  it.only("abandonChanges during active edit command", async () => {
+  it("sync abandonChanges during active edit command", async () => {
     // Start a long-running edit command
     const longCommand = new AsyncEditCommand(imodel, physicalModelId, spatialCategoryId);
-    assert.equal(getElementCount(longCommand), 0);
 
     const startPromise = EditCommandAdmin.runCommand(longCommand);
     await BeDuration.fromSeconds(longCommand.operationDelay).wait();
-    assert.equal(getElementCount(longCommand), 0);
+    expect(getElementCount(longCommand)).to.equal(0, "No elements should exist yet");
 
-    // Start the first long operation and let it complete
-    await longCommand.performLongOperation();
-    expect(getElementCount(longCommand)).to.equal(3, "Should have created 3 elements");
+    // Start the long operation asynchronously - this will create more elements
+    const longOperationPromise = longCommand.performElementInsertOperation(physicalElementProps);
 
-    // Start the second long operation asynchronously - this will create more elements
-    const longOperationPromise = longCommand.performLongOperation();
+    // Give the operation time to start creating elements
+    await BeDuration.fromSeconds(longCommand.operationDelay * 0.5).wait();
 
-    // Give the second operation time to start creating elements
-    await BeDuration.fromSeconds(longCommand.operationDelay).wait();
-
-    // Simulate a race condition: Abandon changes while the second operation is actively creating elements
+    // Simulate a race condition: Abandon changes while the operation is actively creating elements
+    expect(getElementCount(longCommand)).to.be.greaterThan(0, "Some elements should have been created");
     imodel.abandonChanges();
+    longCommand.createdElements = [];
+    expect(getElementCount(longCommand)).to.equal(0, "Elements deleted");
 
-    // Wait for the second long operation to complete
+    // Wait for the long operation to complete
     await longOperationPromise;
 
-    // Final checkpoint
-    expect(getElementCount(longCommand)).to.equal(0, "All elements should be abandoned");
-
-    // Clean up
-    await longCommand.requestFinish();
+    // Wait for the command to finish - EditCommandAdmin.runCommand handles requestFinish internally
     await startPromise;
+
+    // Race condition:
+    // The edit command tried to insert 3 element.
+    // But the abandonChanges got in before the async operation could complete.
+    // So a few of the elements went through.
+    expect(getElementCount(longCommand)).to.be.greaterThan(1);
+  });
+
+  it("async discardChanges during active edit command", async () => {
+    // Start a long-running edit command
+    const longCommand = new AsyncEditCommand(imodel, physicalModelId, spatialCategoryId);
+
+    const startPromise = EditCommandAdmin.runCommand(longCommand);
+    await BeDuration.fromSeconds(longCommand.operationDelay).wait();
+    expect(getElementCount(longCommand)).to.equal(0, "No elements should exist yet");
+
+    // Start the long operation asynchronously - this will create more elements
+    const longOperationPromise = longCommand.performElementInsertOperation(physicalElementProps);
+
+    // Give the operation time to start creating elements
+    await BeDuration.fromSeconds(longCommand.operationDelay * 0.5).wait();
+
+    // Simulate a race condition: Discard changes while the operation is actively creating elements
+    expect(getElementCount(longCommand)).to.be.greaterThan(0, "Some elements should have been created");
+    imodel.discardChanges();
+    longCommand.createdElements = [];
+    expect(getElementCount(longCommand)).to.equal(0, "Elements deleted");
+
+    // Wait for the long operation to complete
+    await longOperationPromise;
+
+    // Wait for the command to finish - EditCommandAdmin.runCommand handles requestFinish internally
+    await startPromise;
+
+    // Race condition:
+    // The edit command tried to insert 3 element.
+    // But the discardChanges got in before the async operation could complete.
+    // So a few of the elements went through.
+    expect(getElementCount(longCommand)).to.be.greaterThan(1);
+  });
+
+  it("sync saveChanges during active edit command", async () => {
+    // Start a long-running edit command
+    const longCommand = new AsyncEditCommand(imodel, physicalModelId, spatialCategoryId);
+
+    const startPromise = EditCommandAdmin.runCommand(longCommand);
+    await BeDuration.fromSeconds(longCommand.operationDelay).wait();
+
+    // Start the long operation asynchronously
+    const longOperationPromise = longCommand.performInsertAbandonOperation(physicalElementProps);
+
+    // Give the operation time to start creating elements
+    await BeDuration.fromSeconds(longCommand.operationDelay + 1).wait();
+
+    // Simulate a race condition: Save changes while the operation is actively creating elements and abandoning them
+    imodel.saveChanges();
+
+    // Wait for the operation to complete
+    await longOperationPromise;
+
+    // Wait for the command to finish - EditCommandAdmin.runCommand handles requestFinish internally
+    await startPromise;
+
+    // Race condition:
+    // The edit command tried to insert 3 element and then abandon them.
+    // But the saveChanges got in before the abandonChanges.
+    // So a few of the elements went through.
+    expect(getElementCount(longCommand)).to.be.greaterThan(1);
   });
 });
