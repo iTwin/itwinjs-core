@@ -602,7 +602,6 @@ describe("GraphicalEditingScope", () => {
         const lineElementId = await insertLineElement(bc, modelId, category, makeLineSegment(new Point3d(ext.low.x, ext.high.y, 0), new Point3d(ext.high.x, ext.low.y, 0)));
         await bc.saveChanges();
 
-        // ###TODO: After we switch from polling for native events, we should not need to wait for changed events to be fetched here...
         const waitTime = 150;
         await BeDuration.wait(waitTime);
         expect(tileTree!.tileState).to.equal("dynamic");
