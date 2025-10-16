@@ -597,6 +597,7 @@ describe("GraphicalEditingScope", () => {
         const scope = await bc.enterEditingScope();
         expect(tileTree!.tileState).to.equal("interactive");
 
+        // Insert a new line element. It should draw using dynamic graphics.
         const ext = bc.projectExtents;
         const lineElementId = await insertLineElement(bc, modelId, category, makeLineSegment(new Point3d(ext.low.x, ext.high.y, 0), new Point3d(ext.high.x, ext.low.y, 0)));
         await bc.saveChanges();
@@ -617,14 +618,14 @@ describe("GraphicalEditingScope", () => {
       });
     }
 
-    it.only("refreshes viewport contents when geometry is added to a non-empty model", async () => {
+    it("refreshes viewport contents when geometry is added to a non-empty model", async () => {
       await testViewportRefresh(1, async (bc, model, category) => {
         await insertLineElement(bc, model, category, makeLineSegment(bc.projectExtents.low.clone(), bc.projectExtents.high.clone()));
       });
     });
 
 
-    it.only("refreshes viewport contents when geometry is added to an empty model", async () => {
+    it("refreshes viewport contents when geometry is added to an empty model", async () => {
       await testViewportRefresh();
     });
   }
