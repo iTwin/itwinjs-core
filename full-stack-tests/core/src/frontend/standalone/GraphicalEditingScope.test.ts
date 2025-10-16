@@ -623,7 +623,6 @@ describe("GraphicalEditingScope", () => {
       });
     });
 
-
     it("refreshes viewport contents when geometry is added to an empty model", async () => {
       await testViewportRefresh();
     });
