@@ -3361,12 +3361,12 @@ describe("ECSqlStatement", () => {
     ecdb.saveChanges();
 
     const reader = ecdb.createQueryReader(
-      `SELECT * FROM Test.X`
+      `SELECT Label FROM Test.X`
     );
     const row = (await reader.toArray())[0];
 
     assert.isNotNull(row);
-    assert.equal(row[7], "TestLabel 1");
+    assert.equal(row[0], "TestLabel 1");
 
     assert.isFalse(await reader.step());
   });
@@ -3526,7 +3526,6 @@ describe("ECSqlStatement", () => {
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
         assert.isDefined(res.id);
         stmt.clearBindings();
-        stmt[Symbol.dispose]();
         ecdb.saveChanges();
       });
 
@@ -3561,7 +3560,6 @@ describe("ECSqlStatement", () => {
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
         assert.isDefined(res.id);
         stmt.clearBindings();
-        stmt[Symbol.dispose]();
         ecdb.saveChanges();
       });
 
