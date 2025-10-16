@@ -780,16 +780,12 @@ describe("ElementDrivesElement Tests", () => {
     const graph = new Graph<string>();
 
     // Graph structure:
-    //     A
-    //    / \
-    //   B   C
-    //  /|   |
-    // E |   |
-    //   |   |
-    //   D <-+
-    //   |
-    //   v
-    //   E
+    //   A
+    //  / \
+    // B   C
+    // |\  /
+    // | \/
+    // E--D  
     graph.addEdge("A", ["B", "C"]);
     graph.addEdge("B", ["E", "D"]);
     graph.addEdge("C", ["D"]);
