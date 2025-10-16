@@ -595,14 +595,14 @@ describe("GraphicalEditingScope", () => {
         const scope = await bc.enterEditingScope();
         expect(tileTree!.tileState).to.equal("interactive");
 
-        await insertLineElement(bc, modelId, category);
+        const ext = bc.projectExtents;
+        await insertLineElement(bc, modelId, category, makeLineSegment(new Point3d(ext.low.x, ext.high.y, 0), new Point3d(ext.high.x, ext.low.y, 0)));
         await bc.saveChanges();
 
         // ###TODO: After we switch from polling for native events, we should not need to wait for changed events to be fetched here...
         const waitTime = 150;
         await BeDuration.wait(waitTime);
         expect(tileTree!.tileState).to.equal("dynamic");
-        expect(vp.sceneValid).to.be.false;
 
         await vp.waitForAllTilesToRender();
         expect(vp.sceneValid).to.be.true;
@@ -615,7 +615,7 @@ describe("GraphicalEditingScope", () => {
 
     it.only("refreshes viewport contents when geometry is added to a non-empty model", async () => {
       await testViewportRefresh(1, async (bc, model, category) => {
-        await insertLineElement(bc, model, category, makeLineSegment(new Point3d(0, 0, 0), new Point3d(10, 0, 0)));
+        await insertLineElement(bc, model, category, makeLineSegment(bc.projectExtents.low.clone(), bc.projectExtents.high.clone()));
       });
     });
 

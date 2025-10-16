@@ -130,7 +130,7 @@ function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocata
 
 export function readUniqueElements(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false): Id64String[] {
   const pixels = Array.from(readUniquePixelData(vp, readRect, excludeNonLocatable)).filter((x) => x.elementId !== undefined && Id64.isValid(x.elementId));
-  return pixels.map((x) => x.elementId!);
+  return pixels.map((x) => x.elementId!).filter((value, index, self) => self.indexOf(value) === index);
 }
 
 function readPixel(vp: Viewport, x: number, y: number, excludeNonLocatable?: boolean): Pixel.Data {
