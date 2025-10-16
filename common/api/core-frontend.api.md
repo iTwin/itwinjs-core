@@ -5271,6 +5271,7 @@ export class IModelTileTree extends TileTree {
     decoder: ImdlDecoder;
     // (undocumented)
     draw(args: TileDrawArgs): void;
+    get dynamicElements(): Id64Array;
     // (undocumented)
     get edgeOptions(): EdgeOptions | false;
     // (undocumented)
