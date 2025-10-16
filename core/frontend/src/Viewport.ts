@@ -1210,6 +1210,7 @@ export abstract class Viewport implements Disposable, TileUser {
     removals.push(view.details.onClipVectorChanged.addListener(() => this.invalidateRenderPlan()));
 
     removals.push(view.onViewedCategoriesChanged.addListener(() => {
+      this._changeFlags.setViewedCategories();
       this.updateSubCategories(view.categorySelector.categories, false);
       this.maybeInvalidateScene();
     }));
