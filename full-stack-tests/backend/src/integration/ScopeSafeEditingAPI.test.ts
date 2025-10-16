@@ -79,12 +79,11 @@ class AsyncEditCommand extends EditCommand {
 describe.only("Scope-Safe Editing API", () => {
   let imodel: StandaloneDb;
   let testFileName: string;
-  let socket: sinon.SinonStubbedInstance<IpcSocketBackend>;
   let physicalModelId: string;
   let spatialCategoryId: string;
 
   before(async () => {
-    socket = {
+    const socket = {
       send: sinon.stub(),
       addListener: sinon.stub(),
       removeListener: sinon.stub(),
@@ -94,25 +93,28 @@ describe.only("Scope-Safe Editing API", () => {
     await IpcHost.startup({ ipcHost: { socket } });
     await IModelHost.startup();
 
-    testFileName = IModelTestUtils.prepareOutputFile("RenderTimeline", `EditCommand.bim`);
-    imodel = StandaloneDb.createEmpty(testFileName, { rootSubject: { name: "TestSubject" } });
-
-    [, physicalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
-    spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance());
-
     // Register test command
     EditCommandAdmin.register(AsyncEditCommand);
   });
 
+  beforeEach(() => {
+    testFileName = IModelTestUtils.prepareOutputFile("ScopeSafeEditingAPI", `EditCommand.bim`);
+    imodel = StandaloneDb.createEmpty(testFileName, { rootSubject: { name: "TestSubject" } });
+
+    [, physicalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
+    spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance());
+  });
+
   after(async () => {
     EditCommandAdmin.unRegister(AsyncEditCommand.commandId);
-    imodel.close();
-    if (IModelJsFs.existsSync(testFileName)) {
-      IModelJsFs.removeSync(testFileName);
-    }
 
     await IModelHost.shutdown();
     await IpcHost.shutdown();
+  });
+
+  afterEach(() => {
+    imodel.close();
+    IModelJsFs.removeSync(testFileName);
   });
 
   function getElementCount(longCommand: AsyncEditCommand) {
