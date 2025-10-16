@@ -555,9 +555,10 @@ describe("GraphicalEditingScope", () => {
       const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
       const dictModelId = await imodel.models.getDictionaryModel();
       const category = await coreFullStackTestIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
+      const category2 = await coreFullStackTestIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
 
       if (prep) {
-        await prep(imodel, modelId, category);
+        await prep(imodel, modelId, category2);
       }
 
       await imodel.saveChanges();
@@ -572,6 +573,7 @@ describe("GraphicalEditingScope", () => {
       }, [modelId]);
       view.categorySelector.categories.clear();
       view.categorySelector.categories.add(category);
+      view.categorySelector.categories.add(category2);
       view.displayStyle.viewFlags = view.displayStyle.viewFlags.copy({ backgroundMap: false });
 
       const bc = imodel;
@@ -596,7 +598,7 @@ describe("GraphicalEditingScope", () => {
         expect(tileTree!.tileState).to.equal("interactive");
 
         const ext = bc.projectExtents;
-        await insertLineElement(bc, modelId, category, makeLineSegment(new Point3d(ext.low.x, ext.high.y, 0), new Point3d(ext.high.x, ext.low.y, 0)));
+        const lineElementId = await insertLineElement(bc, modelId, category, makeLineSegment(new Point3d(ext.low.x, ext.high.y, 0), new Point3d(ext.high.x, ext.low.y, 0)));
         await bc.saveChanges();
 
         // ###TODO: After we switch from polling for native events, we should not need to wait for changed events to be fetched here...
@@ -607,7 +609,9 @@ describe("GraphicalEditingScope", () => {
         await vp.waitForAllTilesToRender();
         expect(vp.sceneValid).to.be.true;
         expect(tileTree!.dynamicElements.length).to.equal(1);
-        expect(readUniqueElements(vp).length).to.equal(numInitialElements + 1);
+        const elements = readUniqueElements(vp);
+        expect(elements.length).to.equal(numInitialElements + 1);
+        expect(elements.includes(lineElementId)).to.be.true;
 
         await scope.exit();
       });
