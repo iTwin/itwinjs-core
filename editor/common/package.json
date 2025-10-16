@@ -1,6 +1,6 @@
 {
   "name": "@itwin/editor-common",
-  "version": "5.2.2",
+  "version": "5.2.3",
   "description": "iTwin.js editing properties common to frontend and backend",
   "main": "lib/cjs/editor-common.js",
   "module": "lib/esm/editor-common.js",

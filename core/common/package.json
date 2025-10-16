@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-common",
-  "version": "5.2.2",
+  "version": "5.2.3",
   "description": "iTwin.js components common to frontend and backend",
   "main": "lib/cjs/core-common.js",
   "module": "lib/esm/core-common.js",

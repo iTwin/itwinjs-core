@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-backend",
-  "version": "5.2.2",
+  "version": "5.2.3",
   "description": "Backend of iTwin.js Presentation library",
   "license": "MIT",
   "repository": {

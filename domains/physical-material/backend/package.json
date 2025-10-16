@@ -1,6 +1,6 @@
 {
   "name": "@itwin/physical-material-backend",
-  "version": "5.2.2",
+  "version": "5.2.3",
   "main": "lib/cjs/physical-material-backend.js",
   "module": "lib/esm/physical-material-backend.js",
   "typings": "lib/cjs/physical-material-backend",

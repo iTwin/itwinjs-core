@@ -1,6 +1,6 @@
 {
   "name": "@itwin/analytical-backend",
-  "version": "5.2.2",
+  "version": "5.2.3",
   "main": "lib/cjs/analytical-backend.js",
   "module": "lib/esm/analytical-backend.js",
   "typings": "lib/cjs/analytical-backend",

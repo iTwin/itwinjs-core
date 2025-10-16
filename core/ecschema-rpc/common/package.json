@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-rpcinterface-common",
-  "version": "5.2.2",
+  "version": "5.2.3",
   "description": "Schema RPC Interface common interface",
   "main": "lib/cjs/ecschema-rpc-interface.js",
   "module": "lib/esm/ecschema-rpc-interface.js",
