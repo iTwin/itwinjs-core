@@ -233,7 +233,7 @@ export namespace SubCategoriesCache {
     }
   }
 
-  export type QueueFunc = () => void;
+  export type QueueFunc = (anySubCategoriesLoaded: boolean) => void;
 
   export class QueueEntry {
     public readonly categoryIds: Id64Set;
@@ -294,7 +294,7 @@ export namespace SubCategoriesCache {
       this._request = cache.load(categoryIds);
       if (undefined === this._request) {
         // All requested categories are already loaded.
-        func();
+        func(false);
         return;
       } else {
         // We need to load the requested categories before invoking the function.
@@ -316,7 +316,7 @@ export namespace SubCategoriesCache {
         assert(undefined !== this._current);
         if (completed)
           for (const func of this._current.funcs)
-            func();
+            func(true);
 
         this._request = undefined;
         this._current = undefined;
@@ -329,7 +329,7 @@ export namespace SubCategoriesCache {
           if (undefined === this._request) {
             // All categories loaded.
             for (const func of next.funcs)
-              func();
+              func(true);
           } else {
             // We need to load the requested categories before invoking the pending functions.
             this.processCurrent(cache, next);
