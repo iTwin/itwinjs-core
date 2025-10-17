@@ -172,7 +172,7 @@ describe("ElementGraphics", () => {
     }
 
     let prevSize = 0;
-    for (const numCopies of [1, 2, 3, 10, 100, 1000, 2000, 2500, 2501, 2600, 3000, 10000]) {
+    for (const numCopies of [1, 2, 3, 10, 100, 1000, 2000, 2048, 2049, 2050, 2500, 2501, 2600, 3000, 10000]) {
       const newSize = await getElementGraphicsSize(numCopies);
       expect(newSize).greaterThan(prevSize);
       prevSize = newSize;
