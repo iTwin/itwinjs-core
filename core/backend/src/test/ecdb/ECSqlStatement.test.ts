@@ -3339,6 +3339,38 @@ describe("ECSqlStatement", () => {
     await assert.isRejected(reader.toArray(), "Struct type binding not supported");
   });
 
+  it("Statement closed with WithWriteStatement", async () => {
+    using ecdb = ECDbTestHelper.createECDb(outDir, "test_hang.ecdb",
+    `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="TestSchema" alias="Test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+      <ECEntityClass typeName="X">
+        <ECProperty propertyName="Label" typeName="string" />
+      </ECEntityClass>
+    </ECSchema>
+    `);
+    assert.isTrue(ecdb.isOpen);
+
+    ecdb.withWriteStatement(`INSERT INTO Test.X (Label) VALUES (?)`, (stmt) => {
+      stmt.bindString(1, "TestLabel 1");
+      const res: ECSqlInsertResult = stmt.stepForInsert();
+      assert.equal(res.status, DbResult.BE_SQLITE_DONE);
+      assert.isDefined(res.id);
+      stmt.clearBindings();
+    });
+
+    ecdb.saveChanges();
+
+    const reader = ecdb.createQueryReader(
+      `SELECT Label FROM Test.X`
+    );
+    const row = (await reader.toArray())[0];
+
+    assert.isNotNull(row);
+    assert.equal(row[0], "TestLabel 1");
+
+    assert.isFalse(await reader.step());
+  });
+
   describe("invalid RelECClassId with pragma validate_ecsql_writes", () => {
     let ecdb: ECDb;
     let parentHasChildrenClassId: Id64String;
@@ -3494,7 +3526,6 @@ describe("ECSqlStatement", () => {
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
         assert.isDefined(res.id);
         stmt.clearBindings();
-        stmt[Symbol.dispose]();
         ecdb.saveChanges();
       });
 
@@ -3529,7 +3560,6 @@ describe("ECSqlStatement", () => {
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
         assert.isDefined(res.id);
         stmt.clearBindings();
-        stmt[Symbol.dispose]();
         ecdb.saveChanges();
       });
 
