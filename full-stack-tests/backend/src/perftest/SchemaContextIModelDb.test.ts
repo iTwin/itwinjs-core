@@ -44,15 +44,13 @@ describe("PerformanceSchemaContextIModelDb", () => {
     const perfSchemaDir = process.env.PERF_SCHEMA_DIR;
     if (perfSchemaDir && IModelJsFs.existsSync(perfSchemaDir)) {
       // eslint-disable-next-line no-console
-      console.log(`Using schema directory: ${perfSchemaDir}`);
+      console.log(`PERF_SCHEMA_DIR is set to: ${perfSchemaDir}`);
       const schemaFiles = IModelJsFs.readdirSync(perfSchemaDir).filter((file) => file.endsWith(".ecschema.xml"));
       const schemaFileNames = schemaFiles.map((file) => path.join(perfSchemaDir, file));
       schemaFileNames.forEach((schemaFileName) => {
         const fileName = path.basename(schemaFileName);
         const schemaName = fileName.substring(0, fileName.indexOf('.'));
         customSchemaNames.push(schemaName);
-        // eslint-disable-next-line no-console
-        console.log(`Custom schema file: ${fileName}, schema name: ${schemaName}`);
       });
       try {
         await imodel.importSchemas(schemaFileNames);
