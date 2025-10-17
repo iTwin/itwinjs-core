@@ -9,6 +9,7 @@ import { CurrentImdlVersion, DynamicGraphicsRequest3dProps, ElementGeometry, Ele
 import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
 import { _nativeDb, GeometricElement3d, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { Point3d, Sphere } from "@itwin/core-geometry";
 
 describe("ElementGraphics", () => {
   let imodel: SnapshotDb;
@@ -135,11 +136,14 @@ describe("ElementGraphics", () => {
         if (!ElementGeometry.appendGeometryParams(entry.geomParams, entries))
           continue;
 
-        const geomEntry = ElementGeometry.fromGeometryQuery(entry.primitive.geometry);
-        expect(geomEntry).not.to.be.undefined;
         for (let i = 0; i < numCopies; i++) {
+          const sphere = Sphere.createCenterRadius(new Point3d(0, 0, 0), numCopies + 1);
+          const geomEntry = ElementGeometry.fromGeometryQuery(sphere);
+          expect(geomEntry).not.to.be.undefined;
           entries.push(geomEntry!);
         }
+
+        break;
       }
 
       const request: DynamicGraphicsRequest3dProps = {
