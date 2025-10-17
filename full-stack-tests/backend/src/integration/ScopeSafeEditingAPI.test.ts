@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BeDuration, Guid } from "@itwin/core-bentley";
+import { BeDuration, Guid, Id64String } from "@itwin/core-bentley";
 import { IModelDb, IModelHost, IModelJsFs, IpcHost, SnapshotDb, SpatialCategory, StandaloneDb } from "@itwin/core-backend";
 import { EditCommand, EditCommandAdmin } from "@itwin/editor-backend";
 import { HubWrappers, IModelTestUtils, TestPhysicalObject, TestPhysicalObjectProps } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
@@ -15,16 +15,25 @@ import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import * as sinon from "sinon";
 
 class AsyncEditCommand extends EditCommand {
-  public static override commandId = "test.longRunning";
-  public operationDelay = 1; // 1 second
-  public modelId: string;
-  public categoryId: string;
-  public createdElements: string[] = [];
+  public static override commandId = "Test.AsyncEditCommand";
+
+  private modelId: string;
+  private categoryId: string;
+  private createdElements: Id64String[] = [];
+  public operationDelay = 1;  // 1 second
 
   public constructor(iModel: IModelDb, modelId: string, categoryId: string) {
     super(iModel);
     this.modelId = modelId;
     this.categoryId = categoryId;
+  }
+
+  public get createdElementIds(): Id64String[] {
+    return this.createdElements;
+  }
+
+  public set createdElementIds(elementIds: Id64String[]) {
+    this.createdElements = elementIds;
   }
 
   public override async onStart(): Promise<any> {
@@ -35,7 +44,7 @@ class AsyncEditCommand extends EditCommand {
     return "done";
   }
 
-  public async performElementInsertOperation(elementProps: TestPhysicalObjectProps) {
+  private async performInsertOperation(elementProps: TestPhysicalObjectProps) {
     for (let i = 0; i < 3; i++) {
       // Insert the element
       elementProps.intProperty += 1;
@@ -45,12 +54,24 @@ class AsyncEditCommand extends EditCommand {
 
       await BeDuration.fromSeconds(this.operationDelay).wait();
     }
+  }
+
+  public async performElementInsertOperation(elementProps: TestPhysicalObjectProps) {
+    await this.performInsertOperation(elementProps);
     this.iModel.saveChanges();
   }
 
   public async performInsertAbandonOperation(elementProps: TestPhysicalObjectProps) {
-    await this.performElementInsertOperation(elementProps);
+    await this.performInsertOperation(elementProps);
     this.iModel.abandonChanges();
+  }
+
+  public async performElementDeleteOperation(elementIds: Id64String[]) {
+    for (const elementId of elementIds) {
+      this.iModel.elements.deleteElement(elementId);
+      this.createdElements = this.createdElements.filter(item => item !== elementId);
+    }
+    this.iModel.saveChanges();
   }
 }
 
@@ -101,6 +122,7 @@ describe.only("Scope-Safe Editing API", () => {
     spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance());
     physicalElementProps.model = physicalModelId;
     physicalElementProps.category = spatialCategoryId;
+    physicalElementProps.intProperty = 0;
     imodel.saveChanges();
   });
 
@@ -118,7 +140,7 @@ describe.only("Scope-Safe Editing API", () => {
 
   function getElementCount(longCommand: AsyncEditCommand) {
     let existingCount = 0;
-    for (const elementId of longCommand.createdElements) {
+    for (const elementId of longCommand.createdElementIds) {
       if (imodel.elements.tryGetElement(elementId) !== undefined) {
         existingCount++;
       }
@@ -143,7 +165,7 @@ describe.only("Scope-Safe Editing API", () => {
     // Simulate a race condition: Abandon changes while the operation is actively creating elements
     expect(getElementCount(longCommand)).to.be.greaterThan(0, "Some elements should have been created");
     const abandonChangesProimise = imodel.abandonChanges();
-    longCommand.createdElements = [];
+    longCommand.createdElementIds = [];
     expect(getElementCount(longCommand)).to.equal(0, "Elements deleted");
 
     await Promise.all([
@@ -156,7 +178,14 @@ describe.only("Scope-Safe Editing API", () => {
     // The edit command tried to insert 3 element.
     // But the abandonChanges got in before the async operation could complete.
     // So a few of the elements went through.
-    expect(getElementCount(longCommand)).to.be.greaterThan(1);
+    expect(getElementCount(longCommand)).to.eql(2);
+    let element = imodel.elements.tryGetElement<TestPhysicalObject>(longCommand.createdElementIds[0]);
+    expect(element).to.not.be.undefined;
+    expect(element!.intProperty).to.eql(2);
+
+    element = imodel.elements.tryGetElement<TestPhysicalObject>(longCommand.createdElementIds[1]);
+    expect(element).to.not.be.undefined;
+    expect(element!.intProperty).to.eql(3);
   });
 
   it("async discardChanges during active edit command", async () => {
@@ -176,7 +205,7 @@ describe.only("Scope-Safe Editing API", () => {
     // Simulate a race condition: Discard changes while the operation is actively creating elements
     expect(getElementCount(longCommand)).to.be.greaterThan(0, "Some elements should have been created");
     const discardChangesProimise = imodel.discardChanges();
-    longCommand.createdElements = [];
+    longCommand.createdElementIds = [];
     expect(getElementCount(longCommand)).to.equal(0, "Elements deleted");
 
     await Promise.all([
@@ -189,7 +218,14 @@ describe.only("Scope-Safe Editing API", () => {
     // The edit command tried to insert 3 element.
     // But the discardChanges got in before the async operation could complete.
     // So a few of the elements went through.
-    expect(getElementCount(longCommand)).to.be.greaterThan(1);
+    expect(getElementCount(longCommand)).to.eql(2);
+    let element = imodel.elements.tryGetElement<TestPhysicalObject>(longCommand.createdElementIds[0]);
+    expect(element).to.not.be.undefined;
+    expect(element!.intProperty).to.eql(2);
+
+    element = imodel.elements.tryGetElement<TestPhysicalObject>(longCommand.createdElementIds[1]);
+    expect(element).to.not.be.undefined;
+    expect(element!.intProperty).to.eql(3);
   });
 
   it("sync saveChanges during active edit command", async () => {
@@ -201,9 +237,6 @@ describe.only("Scope-Safe Editing API", () => {
 
     // Start the long operation asynchronously
     const longOperationPromise = longCommand.performInsertAbandonOperation(physicalElementProps);
-
-    // Give the operation time to start creating elements
-    await BeDuration.fromSeconds(longCommand.operationDelay + 1).wait();
 
     // Simulate a race condition: Save changes while the operation is actively creating elements and abandoning them
     imodel.saveChanges();
@@ -217,7 +250,32 @@ describe.only("Scope-Safe Editing API", () => {
     // The edit command tried to insert 3 element and then abandon them.
     // But the saveChanges got in before the abandonChanges.
     // So a few of the elements went through.
-    expect(getElementCount(longCommand)).to.be.greaterThan(1);
+    expect(getElementCount(longCommand)).to.eql(1);
+    const element = imodel.elements.tryGetElement<TestPhysicalObject>(longCommand.createdElementIds[0]);
+    expect(element).to.not.be.undefined;
+    expect(element!.intProperty).to.eql(1);
+  });
+
+  it("should demonstrate concurrent edit commands causing issues", async () => {
+    const insertCommand = new AsyncEditCommand(imodel, physicalModelId, spatialCategoryId);
+    const promise1 = EditCommandAdmin.runCommand(insertCommand);
+    const insertCommandPromise = insertCommand.performElementInsertOperation(physicalElementProps);
+    await BeDuration.fromSeconds(1.5).wait();
+
+    const deleteCommand = new AsyncEditCommand(imodel, physicalModelId, spatialCategoryId);
+    const promise2 = EditCommandAdmin.runCommand(deleteCommand);
+    const deleteCommandPromise = deleteCommand.performElementDeleteOperation(insertCommand.createdElementIds);
+
+    await Promise.all([insertCommandPromise, promise1, deleteCommandPromise, promise2]);
+
+    // Race condition:
+    // The async insert command tried to insert 3 elements.
+    // But the async delete command got in before the insert command could complete.
+    // So a the number of element at the end is non-deterministic.
+    expect(getElementCount(insertCommand)).to.equal(1);
+    const element = imodel.elements.tryGetElement<TestPhysicalObject>(insertCommand.createdElementIds[2]);
+    expect(element).to.not.be.undefined;
+    expect(element!.intProperty).to.eql(3);
   });
 
   it("pullChanges during active edit command", async () => {
@@ -348,7 +406,7 @@ describe.only("Scope-Safe Editing API", () => {
     ];
 
     // Execute all operations truly concurrently
-    await Promise.allSettled(operations.map(op => op()));
+    await Promise.allSettled(operations.map(async op => op()));
 
     // The 4th operation deleted both elements.
     // However, the edit command created new elements with the same elementIDs, but with different intProperty values (which are our real ids in this case)
