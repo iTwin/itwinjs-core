@@ -13,10 +13,10 @@ import { TransitionSpiral3d } from "./TransitionSpiral3d";
 /**
  * A true transition spiral is a curve defined by its curvature, with the curvature function symmetric about midpoint.
  * * The symmetry condition creates a relationship among the following 4 quantities:
- * ** curvature0 = curvature (i.e. 1/radius) at start
- * ** curvature1 = curvature (i.e. 1/radius) at end
- * ** sweepRadians = signed turning angle from start to end
- * ** arcLength = length of curve
+ * ** curvature0 = curvature (i.e. 1/radius) at start.
+ * ** curvature1 = curvature (i.e. 1/radius) at end.
+ * ** sweepRadians = signed turning angle from start to end.
+ * ** arcLength = length of curve.
  * * The relationship is the equation:
  * ** `sweepRadians = arcLength * average Curvature = arcLength * 0.5 * (curvature0 + curvature1)`
  * * That is, regardless of any curvature properties other than symmetry, specifying any 3 of the quantities fully
@@ -24,13 +24,19 @@ import { TransitionSpiral3d } from "./TransitionSpiral3d";
  * @public
  */
 export class TransitionConditionalProperties {
-  /** Radius (or 0 at start). */
+  /** Radius at start (radius of the osculating circle at the spiral segment's start). */
   public radius0: number | undefined;
-  /** Radius (or 0) at end. */
+  /** Radius at end (radius of the osculating circle at the spiral segment's end). */
   public radius1: number | undefined;
-  /** Bearing at start, measured from x towards y. */
+  /**
+   * Bearing at start (the signed angle from global x-axis to the start tangent of the spiral).
+   * * If the direction from x-axis to start tangent is CCW, the start bearing is positive.
+   */
   public bearing0: Angle | undefined;
-  /** Bearing at end, measured from x towards y. */
+  /**
+   * Bearing at end (the signed angle from global x-axis to the end tangent of the spiral).
+   * * If the direction from x-axis to end tangent is CCW, the end bearing is positive.
+   */
   public bearing1: Angle | undefined;
   /** Curve length. */
   public curveLength: number | undefined;

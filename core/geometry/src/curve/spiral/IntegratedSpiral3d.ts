@@ -217,7 +217,7 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
   }
   /**
    * Create a transition spiral.
-   * * Inputs must provide exactly 4 of the 5 values `[radius0,radius1,bearing0,bearing1,length`.
+   * * Inputs must provide exactly 4 of the 5 values `[radius0,radius1,bearing0,bearing1,length]`.
    * @param spiralType one of "clothoid", "bloss", "biquadratic", "cosine", "sine".  If undefined, "clothoid" is used.
    * @param radius0 radius (or 0 for tangent to line) at start.
    * @param radius1 radius (or 0 for tangent to line) at end.
