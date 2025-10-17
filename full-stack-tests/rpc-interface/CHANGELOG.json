@@ -2,6 +2,12 @@
   "name": "@itwin/rpcinterface-full-stack-tests",
   "entries": [
     {
+      "version": "5.2.3",
+      "tag": "@itwin/rpcinterface-full-stack-tests_v5.2.3",
+      "date": "Thu, 16 Oct 2025 23:00:32 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.2.2",
       "tag": "@itwin/rpcinterface-full-stack-tests_v5.2.2",
       "date": "Fri, 10 Oct 2025 14:49:15 GMT",
