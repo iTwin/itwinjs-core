@@ -3339,7 +3339,7 @@ describe("ECSqlStatement", () => {
     await assert.isRejected(reader.toArray(), "Struct type binding not supported");
   });
 
-  it("Inserting into ECDb hangs the process", async () => {
+  it("Statement closed with WithWriteStatement", async () => {
     using ecdb = ECDbTestHelper.createECDb(outDir, "test_hang.ecdb",
     `<?xml version="1.0" encoding="UTF-8"?>
     <ECSchema schemaName="TestSchema" alias="Test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
