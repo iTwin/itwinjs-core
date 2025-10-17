@@ -119,7 +119,7 @@ describe("ElementGraphics", () => {
   });
 
   it.only("supports an unlimited number of flatbuffer geometry stream entries", async () => {
-    async function getElementGraphicsSize(numCopies: number): Promise<number> {
+    async function getElementGraphics(numCopies: number): Promise<Uint8Array> {
       const elementId = "0x29";
       const element = imodel.elements.tryGetElement<GeometricElement3d>({ id: elementId, wantGeometry: true });
       expect(element).not.to.be.undefined;
@@ -168,14 +168,17 @@ describe("ElementGraphics", () => {
       expect(content instanceof Uint8Array).to.be.true;
       expect(content.length).least(40);
 
-      return content.length;
+      return content;
     }
 
-    let prevSize = 0;
-    for (const numCopies of [1, 2, 3, 10, 100, 1000, 2000, 2048, 2049, 2050, 2500, 2501, 2600, 3000, 10000]) {
-      const newSize = await getElementGraphicsSize(numCopies);
-      expect(newSize).greaterThan(prevSize);
-      prevSize = newSize;
+    let prevGraphics: number[] = [];
+    for (const numCopies of [1, 2, 3, 10, 100, 1000, 2000, 2047,2048, 2049, 2050, 2500, 2501, 2600, 3000, 10000]) {
+      const newGraphics = Array.from(await getElementGraphics(numCopies));
+
+      expect(newGraphics).not.to.deep.equal(prevGraphics);
+      expect(newGraphics.length).greaterThan(prevGraphics.length);
+
+      prevGraphics = newGraphics;
     }
   });
 
