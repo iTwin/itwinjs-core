@@ -9,7 +9,7 @@ import { CurrentImdlVersion, DynamicGraphicsRequest3dProps, ElementGeometry, Ele
 import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
 import { _nativeDb, GeometricElement3d, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { Point3d, Sphere } from "@itwin/core-geometry";
+import { Box, Point3d, Range3d, Sphere } from "@itwin/core-geometry";
 
 describe("ElementGraphics", () => {
   let imodel: SnapshotDb;
@@ -137,8 +137,10 @@ describe("ElementGraphics", () => {
           continue;
 
         for (let i = 0; i < numCopies; i++) {
-          const sphere = Sphere.createCenterRadius(new Point3d(0, 0, 0), numCopies + 1);
-          const geomEntry = ElementGeometry.fromGeometryQuery(sphere);
+          const corner = i + 1;
+          const box = Box.createRange(new Range3d(0, 0, 0, corner, corner, corner), false);
+          expect(box).not.to.be.undefined;
+          const geomEntry = ElementGeometry.fromGeometryQuery(box!);
           expect(geomEntry).not.to.be.undefined;
           entries.push(geomEntry!);
         }
@@ -170,9 +172,8 @@ describe("ElementGraphics", () => {
     }
 
     let prevSize = 0;
-    for (const numCopies of [1, 2, 3, 10, 100, 1000, 2000, 2500, 3000, 10000]) {
+    for (const numCopies of [1, 2, 3, 10, 100, 1000, 2000, 2500, 2501, 2600, 3000, 10000]) {
       const newSize = await getElementGraphicsSize(numCopies);
-      console.log(`${numCopies} ${prevSize} ${newSize}`);
       expect(newSize).greaterThan(prevSize);
       prevSize = newSize;
     }
