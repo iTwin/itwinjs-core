@@ -7,9 +7,12 @@
  * @module Curve
  */
 import { XYCurveEvaluator } from "./XYCurveEvaluator";
-/** Intermediate class for evaluation of bare cubic spirals `y = m ^x^3` with x axis from [0..xLength]
+
+/**
+ * Intermediate class for evaluation of bare cubic spirals `y = m ^x^3` with x axis from [0..xLength]
  * * This implements all the computations among fraction, x, and y.
- * * Derived classes implement specialized logic such as (a) precomputing `m` and (b) domain-specific fraction-to-distance approximations.
+ * * Derived classes implement specialized logic such as (a) precomputing `m` and (b) domain-specific fraction-to-distance
+ * approximations.
  * @internal
  */
 export abstract class CubicEvaluator extends XYCurveEvaluator {
@@ -25,26 +28,37 @@ export abstract class CubicEvaluator extends XYCurveEvaluator {
     this._axisLength = axisLength;
     this._cubicM = cubicM;
   }
-  public get axisLength() { return this._axisLength; }
-  public get cubicM() { return this._cubicM; }
+  public get axisLength() {
+    return this._axisLength;
+  }
+  public get cubicM() {
+    return this._cubicM;
+  }
   /**
    * Apply `scaleFactor` to the xLength and cubicM.
    * * Derived classes commonly call this as `super.scaleInPlace()`, and additionally apply the scale to their members.
-   * @param scaleFactor
    */
   public scaleInPlace(scaleFactor: number) {
     this._axisLength *= scaleFactor;
-    // "x" arriving at "m * x^3" will be scaled. "m" has to be divided by the scale to cancel 2 of the 3 . .
+    // "x" arriving at "m * x^3" will be scaled. "m" has to be divided by the scale to cancel 2 of the 3
     this._cubicM /= (scaleFactor * scaleFactor);
   }
   /** Evaluate X at fraction. */
-  public fractionToX(fraction: number): number { return fraction * this._axisLength; }
-  /** Evaluate derivative of X with respect to fraction */
-  public fractionToDX(_fraction: number): number { return this._axisLength; }
-  /** Evaluate second derivative of X with respect to fraction */
-  public fractionToDDX(_fraction: number): number { return 0.0; }
-  /** Evaluate third derivative of X with respect to fraction */
-  public fractionToD3X(_fraction: number): number { return 0.0; }
+  public fractionToX(fraction: number): number {
+    return fraction * this._axisLength;
+  }
+  /** Evaluate derivative of X with respect to fraction. */
+  public fractionToDX(_fraction: number): number {
+    return this._axisLength;
+  }
+  /** Evaluate second derivative of X with respect to fraction. */
+  public fractionToDDX(_fraction: number): number {
+    return 0.0;
+  }
+  /** Evaluate third derivative of X with respect to fraction. */
+  public fractionToD3X(_fraction: number): number {
+    return 0.0;
+  }
   /** Evaluate Y at fraction. */
   public fractionToY(fraction: number): number {
     const x = fraction * this._axisLength;
@@ -65,5 +79,7 @@ export abstract class CubicEvaluator extends XYCurveEvaluator {
     return 6.0 * this._cubicM * this._axisLength * this._axisLength * this._axisLength;
   }
   /** Evaluate fraction at x. */
-  public xToFraction(x: number): number { return x / this._axisLength; }
+  public xToFraction(x: number): number {
+    return x / this._axisLength;
+  }
 }

@@ -12,18 +12,19 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Quadrature } from "../../numerics/Quadrature";
 import { SimpleNewton } from "../../numerics/Newton";
+
 /**
  * XYCurveEvaluator is an abstract with methods for evaluating X and Y parts of a curve parameterized by a fraction.
  * * The required methods call for independent X and Y evaluation.
  * * Base class methods package those (multiple) calls into point, ray, and plane structures.
- *    * A implementation that has evaluation substantial cost that can be shared among x,y parts or between
- *       primary functions and derivatives might choose to implement the point and derivative methods directly.
+ *    * An implementation that has evaluation substantial cost that can be shared among x,y parts or between
+ *      primary functions and derivatives might choose to implement the point and derivative methods directly.
  * @internal
  */
 export abstract class XYCurveEvaluator {
-  /** return a deep copy of the evaluator */
+  /** Return a deep copy of the evaluator. */
   public abstract clone(): XYCurveEvaluator;
-  /** test for near identical evaluator */
+  /** Test for near identical evaluator. */
   public abstract isAlmostEqual(other: any): boolean;
   /** Evaluate X at fractional position. */
   public abstract fractionToX(fraction: number): number;
@@ -37,22 +38,27 @@ export abstract class XYCurveEvaluator {
   public abstract fractionToDDX(fraction: number): number;
   /** Evaluate second derivative of Y with respect to fraction at fractional position. */
   public abstract fractionToDDY(fraction: number): number;
-  /** Evaluate both X and Y at fractional coordinate, return bundled as a point. */
-  /** Evaluate second derivative of X with respect to fraction at fractional position. */
+  /** Evaluate third derivative of X with respect to fraction at fractional position. */
   public abstract fractionToD3X(fraction: number): number;
-  /** Evaluate second derivative of Y with respect to fraction at fractional position. */
+  /** Evaluate third derivative of Y with respect to fraction at fractional position. */
   public abstract fractionToD3Y(fraction: number): number;
   /** Evaluate both X and Y at fractional coordinate, return bundled as a point. */
   public fractionToPoint(fraction: number, result?: Point3d): Point3d {
     return Point3d.create(this.fractionToX(fraction), this.fractionToY(fraction), 0.0, result);
   }
-  /** Evaluate both X and Y and their first derivatives at fractional coordinate, return bundled as origin and (non-unit) direction vector. */
+  /**
+   * Evaluate both X and Y and their first derivatives at fractional coordinate, return bundled as origin and
+   * (non-unit) direction vector.
+   */
   public fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d {
     return Ray3d.createXYZUVW(this.fractionToX(fraction), this.fractionToY(fraction), 0.0,
       this.fractionToDX(fraction), this.fractionToDY(fraction), 0,
       result);
   }
-  /** Evaluate both X and Y and their second derivatives at fractional coordinate, return bundled as origin and (non-unit) vectorU an vectorV. */
+  /**
+   * Evaluate both X and Y and their second derivatives at fractional coordinate, return bundled as origin and
+   * (non-unit) vectorU an vectorV.
+   */
   public fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     return Plane3dByOriginAndVectors.createOriginAndVectorsXYZ(
       this.fractionToX(fraction), this.fractionToY(fraction), 0.0,
@@ -69,17 +75,16 @@ export abstract class XYCurveEvaluator {
     const v = this.fractionToDY(fraction);
     return Geometry.hypotenuseXY(u, v);
   }
-
   /** Invert the fractionToX function for given X. */
-
   public abstract xToFraction(x: number): number | undefined;
-  /** Initialize class level work arrays for 5 point Gaussian Quadrature. */
-  // Class resources for integration . . .
-  // These static variables are reused on calls to integrateFromStartFraction
   protected static _gaussX: Float64Array;
   protected static _gaussWeight: Float64Array;
   protected static _gaussMapper: (xA: number, xB: number, arrayX: Float64Array, arrayW: Float64Array) => number;
-  public static initWorkSpace() {
+  /**
+   * Initialize class level work arrays for 5 point Gaussian quadrature.
+   * * These static variables are reused on calls to [[integrateDistanceBetweenFractions]].
+   */
+  public static initWorkSpace(): void {
     XYCurveEvaluator._gaussX = new Float64Array(5);
     XYCurveEvaluator._gaussWeight = new Float64Array(5);
     XYCurveEvaluator._gaussMapper = (xA, xB, xMapped, wMapped) => Quadrature.setupGauss5(xA, xB, xMapped, wMapped);
@@ -87,8 +92,6 @@ export abstract class XYCurveEvaluator {
   /**
    * Integrate between nominal fractions with default gauss rule.
    * * The caller is expected to choose nearby fractions so that the single gauss interval accuracy is good.
-   * @param fraction0
-   * @param fraction1
    */
   public integrateDistanceBetweenFractions(fraction0: number, fraction1: number): number {
     const gaussX = XYCurveEvaluator._gaussX;
@@ -101,14 +104,16 @@ export abstract class XYCurveEvaluator {
     return sum;
   }
   /**
-   * Inverse integrated distance
-   * @param fraction0 start of fraction interval
-   * @param fraction1 end of fraction interval
-   * @param distance0 distance at start
-   * @param distance1 distance at end
+   * Inverse integrated distance.
+   * @param fraction0 start of fraction interval.
+   * @param fraction1 end of fraction interval.
+   * @param distance0 distance at start.
+   * @param distance1 distance at end.
    * @param targetDistance intermediate distance.
    */
-  public inverseDistanceFraction(fraction0: number, fraction1: number, distance0: number, distance1: number, targetDistance: number): number | undefined {
+  public inverseDistanceFraction(
+    fraction0: number, fraction1: number, distance0: number, distance1: number, targetDistance: number,
+  ): number | undefined {
     const startFraction = Geometry.inverseInterpolate(fraction0, distance0, fraction1, distance1, targetDistance);
     if (startFraction !== undefined) {
       return SimpleNewton.runNewton1D(startFraction,
@@ -120,16 +125,17 @@ export abstract class XYCurveEvaluator {
     }
     return undefined;
   }
-
   /**
-   *
+   * Get the point and its derivatives at a given fraction.
    * @param fraction fractional position along x axis
    * @param xy xy coordinates of point on the curve
-   * @param d1xy
-   * @param d2xy
-   * @param d3xy
+   * @param d1xy first derivative vector
+   * @param d2xy second derivative vector
+   * @param d3xy third derivative vector
    */
-  public fractionToPointAnd3Derivatives(fraction: number, xy: Point3d, d1xy?: Vector3d, d2xy?: Vector3d, d3xy?: Vector3d) {
+  public fractionToPointAnd3Derivatives(
+    fraction: number, xy: Point3d, d1xy?: Vector3d, d2xy?: Vector3d, d3xy?: Vector3d,
+  ): void {
     xy.set(this.fractionToX(fraction), this.fractionToY(fraction), 0);
     if (d1xy)
       d1xy.set(this.fractionToDX(fraction), this.fractionToDY(fraction), 0);
