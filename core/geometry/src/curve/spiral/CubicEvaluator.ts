@@ -9,7 +9,7 @@
 import { XYCurveEvaluator } from "./XYCurveEvaluator";
 
 /**
- * Intermediate class for evaluation of bare cubic spirals `y = m ^x^3` with x axis from [0..xLength]
+ * Intermediate class for evaluation of bare cubic spirals `y = m*x^3` with x axis from [0..xLength]
  * * This implements all the computations among fraction, x, and y.
  * * Derived classes implement specialized logic such as (a) precomputing `m` and (b) domain-specific fraction-to-distance
  * approximations.

@@ -64,7 +64,8 @@ export abstract class XYCurveEvaluator {
       this.fractionToX(fraction), this.fractionToY(fraction), 0.0,
       this.fractionToDX(fraction), this.fractionToDY(fraction), 0,
       this.fractionToDDX(fraction), this.fractionToDDY(fraction), 0,
-      result);
+      result,
+    );
   }
   /**
    * Return the magnitude of the tangent vector at fraction.
