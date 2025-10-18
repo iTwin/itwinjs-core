@@ -479,6 +479,14 @@ export class Relationships {
     this._iModel[_nativeDb].deleteLinkTableRelationship(props);
   }
 
+  /** Delete multiple Relationship instances from this iModel.
+   * @param props The properties of the relationship instances to delete.
+   * @remarks This method handles bulk deletion of relationships and supports mixed collections containing instances from different relationship classes.
+   */
+  public deleteInstances(props: ReadonlyArray<RelationshipProps>): void {
+    this._iModel[_nativeDb].deleteLinkTableRelationships(props);
+  }
+
   /** Get the props of a Relationship instance
    * @param relClassFullName The full class name of the relationship in the form of "schema:class"
    * @param criteria Either the relationship instanceId or the source and target Ids
