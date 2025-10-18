@@ -9,6 +9,7 @@ import { CurrentImdlVersion, DynamicGraphicsRequest3dProps, ElementGeometry, Ele
 import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
 import { _nativeDb, GeometricElement3d, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { Box, Point3d, Range3d, Sphere } from "@itwin/core-geometry";
 
 describe("ElementGraphics", () => {
   let imodel: SnapshotDb;
@@ -107,7 +108,7 @@ describe("ElementGraphics", () => {
       geometry: { format: "flatbuffer", data: entries },
     };
 
-    const result = await imodel[_nativeDb].generateElementGraphics(request as any); // ###TODO update package versions in addon
+    const result = await imodel[_nativeDb].generateElementGraphics(request);
     expect(result.status).to.equal(ElementGraphicsStatus.Success);
     assert(result.status === ElementGraphicsStatus.Success);
 
@@ -115,6 +116,70 @@ describe("ElementGraphics", () => {
     expect(content).not.to.be.undefined;
     expect(content instanceof Uint8Array).to.be.true;
     expect(content.length).least(40);
+  });
+
+  it.only("supports an unlimited number of flatbuffer geometry stream entries", async () => {
+    async function getElementGraphics(numCopies: number): Promise<Uint8Array> {
+      const elementId = "0x29";
+      const element = imodel.elements.tryGetElement<GeometricElement3d>({ id: elementId, wantGeometry: true });
+      expect(element).not.to.be.undefined;
+      expect(element).instanceof(GeometricElement3d);
+      expect(element?.geom).not.to.be.undefined;
+      expect(element?.placement).not.to.be.undefined;
+
+      const entries: ElementGeometryDataEntry[] = [];
+      const it = new GeometryStreamIterator(element!.geom!, element!.category);
+      for (const entry of it) {
+        if ("geometryQuery" !== entry.primitive.type)
+          continue;
+
+        if (!ElementGeometry.appendGeometryParams(entry.geomParams, entries))
+          continue;
+
+        for (let i = 0; i < numCopies; i++) {
+          const corner = i + 1;
+          const box = Box.createRange(new Range3d(0, 0, 0, corner, corner, corner), false);
+          expect(box).not.to.be.undefined;
+          const geomEntry = ElementGeometry.fromGeometryQuery(box!);
+          expect(geomEntry).not.to.be.undefined;
+          entries.push(geomEntry!);
+        }
+
+        break;
+      }
+
+      const request: DynamicGraphicsRequest3dProps = {
+        id: "test",
+        elementId,
+        toleranceLog10: -2,
+        formatVersion: CurrentImdlVersion.Major,
+        type: "3d",
+        placement: element!.placement,
+        categoryId: element!.category,
+        geometry: { format: "flatbuffer", data: entries },
+      };
+
+      const result = await imodel[_nativeDb].generateElementGraphics(request);
+      expect(result.status).to.equal(ElementGraphicsStatus.Success);
+      assert(result.status === ElementGraphicsStatus.Success);
+
+      const content = result.content;
+      expect(content).not.to.be.undefined;
+      expect(content instanceof Uint8Array).to.be.true;
+      expect(content.length).least(40);
+
+      return content;
+    }
+
+    let prevGraphics: number[] = [];
+    for (const numCopies of [1, 2, 3, 10, 100, 1000, 2000, 2047,2048, 2049, 2050, 2500, 2501, 2600, 3000, 10000]) {
+      const newGraphics = Array.from(await getElementGraphics(numCopies));
+
+      expect(newGraphics).not.to.deep.equal(prevGraphics);
+      expect(newGraphics.length).greaterThan(prevGraphics.length);
+
+      prevGraphics = newGraphics;
+    }
   });
 
   it("produces expected errors", async () => {
