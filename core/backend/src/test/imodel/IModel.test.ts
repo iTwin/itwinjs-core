@@ -3304,6 +3304,52 @@ describe("iModel", () => {
     testImodel.close();
   });
 
+  it.only("should successfully process changes when Definition Elements' codeValues are switched around", async () => {
+    const dbFileName = IModelTestUtils.prepareOutputFile("IModel", "change-codeValues.bim");
+    const imodelDb = SnapshotDb.createEmpty(dbFileName, {
+      rootSubject: { name: "change-codeValues" },
+    });
+    let categoryA = SpatialCategory.create(
+      imodelDb,
+      IModel.dictionaryId,
+      "A"
+    );
+    let categoryB = SpatialCategory.create(
+      imodelDb,
+      IModel.dictionaryId,
+      "B"
+    );
+    categoryA.userLabel = "A";
+    categoryB.userLabel = "B";
+    categoryA.insert();
+    categoryB.insert();
+    imodelDb.saveChanges();
+
+    categoryA = imodelDb.elements.getElement(
+      SpatialCategory.createCode(imodelDb, IModel.dictionaryId, "A")
+    );
+    categoryB = imodelDb.elements.getElement(
+      SpatialCategory.createCode(imodelDb, IModel.dictionaryId, "B")
+    );
+    categoryA.code.value = "temp";
+    categoryA.update();
+    categoryB.code.value = "A";
+    categoryB.update();
+    categoryA.code.value = "B";
+    categoryA.update();
+    imodelDb.saveChanges();
+
+    categoryA = imodelDb.elements.getElement(
+      SpatialCategory.createCode(imodelDb, IModel.dictionaryId, "A")
+    );
+    categoryB = imodelDb.elements.getElement(
+      SpatialCategory.createCode(imodelDb, IModel.dictionaryId, "B")
+    );
+
+    expect(categoryA.userLabel).to.equal("B", `categoryA.userlabel mismatch in ${imodelDb.name}`);
+    expect(categoryB.userLabel).to.equal("A", `categoryB.userlabel mismatch in ${imodelDb.name}`);
+  });
+
   it("should provide meaningful error when querying a closed iModel", () => {
     const testImodel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "QueryingClosedImodel.bim"), { rootSubject: { name: "QueryClosedTest" } });
     assert.isTrue(testImodel.isOpen);
