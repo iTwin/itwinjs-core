@@ -2295,6 +2295,9 @@ importers:
       '@itwin/ecschema-metadata':
         specifier: workspace:*
         version: link:../../core/ecschema-metadata
+      '@itwin/editor-backend':
+        specifier: workspace:*
+        version: link:../../editor/backend
       '@itwin/imodels-access-backend':
         specifier: ^6.0.2
         version: 6.0.2(@itwin/core-backend@..+core+backend)(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
