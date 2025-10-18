@@ -133,8 +133,8 @@ describe("ElementGraphics", () => {
         if ("geometryQuery" !== entry.primitive.type)
           continue;
 
-        if (!ElementGeometry.appendGeometryParams(entry.geomParams, entries))
-          continue;
+        // if (!ElementGeometry.appendGeometryParams(entry.geomParams, entries))
+        //   continue;
 
         for (let i = 0; i < numCopies; i++) {
           const corner = i + 1;
@@ -172,13 +172,23 @@ describe("ElementGraphics", () => {
     }
 
     let prevGraphics: number[] = [];
+    let prevNumCopies = 0;
     for (const numCopies of [1, 2, 3, 10, 100, 1000, 2000, 2047,2048, 2049, 2050, 2500, 2501, 2600, 3000, 10000]) {
       const newGraphics = Array.from(await getElementGraphics(numCopies));
 
       expect(newGraphics).not.to.deep.equal(prevGraphics);
+
+      const prevSize = prevGraphics.length;
+      const newSize = newGraphics.length;
+      const delta = newSize - prevSize;
+      const deltaPer = delta / (numCopies - prevNumCopies);
+
+      console.log(`copies=${numCopies} size=${newSize} delta=${delta} deltaPer=${deltaPer}`);
+
       expect(newGraphics.length).greaterThan(prevGraphics.length);
 
       prevGraphics = newGraphics;
+      prevNumCopies = numCopies;
     }
   });
 
