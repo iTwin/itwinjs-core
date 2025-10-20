@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- ==================================================================================
+|  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+|  * See LICENSE.md in the project root for license terms and full copyright notice.
+======================================================================================= -->
+<ECSchema schemaName="RatioUnits" alias="RTU" version="01.00.01" description="Units for testing ratio formatting" displayLabel="Ratio Units"
+    xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+    <ECSchemaReference name="Units" version="01.00.09" alias="u"/>
+    <Unit typeName="DECIMAL_LENGTH_RATIO" phenomenon="u:LENGTH_RATIO" unitSystem="u:INTERNATIONAL" definition="u:ONE" displayLabel="decimal length ratio" description="Unit suitable for storing a decimal number that represents a length ratio." />
+    <Unit typeName="M_PER_M_LENGTH_RATIO" phenomenon="u:LENGTH_RATIO" unitSystem="u:SI" definition="u:M*u:M(-1)" displayLabel="m:m" />
+    <Unit typeName="IN_PER_FT_LENGTH_RATIO" phenomenon="u:LENGTH_RATIO" unitSystem="u:USCUSTOM" definition="u:IN*u:FT(-1)" displayLabel="in:ft" />
+</ECSchema>

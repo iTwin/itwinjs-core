@@ -197,16 +197,20 @@ describe("Formatting tests handling temperature conversions where sign is flippe
   });
 });
 
-describe("Ratio format tests", () => {
+describe.only("Ratio format tests", () => {
   let context: SchemaContext;
   let provider: SchemaUnitProvider;
 
   before(() => {
     context = new SchemaContext();
 
-    const schemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
-    const schemaXml = fs.readFileSync(schemaFile, "utf-8");
-    deserializeXmlSync(schemaXml, context);
+    const unitsSchemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
+    const unitsSchemaXml = fs.readFileSync(unitsSchemaFile, "utf-8");
+    deserializeXmlSync(unitsSchemaXml, context);
+
+    const ratioSchemaFile = path.join(__dirname, "..",  "assets", "RatioUnits.ecschema.xml");
+    const ratioSchemaXml = fs.readFileSync(ratioSchemaFile, "utf-8");
+    deserializeXmlSync(ratioSchemaXml, context);
 
     provider = new SchemaUnitProvider(context, UNIT_EXTRA_DATA);
   });
@@ -220,8 +224,8 @@ describe("Ratio format tests", () => {
   async function testRatioType(
     ratioType: string,
     testData: TestData[],
-    presentationUnitStr: string = "Units.M_PER_M",
-    persistenceUnitStr: string = "Units.M_PER_M",
+    presentationUnitStr: string = "RatioUnits.M_PER_M_LENGTH_RATIO",
+    persistenceUnitStr: string = "RatioUnits.DECIMAL_LENGTH_RATIO",
   ) {
     const defaultPrecision = 3;
 
@@ -403,12 +407,12 @@ describe("Ratio format tests", () => {
         composite: {
           includeZero: true,
           units: [
-            { name: "Units.ONE" },
+            { name: "RatioUnits.M_PER_M_LENGTH_RATIO" },
           ],
         },
       });
 
-      const persistenceUnit = await provider.findUnitByName("Units.ONE");
+      const persistenceUnit = await provider.findUnitByName("RatioUnits.DECIMAL_LENGTH_RATIO");
       const formatterSpec = await FormatterSpec.create("Dimensionless", format, provider, persistenceUnit);
 
       expect(formatterSpec.applyFormatting(0.5)).to.eql("1:2");
@@ -424,12 +428,12 @@ describe("Ratio format tests", () => {
         composite: {
           includeZero: true,
           units: [
-            { name: "Units.M_PER_M" },
+            { name: "RatioUnits.M_PER_M_LENGTH_RATIO" },
           ],
         },
       });
 
-      const persistenceUnit = await provider.findUnitByName("Units.M_PER_M");
+      const persistenceUnit = await provider.findUnitByName("RatioUnits.DECIMAL_LENGTH_RATIO");
       const formatterSpec = await FormatterSpec.create("Slope", format, provider, persistenceUnit);
 
       expect(formatterSpec.applyFormatting(0.25)).to.eql("1:4");
@@ -446,12 +450,12 @@ describe("Ratio format tests", () => {
         composite: {
           includeZero: true,
           units: [
-            { name: "Units.ONE" },
+            { name: "RatioUnits.M_PER_M_LENGTH_RATIO" },
           ],
         },
       });
 
-      const persistenceUnit = await provider.findUnitByName("Units.ONE");
+      const persistenceUnit = await provider.findUnitByName("RatioUnits.DECIMAL_LENGTH_RATIO");
       const formatterSpec = await FormatterSpec.create("MetricScale", format, provider, persistenceUnit);
 
       // Common metric map scale factors
@@ -486,12 +490,12 @@ describe("Ratio format tests", () => {
         composite: {
           includeZero: true,
           units: [
-            { name: "Units.ONE" },
+            { name: "RatioUnits.IN_PER_FT_LENGTH_RATIO" },
           ],
         },
       });
 
-      const persistenceUnit = await provider.findUnitByName("Units.ONE");
+      const persistenceUnit = await provider.findUnitByName("RatioUnits.DECIMAL_LENGTH_RATIO");
       const formatterSpec = await FormatterSpec.create("ImperialScale", format, provider, persistenceUnit);
 
       // TODO: CONFIRM THESE ARE EXPECTED INPUT OUTPUT
@@ -526,6 +530,43 @@ describe("Ratio format tests", () => {
       expect(formatterSpec.applyFormatting(1/600)).to.eql("1:600.0"); // 1" = 50'
       expect(formatterSpec.applyFormatting(1/1200)).to.eql("1:1200.0"); // 1" = 100'
     });
+
+    it("should convert a scale factor of 0.02 to the respective imperial and metric scale factors", async () => {
+      // Imperial format test
+      const imperialFormat = await Format.createFromJSON("TestRatio", provider, {
+        type: "Ratio",
+        ratioType: "NToOne", // TBD - I expect this is the right ratio unless otherwise.
+        precision: 4, // Use FractionalPrecision.Four
+        composite: {
+          includeZero: true,
+          units: [
+            { name: "RatioUnits.IN_PER_FT_LENGTH_RATIO" },
+          ],
+        },
+      });
+
+      const persistenceUnit = await provider.findUnitByName("RatioUnits.DECIMAL_LENGTH_RATIO"); // This is unitless.
+      const persistedValue = 1/48; // or could use 0.0208333 instead. This means the drawing is around 2% the size of reality
+
+      const imperialSpec = await FormatterSpec.create("ImperialScale", imperialFormat, provider, persistenceUnit);
+      expect(imperialSpec.applyFormatting(persistedValue)).to.eql("0.25\"=1'"); // 1/4 inch on the drawing equals 1 foot in real life
+
+      // Metric format test
+      const metricFormat = await Format.createFromJSON("TestMetricRatio", provider, {
+        type: "Ratio",
+        ratioType: "NToOne",
+        precision: 2, // Format converted value to 2 decimal places
+        composite: {
+          includeZero: true,
+          units: [
+            { name: "RatioUnits.MM_PER_M_LENGTH_RATIO" },
+          ],
+        },
+      });
+
+      const metricSpec = await FormatterSpec.create("MetricScale", metricFormat, provider, persistenceUnit);
+      expect(metricSpec.applyFormatting(persistedValue)).to.eql("20.83mm=1m"); // 20.83mm on the drawing represents 1 meter in real life.
+    });
   });
 
   describe("Ratio formatting edge cases", () => {
@@ -537,12 +578,12 @@ describe("Ratio format tests", () => {
         composite: {
           includeZero: true,
           units: [
-            { name: "Units.ONE" },
+            { name: "RatioUnits.IN_PER_FT_LENGTH_RATIO" },
           ],
         },
       });
 
-      const persistenceUnit = await provider.findUnitByName("Units.ONE");
+      const persistenceUnit = await provider.findUnitByName("RatioUnits.DECIMAL_LENGTH_RATIO");
       const formatterSpec = await FormatterSpec.create("EdgeCase", format, provider, persistenceUnit);
 
       expect(formatterSpec.applyFormatting(0.0001)).to.eql("0:1");
@@ -558,12 +599,12 @@ describe("Ratio format tests", () => {
         composite: {
           includeZero: true,
           units: [
-            { name: "Units.ONE" },
+            { name: "RatioUnits.IN_PER_FT_LENGTH_RATIO" },
           ],
         },
       });
 
-      const persistenceUnit = await provider.findUnitByName("Units.ONE");
+      const persistenceUnit = await provider.findUnitByName("RatioUnits.DECIMAL_LENGTH_RATIO");
       const formatterSpec = await FormatterSpec.create("HighPrecision", format, provider, persistenceUnit);
 
       expect(formatterSpec.applyFormatting(Math.PI)).to.eql("1:0.318310");
@@ -578,12 +619,12 @@ describe("Ratio format tests", () => {
         composite: {
           includeZero: true,
           units: [
-            { name: "Units.ONE" },
+            { name: "RatioUnits.DECIMAL_LENGTH_RATIO" },
           ],
         },
       });
 
-      const persistenceUnit = await provider.findUnitByName("Units.ONE");
+      const persistenceUnit = await provider.findUnitByName("RatioUnits.DECIMAL_LENGTH_RATIO");
       const formatterSpec = await FormatterSpec.create("GCD", format, provider, persistenceUnit);
 
       expect(formatterSpec.applyFormatting(0.5)).to.eql("1:2");
