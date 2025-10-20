@@ -11,7 +11,7 @@ import {
 import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
 import { _nativeDb, GeometricElement3d, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { Box, LineSegment3d, Point3d, Range3d, Sphere } from "@itwin/core-geometry";
+import { LineSegment3d } from "@itwin/core-geometry";
 
 describe("ElementGraphics", () => {
   let imodel: SnapshotDb;
@@ -120,7 +120,7 @@ describe("ElementGraphics", () => {
     expect(content.length).least(40);
   });
 
-  it.only("supports an unlimited number of flatbuffer geometry stream entries", async () => {
+  it("supports an unlimited number of flatbuffer geometry stream entries", async () => {
     async function getElementGraphics(numCopies: number): Promise<Uint8Array> {
       const elementId = "0x29";
       const element = imodel.elements.tryGetElement<GeometricElement3d>({ id: elementId, wantGeometry: true });
@@ -135,14 +135,7 @@ describe("ElementGraphics", () => {
         if ("geometryQuery" !== entry.primitive.type)
           continue;
 
-        // if (!ElementGeometry.appendGeometryParams(entry.geomParams, entries))
-        //   continue;
-
         for (let i = 0; i < numCopies; i++) {
-          // const corner = i + 1;
-          // const box = Box.createRange(new Range3d(i, i, i, corner, corner, corner), false);
-          // expect(box).not.to.be.undefined;
-          // const geomEntry = ElementGeometry.fromGeometryQuery(box!);
           const segment = LineSegment3d.createXYXY(i, i, i+1, i);
           const geomEntry = ElementGeometry.fromGeometryQuery(segment);
           expect(geomEntry).not.to.be.undefined;
@@ -176,7 +169,6 @@ describe("ElementGraphics", () => {
     }
 
     let prevGraphics: number[] = [];
-    let prevNumCopies = 0;
     let prevRangeDiagonalMagnitude = 0;
     for (const numCopies of [1, 2, 3, 10, 100, 1000, 2000, 2047,2048, 2049, 2050, 2500, 2501, 2600, 3000, 10000]) {
       const tileBytes = await getElementGraphics(numCopies);
@@ -184,16 +176,9 @@ describe("ElementGraphics", () => {
 
       expect(newGraphics).not.to.deep.equal(prevGraphics);
 
-      const prevSize = prevGraphics.length;
-      const newSize = newGraphics.length;
-      const delta = newSize - prevSize;
-      const deltaPer = delta / (numCopies - prevNumCopies);
-
-      console.log(`copies=${numCopies} size=${newSize} delta=${delta} deltaPer=${deltaPer}`);
-
+      // Extract metadata from the tile graphics.
       const stream = ByteStream.fromUint8Array(tileBytes);
       const header = new ImdlHeader(stream);
-      //console.log(JSON.stringify(header, undefined, "  "));
 
       const featureTableStartPos = stream.curPos;
       const featureTableHeader = FeatureTableHeader.readFrom(stream);
@@ -206,9 +191,9 @@ describe("ElementGraphics", () => {
       const sceneStr = utf8ToString(sceneStrData);
       expect(sceneStr).not.to.be.undefined;
       const json = JSON.parse(sceneStr!);
-      //console.log(JSON.stringify(json, undefined, "  "));
-      expect(json.meshes.Mesh_Root.primitives[0].vertices.count).to.equal(numCopies * 2);
 
+      // The tile should have two unique vertices per line segment in the input geometry stream.
+      expect(json.meshes.Mesh_Root.primitives[0].vertices.count).to.equal(numCopies * 2);
 
       expect(header.contentRange.diagonal().magnitude()).greaterThan(prevRangeDiagonalMagnitude);
       prevRangeDiagonalMagnitude = header.contentRange.diagonal().magnitude();
@@ -216,7 +201,6 @@ describe("ElementGraphics", () => {
       expect(newGraphics.length).greaterThan(prevGraphics.length);
 
       prevGraphics = newGraphics;
-      prevNumCopies = numCopies;
     }
   });
 
