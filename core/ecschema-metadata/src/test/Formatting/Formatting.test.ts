@@ -531,7 +531,7 @@ describe.only("Ratio format tests", () => {
       expect(formatterSpec.applyFormatting(1/1200)).to.eql("1:1200.0"); // 1" = 100'
     });
 
-    it("should convert a scale factor of 0.02 to the respective imperial and metric scale factors", async () => {
+    it("should convert a scale factor of 0.0208333 to the respective imperial and metric scale factors", async () => {
       // Imperial format test
       const imperialFormat = await Format.createFromJSON("TestRatio", provider, {
         type: "Ratio",
