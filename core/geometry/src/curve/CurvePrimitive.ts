@@ -414,8 +414,8 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * do not allow movement beyond the startPoint or endpoint
    * @param result optional result.
    * @returns A CurveLocationDetail annotated as above. Note that if the curve does not support the calculation, there is
-   * still a result which contains the point at the input startFraction, with failure indicated in the `curveStartState`
-   * member
+   * still a result which contains the point at the input startFraction, with failure indicated in the `curveSearchStatus`
+   * member.
    */
   public moveSignedDistanceFromFraction(
     startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail,
