@@ -140,7 +140,7 @@ describe("ElementGraphics", () => {
 
         for (let i = 0; i < numCopies; i++) {
           const corner = i + 1;
-          const box = Box.createRange(new Range3d(0, 0, 0, corner, corner, corner), false);
+          const box = Box.createRange(new Range3d(i, i, i, corner, corner, corner), false);
           expect(box).not.to.be.undefined;
           const geomEntry = ElementGeometry.fromGeometryQuery(box!);
           expect(geomEntry).not.to.be.undefined;
