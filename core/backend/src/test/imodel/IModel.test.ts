@@ -3304,7 +3304,7 @@ describe("iModel", () => {
     testImodel.close();
   });
 
-  it.only("should successfully process changes when Definition Elements' codeValues are switched around", async () => {
+  it.only("should update codeValues that are switched between elements", async () => {
     const dbFileName = IModelTestUtils.prepareOutputFile("IModel", "change-codeValues.bim");
     const imodelDb = SnapshotDb.createEmpty(dbFileName, {
       rootSubject: { name: "change-codeValues" },
@@ -3348,6 +3348,7 @@ describe("iModel", () => {
 
     expect(categoryA.userLabel).to.equal("B", `categoryA.userlabel mismatch in ${imodelDb.name}`);
     expect(categoryB.userLabel).to.equal("A", `categoryB.userlabel mismatch in ${imodelDb.name}`);
+    imodelDb.close();
   });
 
   it("should provide meaningful error when querying a closed iModel", () => {
