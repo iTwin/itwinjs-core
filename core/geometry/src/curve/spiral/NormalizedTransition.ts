@@ -185,7 +185,8 @@ export class NormalizedSineTransition extends NormalizedTransition {
     const a = 2.0 * Math.PI;
     return 1 - Math.cos(u * a);
   }
-  /** Return the integrated area under the curve.
+  /**
+   * Return the integrated area under the curve.
    * * This fraction is the angular change fraction.
    */
   public fractionToArea(u: number): number {
@@ -211,7 +212,8 @@ export class NormalizedCosineTransition extends NormalizedTransition {
     const a = Math.PI;
     return 0.5 * a * Math.sin(u * a);
   }
-  /** Return the integrated area under the curve.
+  /**
+   * Return the integrated area under the curve.
    * * This fraction is the angular change fraction.
    */
   public fractionToArea(u: number): number {

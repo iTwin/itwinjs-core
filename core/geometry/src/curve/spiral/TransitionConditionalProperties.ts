@@ -24,9 +24,15 @@ import { TransitionSpiral3d } from "./TransitionSpiral3d";
  * @public
  */
 export class TransitionConditionalProperties {
-  /** Radius at start (radius of the osculating circle at the spiral segment's start). */
+  /**
+   * Radius at start (radius of the osculating circle at the spiral segment's start).
+   * radius0 === 0 means straight line at start.
+   */
   public radius0: number | undefined;
-  /** Radius at end (radius of the osculating circle at the spiral segment's end). */
+  /**
+   * Radius at end (radius of the osculating circle at the spiral segment's end).
+   * radius1 === 0 means straight line at end.
+   */
   public radius1: number | undefined;
   /**
    * Bearing at start (the signed angle from global x-axis to the start tangent of the spiral).
