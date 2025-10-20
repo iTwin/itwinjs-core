@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { assert } from "@itwin/core-bentley";
-import { CurrentImdlVersion, DynamicGraphicsRequest3dProps, ElementGeometry, ElementGeometryDataEntry, ElementGraphicsRequestProps, GeometryStreamIterator } from "@itwin/core-common";
+import { assert, ByteStream, utf8ToString } from "@itwin/core-bentley";
+import {
+  CurrentImdlVersion, DynamicGraphicsRequest3dProps, ElementGeometry, ElementGeometryDataEntry, ElementGraphicsRequestProps, FeatureTableHeader, GeometryStreamIterator, GltfHeader, ImdlHeader,
+} from "@itwin/core-common";
 import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
 import { _nativeDb, GeometricElement3d, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -173,8 +175,10 @@ describe("ElementGraphics", () => {
 
     let prevGraphics: number[] = [];
     let prevNumCopies = 0;
+    let prevRangeDiagonalMagnitude = 0;
     for (const numCopies of [1, 2, 3, 10, 100, 1000, 2000, 2047,2048, 2049, 2050, 2500, 2501, 2600, 3000, 10000]) {
-      const newGraphics = Array.from(await getElementGraphics(numCopies));
+      const tileBytes = await getElementGraphics(numCopies);
+      const newGraphics = Array.from(tileBytes);
 
       expect(newGraphics).not.to.deep.equal(prevGraphics);
 
@@ -184,6 +188,27 @@ describe("ElementGraphics", () => {
       const deltaPer = delta / (numCopies - prevNumCopies);
 
       console.log(`copies=${numCopies} size=${newSize} delta=${delta} deltaPer=${deltaPer}`);
+
+      const stream = ByteStream.fromUint8Array(tileBytes);
+      const header = new ImdlHeader(stream);
+      console.log(JSON.stringify(header, undefined, "  "));
+
+      const featureTableStartPos = stream.curPos;
+      const featureTableHeader = FeatureTableHeader.readFrom(stream);
+      expect(featureTableHeader).not.to.be.undefined;
+      stream.curPos = featureTableStartPos + featureTableHeader!.length;
+      const gltfHeader = new GltfHeader(stream);
+      expect(gltfHeader.isValid).to.be.true;
+      stream.curPos = gltfHeader.scenePosition;
+      const sceneStrData = stream.nextBytes(gltfHeader.sceneStrLength);
+      const sceneStr = utf8ToString(sceneStrData);
+      expect(sceneStr).not.to.be.undefined;
+      console.log(JSON.stringify(JSON.parse(sceneStr!), undefined, "  "));
+
+
+
+      expect(header.contentRange.diagonal().magnitude()).greaterThan(prevRangeDiagonalMagnitude);
+      prevRangeDiagonalMagnitude = header.contentRange.diagonal().magnitude();
 
       expect(newGraphics.length).greaterThan(prevGraphics.length);
 
