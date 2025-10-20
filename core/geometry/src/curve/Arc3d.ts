@@ -512,7 +512,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const center = start.plusScaled(vector0, radius);
     // reverse the A-to-center vector and bring it up to scale
     vector0.scaleInPlace(-radius);
-    const vector90 = tangentAtStart.scaleToLength(Math.abs(radius)); // cannot fail; prior unitCrossProduct would have failed first
+    const vector90 = tangentAtStart.scaleToLength(Math.abs(radius));
     return (vector90 !== undefined) ? Arc3d.create(center, vector0, vector90, AngleSweep.create(sweep)) : undefined;
   }
   /**
