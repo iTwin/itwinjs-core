@@ -11,7 +11,7 @@ import {
 import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
 import { _nativeDb, GeometricElement3d, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { Box, Point3d, Range3d, Sphere } from "@itwin/core-geometry";
+import { Box, LineSegment3d, Point3d, Range3d, Sphere } from "@itwin/core-geometry";
 
 describe("ElementGraphics", () => {
   let imodel: SnapshotDb;
@@ -139,10 +139,12 @@ describe("ElementGraphics", () => {
         //   continue;
 
         for (let i = 0; i < numCopies; i++) {
-          const corner = i + 1;
-          const box = Box.createRange(new Range3d(i, i, i, corner, corner, corner), false);
-          expect(box).not.to.be.undefined;
-          const geomEntry = ElementGeometry.fromGeometryQuery(box!);
+          // const corner = i + 1;
+          // const box = Box.createRange(new Range3d(i, i, i, corner, corner, corner), false);
+          // expect(box).not.to.be.undefined;
+          // const geomEntry = ElementGeometry.fromGeometryQuery(box!);
+          const segment = LineSegment3d.createXYXY(i, i, i+1, i);
+          const geomEntry = ElementGeometry.fromGeometryQuery(segment);
           expect(geomEntry).not.to.be.undefined;
           entries.push(geomEntry!);
         }
@@ -205,7 +207,7 @@ describe("ElementGraphics", () => {
       expect(sceneStr).not.to.be.undefined;
       const json = JSON.parse(sceneStr!);
       //console.log(JSON.stringify(json, undefined, "  "));
-      expect(json.meshes.Mesh_Root.primitives[0].vertices.count).to.equal(numCopies * 16);
+      expect(json.meshes.Mesh_Root.primitives[0].vertices.count).to.equal(numCopies * 2);
 
 
       expect(header.contentRange.diagonal().magnitude()).greaterThan(prevRangeDiagonalMagnitude);
