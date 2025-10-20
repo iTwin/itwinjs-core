@@ -378,9 +378,8 @@ export class CurveLocationDetail {
     }
   }
   /**
-   * Return the fraction where f falls between `fraction` and `fraction1`.
-   * Returns `defaultFraction` if calculation fails.
-   * * ASSUME fraction1 defined.
+   * Return the fraction where `f` falls between `fraction` and `fraction1`.
+   * * If the fractions are too close or `fraction1` is undefined, `defaultFraction` is returned.
    */
   public inverseInterpolateFraction(f: number, defaultFraction: number = 0): number {
     if (this.fraction1 === undefined)
