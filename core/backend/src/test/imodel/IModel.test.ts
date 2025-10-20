@@ -3304,7 +3304,7 @@ describe("iModel", () => {
     testImodel.close();
   });
 
-  it.only("should update codeValues that are switched between elements", async () => {
+  it("should update codeValues that are switched between elements", async () => {
     const dbFileName = IModelTestUtils.prepareOutputFile("IModel", "change-codeValues.bim");
     const imodelDb = SnapshotDb.createEmpty(dbFileName, {
       rootSubject: { name: "change-codeValues" },
