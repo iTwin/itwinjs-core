@@ -191,7 +191,7 @@ describe("ElementGraphics", () => {
 
       const stream = ByteStream.fromUint8Array(tileBytes);
       const header = new ImdlHeader(stream);
-      console.log(JSON.stringify(header, undefined, "  "));
+      //console.log(JSON.stringify(header, undefined, "  "));
 
       const featureTableStartPos = stream.curPos;
       const featureTableHeader = FeatureTableHeader.readFrom(stream);
@@ -203,8 +203,9 @@ describe("ElementGraphics", () => {
       const sceneStrData = stream.nextBytes(gltfHeader.sceneStrLength);
       const sceneStr = utf8ToString(sceneStrData);
       expect(sceneStr).not.to.be.undefined;
-      console.log(JSON.stringify(JSON.parse(sceneStr!), undefined, "  "));
-
+      const json = JSON.parse(sceneStr!);
+      //console.log(JSON.stringify(json, undefined, "  "));
+      expect(json.meshes.Mesh_Root.primitives[0].vertices.count).to.equal(numCopies * 16);
 
 
       expect(header.contentRange.diagonal().magnitude()).greaterThan(prevRangeDiagonalMagnitude);
