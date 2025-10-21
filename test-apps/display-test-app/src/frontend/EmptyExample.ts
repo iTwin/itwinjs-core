@@ -13,6 +13,15 @@ export async function openEmptyExample(viewer: Viewer) {
   viewer.viewport.setStandardRotation(StandardViewId.Iso);
   viewer.viewport.turnCameraOn();
 
+  // viewer.viewport.onViewportChanged.addListener((viewport, changed) => {
+  //   console.log("onViewportChanged")
+  //   console.log(changed);
+  // });
+
+  // viewer.viewport.onViewChanged.addListener((viewport) => {
+  //   console.log("onViewChanged EE")
+  // });
+
   // Expand extents to show decorations
   const extents = viewer.viewport.iModel.projectExtents.clone();
   extents.expandInPlace(120000);
@@ -23,7 +32,7 @@ export async function openEmptyExample(viewer: Viewer) {
     lighting: true,
     visibleEdges: false,
     whiteOnWhiteReversal: false,
-    backgroundMap: false,
+    backgroundMap: true,
   });
 
   const style: DisplayStyle3dSettingsProps = {
