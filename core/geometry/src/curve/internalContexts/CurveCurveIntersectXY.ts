@@ -39,6 +39,7 @@ import { LineString3d } from "../LineString3d";
 import { Loop } from "../Loop";
 import { Path } from "../Path";
 import { ProxyCurve } from "../ProxyCurve";
+import { TransitionSpiral3d } from "../spiral/TransitionSpiral3d";
 
 // cspell:word XYRR
 /**
@@ -401,21 +402,21 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const closeApproach = (0 === numRoots);
       if (closeApproach)
         numRoots = 1; // we returned the arc's closest approach as the first "root"; if within tolerance and at endpoints, we record it
-      const acceptSolution = (iRoot: number, checkOnlyEndPointDistance: boolean = false): {fLine: number, fArc: number} | undefined => {
+      const acceptSolution = (iRoot: number, checkOnlyEndPointDistance: boolean = false): { fLine: number, fArc: number } | undefined => {
         const arcPoint = data.center.plus2Scaled(data.vector0, cosines.atUncheckedIndex(iRoot), data.vector90, sines.atUncheckedIndex(iRoot));
         let fArc = data.sweep.radiansToSignedFraction(radians.atUncheckedIndex(iRoot), extendB0);
         let fLine = SmallSystem.lineSegment3dHXYClosestPointUnbounded(pointA0H, pointA1H, arcPoint);
         if (fLine === undefined)
           return undefined;
         if (!checkOnlyEndPointDistance && this.acceptFraction(extendA0, fLine, extendA1) && this.acceptFraction(extendB0, fArc, extendB1))
-          return {fLine, fArc};
+          return { fLine, fArc };
         // check for an endpoint intersection that is beyond parametric tolerance but within point tolerance
         fLine = fLine < 0.5 ? 0 : 1;
         fArc = data.sweep.fractionToSignedPeriodicFraction(fArc) < 0.5 ? 0 : 1;
         const pointAH = fLine ? pointA1H : pointA0H;
         const pointBH = fArc ? pointB1H : pointB0H;
         const dist2 = pointAH.realDistanceSquaredXY(pointBH);
-        return (dist2 !== undefined && Geometry.isDistanceWithinTol(dist2, tol2)) ? {fLine, fArc} : undefined;
+        return (dist2 !== undefined && Geometry.isDistanceWithinTol(dist2, tol2)) ? { fLine, fArc } : undefined;
       };
       for (let i = 0; i < numRoots; i++) {
         const result = acceptSolution(i, closeApproach);
@@ -441,21 +442,21 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const closeApproach = (0 === numRoots);
       if (closeApproach)
         numRoots = 1; // we returned the arc's closest approach as the first "root"; if within tolerance and at endpoints, we record it
-      const acceptSolution = (iRoot: number, checkOnlyEndPointDistance: boolean = false): {fLine: number, fArc: number} | undefined => {
+      const acceptSolution = (iRoot: number, checkOnlyEndPointDistance: boolean = false): { fLine: number, fArc: number } | undefined => {
         const arcPoint = data.center.plus2Scaled(data.vector0, cosines.atUncheckedIndex(iRoot), data.vector90, sines.atUncheckedIndex(iRoot));
         let fArc = data.sweep.radiansToSignedFraction(radians.atUncheckedIndex(iRoot), extendB0);
         let fLine = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0Local, pointA1Local, arcPoint);
         if (fLine === undefined)
           return undefined;
         if (!checkOnlyEndPointDistance && this.acceptFraction(extendA0, fLine, extendA1) && this.acceptFraction(extendB0, fArc, extendB1))
-          return {fLine, fArc};
+          return { fLine, fArc };
         // check for an endpoint intersection that is beyond parametric tolerance but within point tolerance
         fLine = fLine < 0.5 ? 0 : 1;
         fArc = data.sweep.fractionToSignedPeriodicFraction(fArc) < 0.5 ? 0 : 1;
         const pointALocal = fLine ? pointA1Local : pointA0Local;
         const pointBLocal = fArc ? pointB1Local : pointB0Local;
         const dist2 = pointALocal.distanceSquaredXY(pointBLocal);
-        return Geometry.isDistanceWithinTol(dist2, tol2) ? {fLine, fArc} : undefined;
+        return Geometry.isDistanceWithinTol(dist2, tol2) ? { fLine, fArc } : undefined;
       };
       for (let i = 0; i < numRoots; i++) {
         const result = acceptSolution(i, closeApproach);
@@ -596,7 +597,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       for (let spanIndex = 0; ; spanIndex++) {
         bezier = cpB.getSaturatedBezierSpan3dH(spanIndex, bezier);
         if (!bezier)
-            break;
+          break;
         if (this._worldToLocalPerspective)
           bezier.tryMultiplyMatrix4dInPlace(this._worldToLocalPerspective);
         else if (this._worldToLocalAffine)
@@ -1048,6 +1049,12 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         segmentA, this._extendA0, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0, this._extendA1,
         this._geometryB, this._extendB0, this._extendB1, false,
       );
+    } else if (this._geometryB instanceof TransitionSpiral3d) {
+      const linestring = LineString3d.create();
+      this._geometryB.emitStrokes(linestring);
+      this.computeSegmentLineString(
+        segmentA, this._extendA0, this._extendA1, linestring, this._extendB0, this._extendB1, false,
+      );
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(segmentA, this.handleLineSegment3d.bind(this));
     } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
@@ -1072,6 +1079,10 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       this.dispatchLineStringBSplineCurve(
         lsA, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false,
       );
+    } else if (this._geometryB instanceof TransitionSpiral3d) {
+      const linestring = LineString3d.create();
+      this._geometryB.emitStrokes(linestring);
+      this.computeLineStringLineString(lsA, linestring, false);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(lsA, this.handleLineString3d.bind(this));
     } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
@@ -1096,6 +1107,12 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       this.dispatchArcBsplineCurve3d(
         arc0, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false,
       );
+    } else if (this._geometryB instanceof TransitionSpiral3d) {
+      const linestring = LineString3d.create();
+      this._geometryB.emitStrokes(linestring);
+      this.computeArcLineString(
+        arc0, this._extendA0, this._extendA1, linestring, this._extendB0, this._extendB1, false,
+      );
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(arc0, this.handleArc3d.bind(this));
     } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
@@ -1112,18 +1129,32 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       );
     } else if (this._geometryB instanceof LineString3d) {
       this.dispatchLineStringBSplineCurve(
-        this._geometryB, this._extendB0, this._extendB1, curve, this._extendA0, this._extendA1, true);
+        this._geometryB, this._extendB0, this._extendB1, curve, this._extendA0, this._extendA1, true,
+      );
     } else if (this._geometryB instanceof Arc3d) {
       this.dispatchArcBsplineCurve3d(
         this._geometryB, this._extendB0, this._extendB1, curve, this._extendA0, this._extendA1, true,
       );
     } else if (this._geometryB instanceof BSplineCurve3dBase) {
       this.dispatchBSplineCurve3dBSplineCurve3d(curve, this._geometryB, false);
+    } else if (this._geometryB instanceof TransitionSpiral3d) {
+      const linestring = LineString3d.create();
+      this._geometryB.emitStrokes(linestring);
+      this.dispatchLineStringBSplineCurve(
+        linestring, this._extendB0, this._extendB1, curve, this._extendA0, this._extendA1, true,
+      );
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(curve, this.handleBSplineCurve3d.bind(this));
     } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
       this.dispatchCurveChainWithDistanceIndex(curve, this.handleBSplineCurve3d.bind(this));
     }
+    return undefined;
+  }
+  /** Double dispatch handler for strongly typed spiral curve. */
+  public override handleTransitionSpiral(spiral: TransitionSpiral3d): any {
+    const linestring = LineString3d.create();
+    spiral.emitStrokes(linestring);
+    this.handleLineString3d(linestring);
     return undefined;
   }
   /** Double dispatch handler for strongly typed CurveChainWithDistanceIndex. */
