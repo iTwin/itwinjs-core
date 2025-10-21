@@ -6,7 +6,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { Id64 } from "@itwin/core-bentley";
 
-describe.only("Code insertion tests", () => {
+describe("Code insertion tests", () => {
   let imodel: SnapshotDb;
 
   before(async () => {
@@ -15,7 +15,7 @@ describe.only("Code insertion tests", () => {
     const snapshotFile = IModelTestUtils.prepareOutputFile("IModel", "test.bim");
     imodel = IModelTestUtils.createSnapshotFromSeed(snapshotFile, seedFile);
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    await imodel.importSchemas([schemaPathname]); // will throw an exception if import fails
+    await imodel.importSchemas([schemaPathname]);
     imodel.saveChanges();
   });
 
@@ -31,7 +31,7 @@ describe.only("Code insertion tests", () => {
     assert.equal(elementId, "0x1e");
   });
 
-  it("should fail to get an element with a bad code value", () => {
+  it("should get undefined when querying an element with a bad code value", () => {
     assert.exists(imodel.elements);
     const badCode = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
     const elementId = imodel.elements.queryElementIdByCode(badCode);
@@ -45,18 +45,24 @@ describe.only("Code insertion tests", () => {
     assert.isUndefined(elementId);
   });
 
-  it("should throw when querying for an element id with no spec", () => {
-    assert.exists(imodel.elements);
-    const noSpecCode = new Code({ spec: "", scope: "0x11", value: "RF1.dgn" });
-    expect(() => imodel.elements.queryElementIdByCode(noSpecCode)).to.throw("Invalid CodeSpec");
-  });
-
   it("should throw when querying for an element id with a NULL code value", () => {
     assert.exists(imodel.elements);
     expect(() => imodel.elements.queryElementIdByCode({
       spec: "0x10", scope: "0x11",
       value: undefined as any
     })).to.throw("Invalid Code");
+  });
+
+  it("should throw when querying for an element id with no spec", () => {
+    assert.exists(imodel.elements);
+    const noSpecCode = new Code({ spec: "", scope: "0x11", value: "RF1.dgn" });
+    expect(() => imodel.elements.queryElementIdByCode(noSpecCode)).to.throw("Invalid CodeSpec");
+  });
+
+  it("should throw when querying for an element id with no scope", () => {
+    assert.exists(imodel.elements);
+    const noScopeCode = new Code({ spec: "0x10", scope: "", value: "RF1.dgn" });
+    expect(() => imodel.elements.queryElementIdByCode(noScopeCode)).to.throw("Invalid CodeScope");
   });
 
   it("should fail to insert an element with invalid Code scope", () => {
@@ -104,9 +110,9 @@ describe.only("Code insertion tests", () => {
       federationGuid: undefined,
     };
 
-    expect(() => imodel.elements.insertElement(elProps)).throws("invalid code spec").to.have.property("metadata");
+    expect(() => imodel.elements.insertElement(elProps)).throws("Error inserting element").to.have.property("metadata");
     elProps.code.spec = undefined as any; // nothing
-    expect(() => imodel.elements.insertElement(elProps)).throws("invalid code spec").to.have.property("metadata");
+    expect(() => imodel.elements.insertElement(elProps)).throws("Error inserting element").to.have.property("metadata");
   });
 
   it("should fail to insert an element with an empty Code", () => {
