@@ -12,7 +12,11 @@ export async function openEmptyExample(viewer: Viewer) {
   assert(viewer.viewport.view.is3d());
   viewer.viewport.setStandardRotation(StandardViewId.Iso);
   viewer.viewport.turnCameraOn();
-  viewer.viewport.zoomToVolume(viewer.viewport.iModel.projectExtents);
+
+  // Expand extents to show decorations
+  const extents = viewer.viewport.iModel.projectExtents.clone();
+  extents.expandInPlace(120000);
+  viewer.viewport.zoomToVolume(extents);
 
   viewer.viewport.viewFlags = viewer.viewport.viewFlags.copy({
     renderMode: RenderMode.SmoothShade,

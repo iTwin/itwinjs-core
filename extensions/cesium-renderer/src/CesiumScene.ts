@@ -9,44 +9,44 @@ import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion,
 import { createCesiumCameraProps } from "./CesiumCamera.js";
 import { Angle, YawPitchRollAngles } from "@itwin/core-geometry";
 
-const ecefLocProps = {
-  origin: [
-    1255641.5519893507,
-    -4732698.684827632,
-    4073546.2460685894
-  ],
-  orientation: {
-    pitch: -49.005021293968355,
-    roll: -11.823580111180991,
-    yaw: -90.642664633961
-  },
-  transform: [
-    [
-      -0.007357864592832313,
-      0.9804561979367872,
-      0.19659986204464436,
-      1255641.5519893507
-    ],
-    [
-      -0.6559516195525271,
-      0.14366280316126617,
-      -0.7410050416793829,
-      -4732698.684827632
-    ],
-    [
-      -0.75476707309941,
-      -0.13441221267127085,
-      0.6420747794842614,
-      4073546.2460685894
-    ]
-  ],
-  cartographicOrigin: {
-    latitude: 0.6972007432483922,
-    longitude: -1.311456937133241,
-    height: 4.102413240985213
-  }
-};
-const ecefLoc = new EcefLocation(ecefLocProps);
+// const ecefLocProps = {
+//   origin: [
+//     1255641.5519893507,
+//     -4732698.684827632,
+//     4073546.2460685894
+//   ],
+//   orientation: {
+//     pitch: -49.005021293968355,
+//     roll: -11.823580111180991,
+//     yaw: -90.642664633961
+//   },
+//   transform: [
+//     [
+//       -0.007357864592832313,
+//       0.9804561979367872,
+//       0.19659986204464436,
+//       1255641.5519893507
+//     ],
+//     [
+//       -0.6559516195525271,
+//       0.14366280316126617,
+//       -0.7410050416793829,
+//       -4732698.684827632
+//     ],
+//     [
+//       -0.75476707309941,
+//       -0.13441221267127085,
+//       0.6420747794842614,
+//       4073546.2460685894
+//     ]
+//   ],
+//   cartographicOrigin: {
+//     latitude: 0.6972007432483922,
+//     longitude: -1.311456937133241,
+//     height: 4.102413240985213
+//   }
+// };
+// const ecefLoc = new EcefLocation(ecefLocProps);
 
 /** Options to configure a Cesium scene.
  * @internal
@@ -173,9 +173,10 @@ export class CesiumScene {
     IModelApp.viewManager.onViewOpen.addListener((vp) => {
 
       vp.onViewChanged.addListener((viewport) => {
+        const imodelEcef = viewport.iModel.ecefLocation;
         const cesiumCam = createCesiumCameraProps({
           viewDefinition: viewport.view.toJSON() as ViewDefinition3dProps,
-          ecefLoc
+          ecefLoc: imodelEcef
         });
         // console.log("View changed:", cesiumCam.position);
 
