@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Code, EcefLocation, ViewDefinition3dProps } from "@itwin/core-common";
-import { IModelApp, SpatialViewState } from "@itwin/core-frontend";
+import { Code, EcefLocation, IModel, ViewDefinition3dProps } from "@itwin/core-common";
+import { IModelApp, IModelConnection, SpatialViewState } from "@itwin/core-frontend";
 import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion, PerspectiveFrustum, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler, ScreenSpaceEventType } from "@cesium/engine";
 import { createCesiumCameraProps } from "./CesiumCamera.js";
 import { Angle, YawPitchRollAngles } from "@itwin/core-geometry";
@@ -246,66 +246,66 @@ export class CesiumScene {
       }
     }
 
-    const cameraOnView = {
-      cameraOn: true,
-      origin: [-50.20252266797269, 56.989460084120665, -93.48021229168089],
-      extents: [224.2601166976935, 165.04873366794442, 249.514861628184],
-      angles: {
-        pitch: -26.15946129868821,
-        roll: -43.25863504612565,
-        yaw: 25.103938995163002,
-      },
-      camera: {
-        lens: 45.95389015950363,
-        focusDist: 264.45767738020345,
-        eye: [-37.863420740019635, -118.27234989806642, 132.40005835408053],
-      },
-      code: Code.createEmpty(),
-      model: "test",
-      classFullName: "test",
-      categorySelectorId: "@1",
-      displayStyleId: "@1",
-    };
+    // const cameraOnView = {
+    //   cameraOn: true,
+    //   origin: [-50.20252266797269, 56.989460084120665, -93.48021229168089],
+    //   extents: [224.2601166976935, 165.04873366794442, 249.514861628184],
+    //   angles: {
+    //     pitch: -26.15946129868821,
+    //     roll: -43.25863504612565,
+    //     yaw: 25.103938995163002,
+    //   },
+    //   camera: {
+    //     lens: 45.95389015950363,
+    //     focusDist: 264.45767738020345,
+    //     eye: [-37.863420740019635, -118.27234989806642, 132.40005835408053],
+    //   },
+    //   code: Code.createEmpty(),
+    //   model: "test",
+    //   classFullName: "test",
+    //   categorySelectorId: "@1",
+    //   displayStyleId: "@1",
+    // };
 
-    const cesiumCameraProps = createCesiumCameraProps({ viewDefinition: cameraOnView, ecefLoc });
+    // const cesiumCameraProps = createCesiumCameraProps({ viewDefinition: cameraOnView, ecefLoc });
 
-    this._scene.camera.frustum = new PerspectiveFrustum({
-      fov: cesiumCameraProps.frustum.fov,
-      aspectRatio: canvas.width / canvas.height,
-      near: cesiumCameraProps.frustum.near,
-      far: cesiumCameraProps.frustum.far
-    });
-    this._scene.camera.setView({
-      destination: new Cartesian3(cesiumCameraProps.position.x, cesiumCameraProps.position.y, cesiumCameraProps.position.z),
-      orientation: {
-        direction: new Cartesian3(cesiumCameraProps.direction.x, cesiumCameraProps.direction.y, cesiumCameraProps.direction.z),
-        up: new Cartesian3(cesiumCameraProps.up.x, cesiumCameraProps.up.y, cesiumCameraProps.up.z)
-      },
-    });
+    // this._scene.camera.frustum = new PerspectiveFrustum({
+    //   fov: cesiumCameraProps.frustum.fov,
+    //   aspectRatio: canvas.width / canvas.height,
+    //   near: cesiumCameraProps.frustum.near,
+    //   far: cesiumCameraProps.frustum.far
+    // });
+    // this._scene.camera.setView({
+    //   destination: new Cartesian3(cesiumCameraProps.position.x, cesiumCameraProps.position.y, cesiumCameraProps.position.z),
+    //   orientation: {
+    //     direction: new Cartesian3(cesiumCameraProps.direction.x, cesiumCameraProps.direction.y, cesiumCameraProps.direction.z),
+    //     up: new Cartesian3(cesiumCameraProps.up.x, cesiumCameraProps.up.y, cesiumCameraProps.up.z)
+    //   },
+    // });
 
+    // const vp = IModelApp.viewManager.selectedView;
+    // if (vp) {
+    //   const oldView = vp.view;
+    //   const yawPitchRoll = new YawPitchRollAngles(
+    //     Angle.createDegrees(cameraOnView.angles.yaw),
+    //     Angle.createDegrees(cameraOnView.angles.pitch),
+    //     Angle.createDegrees(cameraOnView.angles.roll)
+    //   );
 
-    const vp = IModelApp.viewManager.selectedView;
-    if (vp) {
-      const oldView = vp.view;
-      const yawPitchRoll = new YawPitchRollAngles(
-        Angle.createDegrees(cameraOnView.angles.yaw),
-        Angle.createDegrees(cameraOnView.angles.pitch),
-        Angle.createDegrees(cameraOnView.angles.roll)
-      );
+    //   const newView = SpatialViewState.createBlank(
+    //     vp.iModel,
+    //     {x: cameraOnView.origin[0], y: cameraOnView.origin[1], z: cameraOnView.origin[2]},
+    //     {x: cameraOnView.extents[0], y: cameraOnView.extents[1], z: cameraOnView.extents[2]},
+    //     yawPitchRoll.toMatrix3d()
+    //   );
 
-      const newView = SpatialViewState.createBlank(
-        vp.iModel,
-        {x: cameraOnView.origin[0], y: cameraOnView.origin[1], z: cameraOnView.origin[2]},
-        {x: cameraOnView.extents[0], y: cameraOnView.extents[1], z: cameraOnView.extents[2]},
-        yawPitchRoll.toMatrix3d()
-      );
+    //   if (newView) {
+    //     // vp.applyViewState(newView);
+    //     vp.changeView(newView);
+    //   }
 
-      if (newView) {
-        vp.applyViewState(newView);
-      }
-
-      this._screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.LEFT_CLICK);
-      this._screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.RIGHT_CLICK);
-    }
+    //   // this._screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.LEFT_CLICK);
+    //   // this._screenSpaceEventHandler.removeInputAction(ScreenSpaceEventType.RIGHT_CLICK);
+    // }
   }
 }

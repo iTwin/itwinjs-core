@@ -551,7 +551,7 @@ export class ToolAdmin {
   }
 
   private async onMouseButton(event: ToolEvent, isDown: boolean): Promise<any> {
-    console.log("onMouseButton");
+    // console.log("onMouseButton");
     const ev = event.ev as MouseEvent;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const vp = event.vp!;
