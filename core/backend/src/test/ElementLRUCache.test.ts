@@ -373,10 +373,10 @@ describe('InstanceKeyLRUCache', () => {
     expect(retrievedResultByCode).to.equal(testResults[0]);
   });
 
-  it('should not store undefined in the cache', () => {
+  it('should not store a bad id as result in the cache', () => {
     const cache = new InstanceKeyLRUCache(3);
-    const badResult: IModelJsNative.ResolveInstanceKeyResult = undefined as any;
-    cache.set(testArgs1, badResult);
+    const badResult: IModelJsNative.ResolveInstanceKeyResult = { id: Id64.invalid, classFullName: "badName" };
+    expect(() => cache.set(testArgs1, badResult)).to.throw(Error, "Invalid InstanceKey result");
     expect(cache.size).to.equal(0);
   });
 
