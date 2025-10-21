@@ -135,7 +135,7 @@ describe("Code insertion tests", () => {
     assert.exists(imodel.elements);
     const elProps: ElementProps = {
       classFullName: 'BisCore:RepositoryLink',
-      code: { scope: "0x1", spec: "bad spec" },
+      code: { scope: "0x1", spec: "validSpec" },
       id: '0x1e',
       model: '0x11',
       userLabel: 'RF1.dgn',
