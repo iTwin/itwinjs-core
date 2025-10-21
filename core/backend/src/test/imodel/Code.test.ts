@@ -56,13 +56,15 @@ describe("Code insertion tests", () => {
   it("should throw when querying for an element id with no spec", () => {
     assert.exists(imodel.elements);
     const noSpecCode = new Code({ spec: "", scope: "0x11", value: "RF1.dgn" });
-    expect(() => imodel.elements.queryElementIdByCode(noSpecCode)).to.throw("Invalid CodeSpec");
+    const elementId = imodel.elements.queryElementIdByCode(noSpecCode);
+    assert.isUndefined(elementId);
   });
 
-  it("should throw when querying for an element id with no scope", () => {
+  it("should get undefined when querying for an element id with no scope", () => {
     assert.exists(imodel.elements);
     const noScopeCode = new Code({ spec: "0x10", scope: "", value: "RF1.dgn" });
-    expect(() => imodel.elements.queryElementIdByCode(noScopeCode)).to.throw("Invalid CodeScope");
+    const elementId = imodel.elements.queryElementIdByCode(noScopeCode);
+    assert.isUndefined(elementId);
   });
 
   it("should fail to insert an element with invalid Code scope", () => {
