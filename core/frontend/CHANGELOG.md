@@ -1,6 +1,26 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 02 Oct 2025 14:56:13 GMT and should not be manually modified.
+This log was last generated on Thu, 16 Oct 2025 23:02:22 GMT and should not be manually modified.
+
+## 5.2.3
+Thu, 16 Oct 2025 23:00:31 GMT
+
+### Updates
+
+- Ensure viewport contents update when the view's category selector changes.
+- Increase logo card width in attribution popup to fix Google Maps image clipping
+
+## 5.2.2
+Fri, 10 Oct 2025 14:49:15 GMT
+
+_Version update only_
+
+## 5.2.1
+Thu, 09 Oct 2025 17:10:26 GMT
+
+### Updates
+
+- Added custom `portal` property for ArcGIS map-layers, to support OAuth2 authentication.
 
 ## 5.2.0
 Wed, 01 Oct 2025 20:22:54 GMT
