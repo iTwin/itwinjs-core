@@ -148,7 +148,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
   /** When copying an [[ITextAnnotation]] from one iModel into another, remaps the element Ids in any [FieldPropertyHost]($common) within the cloned element
    * so that they refer to elements in the `context`'s target iModel, and sets any Ids that cannot be remapped to [Id64.invalid]($bentley).
-   * Implementations of `ITextAnnotation` should invoke this function from their implementations of [[Element._onCloned]].
+   * Implementations of `ITextAnnotation` should invoke this function from their implementations of [[Element.onCloned]].
    */
   public static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void {
     if (!context.isBetweenIModels) {

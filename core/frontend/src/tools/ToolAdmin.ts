@@ -795,6 +795,10 @@ export class ToolAdmin {
    * @internal
    */
   public static addEvent(ev: Event, vp?: ScreenViewport): void {
+    // Don't add events to queue if event loop hasn't been started to process them...
+    if (!IModelApp.isEventLoopStarted)
+      return;
+
     if (!ToolAdmin.tryReplace(ev, vp)) // see if this event replaces the last event in the queue
       this._toolEvents.push({ ev, vp }); // otherwise put it at the end of the queue.
 
