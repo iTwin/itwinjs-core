@@ -908,15 +908,15 @@ WHERE
 LIMIT 3
 ```
 
-| className           | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
-| ------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
-| ECDbMeta:ECClassDef | Name         | false     | 0     | name     | Name         | undefined    | string   | String | Name               |
+| className           | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
+| ------------------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ | ------------------ |
+| ECDbMeta:ECClassDef | Name         | false     | 0     | name     | Name | undefined    | string   | String | Name               |
 
-| Name                        |
-| --------------------------- |
-| AnnotationElement2d         |
-| AnnotationFrameStyle        |
-| AnnotationLeaderStyle       |
+| Name                         |
+| ---------------------------- |
+| AngularDimensionAnnotation2d |
+| AnnotationDimensionStyle     |
+| AnnotationElement2d          |
 
 
 # Using ANY with multiple items
@@ -939,15 +939,15 @@ WHERE
 LIMIT 3
 ```
 
-| className           | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
-| ------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
-| ECDbMeta:ECClassDef | Name         | false     | 0     | name     | Name         | undefined    | string   | String | Name               |
+| className           | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
+| ------------------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ | ------------------ |
+| ECDbMeta:ECClassDef | Name         | false     | 0     | name     | Name | undefined    | string   | String | Name               |
 
-| Name                        |
-| --------------------------- |
-| AnnotationFrameStyle        |
-| AnnotationLeaderStyle       |
-| AnnotationTextStyle         |
+| Name                     |
+| ------------------------ |
+| AnnotationDimensionStyle |
+| AnnotationFrameStyle     |
+| AnnotationLeaderStyle    |
 
 # Using SOME with multiple items
 
