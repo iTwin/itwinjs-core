@@ -23,9 +23,9 @@ describe("Code insertion tests", () => {
     imodel.close();
   });
 
-  it("should query a known element by code", () => {
+  it("should query an element by code", () => {
     assert.exists(imodel.elements);
-    const code = new Code({ spec: "0x10", scope: "0x11", value: "RF1.dgn" });
+    const code = new Code({ scope: "0x11", spec: "0x10", value: "RF1.dgn" });
     const elementId = imodel.elements.queryElementIdByCode(code);
     assert.exists(elementId);
     assert.equal(elementId, "0x1e");
@@ -33,38 +33,66 @@ describe("Code insertion tests", () => {
 
   it("should get undefined when querying an element with a bad code value", () => {
     assert.exists(imodel.elements);
-    const badCode = new Code({ spec: "0x10", scope: "0x11", value: "RF1_does_not_exist.dgn" });
+    const badCode = new Code({ scope: "0x11", spec: "0x10", value: "RF1_does_not_exist.dgn" });
     const elementId = imodel.elements.queryElementIdByCode(badCode);
     assert.isUndefined(elementId);
   });
 
-  it("should get undefined when querying for an element id with an empty code", () => {
+  it("should get undefined when querying an element with an empty code", () => {
     assert.exists(imodel.elements);
     const emptyCode = Code.createEmpty();
     const elementId = imodel.elements.queryElementIdByCode(emptyCode);
     assert.isUndefined(elementId);
   });
 
-  it("should throw when querying for an element id with a NULL code value", () => {
+  it("should throw when querying an element with a NULL code value", () => {
     assert.exists(imodel.elements);
     expect(() => imodel.elements.queryElementIdByCode({
-      spec: "0x10", scope: "0x11",
+      scope: "0x11", spec: "0x10",
       value: undefined as any
     })).to.throw("Invalid Code");
   });
 
-  it("should throw when querying for an element id with no spec", () => {
+  it("should throw when querying an element with an empty code spec", () => {
     assert.exists(imodel.elements);
-    const noSpecCode = new Code({ spec: "", scope: "0x11", value: "RF1.dgn" });
-    const elementId = imodel.elements.queryElementIdByCode(noSpecCode);
-    assert.isUndefined(elementId);
+    const noSpecCode = new Code({ scope: "0x11", spec: "", value: "RF1.dgn" });
+    expect(() => imodel.elements.queryElementIdByCode(noSpecCode)).to.throw("Invalid CodeSpec");
+  });
+
+  it("should throw when querying an element with a bad code spec", () => {
+    assert.exists(imodel.elements);
+    const badSpecCode = new Code({ scope: "0x11", spec: "not a real id", value: "RF1.dgn" });
+    expect(() => imodel.elements.queryElementIdByCode(badSpecCode)).to.throw("Invalid CodeSpec");
   });
 
   it("should get undefined when querying for an element id with no scope", () => {
     assert.exists(imodel.elements);
-    const noScopeCode = new Code({ spec: "0x10", scope: "", value: "RF1.dgn" });
+    const noScopeCode = new Code({ scope: "", spec: "0x10", value: "RF1.dgn" });
     const elementId = imodel.elements.queryElementIdByCode(noScopeCode);
     assert.isUndefined(elementId);
+  });
+
+  it("should get undefined when querying for an element id with a bad scope", () => {
+    assert.exists(imodel.elements);
+    const badScopeCode = new Code({ scope: "not a real id", spec: "0x10", value: "RF1.dgn" });
+    const elementId = imodel.elements.queryElementIdByCode(badScopeCode);
+    assert.isUndefined(elementId);
+  });
+
+  it("should insert an element with valid Code", () => {
+    assert.exists(imodel.elements);
+    const elProps: ElementProps = {
+      classFullName: 'BisCore:RepositoryLink',
+      code: { scope: "0x1", spec: "0x10", value: "new code" },
+      id: '0x1e',
+      model: '0x11',
+      userLabel: 'RF1.dgn',
+      federationGuid: undefined,
+    };
+
+    const id = imodel.elements.insertElement(elProps);
+    assert.exists(id);
+    assert.isTrue(Id64.isValidId64(id));
   });
 
   it("should fail to insert an element with invalid Code scope", () => {
@@ -85,22 +113,6 @@ describe("Code insertion tests", () => {
     expect(() => imodel.elements.insertElement(elProps)).throws("invalid code scope").to.have.property("metadata");
   });
 
-  it("should insert an element with valid Code spec", () => {
-    assert.exists(imodel.elements);
-    const elProps: ElementProps = {
-      classFullName: 'BisCore:RepositoryLink',
-      code: { scope: "0x1", spec: "validSpec", value: "new code" },
-      id: '0x1e',
-      model: '0x11',
-      userLabel: 'RF1.dgn',
-      federationGuid: undefined,
-    };
-
-    const id = imodel.elements.insertElement(elProps);
-    assert.exists(id);
-    assert.isTrue(Id64.isValidId64(id));
-  });
-
   it("should fail to insert an element with invalid Code spec", () => {
     assert.exists(imodel.elements);
     const elProps: ElementProps = {
@@ -113,7 +125,185 @@ describe("Code insertion tests", () => {
     };
 
     expect(() => imodel.elements.insertElement(elProps)).throws("Error inserting element").to.have.property("metadata");
+    elProps.code.spec = "not a spec in the model"; // not an id
+    expect(() => imodel.elements.insertElement(elProps)).throws("Error inserting element").to.have.property("metadata");
     elProps.code.spec = undefined as any; // nothing
     expect(() => imodel.elements.insertElement(elProps)).throws("Error inserting element").to.have.property("metadata");
+  });
+
+  it("should fail to insert an element with a duplicate valid code", () => {
+    assert.exists(imodel.elements);
+    const elProps: ElementProps = {
+      classFullName: 'BisCore:RepositoryLink',
+      code: { scope: "0x1", spec: "0x10", value: "new code duplicate test" },
+      id: '0x1e',
+      model: '0x11',
+      userLabel: 'RF1.dgn',
+      federationGuid: undefined,
+    };
+
+    const id = imodel.elements.insertElement(elProps);
+    assert.exists(id);
+    assert.isTrue(Id64.isValidId64(id));
+
+    const elProps2: ElementProps = {
+      classFullName: 'BisCore:RepositoryLink',
+      code: { scope: "0x1", spec: "0x10", value: "new code duplicate test" },
+      id: '0x1e',
+      model: '0x11',
+      userLabel: 'RF1.dgn',
+      federationGuid: undefined,
+    };
+
+    expect(() => imodel.elements.insertElement(elProps2)).throws("Error inserting element").to.have.property("metadata");
+  });
+
+  it("should update an element code to a valid code", () => {
+    assert.exists(imodel.elements);
+    const elProps: ElementProps = {
+      classFullName: 'BisCore:RepositoryLink',
+      code: { scope: "0x1", spec: "0x10", value: "newcode update" },
+      id: '0x1e',
+      model: '0x11',
+      userLabel: 'RF1.dgn',
+      federationGuid: undefined,
+    };
+    const elementId = imodel.elements.insertElement(elProps);
+    const element = imodel.elements.getElement(elementId);
+    assert.equal(element.code.value, elProps.code.value);
+    assert.equal(element.code.spec, elProps.code.spec);
+    assert.equal(element.code.scope, elProps.code.scope);
+
+    let newCode = new Code({ scope: "0x1", spec: "0x10", value: "UpdatedValue.dgn2" });
+    element.code = newCode;
+    element.update();
+
+    const updatedElement = imodel.elements.getElement(elementId);
+    assert.equal(updatedElement.code.value, newCode.value);
+    assert.equal(updatedElement.code.spec, newCode.spec);
+    assert.equal(updatedElement.code.scope, newCode.scope);
+
+    newCode = new Code({ scope: "0x12", spec: "0x11", value: "UpdatedValue.dgn2" });
+    element.code = newCode;
+    element.update();
+
+    const updatedElement2 = imodel.elements.getElement(elementId);
+    assert.equal(updatedElement2.code.value, newCode.value);
+    assert.equal(updatedElement2.code.spec, newCode.spec);
+    assert.equal(updatedElement2.code.scope, newCode.scope);
+  });
+
+  it("should fail to update an element code to a duplicate valid code", () => {
+    assert.exists(imodel.elements);
+    const elProps: ElementProps = {
+      classFullName: 'BisCore:RepositoryLink',
+      code: { scope: "0x1", spec: "0x10", value: "newcode3" },
+      id: '0x1e',
+      model: '0x11',
+      userLabel: 'RF1.dgn',
+      federationGuid: undefined,
+    };
+    const elementId = imodel.elements.insertElement(elProps);
+    const element = imodel.elements.getElement(elementId);
+    assert.equal(element.code.value, elProps.code.value);
+    assert.equal(element.code.spec, elProps.code.spec);
+    assert.equal(element.code.scope, elProps.code.scope);
+
+    const elProps2: ElementProps = {
+      classFullName: 'BisCore:RepositoryLink',
+      code: { scope: "0x1", spec: "0x10", value: "newcode32" },
+      id: '0x1e',
+      model: '0x11',
+      userLabel: 'RF1.dgn',
+      federationGuid: undefined,
+    };
+    const elementId2 = imodel.elements.insertElement(elProps2);
+    const element2 = imodel.elements.getElement(elementId2);
+    assert.equal(element2.code.value, elProps2.code.value);
+    assert.equal(element2.code.spec, elProps2.code.spec);
+    assert.equal(element2.code.scope, elProps2.code.scope);
+
+    element.code = element2.code;
+    expect(() => element.update()).to.throw("Error updating element").to.have.property("metadata");
+  });
+
+  it("should fail to update an element code with an invalid code value", () => {
+    assert.exists(imodel.elements);
+    const elProps: ElementProps = {
+      classFullName: 'BisCore:RepositoryLink',
+      code: { scope: "0x1", spec: "0x10", value: "newcode4" },
+      id: '0x1e',
+      model: '0x11',
+      userLabel: 'RF1.dgn',
+      federationGuid: undefined,
+    };
+    const elementId = imodel.elements.insertElement(elProps);
+    const element = imodel.elements.getElement(elementId);
+    assert.equal(element.code.value, elProps.code.value);
+    assert.equal(element.code.spec, elProps.code.spec);
+    assert.equal(element.code.scope, elProps.code.scope);
+
+    let newCode = new Code({ scope: "0x1", spec: "0x10", value: "" }); // empty value
+    element.code = newCode;
+    element.update();
+
+    const updatedElement = imodel.elements.getElement(elementId);
+    assert.equal(updatedElement.code.value, newCode.value);
+    assert.equal(updatedElement.code.spec, newCode.spec);
+    assert.equal(updatedElement.code.scope, newCode.scope);
+
+    newCode = new Code({ scope: "0x1", spec: "0x10" }); // NULL value
+    newCode.value = undefined as any;
+    element.code = newCode;
+    expect(() => element.update()).to.throw("Error updating element").to.have.property("metadata");
+
+    const updatedElement2 = imodel.elements.getElement(elementId);
+    assert.equal(updatedElement2.code.value, updatedElement.code.value);
+    assert.equal(updatedElement2.code.spec, updatedElement.code.spec);
+    assert.equal(updatedElement2.code.scope, updatedElement.code.scope);
+
+    newCode = Code.createEmpty(); // Empty Code
+    element.code = newCode;
+    expect(() => element.update()).to.throw("Error updating element").to.have.property("metadata");
+
+    const updatedElement3 = imodel.elements.getElement(elementId);
+    assert.equal(updatedElement3.code.value, updatedElement.code.value);
+    assert.equal(updatedElement3.code.spec, updatedElement.code.spec);
+    assert.equal(updatedElement3.code.scope, updatedElement.code.scope);
+  });
+
+  it("should fail to update an element code with an invalid code scope", () => {
+    assert.exists(imodel.elements);
+    const elProps: ElementProps = {
+      classFullName: 'BisCore:RepositoryLink',
+      code: { scope: "0x1", spec: "0x10", value: "newcode5" },
+      id: '0x1e',
+      model: '0x11',
+      userLabel: 'RF1.dgn',
+      federationGuid: undefined,
+    };
+    const elementId = imodel.elements.insertElement(elProps);
+    const element = imodel.elements.getElement(elementId);
+    assert.equal(element.code.value, elProps.code.value);
+    assert.equal(element.code.spec, elProps.code.spec);
+    assert.equal(element.code.scope, elProps.code.scope);
+
+    let newCode = new Code({ scope: "", spec: "0x10", value: "newcode5" }); // empty scope
+    element.code = newCode;
+    expect(() => element.update()).to.throw("Error updating element").to.have.property("metadata");
+
+    const updatedElement = imodel.elements.getElement(elementId);
+    assert.equal(updatedElement.code.value, element.code.value);
+    assert.equal(updatedElement.code.spec, element.code.spec);
+    assert.equal(updatedElement.code.scope, element.code.scope);
+
+    newCode = new Code({ scope: "not a real id", spec: "validSpec5", value: "newcode5" }); // bad id
+    element.code = newCode;
+    expect(() => element.update()).to.throw("Error updating element").to.have.property("metadata");
+
+    const updatedElement2 = imodel.elements.getElement(elementId);
+    assert.equal(updatedElement2.code.value, element.code.value);
+    assert.equal(updatedElement2.code.spec, element.code.spec);
+    assert.equal(updatedElement2.code.scope, element.code.scope);
   });
 });
