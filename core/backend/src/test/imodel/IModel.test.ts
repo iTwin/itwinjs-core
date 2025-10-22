@@ -3346,8 +3346,8 @@ describe("iModel", () => {
       SpatialCategory.createCode(imodelDb, IModel.dictionaryId, "B")
     );
 
-    expect(categoryA.userLabel).to.equal("B", `categoryA.userlabel mismatch in ${imodelDb.name}`);
-    expect(categoryB.userLabel).to.equal("A", `categoryB.userlabel mismatch in ${imodelDb.name}`);
+    expect(categoryA.userLabel).to.equal("B", `categoryA.userLabel mismatch in ${imodelDb.name}`);
+    expect(categoryB.userLabel).to.equal("A", `categoryB.userLabel mismatch in ${imodelDb.name}`);
     imodelDb.close();
   });
 
