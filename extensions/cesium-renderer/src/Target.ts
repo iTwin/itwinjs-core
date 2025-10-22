@@ -90,8 +90,9 @@ export class CesiumOnScreenTarget extends RenderTarget {
     // ###TODO Implement view rectangle setting logic for Cesium
   }
 
-  public updateViewRect() {// force a RenderTarget viewRect to resize if necessary since last draw
-    return true; // ###TODO Implement view rectangle update logic for Cesium
+  public updateViewRect() {
+    // Cesium handles resizing
+    return false;
   }
 
   public readPixels(_rect: ViewRect, _selector: Pixel.Selector, _receiver: Pixel.Receiver, _excludeNonLocatable: boolean, _excludedElements?: Iterable<Id64String>) {
@@ -150,8 +151,10 @@ export class CesiumOffScreenTarget extends RenderTarget {
     // ###TODO Implement view rectangle setting logic for Cesium
   }
 
-  public updateViewRect() {// force a RenderTarget viewRect to resize if necessary since last draw
-    return true; // ###TODO Implement view rectangle update logic for Cesium
+  public updateViewRect() {
+    // Cesium handles resizing, and an offscreen target also will not resize the view rect
+    // See core/frontend/src/internal/render/webgl/Target.ts - OffScreenTarget.updateViewRect()
+    return false;
   }
 
   public readPixels(_rect: ViewRect, _selector: Pixel.Selector, _receiver: Pixel.Receiver, _excludeNonLocatable: boolean, _excludedElements?: Iterable<Id64String>) {
