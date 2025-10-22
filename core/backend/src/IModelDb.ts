@@ -2335,7 +2335,7 @@ export namespace IModelDb {
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
       try {
         if (elProps.id)
-          this[_instanceKeyCache].deleteById(elProps.id)
+          this[_instanceKeyCache].deleteById(elProps.id);
         else
           this[_instanceKeyCache].delete({
             federationGuid: elProps.federationGuid,
