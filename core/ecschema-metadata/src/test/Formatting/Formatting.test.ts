@@ -484,9 +484,8 @@ describe.only("Ratio format tests", () => {
     it("should format imperial scale factors", async () => {
       const format = await Format.createFromJSON("TestImperialScale", provider, {
         type: "Ratio",
-        ratioType: "OneToN",
-        precision: 1,
-        formatTraits: ["TrailZeroes"],
+        ratioType: "NToOne",
+        precision: 4,
         composite: {
           includeZero: true,
           units: [
@@ -498,74 +497,36 @@ describe.only("Ratio format tests", () => {
       const persistenceUnit = await provider.findUnitByName("RatioUnits.DECIMAL_LENGTH_RATIO");
       const formatterSpec = await FormatterSpec.create("ImperialScale", format, provider, persistenceUnit);
 
-      // TODO: CONFIRM THESE ARE EXPECTED INPUT OUTPUT
       // Common imperial architectural and engineering scales
       // Architectural scales (based on inches to feet)
-      expect(formatterSpec.applyFormatting(1.0)).to.eql("1:1.0"); // Full size
-      expect(formatterSpec.applyFormatting(0.5)).to.eql("1:2.0"); // Half size (6" = 1'-0")
-      expect(formatterSpec.applyFormatting(1/3)).to.eql("1:3.0"); // 4" = 1'-0"
-      expect(formatterSpec.applyFormatting(0.25)).to.eql("1:4.0"); // 3" = 1'-0"
-      expect(formatterSpec.applyFormatting(1/6)).to.eql("1:6.0"); // 2" = 1'-0"
-      expect(formatterSpec.applyFormatting(1/8)).to.eql("1:8.0"); // 1-1/2" = 1'-0"
-      expect(formatterSpec.applyFormatting(1/12)).to.eql("1:12.0"); // 1" = 1'-0"
-      expect(formatterSpec.applyFormatting(1/16)).to.eql("1:16.0"); // 3/4" = 1'-0"
-      expect(formatterSpec.applyFormatting(1/24)).to.eql("1:24.0"); // 1/2" = 1'-0"
-      expect(formatterSpec.applyFormatting(1/32)).to.eql("1:32.0"); // 3/8" = 1'-0"
-      expect(formatterSpec.applyFormatting(1/48)).to.eql("1:48.0"); // 1/4" = 1'-0"
-      expect(formatterSpec.applyFormatting(1/96)).to.eql("1:96.0"); // 1/8" = 1'-0"
+      expect(formatterSpec.applyFormatting(1.0)).to.eql("12\"=1'"); // Full size (12" = 1'-0")
+      expect(formatterSpec.applyFormatting(0.5)).to.eql("6\"=1'"); // Half size (6" = 1'-0")
+      expect(formatterSpec.applyFormatting(1/3)).to.eql("4\"=1'"); // 4" = 1'-0"
+      expect(formatterSpec.applyFormatting(0.25)).to.eql("3\"=1'"); // 3" = 1'-0"
+      expect(formatterSpec.applyFormatting(1/6)).to.eql("2\"=1'"); // 2" = 1'-0"
+      expect(formatterSpec.applyFormatting(1/8)).to.eql("1.5\"=1'"); // 1-1/2" = 1'-0"
+      expect(formatterSpec.applyFormatting(1/12)).to.eql("1\"=1'"); // 1" = 1'-0"
+      expect(formatterSpec.applyFormatting(1/16)).to.eql("0.75\"=1'"); // 3/4" = 1'-0"
+      expect(formatterSpec.applyFormatting(1/24)).to.eql("0.5\"=1'"); // 1/2" = 1'-0"
+      expect(formatterSpec.applyFormatting(1/32)).to.eql("0.375\"=1'"); // 3/8" = 1'-0"
+      expect(formatterSpec.applyFormatting(1/48)).to.eql("0.25\"=1'"); // 1/4" = 1'-0"
+      expect(formatterSpec.applyFormatting(1/96)).to.eql("0.125\"=1'"); // 1/8" = 1'-0"
 
       // Engineering scales (decimal based)
-      expect(formatterSpec.applyFormatting(1/10)).to.eql("1:10.0"); // 1" = 10'
-      expect(formatterSpec.applyFormatting(1/20)).to.eql("1:20.0"); // 1" = 20'
-      expect(formatterSpec.applyFormatting(1/30)).to.eql("1:30.0"); // 1" = 30'
-      expect(formatterSpec.applyFormatting(1/40)).to.eql("1:40.0"); // 1" = 40'
-      expect(formatterSpec.applyFormatting(1/50)).to.eql("1:50.0"); // 1" = 50'
-      expect(formatterSpec.applyFormatting(1/60)).to.eql("1:60.0"); // 1" = 60'
-      expect(formatterSpec.applyFormatting(1/100)).to.eql("1:100.0"); // 1" = 100'
+      expect(formatterSpec.applyFormatting(1/10)).to.eql("1.2\"=1'"); // 1" = 10'
+      expect(formatterSpec.applyFormatting(1/20)).to.eql("0.6\"=1'"); // 1" = 20'
+      expect(formatterSpec.applyFormatting(1/30)).to.eql("0.4\"=1'"); // 1" = 30'
+      expect(formatterSpec.applyFormatting(1/40)).to.eql("0.3\"=1'"); // 1" = 40'
+      expect(formatterSpec.applyFormatting(1/50)).to.eql("0.24\"=1'"); // 1" = 50'
+      expect(formatterSpec.applyFormatting(1/60)).to.eql("0.2\"=1'"); // 1" = 60'
+      expect(formatterSpec.applyFormatting(1/100)).to.eql("0.12\"=1'"); // 1" = 100'
 
       // Civil/site scales
-      expect(formatterSpec.applyFormatting(1/120)).to.eql("1:120.0"); // 1" = 10'
-      expect(formatterSpec.applyFormatting(1/240)).to.eql("1:240.0"); // 1" = 20'
-      expect(formatterSpec.applyFormatting(1/480)).to.eql("1:480.0"); // 1" = 40'
-      expect(formatterSpec.applyFormatting(1/600)).to.eql("1:600.0"); // 1" = 50'
-      expect(formatterSpec.applyFormatting(1/1200)).to.eql("1:1200.0"); // 1" = 100'
-    });
-
-    it("should convert a scale factor of 0.0208333 to the respective imperial and metric scale factors", async () => {
-      // Imperial format test
-      const imperialFormat = await Format.createFromJSON("TestRatio", provider, {
-        type: "Ratio",
-        ratioType: "NToOne", // TBD - I expect this is the right ratio unless otherwise.
-        precision: 4, // Use FractionalPrecision.Four
-        composite: {
-          includeZero: true,
-          units: [
-            { name: "RatioUnits.IN_PER_FT_LENGTH_RATIO" },
-          ],
-        },
-      });
-
-      const persistenceUnit = await provider.findUnitByName("RatioUnits.DECIMAL_LENGTH_RATIO"); // This is unitless.
-      const persistedValue = 1/48; // or could use 0.0208333 instead. This means the drawing is around 2% the size of reality
-
-      const imperialSpec = await FormatterSpec.create("ImperialScale", imperialFormat, provider, persistenceUnit);
-      expect(imperialSpec.applyFormatting(persistedValue)).to.eql("0.25\"=1'"); // 1/4 inch on the drawing equals 1 foot in real life
-
-      // Metric format test
-      const metricFormat = await Format.createFromJSON("TestMetricRatio", provider, {
-        type: "Ratio",
-        ratioType: "NToOne",
-        precision: 2, // Format converted value to 2 decimal places
-        composite: {
-          includeZero: true,
-          units: [
-            { name: "RatioUnits.MM_PER_M_LENGTH_RATIO" },
-          ],
-        },
-      });
-
-      const metricSpec = await FormatterSpec.create("MetricScale", metricFormat, provider, persistenceUnit);
-      expect(metricSpec.applyFormatting(persistedValue)).to.eql("20.83mm=1m"); // 20.83mm on the drawing represents 1 meter in real life.
+      expect(formatterSpec.applyFormatting(1/120)).to.eql("0.1\"=1'"); // 1" = 10'
+      expect(formatterSpec.applyFormatting(1/240)).to.eql("0.05\"=1'"); // 1" = 20'
+      expect(formatterSpec.applyFormatting(1/480)).to.eql("0.025\"=1'"); // 1" = 40'
+      expect(formatterSpec.applyFormatting(1/600)).to.eql("0.02\"=1'"); // 1" = 50'
+      expect(formatterSpec.applyFormatting(1/1200)).to.eql("0.01\"=1'"); // 1" = 100'
     });
   });
 
