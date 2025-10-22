@@ -853,6 +853,9 @@ export abstract class IModelDb extends IModel {
     }
 
     const stat = this[_nativeDb].saveChanges(args ? JSON.stringify(args) : undefined);
+    if (DbResult.BE_SQLITE_ERROR_PropagateChangesFailed === stat)
+      throw new IModelError(stat, `Could not save changes due to propagation failure.`);
+
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, `Could not save changes (${args?.description})`);
   }
