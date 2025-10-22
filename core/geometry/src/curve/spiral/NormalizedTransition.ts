@@ -70,6 +70,9 @@ export abstract class NormalizedTransition {
  * @internal
  */
 export class NormalizedClothoidTransition extends NormalizedTransition {
+  // clothoid curvature is f(x) = x
+  // derivative f'(x) = 1
+  // integral If(x) = x^2 / 2
   constructor() {
     super();
   }
@@ -96,13 +99,15 @@ export class NormalizedClothoidTransition extends NormalizedTransition {
  * @internal
  */
 export class NormalizedBlossTransition extends NormalizedTransition {
-  // bloss curve is (3 - 2x) x ^2 = 3 x^2 - 2 x^3
+  // bloss curvature is 3x^2 - 2x^3 or x^2 (3 - 2x)
   // derivative 6x (1-x)
-  // 2nd derivative 6 - 12 x
+  // 2nd derivative 6 - 12x
   // derivatives zero at 0,1
   // inflection zero at 0.5
-  // integral is x^3 - x^4 / 2 = x^3 (1-x/2)
-  constructor() { super(); }
+  // integral is x^3 - x^4/2 or x^3 (1-x/2)
+  constructor() {
+    super();
+  }
   /** At fractional position on the x axis, return the (normalized) curvature fraction. */
   public fractionToCurvatureFraction(u: number): number {
     return u * u * (3 - 2 * u);
@@ -143,9 +148,9 @@ export class NormalizedBiQuadraticTransition extends NormalizedTransition {
   /**
    * At fractional position on the x axis, return the (normalized) curvature fraction.
    *  * For [u <= 0.5, u >= 0.5]
-   *    * f(u) = [2 u^2, 1 - 2 (1-u)^2]
-   *    * f'(u) = [4 u, 4 (1-u)]
-   *    * If(u) = [2 u^3 / 3, 0.5 (1 -u )^3/3]
+   *    * f(u) = [2u^2, 1 - 2(1-u)^2]
+   *    * f'(u) = [4u, 4(1-u)]
+   *    * If(u) = [2u^3 / 3, u - 0.5 + 2(1-u)^3 /3]
    */
   public fractionToCurvatureFraction(u: number): number {
     return u <= 0.5 ? this.basis(u) : 1.0 - this.basis(1.0 - u);
@@ -174,7 +179,12 @@ export class NormalizedBiQuadraticTransition extends NormalizedTransition {
  * @internal
  */
 export class NormalizedSineTransition extends NormalizedTransition {
-  constructor() { super(); }
+  // sine transition is f(x) = x - sin(2 pi x) / (2 pi)
+  // derivative f'(x) = 1 - cos(2 pi x)
+  // integral If(x) = x^2 / 2 + (cos(2 pi x) - 1) / (4 pi^2)
+  constructor() {
+    super();
+  }
   /** At fractional position on the x axis, return the (normalized) curvature fraction. */
   public fractionToCurvatureFraction(u: number): number {
     const a = 2.0 * Math.PI;
@@ -201,7 +211,12 @@ export class NormalizedSineTransition extends NormalizedTransition {
  * @internal
  */
 export class NormalizedCosineTransition extends NormalizedTransition {
-  constructor() { super(); }
+  // cosine transition is f(x) =  0.5 (1 - cos(pi x))
+  // derivative f'(x) = 0.5 pi sin(pi x)
+  // integral If(x) = 0.5 x - sin(pi x) / pi
+  constructor() {
+    super();
+  }
   /** At fractional position on the x axis, return the (normalized) curvature fraction. */
   public fractionToCurvatureFraction(u: number): number {
     const a = Math.PI;

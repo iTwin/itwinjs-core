@@ -183,7 +183,7 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
   /**
    * Create a transition spiral with radius and bearing conditions.
    * @param radius01 radius (inverse curvature) at start and end (radius of zero means straight line).
-   * @param bearing01 bearing angles at start and end.  bearings are measured from the x axis, positive clockwise
+   * @param bearing01 bearing angles at start and end. bearings are measured from the x axis, positive clockwise
    * towards y axis.
    * @param activeFractionInterval fractional limits of the active portion of the spiral.
    * @param localToWorld placement frame. Fractional coordinate 0 is at the origin.
