@@ -147,17 +147,17 @@ export class NormalizedBiQuadraticTransition extends NormalizedTransition {
   }
   /**
    * At fractional position on the x axis, return the (normalized) curvature fraction.
-   *  * For [u <= 0.5, u >= 0.5]
+   *  * For [u <= 0.5, u > 0.5]
    *    * f(u) = [2u^2, 1 - 2(1-u)^2]
    *    * f'(u) = [4u, 4(1-u)]
-   *    * If(u) = [2u^3 / 3, u - 0.5 + 2(1-u)^3 /3]
+   *    * If(u) = [2u^3 / 3, u + 2(1-u)^3 /3]
    */
   public fractionToCurvatureFraction(u: number): number {
     return u <= 0.5 ? this.basis(u) : 1.0 - this.basis(1.0 - u);
   }
   /** Return the derivative of the (normalized) curvature fraction. */
   public fractionToCurvatureFractionDerivative(u: number): number {
-    return u < 0.5 ? this.basisDerivative(u) : this.basisDerivative(1 - u);
+    return u <= 0.5 ? this.basisDerivative(u) : this.basisDerivative(1 - u);
   }
   /**
    * Return the integrated area under the curve.
@@ -166,6 +166,7 @@ export class NormalizedBiQuadraticTransition extends NormalizedTransition {
   public fractionToArea(u: number): number {
     if (u <= 0.5)
       return this.integratedBasis(u);
+    // if u > 0.5, integral[0 to u] would be integral[0 to 0.5] of "2u^2" + integral[0.5 to u] of "1 - 2(1-u)^2"
     const v = 1 - u;
     return 0.5 - v + this.integratedBasis(v);
   }
