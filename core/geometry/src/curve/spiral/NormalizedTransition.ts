@@ -12,12 +12,12 @@
  * * Each function maps fractional progress to a curvature value.
  *   * f(0) === 0
  *   * f(1) === 1
- *   * f(u) === 1 - f (1-u)
+ *   * f(u) === 1 - f(1-u)
  * * Each implementation provides:
  *   * fractionToCurvature -- the f(u) function described above
  *   * fractionToCurvatureDerivative -- df(u)/du
  *   * fractionToArea -- integral of the area under f(u) from 0 to u.
- * * the symmetry condition ensures that the integral from 0 to 1 is 1/2
+ * * The symmetry condition ensures that the integral from 0 to 1 is 1/2.
  * @internal
  */
 export abstract class NormalizedTransition {
@@ -25,10 +25,10 @@ export abstract class NormalizedTransition {
   constructor() { }
   /** At fractional position on the x axis, return the (normalized) curvature fraction. */
   public abstract fractionToCurvatureFraction(fractionX: number): number;
-  /** Return the derivative of the (normalized) curvature fraction */
+  /** Return the derivative of the (normalized) curvature fraction. */
   public abstract fractionToCurvatureFractionDerivative(fractionX: number): number;
   /**
-   * Return the integrated area under the curve
+   * Return the integrated area under the curve.
    * * This is equal to the accumulated angle change.
    */
   public abstract fractionToArea(fractionX: number): number;
@@ -70,7 +70,9 @@ export abstract class NormalizedTransition {
  * @internal
  */
 export class NormalizedClothoidTransition extends NormalizedTransition {
-  constructor() { super(); }
+  constructor() {
+    super();
+  }
   /** At fractional position on the x axis, return the (normalized) curvature fraction. */
   public fractionToCurvatureFraction(fractionX: number): number {
     return fractionX;
@@ -99,7 +101,7 @@ export class NormalizedBlossTransition extends NormalizedTransition {
   // 2nd derivative 6 - 12 x
   // derivatives zero at 0,1
   // inflection zero at 0.5
-  // integral is   x^3 - x^4 / 2 = x^3 ( 1-x/2)
+  // integral is x^3 - x^4 / 2 = x^3 (1-x/2)
   constructor() { super(); }
   /** At fractional position on the x axis, return the (normalized) curvature fraction. */
   public fractionToCurvatureFraction(u: number): number {
@@ -183,7 +185,8 @@ export class NormalizedSineTransition extends NormalizedTransition {
     const a = 2.0 * Math.PI;
     return 1 - Math.cos(u * a);
   }
-  /** Return the integrated area under the curve.
+  /**
+   * Return the integrated area under the curve.
    * * This fraction is the angular change fraction.
    */
   public fractionToArea(u: number): number {
@@ -209,7 +212,8 @@ export class NormalizedCosineTransition extends NormalizedTransition {
     const a = Math.PI;
     return 0.5 * a * Math.sin(u * a);
   }
-  /** Return the integrated area under the curve.
+  /**
+   * Return the integrated area under the curve.
    * * This fraction is the angular change fraction.
    */
   public fractionToArea(u: number): number {
