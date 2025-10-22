@@ -1860,10 +1860,10 @@ describe("iModel", () => {
       for (let numPts = 0; numPts < 3; numPts++) {
         const geoResponse = await imodel5.getGeoCoordinatesFromIModelCoordinates({ target: "WGS84", iModelCoords });
         expect(geoResponse.geoCoords.length).to.equal(numPts);
-        
+
         const iModelResponse = await imodel5.getIModelCoordinatesFromGeoCoordinates({ source: "WGS84", geoCoords });
         expect(iModelResponse.iModelCoords.length).to.equal(numPts);
-        
+
         iModelCoords.push(new Point3d());
         geoCoords.push(new Point3d());
       }
@@ -1875,11 +1875,11 @@ describe("iModel", () => {
       for (let numPts = 0; numPts < 3; numPts++) {
         const geoResponse = await imodel5.getGeoCoordinatesFromIModelCoordinates({ target: "WGS84", iModelCoords });
         expect(geoResponse.fromCache).to.equal(0);
-        
+
         const iModelResponse = await imodel5.getIModelCoordinatesFromGeoCoordinates({ source: "WGS84", geoCoords });
         expect(iModelResponse.iModelCoords.length).to.equal(numPts);
         expect(iModelResponse.fromCache).to.equal(0);
-        
+
         iModelCoords.push(new Point3d());
         geoCoords.push(new Point3d());
       }
@@ -3303,8 +3303,6 @@ describe("iModel", () => {
     }
     testImodel.close();
   });
-<<<<<<< HEAD
-=======
 
   it("should update codeValues that are switched between elements", async () => {
     const dbFileName = IModelTestUtils.prepareOutputFile("IModel", "change-codeValues.bim");
@@ -3373,5 +3371,4 @@ describe("iModel", () => {
     expect(() => testImodel.elements.getAspects("0x1", "WrongSchema:WrongClass")).to.throw("db is not open");
     expect(() => testImodel.createQueryReader("SELECT 1")).to.throw("db not open");
   });
->>>>>>> 4525c90a4f (Clear Element's InstanceKeyCache during element updates (#8632))
 });
