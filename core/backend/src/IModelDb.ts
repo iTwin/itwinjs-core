@@ -2338,7 +2338,6 @@ export namespace IModelDb {
           this[_instanceKeyCache].deleteById(elProps.id)
         else
           this[_instanceKeyCache].delete({
-            partialKey: elProps.id && elProps.classFullName ? { id: elProps.id, baseClassName: elProps.classFullName } : undefined,
             federationGuid: elProps.federationGuid,
             code: elProps.code,
           });
