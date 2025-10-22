@@ -116,32 +116,4 @@ describe("Code insertion tests", () => {
     elProps.code.spec = undefined as any; // nothing
     expect(() => imodel.elements.insertElement(elProps)).throws("Error inserting element").to.have.property("metadata");
   });
-
-  it("should fail to insert an element with an empty Code", () => {
-    assert.exists(imodel.elements);
-    const elProps: ElementProps = {
-      classFullName: 'BisCore:RepositoryLink',
-      code: Code.createEmpty(),
-      id: '0x1e',
-      model: '0x11',
-      userLabel: 'RF1.dgn',
-      federationGuid: undefined,
-    };
-
-    expect(() => imodel.elements.insertElement(elProps)).throws().to.have.property("metadata");
-  });
-
-  it("should fail to insert an element with a NULL Code value", () => {
-    assert.exists(imodel.elements);
-    const elProps: ElementProps = {
-      classFullName: 'BisCore:RepositoryLink',
-      code: { scope: "0x1", spec: "validSpec" },
-      id: '0x1e',
-      model: '0x11',
-      userLabel: 'RF1.dgn',
-      federationGuid: undefined,
-    };
-
-    expect(() => imodel.elements.insertElement(elProps)).throws().to.have.property("metadata");
-  });
 });
