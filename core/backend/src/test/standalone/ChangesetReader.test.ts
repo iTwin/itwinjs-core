@@ -138,7 +138,7 @@ describe("Changeset Reader API", async () => {
         tables: ["bis_GeometricElement2d_Overflow"],
         op: "Updated",
         classFullName: "BisCore:GeometricElement2d",
-        fallbackClassId: "0x5e",
+        fallbackClassId: "0x60",
         changeIndexes: [3],
         stage: "New",
       },
@@ -152,7 +152,7 @@ describe("Changeset Reader API", async () => {
         tables: ["bis_GeometricElement2d_Overflow"],
         op: "Updated",
         classFullName: "BisCore:GeometricElement2d",
-        fallbackClassId: "0x5e",
+        fallbackClassId: "0x60",
         changeIndexes: [3],
         stage: "Old",
       },
@@ -299,7 +299,7 @@ describe("Changeset Reader API", async () => {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         assert.deepEqual(el.BBoxHigh, { X: 15, Y: 15 });
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x6d" });
+        assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x6f" });
         assert.equal(el.s, "xxxxxxxxx");
         assert.isNull(el.CodeValue);
         assert.isNull(el.UserLabel);
@@ -312,11 +312,11 @@ describe("Changeset Reader API", async () => {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         assert.deepEqual(el.TypeDefinition, { Id: null, RelECClassId: null });
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x6d" });
+        assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x6f" });
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        assert.deepEqual(el.CodeSpec, { Id: "0x1", RelECClassId: "0x69" });
+        assert.deepEqual(el.CodeSpec, { Id: "0x1", RelECClassId: "0x6b" });
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        assert.deepEqual(el.CodeScope, { Id: "0x1", RelECClassId: "0x6b" });
+        assert.deepEqual(el.CodeScope, { Id: "0x1", RelECClassId: "0x6d" });
 
         assert.deepEqual(el.$meta, {
           tables: [
@@ -483,7 +483,7 @@ describe("Changeset Reader API", async () => {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         assert.deepEqual(el.BBoxHigh, { X: 15, Y: 15 });
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x6d" });
+        assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x6f" });
         assert.equal(el.s, "xxxxxxxxx");
         assert.isNull(el.CodeValue);
         assert.isNull(el.UserLabel);
@@ -496,11 +496,11 @@ describe("Changeset Reader API", async () => {
         // eslint-disable-next-line @typescript-eslint/naming-convention
         assert.deepEqual(el.TypeDefinition, { Id: null, RelECClassId: null });
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x6d" });
+        assert.deepEqual(el.Category, { Id: "0x20000000002", RelECClassId: "0x6f" });
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        assert.deepEqual(el.CodeSpec, { Id: "0x1", RelECClassId: "0x69" });
+        assert.deepEqual(el.CodeSpec, { Id: "0x1", RelECClassId: "0x6b" });
         // eslint-disable-next-line @typescript-eslint/naming-convention
-        assert.deepEqual(el.CodeScope, { Id: "0x1", RelECClassId: "0x6b" });
+        assert.deepEqual(el.CodeScope, { Id: "0x1", RelECClassId: "0x6d" });
 
         assert.deepEqual(el.$meta, {
           tables: [
@@ -1240,16 +1240,16 @@ describe("Changeset Reader API", async () => {
     const [secondBriefcaseChangeset1, secondBriefcaseChangeset2] = secondBriefcaseChangesets;
 
     expect(secondBriefcaseChangeset1.uncompressedSizeBytes).to.be.greaterThan(40000);
-    expect(secondBriefcaseChangeset1.insertedRows).to.be.greaterThanOrEqual(52);
+    expect(secondBriefcaseChangeset1.insertedRows).to.be.eql(0);
     expect(secondBriefcaseChangeset1.updatedRows).to.be.greaterThanOrEqual(921);
-    expect(secondBriefcaseChangeset1.deletedRows).to.be.eql(0);
+    expect(secondBriefcaseChangeset1.deletedRows).to.be.greaterThanOrEqual(52)
     expect(secondBriefcaseChangeset1.totalFullTableScans).to.be.eql(0);
     expect(secondBriefcaseChangeset1.perStatementStats.length).to.be.eql(11);
 
     expect(secondBriefcaseChangeset2.uncompressedSizeBytes).to.be.greaterThan(40000);
-    expect(secondBriefcaseChangeset2.insertedRows).to.be.eql(0);
+    expect(secondBriefcaseChangeset2.insertedRows).to.be.greaterThanOrEqual(52);
     expect(secondBriefcaseChangeset2.updatedRows).to.be.greaterThanOrEqual(921);
-    expect(secondBriefcaseChangeset2.deletedRows).to.be.greaterThanOrEqual(52);
+    expect(secondBriefcaseChangeset2.deletedRows).to.be.eql(0);
     expect(secondBriefcaseChangeset2.totalFullTableScans).to.be.eql(0);
     expect(secondBriefcaseChangeset2.perStatementStats.length).to.be.eql(11);
 
@@ -1328,7 +1328,7 @@ describe("Changeset Reader API", async () => {
       expect(testEl.$meta?.op).to.equals("Inserted");
       expect(testEl.$meta?.classFullName).to.equals("TestDomain:Test2dElement");
       expect(testEl.$meta?.stage).to.equals("New");
-      expect(testEl.ECClassId).to.equals("0x168");
+      expect(testEl.ECClassId).to.equals("0x171");
       expect(testEl.ECInstanceId).to.equals(e1id);
       expect(testEl.Model.Id).to.equals(drawingModelId);
       expect(testEl.Category.Id).to.equals(drawingCategoryId);
@@ -1365,7 +1365,7 @@ describe("Changeset Reader API", async () => {
       expect(drawingModelElNew.$meta?.op).to.equals("Updated");
       expect(drawingModelElNew.$meta?.classFullName).to.equals("BisCore:DrawingModel");
       expect(drawingModelElNew.$meta?.stage).to.equals("New");
-      expect(drawingModelElNew.ECClassId).to.equals("0xaa");
+      expect(drawingModelElNew.ECClassId).to.equals("0xaf");
       expect(drawingModelElNew.ECInstanceId).to.equals(drawingModelId);
       expect(drawingModelElNew.LastMod).to.exist;
       expect(drawingModelElNew.GeometryGuid).to.exist;
@@ -1375,7 +1375,7 @@ describe("Changeset Reader API", async () => {
       expect(drawingModelElOld.$meta?.op).to.equals("Updated");
       expect(drawingModelElOld.$meta?.classFullName).to.equals("BisCore:DrawingModel");
       expect(drawingModelElOld.$meta?.stage).to.equals("Old");
-      expect(drawingModelElOld.ECClassId).to.equals("0xaa");
+      expect(drawingModelElOld.ECClassId).to.equals("0xaf");
       expect(drawingModelElOld.ECInstanceId).to.equals(drawingModelId);
       expect(drawingModelElOld.LastMod).to.null;
       expect(drawingModelElOld.GeometryGuid).to.null;
@@ -1385,7 +1385,7 @@ describe("Changeset Reader API", async () => {
       expect(testEl.$meta?.op).to.equals("Inserted");
       expect(testEl.$meta?.classFullName).to.equals("TestDomain:Test2dElement");
       expect(testEl.$meta?.stage).to.equals("New");
-      expect(testEl.ECClassId).to.equals("0x168");
+      expect(testEl.ECClassId).to.equals("0x171");
       expect(testEl.ECInstanceId).to.equals(e1id);
       expect(testEl.Model.Id).to.equals(drawingModelId);
       expect(testEl.Category.Id).to.equals(drawingCategoryId);
