@@ -928,29 +928,33 @@ FROM
 
 ```sql
 SELECT
-  Name
+  COUNT(*) AS result
 FROM
-  meta.ecclassdef
-WHERE
-  ECInstanceID > ANY(
+  (
     SELECT
-      ECClassId,
-      Model.RelECClassId
+      Name
     FROM
-      aps.TestElement
+      meta.ecclassdef
+    WHERE
+      ECInstanceID > ANY(
+        SELECT
+          ECClassId,
+          Model.RelECClassId
+        FROM
+          aps.TestElement
+      )
+    LIMIT
+      3
   )
-LIMIT 3
 ```
 
-| className           | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
-| ------------------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ | ------------------ |
-| ECDbMeta:ECClassDef | Name         | false     | 0     | name     | Name | undefined    | string   | String | Name               |
+| className | accessString | generated | index | jsonName | name   | extendedType | typeName | type  |
+| --------- | ------------ | --------- | ----- | -------- | ------ | ------------ | -------- | ----- |
+|           | result       | true      | 0     | result   | result | undefined    | long     | Int64 |
 
-| Name                     |
-| ------------------------ |
-| AnnotationDimensionStyle |
-| AnnotationFrameStyle     |
-| AnnotationLeaderStyle    |
+| result |
+| ------ |
+| 3      |
 
 # Using SOME with multiple items
 
