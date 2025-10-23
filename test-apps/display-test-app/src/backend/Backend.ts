@@ -9,7 +9,7 @@ import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { appendTextAnnotationGeometry, IModelDb, IModelHost, IModelHostOptions, layoutTextBlock, LocalhostIpcHost, TextStyleResolver } from "@itwin/core-backend";
+import { appendTextAnnotationGeometry, Drawing, IModelDb, IModelHost, IModelHostOptions, layoutTextBlock, LocalhostIpcHost, TextStyleResolver } from "@itwin/core-backend";
 import {
   DynamicGraphicsRequest2dProps, ElementGeometry, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, Placement2dProps, RpcInterfaceDefinition, RpcManager, TextAnnotation, TextAnnotationProps,
 } from "@itwin/core-common";
@@ -21,6 +21,7 @@ import { ECSchemaRpcInterface } from '@itwin/ecschema-rpcinterface-common';
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
 import { FormatSet } from "@itwin/ecschema-metadata";
+import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -182,14 +183,20 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
   }
 
-  public override async generateTextAnnotationGeometry(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, categoryId: Id64String, modelId: Id64String, placementProps: Placement2dProps, wantDebugGeometry?: boolean): Promise<Uint8Array | undefined> {
+  public override async generateTextAnnotationGeometry(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, defaultTextStyleId: Id64String, categoryId: Id64String, modelId: Id64String, placementProps: Placement2dProps, wantDebugGeometry?: boolean): Promise<Uint8Array | undefined> {
     const iModel = IModelDb.findByKey(iModelToken.key);
 
     const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
-    const textStyleResolver = new TextStyleResolver({textBlock, iModel, modelId});
+    let scaleFactor = 1;
+    if (modelId) {
+      const element = iModel.elements.getElement(modelId);
+      if (element instanceof Drawing)
+        scaleFactor = element.scaleFactor;
+    }
+    const textStyleResolver = new TextStyleResolver({textBlock, iModel, textStyleId: defaultTextStyleId});
     const layout = layoutTextBlock({ iModel, textBlock, textStyleResolver });
     const builder = new ElementGeometry.Builder();
-    appendTextAnnotationGeometry({ layout, textStyleResolver, annotationProps, builder, categoryId, wantDebugGeometry });
+    appendTextAnnotationGeometry({ layout, textStyleResolver, scaleFactor, annotationProps, builder, categoryId, wantDebugGeometry });
 
     const requestProps: DynamicGraphicsRequest2dProps = {
       id: Guid.createValue(),
@@ -249,7 +256,10 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   Logger.setLevelDefault(logLevel);
   Logger.setLevel("SVT", LogLevel.Trace);
 
-  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  const iModelClient = new IModelsClient({
+    api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` },
+    cloudStorage: new AzureClientStorage(new BlockBlobClientWrapperFactory())
+  });
   const hubAccess = new BackendIModelsAccess(iModelClient);
 
   const iModelHost: IModelHostOptions = {

@@ -14,12 +14,12 @@ describe("LeaderGeometry", () => {
   let builder: MockBuilder;
   let defaultParams: GeometryParams;
 
-  const textBlock = TextBlock.create({ styleId: "0x34", styleOverrides: { fontName: "Arial", color: ColorDef.black.toJSON(), leader: {wantElbow: false} } });
-  textBlock.appendRun(TextRun.create({ content: "Hello", styleOverrides: { fontName: "Arial" } }));
+  const textBlock = TextBlock.create({ styleOverrides: { font: { name: "Arial" }, color: ColorDef.black.toJSON(), leader: {wantElbow: false} } });
+  textBlock.appendRun(TextRun.create({ content: "Hello", styleOverrides: { font: { name: "Arial" } } }));
   textBlock.appendRun(LineBreakRun.create({
-    styleOverrides: { fontName: "Arial" },
+    styleOverrides: { font: { name: "Arial" } },
   }));
-  textBlock.appendRun(TextRun.create({ content: "World", styleOverrides: { fontName: "Arial" } }));
+  textBlock.appendRun(TextRun.create({ content: "World", styleOverrides: { font: { name: "Arial" } } }));
 
   const frame: TextFrameStyleProps = { borderWeight: 1, shape: "rectangle" };
 
@@ -30,17 +30,19 @@ describe("LeaderGeometry", () => {
     offset: { x: 0, y: 0 },
   });
 
-  const findTextStyle = (id: Id64String) => TextStyleSettings.fromJSON(id === "0x34" ? { lineSpacingFactor: 12, fontName: "block", frame } : { lineSpacingFactor: 99, fontName: "run", frame });
+  const findTextStyle = (id: Id64String) => TextStyleSettings.fromJSON(id === "0x34" ? { lineSpacingFactor: 12, font: { name: "block" }, frame } : { lineSpacingFactor: 99, font: { name: "run" }, frame });
   const textStyleResolver = new TextStyleResolver({
     textBlock,
+    textStyleId: "0x34",
     iModel: {} as any,
-    modelId: undefined,
     findTextStyle,
   });
   const layout = doLayout(textBlock, {
+    textStyleId: "0x34",
     findTextStyle,
     findFontId: () => 0,
   });
+  const scaleFactor = 1;
 
 
   const range = Range2d.fromJSON(layout.range);
@@ -60,7 +62,7 @@ describe("LeaderGeometry", () => {
           attachment: { mode: "Nearest" }
         }
       ]
-      const result = appendLeadersToBuilder(builder, leaders, layout, transform, defaultParams, textStyleResolver);
+      const result = appendLeadersToBuilder(builder, leaders, layout, transform, defaultParams, textStyleResolver, scaleFactor);
       expect(result).to.be.true;
       const params = builder.params[builder.params.length - 1];
       expect(builder.params.length).to.be.equal(1);
@@ -74,7 +76,7 @@ describe("LeaderGeometry", () => {
     it("should append multiple leaders to the builder", () => {
       const leaders: TextAnnotationLeader[] = [{ startPoint: Point3d.create(20, 20, 0), attachment: { mode: "Nearest" } },
       { startPoint: Point3d.create(10, 0, 0), attachment: { mode: "Nearest" } }];
-      const result = appendLeadersToBuilder(builder, leaders, layout, transform, defaultParams, textStyleResolver);
+      const result = appendLeadersToBuilder(builder, leaders, layout, transform, defaultParams, textStyleResolver, scaleFactor);
       expect(result).to.be.true;
       expect(builder.params.length).to.be.equal(2); // One for each leader
       expect(builder.geometries.length).to.be.equal(4); // Two LineString3d for leadersSegments and two for terminators
@@ -91,7 +93,7 @@ describe("LeaderGeometry", () => {
           intermediatePoints: [Point3d.create(15, 15, 0), Point3d.create(20, 20, 0)]
         }
       ];
-      const result = appendLeadersToBuilder(builder, leaders, layout, transform, defaultParams, textStyleResolver);
+      const result = appendLeadersToBuilder(builder, leaders, layout, transform, defaultParams, textStyleResolver, scaleFactor);
       expect(result).to.be.true;
       const geometries = builder.geometries;
       const leaderLines = geometries[0] as LineString3d;
@@ -111,7 +113,7 @@ describe("LeaderGeometry", () => {
           }
         }
       ];
-      const result = appendLeadersToBuilder(builder, leaders, layout, transform, defaultParams, textStyleResolver);
+      const result = appendLeadersToBuilder(builder, leaders, layout, transform, defaultParams, textStyleResolver, scaleFactor);
       expect(result).to.be.true;
       const geometries = builder.geometries;
       const leaderLines = geometries[0] as LineString3d;
@@ -137,7 +139,7 @@ describe("LeaderGeometry", () => {
           if (!attachmentPoint) {
             expect.fail("Attachment point should not be undefined");
           }
-          const result = appendLeadersToBuilder(builder, [leader], layout, transform, defaultParams, textStyleResolver);
+          const result = appendLeadersToBuilder(builder, [leader], layout, transform, defaultParams, textStyleResolver, scaleFactor);
           expect(result).to.be.true;
           const leaderLines = builder.geometries[0] as LineString3d;
           // The last point in the geometry is the point on frame where leader is supposed to be attached.
@@ -163,27 +165,27 @@ describe("LeaderGeometry", () => {
       ];
 
       it("should apply color overrides", () => {
-        const result = appendLeadersToBuilder(builder, leaders, layout, transform, defaultParams, textStyleResolver);
+        const result = appendLeadersToBuilder(builder, leaders, layout, transform, defaultParams, textStyleResolver, scaleFactor);
         expect(result).to.be.true;
         const params = builder.params[builder.params.length - 1];
         expect(params.lineColor).to.equal(ColorDef.red);
       });
 
       it("should apply terminator size overrides", () => {
-        const result = appendLeadersToBuilder(builder, leaders, layout, transform, defaultParams, textStyleResolver);
+        const result = appendLeadersToBuilder(builder, leaders, layout, transform, defaultParams, textStyleResolver, scaleFactor);
         expect(result).to.be.true;
         const terminatorLines = builder.geometries[1] as LineString3d;
         const terminatorLength = LineSegment3d.create(terminatorLines.points[0], terminatorLines.points[1]).curveLength();
-        const lineHeight = 1;
-        const terminatorWidth = (leaders[0].styleOverrides?.leader?.terminatorWidthFactor ?? 1) * lineHeight;
-        const terminatorHeight = (leaders[0].styleOverrides?.leader?.terminatorHeightFactor ?? 1) * lineHeight;
+        const textHeight = 1;
+        const terminatorWidth = (leaders[0].styleOverrides?.leader?.terminatorWidthFactor ?? 1) * textHeight;
+        const terminatorHeight = (leaders[0].styleOverrides?.leader?.terminatorHeightFactor ?? 1) * textHeight;
         //  terminator length is calculated based on the terminator width and height factors.
         const expectedTerminatorLength = Math.sqrt(terminatorWidth * terminatorWidth + terminatorHeight * terminatorHeight);
         expect(terminatorLength).to.be.closeTo(expectedTerminatorLength, 0.01);
       });
 
       it("should apply elbow length overrides", () => {
-        const result = appendLeadersToBuilder(builder, leaders, layout, transform, defaultParams, textStyleResolver);
+        const result = appendLeadersToBuilder(builder, leaders, layout, transform, defaultParams, textStyleResolver, scaleFactor);
         expect(result).to.be.true;
         const leaderLines = builder.geometries[0] as LineString3d;
         // When elbow exists, the last two points in the leaderLines should form the elbow

@@ -78,6 +78,7 @@ const selectBaseClasses = `
   INNER JOIN [meta].[ClassHasBaseClasses] [baseClassMap]
     ON [baseClassMap].[TargetECInstanceId] = [baseClass].[ECInstanceId]
   WHERE [baseClassMap].[SourceECInstanceId] = [class].[ECInstanceId]
+  ORDER BY [baseClassMap].[Ordinal] ASC
   LIMIT 1
 `;
 

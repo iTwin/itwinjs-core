@@ -420,6 +420,7 @@ export abstract class CurveChain extends CurveCollection {
    * Return the curve primitive at the given `index`, optionally using `modulo` to map `index` to the cyclic indexing.
    * * In particular, `-1` is the final curve.
    * @param index cyclic index
+   * @param cyclic whether to employ modulo operator for wrap-around indexing. Default is `true`.
    */
   public cyclicCurvePrimitive(index: number, cyclic: boolean = true): CurvePrimitive | undefined {
     const n = this.children.length;

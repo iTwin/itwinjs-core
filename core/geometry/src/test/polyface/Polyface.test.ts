@@ -1728,7 +1728,7 @@ function createPolyfaceFromSynchroA(geom: any): Polyface {
 
 describe("SphericalMeshData", () => {
   // lexicographical order, with slop for equality
-  const compareNormals: OrderedComparator<Vector3d> = (v0: Vector3d, v1: Vector3d) => { // lexicographical order, with slop for equality
+  const compareNormals: OrderedComparator<Vector3d> = (v0: Vector3d, v1: Vector3d) => {
     if (v0.isAlmostEqual(v1))
       return 0;
     if (!Geometry.isAlmostEqualNumber(v0.x, v1.x)) {

@@ -169,12 +169,8 @@ export class ElementPicker {
   }
 
   private comparePixel(pixel1: Pixel.Data, pixel2: Pixel.Data, distXY1: number, distXY2: number) {
-    let priority1 = pixel1.computeHitPriority();
-    let priority2 = pixel2.computeHitPriority();
-
-    // If two hits have the same priority, prefer a contour over a non-contour.
-    priority1 -= pixel1.contour ? 0.5 : 0;
-    priority2 -= pixel2.contour ? 0.5 : 0;
+    const priority1 = pixel1.computeHitPriority();
+    const priority2 = pixel2.computeHitPriority();
 
     if (priority1 < priority2)
       return -1;

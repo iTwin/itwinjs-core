@@ -50,15 +50,17 @@ import { RuledSweep } from "../solid/RuledSweep";
 import { Sphere } from "../solid/Sphere";
 import { SweepContour } from "../solid/SweepContour";
 import { TorusPipe } from "../solid/TorusPipe";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeToBooleanFunction } from "../topology/Graph";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction } from "../topology/Graph";
 import { InsertedVertexZOptions } from "../topology/InsertAndRetriangulateContext";
 import { Triangulator } from "../topology/Triangulation";
 import { BoxTopology } from "./BoxTopology";
+import { FacetLocationDetail } from "./FacetLocationDetail";
 import { GreedyTriangulationBetweenLineStrings } from "./GreedyTriangulationBetweenLineStrings";
 import { SortableEdge, SortableEdgeCluster } from "./IndexedEdgeMatcher";
 import { IndexedPolyfaceSubsetVisitor } from "./IndexedPolyfaceVisitor";
 import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceQuery } from "./PolyfaceQuery";
+import { PolyfaceRangeTreeContext } from "./RangeTree/PolyfaceRangeTreeContext";
 
 /**
  * A FacetSector.
@@ -306,7 +308,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
   /**
    * Add triangles from the first point of the linestring to the subsequent edges of the linestring.
-   * * No checks are made for polygon convexity or edge collinearity, conditions which would ensure positive area triangles.
+   * * No checks are made for polygon convexity or edge colinearity, conditions which would ensure positive area triangles.
    * @param ls linestring with point coordinates.
    * @param reverse if `true`, wrap the triangle creation in toggleReversedFacetFlag.
    */
@@ -1673,8 +1675,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * * Accepted face edge visibility is determined by `isEdgeVisibleFunction`.
    * * Rely on the builder's compress step to find common vertex coordinates.
    * @param graph faces to add as facets.
-   * @param acceptFaceFunction optional test for whether to add a given face. Default: ignore exterior faces.
-   * @param isEdgeVisibleFunction optional test for whether to hide an edge. Default: hide interior edges.
+   * @param acceptFaceFunction (optional) callback invoked once per graph face to test for whether to add a given face to the mesh. Default: accept only interior faces.
+   * @param isEdgeVisibleFunction (optional) callback invoked once per edge of each accepted face to test for whether to hide an edge. Default: only boundary edges are visible.
    * @internal
    */
   public addGraph(
@@ -1733,10 +1735,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /**
    * Create a polyface containing the faces of a HalfEdgeGraph, with test functions to filter faces and hide edges.
    * * This is a static wrapper of [[addGraph]].
+   * * Default callbacks assume graph is appropriately masked with HalfEdgeMask.EXTERIOR.
    * @param graph faces to add as facets.
    * @param options (optional) options for the polyface.
-   * @param acceptFaceFunction optional test for whether to add a given face. Default: ignore exterior faces.
-   * @param isEdgeVisibleFunction optional test for whether to hide an edge. Default: hide interior edges.
+   * @param acceptFaceFunction (optional) callback invoked once per graph face to test for whether to add a given face to the mesh. Default: accept only interior faces.
+   * @param isEdgeVisibleFunction (optional) callback invoked once per edge of each accepted face to test for whether to hide an edge. Default: only boundary edges are visible.
+   * @param clusterTol optional distance tolerance for mesh compression. Default is [[Geometry.smallMetricDistance]].
    * @internal
    */
   public static graphToPolyface(
@@ -1744,11 +1748,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     options?: StrokeOptions,
     acceptFaceFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testNodeMaskNotExterior(node),
     isEdgeVisibleFunction: HalfEdgeToBooleanFunction = (node) => HalfEdge.testMateMaskExterior(node),
+    clusterTol: number = Geometry.smallMetricDistance
   ): IndexedPolyface {
     const builder = PolyfaceBuilder.create(options);
     builder.addGraph(graph, acceptFaceFunction, isEdgeVisibleFunction);
     builder.endFace();
-    return builder.claimPolyface();
+    return builder.claimPolyface(true, clusterTol); // always compress; addGraph does not share vertices!
   }
   /**
    * Create a polyface containing the faces of a HalfEdgeGraph that are specified by the HalfEdge array.
@@ -2132,4 +2137,51 @@ function resolveToIndexedXYZCollectionOrCarrier(points: Point3d[] | LineString3d
 }
 function distinctIndices(i0: number, i1: number, i2: number): boolean {
   return i0 !== i1 && i1 !== i2 && i2 !== i0;
+}
+
+/**
+ * In this file to avoid topology -> polyface dependency.
+ * @internal
+ */
+export namespace HalfEdgeGraphSearch {
+  /**
+   * Search the graph for an interior face containing the test point(s).
+   * * For best results:
+   *   * the graph exterior face(s) should be masked with HalfEdgeMask.EXTERIOR
+   *   * the graph should contain no vertical faces
+   * @param graph input topology, z-coordinates ignored
+   * @param testPoint xy point(s) to search
+   * @returns edge in the face loop of the containing face, or `undefined` if `testPoint` is in an exterior face,
+   * or an array of the same in 1-1 correspondence with the input points.
+   */
+  export function findContainingFaceXY(graph: HalfEdgeGraph, testPoint: XAndY | XAndY[]): (HalfEdge | undefined)[] | HalfEdge | undefined {
+    const results: (HalfEdge | undefined)[] = [];
+    const idToFaceIndexMap = graph.constructIdToFaceIndexMap();
+    const facetIndexToFaceIndex: number[] = [];
+    const acceptFace = (face: HalfEdge): boolean => {
+      if (face.isMaskSet(HalfEdgeMask.EXTERIOR))
+        return false; // skip exterior face
+      facetIndexToFaceIndex.push(idToFaceIndexMap.get(face.id) ?? -1);
+      return true;
+    };
+    const clusterTol = Geometry.smallFloatingPoint; // don't want clustering to destroy edges
+    const mesh = PolyfaceBuilder.graphToPolyface(graph, undefined, acceptFace, () => true, clusterTol);
+    mesh.data.point.multiplyMatrix3dInPlace(Matrix3d.createScale(1, 1, 0)); // flatten
+    const searcher = PolyfaceRangeTreeContext.createCapture(mesh, undefined, undefined, false);
+    if (searcher) {
+      const testPoints = Array.isArray(testPoint) ? testPoint : [testPoint];
+      for (const testPt of testPoints) {
+        let result: HalfEdge | undefined;
+        const closestDetail = searcher.searchForClosestPoint(testPt, undefined, true) as FacetLocationDetail | undefined;
+        // closest point on the mesh should have zero distance to testPt, but allow for minute slop
+        if (closestDetail && closestDetail.a < Geometry.smallFloatingPoint) {
+          const faceIndex = facetIndexToFaceIndex[closestDetail.facetIndex];
+          if (faceIndex >= 0 && faceIndex < graph.allHalfEdges.length)
+            result = graph.allHalfEdges[faceIndex];
+        }
+        results.push(result);
+      }
+    }
+    return results.length === 0 ? undefined : (results.length === 1 ? results[0] : results);
+  }
 }

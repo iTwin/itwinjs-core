@@ -7,7 +7,7 @@ import { Id64String, Logger, OrderedId64Iterable } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 import {
   AnimationNodeId,
-  AttachToViewportArgs, createSpatialTileTreeReferences, IModelConnection, SpatialTileTreeReferences, SpatialViewState,
+  AttachToViewportArgs, collectMaskRefs, createSpatialTileTreeReferences, IModelConnection, SpatialTileTreeReferences, SpatialViewState,
   TileTreeLoadStatus, TileTreeOwner, TileTreeReference,
   Viewport,
 } from "@itwin/core-frontend";
@@ -147,47 +147,13 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
   // Collects the TileTreeReferences for the models that need to be drawn to create the planar clip mask.
   // For every model used by the mask (modelIds), extend the maskRange by that model's range.
   public collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[], maskRange: Range3d): void {
-    for (const ref of this._refs) {
-      // For each ref, check to see whether one of the models that are needed are in its group's list of models.
-      const refModelIds = ref.groupModelIds;
-      if (refModelIds) {
-        let haveRefModel = false;
-        for (const modelId of modelIds) {
-          if (refModelIds.has(modelId)) {
-            if (!haveRefModel) {
-              maskTreeRefs.push(ref);
-              haveRefModel = true;
-            }
-            const modelRange = this._models.getModelExtents(modelId);
-            if (modelRange)
-              maskRange.extendRange(modelRange);
-          }
-        }
-      }
-    }
-    // Also need to collect refs from other tile trees which are not in the batched tile tree refs.
-    this._excludedRefs.collectMaskRefs(modelIds, maskTreeRefs, maskRange);
+    // Use V1 tiles for masking - producing the mask from batched tiles can significantly impact performance.
+    return collectMaskRefs(this._view, modelIds, undefined, maskTreeRefs, maskRange);
   }
 
   // Returns a list of the models that are NOT in the planar clip mask.
-  public getModelsNotInMask(maskModels: OrderedId64Iterable | undefined, useVisible: boolean): Id64String[] | undefined {
-    const modelsNotInMask: Id64String[] = [];
-    const includedModels = this._spec.models.keys();
-    if (useVisible) {
-      // All viewed models are in the mask, so get a list of all models which are not viewed.
-      for (const modelId of includedModels) {
-        if (!this._models.views(modelId))
-          modelsNotInMask.push(modelId);
-      }
-    } else {
-      // Get a list of all model which are NOT in the maskModels list.
-      const maskModelSet = new Set(maskModels);
-      for (const modelId of includedModels) {
-        if (!maskModelSet.has(modelId))
-          modelsNotInMask.push(modelId);
-      }
-    }
-    return modelsNotInMask.length > 0 ? modelsNotInMask : undefined;
+  public getModelsNotInMask(_maskModels: OrderedId64Iterable | undefined, _useVisible: boolean): Id64String[] | undefined {
+    return undefined;
   }
 
   // _view.models
