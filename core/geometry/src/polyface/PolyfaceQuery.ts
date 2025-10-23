@@ -401,8 +401,7 @@ export class PolyfaceQuery {
     for (visitor.reset(); visitor.moveToNextFacet();) {
       const facetData = PolygonOps.volumeBetweenPolygonAndPlane(visitor.point, plane, options);
       signedVolumeTimes6 += facetData.volume6;
-      if (!skipMoments) {
-        assert(posSums !== undefined && negSums !== undefined && facetData.origin !== undefined && facetData.products !== undefined);
+      if (posSums && negSums && facetData.origin && facetData.products) {
         if (facetData.area2 > 0)
           posSums.accumulateProductsFromOrigin(facetData.origin, facetData.products, 1.0);
         else

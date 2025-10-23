@@ -54,7 +54,7 @@ export abstract class IndexedXYZCollection {
   public abstract getPoint3dAtCheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
   /**
    * Return the point at `index` as a strongly typed Point3d, without checking the point index validity.
-   * * Use [[IndexedXYZCollection.getPoint3dAtCheckedPointIndex]] to have index validity test.
+   * * Use [[getPoint3dAtCheckedPointIndex]] to have index validity test.
    * @param index index of point within the array
    * @param result caller-allocated destination
    */
@@ -67,7 +67,7 @@ export abstract class IndexedXYZCollection {
    */
   public abstract getVector3dAtCheckedVectorIndex(index: number, result?: Vector3d): Vector3d | undefined;
   /**
-   * Return a vector from the point at `indexA` to the point at `indexB`
+   * Return a vector from the point at `indexA` to the point at `indexB`.
    * @param indexA index of point within the array
    * @param indexB index of point within the array
    * @param result caller-allocated vector.
@@ -75,16 +75,25 @@ export abstract class IndexedXYZCollection {
    */
   public abstract vectorIndexIndex(indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
   /**
-   * Return a vector from the point at `indexA` to the point at `indexB`
-   * * This method does not check for index validity. Use [[IndexedXYZCollection.vectorIndexIndex]] to have validity test.
+   * Return a vector from the point at `indexA` to the point at `indexB`.
+   * * This method does not check for index validity. Use [[vectorIndexIndex]] to have validity test.
    * @param indexA index of point within the array
    * @param indexB index of point within the array
    * @param result caller-allocated vector.
-   * @returns undefined if either index is out of bounds
    */
-  public abstract vectorUncheckedIndexIndex(indexA: number, indexB: number, result?: Vector3d): Vector3d;
+  public vectorUncheckedIndexIndex(indexA: number, indexB: number, result?: Vector3d): Vector3d {
+    return Vector3d.createStartEndXYZXYZ(
+      this.getXAtUncheckedPointIndex(indexA),
+      this.getYAtUncheckedPointIndex(indexA),
+      this.getZAtUncheckedPointIndex(indexA),
+      this.getXAtUncheckedPointIndex(indexB),
+      this.getYAtUncheckedPointIndex(indexB),
+      this.getZAtUncheckedPointIndex(indexB),
+      result,
+    );
+  }
   /**
-   * Return a vector from `origin` to the point at `indexB`
+   * Return a vector from `origin` to the point at `indexB`.
    * @param origin origin for vector
    * @param indexB index of point within the array
    * @param result caller-allocated vector.
@@ -92,15 +101,25 @@ export abstract class IndexedXYZCollection {
    */
   public abstract vectorXYAndZIndex(origin: XYAndZ, indexB: number, result?: Vector3d): Vector3d | undefined;
     /**
-   * Return a vector from `origin` to the point at `indexB`
-   * * This method does not check for index validity. Use [[IndexedXYZCollection.vectorXYAndZIndex]] to have validity test.
+   * Return a vector from `origin` to the point at `indexB`.
+   * * This method does not check for index validity. Use [[vectorXYAndZIndex]] to have validity test.
    * @param origin origin for vector
    * @param indexB index of point within the array
    * @param result caller-allocated vector.
    */
-  public abstract vectorXYAndZUncheckedIndex(origin: XYAndZ, indexB: number, result?: Vector3d): Vector3d ;
+  public vectorXYAndZUncheckedIndex(origin: XYAndZ, indexB: number, result?: Vector3d): Vector3d {
+    return Vector3d.createStartEndXYZXYZ(
+      origin.x,
+      origin.y,
+      origin.z,
+      this.getXAtUncheckedPointIndex(indexB),
+      this.getYAtUncheckedPointIndex(indexB),
+      this.getZAtUncheckedPointIndex(indexB),
+      result,
+    );
+  }
   /**
-   * Return a vector from the point at `indexA` to `target`
+   * Return a vector from the point at `indexA` to `target`.
    * @param indexA index of point within the array
    * @param target target for vector
    * @param result caller-allocated vector.
@@ -139,14 +158,12 @@ export abstract class IndexedXYZCollection {
       return undefined;
     return this.dotProductUncheckedIndexIndexXYAndZ(origin, indexA, targetB);
   }
-    /**
+  /**
    * Return the dot product of the vectors from the point at `origin` to the point at `indexA` and to `targetB`.
-   * * This method does not check for index validity. Use [[IndexedXYZCollection.dotProductIndexIndexXYAndZ]] to have
-   * validity test.
+   * * This method does not check for index validity. Use [[dotProductIndexIndexXYAndZ]] to have validity test.
    * @param origin index of point within the array; origin of both vectors
    * @param indexA index of point within the array; target of the first vector
    * @param targetB target for second vector
-   * @returns undefined if index is out of bounds
    */
   public dotProductUncheckedIndexIndexXYAndZ(origin: number, indexA: number, targetB: XYAndZ): number {
     const x0 = this.getXAtUncheckedPointIndex(origin);
@@ -166,7 +183,7 @@ export abstract class IndexedXYZCollection {
    */
   public abstract crossProductXYAndZIndexIndex(origin: XYAndZ, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
   /**
-   * Return the cross product of the vectors from `origin` to the point at `indexA` and to `targetB`
+   * Return the cross product of the vectors from `origin` to the point at `indexA` and to `targetB`.
    * @param origin index of point within the array; origin of both vectors
    * @param indexA index of point within the array; target of the first vector
    * @param targetB target of second vector
@@ -176,18 +193,32 @@ export abstract class IndexedXYZCollection {
   public crossProductIndexIndexXYAndZ(origin: number, indexA: number, targetB: XYAndZ, result?: Vector3d): Vector3d | undefined {
     if (origin < 0 || origin >= this.length || indexA < 0 || indexA >= this.length)
       return undefined;
+    return this.crossProductUncheckedIndexIndexXYAndZ(origin, indexA, targetB, result);
+  }
+  /**
+   * Return the cross product of the vectors from `origin` to the point at `indexA` and to `targetB.
+   * * This method does not check for index validity. Use [[crossProductIndexIndexXYAndZ]] to have validity test.
+   * @param origin index of point within the array; origin of both vectors
+   * @param indexA index of point within the array; target of the first vector
+   * @param targetB target of second vector
+   * @param result optional caller-allocated result to fill and return
+   */
+  public crossProductUncheckedIndexIndexXYAndZ(origin: number, indexA: number, targetB: XYAndZ, result?: Vector3d): Vector3d {
     const x0 = this.getXAtUncheckedPointIndex(origin);
     const y0 = this.getYAtUncheckedPointIndex(origin);
     const z0 = this.getZAtUncheckedPointIndex(origin);
-    return Vector3d.createCrossProduct(this.getXAtUncheckedPointIndex(indexA) - x0,
-                                       this.getYAtUncheckedPointIndex(indexA) - y0,
-                                       this.getZAtUncheckedPointIndex(indexA) - z0,
-                                       targetB.x - x0,
-                                       targetB.y - y0,
-                                       targetB.z - z0, result);
+    return Vector3d.createCrossProduct(
+      this.getXAtUncheckedPointIndex(indexA) - x0,
+      this.getYAtUncheckedPointIndex(indexA) - y0,
+      this.getZAtUncheckedPointIndex(indexA) - z0,
+      targetB.x - x0,
+      targetB.y - y0,
+      targetB.z - z0,
+      result,
+    );
   }
   /**
-   * Return the cross product of vectors from `origin` to points at `indexA` and `indexB`
+   * Return the cross product of vectors from `origin` to points at `indexA` and `indexB`.
    * @param origin origin for vector
    * @param indexA index of first target within the array
    * @param indexB index of second target within the array
@@ -196,12 +227,33 @@ export abstract class IndexedXYZCollection {
    */
   public abstract crossProductIndexIndexIndex(origin: number, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
   /**
-   * Return the cross product of vectors from origin point at `indexA` to target points at `indexB` and `indexC`
+   * Return the cross product of vectors from the point at `origin` to points at `indexA` and `indexB`.
+   * * This method does not check for index validity. Use [[crossProductIndexIndexIndex]] to have validity test.
+   * @param origin origin for vector
+   * @param indexA index of first target within the array
+   * @param indexB index of second target within the array
+   * @param result optional caller-allocated vector.
+   */
+  public crossProductUncheckedIndexIndexIndex(origin: number, indexA: number, indexB: number, result?: Vector3d): Vector3d {
+    const x0 = this.getXAtUncheckedPointIndex(origin);
+    const y0 = this.getYAtUncheckedPointIndex(origin);
+    const z0 = this.getZAtUncheckedPointIndex(origin);
+    return Vector3d.createCrossProduct(
+      this.getXAtUncheckedPointIndex(indexA) - x0,
+      this.getYAtUncheckedPointIndex(indexA) - y0,
+      this.getZAtUncheckedPointIndex(indexA) - z0,
+      this.getXAtUncheckedPointIndex(indexB) - x0,
+      this.getYAtUncheckedPointIndex(indexB) - y0,
+      this.getZAtUncheckedPointIndex(indexB) - z0,
+      result,
+    );
+  }
+  /**
+   * Compute the cross product from indexed `origin` to targets at indices `indexA` and `indexB`, and add it to `result`.
    * @param origin index of origin
    * @param indexA index of first target within the array
    * @param indexB index of second target within the array
    * @param result caller-allocated vector.
-   * @returns return true if indexA, indexB both valid
    */
   public abstract accumulateCrossProductIndexIndexIndex(origin: number, indexA: number, indexB: number, result: Vector3d): void;
 
@@ -215,13 +267,19 @@ export abstract class IndexedXYZCollection {
    * @param index1 second point index
    */
   public abstract distanceSquaredIndexIndex(index0: number, index1: number): number | undefined;
-    /**
+  /**
    * Return distance squared between indicated points.
-   * * This method does not check for index validity. Use [[IndexedXYZCollection.distanceSquaredIndexIndex]] to have validity test.
+   * * This method does not check for index validity. Use [[distanceSquaredIndexIndex]] to have validity test.
    * @param index0 first point index
    * @param index1 second point index
    */
-  public abstract distanceSquaredUncheckedIndexIndex(index0: number, index1: number): number;
+  public distanceSquaredUncheckedIndexIndex(index0: number, index1: number): number {
+    return Geometry.hypotenuseSquaredXYZ(
+      this.getXAtUncheckedPointIndex(index1) - this.getXAtUncheckedPointIndex(index0),
+      this.getYAtUncheckedPointIndex(index1) - this.getYAtUncheckedPointIndex(index0),
+      this.getZAtUncheckedPointIndex(index1) - this.getZAtUncheckedPointIndex(index0),
+    );
+  }
   /**
    * Return distance squared between the point at index0 and target.
    * @param index0 first point index
@@ -234,7 +292,7 @@ export abstract class IndexedXYZCollection {
   }
     /**
    * Return distance squared between the point at index0 and target.
-   * * This method does not check for index validity. Use [[IndexedXYZCollection.distanceSquaredIndexXYAndZ]] to have validity test.
+   * * This method does not check for index validity. Use [[distanceSquaredIndexXYAndZ]] to have validity test.
    * @param index0 first point index
    * @param target second point
    */
@@ -252,11 +310,17 @@ export abstract class IndexedXYZCollection {
   public abstract distanceIndexIndex(index0: number, index1: number): number | undefined;
   /**
    * Return distance between indicated points.
-   * * This method does not check for index validity. Use [[IndexedXYZCollection.distanceIndexIndex]] to have validity test.
+   * * This method does not check for index validity. Use [[distanceIndexIndex]] to have validity test.
    * @param index0 first point index
    * @param index1 second point index
    */
-  public abstract distanceUncheckedIndexIndex(index0: number, index1: number): number;
+  public distanceUncheckedIndexIndex(index0: number, index1: number): number {
+    return Geometry.hypotenuseXYZ(
+      this.getXAtUncheckedPointIndex(index1) - this.getXAtUncheckedPointIndex(index0),
+      this.getYAtUncheckedPointIndex(index1) - this.getYAtUncheckedPointIndex(index0),
+      this.getZAtUncheckedPointIndex(index1) - this.getZAtUncheckedPointIndex(index0),
+    );
+  }
   /**
    * Test if index is valid for an xyz within this array.
    * @param index xyz index to test.
@@ -349,7 +413,7 @@ export abstract class IndexedXYZCollection {
   }
   /**
    * Interpolate the points at the given indices.
-   * * This method does not check for index validity. Use [[IndexedXYZCollection.interpolateIndexIndex]] to have validity test.
+   * * This method does not check for index validity. Use [[interpolateIndexIndex]] to have validity test.
    * @param index0 index of point p0 within the array
    * @param fraction fraction f such that returned point is p0 + f * (p1 - p0)
    * @param index1 index of point p1 within the array
@@ -390,24 +454,10 @@ export abstract class IndexedXYZCollection {
       return undefined;
     return this.getPoint3dAtUncheckedPointIndex(0, result);
   }
-  /**
-   * Return the first point. This function does not check if `this` is empty.
-   * * Use [[IndexedXYZCollection.front]] to have the check.
-   */
-  public frontUnchecked(result?: Point3d): Point3d {
-    return this.getPoint3dAtUncheckedPointIndex(0, result);
-  }
   /** Return the last point, or undefined if the array is empty. */
   public back(result?: Point3d): Point3d | undefined {
     if (this.length === 0)
       return undefined;
-    return this.getPoint3dAtUncheckedPointIndex(this.length - 1, result);
-  }
-  /**
-   * Return the last point. This function does not check if `this` is empty.
-   * * Use [[IndexedXYZCollection.back]] to have the check.
-   */
-  public backUnchecked(result?: Point3d): Point3d {
     return this.getPoint3dAtUncheckedPointIndex(this.length - 1, result);
   }
   /**
@@ -424,7 +474,7 @@ export abstract class IndexedXYZCollection {
   }
     /**
    * Test whether the indexed points are equal within tolerance.
-   * * This method does not check for index validity. Use [[IndexedXYZCollection.almostEqualIndexIndex]] to have validity test.
+   * * This method does not check for index validity. Use [[almostEqualIndexIndex]] to have validity test.
    * @param index0 index of first point
    * @param index1 index of second point
    * @param tolerance max coordinate difference to be considered equal. For exact test, pass 0. Defaults to `Geometry.smallMetricDistance`.
@@ -449,11 +499,11 @@ export abstract class IndexedXYZCollection {
   }
   /**
    * Test whether the xy-coordinates of the indexed points are equal within tolerance. The z-coordinates are ignored.
-   * * This method does not check for index validity. Use [[IndexedXYZCollection.almostEqualXYIndexIndex]] to have validity test.
+   * * This method does not check for index validity. Use [[almostEqualXYIndexIndex]] to have validity test.
    * @param index0 index of first point
    * @param index1 index of second point
    * @param tolerance max coordinate difference to be considered equal. For exact test, pass 0. Defaults to `Geometry.smallMetricDistance`.
-   * @returns whether the xy-coordinates of the points are equal within tolerance, or `undefined` if either index is invalid.
+   * @returns whether the xy-coordinates of the points are equal within tolerance.
    */
   public almostEqualXYUncheckedIndexIndex(index0: number, index1: number, tolerance = Geometry.smallMetricDistance): boolean {
     return Geometry.isSameCoordinate(this.getXAtUncheckedPointIndex(index0), this.getXAtUncheckedPointIndex(index1), tolerance)
