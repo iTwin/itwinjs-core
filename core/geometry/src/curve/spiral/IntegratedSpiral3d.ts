@@ -128,9 +128,9 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
    * @param xyz advancing integrated point.
    * @param fractionA fraction at start of interval.
    * @param fractionB fraction at end of interval.
-   * @param unitArcLength length of curve for 0 to 1 fractional.
+   * @param applyMatrix if true, apply the localToWorld matrix to the computed delta before adding to xyz.
    */
-  private fullSpiralIncrementalIntegral(xyz: Point3d, fractionA: number, fractionB: number, applyMatrix: boolean) {
+  private fullSpiralIncrementalIntegral(xyz: Point3d, fractionA: number, fractionB: number, applyMatrix: boolean): void {
     const gaussFraction = IntegratedSpiral3d._gaussFraction;
     const gaussWeight = IntegratedSpiral3d._gaussWeight;
     const numEval = IntegratedSpiral3d._gaussMapper(fractionA, fractionB, gaussFraction, gaussWeight);
@@ -183,7 +183,7 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
   /**
    * Create a transition spiral with radius and bearing conditions.
    * @param radius01 radius (inverse curvature) at start and end (radius of zero means straight line).
-   * @param bearing01 bearing angles at start and end. bearings are measured from the x axis, positive clockwise
+   * @param bearing01 bearing angles at start and end. Bearings are measured from the x axis, positive clockwise
    * towards y axis.
    * @param activeFractionInterval fractional limits of the active portion of the spiral.
    * @param localToWorld placement frame. Fractional coordinate 0 is at the origin.

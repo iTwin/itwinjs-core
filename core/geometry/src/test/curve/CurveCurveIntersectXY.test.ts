@@ -2388,7 +2388,7 @@ describe("CurveCurveIntersectXY", () => {
   };
 
   it("SpiralCurvePrimitiveIntersection", () => {
-    const ck = new Checker();
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     let dx = 0;
     let dy = 0;
@@ -2397,6 +2397,48 @@ describe("CurveCurveIntersectXY", () => {
       Point3d.create(70, 0),
       Matrix3d.createRotationAroundVector(Vector3d.create(0, 0, 1), Angle.createDegrees(90))!,
     );
+    const integratedSpirals = [];
+    const r0 = 0;
+    const r1 = 50;
+    const activeInterval = Segment1d.create(0, 1);
+    for (const integratedSpiralType of ["clothoid", "bloss", "biquadratic", "sine", "cosine"]) {
+      for (const transform of [Transform.createIdentity(), rotationTransform]) { // rotated spirals have even indices
+        integratedSpirals.push(
+          IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+            Segment1d.create(r0, r1),
+            AngleSweep.createStartEndDegrees(0, 120),
+            activeInterval,
+            transform,
+            integratedSpiralType,
+          ) as TransitionSpiral3d
+        );
+      }
+    }
+
+    const directSpirals = [];
+    const length = 180;
+    for (const directSpiralType of [
+      "JapaneseCubic",
+      "Arema",
+      "ChineseCubic",
+      "HalfCosine",
+      "AustralianRailCorp",
+      "WesternAustralian",
+      // TODO: enable below lines after https://github.com/iTwin/itwinjs-backlog/issues/1693 is resolved
+      // "Czech",
+      // "MXCubicAlongArc",
+      // "Italian",
+      // "Polish",
+    ]) {
+      for (const transform of [Transform.createIdentity(), rotationTransform]) { // rotated spirals have even indices
+        directSpirals.push(
+          DirectSpiral3d.createFromLengthAndRadius(
+            directSpiralType, r0, r1, undefined, undefined, length, activeInterval, transform,
+          ) as TransitionSpiral3d
+        );
+      }
+    }
+
     const curvePrimitives = [
       LineSegment3d.create(Point3d.create(70, 30), Point3d.create(70, -30)),
       LineString3d.create(
@@ -2414,58 +2456,54 @@ describe("CurveCurveIntersectXY", () => {
         ],
         3,
       )!,
-      DirectSpiral3d.createFromLengthAndRadius(
-        "Arema", 0, 50, undefined, undefined, 150, Segment1d.create(0, 1), rotationTransform,
-      )!,
+      // add rotated spirals
+      integratedSpirals[1],
+      integratedSpirals[3],
+      integratedSpirals[5],
+      integratedSpirals[7],
+      integratedSpirals[9],
+      directSpirals[1],
+      directSpirals[3],
+      directSpirals[5],
+      directSpirals[7],
+      directSpirals[9],
+      directSpirals[11],
+      // TODO: enable below lines after https://github.com/iTwin/itwinjs-backlog/issues/1693 is resolved
+      // directSpirals[13],
+      // directSpirals[15],
+      // directSpirals[17],
+      // directSpirals[19],
     ];
-    const numExpectedIntersections = [1, 3, 2, 1, 1];
+    const numExpectedIntersections = [1, 3, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 /*, 1, 1, 1, 1*/];
+    ck.testCoordinate(curvePrimitives.length, numExpectedIntersections.length, "matching arrays");
 
-    const r0 = 0;
-    const r1 = 50;
-    const activeInterval = Segment1d.create(0, 1);
-    for (const integratedSpiralType of ["clothoid", "bloss", "biquadratic", "sine", "cosine"]) {
-      const integratedSpiral = IntegratedSpiral3d.createRadiusRadiusBearingBearing(
-        Segment1d.create(r0, r1),
-        AngleSweep.createStartEndDegrees(0, 120),
-        activeInterval,
-        Transform.createIdentity(),
-        integratedSpiralType,
-      ) as TransitionSpiral3d;
-      for (let i = 0; i < curvePrimitives.length; i++) {
-        const curvePrimitive = curvePrimitives[i];
-        const numExpected = numExpectedIntersections[i];
-        visualizeAndTestSpiral(ck, allGeometry, integratedSpiral, curvePrimitive, integratedSpiralType, numExpected, dx, dy);
-        dy += 170;
+    for (let i = 0; i < integratedSpirals.length; i += 2) { // skip rotated spirals
+      const integratedSpiral = integratedSpirals[i];
+      for (let j = 0; j < curvePrimitives.length; j++) {
+        const curvePrimitive = curvePrimitives[j];
+        const numExpected = numExpectedIntersections[j];
+        visualizeAndTestSpiral(
+          ck, allGeometry, integratedSpiral, curvePrimitive, integratedSpiral.constructor.name, numExpected, dx, dy,
+        );
+        dy += 200;
       }
       dy = 0;
-      dx += 150;
+      dx += 200;
     }
 
-    dx += 200;
-    const length = 180;
-    for (const directSpiralType of [
-      "JapaneseCubic",
-      "Arema",
-      "ChineseCubic",
-      "HalfCosine",
-      "AustralianRailCorp",
-      "WesternAustralian",
-      // "Czech",           // TODO: property "activeStrokes" is a line string with points with null as x,y,z
-      // "MXCubicAlongArc", // TODO: property "activeStrokes" is a line string with points with null as x,y,z
-      // "Italian",         // TODO: property "activeStrokes" is a line string with points with null as x,y,z
-      // "Polish",          // TODO: property "activeStrokes" is undefined
-    ]) {
-      const directSpiral = DirectSpiral3d.createFromLengthAndRadius(
-        directSpiralType, r0, r1, undefined, undefined, length, activeInterval, Transform.createIdentity(),
-      ) as TransitionSpiral3d;
-      for (let i = 0; i < curvePrimitives.length; i++) {
-        const curvePrimitive = curvePrimitives[i];
-        const numExpected = numExpectedIntersections[i];
-        visualizeAndTestSpiral(ck, allGeometry, directSpiral, curvePrimitive, directSpiralType, numExpected, dx, dy);
-        dy += 170;
+    dx += 250;
+    for (let i = 0; i < directSpirals.length; i += 2) { // skip rotated spirals
+      const directSpiral = directSpirals[i];
+      for (let j = 0; j < curvePrimitives.length; j++) {
+        const curvePrimitive = curvePrimitives[j];
+        const numExpected = numExpectedIntersections[j];
+        visualizeAndTestSpiral(
+          ck, allGeometry, directSpiral, curvePrimitive, directSpiral.constructor.name, numExpected, dx, dy,
+        );
+        dy += 200;
       }
       dy = 0;
-      dx += 150;
+      dx += 200;
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "SpiralCurvePrimitiveIntersection");

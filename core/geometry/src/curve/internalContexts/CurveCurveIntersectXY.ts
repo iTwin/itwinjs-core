@@ -912,7 +912,11 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     return undefined;
   }
   /** Detail computation for linestring intersecting linestring. */
-  private computeLineStringLineString(lsA: LineString3d, lsB: LineString3d, reversed: boolean): void {
+  private computeLineStringLineString(
+    lsA: LineString3d, extendA0: boolean, extendA1: boolean,
+    lsB: LineString3d, extendB0: boolean, extendB1: boolean,
+    reversed: boolean,
+  ): void {
     const pointA0 = CurveCurveIntersectXY._workPointAA0;
     const pointA1 = CurveCurveIntersectXY._workPointAA1;
     const pointB0 = CurveCurveIntersectXY._workPointBB0;
@@ -937,8 +941,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
           lsB.pointAt(ib, pointB1);
           fB1 = ib * dfB;
           this.dispatchSegmentSegment(
-            lsA, ia === 1 && this._extendA0, pointA0, fA0, pointA1, fA1, (ia + 1) === numA && this._extendA1,
-            lsB, ib === 1 && this._extendB0, pointB0, fB0, pointB1, fB1, (ib + 1) === numB && this._extendB1,
+            lsA, ia === 1 && extendA0, pointA0, fA0, pointA1, fA1, (ia + 1) === numA && extendA1,
+            lsB, ib === 1 && extendB0, pointB0, fB0, pointB1, fB1, (ib + 1) === numB && extendB1,
             reversed,
           );
         }
@@ -1050,11 +1054,9 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         this._geometryB, this._extendB0, this._extendB1, false,
       );
     } else if (this._geometryB instanceof TransitionSpiral3d) {
-      const linestring = LineString3d.create();
-      this._geometryB.emitStrokes(linestring);
-      this.computeSegmentLineString(
-        segmentA, this._extendA0, this._extendA1, linestring, this._extendB0, this._extendB1, false,
-      );
+      const spiralApproximation = LineString3d.create();
+      this._geometryB.emitStrokes(spiralApproximation);
+      this.computeSegmentLineString(segmentA, this._extendA0, this._extendA1, spiralApproximation, false, false, false);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(segmentA, this.handleLineSegment3d.bind(this));
     } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
@@ -1066,7 +1068,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   public override handleLineString3d(lsA: LineString3d): any {
     if (this._geometryB instanceof LineString3d) {
       const lsB = this._geometryB;
-      this.computeLineStringLineString(lsA, lsB, false);
+      this.computeLineStringLineString(lsA, this._extendA0, this._extendA1, lsB, this._extendB0, this._extendB1, false);
     } else if (this._geometryB instanceof LineSegment3d) {
       this.computeSegmentLineString(
         this._geometryB, this._extendB0, this._extendB1, lsA, this._extendA0, this._extendA1, true,
@@ -1080,9 +1082,9 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         lsA, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false,
       );
     } else if (this._geometryB instanceof TransitionSpiral3d) {
-      const linestring = LineString3d.create();
-      this._geometryB.emitStrokes(linestring);
-      this.computeLineStringLineString(lsA, linestring, false);
+      const spiralApproximation = LineString3d.create();
+      this._geometryB.emitStrokes(spiralApproximation);
+      this.computeLineStringLineString(lsA, this._extendA0, this._extendA1, spiralApproximation, false, false, false);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(lsA, this.handleLineString3d.bind(this));
     } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
@@ -1108,11 +1110,9 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         arc0, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false,
       );
     } else if (this._geometryB instanceof TransitionSpiral3d) {
-      const linestring = LineString3d.create();
-      this._geometryB.emitStrokes(linestring);
-      this.computeArcLineString(
-        arc0, this._extendA0, this._extendA1, linestring, this._extendB0, this._extendB1, false,
-      );
+      const spiralApproximation = LineString3d.create();
+      this._geometryB.emitStrokes(spiralApproximation);
+      this.computeArcLineString(arc0, this._extendA0, this._extendA1, spiralApproximation, false, false, false);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(arc0, this.handleArc3d.bind(this));
     } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
@@ -1138,11 +1138,9 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     } else if (this._geometryB instanceof BSplineCurve3dBase) {
       this.dispatchBSplineCurve3dBSplineCurve3d(curve, this._geometryB, false);
     } else if (this._geometryB instanceof TransitionSpiral3d) {
-      const linestring = LineString3d.create();
-      this._geometryB.emitStrokes(linestring);
-      this.dispatchLineStringBSplineCurve(
-        linestring, this._extendB0, this._extendB1, curve, this._extendA0, this._extendA1, true,
-      );
+      const spiralApproximation = LineString3d.create();
+      this._geometryB.emitStrokes(spiralApproximation);
+      this.dispatchLineStringBSplineCurve(spiralApproximation, false, false, curve, this._extendA0, this._extendA1, true);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(curve, this.handleBSplineCurve3d.bind(this));
     } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
@@ -1152,9 +1150,9 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   }
   /** Double dispatch handler for strongly typed spiral curve. */
   public override handleTransitionSpiral(spiral: TransitionSpiral3d): any {
-    const linestring = LineString3d.create();
-    spiral.emitStrokes(linestring);
-    this.handleLineString3d(linestring);
+    const spiralApproximation = LineString3d.create();
+    spiral.emitStrokes(spiralApproximation);
+    this.handleLineString3d(spiralApproximation);
     return undefined;
   }
   /** Double dispatch handler for strongly typed CurveChainWithDistanceIndex. */

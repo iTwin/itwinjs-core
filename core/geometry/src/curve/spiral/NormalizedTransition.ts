@@ -66,7 +66,7 @@ export abstract class NormalizedTransition {
 
 /**
  * Transition functions for clothoid spiral.
- * * curvature variation is linear from (0,0) to (1,1)
+ * * Curvature variation is linear from (0,0) to (1,1).
  * @internal
  */
 export class NormalizedClothoidTransition extends NormalizedTransition {
@@ -99,12 +99,12 @@ export class NormalizedClothoidTransition extends NormalizedTransition {
  * @internal
  */
 export class NormalizedBlossTransition extends NormalizedTransition {
-  // bloss curvature is 3x^2 - 2x^3 or x^2 (3 - 2x)
+  // bloss curvature is x^2 (3 - 2x)
   // derivative 6x (1-x)
   // 2nd derivative 6 - 12x
   // derivatives zero at 0,1
   // inflection zero at 0.5
-  // integral is x^3 - x^4/2 or x^3 (1-x/2)
+  // integral is x^3 (1-x/2)
   constructor() {
     super();
   }
@@ -180,9 +180,9 @@ export class NormalizedBiQuadraticTransition extends NormalizedTransition {
  * @internal
  */
 export class NormalizedSineTransition extends NormalizedTransition {
-  // sine transition is f(x) = x - sin(2 pi x) / (2 pi)
-  // derivative f'(x) = 1 - cos(2 pi x)
-  // integral If(x) = x^2 / 2 + (cos(2 pi x) - 1) / (4 pi^2)
+  // sine transition curvature is x - sin(2 pi x) / (2 pi)
+  // derivative 1 - cos(2 pi x)
+  // integral x^2 / 2 + (cos(2 pi x) - 1) / (4 pi^2)
   constructor() {
     super();
   }
@@ -212,9 +212,9 @@ export class NormalizedSineTransition extends NormalizedTransition {
  * @internal
  */
 export class NormalizedCosineTransition extends NormalizedTransition {
-  // cosine transition is f(x) =  0.5 (1 - cos(pi x))
-  // derivative f'(x) = 0.5 pi sin(pi x)
-  // integral If(x) = 0.5 x - sin(pi x) / pi
+  // cosine transition curvature is 0.5 (1 - cos(pi x))
+  // derivative 0.5 pi sin(pi x)
+  // integral 0.5 x - sin(pi x) / pi
   constructor() {
     super();
   }
