@@ -466,7 +466,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
       await b1.pushChanges({description: "test"});
-    })).to.be.rejectedWith("Cannot push changeset while in a indirect change scope");
+    })).to.be.rejectedWith("Cannot push changeset while in an indirect change scope");
 
     await b1.pushChanges({description: "test"});
   });
