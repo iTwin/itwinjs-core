@@ -64,7 +64,7 @@ async function generateTestSnapshot(targetFileName: string, seedAssetName: strin
   return imodel;
 }
 
-describe.only("iModel", () => {
+describe("iModel", () => {
   //TODO: These imodels are used and modified across multiple tests. This is not a good practice and should be refactored.
   let imodel1: SnapshotDb;
   let imodel2: SnapshotDb;
