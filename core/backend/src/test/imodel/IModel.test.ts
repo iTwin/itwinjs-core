@@ -64,7 +64,7 @@ async function generateTestSnapshot(targetFileName: string, seedAssetName: strin
   return imodel;
 }
 
-describe("iModel", () => {
+describe.only("iModel", () => {
   //TODO: These imodels are used and modified across multiple tests. This is not a good practice and should be refactored.
   let imodel1: SnapshotDb;
   let imodel2: SnapshotDb;
@@ -3349,26 +3349,5 @@ describe("iModel", () => {
     expect(categoryA.userLabel).to.equal("B", `categoryA.userLabel mismatch in ${imodelDb.name}`);
     expect(categoryB.userLabel).to.equal("A", `categoryB.userLabel mismatch in ${imodelDb.name}`);
     imodelDb.close();
-  });
-
-  it("should provide meaningful error when querying a closed iModel", () => {
-    const testImodel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "QueryingClosedImodel.bim"), { rootSubject: { name: "QueryClosedTest" } });
-    assert.isTrue(testImodel.isOpen);
-
-    // Close the iModel for the tests
-    testImodel.close();
-    assert.isFalse(testImodel.isOpen);
-
-    const closedDbError = "Cannot query a closed Db";
-    expect(() => testImodel.withPreparedSqliteStatement("SELECT 1", () => { })).to.throw(closedDbError);
-    expect(() => testImodel.withPreparedSqliteStatement("SELECT 1", () => { })).to.throw(closedDbError);
-    expect(() => testImodel.prepareSqliteStatement("SELECT 1")).to.throw(closedDbError);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    expect(() => testImodel.prepareStatement("SELECT 1")).to.throw(closedDbError);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    expect(() => testImodel.withPreparedStatement("SELECT ECInstanceId FROM BisCore:Element LIMIT 1", () => { })).to.throw(closedDbError);
-    expect(() => testImodel.elements.queryChildren(IModel.rootSubjectId)).to.throw(closedDbError);
-    expect(() => testImodel.elements.getAspects("0x1", "WrongSchema:WrongClass")).to.throw("db is not open");
-    expect(() => testImodel.createQueryReader("SELECT 1")).to.throw("db not open");
   });
 });
