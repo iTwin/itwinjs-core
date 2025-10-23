@@ -12,12 +12,12 @@ import { SimpleNewton } from "../../numerics/Newton";
 
 /**
  * Czech cubic.
- * This is y= m*x^3 with
+ * This is y = m*x^3 with
  * * x any point on the x axis.
  * * `fraction` along the spiral goes to `x = fraction * L`.
- * * m is gamma / (6RL).
+ * * m is gamma/(6RL).
  *    * 1/(6RL) is the leading term of the sine series.
- *    * `gamma = 2R/sqrt (4RR-LL)` pushes y down a little bit to simulate the lost series terms.
+ *    * `gamma = 2R/sqrt(4RR-LL)` pushes y down a little bit to simulate the lost series terms.
  * @internal
  */
 export class CzechSpiralEvaluator extends CubicEvaluator {
@@ -124,12 +124,12 @@ export class CzechSpiralEvaluator extends CubicEvaluator {
 
 /**
  * Italian cubic.
- * This is y= m*x^3 with
+ * This is y = m*x^3 with
  * * x any point on the x axis.
  * * `fraction` along the spiral goes to `x = fraction * L`.
- * * m is gamma / (6RL).
+ * * m is gamma/(6RL).
  *    * 1/(6RL) is the leading term of the sine series.
- *    * `gamma = 2R/sqrt (4RR-LL)` pushes y down a little bit to simulate the lost series terms.
+ *    * `gamma = 2R/sqrt(4RR-LL)` pushes y down a little bit to simulate the lost series terms.
  * @internal
  */
 export class ItalianSpiralEvaluator extends CubicEvaluator {

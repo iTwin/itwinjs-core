@@ -187,28 +187,11 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     );
   }
   /**
-   * Create a Japanese spiral clothoid approximation.
-   *   * X is 1 terms of the clothoid series as a function of nominal distance along.
-   *   * Y is 1 terms of the clothoid series as a function of nominal distance along.
-   *   * Remark: This is identical to the ChineseCubic.
-   * @param localToWorld axes with inflection at origin, tangent along x axis.
-   * @param nominalL1 nominal length as used in series LR terms.
-   * @param nominalR1 nominal final radius as used in series LR terms.
-   * @param activeInterval fractional interval with (0, nominalL1) range for nominal distance along
-   */
-  public static createJapaneseCubic(
-    localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d,
-  ): DirectSpiral3d | undefined {
-    return this.createTruncatedClothoid(
-      "JapaneseCubic", localToWorld, 1, 1, undefined, nominalL1, nominalR1, activeInterval,
-    );
-  }
-  /**
    * Create a czech cubic.
    * This is y = m*x^3 with
    * * x any point on the x axis.
    * * `fraction` along the spiral goes to `x = fraction * L`.
-   * * m is gamma / (6RL).
+   * * m is gamma/(6RL).
    *    * 1/(6RL) is the leading term of the sine series.
    *    * `gamma = 2R/sqrt(4RR-LL)` pushes y up a little bit to simulate the lost series terms.
    * @param localToWorld
@@ -237,7 +220,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
    * This is y = m*x^3 with
    * * x any point on the x axis.
    * * `fraction` along the spiral goes to `x = fraction * L`.
-   * * m is gamma / (6RL).
+   * * m is gamma/(6RL).
    *    * 1/(6RL) is the leading term of the sine series.
    *    * `gamma = 2R/sqrt(4RR-LL)` pushes y up a little bit to simulate the lost series terms.
    * @param localToWorld
@@ -264,7 +247,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   /**
    * Create an MX Cubic whose nominal length is close to along the curve.
    * This is y = m*x^3 with
-   * * m is 1/ (6RL1).
+   * * m is 1/(6RL1).
    *    * 1/(6RL) is the leading term of the sine series.
    * * L1 is an along-the-x-axis distance that is slightly LESS THAN the nominal length.
    * * x is axis position that is slightly LESS than nominal distance along.
@@ -292,8 +275,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   }
   /**
    * Create a polish cubic
-   * This is y= m*x^3 with
-   * * m is 1/ (6RL).
+   * This is y = m*x^3 with
+   * * m is 1/(6RL).
    *    * 1/(6RL) is the leading term of the sine series.
    * * L is nominal length.
    * * R is nominal end radius.
@@ -318,12 +301,12 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   }
   /**
    * Create an AustralianRailCorp spiral
-   * This is y= m*x^3 with
+   * This is y = m*x^3 with
    * * x any point on the x axis.
    * * `fraction` along the spiral goes to `x = fraction * L`.
-   * * m is gamma / (6RL).
+   * * m is gamma/(6RL).
    *    * 1/(6RL) is the leading term of the sine series.
-   *    * `gamma = 2R/sqrt (4RR-LL)` pushes y up a little bit to simulate the lost series terms.
+   *    * `gamma = 2R/sqrt(4RR-LL)` pushes y up a little bit to simulate the lost series terms.
    * @param localToWorld
    * @param nominalL1
    * @param nominalR1
@@ -372,6 +355,23 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d,
   ): DirectSpiral3d | undefined {
     return this.createTruncatedClothoid("Arema", localToWorld, 2, 2, undefined, nominalL1, nominalR1, activeInterval);
+  }
+  /**
+   * Create a Japanese spiral clothoid approximation.
+   *   * X is 1 terms of the clothoid series as a function of nominal distance along.
+   *   * Y is 1 terms of the clothoid series as a function of nominal distance along.
+   *   * Remark: This is identical to the ChineseCubic.
+   * @param localToWorld axes with inflection at origin, tangent along x axis.
+   * @param nominalL1 nominal length as used in series LR terms.
+   * @param nominalR1 nominal final radius as used in series LR terms.
+   * @param activeInterval fractional interval with (0, nominalL1) range for nominal distance along
+   */
+  public static createJapaneseCubic(
+    localToWorld: Transform, nominalL1: number, nominalR1: number, activeInterval?: Segment1d,
+  ): DirectSpiral3d | undefined {
+    return this.createTruncatedClothoid(
+      "JapaneseCubic", localToWorld, 1, 1, undefined, nominalL1, nominalR1, activeInterval,
+    );
   }
   /**
    * Create a Chinese clothoid approximation
