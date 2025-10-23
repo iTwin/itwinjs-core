@@ -142,6 +142,8 @@ We expose APIs and interfaces to support persistence of formats. Different from 
 
 - The `unitSystem` property uses a [UnitSystemKey]($quantity) to specify the unit system for the format set. This provides better type safety and leads to less dependency on `activeUnitSystem` in `IModelApp.quantityFormatter`. Tools using the new formatting API can then listen to only the `onFormatsChanged` event from `IModelApp.formatsProvider` instead of `IModelApp.quantityFormatter.onActiveUnitSystemChanged`.
 
+- The `formats` property accepts either a [FormatDefinition]($quantity) or a string reference to another KindOfQuantity. This allows one format to reference another format's definition, reducing duplication when multiple KindOfQuantities should share the same format specification. For example, `"AecUnits.LENGTH": "RoadRailUnits.LENGTH"` creates an alias where `AecUnits.LENGTH` uses the same format from `RoadRailUnits.LENGTH`.
+
 > The naming convention for a valid format within a FormatSet is <full-schema-name>:<koq-name>
 .
 <details>
@@ -345,77 +347,20 @@ The example below is of a `MutableFormatsProvider` that lets you add/remove form
 
 The [FormatSetFormatsProvider]($ecschema-metadata) provides a convenient way to manage formats within a `FormatSet` while supporting runtime modifications. This provider is particularly useful when you need to persist format changes or override default schema formats.
 
+__Key Features:__
+
+- __String Reference Resolution__: Automatically resolves string references to their target FormatDefinition. When a format references another via string (e.g., `"AecUnits.LENGTH": "RoadRailUnits.LENGTH"`), the provider will resolve and return the actual FormatDefinition.
+- __Chain Resolution__: Supports chains of references with circular reference detection (e.g., HEIGHT → DISTANCE → LENGTH).
+- __Cascade Notifications__: When a format is added or removed, all formats that reference it are included in the `onFormatsChanged` event, enabling proper cache invalidation.
+- __Fallback Provider__: Supports an optional fallback provider for formats not found in the format set.
+
+Here's a working example that demonstrates string reference resolution with formatting:
+
 <details>
   <summary>Example of using FormatSetFormatsProvider</summary>
 
 ```ts
-import { FormatSetFormatsProvider } from "@itwin/core-ecschema-metadata";
-import { FormatDefinition } from "@itwin/core-quantity";
-
-// Create a format set with initial formats
-const formatSet = {
-  name: "MyFormatSet",
-  label: "My Custom Formats",
-  unitSystem: "metric",
-  formats: {
-    "AecUnits.LENGTH": {
-      composite: {
-        includeZero: true,
-        spacer: " ",
-        units: [{ label: "m", name: "Units.M" }]
-      },
-      formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: 2,
-      type: "Decimal"
-    }
-  }
-};
-
-// Create the provider
-const provider = new FormatSetFormatsProvider(formatSet);
-
-// Add a new format at runtime
-const angleFormat: FormatDefinition = {
-  composite: {
-    includeZero: true,
-    spacer: "",
-    units: [{ label: "°", name: "Units.ARC_DEG" }]
-  },
-  formatTraits: ["keepSingleZero", "showUnitLabel"],
-  precision: 1,
-  type: "Decimal"
-};
-
-await provider.addFormat("AecUnits.ANGLE", angleFormat);
-
-// The format set is automatically updated
-console.log(formatSet.formats["AecUnits.ANGLE"]); // Contains the angle format
-
-// Listen for format changes
-provider.onFormatsChanged.addListener((args) => {
-  console.log("Formats changed:", args.formatsChanged);
-});
-```
-
-</details>
-
-The `FormatSetFormatsProvider` also supports a fallback provider for cases where a format isn't found in the format set:
-
-<details>
-  <summary>Example with fallback provider</summary>
-
-```ts
-import { FormatSetFormatsProvider } from "@itwin/core-ecschema-metadata";
-import { SchemaFormatsProvider } from "@itwin/core-ecschema-metadata";
-
-// Create a schema formats provider as fallback
-const schemaProvider = new SchemaFormatsProvider(schemaContext);
-
-// Create format set provider with fallback
-const provider = new FormatSetFormatsProvider(formatSet, schemaProvider);
-
-// If a format isn't found in formatSet, it will check the schema provider
-const format = await provider.getFormat("SomeSchema.SomeKindOfQuantity");
+[[include:Quantity_Formatting.FormatSet_Formats_Provider_With_String_References]]
 ```
 
 </details>

@@ -34,7 +34,7 @@ import { ContoursPanel } from "./Contours";
 import { GoogleMapsPanel } from "./GoogleMaps";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
-import { LocalFormatsProvider } from "./LocalFormatsProvider";
+import { FormatSetFormatsProvider } from "@itwin/ecschema-metadata";
 
 
 // cspell:ignore savedata topdiv savedview viewtop
@@ -568,8 +568,8 @@ export class Viewer extends Window {
     }
     const formatSet = await DtaRpcInterface.getClient().getFormatSetFromFile(filename)
 
-    const localFormatsProvider = new LocalFormatsProvider({
-      fallbackFormatsProvider: IModelApp.formatsProvider,
+    const localFormatsProvider = new FormatSetFormatsProvider({
+      fallbackProvider: IModelApp.formatsProvider,
       formatSet
     });
     IModelApp.formatsProvider = localFormatsProvider;
