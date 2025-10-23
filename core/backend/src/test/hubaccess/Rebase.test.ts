@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Guid, Id64String } from "@itwin/core-bentley";
+import { Code, GeometricElement2dProps, IModel, QueryBinder, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
+import { Suite } from "mocha";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
 import { BriefcaseDb, BriefcaseManager, ChannelControl, DrawingCategory, IModelHost, SqliteChangesetReader, TxnProps } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
-import { Suite } from "mocha";
-import { Code, GeometricElement2dProps, IModel, QueryBinder, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
-import { Guid, Id64String } from "@itwin/core-bentley";
 import { StashManager } from "../../StashManager";
 chai.use(chaiAsPromised);
 
@@ -773,3 +773,4 @@ describe("rebase changes & stashing api", function (this: Suite) {
     chai.expect(e3Props).to.exist;
   });
 });
+

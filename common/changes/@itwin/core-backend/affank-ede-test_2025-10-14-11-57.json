@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fix crash when their is a cycle in EDE.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
