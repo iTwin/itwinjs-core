@@ -733,7 +733,7 @@ export class BriefcaseManager {
       throw new IModelError(IModelStatus.BadRequest, "Cannot push changeset while rebasing");
     }
     if (db.txns.isIndirectChanges) {
-      throw new IModelError(IModelStatus.BadRequest, "Cannot push changeset while in a indirect change scope");
+      throw new IModelError(IModelStatus.BadRequest, "Cannot push changeset while in an indirect change scope");
     }
 
     const changesetProps = db[_nativeDb].startCreateChangeset() as ChangesetFileProps;
