@@ -847,6 +847,11 @@ export abstract class IModelDb extends IModel {
     if (this.openMode === OpenMode.Readonly)
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only");
 
+    if (this instanceof BriefcaseDb) {
+      if (this.txns.isIndirectChanges) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot save changes while in an indirect change scope");
+      }
+    }
     const args = typeof descriptionOrArgs === "string" ? { description: descriptionOrArgs } : descriptionOrArgs;
     if (!this[_nativeDb].hasUnsavedChanges()) {
       Logger.logWarning(loggerCategory, "there are no unsaved changes", () => args);
@@ -1517,6 +1522,11 @@ export abstract class IModelDb extends IModel {
    * @param value either a string or a blob to save as the file property
    */
   public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
+    if (this instanceof BriefcaseDb) {
+      if (this.txns.isIndirectChanges) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot save file property while in an indirect change scope");
+      }
+    }
     this[_nativeDb].saveFileProperty(prop, strValue, blobVal);
   }
 
@@ -1524,6 +1534,11 @@ export abstract class IModelDb extends IModel {
    * @param prop the FilePropertyProps that describes the property
    */
   public deleteFileProperty(prop: FilePropertyProps): void {
+    if (this instanceof BriefcaseDb) {
+      if (this.txns.isIndirectChanges) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot delete file property while in an indirect change scope");
+      }
+    }
     this[_nativeDb].saveFileProperty(prop, undefined, undefined);
   }
 

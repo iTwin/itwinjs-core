@@ -391,7 +391,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     StashManager.dropAllStashes(b1);
     chai.expect(StashManager.getStashes(b1)).to.have.lengthOf(0);
   });
-  it("recursively calling withIndirectTxnMode", async () => {
+  it("recursively calling withIndirectTxnMode()", async () => {
     const b1 = await testIModel.openBriefcase();
     chai.expect(b1.txns.getMode()).to.equal("direct");
     b1.txns.withIndirectTxnMode(() => {
@@ -419,9 +419,93 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     chai.expect(() =>
       b1.txns.withIndirectTxnMode(() => {
+        chai.expect(b1.txns.getMode()).to.equal("indirect");
+        throw new Error("Test error");
+      })).to.throw();
+
+    chai.expect(b1.txns.getMode()).to.equal("direct");
+  });
+  it("should fail to save withIndirectTxnMode[Async]()", async () => {
+    // pull/push/saveFileProperty/deleteFileProperty should be called inside indirect change scope.
+    const b1 = await testIModel.openBriefcase();
+    b1.saveFileProperty({ namespace: "test", name: "test" }, "Hello, World");
+
+    await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
+      b1.saveFileProperty({ namespace: "test", name: "test" }, "This should fail 1");
+    })).to.be.rejectedWith("Cannot save file property while in an indirect change scope");
+
+    chai.expect(b1.queryFilePropertyString({ namespace: "test", name: "test" })).to.equal("Hello, World");
+
+    await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
+      b1.deleteFileProperty({ namespace: "test", name: "test" });
+    })).to.be.rejectedWith("Cannot delete file property while in an indirect change scope");
+
+    chai.expect(b1.queryFilePropertyString({ namespace: "test", name: "test" })).to.equal("Hello, World");
+
+    chai.expect(() => b1.txns.withIndirectTxnMode(() => {
+      b1.saveFileProperty({ namespace: "test", name: "test" }, "This should fail 2");
+    })).to.be.throws("Cannot save file property while in an indirect change scope");
+
+    chai.expect(b1.queryFilePropertyString({ namespace: "test", name: "test" })).to.equal("Hello, World");
+
+    chai.expect(() => b1.txns.withIndirectTxnMode(() => {
+      b1.deleteFileProperty({ namespace: "test", name: "test" });
+    })).to.be.throws("Cannot delete file property while in an indirect change scope");
+
+    await testIModel.insertElement(b1);
+
+    await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
+      b1.saveChanges();
+    })).to.be.rejectedWith("Cannot save changes while in an indirect change scope");
+
+    chai.expect(() => b1.txns.withIndirectTxnMode(() => {
+      b1.saveChanges();
+    })).to.be.throws("Cannot save changes while in an indirect change scope");
+
+    b1.saveChanges();
+
+    await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
+      await b1.pushChanges({description: "test"});
+    })).to.be.rejectedWith("Cannot push changeset while in a indirect change scope");
+
+    await b1.pushChanges({description: "test"});
+  });
+  it("recursively calling withIndirectTxnModeAsync()", async () => {
+    const b1 = await testIModel.openBriefcase();
+    chai.expect(b1.txns.getMode()).to.equal("direct");
+    await b1.txns.withIndirectTxnModeAsync(async () => {
+      chai.expect(b1.txns.getMode()).to.equal("indirect");
+    });
+
+    chai.expect(b1.txns.getMode()).to.equal("direct");
+
+    await b1.txns.withIndirectTxnModeAsync(async () => {
+      chai.expect(b1.txns.getMode()).to.equal("indirect");
+      await b1.txns.withIndirectTxnModeAsync(async () => {
+        chai.expect(b1.txns.getMode()).to.equal("indirect");
+        await b1.txns.withIndirectTxnModeAsync(async () => {
           chai.expect(b1.txns.getMode()).to.equal("indirect");
-          throw new Error("Test error");
-    })).to.throw();
+          await b1.txns.withIndirectTxnModeAsync(async () => {
+            chai.expect(b1.txns.getMode()).to.equal("indirect");
+            await b1.txns.withIndirectTxnModeAsync(async () => {
+              chai.expect(b1.txns.getMode()).to.equal("indirect");
+            });
+            chai.expect(b1.txns.getMode()).to.equal("indirect");
+          });
+          chai.expect(b1.txns.getMode()).to.equal("indirect");
+        });
+      });
+      b1.txns.withIndirectTxnMode(() => {
+        chai.expect(b1.txns.getMode()).to.equal("indirect");
+      });
+    });
+
+    chai.expect(b1.txns.getMode()).to.equal("direct");
+    await chai.expect(
+      b1.txns.withIndirectTxnModeAsync(async () => {
+        chai.expect(b1.txns.getMode()).to.equal("indirect");
+        throw new Error("Test error");
+      })).rejectedWith(Error);
 
     chai.expect(b1.txns.getMode()).to.equal("direct");
   });
@@ -763,12 +847,12 @@ describe("rebase changes & stashing api", function (this: Suite) {
     const b1 = await testIModel.openBriefcase();
     const findElement = async (id: Id64String) => {
       const reader = b1.createQueryReader(`SELECT ECInstanceId, ec_className(ECClassId), Prop1 FROM ts.A1 WHERE ECInstanceId = ${id}`, QueryBinder.from([id]));
-      if(await reader.step())
+      if (await reader.step())
         return { id: reader.current[0], className: reader.current[1], prop1: reader.current[2] };
       return undefined;
     }
 
-    const runQuery  = async (query: string) => {
+    const runQuery = async (query: string) => {
       const reader = b1.createQueryReader(query);
       let rows = 0;
       while (await reader.step()) {
