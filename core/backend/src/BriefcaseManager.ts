@@ -579,7 +579,7 @@ export class BriefcaseManager {
         throw new IModelError(IModelStatus.BadRequest, "Cannot pull and apply changeset while rebasing");
       }
       if (briefcaseDb.txns.isIndirectChanges) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot pull and apply changeset while in a indirect change scope");
+        throw new IModelError(IModelStatus.BadRequest, "Cannot pull and apply changeset while in an indirect change scope");
       }
     }
 
