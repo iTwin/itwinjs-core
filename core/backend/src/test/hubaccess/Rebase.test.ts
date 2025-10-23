@@ -391,6 +391,40 @@ describe("rebase changes & stashing api", function (this: Suite) {
     StashManager.dropAllStashes(b1);
     chai.expect(StashManager.getStashes(b1)).to.have.lengthOf(0);
   });
+  it("recursively calling withIndirectTxnMode", async () => {
+    const b1 = await testIModel.openBriefcase();
+    chai.expect(b1.txns.getMode()).to.equal("direct");
+    b1.txns.withIndirectTxnMode(() => {
+      chai.expect(b1.txns.getMode()).to.equal("indirect");
+    });
+
+    chai.expect(b1.txns.getMode()).to.equal("direct");
+
+    b1.txns.withIndirectTxnMode(() => {
+      chai.expect(b1.txns.getMode()).to.equal("indirect");
+      b1.txns.withIndirectTxnMode(() => {
+        chai.expect(b1.txns.getMode()).to.equal("indirect");
+        b1.txns.withIndirectTxnMode(() => {
+          chai.expect(b1.txns.getMode()).to.equal("indirect");
+          b1.txns.withIndirectTxnMode(() => {
+            chai.expect(b1.txns.getMode()).to.equal("indirect");
+          });
+          chai.expect(b1.txns.getMode()).to.equal("indirect");
+        });
+        chai.expect(b1.txns.getMode()).to.equal("indirect");
+      });
+    });
+
+    chai.expect(b1.txns.getMode()).to.equal("direct");
+
+    chai.expect(() =>
+      b1.txns.withIndirectTxnMode(() => {
+          chai.expect(b1.txns.getMode()).to.equal("indirect");
+          throw new Error("Test error");
+    })).to.throw();
+
+    chai.expect(b1.txns.getMode()).to.equal("direct");
+  });
   it("should restore mutually exclusive stashes", async () => {
     const b1 = await testIModel.openBriefcase();
 
