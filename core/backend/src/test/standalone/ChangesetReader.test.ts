@@ -137,7 +137,7 @@ describe("Changeset Reader API", async () => {
         assert.deepEqual(adaptor.inserted.$meta?.tables, ["bis_GeometricElement2d_Overflow"]);
         assert.equal(adaptor.inserted.$meta?.op, "Updated");
         assert.equal(adaptor.inserted.$meta?.classFullName, "BisCore:GeometricElement2d");
-        assert.isTrue(adaptor.inserted.$meta!.fallbackClassId!.startsWith("0x"));
+        assert.isTrue(adaptor.inserted.$meta.fallbackClassId!.startsWith("0x"));
         assert.deepEqual(adaptor.inserted.$meta?.changeIndexes, [3]);
         assert.equal(adaptor.inserted.$meta?.stage, "New");
 
