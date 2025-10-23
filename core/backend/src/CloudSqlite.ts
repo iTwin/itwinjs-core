@@ -236,24 +236,27 @@ export namespace CloudSqlite {
   export interface BcvStats {
     /** The total number of cache slots that are currently in use or 'locked' by ongoing client read transactions. In daemonless mode, this value is always 0.
      *  A locked cache slot implies that it is not eligible for eviction in the event of a full cachefile.
+     *  NOTE: All values are returned as hex strings to avoid any possibility of overflow.
     */
-    readonly lockedCacheslots: number;
+    readonly lockedCacheslots: string;
     /** The current number of slots with data in them in the cache. */
-    readonly populatedCacheslots: number;
+    readonly populatedCacheslots: string;
     /** The configured size of the cache, in number of slots. */
-    readonly totalCacheslots: number;
+    readonly totalCacheslots: string;
     /** The total number of clients opened on this cache */
-    readonly totalClients?: number;
+    readonly totalClients?: string;
     /** The total number of ongoing prefetches on this cache */
-    readonly ongoingPrefetches?: number;
+    readonly ongoingPrefetches?: string;
     /** The total number of active clients on this cache. An active client is one which has an open read txn. */
-    readonly activeClients?: number;
+    readonly activeClients?: string;
     /** The total number of attached containers on this cache. */
-    readonly attachedContainers?: number;
+    readonly attachedContainers?: string;
     /** The total amount of memory used by sqlite, in bytes. */
-    readonly memoryUsed?: number;
+    readonly memoryUsed?: string;
     /** The maximum value of memoryUsed since high-water mark was last reset, in bytes. */
-    readonly memoryHighwater?: number;
+    readonly memoryHighwater?: string;
+    /** The total amount of memory used for the manifests for each attached container, in bytes. */
+    readonly memoryManifest?: string;
   }
 
   /** The base name of a CloudSqlite database, without any version information.

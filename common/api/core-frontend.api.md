@@ -59,7 +59,6 @@ import { ContentIdProvider } from '@itwin/core-common';
 import { ContextRealityModel } from '@itwin/core-common';
 import { ContextRealityModelProps } from '@itwin/core-common';
 import { ContourDisplay } from '@itwin/core-common';
-import { ContourGroup } from '@itwin/core-common';
 import { ConvexClipPlaneSet } from '@itwin/core-geometry';
 import { CurvePrimitive } from '@itwin/core-geometry';
 import { DeprecatedBackgroundMapProps } from '@itwin/core-common';
@@ -959,22 +958,56 @@ export class AccuDrawViewportUI extends AccuDraw {
         };
         simplifiedInput: boolean;
         mathOperations: boolean;
-        fieldSize: number;
-        rowSpacingFactor: number;
-        columnSpacingFactor: number;
-        borderRadius: string;
-        backgroundColor: string;
-        text: {
-            fontFamily: string;
-            fontSize: string;
+        field: {
+            size: number;
+            height: string;
+            border: {
+                width: string;
+                style: string;
+                radius: string;
+            };
+            text: {
+                fontFamily: string;
+                fontSize: string;
+            };
+        };
+        input: {
             color: string;
-            focusColor: string;
+            padding: string;
+            focused: {
+                backgroundColor: string;
+                innerStroke: string;
+                border: {
+                    color: string;
+                };
+            };
+            unfocused: {
+                backgroundColor: string;
+                border: {
+                    color: string;
+                };
+            };
         };
         button: {
-            pressedColor: string;
+            padding: string;
+            unlocked: {
+                color: string;
+                backgroundColor: string;
+                border: {
+                    color: string;
+                };
+            };
+            locked: {
+                color: string;
+                backgroundColor: string;
+                border: {
+                    color: string;
+                };
+            };
+        };
+        spacing: {
+            gap: string;
             margin: string;
-            outlineWidth: string;
-            shadow: string;
         };
     };
     protected currentControlRect(vp: ScreenViewport): ViewRect | undefined;
@@ -2085,13 +2118,6 @@ export enum ContextRotationId {
     Top = 0,
     // (undocumented)
     View = 6
-}
-
-// @beta
-export interface ContourHit {
-    readonly elevation: number;
-    readonly group: ContourGroup;
-    readonly isMajor: boolean;
 }
 
 // @internal
@@ -4586,8 +4612,6 @@ export class HitDetail {
     // @deprecated
     constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
     clone(): HitDetail;
-    // @beta
-    get contour(): ContourHit | undefined;
     get distFraction(): number;
     get distXY(): number;
     draw(_context: DecorateContext): void;
@@ -4627,8 +4651,6 @@ export class HitDetail {
 
 // @public
 export interface HitDetailProps {
-    // @beta
-    readonly contour?: ContourHit;
     readonly distFraction: number;
     readonly distXY: number;
     readonly geometryClass?: GeometryClass;
@@ -4919,6 +4941,8 @@ export class IModelApp {
     static get hasRenderSystem(): boolean;
     static get hubAccess(): FrontendHubAccess | undefined;
     static get initialized(): boolean;
+    // @internal
+    static get isEventLoopStarted(): boolean;
     static get localization(): Localization;
     // (undocumented)
     static get locateManager(): ElementLocateManager;
@@ -5249,6 +5273,7 @@ export class IModelTileTree extends TileTree {
     decoder: ImdlDecoder;
     // (undocumented)
     draw(args: TileDrawArgs): void;
+    get dynamicElements(): Id64Array;
     // (undocumented)
     get edgeOptions(): EdgeOptions | false;
     // (undocumented)
@@ -5295,6 +5320,9 @@ export class IModelTileTree extends TileTree {
     // (undocumented)
     get viewFlagOverrides(): {};
 }
+
+// @internal (undocumented)
+export const _implementationProhibited: unique symbol;
 
 // @public
 export abstract class InputCollector extends InteractiveTool {
@@ -5862,6 +5890,7 @@ export interface MapLayerAccessTokenParams {
     mapLayerUrl: URL;
     // (undocumented)
     password?: string;
+    portal?: string;
     // (undocumented)
     userName?: string;
 }
@@ -7726,13 +7755,10 @@ export namespace Pixel {
             viewAttachmentId?: string;
             inSectionDrawingAttachment?: boolean;
             transformFromIModel?: Transform;
-            contour?: ContourHit;
         });
         // @internal (undocumented)
         readonly batchType?: BatchType;
         computeHitPriority(): HitPriority;
-        // @beta
-        readonly contour?: ContourHit;
         readonly distanceFraction: number;
         get elementId(): Id64String | undefined;
         readonly feature?: Feature;
@@ -7764,8 +7790,6 @@ export namespace Pixel {
         Unknown = 0
     }
     export interface HitProps {
-        // @beta
-        contour?: ContourHit;
         distFraction: number;
         geometryClass?: GeometryClass;
         // @alpha
@@ -7791,9 +7815,8 @@ export namespace Pixel {
     }
     export type Receiver = (pixels: Buffer | undefined) => void;
     export enum Selector {
-        All = 13,
-        Contours = 8,// eslint-disable-line @typescript-eslint/no-shadow
-        Feature = 1,
+        All = 5,
+        Feature = 1,// eslint-disable-line @typescript-eslint/no-shadow
         GeometryAndDistance = 4,
         // (undocumented)
         None = 0
@@ -8072,6 +8095,8 @@ export interface QuantityTypeDefinition {
 
 // @internal
 export class QuantityTypeFormatsProvider implements FormatsProvider {
+    // (undocumented)
+    [Symbol.dispose](): void;
     constructor();
     // (undocumented)
     getFormat(name: string): Promise<FormatDefinition | undefined>;
@@ -8554,6 +8579,12 @@ export interface RemoteExtensionProviderProps {
     manifestUrl: string;
 }
 
+// @internal
+export interface RenderAreaPattern extends Disposable, RenderMemory.Consumer {
+    // (undocumented)
+    readonly [_implementationProhibited]: "renderAreaPattern";
+}
+
 // @public
 export abstract class RenderClipVolume {
     protected constructor(clipVector: ClipVector);
@@ -8586,6 +8617,19 @@ export enum RenderDiagnostics {
     DebugOutput = 2,
     None = 0,
     WebGL = 4
+}
+
+// @internal
+export interface RenderGeometry extends Disposable, RenderMemory.Consumer {
+    // (undocumented)
+    computeRange(out?: Range3d): Range3d;
+    // (undocumented)
+    readonly isDisposed: boolean;
+    // (undocumented)
+    readonly isInstanceable: boolean;
+    noDispose: boolean;
+    // (undocumented)
+    readonly renderGeometryType: "mesh" | "polyline" | "point-string" | "point-cloud" | "reality-mesh";
 }
 
 // @public
@@ -8841,6 +8885,64 @@ export namespace RenderMemory {
         // @internal (undocumented)
         get vertexTables(): Consumers;
     }
+}
+
+// @internal
+export interface RenderPlan {
+    // (undocumented)
+    readonly analysisStyle?: AnalysisStyle;
+    // (undocumented)
+    readonly analysisTexture?: RenderTexture;
+    // (undocumented)
+    readonly ao?: AmbientOcclusion.Settings;
+    // (undocumented)
+    readonly atmosphere?: Atmosphere.Settings;
+    // (undocumented)
+    readonly backgroundMapOn: boolean;
+    // (undocumented)
+    readonly bgColor: ColorDef;
+    // (undocumented)
+    readonly clip?: ClipVector;
+    // (undocumented)
+    readonly clipStyle: ClipStyle;
+    // (undocumented)
+    readonly contours?: ContourDisplay;
+    // (undocumented)
+    readonly ellipsoid?: RenderPlanEllipsoid;
+    // (undocumented)
+    readonly emphasisSettings: Hilite.Settings;
+    // (undocumented)
+    readonly flashSettings: FlashSettings;
+    // (undocumented)
+    readonly fraction: number;
+    // (undocumented)
+    readonly frustum: Frustum;
+    // (undocumented)
+    readonly globalViewTransition: number;
+    // (undocumented)
+    readonly hiliteSettings: Hilite.Settings;
+    // (undocumented)
+    readonly hline?: HiddenLine.Settings;
+    // (undocumented)
+    readonly is3d: boolean;
+    // (undocumented)
+    readonly isFadeOutActive: boolean;
+    // (undocumented)
+    readonly isGlobeMode3D: boolean;
+    // (undocumented)
+    readonly lights?: LightSettings;
+    // (undocumented)
+    readonly monochromeMode: MonochromeMode;
+    // (undocumented)
+    readonly monoColor: ColorDef;
+    // (undocumented)
+    readonly thematic?: ThematicDisplay;
+    // (undocumented)
+    readonly upVector: Vector3d;
+    // (undocumented)
+    readonly viewFlags: ViewFlags;
+    // (undocumented)
+    readonly whiteOnWhiteReversal: WhiteOnWhiteReversalSettings;
 }
 
 // @public
@@ -10157,7 +10259,7 @@ export namespace SubCategoriesCache {
         readonly funcs: QueueFunc[];
     }
     // (undocumented)
-    export type QueueFunc = () => void;
+    export type QueueFunc = (anySubCategoriesLoaded: boolean) => void;
     // (undocumented)
     export class Request {
         constructor(categoryIds: Set<string>, imodel: IModelConnection, maxCategoriesPerQuery?: number);
@@ -11660,6 +11762,7 @@ export class ToolAdmin {
     onMouseLeave(vp: ScreenViewport): void;
     // @internal (undocumented)
     onPostInstallTool(tool: InteractiveTool): Promise<void>;
+    protected onPreButtonEvent(_ev: BeButtonEvent): boolean;
     // @internal (undocumented)
     onSelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined): Promise<void>;
     // @internal (undocumented)
@@ -12897,6 +13000,8 @@ export class ViewManager implements Iterable<ScreenViewport> {
     setViewCursor(cursor?: string): void;
     // @internal (undocumented)
     readonly toolTipProviders: ToolTipProvider[];
+    // @internal
+    protected updateRenderToScreen(): void;
     // @internal (undocumented)
     validateViewportScenes(): void;
     // (undocumented)

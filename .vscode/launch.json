@@ -607,6 +607,26 @@
       ]
     },
     {
+      "name": "[perftests] IModelDb SchemaContext",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/full-stack-tests/backend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "perftest:schemaContextPerformance"
+      ],
+      "env": {
+        "PERF_SCHEMA_DIR": "D:\\data\\25_10_16-substation\\"
+      },
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
+      ]
+    },
+    {
       "name": "[perftests] Changeset PerfTests (Offline)",
       "presentation": {
         "group": "6_Misc"
@@ -1135,6 +1155,21 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Run Vitest Browser Cesium",
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/extensions/cesium-renderer", // necessary to pick up cesium-renderer's vitest config
+      "program": "node_modules/vitest/vitest.mjs",
+      "args": [
+        "--run",
+        "--inspect",
+        "--no-file-parallelism",
+        "--test-timeout=0"
+      ], // disable test timeout while debugging
+      "autoAttachChildProcesses": true
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Compile test worker for frontend tests",
       "console": "integratedTerminal",
       "runtimeExecutable": "pnpm",
@@ -1156,6 +1191,18 @@
         "Run Vitest Browser"
       ],
       "preLaunchTask": "Run webpack for frontend test worker",
+      "stopAll": true
+    },
+    {
+      "name": "Cesium Renderer Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 2
+      },
+      "configurations": [
+        "Attach to Vitest Browser",
+        "Run Vitest Browser Cesium"
+      ],
       "stopAll": true
     },
     {

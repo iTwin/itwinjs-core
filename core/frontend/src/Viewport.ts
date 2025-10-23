@@ -791,12 +791,13 @@ export abstract class Viewport implements Disposable, TileUser {
     this.updateSubCategories(categoryIds, enableAllSubCategories);
   }
 
-  private updateSubCategories(categoryIds: Id64Arg, enableAllSubCategories: boolean): void {
-    this.subcategories.push(this.iModel.subcategories, categoryIds, () => {
-      if (enableAllSubCategories)
+  private updateSubCategories(categoryIds: Id64Arg, enableAllSubCategories: boolean | undefined): void {
+    this.subcategories.push(this.iModel.subcategories, categoryIds, (anySubCategoriesLoaded) => {
+      if (true === enableAllSubCategories)
         this.enableAllSubCategories(categoryIds);
 
-      this._changeFlags.setViewedCategories();
+      if (undefined !== enableAllSubCategories || anySubCategoriesLoaded)
+        this._changeFlags.setViewedCategories();
     });
   }
 
@@ -1192,6 +1193,11 @@ export abstract class Viewport implements Disposable, TileUser {
     this.registerViewListeners();
     this.view.attachToViewport(this);
     this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this.viewportId, this.displayStyle);
+
+    // ViewState.load loads all the subcategories for the categories in its category selector.
+    // But the set of categories may have changed since loading the view.
+    // Ensure we fill the cache for the current set of categories.
+    this.updateSubCategories(this.view.categorySelector.categories, undefined);
   }
 
   private registerViewListeners(): void {
@@ -1206,6 +1212,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
     removals.push(view.onViewedCategoriesChanged.addListener(() => {
       this._changeFlags.setViewedCategories();
+      this.updateSubCategories(view.categorySelector.categories, undefined);
       this.maybeInvalidateScene();
     }));
 

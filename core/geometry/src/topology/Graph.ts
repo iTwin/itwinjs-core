@@ -7,7 +7,7 @@
  * @module Topology
  */
 
-import { OrderedSet } from "@itwin/core-bentley";
+import { assert, OrderedSet } from "@itwin/core-bentley";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
@@ -91,7 +91,7 @@ export type NodeToNumberFunction = (node: HalfEdge) => number;
  */
 export type HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean;
 /**
- * Function signature for function of a node and a mask, returning a number.
+ * Function signature for function of a node and a mask, returning a boolean.
  * @internal
  */
 export type HalfEdgeAndMaskToBooleanFunction = (node: HalfEdge, mask: HalfEdgeMask) => boolean;
@@ -189,9 +189,12 @@ export class HalfEdge implements HalfEdgeUserData {
   public get edgeMate(): HalfEdge {
     return this._edgeMate;
   }
+  /** HalfEdge ids are sequentially assigned per session (not per graph!). */
   private static _totalNodesCreated = 0;
-  public constructor(x: number = 0, y: number = 0, z: number = 0, i: number = 0) {
+  private constructor(x: number = 0, y: number = 0, z: number = 0, i: number = 0) {
     this._id = HalfEdge._totalNodesCreated++;
+    if (!Number.isSafeInteger(HalfEdge._totalNodesCreated))
+      HalfEdge._totalNodesCreated = 0;
     this.i = i;
     this.maskBits = 0x00000000;
     this.x = x;
@@ -433,6 +436,16 @@ export class HalfEdge implements HalfEdgeUserData {
    */
   public clearMask(mask: HalfEdgeMask): void {
     this.maskBits &= ~mask;
+  }
+  /** Set or clear mask bits from this HalfEdge.
+   * @param mask mask bits
+   * @param clear whether to clear the mask. Default is false (set the mask).
+   */
+  public applyMask(mask: HalfEdgeMask, clear: boolean = false): void {
+    if (clear)
+      this.clearMask(mask);
+    else
+      this.setMask(mask);
   }
   /**
    * Set a mask at all nodes around a vertex.
@@ -707,21 +720,17 @@ export class HalfEdge implements HalfEdgeUserData {
   }
   /**
    * Create an edge with initial id,x,y at each end.
-   * @param id0 id for first node.
    * @param x0 x coordinate for first node.
    * @param y0 y coordinate for first node.
-   * @param id1 id for second node.
    * @param x1 x coordinate for second node.
    * @param y1 y coordinate for second node.
    * @returns the reference to the new node at (x0,y0).
    */
-  public static createEdgeXYXY(id0: number, x0: number, y0: number, id1: number, x1: number, y1: number): HalfEdge {
+  public static createEdgeXYXY(x0: number, y0: number, x1: number, y1: number): HalfEdge {
     const node0 = new HalfEdge(x0, y0);
     const node1 = new HalfEdge(x1, y1);
     node0._faceSuccessor = node0._facePredecessor = node0._edgeMate = node1;
     node1._faceSuccessor = node1._facePredecessor = node1._edgeMate = node0;
-    node0._id = id0;
-    node1._id = id1;
     return node0;
   }
   /**
@@ -1057,18 +1066,21 @@ export class HalfEdge implements HalfEdgeUserData {
   /**
    * Announce edges in the super face loop, starting with the instance.
    * * A super face admits a `faceSuccessor` traversal, where the next edge at the far vertex is the first one lacking `skipMask` in a `vertexPredecessor` traversal.
-   * @param skipMask mask on edges to skip.
-   * @param announceEdge function to call at each edge that is not skipped.
-   * @param announceSkipped optional function to call at each edge that is skipped.
-   * @return whether a super face was found. Specifically, if a vertex loop has all edges with `skipMask` set, the return value is `false`.
+   * @param skipEdge mask preset on edges to skip, or a function that is called to decide whether to skip an edge.
+   * @param announceEdge function that is called at each edge that is not skipped.
+   * @param announceSkipped optional function that is called at each edge that is skipped.
+   * @return whether a super face was found, or `false` if the traversal fails to return to the instance vertex.
    */
-  public announceEdgesInSuperFace(skipMask: HalfEdgeMask, announceEdge: NodeFunction, announceSkipped?: NodeFunction): boolean {
-    const maxIter = 1000; // safeguard against infinite loops
+  public announceEdgesInSuperFace(
+    skipEdge: HalfEdgeMask | HalfEdgeToBooleanFunction, announceEdge: NodeFunction, announceSkipped?: NodeFunction,
+  ): boolean {
+    const maxIter = 10000; // safeguard against infinite loops
     let iter = 0;
+    const mySkipEdge: HalfEdgeToBooleanFunction = skipEdge instanceof Function ? skipEdge : (he: HalfEdge) => he.isMaskSet(skipEdge);
     const findNextNodeAroundVertex = (he: HalfEdge): HalfEdge | undefined => {
       let vNode = he;
       do {
-        if (!vNode.isMaskSet(skipMask))
+        if (!mySkipEdge(vNode))
           return vNode;
         announceSkipped?.(vNode);
         vNode = vNode.vertexPredecessor;
@@ -1085,6 +1097,7 @@ export class HalfEdge implements HalfEdgeUserData {
       if (!node)
         return false;
     } while (node !== firstNode && iter++ < maxIter);
+    assert(iter < maxIter, "Infinite loop detected in HalfEdge.announceEdgesInSuperFace");
     return iter < maxIter;
   }
   /**
@@ -1136,6 +1149,17 @@ export class HalfEdge implements HalfEdgeUserData {
       node = node.vertexSuccessor;
     } while (node !== this);
     return nodes;
+  }
+  /**
+   * Announce edges in the vertex loop, starting with the instance and proceeding in a `vertexSuccessor` traversal.
+   * @param announceEdge function to call at each edge
+   */
+  public announceEdgesAroundVertex(announceEdge: NodeFunction): void {
+    let node: HalfEdge = this;
+    do {
+      announceEdge(node);
+      node = node.vertexSuccessor;
+    } while (node !== this);
   }
   /**
    * Evaluate `f(node)` at each node around `this` node's face loop. Sum the function values.
@@ -1434,7 +1458,6 @@ export class HalfEdgeGraph {
   /** Simple array with pointers to all the half edges in the graph. */
   public allHalfEdges: HalfEdge[];
   private _maskManager: MaskManager;
-  private _numNodesCreated = 0;
   public constructor() {
     this.allHalfEdges = [];
     this._maskManager = MaskManager.create(HalfEdgeMask.ALL_GRAB_DROP_MASKS)!;
@@ -1577,13 +1600,24 @@ export class HalfEdgeGraph {
   }
   /**
    * Create two nodes of a new edge.
+   * @param x0 x-coordinate of the start node.
+   * @param y0 y-coordinate of the start node.
+   * @param x1 x-coordinate of the end node.
+   * @param y1 y-coordinate of the end node.
+   * @param edgeTag0 (optional) edge tag for the start node.
+   * @param edgeTag1 (optional) edge tag for the end node.
+   * @param faceTag0 (optional) face tag for the start node.
+   * @param faceTag1 (optional) face tag for the end node.
    * @returns the reference to the new node at (x0,y0).
    */
-  public addEdgeXY(x0: number, y0: number, x1: number, y1: number): HalfEdge {
-    const baseNode = HalfEdge.createEdgeXYXY(this._numNodesCreated, x0, y0, this._numNodesCreated + 1, x1, y1);
-    this._numNodesCreated += 2;
-    this.allHalfEdges.push(baseNode);
-    this.allHalfEdges.push(baseNode.faceSuccessor);
+  public addEdgeXY(x0: number, y0: number, x1: number, y1: number, edgeTag0?: number, edgeTag1?: number, faceTag0?: number, faceTag1?: number): HalfEdge {
+    const baseNode = HalfEdge.createEdgeXYXY(x0, y0, x1, y1);
+    const farNode = baseNode.faceSuccessor;
+    baseNode.edgeTag = edgeTag0;
+    baseNode.faceTag = faceTag0;
+    farNode.edgeTag = edgeTag1;
+    farNode.faceTag = faceTag1;
+    this.allHalfEdges.push(baseNode, farNode);
     return baseNode;
   }
   /** Clear selected `mask` bits in all nodes of the graph. */
@@ -1598,9 +1632,8 @@ export class HalfEdgeGraph {
   }
   /** Toggle selected `mask` bits in all nodes of the graph. */
   public reverseMask(mask: HalfEdgeMask) {
-    for (const node of this.allHalfEdges) {
+    for (const node of this.allHalfEdges)
       node.maskBits ^= mask;
-    }
   }
   /**
    * Return the number of nodes that have a specified mask bit set.
@@ -1621,15 +1654,9 @@ export class HalfEdgeGraph {
    */
   public collectSegments(): LineSegment3d[] {
     const segments: LineSegment3d[] = [];
-    for (const node of this.allHalfEdges) {
+    for (const node of this.allHalfEdges)
       if (node.id < node.edgeMate.id)
-        segments.push(
-          LineSegment3d.create(
-            Point3d.create(node.x, node.y),
-            Point3d.create(node.faceSuccessor.x, node.faceSuccessor.y),
-          ),
-        );
-    }
+        segments.push(LineSegment3d.createXYXY(node.x, node.y, node.faceSuccessor.x, node.faceSuccessor.y));
     return segments;
   }
   /** Returns the number of vertex loops in a graph structure. */
@@ -1800,5 +1827,51 @@ export class HalfEdgeGraph {
     const numDeleted = numTotal - numAccepted;
     this.allHalfEdges.length = numAccepted;
     return numDeleted;
+  }
+  /**
+   * Construct a map from id to vertex index.
+   * * For a given HalfEdge `e`, the key is `e.id` and the value is the minimum index in `graph.allHalfEdges` of all edges in the vertex loop of `e`.
+  */
+  public constructIdToVertexIndexMap(): Map<number, number> {
+    const idToIndexMap = new Map<number, number>();
+    this.allHalfEdges.forEach((e: HalfEdge, i: number) => idToIndexMap.set(e.id, i));
+    this.announceVertexLoops(
+      (_g, vertex: HalfEdge) => {
+        let minIndex = this.allHalfEdges.length;
+        vertex.announceEdgesAroundVertex(
+          (e: HalfEdge) => {
+            const index = idToIndexMap.get(e.id);
+            if (index !== undefined && index < minIndex)
+              minIndex = index;
+          },
+        );
+        vertex.announceEdgesAroundVertex((e: HalfEdge) => idToIndexMap.set(e.id, minIndex));
+        return true;
+      },
+    );
+    return idToIndexMap;
+  }
+  /**
+   * Construct a map from id to face index.
+   * * For a given HalfEdge `e`, the key is `e.id` and the value is the minimum index in `graph.allHalfEdges` of all edges in the face loop of `e`.
+  */
+  public constructIdToFaceIndexMap(): Map<number, number> {
+    const idToIndexMap = new Map<number, number>();
+    this.allHalfEdges.forEach((e: HalfEdge, i: number) => idToIndexMap.set(e.id, i));
+    this.announceFaceLoops(
+      (_g, face: HalfEdge) => {
+        let minIndex = this.allHalfEdges.length;
+        face.announceEdgesInFace(
+          (e: HalfEdge) => {
+            const index = idToIndexMap.get(e.id);
+            if (index !== undefined && index < minIndex)
+              minIndex = index;
+          },
+        );
+        face.announceEdgesInFace((e: HalfEdge) => idToIndexMap.set(e.id, minIndex));
+        return true;
+      },
+    );
+    return idToIndexMap;
   }
 }

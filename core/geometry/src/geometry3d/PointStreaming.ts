@@ -11,6 +11,7 @@ import { GrowableXYZArray } from "./GrowableXYZArray";
 import { IndexedXYZCollection, LineStringDataVariant, MultiLineStringDataVariant } from "./IndexedXYZCollection";
 import { Point3d } from "./Point3dVector3d";
 import { Range3d } from "./Range";
+import { Transform } from "./Transform";
 
 //
 // remarks: point array variants . . .
@@ -93,12 +94,31 @@ export class PointStreamGrowableXYZArrayCollector extends PointStreamXYZHandlerB
  * PointStream handler to collect the range of points.
  */
 export class PointStreamRangeCollector extends PointStreamXYZHandlerBase {
-  private _range?: Range3d = Range3d.createNull();
+  private _range?: Range3d;
+  private _transform?: Transform;
+
+  /**
+   * Constructor.
+   * @param transform optional Transform to be applied to each point before expanding the range in [[handleXYZ]].
+   * @param range optional existing range to expand and return in [[claimResult]].
+   */
+  public constructor(transform?: Transform, range?: Range3d) {
+    super();
+    if (transform)
+      this._transform = transform;
+    if (range)
+      this._range = range;
+  }
+
   public override handleXYZ(x: number, y: number, z: number): void {
     if (!this._range)
       this._range = Range3d.createNull();
-    this._range.extendXYZ(x, y, z);
+    if (this._transform)
+      this._range.extendTransformedXYZ(this._transform, x, y, z);
+    else
+      this._range.extendXYZ(x, y, z);
   }
+
   public claimResult(): Range3d {
     const range = this._range;
     this._range = undefined;

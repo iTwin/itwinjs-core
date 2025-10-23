@@ -42,7 +42,6 @@ beta;interface;ChangedECInstance
 internal;class;ChangedElementsDb
 beta;interface;ChangeFormatArgs
 beta;interface;ChangeInstanceKey
-internal;class;ChangeMergeManager
 beta;interface;ChangeMetaData
 public;interface;ChangesetArg
 beta;class;ChangesetECAdaptor
@@ -359,6 +358,7 @@ beta;function;isITextAnnotation
 beta;interface;ITextAnnotation
 public;interface;ITwinIdArg
 public;class;KnownLocations
+beta;interface;LayoutTextArgs
 beta;function;layoutTextBlock
 beta;interface;LayoutTextBlockArgs
 internal;class;LightLocation
@@ -414,6 +414,7 @@ beta;interface;OnSubModelPropsArg
 public;type;OpenBriefcaseArgs
 public;class;OrthographicViewDefinition
 preview;class;OrthographicViewDefinition
+internal;function;parseTextAnnotationData
 beta;class;PartialECChangeUnifier
 public;class;PhysicalElement
 preview;class;PhysicalElement
@@ -445,6 +446,8 @@ beta;interface;QueryLocalChangesArgs
 beta;interface;QueryMappedFamiliesArgs
 beta;interface;QueryWorkspaceResourcesArgs
 beta;type;QueryWorkspaceResourcesCallback
+alpha;interface;RebaseHandler
+alpha;class;RebaseManager
 beta;class;RecipeDefinitionElement
 public;class;Relationship
 public;class;Relationships
@@ -466,6 +469,7 @@ public;class;RoleModel
 preview;class;RoleModel
 public;class;RpcTrace
 beta;class;RunLayout
+alpha;interface;SaveChangesArgs
 public;class;Schema
 public;interface;SchemaImportOptions
 internal;type;SchemaKey
@@ -567,13 +571,19 @@ beta;class;TemplateRecipe2d
 beta;class;TemplateRecipe3d
 internal;class;TemplateViewDefinition2d
 internal;class;TemplateViewDefinition3d
+internal;const;TEXT_ANNOTATION_JSON_VERSION
+internal;const;TEXT_STYLE_SETTINGS_JSON_VERSION
 public;class;TextAnnotation2d
 preview;class;TextAnnotation2d
+beta;interface;TextAnnotation2dCreateArgs
 public;class;TextAnnotation3d
 preview;class;TextAnnotation3d
+beta;interface;TextAnnotation3dCreateArgs
+beta;class;TextAnnotationUsesTextStyleByDefault
 beta;interface;TextBlockAndId
 beta;class;TextBlockLayout
 internal;interface;TextLayoutRanges
+beta;interface;TextStyleCreateArgs
 beta;class;TextStyleResolver
 beta;interface;TextStyleResolverArgs
 public;class;Texture
@@ -591,6 +601,9 @@ public;type;TxnIdString
 preview;type;TxnIdString
 public;class;TxnManager
 preview;class;TxnManager
+alpha;type;TxnMode
+alpha;interface;TxnProps
+alpha;type;TxnType
 public;class;TypeDefinitionElement
 preview;class;TypeDefinitionElement
 public;interface;UpdateModelOptions

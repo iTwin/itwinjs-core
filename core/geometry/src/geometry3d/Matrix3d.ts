@@ -1664,7 +1664,7 @@ export class Matrix3d implements BeJSONFunctions {
    * Specifically, `Mu = u + sw` is perpendicular to `n` for some scalar `s`, where `w` is the sweep direction, and
    * `n` is the plane normal.
    * * Symbolically, `M = I - w⊗n / w.n`, where `I` is the identity, and ⊗ is the vector outer product.
-   * @param sweepVector sweep direction. If same as `planeNormal`, the resulting matrix flattens to the plane.
+   * @param sweepVector sweep direction. If same as `planeNormal`, the resulting matrix is a projection onto the plane.
    * @param planeNormal normal to the target plane
    */
   public static createFlattenAlongVectorToPlane(sweepVector: Vector3d, planeNormal: Vector3d): Matrix3d | undefined {

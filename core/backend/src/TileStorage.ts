@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { gunzip, gzip } from "zlib";
 import { promisify } from "util";
-import { Metadata, ObjectReference, ServerStorage, TransferConfig } from "@itwin/object-storage-core";
+import type { Metadata, ObjectReference, ServerStorage, TransferConfig } from "@itwin/object-storage-core";
 import { getTileObjectReference } from "@itwin/core-common";
 import { Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";

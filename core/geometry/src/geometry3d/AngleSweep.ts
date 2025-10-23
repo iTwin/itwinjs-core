@@ -161,10 +161,19 @@ export class AngleSweep implements BeJSONFunctions {
     this._radians0 = other._radians0;
     this._radians1 = other._radians1;
   }
-  /** Create a full circle sweep (CCW). startRadians defaults to 0 */
-  public static create360(startRadians?: number): AngleSweep {
+  /**
+   * Create a full circle sweep (CCW).
+   * @param startRadians start angle in radians. Defaults to 0.
+   * @param result optional preallocated object to populate and return.
+   */
+  public static create360(startRadians?: number, result?: AngleSweep): AngleSweep {
     startRadians = startRadians ? startRadians : 0.0;
-    return new AngleSweep(startRadians, startRadians + 2.0 * Math.PI);
+    const endRadians = startRadians + 2.0 * Math.PI;
+    if (result) {
+      result.setStartEndRadians(startRadians, endRadians);
+      return result;
+    }
+    return new AngleSweep(startRadians, endRadians);
   }
   /** Create a sweep from the south pole to the north pole (-90 to +90). */
   public static createFullLatitude() {
