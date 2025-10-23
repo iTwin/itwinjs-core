@@ -19,7 +19,7 @@ publish: false
 
 ### Enhancements
 
-- Enhanced [FormatSet]($ecschema-metadata) interface to support format aliasing. The `formats` property now accepts either a `FormatDefinition` or a string reference to another kindOfQuantityId, enabling one format to reference another format's definition. This allows for more flexible format management and reduces duplication when multiple KindOfQuantities should share the same format specification.
+- Enhanced [FormatSet]($ecschema-metadata) interface to support format aliasing. The `formats` property now accepts either a `FormatDefinition` or a string reference to another KindOfQuantity, enabling one format to reference another format's definition. This allows for more flexible format management and reduces duplication when multiple KindOfQuantities should share the same format specification.
 
 - Enhanced [FormatSetFormatsProvider]($ecschema-metadata) with the following capabilities:
   - **String Reference Resolution**: The provider now automatically resolves string references to their target FormatDefinition. When a format references another via string (e.g., `"AecUnits.LENGTH": "RoadRailUnits.LENGTH"`), calling `getFormat("AecUnits.LENGTH")` will resolve and return the actual FormatDefinition from `RoadRailUnits.LENGTH`.
