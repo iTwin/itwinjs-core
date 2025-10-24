@@ -1860,10 +1860,10 @@ describe("iModel", () => {
       for (let numPts = 0; numPts < 3; numPts++) {
         const geoResponse = await imodel5.getGeoCoordinatesFromIModelCoordinates({ target: "WGS84", iModelCoords });
         expect(geoResponse.geoCoords.length).to.equal(numPts);
-        
+
         const iModelResponse = await imodel5.getIModelCoordinatesFromGeoCoordinates({ source: "WGS84", geoCoords });
         expect(iModelResponse.iModelCoords.length).to.equal(numPts);
-        
+
         iModelCoords.push(new Point3d());
         geoCoords.push(new Point3d());
       }
@@ -1875,11 +1875,11 @@ describe("iModel", () => {
       for (let numPts = 0; numPts < 3; numPts++) {
         const geoResponse = await imodel5.getGeoCoordinatesFromIModelCoordinates({ target: "WGS84", iModelCoords });
         expect(geoResponse.fromCache).to.equal(0);
-        
+
         const iModelResponse = await imodel5.getIModelCoordinatesFromGeoCoordinates({ source: "WGS84", geoCoords });
         expect(iModelResponse.iModelCoords.length).to.equal(numPts);
         expect(iModelResponse.fromCache).to.equal(0);
-        
+
         iModelCoords.push(new Point3d());
         geoCoords.push(new Point3d());
       }
@@ -3302,5 +3302,52 @@ describe("iModel", () => {
       testImodel.abandonChanges();
     }
     testImodel.close();
+  });
+
+  it("should update codeValues that are switched between elements", async () => {
+    const dbFileName = IModelTestUtils.prepareOutputFile("IModel", "change-codeValues.bim");
+    const imodelDb = SnapshotDb.createEmpty(dbFileName, {
+      rootSubject: { name: "change-codeValues" },
+    });
+    let categoryA = SpatialCategory.create(
+      imodelDb,
+      IModel.dictionaryId,
+      "A"
+    );
+    let categoryB = SpatialCategory.create(
+      imodelDb,
+      IModel.dictionaryId,
+      "B"
+    );
+    categoryA.userLabel = "A";
+    categoryB.userLabel = "B";
+    categoryA.insert();
+    categoryB.insert();
+    imodelDb.saveChanges();
+
+    categoryA = imodelDb.elements.getElement(
+      SpatialCategory.createCode(imodelDb, IModel.dictionaryId, "A")
+    );
+    categoryB = imodelDb.elements.getElement(
+      SpatialCategory.createCode(imodelDb, IModel.dictionaryId, "B")
+    );
+    categoryA.code.value = "temp";
+    categoryA.update();
+    categoryB.code.value = "A";
+    categoryB.update();
+    categoryA.code.value = "B";
+    categoryA.update();
+    imodelDb.saveChanges();
+
+    categoryA = imodelDb.elements.getElement(
+      SpatialCategory.createCode(imodelDb, IModel.dictionaryId, "A")
+    );
+    categoryB = imodelDb.elements.getElement(
+      SpatialCategory.createCode(imodelDb, IModel.dictionaryId, "B")
+    );
+
+    expect(categoryA.userLabel).to.equal("B", `categoryA.userLabel mismatch in ${imodelDb.name}`);
+    expect(categoryB.userLabel).to.equal("A", `categoryB.userLabel mismatch in ${imodelDb.name}`);
+    imodelDb.close();
   });
 });
