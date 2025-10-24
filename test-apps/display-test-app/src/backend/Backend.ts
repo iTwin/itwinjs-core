@@ -9,9 +9,9 @@ import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { appendTextAnnotationGeometry, Drawing, IModelDb, IModelHost, IModelHostOptions, layoutTextBlock, LocalhostIpcHost, TextStyleResolver } from "@itwin/core-backend";
+import { appendTextAnnotationGeometry, Drawing, FontFile, IModelDb, IModelHost, IModelHostOptions, layoutTextBlock, LocalhostIpcHost, TextStyleResolver } from "@itwin/core-backend";
 import {
-  DynamicGraphicsRequest2dProps, ElementGeometry, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, Placement2dProps, RpcInterfaceDefinition, RpcManager, TextAnnotation, TextAnnotationProps,
+  DynamicGraphicsRequest2dProps, ElementGeometry, FontFamilyDescriptor, FontProps, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, Placement2dProps, RpcInterfaceDefinition, RpcManager, TextAnnotation, TextAnnotationProps,
 } from "@itwin/core-common";
 import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
@@ -223,6 +223,27 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     }
 
     return jsonData as FormatSet;
+  }
+
+  public override async embedFont(iModelToken: IModelRpcProps, fontUrl: string): Promise<FontProps> {
+    const iModel = IModelDb.findByKey(iModelToken.key);
+    const file = FontFile.createFromTrueTypeFileName(fontUrl);
+    if (file.faces.length === 0) {
+      throw new Error("No font faces found in the file.");
+    }
+
+    const descriptor: FontFamilyDescriptor = {
+      name: file.faces[0].familyName,
+      type: file.type,
+    }
+
+    await iModel.fonts.embedFontFile({ file });
+    const id = iModel.fonts.findId(descriptor);
+    if (!id) {
+      throw new Error("Failed to embed font in the iModel.");
+    }
+
+    return { id, name: descriptor.name, type: descriptor.type };
   }
 }
 

@@ -496,6 +496,11 @@ export class TextDecorationTool extends Tool {
         }
         break;
       }
+      case "embed": {
+        const absoluteFontFilePath = arg;
+        await DtaRpcInterface.getClient().embedFont(vp.iModel.getRpcProps(), absoluteFontFilePath);
+        break;
+      }
       case "debug": {
         editor.debugAnchorPointAndRange = !editor.debugAnchorPointAndRange;
         break;

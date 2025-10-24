@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelRpcProps, PlacementProps, RpcInterface, RpcManager, TextAnnotationProps } from "@itwin/core-common";
+import { FontProps, IModelRpcProps, PlacementProps, RpcInterface, RpcManager, TextAnnotationProps } from "@itwin/core-common";
 import * as http from "http";
 import * as https from "https";
 import { DtaConfiguration } from "./DtaConfiguration";
@@ -35,4 +35,5 @@ export class DtaRpcInterface extends RpcInterface {
   public async getAccessToken(): Promise<string> { return this.forward(arguments); }
   public async generateTextAnnotationGeometry(_iModelToken: IModelRpcProps, _annotationProps: TextAnnotationProps, _defaultTextStyleId: Id64String, _categoryId: Id64String, _modelId: Id64String, _placementProps: PlacementProps, _wantDebugGeometry?: boolean): Promise<Uint8Array | undefined> { return this.forward(arguments); }
   public async getFormatSetFromFile(_filename: string): Promise<FormatSet> { return this.forward(arguments); }
+  public async embedFont(_iModelToken: IModelRpcProps, _fontUrl: string): Promise<FontProps> { return this.forward(arguments); }
 }
