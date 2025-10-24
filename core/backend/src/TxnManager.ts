@@ -1069,6 +1069,26 @@ export class TxnManager {
       }
     }
   }
+
+  /**
+   * @alpha
+   * Execute a series of changes in an indirect transaction.
+   * @param callback The function containing the changes to make.
+   */
+  public async withIndirectTxnModeAsync(callback: () => Promise<void>): Promise<void> {
+    if (this._withIndirectChangeRefCounter === 0) {
+      this._nativeDb.setTxnMode("indirect");
+    }
+    this._withIndirectChangeRefCounter++;
+    try {
+      await callback();
+    } finally {
+      this._withIndirectChangeRefCounter--;
+      if (this._withIndirectChangeRefCounter === 0) {
+        this._nativeDb.setTxnMode("direct");
+      }
+    }
+  }
 }
 
 /**
