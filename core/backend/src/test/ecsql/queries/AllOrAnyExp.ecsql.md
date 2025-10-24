@@ -894,33 +894,27 @@ WHERE
 
 ```sql
 SELECT
-  COUNT(*) AS result
+  Name
 FROM
-  (
+  aps.TestFeature
+WHERE
+  ECInstanceID < ALL (
     SELECT
-      Name
+      ECClassId,
+      Model.RelECClassId
     FROM
-      meta.ecclassdef
-    WHERE
-      ECInstanceID < ALL (
-        SELECT
-          ECClassId,
-          Model.RelECClassId
-        FROM
-          aps.TestElement
-      )
-    LIMIT
-      3
+      aps.TestElement
   )
 ```
 
-| className | accessString | generated | index | jsonName | name   | extendedType | typeName | type  |
-| --------- | ------------ | --------- | ----- | -------- | ------ | ------------ | -------- | ----- |
-|           | result       | true      | 0     | result   | result | undefined    | long     | Int64 |
+| className                 | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ | ------------------ |
+| AllProperties:TestFeature | Name         | false     | 0     | name     | Name | undefined    | string   | String | Name               |
 
-| result |
-| ------ |
-| 3      |
+| Name        |
+| ----------- |
+| Feature0x1d |
+| Feature0x1c |
 
 # Using ANY with multiple items
 
@@ -928,33 +922,27 @@ FROM
 
 ```sql
 SELECT
-  COUNT(*) AS result
+  Name
 FROM
-  (
+  aps.TestFeature
+WHERE
+  ECInstanceID < ANY(
     SELECT
-      Name
+      ECClassId,
+      Model.RelECClassId
     FROM
-      meta.ecclassdef
-    WHERE
-      ECInstanceID > ANY(
-        SELECT
-          ECClassId,
-          Model.RelECClassId
-        FROM
-          aps.TestElement
-      )
-    LIMIT
-      3
+      aps.TestElement
   )
 ```
 
-| className | accessString | generated | index | jsonName | name   | extendedType | typeName | type  |
-| --------- | ------------ | --------- | ----- | -------- | ------ | ------------ | -------- | ----- |
-|           | result       | true      | 0     | result   | result | undefined    | long     | Int64 |
+| className                 | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ | ------------------ |
+| AllProperties:TestFeature | Name         | false     | 0     | name     | Name | undefined    | string   | String | Name               |
 
-| result |
-| ------ |
-| 3      |
+| Name        |
+| ----------- |
+| Feature0x1d |
+| Feature0x1c |
 
 # Using SOME with multiple items
 
