@@ -309,21 +309,18 @@ export class CurrentInputState {
       return false;
 
 
-    if ((Date.now() - state.downTime) <= ToolSettings.startDragDelay.milliseconds) {
+    if ((Date.now() - state.downTime) <= ToolSettings.startDragDelay.milliseconds)
       return false;
-    }
 
     const vp = this.viewport;
-    if (undefined === vp) {
+    if (undefined === vp)
       return false;
-    }
 
     const viewPt = vp.worldToView(state.downRawPt);
     const deltaX = Math.abs(this._viewPoint.x - viewPt.x);
     const deltaY = Math.abs(this._viewPoint.y - viewPt.y);
 
-    const test = ((deltaX + deltaY) > vp.pixelsFromInches(ToolSettings.startDragDistanceInches));
-    return test;
+    return ((deltaX + deltaY) > vp.pixelsFromInches(ToolSettings.startDragDistanceInches));
   }
 }
 
@@ -551,7 +548,6 @@ export class ToolAdmin {
   }
 
   private async onMouseButton(event: ToolEvent, isDown: boolean): Promise<any> {
-    // console.log("onMouseButton");
     const ev = event.ev as MouseEvent;
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const vp = event.vp!;
@@ -1097,8 +1093,6 @@ export class ToolAdmin {
   }
 
   private async onMotion(vp: ScreenViewport, pt2d: XAndY, inputSource: InputSource, forceStartDrag: boolean = false, movement?: XAndY): Promise<any> {
-    // console.log("ToolAdmin onMotion", inputSource, pt2d.toString());
-
     const current = this.currentInputState;
     current.onMotion(pt2d);
 
@@ -1423,9 +1417,8 @@ export class ToolAdmin {
     current.onButtonUp(button);
     current.toEvent(ev, true);
 
-    if (wasDragging) {
+    if (wasDragging)
       return this.sendEndDragEvent(ev);
-    }
 
     current.changeButtonToDownPoint(ev);
     return this.sendButtonEvent(ev);
