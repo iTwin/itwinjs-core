@@ -270,6 +270,214 @@ describe("ECSqlStatement", () => {
       assert.equal(0, ecdb.getCachedStatementCount()); // there must be single cached statement used with different size pages.
     }
   });
+  it.only("checking for system property flag for CTEs", async () => {
+    using ecdb = ECDbTestHelper.createECDb(outDir, "pagingresultset.ecdb",
+      `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="n" typeName="int"/>
+        </ECEntityClass>
+      </ECSchema>`);
+    assert.isTrue(ecdb.isOpen);
+    const ROW_COUNT = 27;
+    // insert test rows
+    for (let i = 1; i <= ROW_COUNT; i++) {
+      const r = await ecdb.withCachedWriteStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlWriteStatement) => {
+        return stmt.stepForInsert();
+      });
+      assert.equal(r.status, DbResult.BE_SQLITE_DONE);
+    }
+    ecdb.saveChanges();
+    // check if varying page number does not require prepare new statements
+    ecdb.clearStatementCache();
+    let reader = ecdb.createQueryReader("WITH cte(a, b) AS (SELECT ECInstanceId, n FROM ts.Foo) SELECT * FROM cte");
+    let metadata = await reader.getMetaData();
+    assert.equal(metadata.length, 2);
+    // eslint-disable-next-line no-console
+    console.log(metadata[0].extendedType);
+    // eslint-disable-next-line no-console
+    console.log(metadata[1].extendedType);
+
+    reader = ecdb.createQueryReader("WITH cte(a, b) AS (SELECT ECInstanceId, n FROM ts.Foo) SELECT a, b FROM cte");
+    metadata = await reader.getMetaData();
+
+    assert.equal(metadata.length, 2);
+    // eslint-disable-next-line no-console
+    console.log(metadata[0].extendedType);
+    // eslint-disable-next-line no-console
+    console.log(metadata[1].extendedType);
+
+    reader = ecdb.createQueryReader("WITH cte(a, b) AS (SELECT ECInstanceId ddfg, n FROM ts.Foo) SELECT a, b FROM cte");
+    metadata = await reader.getMetaData();
+
+    assert.equal(metadata.length, 2);
+    // eslint-disable-next-line no-console
+    console.log(metadata[0].extendedType);
+    // eslint-disable-next-line no-console
+    console.log(metadata[1].extendedType);
+
+    reader = ecdb.createQueryReader("WITH cte(a, b, c) AS (SELECT ECInstanceId ddfg, n, ec_classid('Test','Foo') FROM ts.Foo) SELECT a, b, c FROM cte");
+    metadata = await reader.getMetaData();
+
+    assert.equal(metadata.length, 3);
+    // eslint-disable-next-line no-console
+    console.log(metadata[0].extendedType);
+    // eslint-disable-next-line no-console
+    console.log(metadata[1].extendedType);
+    // eslint-disable-next-line no-console
+    console.log(metadata[2].extendedType);
+
+    reader = ecdb.createQueryReader("WITH cte AS (SELECT ECInstanceId a, n b FROM ts.Foo) SELECT a, b FROM cte");
+    metadata = await reader.getMetaData();
+
+    assert.equal(metadata.length, 2);
+    // eslint-disable-next-line no-console
+    console.log(metadata[0].extendedType);
+    // eslint-disable-next-line no-console
+    console.log(metadata[1].extendedType);
+
+    reader = ecdb.createQueryReader("WITH cte AS (SELECT ECInstanceId a, n b, ec_classid('Test','Foo') c FROM ts.Foo) SELECT a, b, c FROM cte");
+    metadata = await reader.getMetaData();
+
+    assert.equal(metadata.length, 3);
+    // eslint-disable-next-line no-console
+    console.log(metadata[0].extendedType);
+    // eslint-disable-next-line no-console
+    console.log(metadata[1].extendedType);
+    // eslint-disable-next-line no-console
+    console.log(metadata[2].extendedType);
+
+    reader = ecdb.createQueryReader("WITH cte AS (SELECT ECInstanceId a, n b, ec_classid('Test','Foo') ECClassId FROM ts.Foo) SELECT a, b, ECClassId FROM cte");
+    metadata = await reader.getMetaData();
+
+    assert.equal(metadata.length, 3);
+    // eslint-disable-next-line no-console
+    console.log(metadata[0].extendedType);
+    // eslint-disable-next-line no-console
+    console.log(metadata[1].extendedType);
+    // eslint-disable-next-line no-console
+    console.log(metadata[2].extendedType);
+  });
+  it.only("checking for system property flag for CTEs for ecsqlstatement api", async () => {
+    using ecdb = ECDbTestHelper.createECDb(outDir, "pagingresultset.ecdb",
+      `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="n" typeName="int"/>
+        </ECEntityClass>
+      </ECSchema>`);
+    assert.isTrue(ecdb.isOpen);
+    const ROW_COUNT = 27;
+    // insert test rows
+    for (let i = 1; i <= ROW_COUNT; i++) {
+      const r = await ecdb.withCachedWriteStatement(`insert into ts.Foo(n) values(${i})`, async (stmt_insert: ECSqlWriteStatement) => {
+        return stmt_insert.stepForInsert();
+      });
+      assert.equal(r.status, DbResult.BE_SQLITE_DONE);
+    }
+    ecdb.saveChanges();
+    // check if varying page number does not require prepare new statements
+    ecdb.clearStatementCache();
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    let stmt = ecdb.prepareStatement("WITH cte(a, b) AS (SELECT ECInstanceId, n FROM ts.Foo) SELECT * FROM cte");
+    assert.equal(stmt.getColumnCount(), 2);
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(0).columnInfo.isSystemProperty());
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(1).columnInfo.isSystemProperty());
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    stmt = ecdb.prepareStatement("WITH cte(a, b) AS (SELECT ECInstanceId, n FROM ts.Foo) SELECT a, b FROM cte");
+    assert.equal(stmt.getColumnCount(), 2);
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(0).columnInfo.isSystemProperty());
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(1).columnInfo.isSystemProperty());
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    stmt = ecdb.prepareStatement("WITH cte(a, b) AS (SELECT ECInstanceId ddfg, n FROM ts.Foo) SELECT a, b FROM cte");
+    assert.equal(stmt.getColumnCount(), 2);
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(0).columnInfo.isSystemProperty());
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(1).columnInfo.isSystemProperty());
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    stmt = ecdb.prepareStatement("WITH cte(a, b, c) AS (SELECT ECInstanceId ddfg, n, ec_classid('Test','Foo') FROM ts.Foo) SELECT a, b, c ECClassId FROM cte");
+    assert.equal(stmt.getColumnCount(), 3);
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(0).columnInfo.isSystemProperty());
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(1).columnInfo.isSystemProperty());
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(2).columnInfo.isSystemProperty());
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    stmt = ecdb.prepareStatement("WITH cte(a, b, ECClassId) AS (SELECT ECInstanceId ddfg, n, ec_classid('Test','Foo') FROM ts.Foo) SELECT a, b, ECClassId FROM cte");
+    assert.equal(stmt.getColumnCount(), 3);
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(0).columnInfo.isSystemProperty());
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(1).columnInfo.isSystemProperty());
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(2).columnInfo.isSystemProperty());
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    stmt = ecdb.prepareStatement("WITH cte AS (SELECT ECInstanceId a, n b FROM ts.Foo) SELECT a, b FROM cte");
+    assert.equal(stmt.getColumnCount(), 2);
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(0).columnInfo.isSystemProperty());
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(1).columnInfo.isSystemProperty());
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    stmt = ecdb.prepareStatement("WITH cte AS (SELECT ECInstanceId a, n b, ec_classid('Test','Foo') c FROM ts.Foo) SELECT a, b, c FROM cte");
+    assert.equal(stmt.getColumnCount(), 3);
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(0).columnInfo.isSystemProperty());
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(1).columnInfo.isSystemProperty());
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(2).columnInfo.isSystemProperty());
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    stmt = ecdb.prepareStatement("WITH cte AS (SELECT ECInstanceId a, n b, ec_classid('Test','Foo') ECClassId FROM ts.Foo) SELECT a, b, ECClassId FROM cte");
+    assert.equal(stmt.getColumnCount(), 3);
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(0).columnInfo.isSystemProperty());
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(1).columnInfo.isSystemProperty());
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(2).columnInfo.isSystemProperty());
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    stmt = ecdb.prepareStatement("SELECT ECInstanceId a, n b, ec_classid('Test','Foo') ECClassId FROM ts.Foo");
+    assert.equal(stmt.getColumnCount(), 3);
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(0).columnInfo.isSystemProperty());
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(1).columnInfo.isSystemProperty());
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(2).columnInfo.isSystemProperty());
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    stmt = ecdb.prepareStatement("SELECT ECInstanceId a, n b, ec_classid('Test','Foo') c FROM ts.Foo");
+    assert.equal(stmt.getColumnCount(), 3);
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(0).columnInfo.isSystemProperty());
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(1).columnInfo.isSystemProperty());
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(2).columnInfo.isSystemProperty());
+
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    stmt = ecdb.prepareStatement("SELECT ECInstanceId a, n b, ec_classid('Test','Foo') FROM ts.Foo");
+    assert.equal(stmt.getColumnCount(), 3);
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(0).columnInfo.isSystemProperty());
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(1).columnInfo.isSystemProperty());
+    // eslint-disable-next-line no-console
+    console.log(stmt.getValue(2).columnInfo.isSystemProperty());
+  });
   it("concurrent query binding", async () => {
     using ecdb = ECDbTestHelper.createECDb(outDir, "pagingresultset.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
