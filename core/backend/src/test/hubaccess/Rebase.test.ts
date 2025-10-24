@@ -12,6 +12,8 @@ import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
 import { BriefcaseDb, BriefcaseManager, ChannelControl, DrawingCategory, IModelHost, SqliteChangesetReader, TxnProps } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { StashManager } from "../../StashManager";
+import { existsSync, unlinkSync, writeFileSync } from "fs";
+import * as path from "path";
 chai.use(chaiAsPromised);
 
 class TestIModel {
@@ -425,7 +427,63 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     chai.expect(b1.txns.getMode()).to.equal("direct");
   });
-  it("should fail to save withIndirectTxnMode[Async]()", async () => {
+  it("should fail to importSchemas() & importSchemaStrings() in indirect scope", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="MySchema" alias="ms1" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
+        <ECEntityClass typeName="my_class">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="prop1" typeName="string" />
+        </ECEntityClass>
+    </ECSchema>`;
+
+    const schemaFile = path.join(KnownTestLocations.outputDir, "MySchema.01.00.00.ecschema.xml");
+    if (existsSync(schemaFile)) {
+      unlinkSync(schemaFile);
+    }
+    writeFileSync(schemaFile, schema, { encoding: "utf8" });
+
+    await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
+      await b1.importSchemas([schema]);
+    })).to.be.rejectedWith("Cannot import schemas while in an indirect change scope");
+
+    b1.abandonChanges();
+
+    await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
+      await b1.importSchemaStrings([schema]);
+    })).to.be.rejectedWith("Cannot import schemas while in an indirect change scope");
+
+    b1.abandonChanges();
+    await b1.importSchemaStrings([schema]);
+
+    b1.saveChanges();
+    await b1.pushChanges({description: "import schema"});
+  });
+
+  it("should fail to saveChanges() & pushChanges() in indirect scope", async () => {
+    const b1 = await testIModel.openBriefcase();
+
+    await testIModel.insertElement(b1);
+
+    await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
+      b1.saveChanges();
+    })).to.be.rejectedWith("Cannot save changes while in an indirect change scope");
+
+    chai.expect(() => b1.txns.withIndirectTxnMode(() => {
+      b1.saveChanges();
+    })).to.be.throws("Cannot save changes while in an indirect change scope");
+
+    b1.saveChanges();
+
+    await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
+      await b1.pushChanges({description: "test"});
+    })).to.be.rejectedWith("Cannot push changeset while in a indirect change scope");
+
+    await b1.pushChanges({description: "test"});
+  });
+
+  it("should fail to saveFileProperty/deleteFileProperty in indirect scope", async () => {
     // pull/push/saveFileProperty/deleteFileProperty should be called inside indirect change scope.
     const b1 = await testIModel.openBriefcase();
     b1.saveFileProperty({ namespace: "test", name: "test" }, "Hello, World");
@@ -452,24 +510,9 @@ describe("rebase changes & stashing api", function (this: Suite) {
       b1.deleteFileProperty({ namespace: "test", name: "test" });
     })).to.be.throws("Cannot delete file property while in an indirect change scope");
 
-    await testIModel.insertElement(b1);
-
-    await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
-      b1.saveChanges();
-    })).to.be.rejectedWith("Cannot save changes while in an indirect change scope");
-
-    chai.expect(() => b1.txns.withIndirectTxnMode(() => {
-      b1.saveChanges();
-    })).to.be.throws("Cannot save changes while in an indirect change scope");
-
     b1.saveChanges();
-
-    await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
-      await b1.pushChanges({description: "test"});
-    })).to.be.rejectedWith("Cannot push changeset while in a indirect change scope");
-
-    await b1.pushChanges({description: "test"});
   });
+
   it("recursively calling withIndirectTxnModeAsync()", async () => {
     const b1 = await testIModel.openBriefcase();
     chai.expect(b1.txns.getMode()).to.equal("direct");
