@@ -894,12 +894,9 @@ WHERE
 
 ```sql
 SELECT
-  CASE
-    WHEN COUNT(Name) >= 366 THEN true
-    ELSE false
-  END AS result
+  Name
 FROM
-  meta.ecclassdef
+  aps.TestFeature
 WHERE
   ECInstanceID < ALL (
     SELECT
@@ -910,13 +907,14 @@ WHERE
   )
 ```
 
-| className | accessString | generated | index | jsonName | name   | extendedType | typeName | type    |
-| --------- | ------------ | --------- | ----- | -------- | ------ | ------------ | -------- | ------- |
-|           | result       | true      | 0     | result   | result | undefined    | boolean  | Boolean |
+| className                 | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ | ------------------ |
+| AllProperties:TestFeature | Name         | false     | 0     | name     | Name | undefined    | string   | String | Name               |
 
-| result |
-| ------ |
-| true   |
+| Name        |
+| ----------- |
+| Feature0x1d |
+| Feature0x1c |
 
 # Using ANY with multiple items
 
@@ -924,14 +922,11 @@ WHERE
 
 ```sql
 SELECT
-  CASE
-    WHEN COUNT(Name) >= 274 THEN true
-    ELSE false
-  END AS result
+  Name
 FROM
-  meta.ecclassdef
+  aps.TestFeature
 WHERE
-  ECInstanceID > ANY(
+  ECInstanceID < ANY(
     SELECT
       ECClassId,
       Model.RelECClassId
@@ -940,13 +935,14 @@ WHERE
   )
 ```
 
-| className | accessString | generated | index | jsonName | name   | extendedType | typeName | type    |
-| --------- | ------------ | --------- | ----- | -------- | ------ | ------------ | -------- | ------- |
-|           | result       | true      | 0     | result   | result | undefined    | boolean  | Boolean |
+| className                 | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ | ------------------ |
+| AllProperties:TestFeature | Name         | false     | 0     | name     | Name | undefined    | string   | String | Name               |
 
-| result |
-| ------ |
-| true   |
+| Name        |
+| ----------- |
+| Feature0x1d |
+| Feature0x1c |
 
 # Using SOME with multiple items
 
