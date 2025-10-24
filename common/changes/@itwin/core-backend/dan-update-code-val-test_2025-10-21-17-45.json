@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "clear instanceKeyCache during updateElement",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

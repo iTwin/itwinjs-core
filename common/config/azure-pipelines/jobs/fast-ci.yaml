@@ -145,7 +145,7 @@ jobs:
           # This note indicates that changes from the ESLint deprecation rule must be reviewed
           # and approved before continuing with the release process.
           commitId="$(Build.SourceVersion)"
-          deprecationCommentChangesRegex="DEPRECATION_COMMENT_CHANGES"
+          deprecationCommentChangesRegex="DEPRECATION_COMMENT_CHANGES_PR"
           if [[ "$(getCommit.notes)" =~ $deprecationCommentChangesRegex ]]; then
             echo "$commitId has deprecation comment changes that should be reviewed before release"
             echo '##vso[task.setvariable variable=shouldRequireApproval;isOutput=true]true'
@@ -153,7 +153,7 @@ jobs:
             echo "$commitId doesn't have any deprecation comment changes that need reviewal"
             echo '##vso[task.setvariable variable=shouldRequireApproval;isOutput=true]false'
           fi
-        displayName: Parse DEPRECATION_COMMENT_CHANGES note
+        displayName: Parse DEPRECATION_COMMENT_CHANGES_PR note
         name: deprecationCommentNote
 
   - job: WaitForCodeChangeValidation
@@ -214,6 +214,8 @@ jobs:
     steps:
       - checkout: self
         clean: true
+        timeoutInMinutes: 5
+        retryCountOnTaskFailure: 1
       - template: ../templates/core-build.yaml
         parameters:
           nodeVersion: 22.x

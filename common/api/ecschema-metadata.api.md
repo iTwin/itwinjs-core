@@ -799,7 +799,7 @@ export class Format extends SchemaItem {
 export interface FormatSet {
     description?: string;
     formats: {
-        [kindOfQuantityId: string]: FormatDefinition;
+        [kindOfQuantityId: string]: FormatDefinition | string;
     };
     label: string;
     name: string;
@@ -812,7 +812,7 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
         formatSet: FormatSet;
         fallbackProvider?: FormatsProvider;
     });
-    addFormat(name: string, format: FormatDefinition): Promise<void>;
+    addFormat(name: string, format: FormatDefinition | string): Promise<void>;
     clearFallbackProvider(): void;
     getFormat(input: string): Promise<FormatDefinition | undefined>;
     // (undocumented)

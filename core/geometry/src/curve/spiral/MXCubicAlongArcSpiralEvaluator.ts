@@ -11,7 +11,7 @@ import { CubicEvaluator } from "./CubicEvaluator";
 
 /**
  * MX Cubic along arc.
- * This is y= m*x^3 with
+ * This is y = m*x^3 with
  * * x any point on the x axis.
  * * `fraction` along the spiral goes to `x = fraction * Lx`.
  * * m is (1/6RL).

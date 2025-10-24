@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/perf-tools",
+      "comment": "Add different csv writer that favors columns over many rows",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/perf-tools"
+}

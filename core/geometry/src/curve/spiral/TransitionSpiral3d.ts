@@ -22,14 +22,15 @@ import { TransitionConditionalProperties } from "./TransitionConditionalProperti
 
 import type { Vector3d } from "../../geometry3d/Point3dVector3d";
 import type { Ray3d } from "../../geometry3d/Ray3d";
+
 /**
  * This is the set of valid type names for "integrated" spirals.
  * * Behavior is expressed by a `NormalizedTransition` snap function.
- * * The snap function varies smoothly from f(0)=0 to f(1)=1.
+ * * The snap function varies smoothly from f(0) = 0 to f(1) = 1.
  * * The various snap functions are:
  *   * clothoid: linear
- *   * biquadratic: 2 quadratics pieced together, joining with 1st derivative continuity at f(0.) = 0.5, with zero
- *     slope f'(0)=0 and f'(1)= 0
+ *   * biquadratic: 2 quadratics pieced together, joining with 1st derivative continuity at f(0.5) = 0.5, with zero
+ *     slope f'(0) = 0 and f'(1) = 0
  *   * bloss: A single cubic with zero slope at 0 and 1
  *   * cosine: half of a cosine wave, centered around 0.5
  *   * sine: full period of a sine wave added to the line f(u)=u
@@ -40,7 +41,8 @@ export type IntegratedSpiralTypeName = "clothoid" | "bloss" | "biquadratic" | "c
 
 /**
  * This is the set of valid type names for "direct" spirals.
- * "Direct" spirals can evaluate fractionToPoint by direct equations, i.e. not requiring the numeric integrations in "Integrated" spiral types.
+ * "Direct" spirals can evaluate fractionToPoint by direct equations, i.e. not requiring the numeric integrations in
+ * "Integrated" spiral types.
  * @public
  */
 export type DirectSpiralTypeName =

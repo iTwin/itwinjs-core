@@ -301,8 +301,12 @@ export interface FormatSet {
   description?: string;
   /** A [UnitSystemKey]($quantity) that determines the unit system for this format set. */
   unitSystem: UnitSystemKey;
-  /** A mapping of kind of quantity identifiers to their corresponding format properties. */
-  formats: { [kindOfQuantityId: string]: FormatDefinition };
+  /** 
+   * A mapping of kind of quantity identifiers to their corresponding format properties.
+   * When a format is a [FormatDefinition]($quantity), it defines the complete format specification.
+   * When a format is a string, it references another kindOfQuantityId to map one format to another.
+   */
+  formats: { [kindOfQuantityId: string]: FormatDefinition | string };
 }
 
 /**

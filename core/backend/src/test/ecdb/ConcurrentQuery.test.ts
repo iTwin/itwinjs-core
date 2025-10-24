@@ -110,7 +110,7 @@ describe("ConcurrentQuery", () => {
     db.close();
   });
 
-  it("restart query", async () => {
+  it.skip("restart query #flaky", async () => {
     const testFile = IModelTestUtils.resolveAssetFile("test.bim");
     const db = SnapshotDb.openFile(testFile);
     ConcurrentQuery.resetConfig(db[_nativeDb], { globalQuota: { time: 60, memory: 10000000 }, progressOpCount: 1000 });
@@ -132,7 +132,7 @@ describe("ConcurrentQuery", () => {
     await delay(1);
     const resp2 = ConcurrentQuery.executeQueryRequest(db[_nativeDb], req1);
     const resp = await Promise.all([resp1, resp2]);
-    expect(resp[0].status).equals(DbResponseStatus.Cancel);
+    expect(resp[0].status).equals(DbResponseStatus.Cancel); // can result in DbResponseStatus.Partial instead of DbResponseStatus.Cancel
     expect(resp[1].status).equals(DbResponseStatus.Done);
     db.close();
   });

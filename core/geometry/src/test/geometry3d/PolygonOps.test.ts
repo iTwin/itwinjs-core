@@ -411,4 +411,19 @@ describe("PolygonOps", () => {
     ck.testExactNumber(closedDart.length, openDart.length + 1, "PolygonOps.ensureClosed returns poly of length + 1 if input open");
     expect(ck.getNumErrors()).toBe(0);
   });
+
+  it("areaXY", () => {
+    const ck = new Checker();
+    const pts = [Point3d.create(0, 0), Point3d.create(100, 0), Point3d.create(50, 50)]
+    const packedPts = GrowableXYZArray.create(pts);
+    const packedPtsClosure = GrowableXYZArray.create(pts);
+    packedPtsClosure.forceClosure();
+
+    const area0 = PolygonOps.areaXY(pts);
+    const area1 = PolygonOps.areaXY(packedPts);
+    const area2 = PolygonOps.areaXY(packedPtsClosure);
+    ck.testCoordinate(area0, area1, "Open Point3d array and open GrowableXYZArray have same areaXY");
+    ck.testCoordinate(area0, area2, "Open Point3d array and closed GrowableXYZArray have same areaXY");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });

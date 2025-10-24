@@ -19,7 +19,7 @@ function findProperty<T extends AnyPropertyProps>(name: string, rowData: T[]) {
 
 function isECClass(item: AnySchemaItemProps): item is ClassProps {
   return item.schemaItemType === SchemaItemType.EntityClass || item.schemaItemType === SchemaItemType.Mixin || item.schemaItemType === SchemaItemType.RelationshipClass ||
-      item.schemaItemType === SchemaItemType.StructClass || item.schemaItemType === SchemaItemType.CustomAttributeClass;
+    item.schemaItemType === SchemaItemType.StructClass || item.schemaItemType === SchemaItemType.CustomAttributeClass;
 }
 
 function isRelationshipClass(item: AnySchemaItemProps): item is RelationshipClassProps {
