@@ -1307,6 +1307,7 @@ describe("Changeset Reader API", async () => {
     await rwIModel.locks.acquireLocks({ shared: drawingModelId });
     const e1id = rwIModel.elements.insertElement(e1);
     assert.isTrue(Id64.isValidId64(e1id), "insert worked");
+    const testElClassId: Id64String = getClassIdByName(rwIModel, "Test2dElement");
 
     if (true) {
       const reader = SqliteChangesetReader.openInMemory({ db: rwIModel, disableSchemaCheck: true });
@@ -1324,7 +1325,7 @@ describe("Changeset Reader API", async () => {
       expect(testEl.$meta?.op).to.equals("Inserted");
       expect(testEl.$meta?.classFullName).to.equals("TestDomain:Test2dElement");
       expect(testEl.$meta?.stage).to.equals("New");
-      expect(testEl.ECClassId!.startsWith("0x")).to.be.true;
+      expect(testEl.ECClassId).to.equals(testElClassId);
       expect(testEl.ECInstanceId).to.equals(e1id);
       expect(testEl.Model.Id).to.equals(drawingModelId);
       expect(testEl.Category.Id).to.equals(drawingCategoryId);
@@ -1355,13 +1356,14 @@ describe("Changeset Reader API", async () => {
       // verify the inserted element's properties
       const instances = Array.from(unifier.instances);
       expect(instances.length).to.equals(3);
+      const drawingModelClassId: Id64String = getClassIdByName(rwIModel, "DrawingModel");
 
       // DrawingModel new instance
       const drawingModelElNew = instances[0];
       expect(drawingModelElNew.$meta?.op).to.equals("Updated");
       expect(drawingModelElNew.$meta?.classFullName).to.equals("BisCore:DrawingModel");
       expect(drawingModelElNew.$meta?.stage).to.equals("New");
-      expect(drawingModelElNew.ECClassId!.startsWith("0x")).to.be.true;
+      expect(drawingModelElNew.ECClassId).to.equals(drawingModelClassId);
       expect(drawingModelElNew.ECInstanceId).to.equals(drawingModelId);
       expect(drawingModelElNew.LastMod).to.exist;
       expect(drawingModelElNew.GeometryGuid).to.exist;
@@ -1371,7 +1373,7 @@ describe("Changeset Reader API", async () => {
       expect(drawingModelElOld.$meta?.op).to.equals("Updated");
       expect(drawingModelElOld.$meta?.classFullName).to.equals("BisCore:DrawingModel");
       expect(drawingModelElOld.$meta?.stage).to.equals("Old");
-      expect(drawingModelElOld.ECClassId!.startsWith("0x")).to.be.true;
+      expect(drawingModelElOld.ECClassId).to.equals(drawingModelClassId);
       expect(drawingModelElOld.ECInstanceId).to.equals(drawingModelId);
       expect(drawingModelElOld.LastMod).to.null;
       expect(drawingModelElOld.GeometryGuid).to.null;
@@ -1381,7 +1383,7 @@ describe("Changeset Reader API", async () => {
       expect(testEl.$meta?.op).to.equals("Inserted");
       expect(testEl.$meta?.classFullName).to.equals("TestDomain:Test2dElement");
       expect(testEl.$meta?.stage).to.equals("New");
-      expect(testEl.ECClassId!.startsWith("0x")).to.be.true;
+      expect(testEl.ECClassId).to.equals(testElClassId);
       expect(testEl.ECInstanceId).to.equals(e1id);
       expect(testEl.Model.Id).to.equals(drawingModelId);
       expect(testEl.Category.Id).to.equals(drawingCategoryId);
