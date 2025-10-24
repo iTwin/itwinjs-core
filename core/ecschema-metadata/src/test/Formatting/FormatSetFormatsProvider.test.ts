@@ -480,6 +480,50 @@ describe("FormatSetFormatsProvider", () => {
       expect(distanceFormat).to.be.undefined;
     });
 
+    it("should return undefined for circular reference (A → B → A)", async () => {
+      const formatSetWithCircular: FormatSet = {
+        name: "TestFormatSet",
+        label: "Test Format Set",
+        unitSystem: "metric",
+        formats: {
+          "Schema.A": "Schema.B",
+          "Schema.B": "Schema.A",
+        },
+      };
+      const providerWithCircular = new FormatSetFormatsProvider({ formatSet: formatSetWithCircular });
+
+      // Should return undefined when a circular reference is detected
+      const formatA = await providerWithCircular.getFormat("Schema.A");
+      expect(formatA).to.be.undefined;
+
+      const formatB = await providerWithCircular.getFormat("Schema.B");
+      expect(formatB).to.be.undefined;
+    });
+
+    it("should return undefined for circular reference chain (A → B → C → A)", async () => {
+      const formatSetWithCircularChain: FormatSet = {
+        name: "TestFormatSet",
+        label: "Test Format Set",
+        unitSystem: "metric",
+        formats: {
+          "Schema.A": "Schema.B",
+          "Schema.B": "Schema.C",
+          "Schema.C": "Schema.A",
+        },
+      };
+      const providerWithCircularChain = new FormatSetFormatsProvider({ formatSet: formatSetWithCircularChain });
+
+      // Should return undefined when a circular reference chain is detected
+      const formatA = await providerWithCircularChain.getFormat("Schema.A");
+      expect(formatA).to.be.undefined;
+
+      const formatB = await providerWithCircularChain.getFormat("Schema.B");
+      expect(formatB).to.be.undefined;
+
+      const formatC = await providerWithCircularChain.getFormat("Schema.C");
+      expect(formatC).to.be.undefined;
+    });
+
     it("should resolve both FormatDefinitions and string references correctly", async () => {
       const formatSetMixed: FormatSet = {
         name: "TestFormatSet",

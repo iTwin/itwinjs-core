@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-metadata",
-      "comment": "Update `FormatSet` interface, `FormatSetFormatsProvider` to support format aliasing",
+      "comment": "Update `FormatSet` interface, `FormatSetFormatsProvider` to support format referencing",
       "type": "none"
     }
   ],

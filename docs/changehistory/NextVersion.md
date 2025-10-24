@@ -19,9 +19,6 @@ publish: false
 
 ### Enhancements
 
-- Enhanced [FormatSet]($ecschema-metadata) interface to support format aliasing. The `formats` property now accepts either a `FormatDefinition` or a string reference to another KindOfQuantity, enabling one format to reference another format's definition. This allows for more flexible format management and reduces duplication when multiple KindOfQuantities should share the same format specification.
+- Enhanced [FormatSet]($ecschema-metadata) interface to support format referencing. The `formats` property now accepts either a `FormatDefinition` or a string reference to another KindOfQuantity, enabling one format to reference another format's definition. This allows for more flexible format management and reduces duplication when multiple KindOfQuantities should share the same format specification.
 
-- Enhanced [FormatSetFormatsProvider]($ecschema-metadata) with the following capabilities:
-  - **String Reference Resolution**: The provider now automatically resolves string references to their target FormatDefinition. When a format references another via string (e.g., `"AecUnits.LENGTH": "RoadRailUnits.LENGTH"`), calling `getFormat("AecUnits.LENGTH")` will resolve and return the actual FormatDefinition from `RoadRailUnits.LENGTH`.
-  - **Cascade Notifications**: When adding or removing a format, the `onFormatsChanged` event now includes not only the modified format but also all formats that reference it (directly or indirectly). For example, if `RoadRailUnits.LENGTH` is updated and both `AecUnits.LENGTH` and `LinearAlignment.LENGTH` reference it, all three formats will be included in the `formatsChanged` array, enabling proper cache invalidation.
-  - **Fallback Provider Support**: String references can resolve through the optional fallback provider if the target format isn't found in the format set.
+- Enhanced [FormatSetFormatsProvider]($ecschema-metadata) to support the updated `FormatSet` interface. Please see the learnings article for quantity highlighting features and code examples of the provider.

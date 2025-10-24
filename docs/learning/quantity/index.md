@@ -142,7 +142,7 @@ We expose APIs and interfaces to support persistence of formats. Different from 
 
 - The `unitSystem` property uses a [UnitSystemKey]($quantity) to specify the unit system for the format set. This provides better type safety and leads to less dependency on `activeUnitSystem` in `IModelApp.quantityFormatter`. Tools using the new formatting API can then listen to only the `onFormatsChanged` event from `IModelApp.formatsProvider` instead of `IModelApp.quantityFormatter.onActiveUnitSystemChanged`.
 
-- The `formats` property accepts either a [FormatDefinition]($quantity) or a string reference to another KindOfQuantity. This allows one format to reference another format's definition, reducing duplication when multiple KindOfQuantities should share the same format specification. For example, `"AecUnits.LENGTH": "RoadRailUnits.LENGTH"` creates an alias where `AecUnits.LENGTH` uses the same format from `RoadRailUnits.LENGTH`.
+- The `formats` property accepts either a [FormatDefinition]($quantity) or a string reference to another KindOfQuantity. This allows one format to reference another format's definition, reducing duplication when multiple KindOfQuantities should share the same format specification. For example, `"AecUnits.LENGTH": "RoadRailUnits.LENGTH"` allows `AecUnits.LENGTH` to use the same format from `RoadRailUnits.LENGTH`.
 
 > The naming convention for a valid format within a FormatSet is <full-schema-name>:<koq-name>
 .
@@ -349,10 +349,10 @@ The [FormatSetFormatsProvider]($ecschema-metadata) provides a convenient way to 
 
 __Key Features:__
 
-- __String Reference Resolution__: Automatically resolves string references to their target FormatDefinition. When a format references another via string (e.g., `"AecUnits.LENGTH": "RoadRailUnits.LENGTH"`), the provider will resolve and return the actual FormatDefinition.
+- __String Reference Resolution__: The provider now automatically resolves string references to their target FormatDefinition. When a format references another via string (e.g., `"AecUnits.LENGTH": "RoadRailUnits.LENGTH"`), calling `getFormat("AecUnits.LENGTH")` will resolve and return the actual FormatDefinition from `RoadRailUnits.LENGTH`.
 - __Chain Resolution__: Supports chains of references with circular reference detection (e.g., HEIGHT → DISTANCE → LENGTH).
-- __Cascade Notifications__: When a format is added or removed, all formats that reference it are included in the `onFormatsChanged` event, enabling proper cache invalidation.
-- __Fallback Provider__: Supports an optional fallback provider for formats not found in the format set.
+- __Cascade Notifications__: When adding or removing a format, the `onFormatsChanged` event now includes not only the modified format but also all formats that reference it (directly or indirectly). For example, if `RoadRailUnits.LENGTH` is updated and both `AecUnits.LENGTH` and `LinearAlignment.LENGTH` reference it, all three formats will be included in the `formatsChanged` array, enabling proper cache invalidation.
+- __Fallback Provider__: String references can resolve through the optional fallback provider if the target format isn't found in the format set.
 
 Here's a working example that demonstrates string reference resolution with formatting:
 

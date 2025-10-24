@@ -29,9 +29,9 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
   }
 
   /**
-   * Adds a format definition or string reference to the format set or updates an existing one.
-   * @param name The name of the format to add or update
-   * @param format The format definition or string reference to add or update
+   * Adds or updates the format definition returned for a kind of quantity.  Takes either a format definition or a kind of quantity full name that will be used to lookup the format that will be used.
+   * @param name A kind of quantity full name used as a key to lookup this format
+   * @param format The format definition or the name of a kind of quantity
    */
   public async addFormat(name: string, format: FormatDefinition | string): Promise<void> {
     this._formatSet.formats[name] = format;
@@ -120,7 +120,7 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
 
     delete this._formatSet.formats[name];
     this._references.delete(name);
-    
+
     this.onFormatsChanged.raiseEvent({ formatsChanged: Array.from(affectedFormats) });
   }
 
@@ -131,7 +131,7 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
    */
   private getFormatsReferencingTarget(target: string): Set<string> {
     const referencingFormats = new Set<string>();
-    
+
     // Find all formats that directly reference the target
     for (const [formatName, reference] of this._references.entries()) {
       if (reference === target) {
@@ -143,7 +143,7 @@ export class FormatSetFormatsProvider implements MutableFormatsProvider {
         }
       }
     }
-    
+
     return referencingFormats;
   }
 }
