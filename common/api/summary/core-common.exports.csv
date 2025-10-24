@@ -412,6 +412,7 @@ internal;function;getTileObjectReference
 internal;class;GlbHeader
 public;enum;GlobeMode
 internal;interface;GltfChunk
+internal;class;GltfHeader
 internal;enum;GltfV2ChunkTypes
 internal;enum;GltfVersions
 public;namespace;Gradient
