@@ -16,6 +16,9 @@ import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
+import { DirectSpiral3d } from "../../curve/spiral/DirectSpiral3d";
+import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
+import { TransitionSpiral3d } from "../../curve/spiral/TransitionSpiral3d";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { UnionRegion } from "../../curve/UnionRegion";
 import { AxisIndex, Geometry } from "../../Geometry";
@@ -24,6 +27,7 @@ import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
 import { Map4d } from "../../geometry4d/Map4d";
 import { Matrix4d } from "../../geometry4d/Matrix4d";
@@ -2356,11 +2360,157 @@ describe("CurveCurveIntersectXY", () => {
         const intersection = intersections[0].detailA.point;
         if (ck.testPoint3d(intersection, intersections[0].detailB.point, "report same intersection point on both curves")) {
           GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, intersection, 0.0003);
-          ck.testPoint3d(Point3d.create(6876.64611115,7330.94311524), intersection, "expected intersection point");
+          ck.testPoint3d(Point3d.create(6876.64611115, 7330.94311524), intersection, "expected intersection point");
         }
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "tinyCircleBSplineCurve");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  function visualizeAndTestSpiral(
+    ck: Checker, allGeometry: GeometryQuery[],
+    spiral: TransitionSpiral3d, curvePrimitive: CurvePrimitive,
+    spiralType: string, numExpected: number, dx: number, dy: number,
+  ) {
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral.activeStrokes, dx, dy);
+    if (curvePrimitive instanceof TransitionSpiral3d)
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, curvePrimitive.activeStrokes, dx, dy);
+    else
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, curvePrimitive, dx, dy);
+    const intersectionsAB = CurveCurve.intersectionXYPairs(curvePrimitive, false, spiral, false);
+    GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersectionsAB, 5, dx, dy);
+    ck.testCoordinate(
+      numExpected,
+      intersectionsAB.length,
+      `expect ${numExpected} intersection(s) between ${spiralType} and ${curvePrimitive.constructor.name}`,
+    );
+  };
+
+  it("SpiralCurvePrimitiveIntersection", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0;
+    let dy = 0;
+
+    const rotationTransform = Transform.createFixedPointAndMatrix(
+      Point3d.create(70, 0),
+      Matrix3d.createRotationAroundVector(Vector3d.create(0, 0, 1), Angle.createDegrees(90))!,
+    );
+    const integratedSpirals = [];
+    const r0 = 0;
+    const r1 = 50;
+    const activeInterval = Segment1d.create(0, 1);
+    for (const integratedSpiralType of ["clothoid", "bloss", "biquadratic", "sine", "cosine"]) {
+      for (const transform of [Transform.createIdentity(), rotationTransform]) { // rotated spirals have odd indices
+        integratedSpirals.push(
+          IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+            Segment1d.create(r0, r1),
+            AngleSweep.createStartEndDegrees(0, 120),
+            activeInterval,
+            transform,
+            integratedSpiralType,
+          ) as TransitionSpiral3d
+        );
+      }
+    }
+
+    const directSpirals = [];
+    const length = 180;
+    for (const directSpiralType of [
+      "JapaneseCubic",
+      "Arema",
+      "ChineseCubic",
+      "HalfCosine",
+      "AustralianRailCorp",
+      "WesternAustralian",
+      // TODO: enable below lines after https://github.com/iTwin/itwinjs-backlog/issues/1693 is resolved
+      // "Czech",
+      // "MXCubicAlongArc",
+      // "Italian",
+      // "Polish",
+    ]) {
+      for (const transform of [Transform.createIdentity(), rotationTransform]) { // rotated spirals have odd indices
+        directSpirals.push(
+          DirectSpiral3d.createFromLengthAndRadius(
+            directSpiralType, r0, r1, undefined, undefined, length, activeInterval, transform,
+          ) as TransitionSpiral3d
+        );
+      }
+    }
+
+    const curvePrimitives = [
+      LineSegment3d.create(Point3d.create(70, 30), Point3d.create(70, -30)),
+      LineString3d.create(
+        Point3d.create(50, 30), Point3d.create(70, 30), Point3d.create(100, -30),
+        Point3d.create(120, -30), Point3d.create(100, 30), Point3d.create(160, 30),
+      ),
+      Arc3d.createXY(Point3d.create(70, 20), 40),
+      BSplineCurve3d.createUniformKnots(
+        [
+          Point3d.create(70, 50, 0),
+          Point3d.create(70, 30, 0),
+          Point3d.create(50, 0, 0),
+          Point3d.create(30, -30, 0),
+          Point3d.create(30, -50, 0),
+        ],
+        3,
+      )!,
+      // add rotated spirals
+      integratedSpirals[1],
+      integratedSpirals[3],
+      integratedSpirals[5],
+      integratedSpirals[7],
+      integratedSpirals[9],
+      directSpirals[1],
+      directSpirals[3],
+      directSpirals[5],
+      directSpirals[7],
+      directSpirals[9],
+      directSpirals[11],
+      // TODO: enable below lines after https://github.com/iTwin/itwinjs-backlog/issues/1693 is resolved
+      // directSpirals[13],
+      // directSpirals[15],
+      // directSpirals[17],
+      // directSpirals[19],
+    ];
+    const numExpectedIntersections = [
+      1, 3, 2, 1, // curve primitives other than spirals
+      1, 1, 1, 1, 1, // rotated integrated spirals
+      1, 1, 1, 1, 1, 1, // 1, 1, 1, 1 // rotated direct spirals
+    ];
+    ck.testCoordinate(curvePrimitives.length, numExpectedIntersections.length, "matching arrays");
+
+    for (let i = 0; i < integratedSpirals.length; i += 2) { // skip rotated spirals
+      const integratedSpiral = integratedSpirals[i];
+      for (let j = 0; j < curvePrimitives.length; j++) {
+        const curvePrimitive = curvePrimitives[j];
+        const numExpected = numExpectedIntersections[j];
+        visualizeAndTestSpiral(
+          ck, allGeometry, integratedSpiral, curvePrimitive, integratedSpiral.constructor.name, numExpected, dx, dy,
+        );
+        dy += 200;
+      }
+      dy = 0;
+      dx += 200;
+    }
+
+    dx += 250;
+    for (let i = 0; i < directSpirals.length; i += 2) { // skip rotated spirals
+      const directSpiral = directSpirals[i];
+      for (let j = 0; j < curvePrimitives.length; j++) {
+        const curvePrimitive = curvePrimitives[j];
+        const numExpected = numExpectedIntersections[j];
+        visualizeAndTestSpiral(
+          ck, allGeometry, directSpiral, curvePrimitive, directSpiral.constructor.name, numExpected, dx, dy,
+        );
+        dy += 200;
+      }
+      dy = 0;
+      dx += 200;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "SpiralCurvePrimitiveIntersection");
     expect(ck.getNumErrors()).toBe(0);
   });
 });

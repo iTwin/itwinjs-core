@@ -392,6 +392,7 @@ export class Checker {
       return this.announceOK();
     return this.announceError("Expect same coordinate with tol factor", dataA, dataB, params);
   }
+  /** Return true if dataA is in range. */
   public testNumberInRange1d(dataA: number, range: Range1d, ...params: any[]): boolean {
     if (range.containsX(dataA))
       return this.announceOK();
