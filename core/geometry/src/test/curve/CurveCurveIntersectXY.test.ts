@@ -2388,7 +2388,7 @@ describe("CurveCurveIntersectXY", () => {
   };
 
   it("SpiralCurvePrimitiveIntersection", () => {
-    const ck = new Checker(true, true);
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let dx = 0;
     let dy = 0;
@@ -2402,7 +2402,7 @@ describe("CurveCurveIntersectXY", () => {
     const r1 = 50;
     const activeInterval = Segment1d.create(0, 1);
     for (const integratedSpiralType of ["clothoid", "bloss", "biquadratic", "sine", "cosine"]) {
-      for (const transform of [Transform.createIdentity(), rotationTransform]) { // rotated spirals have even indices
+      for (const transform of [Transform.createIdentity(), rotationTransform]) { // rotated spirals have odd indices
         integratedSpirals.push(
           IntegratedSpiral3d.createRadiusRadiusBearingBearing(
             Segment1d.create(r0, r1),
@@ -2430,7 +2430,7 @@ describe("CurveCurveIntersectXY", () => {
       // "Italian",
       // "Polish",
     ]) {
-      for (const transform of [Transform.createIdentity(), rotationTransform]) { // rotated spirals have even indices
+      for (const transform of [Transform.createIdentity(), rotationTransform]) { // rotated spirals have odd indices
         directSpirals.push(
           DirectSpiral3d.createFromLengthAndRadius(
             directSpiralType, r0, r1, undefined, undefined, length, activeInterval, transform,
@@ -2474,7 +2474,11 @@ describe("CurveCurveIntersectXY", () => {
       // directSpirals[17],
       // directSpirals[19],
     ];
-    const numExpectedIntersections = [1, 3, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 /*, 1, 1, 1, 1*/];
+    const numExpectedIntersections = [
+      1, 3, 2, 1, // curve primitives other than spirals
+      1, 1, 1, 1, 1, // rotated integrated spirals
+      1, 1, 1, 1, 1, 1, // 1, 1, 1, 1 // rotated direct spirals
+    ];
     ck.testCoordinate(curvePrimitives.length, numExpectedIntersections.length, "matching arrays");
 
     for (let i = 0; i < integratedSpirals.length; i += 2) { // skip rotated spirals

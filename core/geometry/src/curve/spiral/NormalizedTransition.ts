@@ -214,7 +214,7 @@ export class NormalizedSineTransition extends NormalizedTransition {
 export class NormalizedCosineTransition extends NormalizedTransition {
   // cosine transition curvature is 0.5 (1 - cos(pi x))
   // derivative 0.5 pi sin(pi x)
-  // integral 0.5 x - sin(pi x) / pi
+  // integral 0.5 (x - sin(pi x) / pi)
   constructor() {
     super();
   }
