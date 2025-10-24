@@ -21,4 +21,4 @@ publish: false
 
 - Enhanced [FormatSet]($ecschema-metadata) interface to support format referencing. The `formats` property now accepts either a `FormatDefinition` or a string reference to another KindOfQuantity, enabling one format to reference another format's definition. This allows for more flexible format management and reduces duplication when multiple KindOfQuantities should share the same format specification.
 
-- Enhanced [FormatSetFormatsProvider]($ecschema-metadata) to support the updated `FormatSet` interface. Please see the [learnings article](https://www.itwinjs.org/learning/quantity/) for quantity highlighting features and code examples of the provider.
+- Enhanced [FormatSetFormatsProvider]($ecschema-metadata) to support the updated `FormatSet` interface. Please see the [learnings article](../learning/quantity/index.md) for quantity highlighting features and code examples of the provider.
