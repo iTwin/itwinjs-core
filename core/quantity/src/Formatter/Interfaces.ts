@@ -49,6 +49,9 @@ export interface FormatProps {
   /** conditionally required. */
   readonly ratioType?: string;
 
+  /** The separator character for ratio formatting. Defaults to ':' if not specified. */
+  readonly ratioSeparator?: string;
+
   /** conditionally required. */
   readonly stationOffsetSize?: number;
   readonly stationSeparator?: string;

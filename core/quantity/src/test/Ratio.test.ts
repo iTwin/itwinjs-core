@@ -257,6 +257,169 @@ describe("Ratio format tests", () => {
     });
   });
 
+  describe("Scale factor formatting tests", () => {
+    it("should format imperial scale factors", async () => {
+      const ratioJson: FormatProps = {
+        type: "Ratio",
+        ratioType: "NToOne",
+        ratioSeparator: "=",
+        precision: 4,
+        composite: {
+          includeZero: true,
+          units: [
+            { name: "Units.IN_PER_FT_LENGTH_RATIO" },
+          ],
+        },
+      };
+
+      const unitsProvider = new TestUnitsProvider();
+      const ratioFormat = new Format("ImperialScale");
+      await ratioFormat.fromJSON(unitsProvider, ratioJson);
+      expect(ratioFormat.hasUnits).to.be.true;
+
+      const persistenceUnit: UnitProps = await unitsProvider.findUnitByName("Units.DECIMAL_LENGTH_RATIO");
+      expect(persistenceUnit.isValid).to.be.true;
+
+      const formatterSpec = await FormatterSpec.create("ImperialScale", ratioFormat, unitsProvider, persistenceUnit);
+
+      // Common imperial architectural and engineering scales
+      // Architectural scales (based on inches to feet)
+      expect(Formatter.formatQuantity(1.0, formatterSpec)).to.equal("12\"=1'"); // Full size (12" = 1'-0")
+      expect(Formatter.formatQuantity(0.5, formatterSpec)).to.equal("6\"=1'"); // Half size (6" = 1'-0")
+      expect(Formatter.formatQuantity(1/3, formatterSpec)).to.equal("4\"=1'"); // 4" = 1'-0"
+      expect(Formatter.formatQuantity(0.25, formatterSpec)).to.equal("3\"=1'"); // 3" = 1'-0"
+      expect(Formatter.formatQuantity(1/6, formatterSpec)).to.equal("2\"=1'"); // 2" = 1'-0"
+      expect(Formatter.formatQuantity(1/8, formatterSpec)).to.equal("1.5\"=1'"); // 1-1/2" = 1'-0"
+      expect(Formatter.formatQuantity(1/12, formatterSpec)).to.equal("1\"=1'"); // 1" = 1'-0"
+      expect(Formatter.formatQuantity(1/16, formatterSpec)).to.equal("0.75\"=1'"); // 3/4" = 1'-0"
+      expect(Formatter.formatQuantity(1/24, formatterSpec)).to.equal("0.5\"=1'"); // 1/2" = 1'-0"
+      expect(Formatter.formatQuantity(1/32, formatterSpec)).to.equal("0.375\"=1'"); // 3/8" = 1'-0"
+      expect(Formatter.formatQuantity(1/48, formatterSpec)).to.equal("0.25\"=1'"); // 1/4" = 1'-0"
+      expect(Formatter.formatQuantity(1/96, formatterSpec)).to.equal("0.125\"=1'"); // 1/8" = 1'-0"
+
+      // Engineering scales (decimal based)
+      expect(Formatter.formatQuantity(1/10, formatterSpec)).to.equal("1.2\"=1'"); // 1" = 10'
+      expect(Formatter.formatQuantity(1/20, formatterSpec)).to.equal("0.6\"=1'"); // 1" = 20'
+      expect(Formatter.formatQuantity(1/30, formatterSpec)).to.equal("0.4\"=1'"); // 1" = 30'
+      expect(Formatter.formatQuantity(1/40, formatterSpec)).to.equal("0.3\"=1'"); // 1" = 40'
+      expect(Formatter.formatQuantity(1/50, formatterSpec)).to.equal("0.24\"=1'"); // 1" = 50'
+      expect(Formatter.formatQuantity(1/60, formatterSpec)).to.equal("0.2\"=1'"); // 1" = 60'
+      expect(Formatter.formatQuantity(1/100, formatterSpec)).to.equal("0.12\"=1'"); // 1" = 100'
+
+      // Civil/site scales
+      expect(Formatter.formatQuantity(1/120, formatterSpec)).to.equal("0.1\"=1'"); // 1" = 10'
+      expect(Formatter.formatQuantity(1/240, formatterSpec)).to.equal("0.05\"=1'"); // 1" = 20'
+      expect(Formatter.formatQuantity(1/480, formatterSpec)).to.equal("0.025\"=1'"); // 1" = 40'
+      expect(Formatter.formatQuantity(1/600, formatterSpec)).to.equal("0.02\"=1'"); // 1" = 50'
+      expect(Formatter.formatQuantity(1/1200, formatterSpec)).to.equal("0.01\"=1'"); // 1" = 100'
+    });
+
+    it("should format metric scale factors", async () => {
+      const ratioJson: FormatProps = {
+        type: "Ratio",
+        ratioType: "OneToN",
+        precision: 1,
+        formatTraits: ["trailZeroes"],
+        composite: {
+          includeZero: true,
+          units: [
+            { name: "Units.M_PER_M_LENGTH_RATIO" },
+          ],
+        },
+      };
+
+      const unitsProvider = new TestUnitsProvider();
+      const ratioFormat = new Format("MetricScale");
+      await ratioFormat.fromJSON(unitsProvider, ratioJson);
+      expect(ratioFormat.hasUnits).to.be.true;
+
+      const persistenceUnit: UnitProps = await unitsProvider.findUnitByName("Units.DECIMAL_LENGTH_RATIO");
+      expect(persistenceUnit.isValid).to.be.true;
+
+      const formatterSpec = await FormatterSpec.create("MetricScale", ratioFormat, unitsProvider, persistenceUnit);
+
+      // Common metric map scale factors
+      expect(Formatter.formatQuantity(1.0, formatterSpec)).to.equal("1:1.0");
+      expect(Formatter.formatQuantity(0.5, formatterSpec)).to.equal("1:2.0");
+      expect(Formatter.formatQuantity(0.4, formatterSpec)).to.equal("1:2.5");
+      expect(Formatter.formatQuantity(0.2, formatterSpec)).to.equal("1:5.0");
+      expect(Formatter.formatQuantity(0.1, formatterSpec)).to.equal("1:10.0");
+      expect(Formatter.formatQuantity(0.05, formatterSpec)).to.equal("1:20.0");
+      expect(Formatter.formatQuantity(0.04, formatterSpec)).to.equal("1:25.0");
+      expect(Formatter.formatQuantity(0.02, formatterSpec)).to.equal("1:50.0");
+      expect(Formatter.formatQuantity(0.01, formatterSpec)).to.equal("1:100.0");
+      expect(Formatter.formatQuantity(0.005, formatterSpec)).to.equal("1:200.0");
+      expect(Formatter.formatQuantity(0.004, formatterSpec)).to.equal("1:250.0");
+      expect(Formatter.formatQuantity(0.0025, formatterSpec)).to.equal("1:400.0");
+      expect(Formatter.formatQuantity(0.002, formatterSpec)).to.equal("1:500.0");
+      expect(Formatter.formatQuantity(0.001, formatterSpec)).to.equal("1:1000.0");
+      expect(Formatter.formatQuantity(0.0002, formatterSpec)).to.equal("1:5000.0");
+      expect(Formatter.formatQuantity(0.0001, formatterSpec)).to.equal("1:10000.0");
+      expect(Formatter.formatQuantity(0.00004, formatterSpec)).to.equal("1:25000.0");
+      expect(Formatter.formatQuantity(0.00002, formatterSpec)).to.equal("1:50000.0");
+      expect(Formatter.formatQuantity(0.00001, formatterSpec)).to.equal("1:100000.0");
+      expect(Formatter.formatQuantity(0.000004, formatterSpec)).to.equal("1:250000.0");
+    });
+
+    it("should parse ratios with custom separator", async () => {
+      const ratioJson: FormatProps = {
+        type: "Ratio",
+        ratioType: "NToOne",
+        ratioSeparator: "=",
+        precision: 4,
+        composite: {
+          includeZero: true,
+          units: [
+            { name: "Units.IN_PER_FT_LENGTH_RATIO" },
+          ],
+        },
+      };
+
+      const unitsProvider = new TestUnitsProvider();
+      const ratioFormat = new Format("ImperialScaleParse");
+      await ratioFormat.fromJSON(unitsProvider, ratioJson);
+      expect(ratioFormat.hasUnits).to.be.true;
+      expect(ratioFormat.ratioSeparator).to.equal("=");
+
+      const persistenceUnit: UnitProps = await unitsProvider.findUnitByName("Units.DECIMAL_LENGTH_RATIO");
+      expect(persistenceUnit.isValid).to.be.true;
+
+      const formatterSpec = await FormatterSpec.create("ImperialScaleParse", ratioFormat, unitsProvider, persistenceUnit);
+      const parserSpec = await ParserSpec.create(ratioFormat, unitsProvider, persistenceUnit);
+
+      // Test formatting with custom separator
+      const formatted = Formatter.formatQuantity(1/12, formatterSpec);
+      expect(formatted).to.equal("1\"=1'");
+
+      // Test parsing with custom separator
+      const parseResult1 = Parser.parseQuantityString("12\"=1'", parserSpec);
+      expect(Parser.isParsedQuantity(parseResult1)).to.be.true;
+      if (Parser.isParsedQuantity(parseResult1)) {
+        expect(parseResult1.value).to.be.closeTo(1.0, 0.0001);
+      }
+
+      const parseResult2 = Parser.parseQuantityString("6\"=1'", parserSpec);
+      expect(Parser.isParsedQuantity(parseResult2)).to.be.true;
+      if (Parser.isParsedQuantity(parseResult2)) {
+        expect(parseResult2.value).to.be.closeTo(0.5, 0.0001);
+      }
+
+      const parseResult3 = Parser.parseQuantityString("1\"=1'", parserSpec);
+      expect(Parser.isParsedQuantity(parseResult3)).to.be.true;
+      if (Parser.isParsedQuantity(parseResult3)) {
+        expect(parseResult3.value).to.be.closeTo(1/12, 0.0001);
+      }
+
+      // Test that default separator doesn't work with custom separator format
+      const parseResult4 = Parser.parseQuantityString("1:1", parserSpec);
+      expect(Parser.isParsedQuantity(parseResult4)).to.be.true;
+      if (Parser.isParsedQuantity(parseResult4)) {
+        // Since the separator is "=", "1:1" won't be split and will be parsed as just "1"
+        expect(parseResult4.value).to.be.closeTo(1.0, 0.0001);
+      }
+    });
+  });
+
   describe("specific parse ratio string tests", () => {
     async function testRatioParser(
       testData: TestData[], presentationUnitStr: string = vHUnitName, persistenceUnitStr: string = vHUnitName,

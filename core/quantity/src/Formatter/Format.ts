@@ -41,6 +41,7 @@ export class BaseFormat {
   protected _stationOffsetSize?: number; // required when type is station; positive integer > 0
   protected _stationBaseFactor?: number; // optional positive integer base factor for station formatting; default is 1
   protected _ratioType?: RatioType; // required if type is ratio; options: oneToN, NToOne, ValueBased, useGreatestCommonDivisor
+  protected _ratioSeparator: string = ":"; // optional; default is ":"; separator character used in ratio formatting
   protected _azimuthBase?: number; // value always clockwise from north
   protected _azimuthBaseUnit?: UnitProps; // unit for azimuthBase value
   protected _azimuthCounterClockwise?: boolean; // if set to true, azimuth values are returned counter-clockwise from base
@@ -70,6 +71,9 @@ export class BaseFormat {
 
   public get ratioType(): RatioType | undefined { return this._ratioType; }
   public set ratioType(ratioType: RatioType | undefined) { this._ratioType = ratioType; }
+
+  public get ratioSeparator(): string { return this._ratioSeparator; }
+  public set ratioSeparator(ratioSeparator: string) { this._ratioSeparator = ratioSeparator; }
 
   public get showSignOption(): ShowSignOption { return this._showSignOption; }
   public set showSignOption(showSignOption: ShowSignOption) { this._showSignOption = showSignOption; }
@@ -161,6 +165,14 @@ export class BaseFormat {
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Ratio' type therefore the attribute 'ratioType' is required.`);
 
       this._ratioType = parseRatioType(formatProps.ratioType, this.name);
+
+      if (undefined !== formatProps.ratioSeparator) { // optional; default is ":"
+        if (typeof (formatProps.ratioSeparator) !== "string")
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'ratioSeparator' attribute. It should be of type 'string'.`);
+        if (formatProps.ratioSeparator.length !== 1)
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'ratioSeparator' attribute. It should be a one character string.`);
+        this._ratioSeparator = formatProps.ratioSeparator;
+      }
     }
 
     if (undefined !== formatProps.roundFactor) { // optional; default is 0.0
@@ -301,6 +313,7 @@ export class Format extends BaseFormat {
     newFormat._azimuthBaseUnit = this._azimuthBaseUnit;
     newFormat._azimuthCounterClockwise = this._azimuthCounterClockwise;
     newFormat._ratioType = this._ratioType;
+    newFormat._ratioSeparator = this._ratioSeparator;
     newFormat._revolutionUnit = this._revolutionUnit;
     newFormat._customProps = this._customProps;
     this._units && (newFormat._units = [...this._units]);
@@ -464,6 +477,7 @@ export class Format extends BaseFormat {
       uomSeparator: this.uomSeparator,
       scientificType: this.scientificType ? this.scientificType : undefined,
       ratioType: this.ratioType,
+      ratioSeparator: this.ratioSeparator !== ":" ? this.ratioSeparator : undefined,
       stationOffsetSize: this.stationOffsetSize,
       stationSeparator: this.stationSeparator,
       stationBaseFactor: this.stationBaseFactor,
