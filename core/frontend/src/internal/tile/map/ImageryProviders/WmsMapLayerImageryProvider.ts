@@ -35,6 +35,22 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     this._baseUrl = WmsUtilities.getBaseUrl(this._settings.url);
   }
 
+  /** Validates a cartographic range for NaN and infinite values.
+   * @param range The cartographic range to validate.
+   * @returns true if the range is valid, false otherwise.
+   * @static
+   */
+  public static isRangeValid(range: MapCartoRectangle | undefined): range is MapCartoRectangle {
+    if (!range) {
+      return false;
+    }
+
+    return !Number.isNaN(range.low.x) && !Number.isNaN(range.low.y) &&
+           !Number.isNaN(range.high.x) && !Number.isNaN(range.high.y) &&
+           Number.isFinite(range.low.x) && Number.isFinite(range.low.y) &&
+           Number.isFinite(range.high.x) && Number.isFinite(range.high.y);
+  }
+
   public override async initialize(): Promise<void> {
     try {
       const credentials = (this._settings.userName && this._settings.password ? {user: this._settings.userName, password:  this._settings.password} : undefined);
