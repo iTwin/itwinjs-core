@@ -4435,6 +4435,21 @@ export interface GltfChunk {
 }
 
 // @internal (undocumented)
+export class GltfHeader extends TileHeader {
+    constructor(stream: ByteStream);
+    // (undocumented)
+    readonly binaryPosition: number;
+    // (undocumented)
+    readonly gltfLength: number;
+    // (undocumented)
+    get isValid(): boolean;
+    // (undocumented)
+    readonly scenePosition: number;
+    // (undocumented)
+    readonly sceneStrLength: number;
+}
+
+// @internal (undocumented)
 export enum GltfV2ChunkTypes {
     // (undocumented)
     Binary = 5130562,

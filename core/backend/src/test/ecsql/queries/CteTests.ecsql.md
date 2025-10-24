@@ -699,6 +699,58 @@ FROM
 ]
 ```
 
+# CTE referencing CTE
+
+- dataset: AllProperties.bim
+
+```sql
+WITH
+  edges AS (
+    SELECT
+      [sif].[ECInstanceId] AS [Id],
+      [sif].[Parent].[Id] AS [ParentId],
+      [sif].[CodeValue],
+      [sif].[UserLabel],
+      [sif].[EntryPriority]
+    FROM
+      [bis].[SheetIndexFolder] [sif]
+    UNION ALL
+    SELECT
+      [si].[ECInstanceId] AS [Id],
+      [si].[Parent].[Id] AS [ParentId],
+      [si].[CodeValue],
+      [si].[UserLabel],
+      -1 AS [EntryPriority]
+    FROM
+      [bis].[SheetIndex] [si]
+  ),
+  nodes AS (
+    SELECT
+      [sr].[ECInstanceId] AS [Id],
+      [sr].[Parent].[Id] AS [ParentId],
+      [sr].[CodeValue],
+      [sr].[UserLabel],
+      [sr].[EntryPriority]
+    FROM
+      [bis].[SheetReference] [sr]
+  ),
+  joinToParent AS (
+    SELECT
+      p.Id
+    FROM
+      nodes [p]
+      LEFT JOIN edges [c] ON [p].Id = [c].ParentId
+  )
+SELECT
+  *
+FROM
+  joinToParent
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- |
+|           | Id           | true      | 0     | id       | Id   | Id           | long     |
+
 # Expected table aliasing for inner and outer tables to fail in CTE subquery due to prop name being wrong
 
 - dataset: AllProperties.bim

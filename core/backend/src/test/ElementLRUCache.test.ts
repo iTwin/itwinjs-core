@@ -502,6 +502,22 @@ describe('InstanceKeyLRUCache', () => {
     expect(retrievedResult2).to.be.undefined;
   });
 
+  it('should throw when trying to delete with all undefined keys', () => {
+    const cache = new InstanceKeyLRUCache(3);
+    cache.set(testArgs1, testResults[0]);
+    cache.set(testArgs2, testResults[1]);
+    cache.set(testArgs3, testResults[2]);
+    expect(cache.size).to.equal(3);
+
+    expect(() => cache.delete({
+      partialKey: undefined,
+      federationGuid: undefined,
+      code: undefined
+    })).to.throw(Error, "ResolveInstanceKeyArgs must have a partialKey, code, or federationGuid");
+
+    expect(cache.size).to.equal(3);
+  });
+
   it('should clear the cache', () => {
     const cache = new InstanceKeyLRUCache(3);
     cache.set(testArgs1, testResults[0]);
