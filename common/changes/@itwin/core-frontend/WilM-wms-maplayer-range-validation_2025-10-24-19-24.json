@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add range validation for WMS maplayers",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
