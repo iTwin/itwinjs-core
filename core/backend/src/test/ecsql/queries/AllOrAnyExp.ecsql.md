@@ -894,33 +894,29 @@ WHERE
 
 ```sql
 SELECT
-  COUNT(*) AS result
+  CASE
+    WHEN COUNT(Name) >= 366 THEN true
+    ELSE false
+  END AS result
 FROM
-  (
+  meta.ecclassdef
+WHERE
+  ECInstanceID < ALL (
     SELECT
-      Name
+      ECClassId,
+      Model.RelECClassId
     FROM
-      meta.ecclassdef
-    WHERE
-      ECInstanceID < ALL (
-        SELECT
-          ECClassId,
-          Model.RelECClassId
-        FROM
-          aps.TestElement
-      )
-    LIMIT
-      3
+      aps.TestElement
   )
 ```
 
-| className | accessString | generated | index | jsonName | name   | extendedType | typeName | type  |
-| --------- | ------------ | --------- | ----- | -------- | ------ | ------------ | -------- | ----- |
-|           | result       | true      | 0     | result   | result | undefined    | long     | Int64 |
+| className | accessString | generated | index | jsonName | name   | extendedType | typeName | type    |
+| --------- | ------------ | --------- | ----- | -------- | ------ | ------------ | -------- | ------- |
+|           | result       | true      | 0     | result   | result | undefined    | boolean  | Boolean |
 
 | result |
 | ------ |
-| 3      |
+| true   |
 
 # Using ANY with multiple items
 
@@ -928,33 +924,29 @@ FROM
 
 ```sql
 SELECT
-  COUNT(*) AS result
+  CASE
+    WHEN COUNT(Name) >= 274 THEN true
+    ELSE false
+  END AS result
 FROM
-  (
+  meta.ecclassdef
+WHERE
+  ECInstanceID > ANY(
     SELECT
-      Name
+      ECClassId,
+      Model.RelECClassId
     FROM
-      meta.ecclassdef
-    WHERE
-      ECInstanceID > ANY(
-        SELECT
-          ECClassId,
-          Model.RelECClassId
-        FROM
-          aps.TestElement
-      )
-    LIMIT
-      3
+      aps.TestElement
   )
 ```
 
-| className | accessString | generated | index | jsonName | name   | extendedType | typeName | type  |
-| --------- | ------------ | --------- | ----- | -------- | ------ | ------------ | -------- | ----- |
-|           | result       | true      | 0     | result   | result | undefined    | long     | Int64 |
+| className | accessString | generated | index | jsonName | name   | extendedType | typeName | type    |
+| --------- | ------------ | --------- | ----- | -------- | ------ | ------------ | -------- | ------- |
+|           | result       | true      | 0     | result   | result | undefined    | boolean  | Boolean |
 
 | result |
 | ------ |
-| 3      |
+| true   |
 
 # Using SOME with multiple items
 
