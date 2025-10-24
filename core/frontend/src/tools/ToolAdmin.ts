@@ -308,7 +308,6 @@ export class CurrentInputState {
     if (!state.isDown)
       return false;
 
-
     if ((Date.now() - state.downTime) <= ToolSettings.startDragDelay.milliseconds)
       return false;
 

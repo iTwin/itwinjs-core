@@ -31,22 +31,17 @@ export class EventController {
     //   this.addDomListeners(["mousedown", "mouseup"], element.parentElement);
     // }
 
-    // const el = document.getElementsByClassName("cesium-credit-lightbox-overlay")[0] as HTMLElement;
-    // // el.style.zIndex = "-1";
-    // // el.remove();
-    // this.addDomListeners(["mousedown", "mouseup"], el);
-
     // document.addEventListener("mousedown", (event) => {
     //   event.preventDefault();
-    //   console.log("mouse DOWN test", event);
+    //   console.log("mouse down test", event);
     // });
     // document.addEventListener("mousemove", (event) => {
     //   event.preventDefault();
-    //   console.log("mouse MOVE test", event);
+    //   console.log("mouse move test", event);
     // });
     // document.addEventListener("dblclick", (event) => {
     //   event.preventDefault();
-    //   console.log("dblclick", event);
+    //   console.log("double click test", event);
     // });
 
     element.oncontextmenu = element.onselectstart = () => false;
@@ -69,7 +64,6 @@ export class EventController {
       ev.preventDefault();
       ToolAdmin.addEvent(ev, vp);
     };
-    // console.log("EventController.addDomListeners: ", domType);
     domType.forEach((type) => {
       element.addEventListener(type, listener, false);
       this._removals.push(() => element.removeEventListener(type, listener, false));

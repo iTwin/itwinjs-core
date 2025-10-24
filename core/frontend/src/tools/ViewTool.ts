@@ -1162,7 +1162,6 @@ class ViewPan extends HandleWithInertia {
 
     vp.setupFromView();
     this._lastPtNpc.setFrom(thisPtNpc);
-
     return true;
   }
 
