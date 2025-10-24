@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fixed tests for biscore version 01.00.24 release",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -574,7 +574,8 @@ export class RebaseManager {
 export class TxnManager {
   /** @internal */
   private _isDisposed = false;
-
+  /** @internal */
+  private _withIndirectChangeRefCounter = 0;
   /** @internal */
   public get isDisposed(): boolean {
     return this._isDisposed;
@@ -1055,11 +1056,17 @@ export class TxnManager {
    * @param callback The function containing the changes to make.
    */
   public withIndirectTxnMode(callback: () => void): void {
-    this._nativeDb.setTxnMode("indirect");
+    if (this._withIndirectChangeRefCounter === 0) {
+      this._nativeDb.setTxnMode("indirect");
+    }
+    this._withIndirectChangeRefCounter++;
     try {
       callback();
     } finally {
-      this._nativeDb.setTxnMode("direct");
+      this._withIndirectChangeRefCounter--;
+      if (this._withIndirectChangeRefCounter === 0) {
+        this._nativeDb.setTxnMode("direct");
+      }
     }
   }
 }

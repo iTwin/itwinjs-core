@@ -853,6 +853,9 @@ export abstract class IModelDb extends IModel {
     }
 
     const stat = this[_nativeDb].saveChanges(args ? JSON.stringify(args) : undefined);
+    if (DbResult.BE_SQLITE_ERROR_PropagateChangesFailed === stat)
+      throw new IModelError(stat, `Could not save changes due to propagation failure.`);
+
     if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, `Could not save changes (${args?.description})`);
   }
@@ -2334,6 +2337,14 @@ export namespace IModelDb {
      */
     public updateElement<T extends ElementProps>(elProps: Partial<T>): void {
       try {
+        if (elProps.id) {
+          this[_instanceKeyCache].deleteById(elProps.id);
+        } else {
+          this[_instanceKeyCache].delete({
+            federationGuid: elProps.federationGuid,
+            code: elProps.code,
+          });
+        }
         this[_cache].delete({
           id: elProps.id,
           federationGuid: elProps.federationGuid,

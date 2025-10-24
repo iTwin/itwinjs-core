@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Guid, Id64String } from "@itwin/core-bentley";
+import { Code, GeometricElement2dProps, IModel, QueryBinder, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
+import { Suite } from "mocha";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
 import { BriefcaseDb, BriefcaseManager, ChannelControl, DrawingCategory, IModelHost, SqliteChangesetReader, TxnProps } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
-import { Suite } from "mocha";
-import { Code, GeometricElement2dProps, IModel, QueryBinder, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
-import { Guid, Id64String } from "@itwin/core-bentley";
 import { StashManager } from "../../StashManager";
 chai.use(chaiAsPromised);
 
@@ -390,6 +390,40 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     StashManager.dropAllStashes(b1);
     chai.expect(StashManager.getStashes(b1)).to.have.lengthOf(0);
+  });
+  it("recursively calling withIndirectTxnMode", async () => {
+    const b1 = await testIModel.openBriefcase();
+    chai.expect(b1.txns.getMode()).to.equal("direct");
+    b1.txns.withIndirectTxnMode(() => {
+      chai.expect(b1.txns.getMode()).to.equal("indirect");
+    });
+
+    chai.expect(b1.txns.getMode()).to.equal("direct");
+
+    b1.txns.withIndirectTxnMode(() => {
+      chai.expect(b1.txns.getMode()).to.equal("indirect");
+      b1.txns.withIndirectTxnMode(() => {
+        chai.expect(b1.txns.getMode()).to.equal("indirect");
+        b1.txns.withIndirectTxnMode(() => {
+          chai.expect(b1.txns.getMode()).to.equal("indirect");
+          b1.txns.withIndirectTxnMode(() => {
+            chai.expect(b1.txns.getMode()).to.equal("indirect");
+          });
+          chai.expect(b1.txns.getMode()).to.equal("indirect");
+        });
+        chai.expect(b1.txns.getMode()).to.equal("indirect");
+      });
+    });
+
+    chai.expect(b1.txns.getMode()).to.equal("direct");
+
+    chai.expect(() =>
+      b1.txns.withIndirectTxnMode(() => {
+          chai.expect(b1.txns.getMode()).to.equal("indirect");
+          throw new Error("Test error");
+    })).to.throw();
+
+    chai.expect(b1.txns.getMode()).to.equal("direct");
   });
   it("should restore mutually exclusive stashes", async () => {
     const b1 = await testIModel.openBriefcase();
@@ -773,3 +807,4 @@ describe("rebase changes & stashing api", function (this: Suite) {
     chai.expect(e3Props).to.exist;
   });
 });
+
