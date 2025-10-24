@@ -425,8 +425,8 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   }
 
   /**
-   * Read coordinates from source array, place them at index within this array.
-   * @param destIndex point index where coordinates are to be placed in this array
+   * Read a point from the source array, and place its coordinates at the given index within this array.
+   * @param destIndex index of point in this array to be overwritten
    * @param source source array
    * @param sourceIndex point index in source array
    * @returns true if destIndex and sourceIndex are both valid.
