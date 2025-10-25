@@ -23,9 +23,16 @@ export class EventController {
     if (element === undefined)
       return;
 
-    // Put events  on the parentDiv to allows us to stopPropagation of events to the view canvas when they are meant for a sibling of view canvas (markup canvas, for example).
-    this.addDomListeners(["mousedown", "mouseup", "mousemove", "mouseover", "mouseout", "wheel", "touchstart", "touchend", "touchcancel", "touchmove"], element);
-    this.addDomListeners(["pointerup", "pointerdown", "pointermove"], element);
+    const pointerSupported = typeof window !== "undefined" && (window as any).PointerEvent !== undefined;
+
+    // Put events on the parentDiv to allow us to stopPropagation of events to the view canvas when they are meant for a sibling of view canvas (markup canvas, for example).
+    if (pointerSupported) {
+      this.addDomListeners(["pointerdown", "pointerup", "pointermove"], element);
+    } else {
+      this.addDomListeners(["mousedown", "mouseup", "mousemove"], element);
+    }
+
+    this.addDomListeners(["mouseover", "mouseout", "wheel", "touchstart", "touchend", "touchcancel", "touchmove"], element);
 
     // if (element.parentElement) {
     //   this.addDomListeners(["mousedown", "mouseup"], element.parentElement);
@@ -64,9 +71,10 @@ export class EventController {
       ev.preventDefault();
       ToolAdmin.addEvent(ev, vp);
     };
+    const options: AddEventListenerOptions = { passive: false };
     domType.forEach((type) => {
-      element.addEventListener(type, listener, false);
-      this._removals.push(() => element.removeEventListener(type, listener, false));
+      element.addEventListener(type, listener, options);
+      this._removals.push(() => element.removeEventListener(type, listener, options));
     });
   }
 }

@@ -766,16 +766,25 @@ export class ToolAdmin {
 
   /** A first-in-first-out queue of ToolEvents. */
   private static _toolEvents: ToolEvent[] = [];
+
   private static tryReplace(ev: Event, vp?: ScreenViewport): boolean {
     if (ToolAdmin._toolEvents.length < 1)
       return false;
     const last = ToolAdmin._toolEvents[ToolAdmin._toolEvents.length - 1];
     const lastType = last.ev.type;
-    if (lastType !== ev.type || (lastType !== "mousemove" && lastType !== "touchmove"))
-      return false; // only mousemove and touchmove can replace previous
-    last.ev = ev; // sequential moves are not important. Replace the previous one with this one.
-    last.vp = vp;
-    return true;
+    if (lastType !== ev.type)
+      return false;
+
+    switch (lastType) {
+      case "mousemove":
+      case "touchmove":
+      case "pointermove":
+        last.ev = ev; // sequential moves are not important. Replace the previous one with this one.
+        last.vp = vp;
+        return true;
+      default:
+        return false; // everything else should queue normally
+    }
   }
 
   /** @internal */
