@@ -97,11 +97,6 @@ export abstract class PrimitiveConverter<TPrimitiveData = DecorationPrimitiveEnt
       return;
     }
 
-    if (filteredGraphics.length > 0) {
-      // eslint-disable-next-line no-console
-      console.debug("[PrimitiveConverter] convert", { decorationType: type, primitiveType, count: filteredGraphics.length });
-    }
-
     filteredGraphics.forEach((graphic, index) => {
       const primitiveId = `${type}_${this.getPrimitiveTypeName()}_${index}`;
       const graphicWithCoords = graphic as RenderGraphicWithCoordinates;
