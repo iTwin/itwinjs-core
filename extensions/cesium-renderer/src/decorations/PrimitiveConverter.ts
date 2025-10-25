@@ -97,6 +97,11 @@ export abstract class PrimitiveConverter<TPrimitiveData = DecorationPrimitiveEnt
       return;
     }
 
+    if (filteredGraphics.length > 0) {
+      // eslint-disable-next-line no-console
+      console.debug("[PrimitiveConverter] convert", { decorationType: type, primitiveType, count: filteredGraphics.length });
+    }
+
     filteredGraphics.forEach((graphic, index) => {
       const primitiveId = `${type}_${this.getPrimitiveTypeName()}_${index}`;
       const graphicWithCoords = graphic as RenderGraphicWithCoordinates;
@@ -147,27 +152,33 @@ export abstract class PrimitiveConverter<TPrimitiveData = DecorationPrimitiveEnt
   }
 
 
-  /** Convert all decoration types using switch-based auto dispatch */
+  /** Convert decorations of a specific type, optionally clearing existing Cesium primitives for that type first. */
+  public convertDecorationType(
+    graphics: GraphicList | undefined,
+    type: string,
+    scene: CesiumScene,
+    iModel?: IModelConnection,
+    opts?: { clear?: boolean }
+  ): void {
+    const list = graphics ?? [];
+    const shouldClear = opts?.clear !== false;
+
+    if (shouldClear)
+      this.clearDecorationsForType(scene, type);
+
+    if (list.length === 0)
+      return;
+
+    this.autoDispatchGraphics(list, type, scene, iModel);
+  }
+
+  /** Convenience for existing callers: converts all known decoration buckets sequentially. */
   public convertAllDecorationTypes(decorations: Decorations, scene: CesiumScene, iModel?: IModelConnection): void {
-    if (decorations.world) {
-      this.autoDispatchGraphics(decorations.world, 'world', scene, iModel);
-    }
-
-    if (decorations.normal) {
-      this.autoDispatchGraphics(decorations.normal, 'normal', scene, iModel);
-    }
-
-    if (decorations.worldOverlay) {
-      this.autoDispatchGraphics(decorations.worldOverlay, 'worldOverlay', scene, iModel);
-    }
-
-    if (decorations.viewOverlay) {
-      this.autoDispatchGraphics(decorations.viewOverlay, 'viewOverlay', scene, iModel);
-    }
-
-    if (decorations.viewBackground) {
-      this.autoDispatchGraphics([decorations.viewBackground], 'viewBackground', scene, iModel);
-    }
+    this.convertDecorationType(decorations.world, "world", scene, iModel);
+    this.convertDecorationType(decorations.normal, "normal", scene, iModel);
+    this.convertDecorationType(decorations.worldOverlay, "worldOverlay", scene, iModel);
+    this.convertDecorationType(decorations.viewOverlay, "viewOverlay", scene, iModel);
+    this.convertDecorationType(decorations.viewBackground ? [decorations.viewBackground] : undefined, "viewBackground", scene, iModel);
   }
 
   private autoDispatchGraphics(graphics: GraphicList, type: string, scene: CesiumScene, iModel?: IModelConnection): void {
@@ -190,37 +201,56 @@ export abstract class PrimitiveConverter<TPrimitiveData = DecorationPrimitiveEnt
     });
   }
 
-  /** Unified clear decorations - removes all decoration primitives from scene */
-  public clearDecorations(scene: CesiumScene): void {
-    // Clear all point primitives
-    const pointCollection = scene.pointCollection;
-    if (pointCollection) {
-      const pointsToRemove: PointPrimitive[] = [];
-      for (let i = 0; i < pointCollection.length; i++) {
-        const point = pointCollection.get(i);
-        if (typeof point?.id === 'string' && this.isAnyDecorationId(point.id))
-          pointsToRemove.push(point);
-      }
-      pointsToRemove.forEach(point => pointCollection.remove(point));
-    }
+  /** Remove all decorations previously converted for a specific decoration bucket. */
+  public clearDecorationsForType(scene: CesiumScene, type: string): void {
+    const matchesType = (id: any) => typeof id === "string" && id.startsWith(`${type}_`);
 
-    // Clear all line primitives
-    const polylineCollection = scene.polylineCollection;
-    if (polylineCollection) {
-      const linesToRemove: Polyline[] = [];
-      for (let i = 0; i < polylineCollection.length; i++) {
-        const line = polylineCollection.get(i);
-        if (typeof line?.id === 'string' && this.isAnyDecorationId(line.id))
-          linesToRemove.push(line);
-      }
-      linesToRemove.forEach(line => polylineCollection.remove(line));
+    const removedPoints = this.removeMatching(scene.pointCollection, matchesType);
+    const removedLines = this.removeMatching(scene.polylineCollection, matchesType);
+    const removedPrimitives = this.removeMatching(scene.primitivesCollection, matchesType);
+
+    if (removedPoints || removedLines || removedPrimitives) {
+      // eslint-disable-next-line no-console
+      console.debug("[PrimitiveConverter] clearDecorationsForType", { type, removedPoints, removedLines, removedPrimitives });
     }
   }
 
-  /** Check if an ID is any type of decoration */
-  private isAnyDecorationId(id: string): boolean {
-    // Matches: <type>_(pointstring|linestring|shape)_<index>
-    return /^(world|normal|worldOverlay|viewOverlay|viewBackground)_(pointstring(?:2d)?|linestring(?:2d)?|shape(?:2d)?)_/i.test(id);
+  /** Remove all converted decorations from the Cesium scene. */
+  public clearAllDecorations(scene: CesiumScene): void {
+    const removedPoints = scene.pointCollection?.length ?? 0;
+    scene.pointCollection?.removeAll();
+
+    const removedLines = scene.polylineCollection?.length ?? 0;
+    scene.polylineCollection?.removeAll();
+
+    const removedPrimitives = scene.primitivesCollection?.length ?? 0;
+    scene.primitivesCollection?.removeAll();
+
+    if (removedPoints || removedLines || removedPrimitives) {
+      // eslint-disable-next-line no-console
+      console.debug("[PrimitiveConverter] clearAllDecorations", { removedPoints, removedLines, removedPrimitives });
+    }
+  }
+
+  private removeMatching<T extends { id?: any; destroy?: () => void }>(
+    collection: { length: number; get: (index: number) => T | undefined; remove: (item: T) => void } | undefined,
+    predicate: (id: any) => boolean
+  ): number {
+    if (!collection)
+      return 0;
+
+    const toRemove: T[] = [];
+    for (let i = 0; i < collection.length; i++) {
+      const item = collection.get(i);
+      if (!item)
+        continue;
+      const id = (item as any).id;
+      if (predicate(id))
+        toRemove.push(item);
+    }
+
+    toRemove.forEach((item) => collection.remove(item));
+    return toRemove.length;
   }
 
   // Shared helpers to reduce duplication in converters

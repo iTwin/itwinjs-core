@@ -179,7 +179,7 @@ export class ShapePrimitiveConverter extends PrimitiveConverter<ShapeCoordinates
           })
         });
 
-        primitivesCollection.add(primitive);
+        (primitive as any).id = shapeId;
         return primitive;
     }
   }

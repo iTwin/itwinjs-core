@@ -18,7 +18,7 @@ export class CesiumOnScreenTarget extends RenderTarget {
 
   private readonly _canvas: HTMLCanvasElement;
   private readonly _scene: CesiumScene;
-  private _lastDecorationCount = -1;
+  private readonly _lastDecorationCounts = new Map<string, number>();
 
   public get renderSystem(): CesiumSystem { return CesiumSystem.instance; }
 
@@ -62,19 +62,46 @@ export class CesiumOnScreenTarget extends RenderTarget {
       return;
     }
 
-    const currentCount = (decorations.world?.length || 0) + (decorations.normal?.length || 0) +
-                        (decorations.worldOverlay?.length || 0) + (decorations.viewOverlay?.length || 0);
+    const converter = PrimitiveConverterFactory.getConverter();
+    if (!converter) {
+      return;
+    }
 
-    if (currentCount !== this._lastDecorationCount) {
-      this._lastDecorationCount = currentCount;
+    const currentIModel = IModelApp.viewManager.selectedView?.iModel;
+    let anyActive = false;
 
-      const converter = PrimitiveConverterFactory.getConverter();
-      if (converter) {
-        converter.clearDecorations(this._scene);
+    const processType = (type: string, graphics: GraphicList | undefined, options?: { alwaysRefresh?: boolean }) => {
+      const currentCount = graphics?.length ?? 0;
+      const prevCount = this._lastDecorationCounts.get(type) ?? 0;
+      const alwaysRefresh = options?.alwaysRefresh === true;
 
-        const currentIModel = IModelApp.viewManager.selectedView?.iModel;
-        converter.convertAllDecorationTypes(decorations, this._scene, currentIModel);
+      if (currentCount === 0) {
+        if (prevCount !== 0) {
+          converter.clearDecorationsForType(this._scene, type);
+          this._lastDecorationCounts.set(type, 0);
+        }
+        return;
       }
+
+      anyActive = true;
+      const shouldClear = alwaysRefresh || prevCount !== currentCount;
+      if (!shouldClear && !alwaysRefresh) {
+        this._lastDecorationCounts.set(type, currentCount);
+        return;
+      }
+
+      converter.convertDecorationType(graphics, type, this._scene, currentIModel, { clear: shouldClear });
+      this._lastDecorationCounts.set(type, currentCount);
+    };
+
+    processType("world", decorations.world, { alwaysRefresh: false });
+    processType("normal", decorations.normal, { alwaysRefresh: false });
+    processType("viewBackground", decorations.viewBackground ? [decorations.viewBackground] : undefined, { alwaysRefresh: false });
+    processType("worldOverlay", decorations.worldOverlay, { alwaysRefresh: true });
+    processType("viewOverlay", decorations.viewOverlay, { alwaysRefresh: true });
+
+    if (!anyActive) {
+      converter.clearAllDecorations(this._scene);
     }
   }
 

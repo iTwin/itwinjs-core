@@ -170,7 +170,7 @@ export class CesiumDecorator implements Decorator {
           new Point3d(center.x - 60000, center.y + 80000, center.z + 25000),
           new Point3d(center.x - 60000, center.y + 40000, center.z + 25000),
         ],
-        type: GraphicType.WorldOverlay,
+        type: GraphicType.WorldDecoration,
         color: ColorDef.from(255, 0, 255),
       }
     ];
@@ -189,7 +189,7 @@ export class CesiumDecorator implements Decorator {
       Point2d.create(center.x + 50000, center.y + 140000),
       Point2d.create(center.x + 50000, center.y + 90000),
     ];
-    const shape2dBuilder = context.createGraphic({ type: GraphicType.WorldOverlay });
+    const shape2dBuilder = context.createGraphic({ type: GraphicType.WorldDecoration });
     const shape2dColor = ColorDef.from(186, 85, 211);
     shape2dBuilder.setSymbology(shape2dColor, shape2dColor, 3);
     shape2dBuilder.addShape2d(overlayShapePoints, center.z + 9000);
