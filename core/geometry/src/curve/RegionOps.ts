@@ -200,16 +200,15 @@ export class RegionOps {
    */
   public static centroidAreaNormal(region: AnyRegion, result?: Ray3d): Ray3d | undefined {
     const localToWorld = FrameBuilder.createRightHandedFrame(undefined, region);
-    if (undefined === localToWorld)
+    if (!localToWorld)
       return undefined;
     const normal = localToWorld.matrix.columnZ(result?.direction);
     const regionIsXY = normal.isParallelTo(Vector3d.unitZ(), true);
     let regionXY: AnyRegion | undefined = region;
     if (!regionIsXY) { // rotate the region to be parallel to the xy-plane
-      const inverse = localToWorld.inverse();
-      if (!inverse)
-        return undefined;
-      regionXY = region.cloneTransformed(inverse) as AnyRegion | undefined;
+      const worldToLocal = localToWorld.inverse();
+      assert(worldToLocal !== undefined, "FrameBuilder's transform is invertible");
+      regionXY = region.cloneTransformed(worldToLocal) as AnyRegion | undefined;
       if (!regionXY)
         return undefined;
     }
@@ -751,10 +750,7 @@ export class RegionOps {
     } else if (data instanceof IndexedXYZCollection) {
       let dataToUse;
       if (requireClosurePoint && data.length === 5) {
-        const distance = data.distanceIndexIndex(0, 4);
-        if (undefined === distance)
-          return undefined;
-        if (!Geometry.isSmallMetricDistance(distance))
+        if (!data.almostEqualUncheckedIndexIndex(0, 4))
           return undefined;
         dataToUse = data;
       } else if (!requireClosurePoint && data.length === 4) {
@@ -767,11 +763,10 @@ export class RegionOps {
         if (dataToUse.length < (requireClosurePoint ? 5 : 4))
           return undefined;
       }
-      const vector01 = dataToUse.vectorIndexIndex(0, 1);
-      const vector03 = dataToUse.vectorIndexIndex(0, 3);
-      const vector12 = dataToUse.vectorIndexIndex(1, 2);
-      if (undefined === vector01 || undefined === vector03 || undefined === vector12)
-        return undefined;
+      assert(dataToUse.length >= 4, "expect at least 4 points in dataToUse");
+      const vector01 = dataToUse.vectorUncheckedIndexIndex(0, 1);
+      const vector03 = dataToUse.vectorUncheckedIndexIndex(0, 3);
+      const vector12 = dataToUse.vectorUncheckedIndexIndex(1, 2);
       const normalVector = vector01.crossProduct(vector03);
       if (normalVector.normalizeInPlace()
         && vector12.isAlmostEqual(vector03)

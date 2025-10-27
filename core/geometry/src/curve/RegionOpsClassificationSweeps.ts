@@ -7,6 +7,7 @@
  * @module Curve
  */
 
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../Geometry";
 import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
@@ -738,7 +739,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     if (data instanceof RegionGroupMember)
       return updateRegionGroupMemberState(data);
 
-    if (data instanceof CurveLocationDetail && undefined !== data.curve) {
+    if (data instanceof CurveLocationDetail && data.curve) {
       // We trust that the caller has linked from the graph node to a curve which has a RegionGroupMember as its parent.
       const member = data.curve.parent;
       if (member instanceof RegionGroupMember)
@@ -802,9 +803,8 @@ function areaUnderPartialCurveXY(
       areaToChord = detail.curve.areaToChordXY(detail.fraction, detail.fraction1);
     } else {
       const partial = detail.curve.clonePartialCurve(detail.fraction, detail.fraction1);
-      areaToChord = (partial) ?
-        RegionOps.computeXYArea(Loop.create(partial, LineSegment3d.create(detail.point1, detail.point))) ?? 0
-        : 0;
+      const loopArea = partial ? RegionOps.computeXYArea(Loop.create(partial, LineSegment3d.create(detail.point1, detail.point))) : 0;
+      areaToChord = loopArea ?? 0;
     }
   }
   return trapezoidArea + areaToChord;
