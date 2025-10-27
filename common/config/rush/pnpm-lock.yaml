@@ -1756,8 +1756,8 @@ importers:
         specifier: 5.2.2-dev.2
         version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/oidc-signin-tool':
-        specifier: ^4.4.1
-        version: 4.4.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+        specifier: ^5.0.2
+        version: 5.0.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -1862,8 +1862,8 @@ importers:
         specifier: 5.2.2-dev.2
         version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
       '@itwin/oidc-signin-tool':
-        specifier: ^4.4.1
-        version: 4.4.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+        specifier: ^5.0.2
+        version: 5.0.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -2308,8 +2308,8 @@ importers:
         specifier: ^3.0.4
         version: 3.0.4
       '@itwin/oidc-signin-tool':
-        specifier: ^4.4.1
-        version: 4.4.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+        specifier: ^5.0.2
+        version: 5.0.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/perf-tools':
         specifier: workspace:*
         version: link:../../tools/perf-tools
@@ -2502,8 +2502,8 @@ importers:
         specifier: ^3.0.4
         version: 3.0.4
       '@itwin/oidc-signin-tool':
-        specifier: ^4.4.1
-        version: 4.4.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+        specifier: ^5.0.2
+        version: 5.0.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
@@ -2646,8 +2646,8 @@ importers:
         specifier: ^3.0.4
         version: 3.0.4
       '@itwin/oidc-signin-tool':
-        specifier: ^4.4.1
-        version: 4.4.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+        specifier: ^5.0.2
+        version: 5.0.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/presentation-common':
         specifier: workspace:*
         version: link:../../presentation/common
@@ -3050,8 +3050,8 @@ importers:
         specifier: ^3.0.4
         version: 3.0.4
       '@itwin/oidc-signin-tool':
-        specifier: ^4.4.1
-        version: 4.4.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+        specifier: ^5.0.2
+        version: 5.0.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/presentation-common':
         specifier: workspace:*
         version: link:../../presentation/common
@@ -3585,8 +3585,8 @@ importers:
         specifier: ^3.0.4
         version: 3.0.4
       '@itwin/oidc-signin-tool':
-        specifier: ^4.4.1
-        version: 4.4.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+        specifier: ^5.0.2
+        version: 5.0.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
       '@itwin/reality-data-client':
         specifier: ^1.3.1
         version: 1.3.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)(@itwin/core-geometry@..+core+geometry)
@@ -5260,8 +5260,8 @@ packages:
       reflect-metadata:
         optional: true
 
-  '@itwin/oidc-signin-tool@4.4.1':
-    resolution: {integrity: sha512-E/Mg8RyKKOasZ+H36UFLgjlIbpYIpw1og/506ml0x9BkiCwfnkFb8YtrCWbgvWeV0sWLg+VwjiB8E3HN1QGd/A==}
+  '@itwin/oidc-signin-tool@5.0.2':
+    resolution: {integrity: sha512-71rD1C1YTfz+PkXrxg0yp9XXavfvi2DAXfebR7/8QSAfhCeK3bnhWlGJExoE8l/SfVbOjbjPrfpNTS9kugqddw==}
     peerDependencies:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
@@ -5282,8 +5282,8 @@ packages:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
 
-  '@itwin/service-authorization@1.2.3':
-    resolution: {integrity: sha512-KoN7Y60Mbmeq5r5U3wfmDu9oAyCo00cb73zR/wwBVWFpdYUfDQbQKHofS0TrXLANO9uva3BdwH5L+S41szXYmg==}
+  '@itwin/service-authorization@2.1.0':
+    resolution: {integrity: sha512-UHaXyJOgpzAjo2aBX1PDcr2t7GnDx76TQjYAamUPhG58w0BFhQ69LFt9c6mdXi2BZBdYHNc6xIijGGjoHDGz1A==}
     peerDependencies:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
@@ -5440,8 +5440,8 @@ packages:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
     engines: {node: '>=14'}
 
-  '@playwright/test@1.48.2':
-    resolution: {integrity: sha512-54w1xCWfXuax7dz4W2M9uw0gDyh+ti/0K/MxcCUxChFh37kkdxPdfZDw5QBbuPUJHr1CiHJ1hXgSs+GgeQc5Zw==}
+  '@playwright/test@1.56.1':
+    resolution: {integrity: sha512-vSMYtL/zOcFpvJCW71Q/OEGQb7KYBPAdKh35WNSkaZA75JlAO8ED8UN6GUNTm3drWomcbcqRPFqQbLae8yBTdg==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -5969,6 +5969,9 @@ packages:
 
   '@types/jsonwebtoken@8.5.9':
     resolution: {integrity: sha512-272FMnFGzAVMGtu9tkr29hRL6bZj4Zs1KZNeHLnKqAvp06tAIcarTMwOh8/8bz4FmKRcMxZhZNeUAQsNLoiPhg==}
+
+  '@types/jsonwebtoken@9.0.10':
+    resolution: {integrity: sha512-asx5hIG9Qmf/1oStypjanR7iKTv0gXQ1Ov/jfrX6kS/EO0OFni8orbmGCn0672NHR3kXHwpAwR+B368ZGN/2rA==}
 
   '@types/keyv@3.1.4':
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
@@ -8498,6 +8501,9 @@ packages:
     resolution: {integrity: sha512-5hFWIigKqC+e/lRyQhfnirrAqUdIPMB7SJRqflJaO29dW7q5DFvH1XCSTmv6PQ6pb++0k6MJlLRoS0Wv4s38Wg==}
     engines: {node: '>=10.13.0 < 13 || >=13.7.0'}
 
+  jose@4.15.9:
+    resolution: {integrity: sha512-1vUQX+IdDMVPj4k8kOxgUqlcK518yluMuGZwqlr44FS1ppZB/5GWh4rZG89erpOBOJjU/OBsnCVFfapsRz6nEA==}
+
   js-base64@3.6.1:
     resolution: {integrity: sha512-Frdq2+tRRGLQUIQOgsIGSCd1VePCS2fsddTG5dTCqR0JHgltXWfsxnY0gIXPoMeRmdom6Oyq+UMOFg5suduOjQ==}
 
@@ -8607,6 +8613,10 @@ packages:
     resolution: {integrity: sha512-IODtn1SwEm7n6GQZnQLY0oxKDrMh7n/jRH1MzE8mlxWMrh2NnMyOsXTebu8vJ1qCpmuTJcL4DdiE0E4h8jnwsA==}
     engines: {node: '>=10 < 13 || >=14'}
 
+  jwks-rsa@3.2.0:
+    resolution: {integrity: sha512-PwchfHcQK/5PSydeKCs1ylNym0w/SSv8a62DgHJ//7x2ZclCoinlsjAfDxAAbpoTPybOum/Jgy+vkvMmKz89Ww==}
+    engines: {node: '>=14'}
+
   jws@3.2.2:
     resolution: {integrity: sha512-YHlZCB6lMTllWDtSPHz/ZXTsi8S00usEV6v1tjq8tOUZzw7DpSDWVXjXDre6ed1w/pd495ODpHZYSdkRTsa0HA==}
 
@@ -8615,6 +8625,10 @@ packages:
 
   jwt-decode@3.1.2:
     resolution: {integrity: sha512-UfpWE/VZn0iP50d8cz9NrZLM9lSWhcJ+0Gt/nm4by88UL+J1SiKN8/5dkjMmbEzwL2CAe+67GsegCbIKtbp75A==}
+
+  jwt-decode@4.0.0:
+    resolution: {integrity: sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==}
+    engines: {node: '>=18'}
 
   kdbush@4.0.2:
     resolution: {integrity: sha512-WbCVYJ27Sz8zi9Q7Q0xHC+05iwkm3Znipc2XTlrnJbsHMYktW4hPhXUE8Ys1engBrvffoSCqbil1JQAa7clRpA==}
@@ -9210,6 +9224,10 @@ packages:
     resolution: {integrity: sha512-IxlGMsbkZPsHJGCliWT3LxjUcYzmiN21656n/Zt2jDncZlBFc//cd8WqFF0Lt681UT3AImM57E6d4N53ziTCYA==}
     engines: {node: '>=12.13.0'}
 
+  oidc-client-ts@3.3.0:
+    resolution: {integrity: sha512-t13S540ZwFOEZKLYHJwSfITugupW4uYLwuQSSXyKH/wHwZ+7FvgHE7gnNJh1YQIZ1Yd1hKSRjqeXGSUtS0r9JA==}
+    engines: {node: '>=18'}
+
   oidc-token-hash@5.1.0:
     resolution: {integrity: sha512-y0W+X7Ppo7oZX6eovsRkuzcSM40Bicg2JEJkDJ4irIt1wsYAP5MLSNv+QAogO8xivMffw/9OvV3um1pxXgt1uA==}
     engines: {node: ^10.13.0 || >=12.0.0}
@@ -9446,18 +9464,8 @@ packages:
   platform@1.3.6:
     resolution: {integrity: sha512-fnWVljUchTro6RiCFvCXBbNhJc2NijN7oIQxbwsyL0buWJPG85v81ehlHI9fXrJsMNgTofEoWIQeClKpgxFLrg==}
 
-  playwright-core@1.48.2:
-    resolution: {integrity: sha512-sjjw+qrLFlriJo64du+EK0kJgZzoQPsabGF4lBvsid+3CNIZIYLgnMj9V6JY5VhM2Peh20DJWIVpVljLLnlawA==}
-    engines: {node: '>=18'}
-    hasBin: true
-
   playwright-core@1.56.1:
     resolution: {integrity: sha512-hutraynyn31F+Bifme+Ps9Vq59hKuUCz7H1kDOcBs+2oGguKkWTU50bBWrtz34OUWmIwpBTWDxaRPXrIXkgvmQ==}
-    engines: {node: '>=18'}
-    hasBin: true
-
-  playwright@1.48.2:
-    resolution: {integrity: sha512-NjYvYgp4BPmiwfe31j4gHLa3J7bD2WiBz8Lk2RoSsmX38SVIARZ18VYjxLjAcDsAhA+F4iSEXTSGgjua0rrlgQ==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -11936,16 +11944,16 @@ snapshots:
       - encoding
       - supports-color
 
-  '@itwin/oidc-signin-tool@4.4.1(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)':
+  '@itwin/oidc-signin-tool@5.0.2(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)':
     dependencies:
       '@itwin/certa': link:../../tools/certa
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
-      '@itwin/service-authorization': 1.2.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
-      '@playwright/test': 1.48.2
+      '@itwin/service-authorization': 2.1.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)
+      '@playwright/test': 1.56.1
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      oidc-client-ts: 2.4.1
+      oidc-client-ts: 3.3.0
     transitivePeerDependencies:
       - supports-color
 
@@ -11972,13 +11980,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@itwin/service-authorization@1.2.3(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)':
+  '@itwin/service-authorization@2.1.0(@itwin/core-bentley@..+core+bentley)(@itwin/core-common@..+core+common)':
     dependencies:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       got: 12.6.1
       jsonwebtoken: 9.0.2
-      jwks-rsa: 2.1.5
+      jwks-rsa: 3.2.0
     transitivePeerDependencies:
       - supports-color
 
@@ -12177,9 +12185,9 @@ snapshots:
   '@pkgjs/parseargs@0.11.0':
     optional: true
 
-  '@playwright/test@1.48.2':
+  '@playwright/test@1.56.1':
     dependencies:
-      playwright: 1.48.2
+      playwright: 1.56.1
 
   '@polka/url@1.0.0-next.28': {}
 
@@ -12655,6 +12663,11 @@ snapshots:
 
   '@types/jsonwebtoken@8.5.9':
     dependencies:
+      '@types/node': 20.17.24
+
+  '@types/jsonwebtoken@9.0.10':
+    dependencies:
+      '@types/ms': 2.1.0
       '@types/node': 20.17.24
 
   '@types/keyv@3.1.4':
@@ -15673,6 +15686,8 @@ snapshots:
     dependencies:
       '@panva/asn1.js': 1.0.0
 
+  jose@4.15.9: {}
+
   js-base64@3.6.1: {}
 
   js-md4@0.3.2: {}
@@ -15807,6 +15822,17 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  jwks-rsa@3.2.0:
+    dependencies:
+      '@types/express': 4.17.21
+      '@types/jsonwebtoken': 9.0.10
+      debug: 4.4.1(supports-color@8.1.1)
+      jose: 4.15.9
+      limiter: 1.1.5
+      lru-memoizer: 2.3.0
+    transitivePeerDependencies:
+      - supports-color
+
   jws@3.2.2:
     dependencies:
       jwa: 1.4.1
@@ -15818,6 +15844,8 @@ snapshots:
       safe-buffer: 5.2.1
 
   jwt-decode@3.1.2: {}
+
+  jwt-decode@4.0.0: {}
 
   kdbush@4.0.2: {}
 
@@ -16457,6 +16485,10 @@ snapshots:
       crypto-js: 4.2.0
       jwt-decode: 3.1.2
 
+  oidc-client-ts@3.3.0:
+    dependencies:
+      jwt-decode: 4.0.0
+
   oidc-token-hash@5.1.0: {}
 
   on-finished@2.3.0:
@@ -16665,15 +16697,7 @@ snapshots:
 
   platform@1.3.6: {}
 
-  playwright-core@1.48.2: {}
-
   playwright-core@1.56.1: {}
-
-  playwright@1.48.2:
-    dependencies:
-      playwright-core: 1.48.2
-    optionalDependencies:
-      fsevents: 2.3.2
 
   playwright@1.56.1:
     dependencies:
