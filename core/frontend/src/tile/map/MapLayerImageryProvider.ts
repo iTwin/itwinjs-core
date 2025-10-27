@@ -102,7 +102,7 @@ export abstract class MapLayerImageryProvider {
    * @returns true if the range is valid, false otherwise.
    * @internal
    */
-  public static isRangeValid(range: MapCartoRectangle | undefined): boolean {
+  private static isRangeValid(range: MapCartoRectangle | undefined): boolean {
     if (!range) {
       return false;
     }
@@ -113,19 +113,17 @@ export abstract class MapLayerImageryProvider {
            Number.isFinite(range.high.x) && Number.isFinite(range.high.y);
   }
 
-  /** Gets the cartographic range for this provider.
-   * Returns undefined if the range is invalid (contains NaN or infinite values).
+  /** Gets or sets the cartographic range for this provider.
+   * When setting, if the range is invalid (contains NaN or infinite values), it will be stored as undefined.
+   * When getting, returns undefined if the range was set to an invalid value.
    * @internal
    */
   public get cartoRange(): MapCartoRectangle | undefined {
-    return MapLayerImageryProvider.isRangeValid(this._cartoRange) ? this._cartoRange : undefined;
+    return this._cartoRange;
   }
 
-  /** Sets the cartographic range for this provider.
-   * @internal
-   */
   public set cartoRange(range: MapCartoRectangle | undefined) {
-    this._cartoRange = range;
+    this._cartoRange = MapLayerImageryProvider.isRangeValid(range) ? range : undefined;
   }
 
   /**
