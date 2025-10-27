@@ -248,8 +248,6 @@ class ExerciseCurve {
       Segment1d.create(0.1, 0.35),
       Segment1d.create(0.38, 0.92),
       Segment1d.create(-0.1, 0.2),
-      Segment1d.create(-0.1, 0.2),
-      Segment1d.create(0.9, 1.2),
       Segment1d.create(0.9, 1.2)]) {
       const a = segment.x0;
       const b = segment.x1;
