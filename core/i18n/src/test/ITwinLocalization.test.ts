@@ -957,7 +957,7 @@ describe("ITwinLocalization", () => {
     // TODO: Fix test on Linux CI environment
     // On current Linux CI environment, "@POSIX" is appended as a suffix to the locale,
     // which means that the en-US locales do not get loaded.
-    if (process.platform !== "linux") {
+    if (!navigator.userAgent.toLowerCase().includes("linux")) {
       it("english language list includes en and en-US", async () => {
         localization = new ITwinLocalization();
         await localization.initialize([]);
