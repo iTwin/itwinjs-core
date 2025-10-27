@@ -20,6 +20,7 @@ import {
   ContentFlags,
   ContentRequestOptions,
   ContentSourcesRequestOptions,
+  createContentFormatter,
   DefaultContentDisplayTypes,
   Descriptor,
   DescriptorOverrides,
@@ -60,8 +61,6 @@ import {
 } from "@itwin/presentation-common";
 import {
   buildElementProperties,
-  ContentFormatter,
-  ContentPropertyValueFormatter,
   deepReplaceNullsToUndefined,
   isSingleElementPropertiesRequestOptions,
   LocalizationHelper,
@@ -550,7 +549,7 @@ export class PresentationManager {
     return this._detail.getContentSetSize(requestOptions);
   }
 
-  private createContentFormatter({ imodel, unitSystem }: { imodel: IModelDb; unitSystem?: UnitSystemKey }): ContentFormatter {
+  private createContentFormatter({ imodel, unitSystem }: { imodel: IModelDb; unitSystem?: UnitSystemKey }) {
     if (!unitSystem) {
       unitSystem = this.props.defaultUnitSystem ?? "metric";
     }
@@ -561,7 +560,7 @@ export class PresentationManager {
     });
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     koqPropertyFormatter.defaultFormats = this.props.defaultFormats;
-    return new ContentFormatter(new ContentPropertyValueFormatter(koqPropertyFormatter), unitSystem);
+    return createContentFormatter({ propertyValueFormatter: koqPropertyFormatter, unitSystem });
   }
 
   /**
