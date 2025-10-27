@@ -56,7 +56,7 @@
     "cpx2": "^8.0.0",
     "eslint": "^9.31.0",
     "internal-tools": "workspace:*",
-    "playwright": "~1.47.1",
+    "playwright": "~1.56.1",
     "rimraf": "^6.0.1",
     "typescript": "~5.6.2",
     "vitest": "^3.0.6"
