@@ -278,7 +278,7 @@ export class StrokeCountSection {
       if (sections[i].chains.length !== numChains)
         return false;
       // second level: must have same number of primitives in each path or loop
-      for (let j = 0; j < sections[0].chains.length; j++) {
+      for (let j = 0; j < numChains; j++) {
         const numPrimitive = sections[0].chains[j].maps.length;
         if (sections[i].chains[j].maps.length !== numPrimitive)
           return false;
@@ -303,39 +303,36 @@ export class StrokeCountSection {
     }
   }
 
-  private static applyMultipassVisitorCallbackNoComponents(sections: StrokeCountSection[], chainIndex: number, primitiveIndex: number,
-    componentIndex: number | undefined, callback: StrokeCountMapMultipassVisitor) {
+  /**
+   * Invoke callback on each (component of) each primitive of each chain of each section.
+   * * Caller ensures the input sections all have the same structure, e.g., by calling `areSectionsCompatible(sections, false)`.
+   * * Caller ensures all input indices are valid.
+   * @param componentIndex optional component index; if defined, caller ensures each primitive's [[StrokeCountMap]] has a `componentData`.
+   */
+  private static applyMultipassVisitorCallback(
+    sections: StrokeCountSection[],
+    chainIndex: number,
+    primitiveIndex: number,
+    componentIndex: number | undefined,
+    callback: StrokeCountMapMultipassVisitor,
+  ): boolean {
     const numSection = sections.length;
-    if (!callback.startSweeps(chainIndex, primitiveIndex, componentIndex)) return false;
-    if (componentIndex === undefined) {
-      // there are corresponding primitives directly at the section, chain, primitive index:
-      for (let pass = 0; ; pass++) {
-        if (!callback.startPass(pass))
-          break;
-        for (let sectionIndex = 0; sectionIndex < numSection; sectionIndex++)
-          if (!callback.visit(pass, sections[sectionIndex].chains[chainIndex].maps[primitiveIndex]))
-            return false;
-        if (!callback.endPass(pass))
+    if (!callback.startSweeps(chainIndex, primitiveIndex, componentIndex))
+      return false;
+    for (let pass = 0; ; pass++) {
+      if (!callback.startPass(pass))
+        break;
+      for (let sectionIndex = 0; sectionIndex < numSection; sectionIndex++) {
+        let map = sections[sectionIndex].chains[chainIndex].maps[primitiveIndex];
+        if (map.componentData && componentIndex !== undefined)
+          map = map.componentData[componentIndex];
+        if (!callback.visit(pass, map))
           return false;
       }
-    } else {
-      // there are corresponding primitives at the section, chain, primitive,componentIndex
-      // there are corresponding primitives directly at the section, chain, primitive index:
-      for (let pass = 0; ; pass++) {
-        if (!callback.startPass(pass))
-          break;
-        for (let sectionIndex = 0; sectionIndex < numSection; sectionIndex++) {
-          const componentData = sections[sectionIndex].chains[chainIndex].maps[primitiveIndex].componentData;
-          if (undefined === componentData || !callback.visit(pass, componentData[componentIndex]))
-            return false;
-        }
-        if (!callback.endPass(pass))
-          return false;
-      }
-
+      if (!callback.endPass(pass))
+        return false;
     }
-    if (!callback.endSweeps(chainIndex, primitiveIndex, componentIndex)) return false;
-    return true;
+    return callback.endSweeps(chainIndex, primitiveIndex, componentIndex);
   }
 
   /**
@@ -344,6 +341,9 @@ export class StrokeCountSection {
    * @param callback object to be notified during the traversal
    */
   public static runMultiPassVisitorAtCorrespondingPrimitives(sections: StrokeCountSection[], callback: StrokeCountMapMultipassVisitor): boolean {
+    const enforceCounts = false; // StrokeCountMap.numStroke counts are allowed to differ
+    if (!StrokeCountSection.areSectionsCompatible(sections, enforceCounts))
+      return false;
     const numChainPerSection = sections[0].chains.length;
     for (let chainIndex = 0; chainIndex < numChainPerSection; chainIndex++) {
       const numPrimitive = sections[0].chains[chainIndex].maps.length;
@@ -351,11 +351,11 @@ export class StrokeCountSection {
         const numComponent = sections[0].chains[chainIndex].maps[primitiveIndex].componentData?.length ?? 0;
         if (numComponent > 0) {
           for (let i = 0; i < numComponent; i++) {
-            if (!this.applyMultipassVisitorCallbackNoComponents(sections, chainIndex, primitiveIndex, i, callback))
+            if (!this.applyMultipassVisitorCallback(sections, chainIndex, primitiveIndex, i, callback))
               return false;
           }
         } else {
-          if (!this.applyMultipassVisitorCallbackNoComponents(sections, chainIndex, primitiveIndex, undefined, callback))
+          if (!this.applyMultipassVisitorCallback(sections, chainIndex, primitiveIndex, undefined, callback))
             return false;
         }
       }
@@ -369,15 +369,10 @@ export class StrokeCountSection {
    * @param sections array of per-section stroke count entries
    */
   public static enforceStrokeCountCompatibility(sections: StrokeCountSection[]): boolean {
-
     if (sections.length < 2)
       return true;
-    if (!StrokeCountSection.areSectionsCompatible(sections, false))
-      return false;
     const visitor = new StrokeCountMapVisitorApplyMaxCount();
-    this.runMultiPassVisitorAtCorrespondingPrimitives(sections, visitor);
-    return true;
-
+    return this.runMultiPassVisitorAtCorrespondingPrimitives(sections, visitor);
   }
   /**
    * * Confirm that all sections in the array have the same structure.
@@ -386,16 +381,13 @@ export class StrokeCountSection {
    * @param sections array of per-section stroke count entries
    */
   public static enforceCompatibleDistanceSums(sections: StrokeCountSection[]): boolean {
-
     if (sections.length < 2)
       return true;
-    if (!StrokeCountSection.areSectionsCompatible(sections, false))
-      return false;
     const visitor = new StrokeCountMapVisitorApplyMaxCurveLength();
-    this.runMultiPassVisitorAtCorrespondingPrimitives(sections, visitor);
+    if (!this.runMultiPassVisitorAtCorrespondingPrimitives(sections, visitor))
+      return false;
     this.remapa0a1WithinEachChain(sections);
     return true;
-
   }
 
   /**
