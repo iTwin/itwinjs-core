@@ -23,6 +23,9 @@ export class EventController {
     if (element === undefined)
       return;
 
+    // TODO when I set a breakpoint here, pointerSupported is always true
+    // This is the case in EmptyExample using both the Cesium and iTwin renderers, and also when I open a BlankConnection
+    // So do we need this? Should we just replace mouse events with pointer events? Will that be a breaking iTwin.js change?
     const pointerSupported = typeof window !== "undefined" && (window as any).PointerEvent !== undefined;
 
     // Put events on the parentDiv to allow us to stopPropagation of events to the view canvas when they are meant for a sibling of view canvas (markup canvas, for example).
@@ -33,23 +36,6 @@ export class EventController {
     }
 
     this.addDomListeners(["mouseover", "mouseout", "wheel", "touchstart", "touchend", "touchcancel", "touchmove"], element);
-
-    // if (element.parentElement) {
-    //   this.addDomListeners(["mousedown", "mouseup"], element.parentElement);
-    // }
-
-    // document.addEventListener("mousedown", (event) => {
-    //   event.preventDefault();
-    //   console.log("mouse down test", event);
-    // });
-    // document.addEventListener("mousemove", (event) => {
-    //   event.preventDefault();
-    //   console.log("mouse move test", event);
-    // });
-    // document.addEventListener("dblclick", (event) => {
-    //   event.preventDefault();
-    //   console.log("double click test", event);
-    // });
 
     element.oncontextmenu = element.onselectstart = () => false;
   }
@@ -71,10 +57,9 @@ export class EventController {
       ev.preventDefault();
       ToolAdmin.addEvent(ev, vp);
     };
-    const options: AddEventListenerOptions = { passive: false };
     domType.forEach((type) => {
-      element.addEventListener(type, listener, options);
-      this._removals.push(() => element.removeEventListener(type, listener, options));
+      element.addEventListener(type, listener, false);
+      this._removals.push(() => element.removeEventListener(type, listener, false));
     });
   }
 }
