@@ -210,7 +210,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
     fraction: number, result?: Plane3dByOriginAndVectors
   ): Plane3dByOriginAndVectors | undefined;
   /**
-   * Construct a frenet frame:
+   * Construct a Frenet frame:
    * * origin at the point on the curve
    * * x axis is unit vector along the curve (tangent)
    * * y axis is perpendicular and in the plane of the osculating circle. y axis is called "main normal"

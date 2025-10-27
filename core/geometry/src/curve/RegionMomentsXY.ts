@@ -32,7 +32,7 @@ import { UnionRegion } from "./UnionRegion";
  * @internal
  */
 export class RegionMomentsXY extends NullGeometryHandler {
-  private _activeMomentData?: MomentData;
+  private _activeMomentData?: MomentData; // defined only within a region context (cf. handleLoop)
   private _point0 = Point3d.create();
   private _point1 = Point3d.create();
   /**
