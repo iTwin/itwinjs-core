@@ -2,6 +2,12 @@
   "name": "@itwin/ecsql-common",
   "entries": [
     {
+      "version": "5.2.4",
+      "tag": "@itwin/ecsql-common_v5.2.4",
+      "date": "Fri, 24 Oct 2025 16:20:38 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.2.3",
       "tag": "@itwin/ecsql-common_v5.2.3",
       "date": "Thu, 16 Oct 2025 23:00:31 GMT",
