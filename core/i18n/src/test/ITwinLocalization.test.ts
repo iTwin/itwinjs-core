@@ -959,8 +959,6 @@ describe("ITwinLocalization", () => {
     // which means that the en-US locales do not get loaded.
     if (process.platform !== "linux") {
       it("english language list includes en and en-US", async () => {
-        // eslint-disable-next-line no-debugger
-        debugger;
         localization = new ITwinLocalization();
         await localization.initialize([]);
 
