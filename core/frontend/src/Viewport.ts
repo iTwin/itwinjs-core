@@ -50,7 +50,7 @@ import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
   DisclosedTileTreeSet, MapCartoRectangle, MapFeatureInfo, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerIndex, MapLayerInfoFromTileTree, MapTiledGraphicsProvider,
-  MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser, WmsMapLayerImageryProvider,
+  MapTileTreeReference, MapTileTreeScaleRangeVisibility, TileBoundingBoxes, TiledGraphicsProvider, TileTreeLoadStatus, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
@@ -912,13 +912,7 @@ export abstract class Viewport implements Disposable, TileUser {
     const imageryTreeRef = tileTreeRef?.getLayerImageryTreeRef(mapLayerIndex.index);
 
     if (imageryTreeRef?.treeOwner.loadStatus === TileTreeLoadStatus.Loaded) {
-      const range = imageryProvider.cartoRange;
-      // Validate range for NaN and infinite values
-      if (!WmsMapLayerImageryProvider.isRangeValid(range)) {
-        return undefined;
-      }
-
-      return range;
+      return imageryProvider.cartoRange;
     } else {
       return undefined;
     }

@@ -95,7 +95,38 @@ export abstract class MapLayerImageryProvider {
   /** @internal */
   public get useGeographicTilingScheme() { return false; }
 
-  public cartoRange?: MapCartoRectangle;
+  private _cartoRange?: MapCartoRectangle;
+
+  /** Validates a cartographic range for NaN and infinite values.
+   * @param range The cartographic range to validate.
+   * @returns true if the range is valid, false otherwise.
+   * @internal
+   */
+  public static isRangeValid(range: MapCartoRectangle | undefined): boolean {
+    if (!range) {
+      return false;
+    }
+
+    return !Number.isNaN(range.low.x) && !Number.isNaN(range.low.y) &&
+           !Number.isNaN(range.high.x) && !Number.isNaN(range.high.y) &&
+           Number.isFinite(range.low.x) && Number.isFinite(range.low.y) &&
+           Number.isFinite(range.high.x) && Number.isFinite(range.high.y);
+  }
+
+  /** Gets the cartographic range for this provider.
+   * Returns undefined if the range is invalid (contains NaN or infinite values).
+   * @internal
+   */
+  public get cartoRange(): MapCartoRectangle | undefined {
+    return MapLayerImageryProvider.isRangeValid(this._cartoRange) ? this._cartoRange : undefined;
+  }
+
+  /** Sets the cartographic range for this provider.
+   * @internal
+   */
+  public set cartoRange(range: MapCartoRectangle | undefined) {
+    this._cartoRange = range;
+  }
 
   /**
    * This value is used internally for various computations, this should not get overriden.
