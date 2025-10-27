@@ -178,7 +178,12 @@ export class ITwinLocalization implements Localization {
 
   /** @internal */
   public getLanguageList(): readonly string[] {
-    return this.i18next.languages;
+    return this.i18next.languages.map((lang) => {
+      if (lang.toLowerCase().endsWith("@posix")) {
+        return lang.slice(0, -6);
+      }
+      return lang;
+    });
   }
 
   /** override the language detected in the browser  */
