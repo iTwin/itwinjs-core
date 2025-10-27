@@ -5,7 +5,7 @@
 
 import { ViewDefinition3dProps } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
-import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion, OrthographicFrustum, PerspectiveFrustum, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler } from "@cesium/engine";
+import { Cartesian3, Clock, Color, createWorldImageryAsync, defined, Ellipsoid, Globe, ImageryLayer, Ion, IonWorldImageryStyle, OrthographicFrustum, PerspectiveFrustum, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler } from "@cesium/engine";
 import { createCesiumCameraProps } from "./CesiumCamera.js";
 
 /** Options to configure a Cesium scene.
@@ -94,7 +94,9 @@ export class CesiumScene {
       Ion.defaultAccessToken = cesiumKey;
     }
 
-    this._scene.imageryLayers.add(ImageryLayer.fromWorldImagery({}));
+    const imageryProvider = createWorldImageryAsync({ style: IonWorldImageryStyle.AERIAL_WITH_LABELS });
+    const imageryLayer = ImageryLayer.fromProviderAsync(imageryProvider);
+    this._scene.imageryLayers.add(imageryLayer);
 
     // Create PointPrimitiveCollection for direct primitive rendering
     this._pointCollection = new PointPrimitiveCollection();
@@ -112,7 +114,7 @@ export class CesiumScene {
 
     const onRenderError = function (_scene: any, error: any) {
       const title =
-        "An error occurred while rendering.  Rendering has stopped.";
+        "An error occurred while rendering. Rendering has stopped.";
       // eslint-disable-next-line no-console
       console.log(title, error);
     };
@@ -133,7 +135,6 @@ export class CesiumScene {
     IModelApp.viewManager.onViewOpen.addListener((vp) => {
 
       vp.onViewChanged.addListener((viewport) => {
-        // console.log("onViewChanged CesiumScene");
 
         const imodelEcef = viewport.iModel.ecefLocation;
         const cesiumCam = createCesiumCameraProps({

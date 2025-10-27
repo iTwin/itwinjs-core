@@ -102,6 +102,7 @@ export class ShapePrimitiveConverter extends PrimitiveConverter<ShapeCoordinates
     geometryType: string,
     shapeId: string,
     _index: number,
+    // @ts-expect-error unused parameter
     primitivesCollection: PrimitiveCollection,
     iModel?: IModelConnection,
     originalShapes?: ShapeCoordinates[],
