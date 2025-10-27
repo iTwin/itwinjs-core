@@ -116,7 +116,7 @@ export abstract class MapLayerImageryProvider {
   /** Gets or sets the cartographic range for this provider.
    * When setting, if the range is invalid (contains NaN or infinite values), it will be stored as undefined.
    * When getting, returns undefined if the range was set to an invalid value.
-   * @internal
+   * @beta
    */
   public get cartoRange(): MapCartoRectangle | undefined {
     return this._cartoRange;

@@ -5979,7 +5979,6 @@ export abstract class MapLayerImageryProvider {
     protected appendCustomParams(url: string): string;
     // @internal (undocumented)
     protected _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean>;
-    // @internal
     get cartoRange(): MapCartoRectangle | undefined;
     set cartoRange(range: MapCartoRectangle | undefined);
     // (undocumented)
