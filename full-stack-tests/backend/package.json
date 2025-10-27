@@ -56,7 +56,7 @@
     "@itwin/imodels-access-backend": "^5.2.1",
     "@itwin/imodels-client-authoring": "^5.8.1",
     "@itwin/itwins-client": "^1.6.1",
-    "@itwin/oidc-signin-tool": "^4.4.1",
+    "@itwin/oidc-signin-tool": "^5.0.2",
     "@itwin/perf-tools": "workspace:*",
     "azurite": "^3.34.0",
     "chai": "^4.3.10",

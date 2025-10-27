@@ -48,6 +48,10 @@
     "@types/node": "~20.17.0",
     "eslint": "^9.31.0",
     "internal-tools": "workspace:*",
+<<<<<<< HEAD
+=======
+    "playwright": "~1.56.1",
+>>>>>>> 51dbab2317 (Bump `playwright` version to `~1.56.1`. (#8684))
     "rimraf": "^6.0.1",
     "typescript": "~5.6.2",
     "vitest": "^3.0.6"
