@@ -355,10 +355,6 @@ jobs:
             env:
               GH_TOKEN: $(GITHUBTOKEN)
 
-      - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
-          - bash: 'git tag -a release/$(getVersion.version) -m "v$(getVersion.version)"'
-            displayName: Create git tag
-
       - bash: git fetch https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core refs/notes/commits:refs/notes/commits
         displayName: git fetch refs/notes/commits
         continueOnError: true
@@ -371,20 +367,20 @@ jobs:
 
       - bash: |
           latestCommit=$(git log -1 --format=%H)
-          echo "Applying DEPRECATION_COMMENT_CHANGES note to commit $latestCommit"
-          git notes append -m "DEPRECATION_COMMENT_CHANGES" $latestCommit
+          echo "Applying DEPRECATION_COMMENT_CHANGES_PR note to commit $latestCommit"
+          git notes append -m "DEPRECATION_COMMENT_CHANGES_PR" $latestCommit
         displayName: Mark commit for eslint rule changes
-        condition: eq(variables['deprecationCommentChangesMade'], 'true')
+        condition: eq(variables['needsPR'], 'true')
 
       - bash: |
           git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core refs/notes/commits
         displayName: git push refs/notes/commits
 
-      - bash: "git push --follow-tags https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(releaseBranchName)"
+      - bash: "git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(releaseBranchName)"
         displayName: Push version bump for release candidate
         condition: eq('${{ parameters.BumpType }}', 'releaseCandidate')
 
-      - bash: "git push --follow-tags https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:$(Build.SourceBranch)"
+      - bash: "git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:$(Build.SourceBranch)"
         displayName: Push version bump for non-release candidate
         condition: ne('${{ parameters.BumpType }}', 'releaseCandidate')
 
