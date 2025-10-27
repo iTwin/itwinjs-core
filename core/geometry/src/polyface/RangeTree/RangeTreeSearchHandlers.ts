@@ -287,8 +287,8 @@ export class TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach extend
    * * If indices are out of range, simply return.
    */
   public override processAppDataPair(indexA: number, indexB: number): void {
-    if (indexA < 0 || indexA >= this.contextA.lineString.points.length ||
-      indexB < 0 || indexB >= this.contextB.lineString.points.length)
+    if (indexA < 0 || indexA >= this.contextA.lineString.numEdges() ||
+      indexB < 0 || indexB >= this.contextB.lineString.numEdges())
         return;
     this.contextA.numPointTest++;
     const segA = TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentA =
