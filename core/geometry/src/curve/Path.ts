@@ -7,6 +7,7 @@
  * @module Curve
  */
 
+import { assert } from "@itwin/core-bentley";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { CurveChainWithDistanceIndex } from "./CurveChainWithDistanceIndex";
@@ -95,8 +96,8 @@ export class Path extends CurveChain {
         const mode1 = (i === this.children.length - 1) ? CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 1) : CurveExtendMode.None;
         if (child.closestPoint(spacePoint, [mode0, mode1], detailB)) {
           const smaller = CurveLocationDetail.chooseSmallerA(detailA, detailB);
-          if (undefined !== smaller)
-            detailA = result = smaller.clone(result);
+          assert(undefined !== smaller, "expect defined because detailB is always defined");
+          detailA = result = smaller.clone(result);
         }
       }
     }
