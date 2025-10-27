@@ -118,14 +118,14 @@ export abstract class MapLayerImageryProvider {
    * @internal
    */
   public get cartoRange(): MapCartoRectangle | undefined {
-    return MapLayerImageryProvider.isRangeValid(this._cartoRange) ? this._cartoRange : undefined;
+    return this._cartoRange;
   }
 
   /** Sets the cartographic range for this provider.
    * @internal
    */
   public set cartoRange(range: MapCartoRectangle | undefined) {
-    this._cartoRange = range;
+    this._cartoRange = range && MapLayerImageryProvider.isRangeValid(range) ? range : undefined;
   }
 
   /**
