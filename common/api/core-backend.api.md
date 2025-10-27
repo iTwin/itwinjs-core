@@ -6787,6 +6787,8 @@ export class TxnManager {
     readonly validationErrors: ValidationError[];
     // @alpha
     withIndirectTxnMode(callback: () => void): void;
+    // @alpha
+    withIndirectTxnModeAsync(callback: () => Promise<void>): Promise<void>;
 }
 
 // @alpha

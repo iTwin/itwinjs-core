@@ -13,7 +13,7 @@ import { CubicEvaluator } from "./CubicEvaluator";
 /**
  * Polish Cubic.
  * * Construction takes nominal length and end radius.
- * curve is  is y= m*x^3 with
+ * curve is y = m*x^3 with
  * * x any point on the x axis.
  * * m is (1/6RL).
  * * Lx = x length is along the axis, determined by inversion of a distance series at nominal length.

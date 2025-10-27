@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
 import * as fs from "fs";
+import { describe, expect, it } from "vitest";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { CurveCollection } from "../../curve/CurveCollection";
 import { CurveFactory } from "../../curve/CurveFactory";
@@ -35,7 +35,6 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
 import { Quadrature } from "../../numerics/Quadrature";
-import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
@@ -485,29 +484,35 @@ describe("TransitionSpiral3d", () => {
   it("SnapFunctions", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
+
     let x0 = 0;
-    const unitBox = Sample.createRectangle(0, 0, 1, 1, 0, true);
-    const outerLines = [LineSegment3d.createXYXY(-1, 0, 0, 0), LineSegment3d.createXYXY(1, 1, 2, 1)];
-    const yDF = 0;
-    const yF = 4;
+    const zeroOneLines = [LineSegment3d.createXYXY(-1, 0, 0, 0), LineSegment3d.createXYXY(1, 1, 2, 1)];
+    const zeroZeroLines = [LineSegment3d.createXYXY(-1, 0, 0, 0), LineSegment3d.createXYXY(1, 0, 2, 0)];
+    const zeroHalfLines = [LineSegment3d.createXYXY(-1, 0, 0, 0), LineSegment3d.createXYXY(1, 0.5, 2, 0.5)];
+    const yF = 0;
+    const yDF = 4;
     const yIF = 8;
     const snapFunctions = [
       new NormalizedClothoidTransition(),
       new NormalizedBiQuadraticTransition(),
       new NormalizedBlossTransition(),
       new NormalizedCosineTransition(),
-      new NormalizedSineTransition()];
+      new NormalizedSineTransition(),
+    ];
     for (const snap of snapFunctions) {
       if (Checker.noisy.spirals)
-        GeometryCoreTestIO.consoleLog(" Snap Function ", snap);
-      const lsF = LineString3d.create();
-      const lsDF = LineString3d.create();
-      const lsIF = LineString3d.create();
+        GeometryCoreTestIO.consoleLog("Snap Function: ", snap);
+      const lsF = LineString3d.create(); // fractions
+      const lsDF = LineString3d.create(); // derivatives
+      const lsIF = LineString3d.create(); // integrated areas
       ck.testCoordinate(0.5, snap.fractionToArea(1.0));
       const e0 = 1.0e-12;
-      // verify approach at 0.5
-      ck.testCoordinate(snap.fractionToCurvatureFraction(0.5 - e0), snap.fractionToCurvatureFraction(0.5 + e0), "continuous at 0.5");
-      ck.testCoordinate(0.5, snap.fractionToArea(1.0));
+      ck.testCoordinate(
+        snap.fractionToCurvatureFraction(0.5 - e0),
+        snap.fractionToCurvatureFraction(0.5 + e0),
+        "continuous at 0.5",
+      );
+      ck.testCoordinate(0.5, snap.fractionToArea(1.0), "integrated area from fraction 0 to 1 is expected to be 0.5");
       const df = 1.0 / 31.0;
       const derivativeTolerance = 1.0e-5;
       const e = 1.0e-3;
@@ -517,28 +522,28 @@ describe("TransitionSpiral3d", () => {
         lsF.packedPoints.pushXYZ(f, snap.fractionToCurvatureFraction(f), 0);
         lsDF.packedPoints.pushXYZ(f, (trueDerivative = snap.fractionToCurvatureFractionDerivative(f)), 0);
         lsIF.packedPoints.pushXYZ(f, snap.fractionToArea(f), 0);
-        // if cleanly inside the interval and NOT bracketing 0.5, do a central-difference derivative check ...
+        // if cleanly inside the interval and NOT bracketing 0.5, do a central-difference derivative check
         if (f - e >= 0 && f + e <= 1.0 && (f + e - 0.5) * (f - e - 0.5) > 0) {
-          const approximateDerivative = (snap.fractionToCurvatureFraction(f + e) - snap.fractionToCurvatureFraction(f - e)) / (2 * e);
+          const approximateDerivative =
+            (snap.fractionToCurvatureFraction(f + e) - snap.fractionToCurvatureFraction(f - e)) / (2 * e);
           const derivativeError = Math.abs(approximateDerivative - trueDerivative);
           maxDerivativeError = Math.max(derivativeError, maxDerivativeError);
           ck.testLE(Math.abs(approximateDerivative - trueDerivative), derivativeTolerance, "approximate derivative");
         }
-        // verify symmetry ...
+        // verify symmetry
         ck.testCoordinate(snap.fractionToCurvatureFraction(f), 1 - snap.fractionToCurvatureFraction(1 - f));
       }
       if (Checker.noisy.spirals)
         GeometryCoreTestIO.consoleLog(`maxDerivativeError ${maxDerivativeError}`);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, lsF, x0, yF);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, zeroOneLines, x0, yF);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, lsDF, x0, yDF);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, zeroZeroLines, x0, yDF);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, lsIF, x0, yIF);
-
-      // GeometryCoreTestIO.captureCloneGeometry(allGeometry, unitBox, x0, yF);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, outerLines, x0, yF);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, unitBox, x0, yDF);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, unitBox, x0, yIF);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, zeroHalfLines, x0, yIF);
       x0 += 5.0;
     }
+
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "SnapFunctions");
     expect(ck.getNumErrors()).toBe(0);
   });
@@ -595,6 +600,7 @@ describe("TransitionSpiral3d", () => {
   it("Types", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
+
     const x0 = 0;
     let y0 = 0;
     const dyA = 2;
@@ -603,31 +609,38 @@ describe("TransitionSpiral3d", () => {
     const length = bearingChange.radians / Geometry.meanCurvatureOfRadii(0, bigRadius);
     const dxB = length;
     const spirals: TransitionSpiral3d[] = [];
-    for (const spiralType of ["clothoid", "bloss", "biquadratic", "sine", "cosine",
-      "Czech", "Arema", "AustralianRailCorp"]) {
+    for (const spiralType of [
+      "clothoid", "bloss", "biquadratic", "sine", "cosine", "Czech", "Arema", "AustralianRailCorp",
+    ]) {
       for (const activeInterval of [Segment1d.create(0, 1), Segment1d.create(0.35, 0.75)]) {
         for (const radiusSign of [1.0, -1.0]) {
           for (const reverseRadii of [false, true]) {
             let r0, r1;
             if (reverseRadii) {
-              r0 = bigRadius; r1 = 0;
+              r0 = bigRadius;
+              r1 = 0;
             } else {
-              r0 = 0; r1 = bigRadius;
+              r0 = 0;
+              r1 = bigRadius;
             }
             r0 *= radiusSign;
             r1 *= radiusSign;
             for (const reverseAfterCreate of [false, true]) {
               const spiralA = IntegratedSpiral3d.createRadiusRadiusBearingBearing(
-                Segment1d.create(r0, r1), AngleSweep.createStartEndDegrees(0, 8),
-                activeInterval, Transform.createIdentity(), spiralType);
+                Segment1d.create(r0, r1),
+                AngleSweep.createStartEndDegrees(0, 8),
+                activeInterval,
+                Transform.createIdentity(),
+                spiralType,
+              );
               if (spiralA) {
                 if (reverseAfterCreate)
                   spiralA.reverseInPlace();
                 spirals.push(spiralA);
               } else {
-                const spiralB = DirectSpiral3d.createFromLengthAndRadius(spiralType, r0, r1,
-                  undefined, undefined, length,
-                  activeInterval, Transform.createIdentity());
+                const spiralB = DirectSpiral3d.createFromLengthAndRadius(
+                  spiralType, r0, r1, undefined, undefined, length, activeInterval, Transform.createIdentity(),
+                );
                 if (spiralB) {
                   if (reverseAfterCreate)
                     spiralB.reverseInPlace();
@@ -641,8 +654,7 @@ describe("TransitionSpiral3d", () => {
     }
     let spiralType0 = "";
     const optionsB = StrokeOptions.createForCurves();
-    optionsB.maxEdgeLength = 2.0;   // force a lot of strokes !
-
+    optionsB.maxEdgeLength = 2.0; // force a lot of strokes
     for (const spiral of spirals) {
       const spiralType1 = spiral.spiralType;
       if (spiralType1 !== spiralType0)
@@ -662,6 +674,7 @@ describe("TransitionSpiral3d", () => {
       }
       y0 += 25;
     }
+
     expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "Types");
   });
