@@ -153,7 +153,7 @@ We expose APIs and interfaces to support persistence of formats. Different from 
   "label": "Metric",
   "unitSystem": "metric",
   "formats": {
-    "AecUnits.LENGTH": {
+    "DefaultToolUnits.LENGTH": {
       "composite": {
         "includeZero": true,
         "spacer": "",
@@ -164,7 +164,7 @@ We expose APIs and interfaces to support persistence of formats. Different from 
       "type": "Decimal",
       "decimalSeparator": "."
     },
-    "AecUnits.Angle": {
+    "DefaultToolUnits.ANGLE": {
       "description": "degrees (labeled) 2 decimal places",
       "composite": {
         "includeZero": true,
@@ -191,7 +191,7 @@ We expose APIs and interfaces to support persistence of formats. Different from 
   "label": "Imperial",
   "unitSystem": "imperial",
   "formats": {
-    "AecUnits.LENGTH": {
+    "DefaultToolUnits.LENGTH": {
       "composite": {
         "includeZero": true,
         "spacer": "",
@@ -200,7 +200,7 @@ We expose APIs and interfaces to support persistence of formats. Different from 
       "precision": 4,
       "type": "Decimal",
     },
-    "AecUnits.Angle": {
+    "DefaultToolUnits.ANGLE": {
       "description": "degrees minutes seconds (labeled) 0 decimal places",
       "composite": {
         "includeZero": true,
@@ -220,23 +220,23 @@ We expose APIs and interfaces to support persistence of formats. Different from 
 
 ## Using KindOfQuantities to Retrieve Formats
 
-Building off of [FormatSet](#formatset), Tools and components that format quantities across applications should be linked to a [KindOfQuantity](../../bis/ec/kindofquantity.md) and a Persistence Unit. See [Domains](../../bis/domains/index.md) for available schemas, including `AecUnits` and `RoadRailUnits`, which define many `KindOfQuantity` values.
+Building off of [FormatSet](#formatset), Tools and components that format quantities across applications should be linked to a [KindOfQuantity](../../bis/ec/kindofquantity.md) and a Persistence Unit. See [Domains](../../bis/domains/index.md) for available schemas, including `DefaultToolUnits`, `CivilUnits`, and `AecUnits`, which define many `KindOfQuantity` values.
 
 The table below lists common measurements with their typical `KindOfQuantity` and Persistence Unit. This allows tools to request a default `KindOfQuantity` from [IModelApp.formatsProvider]($core-frontend) and a Persistence Unit from [IModelApp.quantityFormatter]($core-frontend) to create a `FormatterSpec` for quantity formatting.
 
 | Measurement  | Actual KindOfQuantity (EC Full Name) | Persistence Unit |
 | ------------- | ------------- | ------------- |
-| Length  |  AecUnits.LENGTH | Units.M |
-| Angle  | AecUnits.ANGLE  | Units.RAD |
-| Area  |  AecUnits.AREA | Units.SQ_M |
-| Volume  | AecUnits.VOLUME  | Units.CUB_M |
-| Latitude/Longitude | AecUnits.ANGLE | Units.RAD |
-| Coordinate | AecUnits.LENGTH_COORDINATE | Units.M |
-| Stationing | RoadRailUnits.STATION | Units.M |
-| Length (Survey Feet) | RoadRailUnits.LENGTH | Units.M |
-| Bearing | RoadRailUnits.BEARING | Units.RAD |
-| Weight | AecUnits.WEIGHT | Units.KG |
-| Time | AecUnits.TIME | Units.S |
+| Length  |  DefaultToolUnits.LENGTH | Units.M |
+| Angle  | DefaultToolUnits.ANGLE  | Units.RAD |
+| Area  |  DefaultToolUnits.AREA | Units.SQ_M |
+| Volume  | DefaultToolUnits.VOLUME  | Units.CUB_M |
+| Latitude/Longitude | DefaultToolUnits.ANGLE | Units.RAD |
+| Coordinate | DefaultToolUnits.LENGTH_COORDINATE | Units.M |
+| Stationing | CivilUnits.STATION | Units.M |
+| Length (Survey Feet) | CivilUnits.LENGTH | Units.M |
+| Length (Engineering) | AecUnits.LENGTH | Units.M |
+| Bearing | CivilUnits.BEARING | Units.RAD |
+| Time | DefaultToolUnits.TIME | Units.S |
 
 ## Examples of Usage
 
@@ -358,7 +358,7 @@ const formatSet = {
   label: "My Custom Formats",
   unitSystem: "metric",
   formats: {
-    "AecUnits.LENGTH": {
+    "DefaultToolUnits.LENGTH": {
       composite: {
         includeZero: true,
         spacer: " ",
@@ -386,10 +386,10 @@ const angleFormat: FormatDefinition = {
   type: "Decimal"
 };
 
-await provider.addFormat("AecUnits.ANGLE", angleFormat);
+await provider.addFormat("DefaultToolUnits.ANGLE", angleFormat);
 
 // The format set is automatically updated
-console.log(formatSet.formats["AecUnits.ANGLE"]); // Contains the angle format
+console.log(formatSet.formats["DefaultToolUnits.ANGLE"]); // Contains the angle format
 
 // Listen for format changes
 provider.onFormatsChanged.addListener((args) => {

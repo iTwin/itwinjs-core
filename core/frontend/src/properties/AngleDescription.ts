@@ -20,7 +20,7 @@ export class AngleDescription extends FormattedQuantityDescription {
     super({
       name: name ? name : defaultName,
       displayLabel: displayLabel ? displayLabel : IModelApp.localization.getLocalizedString("iModelJs:Properties.Angle"),
-      kindOfQuantityName: kindOfQuantityName ? kindOfQuantityName : "AecUnits.ANGLE",
+      kindOfQuantityName: kindOfQuantityName ? kindOfQuantityName : "DefaultToolsUnits.ANGLE",
       iconSpec
     })
   }

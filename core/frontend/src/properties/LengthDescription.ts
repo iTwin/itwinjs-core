@@ -20,7 +20,7 @@ export class LengthDescription extends FormattedQuantityDescription {
     super({
       name: name ? name : defaultName,
       displayLabel: displayLabel ? displayLabel : IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
-      kindOfQuantityName: kindOfQuantityName ? kindOfQuantityName : "AecUnits.LENGTH",
+      kindOfQuantityName: kindOfQuantityName ? kindOfQuantityName : "DefaultToolsUnits.LENGTH",
       iconSpec,
     });
   }
@@ -44,7 +44,7 @@ export class SurveyLengthDescription extends FormattedQuantityDescription {
     super({
       name: name ? name : defaultName,
       displayLabel: displayLabel ? displayLabel : IModelApp.localization.getLocalizedString("iModelJs:Properties.Length"),
-      kindOfQuantityName: kindOfQuantityName ? kindOfQuantityName : "AecUnits.LENGTH",
+      kindOfQuantityName: kindOfQuantityName ? kindOfQuantityName : "CivilUnits.LENGTH",
       iconSpec,
     });
   }
