@@ -868,7 +868,7 @@ export namespace BSplineCurveOps {
         if (undefined !== (poles = this.solveNearTridiagonal(options.fitPoints, alpha, beta, gamma))) {
           if (poles.length > 2) {
             const pole = poles.pop();
-            assert(pole !== undefined);
+            assert(pole !== undefined, "expect pop to succeed since length > 2");
             poles.unshift(pole); // shift poles right to line up with the knots
             for (let i = 0; i < options.order - 1; ++i)
               poles.push(poles[i].clone()); // periodically extend (the modern way)

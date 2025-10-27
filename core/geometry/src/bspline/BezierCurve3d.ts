@@ -164,10 +164,11 @@ export class BezierCurve3d extends BezierCurveBase {
     const order = this.order;
     if (order < 2) // guarantee the work arrays are allocated below
       return;
+    const productOrder = order - 1;
     if (!transform) {
-      this.allocateAndZeroBezierWorkData(order - 1, 0, 0);
+      this.allocateAndZeroBezierWorkData(productOrder, 0, 0);
       const bezier = this._workBezier;
-      assert(bezier !== undefined);
+      assert(bezier !== undefined, "expect defined because productOrder > 0");
       this.getPolePoint3d(0, this._workPoint0);
       rangeToExtend.extend(this._workPoint0);
       this.getPolePoint3d(order - 1, this._workPoint0);
@@ -183,11 +184,11 @@ export class BezierCurve3d extends BezierCurveBase {
         }
       }
     } else {
-      this.allocateAndZeroBezierWorkData(order - 1, order, 0);
+      this.allocateAndZeroBezierWorkData(productOrder, order, 0);
       const bezier = this._workBezier;
       const componentCoffs = this._workCoffsA;   // to hold transformed copy of x,y,z in turn.
-      assert(bezier !== undefined);
-      assert(componentCoffs !== undefined);
+      assert(bezier !== undefined, "expect defined because productOrder > 0");
+      assert(componentCoffs !== undefined, "expect defined because order > 0");
       this.getPolePoint3d(0, this._workPoint0);
       rangeToExtend.extendTransformedPoint(transform, this._workPoint0);
       this.getPolePoint3d(order - 1, this._workPoint0);

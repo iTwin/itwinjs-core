@@ -178,9 +178,8 @@ export class CutLoop {
   public static createCaptureWithReturnEdge(xyz: GrowableXYZArray): CutLoop {
     const result = new CutLoop(xyz);
     if (xyz.length >= 2) {
-      const firstPoint = xyz.front();
-      const lastPoint = xyz.back();
-      assert(firstPoint !== undefined && lastPoint !== undefined, "expect front/back() to succeed on nonempty array");
+      const firstPoint = xyz.getPoint3dAtUncheckedPointIndex(0);
+      const lastPoint = xyz.getPoint3dAtUncheckedPointIndex(xyz.length - 1);
       result.edge = Ray3d.createStartEnd(firstPoint, lastPoint);
     }
     return result;
@@ -282,8 +281,7 @@ export class CutLoopMergeContext {
    */
   private sortInputs() {
     if (this.inputLoops.length > 0 && this.inputLoops[0].xyz.length > 0) {
-      const point0 = this.inputLoops[0].xyz.front();
-      assert(point0 !== undefined, "expect front() to succeed on nonempty array");
+      const point0 = this.inputLoops[0].xyz.getPoint3dAtUncheckedPointIndex(0);
       const workPoint = Point3d.create();
       const point1 = Point3d.create();
       // point0 could be in the middle.   Find the most distant point ...

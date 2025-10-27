@@ -7,6 +7,7 @@
  * @module CartesianGeometry
  */
 
+import { assert } from "@itwin/core-bentley";
 import { Arc3d } from "../curve/Arc3d";
 import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { AxisOrder, Geometry } from "../Geometry";
@@ -306,8 +307,8 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     const d = this._distanceFromOrigin;
     const origin = Point3d.create(this._inwardNormal.x * d, this._inwardNormal.y * d, this._inwardNormal.z * d);
     const plane = Plane3dByOriginAndUnitNormal.createXYPlane();
-    // inwardNormal should be normalized, will not return undefined
-    Plane3dByOriginAndUnitNormal.create(origin, this._inwardNormal, plane);
+    const result = Plane3dByOriginAndUnitNormal.create(origin, this._inwardNormal, plane);
+    assert(result !== undefined, "this._inwardNormal should be normalized by constructors. Fix caller if this fails.");
     return plane;
   }
   /**
