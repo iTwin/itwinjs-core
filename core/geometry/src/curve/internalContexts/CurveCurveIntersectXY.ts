@@ -170,11 +170,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     let globalFractionA, globalFractionB;
     let globalFractionA1, globalFractionB1;
     let isInterval = false;
-    if (undefined !== intervalDetails &&
-      intervalDetails.detailA.isInterval() &&
-      intervalDetails.detailB.isInterval() &&
-      intervalDetails.detailA.fraction1 &&
-      intervalDetails.detailB.fraction1) {
+    if (intervalDetails && intervalDetails.detailA.isInterval() && intervalDetails.detailB.isInterval()) {
       isInterval = true;
       globalFractionA = Geometry.interpolate(fractionA0, intervalDetails.detailA.fraction, fractionA1);
       globalFractionB = Geometry.interpolate(fractionB0, intervalDetails.detailB.fraction, fractionB1);
