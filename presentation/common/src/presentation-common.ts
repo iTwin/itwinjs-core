@@ -230,6 +230,7 @@ export {
   combineFieldNames,
   parseCombinedFieldNames,
 } from "./presentation-common/content/ContentTraverser.js";
+export { createContentFormatter } from "./presentation-common/content/PropertyValueFormatter.js";
 export {
   ElementProperties,
   ElementPropertiesCategoryItem,
