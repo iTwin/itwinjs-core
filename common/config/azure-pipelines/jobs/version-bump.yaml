@@ -113,6 +113,14 @@ jobs:
           # manually to be the most recent previous major release
           # e.g. if this release is `release/5.0.x`, value in `gather-docs.yaml`
           # should be `release/4.<whatever_last_minor_release_version_was>.x`
+          # additionally if major version bump, the `mergify.yml` also needs to be edited manually
+          # if this release is `release/5.0.x`, the branches under actions/backport should be updated to look like:
+          #     branches:
+          #       # current minor release branch
+          #       - "release/5.0.x"
+          #       # previous major release branch
+          #       - `release/4.<whatever_last_minor_release_version_was>.x`
+
           if [ $((previousMinorVersion)) -lt 0 ]
           then
             echo "This is is a major release. Edit \"gather-docs.yaml\" manually."
@@ -254,8 +262,23 @@ jobs:
         displayName: Get new version number
         name: getVersion
 
-      # When creating a minor release, the NextVersion.md need to be cleared and the contents placed into a {Version Number}.md file
       - ${{ if eq(parameters.BumpType, 'minor') }}:
+
+          # When creating a minor release, the mergify.yml file needs to be updated to change the hardcoded branch names for security fixes
+          - bash: |
+              mergifyPath=".github/mergify.yml"
+              version=$(echo $(getVersion.version) | sed 's/\([0-9]*\.[0-9]*\)\.[0-9]*/\1.x/')
+              releaseBranch="release/$version"
+              majorVersion=$(echo $version | cut -d. -f1)
+              echo "Updating mergify.yml to backport to $releaseBranch for security fixes"
+
+              # Update the backporting release branch matching the major version number of the new version
+              sed -i "/\"release\/$majorVersion\.[0-9]*\.x\"/ s|\"release/$majorVersion\.[0-9]*\.x\"|\"$releaseBranch\"|" "$mergifyPath"
+
+            displayName: Update mergify.yml for new minor release
+            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
+
+          # When creating a minor release, the NextVersion.md need to be cleared and the contents placed into a {Version Number}.md file
           - powershell: |
               $sourceFile = 'docs/changehistory/NextVersion.md'
 
@@ -332,10 +355,6 @@ jobs:
             env:
               GH_TOKEN: $(GITHUBTOKEN)
 
-      - ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}:
-          - bash: 'git tag -a release/$(getVersion.version) -m "v$(getVersion.version)"'
-            displayName: Create git tag
-
       - bash: git fetch https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core refs/notes/commits:refs/notes/commits
         displayName: git fetch refs/notes/commits
         continueOnError: true
@@ -348,20 +367,20 @@ jobs:
 
       - bash: |
           latestCommit=$(git log -1 --format=%H)
-          echo "Applying DEPRECATION_COMMENT_CHANGES note to commit $latestCommit"
-          git notes append -m "DEPRECATION_COMMENT_CHANGES" $latestCommit
+          echo "Applying DEPRECATION_COMMENT_CHANGES_PR note to commit $latestCommit"
+          git notes append -m "DEPRECATION_COMMENT_CHANGES_PR" $latestCommit
         displayName: Mark commit for eslint rule changes
-        condition: eq(variables['deprecationCommentChangesMade'], 'true')
+        condition: eq(variables['needsPR'], 'true')
 
       - bash: |
           git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core refs/notes/commits
         displayName: git push refs/notes/commits
 
-      - bash: "git push --follow-tags https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(releaseBranchName)"
+      - bash: "git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(releaseBranchName)"
         displayName: Push version bump for release candidate
         condition: eq('${{ parameters.BumpType }}', 'releaseCandidate')
 
-      - bash: "git push --follow-tags https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:$(Build.SourceBranch)"
+      - bash: "git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:$(Build.SourceBranch)"
         displayName: Push version bump for non-release candidate
         condition: ne('${{ parameters.BumpType }}', 'releaseCandidate')
 

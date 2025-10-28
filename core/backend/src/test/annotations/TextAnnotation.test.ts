@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Angle, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { AnnotationTextStyleProps, FieldRun, FractionRun, Placement2dProps, Placement3dProps, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { AnnotationTextStyleProps, FieldRun, FontType, FractionRun, Placement2dProps, Placement3dProps, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { AnnotationTextStyle, parseTextAnnotationData, TEXT_ANNOTATION_JSON_VERSION, TEXT_STYLE_SETTINGS_JSON_VERSION, TextAnnotation2d, TextAnnotation2dCreateArgs, TextAnnotation3d, TextAnnotation3dCreateArgs } from "../../annotations/TextAnnotationElement";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -20,7 +20,7 @@ import { TextAnnotationUsesTextStyleByDefault } from "../../annotations/ElementD
 import { layoutTextBlock, TextStyleResolver } from "../../annotations/TextBlockLayout";
 import { appendTextAnnotationGeometry } from "../../annotations/TextAnnotationGeometry";
 import { IModelElementCloneContext } from "../../IModelElementCloneContext";
-
+import * as fs from "fs";
 
 function mockIModel(): IModelDb {
   const iModel: Pick<IModelDb, "fonts" | "computeRangesForText" | "forEachMetaData"> = {
@@ -564,7 +564,7 @@ describe("TextAnnotation element", () => {
         }
 
         describe("within a single iModel", () => {
-          it("leaves property hosts intact", () => {
+          it("leaves property hosts intact", async () => {
             const textBlock = TextBlock.create({
               children: [{
                 children: [{
@@ -597,7 +597,7 @@ describe("TextAnnotation element", () => {
             context.remapElement("0xabc", "0xdef");
             context.remapElement(createElement2dArgs.model, createElement2dArgs.model);
 
-            const props = context.cloneElement(elem) as TextAnnotation2dProps;
+            const props = await context.cloneElement(elem) as TextAnnotation2dProps;
             expect(props.textAnnotationData).not.to.be.undefined;
             const anno = TextAnnotation.fromJSON(parseTextAnnotationData(props.textAnnotationData)?.data);
             const para = anno.textBlock.children[0];
@@ -606,27 +606,27 @@ describe("TextAnnotation element", () => {
 
           });
 
-          it("leaves default text style intact", () => {
-            function clone(styleId: Id64String | undefined, expectedStyleId: Id64String | undefined): void {
+          it("leaves default text style intact", async () => {
+            async function clone(styleId: Id64String | undefined, expectedStyleId: Id64String | undefined): Promise<void> {
               const elem = insertStyledElement(styleId, imodel);
               const context = new IModelElementCloneContext(imodel);
               context.remapElement(createElement2dArgs.model, createElement2dArgs.model);
-              const props = context.cloneElement(elem) as TextAnnotation2dProps;
+              const props = await context.cloneElement(elem) as TextAnnotation2dProps;
               expect(props.defaultTextStyle?.id).to.equal(expectedStyleId);
 
               if (styleId) {
                 // Even an explicit remapping is ignored when cloning within a single iModel
                 // (per the examples set by most other elements, excluding RenderMaterial).
                 context.remapElement(styleId, "0x99887");
-                const props2 = context.cloneElement(elem) as TextAnnotation2dProps;
+                const props2 = await context.cloneElement(elem) as TextAnnotation2dProps;
                 expect(props2.defaultTextStyle?.id).to.equal(expectedStyleId);
               }
             }
 
-            clone(seedStyleId, seedStyleId);
-            clone(undefined, undefined);
-            clone("0x12345", "0x12345");
-            clone(Id64.invalid, undefined);
+            await clone(seedStyleId, seedStyleId);
+            await clone(undefined, undefined);
+            await clone("0x12345", "0x12345");
+            await clone(Id64.invalid, undefined);
           });
         });
 
@@ -649,7 +649,7 @@ describe("TextAnnotation element", () => {
 
           after(() => dstDb.close());
 
-          it("remaps property hosts", () => {
+          it("remaps property hosts", async () => {
             const textBlock = TextBlock.create({
               children: [{
                 children: [{
@@ -682,7 +682,7 @@ describe("TextAnnotation element", () => {
             context.remapElement("0xabc", "0xdef");
             context.remapElement(createElement2dArgs.model, dstElemArgs.model);
 
-            const props = context.cloneElement(elem) as TextAnnotation2dProps;
+            const props = await context.cloneElement(elem) as TextAnnotation2dProps;
             expect(props.textAnnotationData).not.to.be.undefined;
             const anno = TextAnnotation.fromJSON(parseTextAnnotationData(props.textAnnotationData)?.data);
             const para = anno.textBlock.children[0];
@@ -690,15 +690,15 @@ describe("TextAnnotation element", () => {
             expect((para.children[1] as FieldRun).propertyHost.elementId).to.equal("0xdef");
           });
 
-          it("sets default text style to undefined if source style does not exist", () => {
+          it("sets default text style to undefined if source style does not exist", async () => {
             const elem = insertStyledElement("0x12345", imodel);
             const context = new IModelElementCloneContext(imodel, dstDb);
             context.remapElement(createElement2dArgs.model, dstElemArgs.model);
-            const props = context.cloneElement(elem) as TextAnnotation2dProps;
+            const props = await context.cloneElement(elem) as TextAnnotation2dProps;
             expect(props.defaultTextStyle).to.be.undefined;
           });
 
-          it("remaps to an existing text style with the same code if present", () => {
+          it("remaps to an existing text style with the same code if present", async () => {
             const dstStyleId = createAnnotationTextStyle(dstDb, dstDefModel, "test", {font: { name: "Karla" } }).insert();
             expect(dstStyleId).not.to.equal(seedStyleId);
 
@@ -706,32 +706,32 @@ describe("TextAnnotation element", () => {
             const context = new IModelElementCloneContext(imodel, dstDb);
             context.remapElement(createElement2dArgs.model, dstElemArgs.model);
 
-            const props = context.cloneElement(srcElem) as TextAnnotation2dProps;
+            const props = await context.cloneElement(srcElem) as TextAnnotation2dProps;
             expect(props.defaultTextStyle?.id).to.equal(dstStyleId);
           });
 
-          it("throws an error if definition model is not remapped", () => {
+          it("throws an error if definition model is not remapped", async () => {
             const srcElem = insertStyledElement(seedStyleId2, imodel);
             const context = new IModelElementCloneContext(imodel, dstDb);
             context.remapElement(createElement2dArgs.model, dstElemArgs.model);
 
-            expect(() => context.cloneElement(srcElem)).to.throw("Invalid target model");
+            await expect(context.cloneElement(srcElem)).to.be.rejectedWith("Invalid target model");
           });
 
-          it("imports default text style if necessary", () => {
+          it("imports default text style if necessary", async () => {
             const srcElem = insertStyledElement(seedStyleId2, imodel);
             const context = new IModelElementCloneContext(imodel, dstDb);
             context.remapElement(createElement2dArgs.model, dstElemArgs.model);
             context.remapElement(seedDefinitionModelId, dstDefModel);
 
-            const props = context.cloneElement(srcElem) as TextAnnotation2dProps;
+            const props = await context.cloneElement(srcElem) as TextAnnotation2dProps;
             const dstStyleId = props.defaultTextStyle!.id;
             expect(dstStyleId).not.to.be.undefined;
             expect(dstStyleId).not.to.equal(seedStyleId2);
             expect(dstDb.elements.tryGetElement(dstStyleId)).not.to.be.undefined;
           });
 
-          it("remaps multiple occurrences of same style to same Id", () => {
+          it("remaps multiple occurrences of same style to same Id", async () => {
             const srcStyleId = createAnnotationTextStyle(imodel, seedDefinitionModelId, "styyyle", {font: { name: "Karla" } }).insert();
             const srcElem1 = insertStyledElement(srcStyleId, imodel);
             const srcElem2 = insertStyledElement(srcStyleId, imodel);
@@ -741,8 +741,8 @@ describe("TextAnnotation element", () => {
             context.remapElement(createElement2dArgs.model, dstElemArgs.model);
             context.remapElement(seedDefinitionModelId, dstDefModel);
 
-            const props1 = context.cloneElement(srcElem1) as TextAnnotation2dProps;
-            const props2 = context.cloneElement(srcElem2) as TextAnnotation2dProps;
+            const props1 = await context.cloneElement(srcElem1) as TextAnnotation2dProps;
+            const props2 = await context.cloneElement(srcElem2) as TextAnnotation2dProps;
             expect(props1.defaultTextStyle).not.to.be.undefined;
             expect(props1.defaultTextStyle?.id).not.to.equal(srcStyleId);
             expect(props2.defaultTextStyle?.id).to.equal(props1.defaultTextStyle?.id);
@@ -750,7 +750,7 @@ describe("TextAnnotation element", () => {
             const context2 = new IModelElementCloneContext(imodel, dstDb);
             context2.remapElement(createElement2dArgs.model, dstElemArgs.model);
             context2.remapElement(seedDefinitionModelId, dstDefModel);
-            const props3 = context2.cloneElement(srcElem3) as TextAnnotation2dProps;
+            const props3 = await context2.cloneElement(srcElem3) as TextAnnotation2dProps;
             expect(props3.defaultTextStyle?.id).to.equal(props1.defaultTextStyle?.id);
           });
         });
@@ -959,6 +959,63 @@ describe("AnnotationTextStyle", () => {
       })).to.throw(`Migration for settings from version 0.0.1 to ${TEXT_STYLE_SETTINGS_JSON_VERSION} failed.`);
     });
   })
+
+  describe("onCloned", () => {
+    let targetDb: StandaloneDb;
+    let targetDefModel: string;
+
+    before(async () => {
+      // The source and target iModel will both contain the Karla font family.
+      targetDb = await createIModel("AnnotationTextStyleTargetDb");
+      const jobSubjectId = createJobSubjectElement(targetDb, "Job").insert();
+      targetDefModel = DefinitionModel.insert(targetDb, jobSubjectId, "Definition");
+
+      // Embed a font into the source iModel that doesn't exist in the target iModel.
+      const shxName = IModelTestUtils.resolveFontFile("Cdm.shx");
+      const shxBlob = fs.readFileSync(shxName);
+      const shxFile = FontFile.createFromShxFontBlob({ blob: shxBlob, familyName: "Cdm" });
+      await imodel.fonts.embedFontFile({ file: shxFile });
+    });
+
+    after(() => targetDb.close());
+
+    it("embeds font into target Db if not already embedded", async () => {
+      const getFontCounts = () => {
+        let files = 0;
+        for (const _ of targetDb.fonts.queryEmbeddedFontFiles()) {
+          files++;
+        }
+
+        let families = 0;
+        for (const _ of targetDb.fonts.queryMappedFamilies()) {
+          families++;
+        }
+
+        return { files, families };
+      }
+
+      const initialCounts = getFontCounts();
+
+      const karlaStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "karla-style", TextStyleSettings.fromJSON({ font: { name: "Karla" }}));
+      karlaStyle.insert();
+      const cdmStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "cdm-style", TextStyleSettings.fromJSON({ font: { name: "Cdm", type: FontType.Shx }}));
+      cdmStyle.insert();
+
+      const context = new IModelElementCloneContext(imodel, targetDb);
+      context.remapElement(seedDefinitionModel, targetDefModel);
+
+      expect(targetDb.fonts.findId({ name: "Karla" })).not.to.be.undefined;
+      await context.cloneElement(karlaStyle);
+      expect(getFontCounts()).to.deep.equal(initialCounts);
+
+      expect(targetDb.fonts.findId({ name: "Cdm", type: FontType.Shx })).to.be.undefined;
+      await context.cloneElement(cdmStyle);
+      expect(targetDb.fonts.findId({ name: "Cdm", type: FontType.Shx })).not.to.be.undefined;
+      const finalCounts = getFontCounts();
+      expect(finalCounts.files).greaterThan(initialCounts.files);
+      expect(finalCounts.families).greaterThan(initialCounts.families);
+    });
+  });
 });
 
 describe("appendTextAnnotationGeometry", () => {

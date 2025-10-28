@@ -218,8 +218,8 @@ export class RenderMaterialElement extends DefinitionElement {
   }
 
   /** @beta */
-  protected static override onCloned(context: IModelElementCloneContext, sourceProps: ElementProps, targetProps: ElementProps) {
-    super.onCloned(context, sourceProps, targetProps);
+  protected static override async onCloned(context: IModelElementCloneContext, sourceProps: ElementProps, targetProps: ElementProps) {
+    await super.onCloned(context, sourceProps, targetProps);
     for (const mapName in sourceProps.jsonProperties?.materialAssets?.renderMaterial?.Map ?? {}) {
       if (typeof mapName !== "string")
         continue;

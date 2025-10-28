@@ -1,6 +1,19 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Fri, 10 Oct 2025 14:50:50 GMT and should not be manually modified.
+This log was last generated on Fri, 24 Oct 2025 16:22:31 GMT and should not be manually modified.
+
+## 5.2.4
+Fri, 24 Oct 2025 16:20:38 GMT
+
+_Version update only_
+
+## 5.2.3
+Thu, 16 Oct 2025 23:00:31 GMT
+
+### Updates
+
+- Ensure viewport contents update when the view's category selector changes.
+- Increase logo card width in attribution popup to fix Google Maps image clipping
 
 ## 5.2.2
 Fri, 10 Oct 2025 14:49:15 GMT
