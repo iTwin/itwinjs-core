@@ -11,6 +11,7 @@ publish: false
     - [Enhancements](#enhancements)
   - [@itwin/presentation-common](#itwinpresentation-common)
     - [Additions](#additions)
+  - [Electron 39 support](#electron-39-support)
 
 ## @itwin/core-quantity
 
@@ -41,3 +42,7 @@ publish: false
     unitSystem: IModelApp.quantityFormatter.activeUnitSystem,
   });
   ```
+
+## Electron 39 support
+
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 39](https://www.electronjs.org/blog/electron-39-0).
