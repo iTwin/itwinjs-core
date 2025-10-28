@@ -14,7 +14,27 @@ import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import * as sinon from "sinon";
 
-class AsyncEditCommand extends EditCommand {
+class BaseAsyncEditCommand extends EditCommand {
+  public static override commandId = "Test.BaseAsyncEditCommand";
+
+  public testFunction(): string {
+    return this.ctor.commandId;
+  }
+
+  public async callMockIPCMethod(methodName: string): Promise<any> {
+    const cmd = EditCommandAdmin.activeCommand;
+    if (!cmd)
+      throw new Error(`No active command`);
+
+    const func = (cmd as any)[methodName];
+    if (typeof func !== "function")
+      throw new Error(`Method ${methodName} not found on ${cmd.ctor.commandId}`);
+
+    return func.call(cmd);
+  }
+}
+
+class AsyncEditCommand extends BaseAsyncEditCommand {
   public static override commandId = "Test.AsyncEditCommand";
 
   private modelId: string;
@@ -34,14 +54,6 @@ class AsyncEditCommand extends EditCommand {
 
   public set createdElementIds(elementIds: Id64String[]) {
     this.createdElements = elementIds;
-  }
-
-  public override async onStart(): Promise<any> {
-    await BeDuration.fromSeconds(this.operationDelay).wait();
-  }
-
-  public override async requestFinish(): Promise<string> {
-    return "done";
   }
 
   private async performInsertOperation(elementProps: TestPhysicalObjectProps) {
@@ -73,6 +85,10 @@ class AsyncEditCommand extends EditCommand {
     }
     this.iModel.saveChanges();
   }
+}
+
+class AnotherAsyncEditCommand extends BaseAsyncEditCommand {
+  public static override commandId = "Test.AnotherAsyncEditCommand";
 }
 
 describe.only("Scope-Safe Editing API", () => {
@@ -147,6 +163,21 @@ describe.only("Scope-Safe Editing API", () => {
     }
     return existingCount;
   }
+
+  it.only("race condition with non-awaited edit command calls", async () => {
+    const asyncEditCommand = new AsyncEditCommand(imodel, physicalModelId, spatialCategoryId);
+    const anotherAsyncEditCommand = new AnotherAsyncEditCommand(imodel);
+
+    EditCommandAdmin.runCommand(asyncEditCommand);
+    EditCommandAdmin.runCommand(anotherAsyncEditCommand);
+
+    await BeDuration.fromMilliseconds(10).wait();
+    const returnedValue1 = await asyncEditCommand.callMockIPCMethod("testFunction");
+    const returnedValue2 = await anotherAsyncEditCommand.callMockIPCMethod("testFunction");
+
+    expect(returnedValue1).to.equal(AsyncEditCommand.commandId);
+    expect(returnedValue2).to.equal(AnotherAsyncEditCommand.commandId);
+  });
 
   it("sync abandonChanges during active edit command", async () => {
     // Start a long-running edit command
