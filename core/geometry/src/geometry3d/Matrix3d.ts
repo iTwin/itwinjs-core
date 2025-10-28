@@ -6,6 +6,7 @@
  * @module CartesianGeometry
  */
 
+import { assert } from "@itwin/core-bentley";
 import { AxisIndex, AxisOrder, BeJSONFunctions, Geometry, StandardViewIndex } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Angle } from "./Angle";
@@ -493,12 +494,12 @@ export class Matrix3d implements BeJSONFunctions {
    * This is for use by matrix * matrix multiplications which need to be sure the member is there to be
    * filled with method-specific content.
    */
-  private createInverseCoffsWithZeros(): this is { inverseCoffs: Float64Array, inverseState: InverseMatrixState } {
+  private createInverseCoffsWithZeros(): this is { inverseCoffs: Float64Array } {
     if (!this.inverseCoffs) {
       this.inverseState = InverseMatrixState.unknown;
       this.inverseCoffs = new Float64Array(9);
     }
-    return this.inverseCoffs !== undefined && this.inverseState !== undefined;
+    return this.inverseCoffs !== undefined;
   }
   /**
    * Copy the transpose of the coffs to the inverseCoffs.
@@ -1326,10 +1327,8 @@ export class Matrix3d implements BeJSONFunctions {
     } else if (!scaleXIsZero && !scaleYIsZero) { // rank 2
       column[0].scaleInPlace(1 / scale.x);
       column[1].scaleInPlace(1 / scale.y);
-      const crossProduct = column[0].unitCrossProduct(column[1], column[2]);
-      if (!crossProduct)
-        return false;
-      column[2] = crossProduct;
+      const cross = column[0].unitCrossProduct(column[1], column[2]);
+      assert(cross !== undefined, "expect defined cross product because columns are perpendicular and non-zero");
       matrixV.setColumns(column[0], column[1], column[2]);
     } else if (!scaleXIsZero) { // rank 1
       matrixV = Matrix3d.createRigidHeadsUp(column[0], AxisOrder.XYZ, matrixV); // preserve column0
@@ -2098,7 +2097,7 @@ export class Matrix3d implements BeJSONFunctions {
   ): void {
     if (coffA && coffB && this.createInverseCoffsWithZeros()) {
       this.inverseState = InverseMatrixState.inverseStored;
-      f(coffA, coffB, this.inverseCoffs); // call function f (which is provided by user) to compute the inverse.
+      f(coffA, coffB, this.inverseCoffs);
     } else {
       this.inverseState = InverseMatrixState.unknown;
     }
@@ -2268,13 +2267,12 @@ export class Matrix3d implements BeJSONFunctions {
     if (result === undefined) {
       result = Matrix3d.createIdentity();
     }
-    if (result.createInverseCoffsWithZeros()) {
-      PackedMatrix3dOps.copy(this.coffs, result.inverseCoffs);
-      PackedMatrix3dOps.copy(this.inverseCoffs, result.coffs);
-      result.inverseState = this.inverseState;
-      return result;
-    }
-    return undefined;
+    result.createInverseCoffsWithZeros();
+    assert(result.inverseCoffs !== undefined, "expect inverseCoffs defined by createInverseCoffsWithZeros");
+    PackedMatrix3dOps.copy(this.coffs, result.inverseCoffs);
+    PackedMatrix3dOps.copy(this.inverseCoffs, result.coffs);
+    result.inverseState = this.inverseState;
+    return result;
   }
   /**
    * Take the dot product of a row (specified by `rowStartA`) of `coffA` and `columnStartB` of `coffB`.
