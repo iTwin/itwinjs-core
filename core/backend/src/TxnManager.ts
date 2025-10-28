@@ -408,8 +408,8 @@ export class RebaseManager {
       if (!nativeDb.isReadonly) {
         nativeDb.saveChanges("Merge.");
       }
-      if (BriefcaseManager.containsRestorePoint(this._iModel,  BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)) {
-        BriefcaseManager.dropRestorePoint(this._iModel,  BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
+      if (BriefcaseManager.containsRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)) {
+        BriefcaseManager.dropRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
       }
     } catch (err) {
       nativeDb.pullMergeRebaseAbortTxn();
