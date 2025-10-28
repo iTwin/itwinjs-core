@@ -1,6 +1,6 @@
 {
   "name": "@itwin/rpcinterface-full-stack-tests",
-  "version": "5.3.0-dev.23",
+  "version": "5.3.0-dev.24",
   "description": "Test the full iTwin.js Core stack (frontend and backend) using standard RPC interfaces",
   "license": "MIT",
   "scripts": {
@@ -47,7 +47,7 @@
     "@itwin/core-quantity": "workspace:*",
     "@itwin/certa": "workspace:*",
     "@itwin/eslint-plugin": "5.2.2-dev.2",
-    "@itwin/oidc-signin-tool": "^4.4.1",
+    "@itwin/oidc-signin-tool": "^5.0.2",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
     "@itwin/service-authorization": "^1.0.0",

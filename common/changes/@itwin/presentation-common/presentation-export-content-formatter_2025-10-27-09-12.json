@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Added `createContentFormatter` factory function that creates a content formatter for formatting `Content` and its contained `Item` objects.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}
