@@ -2418,16 +2418,16 @@ describe("CurveCurveIntersectXY", () => {
     const directSpirals = [];
     const length = 180;
     for (const directSpiralType of [
-      "JapaneseCubic",
       "Arema",
+      "JapaneseCubic",
       "ChineseCubic",
+      "WesternAustralian",
       "HalfCosine",
       "AustralianRailCorp",
-      "WesternAustralian",
       // TODO: enable below lines after https://github.com/iTwin/itwinjs-backlog/issues/1693 is resolved
       // "Czech",
-      // "MXCubicAlongArc",
       // "Italian",
+      // "MXCubicAlongArc",
       // "Polish",
     ]) {
       for (const transform of [Transform.createIdentity(), rotationTransform]) { // rotated spirals have odd indices

@@ -85,11 +85,12 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
   public static readonly defaultSpiralType = "clothoid";
   /** Use the integrated function to return an angle at fractional position. */
   public globalFractionToBearingRadians(fraction: number): number {
+    // calculate area under curvature curve from 0 to fraction and add it to start radian to get angle at the given fraction
     const areaFraction = this._evaluator.fractionToArea(fraction);
-    const dx = this._arcLength01;
+    const arcLength = this._arcLength01;
     return this.bearing01.startRadians
-      + areaFraction * dx * this._curvature01.signedDelta()
-      + fraction * this._curvature01.x0 * dx;
+      + fraction * arcLength * this._curvature01.x0
+      + areaFraction * arcLength * this._curvature01.signedDelta();
   }
   /** Use the integrated function to return an angle at fractional position. */
   public globalFractionToCurvature(fraction: number): number {

@@ -101,9 +101,6 @@ export class NormalizedClothoidTransition extends NormalizedTransition {
 export class NormalizedBlossTransition extends NormalizedTransition {
   // bloss curvature is x^2 (3 - 2x)
   // derivative 6x (1-x)
-  // 2nd derivative 6 - 12x
-  // derivatives zero at 0,1
-  // inflection zero at 0.5
   // integral is x^3 (1-x/2)
   constructor() {
     super();
@@ -183,6 +180,8 @@ export class NormalizedSineTransition extends NormalizedTransition {
   // sine transition curvature is x - sin(2 pi x) / (2 pi)
   // derivative 1 - cos(2 pi x)
   // integral x^2 / 2 + (cos(2 pi x) - 1) / (4 pi^2)
+  // note: integral or If is anti-derivative of curvature function and it's chosen such that If(0) = 0.
+  // this is to support the "normalization" of the snap functions, so that fractionToArea(1) = 1/2.
   constructor() {
     super();
   }
