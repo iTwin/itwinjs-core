@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fixed test cases",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
