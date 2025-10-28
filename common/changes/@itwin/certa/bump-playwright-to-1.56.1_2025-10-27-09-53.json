@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/certa",
+      "comment": "Bump `playwright` version to `~1.56.1`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/certa"
+}

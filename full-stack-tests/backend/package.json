@@ -59,7 +59,7 @@
     "@itwin/imodels-client-authoring": "^6.0.2",
     "@itwin/object-storage-azure": "^3.0.4",
     "@itwin/itwins-client": "^1.6.1",
-    "@itwin/oidc-signin-tool": "^4.4.1",
+    "@itwin/oidc-signin-tool": "^5.0.2",
     "@itwin/perf-tools": "workspace:*",
     "azurite": "^3.35.0",
     "chai": "^4.3.10",
