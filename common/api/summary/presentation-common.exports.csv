@@ -57,6 +57,7 @@ public;type;ContentSpecification
 public;interface;ContentSpecificationBase
 public;enum;ContentSpecificationTypes
 public;type;ContentUpdateInfo
+public;function;createContentFormatter
 public;function;createFieldHierarchies
 public;type;CustomizationRule
 public;interface;CustomNodeSpecification
