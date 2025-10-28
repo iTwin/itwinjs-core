@@ -82,7 +82,7 @@ export class TransitionConditionalProperties {
   /** Examine which properties are defined and compute the (single) undefined.
    * @returns Return true if the input state had precisely one undefined member.
    */
-  public tryResolveAnySingleUnknown(): boolean {
+  public tryResolveAnySingleUnknown(): this is {radius0: number, radius1: number, bearing0: Angle, bearing1: Angle, curveLength: number} {
     if (this.getIsValidCompleteSet())
       return true;
     if (this.bearing0 && this.bearing1) {

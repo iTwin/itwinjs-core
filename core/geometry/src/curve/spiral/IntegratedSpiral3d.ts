@@ -24,6 +24,7 @@ import { GeometryHandler, IStrokeHandler } from "../../geometry3d/GeometryHandle
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
 import { GeometryQuery } from "../GeometryQuery";
+import { assert } from "@itwin/core-bentley";
 /**
  * An IntegratedSpiral3d is a curve defined by integrating its curvature.
  * * The first integral of curvature (with respect to distance along the curve) is the bearing angle (in radians)
@@ -96,11 +97,8 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
     const fraction = this.activeFractionInterval.fractionToPoint(activeFraction);
     return this.bearing01.startRadians + fraction * this._arcLength01 * (this._curvature01.x0 + 0.5 * fraction * (this._curvature01.x1 - this._curvature01.x0));
   }
-  /** Return the curvature at given fraction of the active interval ...
-   * * The `undefined` result is to match the abstract class -- it cannot actually occur.
-   */
-  public override fractionToCurvature(activeFraction: number): number | undefined {
-    // BUG? active interval
+  /** Return the curvature at given fraction of the active interval. */
+  public override fractionToCurvature(activeFraction: number): number {
     return this._curvature01.fractionToPoint(this.activeFractionInterval.fractionToPoint(activeFraction));
   }
 
@@ -226,8 +224,6 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
       return undefined;
     if (fractionInterval === undefined)
       fractionInterval = Segment1d.create(0, 1);
-    if (!data.bearing0 || !data.bearing1 || !data.curveLength)
-      return undefined;
     return new IntegratedSpiral3d(
       spiralType,
       evaluator,
@@ -341,17 +337,15 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
       this._activeStrokes = this._globalStrokes.clone();
     this._activeStrokes.reverseInPlace();
   }
-  /**
-   * Evaluate curve point with respect to fraction.
-   * If calculation failed, a zero Point3d is returned.
-   */
+  /** Evaluate curve point with respect to fraction. */
   public fractionToPoint(activeFraction: number, result?: Point3d): Point3d {
     const targetGlobalFraction = this.activeFractionInterval.fractionToPoint(activeFraction);
     const numStrokes = this._globalStrokes.packedPoints.length - 1;
+    assert(numStrokes > 0, "expect constructor to populate nonzero global strokes");
+    if (numStrokes < 1)
+      return Point3d.createZero(result); // trust but verify
     if (activeFraction > 1.0) {
-      result = this._globalStrokes.packedPoints.back(result);
-      if (undefined === result)
-        result = Point3d.createZero();
+      result = this._globalStrokes.packedPoints.getPoint3dAtUncheckedPointIndex(numStrokes, result);
       const integrationStep = 1.0 / numStrokes;
       let currentGlobalFraction = 1.0;
       let nextGlobalFraction = currentGlobalFraction + integrationStep;
@@ -362,9 +356,7 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
       }
       this.fullSpiralIncrementalIntegral(result, currentGlobalFraction, targetGlobalFraction, true);
     } else if (activeFraction < 0.0) {
-      result = this._globalStrokes.packedPoints.front(result);
-      if (undefined === result)
-        result = Point3d.createZero();
+      result = this._globalStrokes.packedPoints.getPoint3dAtUncheckedPointIndex(0, result);
       const integrationStep = 1.0 / numStrokes;
       let currentGlobalFraction = 0.0;
       let nextGlobalFraction = currentGlobalFraction - integrationStep;
@@ -376,12 +368,11 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
       this.fullSpiralIncrementalIntegral(result, currentGlobalFraction, targetGlobalFraction, true);
     } else {
       const clampedGlobalFraction = Geometry.clampToStartEnd(targetGlobalFraction, 0, 1);
-      const index0 = Math.trunc(clampedGlobalFraction * numStrokes); // This indexes the point to the left of the query.
+      const index0 = Math.trunc(clampedGlobalFraction * numStrokes);
+      assert(0 <= index0 && index0 <= numStrokes, "expect valid index0, at left of containing stroke interval");
       const globalFraction0 = index0 / numStrokes;
       result = this._globalStrokes.packedPoints.getPoint3dAtUncheckedPointIndex(index0, result);
-      // GeometryCoreTestIO.consoleLog(" fractionToPoint ", activeFraction, this.activeFractionInterval, "( global integration " + globalFraction0 + " to " + globalFraction + ")", index0);
       this.fullSpiralIncrementalIntegral(result, globalFraction0, targetGlobalFraction, true);
-
     }
     return result;
   }

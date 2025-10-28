@@ -241,8 +241,8 @@ describe("TransitionSpiral3d", () => {
     const bearingA = spiralA.fractionToBearingRadians(f0);
     const bearingB = spiralB.fractionToBearingRadians(0.0);
     ck.testCoordinate(bearingA, bearingB, `spiral bearing at fraction " + [${f0}, 0.0]`);
-    const curvatureA = spiralA.fractionToCurvature(f0)!;
-    const curvatureB = spiralB.fractionToCurvature(0.0)!;
+    const curvatureA = spiralA.fractionToCurvature(f0);
+    const curvatureB = spiralB.fractionToCurvature(0.0);
     ck.testCoordinate(curvatureA, curvatureB, `spiral curvature at fraction [${f0}, 0.0]`);
 
     expect(ck.getNumErrors()).toBe(0);
@@ -823,7 +823,7 @@ describe("TransitionSpiral3d", () => {
           if (spiral instanceof IntegratedSpiral3d) {
             {
               GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral.activeStrokes, x0, y0);
-              const c1 = spiral.fractionToCurvature(1.0)!;
+              const c1 = spiral.fractionToCurvature(1.0);
               ck.testCoordinate(radius, Math.abs(1 / c1), "confirm curvature at junction.");
               ck.testCoordinate(lengthArray[spiralCounter], spiral.curveLength(), " confirm spiralLength");
               spiralCounter++;
