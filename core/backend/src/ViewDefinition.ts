@@ -312,8 +312,8 @@ export abstract class ViewDefinition extends DefinitionElement {
   };
 
   /** @beta */
-  protected static override onCloned(context: IModelElementCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void {
-    super.onCloned(context, sourceElementProps, targetElementProps);
+  protected static override async onCloned(context: IModelElementCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): Promise<void> {
+    await super.onCloned(context, sourceElementProps, targetElementProps);
     if (context.isBetweenIModels && targetElementProps.jsonProperties && targetElementProps.jsonProperties.viewDetails) {
       const acsId: Id64String = Id64.fromJSON(targetElementProps.jsonProperties.viewDetails.acs);
       if (Id64.isValidId64(acsId)) {
