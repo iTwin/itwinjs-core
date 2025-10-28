@@ -37,13 +37,8 @@
     "express": "^4.21.2",
     "jsonc-parser": "~2.0.3",
     "lodash": "^4.17.21",
-<<<<<<< HEAD
     "mocha": "^10.2.0",
-    "playwright": "~1.47.1",
-=======
-    "mocha": "^11.1.0",
     "playwright": "~1.56.1",
->>>>>>> 51dbab2317 (Bump `playwright` version to `~1.56.1`. (#8684))
     "source-map-support": "^0.5.6",
     "yargs": "^17.4.0"
   },

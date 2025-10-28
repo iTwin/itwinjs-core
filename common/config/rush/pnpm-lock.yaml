@@ -576,7 +576,7 @@ importers:
       fuse.js: ^3.3.0
       glob: ^10.3.12
       meshoptimizer: ~0.20.0
-      playwright: ~1.47.1
+      playwright: ~1.56.1
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
       typemoq: ^2.1.0
@@ -607,12 +607,12 @@ importers:
       '@itwin/core-quantity': link:../quantity
       '@itwin/eslint-plugin': 5.2.1_aud4m2gc3le6icaewhydfwpu6m
       '@types/chai-as-promised': 7.1.0
-      '@vitest/browser': 3.0.5_jow2yrj3635kzsaot46gbcjabm
+      '@vitest/browser': 3.0.5_rcgq7ve5umsaeyjctxd52dv5fe
       '@vitest/coverage-v8': 3.0.5_7nfnwwlr4g6v22ym2aqrq4d5ay
       cpx2: 3.0.0
       eslint: 9.31.0
       glob: 10.3.12
-      playwright: 1.47.1
+      playwright: 1.56.1
       rimraf: 3.0.2
       source-map-loader: 4.0.0_webpack@5.76.0
       typemoq: 2.1.0
@@ -1254,7 +1254,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': 5.2.1
-      '@itwin/oidc-signin-tool': ^4.4.1
+      '@itwin/oidc-signin-tool': ^5.0.2
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
@@ -1276,7 +1276,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 5.2.1_aud4m2gc3le6icaewhydfwpu6m
-      '@itwin/oidc-signin-tool': 4.4.1_67wltvhdskk2oee2c3z2o4tfly
+      '@itwin/oidc-signin-tool': 5.0.2_mdtbcqczpmeuv6yjzfaigjndwi
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       '@types/node': 18.16.20
@@ -1304,7 +1304,7 @@ importers:
       '@itwin/eslint-plugin': 5.2.1
       '@itwin/imodel-transformer': ^0.4.2
       '@itwin/itwins-client': ^1.6.1
-      '@itwin/oidc-signin-tool': ^4.4.1
+      '@itwin/oidc-signin-tool': ^5.0.2
       '@itwin/service-authorization': ^1.0.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
@@ -1344,7 +1344,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 5.2.1_aud4m2gc3le6icaewhydfwpu6m
-      '@itwin/oidc-signin-tool': 4.4.1_67wltvhdskk2oee2c3z2o4tfly
+      '@itwin/oidc-signin-tool': 5.0.2_mdtbcqczpmeuv6yjzfaigjndwi
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/fs-extra': 4.0.7
@@ -1582,7 +1582,7 @@ importers:
       '@itwin/imodels-access-backend': ^5.2.1
       '@itwin/imodels-client-authoring': ^5.8.1
       '@itwin/itwins-client': ^1.6.1
-      '@itwin/oidc-signin-tool': ^4.4.1
+      '@itwin/oidc-signin-tool': ^5.0.2
       '@itwin/perf-tools': workspace:*
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
@@ -1632,7 +1632,7 @@ importers:
       '@itwin/imodels-access-backend': 5.2.1_wj555zckjupkhkzyssqqpl4sei
       '@itwin/imodels-client-authoring': 5.8.1
       '@itwin/itwins-client': 1.6.1
-      '@itwin/oidc-signin-tool': 4.4.1_67wltvhdskk2oee2c3z2o4tfly
+      '@itwin/oidc-signin-tool': 5.0.2_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/perf-tools': link:../../tools/perf-tools
       azurite: 3.34.0
       chai: 4.3.10
@@ -1689,7 +1689,7 @@ importers:
       '@itwin/imodels-client-management': ^5.8.1
       '@itwin/itwins-client': ^1.6.1
       '@itwin/object-storage-core': ^2.3.0
-      '@itwin/oidc-signin-tool': ^4.4.1
+      '@itwin/oidc-signin-tool': ^5.0.2
       '@itwin/reality-data-client': ^1.2.1
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
@@ -1767,7 +1767,7 @@ importers:
       '@itwin/eslint-plugin': 5.2.1_aud4m2gc3le6icaewhydfwpu6m
       '@itwin/itwins-client': 1.6.1
       '@itwin/object-storage-core': 2.3.0
-      '@itwin/oidc-signin-tool': 4.4.1_67wltvhdskk2oee2c3z2o4tfly
+      '@itwin/oidc-signin-tool': 5.0.2_mdtbcqczpmeuv6yjzfaigjndwi
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/fs-extra': 4.0.7
@@ -1820,7 +1820,7 @@ importers:
       '@itwin/imodels-client-authoring': ^5.8.1
       '@itwin/imodels-client-management': ^5.8.1
       '@itwin/itwins-client': ^1.6.1
-      '@itwin/oidc-signin-tool': ^4.4.1
+      '@itwin/oidc-signin-tool': ^5.0.2
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@types/chai': 4.3.1
@@ -1863,7 +1863,7 @@ importers:
       '@itwin/imodels-access-frontend': 5.2.1_ueafa4slb6ohrhyf7kbp6egmha
       '@itwin/imodels-client-authoring': 5.8.1
       '@itwin/imodels-client-management': 5.8.1
-      '@itwin/oidc-signin-tool': 4.4.1_67wltvhdskk2oee2c3z2o4tfly
+      '@itwin/oidc-signin-tool': 5.0.2_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
       chai: 4.3.10
@@ -2100,7 +2100,7 @@ importers:
       '@itwin/imodels-client-authoring': ^5.8.1
       '@itwin/imodels-client-management': ^5.8.1
       '@itwin/itwins-client': ^1.6.1
-      '@itwin/oidc-signin-tool': ^4.4.1
+      '@itwin/oidc-signin-tool': ^5.0.2
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -2144,7 +2144,7 @@ importers:
       '@itwin/imodels-access-frontend': 5.2.1_ueafa4slb6ohrhyf7kbp6egmha
       '@itwin/imodels-client-authoring': 5.8.1
       '@itwin/imodels-client-management': 5.8.1
-      '@itwin/oidc-signin-tool': 4.4.1_67wltvhdskk2oee2c3z2o4tfly
+      '@itwin/oidc-signin-tool': 5.0.2_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
       '@itwin/service-authorization': 1.0.0_67wltvhdskk2oee2c3z2o4tfly
@@ -2468,7 +2468,7 @@ importers:
       '@itwin/imodels-access-frontend': ^5.2.1
       '@itwin/imodels-client-authoring': ^5.8.1
       '@itwin/imodels-client-management': ^5.8.1
-      '@itwin/oidc-signin-tool': ^4.4.1
+      '@itwin/oidc-signin-tool': ^5.0.2
       '@itwin/perf-tools': workspace:*
       '@itwin/reality-data-client': ^1.2.1
       '@types/body-parser': ^1.17.0
@@ -2519,7 +2519,7 @@ importers:
       '@itwin/imodels-access-frontend': 5.2.1_ueafa4slb6ohrhyf7kbp6egmha
       '@itwin/imodels-client-authoring': 5.8.1
       '@itwin/imodels-client-management': 5.8.1
-      '@itwin/oidc-signin-tool': 4.4.1_67wltvhdskk2oee2c3z2o4tfly
+      '@itwin/oidc-signin-tool': 5.0.2_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/reality-data-client': 1.2.1_mdtbcqczpmeuv6yjzfaigjndwi
       body-parser: 1.20.3
     devDependencies:
@@ -2954,7 +2954,7 @@ importers:
       lodash: ^4.17.21
       mocha: ^10.2.0
       nyc: ^15.1.0
-      playwright: ~1.47.1
+      playwright: ~1.56.1
       rimraf: ^3.0.2
       source-map-support: ^0.5.6
       typescript: ~5.6.2
@@ -2966,7 +2966,7 @@ importers:
       jsonc-parser: 2.0.3
       lodash: 4.17.21
       mocha: 10.2.0
-      playwright: 1.47.1
+      playwright: 1.56.1
       source-map-support: 0.5.6
       yargs: 17.4.0
     devDependencies:
@@ -4301,6 +4301,7 @@ packages:
       '@itwin/core-geometry': link:../../core/geometry
       flatbuffers: 1.12.0
       js-base64: 3.6.1
+    dev: false
 
   /@itwin/electron-authorization/0.19.5_4jfpcc4pjfgh7oq6n76ilnmnfq:
     resolution: {integrity: sha512-2mOXbUYesxrdcMEM38klfQNvagbARlXYGVUtVzJ6CrwYdeHfMDB47DymYQ1tp/McTyKKfvN6nHBOTLbCmS7lng==}
@@ -4518,22 +4519,20 @@ packages:
       - debug
     dev: false
 
-  /@itwin/oidc-signin-tool/4.4.1_67wltvhdskk2oee2c3z2o4tfly:
-    resolution: {integrity: sha512-E/Mg8RyKKOasZ+H36UFLgjlIbpYIpw1og/506ml0x9BkiCwfnkFb8YtrCWbgvWeV0sWLg+VwjiB8E3HN1QGd/A==}
+  /@itwin/oidc-signin-tool/5.0.2_mdtbcqczpmeuv6yjzfaigjndwi:
+    resolution: {integrity: sha512-71rD1C1YTfz+PkXrxg0yp9XXavfvi2DAXfebR7/8QSAfhCeK3bnhWlGJExoE8l/SfVbOjbjPrfpNTS9kugqddw==}
     requiresBuild: true
     peerDependencies:
-      '@itwin/core-bentley': ^3.3.0 || ^4.0.0
+      '@itwin/core-bentley': ^5.0.0
     dependencies:
       '@itwin/certa': link:../../tools/certa
       '@itwin/core-bentley': link:../../core/bentley
-      '@itwin/core-common': 4.10.13_67wltvhdskk2oee2c3z2o4tfly
-      '@itwin/service-authorization': 1.2.3_67wltvhdskk2oee2c3z2o4tfly
-      '@playwright/test': 1.48.2
+      '@itwin/service-authorization': 2.1.0_mdtbcqczpmeuv6yjzfaigjndwi
+      '@playwright/test': 1.56.1
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      oidc-client-ts: 2.4.1
+      oidc-client-ts: 3.3.0
     transitivePeerDependencies:
-      - '@itwin/core-geometry'
       - supports-color
 
   /@itwin/presentation-shared/1.2.1:
@@ -4570,18 +4569,16 @@ packages:
       - supports-color
     dev: false
 
-  /@itwin/service-authorization/1.2.3_67wltvhdskk2oee2c3z2o4tfly:
-    resolution: {integrity: sha512-KoN7Y60Mbmeq5r5U3wfmDu9oAyCo00cb73zR/wwBVWFpdYUfDQbQKHofS0TrXLANO9uva3BdwH5L+S41szXYmg==}
+  /@itwin/service-authorization/2.1.0_mdtbcqczpmeuv6yjzfaigjndwi:
+    resolution: {integrity: sha512-UHaXyJOgpzAjo2aBX1PDcr2t7GnDx76TQjYAamUPhG58w0BFhQ69LFt9c6mdXi2BZBdYHNc6xIijGGjoHDGz1A==}
     peerDependencies:
-      '@itwin/core-bentley': ^3.3.0 || ^4.0.0
+      '@itwin/core-bentley': ^5.0.0
     dependencies:
       '@itwin/core-bentley': link:../../core/bentley
-      '@itwin/core-common': 4.10.13_67wltvhdskk2oee2c3z2o4tfly
       got: 12.6.1
       jsonwebtoken: 9.0.2
-      jwks-rsa: 2.1.5
+      jwks-rsa: 3.2.0
     transitivePeerDependencies:
-      - '@itwin/core-geometry'
       - supports-color
 
   /@itwin/unified-selection/1.1.1:
@@ -4860,6 +4857,7 @@ packages:
   /@panva/asn1.js/1.0.0:
     resolution: {integrity: sha512-UdkG3mLEqXgnlKsWanWcgb6dOjUzJ+XC5f+aWw30qrtjxeNUSfKX1cd5FBzOaXQumoe9nIqeZUvrRJS03HCCtw==}
     engines: {node: '>=10.13.0'}
+    dev: false
 
   /@pkgjs/parseargs/0.11.0:
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -4871,12 +4869,12 @@ packages:
     resolution: {integrity: sha512-fdDH1LSGfZdTH2sxdpVMw31BanV28K/Gry0cVFxaNP77neJSkd82mM8ErPNYs9e+0O7SdHBLTDzDgwUuy18RnQ==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
 
-  /@playwright/test/1.48.2:
-    resolution: {integrity: sha512-54w1xCWfXuax7dz4W2M9uw0gDyh+ti/0K/MxcCUxChFh37kkdxPdfZDw5QBbuPUJHr1CiHJ1hXgSs+GgeQc5Zw==}
+  /@playwright/test/1.56.1:
+    resolution: {integrity: sha512-vSMYtL/zOcFpvJCW71Q/OEGQb7KYBPAdKh35WNSkaZA75JlAO8ED8UN6GUNTm3drWomcbcqRPFqQbLae8yBTdg==}
     engines: {node: '>=18'}
     hasBin: true
     dependencies:
-      playwright: 1.48.2
+      playwright: 1.56.1
 
   /@polka/url/1.0.0-next.29:
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
@@ -5505,6 +5503,13 @@ packages:
     resolution: {integrity: sha512-272FMnFGzAVMGtu9tkr29hRL6bZj4Zs1KZNeHLnKqAvp06tAIcarTMwOh8/8bz4FmKRcMxZhZNeUAQsNLoiPhg==}
     dependencies:
       '@types/node': 18.16.20
+    dev: false
+
+  /@types/jsonwebtoken/9.0.10:
+    resolution: {integrity: sha512-asx5hIG9Qmf/1oStypjanR7iKTv0gXQ1Ov/jfrX6kS/EO0OFni8orbmGCn0672NHR3kXHwpAwR+B368ZGN/2rA==}
+    dependencies:
+      '@types/ms': 2.1.0
+      '@types/node': 18.16.20
 
   /@types/keyv/3.1.4:
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
@@ -5540,7 +5545,6 @@ packages:
 
   /@types/ms/2.1.0:
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
-    dev: false
 
   /@types/multiparty/0.0.31:
     resolution: {integrity: sha512-cAFkeGKH55zJiYUjvXznQ3IdShi15VPcaDYxTm9a/lvLhD5dZgSrS+FmQvdS1/vFVIEolFGM1eZCB1avVpiN3w==}
@@ -5909,7 +5913,7 @@ packages:
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
     dev: false
 
-  /@vitest/browser/3.0.5_jow2yrj3635kzsaot46gbcjabm:
+  /@vitest/browser/3.0.5_rcgq7ve5umsaeyjctxd52dv5fe:
     resolution: {integrity: sha512-5WAWJoucuWcGYU5t0HPBY03k9uogbUEIu4pDmZHoB4Dt+6pXqzDbzEmxGjejZSitSYA3k/udYfuotKNxETVA3A==}
     peerDependencies:
       playwright: '*'
@@ -5930,7 +5934,7 @@ packages:
       '@vitest/utils': 3.0.5
       magic-string: 0.30.17
       msw: 2.7.3_typescript@5.6.2
-      playwright: 1.47.1
+      playwright: 1.56.1
       sirv: 3.0.1
       tinyrainbow: 2.0.0
       vitest: 3.0.5_@vitest+browser@3.0.5
@@ -5954,7 +5958,7 @@ packages:
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 1.0.2
-      '@vitest/browser': 3.0.5_jow2yrj3635kzsaot46gbcjabm
+      '@vitest/browser': 3.0.5_rcgq7ve5umsaeyjctxd52dv5fe
       debug: 4.4.0
       istanbul-lib-coverage: 3.2.2
       istanbul-lib-report: 3.0.1
@@ -7579,6 +7583,7 @@ packages:
 
   /crypto-js/4.2.0:
     resolution: {integrity: sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==}
+    dev: false
 
   /crypto-random-string/2.0.0:
     resolution: {integrity: sha512-v1plID3y9r/lPhviJ1wrXpLeyUIGAZ2SHNYTEapm7/8A9nLPoyvVp3RK/EPFqn5kEznyWgYZNsRtYYIWbuG8KA==}
@@ -8989,6 +8994,7 @@ packages:
 
   /flatbuffers/1.12.0:
     resolution: {integrity: sha512-c7CZADjRcl6j0PlvFy0ZqXQ67qSEZfrVPynmnL+2zPc+NtMvrF8Y0QceMo7QqnSPc7+uWjUIAbvCQ5WIKlMVdQ==}
+    dev: false
 
   /flatbush/4.4.0:
     resolution: {integrity: sha512-cf6G+sfy/+/FLH7Ls1URQ5GCRlXgwgqUZiEsMNrMZqb3Us3EkKmzUlKbnyoBy/4wI4oLJ+8cyCQoKJIVm92Fmg==}
@@ -10299,9 +10305,14 @@ packages:
     engines: {node: '>=10.13.0 < 13 || >=13.7.0'}
     dependencies:
       '@panva/asn1.js': 1.0.0
+    dev: false
+
+  /jose/4.15.9:
+    resolution: {integrity: sha512-1vUQX+IdDMVPj4k8kOxgUqlcK518yluMuGZwqlr44FS1ppZB/5GWh4rZG89erpOBOJjU/OBsnCVFfapsRz6nEA==}
 
   /js-base64/3.6.1:
     resolution: {integrity: sha512-Frdq2+tRRGLQUIQOgsIGSCd1VePCS2fsddTG5dTCqR0JHgltXWfsxnY0gIXPoMeRmdom6Oyq+UMOFg5suduOjQ==}
+    dev: false
 
   /js-md4/0.3.2:
     resolution: {integrity: sha512-/GDnfQYsltsjRswQhN9fhv3EMw2sCpUdrdxyWDOUK7eyD++r3gRhzgiQgc/x4MAv2i1iuQ4lxO5mvqM3vj4bwA==}
@@ -10522,6 +10533,20 @@ packages:
       lru-memoizer: 2.3.0
     transitivePeerDependencies:
       - supports-color
+    dev: false
+
+  /jwks-rsa/3.2.0:
+    resolution: {integrity: sha512-PwchfHcQK/5PSydeKCs1ylNym0w/SSv8a62DgHJ//7x2ZclCoinlsjAfDxAAbpoTPybOum/Jgy+vkvMmKz89Ww==}
+    engines: {node: '>=14'}
+    dependencies:
+      '@types/express': 4.17.20
+      '@types/jsonwebtoken': 9.0.10
+      debug: 4.4.0
+      jose: 4.15.9
+      limiter: 1.1.5
+      lru-memoizer: 2.3.0
+    transitivePeerDependencies:
+      - supports-color
 
   /jws/3.2.2:
     resolution: {integrity: sha512-YHlZCB6lMTllWDtSPHz/ZXTsi8S00usEV6v1tjq8tOUZzw7DpSDWVXjXDre6ed1w/pd495ODpHZYSdkRTsa0HA==}
@@ -10538,6 +10563,11 @@ packages:
 
   /jwt-decode/3.1.2:
     resolution: {integrity: sha512-UfpWE/VZn0iP50d8cz9NrZLM9lSWhcJ+0Gt/nm4by88UL+J1SiKN8/5dkjMmbEzwL2CAe+67GsegCbIKtbp75A==}
+    dev: false
+
+  /jwt-decode/4.0.0:
+    resolution: {integrity: sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==}
+    engines: {node: '>=18'}
 
   /keyv/3.1.0:
     resolution: {integrity: sha512-9ykJ/46SN/9KPM/sichzQ7OvXyGDYKGTaDlKMGCAlg2UK8KRy4jb0d8sFc+0Tt0YYnThq8X2RZgCg74RPxgcVA==}
@@ -11545,6 +11575,13 @@ packages:
     dependencies:
       crypto-js: 4.2.0
       jwt-decode: 3.1.2
+    dev: false
+
+  /oidc-client-ts/3.3.0:
+    resolution: {integrity: sha512-t13S540ZwFOEZKLYHJwSfITugupW4uYLwuQSSXyKH/wHwZ+7FvgHE7gnNJh1YQIZ1Yd1hKSRjqeXGSUtS0r9JA==}
+    engines: {node: '>=18'}
+    dependencies:
+      jwt-decode: 4.0.0
 
   /oidc-token-hash/5.1.0:
     resolution: {integrity: sha512-y0W+X7Ppo7oZX6eovsRkuzcSM40Bicg2JEJkDJ4irIt1wsYAP5MLSNv+QAogO8xivMffw/9OvV3um1pxXgt1uA==}
@@ -11956,31 +11993,17 @@ packages:
     resolution: {integrity: sha512-fnWVljUchTro6RiCFvCXBbNhJc2NijN7oIQxbwsyL0buWJPG85v81ehlHI9fXrJsMNgTofEoWIQeClKpgxFLrg==}
     dev: true
 
-  /playwright-core/1.47.1:
-    resolution: {integrity: sha512-i1iyJdLftqtt51mEk6AhYFaAJCDx0xQ/O5NU8EKaWFgMjItPVma542Nh/Aq8aLCjIJSzjaiEQGW/nyqLkGF1OQ==}
+  /playwright-core/1.56.1:
+    resolution: {integrity: sha512-hutraynyn31F+Bifme+Ps9Vq59hKuUCz7H1kDOcBs+2oGguKkWTU50bBWrtz34OUWmIwpBTWDxaRPXrIXkgvmQ==}
     engines: {node: '>=18'}
     hasBin: true
 
-  /playwright-core/1.48.2:
-    resolution: {integrity: sha512-sjjw+qrLFlriJo64du+EK0kJgZzoQPsabGF4lBvsid+3CNIZIYLgnMj9V6JY5VhM2Peh20DJWIVpVljLLnlawA==}
-    engines: {node: '>=18'}
-    hasBin: true
-
-  /playwright/1.47.1:
-    resolution: {integrity: sha512-SUEKi6947IqYbKxRiqnbUobVZY4bF1uu+ZnZNJX9DfU1tlf2UhWfvVjLf01pQx9URsOr18bFVUKXmanYWhbfkw==}
+  /playwright/1.56.1:
+    resolution: {integrity: sha512-aFi5B0WovBHTEvpM3DzXTUaeN6eN0qWnTkKx4NQaH4Wvcmc153PdaY2UBdSYKaGYw+UyWXSVyxDUg5DoPEttjw==}
     engines: {node: '>=18'}
     hasBin: true
     dependencies:
-      playwright-core: 1.47.1
-    optionalDependencies:
-      fsevents: 2.3.2
-
-  /playwright/1.48.2:
-    resolution: {integrity: sha512-NjYvYgp4BPmiwfe31j4gHLa3J7bD2WiBz8Lk2RoSsmX38SVIARZ18VYjxLjAcDsAhA+F4iSEXTSGgjua0rrlgQ==}
-    engines: {node: '>=18'}
-    hasBin: true
-    dependencies:
-      playwright-core: 1.48.2
+      playwright-core: 1.56.1
     optionalDependencies:
       fsevents: 2.3.2
 
@@ -14377,7 +14400,7 @@ packages:
       jsdom:
         optional: true
     dependencies:
-      '@vitest/browser': 3.0.5_jow2yrj3635kzsaot46gbcjabm
+      '@vitest/browser': 3.0.5_rcgq7ve5umsaeyjctxd52dv5fe
       '@vitest/expect': 3.0.5
       '@vitest/mocker': 3.0.5_vite@5.4.6
       '@vitest/pretty-format': 3.1.1

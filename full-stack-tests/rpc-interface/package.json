@@ -44,13 +44,8 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/certa": "workspace:*",
-<<<<<<< HEAD
     "@itwin/eslint-plugin": "5.2.1",
-    "@itwin/oidc-signin-tool": "^4.4.1",
-=======
-    "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@itwin/oidc-signin-tool": "^5.0.2",
->>>>>>> 51dbab2317 (Bump `playwright` version to `~1.56.1`. (#8684))
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
     "@itwin/service-authorization": "^1.0.0",

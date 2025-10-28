@@ -71,16 +71,9 @@
     "cpx2": "^3.0.0",
     "eslint": "^9.31.0",
     "glob": "^10.3.12",
-<<<<<<< HEAD
-    "playwright": "~1.47.1",
+    "playwright": "~1.56.1",
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
-=======
-    "playwright": "~1.56.1",
-    "rimraf": "^6.0.1",
-    "sinon": "^17.0.2",
-    "source-map-loader": "^5.0.0",
->>>>>>> 51dbab2317 (Bump `playwright` version to `~1.56.1`. (#8684))
     "typescript": "~5.6.2",
     "typemoq": "^2.1.0",
     "vitest": "^3.0.5",

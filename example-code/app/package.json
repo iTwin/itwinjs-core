@@ -27,13 +27,8 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-<<<<<<< HEAD
     "@itwin/eslint-plugin": "5.2.1",
-    "@itwin/oidc-signin-tool": "^4.4.1",
-=======
-    "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@itwin/oidc-signin-tool": "^5.0.2",
->>>>>>> 51dbab2317 (Bump `playwright` version to `~1.56.1`. (#8684))
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
     "@types/node": "~18.16.20",
