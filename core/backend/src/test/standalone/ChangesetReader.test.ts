@@ -1244,7 +1244,7 @@ describe("Changeset Reader API", async () => {
     expect(secondBriefcaseChangeset1.totalFullTableScans).to.be.eql(0);
     expect(secondBriefcaseChangeset1.perStatementStats.length).to.be.eql(11);
 
-    expect(secondBriefcaseChangeset1.changesetIndex).to.be.eql(3);
+    expect(secondBriefcaseChangeset2.changesetIndex).to.be.eql(3);
     expect(secondBriefcaseChangeset2.uncompressedSizeBytes).to.be.greaterThan(40000);
     expect(secondBriefcaseChangeset2.insertedRows).to.be.greaterThanOrEqual(0);
     expect(secondBriefcaseChangeset2.updatedRows).to.be.greaterThanOrEqual(921);
