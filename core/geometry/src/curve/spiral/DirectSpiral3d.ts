@@ -5,6 +5,7 @@
 /** @packageDocumentation
  * @module Curve
  */
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { GeometryHandler, IStrokeHandler } from "../../geometry3d/GeometryHandler";
@@ -104,11 +105,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     if (numInterval < 1)
       numInterval = 1;
     strokes.clear();
-    strokes.ensureEmptyUVParams();
+    const distances = strokes.ensureEmptyUVParams();
     strokes.ensureEmptyFractions();
-    const distances = strokes.packedUVParams;
-    if (undefined === distances)
-      return;
     const nominalIntervalLength = Math.abs(fractionB - fractionA) * this._nominalL1;
     for (let i = 0; i <= numInterval; i++) {
       const fraction = Geometry.interpolate(fractionA, i / numInterval, fractionB);
@@ -484,18 +482,14 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       && Geometry.isSameCoordinate(0.0, this.localToWorld.matrix.dotColumnX(plane.getNormalRef()))
       && Geometry.isSameCoordinate(0.0, this.localToWorld.matrix.dotColumnY(plane.getNormalRef()));
   }
-  /**
-   * Return quick length of the spiral.
-   * The tangent vector of a true clothoid is length 1 everywhere, so simple proportion of nominalL1 is a good
-   * approximation.
-   * * Return 0 if suitable stroke data is not available.
-   */
+  /** Return length of the spiral. */
   public quickLength() {
-    const distanceData = this._globalStrokes.packedUVParams;
-    if (undefined === distanceData)
-      return 0;
-    const n = distanceData.length;
-    return distanceData.getYAtUncheckedPointIndex(n - 1);
+    const distanceData = this.activeStrokes.packedUVParams;
+    const n = distanceData?.length ?? 0;
+    assert(n > 0, "expect constructor to populate uvParams");
+    if (distanceData && n > 0)
+      return distanceData.getYAtUncheckedPointIndex(n - 1); // true length
+    return 0;
   }
   /** Return length of the spiral.
    * * True length is stored at back of uvParams . . .
