@@ -12,7 +12,7 @@ import {
   DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityProps, FilePropertyProps,
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
   ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, LightLocationProps, MapImageryProps, PhysicalElementProps,
-  PointWithStatus, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
+  PointWithStatus, QueryBinder, RelatedElement, RelationshipProps, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
   TextureMapProps, TextureMapUnits, TypeDefinitionElementProps, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
 import {
@@ -3370,5 +3370,128 @@ describe("iModel", () => {
     expect(() => testImodel.elements.queryChildren(IModel.rootSubjectId)).to.throw(closedDbError);
     expect(() => testImodel.elements.getAspects("0x1", "WrongSchema:WrongClass")).to.throw("db is not open");
     expect(() => testImodel.createQueryReader("SELECT 1")).to.throw("db not open");
+  });
+
+  describe("Delete relationship instances", () => {
+    let testImodel: SnapshotDb;
+    const relationshipClasses = [
+      "BisCore:ElementGroupsMembers",
+      "BisCore:ElementDrivesElement",
+      "BisCore:ElementRefersToDocuments"
+    ];
+
+    afterEach(() => {
+      if (testImodel !== undefined) {
+        const iModelPath = testImodel.pathName;
+        if (testImodel.isOpen)
+          testImodel.close();
+        IModelJsFs.unlinkSync(iModelPath);
+      }
+    });
+
+    function setupRelationships(numOfRelationships: number, multipleClasses: boolean = false): RelationshipProps[] {
+      testImodel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "DeleteRelationshipInstances.bim"), { rootSubject: { name: "DeleteRelationshipInstances" } });
+      assert.isTrue(testImodel.isOpen);
+
+      const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty(), true);
+      let spatialCategoryId = SpatialCategory.queryCategoryIdByName(testImodel, IModel.dictionaryId, "MySpatialCategory");
+      if (!spatialCategoryId) {
+        spatialCategoryId = SpatialCategory.insert(testImodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance());
+      }
+
+      const relationships: RelationshipProps[] = [];
+      for (let i = 0; i < numOfRelationships; ++i) {
+        const sourceProps = createElemProps(testImodel, newModelId, spatialCategoryId, "Generic:PhysicalObject");
+        const sourceId = testImodel.elements.insertElement(sourceProps);
+
+        const targetProps = createElemProps(testImodel, newModelId, spatialCategoryId, "Generic:PhysicalObject");
+        const targetId = testImodel.elements.insertElement(targetProps);
+
+        let relationshipClass = "BisCore:ElementGroupsMembers";
+        if (multipleClasses)
+          relationshipClass = relationshipClasses[i % relationshipClasses.length];
+
+        const relationshipProps: RelationshipProps = {
+          classFullName: relationshipClass,
+          sourceId,
+          targetId,
+        };
+
+        relationshipProps.id = testImodel.relationships.insertInstance(relationshipProps);
+        relationships.push(relationshipProps);
+      }
+      testImodel.saveChanges();
+      return relationships;
+    }
+
+    async function getRelationshipCount(iModel: IModelDb, relationshipClass: string): Promise<number> {
+      const reader = iModel.createQueryReader(`SELECT COUNT(*) AS [count] FROM ${relationshipClass}`);
+      await reader.step();
+      return reader.current.count;
+    }
+
+    it("deleteInstances with an empty array", async () => {
+      const relationships = setupRelationships(10);
+      assert.equal(relationships.length, await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers"));
+
+      testImodel.relationships.deleteInstances([]);
+      testImodel.saveChanges();
+
+      assert.equal(relationships.length, await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers"));
+    });
+
+    it("deleteInstances with a single relationship instance", async () => {
+      const relationships = setupRelationships(10);
+      assert.equal(relationships.length, await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers"), "Should delete exactly one relationship");
+
+      // Delete just one relationship using deleteInstances method
+      testImodel.relationships.deleteInstances([relationships[0]]);
+      testImodel.saveChanges();
+
+      const remainingCount = await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers");
+      assert.equal(remainingCount, relationships.length - 1, "Should delete exactly one relationship");
+    });
+
+    it("deleteInstances with different relationship classes", async () => {
+      const relationships = setupRelationships(500, true);
+
+      // Verify relationships were created across different classes
+      assert.isTrue(await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers") >= Math.floor(relationships.length / 3));
+      assert.isTrue(await getRelationshipCount(testImodel, "BisCore.ElementDrivesElement") >= Math.floor(relationships.length / 3));
+      assert.isTrue(await getRelationshipCount(testImodel, "BisCore.ElementRefersToDocuments") >= Math.floor(relationships.length / 3));
+
+      // Test deleteInstances with mixed relationship classes
+      testImodel.relationships.deleteInstances(relationships);
+      testImodel.saveChanges();
+
+      // Verify all relationships were deleted regardless of their class
+      assert.equal(0, await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers"), "All ElementGroupsMembers relationships should be deleted");
+      assert.equal(0, await getRelationshipCount(testImodel, "BisCore.ElementDrivesElement"), "All ElementDrivesElement relationships should be deleted");
+      assert.equal(0, await getRelationshipCount(testImodel, "BisCore.ElementRefersToDocuments"), "All ElementRefersToDocuments relationships should be deleted");
+    });
+
+    it("deleteInstances for random relationship instances", async () => {
+      const relationships = setupRelationships(1000, true);
+
+      // Verify relationships exist before deletion
+      assert.isTrue(await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers") >= Math.floor(relationships.length / 3));
+      assert.isTrue(await getRelationshipCount(testImodel, "BisCore.ElementDrivesElement") >= Math.floor(relationships.length / 3));
+      assert.isTrue(await getRelationshipCount(testImodel, "BisCore.ElementRefersToDocuments") >= Math.floor(relationships.length / 3));
+
+      // Create a subset of random relationship entries to delete
+      const relationshipsToDelete: RelationshipProps[] = [];
+      for (let i = 0; i < 250; ++i) {
+        relationshipsToDelete.push(relationships[Math.floor(Math.random() * (relationships.length + 1))]);
+      }
+
+      testImodel.relationships.deleteInstances(relationshipsToDelete);
+      testImodel.saveChanges();
+
+      // Verify all relationships were deleted
+      for (const relClass of relationshipsToDelete) {
+        const reader = testImodel.createQueryReader(`SELECT ECInstanceId FROM ${relClass.classFullName} WHERE SourceECInstanceId=? AND TargetECInstanceId=?`, new QueryBinder().bindId(1, relClass.sourceId).bindId(2, relClass.targetId));
+        assert.isFalse(await reader.step(), `Relationship ${relClass.id} should be deleted`); // No row should be returned
+      }
+    });
   });
 });
