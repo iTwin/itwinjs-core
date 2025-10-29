@@ -515,8 +515,10 @@ beta;class;SheetIndexPartition
 beta;class;SheetIndexReference
 beta;interface;SheetIndexReferenceCreateArgs
 beta;class;SheetIndexReferenceRefersToSheetIndex
+beta;class;SheetInformationAspect
 public;class;SheetModel
 preview;class;SheetModel
+beta;class;SheetOwnsSheetInformationAspect
 beta;class;SheetReference
 beta;interface;SheetReferenceCreateArgs
 beta;class;SheetReferenceRefersToSheet

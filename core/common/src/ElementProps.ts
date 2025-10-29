@@ -687,11 +687,19 @@ export interface ProjectInformation {
  */
 export type ProjectInformationRecordProps = ElementProps & ProjectInformation;
 
-/*
-export interface SheetInformationAspectProps extends ElementAspectProps {
+/** Captures basic metadata about a [Sheet]($backend). This information is typically included in the Sheet's graphical representation, often
+ * as part of its title block.
+ * This information is stored in a [SheetInformationAspect]($backend).
+ * @beta
+ */
+export interface SheetInformation {
   designedBy?: string;
   designedDate?: Date;
   drawnBy?: string;
   checkedBy?: string;
 }
-*/
+
+/** JSON representation of a [SheetInformationAspect]($backend).
+ * @beta
+ */
+export type SheetInformationAspectProps = ElementAspectProps & SheetInformation;

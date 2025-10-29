@@ -275,3 +275,15 @@ export class SubjectOwnsProjectInformationRecord extends ElementOwnsChildElement
     super(parentId, relClassName);
   }
 }
+
+/** Relates a [[Sheet]] to the [[SheetInformationAspect]] that hosts its basic [SheetInformation]($common).
+ * @see [[SheetInformationAspect.setSheetInformation]] to create an instance of this relationship.
+ * @beta
+ */
+export class SheetOwnsSheetInformationAspect extends ElementOwnsUniqueAspect {
+  public static override classFullName = "BisCore:SheetOwnsSheetInformationAspect";
+
+  public constructor(sheetId: Id64String, relClassName = SheetOwnsSheetInformationAspect.classFullName) {
+    super(sheetId, relClassName);
+  }
+}

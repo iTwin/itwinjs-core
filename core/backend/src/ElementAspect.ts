@@ -6,12 +6,14 @@
  * @module ElementAspects
  */
 
-import { ChannelRootAspectProps, ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, RelatedElement } from "@itwin/core-common";
+import { ChannelRootAspectProps, ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, RelatedElement, SheetInformation, SheetInformationAspectProps } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { DbResult, Id64String } from "@itwin/core-bentley";
+import { assert, DbResult, Id64String } from "@itwin/core-bentley";
 import { _verifyChannel } from "./internal/Symbols";
+import { SheetOwnsSheetInformationAspect } from "./NavigationRelationship";
+import { Sheet } from "./Element";
 
 /** Argument for the `ElementAspect.onXxx` static methods
  * @beta
@@ -135,6 +137,107 @@ export class ChannelRootAspect extends ElementUniqueAspect {
   public static insert(iModel: IModelDb, ownerId: Id64String, channelName: string) {
     const props: ChannelRootAspectProps = { classFullName: this.classFullName, element: { id: ownerId }, owner: channelName };
     iModel.elements.insertAspect(props);
+  }
+}
+
+/** An [[ElementUniqueAspect]] that captures common metadata about a single [[Sheet]].
+ * Use [[getSheetInformation]] to retrieve the metadata for a Sheet and [[setSheetInformation]] to create, update, or delete it.
+ * @beta
+ */
+export class SheetInformationAspect extends ElementUniqueAspect {
+  public static override get className() { return "SheetInformationAspect"; }
+  
+  /** The sheet's metadata. */
+  public sheetInformation: SheetInformation;
+
+  protected static override onInsert(arg: OnAspectPropsArg): void {
+    super.onInsert(arg);
+
+    const sheet = arg.iModel.elements.tryGetElement<Sheet>(arg.props.element);
+    if (!(sheet instanceof Sheet)) {
+      throw new Error("SheetInformationAspect can only be applied to a Sheet element");
+    }
+  }
+
+  private constructor(props: SheetInformationAspectProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.sheetInformation = {
+      designedBy: props.designedBy,
+      designedDate: props.designedDate,
+      drawnBy: props.drawnBy,
+      checkedBy: props.checkedBy,
+    };
+  }
+
+  public override toJSON(): SheetInformationAspectProps {
+    const props = super.toJSON() as SheetInformationAspectProps;
+    for (const key of ["designedBy", "drawnBy", "checkedBy"] as const) {
+      const value = this.sheetInformation[key];
+      if (undefined !== value) {
+        props[key] = value;
+      }
+    }
+
+    if (undefined !== this.sheetInformation.designedDate) {
+      props.designedDate = this.sheetInformation.designedDate;
+    }
+
+    return props;
+  }
+
+  private static findForSheet(sheetId: Id64String, iModel: IModelDb): SheetInformationAspect | undefined {
+    try {
+      const aspects = iModel.elements.getAspects(sheetId, this.classFullName);
+      if (aspects[0]) {
+        assert(aspects[0] instanceof SheetInformationAspect);
+        return aspects[0];
+      }
+    } catch {
+      // Most likely error is that BisCore version < 01.00.25.
+      // Could be other things like invalid sheet Id.
+    }
+
+    return undefined;
+  }
+
+  /** Retrieves the metadata hosted by the aspect on the specified sheet, returning `undefined` if no such metadata could be retrieved.
+   * @see [[setSheetInformation]] to create, update, or delete the aspect.
+   */
+  public static getSheetInformation(sheetId: Id64String, iModel: IModelDb): SheetInformation | undefined {
+    const aspect = this.findForSheet(sheetId, iModel);
+    return aspect?.sheetInformation;
+  }
+
+  /** Sets the `information` for the [[Sheet]] element specified by ``sheetId`.
+   * If `information` is `undefined`, any existing aspect will be deleted.
+   * Otherwise, a new aspect will be inserted, or an existing aspect will be updated with the new metadata.
+   * @throws Error if the iModel contains a version of the BisCore schema older than 01.00.25.
+   */
+  public static setSheetInformation(information: SheetInformation | undefined, sheetId: Id64String, iModel: IModelDb): void {
+    const aspect = this.findForSheet(sheetId, iModel);
+    if (!information) {
+      if (aspect) {
+        iModel.elements.deleteAspect(aspect.id);
+      }
+
+      return;
+    }
+
+    if (aspect) {
+      aspect.sheetInformation = { ...information };
+      iModel.elements.updateAspect(aspect.toJSON());
+    } else {
+      const props: SheetInformationAspectProps = {
+        classFullName: this.classFullName,
+        element: {
+          id: sheetId,
+          relClassName: SheetOwnsSheetInformationAspect.classFullName,
+        },
+        ...information,
+      };
+
+      iModel.elements.insertAspect(props);
+    }
   }
 }
 

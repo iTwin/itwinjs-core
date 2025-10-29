@@ -2237,16 +2237,23 @@ export class ProjectInformationRecord extends InformationRecordElement {
     };
   }
 
-  /** Create a new ProjectInformationRecord element ready to be inserted into the iModel. */
-  public static create(args: ProjectInformationRecordCreateArgs): ProjectInformationRecord {
-    const subject = args.iModel.elements.getElement<Subject>(args.parentSubjectId);
+  protected static override onInsert(arg: OnElementPropsArg) {
+    super.onInsert(arg);
+
+    const parentId = arg.props.parent?.id;
+    const subject = undefined !== parentId ? arg.iModel.elements.tryGetElement<Subject>(parentId) : undefined;
     if (!(subject instanceof Subject)) {
       throw new Error("ProjectInformationRecord must be a child of a Subject");
     }
+  }
+
+  /** Create a new ProjectInformationRecord element ready to be inserted into the iModel. */
+  public static create(args: ProjectInformationRecordCreateArgs): ProjectInformationRecord {
+    const parent = args.iModel.elements.getElement(args.parentSubjectId);
 
     const props: ProjectInformationRecordProps = {
       classFullName: this.classFullName,
-      model: subject.model,
+      model: parent.model,
       code: args.code ?? Code.createEmpty(),
       parent: new SubjectOwnsProjectInformationRecord(args.parentSubjectId),
       projectName: args.projectName,
@@ -2259,16 +2266,11 @@ export class ProjectInformationRecord extends InformationRecordElement {
 
   public override toJSON(): ProjectInformationRecordProps {
     const props = super.toJSON() as ProjectInformationRecordProps;
-    if (undefined !== this.projectInformation.projectNumber) {
-      props.projectNumber = this.projectInformation.projectNumber;
-    }
-
-    if (undefined !== this.projectInformation.projectName) {
-      props.projectName = this.projectInformation.projectName;
-    }
-
-    if (undefined !== this.projectInformation.location) {
-      props.location = this.projectInformation.location;
+    for (const key of ["projectNumber", "projectName", "location"] as const) {
+      const value = this.projectInformation[key];
+      if (undefined !== value) {
+        props[key] = value;
+      }
     }
 
     return props;

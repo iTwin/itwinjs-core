@@ -240,6 +240,8 @@ import { SessionProps } from '@itwin/core-common';
 import { SheetBorderTemplateProps } from '@itwin/core-common';
 import { SheetIndexEntryProps } from '@itwin/core-common';
 import { SheetIndexReferenceProps } from '@itwin/core-common';
+import { SheetInformation } from '@itwin/core-common';
+import { SheetInformationAspectProps } from '@itwin/core-common';
 import { SheetProps } from '@itwin/core-common';
 import { SheetReferenceProps } from '@itwin/core-common';
 import { SheetTemplateProps } from '@itwin/core-common';
@@ -5107,6 +5109,8 @@ export class ProjectInformationRecord extends InformationRecordElement {
     // (undocumented)
     static get className(): string;
     static create(args: ProjectInformationRecordCreateArgs): ProjectInformationRecord;
+    // (undocumented)
+    protected static onInsert(arg: OnElementPropsArg): void;
     projectInformation: ProjectInformation;
     // (undocumented)
     toJSON(): ProjectInformationRecordProps;
@@ -5837,10 +5841,30 @@ export class SheetIndexReferenceRefersToSheetIndex extends RelatedElement {
     static classFullName: string;
 }
 
+// @beta
+export class SheetInformationAspect extends ElementUniqueAspect {
+    // (undocumented)
+    static get className(): string;
+    static getSheetInformation(sheetId: Id64String, iModel: IModelDb): SheetInformation | undefined;
+    // (undocumented)
+    protected static onInsert(arg: OnAspectPropsArg): void;
+    static setSheetInformation(information: SheetInformation | undefined, sheetId: Id64String, iModel: IModelDb): void;
+    sheetInformation: SheetInformation;
+    // (undocumented)
+    toJSON(): SheetInformationAspectProps;
+}
+
 // @public @preview
 export class SheetModel extends GraphicalModel2d {
     // (undocumented)
     static get className(): string;
+}
+
+// @beta
+export class SheetOwnsSheetInformationAspect extends ElementOwnsUniqueAspect {
+    constructor(sheetId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
 }
 
 // @beta

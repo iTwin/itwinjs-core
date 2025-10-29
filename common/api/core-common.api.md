@@ -9488,6 +9488,21 @@ export interface SheetIndexReferenceProps extends SheetIndexEntryProps {
     sheetIndex?: RelatedElementProps;
 }
 
+// @beta
+export interface SheetInformation {
+    // (undocumented)
+    checkedBy?: string;
+    // (undocumented)
+    designedBy?: string;
+    // (undocumented)
+    designedDate?: Date;
+    // (undocumented)
+    drawnBy?: string;
+}
+
+// @beta
+export type SheetInformationAspectProps = ElementAspectProps & SheetInformation;
+
 // @public @preview
 export interface SheetProps extends ElementProps {
     // (undocumented)
