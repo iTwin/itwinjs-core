@@ -162,7 +162,7 @@ export function createTerminatorGeometry(builder: ElementGeometry.Builder, point
       if (!normalizedVector) throw new Error("Invalid reference vector for slash terminator.");
 
       const rotatedVector = normalizedVector.rotateXY(Angle.createDegrees(45));
-      const startPoint = point.plusScalesd(rotatedVector, -radius);
+      const startPoint = point.plusScaled(rotatedVector, -radius);
       const endPoint = point.plusScaled(rotatedVector, radius);
 
       const slashLine = LineSegment3d.create(startPoint, endPoint);
