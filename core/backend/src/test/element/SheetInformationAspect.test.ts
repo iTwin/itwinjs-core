@@ -134,32 +134,63 @@ describe.only("SheetInformationAspect", () => {
     });
 
     describe("setSheetInformation", () => {
-      it("inserts aspect if it doesn't already exist", () => {
+      it("inserts aspect if it doesn't already exist", async () => {
+        const sheetId = await insertSheet(db);
+        expect(getSheetInfo(sheetId)).to.be.undefined;
 
+        const info = { designedBy: "me", checkedBy: "you", designedDate, drawnBy: "Bob Ross" };
+        setSheetInfo(sheetId, info);
+        expect(getSheetInfo(sheetId)).to.deep.equal(info);
       });
 
-      it("omits undefined fields", () => {
-
+      it("omits undefined fields", async () => {
+        const info = { designedBy: "me" };
+        const sheetId = await insertSheet(db);
+        setSheetInfo(sheetId, info);
+        expect(getSheetInfo(sheetId)).to.deep.equal({ designedBy: "me", checkedBy: undefined, designedDate: undefined, drawnBy: undefined });
       });
 
-      it("includes fields set to empty strings", () => {
-
+      it("includes fields set to empty strings", async () => {
+        const info = { designedBy: "", checkedBy: "", designedDate, drawnBy: "" };
+        const sheetId = await insertSheet(db);
+        setSheetInfo(sheetId, info);
+        expect(getSheetInfo(sheetId)).to.deep.equal(info);
       });
 
-      it("updates existing aspect", () => {
+      it("updates existing aspect", async () => {
+        const sheetId = await insertSheet(db);
+        const initialInfo = { designedBy: "me", checkedBy: "you", designedDate, drawnBy: "Bob Ross" };
+        setSheetInfo(sheetId, initialInfo);
+        expect(getSheetInfo(sheetId)).to.deep.equal(initialInfo);
 
+        const updatedInfo = { designedBy: "you", checkedBy: "me", designedDate, drawnBy: "Pablo Picasso" };
+        setSheetInfo(sheetId, updatedInfo);
+        expect(getSheetInfo(sheetId)).to.deep.equal(updatedInfo);
+
+        const newInfo = { designedBy: "my buddy Gary" };
+        setSheetInfo(sheetId, newInfo);
+        expect(getSheetInfo(sheetId)).to.deep.equal(newInfo);
       });
 
-      it("deletes existing aspect if information is undefined", () => {
-
+      it("deletes existing aspect if information is undefined", async () => {
+        const sheetId = await insertSheet(db);
+        const info = { designedBy: "me", checkedBy: "you", designedDate, drawnBy: "Bob Ross" };
+        setSheetInfo(sheetId, info);
+        expect(getSheetInfo(sheetId)).to.deep.equal(info);
+        setSheetInfo(sheetId, undefined);
+        expect(getSheetInfo(sheetId)).to.be.undefined;
       });
 
-      it("is a no-op if information is undefined and no aspect exists", () => {
-
+      it("is a no-op if information is undefined and no aspect exists", async () => {
+        const sheetId = await insertSheet(db);
+        expect(getSheetInfo(sheetId)).to.be.undefined;
+        setSheetInfo(sheetId, undefined);
+        expect(getSheetInfo(sheetId)).to.be.undefined;
       });
 
-      it("throws if element is not a valid Sheet", () => {
-
+      it("throws if element is not a Sheet", () => {
+        const info = { designedBy: "me", checkedBy: "you", designedDate, drawnBy: "Bob Ross" };
+        expect(() => setSheetInfo(IModel.rootSubjectId, info)).to.throw("SheetInformationAspect can only be applied to a Sheet element");
       });
 
       it("creates SheetOwnsSheetInformationAspect relationships", () => {
