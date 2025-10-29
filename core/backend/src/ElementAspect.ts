@@ -141,6 +141,8 @@ export class ChannelRootAspect extends ElementUniqueAspect {
   }
 }
 
+const minimumBisCoreVersion = new ECVersion(1, 0, 25);
+
 /** An [[ElementUniqueAspect]] that captures common metadata about a single [[Sheet]].
  * Use [[getSheetInformation]] to retrieve the metadata for a Sheet and [[setSheetInformation]] to create, update, or delete it.
  * @beta
@@ -190,15 +192,14 @@ export class SheetInformationAspect extends ElementUniqueAspect {
   }
 
   private static findForSheet(sheetId: Id64String, iModel: IModelDb): SheetInformationAspect | undefined {
-    try {
-      const aspects = iModel.elements.getAspects(sheetId, this.classFullName);
-      if (aspects[0]) {
-        assert(aspects[0] instanceof SheetInformationAspect);
-        return aspects[0];
-      }
-    } catch {
-      // Most likely error is that BisCore version < 01.00.25.
-      // Could be other things like invalid sheet Id.
+    if (!iModel.meetsMinimumSchemaVersion("BisCore", minimumBisCoreVersion)) {
+      return undefined;
+    }
+
+    const aspects = iModel.elements.getAspects(sheetId, this.classFullName);
+    if (aspects[0]) {
+      assert(aspects[0] instanceof SheetInformationAspect);
+      return aspects[0];
     }
 
     return undefined;
@@ -218,7 +219,7 @@ export class SheetInformationAspect extends ElementUniqueAspect {
    * @throws Error if the iModel contains a version of the BisCore schema older than 01.00.25.
    */
   public static setSheetInformation(information: SheetInformation | undefined, sheetId: Id64String, iModel: IModelDb): void {
-    iModel.requireMinimumSchemaVersion("BisCore", new ECVersion(1, 0, 25), "SheetInformationAspect");
+    iModel.requireMinimumSchemaVersion("BisCore", minimumBisCoreVersion, "SheetInformationAspect");
 
     const aspect = this.findForSheet(sheetId, iModel);
     if (!information) {
