@@ -6,10 +6,10 @@
 import { expect } from "chai";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { Id64String } from "@itwin/core-bentley";
+import { Guid, Id64String } from "@itwin/core-bentley";
 import { DocumentPartition, Sheet } from "../../Element";
 import { DocumentListModel, SheetModel } from "../../Model";
-import { GeometricModel2dProps, RelatedElement, SheetProps } from "@itwin/core-common";
+import { GeometricModel2dProps, IModel, RelatedElement, SheetInformation, SheetProps } from "@itwin/core-common";
 import { SheetInformationAspect } from "../../ElementAspect";
 
 async function getOrCreateDocumentList(iModel: IModelDb): Promise<Id64String> {
@@ -34,7 +34,9 @@ async function getOrCreateDocumentList(iModel: IModelDb): Promise<Id64String> {
   return documentListModelId;
 };
 
-async function insertSheet(iModel: IModelDb, sheetName: string): Promise<Id64String> {
+async function insertSheet(iModel: IModelDb): Promise<Id64String> {
+  const sheetName = Guid.createValue();
+
   const createSheetProps = {
     height: 42,
     width: 42,
@@ -71,7 +73,7 @@ describe.only("SheetInformationAspect", () => {
       const seedFileName = IModelTestUtils.resolveAssetFile("mirukuru.ibim");
       const testFileName = IModelTestUtils.prepareOutputFile("ProjectInformationRecord", "ProjectInformationRecordTest.bim");
       db = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-      sheetId = await insertSheet(db, "Sheet");
+      sheetId = await insertSheet(db);
     });
 
     after(() => db.close());
@@ -92,17 +94,40 @@ describe.only("SheetInformationAspect", () => {
   });
 
   describe("with BisCore >= 00.01.25", () => {
-    describe("getSheetInformation", () => {
-      it("returns undefined if no aspect exists", () => {
+    let db: SnapshotDb;
 
+    before(async () => {
+      db = SnapshotDb.createEmpty(
+        IModelTestUtils.prepareOutputFile("SheetInformationAspect", "SheetInformationAspect.bim"),
+        { rootSubject: { name: "SheetInformationAspect" } }
+      );
+    });
+
+    after(() => db.close());
+
+    function getSheetInfo(elemId: string): SheetInformation | undefined {
+      return SheetInformationAspect.getSheetInformation(elemId, db);
+    }
+
+    function setSheetInfo(elemId: string, info: SheetInformation | undefined): void {
+      SheetInformationAspect.setSheetInformation(info, elemId, db);
+    }
+
+    describe("getSheetInformation", () => {
+      it("returns undefined if no aspect exists", async () => {
+        const sheetId = await insertSheet(db);
+        expect(getSheetInfo(sheetId)).to.be.undefined;
       });
 
       it("returns undefined if element is not a valid Sheet", () => {
-
+        expect(getSheetInfo(IModel.rootSubjectId)).to.be.undefined;
       });
 
-      it("returns information if aspect exists", () => {
-
+      it("returns information if aspect exists", async () => {
+        const sheetId = await insertSheet(db);
+        const info = { designedBy: "me", checkedBy: "you" };
+        setSheetInfo(sheetId, info);
+        expect(getSheetInfo(sheetId)).to.deep.equal(info);
       });
     });
 
