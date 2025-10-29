@@ -95,6 +95,8 @@ describe.only("SheetInformationAspect", () => {
 
   describe("with BisCore >= 00.01.25", () => {
     let db: SnapshotDb;
+    const designedDate = new Date("2011-10-05T14:48:00.000Z");
+    expect(designedDate.toISOString()).to.equal("2011-10-05T14:48:00.000Z");
 
     before(async () => {
       db = SnapshotDb.createEmpty(
@@ -125,7 +127,7 @@ describe.only("SheetInformationAspect", () => {
 
       it("returns information if aspect exists", async () => {
         const sheetId = await insertSheet(db);
-        const info = { designedBy: "me", checkedBy: "you", designedDate: new Date(Date.now()), drawnBy: "Bob Ross" };
+        const info = { designedBy: "me", checkedBy: "you", designedDate, drawnBy: "Bob Ross" };
         setSheetInfo(sheetId, info);
         expect(getSheetInfo(sheetId)).to.deep.equal(info);
       });
@@ -137,6 +139,10 @@ describe.only("SheetInformationAspect", () => {
       });
 
       it("omits undefined fields", () => {
+
+      });
+
+      it("includes fields set to empty strings", () => {
 
       });
 

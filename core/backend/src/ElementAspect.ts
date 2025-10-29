@@ -162,9 +162,12 @@ export class SheetInformationAspect extends ElementUniqueAspect {
 
   private constructor(props: SheetInformationAspectProps, iModel: IModelDb) {
     super(props, iModel);
+
+    const designedDate = undefined !== props.designedDate ? new Date(props.designedDate) : undefined;
+
     this.sheetInformation = {
       designedBy: props.designedBy,
-      designedDate: props.designedDate,
+      designedDate,
       drawnBy: props.drawnBy,
       checkedBy: props.checkedBy,
     };
@@ -180,7 +183,7 @@ export class SheetInformationAspect extends ElementUniqueAspect {
     }
 
     if (undefined !== this.sheetInformation.designedDate) {
-      props.designedDate = this.sheetInformation.designedDate;
+      props.designedDate = this.sheetInformation.designedDate.toISOString();
     }
 
     return props;
@@ -230,13 +233,25 @@ export class SheetInformationAspect extends ElementUniqueAspect {
       aspect.sheetInformation = { ...information };
       iModel.elements.updateAspect(aspect.toJSON());
     } else {
+      const info = { ...information } as any;
+      for (const key of Object.keys(info)) {
+        if (info[key] === undefined) {
+          delete info[key];
+        }
+      }
+
+      if (undefined !== info.designedDate) {
+        info.designedDate = info.designedDate.toISOString();
+      }
+
+      console.log(JSON.stringify(info));
       const props: SheetInformationAspectProps = {
         classFullName: this.classFullName,
         element: {
           id: sheetId,
           relClassName: SheetOwnsSheetInformationAspect.classFullName,
         },
-        ...information,
+        ...info,
       };
 
       iModel.elements.insertAspect(props);

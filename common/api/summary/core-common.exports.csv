@@ -864,6 +864,7 @@ beta;type;SheetIndexFolderProps
 beta;interface;SheetIndexReferenceProps
 beta;interface;SheetInformation
 beta;type;SheetInformationAspectProps
+beta;interface;SheetInformationProps
 public;interface;SheetProps
 preview;interface;SheetProps
 beta;interface;SheetReferenceProps

@@ -699,7 +699,17 @@ export interface SheetInformation {
   checkedBy?: string;
 }
 
+/** JSON representation of a [[SheetInformation]].
+ * @beta
+ */
+export interface SheetInformationProps {
+  designedBy?: string;
+  designedDate?: string;
+  drawnBy?: string;
+  checkedBy?: string;
+}
+
 /** JSON representation of a [SheetInformationAspect]($backend).
  * @beta
  */
-export type SheetInformationAspectProps = ElementAspectProps & SheetInformation;
+export type SheetInformationAspectProps = ElementAspectProps & SheetInformationProps;

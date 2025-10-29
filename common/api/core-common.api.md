@@ -9501,7 +9501,19 @@ export interface SheetInformation {
 }
 
 // @beta
-export type SheetInformationAspectProps = ElementAspectProps & SheetInformation;
+export type SheetInformationAspectProps = ElementAspectProps & SheetInformationProps;
+
+// @beta
+export interface SheetInformationProps {
+    // (undocumented)
+    checkedBy?: string;
+    // (undocumented)
+    designedBy?: string;
+    // (undocumented)
+    designedDate?: string;
+    // (undocumented)
+    drawnBy?: string;
+}
 
 // @public @preview
 export interface SheetProps extends ElementProps {
