@@ -11,7 +11,7 @@ import { ProjectInformationRecord } from "../../Element";
 import { SubjectOwnsProjectInformationRecord } from "../../NavigationRelationship";
 import { DbResult } from "@itwin/core-bentley";
 
-describe.only("ProjectInformationRecord", () => {
+describe("ProjectInformationRecord", () => {
   describe("with BisCore < 00.01.25", () => {
     let db: SnapshotDb;
 

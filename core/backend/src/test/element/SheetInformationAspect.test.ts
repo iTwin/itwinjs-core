@@ -65,7 +65,7 @@ async function insertSheet(iModel: IModelDb): Promise<Id64String> {
   return sheetModelId;
 };
 
-describe.only("SheetInformationAspect", () => {
+describe("SheetInformationAspect", () => {
   describe("with BisCore < 00.01.25", () => {
     let db: SnapshotDb;
     let sheetId: Id64String;

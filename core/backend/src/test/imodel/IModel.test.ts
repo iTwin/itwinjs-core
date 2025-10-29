@@ -3496,7 +3496,7 @@ describe("iModel", () => {
   });
 });
 
-describe.only("IModelDb.requireMinimumSchemaVersion", () => {
+describe("IModelDb.requireMinimumSchemaVersion", () => {
   let imodel: SnapshotDb;
 
   before(() => imodel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "MinSchemaVer.bim"), { rootSubject: { name: "MinSchemaVer" } }));
