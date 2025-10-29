@@ -72,7 +72,7 @@ describe.only("SheetInformationAspect", () => {
 
     before(async () => {
       const seedFileName = IModelTestUtils.resolveAssetFile("mirukuru.ibim");
-      const testFileName = IModelTestUtils.prepareOutputFile("ProjectInformationRecord", "ProjectInformationRecordTest.bim");
+      const testFileName = IModelTestUtils.prepareOutputFile("SheetInformationAspect", "OldBisCore.bim");
       db = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
       sheetId = await insertSheet(db);
     });
@@ -101,7 +101,7 @@ describe.only("SheetInformationAspect", () => {
 
     before(async () => {
       db = SnapshotDb.createEmpty(
-        IModelTestUtils.prepareOutputFile("SheetInformationAspect", "SheetInformationAspect.bim"),
+        IModelTestUtils.prepareOutputFile("SheetInformationAspect", "NewBisCore.bim"),
         { rootSubject: { name: "SheetInformationAspect" } }
       );
     });
