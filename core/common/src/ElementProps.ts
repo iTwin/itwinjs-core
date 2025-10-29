@@ -693,9 +693,13 @@ export type ProjectInformationRecordProps = ElementProps & ProjectInformation;
  * @beta
  */
 export interface SheetInformation {
+  /** A user-supplied string describing who designed the sheet contents. */
   designedBy?: string;
+  /** A user-supplied date describing when the sheet contents were designed. */
   designedDate?: Date;
+  /** A user-supplied string describing who drew the sheet contents. */
   drawnBy?: string;
+  /** A user-supplied string describing who verified the sheet contents. */
   checkedBy?: string;
 }
 
@@ -703,9 +707,13 @@ export interface SheetInformation {
  * @beta
  */
 export interface SheetInformationProps {
+  /** A user-supplied string describing who designed the sheet contents. */
   designedBy?: string;
-  designedDate?: string;
+  /** The [ISO string representation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString) of a user-supplied date describing when the sheet contents were designed. */
+  designedDate?: Date;
+  /** A user-supplied string describing who drew the sheet contents. */
   drawnBy?: string;
+  /** A user-supplied string describing who verified the sheet contents. */
   checkedBy?: string;
 }
 
