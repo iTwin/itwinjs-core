@@ -16,10 +16,13 @@
  * * Each implementation provides:
  *   * fractionToCurvature -- the f(u) function described above
  *   * fractionToCurvatureDerivative -- df(u)/du
- *   * fractionToArea -- integral of the area under f(u) from 0 to u.
+ *   * fractionToArea -- anti-derivative A of f, chosen such that A(0) = 0. The value of this function at fraction u
+ *     is the area under f from 0 to u. In particular, the symmetry condition on f implies that 1/2 = integral of f
+ *     over [0,1] = A(1) - A(0) = A(1).
  * * The symmetry condition ensures that the integral from 0 to 1 is 1/2.
  * @internal
  */
+// see internaldocs/Spiral.md for more info
 export abstract class NormalizedTransition {
   /** Constructor initializes with 0..1 values. Call "setBearingCurvatureLengthCurvature" to apply real values. */
   constructor() { }
@@ -180,8 +183,7 @@ export class NormalizedSineTransition extends NormalizedTransition {
   // sine transition curvature is x - sin(2 pi x) / (2 pi)
   // derivative 1 - cos(2 pi x)
   // integral x^2 / 2 + (cos(2 pi x) - 1) / (4 pi^2)
-  // note: integral or If is anti-derivative of curvature function and it's chosen such that If(0) = 0.
-  // this is to support the "normalization" of the snap functions, so that fractionToArea(1) = 1/2.
+  // note: this is the only snap function whose anti-derivative is chosen with nonzero integration constant.
   constructor() {
     super();
   }

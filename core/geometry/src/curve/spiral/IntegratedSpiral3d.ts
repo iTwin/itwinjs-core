@@ -33,6 +33,7 @@ import { GeometryQuery } from "../GeometryQuery";
  * * [[TransitionConditionalProperties]] implements the computations of the interrelationship of radii, bearing, and length.
  * @public
  */
+// see internaldocs/Spiral.md for more info
 export class IntegratedSpiral3d extends TransitionSpiral3d {
   /** String name for schema properties. */
   public readonly curvePrimitiveType = "transitionSpiral";
@@ -85,7 +86,8 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
   public static readonly defaultSpiralType = "clothoid";
   /** Use the integrated function to return an angle at fractional position. */
   public globalFractionToBearingRadians(fraction: number): number {
-    // calculate area under curvature curve from 0 to fraction and add it to start radian to get angle at the given fraction
+    // calculate area under curvature curve from 0 to fraction and add it to start angle to get angle at the given fraction
+    // see internaldocs/Spiral.md for more info
     const areaFraction = this._evaluator.fractionToArea(fraction);
     const arcLength = this._arcLength01;
     return this.bearing01.startRadians
@@ -132,6 +134,7 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
    * @param applyMatrix if true, apply the localToWorld matrix to the computed delta before adding to xyz.
    */
   private fullSpiralIncrementalIntegral(xyz: Point3d, fractionA: number, fractionB: number, applyMatrix: boolean): void {
+    // see internaldocs/Spiral.md for more info
     const gaussFraction = IntegratedSpiral3d._gaussFraction;
     const gaussWeight = IntegratedSpiral3d._gaussWeight;
     const numEval = IntegratedSpiral3d._gaussMapper(fractionA, fractionB, gaussFraction, gaussWeight);

@@ -48,14 +48,14 @@ export type IntegratedSpiralTypeName = "clothoid" | "bloss" | "biquadratic" | "c
 export type DirectSpiralTypeName =
   "Arema"                // 2 terms from each of the X,Y clothoid series expansions; identical to ChineseCubic
   | "JapaneseCubic"      // 1 term from each of the X,Y clothoid series expansions; y = x^3 / (6RL)
-  | "ChineseCubic"       // Identical to Arema
+  | "ChineseCubic"       // identical to Arema
   | "WesternAustralian"  // simple cubic; 2 terms of x series, 1 term of y series
   | "HalfCosine"         // high continuity cosine variation from quadratic
   | "AustralianRailCorp" // cubic with high accuracy distance series
   | "Czech"              // simple cubic with two term distance approximation
-  | "Italian"
+  | "Italian"            // similar to Czech
   | "MXCubicAlongArc"    // x obtained from fractional distance via 2-terms from series, y = x^3 / (6RL)
-  | "Polish"
+  | "Polish"             // similar to MXCubicAlongArc
   ;
 
 /**
@@ -73,6 +73,7 @@ export type DirectSpiralTypeName =
  *   * This is not necessary for integrated spirals.
  * @public
  */
+// see internaldocs/Spiral.md for more info
 export abstract class TransitionSpiral3d extends CurvePrimitive {
   /** String name of spiral type. */
   protected _spiralType: string;

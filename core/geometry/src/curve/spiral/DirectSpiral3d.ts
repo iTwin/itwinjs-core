@@ -31,7 +31,7 @@ import { XYCurveEvaluator } from "./XYCurveEvaluator";
 * DirectSpiral3d acts like a TransitionSpiral3d for serialization purposes, but implements spiral types that have
 * "direct" xy calculations without the integrations required for IntegratedSpiral3d.
 * * Each DirectSpiral3d carries an XYCurveEvaluator to give it specialized behavior.
-* * Direct spirals that flow through serialization to native imodel02 are created with these static methods:
+* * Direct spirals are created with these static methods:
 *   * createArema
 *   * createJapaneseCubic
 *   * createChineseCubic
@@ -44,6 +44,7 @@ import { XYCurveEvaluator } from "./XYCurveEvaluator";
 *   * createItalian
 * @public
 */
+// see internaldocs/Spiral.md for more info
 export class DirectSpiral3d extends TransitionSpiral3d {
   /** String name for schema properties. */
   public readonly curvePrimitiveType = "transitionSpiral";
