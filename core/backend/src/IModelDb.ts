@@ -3103,7 +3103,6 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /**
-   * @alpha
    * Permanently discards any local changes made to this briefcase, reverting the briefcase to its last synchronized state.
    * This operation cannot be undone. By default, all locks held by this briefcase will be released unless the `retainLocks` option is specified.
    * @Note This operation can be performed at any point including after failed rebase attempts.
@@ -3114,6 +3113,14 @@ export class BriefcaseDb extends IModelDb {
    */
   public async discardChanges(args?: { retainLocks?: true }): Promise<void> {
     Logger.logInfo(loggerCategory, "Discarding local changes");
+    if (this.txns.isIndirectChanges) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot discard changes when there are indirect changes");
+    }
+
+    if (this.txns.rebaser.inProgress()) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot discard changes while a rebase is in progress");
+    }
+
     this.clearCaches();
     this[_nativeDb].clearECDbCache();
     this[_nativeDb].discardLocalChanges();
