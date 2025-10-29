@@ -580,6 +580,7 @@ export class BriefcaseDb extends IModelDb {
     close(): void;
     // (undocumented)
     disableChangesetStatTracking(): Promise<void>;
+    // @preview
     discardChanges(args?: {
         retainLocks?: true;
     }): Promise<void>;

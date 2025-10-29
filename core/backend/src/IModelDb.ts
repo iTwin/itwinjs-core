@@ -3110,6 +3110,8 @@ export class BriefcaseDb extends IModelDb {
    * @param args.retainLocks - If `true`, retains all currently held locks after discarding changes. If omitted or `false`, all locks will be released.
    * @returns A promise that resolves when the operation is complete.
    * @throws May throw if discarding changes fails.
+   *
+   * @public @preview
    */
   public async discardChanges(args?: { retainLocks?: true }): Promise<void> {
     Logger.logInfo(loggerCategory, "Discarding local changes");
