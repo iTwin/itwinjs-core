@@ -1500,7 +1500,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Returns true if the specified schema exists in the iModel and is no older than the specified minimum version.
-   * @alpha
+   * @beta
    */
   public meetsMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion): boolean {
     const actualVersion = this.querySchemaVersionNumbers(schemaName);
@@ -1511,8 +1511,7 @@ export abstract class IModelDb extends IModel {
    * The error will indicate the `featureName` that requires this minimum version.
    * Use this to produce more helpful errors when interacting with APIs that operate on classes introduced as
    * schemas evolve.
-   * @see [[meetsMinimumSchemaVersion]] to test against a minimum schema version without throwing an exception.
-   * @alpha
+   * @beta
    */
   public requireMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion, featureName: string): void {
     if (!this.meetsMinimumSchemaVersion(schemaName, minimumVersion)) {

@@ -3664,7 +3664,7 @@ export abstract class IModelDb extends IModel {
     protected _locks?: LockControl;
     // (undocumented)
     static readonly maxLimit = 10000;
-    // @alpha
+    // @beta
     meetsMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion): boolean;
     // (undocumented)
     readonly models: IModelDb.Models;
@@ -3702,7 +3702,7 @@ export abstract class IModelDb extends IModel {
     get relationships(): Relationships;
     // @internal (undocumented)
     requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
-    // @alpha
+    // @beta
     requireMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion, featureName: string): void;
     // @internal (undocumented)
     restartDefaultTxn(): void;
