@@ -6,11 +6,12 @@
 import { expect } from "chai";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { Guid, Id64String } from "@itwin/core-bentley";
+import { DbResult, Guid, Id64String } from "@itwin/core-bentley";
 import { DocumentPartition, Sheet } from "../../Element";
 import { DocumentListModel, SheetModel } from "../../Model";
 import { GeometricModel2dProps, IModel, RelatedElement, SheetInformation, SheetProps } from "@itwin/core-common";
 import { SheetInformationAspect } from "../../ElementAspect";
+import { SheetOwnsSheetInformationAspect } from "../../NavigationRelationship";
 
 async function getOrCreateDocumentList(iModel: IModelDb): Promise<Id64String> {
   const documentListName = "SheetList";
@@ -166,10 +167,17 @@ describe.only("SheetInformationAspect", () => {
         const updatedInfo = { designedBy: "you", checkedBy: "me", designedDate, drawnBy: "Pablo Picasso" };
         setSheetInfo(sheetId, updatedInfo);
         expect(getSheetInfo(sheetId)).to.deep.equal(updatedInfo);
+      });
 
-        const newInfo = { designedBy: "my buddy Gary" };
-        setSheetInfo(sheetId, newInfo);
-        expect(getSheetInfo(sheetId)).to.deep.equal(newInfo);
+      it("selectively updates existing aspect", async () => {
+        const sheetId = await insertSheet(db);
+        const initialInfo = { designedBy: "me", checkedBy: "you", designedDate, drawnBy: "Bob Ross" };
+        setSheetInfo(sheetId, initialInfo);
+        expect(getSheetInfo(sheetId)).to.deep.equal(initialInfo);
+
+        const updatedInfo = { designedBy: "my buddy Gary" };
+        setSheetInfo(sheetId, updatedInfo);
+        expect(getSheetInfo(sheetId)).to.deep.equal({ designedDate, designedBy: "my buddy Gary", checkedBy: "you", drawnBy: "Bob Ross" });
       });
 
       it("deletes existing aspect if information is undefined", async () => {
@@ -193,8 +201,19 @@ describe.only("SheetInformationAspect", () => {
         expect(() => setSheetInfo(IModel.rootSubjectId, info)).to.throw("SheetInformationAspect can only be applied to a Sheet element");
       });
 
-      it("creates SheetOwnsSheetInformationAspect relationships", () => {
+      it("creates SheetOwnsSheetInformationAspect relationships", async () => {
+        const sheetId = await insertSheet(db);
 
+        function countRelationships(): number {
+          return db.withPreparedStatement(`SELECT COUNT(*) FROM ${SheetOwnsSheetInformationAspect.classFullName} WHERE SourceECInstanceId=${sheetId}`, (stmt) => {
+            expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
+            return stmt.getValue(0).getInteger();
+          });
+        }
+
+        expect(countRelationships()).to.equal(0);
+        setSheetInfo(sheetId, { designedBy: "me", checkedBy: "you", designedDate, drawnBy: "Bob Ross" });
+        expect(countRelationships()).to.equal(1);
       });
     })
   });
