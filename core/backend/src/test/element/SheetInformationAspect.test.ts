@@ -125,7 +125,7 @@ describe.only("SheetInformationAspect", () => {
 
       it("returns information if aspect exists", async () => {
         const sheetId = await insertSheet(db);
-        const info = { designedBy: "me", checkedBy: "you" };
+        const info = { designedBy: "me", checkedBy: "you", designedDate: new Date(Date.now()), drawnBy: "Bob Ross" };
         setSheetInfo(sheetId, info);
         expect(getSheetInfo(sheetId)).to.deep.equal(info);
       });
@@ -133,6 +133,10 @@ describe.only("SheetInformationAspect", () => {
 
     describe("setSheetInformation", () => {
       it("inserts aspect if it doesn't already exist", () => {
+
+      });
+
+      it("omits undefined fields", () => {
 
       });
 
