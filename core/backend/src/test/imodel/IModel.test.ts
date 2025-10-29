@@ -3481,7 +3481,7 @@ describe("iModel", () => {
       // Create a subset of random relationship entries to delete
       const relationshipsToDelete: RelationshipProps[] = [];
       for (let i = 0; i < 250; ++i) {
-        relationshipsToDelete.push(relationships[Math.floor(Math.random() * (relationships.length + 1))]);
+        relationshipsToDelete.push(relationships[Math.floor(Math.random() * (relationships.length))]);
       }
 
       testImodel.relationships.deleteInstances(relationshipsToDelete);
