@@ -48,6 +48,16 @@ export const textAnnotationFrameShapes = ["none", "line", "rectangle", "circle",
 */
 export type TextAnnotationFrameShape = typeof textAnnotationFrameShapes[number];
 
+/** Set of predefined shapes that can be used as terminators for leaders in a [[TextAnnotation]]
+ * @beta
+*/
+export const terminatorShapes = ["openArrow", "closedArrow", "closedArrowFilled", "circle", "circleFilled", "slash"] as const;
+
+/** Describes a predefined shape that can be used as a terminator for leaders in a [[TextAnnotation]]
+ * @beta
+*/
+export type TerminatorShape = typeof terminatorShapes[number];
+
 /**
  * Describes what color to use when filling the frame around a [[TextBlock]].
  * If `background` is specified, [[GeometryParams.BackgroundFill]] will be set to `BackgroundFill.Outline`.
@@ -125,6 +135,11 @@ export interface TextLeaderStyleProps {
    * Default: 1.0
    */
   elbowLength?: number;
+  /**
+   * The shape of the leader terminator.
+   * Default:"openArrow"
+   */
+  terminatorShape?: TerminatorShape;
   /** Multiplier to compute height of the leader terminator.
    * The terminator height is computed in meters as terminatorHeight * [[textHeight]].
    * Default: 1.0
@@ -212,7 +227,7 @@ export interface TextStyleSettingsProps {
 
   /** Properties describing appearance of leaders in a [[TextAnnotation]]
    * Used when producing geometry for [[TextAnnotation]]
-   * Default: {color:"subcategory", wantElbow:"false",elbowLength:1, terminatorWidthFactor:1, terminatorHeightFactor:1}.
+   * Default: {color:"subcategory", wantElbow:"false",elbowLength:1, terminatorShape:"openArrow",terminatorWidthFactor:1, terminatorHeightFactor:1}.
    */
   leader?: TextLeaderStyleProps;
   /** The size (in meters) used to calculate the tab stops in a run.
@@ -364,6 +379,7 @@ export class TextStyleSettings {
       color: "inherit",
       wantElbow: false,
       elbowLength: 1.0,
+      terminatorShape: terminatorShapes[0],
       terminatorHeightFactor: 1.0,
       terminatorWidthFactor: 1.0,
     },
@@ -416,6 +432,7 @@ export class TextStyleSettings {
       color: props.leader?.color ?? defaults.leader.color,
       wantElbow: props.leader?.wantElbow ?? defaults.leader.wantElbow,
       elbowLength: props.leader?.elbowLength ?? defaults.leader.elbowLength,
+      terminatorShape: props.leader?.terminatorShape ?? defaults.leader.terminatorShape,
       terminatorHeightFactor: props.leader?.terminatorHeightFactor ?? defaults.leader.terminatorHeightFactor,
       terminatorWidthFactor: props.leader?.terminatorWidthFactor ?? defaults.leader.terminatorWidthFactor,
     }
@@ -460,7 +477,7 @@ export class TextStyleSettings {
    */
   public leaderEquals(other: TextLeaderStyleProps): boolean {
     return this.leader.color === other.color && this.leader.wantElbow === other.wantElbow
-      && this.leader.elbowLength === other.elbowLength && this.leader.terminatorHeightFactor === other.terminatorHeightFactor
+      && this.leader.elbowLength === other.elbowLength && this.leader.terminatorShape === other.terminatorShape && this.leader.terminatorHeightFactor === other.terminatorHeightFactor
       && this.leader.terminatorWidthFactor === other.terminatorWidthFactor;
   }
 

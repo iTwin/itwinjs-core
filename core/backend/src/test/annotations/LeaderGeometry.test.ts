@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ColorDef, GeometryParams, LineBreakRun, TextAnnotation, TextAnnotationLeader, TextBlock, TextFrameStyleProps, TextRun, TextStyleSettings } from "@itwin/core-common";
-import { LineSegment3d, LineString3d, Point3d, Range2d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { ColorDef, GeometryParams, LineBreakRun, terminatorShapes, TextAnnotation, TextAnnotationLeader, TextBlock, TextFrameStyleProps, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { Arc3d, LineSegment3d, LineString3d, Point3d, Range2d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { appendLeadersToBuilder, computeElbowDirection, computeFrame, computeLeaderAttachmentPoint, TextStyleResolver } from "../../core-backend";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { doLayout, MockBuilder } from "../AnnotationTestUtils";
@@ -14,7 +14,7 @@ describe("LeaderGeometry", () => {
   let builder: MockBuilder;
   let defaultParams: GeometryParams;
 
-  const textBlock = TextBlock.create({ styleOverrides: { font: { name: "Arial" }, color: ColorDef.black.toJSON(), leader: {wantElbow: false} } });
+  const textBlock = TextBlock.create({ styleOverrides: { font: { name: "Arial" }, color: ColorDef.black.toJSON(), leader: { wantElbow: false } } });
   textBlock.appendRun(TextRun.create({ content: "Hello", styleOverrides: { font: { name: "Arial" } } }));
   textBlock.appendRun(LineBreakRun.create({
     styleOverrides: { font: { name: "Arial" } },
@@ -157,6 +157,7 @@ describe("LeaderGeometry", () => {
               wantElbow: true,
               elbowLength: 5,
               color: ColorDef.red.toJSON(),
+              terminatorShape: terminatorShapes[0],
               terminatorHeightFactor: 2,
               terminatorWidthFactor: 2,
             }
@@ -193,6 +194,50 @@ describe("LeaderGeometry", () => {
         const elbowLength = elbowLine.curveLength();
         expect(elbowLength).to.be.closeTo(leaders[0].styleOverrides?.leader?.elbowLength ?? 1, 0.01);
       });
+
+      it("should apply terminator shape overrides", () => {
+        const textHeight = 1;
+        const terminatorHeight = (leaders[0].styleOverrides?.leader?.terminatorHeightFactor ?? 1) * textHeight;
+        const terminatorWidth = (leaders[0].styleOverrides?.leader?.terminatorWidthFactor ?? 1) * textHeight;
+        let firstLeaderLineLengthBeforeTruncation: number;
+        terminatorShapes.forEach((shape) => {
+          it(`Terminator shape: ${shape}`, () => {
+            leaders[0].styleOverrides = { ...leaders[0].styleOverrides, leader: { terminatorShape: shape } };
+            const result = appendLeadersToBuilder(builder, leaders, layout, transform, defaultParams, textStyleResolver, scaleFactor);
+            expect(result).to.be.true;
+            let terminatorGeometry = builder.geometries[1];
+            if (shape.includes("Filled")) {
+              expect(builder.geometries.length).to.equal(3) // One entry for geometry query and another for geometryParams for fill
+              terminatorGeometry = builder.geometries[2];
+            }
+            if (shape.includes("circle")) {
+              // expect(terminatorGeometry).to.be.instanceOf(Arc3d);
+              expect((terminatorGeometry as Arc3d).circularRadius()).to.equal(terminatorHeight / 2)
+            }
+
+            if (shape === "slash") {
+              expect(terminatorGeometry).to.be.instanceOf(LineSegment3d);
+              terminatorGeometry = terminatorGeometry as LineSegment3d;
+              expect(terminatorGeometry.curveLength()).to.equal(terminatorHeight);
+            }
+
+            if (shape === "closedArrow") {
+              // The leaderLine is truncated to accommodate the closed and hollow shape of the terminator
+              const leaderLine = builder.geometries[0] as LineString3d;
+              const firstLeaderLine = LineSegment3d.create(leaderLine.points[0], leaderLine.points[1]);
+              const firstLeaderLineLength = firstLeaderLine.curveLength();
+              expect(firstLeaderLineLength).to.be.closeTo(firstLeaderLineLengthBeforeTruncation - terminatorWidth, 0.01);
+            } else {
+              // keep record of first leader line length before truncation for closedArrow test
+              const leaderLine = builder.geometries[0] as LineString3d;
+              const firstLeaderLineBeforeTruncation = LineSegment3d.create(leaderLine.points[0], leaderLine.points[1]);
+              firstLeaderLineLengthBeforeTruncation = firstLeaderLineBeforeTruncation.curveLength();
+            }
+          });
+
+        });
+      });
+
     });
   });
 
