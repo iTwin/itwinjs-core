@@ -21,7 +21,7 @@ import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
 import { SubjectOwnsProjectInformationRecord, SubjectOwnsSubjects } from "./NavigationRelationship";
 import { _cache, _elementWasCreated, _nativeDb, _verifyChannel } from "./internal/Symbols";
-import { EntityClass } from "@itwin/ecschema-metadata";
+import { ECVersion, EntityClass } from "@itwin/ecschema-metadata";
 
 /** Argument for the `Element.onXxx` static methods
  * @beta
@@ -2247,8 +2247,12 @@ export class ProjectInformationRecord extends InformationRecordElement {
     }
   }
 
-  /** Create a new ProjectInformationRecord element ready to be inserted into the iModel. */
+  /** Create a new ProjectInformationRecord element ready to be inserted into the iModel.
+   * @throws Error if the iModel contains a version of the BisCore schema older than 01.00.25.
+   */
   public static create(args: ProjectInformationRecordCreateArgs): ProjectInformationRecord {
+    args.iModel.requireMinimumSchemaVersion("BisCore", new ECVersion(1, 0, 25), "ProjectInformationRecord");
+
     const parent = args.iModel.elements.getElement(args.parentSubjectId);
 
     const props: ProjectInformationRecordProps = {

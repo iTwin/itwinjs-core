@@ -32,7 +32,7 @@ describe.only("ProjectInformationRecord", () => {
         iModel: db,
         parentSubjectId: IModel.rootSubjectId,
         ...projectProps,
-      })).to.throw("Error getting class meta data for: BisCore:ProjectInformationRecord")
+      })).to.throw("ProjectInformationRecord requires BisCore v01.00.25 or newer");
     });
   });
 

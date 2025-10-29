@@ -14,6 +14,7 @@ import { assert, DbResult, Id64String } from "@itwin/core-bentley";
 import { _verifyChannel } from "./internal/Symbols";
 import { SheetOwnsSheetInformationAspect } from "./NavigationRelationship";
 import { Sheet } from "./Element";
+import { ECVersion } from "@itwin/ecschema-metadata";
 
 /** Argument for the `ElementAspect.onXxx` static methods
  * @beta
@@ -214,6 +215,8 @@ export class SheetInformationAspect extends ElementUniqueAspect {
    * @throws Error if the iModel contains a version of the BisCore schema older than 01.00.25.
    */
   public static setSheetInformation(information: SheetInformation | undefined, sheetId: Id64String, iModel: IModelDb): void {
+    iModel.requireMinimumSchemaVersion("BisCore", new ECVersion(1, 0, 25), "SheetInformationAspect");
+
     const aspect = this.findForSheet(sheetId, iModel);
     if (!information) {
       if (aspect) {

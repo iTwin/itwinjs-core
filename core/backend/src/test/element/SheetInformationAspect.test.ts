@@ -4,19 +4,89 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import { IModelDb, SnapshotDb } from "../../IModelDb";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { Id64String } from "@itwin/core-bentley";
+import { DocumentPartition, Sheet } from "../../Element";
+import { DocumentListModel, SheetModel } from "../../Model";
+import { GeometricModel2dProps, RelatedElement, SheetProps } from "@itwin/core-common";
+import { SheetInformationAspect } from "../../ElementAspect";
+
+async function getOrCreateDocumentList(iModel: IModelDb): Promise<Id64String> {
+  const documentListName = "SheetList";
+  let documentListModelId: string | undefined;
+
+  // Attempt to find an existing document partition and document list model
+  const ids = iModel.queryEntityIds({ from: DocumentPartition.classFullName, where: `CodeValue = '${documentListName}'`});
+  if (ids.size === 1) {
+    documentListModelId = ids.values().next().value;
+  }
+
+  // If they do not exist, create the document partition and document list model
+  if (documentListModelId === undefined) {
+    const subjectId = iModel.elements.getRootSubject().id;
+    await iModel.locks.acquireLocks({
+      shared: subjectId,
+    });
+    documentListModelId = DocumentListModel.insert(iModel, subjectId, documentListName);
+  }
+
+  return documentListModelId;
+};
+
+async function insertSheet(iModel: IModelDb, sheetName: string): Promise<Id64String> {
+  const createSheetProps = {
+    height: 42,
+    width: 42,
+    scale: 42,
+  };
+  // Get or make documentListModelId
+  const modelId = await getOrCreateDocumentList(iModel);
+
+  // Acquire locks and create sheet
+  await iModel.locks.acquireLocks({ shared: modelId });
+  const sheetElementProps: SheetProps = {
+    ...createSheetProps,
+    classFullName: Sheet.classFullName,
+    code: Sheet.createCode(iModel, modelId, sheetName),
+    model: modelId,
+  };
+  const sheetElementId = iModel.elements.insertElement(sheetElementProps);
+
+  const sheetModelProps: GeometricModel2dProps = {
+    classFullName: SheetModel.classFullName,
+    modeledElement: { id: sheetElementId, relClassName: "BisCore:ModelModelsElement" } as RelatedElement,
+  };
+  const sheetModelId = iModel.models.insertModel(sheetModelProps);
+
+  return sheetModelId;
+};
 
 describe.only("SheetInformationAspect", () => {
   describe("with BisCore < 00.01.25", () => {
+    let db: SnapshotDb;
+    let sheetId: Id64String;
+
+    before(async () => {
+      const seedFileName = IModelTestUtils.resolveAssetFile("mirukuru.ibim");
+      const testFileName = IModelTestUtils.prepareOutputFile("ProjectInformationRecord", "ProjectInformationRecordTest.bim");
+      db = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
+      sheetId = await insertSheet(db, "Sheet");
+    });
+
+    after(() => db.close());
 
     describe("getSheetInformation", () => {
       it("returns undefined", () => {
-
+        expect(SheetInformationAspect.getSheetInformation(sheetId, db)).to.be.undefined;
       });
     });
 
     describe("setSheetInformation", () => {
       it("throws", () => {
-
+        expect(
+          () => SheetInformationAspect.setSheetInformation({ designedBy: "me" }, sheetId, db)
+        ).to.throw("SheetInformationAspect requires BisCore v01.00.25 or newer");
       });
     });
   });

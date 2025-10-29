@@ -1499,6 +1499,17 @@ export abstract class IModelDb extends IModel {
     });
   }
 
+  public meetsMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion): boolean {
+    const actualVersion = this.querySchemaVersionNumbers(schemaName);
+    return undefined !== actualVersion && actualVersion.compare(minimumVersion) >= 0;
+  }
+
+  public requireMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion, featureName: string): void {
+    if (!this.meetsMinimumSchemaVersion(schemaName, minimumVersion)) {
+      throw new Error(`${featureName} requires ${schemaName} v${minimumVersion.toString()} or newer`);
+    }
+  }
+
   /** Retrieve a named texture image from this iModel, as a TextureData.
    * @param props the texture load properties which must include the name of the texture to load
    * @returns the TextureData or undefined if the texture image is not present.

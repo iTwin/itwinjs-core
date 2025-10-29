@@ -35,8 +35,9 @@ export class GeoCoordConfig {
   };
 
   private static addGcsWorkspace(dbProps: GcsDbProps) {
+    const dontLoad = true; // ###TODO remove me.
     // override to disable loading GCS data from workspaces
-    if (IModelHost.appWorkspace.settings.getBoolean(GeoCoordConfig.settingName.disableWorkspaces, false))
+    if (dontLoad || IModelHost.appWorkspace.settings.getBoolean(GeoCoordConfig.settingName.disableWorkspaces, false))
       return;
 
     try {
