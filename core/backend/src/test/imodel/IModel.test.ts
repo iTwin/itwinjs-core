@@ -36,7 +36,7 @@ import { DisableNativeAssertions } from "../TestUtils";
 import { samplePngTexture } from "../imageData";
 import { performance } from "perf_hooks";
 import { _hubAccess } from "../../internal/Symbols";
-import { CustomAttributeClass, EntityClass, PrimitiveArrayProperty, PrimitiveOrEnumPropertyBase, PropertyType, propertyTypeToString, SchemaItemType } from "@itwin/ecschema-metadata";
+import { CustomAttributeClass, ECVersion, EntityClass, PrimitiveArrayProperty, PrimitiveOrEnumPropertyBase, PropertyType, propertyTypeToString, SchemaItemType } from "@itwin/ecschema-metadata";
 // spell-checker: disable
 
 async function getIModelError<T>(promise: Promise<T>): Promise<IModelError | undefined> {
@@ -3493,5 +3493,43 @@ describe("iModel", () => {
         assert.isFalse(await reader.step(), `Relationship ${relClass.id} should be deleted`); // No row should be returned
       }
     });
+  });
+});
+
+describe.only("IModelDb.requireMinimumSchemaVersion", () => {
+  let imodel: SnapshotDb;
+
+  before(() => imodel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "MinSchemaVer.bim"), { rootSubject: { name: "MinSchemaVer" } }));
+  after(() => imodel.close());
+
+  it("throws if the schema does not exist", () => {
+    expect(
+      () => imodel.requireMinimumSchemaVersion("FakeSchema", new ECVersion(1, 0, 0), "Scrobbles")
+    ).to.throw("Scrobbles requires FakeSchema v01.00.00 or newer");
+  });
+
+  it("throws IFF the schema version is older than the minimum", () => {
+    function test(minVer: ECVersion, expectError: boolean): void {
+      expect(imodel.meetsMinimumSchemaVersion("BisCore", minVer)).to.equal(!expectError);
+      const require = () => imodel.requireMinimumSchemaVersion("BisCore", minVer, "Scrobbles");
+      if (expectError) {
+        expect(require).to.throw(`Scrobbles requires BisCore v${minVer.toString()} or newer`);
+      } else {
+        require();
+      }
+    }
+
+    const bisVer = imodel.querySchemaVersionNumbers("BisCore")!;
+    expect(bisVer.read).to.equal(1);
+    expect(bisVer.write).to.equal(0);
+    expect(bisVer.minor).to.least(24);
+
+    test(bisVer, false);
+    test(new ECVersion(bisVer.read, bisVer.write, bisVer.minor - 1), false);
+    test(new ECVersion(0, 0, 1), false);
+
+    test(new ECVersion(bisVer.read, bisVer.write, bisVer.minor + 1), true);
+    test(new ECVersion(bisVer.read, bisVer.write, bisVer.minor + 1), true);
+    test(new ECVersion(bisVer.read + 1, bisVer.write + 1, bisVer.minor), true);
   });
 });
