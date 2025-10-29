@@ -9503,7 +9503,7 @@ export type SheetInformationAspectProps = ElementAspectProps & SheetInformationP
 export interface SheetInformationProps {
     checkedBy?: string;
     designedBy?: string;
-    designedDate?: Date;
+    designedDate?: string;
     drawnBy?: string;
 }
 

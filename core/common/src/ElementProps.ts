@@ -710,7 +710,7 @@ export interface SheetInformationProps {
   /** A user-supplied string describing who designed the sheet contents. */
   designedBy?: string;
   /** The [ISO string representation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString) of a user-supplied date describing when the sheet contents were designed. */
-  designedDate?: Date;
+  designedDate?: string;
   /** A user-supplied string describing who drew the sheet contents. */
   drawnBy?: string;
   /** A user-supplied string describing who verified the sheet contents. */
