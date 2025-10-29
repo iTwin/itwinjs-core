@@ -7,7 +7,7 @@
  * @module ArraysAndInterfaces
  */
 
-import { Geometry } from "../Geometry";
+import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Point3d, Vector3d, XYZ } from "./Point3dVector3d";
 import { Range3d } from "./Range";
 import { Transform } from "./Transform";
@@ -509,6 +509,10 @@ export abstract class IndexedXYZCollection {
     return Geometry.isSameCoordinate(this.getXAtUncheckedPointIndex(index0), this.getXAtUncheckedPointIndex(index1), tolerance)
       && Geometry.isSameCoordinate(this.getYAtUncheckedPointIndex(index0), this.getYAtUncheckedPointIndex(index1), tolerance);
   }
+  /** Return the altitude of the indexed point from the plane. */
+  public evaluateUncheckedIndexPlaneAltitude(pointIndex: number, plane: PlaneAltitudeEvaluator): number {
+    return plane.altitudeXYZ(this.getXAtUncheckedPointIndex(pointIndex), this.getYAtUncheckedPointIndex(pointIndex), this.getZAtUncheckedPointIndex(pointIndex));
+  }
 }
 /**
  * Abstract base class extends [[IndexedXYZCollection]] with methods that modify the collection.
@@ -525,6 +529,12 @@ export abstract class IndexedReadWriteXYZCollection extends IndexedXYZCollection
   public abstract clear(): void;
   /** Reverse the points in place. */
   public abstract reverseInPlace(): void;
+  /** Push points from the source array to the end of this array and return the number of points pushed. */
+  public pushIndexedXYZCollection(source: IndexedXYZCollection): number {
+    for (let i = 0; i < source.length; i++)
+      this.pushXYZ(source.getXAtUncheckedPointIndex(i), source.getYAtUncheckedPointIndex(i), source.getZAtUncheckedPointIndex(i));
+    return source.length;
+  }
 }
 
 /**

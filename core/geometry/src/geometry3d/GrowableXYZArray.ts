@@ -266,12 +266,8 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       this.pushXYZ(p.x, p.y, p.z);
     else if (Point3d.isXAndY(p))
       this.pushXYZ(p.x, p.y, 0.0);
-    else if (p instanceof IndexedXYZCollection) {
-      const n = p.length;
-      this.ensureCapacity(this._xyzInUse + n, false);
-      for (let i = 0; i < n; i++)
-        this.pushXYZ(p.getXAtUncheckedPointIndex(i), p.getYAtUncheckedPointIndex(i), p.getZAtUncheckedPointIndex(i));
-    }
+    else if (p instanceof IndexedXYZCollection)
+      this.pushIndexedXYZCollection(p);
   }
   /**
    * Replicate numWrap xyz values from the front of the array as new values at the end.
@@ -443,7 +439,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   }
 
   /**
-   * push coordinates from the source array to the end of this array.
+   * Push coordinates from the source array to the end of this array.
    * @param source source array
    * @param sourceIndex xyz index within the source.  If undefined, entire source is pushed.
    * @returns number of points pushed.
@@ -464,6 +460,17 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       return 1;
     }
     return 0;
+  }
+  /**
+   * Push coordinates from the source array to the end of this array.
+   * @param source source array
+   * @returns number of points pushed.
+   */
+  public override pushIndexedXYZCollection(source: IndexedXYZCollection): number {
+    if (source instanceof GrowableXYZArray)
+      return this.pushFromGrowableXYZArray(source);
+    this.ensureCapacity(this._xyzInUse + source.length, false);
+    return super.pushIndexedXYZCollection(source);
   }
   /**
    * Set the coordinates of a single point.
@@ -883,8 +890,8 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     const data = this._data;
     return data[i] * x + data[i + 1] * y + data[i + 2] * z;
   }
-  /** Compute the dot product of pointIndex with [x,y,z] */
-  public evaluateUncheckedIndexPlaneAltitude(pointIndex: number, plane: PlaneAltitudeEvaluator): number {
+  /** Return the altitude of the indexed point from the plane. */
+  public override evaluateUncheckedIndexPlaneAltitude(pointIndex: number, plane: PlaneAltitudeEvaluator): number {
     const i = pointIndex * 3;
     const data = this._data;
     return plane.altitudeXYZ(data[i], data[i + 1], data[i + 2]);
