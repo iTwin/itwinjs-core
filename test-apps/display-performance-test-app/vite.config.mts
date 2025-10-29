@@ -124,8 +124,6 @@ export default defineConfig(() => {
         copyOnce: true, // only during initial build or on change
         hook: "buildStart",
       }),
-      // open http://localhost:3000/__inspect/ to debug vite plugins
-      ...(mode === "development" ? [viteInspect({ build: true })] : []),
       envCompatible({
         prefix: "IMJS_",
       }),

@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { CheckpointConnection } from "@itwin/core-frontend";
+import { CheckpointConnection, IModelApp } from "@itwin/core-frontend";
 import { ITwin, ITwinsAccessClient, ITwinsAPIResponse, ITwinSubClass } from "@itwin/itwins-client";
 import { IModelData } from "../../common/Settings";
 import { IModelVersion } from "@itwin/core-common";
-import { AccessToken, ITwinError } from "@itwin/core-bentley";
-import { IModelsClient, IModelsErrorCode, IModelsErrorScope } from "@itwin/imodels-client-management";
+import { AccessToken } from "@itwin/core-bentley";
+import { IModelsClient } from "@itwin/imodels-client-management";
+import { AccessTokenAdapter } from "@itwin/imodels-access-frontend";
 
 export class IModelSession {
 
@@ -56,18 +57,7 @@ export class IModelSession {
     if (iModelData.useName) {
       const imodelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
       const imodels = imodelClient.iModels.getRepresentationList({
-        authorization: async () => {
-          const [scheme, token] = requestContext.split(" ");
-          if (!scheme || !token)
-            ITwinError.throwError({
-              iTwinErrorId: {
-                key: IModelsErrorCode.InvalidIModelsRequest,
-                scope: IModelsErrorScope,
-              },
-              message: "Unsupported access token format",
-            });
-          return Promise.resolve({ scheme, token });
-        },
+        authorization: AccessTokenAdapter.toAuthorizationCallback(await IModelApp.getAccessToken()),
         urlParams: {
           iTwinId,
           name: iModelData.name,

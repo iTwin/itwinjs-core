@@ -67,7 +67,7 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-webpack-tools": "workspace:*",
     "@itwin/ecsql-common": "workspace:*",
-    "@itwin/eslint-plugin": "5.2.2-dev.2",
+    "@itwin/eslint-plugin": "5.2.1",
     "@itwin/object-storage-core": "^3.0.4",
     "@opentelemetry/api": "1.0.4",
     "@types/chai": "4.3.1",
@@ -101,7 +101,7 @@
     "webpack": "^5.76.0"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "5.3.8",
+    "@bentley/imodeljs-native": "4.11.39",
     "@itwin/object-storage-azure": "^3.0.4",
     "@azure/storage-blob": "^12.28.0",
     "form-data": "^4.0.4",
