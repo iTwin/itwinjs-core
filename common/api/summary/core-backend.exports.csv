@@ -437,6 +437,8 @@ internal;interface;ProcessChangesetOptions
 beta;function;produceTextBlockGeometry
 public;type;ProgressFunction
 public;enum;ProgressStatus
+beta;class;ProjectInformationRecord
+beta;interface;ProjectInformationRecordCreateArgs
 public;type;PropertyHandler
 preview;type;PropertyHandler
 beta;namespace;PropertyStore
@@ -563,6 +565,7 @@ preview;class;SubCategory
 public;class;Subject
 preview;class;Subject
 public;class;SubjectOwnsPartitionElements
+beta;class;SubjectOwnsProjectInformationRecord
 public;class;SubjectOwnsSubjects
 beta;class;SynchronizationConfigLink
 beta;class;SynchronizationConfigProcessesSources

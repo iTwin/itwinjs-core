@@ -265,3 +265,13 @@ export class SheetIndexReferenceRefersToSheetIndex extends RelatedElement {
     super({ id: sheetIndexId, relClassName });
   }
 }
+
+/** Relates a [[Subject]] to the [[ProjectInformationRecord]] that describes its project-level properties.
+ * @beta
+ */
+export class SubjectOwnsProjectInformationRecord extends ElementOwnsChildElements {
+  public static override classFullName = "BisCore:SubjectOwnsProjectInformationRecord";
+  public constructor(parentId: Id64String, relClassName = SubjectOwnsProjectInformationRecord.classFullName) {
+    super(parentId, relClassName);
+  }
+}

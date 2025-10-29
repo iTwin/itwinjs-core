@@ -10,7 +10,7 @@ import { CompressedId64Set, GuidString, Id64, Id64String, JsonUtils, OrderedId64
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, DrawingProps, ElementAlignedBox3d,
   ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
-  GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement2dProps, Placement3d, Placement3dProps, RelatedElement, RenderSchedule,
+  GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement2dProps, Placement3d, Placement3dProps, ProjectInformation, ProjectInformationRecordProps, RelatedElement, RenderSchedule,
   RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
   SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps
 } from "@itwin/core-common";
@@ -19,7 +19,7 @@ import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow, Entity } from "
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
-import { SubjectOwnsSubjects } from "./NavigationRelationship";
+import { SubjectOwnsProjectInformationRecord, SubjectOwnsSubjects } from "./NavigationRelationship";
 import { _cache, _elementWasCreated, _nativeDb, _verifyChannel } from "./internal/Symbols";
 import { EntityClass } from "@itwin/ecschema-metadata";
 
@@ -2202,5 +2202,75 @@ export class RenderTimeline extends InformationRecordElement {
     }
 
     return scriptProps;
+  }
+}
+
+/** Arguments supplied to [[ProjectInformationRecord.create]].
+ * @beta
+ */
+export interface ProjectInformationRecordCreateArgs extends ProjectInformation {
+  /** The iModel in which to create the new element. */
+  iModel: IModelDb;
+  /** The new element's code. Defaults to an empty code. */
+  code?: Code;
+  /** The Id of the parent [[Subject]] whose project-level properties the ProjectInformationRecord element describes.
+   * The ProjectInformationRecord element will reside in the same [[Model]] as the parent Subject.
+   */
+  parentSubjectId: Id64String;
+}
+
+/** Captures project-level properties of the real-world entity represented by its parent [[Subject]].
+ * @beta
+ */
+export class ProjectInformationRecord extends InformationRecordElement {
+  public static override get className() { return "ProjectInformationRecord"; }
+
+  /** The properties of the project. */
+  public projectInformation: ProjectInformation;
+
+  private constructor(props: ProjectInformationRecordProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.projectInformation = {
+      projectNumber: props.projectNumber,
+      projectName: props.projectName,
+      location: props.location,
+    };
+  }
+
+  /** Create a new ProjectInformationRecord element ready to be inserted into the iModel. */
+  public static create(args: ProjectInformationRecordCreateArgs): ProjectInformationRecord {
+    const subject = args.iModel.elements.getElement<Subject>(args.parentSubjectId);
+    if (!(subject instanceof Subject)) {
+      throw new Error("ProjectInformationRecord must be a child of a Subject");
+    }
+
+    const props: ProjectInformationRecordProps = {
+      classFullName: this.classFullName,
+      model: subject.model,
+      code: args.code ?? Code.createEmpty(),
+      parent: new SubjectOwnsProjectInformationRecord(args.parentSubjectId),
+      projectName: args.projectName,
+      projectNumber: args.projectNumber,
+      location: args.location,
+    };
+
+    return new this(props, args.iModel);
+  }
+
+  public override toJSON(): ProjectInformationRecordProps {
+    const props = super.toJSON() as ProjectInformationRecordProps;
+    if (undefined !== this.projectInformation.projectNumber) {
+      props.projectNumber = this.projectInformation.projectNumber;
+    }
+
+    if (undefined !== this.projectInformation.projectName) {
+      props.projectName = this.projectInformation.projectName;
+    }
+
+    if (undefined !== this.projectInformation.location) {
+      props.location = this.projectInformation.location;
+    }
+
+    return props;
   }
 }

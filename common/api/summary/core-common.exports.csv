@@ -683,6 +683,8 @@ internal;interface;PrimaryTileTreeId
 beta;enum;PrimitiveTypeCode
 public;interface;PriorityPlanarClipMaskArgs
 beta;enum;ProfileOptions
+beta;interface;ProjectInformation
+beta;type;ProjectInformationRecordProps
 public;class;Projection
 public;type;ProjectionMethod
 public;interface;ProjectionProps

@@ -669,3 +669,29 @@ export interface VersionedJSON<T> {
   /** The JSON data. */
   data: T;
 }
+
+/** Project-level properties hosted by a [ProjectInformationRecord]($backend) element.
+ * @beta
+ */
+export interface ProjectInformation {
+  /** A name that uniquely identifies this project within an organization. */
+  projectNumber?: string;
+  /** A human-readable display label for the project. Unlike [[projectNumber]], this needn't be unique. */
+  projectName?: string;
+  /** A human-readable description of the geographic location of the project - often, the name of a city or a street address. */
+  location?: string;
+}
+
+/** JSON representation of a [ProjectInformationRecord]($backend).
+ * @beta
+ */
+export type ProjectInformationRecordProps = ElementProps & ProjectInformation;
+
+/*
+export interface SheetInformationAspectProps extends ElementAspectProps {
+  designedBy?: string;
+  designedDate?: Date;
+  drawnBy?: string;
+  checkedBy?: string;
+}
+*/

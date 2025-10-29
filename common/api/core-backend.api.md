@@ -201,6 +201,8 @@ import { Point3d } from '@itwin/core-geometry';
 import { Polyface } from '@itwin/core-geometry';
 import { PolyfaceData } from '@itwin/core-geometry';
 import { PolyfaceVisitor } from '@itwin/core-geometry';
+import { ProjectInformation } from '@itwin/core-common';
+import { ProjectInformationRecordProps } from '@itwin/core-common';
 import { Property } from '@itwin/ecschema-metadata';
 import { PropertyCallback } from '@itwin/core-common';
 import { QueryBinder } from '@itwin/core-common';
@@ -5100,6 +5102,23 @@ export enum ProgressStatus {
     Continue = 0
 }
 
+// @beta
+export class ProjectInformationRecord extends InformationRecordElement {
+    // (undocumented)
+    static get className(): string;
+    static create(args: ProjectInformationRecordCreateArgs): ProjectInformationRecord;
+    projectInformation: ProjectInformation;
+    // (undocumented)
+    toJSON(): ProjectInformationRecordProps;
+}
+
+// @beta
+export interface ProjectInformationRecordCreateArgs extends ProjectInformation {
+    code?: Code;
+    iModel: IModelDb;
+    parentSubjectId: Id64String;
+}
+
 // @public @preview
 export type PropertyHandler = (name: string, property: Property) => void;
 
@@ -6372,6 +6391,13 @@ export class Subject extends InformationReferenceElement {
 
 // @public
 export class SubjectOwnsPartitionElements extends ElementOwnsChildElements {
+    constructor(parentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @beta
+export class SubjectOwnsProjectInformationRecord extends ElementOwnsChildElements {
     constructor(parentId: Id64String, relClassName?: string);
     // (undocumented)
     static classFullName: string;

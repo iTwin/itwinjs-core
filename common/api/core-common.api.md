@@ -7356,6 +7356,16 @@ export enum ProfileOptions {
     Upgrade = 1
 }
 
+// @beta
+export interface ProjectInformation {
+    location?: string;
+    projectName?: string;
+    projectNumber?: string;
+}
+
+// @beta
+export type ProjectInformationRecordProps = ElementProps & ProjectInformation;
+
 // @public
 export class Projection implements ProjectionProps {
     constructor(_data?: ProjectionProps);
