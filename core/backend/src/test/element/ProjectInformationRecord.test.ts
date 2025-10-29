@@ -52,6 +52,7 @@ describe("ProjectInformationRecord", () => {
 
     it("inserts element and creates relationship", () => {
       function countRelationships(): number {
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         return db.withPreparedStatement(`SELECT COUNT(*) FROM ${SubjectOwnsProjectInformationRecord.classFullName}`, (stmt) => {
           expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
           return stmt.getValue(0).getInteger();

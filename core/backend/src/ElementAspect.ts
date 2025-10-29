@@ -244,7 +244,6 @@ export class SheetInformationAspect extends ElementUniqueAspect {
         info.designedDate = info.designedDate.toISOString();
       }
 
-      console.log(JSON.stringify(info));
       const props: SheetInformationAspectProps = {
         classFullName: this.classFullName,
         element: {

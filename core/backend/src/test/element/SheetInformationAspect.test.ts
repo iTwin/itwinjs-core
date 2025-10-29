@@ -205,6 +205,7 @@ describe("SheetInformationAspect", () => {
         const sheetId = await insertSheet(db);
 
         function countRelationships(): number {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           return db.withPreparedStatement(`SELECT COUNT(*) FROM ${SheetOwnsSheetInformationAspect.classFullName} WHERE SourceECInstanceId=${sheetId}`, (stmt) => {
             expect(stmt.step()).to.equal(DbResult.BE_SQLITE_ROW);
             return stmt.getValue(0).getInteger();
