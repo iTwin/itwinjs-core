@@ -455,7 +455,11 @@
 			repositoryURL = "https://github.com/iTwin/mobile-native-ios";
 			requirement = {
 				kind = exactVersion;
+<<<<<<< HEAD
 				version = 5.2.27;
+=======
+				version = 5.4.1;
+>>>>>>> f72400fc56 (Update to support bcv memory_client_* fields (#8696))
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
