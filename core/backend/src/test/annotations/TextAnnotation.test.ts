@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Angle, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { AnnotationTextStyleProps, FieldRun, FontType, FractionRun, Placement2dProps, Placement3dProps, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { AnnotationTextStyleProps, FieldRun, FontType, FractionRun, Placement2dProps, Placement3dProps, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps, VersionedJSON } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { AnnotationTextStyle, parseTextAnnotationData, TEXT_ANNOTATION_JSON_VERSION, TEXT_STYLE_SETTINGS_JSON_VERSION, TextAnnotation2d, TextAnnotation2dCreateArgs, TextAnnotation3d, TextAnnotation3dCreateArgs } from "../../annotations/TextAnnotationElement";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -957,6 +957,28 @@ describe("AnnotationTextStyle", () => {
           data: TextStyleSettings.defaultProps
         }),
       })).to.not.throw();
+    });
+
+    it("should migrate text style settings from old version", () => {
+      const oldStyleData: VersionedJSON<TextStyleSettingsProps> = {
+        version: "0.0.1",
+        data: {
+          ...TextStyleSettings.defaultProps,
+          leader: {
+            ...TextStyleSettings.defaultProps.leader,
+            // Explicitly remove terminatorShape to simulate old data
+            terminatorShape: undefined as any
+          }
+        }
+      };
+      const migratedStyle = makeStyle({
+        settings: JSON.stringify({
+          version: "0.0.1",
+          data: oldStyleData
+        }),
+      })
+      expect(migratedStyle.settings.leader.terminatorShape).to.not.be.undefined;
+
     });
   })
 
