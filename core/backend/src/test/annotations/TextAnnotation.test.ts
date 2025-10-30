@@ -965,7 +965,7 @@ describe("AnnotationTextStyle", () => {
         leader: {
           ...TextStyleSettings.defaultProps.leader,
           // Explicitly remove terminatorShape to simulate old data
-          terminatorShape: undefined as any
+          terminatorShape: undefined
         }
       };
       const migratedStyle = makeStyle({
@@ -974,9 +974,9 @@ describe("AnnotationTextStyle", () => {
           data: oldStyleData
         }),
       })
-      const deserializedStyleData = migratedStyle.toJSON();
-      if (deserializedStyleData.settings) {
-        const jsonVersion = JSON.parse(deserializedStyleData.settings).version;
+      const jsonStyleData = migratedStyle.toJSON();
+      if (jsonStyleData.settings) {
+        const jsonVersion = JSON.parse(jsonStyleData.settings).version;
         expect(jsonVersion).to.equal(TEXT_STYLE_SETTINGS_JSON_VERSION);
       }
 
@@ -996,13 +996,14 @@ describe("AnnotationTextStyle", () => {
           data: styleData.data
         }),
       })
-      const deserializedStyleData = migratedStyle.toJSON();
-      if (deserializedStyleData.settings) {
-        const parsedJson = JSON.parse(deserializedStyleData.settings);
+      const jsonStyleData = migratedStyle.toJSON();
+      if (jsonStyleData.settings) {
+        const parsedJson = JSON.parse(jsonStyleData.settings);
         expect(parsedJson.version).to.equal(styleData.version);
         expect(parsedJson.data).to.deep.equal(styleData.data);
       }
     });
+
     it("should return undefined when styleData is unrecognized", () => {
       const textStyle = makeStyle({
         settings: JSON.stringify({

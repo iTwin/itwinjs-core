@@ -560,8 +560,6 @@ function migrateTextStyleSettings(oldData: VersionedJSON<TextStyleSettingsProps>
   }
   return oldData.data;
 
-  // Only if something goes wrong, throw an error.
-  // throw new Error(`Migration for settings from version ${oldData.version} to ${TEXT_STYLE_SETTINGS_JSON_VERSION} failed.`);
 }
 
 /** Arguments supplied when creating an [[AnnotationTextStyle]].
