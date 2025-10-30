@@ -646,16 +646,17 @@ describe("PolyfaceClip", () => {
     const shape3 = GrowableXYZArray.create([[0, 0], [0, 6], [4, 4], [4, 0], [3, 0], [3, 2], [1, 3], [1, 0]]);
     const shape4 = GrowableXYZArray.create([[0, 0], [0, 6], [4, 4], [4, 0], [3, 0], [3, 2], [1, 2], [1, 0], [0.5, 0], [0.5, 2], [0.25, 2], [0.25, 0]]);
     const shape5 = GrowableXYZArray.create(Sample.createSquareWave(Point3d.create(0, 0, 0), 0.5, 3, 0.75, 3, 4));
-    for (const points of [shape5, shape0, shape1, shape2, shape3, shape4, shape5]) {
+    for (const points of [shape0, shape1, shape2, shape3, shape4, shape5]) {
       const range = Range3d.createFromVariantData(points);
       range.expandInPlace(1.5);
-      range.high.z = range.low.z;
-
+      range.high.z = range.low.z = 0;
       const work = new GrowableXYZArray();
       GeometryCoreTestIO.createAndCaptureLoop(allGeometry, points, x0, y0);
-      for (const y of [2, 0, 1, 2, 3, 4, 5, 6]) {
+      points.pushWrap(1); // cover closure point handling
+
+      for (const y of [0, 1, 2, 3, 4, 5, 6]) {
         const plane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, y, 0), Vector3d.create(0, 1, 0))!;
-        GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYXY(-2, y, 22, y), x0, y0);
+        GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYXY(-2, y, 35, y), x0, y0);
         x0 += deltaX;
         const pointsA = points.clone();
         const numCrossingsA = IndexedXYZCollectionPolygonOps.clipConvexPolygonInPlace(plane, pointsA, work, false);
@@ -672,6 +673,7 @@ describe("PolyfaceClip", () => {
         const numCrossingsB = IndexedXYZCollectionPolygonOps.clipConvexPolygonInPlace(plane, pointsB, work, true);
         const loopsB = IndexedXYZCollectionPolygonOps.gatherCutLoopsFromPlaneClip(plane, pointsB);
         GeometryCoreTestIO.createAndCaptureLoop(allGeometry, pointsB, x0, y0 + gapDelta);
+
         for (const loop of loopsB.inputLoops)
           GeometryCoreTestIO.createAndCaptureLoop(allGeometry, loop.xyz, x0 + 10, y0 + gapDelta);
         IndexedXYZCollectionPolygonOps.reorderCutLoops(loopsB);

@@ -1598,21 +1598,21 @@ export class IndexedXYZCollectionPolygonOps {
     }
   }
   /**
-   * Clip a polygon to one side of a plane.
-   * * Results with 2 or fewer points are ignored.
-   * * Other than ensuring capacity in the arrays, there are no object allocations during execution of this function.
+   * Clip a polygon to one side of a plane in place.
+   * * If the only points that would survive are colinear, no points are returned.
    * * For a convex input polygon, the output polygon is also convex.
    * * For non-convex input, the output polygon may have double-back edges along plane intersections. This is still a
    * valid clip in a parity sense (overlapping regions cancel).
    * * This method returns only the piece of the input polygon on one side of the clipper.
    * See [[splitConvexPolygonInsideOutsidePlane]] for a method that returns both sides.
-   * @param plane any type that has `plane.altitude`
-   * @param xyz input polygon, clipped on output
+   * * Other than ensuring capacity in the arrays, there are no object allocations during execution of this function.
+   * @param plane altitude evaluator
+   * @param xyz input polygon, clipped on output. Closure point, if present on input, is removed on output.
    * @param work optional work buffer
    * @param keepPositive whether the positive side of the plane survives (true, default), or negative side (false).
    * @param tolerance tolerance for "on plane" decision. This is a distance if `plane` has unit normal (e.g., [[ClipPlane]]).
    * Default value is [[Geometry.smallMetricDistance]].
-   * @return the number of crossings. If this is larger than 2, the input polygon was non-convex.
+   * @return the number of simple crossings and on-plane intervals. If this is larger than 2, the input polygon was non-convex.
    * @see splitConvexPolygonInsideOutsidePlane
    */
   public static clipConvexPolygonInPlace(
@@ -1622,59 +1622,60 @@ export class IndexedXYZCollectionPolygonOps {
     keepPositive: boolean = true,
     tolerance: number = Geometry.smallMetricDistance
   ): number {
-    if (!work)
-      work = new GrowableXYZArray();
-    work.clear();
-    const s = keepPositive ? 1.0 : -1.0;
+    const surviving = work ? work : new GrowableXYZArray();
+    surviving.clear();
+    while (xyz.length > 1 && xyz.getPoint3dAtUncheckedPointIndex(0).isExactEqual(xyz.getPoint3dAtUncheckedPointIndex(xyz.length - 1)))
+      xyz.pop();  // ignore closure point(s)
     const n = xyz.length;
-    let numNegative = 0;
+    if (n < 3) { // no area survives
+      xyz.clear();
+      return 0;
+    }
     const fractionTol = 1.0e-8;
-    let numCrossings = 0;
-    if (xyz.length > 2) {
-      let a1;
-      let index0 = xyz.length - 1;
-      let a0 = s * xyz.evaluateUncheckedIndexPlaneAltitude(index0, plane);
-      if (Math.abs(a0) < tolerance)
-        a0 = 0;
-      //    if (a0 >= 0.0)
-      //      work.push_back (xyz0);
-      for (let index1 = 0; index1 < n; a0 = a1, index0 = index1++) {
-        a1 = s * xyz.evaluateUncheckedIndexPlaneAltitude(index1, plane);
-        if (Math.abs(a1) < tolerance)
-          a1 = 0;
-        if (a1 < 0)
-          numNegative++;
-        if (a0 * a1 < 0.0) {
-          // simple crossing . . .
-          const f = - a0 / (a1 - a0);
-          if (f > 1.0 - fractionTol && a1 >= 0.0) {
-            // the endpoint will be saved -- avoid the duplicate
-          } else {
-            const crossing = xyz.interpolateUncheckedIndexIndex(index0, f, index1, this._xyz0Work);
-            work.pushXYZ(crossing.x, crossing.y, crossing.z);
-            if (a1 > 0)
-              numCrossings++; // "out to in"
-          }
+    let numNegative = 0; // # vertices clipped away
+    let numPositive = 0; // # vertices retained
+    let numSimpleCrossings = 0; // new surviving vertices, each at intersection of plane with polygon edge interior
+    let numOnPlaneIntervals = 0; // each "interval" is one or more successive on-plane vertices
+    const s = keepPositive ? 1.0 : -1.0;
+    let a1, a0 = s * xyz.evaluateUncheckedIndexPlaneAltitude(n - 1, plane);
+    if (Math.abs(a0) < tolerance)
+      a0 = 0;
+    for (let index0 = n - 1, index1 = 0; index1 < n; a0 = a1, index0 = index1++) {
+      a1 = s * xyz.evaluateUncheckedIndexPlaneAltitude(index1, plane);
+      if (Math.abs(a1) < tolerance)
+        a1 = 0;
+      if (a1 < 0)
+        numNegative++;
+      if (a0 * a1 < 0.0) { // simple crossing
+        const f = - a0 / (a1 - a0);
+        if (f > 1.0 - fractionTol && a1 > 0.0) {
+          // the endpoint will be pushed further below: avoid the duplicate
+        } else {
+          const crossing = xyz.interpolateUncheckedIndexIndex(index0, f, index1, this._xyz0Work);
+          surviving.pushXYZ(crossing.x, crossing.y, crossing.z);
+          numSimpleCrossings++;
         }
-        if (a1 >= -tolerance) {
-          work.pushXYZ(xyz.getXAtUncheckedPointIndex(index1), xyz.getYAtUncheckedPointIndex(index1), xyz.getZAtUncheckedPointIndex(index1));
-          if (a0 < tolerance) {
-            numCrossings++; // "in to out"
-          }
-        }
-        index0 = index1;
-        a0 = a1;
       }
+      if (a1 >= 0) {
+        surviving.pushXYZ(xyz.getXAtUncheckedPointIndex(index1), xyz.getYAtUncheckedPointIndex(index1), xyz.getZAtUncheckedPointIndex(index1));
+        if (a1 > 0)
+          numPositive++;
+        else if (a0 !== 0)
+          numOnPlaneIntervals++; // count the on-plane interval at its start point only
+      }
+      index0 = index1;
+      a0 = a1;
     }
-
-    if (work.length <= 2) {
-      xyz.clear();
+    if (numPositive === 0) {
+      xyz.clear(); // no area remains
     } else if (numNegative > 0) {
-      xyz.clear();
-      xyz.pushIndexedXYZCollection(work);
+      xyz.clear(); // at least one vertex was clipped and at least one vertex survives off-plane
+      xyz.pushIndexedXYZCollection(surviving);
+    } else {
+      // all points survive
     }
-    work.clear();
-    return numCrossings;
+    surviving.clear();
+    return numSimpleCrossings + numOnPlaneIntervals;
   }
   /** Return an array containing
    * * All points that are exactly on the plane.
@@ -1778,9 +1779,9 @@ export class IndexedXYZCollectionPolygonOps {
     }
   }
   /**
-   * Return the intersection of the plane with a range cube.
-   * @param range
-   * @param xyzOut intersection polygon.  This is convex.
+   * Clip a convex polygon in place by a range box.
+   * @param range six clipping planes
+   * @param xyz convex polygon, clipped in place
    * @return reference to xyz if the polygon still has points; undefined if all points are clipped away.
    */
   public static intersectRangeConvexPolygonInPlace(range: Range3d, xyz: GrowableXYZArray): GrowableXYZArray | undefined {
@@ -1849,10 +1850,12 @@ export class Point3dArrayPolygonOps {
     return IndexedXYZCollectionPolygonOps.polygonPlaneCrossings(plane, xyzSource, crossings);
   }
   /**
-   * Clip a polygon, returning the clip result in the same object.
+   * Clip a polygon to one side of a plane in place.
+   * @param plane altitude evaluator
    * @param xyz input/output polygon
-   * @param work scratch object
+   * @param work optional scratch object
    * @param tolerance tolerance for on-plane decision.
+   * @see [[IndexedXYZCollectionPolygonOps.clipConvexPolygonInPlace]]
    */
   public static convexPolygonClipInPlace(plane: PlaneAltitudeEvaluator, xyz: Point3d[], work: Point3d[] | undefined, tolerance: number = Geometry.smallMetricDistance) {
     const xyzSource = new Point3dArrayCarrier(xyz);

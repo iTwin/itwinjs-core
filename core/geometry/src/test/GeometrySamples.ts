@@ -951,6 +951,7 @@ export class Sample {
   }
   /**
    * Create a square wave along x direction
+   * @param origin start point of wave
    * @param dx0 distance along x axis at y=0
    * @param dy vertical rise
    * @param dx1 distance along x axis at y=dy
