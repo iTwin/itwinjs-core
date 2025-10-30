@@ -224,7 +224,7 @@ export class TestRunner {
         /** API Version. v1 by default */
         // version?: ApiVersion;
         /** API Url. Used to select environment. Defaults to "https://api.bentley.com/reality-management/reality-data" */
-        baseUrl: `https://${import.meta.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
+        baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
       };
       await DisplayPerfTestApp.startup({
         renderSys: renderOptions,
@@ -255,7 +255,7 @@ export class TestRunner {
       /** API Version. v1 by default */
       // version?: ApiVersion;
       /** API Url. Used to select environment. Defaults to "https://api.bentley.com/realitydata" */
-      baseUrl: `https://${import.meta.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
+      baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
     };
 
     let context: TestContext | undefined;
@@ -694,7 +694,7 @@ export class TestRunner {
 
   private async openIModel(): Promise<TestContext> {
     if (this.curConfig.iModelId) {
-      if (import.meta.env.IMJS_OIDC_HEADLESS) {
+      if (process.env.IMJS_OIDC_HEADLESS) {
         const token = await DisplayPerfRpcInterface.getClient().getAccessToken();
         IModelApp.authorizationClient = new TestFrontendAuthorizationClient(token);
       }

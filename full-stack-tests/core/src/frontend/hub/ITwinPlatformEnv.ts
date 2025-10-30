@@ -2,13 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, GuidString, ITwinError } from "@itwin/core-bentley";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { AuthorizationClient, BriefcaseId } from "@itwin/core-common";
 import { FrontendHubAccess, IModelIdArg } from "@itwin/core-frontend";
-import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
-import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
-import { IModelsClient as AuthorIModelsClient, ReleaseBriefcaseParams } from "@itwin/imodels-client-authoring";
-import { Briefcase, IModelsClient as FrontendIModelsClient, GetBriefcaseListParams, GetIModelListParams, IModelScopedOperationParams, IModelsErrorCode, IModelsErrorScope, MinimalIModel, SPECIAL_VALUES_ME, toArray } from "@itwin/imodels-client-management";
+import { AccessTokenAdapter, FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
+import { IModelsClient as AuthorIModelsClient, Briefcase, GetBriefcaseListParams, GetIModelListParams, IModelScopedOperationParams, MinimalIModel, ReleaseBriefcaseParams, SPECIAL_VALUES_ME, toArray } from "@itwin/imodels-client-authoring";
+import { IModelsClient as FrontendIModelsClient } from "@itwin/imodels-client-management";
 import { ITwinAccessClientWrapper } from "../../common/ITwinAccessClientWrapper";
 
 export interface IModelNameArg {
@@ -31,36 +30,14 @@ export interface TestFrontendHubAccess extends FrontendHubAccess {
 export class TestHubFrontend extends FrontendIModelsAccess {
   private getScopedOperationParams(arg: IModelIdArg): IModelScopedOperationParams {
     return {
-      authorization: async () => {
-        const [scheme, token] = arg.accessToken.split(" ");
-        if (!scheme || !token)
-          ITwinError.throwError({
-            iTwinErrorId: {
-              key: IModelsErrorCode.InvalidIModelsRequest,
-              scope: IModelsErrorScope,
-            },
-            message: "Unsupported access token format",
-          });
-        return Promise.resolve({ scheme, token });
-      },
+      authorization: AccessTokenAdapter.toAuthorizationCallback(arg.accessToken),
       iModelId: arg.iModelId,
     };
   }
 
   public async queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined> {
     const getIModelListParams: GetIModelListParams = {
-      authorization: async () => {
-        const [scheme, token] = arg.accessToken.split(" ");
-        if (!scheme || !token)
-          ITwinError.throwError({
-            iTwinErrorId: {
-              key: IModelsErrorCode.InvalidIModelsRequest,
-              scope: IModelsErrorScope,
-            },
-            message: "Unsupported access token format",
-          });
-        return Promise.resolve({ scheme, token });
-      },
+      authorization: AccessTokenAdapter.toAuthorizationCallback(arg.accessToken),
       urlParams: {
         iTwinId: arg.iTwinId,
         name: arg.iModelName,
@@ -92,7 +69,7 @@ export class TestHubFrontend extends FrontendIModelsAccess {
     };
 
     // Need to use the IModelsClient from the authoring package to be able to release the briefcase.
-    const iModelClient = new AuthorIModelsClient({ cloudStorage: new AzureClientStorage(new BlockBlobClientWrapperFactory()), api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+    const iModelClient = new AuthorIModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
     return iModelClient.briefcases.release(releaseBriefcaseParams);
   }
 }

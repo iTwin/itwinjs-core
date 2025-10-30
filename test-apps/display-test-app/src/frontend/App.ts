@@ -238,7 +238,7 @@ export class DisplayTestApp {
       /** API Version. v1 by default */
       // version?: ApiVersion;
       /** API Url. Used to select environment. Defaults to "https://api.bentley.com/reality-management/reality-data" */
-      baseUrl: `https://${import.meta.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
+      baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
     };
     const opts: ElectronAppOpts | LocalHostIpcAppOpts = {
       iModelApp: {
@@ -379,7 +379,7 @@ export class DisplayTestApp {
 
     BingTerrainMeshProvider.register();
 
-    const realityApiKey = import.meta.env.IMJS_REALITY_DATA_KEY;
+    const realityApiKey = process.env.IMJS_REALITY_DATA_KEY;
     if (realityApiKey)
       registerRealityDataSourceProvider(realityApiKey);
 

@@ -564,32 +564,6 @@ export class ViewAttributes {
       if (!visible)
         return;
 
-      if (checkboxInterfaceGoogle3dTiles0.checkbox.checked) {
-        // Only create and initialize the provider once
-        const provider = new Google3dTilesProvider({ apiKey: import.meta.env.IMJS_GOOGLE_3D_TILES_KEY!, showCreditsOnScreen: true });
-        await provider.initialize();
-
-        if (!this.getDisplayingGoogle3dTiles()) {
-          const url = getGoogle3dTilesUrl();
-          IModelApp.realityDataSourceProviders.register("google3dTiles", provider);
-          view.displayStyle.attachRealityModel({
-            tilesetUrl: url,
-            name: "google3dTiles",
-            rdSourceKey: {
-              provider: "google3dTiles",
-              format: "ThreeDTile",
-              id: url,
-            },
-          });
-          this.sync();
-        }
-      } else {
-        if (this.getDisplayingGoogle3dTiles()) {
-          view.displayStyle.detachRealityModelByNameAndUrl("google3dTiles", getGoogle3dTilesUrl());
-          this.sync();
-        }
-      }
-
       checkbox.checked = view.viewFlags.backgroundMap;
       checkboxLabel.style.fontWeight = checkbox.checked ? "bold" : "500";
       showOrHideSettings(checkbox.checked);
@@ -974,7 +948,7 @@ export class ViewAttributesPanel extends ToolBarDropDown {
       else
         displayStyle = new DisplayStyle2dState(displayStyleProp, view.iModel);
 
-      displayStyles.set(displayStyleProp.id, displayStyle);
+      displayStyles.set(displayStyleProp.id!, displayStyle);
     }
 
     await Promise.all(promises);

@@ -129,6 +129,9 @@ export default defineConfig(() => {
         prefix: "IMJS_",
       }),
     ],
+    define: {
+      "process.env": process.env, // injects process.env into the frontend
+    },
     resolve: {
       alias: {
         ...packageAliases,

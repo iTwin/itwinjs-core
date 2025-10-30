@@ -49,6 +49,7 @@ function createConfig(shouldInstrument) {
         zlib: require.resolve("browserify-zlib"),
       },
       alias: {
+        "@azure/storage-blob$": "@azure/storage-blob/dist-esm/storage-blob/src/index.browser.js",
         "supports-color$": "supports-color/browser.js"
       }
     },

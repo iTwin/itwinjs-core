@@ -5,7 +5,6 @@
 
 import { IModelHost, IModelHostOptions } from "@itwin/core-backend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
-import { AzureClientStorage, BlockBlobClientWrapperFactory } from "@itwin/object-storage-azure";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { emptyDirSync, mkdirsSync } from "fs-extra";
 import * as fs from "fs";
@@ -31,10 +30,7 @@ loadEnv(path.join(__dirname, "..", "..", "..", ".env"));
 export async function startupForIntegration(cfg?: IModelHostOptions) {
   cfg = cfg ?? {};
   cfg.cacheDir = path.join(__dirname, ".cache");  // Set the cache dir to be under the lib directory.
-  const iModelClient = new IModelsClient({
-    cloudStorage: new AzureClientStorage(new BlockBlobClientWrapperFactory()),
-    api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` }
-  });
+  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
   cfg.hubAccess = new BackendIModelsAccess(iModelClient);
   mkdirsSync(cfg.cacheDir);
   emptyDirSync(cfg.cacheDir);

@@ -4,7 +4,7 @@
   "packages": [
     {
       "name": "@azure/storage-blob",
-      "allowedCategories": [ "backend", "internal" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/aec-units-schema",
@@ -312,7 +312,7 @@
     },
     {
       "name": "@itwin/object-storage-azure",
-      "allowedCategories": [ "backend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@itwin/object-storage-core",
