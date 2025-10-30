@@ -96,6 +96,7 @@ public;interface;CreateNewIModelProps
 beta;interface;CreateNewWorkspaceContainerArgs
 beta;interface;CreateNewWorkspaceDbVersionArgs
 public;interface;CreateSheetViewDefinitionArgs
+beta;function;createTerminatorGeometry
 beta;interface;CustomHandledProperty
 public;class;DefinitionContainer
 preview;class;DefinitionContainer

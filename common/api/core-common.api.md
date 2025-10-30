@@ -10058,6 +10058,12 @@ export interface TabRunProps extends TextBlockComponentProps {
     readonly type: "tab";
 }
 
+// @beta
+export type TerminatorShape = typeof terminatorShapes[number];
+
+// @beta
+export const terminatorShapes: readonly ["openArrow", "closedArrow", "closedArrowFilled", "circle", "circleFilled", "slash", "none"];
+
 // @public
 export enum TerrainHeightOriginMode {
     Geodetic = 0,
@@ -10300,6 +10306,7 @@ export interface TextLeaderStyleProps {
     color?: TextStyleColor | "inherit";
     elbowLength?: number;
     terminatorHeightFactor?: number;
+    terminatorShape?: TerminatorShape;
     terminatorWidthFactor?: number;
     wantElbow?: boolean;
 }
