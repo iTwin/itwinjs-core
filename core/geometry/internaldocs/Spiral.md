@@ -18,6 +18,8 @@ $$r=ae^{bθ}$$
 Parametric (Cartesian) form:
 $$x(θ)=ae^{bθ}cosθ \\ y(θ)=ae^{bθ}sinθ​$$
 
+**Note:** Archimedean and Logarithmic spirals are not yet supported by iTwin.
+
 -----------
 
 Another way to represent a spiral is via its curvature. In general, for a curve parameterized by curve length $\bar{s}$ we have:
@@ -46,7 +48,7 @@ $$\boxed{
 
 **Example:**
 
-*Euler Spiral (Clothoid)*
+*Clothoid (Euler Spiral)*
 
 Curvature $𝜅$ increases linearly with arc length $s$:
 $$𝜅(s) = cs \Rightarrow θ(s) = \frac{cs^2}{2} $$
