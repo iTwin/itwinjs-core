@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "patch fix for an if condition in migrateTextStyleSettings",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
