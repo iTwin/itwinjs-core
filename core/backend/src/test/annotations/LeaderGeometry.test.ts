@@ -205,34 +205,39 @@ describe("LeaderGeometry", () => {
             leaders[0].styleOverrides = { ...leaders[0].styleOverrides, leader: { terminatorShape: shape } };
             const result = appendLeadersToBuilder(builder, leaders, layout, transform, defaultParams, textStyleResolver, scaleFactor);
             expect(result).to.be.true;
-            let terminatorGeometry = builder.geometries[1];
-            if (shape.includes("Filled")) {
-              expect(builder.geometries.length).to.equal(3) // One entry for geometry query and another for geometryParams for fill
-              terminatorGeometry = builder.geometries[2];
-            }
-            if (shape.includes("circle")) {
-              // expect(terminatorGeometry).to.be.instanceOf(Arc3d);
-              expect((terminatorGeometry as Arc3d).circularRadius()).to.equal(terminatorHeight / 2)
-            }
-
-            if (shape === "slash") {
-              expect(terminatorGeometry).to.be.instanceOf(LineSegment3d);
-              terminatorGeometry = terminatorGeometry as LineSegment3d;
-              expect(terminatorGeometry.curveLength()).to.equal(terminatorHeight);
-            }
-
-            if (shape === "closedArrow") {
-              // The leaderLine is truncated to accommodate the closed and hollow shape of the terminator
-              const leaderLine = builder.geometries[0] as LineString3d;
-              const firstLeaderLine = LineSegment3d.create(leaderLine.points[0], leaderLine.points[1]);
-              const firstLeaderLineLength = firstLeaderLine.curveLength();
-              expect(firstLeaderLineLength).to.be.closeTo(firstLeaderLineLengthBeforeTruncation - terminatorWidth, 0.01);
+            if (shape === "none") {
+              expect(builder.geometries.length).to.equal(1); // Only leader line should be present with no terminators
             } else {
-              // keep record of first leader line length before truncation for closedArrow test
-              const leaderLine = builder.geometries[0] as LineString3d;
-              const firstLeaderLineBeforeTruncation = LineSegment3d.create(leaderLine.points[0], leaderLine.points[1]);
-              firstLeaderLineLengthBeforeTruncation = firstLeaderLineBeforeTruncation.curveLength();
+              let terminatorGeometry = builder.geometries[1];
+              if (shape.includes("Filled")) {
+                expect(builder.geometries.length).to.equal(3) // One entry for geometry query and another for geometryParams for fill
+                terminatorGeometry = builder.geometries[2];
+              }
+              if (shape.includes("circle")) {
+                // expect(terminatorGeometry).to.be.instanceOf(Arc3d);
+                expect((terminatorGeometry as Arc3d).circularRadius()).to.equal(terminatorHeight / 2)
+              }
+
+              if (shape === "slash") {
+                expect(terminatorGeometry).to.be.instanceOf(LineSegment3d);
+                terminatorGeometry = terminatorGeometry as LineSegment3d;
+                expect(terminatorGeometry.curveLength()).to.equal(terminatorHeight);
+              }
+
+              if (shape === "closedArrow") {
+                // The leaderLine is truncated to accommodate the closed and hollow shape of the terminator
+                const leaderLine = builder.geometries[0] as LineString3d;
+                const firstLeaderLine = LineSegment3d.create(leaderLine.points[0], leaderLine.points[1]);
+                const firstLeaderLineLength = firstLeaderLine.curveLength();
+                expect(firstLeaderLineLength).to.be.closeTo(firstLeaderLineLengthBeforeTruncation - terminatorWidth, 0.01);
+              } else {
+                // keep record of first leader line length before truncation for closedArrow test
+                const leaderLine = builder.geometries[0] as LineString3d;
+                const firstLeaderLineBeforeTruncation = LineSegment3d.create(leaderLine.points[0], leaderLine.points[1]);
+                firstLeaderLineLengthBeforeTruncation = firstLeaderLineBeforeTruncation.curveLength();
+              }
             }
+
           });
 
         });

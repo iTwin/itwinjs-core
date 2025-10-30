@@ -90,10 +90,12 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
 
     result = result && builder.appendGeometryQuery(LineString3d.create(leaderLinePoints));
 
-    // Terminator geometry
-    if (!terminatorDirection) continue; // Assuming leaders without terminators is a valid case.
+    if (leaderStyle.leader.terminatorShape !== "none") {
+      // Terminator geometry
+      if (!terminatorDirection) continue; // Assuming leaders without terminators is a valid case.
+      result = result && createTerminatorGeometry(builder, leader.startPoint, terminatorDirection, params, leaderStyle, scaledBlockTextHeight);
 
-    result = result && createTerminatorGeometry(builder, leader.startPoint, terminatorDirection, params, leaderStyle, scaledBlockTextHeight);
+    }
 
   }
   return result;
@@ -124,7 +126,6 @@ export function createTerminatorGeometry(builder: ElementGeometry.Builder, point
 
   // Helper function to add fill parameters
   const addFillParams = () => {
-    params.fillColor = ColorDef.black;
     params.fillDisplay = FillDisplay.Always;
     result = result && builder.appendGeometryParamsChange(params);
   };

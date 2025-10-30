@@ -51,7 +51,7 @@ export type TextAnnotationFrameShape = typeof textAnnotationFrameShapes[number];
 /** Set of predefined shapes that can be used as terminators for leaders in a [[TextAnnotation]]
  * @beta
 */
-export const terminatorShapes = ["openArrow", "closedArrow", "closedArrowFilled", "circle", "circleFilled", "slash"] as const;
+export const terminatorShapes = ["openArrow", "closedArrow", "closedArrowFilled", "circle", "circleFilled", "slash", "none"] as const;
 
 /** Describes a predefined shape that can be used as a terminator for leaders in a [[TextAnnotation]]
  * @beta
