@@ -232,7 +232,7 @@
     },
     {
       "name": "@itwin/ecschema-rpcinterface-common",
-      "allowedCategories": [ "backend", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/ecschema-rpcinterface-impl",
@@ -607,10 +607,6 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "get-system-fonts",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "glob",
       "allowedCategories": [ "backend", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -757,10 +753,6 @@
     {
       "name": "playwright",
       "allowedCategories": [ "frontend", "tools" ]
-    },
-    {
-      "name": "plugin",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "prettier",

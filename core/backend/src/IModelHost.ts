@@ -11,7 +11,7 @@ import "./IModelDb"; // DO NOT REMOVE OR MOVE THIS LINE!
 
 import { IModelNative, loadNativePlatform } from "./internal/NativePlatform";
 import * as os from "node:os";
-import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
+import { NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, assert, BeEvent, BentleyStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { AzureServerStorage, AzureServerStorageConfig, BlobServiceClientWrapper } from "@itwin/object-storage-azure";
