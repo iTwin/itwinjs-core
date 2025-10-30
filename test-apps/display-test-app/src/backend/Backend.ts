@@ -9,7 +9,7 @@ import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { appendTextAnnotationGeometry, Drawing, IModelDb, IModelHost, IModelHostOptions, layoutTextBlock, LocalhostIpcHost, TextStyleResolver } from "@itwin/core-backend";
+import { appendTextAnnotationGeometry, BriefcaseDb, Drawing, IModelDb, IModelHost, IModelHostOptions, layoutTextBlock, LocalhostIpcHost, SnapshotDb, TextStyleResolver } from "@itwin/core-backend";
 import {
   DynamicGraphicsRequest2dProps, ElementGeometry, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, Placement2dProps, RpcInterfaceDefinition, RpcManager, TextAnnotation, TextAnnotationProps,
 } from "@itwin/core-common";
@@ -296,6 +296,18 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   } else {
     await LocalhostIpcHost.startup(opts);
     EditCommandAdmin.registerModule(editorBuiltInCommands);
+  }
+
+  const allowedChannels = dtaConfig.allowedChannels;
+  if (dtaConfig.openReadWrite && allowedChannels) {
+    const applyAllowedChannels = (db: IModelDb) => {
+      for (const channel of allowedChannels) {
+        db.channels.addAllowedChannel(channel);
+      }
+    }
+
+    SnapshotDb.onOpened.addListener(applyAllowedChannels);
+    BriefcaseDb.onOpened.addListener(applyAllowedChannels);
   }
 };
 
