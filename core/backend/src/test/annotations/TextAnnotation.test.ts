@@ -960,23 +960,26 @@ describe("AnnotationTextStyle", () => {
     });
 
     it("should migrate text style settings from old version", () => {
-      const oldStyleData: VersionedJSON<TextStyleSettingsProps> = {
-        version: "0.0.1",
-        data: {
-          ...TextStyleSettings.defaultProps,
-          leader: {
-            ...TextStyleSettings.defaultProps.leader,
-            // Explicitly remove terminatorShape to simulate old data
-            terminatorShape: undefined as any
-          }
+      const oldStyleData: TextStyleSettingsProps = {
+        ...TextStyleSettings.defaultProps,
+        leader: {
+          ...TextStyleSettings.defaultProps.leader,
+          // Explicitly remove terminatorShape to simulate old data
+          terminatorShape: undefined as any
         }
       };
       const migratedStyle = makeStyle({
         settings: JSON.stringify({
-          version: "0.0.1",
+          version: "1.0.0",
           data: oldStyleData
         }),
       })
+      const jsonStyleData = migratedStyle.toJSON();
+      if (jsonStyleData.settings) {
+        const jsonVersion = JSON.parse(jsonStyleData.settings).version;
+        expect(jsonVersion).to.equal(TEXT_STYLE_SETTINGS_JSON_VERSION);
+      }
+
       expect(migratedStyle.settings.leader.terminatorShape).to.not.be.undefined;
 
     });
