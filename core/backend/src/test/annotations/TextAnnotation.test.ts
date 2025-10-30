@@ -995,7 +995,7 @@ describe("AnnotationTextStyle", () => {
       }
     });
 
-    it("should return undefined when styleData is unrecognized", () => {
+    it("should return defaultProps when styleData is unrecognized", () => {
       const textStyle = makeStyle({
         settings: JSON.stringify({
           version: "1.0.1",
