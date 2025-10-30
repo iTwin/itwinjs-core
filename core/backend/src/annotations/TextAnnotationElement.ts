@@ -555,6 +555,7 @@ export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.1";
 function migrateTextStyleSettings(oldData: VersionedJSON<TextStyleSettingsProps>): TextStyleSettingsProps {
   if (oldData.version === TEXT_STYLE_SETTINGS_JSON_VERSION) return oldData.data;
 
+  // Migrate from 1.0.0 to 1.0.1
   if (oldData.data.leader && !oldData.data.leader.terminatorShape) {
     oldData.data.leader.terminatorShape = TextStyleSettings.defaultProps.leader.terminatorShape;
   }
