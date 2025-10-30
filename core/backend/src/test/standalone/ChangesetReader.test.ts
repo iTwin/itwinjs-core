@@ -1162,7 +1162,7 @@ describe("Changeset Reader API", async () => {
     await Promise.all([secondBriefCase.close(), firstBriefCase.close()]);
   });
 
-  it.skip("Track changeset health stats", async () => {
+  it("Track changeset health stats", async () => {
     const adminToken = "super manager token";
     const iModelName = "test";
     const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
@@ -1247,6 +1247,7 @@ describe("Changeset Reader API", async () => {
     assert.equal(firstBriefcaseChangesets.length, 1);
     const firstBriefcaseChangeset = firstBriefcaseChangesets[0];
 
+    expect(firstBriefcaseChangeset.changesetIndex).to.be.eql(2);
     expect(firstBriefcaseChangeset.uncompressedSizeBytes).to.be.greaterThan(300);
     expect(firstBriefcaseChangeset.insertedRows).to.be.greaterThanOrEqual(4);
     expect(firstBriefcaseChangeset.updatedRows).to.be.greaterThanOrEqual(1);
@@ -1257,17 +1258,19 @@ describe("Changeset Reader API", async () => {
     assert.equal(secondBriefcaseChangesets.length, 2);
     const [secondBriefcaseChangeset1, secondBriefcaseChangeset2] = secondBriefcaseChangesets;
 
+    expect(secondBriefcaseChangeset1.changesetIndex).to.be.eql(1);
     expect(secondBriefcaseChangeset1.uncompressedSizeBytes).to.be.greaterThan(40000);
-    expect(secondBriefcaseChangeset1.insertedRows).to.be.eql(0);
+    expect(secondBriefcaseChangeset1.insertedRows).to.be.eql(52);
     expect(secondBriefcaseChangeset1.updatedRows).to.be.greaterThanOrEqual(921);
-    expect(secondBriefcaseChangeset1.deletedRows).to.be.greaterThanOrEqual(52)
+    expect(secondBriefcaseChangeset1.deletedRows).to.be.greaterThanOrEqual(0)
     expect(secondBriefcaseChangeset1.totalFullTableScans).to.be.eql(0);
     expect(secondBriefcaseChangeset1.perStatementStats.length).to.be.eql(11);
 
+    expect(secondBriefcaseChangeset2.changesetIndex).to.be.eql(3);
     expect(secondBriefcaseChangeset2.uncompressedSizeBytes).to.be.greaterThan(40000);
-    expect(secondBriefcaseChangeset2.insertedRows).to.be.greaterThanOrEqual(52);
+    expect(secondBriefcaseChangeset2.insertedRows).to.be.greaterThanOrEqual(0);
     expect(secondBriefcaseChangeset2.updatedRows).to.be.greaterThanOrEqual(921);
-    expect(secondBriefcaseChangeset2.deletedRows).to.be.eql(0);
+    expect(secondBriefcaseChangeset2.deletedRows).to.be.eql(52);
     expect(secondBriefcaseChangeset2.totalFullTableScans).to.be.eql(0);
     expect(secondBriefcaseChangeset2.perStatementStats.length).to.be.eql(11);
 

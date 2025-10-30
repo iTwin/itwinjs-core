@@ -1200,6 +1200,8 @@ export interface ChangesetHealthStats {
     // (undocumented)
     changesetId: string;
     // (undocumented)
+    changesetIndex: number;
+    // (undocumented)
     deletedRows: number;
     // (undocumented)
     insertedRows: number;
