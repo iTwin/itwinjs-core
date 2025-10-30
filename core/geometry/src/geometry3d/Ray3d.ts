@@ -6,6 +6,7 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
+import { assert } from "@itwin/core-bentley";
 import { CurveCurveApproachType, CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
 import { AxisOrder, BeJSONFunctions, Geometry, PerpParallelOptions } from "../Geometry";
 import { SmallSystem } from "../numerics/SmallSystem";
@@ -229,13 +230,10 @@ export class Ray3d implements BeJSONFunctions {
     if (!transform.computeCachedInverse(true))
       return undefined;
     const origin = transform.multiplyInversePoint3d(this.origin, result?.origin);
-    if (!origin)
-      return undefined;
     const direction = transform.matrix.multiplyInverseXYZAsVector3d(
       this.direction.x, this.direction.y, this.direction.z, result?.direction,
     );
-    if (!direction)
-      return undefined;
+    assert(origin !== undefined && direction !== undefined, "expect transform to be nonsingular");
     return Ray3d.create(origin, direction, result);
   }
   /** Apply a transform in place. */
