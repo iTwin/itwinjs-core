@@ -384,7 +384,6 @@ describe("Code Tests", () => {
       assert.equal(updatedElement3.code.scope, newCode.scope);
 
       newCode = new Code({ scope: "0x1", spec: "0x11", value: "\xa0" }); // non-breaking space value
-      newCode.value = undefined as any;
       element.code = newCode;
       element.update();
 
