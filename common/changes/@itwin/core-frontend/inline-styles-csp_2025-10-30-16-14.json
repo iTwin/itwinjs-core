@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix unsafe-inline CSP violation",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
