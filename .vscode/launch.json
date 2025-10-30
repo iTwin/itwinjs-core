@@ -644,6 +644,23 @@
       ]
     },
     {
+      "name": "[perftests] Delete Multiple Relationship Instances (Offline)",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/full-stack-tests/backend",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "perftest:deleteRelationshipInstances"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/*/lib/**/*.js"
+      ]
+    },
+    {
       "name": "[perftests] ElementAspect PerfTests",
       "presentation": {
         "group": "6_Misc"

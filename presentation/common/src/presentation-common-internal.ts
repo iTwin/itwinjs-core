@@ -12,6 +12,5 @@ export { buildElementProperties } from "./presentation-common/ElementProperties.
 export { createCancellableTimeoutPromise, deepReplaceNullsToUndefined } from "./presentation-common/Utils.js";
 export { LocalizationHelper } from "./presentation-common/LocalizationHelper.js";
 export { isSingleElementPropertiesRequestOptions } from "./presentation-common/PresentationManagerOptions.js";
-export { ContentFormatter, ContentPropertyValueFormatter } from "./presentation-common/content/PropertyValueFormatter.js";
 export { RpcRequestsHandler } from "./presentation-common/RpcRequestsHandler.js";
 export { AsyncTasksTracker } from "./presentation-common/AsyncTasks.js";
