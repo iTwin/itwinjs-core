@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { ColorDef, GeometryParams, LineBreakRun, terminatorShapes, TextAnnotation, TextAnnotationLeader, TextBlock, TextFrameStyleProps, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { ColorDef, GeometryParams, LineBreakRun, TerminatorShape, terminatorShapes, TextAnnotation, TextAnnotationLeader, TextBlock, TextFrameStyleProps, TextRun, TextStyleSettings } from "@itwin/core-common";
 import { Arc3d, LineSegment3d, LineString3d, Point3d, Range2d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { appendLeadersToBuilder, computeElbowDirection, computeFrame, computeLeaderAttachmentPoint, TextStyleResolver } from "../../core-backend";
 import { Id64, Id64String } from "@itwin/core-bentley";
@@ -195,12 +195,12 @@ describe("LeaderGeometry", () => {
         expect(elbowLength).to.be.closeTo(leaders[0].styleOverrides?.leader?.elbowLength ?? 1, 0.01);
       });
 
-      it("should apply terminator sh'ape overrides", () => {
+      it("should apply terminator shape overrides", () => {
         const textHeight = 1;
         const terminatorHeight = (leaders[0].styleOverrides?.leader?.terminatorHeightFactor ?? 1) * textHeight;
         const terminatorWidth = (leaders[0].styleOverrides?.leader?.terminatorWidthFactor ?? 1) * textHeight;
         let firstLeaderLineLengthBeforeTruncation: number;
-        terminatorShapes.forEach((shape) => {
+        terminatorShapes.forEach((shape: TerminatorShape) => {
           it(`Terminator shape: ${shape}`, () => {
             leaders[0].styleOverrides = { ...leaders[0].styleOverrides, leader: { terminatorShape: shape } };
             const result = appendLeadersToBuilder(builder, leaders, layout, transform, defaultParams, textStyleResolver, scaleFactor);
