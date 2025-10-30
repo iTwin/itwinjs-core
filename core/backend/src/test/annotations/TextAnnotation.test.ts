@@ -998,9 +998,9 @@ describe("AnnotationTextStyle", () => {
       })
       const deserializedStyleData = migratedStyle.toJSON();
       if (deserializedStyleData.settings) {
-        const jsonVersion = JSON.parse(deserializedStyleData.settings).version;
-        expect(jsonVersion).to.equal(styleData.version);
-        expect(JSON.parse(deserializedStyleData.settings).data).to.deep.equal(styleData.data);
+        const parsedJson = JSON.parse(deserializedStyleData.settings);
+        expect(parsedJson.version).to.equal(styleData.version);
+        expect(parsedJson.data).to.deep.equal(styleData.data);
       }
     });
     it("should return undefined when styleData is unrecognized", () => {
