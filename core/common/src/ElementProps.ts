@@ -669,3 +669,55 @@ export interface VersionedJSON<T> {
   /** The JSON data. */
   data: T;
 }
+
+/** Project-level properties hosted by a [ProjectInformationRecord]($backend) element.
+ * @beta
+ */
+export interface ProjectInformation {
+  /** A name that uniquely identifies this project within an organization. */
+  projectNumber?: string;
+  /** A human-readable display label for the project. Unlike [[projectNumber]], this needn't be unique. */
+  projectName?: string;
+  /** A human-readable description of the geographic location of the project - often, the name of a city or a street address. */
+  location?: string;
+}
+
+/** JSON representation of a [ProjectInformationRecord]($backend).
+ * @beta
+ */
+export type ProjectInformationRecordProps = ElementProps & ProjectInformation;
+
+/** Captures basic metadata about a [Sheet]($backend). This information is typically included in the Sheet's graphical representation, often
+ * as part of its title block.
+ * This information is stored in a [SheetInformationAspect]($backend).
+ * @beta
+ */
+export interface SheetInformation {
+  /** A user-supplied string describing who designed the sheet contents. */
+  designedBy?: string;
+  /** A user-supplied date describing when the sheet contents were designed. */
+  designedDate?: Date;
+  /** A user-supplied string describing who drew the sheet contents. */
+  drawnBy?: string;
+  /** A user-supplied string describing who verified the sheet contents. */
+  checkedBy?: string;
+}
+
+/** JSON representation of a [[SheetInformation]].
+ * @beta
+ */
+export interface SheetInformationProps {
+  /** A user-supplied string describing who designed the sheet contents. */
+  designedBy?: string;
+  /** The [ISO string representation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString) of a user-supplied date describing when the sheet contents were designed. */
+  designedDate?: string;
+  /** A user-supplied string describing who drew the sheet contents. */
+  drawnBy?: string;
+  /** A user-supplied string describing who verified the sheet contents. */
+  checkedBy?: string;
+}
+
+/** JSON representation of a [SheetInformationAspect]($backend).
+ * @beta
+ */
+export type SheetInformationAspectProps = ElementAspectProps & SheetInformationProps;
