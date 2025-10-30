@@ -23,7 +23,7 @@ importers:
       '@itwin/ecsql-common': workspace:*
       '@itwin/eslint-plugin': 5.2.1
       '@itwin/object-storage-azure': ^2.3.0
-      '@itwin/object-storage-core': ^2.3.0
+      '@itwin/object-storage-core': ^3.0.4
       '@opentelemetry/api': 1.0.4
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
@@ -68,7 +68,7 @@ importers:
       '@itwin/cloud-agnostic-core': 2.2.4_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.3.0_scz6qrwecfbbxg4vskopkl3a7u
-      '@itwin/object-storage-core': 2.3.0_scz6qrwecfbbxg4vskopkl3a7u
+      '@itwin/object-storage-core': 3.0.4_scz6qrwecfbbxg4vskopkl3a7u
       form-data: 4.0.4
       fs-extra: 8.1.0
       inversify: 6.0.1
@@ -145,7 +145,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': 5.2.1
-      '@itwin/object-storage-core': ^2.3.0
+      '@itwin/object-storage-core': ^3.0.4
       '@types/chai': 4.3.1
       '@types/flatbuffers': ~1.10.0
       '@types/node': ~18.16.20
@@ -165,7 +165,7 @@ importers:
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-geometry': link:../geometry
       '@itwin/eslint-plugin': 5.2.1_aud4m2gc3le6icaewhydfwpu6m
-      '@itwin/object-storage-core': 2.3.0
+      '@itwin/object-storage-core': 3.0.4
       '@types/chai': 4.3.1
       '@types/flatbuffers': 1.10.0
       '@types/node': 18.16.20
@@ -564,7 +564,7 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/core-telemetry': workspace:*
       '@itwin/eslint-plugin': 5.2.1
-      '@itwin/object-storage-core': ^2.3.0
+      '@itwin/object-storage-core': ^3.0.4
       '@itwin/webgl-compatibility': workspace:*
       '@loaders.gl/core': ^3.1.6
       '@loaders.gl/draco': ^3.1.6
@@ -590,7 +590,7 @@ importers:
       '@itwin/cloud-agnostic-core': 2.2.4
       '@itwin/core-i18n': link:../i18n
       '@itwin/core-telemetry': link:../telemetry
-      '@itwin/object-storage-core': 2.3.0
+      '@itwin/object-storage-core': 3.0.4
       '@itwin/webgl-compatibility': link:../webgl-compatibility
       '@loaders.gl/core': 3.1.6
       '@loaders.gl/draco': 3.1.6
@@ -1688,7 +1688,7 @@ importers:
       '@itwin/imodels-client-authoring': ^5.8.1
       '@itwin/imodels-client-management': ^5.8.1
       '@itwin/itwins-client': ^1.6.1
-      '@itwin/object-storage-core': ^2.3.0
+      '@itwin/object-storage-core': ^3.0.4
       '@itwin/oidc-signin-tool': ^5.0.2
       '@itwin/reality-data-client': ^1.2.1
       '@types/chai': 4.3.1
@@ -1766,7 +1766,7 @@ importers:
       '@itwin/certa': link:../../tools/certa
       '@itwin/eslint-plugin': 5.2.1_aud4m2gc3le6icaewhydfwpu6m
       '@itwin/itwins-client': 1.6.1
-      '@itwin/object-storage-core': 2.3.0
+      '@itwin/object-storage-core': 3.0.4
       '@itwin/oidc-signin-tool': 5.0.2_mdtbcqczpmeuv6yjzfaigjndwi
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
@@ -2588,7 +2588,7 @@ importers:
       '@itwin/imodels-client-authoring': ^5.8.1
       '@itwin/imodels-client-management': ^5.8.1
       '@itwin/map-layers-formats': workspace:*
-      '@itwin/object-storage-core': ^2.3.0
+      '@itwin/object-storage-core': ^3.0.4
       '@itwin/reality-data-client': ^1.2.1
       '@itwin/webgl-compatibility': workspace:*
       '@types/express': ^4.17.20
@@ -2652,7 +2652,7 @@ importers:
       '@itwin/imodels-client-authoring': 5.8.1
       '@itwin/imodels-client-management': 5.8.1
       '@itwin/map-layers-formats': link:../../extensions/map-layers-formats
-      '@itwin/object-storage-core': 2.3.0
+      '@itwin/object-storage-core': 3.0.4
       '@itwin/reality-data-client': 1.2.1_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/webgl-compatibility': link:../../core/webgl-compatibility
       body-parser: 1.20.3
@@ -4271,12 +4271,39 @@ packages:
         optional: true
       reflect-metadata:
         optional: true
+    dev: false
 
   /@itwin/cloud-agnostic-core/2.3.0_scz6qrwecfbbxg4vskopkl3a7u:
     resolution: {integrity: sha512-oFSaERSqnuXtpzJ/dX61/p47eFoNoZ3NG0F9NUpndmiErVYba8aEnlVHQqXBQb5kycXBd7c9a5Ihnif1ussLLw==}
     peerDependencies:
       inversify: ^6.0.1
       reflect-metadata: ^0.1.13
+    peerDependenciesMeta:
+      inversify:
+        optional: true
+      reflect-metadata:
+        optional: true
+    dependencies:
+      inversify: 6.0.1
+      reflect-metadata: 0.1.13
+    dev: false
+
+  /@itwin/cloud-agnostic-core/3.0.4:
+    resolution: {integrity: sha512-aOgtonCzp1mm8IueeF+7wcIsp/lpkkv3qSyPXj+C141xQItnHL6vjhSD8W8X3OWPlGZKS1JqB/mB20/2X14dFQ==}
+    peerDependencies:
+      inversify: ^7.5.2
+      reflect-metadata: ^0.2.2
+    peerDependenciesMeta:
+      inversify:
+        optional: true
+      reflect-metadata:
+        optional: true
+
+  /@itwin/cloud-agnostic-core/3.0.4_scz6qrwecfbbxg4vskopkl3a7u:
+    resolution: {integrity: sha512-aOgtonCzp1mm8IueeF+7wcIsp/lpkkv3qSyPXj+C141xQItnHL6vjhSD8W8X3OWPlGZKS1JqB/mB20/2X14dFQ==}
+    peerDependencies:
+      inversify: ^7.5.2
+      reflect-metadata: ^0.2.2
     peerDependenciesMeta:
       inversify:
         optional: true
@@ -4496,9 +4523,10 @@ packages:
         optional: true
     dependencies:
       '@itwin/cloud-agnostic-core': 2.3.0
-      axios: 1.8.4
+      axios: 1.13.1
     transitivePeerDependencies:
       - debug
+    dev: false
 
   /@itwin/object-storage-core/2.3.0_scz6qrwecfbbxg4vskopkl3a7u:
     resolution: {integrity: sha512-PAHaTMG7sE1hLlXBmSimxo/oZDJZJ81vS/hJ1p7QnwEu6MEtLgo5wXMU7sy7fHtOeh8ZqzKpXWkQyry5kRDXAg==}
@@ -4512,7 +4540,42 @@ packages:
         optional: true
     dependencies:
       '@itwin/cloud-agnostic-core': 2.3.0_scz6qrwecfbbxg4vskopkl3a7u
-      axios: 1.8.4
+      axios: 1.13.1
+      inversify: 6.0.1
+      reflect-metadata: 0.1.13
+    transitivePeerDependencies:
+      - debug
+    dev: false
+
+  /@itwin/object-storage-core/3.0.4:
+    resolution: {integrity: sha512-CnNpqI3ZgCMM6sFMXqvToFjN6/9K4xCOQZf6svL0PgaMhNF0cfqhqtgJG58CGuH/fvVENcCqXmn+4esX0KiOjQ==}
+    peerDependencies:
+      inversify: ^7.5.2
+      reflect-metadata: ^0.2.2
+    peerDependenciesMeta:
+      inversify:
+        optional: true
+      reflect-metadata:
+        optional: true
+    dependencies:
+      '@itwin/cloud-agnostic-core': 3.0.4
+      axios: 1.13.1
+    transitivePeerDependencies:
+      - debug
+
+  /@itwin/object-storage-core/3.0.4_scz6qrwecfbbxg4vskopkl3a7u:
+    resolution: {integrity: sha512-CnNpqI3ZgCMM6sFMXqvToFjN6/9K4xCOQZf6svL0PgaMhNF0cfqhqtgJG58CGuH/fvVENcCqXmn+4esX0KiOjQ==}
+    peerDependencies:
+      inversify: ^7.5.2
+      reflect-metadata: ^0.2.2
+    peerDependenciesMeta:
+      inversify:
+        optional: true
+      reflect-metadata:
+        optional: true
+    dependencies:
+      '@itwin/cloud-agnostic-core': 3.0.4_scz6qrwecfbbxg4vskopkl3a7u
+      axios: 1.13.1
       inversify: 6.0.1
       reflect-metadata: 0.1.13
     transitivePeerDependencies:
@@ -6732,6 +6795,15 @@ packages:
     transitivePeerDependencies:
       - debug
     dev: false
+
+  /axios/1.13.1:
+    resolution: {integrity: sha512-hU4EGxxt+j7TQijx1oYdAjw4xuIp1wRQSsbMFwSthCWeBQur1eF+qJ5iQ5sN3Tw8YRzQNKb8jszgBdMDVqwJcw==}
+    dependencies:
+      follow-redirects: 1.15.9
+      form-data: 4.0.4
+      proxy-from-env: 1.1.0
+    transitivePeerDependencies:
+      - debug
 
   /axios/1.8.4:
     resolution: {integrity: sha512-eBSYY4Y68NNlHbHBMdeDmKNtDgXWhQsJcGqzO3iLUM0GraQFSS9cVgPX5I9b3lbdFKyYoAEGAZF1DwhTaljNAw==}
