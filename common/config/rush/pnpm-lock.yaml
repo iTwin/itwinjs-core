@@ -1314,7 +1314,7 @@ importers:
       '@types/mocha': ^10.0.6
       '@types/node': ~18.16.20
       '@xmldom/xmldom': ~0.8.5
-      azurite: ^3.34.0
+      azurite: ^3.35.0
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
@@ -1341,7 +1341,7 @@ importers:
       '@itwin/itwins-client': 1.6.1
       '@itwin/service-authorization': 1.0.0_67wltvhdskk2oee2c3z2o4tfly
       '@xmldom/xmldom': 0.8.5
-      azurite: 3.34.0
+      azurite: 3.35.0
       fs-extra: 8.1.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -1591,7 +1591,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
       '@types/sinon': ^17.0.2
-      azurite: ^3.34.0
+      azurite: ^3.35.0
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
@@ -1636,7 +1636,7 @@ importers:
       '@itwin/itwins-client': 1.6.1
       '@itwin/oidc-signin-tool': 5.0.2_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/perf-tools': link:../../tools/perf-tools
-      azurite: 3.34.0
+      azurite: 3.35.0
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       cpx2: 3.0.0
@@ -1701,7 +1701,7 @@ importers:
       '@types/sinon': ^17.0.2
       '@types/sinon-chai': ^3.2.0
       assert: ^2.0.0
-      azurite: ^3.34.0
+      azurite: ^3.35.0
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       browserify-zlib: ^0.2.0
@@ -1756,7 +1756,7 @@ importers:
       '@itwin/imodels-client-authoring': 5.8.1
       '@itwin/imodels-client-management': 5.8.1
       '@itwin/reality-data-client': 1.2.1_mdtbcqczpmeuv6yjzfaigjndwi
-      azurite: 3.34.0
+      azurite: 3.35.0
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       electron: 33.0.0
@@ -6804,8 +6804,8 @@ packages:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
     engines: {node: '>= 0.4'}
 
-  /azurite/3.34.0:
-    resolution: {integrity: sha512-1uPtXTHtH318SEPV1sUkarcCMNNpTGy0pzMx1C2QNsQzdrllg+XvsLqD6j+NTuScZqow9+h704pfruK0BQGenQ==}
+  /azurite/3.35.0:
+    resolution: {integrity: sha512-GzKmi+/5U0baNRjEEVtBMLpLuIKEJ0uSh0VWBzOI4qe4f5ziJyoZQmcTO7QhxZTF6+rphj7TZS3PtJY7uiiacA==}
     engines: {node: '>=10.0.0', vscode: ^1.39.0}
     hasBin: true
     dependencies:

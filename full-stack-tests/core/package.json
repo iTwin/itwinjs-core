@@ -51,7 +51,7 @@
     "@itwin/imodels-client-authoring": "^5.8.1",
     "@itwin/imodels-client-management": "^5.8.1",
     "@itwin/reality-data-client": "^1.2.1",
-    "azurite": "^3.34.0",
+    "azurite": "^3.35.0",
     "chai-as-promised": "^7.1.1",
     "chai": "^4.3.10",
     "electron": "^33.0.0",

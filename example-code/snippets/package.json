@@ -34,7 +34,7 @@
     "@itwin/itwins-client": "^1.6.1",
     "@itwin/service-authorization": "^1.0.0",
     "@xmldom/xmldom": "~0.8.5",
-    "azurite": "^3.34.0",
+    "azurite": "^3.35.0",
     "fs-extra": "^8.1.0"
   },
   "devDependencies": {
