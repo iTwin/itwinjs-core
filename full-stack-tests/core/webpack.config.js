@@ -50,7 +50,6 @@ function createConfig(shouldInstrument) {
       },
       alias: {
         "@azure/storage-blob$": "@azure/storage-blob/dist-esm/storage-blob/src/index.browser.js",
-        "supports-color$": "supports-color/browser.js"
       }
     },
     module: {
