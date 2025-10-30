@@ -200,31 +200,16 @@ export abstract class PrimitiveConverter<TPrimitiveData = DecorationPrimitiveEnt
   public clearDecorationsForType(scene: CesiumScene, type: string): void {
     const matchesType = (id: any) => typeof id === "string" && id.startsWith(`${type}_`);
 
-    const removedPoints = this.removeMatching(scene.pointCollection, matchesType);
-    const removedLines = this.removeMatching(scene.polylineCollection, matchesType);
-    const removedPrimitives = this.removeMatching(scene.primitivesCollection, matchesType);
-
-    if (removedPoints || removedLines || removedPrimitives) {
-      // eslint-disable-next-line no-console
-      console.debug("[PrimitiveConverter] clearDecorationsForType", { type, removedPoints, removedLines, removedPrimitives });
-    }
+    this.removeMatching(scene.pointCollection, matchesType);
+    this.removeMatching(scene.polylineCollection, matchesType);
+    this.removeMatching(scene.primitivesCollection, matchesType);
   }
 
   /** Remove all converted decorations from the Cesium scene. */
   public clearAllDecorations(scene: CesiumScene): void {
-    const removedPoints = scene.pointCollection?.length ?? 0;
     scene.pointCollection?.removeAll();
-
-    const removedLines = scene.polylineCollection?.length ?? 0;
     scene.polylineCollection?.removeAll();
-
-    const removedPrimitives = scene.primitivesCollection?.length ?? 0;
     scene.primitivesCollection?.removeAll();
-
-    if (removedPoints || removedLines || removedPrimitives) {
-      // eslint-disable-next-line no-console
-      console.debug("[PrimitiveConverter] clearAllDecorations", { removedPoints, removedLines, removedPrimitives });
-    }
   }
 
   private removeMatching<T extends { id?: any; destroy?: () => void }>(
