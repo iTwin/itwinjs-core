@@ -7,7 +7,7 @@
   "typings": "lib/cjs/core-backend",
   "license": "MIT",
   "engines": {
-    "node": "^20.0.0 || ^22.0.0"
+    "node": "^20.0.0 || ^22.0.0 || ^24.0.0"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s build:esm && npm run -s copy:assets && npm run -s copy:test-assets && npm run -s copy:ecsqltestmdfiles",
@@ -113,7 +113,7 @@
     "webpack": "^5.97.1"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "5.4.1",
+    "@bentley/imodeljs-native": "5.4.2",
     "@itwin/object-storage-azure": "^3.0.4",
     "@azure/storage-blob": "^12.28.0",
     "form-data": "^4.0.4",

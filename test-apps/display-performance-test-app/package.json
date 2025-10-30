@@ -7,9 +7,6 @@
     "url": "http://www.bentley.com"
   },
   "version": "0.0.0",
-  "engines": {
-    "node": "^20.0.0 || ^22.0.0"
-  },
   "private": true,
   "scripts": {
     "build": "npm run -s build:frontend && npm run -s build:backend",

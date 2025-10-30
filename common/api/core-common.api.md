@@ -1200,6 +1200,8 @@ export interface ChangesetHealthStats {
     // (undocumented)
     changesetId: string;
     // (undocumented)
+    changesetIndex: number;
+    // (undocumented)
     deletedRows: number;
     // (undocumented)
     insertedRows: number;
@@ -7356,6 +7358,16 @@ export enum ProfileOptions {
     Upgrade = 1
 }
 
+// @beta
+export interface ProjectInformation {
+    location?: string;
+    projectName?: string;
+    projectNumber?: string;
+}
+
+// @beta
+export type ProjectInformationRecordProps = ElementProps & ProjectInformation;
+
 // @public
 export class Projection implements ProjectionProps {
     constructor(_data?: ProjectionProps);
@@ -9476,6 +9488,25 @@ export type SheetIndexFolderProps = SheetIndexEntryProps;
 // @beta
 export interface SheetIndexReferenceProps extends SheetIndexEntryProps {
     sheetIndex?: RelatedElementProps;
+}
+
+// @beta
+export interface SheetInformation {
+    checkedBy?: string;
+    designedBy?: string;
+    designedDate?: Date;
+    drawnBy?: string;
+}
+
+// @beta
+export type SheetInformationAspectProps = ElementAspectProps & SheetInformationProps;
+
+// @beta
+export interface SheetInformationProps {
+    checkedBy?: string;
+    designedBy?: string;
+    designedDate?: string;
+    drawnBy?: string;
 }
 
 // @public @preview
