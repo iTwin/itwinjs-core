@@ -1063,6 +1063,8 @@ export namespace CloudSqlite {
         readonly activeClients?: string;
         readonly attachedContainers?: string;
         readonly lockedCacheslots: string;
+        readonly memoryClientArray?: string;
+        readonly memoryClientManifest?: string;
         readonly memoryHighwater?: string;
         readonly memoryManifest?: string;
         readonly memoryUsed?: string;

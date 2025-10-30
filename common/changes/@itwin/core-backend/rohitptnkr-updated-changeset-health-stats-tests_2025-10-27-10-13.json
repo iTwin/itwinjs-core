@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Make discardChanges() public preview",
+      "comment": "",
       "type": "none"
     }
   ],
