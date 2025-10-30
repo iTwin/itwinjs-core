@@ -950,13 +950,13 @@ describe("AnnotationTextStyle", () => {
       })).to.throw(`JSON version 999.999.999 is newer than supported version ${TEXT_STYLE_SETTINGS_JSON_VERSION}. Application update required to understand data.`);
     });
 
-    it("should return migrated data if the JSON version is old", () => {
+    it("should not throw error if the JSON version is old", () => {
       expect(() => makeStyle({
         settings: JSON.stringify({
           version: "0.0.1",
           data: TextStyleSettings.defaultProps
         }),
-      })).to.be.instanceOf(AnnotationTextStyle);
+      })).to.not.throw();
     });
   })
 
