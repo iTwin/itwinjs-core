@@ -65,7 +65,7 @@ describe("Code Tests", () => {
       expect(() => imodel.elements.queryElementIdByCode(noSpecCode)).to.throw("Invalid CodeSpec");
     });
 
-    it("should get undefined when querying an element with an whitespace string spec", () => {
+    it("should get undefined when querying an element with a whitespace string spec", () => {
       assert.exists(imodel.elements);
       const whitespaceCode = { scope: "0x11", spec: " ", value: "RF1.dgn" };
       const elementId = imodel.elements.queryElementIdByCode(whitespaceCode);
