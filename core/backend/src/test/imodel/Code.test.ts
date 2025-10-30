@@ -183,7 +183,7 @@ describe("Code Tests", () => {
       assert.equal(element2.code.value, "new code trailing space test2");
     });
 
-    it("should insert and trim an element with a code value is only trailing spaces", () => {
+    it("should insert and trim an element with a code value that is only trailing spaces", () => {
       assert.exists(imodel.elements);
       const elProps: ElementProps = {
         classFullName: 'BisCore:RepositoryLink',
