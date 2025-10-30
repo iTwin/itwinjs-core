@@ -10062,7 +10062,7 @@ export interface TabRunProps extends TextBlockComponentProps {
 export type TerminatorShape = typeof terminatorShapes[number];
 
 // @beta
-export const terminatorShapes: readonly ["openArrow", "closedArrow", "closedArrowFilled", "circle", "circleFilled", "slash"];
+export const terminatorShapes: readonly ["openArrow", "closedArrow", "closedArrowFilled", "circle", "circleFilled", "slash", "none"];
 
 // @public
 export enum TerrainHeightOriginMode {
