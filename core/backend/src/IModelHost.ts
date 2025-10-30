@@ -17,7 +17,7 @@ import { AuthorizationClient, IModelError, LocalDirName, SessionProps } from "@i
 import { AzureServerStorage, AzureServerStorageConfig, BlobServiceClientWrapper } from "@itwin/object-storage-azure";
 import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
 import type { ServerStorage } from "@itwin/object-storage-core";
-import { BackendHubAccess, CreateNewIModelProps } from "./BackendHubAccess";
+import { BackendHubAccess } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
 import { BriefcaseManager } from "./BriefcaseManager";
