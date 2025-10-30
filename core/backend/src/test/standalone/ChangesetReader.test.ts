@@ -1162,7 +1162,7 @@ describe("Changeset Reader API", async () => {
     await Promise.all([secondBriefCase.close(), firstBriefCase.close()]);
   });
 
-  it.skip("Track changeset health stats", async () => {
+  it("Track changeset health stats", async () => {
     const adminToken = "super manager token";
     const iModelName = "test";
     const rwIModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: adminToken });
