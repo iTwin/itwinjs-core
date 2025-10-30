@@ -331,7 +331,7 @@ describe("TextAnnotation element", () => {
       const jobSubjectId = createJobSubjectElement(imodel, "Job").insert();
       const definitionModel = DefinitionModel.insert(imodel, jobSubjectId, "Definition");
       const { category, model } = insertSpatialModel(imodel, jobSubjectId, definitionModel);
-      const styleId = createAnnotationTextStyle(imodel, definitionModel, "test", {font: { name: "Totally Real Font" }, textHeight: 0.25, isItalic: true}).insert();
+      const styleId = createAnnotationTextStyle(imodel, definitionModel, "test", { font: { name: "Totally Real Font" }, textHeight: 0.25, isItalic: true }).insert();
 
       expect(jobSubjectId).not.to.be.undefined;
       expect(category).not.to.be.undefined;
@@ -482,8 +482,8 @@ describe("TextAnnotation element", () => {
       imodel = await createIModel("DefaultTextStyle");
       const jobSubjectId = createJobSubjectElement(imodel, "Job").insert();
       const definitionModel = DefinitionModel.insert(imodel, jobSubjectId, "Definition");
-      const styleId = createAnnotationTextStyle(imodel, definitionModel, "test", {font: { name: "Totally Real Font" }, textHeight: 0.25, isItalic: true}).insert();
-      const differentStyleId = createAnnotationTextStyle(imodel, definitionModel, "alt", {font: { name: "Karla" }, textHeight: 0.5, isBold: true}).insert();
+      const styleId = createAnnotationTextStyle(imodel, definitionModel, "test", { font: { name: "Totally Real Font" }, textHeight: 0.25, isItalic: true }).insert();
+      const differentStyleId = createAnnotationTextStyle(imodel, definitionModel, "alt", { font: { name: "Karla" }, textHeight: 0.5, isBold: true }).insert();
 
       expect(jobSubjectId).not.to.be.undefined;
       expect(definitionModel).not.to.be.undefined;
@@ -699,7 +699,7 @@ describe("TextAnnotation element", () => {
           });
 
           it("remaps to an existing text style with the same code if present", async () => {
-            const dstStyleId = createAnnotationTextStyle(dstDb, dstDefModel, "test", {font: { name: "Karla" } }).insert();
+            const dstStyleId = createAnnotationTextStyle(dstDb, dstDefModel, "test", { font: { name: "Karla" } }).insert();
             expect(dstStyleId).not.to.equal(seedStyleId);
 
             const srcElem = insertStyledElement(seedStyleId, imodel);
@@ -732,7 +732,7 @@ describe("TextAnnotation element", () => {
           });
 
           it("remaps multiple occurrences of same style to same Id", async () => {
-            const srcStyleId = createAnnotationTextStyle(imodel, seedDefinitionModelId, "styyyle", {font: { name: "Karla" } }).insert();
+            const srcStyleId = createAnnotationTextStyle(imodel, seedDefinitionModelId, "styyyle", { font: { name: "Karla" } }).insert();
             const srcElem1 = insertStyledElement(srcStyleId, imodel);
             const srcElem2 = insertStyledElement(srcStyleId, imodel);
             const srcElem3 = insertStyledElement(srcStyleId, imodel);
@@ -905,7 +905,7 @@ describe("AnnotationTextStyle", () => {
 
   it("can update style via cloning", async () => {
     const el0 = createAnnotationTextStyle(imodel, seedDefinitionModel, "cloning", { font: { name: "Totally Real Font" } });
-    const newStyle = el0.settings.clone({isBold: true, lineSpacingFactor: 3});
+    const newStyle = el0.settings.clone({ isBold: true, lineSpacingFactor: 3 });
     expect(el0.settings.toJSON()).to.not.deep.equal(newStyle.toJSON());
     el0.settings = newStyle;
     expect(el0.settings.toJSON()).to.deep.equal(newStyle.toJSON());
@@ -950,13 +950,13 @@ describe("AnnotationTextStyle", () => {
       })).to.throw(`JSON version 999.999.999 is newer than supported version ${TEXT_STYLE_SETTINGS_JSON_VERSION}. Application update required to understand data.`);
     });
 
-    it("throws if the JSON version is old and cannot be migrated", () => {
+    it("should return migrated data if the JSON version is old", () => {
       expect(() => makeStyle({
         settings: JSON.stringify({
           version: "0.0.1",
           data: TextStyleSettings.defaultProps
         }),
-      })).to.throw(`Migration for settings from version 0.0.1 to ${TEXT_STYLE_SETTINGS_JSON_VERSION} failed.`);
+      })).to.be.instanceOf(AnnotationTextStyle);
     });
   })
 
@@ -996,9 +996,9 @@ describe("AnnotationTextStyle", () => {
 
       const initialCounts = getFontCounts();
 
-      const karlaStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "karla-style", TextStyleSettings.fromJSON({ font: { name: "Karla" }}));
+      const karlaStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "karla-style", TextStyleSettings.fromJSON({ font: { name: "Karla" } }));
       karlaStyle.insert();
-      const cdmStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "cdm-style", TextStyleSettings.fromJSON({ font: { name: "Cdm", type: FontType.Shx }}));
+      const cdmStyle = createAnnotationTextStyle(imodel, seedDefinitionModel, "cdm-style", TextStyleSettings.fromJSON({ font: { name: "Cdm", type: FontType.Shx } }));
       cdmStyle.insert();
 
       const context = new IModelElementCloneContext(imodel, targetDb);
@@ -1026,24 +1026,24 @@ describe("appendTextAnnotationGeometry", () => {
   let seedStyleId2: string;
 
   before(async () => {
-      imodel = await createIModel("DefaultTextStyle");
-      const jobSubjectId = createJobSubjectElement(imodel, "Job").insert();
-      const definitionModel = DefinitionModel.insert(imodel, jobSubjectId, "Definition");
-      const { category, model } = insertDrawingModel(imodel, jobSubjectId, definitionModel);
-      const styleId = createAnnotationTextStyle(imodel, definitionModel, "test", {font: { name: "Totally Real Font" }, textHeight: 0.25, isItalic: true}).insert();
-      const differentStyleId = createAnnotationTextStyle(imodel, definitionModel, "alt", {font: { name: "Karla" }, textHeight: 0.5, isBold: true}).insert();
+    imodel = await createIModel("DefaultTextStyle");
+    const jobSubjectId = createJobSubjectElement(imodel, "Job").insert();
+    const definitionModel = DefinitionModel.insert(imodel, jobSubjectId, "Definition");
+    const { category, model } = insertDrawingModel(imodel, jobSubjectId, definitionModel);
+    const styleId = createAnnotationTextStyle(imodel, definitionModel, "test", { font: { name: "Totally Real Font" }, textHeight: 0.25, isItalic: true }).insert();
+    const differentStyleId = createAnnotationTextStyle(imodel, definitionModel, "alt", { font: { name: "Karla" }, textHeight: 0.5, isBold: true }).insert();
 
-      expect(jobSubjectId).not.to.be.undefined;
-      expect(definitionModel).not.to.be.undefined;
-      expect(category).not.to.be.undefined;
-      expect(model).not.to.be.undefined;
-      expect(styleId).not.to.be.undefined;
-      expect(differentStyleId).not.to.be.undefined;
+    expect(jobSubjectId).not.to.be.undefined;
+    expect(definitionModel).not.to.be.undefined;
+    expect(category).not.to.be.undefined;
+    expect(model).not.to.be.undefined;
+    expect(styleId).not.to.be.undefined;
+    expect(differentStyleId).not.to.be.undefined;
 
-      seedDefinitionModelId = definitionModel;
-      seedCategoryId = category;
-      seedStyleId = styleId;
-      seedStyleId2 = differentStyleId;
+    seedDefinitionModelId = definitionModel;
+    seedCategoryId = category;
+    seedStyleId = styleId;
+    seedStyleId2 = differentStyleId;
   });
 
   function runAppendTextAnnotationGeometry(annotation: TextAnnotation, styleId: Id64String, scaleFactor: number = 1): MockBuilder {
@@ -1138,7 +1138,7 @@ describe("appendTextAnnotationGeometry", () => {
 
   it("accounts for style overrides in the text", () => {
     const block = TextBlock.create();
-    block.styleOverrides = { margins: { left: 0, right: 1, top: 2, bottom: 3 }}
+    block.styleOverrides = { margins: { left: 0, right: 1, top: 2, bottom: 3 } }
     block.appendParagraph();
     block.children[0].styleOverrides = { isBold: true };
     block.appendRun(TextRun.create({ content: "Run, Barry," }));

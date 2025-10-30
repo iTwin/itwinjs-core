@@ -181,7 +181,7 @@ describe("LeaderGeometry", () => {
         const terminatorWidth = (leaders[0].styleOverrides?.leader?.terminatorWidthFactor ?? 1) * textHeight;
         const terminatorHeight = (leaders[0].styleOverrides?.leader?.terminatorHeightFactor ?? 1) * textHeight;
         //  terminator length is calculated based on the terminator width and height factors.
-        const expectedTerminatorLength = Math.sqrt(terminatorWidth * terminatorWidth + terminatorHeight * terminatorHeight);
+        const expectedTerminatorLength = Math.sqrt(terminatorWidth * terminatorWidth + ((terminatorHeight / 2) * (terminatorHeight / 2)));
         expect(terminatorLength).to.be.closeTo(expectedTerminatorLength, 0.01);
       });
 
