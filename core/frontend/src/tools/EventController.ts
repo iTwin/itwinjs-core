@@ -23,10 +23,7 @@ export class EventController {
     if (element === undefined)
       return;
 
-    // TODO when I set a breakpoint here, pointerSupported is always true
-    // This is the case in EmptyExample using both the Cesium and iTwin renderers, and also when I open a BlankConnection
-    // So do we need this? Should we just replace mouse events with pointer events? Will that be a breaking iTwin.js change?
-    const pointerSupported = typeof window !== "undefined" && (window as any).PointerEvent !== undefined;
+    const pointerSupported = window.PointerEvent !== undefined;
 
     // Put events on the parentDiv to allow us to stopPropagation of events to the view canvas when they are meant for a sibling of view canvas (markup canvas, for example).
     if (pointerSupported) {
