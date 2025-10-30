@@ -195,7 +195,7 @@ describe("LeaderGeometry", () => {
         expect(elbowLength).to.be.closeTo(leaders[0].styleOverrides?.leader?.elbowLength ?? 1, 0.01);
       });
 
-      it("should apply terminator shape overrides", () => {
+      it("should apply terminator sh'ape overrides", () => {
         const textHeight = 1;
         const terminatorHeight = (leaders[0].styleOverrides?.leader?.terminatorHeightFactor ?? 1) * textHeight;
         const terminatorWidth = (leaders[0].styleOverrides?.leader?.terminatorWidthFactor ?? 1) * textHeight;

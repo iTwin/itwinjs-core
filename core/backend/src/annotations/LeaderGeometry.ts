@@ -99,6 +99,17 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
   return result;
 }
 
+/**
+ * Creates the geometry for a terminator at the end of a leader line.
+ * @param builder The geometry builder to append the terminator geometry to.
+ * @param point The starting point of the leader line.
+ * @param dir The direction vector of the leader line.
+ * @param params The geometry parameters to use for the terminator.
+ * @param textStyleSettings The text style settings to use for the terminator.
+ * @param textHeight The height of the text block.
+ * @returns True if the geometry was successfully created, false otherwise.
+ * @beta
+ */
 export function createTerminatorGeometry(builder: ElementGeometry.Builder, point: Point3d, dir: Vector3d, params: GeometryParams, textStyleSettings: TextStyleSettings, textHeight: number): boolean {
 
   let result = true;
