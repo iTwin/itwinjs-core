@@ -959,7 +959,7 @@ describe("AnnotationTextStyle", () => {
       })).to.not.throw();
     });
 
-    it("should migrate text style settings from old version", () => {
+    it("should migrate text style settings from 1.0.0", () => {
       const oldStyleData: TextStyleSettingsProps = {
         ...TextStyleSettings.defaultProps,
         leader: {
@@ -974,14 +974,43 @@ describe("AnnotationTextStyle", () => {
           data: oldStyleData
         }),
       })
-      const jsonStyleData = migratedStyle.toJSON();
-      if (jsonStyleData.settings) {
-        const jsonVersion = JSON.parse(jsonStyleData.settings).version;
+      const deserializedStyleData = migratedStyle.toJSON();
+      if (deserializedStyleData.settings) {
+        const jsonVersion = JSON.parse(deserializedStyleData.settings).version;
         expect(jsonVersion).to.equal(TEXT_STYLE_SETTINGS_JSON_VERSION);
       }
 
       expect(migratedStyle.settings.leader.terminatorShape).to.not.be.undefined;
 
+    });
+
+    it("should return same data when version is 1.0.1", () => {
+      const styleData: VersionedJSON<TextStyleSettingsProps> = {
+        version: "1.0.1",
+        data: TextStyleSettings.defaultProps
+
+      };
+      const migratedStyle = makeStyle({
+        settings: JSON.stringify({
+          version: styleData.version,
+          data: styleData.data
+        }),
+      })
+      const deserializedStyleData = migratedStyle.toJSON();
+      if (deserializedStyleData.settings) {
+        const parsedJson = JSON.parse(deserializedStyleData.settings);
+        expect(parsedJson.version).to.equal(styleData.version);
+        expect(parsedJson.data).to.deep.equal(styleData.data);
+      }
+    });
+    it("should return undefined when styleData is unrecognized", () => {
+      const textStyle = makeStyle({
+        settings: JSON.stringify({
+          version: "1.0.1",
+          data: { invalid: "data" }
+        }),
+      });
+      expect(textStyle.settings).to.be.undefined;
     });
   })
 
