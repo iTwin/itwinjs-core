@@ -18,8 +18,7 @@ $$r=ae^{bθ}$$
 Parametric (Cartesian) form:
 $$x(θ)=ae^{bθ}cosθ \\ y(θ)=ae^{bθ}sinθ​$$
 
-**Note:** Archimedean and Logarithmic spirals are not yet supported by iTwin.
-
+**Note:** core-geometry does not currently support Archimedean or logarithmic spirals, and there are no plans to implement them. Their inclusion here is solely to illustrate the mathematical concepts behind spirals.
 -----------
 
 Another way to represent a spiral is via its curvature. In general, for a curve parameterized by curve length $\bar{s}$ we have:

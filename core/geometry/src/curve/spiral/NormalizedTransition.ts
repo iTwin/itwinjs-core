@@ -16,9 +16,9 @@
  * * Each implementation provides:
  *   * fractionToCurvature -- the f(u) function described above
  *   * fractionToCurvatureDerivative -- df(u)/du
- *   * fractionToArea -- antiderivative A of f, chosen such that A(0) = 0. The value of this function at fraction u
- *     is the area under f from 0 to u. In particular, the symmetry condition on f implies that
- *     "integral of f over [0,1]" = A(1) - A(0) = A(1) = 1/2.
+ *   * fractionToArea -- antiderivative A of f, chosen such that A(0) = 0. The value of this function at
+ *     fraction u is the area under f from 0 to u. In particular, the symmetry condition on f implies that
+ *     1/2 = "integral of f over [0,1]" = A(1) - A(0) = A(1).
  * @internal
  */
 // see internaldocs/Spiral.md for more info
