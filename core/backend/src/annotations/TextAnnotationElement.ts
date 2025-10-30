@@ -74,7 +74,7 @@ export function parseTextAnnotationData(json: string | undefined): VersionedJSON
 
 function getElementGeometryBuilderParams(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, _placementProps: PlacementProps, annotationProps?: TextAnnotationProps, textStyleId?: Id64String, _subCategory?: Id64String): ElementGeometryBuilderParams {
   const textBlock = TextAnnotation.fromJSON(annotationProps).textBlock;
-  const textStyleResolver = new TextStyleResolver({textBlock, textStyleId: textStyleId ?? "", iModel});
+  const textStyleResolver = new TextStyleResolver({ textBlock, textStyleId: textStyleId ?? "", iModel });
   const layout = layoutTextBlock({ iModel, textBlock, textStyleResolver });
   const builder = new ElementGeometry.Builder();
   let scaleFactor = 1;
@@ -303,7 +303,7 @@ export class TextAnnotation2d extends AnnotationElement2d /* implements ITextAnn
     const srcElem = TextAnnotation2d.fromJSON(srcProps, context.sourceDb);
     ElementDrivesTextAnnotation.remapFields(srcElem, context);
     const anno = srcElem.getAnnotation();
-dstProps.textAnnotationData = anno ? JSON.stringify({ version: TEXT_ANNOTATION_JSON_VERSION, data: anno.toJSON() }) : undefined;
+    dstProps.textAnnotationData = anno ? JSON.stringify({ version: TEXT_ANNOTATION_JSON_VERSION, data: anno.toJSON() }) : undefined;
 
     return remapTextStyle(context, srcElem, dstProps);
   }
@@ -549,14 +549,19 @@ function updateTextBlocks(elem: TextAnnotation2d | TextAnnotation3d, textBlocks:
  * Uses the same semantics as [ECVersion]($ecschema-metadata).
  * @internal
 */
-export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.0";
+// 1.0.1 - Added terminatorShapes for leaders
+export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.1";
 
 function migrateTextStyleSettings(oldData: VersionedJSON<TextStyleSettingsProps>): TextStyleSettingsProps {
   if (oldData.version === TEXT_STYLE_SETTINGS_JSON_VERSION) return oldData.data;
 
-  // Place migration logic here.
+  if (oldData.data.leader) {
+    oldData.data.leader.terminatorShape = oldData.data.leader.terminatorShape ?? TextStyleSettings.defaultProps.leader.terminatorShape;
+  }
+  return oldData.data;
 
-  throw new Error(`Migration for settings from version ${oldData.version} to ${TEXT_STYLE_SETTINGS_JSON_VERSION} failed.`);
+  // Only if something goes wrong, throw an error.
+  // throw new Error(`Migration for settings from version ${oldData.version} to ${TEXT_STYLE_SETTINGS_JSON_VERSION} failed.`);
 }
 
 /** Arguments supplied when creating an [[AnnotationTextStyle]].
@@ -624,7 +629,7 @@ export class AnnotationTextStyle extends DefinitionElement {
       model: arg.definitionModelId,
       code: this.createCode(iModelDb, arg.definitionModelId, arg.name).toJSON(),
       description: arg.description,
-      settings: arg.settings ? JSON.stringify({version: TEXT_STYLE_SETTINGS_JSON_VERSION, data: arg.settings}) : undefined,
+      settings: arg.settings ? JSON.stringify({ version: TEXT_STYLE_SETTINGS_JSON_VERSION, data: arg.settings }) : undefined,
     }
     return new this(props, iModelDb);
   }
@@ -636,7 +641,7 @@ export class AnnotationTextStyle extends DefinitionElement {
   public override toJSON(): AnnotationTextStyleProps {
     const props = super.toJSON() as AnnotationTextStyleProps;
     props.description = this.description;
-    props.settings = JSON.stringify({version: TEXT_STYLE_SETTINGS_JSON_VERSION, data: this.settings.toJSON()});
+    props.settings = JSON.stringify({ version: TEXT_STYLE_SETTINGS_JSON_VERSION, data: this.settings.toJSON() });
     return props;
   }
 

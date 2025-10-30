@@ -96,6 +96,7 @@ public;interface;CreateNewIModelProps
 beta;interface;CreateNewWorkspaceContainerArgs
 beta;interface;CreateNewWorkspaceDbVersionArgs
 public;interface;CreateSheetViewDefinitionArgs
+beta;function;createTerminatorGeometry
 beta;interface;CustomHandledProperty
 public;class;DefinitionContainer
 preview;class;DefinitionContainer
@@ -437,6 +438,8 @@ internal;interface;ProcessChangesetOptions
 beta;function;produceTextBlockGeometry
 public;type;ProgressFunction
 public;enum;ProgressStatus
+beta;class;ProjectInformationRecord
+beta;interface;ProjectInformationRecordCreateArgs
 public;type;PropertyHandler
 preview;type;PropertyHandler
 beta;namespace;PropertyStore
@@ -513,8 +516,10 @@ beta;class;SheetIndexPartition
 beta;class;SheetIndexReference
 beta;interface;SheetIndexReferenceCreateArgs
 beta;class;SheetIndexReferenceRefersToSheetIndex
+beta;class;SheetInformationAspect
 public;class;SheetModel
 preview;class;SheetModel
+beta;class;SheetOwnsSheetInformationAspect
 beta;class;SheetReference
 beta;interface;SheetReferenceCreateArgs
 beta;class;SheetReferenceRefersToSheet
@@ -563,6 +568,7 @@ preview;class;SubCategory
 public;class;Subject
 preview;class;Subject
 public;class;SubjectOwnsPartitionElements
+beta;class;SubjectOwnsProjectInformationRecord
 public;class;SubjectOwnsSubjects
 beta;class;SynchronizationConfigLink
 beta;class;SynchronizationConfigProcessesSources
