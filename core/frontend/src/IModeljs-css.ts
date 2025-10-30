@@ -52,6 +52,10 @@ let iModelJsCss: string | undefined = `
   opacity:.7
 }
 
+.itwinjs-header-lead {
+  font-weight:normal;
+}
+
 .logo-card-header {
   margin:auto;
   font-size:18px;
