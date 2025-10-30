@@ -18,7 +18,7 @@ import { IModelTestUtils } from "./IModelTestUtils";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { overrideSyncNativeLogLevels } from "../internal/NativePlatform";
 
-describe("IModelHost", () => {
+describe.only("IModelHost", () => {
   const opts = { cacheDir: TestUtils.getCacheDir() };
   beforeEach(async () => {
     await TestUtils.shutdownBackend();

@@ -12,6 +12,7 @@ importers:
 
   ../../core/backend:
     specifiers:
+      '@azure/storage-blob': ^12.28.0
       '@bentley/imodeljs-native': 4.11.39
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.2.4
@@ -22,7 +23,7 @@ importers:
       '@itwin/core-webpack-tools': workspace:*
       '@itwin/ecsql-common': workspace:*
       '@itwin/eslint-plugin': 5.2.1
-      '@itwin/object-storage-azure': ^2.3.0
+      '@itwin/object-storage-azure': ^3.0.4
       '@itwin/object-storage-core': ^3.0.4
       '@opentelemetry/api': 1.0.4
       '@types/chai': 4.3.1
@@ -64,10 +65,11 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.10
     dependencies:
+      '@azure/storage-blob': 12.29.1
       '@bentley/imodeljs-native': 4.11.39
       '@itwin/cloud-agnostic-core': 2.2.4_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
-      '@itwin/object-storage-azure': 2.3.0_scz6qrwecfbbxg4vskopkl3a7u
+      '@itwin/object-storage-azure': 3.0.4_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/object-storage-core': 3.0.4_scz6qrwecfbbxg4vskopkl3a7u
       form-data: 4.0.4
       fs-extra: 8.1.0
@@ -1289,7 +1291,7 @@ importers:
 
   ../../example-code/snippets:
     specifiers:
-      '@azure/storage-blob': ^12.24.0
+      '@azure/storage-blob': ^12.28.0
       '@itwin/build-tools': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
@@ -1324,7 +1326,7 @@ importers:
       rimraf: ^3.0.2
       typescript: ~5.6.2
     dependencies:
-      '@azure/storage-blob': 12.24.0
+      '@azure/storage-blob': 12.29.1
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
@@ -1554,7 +1556,7 @@ importers:
 
   ../../full-stack-tests/backend:
     specifiers:
-      '@azure/storage-blob': ^12.24.0
+      '@azure/storage-blob': ^12.28.0
       '@bentley/aec-units-schema': ^1.0.3
       '@bentley/cif-bridge-schema': ^1.0.5
       '@bentley/cif-common-schema': ^1.0.3
@@ -1606,7 +1608,7 @@ importers:
       sinon: ^17.0.2
       typescript: ~5.6.2
     dependencies:
-      '@azure/storage-blob': 12.24.0
+      '@azure/storage-blob': 12.29.1
       '@bentley/aec-units-schema': 1.0.3
       '@bentley/cif-bridge-schema': 1.0.5
       '@bentley/cif-common-schema': 1.0.3
@@ -1661,7 +1663,7 @@ importers:
 
   ../../full-stack-tests/core:
     specifiers:
-      '@azure/storage-blob': ^12.24.0
+      '@azure/storage-blob': ^12.28.0
       '@itwin/browser-authorization': ^1.0.1
       '@itwin/build-tools': workspace:*
       '@itwin/certa': workspace:*
@@ -1730,7 +1732,7 @@ importers:
       webpack: ^5.76.0
       webpack-cli: ^5.0.1
     dependencies:
-      '@azure/storage-blob': 12.24.0
+      '@azure/storage-blob': 12.29.1
       '@itwin/browser-authorization': 1.0.1_mdtbcqczpmeuv6yjzfaigjndwi
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -3325,7 +3327,7 @@ packages:
     engines: {node: '>=18.0.0'}
     dependencies:
       '@azure/abort-controller': 2.1.2
-      '@azure/core-auth': 1.7.2
+      '@azure/core-auth': 1.9.0
       '@azure/core-tracing': 1.2.0
       '@azure/core-util': 1.11.0
       '@azure/logger': 1.1.4
@@ -3490,11 +3492,11 @@ packages:
       - supports-color
     dev: false
 
-  /@azure/storage-blob/12.24.0:
-    resolution: {integrity: sha512-l8cmWM4C7RoNCBOImoFMxhTXe1Lr+8uQ/IgnhRNMpfoA9bAFWoLG4XrWm6O5rKXortreVQuD+fc1hbzWklOZbw==}
-    engines: {node: '>=18.0.0'}
+  /@azure/storage-blob/12.29.1:
+    resolution: {integrity: sha512-7ktyY0rfTM0vo7HvtK6E3UvYnI9qfd6Oz6z/+92VhGRveWng3kJwMKeUpqmW/NmwcDNbxHpSlldG+vsUnRFnBg==}
+    engines: {node: '>=20.0.0'}
     dependencies:
-      '@azure/abort-controller': 1.1.0
+      '@azure/abort-controller': 2.1.2
       '@azure/core-auth': 1.9.0
       '@azure/core-client': 1.9.3
       '@azure/core-http-compat': 2.2.0
@@ -3504,6 +3506,24 @@ packages:
       '@azure/core-tracing': 1.2.0
       '@azure/core-util': 1.11.0
       '@azure/core-xml': 1.4.5
+      '@azure/logger': 1.1.4
+      '@azure/storage-common': 12.1.1
+      events: 3.3.0
+      tslib: 2.8.1
+    transitivePeerDependencies:
+      - supports-color
+    dev: false
+
+  /@azure/storage-common/12.1.1:
+    resolution: {integrity: sha512-eIOH1pqFwI6UmVNnDQvmFeSg0XppuzDLFeUNO/Xht7ODAzRLgGDh7h550pSxoA+lPDxBl1+D2m/KG3jWzCUjTg==}
+    engines: {node: '>=20.0.0'}
+    dependencies:
+      '@azure/abort-controller': 2.1.2
+      '@azure/core-auth': 1.9.0
+      '@azure/core-http-compat': 2.2.0
+      '@azure/core-rest-pipeline': 1.19.1
+      '@azure/core-tracing': 1.2.0
+      '@azure/core-util': 1.11.0
       '@azure/logger': 1.1.4
       events: 3.3.0
       tslib: 2.8.1
@@ -4273,21 +4293,6 @@ packages:
         optional: true
     dev: false
 
-  /@itwin/cloud-agnostic-core/2.3.0_scz6qrwecfbbxg4vskopkl3a7u:
-    resolution: {integrity: sha512-oFSaERSqnuXtpzJ/dX61/p47eFoNoZ3NG0F9NUpndmiErVYba8aEnlVHQqXBQb5kycXBd7c9a5Ihnif1ussLLw==}
-    peerDependencies:
-      inversify: ^6.0.1
-      reflect-metadata: ^0.1.13
-    peerDependenciesMeta:
-      inversify:
-        optional: true
-      reflect-metadata:
-        optional: true
-    dependencies:
-      inversify: 6.0.1
-      reflect-metadata: 0.1.13
-    dev: false
-
   /@itwin/cloud-agnostic-core/3.0.4:
     resolution: {integrity: sha512-aOgtonCzp1mm8IueeF+7wcIsp/lpkkv3qSyPXj+C141xQItnHL6vjhSD8W8X3OWPlGZKS1JqB/mB20/2X14dFQ==}
     peerDependencies:
@@ -4443,7 +4448,7 @@ packages:
   /@itwin/imodels-client-authoring/5.8.1:
     resolution: {integrity: sha512-iRjzQ7xbp9bjEBFTOSYPjUergw9gwB7MAXr7n/VvOkL4UMan6VuQTqgGKDHamelUFbPcXu8ujU225F7QWRUlCQ==}
     dependencies:
-      '@azure/storage-blob': 12.24.0
+      '@azure/storage-blob': 12.29.1
       '@itwin/imodels-client-management': 5.8.1
       '@itwin/object-storage-azure': 2.3.0
       '@itwin/object-storage-core': 2.3.0
@@ -4481,7 +4486,7 @@ packages:
         optional: true
     dependencies:
       '@azure/core-paging': 1.6.2
-      '@azure/storage-blob': 12.24.0
+      '@azure/storage-blob': 12.29.1
       '@itwin/cloud-agnostic-core': 2.3.0
       '@itwin/object-storage-core': 2.3.0
     transitivePeerDependencies:
@@ -4489,11 +4494,11 @@ packages:
       - supports-color
     dev: false
 
-  /@itwin/object-storage-azure/2.3.0_scz6qrwecfbbxg4vskopkl3a7u:
-    resolution: {integrity: sha512-WHECH+aBo9OVk5xcY5cdGnj5g08d2jMQefm6Q4rvHcqlfFtCKh4hfUMkaU5GAF8peNZxkxy06Goe206RWTtsVw==}
+  /@itwin/object-storage-azure/3.0.4_scz6qrwecfbbxg4vskopkl3a7u:
+    resolution: {integrity: sha512-KtXn8DCTpnRcPRQv2v6XNSa9Zb266vL8C71oH5RKbAPjl6QHtj1A1uN5m+pHt23b1UvJYB3QZz+7YKWeqU9dqQ==}
     peerDependencies:
-      inversify: ^6.0.1
-      reflect-metadata: ^0.1.13
+      inversify: ^7.5.2
+      reflect-metadata: ^0.2.2
     peerDependenciesMeta:
       inversify:
         optional: true
@@ -4501,9 +4506,9 @@ packages:
         optional: true
     dependencies:
       '@azure/core-paging': 1.6.2
-      '@azure/storage-blob': 12.24.0
-      '@itwin/cloud-agnostic-core': 2.3.0_scz6qrwecfbbxg4vskopkl3a7u
-      '@itwin/object-storage-core': 2.3.0_scz6qrwecfbbxg4vskopkl3a7u
+      '@azure/storage-blob': 12.29.1
+      '@itwin/cloud-agnostic-core': 3.0.4_scz6qrwecfbbxg4vskopkl3a7u
+      '@itwin/object-storage-core': 3.0.4_scz6qrwecfbbxg4vskopkl3a7u
       inversify: 6.0.1
       reflect-metadata: 0.1.13
     transitivePeerDependencies:
@@ -4524,25 +4529,6 @@ packages:
     dependencies:
       '@itwin/cloud-agnostic-core': 2.3.0
       axios: 1.13.1
-    transitivePeerDependencies:
-      - debug
-    dev: false
-
-  /@itwin/object-storage-core/2.3.0_scz6qrwecfbbxg4vskopkl3a7u:
-    resolution: {integrity: sha512-PAHaTMG7sE1hLlXBmSimxo/oZDJZJ81vS/hJ1p7QnwEu6MEtLgo5wXMU7sy7fHtOeh8ZqzKpXWkQyry5kRDXAg==}
-    peerDependencies:
-      inversify: ^6.0.1
-      reflect-metadata: ^0.1.13
-    peerDependenciesMeta:
-      inversify:
-        optional: true
-      reflect-metadata:
-        optional: true
-    dependencies:
-      '@itwin/cloud-agnostic-core': 2.3.0_scz6qrwecfbbxg4vskopkl3a7u
-      axios: 1.13.1
-      inversify: 6.0.1
-      reflect-metadata: 0.1.13
     transitivePeerDependencies:
       - debug
     dev: false
