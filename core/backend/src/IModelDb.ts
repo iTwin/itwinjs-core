@@ -3119,7 +3119,7 @@ export class BriefcaseDb extends IModelDb {
       throw new IModelError(IModelStatus.BadRequest, "Cannot discard changes when there are indirect changes");
     }
 
-    if (this.txns.rebaser.inProgress()) {
+    if (this.txns.rebaser.inProgress() && !this.txns.rebaser.isAborting) {
       throw new IModelError(IModelStatus.BadRequest, "Cannot discard changes while a rebase is in progress");
     }
 
