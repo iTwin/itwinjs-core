@@ -5218,6 +5218,7 @@ export class RebaseManager {
     }): void;
     canAbort(): boolean;
     inProgress(): boolean;
+    get isAborting(): boolean;
     get isMerging(): boolean;
     get isRebasing(): boolean;
     onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
