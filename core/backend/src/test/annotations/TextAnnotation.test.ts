@@ -965,7 +965,7 @@ describe("AnnotationTextStyle", () => {
         leader: {
           ...TextStyleSettings.defaultProps.leader,
           // Explicitly remove terminatorShape to simulate old data
-          terminatorShape: undefined as any
+          terminatorShape: undefined
         }
       };
       const migratedStyle = makeStyle({

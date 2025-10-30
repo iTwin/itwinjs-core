@@ -182,8 +182,6 @@ export function createTerminatorGeometry(builder: ElementGeometry.Builder, point
       break;
     }
 
-    default:
-      throw new Error(`Unknown terminator shape: ${textStyleSettings.leader.terminatorShape}`);
   }
 
   return result;
