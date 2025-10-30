@@ -10,7 +10,7 @@ overrides:
   form-data: ^4.0.4
   browserslist: latest
 
-pnpmfileChecksum: avk5jcsa6uxo2n5cahoirjiuw4
+pnpmfileChecksum: fm2bgttvmfglngapbjspr7zf2u
 
 importers:
 
@@ -22,8 +22,8 @@ importers:
         specifier: ^12.28.0
         version: 12.28.0
       '@bentley/imodeljs-native':
-        specifier: 5.4.0
-        version: 5.4.0
+        specifier: 5.4.4
+        version: 5.4.4
       '@itwin/object-storage-azure':
         specifier: ^3.0.4
         version: 3.0.4
@@ -4771,8 +4771,8 @@ packages:
   '@bentley/icons-generic@1.0.34':
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
 
-  '@bentley/imodeljs-native@5.4.0':
-    resolution: {integrity: sha512-etGfLbQ8RaOHxASlNmqohoUaNLYO0OREHZV1jV8LX7ow4dpEwPoSFwTsFO2tOpomMLB5AupJEEMS+Mj7PVGClA==}
+  '@bentley/imodeljs-native@5.4.4':
+    resolution: {integrity: sha512-e+Sq/8U+KXK9wLDaBgz7RTLwLayEP9uJSJU8IvkDS28BdGAzo9EOzCw4SFXDNjoLEzbFNViEVCbFWqpj5x62Yg==}
 
   '@bentley/linear-referencing-schema@2.0.3':
     resolution: {integrity: sha512-2pFIEN4BS7alIDhGous6N2icKAS8ZhVBfoWB8WvSFaYnneGv5YwbbXl46qATDdPO5jUFezkW6uVxdpp1eOgUHQ==}
@@ -11444,7 +11444,7 @@ snapshots:
 
   '@bentley/icons-generic@1.0.34': {}
 
-  '@bentley/imodeljs-native@5.4.0': {}
+  '@bentley/imodeljs-native@5.4.4': {}
 
   '@bentley/linear-referencing-schema@2.0.3': {}
 
