@@ -78,8 +78,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * update when the source element changes.
    */
   public static isSupportedForIModel(iModel: IModelDb): boolean {
-    const bisCoreVersion = iModel.querySchemaVersionNumbers("BisCore");
-    return undefined !== bisCoreVersion && bisCoreVersion.compare(minBisCoreVersion) >= 0;
+    return iModel.meetsMinimumSchemaVersion("BisCore", minBisCoreVersion);
   }
 
   /** Examines all of the [FieldRun]($common)s within the specified [[ITextAnnotation]] and ensures that the appropriate
@@ -87,10 +86,6 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * It also deletes any stale relationships left over from fields that were deleted or whose source elements changed.
    */
   public static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void {
-    if (!ElementDrivesTextAnnotation.isSupportedForIModel(iModel)) {
-      return;
-    }
-
     const annotationElement = iModel.elements.tryGetElement<Element>(annotationElementId);
     if (!annotationElement || !isITextAnnotation(annotationElement)) {
       return;
@@ -112,27 +107,37 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     const sourceToRelationship = new Map<Id64String, Id64String | null>();
     const blocks = annotationElement.getTextBlocks();
 
+    let haveFields = false;
     for (const block of blocks) {
       for (const { child } of traverseTextBlockComponent(block.textBlock)) {
-        if (child.type === "field" && isValidSourceId(child.propertyHost.elementId)) {
-          sourceToRelationship.set(child.propertyHost.elementId, null);
+        if (child.type === "field") {
+          haveFields = true;
+          if (isValidSourceId(child.propertyHost.elementId)) {
+            sourceToRelationship.set(child.propertyHost.elementId, null);
+          }
         }
       }
     }
 
+    if (haveFields) {
+      iModel.requireMinimumSchemaVersion("BisCore", minBisCoreVersion, "Text fields");
+    }
+
     const staleRelationships = new Set<Id64String>();
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    annotationElement.iModel.withPreparedStatement(`SELECT ECInstanceId, SourceECInstanceId FROM BisCore.ElementDrivesTextAnnotation WHERE TargetECInstanceId=${annotationElement.id}`, (stmt) => {
-      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
-        const relationshipId = stmt.getValue(0).getId();
-        const sourceId = stmt.getValue(1).getId();
-        if (sourceToRelationship.has(sourceId)) {
-          sourceToRelationship.set(sourceId, relationshipId);
-        } else {
-          staleRelationships.add(relationshipId);
+    if (this.isSupportedForIModel(iModel)) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      annotationElement.iModel.withPreparedStatement(`SELECT ECInstanceId, SourceECInstanceId FROM BisCore.ElementDrivesTextAnnotation WHERE TargetECInstanceId=${annotationElement.id}`, (stmt) => {
+        while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+          const relationshipId = stmt.getValue(0).getId();
+          const sourceId = stmt.getValue(1).getId();
+          if (sourceToRelationship.has(sourceId)) {
+            sourceToRelationship.set(sourceId, relationshipId);
+          } else {
+            staleRelationships.add(relationshipId);
+          }
         }
-      }
-    });
+      });
+    }
 
     for (const [sourceId, relationshipId] of sourceToRelationship) {
       if (relationshipId === null) {
