@@ -214,7 +214,6 @@ describe("LeaderGeometry", () => {
                 terminatorGeometry = builder.geometries[2];
               }
               if (shape.includes("circle")) {
-                // expect(terminatorGeometry).to.be.instanceOf(Arc3d);
                 expect((terminatorGeometry as Arc3d).circularRadius()).to.equal(terminatorHeight / 2)
               }
 
