@@ -555,13 +555,12 @@ export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.1";
 function migrateTextStyleSettings(oldData: VersionedJSON<TextStyleSettingsProps>): TextStyleSettingsProps {
   if (oldData.version === TEXT_STYLE_SETTINGS_JSON_VERSION) return oldData.data;
 
-  if (oldData.data.leader) {
-    oldData.data.leader.terminatorShape = oldData.data.leader.terminatorShape ?? TextStyleSettings.defaultProps.leader.terminatorShape;
+  // Migrate from 1.0.0 to 1.0.1
+  if (oldData.data.leader && !oldData.data.leader.terminatorShape) {
+    oldData.data.leader.terminatorShape = TextStyleSettings.defaultProps.leader.terminatorShape;
   }
   return oldData.data;
 
-  // Only if something goes wrong, throw an error.
-  // throw new Error(`Migration for settings from version ${oldData.version} to ${TEXT_STYLE_SETTINGS_JSON_VERSION} failed.`);
 }
 
 /** Arguments supplied when creating an [[AnnotationTextStyle]].

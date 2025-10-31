@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Angle, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { AnnotationTextStyleProps, FieldRun, FontType, FractionRun, Placement2dProps, Placement3dProps, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
+import { AnnotationTextStyleProps, FieldRun, FontType, FractionRun, Placement2dProps, Placement3dProps, SubCategoryAppearance, TextAnnotation, TextAnnotation2dProps, TextBlock, TextRun, TextStyleSettings, TextStyleSettingsProps, VersionedJSON } from "@itwin/core-common";
 import { IModelDb, StandaloneDb } from "../../IModelDb";
 import { AnnotationTextStyle, parseTextAnnotationData, TEXT_ANNOTATION_JSON_VERSION, TEXT_STYLE_SETTINGS_JSON_VERSION, TextAnnotation2d, TextAnnotation2dCreateArgs, TextAnnotation3d, TextAnnotation3dCreateArgs } from "../../annotations/TextAnnotationElement";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -950,13 +950,59 @@ describe("AnnotationTextStyle", () => {
       })).to.throw(`JSON version 999.999.999 is newer than supported version ${TEXT_STYLE_SETTINGS_JSON_VERSION}. Application update required to understand data.`);
     });
 
-    it("should not throw error if the JSON version is old", () => {
-      expect(() => makeStyle({
+    it("should migrate text style settings from 1.0.0", () => {
+      const oldStyleData: TextStyleSettingsProps = {
+        ...TextStyleSettings.defaultProps,
+        leader: {
+          ...TextStyleSettings.defaultProps.leader,
+          // Explicitly remove terminatorShape to simulate old data
+          terminatorShape: undefined
+        }
+      };
+      const migratedStyle = makeStyle({
         settings: JSON.stringify({
-          version: "0.0.1",
-          data: TextStyleSettings.defaultProps
+          version: "1.0.0",
+          data: oldStyleData
         }),
-      })).to.not.throw();
+      })
+      const jsonStyleData = migratedStyle.toJSON();
+      if (jsonStyleData.settings) {
+        const jsonVersion = JSON.parse(jsonStyleData.settings).version;
+        expect(jsonVersion).to.equal(TEXT_STYLE_SETTINGS_JSON_VERSION);
+      }
+
+      expect(migratedStyle.settings.leader.terminatorShape).to.not.be.undefined;
+
+    });
+
+    it("should return same data when version is 1.0.1", () => {
+      const styleData: VersionedJSON<TextStyleSettingsProps> = {
+        version: "1.0.1",
+        data: TextStyleSettings.defaultProps
+
+      };
+      const migratedStyle = makeStyle({
+        settings: JSON.stringify({
+          version: styleData.version,
+          data: styleData.data
+        }),
+      })
+      const jsonStyleData = migratedStyle.toJSON();
+      if (jsonStyleData.settings) {
+        const parsedJson = JSON.parse(jsonStyleData.settings);
+        expect(parsedJson.version).to.equal(styleData.version);
+        expect(parsedJson.data).to.deep.equal(styleData.data);
+      }
+    });
+
+    it("should return defaultProps when styleData is unrecognized", () => {
+      const textStyle = makeStyle({
+        settings: JSON.stringify({
+          version: "1.0.1",
+          data: { invalid: "data" }
+        }),
+      });
+      expect(textStyle.settings).to.be.deep.equal(TextStyleSettings.defaultProps);
     });
   })
 
