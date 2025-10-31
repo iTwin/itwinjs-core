@@ -119,10 +119,10 @@ export function createTerminatorGeometry(builder: ElementGeometry.Builder, point
   if (!termY) return false; // If dir is parallel to Z, we can't create a terminator
   const terminatorHeight = textStyleSettings.leader.terminatorHeightFactor * textHeight;
   const terminatorWidth = textStyleSettings.leader.terminatorWidthFactor * textHeight;
+  const terminatorHalfHeight = terminatorHeight / 2;
   const basePoint = point.plusScaled(dir, terminatorWidth);
-  const point1 = basePoint.plusScaled(termY, terminatorHeight / 2);
-  const point2 = basePoint.plusScaled(termY.negate(), terminatorHeight / 2);
-  const radius = terminatorHeight / 2;
+  const point1 = basePoint.plusScaled(termY, terminatorHalfHeight);
+  const point2 = basePoint.plusScaled(termY.negate(), terminatorHalfHeight);
 
   // Helper function to add fill parameters
   const addFillParams = () => {
@@ -157,14 +157,14 @@ export function createTerminatorGeometry(builder: ElementGeometry.Builder, point
     }
 
     case "circle": {
-      const circle = Arc3d.createXY(point, radius);
+      const circle = Arc3d.createXY(point, terminatorHalfHeight);
       addGeometry(circle);
       break;
     }
 
     case "circleFilled": {
       addFillParams();
-      const circle = Arc3d.createXY(point, radius);
+      const circle = Arc3d.createXY(point, terminatorHalfHeight);
       addGeometry(circle, true);
       break;
     }
@@ -174,8 +174,8 @@ export function createTerminatorGeometry(builder: ElementGeometry.Builder, point
       if (!normalizedVector) throw new Error("Invalid reference vector for slash terminator.");
 
       const rotatedVector = normalizedVector.rotateXY(Angle.createDegrees(45));
-      const startPoint = point.plusScaled(rotatedVector, -radius);
-      const endPoint = point.plusScaled(rotatedVector, radius);
+      const startPoint = point.plusScaled(rotatedVector, -terminatorHalfHeight);
+      const endPoint = point.plusScaled(rotatedVector, terminatorHalfHeight);
 
       const slashLine = LineSegment3d.create(startPoint, endPoint);
       addGeometry(slashLine);
