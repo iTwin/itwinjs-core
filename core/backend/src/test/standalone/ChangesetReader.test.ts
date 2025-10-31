@@ -296,7 +296,7 @@ describe("Changeset Reader API", async () => {
         assert.deepEqual(el.BBoxLow, { X: -25, Y: -25 });
         // eslint-disable-next-line @typescript-eslint/naming-convention
         assert.deepEqual(el.BBoxHigh, { X: 15, Y: 15 });
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+         
         assert.equal(el.Category.Id, "0x20000000002");
         assert.isNotEmpty(el.Category.RelECClassId);
 
@@ -313,13 +313,13 @@ describe("Changeset Reader API", async () => {
         assert.deepEqual(el.Parent, { Id: null, RelECClassId: null });
         // eslint-disable-next-line @typescript-eslint/naming-convention
         assert.deepEqual(el.TypeDefinition, { Id: null, RelECClassId: null });
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+         
         assert.equal(el.CodeSpec.Id, "0x1");
         assert.isNotEmpty(el.CodeSpec.RelECClassId);
 
         const codeSpecRelClass = await getClassNameById(rwIModel, el.CodeSpec.RelECClassId);
         assert.equal("BisCore:CodeSpecSpecifiesCode", codeSpecRelClass);
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+         
         assert.equal(el.CodeScope.Id, "0x1");
         assert.isNotEmpty(el.CodeScope.RelECClassId);
 
@@ -490,7 +490,7 @@ describe("Changeset Reader API", async () => {
         assert.deepEqual(el.BBoxLow, { X: -25, Y: -25 });
         // eslint-disable-next-line @typescript-eslint/naming-convention
         assert.deepEqual(el.BBoxHigh, { X: 15, Y: 15 });
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+         
         assert.equal(el.Category.Id, "0x20000000002");
         assert.isNotEmpty(el.Category.RelECClassId);
 
@@ -507,13 +507,13 @@ describe("Changeset Reader API", async () => {
         assert.deepEqual(el.Parent, { Id: null, RelECClassId: null });
         // eslint-disable-next-line @typescript-eslint/naming-convention
         assert.deepEqual(el.TypeDefinition, { Id: null, RelECClassId: null });
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+         
         assert.equal(el.CodeSpec.Id, "0x1");
         assert.isNotEmpty(el.CodeSpec.RelECClassId);
 
         const codeSpecRelClass = await getClassNameById(rwIModel, el.CodeSpec.RelECClassId);
         assert.equal("BisCore:CodeSpecSpecifiesCode", codeSpecRelClass);
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+         
         assert.equal(el.CodeScope.Id, "0x1");
         assert.isNotEmpty(el.CodeScope.RelECClassId);
 
