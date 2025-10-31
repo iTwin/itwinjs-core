@@ -1200,6 +1200,8 @@ export interface ChangesetHealthStats {
     // (undocumented)
     changesetId: string;
     // (undocumented)
+    changesetIndex: number;
+    // (undocumented)
     deletedRows: number;
     // (undocumented)
     insertedRows: number;
@@ -3645,12 +3647,12 @@ export class FieldRun extends TextBlockComponent {
     clone(): FieldRun;
     static create(props: Omit<FieldRunProps, "type">): FieldRun;
     equals(other: TextBlockComponent): boolean;
-    readonly formatOptions?: FieldFormatOptions;
+    formatOptions?: FieldFormatOptions;
     static invalidContentIndicator: string;
     // (undocumented)
     get isEmpty(): boolean;
-    readonly propertyHost: Readonly<FieldPropertyHost>;
-    readonly propertyPath: Readonly<FieldPropertyPath>;
+    propertyHost: FieldPropertyHost;
+    propertyPath: FieldPropertyPath;
     // @internal
     setCachedContent(content: string | undefined): void;
     stringify(): string;
@@ -4432,6 +4434,21 @@ export enum GlobeMode {
 export interface GltfChunk {
     length: number;
     offset: number;
+}
+
+// @internal (undocumented)
+export class GltfHeader extends TileHeader {
+    constructor(stream: ByteStream);
+    // (undocumented)
+    readonly binaryPosition: number;
+    // (undocumented)
+    readonly gltfLength: number;
+    // (undocumented)
+    get isValid(): boolean;
+    // (undocumented)
+    readonly scenePosition: number;
+    // (undocumented)
+    readonly sceneStrLength: number;
 }
 
 // @internal (undocumented)
@@ -7341,6 +7358,16 @@ export enum ProfileOptions {
     Upgrade = 1
 }
 
+// @beta
+export interface ProjectInformation {
+    location?: string;
+    projectName?: string;
+    projectNumber?: string;
+}
+
+// @beta
+export type ProjectInformationRecordProps = ElementProps & ProjectInformation;
+
 // @public
 export class Projection implements ProjectionProps {
     constructor(_data?: ProjectionProps);
@@ -9463,6 +9490,25 @@ export interface SheetIndexReferenceProps extends SheetIndexEntryProps {
     sheetIndex?: RelatedElementProps;
 }
 
+// @beta
+export interface SheetInformation {
+    checkedBy?: string;
+    designedBy?: string;
+    designedDate?: Date;
+    drawnBy?: string;
+}
+
+// @beta
+export type SheetInformationAspectProps = ElementAspectProps & SheetInformationProps;
+
+// @beta
+export interface SheetInformationProps {
+    checkedBy?: string;
+    designedBy?: string;
+    designedDate?: string;
+    drawnBy?: string;
+}
+
 // @public @preview
 export interface SheetProps extends ElementProps {
     // (undocumented)
@@ -10012,6 +10058,12 @@ export interface TabRunProps extends TextBlockComponentProps {
     readonly type: "tab";
 }
 
+// @beta
+export type TerminatorShape = typeof terminatorShapes[number];
+
+// @beta
+export const terminatorShapes: readonly ["openArrow", "closedArrow", "closedArrowFilled", "circle", "circleFilled", "slash", "none"];
+
 // @public
 export enum TerrainHeightOriginMode {
     Geodetic = 0,
@@ -10254,6 +10306,7 @@ export interface TextLeaderStyleProps {
     color?: TextStyleColor | "inherit";
     elbowLength?: number;
     terminatorHeightFactor?: number;
+    terminatorShape?: TerminatorShape;
     terminatorWidthFactor?: number;
     wantElbow?: boolean;
 }

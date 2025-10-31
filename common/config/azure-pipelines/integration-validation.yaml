@@ -45,6 +45,18 @@ jobs:
           imageName: macos-latest
           poolName: "iModelTechMacArm"
           nodeVersion: 22.x
+        Linux_node_24_x:
+          imageName: ubuntu-22.04 # ubuntu-latest is 24.04, and breaks tests using sandbox
+          poolName:
+          nodeVersion: 24.x
+        Windows_node_24_x:
+          imageName: windows-latest
+          poolName:
+          nodeVersion: 24.x
+        MacOS_node_24_x:
+          imageName: macos-latest
+          poolName: "iModelTechMacArm"
+          nodeVersion: 24.x
     pool:
       name: $(poolName)
       vmImage: $(imageName)

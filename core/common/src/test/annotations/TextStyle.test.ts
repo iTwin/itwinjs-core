@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { ColorDef, FontType, ListMarkerEnumerator, TextStyleSettings, TextStyleSettingsProps } from "../../core-common";
+import { ColorDef, FontType, ListMarkerEnumerator, terminatorShapes, TextStyleSettings, TextStyleSettingsProps } from "../../core-common";
 import { DeepRequiredObject } from "@itwin/core-bentley";
 
 describe("TextStyleSettings", () => {
@@ -42,6 +42,7 @@ describe("TextStyleSettings", () => {
       color: 0xff007f,
       wantElbow: false,
       elbowLength: 0.5,
+      terminatorShape: terminatorShapes[0],
       terminatorHeightFactor: 0.5,
       terminatorWidthFactor: 0.5,
     },

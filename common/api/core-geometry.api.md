@@ -245,6 +245,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     cloneTransformed(transform: Transform): Arc3d;
     closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
+    computeTangentIntersection(f0?: number, f1?: number, result?: Point3d): Point3d | undefined;
     constructCircularArcChainApproximation(options?: EllipticalArcApproximationOptions): CurveChain | Arc3d | undefined;
     constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
     static create(center: Point3d | undefined, vector0: Vector3d, vector90: Vector3d, sweep?: AngleSweep, result?: Arc3d): Arc3d;
@@ -1499,6 +1500,12 @@ export class CoordinateXYZ extends GeometryQuery {
 }
 
 // @public
+export interface CreateFilletsInLineStringOptions {
+    allowCusp?: boolean;
+    filletClosure?: boolean;
+}
+
+// @public
 export abstract class CurveChain extends CurveCollection {
     protected constructor();
     childIndex(target: CurvePrimitive | undefined, alsoSearchProxies?: boolean): number | undefined;
@@ -1652,7 +1659,7 @@ export class CurveFactory {
     static createArcFromSectionData(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, sectionData: number | XAndY | Arc3d): Arc3d | undefined;
     static createArcPointTangentPoint(start: Point3d, tangentAtStart: Vector3d, end: Point3d): Arc3d | undefined;
     static createArcPointTangentRadius(start: Point3d, tangentAtStart: Vector3d, radius: number, upVector?: Vector3d, sweep?: Angle | AngleSweep): Arc3d | undefined;
-    static createFilletsInLineString(points: LineString3d | IndexedXYZCollection | Point3d[], radius: number | number[], allowBackupAlongEdge?: boolean): Path | undefined;
+    static createFilletsInLineString(points: LineString3d | IndexedXYZCollection | Point3d[], radius: number | number[], allowCuspOrOptions?: boolean | CreateFilletsInLineStringOptions): Path | undefined;
     static createLineSpiralArcSpiralLine(spiralType: IntegratedSpiralTypeName, pointA: Point3d, pointB: Point3d, pointC: Point3d, lengthA: number, lengthB: number, arcRadius: number): GeometryQuery[] | undefined;
     static createLineSpiralSpiralLine(spiralType: IntegratedSpiralTypeName, startPoint: Point3d, shoulderPoint: Point3d, targetPoint: Point3d): GeometryQuery[] | undefined;
     static createLineSpiralSpiralLineWithSpiralLength(spiralType: IntegratedSpiralTypeName, pointA: Point3d, pointB: Point3d, pointC: Point3d, spiralLength: number): GeometryQuery[] | undefined;
@@ -2405,8 +2412,8 @@ export class GrowableFloat64Array {
 }
 
 // @public
-export class GrowableXYArray extends IndexedXYCollection {
-    constructor(numPoints?: number, growthFactor?: number);
+export class GrowableXYArray extends IndexedReadWriteXYCollection {
+    constructor(numPoints?: number, growthFactor?: number, data?: Float64Array);
     areaXY(): number;
     back(result?: Point2d): Point2d | undefined;
     clear(): void;
@@ -2420,6 +2427,7 @@ export class GrowableXYArray extends IndexedXYCollection {
     static create(data: any, result?: GrowableXYArray): GrowableXYArray;
     // @deprecated
     static createArrayOfGrowableXYZArray(data: MultiLineStringDataVariant): GrowableXYZArray[] | undefined;
+    static createCapture(data: Float64Array): GrowableXYArray;
     static createFromGrowableXYZArray(source: GrowableXYZArray, transform?: Transform, dest?: GrowableXYArray): GrowableXYArray;
     crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number): number | undefined;
     crossProductXAndYIndexIndex(origin: XAndY, targetAIndex: number, targetBIndex: number): number | undefined;
@@ -2469,7 +2477,7 @@ export class GrowableXYArray extends IndexedXYCollection {
 
 // @public
 export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
-    constructor(numPoints?: number, growthFactor?: number);
+    constructor(numPoints?: number, growthFactor?: number, data?: Float64Array);
     accumulateCrossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result: Vector3d): void;
     accumulateScaledXYZ(index: number, scale: number, sum: Point3d): void;
     addSteppedPoints(other: GrowableXYZArray, pointIndex0: number, step: number, numAdd: number): void;
@@ -2486,6 +2494,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     };
     static create(data: any, result?: GrowableXYZArray): GrowableXYZArray;
     static createArrayOfGrowableXYZArray(data: MultiLineStringDataVariant): GrowableXYZArray[] | undefined;
+    static createCapture(data: Float64Array): GrowableXYZArray;
     static createCompressed(source: IndexedXYZCollection, tolerance?: number, result?: GrowableXYZArray): GrowableXYZArray;
     crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined;
     crossProductXYAndZIndexIndex(origin: XYAndZ, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined;
@@ -2967,10 +2976,19 @@ export class IndexedPolyfaceWalker {
 }
 
 // @public
+export abstract class IndexedReadWriteXYCollection extends IndexedXYCollection {
+    abstract clear(): void;
+    abstract pop(): void;
+    abstract push(point: XAndY): void;
+    abstract pushXY(x?: number, y?: number): void;
+    abstract reverseInPlace(): void;
+}
+
+// @public
 export abstract class IndexedReadWriteXYZCollection extends IndexedXYZCollection {
     abstract clear(): void;
     abstract pop(): void;
-    abstract push(data: XYAndZ): void;
+    abstract push(point: XYAndZ): void;
     abstract pushXYZ(x?: number, y?: number, z?: number): void;
     abstract reverseInPlace(): void;
 }
@@ -5377,6 +5395,12 @@ export enum RegionBinaryOpType {
     Union = 0
 }
 
+// @public
+export interface RegionBooleanXYOptions {
+    mergeTolerance?: number;
+    simplifyUnion?: boolean;
+}
+
 // @internal
 export class RegionMomentsXY extends NullGeometryHandler {
     handleArc3d(arc: Arc3d): void;
@@ -5425,7 +5449,7 @@ export class RegionOps {
     static polygonXYAreaIntersectLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate?: boolean): Polyface | undefined;
     static polygonXYAreaUnionLoopsToPolyface(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate?: boolean): Polyface | undefined;
     static rectangleEdgeTransform(data: AnyCurve | Point3d[] | IndexedXYZCollection, requireClosurePoint?: boolean): Transform | undefined;
-    static regionBooleanXY(loopsA: AnyRegion | AnyRegion[] | undefined, loopsB: AnyRegion | AnyRegion[] | undefined, operation: RegionBinaryOpType, mergeTolerance?: number): AnyRegion | undefined;
+    static regionBooleanXY(loopsA: AnyRegion | AnyRegion[] | undefined, loopsB: AnyRegion | AnyRegion[] | undefined, operation: RegionBinaryOpType, mergeToleranceOrOptions?: number | RegionBooleanXYOptions): AnyRegion | undefined;
     // @internal
     static setCheckPointFunction(f?: GraphCheckPointFunction): void;
     static simplifyRegion(region: AnyRegion): AnyRegion | undefined;

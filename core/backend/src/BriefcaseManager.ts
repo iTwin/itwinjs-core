@@ -59,7 +59,7 @@ export interface PushChangesArgs extends TokenArg {
   pushRetryDelay?: BeDuration;
   /**
    *  (unused)
-   * @deprecated Not used by BriefcaseManager. Caller should remove this flag.
+   * @deprecated in 5.1.8 - will not be removed until after 2026-10-01. Not used by BriefcaseManager. Caller should remove this flag.
    * @internal
    */
   noFastForward?: true;
@@ -84,7 +84,7 @@ export type PullChangesArgs = ToChangesetArgs & {
   onProgress?: ProgressFunction;
   /**
    *  (unused)
-   * @deprecated Not used by BriefcaseManager. Caller should remove this flag.
+   * @deprecated in 5.1.8 - will not be removed until after 2026-10-01. Not used by BriefcaseManager. Caller should remove this flag.
    * @internal
    */
   noFastForward?: true;
@@ -574,6 +574,15 @@ export class BriefcaseManager {
 
 
     const briefcaseDb = db instanceof BriefcaseDb ? db : undefined;
+    if (briefcaseDb) {
+      if (briefcaseDb.txns.rebaser.isRebasing) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot pull and apply changeset while rebasing");
+      }
+      if (briefcaseDb.txns.isIndirectChanges) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot pull and apply changeset while in an indirect change scope");
+      }
+    }
+
     // create restore point if certain conditions are met
     if (briefcaseDb && briefcaseDb.txns.hasPendingTxns && !briefcaseDb.txns.hasPendingSchemaChanges && !reverse && !IModelHost.configuration?.disableRestorePointOnPullMerge) {
       Logger.logInfo(loggerCategory, `Creating restore point ${this.PULL_MERGE_RESTORE_POINT_NAME}`);
@@ -720,6 +729,13 @@ export class BriefcaseManager {
 
   /** create a changeset from the current changes, and push it to iModelHub */
   private static async pushChanges(db: BriefcaseDb, arg: PushChangesArgs): Promise<void> {
+    if (db.txns.rebaser.isRebasing) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot push changeset while rebasing");
+    }
+    if (db.txns.isIndirectChanges) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot push changeset while in an indirect change scope");
+    }
+
     const changesetProps = db[_nativeDb].startCreateChangeset() as ChangesetFileProps;
     changesetProps.briefcaseId = db.briefcaseId;
     changesetProps.description = arg.description;

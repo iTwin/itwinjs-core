@@ -444,13 +444,13 @@ export class FieldRun extends TextBlockComponent {
   /** Discriminator field for the [[Run]] union. */
   public readonly type = "field";
   /** The element and BIS class containing the property described by [[propertyPath]]. */
-  public readonly propertyHost: Readonly<FieldPropertyHost>;
+  public propertyHost: FieldPropertyHost;
   /** Describes how to obtain the property value from [[propertyHost]]. */
-  public readonly propertyPath: Readonly<FieldPropertyPath>;
+  public propertyPath: FieldPropertyPath;
   /** Specifies how to format the property value obtained from [[propertyPath]] into a string to be stored in [[cachedContent]].
    * The specific options used depend upon the [[FieldPropertyType]].
    */
-  public readonly formatOptions?: FieldFormatOptions;
+  public formatOptions?: FieldFormatOptions;
   private _cachedContent: string;
 
   /** The field's most recently evaluated display string. */
