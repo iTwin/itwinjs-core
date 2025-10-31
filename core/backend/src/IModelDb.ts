@@ -396,7 +396,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public [_resetIModelDb] () {
+  public [_resetIModelDb]() {
     this.loadIModelSettings();
     GeoCoordConfig.loadForImodel(this.workspace.settings); // load gcs data specified by iModel's settings dictionaries, must be done before calling initializeIModelDb
     this.initializeIModelDb();
@@ -826,7 +826,7 @@ export abstract class IModelDb extends IModel {
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync}, {TxnManager.withIndirectTxnMode} or {RebaseHandler.recompute}.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
    */
-  public saveChanges(description?: string): void ;
+  public saveChanges(description?: string): void;
 
   /** Commit unsaved changes in memory as a Txn to this iModelDb. This is preferable for case where application like to store additional structured information with the change that could be useful later when rebasing.
    * @alpha
@@ -836,7 +836,7 @@ export abstract class IModelDb extends IModel {
    * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync}, {TxnManager.withIndirectTxnMode} or {RebaseHandler.recompute}.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
    */
-    public saveChanges(args: SaveChangesArgs): void;
+  public saveChanges(args: SaveChangesArgs): void;
 
   /** Commit unsaved changes in memory as a Txn to this iModelDb.
    * @internal
@@ -1497,6 +1497,26 @@ export abstract class IModelDb extends IModel {
       }
       return undefined;
     });
+  }
+
+  /** Returns true if the specified schema exists in the iModel and is no older than the specified minimum version.
+   * @beta
+   */
+  public meetsMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion): boolean {
+    const actualVersion = this.querySchemaVersionNumbers(schemaName);
+    return undefined !== actualVersion && actualVersion.compare(minimumVersion) >= 0;
+  }
+
+  /** Throws an error if the version of the schema specified by `schemaName` is older than `minimumVersion`.
+   * The error will indicate the `featureName` that requires this minimum version.
+   * Use this to produce more helpful errors when interacting with APIs that operate on classes introduced as
+   * schemas evolve.
+   * @beta
+   */
+  public requireMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion, featureName: string): void {
+    if (!this.meetsMinimumSchemaVersion(schemaName, minimumVersion)) {
+      throw new Error(`${featureName} requires ${schemaName} v${minimumVersion.toString()} or newer`);
+    }
   }
 
   /** Retrieve a named texture image from this iModel, as a TextureData.
