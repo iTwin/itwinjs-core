@@ -48,6 +48,19 @@ describe("Code Tests", () => {
 
     it("should get undefined when querying an element with a non-breaking space value", () => {
       assert.exists(imodel.elements);
+      const elProps: ElementProps = {
+        classFullName: 'BisCore:RepositoryLink',
+        code: { scope: "0x11", spec: "0x10", value: "\xa0" },
+        id: '0x1e',
+        model: '0x11',
+        userLabel: 'RF1.dgn',
+        federationGuid: undefined,
+      };
+
+      const id = imodel.elements.insertElement(elProps);
+      assert.exists(id);
+      assert.isTrue(Id64.isValidId64(id));
+
       const nonBreakingSpaceCode = new Code({ scope: "0x11", spec: "0x10", value: "\xa0" });
       const elementId = imodel.elements.queryElementIdByCode(nonBreakingSpaceCode);
       assert.isUndefined(elementId);
@@ -67,6 +80,19 @@ describe("Code Tests", () => {
 
     it("should get undefined when querying an element with a whitespace string spec", () => {
       assert.exists(imodel.elements);
+      const elProps: ElementProps = {
+        classFullName: 'BisCore:RepositoryLink',
+        code: { scope: "0x11", spec: " ", value: "RF1.dgn" },
+        id: '0x1e',
+        model: '0x11',
+        userLabel: 'RF1.dgn',
+        federationGuid: undefined,
+      };
+
+      const id = imodel.elements.insertElement(elProps);
+      assert.exists(id);
+      assert.isTrue(Id64.isValidId64(id));
+
       const whitespaceCode = { scope: "0x11", spec: " ", value: "RF1.dgn" };
       const elementId = imodel.elements.queryElementIdByCode(whitespaceCode);
       assert.isUndefined(elementId);
