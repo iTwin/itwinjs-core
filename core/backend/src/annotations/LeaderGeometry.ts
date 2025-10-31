@@ -6,8 +6,8 @@
  * @module ElementGeometry
  */
 
-import { ColorDef, ElementGeometry, GeometryParams, TextAnnotationLeader, TextFrameStyleProps, TextStyleColor } from "@itwin/core-common";
-import { CurveCurve, LineSegment3d, LineString3d, Loop, Path, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { ColorDef, ElementGeometry, FillDisplay, GeometryParams, TextAnnotationLeader, TextFrameStyleProps, TextStyleColor, TextStyleSettings } from "@itwin/core-common";
+import { Angle, Arc3d, CurveCurve, CurvePrimitive, LineSegment3d, LineString3d, Loop, Path, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { computeFrame } from "./FrameGeometry";
 import { TextBlockLayout, TextStyleResolver } from "./TextBlockLayout";
 
@@ -78,25 +78,114 @@ export function appendLeadersToBuilder(builder: ElementGeometry.Builder, leaders
 
     leaderLinePoints.push(attachmentPoint)
 
-    result = result && builder.appendGeometryQuery(LineString3d.create(leaderLinePoints));
-
-    // Terminator geometry
     const terminatorDirection = Vector3d.createStartEnd(
       leaderLinePoints[0], leaderLinePoints[1]
     ).normalize();
-
-    const termY = terminatorDirection?.unitCrossProduct(Vector3d.unitZ());
-    if (!termY || !terminatorDirection) continue; // Assuming leaders without terminators is a valid case.
-    const terminatorHeight = leaderStyle.leader.terminatorHeightFactor * scaledBlockTextHeight;
     const terminatorWidth = leaderStyle.leader.terminatorWidthFactor * scaledBlockTextHeight;
-    const basePoint = leader.startPoint.plusScaled(terminatorDirection, terminatorWidth);
-    const termPointA = basePoint.plusScaled(termY, terminatorHeight);
-    const termPointB = basePoint.plusScaled(termY.negate(), terminatorHeight);
-    result = result && builder.appendGeometryQuery(LineString3d.create([termPointA, leader.startPoint, termPointB]));
+    // Truncate the first segment of the leader lines to account for the arrowhead size when closedArrow (hollow triangle) terminatorShape is used.
+    if (leaderStyle.leader.terminatorShape === "closedArrow") {
+      if (terminatorDirection)
+        leaderLinePoints[0] = leaderLinePoints[0].plusScaled(terminatorDirection, terminatorWidth);
+    }
+
+    result = result && builder.appendGeometryQuery(LineString3d.create(leaderLinePoints));
+
+    if (leaderStyle.leader.terminatorShape !== "none") {
+      // Terminator geometry
+      if (!terminatorDirection) continue; // Assuming leaders without terminators is a valid case.
+      result = result && createTerminatorGeometry(builder, leader.startPoint, terminatorDirection, params, leaderStyle, scaledBlockTextHeight);
+
+    }
 
   }
   return result;
 }
+
+/**
+ * Creates the geometry for a terminator at the end of a leader line.
+ * @param builder The geometry builder to append the terminator geometry to.
+ * @param point The starting point of the leader line.
+ * @param dir The direction vector of the leader line.
+ * @param params The geometry parameters to use for the terminator.
+ * @param textStyleSettings The text style settings to use for the terminator.
+ * @param textHeight The height of the text block.
+ * @returns True if the geometry was successfully created, false otherwise.
+ * @beta
+ */
+export function createTerminatorGeometry(builder: ElementGeometry.Builder, point: Point3d, dir: Vector3d, params: GeometryParams, textStyleSettings: TextStyleSettings, textHeight: number): boolean {
+
+  let result = true;
+  const termY = dir.unitCrossProduct(Vector3d.unitZ());
+  if (!termY) return false; // If dir is parallel to Z, we can't create a terminator
+  const terminatorHeight = textStyleSettings.leader.terminatorHeightFactor * textHeight;
+  const terminatorWidth = textStyleSettings.leader.terminatorWidthFactor * textHeight;
+  const terminatorHalfHeight = terminatorHeight / 2;
+  const basePoint = point.plusScaled(dir, terminatorWidth);
+  const point1 = basePoint.plusScaled(termY, terminatorHalfHeight);
+  const point2 = basePoint.plusScaled(termY.negate(), terminatorHalfHeight);
+
+  // Helper function to add fill parameters
+  const addFillParams = () => {
+    params.fillDisplay = FillDisplay.Always;
+    result = result && builder.appendGeometryParamsChange(params);
+  };
+
+  // Helper function to create geometry entry
+  const addGeometry = (content: CurvePrimitive, useLoop = false) => {
+    const finalContent = useLoop ? Loop.create(content) : content;
+    result = result && builder.appendGeometryQuery(finalContent);
+  };
+
+  switch (textStyleSettings.leader.terminatorShape) {
+    case "openArrow": {
+      const lineString = LineString3d.create([point1, point, point2]);
+      addGeometry(lineString);
+      break;
+    }
+
+    case "closedArrow": {
+      const lineString = LineString3d.create([point1, point, point2, point1]);
+      addGeometry(lineString);
+      break;
+    }
+
+    case "closedArrowFilled": {
+      addFillParams();
+      const lineString = LineString3d.create([point1, point, point2, point1]);
+      addGeometry(lineString, true);
+      break;
+    }
+
+    case "circle": {
+      const circle = Arc3d.createXY(point, terminatorHalfHeight);
+      addGeometry(circle);
+      break;
+    }
+
+    case "circleFilled": {
+      addFillParams();
+      const circle = Arc3d.createXY(point, terminatorHalfHeight);
+      addGeometry(circle, true);
+      break;
+    }
+
+    case "slash": {
+      const normalizedVector = dir.normalize();
+      if (!normalizedVector) throw new Error("Invalid reference vector for slash terminator.");
+
+      const rotatedVector = normalizedVector.rotateXY(Angle.createDegrees(45));
+      const startPoint = point.plusScaled(rotatedVector, -terminatorHalfHeight);
+      const endPoint = point.plusScaled(rotatedVector, terminatorHalfHeight);
+
+      const slashLine = LineSegment3d.create(startPoint, endPoint);
+      addGeometry(slashLine);
+      break;
+    }
+
+  }
+
+  return result;
+};
 
 
 /**

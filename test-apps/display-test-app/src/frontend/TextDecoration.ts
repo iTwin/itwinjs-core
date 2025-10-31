@@ -16,6 +16,7 @@ import {
   Placement2dProps,
   Run,
   TabRun,
+  TerminatorShape,
   TextAnnotation,
   TextAnnotationAnchor,
   TextAnnotationFrameShape,
@@ -26,6 +27,7 @@ import {
   TextBlockProps,
   TextFrameStyleProps,
   TextJustification,
+  TextLeaderStyleProps,
   TextRun,
   TextStyleSettingsProps,
 } from "@itwin/core-common";
@@ -63,6 +65,7 @@ class TextEditor implements Decorator {
     "lineSpacingFactor" |
     "margins" |
     "frame" |
+    "leader" |
     "justification"> {
     return this.textBlock.styleOverrides;
   }
@@ -177,7 +180,7 @@ class TextEditor implements Decorator {
   }
 
   public appendList(index: number = 0, listMarker?: ListMarker): void {
-    const list = List.create({ styleOverrides: { font: {name: this.runStyle.font?.name ?? "Arial" }, ...this.runStyle, listMarker } });
+    const list = List.create({ styleOverrides: { font: { name: this.runStyle.font?.name ?? "Arial" }, ...this.runStyle, listMarker } });
 
     const path = this.pathToLastChild().filter(component => component.type === "paragraph");
     const child = path[index];
@@ -665,6 +668,11 @@ export class TextDecorationTool extends Tool {
               const position = inArgs[2] as LeaderTextPointOptions;
               editor.setLeaderTextPoint(editor.leaders[latestLeaderIndex], position);
 
+            } else if (command === "terminatorShape") {
+              const shape = inArgs[2] as TerminatorShape;
+              const leaderStyle: TextLeaderStyleProps = editor.documentStyle.leader ?? {};
+              leaderStyle.terminatorShape = shape;
+              editor.documentStyle.leader = leaderStyle;
             }
             else throw new Error("Expected start, keypoint, nearest, textpoint");
           } else {

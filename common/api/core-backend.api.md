@@ -1732,6 +1732,9 @@ export interface CreateSheetViewDefinitionArgs {
 }
 
 // @beta
+export function createTerminatorGeometry(builder: ElementGeometry.Builder, point: Point3d, dir: Vector3d, params: GeometryParams, textStyleSettings: TextStyleSettings, textHeight: number): boolean;
+
+// @beta
 export interface CustomHandledProperty {
     readonly propertyName: string;
     readonly source: "Class" | "Computed";
@@ -6496,7 +6499,7 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
 export const TEXT_ANNOTATION_JSON_VERSION = "1.0.0";
 
 // @internal
-export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.0";
+export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.1";
 
 // @public @preview
 export class TextAnnotation2d extends AnnotationElement2d {

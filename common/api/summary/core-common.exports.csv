@@ -921,6 +921,8 @@ beta;interface;SynchronizationConfigLinkProps
 public;enum;SyncMode
 beta;class;TabRun
 beta;interface;TabRunProps
+beta;type;TerminatorShape
+beta;const;terminatorShapes
 public;enum;TerrainHeightOriginMode
 public;interface;TerrainProps
 public;class;TerrainSettings
