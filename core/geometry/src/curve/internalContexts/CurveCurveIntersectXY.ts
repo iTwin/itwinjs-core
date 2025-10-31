@@ -1057,6 +1057,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const spiralApproximation = LineString3d.create();
       this._geometryB.emitStrokes(spiralApproximation);
       this.computeSegmentLineString(segmentA, this._extendA0, this._extendA1, spiralApproximation, false, false, false);
+      this.refineSpiralResultsByNewton(this._geometryB, segmentA, false);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(segmentA, this.handleLineSegment3d.bind(this));
     } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
@@ -1085,6 +1086,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const spiralApproximation = LineString3d.create();
       this._geometryB.emitStrokes(spiralApproximation);
       this.computeLineStringLineString(lsA, this._extendA0, this._extendA1, spiralApproximation, false, false, false);
+      this.refineSpiralResultsByNewton(this._geometryB, lsA, true);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(lsA, this.handleLineString3d.bind(this));
     } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
@@ -1113,6 +1115,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const spiralApproximation = LineString3d.create();
       this._geometryB.emitStrokes(spiralApproximation);
       this.computeArcLineString(arc0, this._extendA0, this._extendA1, spiralApproximation, false, false, false);
+      this.refineSpiralResultsByNewton(this._geometryB, arc0, true);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(arc0, this.handleArc3d.bind(this));
     } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
@@ -1141,6 +1144,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const spiralApproximation = LineString3d.create();
       this._geometryB.emitStrokes(spiralApproximation);
       this.dispatchLineStringBSplineCurve(spiralApproximation, false, false, curve, this._extendA0, this._extendA1, true);
+      this.refineSpiralResultsByNewton(this._geometryB, curve, true);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(curve, this.handleBSplineCurve3d.bind(this));
     } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
@@ -1148,11 +1152,40 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
     return undefined;
   }
+  /**
+   * Use the intersection found between the spiral approximation and the curve primitive as the initial guess for
+   * the Newton iteration to locate the intersection between the actual spiral and the curve primitive.
+   */
+  private refineSpiralResultsByNewton(spiral: TransitionSpiral3d, curvePrimitive: CurvePrimitive, reversed: boolean): void {
+    const oldResults = this._results;
+    this._results = []; // erase old results to be replaced by refined results
+    for (const detail of oldResults) {
+      let spiralFraction = detail.detailA.fraction;
+      let geometryBFraction = detail.detailB.fraction;
+      if (reversed) {
+        spiralFraction = detail.detailB.fraction;
+        geometryBFraction = detail.detailA.fraction;
+      }
+      const xyMatchingFunction = new CurveCurveIntersectionXYRRToRRD(spiral, curvePrimitive);
+      const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction);
+      newtonSearcher.setUV(spiralFraction, geometryBFraction);
+      if (newtonSearcher.runIterations()) {
+        spiralFraction = newtonSearcher.getU();
+        geometryBFraction = newtonSearcher.getV();
+      }
+      if (this.acceptFraction(false, spiralFraction, false) && this.acceptFraction(false, geometryBFraction, false))
+        this.recordPointWithLocalFractions(spiralFraction, spiral, 0, 1, geometryBFraction, curvePrimitive, 0, 1, false);
+    }
+  }
   /** Double dispatch handler for strongly typed spiral curve. */
   public override handleTransitionSpiral(spiral: TransitionSpiral3d): any {
-    const spiralApproximation = LineString3d.create();
-    spiral.emitStrokes(spiralApproximation);
-    this.handleLineString3d(spiralApproximation);
+    if (this._geometryB instanceof CurvePrimitive) {
+      const spiralApproximation = LineString3d.create();
+      spiral.emitStrokes(spiralApproximation);
+      this.handleLineString3d(spiralApproximation);
+      this.refineSpiralResultsByNewton(spiral, this._geometryB, false);
+    }
+    // TODO: curve chain
     return undefined;
   }
   /** Double dispatch handler for strongly typed CurveChainWithDistanceIndex. */
