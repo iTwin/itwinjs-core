@@ -182,6 +182,7 @@ class TextEditor implements Decorator {
       propertyHost: { elementId, schemaName, className },
       propertyPath: { propertyName },
       formatOptions,
+      styleOverrides: { ...this.runStyle },
     }));
   }
 
