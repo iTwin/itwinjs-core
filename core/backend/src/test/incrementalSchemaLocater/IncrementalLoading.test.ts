@@ -261,4 +261,49 @@ describe("Incremental Schema Loading", function () {
       }
     });
   });
+
+  describe("Old Schema ECXmlVersion in iModel Tests", () => {
+    const testSchemaKey: SchemaKey = new SchemaKey("Schema___Test_6");
+    const bimName = "OldECXmlVersionIModel.bim";
+
+    before("Setup", async function () {
+      await IncrementalTestHelper.setup(bimName);
+    });
+
+    after(async () => {
+      await IncrementalTestHelper.close();
+    });
+
+    it("Incremental Loading matches json.", async () => {
+      let schemaContext = new SchemaContext();
+      const schemaJsonLocater = new SchemaJsonLocater((schemaName) => IncrementalTestHelper.iModel.getSchemaProps(schemaName));
+      schemaContext.addLocater(schemaJsonLocater);
+      const schemaJson = await schemaContext.getSchema(testSchemaKey) as Schema;
+
+      schemaContext = new SchemaContext();
+      const incrementalSchemaLocater = new IModelIncrementalSchemaLocater(IncrementalTestHelper.iModel);
+      schemaContext.addLocater(incrementalSchemaLocater);
+      const incrementalSchema = await schemaContext.getSchema(testSchemaKey) as Schema;
+
+      expect(incrementalSchema).to.have.property("name", schemaJson.name);
+      expect(incrementalSchema).to.have.property("references").to.have.a.lengthOf(schemaJson.references.length);
+
+      if (incrementalSchema.loadingController)
+        await incrementalSchema.loadingController.wait();
+
+      const itemsJson = [...schemaJson.getItems()];
+      const incrementalItems = [...incrementalSchema.getItems()];
+      expect(incrementalItems).to.have.a.lengthOf(itemsJson.length);
+
+      for (const checkItem of itemsJson) {
+        const item = await incrementalSchema.lookupItem(checkItem.name);
+        expect(item).to.be.not.undefined;
+
+        const itemProps = item!.toJSON();
+        for (const [propertyName, propertyValue] of Object.entries(checkItem.toJSON())) {
+          expect(itemProps).to.have.property(propertyName).deep.equalInAnyOrder(propertyValue);
+        }
+      }
+    });
+  });
 });
