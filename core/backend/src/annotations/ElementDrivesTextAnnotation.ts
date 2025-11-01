@@ -10,7 +10,7 @@ import { RelatedElement, RelationshipProps, TextBlock, traverseTextBlockComponen
 import { ElementDrivesElement } from "../Relationship";
 import { IModelDb } from "../IModelDb";
 import { Element } from "../Element";
-import { updateElementFields } from "../internal/annotations/fields";
+import { updateAllFields, updateElementFields } from "../internal/annotations/fields";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { ECVersion } from "@itwin/ecschema-metadata";
 import { IModelElementCloneContext } from "../IModelElementCloneContext";
@@ -121,6 +121,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
 
     if (haveFields) {
       iModel.requireMinimumSchemaVersion("BisCore", minBisCoreVersion, "Text fields");
+      updateAllFields(annotationElementId, iModel)
     }
 
     const staleRelationships = new Set<Id64String>();
