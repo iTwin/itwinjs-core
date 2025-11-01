@@ -116,7 +116,7 @@ export abstract class NewtonEvaluatorRtoRD {
 /**
  * Newton iterator for use when both function and derivative can be evaluated.
  * To solve `f(x) = 0`, the Newton iteration is `x_{n+1} = x_n - dx = x_n - f(x_n)/f'(x_n)`.
- * To solve `f(x) = target` which is equivalent to solving  `g(x) = f(x) - target = 0`, the Newton iteration is
+ * To solve `f(x) = target` which is equivalent to solving `g(x) = f(x) - target = 0`, the Newton iteration is
  * `x_{n+1} = x_n - dx = x_n - g(x_n)/g'(x_n) = x_n - (f(x_n)-target)/f'(x_n)`.
  * @internal
  */
@@ -383,7 +383,7 @@ export class SimpleNewton {
         tolerance = absoluteTolerance + Math.abs(x) * relTol;
         if (Math.abs(dx) < tolerance) {
           numConverged++;
-          if (dx === 0.0 || numConverged > 1)   // bypass convergence count on true 0 dx
+          if (dx === 0.0 || numConverged > 1) // bypass convergence count on true 0 dx
             return x;
         } else {
           numConverged = 0;

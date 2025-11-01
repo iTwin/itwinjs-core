@@ -1935,7 +1935,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
 }
 
 // @public
-export type DirectSpiralTypeName = "JapaneseCubic" | "Arema" | "ChineseCubic" | "HalfCosine" | "AustralianRailCorp" | "WesternAustralian" | "Czech" | "MXCubicAlongArc" | "Polish" | "Italian";
+export type DirectSpiralTypeName = "Arema" | "JapaneseCubic" | "ChineseCubic" | "WesternAustralian" | "HalfCosine" | "AustralianRailCorp" | "Czech" | "Italian" | "MXCubicAlongArc" | "Polish";
 
 // @public
 export enum DuplicateFacetClusterSelector {

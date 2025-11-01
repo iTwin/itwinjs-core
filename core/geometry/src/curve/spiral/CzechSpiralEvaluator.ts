@@ -37,7 +37,7 @@ export class CzechSpiralEvaluator extends CubicEvaluator {
   public static gammaConstant(length1: number, radius1: number): number | undefined {
     return 2.0 * radius1 / Math.sqrt(4.0 * radius1 * radius1 - length1 * length1);
   }
-  /** Compute the czech cubic constant. */
+  /** Compute the Czech cubic constant. */
   public static computeCubicM(length1: number, radius1: number): number | undefined {
     const gamma = CzechSpiralEvaluator.gammaConstant(length1, radius1);
     // in the private update method, the LR values should have been vetted
@@ -135,18 +135,9 @@ export class CzechSpiralEvaluator extends CubicEvaluator {
 export class ItalianSpiralEvaluator extends CubicEvaluator {
   public nominalLength1: number;
   public nominalRadius1: number;
-
-  /**
-   * Compute the czech cubic constant.
-   * * Funky mixture of lengths.
-   */
+  /** Compute the Italian cubic constant. */
   private static computeCubicM(lengthXByForward: number, radius1: number): number | undefined {
-    const gamma = CzechSpiralEvaluator.gammaConstant(lengthXByForward, radius1);
-    // in the private update method, the LR values should have been vetted
-    if (gamma === undefined)
-      return undefined;
-    // if radius is negative, it shows up in gamma; but the a signed denominator undoes it so take abs of denominator
-    return gamma / Math.abs((6.0 * radius1 * lengthXByForward));
+    return CzechSpiralEvaluator.computeCubicM(lengthXByForward, radius1);
   }
   /** Constructor is private. Caller responsible for cubicM validity. */
   private constructor(length1: number, radius1: number, lengthX: number, cubicM: number) {
@@ -155,7 +146,7 @@ export class ItalianSpiralEvaluator extends CubicEvaluator {
     this.nominalRadius1 = radius1;
   }
   public static create(length1: number, radius1: number): ItalianSpiralEvaluator | undefined {
-    // this seems goofy.; lengthX from forward, then invert for another but that's what the native code does too
+    // this seems goofy; lengthX from forward, then invert for another but that's what the native code does too
     const lengthX = CzechSpiralEvaluator.forwardL2R2Map(length1, -1.0, length1, radius1);
     const lengthX1 = CzechSpiralEvaluator.inverseL2R2Map(length1, 1.0, lengthX, radius1);
     if (lengthX1 === undefined)
