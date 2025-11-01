@@ -10,7 +10,7 @@ import { RelatedElement, RelationshipProps, TextBlock, traverseTextBlockComponen
 import { ElementDrivesElement } from "../Relationship";
 import { IModelDb } from "../IModelDb";
 import { Element } from "../Element";
-import { updateAllFields, updateElementFields } from "../internal/annotations/fields";
+import { createUpdateContext, updateAllFields, updateElementFields, updateFields } from "../internal/annotations/fields";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { ECVersion } from "@itwin/ecschema-metadata";
 import { IModelElementCloneContext } from "../IModelElementCloneContext";
@@ -50,6 +50,16 @@ export interface ITextAnnotation {
  */
 export function isITextAnnotation(element: Element): element is ITextAnnotation & Element {
   return ["getTextBlocks", "updateTextBlocks"].every((x) => x in element && typeof (element as any)[x] === "function");
+}
+
+/** Arguments supplied to [[ElementDrivesTextAnnotation.evaluateFields]].
+ * @beta
+ */
+export interface EvaluateFieldsArgs {
+  /** The text block whose fields are to be evaluated. */
+  block: TextBlock;
+  /** The iModel containing the elements supplying the display strings for the fields in [[block]]. */
+  iModel: IModelDb;
 }
 
 /** A relationship in which the source element hosts one or more properties that are displayed by a target [[ITextAnnotation]] element.
@@ -152,6 +162,14 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
       );
       annotationElement.iModel.relationships.deleteInstances(staleRelationshipProps);
     }
+  }
+
+  /** Recompute the display strings of all [FieldRun]($common)s in a [TextBlock]($common).
+   * @returns the number of fields whose display strings were modified.
+   * @throws Error if evaluation of any field fails.
+   */
+  public static evaluateFields(args: EvaluateFieldsArgs): number {
+    return updateFields(args.block, createUpdateContext(undefined, args.iModel, false))
   }
 
   /** When copying an [[ITextAnnotation]] from one iModel into another, remaps the element Ids in any [FieldPropertyHost]($common) within the cloned element
