@@ -857,6 +857,44 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.false;
   });
+  it("calling discardChanges() from inside indirect scope is not allowed", async () => {
+    const b1 = await testIModel.openBriefcase();
+    await testIModel.insertElement(b1);
+    b1.saveChanges();
+    const p1 = b1.txns.withIndirectTxnModeAsync(async () => {
+      await b1.discardChanges();
+    });
+    await chai.expect(p1).to.be.rejectedWith("Cannot discard changes when there are indirect changes");
+    b1.saveChanges();
+  });
+  it("calling discardChanges() during rebasing is not allowed", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+    await testIModel.insertElement(b1);
+    await testIModel.insertElement(b1);
+    b1.saveChanges();
+    await b1.pushChanges({description: "inserted element"});
+
+    await testIModel.insertElement(b2);
+    await testIModel.insertElement(b2);
+    b2.saveChanges();
+
+    b2.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txnProps: TxnProps) => {
+        return true;
+      },
+      recompute: async (_txnProps: TxnProps) => {
+        chai.expect(b2.txns.rebaser.isAborting).is.false;
+        await b2.discardChanges();
+      },
+    });
+
+    chai.expect(b2.txns.rebaser.isAborting).is.false;
+    const p1 = b2.pullChanges();
+    await chai.expect(p1).to.be.rejectedWith("Cannot discard changes while a rebase is in progress");
+    chai.expect(b2.txns.rebaser.canAbort()).is.true;
+    await b2.txns.rebaser.abort();
+  });
   it("getStash() should throw exception", async () => {
     const b1 = await testIModel.openBriefcase();
     chai.expect(() => StashManager.getStash({ db: b1, stash: "invalid_stash" })).to.throw("Invalid stash");

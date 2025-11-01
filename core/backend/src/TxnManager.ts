@@ -353,6 +353,7 @@ export interface TxnProps {
 export class RebaseManager {
   private _conflictHandlers?: IConflictHandler;
   private _customHandler?: RebaseHandler;
+  private _aborting: boolean = false;
   public constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
 
   /**
@@ -439,9 +440,14 @@ export class RebaseManager {
    * @returns A promise that resolves when the restore operation is complete.
    * @throws {Error} If there is no restore point to abort to.
    */
-  public async abort() {
+  public async abort(): Promise<void> {
     if (this.canAbort()) {
-      return BriefcaseManager.restorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
+      this._aborting = true;
+      try {
+        await BriefcaseManager.restorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
+      } finally {
+        this._aborting = false;
+      }
     } else {
       throw new Error("No restore point to abort to");
     }
@@ -466,6 +472,15 @@ export class RebaseManager {
    */
   public inProgress() {
     return this._iModel[_nativeDb].pullMergeGetStage() !== "None";
+  }
+
+  /**
+   * Indicates whether the current transaction manager is in the process of aborting a transaction.
+   *
+   * @returns `true` if the transaction manager is currently aborting; otherwise, `false`.
+   */
+  public get isAborting(): boolean {
+    return this._aborting;
   }
 
   /**
