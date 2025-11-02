@@ -564,7 +564,7 @@ describe("TextAnnotation element", () => {
         }
 
         describe("within a single iModel", () => {
-          it("leaves property hosts intact", async () => {
+          it.only("leaves property hosts intact", async () => {
             const textBlock = TextBlock.create({
               children: [{
                 children: [{
@@ -649,7 +649,7 @@ describe("TextAnnotation element", () => {
 
           after(() => dstDb.close());
 
-          it("remaps property hosts", async () => {
+          it.only("remaps property hosts", async () => {
             const textBlock = TextBlock.create({
               children: [{
                 children: [{
