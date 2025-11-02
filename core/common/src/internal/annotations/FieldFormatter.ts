@@ -29,7 +29,7 @@ const formatters: { [type: string]: FieldFormatter | undefined } = {
 
   // eslint-disable-next-line @typescript-eslint/no-base-to-string
   "quantity": (v, o) => formatString(v.toString(), o),
-  // eslint-disable-next-line @typescript-eslint/no-base-to-string
+   
   "coordinate": (v, o) => formatString(formatPointBasic(v), o),
   // eslint-disable-next-line @typescript-eslint/no-base-to-string
   "boolean": (v, o) => formatString(v.toString(), o),
@@ -83,7 +83,7 @@ function formatDateTime(v: FieldPrimitiveValue, o?: DateTimeFieldFormatOptions):
 function formatPointBasic(v: FieldPrimitiveValue): string | undefined {
   if (typeof v === "object" && "x" in v && "y" in v) {
     const parts = [v.x, v.y];
-    const z = (v as any)["z"];
+    const z = (v as any).z;
     if (undefined !== z) {
       parts.push(z);
     }
