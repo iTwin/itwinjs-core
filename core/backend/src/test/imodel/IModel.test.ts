@@ -12,7 +12,7 @@ import {
   DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityProps, FilePropertyProps,
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
   ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, LightLocationProps, MapImageryProps, PhysicalElementProps,
-  PointWithStatus, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
+  PointWithStatus, QueryBinder, RelatedElement, RelationshipProps, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
   TextureMapProps, TextureMapUnits, TypeDefinitionElementProps, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
 import {
@@ -36,7 +36,7 @@ import { DisableNativeAssertions } from "../TestUtils";
 import { samplePngTexture } from "../imageData";
 import { performance } from "perf_hooks";
 import { _hubAccess } from "../../internal/Symbols";
-import { CustomAttributeClass, EntityClass, PrimitiveArrayProperty, PrimitiveOrEnumPropertyBase, PropertyType, propertyTypeToString, SchemaItemType } from "@itwin/ecschema-metadata";
+import { CustomAttributeClass, ECVersion, EntityClass, PrimitiveArrayProperty, PrimitiveOrEnumPropertyBase, PropertyType, propertyTypeToString, SchemaItemType } from "@itwin/ecschema-metadata";
 // spell-checker: disable
 
 async function getIModelError<T>(promise: Promise<T>): Promise<IModelError | undefined> {
@@ -3304,6 +3304,53 @@ describe("iModel", () => {
     testImodel.close();
   });
 
+  it("should update codeValues that are switched between elements", async () => {
+    const dbFileName = IModelTestUtils.prepareOutputFile("IModel", "change-codeValues.bim");
+    const imodelDb = SnapshotDb.createEmpty(dbFileName, {
+      rootSubject: { name: "change-codeValues" },
+    });
+    let categoryA = SpatialCategory.create(
+      imodelDb,
+      IModel.dictionaryId,
+      "A"
+    );
+    let categoryB = SpatialCategory.create(
+      imodelDb,
+      IModel.dictionaryId,
+      "B"
+    );
+    categoryA.userLabel = "A";
+    categoryB.userLabel = "B";
+    categoryA.insert();
+    categoryB.insert();
+    imodelDb.saveChanges();
+
+    categoryA = imodelDb.elements.getElement(
+      SpatialCategory.createCode(imodelDb, IModel.dictionaryId, "A")
+    );
+    categoryB = imodelDb.elements.getElement(
+      SpatialCategory.createCode(imodelDb, IModel.dictionaryId, "B")
+    );
+    categoryA.code.value = "temp";
+    categoryA.update();
+    categoryB.code.value = "A";
+    categoryB.update();
+    categoryA.code.value = "B";
+    categoryA.update();
+    imodelDb.saveChanges();
+
+    categoryA = imodelDb.elements.getElement(
+      SpatialCategory.createCode(imodelDb, IModel.dictionaryId, "A")
+    );
+    categoryB = imodelDb.elements.getElement(
+      SpatialCategory.createCode(imodelDb, IModel.dictionaryId, "B")
+    );
+
+    expect(categoryA.userLabel).to.equal("B", `categoryA.userLabel mismatch in ${imodelDb.name}`);
+    expect(categoryB.userLabel).to.equal("A", `categoryB.userLabel mismatch in ${imodelDb.name}`);
+    imodelDb.close();
+  });
+
   it("should provide meaningful error when querying a closed iModel", () => {
     const testImodel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "QueryingClosedImodel.bim"), { rootSubject: { name: "QueryClosedTest" } });
     assert.isTrue(testImodel.isOpen);
@@ -3323,5 +3370,166 @@ describe("iModel", () => {
     expect(() => testImodel.elements.queryChildren(IModel.rootSubjectId)).to.throw(closedDbError);
     expect(() => testImodel.elements.getAspects("0x1", "WrongSchema:WrongClass")).to.throw("db is not open");
     expect(() => testImodel.createQueryReader("SELECT 1")).to.throw("db not open");
+  });
+
+  describe("Delete relationship instances", () => {
+    let testImodel: SnapshotDb;
+    const relationshipClasses = [
+      "BisCore:ElementGroupsMembers",
+      "BisCore:ElementDrivesElement",
+      "BisCore:ElementRefersToDocuments"
+    ];
+
+    afterEach(() => {
+      if (testImodel !== undefined) {
+        const iModelPath = testImodel.pathName;
+        if (testImodel.isOpen)
+          testImodel.close();
+        IModelJsFs.unlinkSync(iModelPath);
+      }
+    });
+
+    function setupRelationships(numOfRelationships: number, multipleClasses: boolean = false): RelationshipProps[] {
+      testImodel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "DeleteRelationshipInstances.bim"), { rootSubject: { name: "DeleteRelationshipInstances" } });
+      assert.isTrue(testImodel.isOpen);
+
+      const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty(), true);
+      let spatialCategoryId = SpatialCategory.queryCategoryIdByName(testImodel, IModel.dictionaryId, "MySpatialCategory");
+      if (!spatialCategoryId) {
+        spatialCategoryId = SpatialCategory.insert(testImodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance());
+      }
+
+      const relationships: RelationshipProps[] = [];
+      for (let i = 0; i < numOfRelationships; ++i) {
+        const sourceProps = createElemProps(testImodel, newModelId, spatialCategoryId, "Generic:PhysicalObject");
+        const sourceId = testImodel.elements.insertElement(sourceProps);
+
+        const targetProps = createElemProps(testImodel, newModelId, spatialCategoryId, "Generic:PhysicalObject");
+        const targetId = testImodel.elements.insertElement(targetProps);
+
+        let relationshipClass = "BisCore:ElementGroupsMembers";
+        if (multipleClasses)
+          relationshipClass = relationshipClasses[i % relationshipClasses.length];
+
+        const relationshipProps: RelationshipProps = {
+          classFullName: relationshipClass,
+          sourceId,
+          targetId,
+        };
+
+        relationshipProps.id = testImodel.relationships.insertInstance(relationshipProps);
+        relationships.push(relationshipProps);
+      }
+      testImodel.saveChanges();
+      return relationships;
+    }
+
+    async function getRelationshipCount(iModel: IModelDb, relationshipClass: string): Promise<number> {
+      const reader = iModel.createQueryReader(`SELECT COUNT(*) AS [count] FROM ${relationshipClass}`);
+      await reader.step();
+      return reader.current.count;
+    }
+
+    it("deleteInstances with an empty array", async () => {
+      const relationships = setupRelationships(10);
+      assert.equal(relationships.length, await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers"));
+
+      testImodel.relationships.deleteInstances([]);
+      testImodel.saveChanges();
+
+      assert.equal(relationships.length, await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers"));
+    });
+
+    it("deleteInstances with a single relationship instance", async () => {
+      const relationships = setupRelationships(10);
+      assert.equal(relationships.length, await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers"), "Should delete exactly one relationship");
+
+      // Delete just one relationship using deleteInstances method
+      testImodel.relationships.deleteInstances([relationships[0]]);
+      testImodel.saveChanges();
+
+      const remainingCount = await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers");
+      assert.equal(remainingCount, relationships.length - 1, "Should delete exactly one relationship");
+    });
+
+    it("deleteInstances with different relationship classes", async () => {
+      const relationships = setupRelationships(500, true);
+
+      // Verify relationships were created across different classes
+      assert.isTrue(await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers") >= Math.floor(relationships.length / 3));
+      assert.isTrue(await getRelationshipCount(testImodel, "BisCore.ElementDrivesElement") >= Math.floor(relationships.length / 3));
+      assert.isTrue(await getRelationshipCount(testImodel, "BisCore.ElementRefersToDocuments") >= Math.floor(relationships.length / 3));
+
+      // Test deleteInstances with mixed relationship classes
+      testImodel.relationships.deleteInstances(relationships);
+      testImodel.saveChanges();
+
+      // Verify all relationships were deleted regardless of their class
+      assert.equal(0, await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers"), "All ElementGroupsMembers relationships should be deleted");
+      assert.equal(0, await getRelationshipCount(testImodel, "BisCore.ElementDrivesElement"), "All ElementDrivesElement relationships should be deleted");
+      assert.equal(0, await getRelationshipCount(testImodel, "BisCore.ElementRefersToDocuments"), "All ElementRefersToDocuments relationships should be deleted");
+    });
+
+    it("deleteInstances for random relationship instances", async () => {
+      const relationships = setupRelationships(1000, true);
+
+      // Verify relationships exist before deletion
+      assert.isTrue(await getRelationshipCount(testImodel, "BisCore.ElementGroupsMembers") >= Math.floor(relationships.length / 3));
+      assert.isTrue(await getRelationshipCount(testImodel, "BisCore.ElementDrivesElement") >= Math.floor(relationships.length / 3));
+      assert.isTrue(await getRelationshipCount(testImodel, "BisCore.ElementRefersToDocuments") >= Math.floor(relationships.length / 3));
+
+      // Create a subset of random relationship entries to delete
+      const relationshipsToDelete: RelationshipProps[] = [];
+      for (let i = 0; i < 250; ++i) {
+        relationshipsToDelete.push(relationships[Math.floor(Math.random() * relationships.length)]);
+      }
+
+      testImodel.relationships.deleteInstances(relationshipsToDelete);
+      testImodel.saveChanges();
+
+      // Verify all relationships were deleted
+      for (const relClass of relationshipsToDelete) {
+        const reader = testImodel.createQueryReader(`SELECT ECInstanceId FROM ${relClass.classFullName} WHERE SourceECInstanceId=? AND TargetECInstanceId=?`, new QueryBinder().bindId(1, relClass.sourceId).bindId(2, relClass.targetId));
+        assert.isFalse(await reader.step(), `Relationship ${relClass.id} should be deleted`); // No row should be returned
+      }
+    });
+  });
+});
+
+describe("IModelDb.requireMinimumSchemaVersion", () => {
+  let imodel: SnapshotDb;
+
+  before(() => imodel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IModel", "MinSchemaVer.bim"), { rootSubject: { name: "MinSchemaVer" } }));
+  after(() => imodel.close());
+
+  it("throws if the schema does not exist", () => {
+    expect(
+      () => imodel.requireMinimumSchemaVersion("FakeSchema", new ECVersion(1, 0, 0), "Scrobbles")
+    ).to.throw("Scrobbles requires FakeSchema v01.00.00 or newer");
+  });
+
+  it("throws IFF the schema version is older than the minimum", () => {
+    function test(minVer: ECVersion, expectError: boolean): void {
+      expect(imodel.meetsMinimumSchemaVersion("BisCore", minVer)).to.equal(!expectError);
+      const require = () => imodel.requireMinimumSchemaVersion("BisCore", minVer, "Scrobbles");
+      if (expectError) {
+        expect(require).to.throw(`Scrobbles requires BisCore v${minVer.toString()} or newer`);
+      } else {
+        require();
+      }
+    }
+
+    const bisVer = imodel.querySchemaVersionNumbers("BisCore")!;
+    expect(bisVer.read).to.equal(1);
+    expect(bisVer.write).to.equal(0);
+    expect(bisVer.minor).to.least(24);
+
+    test(bisVer, false);
+    test(new ECVersion(bisVer.read, bisVer.write, bisVer.minor - 1), false);
+    test(new ECVersion(0, 0, 1), false);
+
+    test(new ECVersion(bisVer.read, bisVer.write, bisVer.minor + 1), true);
+    test(new ECVersion(bisVer.read, bisVer.write, bisVer.minor + 1), true);
+    test(new ECVersion(bisVer.read + 1, bisVer.write + 1, bisVer.minor), true);
   });
 });

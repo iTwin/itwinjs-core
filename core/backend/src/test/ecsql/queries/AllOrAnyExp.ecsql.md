@@ -896,7 +896,7 @@ WHERE
 SELECT
   Name
 FROM
-  meta.ecclassdef
+  aps.TestFeature
 WHERE
   ECInstanceID < ALL (
     SELECT
@@ -905,19 +905,16 @@ WHERE
     FROM
       aps.TestElement
   )
-LIMIT 3
 ```
 
-| className           | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
-| ------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
-| ECDbMeta:ECClassDef | Name         | false     | 0     | name     | Name         | undefined    | string   | String | Name               |
+| className                 | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ | ------------------ |
+| AllProperties:TestFeature | Name         | false     | 0     | name     | Name | undefined    | string   | String | Name               |
 
-| Name                        |
-| --------------------------- |
-| AnnotationElement2d         |
-| AnnotationFrameStyle        |
-| AnnotationLeaderStyle       |
-
+| Name        |
+| ----------- |
+| Feature0x1d |
+| Feature0x1c |
 
 # Using ANY with multiple items
 
@@ -927,27 +924,25 @@ LIMIT 3
 SELECT
   Name
 FROM
-  meta.ecclassdef
+  aps.TestFeature
 WHERE
-  ECInstanceID > ANY(
+  ECInstanceID < ANY(
     SELECT
       ECClassId,
       Model.RelECClassId
     FROM
       aps.TestElement
   )
-LIMIT 3
 ```
 
-| className           | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
-| ------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
-| ECDbMeta:ECClassDef | Name         | false     | 0     | name     | Name         | undefined    | string   | String | Name               |
+| className                 | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ | ------------------ |
+| AllProperties:TestFeature | Name         | false     | 0     | name     | Name | undefined    | string   | String | Name               |
 
-| Name                        |
-| --------------------------- |
-| AnnotationFrameStyle        |
-| AnnotationLeaderStyle       |
-| AnnotationTextStyle         |
+| Name        |
+| ----------- |
+| Feature0x1d |
+| Feature0x1c |
 
 # Using SOME with multiple items
 

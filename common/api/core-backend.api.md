@@ -201,6 +201,8 @@ import { Point3d } from '@itwin/core-geometry';
 import { Polyface } from '@itwin/core-geometry';
 import { PolyfaceData } from '@itwin/core-geometry';
 import { PolyfaceVisitor } from '@itwin/core-geometry';
+import { ProjectInformation } from '@itwin/core-common';
+import { ProjectInformationRecordProps } from '@itwin/core-common';
 import { Property } from '@itwin/ecschema-metadata';
 import { PropertyCallback } from '@itwin/core-common';
 import { QueryBinder } from '@itwin/core-common';
@@ -238,6 +240,8 @@ import { SessionProps } from '@itwin/core-common';
 import { SheetBorderTemplateProps } from '@itwin/core-common';
 import { SheetIndexEntryProps } from '@itwin/core-common';
 import { SheetIndexReferenceProps } from '@itwin/core-common';
+import { SheetInformation } from '@itwin/core-common';
+import { SheetInformationAspectProps } from '@itwin/core-common';
 import { SheetProps } from '@itwin/core-common';
 import { SheetReferenceProps } from '@itwin/core-common';
 import { SheetTemplateProps } from '@itwin/core-common';
@@ -326,9 +330,11 @@ export class AnnotationTextStyle extends DefinitionElement {
     description?: string;
     static deserialize(props: DeserializeEntityArgs): AnnotationTextStyleProps;
     static fromJSON(props: AnnotationTextStyleProps, iModel: IModelDb): AnnotationTextStyle;
+    // (undocumented)
+    protected static onCloned(context: IModelElementCloneContext, srcProps: AnnotationTextStyleProps, dstProps: AnnotationTextStyleProps): Promise<void>;
     protected static onInsert(arg: OnElementPropsArg): void;
     protected static onUpdate(arg: OnElementPropsArg): void;
-    static remapTextStyleId(sourceTextStyleId: Id64String, context: IModelElementCloneContext): Id64String;
+    static remapTextStyleId(sourceTextStyleId: Id64String, context: IModelElementCloneContext): Promise<Id64String>;
     static serialize(props: AnnotationTextStyleProps, iModel: IModelDb): ECSqlRow;
     settings: TextStyleSettings;
     toJSON(): AnnotationTextStyleProps;
@@ -1063,7 +1069,10 @@ export namespace CloudSqlite {
         readonly activeClients?: string;
         readonly attachedContainers?: string;
         readonly lockedCacheslots: string;
+        readonly memoryClientArray?: string;
+        readonly memoryClientManifest?: string;
         readonly memoryHighwater?: string;
+        readonly memoryManifest?: string;
         readonly memoryUsed?: string;
         readonly ongoingPrefetches?: string;
         readonly populatedCacheslots: string;
@@ -1727,6 +1736,9 @@ export interface CreateSheetViewDefinitionArgs {
 }
 
 // @beta
+export function createTerminatorGeometry(builder: ElementGeometry.Builder, point: Point3d, dir: Vector3d, params: GeometryParams, textStyleSettings: TextStyleSettings, textHeight: number): boolean;
+
+// @beta
 export interface CustomHandledProperty {
     readonly propertyName: string;
     readonly source: "Class" | "Computed";
@@ -1901,7 +1913,7 @@ export abstract class DisplayStyle extends DefinitionElement {
     // (undocumented)
     loadScheduleScript(): RenderSchedule.ScriptReference | undefined;
     // @alpha (undocumented)
-    protected static onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void;
+    protected static onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): Promise<void>;
     // @beta (undocumented)
     static serialize(props: DisplayStyleProps, iModel: IModelDb): ECSqlRow;
     // (undocumented)
@@ -1929,7 +1941,7 @@ export class DisplayStyle3d extends DisplayStyle {
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): DisplayStyle3d;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String;
     // @alpha (undocumented)
-    protected static onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void;
+    protected static onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): Promise<void>;
     // (undocumented)
     get settings(): DisplayStyle3dSettings;
 }
@@ -2450,7 +2462,7 @@ class Element_2 extends Entity {
     // @beta
     protected static onChildUpdated(arg: OnChildElementIdArg): void;
     // @beta
-    protected static onCloned(_context: IModelElementCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void;
+    protected static onCloned(_context: IModelElementCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): Promise<void> | void;
     // @beta
     protected static onDelete(arg: OnElementIdArg): void;
     // @beta
@@ -2541,6 +2553,7 @@ export interface ElementDrivesElementProps extends RelationshipProps {
 export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     // (undocumented)
     static get className(): string;
+    static evaluateFields(args: EvaluateFieldsArgs): number;
     static isSupportedForIModel(iModel: IModelDb): boolean;
     // @internal (undocumented)
     static onDeletedDependency(props: RelationshipProps, iModel: IModelDb): void;
@@ -2805,6 +2818,12 @@ export namespace EntityReferences {
     export function toId64(id: EntityReference): string;
     // @internal
     export function typeFromClass(entityClass: typeof Entity): ConcreteEntityTypes;
+}
+
+// @beta
+export interface EvaluateFieldsArgs {
+    block: TextBlock;
+    iModel: IModelDb;
 }
 
 // @public
@@ -3663,6 +3682,8 @@ export abstract class IModelDb extends IModel {
     protected _locks?: LockControl;
     // (undocumented)
     static readonly maxLimit = 10000;
+    // @beta
+    meetsMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion): boolean;
     // (undocumented)
     readonly models: IModelDb.Models;
     // @internal (undocumented)
@@ -3699,6 +3720,8 @@ export abstract class IModelDb extends IModel {
     get relationships(): Relationships;
     // @internal (undocumented)
     requestSnap(sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps>;
+    // @beta
+    requireMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion, featureName: string): void;
     // @internal (undocumented)
     restartDefaultTxn(): void;
     // @internal (undocumented)
@@ -3874,7 +3897,7 @@ export class IModelElementCloneContext {
     [Symbol.dispose](): void;
     constructor(sourceDb: IModelDb, targetDb?: IModelDb);
     // @internal
-    cloneElement(sourceElement: Element_2, cloneOptions?: IModelJsNative.CloneElementOptions): ElementProps;
+    cloneElement(sourceElement: Element_2, cloneOptions?: IModelJsNative.CloneElementOptions): Promise<ElementProps>;
     static create(...args: ConstructorParameters<typeof IModelElementCloneContext>): Promise<IModelElementCloneContext>;
     // @deprecated (undocumented)
     dispose(): void;
@@ -5103,6 +5126,25 @@ export enum ProgressStatus {
     Continue = 0
 }
 
+// @beta
+export class ProjectInformationRecord extends InformationRecordElement {
+    // (undocumented)
+    static get className(): string;
+    static create(args: ProjectInformationRecordCreateArgs): ProjectInformationRecord;
+    // (undocumented)
+    protected static onInsert(arg: OnElementPropsArg): void;
+    projectInformation: ProjectInformation;
+    // (undocumented)
+    toJSON(): ProjectInformationRecordProps;
+}
+
+// @beta
+export interface ProjectInformationRecordCreateArgs extends ProjectInformation {
+    code?: Code;
+    iModel: IModelDb;
+    parentSubjectId: Id64String;
+}
+
 // @public @preview
 export type PropertyHandler = (name: string, property: Property) => void;
 
@@ -5265,6 +5307,7 @@ export class Relationships {
     constructor(iModel: IModelDb);
     createInstance(props: RelationshipProps): Relationship;
     deleteInstance(props: RelationshipProps): void;
+    deleteInstances(props: ReadonlyArray<RelationshipProps>): void;
     getInstance<T extends Relationship>(relClassSqlName: string, criteria: Id64String | SourceAndTarget): T;
     getInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T;
     insertInstance(props: RelationshipProps): Id64String;
@@ -5286,7 +5329,7 @@ export class RenderMaterialElement extends DefinitionElement {
     static deserialize(props: DeserializeEntityArgs): RenderMaterialProps;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): Id64String;
     // @beta (undocumented)
-    protected static onCloned(context: IModelElementCloneContext, sourceProps: ElementProps, targetProps: ElementProps): void;
+    protected static onCloned(context: IModelElementCloneContext, sourceProps: ElementProps, targetProps: ElementProps): Promise<void>;
     paletteName: string;
     // @beta
     static serialize(props: RenderMaterialProps, iModel: IModelDb): ECSqlRow;
@@ -5340,7 +5383,7 @@ export class RenderTimeline extends InformationRecordElement {
     // (undocumented)
     static fromJSON(props: RenderTimelineProps, iModel: IModelDb): RenderTimeline;
     // @alpha (undocumented)
-    protected static onCloned(context: IModelElementCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): void;
+    protected static onCloned(context: IModelElementCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): Promise<void>;
     // @beta
     static remapScript(context: IModelElementCloneContext, input: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps;
     scriptProps: RenderSchedule.ScriptProps;
@@ -5820,10 +5863,30 @@ export class SheetIndexReferenceRefersToSheetIndex extends RelatedElement {
     static classFullName: string;
 }
 
+// @beta
+export class SheetInformationAspect extends ElementUniqueAspect {
+    // (undocumented)
+    static get className(): string;
+    static getSheetInformation(sheetId: Id64String, iModel: IModelDb): SheetInformation | undefined;
+    // (undocumented)
+    protected static onInsert(arg: OnAspectPropsArg): void;
+    static setSheetInformation(information: SheetInformation | undefined, sheetId: Id64String, iModel: IModelDb): void;
+    sheetInformation: SheetInformation;
+    // (undocumented)
+    toJSON(): SheetInformationAspectProps;
+}
+
 // @public @preview
 export class SheetModel extends GraphicalModel2d {
     // (undocumented)
     static get className(): string;
+}
+
+// @beta
+export class SheetOwnsSheetInformationAspect extends ElementOwnsUniqueAspect {
+    constructor(sheetId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
 }
 
 // @beta
@@ -6379,6 +6442,13 @@ export class SubjectOwnsPartitionElements extends ElementOwnsChildElements {
     static classFullName: string;
 }
 
+// @beta
+export class SubjectOwnsProjectInformationRecord extends ElementOwnsChildElements {
+    constructor(parentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
 // @public
 export class SubjectOwnsSubjects extends ElementOwnsChildElements {
     constructor(parentId: Id64String, relClassName?: string);
@@ -6444,7 +6514,7 @@ export class TemplateViewDefinition3d extends ViewDefinition3d {
 export const TEXT_ANNOTATION_JSON_VERSION = "1.0.0";
 
 // @internal
-export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.0";
+export const TEXT_STYLE_SETTINGS_JSON_VERSION = "1.0.1";
 
 // @public @preview
 export class TextAnnotation2d extends AnnotationElement2d {
@@ -6466,7 +6536,7 @@ export class TextAnnotation2d extends AnnotationElement2d {
     // @internal (undocumented)
     getTextBlocks(): Iterable<TextBlockAndId>;
     // @internal (undocumented)
-    protected static onCloned(context: IModelElementCloneContext, srcProps: TextAnnotation2dProps, dstProps: TextAnnotation2dProps): void;
+    protected static onCloned(context: IModelElementCloneContext, srcProps: TextAnnotation2dProps, dstProps: TextAnnotation2dProps): Promise<void>;
     // @beta
     protected static onInsert(arg: OnElementPropsArg): void;
     // @internal (undocumented)
@@ -6515,7 +6585,7 @@ export class TextAnnotation3d extends GraphicalElement3d {
     // @internal (undocumented)
     getTextBlocks(): Iterable<TextBlockAndId>;
     // @internal (undocumented)
-    protected static onCloned(context: IModelElementCloneContext, srcProps: TextAnnotation3dProps, dstProps: TextAnnotation3dProps): void;
+    protected static onCloned(context: IModelElementCloneContext, srcProps: TextAnnotation3dProps, dstProps: TextAnnotation3dProps): Promise<void>;
     // @beta
     protected static onInsert(arg: OnElementPropsArg): void;
     // @internal (undocumented)
@@ -6789,6 +6859,8 @@ export class TxnManager {
     readonly validationErrors: ValidationError[];
     // @alpha
     withIndirectTxnMode(callback: () => void): void;
+    // @alpha
+    withIndirectTxnModeAsync(callback: () => Promise<void>): Promise<void>;
 }
 
 // @alpha
@@ -6957,7 +7029,7 @@ export abstract class ViewDefinition extends DefinitionElement {
     loadCategorySelector(): CategorySelector;
     loadDisplayStyle(): DisplayStyle;
     // @beta (undocumented)
-    protected static onCloned(context: IModelElementCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void;
+    protected static onCloned(context: IModelElementCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): Promise<void>;
     // @beta (undocumented)
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
     // @alpha (undocumented)

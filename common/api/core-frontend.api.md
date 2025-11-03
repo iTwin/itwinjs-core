@@ -4941,6 +4941,8 @@ export class IModelApp {
     static get hasRenderSystem(): boolean;
     static get hubAccess(): FrontendHubAccess | undefined;
     static get initialized(): boolean;
+    // @internal
+    static get isEventLoopStarted(): boolean;
     static get localization(): Localization;
     // (undocumented)
     static get locateManager(): ElementLocateManager;
@@ -5271,6 +5273,7 @@ export class IModelTileTree extends TileTree {
     decoder: ImdlDecoder;
     // (undocumented)
     draw(args: TileDrawArgs): void;
+    get dynamicElements(): Id64Array;
     // (undocumented)
     get edgeOptions(): EdgeOptions | false;
     // (undocumented)
@@ -5976,8 +5979,8 @@ export abstract class MapLayerImageryProvider {
     protected appendCustomParams(url: string): string;
     // @internal (undocumented)
     protected _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean>;
-    // (undocumented)
-    cartoRange?: MapCartoRectangle;
+    get cartoRange(): MapCartoRectangle | undefined;
+    set cartoRange(range: MapCartoRectangle | undefined);
     // (undocumented)
     abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
     // @internal (undocumented)
@@ -6060,7 +6063,7 @@ export abstract class MapLayerImageryProvider {
     setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected readonly _settings: ImageMapLayerSettings;
-    // @internal (undocumented)
+    // @public @preview
     get status(): MapLayerImageryProviderStatus;
     // @public
     get supportsMapFeatureInfo(): boolean;
@@ -10256,7 +10259,7 @@ export namespace SubCategoriesCache {
         readonly funcs: QueueFunc[];
     }
     // (undocumented)
-    export type QueueFunc = () => void;
+    export type QueueFunc = (anySubCategoriesLoaded: boolean) => void;
     // (undocumented)
     export class Request {
         constructor(categoryIds: Set<string>, imodel: IModelConnection, maxCategoriesPerQuery?: number);
