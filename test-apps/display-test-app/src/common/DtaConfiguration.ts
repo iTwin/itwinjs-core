@@ -73,6 +73,7 @@ export interface DtaNumberConfiguration {
 export interface DtaOtherConfiguration {
   disabledExtensions?: string[]; // An array of names of WebGL extensions to be disabled
   gpuMemoryLimit?: string | number; // see GpuMemoryLimit in core-frontend for supported string values
+  allowedChannels?: string[];
 }
 
 /** Parameters for starting display-test-app with a specified initial configuration */
@@ -111,6 +112,9 @@ export const getConfig = (): DtaConfiguration => {
 
   if (undefined !== process.env.IMJS_READ_WRITE)
     configuration.openReadWrite = true;
+
+  if (undefined !== process.env.IMJS_ALLOWED_CHANNELS)
+    configuration.allowedChannels = process.env.IMJS_ALLOWED_CHANNELS.split(",");
 
   if (undefined !== process.env.IMJS_DISABLE_INSTANCING)
     configuration.disableInstancing = true;

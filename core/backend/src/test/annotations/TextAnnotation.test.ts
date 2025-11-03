@@ -566,6 +566,7 @@ describe("TextAnnotation element", () => {
         describe("within a single iModel", () => {
           it("leaves property hosts intact", async () => {
             const textBlock = TextBlock.create({
+              styleOverrides: { font: { name: "Karla" } },
               children: [{
                 children: [{
                   type: "field",
@@ -587,7 +588,7 @@ describe("TextAnnotation element", () => {
               }],
             });
 
-            const annotation = TextAnnotation.create({ textBlock });
+            const annotation = TextAnnotation.create({ textBlock, });
             const elem = createElement2d(imodel, { ...createElement2dArgs, textAnnotationProps: annotation.toJSON() });
             elem.insert();
             imodel.saveChanges();
@@ -651,6 +652,7 @@ describe("TextAnnotation element", () => {
 
           it("remaps property hosts", async () => {
             const textBlock = TextBlock.create({
+              styleOverrides: { font: { name: "Karla" } },
               children: [{
                 children: [{
                   type: "field",
