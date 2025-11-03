@@ -564,7 +564,7 @@ describe("TextAnnotation element", () => {
         }
 
         describe("within a single iModel", () => {
-          it.only("leaves property hosts intact", async () => {
+          it("leaves property hosts intact", async () => {
             const textBlock = TextBlock.create({
               styleOverrides: { font: { name: "Karla" } },
               children: [{
@@ -650,8 +650,9 @@ describe("TextAnnotation element", () => {
 
           after(() => dstDb.close());
 
-          it.only("remaps property hosts", async () => {
+          it("remaps property hosts", async () => {
             const textBlock = TextBlock.create({
+              styleOverrides: { font: { name: "Karla" } },
               children: [{
                 children: [{
                   type: "field",
