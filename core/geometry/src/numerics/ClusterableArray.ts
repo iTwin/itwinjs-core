@@ -7,6 +7,7 @@
  * @module Numerics
  */
 
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../Geometry";
 import { GrowableBlockedArray } from "../geometry3d/GrowableBlockedArray";
 import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
@@ -421,8 +422,10 @@ export class ClusterableArray extends GrowableBlockedArray {
         currentClusterIndex++;
         numThisCluster = 0;
       } else {
-        if (numThisCluster === 0 && result.growablePackedPoints) // This is the first encounter with a new cluster
+        if (numThisCluster === 0) { // This is the first encounter with a new cluster
+          assert(result.growablePackedPoints !== undefined, "expect defined (just created above)");
           result.growablePackedPoints.pushFromGrowableXYZArray(source, k);
+        }
         result.oldToNew[k] = currentClusterIndex;
         numThisCluster++;
       }
