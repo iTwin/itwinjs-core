@@ -408,8 +408,8 @@ export class RebaseManager {
       if (!nativeDb.isReadonly) {
         nativeDb.saveChanges("Merge.");
       }
-      if (BriefcaseManager.containsRestorePoint(this._iModel,  BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)) {
-        BriefcaseManager.dropRestorePoint(this._iModel,  BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
+      if (BriefcaseManager.containsRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)) {
+        BriefcaseManager.dropRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
       }
     } catch (err) {
       nativeDb.pullMergeRebaseAbortTxn();
@@ -1062,6 +1062,26 @@ export class TxnManager {
     this._withIndirectChangeRefCounter++;
     try {
       callback();
+    } finally {
+      this._withIndirectChangeRefCounter--;
+      if (this._withIndirectChangeRefCounter === 0) {
+        this._nativeDb.setTxnMode("direct");
+      }
+    }
+  }
+
+  /**
+   * @alpha
+   * Execute a series of changes in an indirect transaction.
+   * @param callback The function containing the changes to make.
+   */
+  public async withIndirectTxnModeAsync(callback: () => Promise<void>): Promise<void> {
+    if (this._withIndirectChangeRefCounter === 0) {
+      this._nativeDb.setTxnMode("indirect");
+    }
+    this._withIndirectChangeRefCounter++;
+    try {
+      await callback();
     } finally {
       this._withIndirectChangeRefCounter--;
       if (this._withIndirectChangeRefCounter === 0) {
