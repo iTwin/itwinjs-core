@@ -216,6 +216,7 @@ alpha;namespace;EntityReferences
 internal;function;isValid
 internal;function;makeInvalid
 internal;function;typeFromClass
+beta;interface;EvaluateFieldsArgs
 public;namespace;ExportGraphics
 public;type;ExportGraphicsFunction
 public;interface;ExportGraphicsInfo
