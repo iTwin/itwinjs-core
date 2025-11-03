@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Exposed `MapLayerImageryProvider.status` as beta api.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
