@@ -593,28 +593,16 @@ export class Transform implements BeJSONFunctions {
     const originX = this.origin.x;
     const originY = this.origin.y;
     const originZ = this.origin.z;
-    if (result) {
-      const n = Transform.matchArrayLengths(points, result, () => Point3d.createZero());
-      for (let i = 0; i < n; i++)
-        this._matrix.multiplyInverseXYZAsPoint3d(
-          points[i].x - originX,
-          points[i].y - originY,
-          points[i].z - originZ,
-          result[i],
-        );
-      return result;
-    }
-    result = [];
-    for (const point of points) {
-      const pt = this._matrix.multiplyInverseXYZAsPoint3d(
-        point.x - originX,
-        point.y - originY,
-        point.z - originZ,
+    if (!result)
+      result = [];
+    const n = Transform.matchArrayLengths(points, result, () => Point3d.createZero());
+    for (let i = 0; i < n; i++)
+      this._matrix.multiplyInverseXYZAsPoint3d(
+        points[i].x - originX,
+        points[i].y - originY,
+        points[i].z - originZ,
+        result[i],
       );
-      if (!pt)
-        return undefined;
-      result.push(pt);
-    }
     return result;
   }
   /**
