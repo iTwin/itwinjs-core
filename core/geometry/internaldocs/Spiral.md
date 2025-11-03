@@ -11,37 +11,56 @@ Mathematically, a spiral can be described in polar coordinates $(r,θ)$ where $r
 *Archimedean Spiral:*
 $$r=a+bθ$$
 Parametric (Cartesian) form:
-$$x(θ)=(a+bθ)cosθ \\ y(θ)=(a+bθ)sinθ​$$
+$$
+\begin{aligned}
+x(θ)=(a+bθ)\cosθ \\
+y(θ)=(a+bθ)\sinθ​
+\end{aligned}
+$$
 
 *Logarithmic Spiral:*
 $$r=ae^{bθ}$$
 Parametric (Cartesian) form:
-$$x(θ)=ae^{bθ}cosθ \\ y(θ)=ae^{bθ}sinθ​$$
+$$
+\begin{aligned}
+x(θ)=ae^{bθ}\cosθ \\
+y(θ)=ae^{bθ}\sinθ
+\end{aligned}
+​$$
 
 **Note:** core-geometry does not currently support Archimedean or logarithmic spirals, and there are no plans to implement them. Their inclusion here is solely to illustrate the mathematical concepts behind spirals.
 -----------
 
-Another way to represent a spiral is via its curvature. In general, for a curve parameterized by curve length $\bar{s}$ we have:
+Another way to represent a spiral is via its curvature. In general, for a curve parameterized by curve length $s$ we have:
 
-$$\frac{dθ}{d\bar{s}} = κ(\bar{s})$$
+$$\frac{dθ}{ds} = κ(s)$$
 
-where where $κ(\bar{s})$ is curvature. If $p$ is the position vector we have
+where where $κ(s)$ is curvature and $θ$ is not the same theta as the polar coordinate. Here, $θ$ is a function of arc length: it is the angle that the tangent vector of the curve at arc length $s$ makes with the $x$-axis. That "the derivative of theta is the curvature function" is a consequence of the Frenet-Serre formulas, which apply to all 3D curves with nonzero curvature.
 
-$$p(s) = (x'(\bar{s}),y'(\bar{s})) = (cosθ(\bar{s}), sinθ(\bar{s}))$$
+If we integrate and change variable from $s$ to $f$ we get
+
+$$θ(s)= \int_{0}^{Lf} κ(u)du \tag{*}$$
+
+because fraction $f(s) = \frac{s}{L}$ so $s(f) = Lf$ where $L$ is the spiral length from fraction 0 to $f$.
+
+If $T$ is the unit tangent vector we have
+
+$$T(s) = (x'(s),y'(s)) = (\cosθ(s), \sinθ(s))$$
 
 so integrating gives positions:
 
-$$x(\bar{s})= \int_{0}^{\bar{s}} cosθ(u)du \\ y(\bar{s})= \int_{0}^{\bar{s}} sinθ(u)du $$
+$$
+\begin{aligned}
+x(s)= \int_{0}^{s} \cosθ(u)du \\
+y(s)= \int_{0}^{s} \sinθ(u)du
+\end{aligned}
+$$
 
-For a spiral defined by curvature varying smoothly with length, we have fraction $s = \frac{\bar{s}}{L}$ or $\bar{s} = Ls$ where $L$ is the total spiral length. This gives:
-
-$$θ(s)= \int_{0}^{Ls} κ(u)du$$
-
-Replacing this into previous formula and switching variable to fraction form gives:
+Replacing equation (*) this and switching variable to fraction form gives:
 
 $$\boxed{
 \begin{aligned}
-  x(s)= L \int_{0}^{s} \Bigl(\int_{0}^{Lu} 𝜅(v)dv\Bigl) du \\ y(s)= L \int_{0}^{s} \Bigl(\int_{0}^{Lu} 𝜅(v)dv\Bigl) du
+  x(f)= L \int_{0}^{f} \cos\Bigl(\int_{0}^{Lu} 𝜅(v)dv\Bigl) du \\ y(f)= L \int_{0}^{f} \sin\Bigl(\int_{0}^{Lu} 𝜅(v)dv\Bigl) du
 \end{aligned}
 }$$
 
@@ -50,11 +69,16 @@ $$\boxed{
 *Clothoid (Euler Spiral)*
 
 Curvature $𝜅$ increases linearly with arc length $s$:
-$$𝜅(s) = cs \Rightarrow θ(s) = \frac{cs^2}{2} $$
+$$𝜅(f) = cf \Rightarrow θ(f) = \frac{cf^2}{2} $$
 where $c$ is a constant.
 
 Parametric (Cartesian) form:
-$$x(s)= \int_{0}^{s} cos\Bigl(\frac{cu^2}{2}\Bigl)du \\ y(s)= \int_{0}^{s} sin\Bigl(\frac{cu^2}{2}\Bigl)du $$
+$$
+\begin{aligned}
+x(f)= \int_{0}^{f} \cos\Bigl(\frac{cu^2}{2}\Bigl)du \\
+y(f)= \int_{0}^{f} \sin\Bigl(\frac{cu^2}{2}\Bigl)du
+\end{aligned}
+$$
 
 ![>](./figs/Spiral/spirals.png)
 
@@ -67,7 +91,7 @@ Parent class for all iTwin spirals is `TransitionSpiral3d` which is extended by 
 `TransitionSpiral3d` class has an member called `TransitionConditionalProperties` which encapsulates 5 elements: `radius0`, `radius1`, `bearing0`, `bearing1`, and `curveLength`.
 
 We already know:
-$$θ(s)= \int_{0}^{Ls} 𝜅(u)du$$
+$$θ(f)= \int_{0}^{Lf} 𝜅(u)du$$
 This can be rewritten as
 $$θ_1 - θ_0 = L \bar{𝜅} = L \frac{𝜅_0 + 𝜅_1}{2}$$
 where $\bar{𝜅}$ is curvature average, $θ_0$ is `bearing0`, $θ_1$ is `bearing1`, $L$ is `curveLength`, $𝜅_0$ is `1/radius0`, and $𝜅_1$ is `1/radius1`.
@@ -82,7 +106,7 @@ The spiral $x$ and $y$ coordinates is calculated by
 
 $$\boxed{
 \begin{aligned}
-  x(s)= L \int_{0}^{s} \Bigl(\int_{0}^{Lu} 𝜅(v)dv\Bigl) du \\ y(s)= L \int_{0}^{s} \Bigl(\int_{0}^{Lu} 𝜅(v)dv\Bigl) du
+  x(f)= L \int_{0}^{f} \cos\Bigl(\int_{0}^{Lu} 𝜅(v)dv\Bigl) du \\ y(f)= L \int_{0}^{f} \sin\Bigl(\int_{0}^{Lu} 𝜅(v)dv\Bigl) du
 \end{aligned}
 }$$
 
@@ -115,19 +139,24 @@ public globalFractionToBearingRadians(fraction: number): number {
 
 Direct spirals do not use integration to calculate $x$ and $y$ coordinates. Instead they use direct formulas to find coordinates.
 
-The 4 spirals `JapaneseCubic`, `Arema`, `ChineseCubic`, and `WesternAustralian` have a formula for $θ$ (which is $θ(s) = c*s^2$).
+The 4 spirals `JapaneseCubic`, `Arema`, `ChineseCubic`, and `WesternAustralian` have a formula for $θ$ (which is $θ(s) = c*s^2$). These formulae use truncated Taylor series to approximate the clothoid integrands by polynomials, which we can integrate directly (without quadrature).
 
 To find the $x$ and $y$ coordinates for each one of those 4 spirals:
 
-- We find Taylor series of $cos(θ)$ and $sin(θ)$
+- We find Taylor series of $\cos(θ)$ and $\sin(θ)$
 - We pick a couple of $x$ and $y$ terms in the series
-- We replace $θ(s)$ with $c*s^2$
+- We replace $θ(f)$ with $c*f^2$
 - We integrate
 
 All these steps are done in `ClothoidSeriesRLEvaluator`.
 
 The 5 spirals `AustralianRailCorp `, `Czech`, `Italian`, `MXCubicAlongArc`, and `Polish` are indeed NOT spirals`. Those are just cubic curves defined by
-$$x(s)= sL \\ y(s) = cs^3$$
+$$
+\begin{aligned}
+x(f)= fL \\
+y(f) = cf^3
+\end{aligned}
+$$
 that briefly take off from the x axis "like a spiral".
 
 All of these 5 spirals extend `CubicEvaluator` class.
