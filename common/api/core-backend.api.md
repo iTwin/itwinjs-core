@@ -2549,6 +2549,7 @@ export interface ElementDrivesElementProps extends RelationshipProps {
 export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     // (undocumented)
     static get className(): string;
+    static evaluateFields(args: EvaluateFieldsArgs): number;
     static isSupportedForIModel(iModel: IModelDb): boolean;
     // @internal (undocumented)
     static onDeletedDependency(props: RelationshipProps, iModel: IModelDb): void;
@@ -2813,6 +2814,12 @@ export namespace EntityReferences {
     export function toId64(id: EntityReference): string;
     // @internal
     export function typeFromClass(entityClass: typeof Entity): ConcreteEntityTypes;
+}
+
+// @beta
+export interface EvaluateFieldsArgs {
+    block: TextBlock;
+    iModel: IModelDb;
 }
 
 // @public
