@@ -67,7 +67,7 @@ export abstract class MapLayerImageryProvider {
 
   /**
    * The status of the map layer imagery provider.
-   * @beta
+   * @public @preview
    */
   public get status() { return this._status; }
 
