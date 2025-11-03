@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added clearECDbCache() call inside clearCache method of IModelDb class",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
