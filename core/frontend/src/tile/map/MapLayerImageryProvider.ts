@@ -65,13 +65,15 @@ export abstract class MapLayerImageryProvider {
   /** @internal */
   protected _firstRequestPromise: Promise<void>|undefined;
 
-  /** @internal */
+  /**
+   * The status of the map layer imagery provider.
+   */
   public get status() { return this._status; }
 
   /** Determine if this provider supports map feature info.
    * For example, this can be used to show the map feature info tool only when a provider is registered to support it.
    * @returns true if provider supports map feature info else return false.
-   * @public
+   * @beta
    */
   public get supportsMapFeatureInfo(): boolean { return false; }
 
