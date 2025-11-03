@@ -6063,7 +6063,6 @@ export abstract class MapLayerImageryProvider {
     setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected readonly _settings: ImageMapLayerSettings;
-    // @internal (undocumented)
     get status(): MapLayerImageryProviderStatus;
     // @public
     get supportsMapFeatureInfo(): boolean;
