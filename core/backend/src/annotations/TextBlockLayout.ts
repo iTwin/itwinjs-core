@@ -795,7 +795,7 @@ export class TextBlockLayout {
         break;
       }
       case "text":
-      /* ###TODO uncomment me case "field":*/ {
+      case "field": {
         const layout = RunLayout.create(component, context, cumulativeOverrides);
 
         // Text can be word-wrapped, so we need to split it into multiple runs if necessary.
