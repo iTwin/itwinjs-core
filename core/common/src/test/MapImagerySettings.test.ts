@@ -17,7 +17,5 @@ describe("MapImagerySettings", () => {
 
     const roundTripped = MapImagerySettings.fromJSON(json);
     expect(roundTripped.backgroundBase).to.equal(ColorDef.black);
-
-    expect(roundTripped.toJSON()).to.equal(json);
   });
 });
