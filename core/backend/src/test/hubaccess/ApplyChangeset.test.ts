@@ -107,11 +107,13 @@ describe("apply changesets", function (this: Suite) {
   });
 
   it("Pulling profile upgrade after inserting element should pass", async () => {
+    // startup
     HubMock.startup("ProfileUpgradeAfterInsertElement", KnownTestLocations.outputDir);
 
     const pathname = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const iModelId = await HubWrappers.pushIModel("user1", HubMock.iTwinId, pathname,"Test", true);
 
+    // inserting and updating elements in one briefcase
     const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     b1.saveChanges();
@@ -138,12 +140,15 @@ describe("apply changesets", function (this: Suite) {
   b1.saveChanges();
   await b1.pushChanges({description: "Updated Subject"});
   await b1.locks.releaseAllLocks();
+
+  // upgrading schemas in second briefcase
   const props = await BriefcaseManager.downloadBriefcase({ accessToken: "user2", iTwinId: HubMock.iTwinId, iModelId });
   const schemaState = BriefcaseDb.validateSchemas(props.fileName, true);
   chai.assert(schemaState === SchemaState.UpgradeRecommended);
   await BriefcaseDb.upgradeSchemas({fileName: props.fileName});
   await b1.pullChanges();
 
+  //cleanup
   await HubMock.deleteIModel({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
   HubMock.shutdown()
   });
