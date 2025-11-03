@@ -1,6 +1,18 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Fri, 24 Oct 2025 16:22:31 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Nov 2025 19:02:35 GMT and should not be manually modified.
+
+## 5.3.0
+Mon, 03 Nov 2025 19:02:35 GMT
+
+### Updates
+
+- Added new `VersionedJSON<T>` interface for wrapping JSON data that should be versioned.
+- Multiple changes were made to the `TextStyleSettings` class. `lineHeight` is replaced with `textHeight`. Frame style names were changed to be more descriptive. `fontName` is now `font` and has both the font's name and type. `justification` and `margins` were moved from the `TextBlock` into `TextStyleSettings`.
+- Fixes and enhancements for text fields.
+- Add support for text fields referring to properties of EC views.
+- Add APIs for project and sheet information.
+- Added new terminatorShape property in TextStyleSettings
 
 ## 5.2.4
 Fri, 24 Oct 2025 16:20:38 GMT

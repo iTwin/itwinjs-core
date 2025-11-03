@@ -2,6 +2,75 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "5.3.0",
+      "tag": "@itwin/core-backend_v5.3.0",
+      "date": "Mon, 03 Nov 2025 19:02:35 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add SqliteChangesetReader.openInMemory() to allow read unsaved changes"
+          },
+          {
+            "comment": "Fix crash when their is a cycle in EDE."
+          },
+          {
+            "comment": "ECSqlReader/ConcurrentQuery unable to see modification to file"
+          },
+          {
+            "comment": "add withIndirectTxnModeAsync()"
+          },
+          {
+            "comment": "Allow recursive calls to withIndirectTxnMode"
+          },
+          {
+            "comment": "`TextAnnotation2d/3d` and `AnnotationTextStyle` now persist a stringified `VersionedJSON<T>` in their JSON properties. This bundles a version number with the JSON data to allow data version checking and migration."
+          },
+          {
+            "comment": "`justification` and `margins` are now text block level text style properties. `textHeight` replaces `lineHeight` allowing multi-sized text and changing the baseline that text vertically aligns to in a line."
+          },
+          {
+            "comment": "load default geo coord dbs when getting available crs"
+          },
+          {
+            "comment": "clear instanceKeyCache during updateElement"
+          },
+          {
+            "comment": "Fixed tests for biscore version 01.00.24 release"
+          },
+          {
+            "comment": "Fixed test cases"
+          },
+          {
+            "comment": "Remap fields and text styles when cloning text annotation elements between iModels."
+          },
+          {
+            "comment": "Element.onCloned can now invoke asynchronous operations."
+          },
+          {
+            "comment": "Fixes and enhancements for text fields."
+          },
+          {
+            "comment": "Add support for text fields referring to properties of EC views."
+          },
+          {
+            "comment": "Fix generateElementGraphics ignoring geometry beyond 2048 entries."
+          },
+          {
+            "comment": "Add APIs for project and sheet information."
+          },
+          {
+            "comment": "Added deleteInstances to delete multiple relationship instances"
+          },
+          {
+            "comment": "Added new api to create leader terminator geometry for different shapes"
+          },
+          {
+            "comment": "Added ECSqlWriteStatement disposal inside WithWriteStatement"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.2.4",
       "tag": "@itwin/core-backend_v5.2.4",
       "date": "Fri, 24 Oct 2025 16:20:38 GMT",

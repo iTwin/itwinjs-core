@@ -2,6 +2,33 @@
   "name": "@itwin/core-common",
   "entries": [
     {
+      "version": "5.3.0",
+      "tag": "@itwin/core-common_v5.3.0",
+      "date": "Mon, 03 Nov 2025 19:02:35 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added new `VersionedJSON<T>` interface for wrapping JSON data that should be versioned."
+          },
+          {
+            "comment": "Multiple changes were made to the `TextStyleSettings` class. `lineHeight` is replaced with `textHeight`. Frame style names were changed to be more descriptive. `fontName` is now `font` and has both the font's name and type. `justification` and `margins` were moved from the `TextBlock` into `TextStyleSettings`."
+          },
+          {
+            "comment": "Fixes and enhancements for text fields."
+          },
+          {
+            "comment": "Add support for text fields referring to properties of EC views."
+          },
+          {
+            "comment": "Add APIs for project and sheet information."
+          },
+          {
+            "comment": "Added new terminatorShape property in TextStyleSettings"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.2.4",
       "tag": "@itwin/core-common_v5.2.4",
       "date": "Fri, 24 Oct 2025 16:20:38 GMT",

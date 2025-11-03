@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-geometry
 
-This log was last generated on Fri, 24 Oct 2025 16:22:31 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Nov 2025 19:02:35 GMT and should not be manually modified.
+
+## 5.3.0
+Mon, 03 Nov 2025 19:02:35 GMT
+
+### Updates
+
+- n
 
 ## 5.2.4
 Fri, 24 Oct 2025 16:20:38 GMT

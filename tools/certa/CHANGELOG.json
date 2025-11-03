@@ -2,6 +2,21 @@
   "name": "@itwin/certa",
   "entries": [
     {
+      "version": "5.3.0",
+      "tag": "@itwin/certa_v5.3.0",
+      "date": "Mon, 03 Nov 2025 19:02:35 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Bump `playwright` version to `~1.56.1`."
+          },
+          {
+            "comment": "Add support for Electron 39"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.2.4",
       "tag": "@itwin/certa_v5.2.4",
       "date": "Fri, 24 Oct 2025 16:20:38 GMT",
