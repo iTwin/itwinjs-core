@@ -29,6 +29,7 @@ y(θ)=ae^{bθ}\sinθ
 ​$$
 
 **Note:** core-geometry does not currently support Archimedean or logarithmic spirals, and there are no plans to implement them. Their inclusion here is solely to illustrate the mathematical concepts behind spirals.
+
 -----------
 
 Another way to represent a spiral is via its curvature. In general, for a curve parameterized by curve length $s$ we have:
@@ -95,6 +96,8 @@ $$θ(f)= \int_{0}^{Lf} 𝜅(u)du$$
 This can be rewritten as
 $$θ_1 - θ_0 = L \bar{𝜅} = L \frac{𝜅_0 + 𝜅_1}{2}$$
 where $\bar{𝜅}$ is curvature average, $θ_0$ is `bearing0`, $θ_1$ is `bearing1`, $L$ is `curveLength`, $𝜅_0$ is `1/radius0`, and $𝜅_1$ is `1/radius1`.
+
+**Note:** This only applies to clothoids and `TransitionConditionalProperties` is not instantiated for `DirectSpiral3ds`, but only for `IntegratedSpiral3ds`, which is a class that generalizes the clothoid.
 
 **IntegratedSpiral3d**
 
