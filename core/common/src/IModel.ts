@@ -377,6 +377,8 @@ export abstract class IModel implements IModelProps {
   public static readonly rootSubjectId: Id64String = "0x1";
   /** The Id of the dictionary model. */
   public static readonly dictionaryId: Id64String = "0x10";
+  /** The Id used for schema locks. */
+  public static readonly schemaLockId: Id64String = "0x11";
 
   /** Event raised after [[name]] changes. */
   public readonly onNameChanged = new BeEvent<(previousName: string) => void>();

@@ -5,11 +5,12 @@
 
 import { assert, expect } from "chai";
 import { Suite } from "mocha";
-import { _nativeDb, BriefcaseDb, IModelHost } from "@itwin/core-backend";
+import { _nativeDb, BriefcaseDb, DrawingCategory, IModelHost } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
-import { HubWrappers, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
+import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { Guid } from "@itwin/core-bentley";
+import { Code, GeometricElementProps, IModel, QueryBinder, SubCategoryAppearance } from "@itwin/core-common";
 
 describe.only("Schema lock tests", function (this: Suite) {
   this.timeout(0);
@@ -22,7 +23,8 @@ describe.only("Schema lock tests", function (this: Suite) {
   after(async () => {
     IModelHost.authorizationClient = undefined;
   });
-  it("multi user workflow", async () => {
+
+  it("importing schemas should lock", async () => {
     const iModelName = "SchemaLockMultiUserTest";
     const iTwinId = Guid.createValue();
     const user1AccessToken = "token 1";
@@ -30,7 +32,7 @@ describe.only("Schema lock tests", function (this: Suite) {
     let user1Briefcase: BriefcaseDb | undefined;
     let user2Briefcase: BriefcaseDb | undefined;
 
-    HubMock.startup("test", KnownTestLocations.outputDir);
+    HubMock.startup("schemaLockTest", KnownTestLocations.outputDir);
 
     try {
       const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken: user1AccessToken });
@@ -46,9 +48,27 @@ describe.only("Schema lock tests", function (this: Suite) {
           </ECEntityClass>
       </ECSchema>`;
       await user1Briefcase.importSchemaStrings([schema]);
-      // rwIModel.channels.addAllowedChannel(ChannelControl.sharedChannelName); Needed?
       user1Briefcase.saveChanges();
       await user1Briefcase.pushChanges({ description: "import schema", accessToken: user1AccessToken });
+
+      // Insert an element of the new class
+      const modelCode = IModelTestUtils.getUniqueModelCode(user1Briefcase, "DrawingModel");
+      await user1Briefcase.locks.acquireLocks({ shared: IModel.dictionaryId });
+      const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(user1Briefcase, modelCode);
+      // Create a drawing category
+      const drawingCategoryId = DrawingCategory.insert(user1Briefcase, IModel.dictionaryId, "DrawingCategory", new SubCategoryAppearance());
+      const firstElementProps: GeometricElementProps & { myProperty?: string } = {
+        classFullName: "TestDomain:Test2dElement",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        myProperty: "MYPROP",
+      };
+      const firstElement = user1Briefcase.elements.createElement(firstElementProps);
+      const firstElementId = user1Briefcase.elements.insertElement(firstElement.toJSON());
+      assert.isTrue(firstElementId !== undefined, "First element should be inserted");
+      user1Briefcase.saveChanges();
+      await user1Briefcase.pushChanges({ description: "insert element of new class", accessToken: user1AccessToken });
 
       // Open briefcase as user 2.
       user2Briefcase = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken: user2AccessToken });
@@ -62,6 +82,9 @@ describe.only("Schema lock tests", function (this: Suite) {
           </ECEntityClass>
       </ECSchema>`;
       await user2Briefcase.importSchemaStrings([updatedSchemaUser2]);
+
+      // TODO: Verify we hold a schema lock here (and not a full data lock)
+
       user2Briefcase.saveChanges();
 
       const updatedSchemaUser1 = `<?xml version="1.0" encoding="UTF-8"?>
@@ -73,19 +96,119 @@ describe.only("Schema lock tests", function (this: Suite) {
               <ECProperty propertyName="MyPropertyForUser1" typeName="string"/>
           </ECEntityClass>
       </ECSchema>`;
-      await user1Briefcase.importSchemaStrings([updatedSchemaUser1]);
-      user1Briefcase.saveChanges();
 
-      // Push changes from user 1
-      await user1Briefcase.pushChanges({ description: "update schema from user 1", accessToken: user1AccessToken });
+      await expect(user1Briefcase.importSchemaStrings([updatedSchemaUser1]))
+        .to.be.rejectedWith("exclusive lock is already held");
 
-      // Now try to push changes from user 2 - should get a schema conflict
-      await expect(user2Briefcase.pushChanges({ description: "update schema from user 2", accessToken: user2AccessToken }))
-        .to.be.rejectedWith("Failed something something");
+      // Try to modify the existing element - should also be rejected due to schema lock
+      const element = user1Briefcase.elements.getElement(firstElementId);
+      (element as any).myProperty = "UPDATED_VALUE";
+      await user1Briefcase.locks.acquireLocks({ exclusive: firstElementId }); // should not throw, schema lock allows shared locks
+      user1Briefcase.elements.updateElement(element.toJSON()); // should not throw
 
     } finally {
       user1Briefcase?.close();
       user2Briefcase?.close();
+      HubMock.shutdown();
+    }
+  });
+
+  it("schema update with data changes - inserting base class in hierarchy", async () => {
+    const iModelName = "SchemaDataChangeTest";
+    const iTwinId = Guid.createValue();
+    const accessToken = "token 1";
+    let briefcase: BriefcaseDb | undefined;
+
+    HubMock.startup("schemaDataChangeTest", KnownTestLocations.outputDir);
+
+    try {
+      const iModelId = await HubMock.createNewIModel({ iTwinId, iModelName, description: "TestSubject", accessToken });
+      assert.isNotEmpty(iModelId);
+      briefcase = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken });
+
+      // Import initial schema: C -> A
+      const initialSchema = `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="NewBaseClass" alias="nbc" version="01.00.00" displayLabel="InsertNewBaseClassInMiddleOfExistingHierarchy" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="BisCore" version="01.00.23" alias="bis"/>
+        <ECEntityClass typeName="A">
+          <BaseClass>bis:GraphicalElement2d</BaseClass>
+          <ECProperty propertyName="PropA" typeName="string"/>
+        </ECEntityClass>
+        <ECEntityClass typeName="C">
+          <BaseClass>A</BaseClass>
+          <ECProperty propertyName="PropC" typeName="string"/>
+        </ECEntityClass>
+      </ECSchema>`;
+
+      await briefcase.importSchemaStrings([initialSchema]);
+
+      await briefcase.locks.acquireLocks({ shared: IModel.dictionaryId });
+      // Create a drawing partition and model for 2D elements
+      const modelCode = IModelTestUtils.getUniqueModelCode(briefcase, "DrawingModel");
+      const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(briefcase, modelCode);
+
+      // Create a drawing category
+      const drawingCategoryId = DrawingCategory.insert(briefcase, IModel.dictionaryId, "DrawingCategory", new SubCategoryAppearance());
+
+      // Create element props for class C
+
+      const firstElementProps: GeometricElementProps & { propA?: string; propC?: string } = {
+        classFullName: "NewBaseClass:C",
+        model: drawingModelId,
+        category: drawingCategoryId,
+        code: Code.createEmpty(),
+        propA: "FIRSTA",
+        propC: "FIRSTC",
+      };
+
+      const firstElement = briefcase.elements.createElement(firstElementProps);
+      const firstElementId = briefcase.elements.insertElement(firstElement.toJSON());
+      assert.isTrue(firstElementId !== undefined, "First element should be inserted");
+      briefcase.saveChanges();
+      await briefcase.pushChanges({ description: "import initial schema and insert first element", accessToken });
+
+      // Helper function to query and verify element properties
+      const queryAndVerifyElement = async (context: string) => {
+        const queryBinder = new QueryBinder();
+        queryBinder.bindId(1, firstElementId);
+        const reader = briefcase!.createQueryReader("SELECT PropA, PropC FROM NewBaseClass.C WHERE ECInstanceId = ?", queryBinder);
+        assert.isTrue(await reader.step(), `Should find element (${context})`);
+
+        const result = reader.current.toRow();
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const expected = { PropA: "FIRSTA", PropC: "FIRSTC" };
+        assert.deepEqual(result, expected, `Element properties should match expected values (${context})`);
+      };
+
+      // Verify element immediately after insertion (before schema change)
+      await queryAndVerifyElement("before schema change");
+
+      // Import updated schema: C -> B -> A (B is inserted in the middle)
+      const updatedSchema = `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="NewBaseClass" alias="nbc" version="01.01.00" displayLabel="InsertNewBaseClassInMiddleOfExistingHierarchy" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="BisCore" version="01.00.23" alias="bis"/>
+        <ECEntityClass typeName="A">
+          <BaseClass>bis:GraphicalElement2d</BaseClass>
+          <ECProperty propertyName="PropA" typeName="string"/>
+          <ECProperty propertyName="PropC" typeName="string"/>
+        </ECEntityClass>
+        <ECEntityClass typeName="C">
+          <BaseClass>A</BaseClass>
+          <ECProperty propertyName="PropC" typeName="string"/>
+        </ECEntityClass>
+      </ECSchema>`;
+
+      await briefcase.importSchemaStrings([updatedSchema]);
+
+      //TODO: Verify we're holding a full lock here (since importSchemas had data changes)
+
+      briefcase.saveChanges();
+      await briefcase.pushChanges({ description: "update schema with new base class", accessToken });
+
+      // Verify element after schema change - data should be preserved
+      await queryAndVerifyElement("after schema change");
+    } finally {
+      briefcase?.close();
       HubMock.shutdown();
     }
   });
