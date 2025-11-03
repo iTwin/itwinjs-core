@@ -776,6 +776,7 @@ export abstract class IModelDb extends IModel {
     this.models[_cache].clear();
     this.elements[_instanceKeyCache].clear();
     this.models[_instanceKeyCache].clear();
+    this[_nativeDb].clearECDbCache();
   }
 
   /** Update the project extents for this iModel.

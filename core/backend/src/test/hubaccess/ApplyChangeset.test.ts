@@ -5,10 +5,12 @@
 
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { HubWrappers, KnownTestLocations } from "..";
-import { ChannelControl, IModelHost } from "../../core-backend";
+import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
+import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, IModelHost, Subject, SubjectOwnsSubjects } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { Suite } from "mocha";
+import { IModel, SchemaState, SubjectProps } from "@itwin/core-common";
+import { Guid } from "@itwin/core-bentley";
 chai.use(chaiAsPromised);
 
 describe("apply changesets", function (this: Suite) {
@@ -102,5 +104,47 @@ describe("apply changesets", function (this: Suite) {
     b2.close();
     b3.close();
     HubMock.shutdown();
+  });
+
+  it("Pulling profile upgrade after inserting element should pass", async () => {
+    HubMock.startup("ProfileUpgradeAfterInsertElement", KnownTestLocations.outputDir);
+
+    const pathname = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
+    const iModelId = await HubWrappers.pushIModel("user1", HubMock.iTwinId, pathname,"Test", true);
+
+    const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
+    b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
+    b1.saveChanges();
+
+    await b1.locks.acquireLocks({
+      shared: IModel.repositoryModelId,
+    });
+    const subjectProps: SubjectProps = {
+    classFullName: Subject.classFullName,
+    code: Subject.createCode(b1, IModel.rootSubjectId, "code value 1"),
+    federationGuid: Guid.createValue(),
+    model: IModel.repositoryModelId,
+    parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+  };
+  const subjectId = b1.elements.insertElement(subjectProps);
+  b1.saveChanges();
+  await b1.pushChanges({description: "Inserted Subject", retainLocks: true})
+
+  const existingCode = b1.elements.getElementProps(subjectId).code;
+  b1.elements.updateElement({
+    id: subjectId,
+    code: { ...existingCode, value: "code value 2" },
+  });
+  b1.saveChanges();
+  await b1.pushChanges({description: "Updated Subject"});
+  await b1.locks.releaseAllLocks();
+  const props = await BriefcaseManager.downloadBriefcase({ accessToken: "user2", iTwinId: HubMock.iTwinId, iModelId });
+  const schemaState = BriefcaseDb.validateSchemas(props.fileName, true);
+  chai.assert(schemaState === SchemaState.UpgradeRecommended);
+  await BriefcaseDb.upgradeSchemas({fileName: props.fileName});
+  await b1.pullChanges();
+
+  await HubMock.deleteIModel({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
+  HubMock.shutdown()
   });
 });
