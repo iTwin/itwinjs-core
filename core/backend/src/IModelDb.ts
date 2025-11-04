@@ -776,7 +776,6 @@ export abstract class IModelDb extends IModel {
     this.models[_cache].clear();
     this.elements[_instanceKeyCache].clear();
     this.models[_instanceKeyCache].clear();
-    this[_nativeDb].clearECDbCache();
   }
 
   /** Update the project extents for this iModel.
@@ -890,6 +889,7 @@ export abstract class IModelDb extends IModel {
       this.saveChanges();
       this.clearCaches();
       this[_nativeDb].concurrentQueryShutdown();
+      this[_nativeDb].clearECDbCache();
       this[_nativeDb].performCheckpoint();
     }
   }
@@ -3135,6 +3135,7 @@ export class BriefcaseDb extends IModelDb {
   public async discardChanges(args?: { retainLocks?: true }): Promise<void> {
     Logger.logInfo(loggerCategory, "Discarding local changes");
     this.clearCaches();
+    this[_nativeDb].clearECDbCache();
     this[_nativeDb].discardLocalChanges();
     this[_resetIModelDb]();
     if (args?.retainLocks) {

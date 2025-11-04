@@ -559,6 +559,7 @@ class SqliteBackedInstanceCache implements ECChangeUnifierCache {
       this._db.clearStatementCache();
     else {
       this._db.clearCaches();
+      this._db[_nativeDb].clearECDbCache();
     }
     this._db.withSqliteStatement(`DROP TABLE IF EXISTS ${this._cacheTable}`, (stmt) => {
       if (DbResult.BE_SQLITE_DONE !== stmt.step())
