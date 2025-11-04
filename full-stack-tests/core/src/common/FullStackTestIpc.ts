@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String, LoggingMetaData } from "@itwin/core-bentley";
-import { ChannelControlError, CodeProps, ConflictingLock, SubCategoryAppearance } from "@itwin/core-common";
+import { ChannelControlError, CodeProps, ConflictingLock, ElementProps, SubCategoryAppearance } from "@itwin/core-common";
 
 export const fullstackIpcChannel = "full-stack-tests/fullStackIpc";
 export interface FullStackTestIpc {
@@ -17,4 +17,6 @@ export interface FullStackTestIpc {
   useAzTestAuthClient(): Promise<void>;
   setAzTestUser(user: "admin" | "readOnly" | "readWrite"): Promise<void>;
   insertSheetViewWithAttachment(filePath: string): Promise<Id64String>;
+  insertElement(iModelKey: string, props: ElementProps): Promise<Id64String>;
+  updateElement(iModelKey: string, props: ElementProps): Promise<void>;
 }

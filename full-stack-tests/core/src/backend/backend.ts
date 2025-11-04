@@ -77,6 +77,14 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     return categoryId;
   }
 
+  public async insertElement(iModelKey: string, props: ElementProps): Promise<Id64String> {
+    return IModelDb.findByKey(iModelKey).elements.insertElement(props);
+  }
+
+  public async updateElement(iModelKey: string, props: ElementProps): Promise<void> {
+    return IModelDb.findByKey(iModelKey).elements.updateElement(props);
+  }
+
   public async closeAndReopenDb(key: string): Promise<void> {
     const iModel = BriefcaseDb.findByKey(key);
     return iModel.executeWritable(async () => undefined);
