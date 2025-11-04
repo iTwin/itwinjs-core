@@ -65,7 +65,10 @@ export abstract class MapLayerImageryProvider {
   /** @internal */
   protected _firstRequestPromise: Promise<void>|undefined;
 
-  /** @internal */
+  /**
+   * The status of the map layer imagery provider.
+   * @public @preview
+   */
   public get status() { return this._status; }
 
   /** Determine if this provider supports map feature info.
