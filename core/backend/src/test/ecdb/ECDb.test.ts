@@ -515,6 +515,25 @@ describe("ECDb", () => {
     ecdb.closeDb();
   });
 
+  it.only("should not throw any error if the locater fails to find a schema", async () => {
+    using ecdb = ECDbTestHelper.createECDb(outDir, "test.ecdb",
+      `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECEntityClass typeName="Foo" modifier="Sealed">
+          <ECProperty propertyName="n" typeName="int"/>
+        </ECEntityClass>
+      </ECSchema>`);
+    assert.isTrue(ecdb.isOpen);
+
+    const context = new SchemaContext();
+    const locater = new SchemaJsonLocater((name) => ecdb.getSchemaProps(name));
+    context.addLocater(locater);
+    const schema = await context.getSchema(new SchemaKey("Test", 1, 0, 0));
+    assert.isDefined(schema);
+
+    const missingSchema = await context.getSchema(new SchemaKey("MissingSchema"));
+    assert.isUndefined(missingSchema);
+  });
+
   it("should drop a single schema", () => {
     using ecdb = ECDbTestHelper.createECDb(outDir, "test.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
