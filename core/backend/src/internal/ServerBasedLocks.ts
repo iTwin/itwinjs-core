@@ -118,7 +118,7 @@ export class ServerBasedLocks implements LockControl {
   }
 
   private ownerHoldsExclusiveLock(id: Id64String | undefined): boolean {
-    if (id === undefined || id === IModel.rootSubjectId || id === IModel.schemaLockId)
+    if (id === undefined || id === IModel.rootSubjectId || id === IModel.schemaElementId)
       return false; // has no owners
 
     const { modelId, parentId } = this.getOwners(id);
@@ -158,7 +158,7 @@ export class ServerBasedLocks implements LockControl {
 
   /** add owners (recursively) of an element to a list of required shared locks, if not already held. */
   private addOwnerSharedLocks(id: Id64String, locks: Set<Id64String>) {
-    if (id === IModel.schemaLockId)
+    if (id === IModel.schemaElementId)
       return; // schema lock has no owners
     const el = this.getOwners(id);
     this.addSharedLock(el.parentId, locks); // if this element is in a group

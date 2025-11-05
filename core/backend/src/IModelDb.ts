@@ -302,11 +302,25 @@ export abstract class IModelDb extends IModel {
    * will be able to acquire *any* locks while the schema lock is held.
    */
   public async acquireSchemaLock(): Promise<void> {
-    return this.locks.acquireLocks({ exclusive: IModel.schemaLockId });
+    return this.locks.acquireLocks({ exclusive: IModel.rootSubjectId }); // TODO: ModelId treated like Element ID for the lock? This matches rootSubjectId.
   }
   /** determine whether the schema lock is currently held for this iModel. */
   public get holdsSchemaLock() {
-    return this.locks.holdsExclusiveLock(IModel.schemaLockId);
+    return this.locks.holdsExclusiveLock(IModel.rootSubjectId);
+  }
+
+  /** Acquire the additive only schema change schema lock on this iModel.
+   * @note: We obtain a shared lock on rootSubjectId so this does not clash with earlier versions
+   * of itwinjs-core which used exclusive locks on that Id to indicate schema changes.
+   * TODO: It would be nice to be able to release these locks specifically on failed imports that changed nothing, however the current lock API does not support that.
+   */
+  public async acquireAdditiveSchemaChangeOnlyLock(): Promise<void> {
+    return this.locks.acquireLocks({ shared: IModel.rootSubjectId, exclusive: IModel.schemaElementId });
+  }
+
+  /** determine whether the additive only schema change lock is currently held for this iModel. */
+  public get holdsAdditiveSchemaChangeOnlyLock() {
+    return this.locks.holdsExclusiveLock(IModel.schemaElementId) && this.locks.holdsSharedLock(IModel.rootSubjectId);
   }
 
   /** Event called after a changeset is applied to this IModelDb. */
@@ -991,21 +1005,39 @@ export abstract class IModelDb extends IModel {
         }
       });
     } else {
-      const nativeImportOptions: IModelJsNative.SchemaImportOptions = {
-        schemaLockHeld: true,
-        ecSchemaXmlContext: maybeCustomNativeContext,
-      };
-
       if (this[_nativeDb].getITwinId() !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
-        await this.acquireSchemaLock();
+        await this.importSchemasWithLocking(schemaFileNames, maybeCustomNativeContext); // TODO: None of these calls respect the DbResult returned from the call
 
       try {
-        this[_nativeDb].importSchemas(schemaFileNames, nativeImportOptions);
+        this[_nativeDb].importSchemas(schemaFileNames, {
+          schemaLockHeld: true,
+          ecSchemaXmlContext: maybeCustomNativeContext,
+        });
       } catch (err: any) {
         throw new IModelError(err.errorNumber, err.message);
       }
     }
     this.clearCaches();
+  }
+
+  /** Attempt to lock just for additive changes first, and if that isn't enough, do the real thing.
+   * @internal
+   */
+  private async importSchemasWithLocking(schemaFileNames: LocalFileName[], customNativeContext?: IModelJsNative.ECSchemaXmlContext | undefined): Promise<DbResult> {
+    if (this.holdsSchemaLock) // We already hold the maximum lock, so we can just import the schemas
+      return this[_nativeDb].importSchemas(schemaFileNames, { ecSchemaXmlContext: customNativeContext, schemaLockHeld: true });
+
+    await this.acquireAdditiveSchemaChangeOnlyLock();
+    const result = this[_nativeDb].importSchemas(schemaFileNames, { ecSchemaXmlContext: customNativeContext, schemaLockHeld: false });
+    if (result === DbResult.BE_SQLITE_OK)
+      return result;
+
+    if (result !== DbResult.BE_SQLITE_ERROR_DataTransformRequired) {
+      return result;
+    }
+
+    await this.acquireSchemaLock();
+    return this[_nativeDb].importSchemas(schemaFileNames, { ecSchemaXmlContext: customNativeContext, schemaLockHeld: true });
   }
 
   /** Import ECSchema(s) serialized to XML. On success, the schema definition is stored in the iModel.

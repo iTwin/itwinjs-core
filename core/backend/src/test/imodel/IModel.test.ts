@@ -26,7 +26,7 @@ import {
   Element, ElementDrivesElement, ElementGroupsMembers, ElementGroupsMembersProps, ElementOwnsChildElements, Entity, GenericGraphicalType2d, GeometricElement2d, GeometricElement3d,
   GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation,
   LinkPartition, Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, SpatialCategory,
-  SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
+  SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, SubjectOwnsSubjects, Texture, ViewDefinition,
 } from "../../core-backend";
 import { BriefcaseDb, SnapshotDbOpenArgs } from "../../IModelDb";
 import { HubMock } from "../../internal/HubMock";
@@ -3493,6 +3493,64 @@ describe("iModel", () => {
         assert.isFalse(await reader.step(), `Relationship ${relClass.id} should be deleted`); // No row should be returned
       }
     });
+  });
+
+
+  it.only("Should retain reserved element ids", async () => {
+    /* We want to make sure Element ID 2 through 15 are never assigned to inserted elements.
+    This implicitly happens because new imodels insert a dictionary with ID 16 (0x10) and a LinkPartition at ID 14 (0xe) so subsequent
+    inserts increment from there.
+    */
+    const standaloneFile = IModelTestUtils.prepareOutputFile("IModel", "ReservedElementIds.bim");
+    const db = StandaloneDb.createEmpty(standaloneFile, { rootSubject: { name: "Standalone" } });
+    db.saveChanges();
+    // lock db so another connection cannot write to it.
+    const reader = db.createQueryReader("SELECT ECInstanceId, ec_classname(ECClassId) as [className] FROM bis.Element WHERE ECInstanceId < ?", new QueryBinder().bindId(1, IModel.dictionaryId));
+    let count = 0;
+    while (await reader.step()) {
+      count++;
+      const id = reader.current[0];
+      const className = reader.current[1];
+      assert.isTrue(Id64.isValidId64(id));
+      assert.isDefined(className);
+
+      if (id === IModel.rootSubjectId) {
+        assert.equal(className, Subject.classFullName, `Root subject has incorrect class name: ${className}`);
+      } else if (id === "0xe") {
+        assert.equal(className, LinkPartition.classFullName, `LinkPartition at id 14 has incorrect class name: ${className}`);
+      } else {
+        assert.fail(`Unexpected reserved element id: ${id} with class name: ${className}`);
+      }
+    }
+
+    assert.equal(count, 2, "Expected 1 result (with ID 1");
+
+    const subjectProps: SubjectProps = {
+      classFullName: Subject.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+      code: Subject.createCode(db, IModel.rootSubjectId, "TestSubject"),
+    };
+    const subjectId = db.elements.insertElement(subjectProps);
+    assert.isTrue(Id64.isValidId64(subjectId));
+    const localId = Id64.getLocalId(subjectId);
+    assert.isTrue(localId > 16, `Subject ID ${subjectId} should be greater than 16 (0x10)`);
+
+    // Attempt to force an Id in the reserved range (should fail)
+    const reservedSubjectProps: SubjectProps = {
+      id: "0x2", // ID 2 is in the reserved range
+      classFullName: Subject.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+      code: Subject.createCode(db, IModel.rootSubjectId, "ReservedIdSubject"),
+    };
+    const forcedId = db.elements.insertElement(reservedSubjectProps);
+    assert.isTrue(Id64.isValidId64(forcedId));
+    assert.notEqual(forcedId, "0x2", `Element was assigned reserved ID 0x2`);
+    const forcedLocalId = Id64.getLocalId(forcedId);
+    assert.isTrue(forcedLocalId > 16, `Subject ID ${forcedId} should be greater than 16 (0x10)`);
+
+    db.close();
   });
 });
 
