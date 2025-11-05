@@ -413,34 +413,51 @@ describe("SubCategoriesCache", () => {
       return Id64.fromUint32PairObject(parts);
     }
 
-    it("###TODO removeme", async () => {
+    function expectCachedSubCategories(categoryId: Id64String, expectedSubCategories: Id64String[] | undefined): void {
+      const actual = bc.subcategories.getSubCategories(categoryId);
+      if (!expectedSubCategories) {
+        expect(actual).to.be.undefined;
+      } else {
+        expect(actual).not.to.be.undefined;
+        expect(Array.from(actual!)).to.deep.equal(expectedSubCategories);
+      }
+    }
+
+    it("invalidates cache for parent category when subcategory is added, deleted, or modified", async () => {
+
+    });
+
+    it("removes cache for category when category is deleted", async () => {
       const cat = await ipc.createAndInsertSpatialCategory(bc.key, dictId, Guid.createValue(), { color: ColorDef.blue.toJSON() });
       await bc.saveChanges();
       const subcat = getDefaultSubCategoryId(cat);
       expectChanges([cat, subcat]);
+      expectCachedSubCategories(cat, undefined);
+
+      const req = bc.subcategories.load(cat);
+      expect(req?.promise).not.to.be.undefined;
+      await req?.promise;
+      expectCachedSubCategories(cat, [subcat]);
+
+      await ipc.deleteDefinitionElements(bc.key, [cat]);
+      await bc.saveChanges();
+      expectChanges([cat, subcat]);
+      expectCachedSubCategories(cat, undefined);
     });
 
-    it("invalidates cache for parent category when subcategory is added, deleted, or modified", () => {
-
-    });
-
-    it("removes cache for category when category is deleted", () => {
-
-    });
-
-    it("invalidates viewport symbology overrides when subcategory is modified", () => {
-
-    });
-
-    it("does nothing when categories are updated or inserted", () => {
-
-    });
-
-    it("does nothing when a subcategory is added, deleted, or modified but its parent category is not in the cache", () => {
+    it("invalidates viewport symbology overrides when subcategory is modified", async () => {
 
     });
 
-    it("does nothing when a category not in the cache is deleted", () => {
+    it("does nothing when categories are updated or inserted", async () => {
+
+    });
+
+    it("does nothing when a subcategory is added, deleted, or modified but its parent category is not in the cache", async () => {
+
+    });
+
+    it("does nothing when a category not in the cache is deleted", async () => {
 
     });
   });
