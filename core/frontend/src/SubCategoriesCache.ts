@@ -53,9 +53,11 @@ export class SubCategoriesCache {
           if (change.type === "inserted") {
             // We don't know to which category the subcategory belongs. Blow away the entire cache.
             this._byCategoryId.clear();
+            this._appearances.clear();
             return;
           }
 
+          this._appearances.delete(change.id);
           affectedSubCategories.add(change.id);
         }
       }

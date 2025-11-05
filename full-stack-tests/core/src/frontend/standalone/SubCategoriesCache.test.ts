@@ -422,22 +422,34 @@ describe("SubCategoriesCache", () => {
       }
     }
 
+    function expectAppearance(subCatId: string, expected: ColorDef | undefined): void {
+      const app = bc.subcategories.getSubCategoryAppearance(subCatId);
+      if (undefined === expected) {
+        expect(app).to.be.undefined;
+      } else {
+        expect(app?.color?.toJSON()).to.equal(expected.toJSON());
+      }
+    }
+
     it("invalidates cache for category when category is deleted", async () => {
       const cat = await ipc.createAndInsertSpatialCategory(bc.key, dictId, Guid.createValue(), { color: ColorDef.blue.toJSON() });
       await bc.saveChanges();
       const subcat = getDefaultSubCategoryId(cat);
       expectChanges([cat, subcat]);
       expectCachedSubCategories(cat, undefined);
+      expectAppearance(subcat, undefined);
 
       const req = bc.subcategories.load(cat);
       expect(req?.promise).not.to.be.undefined;
       await req?.promise;
       expectCachedSubCategories(cat, [subcat]);
+      expectAppearance(subcat, ColorDef.blue);
 
       await ipc.deleteDefinitionElements(bc.key, [cat]);
       await bc.saveChanges();
       expectChanges([cat, subcat]);
       expectCachedSubCategories(cat, undefined);
+      expectAppearance(subcat, undefined);
     });
 
     it("invalidates cache for parent category when subcategory is added, deleted, or modified", async () => {
@@ -448,19 +460,25 @@ describe("SubCategoriesCache", () => {
 
       await bc.subcategories.load(cat)?.promise;
       expectCachedSubCategories(cat, [s1]);
+      expectAppearance(s1, ColorDef.blue);
 
       // Insert a new subcategory
       const s2Props = await bc.elements.loadProps(s1) as SubCategoryProps;
       s2Props.id = s2Props.federationGuid = undefined;
       s2Props.code.value = "SubCat2";
+      s2Props.appearance = { color: ColorDef.red.toJSON() };
 
       const s2 = await ipc.insertElement(bc.key, s2Props);
       await bc.saveChanges();
       expectChanges([s2]);
       expectCachedSubCategories(cat, undefined);
+      expectAppearance(s1, undefined);
+      expectAppearance(s2, undefined);
 
       await bc.subcategories.load(cat)?.promise;
       expectCachedSubCategories(cat, [s1, s2]);
+      expectAppearance(s1, ColorDef.blue);
+      expectAppearance(s2, ColorDef.red);
 
       // Change the appearance of a subcategory
       s2Props.id = s2;
@@ -469,15 +487,21 @@ describe("SubCategoriesCache", () => {
       await bc.saveChanges();
       expectChanges([s2]);
       expectCachedSubCategories(cat, undefined);
+      expectAppearance(s1, ColorDef.blue);
+      expectAppearance(s2, undefined);
 
       await bc.subcategories.load(cat)?.promise;
       expectCachedSubCategories(cat, [s1, s2]);
+      expectAppearance(s1, ColorDef.blue);
+      expectAppearance(s2, ColorDef.green);
 
       // Delete a subcategory
       await ipc.deleteDefinitionElements(bc.key, [s2]);
       await bc.saveChanges();
       expectChanges([s2]);
       expectCachedSubCategories(cat, undefined);
+      expectAppearance(s1, ColorDef.blue);
+      expectAppearance(s2, undefined);
 
       await bc.subcategories.load(cat)?.promise;
       expectCachedSubCategories(cat, [s1]);
@@ -489,6 +513,7 @@ describe("SubCategoriesCache", () => {
 
       await bc.subcategories.load(cat)?.promise;
       expectCachedSubCategories(cat, [s1, s2]);
+      expectAppearance(s1, ColorDef.blue);
 
       // Redo
       await bc.txns.reinstateTxn();
@@ -497,6 +522,7 @@ describe("SubCategoriesCache", () => {
 
       await bc.subcategories.load(cat)?.promise;
       expectCachedSubCategories(cat, [s1]);
+      expectAppearance(s1, ColorDef.blue);
     });
   });
 });
