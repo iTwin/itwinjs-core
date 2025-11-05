@@ -148,6 +148,21 @@ describe("apply changesets", function (this: Suite) {
   await BriefcaseDb.upgradeSchemas({fileName: props.fileName});
   await b1.pullChanges();
 
+  await b1.locks.acquireLocks({
+      shared: IModel.repositoryModelId,
+    });
+    const subjectProps2: SubjectProps = {
+    classFullName: Subject.classFullName,
+    code: Subject.createCode(b1, IModel.rootSubjectId, "code value 3"),
+    federationGuid: Guid.createValue(),
+    model: IModel.repositoryModelId,
+    parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+  };
+  b1.elements.insertElement(subjectProps2);
+  b1.saveChanges();
+  await b1.pushChanges({description: "Inserted Subject 2", retainLocks: true});
+  await b1.locks.releaseAllLocks();
+
   //cleanup
   await HubMock.deleteIModel({ accessToken: "user1", iTwinId: HubMock.iTwinId, iModelId });
   HubMock.shutdown()
