@@ -15,14 +15,13 @@ import { TextureUnit } from "../RenderFlags";
 import { addAnimation } from "./Animation";
 import { addColor } from "./Color";
 import { addFrustum, addShaderFlags } from "./Common";
-import { addWhiteOnWhiteReversal, fragCheckForVertexDiscard } from "./Fragment";
+import { addWhiteOnWhiteReversal } from "./Fragment";
 import { addAdjustWidth, addLineCode } from "./Polyline";
 import { octDecodeNormal } from "./Surface";
 import { addLineWeight, addModelViewMatrix, addNormalMatrix, addProjectionMatrix, addSamplePosition } from "./Vertex";
 import { addModelToWindowCoordinates, addViewport } from "./Viewport";
 import { addLookupTable } from "./LookupTable";
 import { addRenderOrder, addRenderOrderConstants } from "./FeatureSymbology";
-import { System } from "../System";
 
 export type EdgeBuilderType = "SegmentEdge" | "Silhouette" | "IndexedEdge";
 
@@ -298,10 +297,6 @@ function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: I
     addFrustum(builder);
     vert.addFunction(octDecodeNormal);
     vert.set(VertexShaderComponent.CheckForEarlyDiscard, isSilhouette ? checkForSilhouetteDiscardNonIndexed : checkForSilhouetteDiscardIndexed);
-    if (System.instance.vertexDiscardWillGlitch) {
-      builder.addVarying("v_vertexDiscard", VariableType.Float);
-      builder.frag.set(FragmentShaderComponent.CheckForVertexDiscard, fragCheckForVertexDiscard);
-    }
   }
 
   return builder;

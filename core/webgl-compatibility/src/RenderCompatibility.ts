@@ -96,11 +96,11 @@ export interface GraphicsDriverBugs {
    * The workaround for this bug means MSAA cannot be enabled on those devices.
    */
   msaaWillHang?: true;
-  /** If true, the graphics driver will glitch when discarding triangles using the vertex shader (setting all vertices to the same value).
+  /** If true, the graphics driver will glitch when discarding triangles using the vertex shader (setting all vertices to the same value) if gl_Position was not adequately initialized beforehand.
    *
    * Known to affect much of the Intel Ultra 7 family of chipsets when using Intel driver from some point after driver version 32.0.101.6078 (9/13/2024).
    *
-   * The workaround for this bug involves using a more expensive fragment-based discard.
+   * The workaround for this bug involves ensuring that gl_Position is adequately initialized before attempting a discard using a degenerate triangle.
    */
   vertexDiscardWillGlitch?: true;
 }

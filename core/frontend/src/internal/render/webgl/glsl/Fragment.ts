@@ -156,8 +156,3 @@ float computeLinearDepth(float eyeSpaceZ) {
   return 1.0 - linearDepth;
 }
 `;
-
-/** @internal */
-export const fragCheckForVertexDiscard = `
-  return 1.0 == v_vertexDiscard;
-`;
