@@ -78,6 +78,7 @@ const buggyIntelMatchers2 = [
   // Certain Intel Ultra 7 chipsets reported in https://github.com/iTwin/itwinjs-core/issues/815, https://github.com/IGCIT/Intel-GPU-Community-Issue-Tracker-IGCIT/issues/1165, and elsewhere.
   /ANGLE \(Intel, Intel\(\R\) Graphics \(0x00007D40\) Direct3D11/,
   /ANGLE \(Intel, Intel\(\R\) Graphics \(0x00007D45\) Direct3D11/,
+  /ANGLE \(Intel, Intel\(\R\) Iris\(\R\) Xe Graphics \(0x00009A49\) Direct3D11/,
 ];
 
 // Regexes to match Mali GPUs known to suffer from GraphicsDriverBugs.msaaWillHang.
@@ -350,7 +351,7 @@ export class Capabilities {
       missingOptionalFeatures,
       unmaskedRenderer,
       unmaskedVendor,
-      usingIntegratedGraphics: isIntegratedGraphics({unmaskedVendor, unmaskedRenderer}),
+      usingIntegratedGraphics: isIntegratedGraphics({ unmaskedVendor, unmaskedRenderer }),
       driverBugs: { ...this._driverBugs },
       userAgent: navigator.userAgent,
       createdContext: gl,
