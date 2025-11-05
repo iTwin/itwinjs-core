@@ -7,10 +7,9 @@ import { BeDuration, CompressedId64Set, Guid, Id64, Id64Arg, Id64Set, Id64String
 import { BriefcaseConnection, IModelConnection, SubCategoriesCache } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
-import { deleteElements, initializeEditTools } from "../Editing";
-import { coreFullStackTestIpc as ipc } from "../Editing";
+import { initializeEditTools, coreFullStackTestIpc as ipc } from "../Editing";
 import * as path from "path";
-import { Code, ColorDef, SubCategoryProps } from "@itwin/core-common";
+import { ColorDef, SubCategoryProps } from "@itwin/core-common";
 
 describe("SubCategoriesCache", () => {
   // test.bim:
