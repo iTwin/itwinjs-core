@@ -50,6 +50,12 @@ export class SubCategoriesCache {
             this._byCategoryId.delete(change.id);
           }
         } else if (change.metadata.is("BisCore:SubCategory")) {
+          if (change.type === "inserted") {
+            // We don't know to which category the subcategory belongs. Blow away the entire cache.
+            this._byCategoryId.clear();
+            return;
+          }
+
           affectedSubCategories.add(change.id);
         }
       }

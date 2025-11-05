@@ -7,7 +7,7 @@ import { BeDuration, CompressedId64Set, Guid, Id64, Id64Arg, Id64Set, Id64String
 import { BriefcaseConnection, IModelConnection, SubCategoriesCache } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
-import { initializeEditTools } from "../Editing";
+import { deleteElements, initializeEditTools } from "../Editing";
 import { coreFullStackTestIpc as ipc } from "../Editing";
 import * as path from "path";
 import { Code, ColorDef, SubCategoryProps } from "@itwin/core-common";
@@ -363,7 +363,7 @@ describe("SubCategoriesCache", () => {
     });
   });
 
-  describe.only("read-write", () => {
+  describe("read-write", () => {
     let bc: BriefcaseConnection;
     let dictId: Id64String;
     let pullChanges: () => Id64String[];
@@ -443,36 +443,61 @@ describe("SubCategoriesCache", () => {
 
     it("invalidates cache for parent category when subcategory is added, deleted, or modified", async () => {
       const cat = await ipc.createAndInsertSpatialCategory(bc.key, dictId, Guid.createValue(), { color: ColorDef.blue.toJSON() });
+      await bc.saveChanges();
       const s1 = getDefaultSubCategoryId(cat);
+      expectChanges([cat, s1]);
 
+      await bc.subcategories.load(cat)?.promise;
+      expectCachedSubCategories(cat, [s1]);
+
+      // Insert a new subcategory
       const s2Props = await bc.elements.loadProps(s1) as SubCategoryProps;
       s2Props.id = s2Props.federationGuid = undefined;
       s2Props.code.value = "SubCat2";
+
       const s2 = await ipc.insertElement(bc.key, s2Props);
-
       await bc.saveChanges();
-      expectChanges([cat, s1, s2]);
+      expectChanges([s2]);
+      expectCachedSubCategories(cat, undefined);
 
-      const req = bc.subcategories.load(cat);
-      expect(req?.promise).not.to.be.undefined;
-      await req?.promise;
+      await bc.subcategories.load(cat)?.promise;
       expectCachedSubCategories(cat, [s1, s2]);
-    });
 
-    it("invalidates viewport symbology overrides when subcategory is modified", async () => {
+      // Change the appearance of a subcategory
+      s2Props.id = s2;
+      s2Props.appearance = { color: ColorDef.green.toJSON() };
+      await ipc.updateElement(bc.key, s2Props);
+      await bc.saveChanges();
+      expectChanges([s2]);
+      expectCachedSubCategories(cat, undefined);
 
-    });
+      await bc.subcategories.load(cat)?.promise;
+      expectCachedSubCategories(cat, [s1, s2]);
 
-    it("does nothing when categories are updated or inserted", async () => {
+      // Delete a subcategory
+      await ipc.deleteDefinitionElements(bc.key, [s2]);
+      await bc.saveChanges();
+      expectChanges([s2]);
+      expectCachedSubCategories(cat, undefined);
 
-    });
+      await bc.subcategories.load(cat)?.promise;
+      expectCachedSubCategories(cat, [s1]);
 
-    it("does nothing when a subcategory is added, deleted, or modified but its parent category is not in the cache", async () => {
+      // Undo
+      await bc.txns.reverseSingleTxn();
+      expectChanges([s2]);
+      expectCachedSubCategories(cat, undefined);
 
-    });
+      await bc.subcategories.load(cat)?.promise;
+      expectCachedSubCategories(cat, [s1, s2]);
 
-    it("does nothing when a category not in the cache is deleted", async () => {
+      // Redo
+      await bc.txns.reinstateTxn();
+      expectChanges([s2]);
+      expectCachedSubCategories(cat, undefined);
 
+      await bc.subcategories.load(cat)?.promise;
+      expectCachedSubCategories(cat, [s1]);
     });
   });
 });
