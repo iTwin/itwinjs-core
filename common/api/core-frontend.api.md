@@ -10221,6 +10221,8 @@ export class SubCategoriesCache {
     constructor(imodel: IModelConnection);
     add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance, override: boolean): void;
     // (undocumented)
+    attachToBriefcase(imodel: IModelConnection): void;
+    // (undocumented)
     clear(): void;
     // (undocumented)
     getCategoryInfo(inputCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.CategoryInfo>>;
