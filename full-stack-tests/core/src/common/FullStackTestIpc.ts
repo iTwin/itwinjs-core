@@ -19,4 +19,5 @@ export interface FullStackTestIpc {
   insertSheetViewWithAttachment(filePath: string): Promise<Id64String>;
   insertElement(iModelKey: string, props: ElementProps): Promise<Id64String>;
   updateElement(iModelKey: string, props: ElementProps): Promise<void>;
+  deleteDefinitionElements(iModelKey: string, ids: string[]): Promise<void>;
 }

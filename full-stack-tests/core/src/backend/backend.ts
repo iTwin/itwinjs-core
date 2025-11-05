@@ -85,6 +85,10 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     return IModelDb.findByKey(iModelKey).elements.updateElement(props);
   }
 
+  public async deleteDefinitionElements(iModelKey: string, ids: string[]): Promise<void> {
+    IModelDb.findByKey(iModelKey).elements.deleteDefinitionElements(ids);
+  }
+
   public async closeAndReopenDb(key: string): Promise<void> {
     const iModel = BriefcaseDb.findByKey(key);
     return iModel.executeWritable(async () => undefined);

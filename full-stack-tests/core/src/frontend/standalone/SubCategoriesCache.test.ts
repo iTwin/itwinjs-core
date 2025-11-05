@@ -3,12 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { BeDuration, Id64, Id64Arg, Id64Set, Id64String } from "@itwin/core-bentley";
-import { IModelConnection, SubCategoriesCache } from "@itwin/core-frontend";
+import { BeDuration, CompressedId64Set, Guid, Id64, Id64Arg, Id64Set, Id64String, OpenMode } from "@itwin/core-bentley";
+import { BriefcaseConnection, IModelConnection, SubCategoriesCache } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { TestSnapshotConnection } from "../TestSnapshotConnection";
+import { initializeEditTools } from "../Editing";
+import { coreFullStackTestIpc as ipc } from "../Editing";
+import * as path from "path";
+import { ColorDef } from "@itwin/core-common";
 
-describe.only("SubCategoriesCache", () => {
+describe("SubCategoriesCache", () => {
   // test.bim:
   //  3d views:
   //    view:           34
@@ -359,7 +363,63 @@ describe.only("SubCategoriesCache", () => {
     });
   });
 
-  describe("read-write", () => {
+  describe.only("read-write", () => {
+    let bc: BriefcaseConnection;
+    let dictId: Id64String;
+    let pullChanges: () => Id64String[];
+
+    before(async () => {
+      await TestUtility.startFrontend(undefined, undefined, true);
+      await initializeEditTools();
+
+      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/planprojection.bim");
+      bc = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
+
+      const changedElements = new Set<Id64String>();
+      bc.txns.onElementsChanged.addListener((changes) => {
+        for (const key of ["inserted", "updated", "deleted"] as const) {
+          const elems = changes[key];
+          if (undefined !== elems) {
+            for (const elem of CompressedId64Set.iterable(elems)) {
+              changedElements.add(elem);
+            }
+          }
+        }
+      });
+
+      dictId = await bc.models.getDictionaryModel();
+
+      pullChanges = () => {
+        const result = Array.from(changedElements);
+        changedElements.clear();
+        return result;
+      };
+    });
+
+    after(async () => {
+      await bc.close();
+      await TestUtility.shutdownFrontend();
+    });
+
+    function expectChanges(changedElementIds: Id64String[]): void {
+      const actual = pullChanges();
+      expect(actual).to.deep.equal(changedElementIds);
+    }
+
+    function getDefaultSubCategoryId(categoryId: string): string {
+      const parts = Id64.getUint32Pair(categoryId);
+      expect(parts.upper).to.equal(0);
+      parts.lower += 1;
+      return Id64.fromUint32PairObject(parts);
+    }
+
+    it("###TODO removeme", async () => {
+      const cat = await ipc.createAndInsertSpatialCategory(bc.key, dictId, Guid.createValue(), { color: ColorDef.blue.toJSON() });
+      await bc.saveChanges();
+      const subcat = getDefaultSubCategoryId(cat);
+      expectChanges([cat, subcat]);
+    });
+
     it("invalidates cache for parent category when subcategory is added, deleted, or modified", () => {
 
     });
