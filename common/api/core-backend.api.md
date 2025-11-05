@@ -6821,6 +6821,10 @@ export class TxnManager {
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
     // @alpha
+    readonly onRebaseBegin: BeEvent<(txns: TxnIdString[]) => void>;
+    // @alpha
+    readonly onRebaseEnd: BeEvent<() => void>;
+    // @alpha
     readonly onRebaseTxnBegin: BeEvent<(txn: TxnProps) => void>;
     // @alpha
     readonly onRebaseTxnEnd: BeEvent<(txn: TxnProps) => void>;
