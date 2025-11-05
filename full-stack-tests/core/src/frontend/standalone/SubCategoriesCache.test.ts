@@ -10,7 +10,7 @@ import { TestSnapshotConnection } from "../TestSnapshotConnection";
 import { initializeEditTools } from "../Editing";
 import { coreFullStackTestIpc as ipc } from "../Editing";
 import * as path from "path";
-import { ColorDef } from "@itwin/core-common";
+import { Code, ColorDef, SubCategoryProps } from "@itwin/core-common";
 
 describe("SubCategoriesCache", () => {
   // test.bim:
@@ -423,11 +423,7 @@ describe("SubCategoriesCache", () => {
       }
     }
 
-    it("invalidates cache for parent category when subcategory is added, deleted, or modified", async () => {
-
-    });
-
-    it("removes cache for category when category is deleted", async () => {
+    it("invalidates cache for category when category is deleted", async () => {
       const cat = await ipc.createAndInsertSpatialCategory(bc.key, dictId, Guid.createValue(), { color: ColorDef.blue.toJSON() });
       await bc.saveChanges();
       const subcat = getDefaultSubCategoryId(cat);
@@ -443,6 +439,24 @@ describe("SubCategoriesCache", () => {
       await bc.saveChanges();
       expectChanges([cat, subcat]);
       expectCachedSubCategories(cat, undefined);
+    });
+
+    it("invalidates cache for parent category when subcategory is added, deleted, or modified", async () => {
+      const cat = await ipc.createAndInsertSpatialCategory(bc.key, dictId, Guid.createValue(), { color: ColorDef.blue.toJSON() });
+      const s1 = getDefaultSubCategoryId(cat);
+
+      const s2Props = await bc.elements.loadProps(s1) as SubCategoryProps;
+      s2Props.id = s2Props.federationGuid = undefined;
+      s2Props.code.value = "SubCat2";
+      const s2 = await ipc.insertElement(bc.key, s2Props);
+
+      await bc.saveChanges();
+      expectChanges([cat, s1, s2]);
+
+      const req = bc.subcategories.load(cat);
+      expect(req?.promise).not.to.be.undefined;
+      await req?.promise;
+      expectCachedSubCategories(cat, [s1, s2]);
     });
 
     it("invalidates viewport symbology overrides when subcategory is modified", async () => {
