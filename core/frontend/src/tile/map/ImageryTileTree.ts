@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareNumbers, compareSimpleArrays, compareSimpleTypes, compareStrings, compareStringsOrUndefined, dispose, Logger,} from "@itwin/core-bentley";
+import { assert, compareBooleans, compareNumbers, compareSimpleArrays, compareSimpleTypes, compareStrings, compareStringsOrUndefined, dispose, expectDefined, Logger,} from "@itwin/core-bentley";
 import { Angle, Range3d, Transform } from "@itwin/core-geometry";
 import { Cartographic, ImageMapLayerSettings, ImageSource, MapLayerProviderArrayProperty, MapLayerSettings, RenderTexture, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
@@ -49,7 +49,7 @@ export class ImageryMapTile extends RealityTile {
   public override setContent(content: ImageryTileContent): void {
     this._texture = content.imageryTexture;        // No dispose - textures may be shared by terrain tiles so let garbage collector dispose them.
     if (undefined === content.imageryTexture)
-      (this.parent! as ImageryMapTile).setLeaf();   // Avoid traversing bing branches after no graphics is found.
+      (expectDefined(this.parent) as ImageryMapTile).setLeaf();   // Avoid traversing bing branches after no graphics is found.
 
     this.setIsReady();
   }
@@ -209,7 +209,7 @@ export class ImageryMapTileTree extends RealityTileTree {
   }
   public get tilingScheme(): MapTilingScheme { return this._imageryLoader.imageryProvider.tilingScheme; }
 
-    /** @deprecated in 5.0 Use [addAttributions] instead. */
+    /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
   public addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._imageryLoader.addLogoCards(cards, vp);
@@ -266,7 +266,7 @@ class ImageryTileLoader extends RealityTileLoader {
   public get minDepth(): number { return this._imageryProvider.minimumZoomLevel; }
   public get priority(): TileLoadPriority { return TileLoadPriority.Map; }
 
-    /** @deprecated in 5.0 Use [addAttributions] instead. */
+    /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
   public addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     this._imageryProvider.addLogoCards(cards, vp);

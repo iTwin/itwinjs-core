@@ -76,8 +76,6 @@ function equalLineRgb(a: RgbColor | false | undefined, b: RgbColor | false | und
   } else if (a instanceof RgbColor && b instanceof RgbColor) {
     return equalRgb(a, b);
   } else {
-    assert(a === undefined || a === false);
-    assert(b === undefined || b === false);
     return false;
   }
 }

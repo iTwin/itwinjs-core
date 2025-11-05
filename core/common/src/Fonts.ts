@@ -98,7 +98,7 @@ export interface RscFontEncodingProps {
 /** The properties of a FontMap
  * @public
  * @extensions
- * @deprecated in 5.0.0. Use [IModelDb.fonts]($backend)
+ * @deprecated in 5.0.0 - will not be removed until after 2026-06-13. Use [IModelDb.fonts]($backend)
  */
 export interface FontMapProps { fonts: FontProps[] }
 
@@ -108,7 +108,7 @@ export interface FontMapProps { fonts: FontProps[] }
  * This class maps FontIds to FontProps.
  * @note This API has never worked properly. Don't use it. Use [IModelDb.fonts]($backend) instead.
  * @public
- * @deprecated in 5.0.0. Use [IModelDb.fonts]($backend) instead.
+ * @deprecated in 5.0.0 - will not be removed until after 2026-06-13. Use [IModelDb.fonts]($backend) instead.
  */
 export class FontMap {
   public readonly fonts = new Map<FontId, FontProps>();

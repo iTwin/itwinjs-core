@@ -11,7 +11,7 @@ The lighting and environment of a [view](../frontend/Views.md) can be customized
 - [AmbientOcclusion]($common) can simulate shadows.
 - An [Environment]($common) can provide a decorative sky box or sky sphere.
 
-[This sample](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=display-styles-sample&imodel=Villa) provides examples of various display styles utilizing a variety of these settings.
+[This sample](https://www.itwinjs.org/sandboxes/iTwinPlatform/Display%20Styles/) provides examples of various display styles utilizing a variety of these settings.
 
 The images below illustrate the effects of different lighting and environment settings upon the same view.
 

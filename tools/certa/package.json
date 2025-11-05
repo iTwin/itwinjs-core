@@ -1,6 +1,6 @@
 {
   "name": "@itwin/certa",
-  "version": "5.1.0-dev.26",
+  "version": "5.4.0-dev.5",
   "description": "A mocha-based integration test runner",
   "license": "MIT",
   "main": "bin/certa.js",
@@ -16,6 +16,7 @@
     "build": "tsc 1>&2",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": "",
     "docs": "",
     "cover": "",
@@ -38,13 +39,13 @@
     "jsonc-parser": "~2.0.3",
     "lodash": "^4.17.21",
     "mocha": "^11.1.0",
-    "playwright": "~1.47.1",
+    "playwright": "~1.56.1",
     "source-map-support": "^0.5.6",
     "yargs": "^17.4.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@types/chai": "4.3.1",
     "@types/detect-port": "~1.1.0",
     "@types/express": "^4.17.20",
@@ -52,14 +53,14 @@
     "@types/mocha": "^10.0.6",
     "@types/node": "~20.17.0",
     "@types/yargs": "17.0.19",
-    "electron": "^36.2.1",
-    "eslint": "^9.13.0",
+    "electron": "^39.0.0",
+    "eslint": "^9.31.0",
     "nyc": "^17.1.0",
     "rimraf": "^6.0.1",
     "typescript": "~5.6.2"
   },
   "peerDependencies": {
-    "electron": "^35.0.0 || ^36.0.0"
+    "electron": "^35.0.0 || ^36.0.0 || ^37.0.0 || ^38.0.0 || ^39.0.0"
   },
   "peerDependenciesMeta": {
     "electron": {

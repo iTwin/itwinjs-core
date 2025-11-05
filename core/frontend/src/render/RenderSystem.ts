@@ -174,7 +174,7 @@ export abstract class RenderSystem implements Disposable {
     this.dispose(); // eslint-disable-line @typescript-eslint/no-deprecated
   }
 
-  /** @deprecated in 5.0 Will be made protected in a future release. Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Will be made protected in a future release. Use [Symbol.dispose] instead. */
   public abstract dispose(): void; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /** The maximum permitted width or height of a texture supported by this render system. */
@@ -822,7 +822,7 @@ export namespace RenderSystem {
     /** Previously, this property dictated whether to attempt to use a WebGL 2 rendering context before falling back to WebGL 1.
      * WebGL 1 is no longer supported, so this property is now ignored.
      * @public
-     * @deprecated in 4.x. WebGL 1 is no longer supported.
+     * @deprecated in 4.0.0 - will not be removed until after 2026-06-13. WebGL 1 is no longer supported.
      */
     useWebGL2?: boolean;
 

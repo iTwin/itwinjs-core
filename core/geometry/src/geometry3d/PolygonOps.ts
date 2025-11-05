@@ -487,7 +487,14 @@ export class PolygonOps {
   private static _matrixA = Matrix4d.createIdentity();
   private static _matrixB = Matrix4d.createIdentity();
   private static _matrixC = Matrix4d.createIdentity();
-  /** return a vector which is perpendicular to the polygon and has magnitude equal to the polygon area. */
+
+  /**
+   * Compute the area and normal of the polygon, packaged as a vector.
+   * * This is just [[areaNormal]] with expanded return type.
+   * @param points polygon vertices, closure point optional. Polygon can be in any plane.
+   * @param result optional pre-allocated vector to populate and return.
+   * @returns polygon normal with magnitude equal to polygon area, or `undefined` if colinear/insufficient points.
+   */
   public static areaNormalGo(points: IndexedXYZCollection, result?: Vector3d): Vector3d | undefined {
     if (!result)
       result = new Vector3d();
@@ -497,7 +504,7 @@ export class PolygonOps {
     if (n === 3) {
       points.crossProductIndexIndexIndex(0, 1, 2, result);
     } else if (n > 3) {
-      // This will work with or without closure edge.  If closure is given, the last vector is 000.
+      // Shoelace. This will work with or without closure point: if present, the last vector is 000.
       for (let i = 2; i < n; i++) {
         points.accumulateCrossProductIndexIndexIndex(0, i - 1, i, result);
       }
@@ -506,23 +513,34 @@ export class PolygonOps {
     result.scaleInPlace(0.5);
     return result.isZero ? undefined : result;
   }
-  /** return a vector which is perpendicular to the polygon and has magnitude equal to the polygon area. */
+  /**
+   * Compute the area and normal of the polygon, packaged as a vector.
+   * @param points polygon vertices, closure point optional. Polygon can be in any plane.
+   * @param result optional pre-allocated vector to populate and return.
+   * @returns polygon normal with magnitude equal to polygon area, or zero vector if colinear/insufficient points.
+   */
   public static areaNormal(points: Point3d[], result?: Vector3d): Vector3d {
     if (!result)
       result = Vector3d.create();
     PolygonOps.areaNormalGo(new Point3dArrayCarrier(points), result);
     return result;
   }
-  /** return the area of the polygon.
-   * * This assumes the polygon is planar
-   * * This does NOT assume the polygon is on the xy plane.
+  /**
+   * Compute the area of the polygon.
+   * @param points polygon vertices, closure point optional. Polygon can be in any plane.
+   * @returns polygon area.
    */
   public static area(points: Point3d[]): number {
     return PolygonOps.areaNormal(points).magnitude();
   }
-  /** return the projected XY area of the polygon. */
+  /**
+   * Compute the projected XY area of the polygon.
+   * @param points polygon vertices, closure point optional, z-coordinates ignored.
+   * @returns xy-projected polygon area.
+   */
   public static areaXY(points: Point3d[] | IndexedXYZCollection): number {
     let area = 0.0;
+    // Shoelace algorithm
     if (points instanceof IndexedXYZCollection) {
       if (points.length > 2) {
         const x0 = points.getXAtUncheckedPointIndex(0);
@@ -530,7 +548,7 @@ export class PolygonOps {
         let u1 = points.getXAtUncheckedPointIndex(1) - x0;
         let v1 = points.getYAtUncheckedPointIndex(1) - y0;
         let u2, v2;
-        for (let i = 2; i + 1 < points.length; i++, u1 = u2, v1 = v2) {
+        for (let i = 2; i < points.length; i++, u1 = u2, v1 = v2) {
           u2 = points.getXAtUncheckedPointIndex(i) - x0;
           v2 = points.getYAtUncheckedPointIndex(i) - y0;
           area += Geometry.crossProductXYXY(u1, v1, u2, v2);
@@ -542,7 +560,11 @@ export class PolygonOps {
     }
     return 0.5 * area;
   }
-  /** Sum the areaXY () values for multiple polygons */
+  /**
+   * Sum the result of [[areaXY]] for multiple polygons.
+   * @param polygons array of polygons, closure point optional for each, z-coordinates ignored.
+   * @returns sum of xy-projected polygon areas.
+   */
   public static sumAreaXY(polygons: Point3d[][]): number {
     let s = 0.0;
     for (const p of polygons)
@@ -1519,54 +1541,73 @@ export class IndexedXYZCollectionPolygonOps {
   private static _xyz2Work: Point3d = Point3d.create();
   /**
    * Split a (convex) polygon into 2 parts based on altitude evaluations.
-   * * POSITIVE ALTITUDE IS IN
+   * * Both output arrays are cleared first.
+   * * This method uses only a fixed (tight) parametric tolerance for on-plane detection.
+   * See [[clipConvexPolygonInPlace]] for a method that takes an additional distance tolerance.
    * @param plane any `PlaneAltitudeEvaluator` object that can evaluate `plane.altitude(xyz)` for distance from the plane.
    * @param xyz original polygon
    * @param xyzPositive array to receive inside part (altitude > 0)
    * @param xyzNegative array to receive outside part
    * @param altitudeRange min and max altitudes encountered.
+   * @see clipConvexPolygonInPlace
    */
-  public static splitConvexPolygonInsideOutsidePlane(plane: PlaneAltitudeEvaluator,
+  public static splitConvexPolygonInsideOutsidePlane(
+    plane: PlaneAltitudeEvaluator,
     xyz: IndexedXYZCollection,
     xyzPositive: IndexedReadWriteXYZCollection,
-    xyzNegative: IndexedReadWriteXYZCollection, altitudeRange: Range1d) {
+    xyzNegative: IndexedReadWriteXYZCollection,
+    altitudeRange: Range1d,
+  ): void {
     const xyz0 = IndexedXYZCollectionPolygonOps._xyz0Work;
     const xyz1 = IndexedXYZCollectionPolygonOps._xyz1Work;
     const xyzInterpolated = IndexedXYZCollectionPolygonOps._xyz2Work;
     const n = xyz.length;
     xyzPositive.clear();
     xyzNegative.clear();
-    // let numSplit = 0;
     const fractionTol = 1.0e-8;
     if (n > 2) {
       xyz.back(xyz0);
-      altitudeRange.setNull();
-      let a0 = plane.altitude(xyz0);
-      altitudeRange.extendX(a0);
-      //    if (a0 >= 0.0)
-      //      work.push_back (xyz0);
+      let a0 = plane.altitude(xyz0), a1 = 0.0, f = 0.0;
+      altitudeRange.setX(a0);
       for (let i1 = 0; i1 < n; i1++) {
         xyz.getPoint3dAtUncheckedPointIndex(i1, xyz1);
-        const a1 = plane.altitude(xyz1);
+        a1 = plane.altitude(xyz1);
         altitudeRange.extendX(a1);
-        let nearZero = false;
         if (a0 * a1 < 0.0) {
-          // simple crossing. . .
-          const f = - a0 / (a1 - a0);
-          if (f > 1.0 - fractionTol && a1 >= 0.0) {
-            // the endpoint will be saved -- avoid the duplicate
-            nearZero = true;
+          // simple crossing
+          f = - a0 / (a1 - a0);
+          if (f > 1.0 - fractionTol) {
+            // segment end is on the clip plane; push it to both sides of the plane
+            xyzPositive.push(xyz1);
+            xyzNegative.push(xyz1);
+          } else if (f < fractionTol) {
+            // segment start is on the clip plane; push it to same side as segment end, as the
+            // the previous segment end was already pushed to the opposite side of the plane
+            if (a1 > 0.0) {
+              xyzPositive.push(xyz0);
+              xyzPositive.push(xyz1);
+            } else {
+              xyzNegative.push(xyz0);
+              xyzNegative.push(xyz1);
+            }
           } else {
+            // crossing point is on the clip plane; push it to both sides of the plane
             xyz0.interpolate(f, xyz1, xyzInterpolated);
             xyzPositive.push(xyzInterpolated);
             xyzNegative.push(xyzInterpolated);
+            // save segment end to only one side of the plane
+            if (a1 > 0.0)
+              xyzPositive.push(xyz1);
+            else
+              xyzNegative.push(xyz1);
           }
-          // numSplit++;
+        } else {
+          // no crossing
+          if (a1 >= 0.0)
+            xyzPositive.push(xyz1);
+          if (a1 <= 0.0)
+            xyzNegative.push(xyz1);
         }
-        if (a1 >= 0.0 || nearZero)
-          xyzPositive.push(xyz1);
-        if (a1 <= 0.0 || nearZero)
-          xyzNegative.push(xyz1);
         xyz0.setFromPoint3d(xyz1);
         a0 = a1;
       }
@@ -1576,15 +1617,29 @@ export class IndexedXYZCollectionPolygonOps {
    * Clip a polygon to one side of a plane.
    * * Results with 2 or fewer points are ignored.
    * * Other than ensuring capacity in the arrays, there are no object allocations during execution of this function.
-   * * plane is passed as unrolled Point4d (ax,ay,az,aw) point (x,y,z) acts as homogeneous (x,y,z,1)
-   *   * `keepPositive === true` selects positive altitudes.
+   * * For a convex input polygon, the output polygon is also convex.
+   * * For non-convex input, the output polygon may have double-back edges along plane intersections. This is still a
+   * valid clip in a parity sense (overlapping regions cancel).
+   * * This method returns only the piece of the input polygon on one side of the clipper.
+   * See [[splitConvexPolygonInsideOutsidePlane]] for a method that returns both sides.
    * @param plane any type that has `plane.altitude`
-   * @param xyz input points.
-   * @param work work buffer
-   * @param tolerance tolerance for "on plane" decision.
-   * @return the number of crossings.   If this is larger than 2, the result is "correct" in a parity sense but may have overlapping (hence cancelling) parts.
+   * @param xyz input polygon, clipped on output
+   * @param work optional work buffer
+   * @param keepPositive whether the positive side of the plane survives (true, default), or negative side (false).
+   * @param tolerance tolerance for "on plane" decision. This is a distance if `plane` has unit normal (e.g., [[ClipPlane]]).
+   * Default value is [[Geometry.smallMetricDistance]].
+   * @return the number of crossings. If this is larger than 2, the input polygon was non-convex.
+   * @see splitConvexPolygonInsideOutsidePlane
    */
-  public static clipConvexPolygonInPlace(plane: PlaneAltitudeEvaluator, xyz: GrowableXYZArray, work: GrowableXYZArray, keepPositive: boolean = true, tolerance: number = Geometry.smallMetricDistance): number {
+  public static clipConvexPolygonInPlace(
+    plane: PlaneAltitudeEvaluator,
+    xyz: GrowableXYZArray,
+    work?: GrowableXYZArray,
+    keepPositive: boolean = true,
+    tolerance: number = Geometry.smallMetricDistance
+  ): number {
+    if (!work)
+      work = new GrowableXYZArray();
     work.clear();
     const s = keepPositive ? 1.0 : -1.0;
     const n = xyz.length;
@@ -1592,7 +1647,7 @@ export class IndexedXYZCollectionPolygonOps {
     const fractionTol = 1.0e-8;
     const b = -tolerance;
     let numCrossings = 0;
-    if (xyz.length > 1) {
+    if (xyz.length > 1) { // > 2 ??
       let a1;
       let index0 = xyz.length - 1;
       let a0 = s * xyz.evaluateUncheckedIndexPlaneAltitude(index0, plane);

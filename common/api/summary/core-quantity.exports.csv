@@ -12,6 +12,7 @@ beta;interface;CloneUnit
 beta;interface;CustomFormatProps
 beta;enum;DecimalPrecision
 beta;class;Format
+beta;interface;FormatCompositeProps
 beta;interface;FormatDefinition
 beta;interface;FormatProps
 beta;interface;FormatsChangedArgs
@@ -50,6 +51,8 @@ beta;type;QuantityParseResult
 beta;interface;QuantityProps
 beta;enum;QuantityStatus
 beta;enum;RatioType
+beta;type;ResolvedFormatCompositeProps
+beta;type;ResolvedFormatProps
 beta;enum;ScientificType
 beta;function;scientificTypeToString
 deprecated;function;scientificTypeToString

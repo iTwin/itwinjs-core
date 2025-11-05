@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, Id64String } from "@itwin/core-bentley";
+import { assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, expectDefined, Id64String } from "@itwin/core-bentley";
 import {
   BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, FeatureAppearance, GeoCoordStatus, GlobeMode, MapLayerSettings, ModelMapLayerDrapeTarget, ModelMapLayerSettings, PlanarClipMaskPriority, TerrainHeightOriginMode,
 } from "@itwin/core-common";
@@ -306,10 +306,10 @@ export class MapTileTree extends RealityTileTree {
   public getCornerRays(rectangle: MapCartoRectangle): Ray3d[] | undefined {
     const rays = new Array<Ray3d>();
     if (this.globeMode === GlobeMode.Ellipsoid) {
-      rays.push(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.low.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.high.y))!);
-      rays.push(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.high.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.high.y))!);
-      rays.push(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.low.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.low.y))!);
-      rays.push(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.high.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.low.y))!);
+      rays.push(expectDefined(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.low.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.high.y))));
+      rays.push(expectDefined(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.high.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.high.y))));
+      rays.push(expectDefined(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.low.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.low.y))));
+      rays.push(expectDefined(this.earthEllipsoid.radiansToUnitNormalRay(rectangle.high.x, Cartographic.parametricLatitudeFromGeodeticLatitude(rectangle.low.y))));
     } else {
       const mercatorFractionRange = rectangle.getTileFractionRange(this._mercatorTilingScheme);
       rays.push(Ray3d.createCapture(this._mercatorFractionToDb.multiplyXYZ(mercatorFractionRange.low.x, mercatorFractionRange.high.y), scratchZNormal));
@@ -322,7 +322,7 @@ export class MapTileTree extends RealityTileTree {
 
   /** @internal */
   public pointAboveEllipsoid(point: Point3d): boolean {
-    return this.earthEllipsoid.worldToLocal(point, scratchPoint)!.magnitude() > 1;
+    return expectDefined(this.earthEllipsoid.worldToLocal(point, scratchPoint)).magnitude() > 1;
   }
 
   private getMercatorFractionChildGridPoints(tile: MapTile, columnCount: number, rowCount: number): Point3d[] {
@@ -367,7 +367,7 @@ export class MapTileTree extends RealityTileTree {
         z: this.bimElevationBias,
       });
 
-    const iModelCoordinates = this._gcsConverter!.getCachedIModelCoordinatesFromGeoCoordinates(requestProps);
+    const iModelCoordinates = expectDefined(this._gcsConverter).getCachedIModelCoordinatesFromGeoCoordinates(requestProps);
 
     if (iModelCoordinates.missing)
       return undefined;
@@ -400,7 +400,7 @@ export class MapTileTree extends RealityTileTree {
       }
     }
 
-    await this._gcsConverter!.getIModelCoordinatesFromGeoCoordinates(requestProps);
+    await expectDefined(this._gcsConverter).getIModelCoordinatesFromGeoCoordinates(requestProps);
   }
 
   private static _scratchCarto = Cartographic.createZero();
@@ -416,6 +416,7 @@ export class MapTileTree extends RealityTileTree {
         this._mercatorFractionToDb.multiplyPoint3d(gridPoint, scratchCorner);
         if (this.globeMode !== GlobeMode.Ellipsoid || this.cartesianRange.containsPoint(scratchCorner)) {
           if (reprojected !== undefined && reprojected[i] !== undefined)
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             reprojected[i]!.clone(gridPoint);
           else
             scratchCorner.clone(gridPoint);
@@ -1079,7 +1080,7 @@ export class MapTileTreeReference extends TileTreeReference {
     return info;
   }
 
-  /** @deprecated in 5.0 Use [addAttributions] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
     const tree = this.treeOwner.tileTree as MapTileTree;
     if (tree) {

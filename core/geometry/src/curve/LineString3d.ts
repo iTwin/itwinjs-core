@@ -679,10 +679,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     return Transform.createTranslation(origin, result);
   }
   /** Evaluate the start point of the linestring. */
-  public override startPoint() {
+  public override startPoint(result?: Point3d) {
     if (this._points.length === 0)
-      return Point3d.createZero();
-    return this._points.getPoint3dAtUncheckedPointIndex(0);
+      return Point3d.createZero(result);
+    return this._points.getPoint3dAtUncheckedPointIndex(0, result);
   }
   /** If i is a valid index, return that point. */
   public pointAt(i: number, result?: Point3d): Point3d | undefined {
@@ -715,10 +715,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     return this._points.length > 0 ? this._points.length - 1 : 0;
   }
   /** Evaluate the end point of the linestring. */
-  public override endPoint() {
+  public override endPoint(result?: Point3d) {
     if (this._points.length === 0)
-      return Point3d.createZero();
-    return this._points.getPoint3dAtUncheckedPointIndex(this._points.length - 1);
+      return Point3d.createZero(result);
+    return this._points.getPoint3dAtUncheckedPointIndex(this._points.length - 1, result);
   }
   /** Reverse the points within the linestring. */
   public reverseInPlace(): void {
@@ -876,9 +876,9 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    * Compute and normalize cross product among 3 points on the linestring.
    * * Essentially 3 random points are used to form the cross product.
    * * This is appropriate for a polygon known to be convex.
-   * * No test for convexity or collinearity is performed.
+   * * No test for convexity or colinearity is performed.
    * * If the polygon is not convex, the returned normal may be reversed.
-   * * If the random points used in the cross product are collinear, undefined is returned.
+   * * If the random points used in the cross product are colinear, undefined is returned.
    * @param result pre-allocated object to populate and return
    * @returns unit normal, or undefined if normalization failed
    */
@@ -1347,8 +1347,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     this.addResolvedPoint(localA.index, localA.fraction, result._points);
     for (let index = index0; index <= index1; index++) {
       if (this._points.isIndexValid(index)) {
-        this._points.getPoint3dAtUncheckedPointIndex(index, LineString3d._workPointA);
-        result._points.push(LineString3d._workPointA);
+        result._points.pushFromGrowableXYZArray(this._points, index);
       }
     }
     this.addResolvedPoint(localB.index, localB.fraction, result._points);
@@ -1362,11 +1361,22 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       );
     return undefined;
   }
+  /**
+   * Whether the start and end points are defined and within tolerance.
+   * * Does not check for planarity or degeneracy.
+   * @param tolerance optional distance tolerance (default is [[Geometry.smallMetricDistance]])
+   * @param xyOnly if true, ignore z coordinate (default is `false`)
+   */
+  public override isPhysicallyClosedCurve(tolerance: number = Geometry.smallMetricDistance, xyOnly: boolean = false): boolean {
+    if (!this._points.length)
+      return false;
+    if (xyOnly)
+      return this._points.almostEqualXYIndexIndex(0, this._points.length - 1, tolerance)!; // we know the indices are valid
+    return this._points.almostEqualIndexIndex(0, this._points.length - 1, tolerance)!;
+  }
   /** Returns true if first and last points are within metric tolerance. */
   public get isPhysicallyClosed(): boolean {
-    return this._points.length > 0 && Geometry.isSmallMetricDistance(
-      this._points.distanceIndexIndex(0, this._points.length - 1)!,
-    );
+    return this.isPhysicallyClosedCurve();
   }
 
   /**

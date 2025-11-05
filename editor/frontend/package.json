@@ -1,6 +1,6 @@
 {
   "name": "@itwin/editor-frontend",
-  "version": "5.1.0-dev.26",
+  "version": "5.4.0-dev.5",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/editor-frontend.js",
   "module": "lib/esm/editor-frontend.js",
@@ -15,6 +15,7 @@
     "docs": "betools docs --json=../../generated-docs/editor/editor-frontend/file.json --tsIndexFile=./editor-frontend.ts --onlyJson --excludes=webgl/**/*,**/primitives --excludeGlob=**/*-css.ts",
     "extract-api": "betools extract-api --entry=editor-frontend",
     "lint": "eslint --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./public/locales/en-PSEUDO",
     "test": "",
     "cover": ""
@@ -54,9 +55,9 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.2",
     "cpx2": "^8.0.0",
-    "eslint": "^9.13.0",
+    "eslint": "^9.31.0",
     "rimraf": "^6.0.1",
     "typescript": "~5.6.2"
   },

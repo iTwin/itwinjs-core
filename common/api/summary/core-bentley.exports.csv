@@ -41,6 +41,8 @@ internal;enum;DbConflictResolution
 public;enum;DbOpcode
 public;enum;DbResult
 internal;enum;DbValueType
+public;type;DeepReadonlyObject
+public;type;DeepRequiredObject
 public;class;Dictionary
 public;interface;DictionaryEntry
 public;class;DisposableList
@@ -55,6 +57,8 @@ public;enum;DuplicatePolicy
 public;class;Entry
 public;interface;EntryContainer
 alpha;class;ErrorCategory
+internal;function;expectDefined
+internal;function;expectNotNull
 public;enum;GeoServiceStatus
 public;type;GetMetaDataFunction
 public;namespace;Guid

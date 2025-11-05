@@ -13,7 +13,7 @@ import { ContentLayoutProps } from "./ContentLayoutProps";
 /**
  * Class that define Standard Content Layouts that can be used to specify how the content is arranged in a frontstage.
  * @public
- * @deprecated in 4.10.x. Use `StandardContentLayouts` from `@itwin/appui-react`.
+ * @deprecated in 4.10.0 - will not be removed until after 2026-06-13. Use `StandardContentLayouts` from `@itwin/appui-react`.
  */
 export class StandardContentLayouts {
   public static readonly singleView: ContentLayoutProps = {

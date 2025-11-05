@@ -97,7 +97,7 @@ export class LocalHub {
     const db = this._hubDb = new SQLiteDb();
     db.createDb(this.mockDbName);
     db.executeSQL("CREATE TABLE briefcases(id INTEGER PRIMARY KEY NOT NULL,user TEXT NOT NULL,alias TEXT NOT NULL,assigned INTEGER DEFAULT 1)");
-    db.executeSQL("CREATE TABLE timeline(csIndex INTEGER PRIMARY KEY NOT NULL,csId TEXT NOT NULL UNIQUE,description TEXT,user TEXT,size BIGINT,type INTEGER,pushDate TEXT,briefcaseId INTEGER,\
+    db.executeSQL("CREATE TABLE timeline(csIndex INTEGER PRIMARY KEY NOT NULL,csId TEXT NOT NULL UNIQUE,description TEXT,user TEXT,size BIGINT,type INTEGER,pushDate TEXT,briefcaseId INTEGER,uncompressedSize BIGINT,\
                    FOREIGN KEY(briefcaseId) REFERENCES briefcases(id))");
     db.executeSQL("CREATE TABLE checkpoints(csIndex INTEGER PRIMARY KEY NOT NULL)");
     db.executeSQL("CREATE TABLE versions(name TEXT PRIMARY KEY NOT NULL,csIndex TEXT,FOREIGN KEY(csIndex) REFERENCES timeline(csIndex))");
@@ -228,7 +228,7 @@ export class LocalHub {
     this.getBriefcase(changeset.briefcaseId); // throws if invalid id
     const db = this.db;
     changeset.index = this._latestChangesetIndex + 1;
-    db.withSqliteStatement("INSERT INTO timeline(csIndex,csId,description,size,type,pushDate,user,briefcaseId) VALUES (?,?,?,?,?,?,?,?)", (stmt) => {
+    db.withSqliteStatement("INSERT INTO timeline(csIndex,csId,description,size,type,pushDate,user,briefcaseId,uncompressedSize) VALUES (?,?,?,?,?,?,?,?,?)", (stmt) => {
       stmt.bindInteger(1, changeset.index);
       stmt.bindString(2, changeset.id);
       stmt.bindString(3, changeset.description);
@@ -237,6 +237,7 @@ export class LocalHub {
       stmt.bindString(6, changeset.pushDate ?? new Date().toISOString());
       stmt.bindString(7, changeset.userCreated ?? "");
       stmt.bindInteger(8, changeset.briefcaseId);
+      stmt.bindInteger(9, changeset.uncompressedSize ?? 0);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)
         throw new IModelError(rc, "can't insert changeset into mock db");
@@ -296,9 +297,9 @@ export class LocalHub {
   /** Get the properties of a changeset by its index */
   public getChangesetByIndex(index: ChangesetIndex): ChangesetProps {
     if (index <= 0)
-      return { id: "", changesType: 0, description: "version0", parentId: "", briefcaseId: 0, pushDate: "", userCreated: "", index: 0, size: 0 };
+      return { id: "", changesType: 0, description: "version0", parentId: "", briefcaseId: 0, pushDate: "", userCreated: "", index: 0, size: 0, uncompressedSize: 0 };
 
-    return this.db.withPreparedSqliteStatement("SELECT description,size,type,pushDate,user,csId,briefcaseId FROM timeline WHERE csIndex=?", (stmt) => {
+    return this.db.withPreparedSqliteStatement("SELECT description,size,type,pushDate,user,csId,briefcaseId,uncompressedSize FROM timeline WHERE csIndex=?", (stmt) => {
       stmt.bindInteger(1, index);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_ROW !== rc)
@@ -314,6 +315,7 @@ export class LocalHub {
         briefcaseId: stmt.getValueInteger(6),
         index,
         parentId: this.getParentId(index),
+        uncompressedSize: stmt.getValueInteger(7),
       };
     });
   }

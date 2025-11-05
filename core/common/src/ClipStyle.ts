@@ -251,7 +251,7 @@ export class ClipStyle {
     this.intersectionStyle = intersectionStyle;
   }
 
-  /** @deprecated in 4.x. Use [[create(style: ClipStyleCreateArgs]] */
+  /** @deprecated in 4.3.0 - will not be removed until after 2026-06-13. Use [[create(style: ClipStyleCreateArgs]] */
   public static create(produceCutGeometry: boolean, cutStyle: CutStyle, insideColor?: RgbColor, outsideColor?: RgbColor): ClipStyle;
 
   /** Create a style from its components. */
@@ -278,7 +278,7 @@ export class ClipStyle {
     const colorizeIntersection = style.colorizeIntersection ? true : false;
     cutStyle = style.cutStyle === undefined ? CutStyle.defaults : style.cutStyle;
 
-    return new ClipStyle(produceCutGeometry, colorizeIntersection, cutStyle, style.insideColor, style.outsideColor,  style.intersectionStyle);
+    return new ClipStyle(produceCutGeometry, colorizeIntersection, cutStyle, style.insideColor, style.outsideColor, style.intersectionStyle);
   }
 
   public static fromJSON(props?: ClipStyleProps): ClipStyle {
@@ -290,7 +290,7 @@ export class ClipStyle {
       const outsideColor = props.outsideColor ? RgbColor.fromJSON(props.outsideColor) : undefined;
       const intersectionStyle = props.intersectionStyle ? ClipIntersectionStyle.fromJSON(props.intersectionStyle) : undefined;
 
-      return this.create({produceCutGeometry, colorizeIntersection, cutStyle, insideColor, outsideColor, intersectionStyle});
+      return this.create({ produceCutGeometry, colorizeIntersection, cutStyle, insideColor, outsideColor, intersectionStyle });
     }
 
     return this.defaults;

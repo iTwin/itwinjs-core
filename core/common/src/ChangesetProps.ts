@@ -79,6 +79,8 @@ export interface ChangesetProps {
   userCreated: string;
   /** The size, in bytes, of this changeset */
   size: number;
+  /** The uncompressed size, in bytes, of this changeset */
+  uncompressedSize?: number;
 }
 
 /** Properties of a changeset file
@@ -99,4 +101,33 @@ export interface ChangesetRange {
   first: ChangesetIndex;
   /** index of last changeset. If undefined, all changesets after first are returned. */
   end?: ChangesetIndex;
+}
+
+/**
+ * Statistics for a single SQL statement executed during changeset application.
+ * @beta
+ */
+export interface PerStatementHealthStats {
+  sqlStatement: string;
+  dbOperation: string;
+  rowCount: number;
+  elapsedMs: number;
+  fullTableScans: number;
+}
+
+/**
+ * Aggregated health statistics for a changeset application.
+ * @beta
+ */
+export interface ChangesetHealthStats {
+  changesetId: string;
+  changesetIndex: number;
+  uncompressedSizeBytes: number;
+  sha1ValidationTimeMs: number;
+  insertedRows: number;
+  updatedRows: number;
+  deletedRows: number;
+  totalElapsedMs: number;
+  totalFullTableScans: number;
+  perStatementStats: [PerStatementHealthStats];
 }

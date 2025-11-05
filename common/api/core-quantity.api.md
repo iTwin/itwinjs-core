@@ -78,7 +78,7 @@ export class BaseFormat {
     // (undocumented)
     protected _includeZero: boolean;
     // (undocumented)
-    loadFormatProperties(formatProps: FormatProps): void;
+    loadFormatProperties(formatProps: FormatProps | ResolvedFormatProps): void;
     // (undocumented)
     get minWidth(): number | undefined;
     set minWidth(minWidth: number | undefined);
@@ -124,6 +124,10 @@ export class BaseFormat {
     protected _spacer: string;
     // (undocumented)
     get spacerOrDefault(): string;
+    get stationBaseFactor(): number | undefined;
+    set stationBaseFactor(stationBaseFactor: number | undefined);
+    // (undocumented)
+    protected _stationBaseFactor?: number;
     // (undocumented)
     get stationOffsetSize(): number | undefined;
     set stationOffsetSize(stationOffsetSize: number | undefined);
@@ -223,21 +227,38 @@ export enum DecimalPrecision {
 export class Format extends BaseFormat {
     constructor(name: string);
     clone(options?: CloneOptions): Format;
+    // (undocumented)
+    static createFromFullyResolvedJSON(name: string, formatProps: ResolvedFormatProps): Format;
     static createFromJSON(name: string, unitsProvider: UnitsProvider, formatProps: FormatProps): Promise<Format>;
     // (undocumented)
     get customProps(): any;
     // (undocumented)
     protected _customProps?: any;
+    // (undocumented)
+    fromFullyResolvedJSON(jsonObj: ResolvedFormatProps): void;
     fromJSON(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void>;
     // (undocumented)
     get hasUnits(): boolean;
     // (undocumented)
     static isFormatTraitSetInProps(formatProps: FormatProps, trait: FormatTraits): boolean;
+    // (undocumented)
+    toFullyResolvedJSON(): ResolvedFormatProps;
     toJSON(): FormatProps;
     // (undocumented)
     get units(): Array<[UnitProps, string | undefined]> | undefined;
     // (undocumented)
     protected _units?: Array<[UnitProps, string | undefined]>;
+}
+
+// @beta
+export interface FormatCompositeProps {
+    // (undocumented)
+    readonly includeZero?: boolean;
+    readonly spacer?: string;
+    readonly units: Array<{
+        readonly name: string;
+        readonly label?: string;
+    }>;
 }
 
 // @beta
@@ -258,14 +279,7 @@ export interface FormatProps {
     readonly azimuthBaseUnit?: string;
     readonly azimuthCounterClockwise?: boolean;
     // (undocumented)
-    readonly composite?: {
-        readonly spacer?: string;
-        readonly includeZero?: boolean;
-        readonly units: Array<{
-            readonly name: string;
-            readonly label?: string;
-        }>;
-    };
+    readonly composite?: FormatCompositeProps;
     // (undocumented)
     readonly decimalSeparator?: string;
     // (undocumented)
@@ -281,6 +295,7 @@ export interface FormatProps {
     readonly scientificType?: string;
     // (undocumented)
     readonly showSignOption?: string;
+    readonly stationBaseFactor?: number;
     readonly stationOffsetSize?: number;
     // (undocumented)
     readonly stationSeparator?: string;
@@ -301,7 +316,6 @@ export interface FormatsChangedArgs {
 export interface FormatsProvider {
     // (undocumented)
     getFormat(name: string): Promise<FormatDefinition | undefined>;
-    // (undocumented)
     onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
 }
 
@@ -410,9 +424,7 @@ export const isCustomFormatProps: (item: FormatProps) => item is CustomFormatPro
 
 // @beta
 export interface MutableFormatsProvider extends FormatsProvider {
-    // (undocumented)
     addFormat(name: string, format: FormatDefinition): Promise<void>;
-    // (undocumented)
     removeFormat(name: string): Promise<void>;
 }
 
@@ -427,6 +439,8 @@ export interface ParsedQuantity {
 
 // @beta
 export enum ParseError {
+    // (undocumented)
+    BearingAngleOutOfRange = 9,
     // (undocumented)
     BearingPrefixOrSuffixMissing = 7,
     // (undocumented)
@@ -626,6 +640,22 @@ export enum RatioType {
     UseGreatestCommonDivisor = "UseGreatestCommonDivisor",
     ValueBased = "ValueBased"
 }
+
+// @beta
+export type ResolvedFormatCompositeProps = Omit<FormatCompositeProps, "units"> & {
+    readonly units: Array<{
+        readonly unit: UnitProps;
+        readonly label?: string;
+    }>;
+};
+
+// @beta
+export type ResolvedFormatProps = Omit<FormatDefinition, "azimuthBaseUnit" | "revolutionUnit" | "composite"> & {
+    readonly azimuthBaseUnit?: UnitProps;
+    readonly revolutionUnit?: UnitProps;
+    readonly composite?: ResolvedFormatCompositeProps;
+    readonly custom?: any;
+};
 
 // @beta
 export enum ScientificType {

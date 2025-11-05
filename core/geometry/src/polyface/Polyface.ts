@@ -493,7 +493,7 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   }
   /**
    * Clean up the open facet.
-   * @deprecated in 4.x to remove nebulous "open facet" concept from the API. Call [[PolyfaceData.trimAllIndexArrays]]
+   * @deprecated in 4.5.0 - will not be removed until after 2026-06-13. To remove nebulous "open facet" concept from the API. Call [[PolyfaceData.trimAllIndexArrays]]
    * instead.
    */
   public cleanupOpenFacet(): void {
@@ -635,17 +635,13 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   public createVisitor(numWrap: number = 0): IndexedPolyfaceVisitor {
     return IndexedPolyfaceVisitor.create(this, numWrap);
   }
-  /** Return the range of (optionally transformed) points in this mesh. */
-  public override range(transform?: Transform, result?: Range3d): Range3d {
-    return this.data.range(result, transform);
-  }
-  /** Extend `range` with coordinates from this mesh. */
+  /** Extend `range` with coordinates from this mesh, optionally transformed. */
   public extendRange(range: Range3d, transform?: Transform): void {
-    this.data.range(range, transform);
+    this.data.extendRange(range, transform);
   }
   /**
    * Given the index of a facet, return the data pertaining to the face it is a part of.
-   * @deprecated in 4.x. Use [[IndexedPolyface.tryGetFaceData]], which verifies the index is in range.
+   * @deprecated in 4.5.0 - will not be removed until after 2026-06-13. Use [[IndexedPolyface.tryGetFaceData]], which verifies the index is in range.
    */
   public getFaceDataByFacetIndex(facetIndex: number): FacetFaceData {
     return this.data.face[this._facetToFaceData[facetIndex]];

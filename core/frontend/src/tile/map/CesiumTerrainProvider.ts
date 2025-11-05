@@ -200,7 +200,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     this._tokenTimeOut = BeTimePoint.now().plus(CesiumTerrainProvider._tokenTimeoutInterval);
   }
 
-  /** @deprecated in 5.0 Use [addAttributions] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [addAttributions] instead. */
   public override addLogoCards(cards: HTMLTableElement): void {
     if (cards.dataset.cesiumIonLogoCard)
       return;

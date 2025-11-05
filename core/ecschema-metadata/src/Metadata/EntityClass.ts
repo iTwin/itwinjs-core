@@ -233,13 +233,16 @@ protected override async buildPropertyCache(): Promise<Map<string, Property>> {
         const mixinSchemaItemKey = this.schema.getSchemaItemKey(name);
         if (!mixinSchemaItemKey)
           throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
-        this._mixins.push(new DelayedPromiseWithProps<SchemaItemKey, Mixin>(mixinSchemaItemKey,
-          async () => {
-            const mixin = await this.schema.lookupItem(mixinSchemaItemKey, Mixin);
-            if (undefined === mixin)
-              throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
-            return mixin;
+
+        if (!this._mixins.find((value) => mixinSchemaItemKey.matchesFullName(value.fullName))) {
+          this._mixins.push(new DelayedPromiseWithProps<SchemaItemKey, Mixin>(mixinSchemaItemKey,
+            async () => {
+              const mixin = await this.schema.lookupItem(mixinSchemaItemKey, Mixin);
+              if (undefined === mixin)
+                throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
+              return mixin;
           }));
+        }
       }
     }
   }
@@ -306,7 +309,7 @@ export async function createNavigationProperty(ecClass: ECClass, name: string, r
 
 /** @internal */
 export function createNavigationPropertySync(ecClass: ECClass, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
-  if (ecClass.getPropertySync(name))
+  if (ecClass.getPropertySync(name, true))
     throw new ECSchemaError(ECSchemaStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${ecClass.name}.`);
 
   let resolvedRelationship: RelationshipClass | undefined;

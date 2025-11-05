@@ -31,7 +31,7 @@ import { createSelectionScopeProps, SelectionScopesManager } from "./SelectionSc
 /**
  * Properties for creating [[SelectionManager]].
  * @public
- * @deprecated in 5.0. Use `SelectionStorage` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md) package instead.
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `SelectionStorage` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md) package instead.
  */
 export interface SelectionManagerProps {
   /** A manager for [selection scopes]($docs/presentation/unified-selection/index#selection-scopes) */
@@ -56,7 +56,7 @@ export interface SelectionManagerProps {
 /**
  * The selection manager which stores the overall selection.
  * @public
- * @deprecated in 5.0. Use `SelectionStorage` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md) package instead.
+ * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use `SelectionStorage` from [@itwin/unified-selection](https://github.com/iTwin/presentation/blob/master/packages/unified-selection/README.md) package instead.
  */
 export class SelectionManager implements ISelectionProvider, Disposable {
   private _imodelKeyFactory: (imodel: IModelConnection) => string;
@@ -110,7 +110,7 @@ export class SelectionManager implements ISelectionProvider, Disposable {
     this._listeners.forEach((dispose) => dispose());
   }
 
-  /** @deprecated in 5.0. Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
   /* c8 ignore next 3 */
   public dispose() {
     this[Symbol.dispose]();

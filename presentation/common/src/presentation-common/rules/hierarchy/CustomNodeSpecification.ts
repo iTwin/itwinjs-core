@@ -2,6 +2,7 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module PresentationRules
  */
@@ -13,6 +14,8 @@ import { ChildNodeSpecificationBase } from "./ChildNodeSpecification.js";
  *
  * @see [Custom node specification reference documentation page]($docs/presentation/hierarchies/CustomNode.md)
  * @public
+ * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+ * package for creating hierarchies.
  */
 export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
   /** Used for serializing to JSON. */
@@ -37,7 +40,7 @@ export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
    * Specifies node's image ID. If set, the ID is assigned to [[Node.imageId]] and it's
    * up to the UI component to decide what to do with it.
    *
-   * @deprecated in 5.x. Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
    */
   imageId?: string;
 }

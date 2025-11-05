@@ -699,8 +699,9 @@ export namespace BSplineCurveOps {
       if (!this.removeDuplicateFitPoints(options))
         return false;
 
+      let hasClosurePoint = (options.fitPoints.length > 1) && options.fitPoints[0].isAlmostEqual(options.fitPoints[options.fitPoints.length - 1]);
+
       // if only 2 unique points, then must create open curve
-      let hasClosurePoint = options.fitPoints[0].isAlmostEqual(options.fitPoints[options.fitPoints.length - 1]);
       if (3 === options.fitPoints.length && hasClosurePoint) {
         options.fitPoints.pop();
         if (undefined !== options.knots)

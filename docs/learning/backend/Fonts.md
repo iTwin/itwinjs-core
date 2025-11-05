@@ -6,7 +6,7 @@ Text is an important part of many iModel workflows, especially those involving t
 
 The term "font" can be ambiguous. Strictly speaking, a "font" is a digital representation of a set of unique glyphs that a computer program can use to render text. To minimize confusion, iTwin.js prefers the following more specific terms:
 - Font family: a named, characteristic design of a set of glyphs. Two families are distinct if their names differ. For example, Helvetica and Comic Sans are two distinct families sharing few design similarities. Helvetica and Helvetica Condensed are two distinct families sharing many design similarities. A font family comprises one or more *font faces*. When you create text in an iModel, you specify the name of the font family.
-- Font face: a specific variation of the glyphs defined by a *font family*. iTwin.js recognizes four types of font face: regular, italic, bold, and bold-italic. These variations can be applied to text in an iModel by a [TextStyle]($common).
+- Font face: a specific variation of the glyphs defined by a *font family*. iTwin.js recognizes four types of font face: regular, italic, bold, and bold-italic. These variations can be applied to text in an iModel by an [AnnotationTextStyle]($backend).
 - Font file: a digital representation of one or more *font faces* belonging to any number of *font families*. The representation can be expressed in one of a [handful of formats](#Formats). When you embed a "font" into an iModel, you are actually embedding a *font file*.
 
 For backwards compatibility, a handful of ambiguous uses of "font" in the APIs remain:

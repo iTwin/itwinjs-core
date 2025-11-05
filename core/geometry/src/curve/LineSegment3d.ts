@@ -28,8 +28,6 @@ import { LineString3d } from "./LineString3d";
 import { OffsetOptions } from "./OffsetOptions";
 import { StrokeOptions } from "./StrokeOptions";
 
-// cspell:words CCWXY
-
 /**
  * A LineSegment3d is:
  * * A 3d line segment represented by its start and end coordinates
@@ -68,6 +66,10 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    */
   public get point1Ref(): Point3d {
     return this._point1;
+  }
+  /** Return a copy of the start and end points in an array. */
+  public get points(): Point3d[] {
+    return [this._point0.clone(), this._point1.clone()];
   }
   /** A LineSegment3d extends along its infinite line. */
   public override get isExtensibleFractionSpace(): boolean {

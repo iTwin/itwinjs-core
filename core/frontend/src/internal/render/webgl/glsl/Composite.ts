@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, expectDefined } from "@itwin/core-bentley";
 import { CompositeGeometry } from "../CachedGeometry";
 import { CompositeFlags, TextureUnit } from "../RenderFlags";
 import { FragmentShaderBuilder, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
@@ -185,7 +185,7 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGL2Ren
   if (wantOcclusion) {
     frag.addUniform("u_occlusion", VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform("u_occlusion", (uniform, params) => {
-        Texture2DHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).occlusion!, TextureUnit.Four);
+        Texture2DHandle.bindSampler(uniform, expectDefined((params.geometry as CompositeGeometry).occlusion), TextureUnit.Four);
       });
     });
 

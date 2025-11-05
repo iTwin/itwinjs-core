@@ -65,8 +65,6 @@ import { SolidPrimitive } from "../solid/SolidPrimitive";
 import { Sphere } from "../solid/Sphere";
 import { TorusPipe } from "../solid/TorusPipe";
 
-// cspell:word CCWXY
-// cspell:word ABCDA
 /**
  * Function to be called to obtain function value at (i,n), for
  * * n fixed over many calls
@@ -1317,7 +1315,8 @@ export class Sample {
    * @param numYVertices number of vertices in y direction
    * @param createParams true to create parameters, with parameter value `(i,j)` for point at (0 based) vertex in x,y directions
    * @param createNormals true to create a (single) normal indexed from all facets
-   * @param createColors true to create a single color on each quad.  (shared between its triangles)
+   * @param createColors true to create a single color on each quad (shared between both triangles in quad if triangulating)
+   * @param triangulate whether to triangulate the quads (default true)
    * @note edgeVisible is false only on the diagonals
    */
   public static createTriangularUnitGridPolyface(
@@ -2585,7 +2584,7 @@ export class Sample {
   }
 
   // cspell:word creat
-  /** @deprecated in 4.x. Use createVerticalStaggerPolygon instead. */
+  /** @deprecated in 4.0.0 - will not be removed until after 2026-06-13. Use createVerticalStaggerPolygon instead. */
   public static creatVerticalStaggerPolygon(
     dy1: number, dy2: number, dy3: number, dy4: number, ax: number, ay: number, dx1: number, dx4: number,
   ): Point3d[] {
@@ -2691,7 +2690,7 @@ export class Sample {
     const pointD = Point3d.create(0, 1, 0);
     const pointABC = [pointA, pointB, pointC];
     const pointABCD = [pointA, pointB, pointC, pointD];
-    const pointABCDA = [pointA, pointB, pointC, pointD, pointA];
+    const pointABCD1 = [pointA, pointB, pointC, pointD, pointA];
     result.push(LineSegment3d.create(pointA, pointB));
     result.push(CoordinateXYZ.create(pointA));
     result.push(Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC));
@@ -2709,7 +2708,7 @@ export class Sample {
     result.push(BezierCurve3dH.create(pointABC)!);
     result.push(BSplineCurve3d.createUniformKnots(pointABC, 3)!);
     result.push(BSplineCurve3dH.createUniformKnots(pointABC, 3)!);
-    result.push(Loop.create(LineString3d.create(pointABCDA)));
+    result.push(Loop.create(LineString3d.create(pointABCD1)));
     result.push(Path.create(LineString3d.create(pointABCD)));
     result.push(this.createConeBsplineSurface(pointA, pointC, 1, 2, 4)!);
     result.push(this.createXYGridBsplineSurface(8, 4, 4, 3)!);

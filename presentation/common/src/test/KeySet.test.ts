@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { InstanceKey, Key, KeySet, KeySetJSON, PresentationError } from "../presentation-common.js";
+import { InstanceKey, Key, KeySet, KeySetJSON } from "../presentation-common.js";
 import { createTestECInstanceKey, createTestECInstancesNodeKey } from "./_helpers/index.js";
 import { EntityProps } from "@itwin/core-common";
 
@@ -144,6 +144,7 @@ describe("KeySet", () => {
     });
   });
 
+  /* eslint-disable @typescript-eslint/no-deprecated */
   describe("[get] nodeKeys", () => {
     it("returns empty set when there are no keys", () => {
       const set = new KeySet();
@@ -174,6 +175,7 @@ describe("KeySet", () => {
       expect(set.nodeKeysCount).to.eq(2);
     });
   });
+  /* eslint-enable @typescript-eslint/no-deprecated */
 
   describe("clear", () => {
     it("clears node keys", () => {
@@ -225,6 +227,7 @@ describe("KeySet", () => {
       const key = createTestECInstancesNodeKey({ instanceKeys: [createTestECInstanceKey({ id: "0x222" })] });
       set.add(key);
       expect(set.size).to.eq(2);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(set.nodeKeysCount).to.eq(2);
       expect(set.has(key)).to.be.true;
       expect(set.guid).to.not.eq(guidBefore);
@@ -250,6 +253,7 @@ describe("KeySet", () => {
       ];
       set.add(keys);
       expect(set.size).to.eq(3);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(set.nodeKeysCount).to.eq(3);
       expect(set.has(keys[0])).to.be.true;
       expect(set.has(keys[1])).to.be.true;
@@ -470,18 +474,6 @@ describe("KeySet", () => {
       expect(set.size).to.eq(2);
       expect(set.guid).to.eq(guidBefore);
     });
-
-    it("handles invalid values", () => {
-      const set = new KeySet();
-      const guidBefore = set.guid;
-      expect(() => (set as any).add(undefined)).to.throw(PresentationError);
-      expect(set.isEmpty).to.be.true;
-      expect(() => (set as any).add(null)).to.throw(PresentationError);
-      expect(set.isEmpty).to.be.true;
-      expect(() => (set as any).add({})).to.throw(PresentationError);
-      expect(set.isEmpty).to.be.true;
-      expect(set.guid).to.eq(guidBefore);
-    });
   });
 
   describe("delete", () => {
@@ -496,6 +488,7 @@ describe("KeySet", () => {
       const guidBefore = set.guid;
       set.delete(keys[1]);
       expect(set.size).to.eq(2);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(set.nodeKeysCount).to.eq(2);
       expect(set.has(keys[1])).to.be.false;
       expect(set.guid).to.not.eq(guidBefore);
@@ -512,6 +505,7 @@ describe("KeySet", () => {
       const guidBefore = set.guid;
       set.delete([keys[1], keys[2]]);
       expect(set.size).to.eq(1);
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(set.nodeKeysCount).to.eq(1);
       expect(set.has(keys[1])).to.be.false;
       expect(set.has(keys[2])).to.be.false;
@@ -659,25 +653,6 @@ describe("KeySet", () => {
       expect(set.size).to.eq(1);
       expect(set.guid).to.eq(guidBefore);
     });
-
-    it("handles invalid values", () => {
-      const set = new KeySet([createTestECInstancesNodeKey()]);
-      expect(() => (set as any).delete(undefined)).to.throw(PresentationError);
-      expect(set.size).to.eq(1);
-      expect(() => (set as any).delete(null)).to.throw(PresentationError);
-      expect(set.size).to.eq(1);
-      expect(() => (set as any).delete({})).to.throw(PresentationError);
-      expect(set.size).to.eq(1);
-    });
-  });
-
-  describe("has", () => {
-    it("handles invalid values", () => {
-      const set = new KeySet([createTestECInstancesNodeKey()]);
-      expect(() => (set as any).has(undefined)).to.throw(PresentationError);
-      expect(() => (set as any).has(null)).to.throw(PresentationError);
-      expect(() => (set as any).has({})).to.throw(PresentationError);
-    });
   });
 
   const keyTypes = [
@@ -750,13 +725,6 @@ describe("KeySet", () => {
         });
       });
     });
-
-    it("handles invalid values", () => {
-      const set = new KeySet();
-      expect(() => (set as any).hasAll(undefined)).to.throw(PresentationError);
-      expect(() => (set as any).hasAll(null)).to.throw(PresentationError);
-      expect(() => (set as any).hasAll({})).to.throw(PresentationError);
-    });
   });
 
   describe("hasAny", () => {
@@ -794,13 +762,6 @@ describe("KeySet", () => {
           expect(set.hasAny(createKeys([createTestECInstanceKey({ id: "0x333" }), createTestECInstancesNodeKey({ pathFromRoot: ["def"] })]))).to.be.false;
         });
       });
-    });
-
-    it("handles invalid values", () => {
-      const set = new KeySet();
-      expect(() => (set as any).hasAny(undefined)).to.throw(PresentationError);
-      expect(() => (set as any).hasAny(null)).to.throw(PresentationError);
-      expect(() => (set as any).hasAny({})).to.throw(PresentationError);
     });
   });
 

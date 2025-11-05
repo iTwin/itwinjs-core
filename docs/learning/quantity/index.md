@@ -4,18 +4,27 @@
   - [Terms and Concepts](#terms-and-concepts)
     - [Common Terms](#common-terms)
     - [FormatProps](#formatprops)
+    - [Station Format Properties](#station-format-properties)
+      - [stationOffsetSize](#stationoffsetsize)
+      - [stationBaseFactor](#stationbasefactor)
+        - [Station Format Examples](#station-format-examples)
     - [Concepts](#concepts)
       - [Formats Provider](#formats-provider)
       - [Units Provider](#units-provider)
       - [Unit Conversion](#unit-conversion)
+      - [Parser Behavior](#parser-behavior)
   - [Persistence](#persistence)
     - [FormatSet](#formatset)
+  - [Using KindOfQuantities to Retrieve Formats](#using-kindofquantities-to-retrieve-formats)
   - [Examples of Usage](#examples-of-usage)
     - [Numeric Format](#numeric-format)
     - [Composite Format](#composite-format)
     - [Parsing Values](#parsing-values)
     - [Using a FormatsProvider](#using-a-formatsprovider)
+    - [Retrieving a FormatProp, and a PersistenceUnit with only a KindOfQuantity Name and through schemas](#retrieving-a-formatprop-and-a-persistenceunit-with-only-a-kindofquantity-name-and-through-schemas)
     - [Using a MutableFormatsProvider](#using-a-mutableformatsprovider)
+    - [Using a FormatSetFormatsProvider](#using-a-formatsetformatsprovider)
+    - [Registering a SchemaFormatsProvider on IModelConnection open](#registering-a-schemaformatsprovider-on-imodelconnection-open)
     - [Mathematical Operation Parsing](#mathematical-operation-parsing)
       - [Limitations](#limitations)
 
@@ -44,6 +53,34 @@ If you're developing a frontend application that takes advantage of the core qua
 
 For a detailed description of all the setting supported by FormatProp see the EC documentation on [Format](../../bis/ec/ec-format.md).
 
+### Station Format Properties
+
+Station formatting in iTwin.js supports properties that control how values are broken down into major and minor station components:
+
+#### stationOffsetSize
+
+The `stationOffsetSize` property specifies the number of decimal places for calculating the station offset magnitude. This must be a positive integer greater than 0. This works with `stationBaseFactor` to determine the effective station offset using the formula: `effective offset = stationBaseFactor * 10^stationOffsetSize`.
+
+#### stationBaseFactor
+
+The `stationBaseFactor` property provides additional flexibility for station formatting by acting as a multiplier for the base offset calculation. This allows for non-standard station intervals that aren't simple powers of 10. The default value is 1.
+
+> __Note__: The `stationBaseFactor` property is currently implemented as an iTwin.js-specific extension and is not supported in the native EC (Entity Context) layer. This feature will eventually be incorporated into the ECFormat specification to provide broader compatibility across the iTwin ecosystem.
+
+##### Station Format Examples
+
+| stationOffsetSize | stationBaseFactor | Value  | Effective Offset | Formatted |
+| ----------------- | ----------------- | ------ | ---------------- | --------- |
+| 2                 | 1                 | 1055.5 | 100              | 10+55.50  |
+| 3                 | 1                 | 1055.5 | 1000             | 1+055.50  |
+| 2                 | 5                 | 1055.5 | 500              | 2+55.50   |
+
+In the examples above:
+
+- With `stationOffsetSize=2` and `stationBaseFactor=1`: effective offset = 1 × 10² = 100
+- With `stationOffsetSize=3` and `stationBaseFactor=1`: effective offset = 1 × 10³ = 1000
+- With `stationOffsetSize=2` and `stationBaseFactor=5`: effective offset = 5 × 10² = 500
+
 ### Concepts
 
 #### Formats Provider
@@ -55,6 +92,8 @@ A [FormatsProvider]($quantity) interface helps provide all the necessary `Format
 A [MutableFormatsProvider]($quantity) interface extends the read-only `FormatsProvider` above by allowing adding or removing `Formats` to the provider.
 
 The [SchemaFormatsProvider]($ecschema-metadata) takes in a [SchemaContext]($ecschema-metadata), to provide `Formats` coming from schemas. The `SchemaFormatsProvider` also requires a [UnitSystemKey]($quantity) passed in to filter the [FormatDefinition]($quantity) returned, according to the current unit system set in the `SchemaFormatsProvider`. When getting a format, the `SchemaFormatsProvider` will throw an error if it receives a non-valid [EC full name](https://www.itwinjs.org/bis/ec/ec-name/#full-name).
+
+The [FormatSetFormatsProvider]($ecschema-metadata) is a mutable format provider that manages format definitions within a [FormatSet](#formatset). This provider automatically updates the underlying format set when formats are added or removed, making it ideal for applications that need to persist format changes. It also supports an optional fallback provider to provide formats not found in the format set.
 
 #### Units Provider
 
@@ -70,6 +109,27 @@ The [AlternateUnitLabelsProvider]($quantity) interface allows users to specify a
 
 Unit conversion is performed through a [UnitConversionSpec]($quantity). These objects are generated by a `UnitsProvider`, with the implementation determined by each specific provider. During initialization, a `ParserSpec` or `FormatterSpec` can ask for `UnitConversionSpec` objects provided via the `UnitsProvider`. During parsing and formatting, the specification will retrieve the `UnitConversionSpec` between the source and destination units to apply the unit conversion.
 
+#### Parser Behavior
+
+The [Parser]($quantity) converts text strings into numeric quantity values by tokenizing the input and matching unit labels to known units. The parsing process follows these steps:
+
+1. __Tokenization__: The input string is broken down into tokens representing numbers, unit labels, and mathematical operators (if enabled).
+
+2. __Unit Label Matching__: For each unit label token found, the parser attempts to match it against:
+   - Units explicitly defined in the format specification
+   - Units from the same phenomenon (unit family) provided by the `UnitsProvider`
+   - Alternate labels defined through the `AlternateUnitLabelsProvider`
+
+3. __Error Handling__: The parser's behavior when encountering unrecognized unit labels depends on the format configuration:
+   - __Unitless Format__ (no units defined in format): If a unit label is provided but cannot be matched to any known unit, the parser returns `ParseError.UnitLabelSuppliedButNotMatched`. This prevents silent failures where typos like "12 im" (instead of "12 in") would incorrectly parse as "12 meters" when the persistence unit is meters.
+   - __Format with Units__ (units explicitly defined): If an unrecognized unit label is provided (e.g., "12 ABCDEF"), the parser falls back to the format's default unit for backward compatibility. For example, with a feet format, "12 ABCDEF" would parse as "12 feet".
+
+4. __Default Unit Behavior__: If no unit label is provided in the input (e.g., just "12"), the parser uses the default unit specified in the format. For unitless formats, if the input contains multiple unit labels, the first successfully matched unit becomes the default for subsequent unitless values in the same expression.
+
+5. __Unit Conversion__: Once units are matched, the parser applies the appropriate unit conversions to produce a value in the persistence unit specified by the `ParserSpec`.
+
+This error handling ensures that parsing errors are caught in unitless format contexts, preventing data corruption from unrecognized or mistyped unit labels, while maintaining backward compatibility for formats with explicitly defined units.
+
 ## Persistence
 
 We expose APIs and interfaces to support persistence of formats. Different from [KindOfQuantity](../../bis/ec/kindofquantity.md), which enables persistence of formats at the schema level, this section covers persistence at the application level.
@@ -78,7 +138,11 @@ We expose APIs and interfaces to support persistence of formats. Different from 
 
 [FormatSet]($ecschema-metadata) defines properties necessary to support persistence of a set of `Formats`.
 
-Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../../bis/ec/ec-name.md) for a [KindOfQuantity](../../bis/ec/kindofquantity.md). During an application's runtime, the `Format` associated to a `KindofQuantity` within a `FormatSet` would take precedence and be used over the default presentation formats of that `KindOfQuantity`.
+> Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../../bis/ec/ec-name.md) for a [KindOfQuantity](../../bis/ec/kindofquantity.md). During an application's runtime, the `Format` associated to a `KindofQuantity` within a `FormatSet` would take precedence and be used over the default presentation formats of that `KindOfQuantity`.
+
+- The `unitSystem` property uses a [UnitSystemKey]($quantity) to specify the unit system for the format set. This provides better type safety and leads to less dependency on `activeUnitSystem` in `IModelApp.quantityFormatter`. Tools using the new formatting API can then listen to only the `onFormatsChanged` event from `IModelApp.formatsProvider` instead of `IModelApp.quantityFormatter.onActiveUnitSystemChanged`.
+
+- The `formats` property accepts either a [FormatDefinition]($quantity) or a string reference to another KindOfQuantity. This allows one format to reference another format's definition, reducing duplication when multiple KindOfQuantities should share the same format specification. For example, `"AecUnits.LENGTH": "RoadRailUnits.LENGTH"` allows `AecUnits.LENGTH` to use the same format from `RoadRailUnits.LENGTH`.
 
 > The naming convention for a valid format within a FormatSet is <full-schema-name>:<koq-name>
 .
@@ -89,6 +153,7 @@ Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../
 {
   "name": "metric",
   "label": "Metric",
+  "unitSystem": "metric",
   "formats": {
     "AecUnits.LENGTH": {
       "composite": {
@@ -126,6 +191,7 @@ Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../
 {
   "name": "imperial",
   "label": "Imperial",
+  "unitSystem": "imperial",
   "formats": {
     "AecUnits.LENGTH": {
       "composite": {
@@ -153,6 +219,26 @@ Each `Format` defined in a `FormatSet` need to be mapped to a valid [ECName](../
 ```
 
 </details>
+
+## Using KindOfQuantities to Retrieve Formats
+
+Building off of [FormatSet](#formatset), Tools and components that format quantities across applications should be linked to a [KindOfQuantity](../../bis/ec/kindofquantity.md) and a Persistence Unit. See [Domains](../../bis/domains/index.md) for available schemas, including `AecUnits` and `RoadRailUnits`, which define many `KindOfQuantity` values.
+
+The table below lists common measurements with their typical `KindOfQuantity` and Persistence Unit. This allows tools to request a default `KindOfQuantity` from [IModelApp.formatsProvider]($core-frontend) and a Persistence Unit from [IModelApp.quantityFormatter]($core-frontend) to create a `FormatterSpec` for quantity formatting.
+
+| Measurement  | Actual KindOfQuantity (EC Full Name) | Persistence Unit |
+| ------------- | ------------- | ------------- |
+| Length  |  AecUnits.LENGTH | Units.M |
+| Angle  | AecUnits.ANGLE  | Units.RAD |
+| Area  |  AecUnits.AREA | Units.SQ_M |
+| Volume  | AecUnits.VOLUME  | Units.CUB_M |
+| Latitude/Longitude | AecUnits.ANGLE | Units.RAD |
+| Coordinate | AecUnits.LENGTH_COORDINATE | Units.M |
+| Stationing | RoadRailUnits.STATION | Units.M |
+| Length (Survey Feet) | RoadRailUnits.LENGTH | Units.M |
+| Bearing | RoadRailUnits.BEARING | Units.RAD |
+| Weight | AecUnits.WEIGHT | Units.KG |
+| Time | AecUnits.TIME | Units.S |
 
 ## Examples of Usage
 
@@ -227,6 +313,19 @@ When retrieving a format from a schema, users might want to ensure the format th
 
 </details>
 
+### Retrieving a FormatProp, and a PersistenceUnit with only a KindOfQuantity Name and through schemas
+
+When working with formats, developers often need to retrieve a format and determine the appropriate persistence unit. When you only have a KindOfQuantity name, you can utilize a SchemaContext to find the schema item for that KindOfQuantity and then access its persistence unit:
+
+<details>
+  <summary>Using a SchemaContext to get KindOfQuantity and a persistence unit<summary>
+
+```ts
+[[include:Quantity_Formatting.KindOfQuantityPersistenceUnitFormatting]]
+```
+
+</details>
+
 ### Using a MutableFormatsProvider
 
 The example below is of a `MutableFormatsProvider` that lets you add/remove formats during runtime.
@@ -240,6 +339,41 @@ The example below is of a `MutableFormatsProvider` that lets you add/remove form
 
 ```ts
 [[include:Quantity_Formatting.Mutable_Formats_Provider_Adding_A_Format]]
+```
+
+</details>
+
+### Using a FormatSetFormatsProvider
+
+The [FormatSetFormatsProvider]($ecschema-metadata) provides a convenient way to manage formats within a `FormatSet` while supporting runtime modifications. This provider is particularly useful when you need to persist format changes or override default schema formats.
+
+__Key Features:__
+
+- __String Reference Resolution__: The provider now automatically resolves string references to their target FormatDefinition. When a format references another via string (e.g., `"AecUnits.LENGTH": "RoadRailUnits.LENGTH"`), calling `getFormat("AecUnits.LENGTH")` will resolve and return the actual FormatDefinition from `RoadRailUnits.LENGTH`.
+- __Chain Resolution__: Supports chains of references with circular reference detection (e.g., HEIGHT → DISTANCE → LENGTH).
+- __Cascade Notifications__: When adding or removing a format, the `onFormatsChanged` event now includes not only the modified format but also all formats that reference it (directly or indirectly). For example, if `RoadRailUnits.LENGTH` is updated and both `AecUnits.LENGTH` and `LinearAlignment.LENGTH` reference it, all three formats will be included in the `formatsChanged` array, enabling proper cache invalidation.
+- __Fallback Provider__: String references can resolve through the optional fallback provider if the target format isn't found in the format set.
+
+Here's a working example that demonstrates string reference resolution with formatting:
+
+<details>
+  <summary>Example of using FormatSetFormatsProvider</summary>
+
+```ts
+[[include:Quantity_Formatting.FormatSet_Formats_Provider_With_String_References]]
+```
+
+</details>
+
+### Registering a SchemaFormatsProvider on IModelConnection open
+
+The simplest way to get formats from schemas into an iTwin application is to register a new `SchemaFormatsProvider` through a [IModelConnection.onOpen]($core-frontend) event listener, passing [IModelConnection.schemaContext]($core-frontend) to the provider. The example below illustrates how that can be done.
+
+<details>
+  <summary> Example of registering a SchemaFormatsProvider on IModelConnection open
+
+```ts
+[[include:Quantity_Formatting.Schema_Fmt_Provider_on_IModelConnection_Open]]
 ```
 
 </details>

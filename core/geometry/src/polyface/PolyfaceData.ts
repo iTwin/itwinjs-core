@@ -511,7 +511,7 @@ export class PolyfaceData {
   }
   /**
    * Resize all data arrays to the specified `length`.
-   * @deprecated in 4.x because name is misleading. Call [[PolyfaceData.resizeAllArrays]] instead.
+   * @deprecated in 4.5.0 - will not be removed until after 2026-06-13. Because name is misleading. Call [[PolyfaceData.resizeAllArrays]] instead.
    */
   public resizeAllDataArrays(length: number): void {
     if (length > this.point.length) {
@@ -549,9 +549,13 @@ export class PolyfaceData {
   }
   /** Return the range of the point array (optionally transformed). */
   public range(result?: Range3d, transform?: Transform): Range3d {
-    result = result ? result : Range3d.createNull();
-    result.extendArray(this.point, transform);
-    return result;
+    const range = Range3d.createNull(result);
+    this.extendRange(range, transform);
+    return range;
+  }
+  /** Extend `range` with coordinates from this mesh, optionally transformed. */
+  public extendRange(range: Range3d, transform?: Transform): void {
+    range.extendArray(this.point, transform);
   }
   /**
    * Apply a transform to the mesh data.

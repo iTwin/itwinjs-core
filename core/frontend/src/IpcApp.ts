@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { BentleyError, IModelStatus, JsonUtils, PickAsyncMethods } from "@itwin/core-bentley";
+import { BentleyError, expectDefined, IModelStatus, JsonUtils, PickAsyncMethods } from "@itwin/core-bentley";
 import {
   BackendError, IModelError, ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend, iTwinChannel,
   RemoveFunction,
@@ -31,7 +31,7 @@ export class IpcApp {
   private static _removeAppNotify: RemoveFunction | undefined;
   /** Get the implementation of the [[IpcSocketFrontend]] interface. */
 
-  private static get ipc(): IpcSocketFrontend { return this._ipc!; }
+  private static get ipc(): IpcSocketFrontend { return expectDefined(this._ipc); }
 
   /** Determine whether Ipc is available for this frontend. This will only be true if [[startup]] has been called on this class. */
   public static get isValid(): boolean { return undefined !== this._ipc; }
@@ -115,7 +115,7 @@ export class IpcApp {
   }
 
   /** @internal
-   * @deprecated in 4.8. Use [[makeIpcProxy]] for a type-safe interface.
+   * @deprecated in 4.8 - will not be removed until after 2026-06-13. Use [[makeIpcProxy]] for a type-safe interface.
    */
   public static async callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any> {
     return this[_callIpcChannel](channelName, methodName, ...args);

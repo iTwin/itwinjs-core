@@ -25,7 +25,7 @@ export class CustomAttributeClass extends ECClass {
   private _appliesTo?: CustomAttributeContainerType;
 
   /**
-   * @deprecated in 4.8 use [[appliesTo]]
+   * @deprecated in 4.8 - will not be removed until after 2026-06-13. Use [[appliesTo]]
    * */
   public get containerType(): CustomAttributeContainerType {
     return this.appliesTo;

@@ -9,7 +9,7 @@
 // cspell:ignore greyscale ovrs
 
 import {
-  assert, BeEvent, CompressedId64Set, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, OrderedId64Iterable,
+  assert, BeEvent, CompressedId64Set, expectDefined, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, OrderedId64Iterable,
 } from "@itwin/core-bentley";
 import { XYZProps } from "@itwin/core-geometry";
 import { AmbientOcclusion } from "./AmbientOcclusion";
@@ -1397,7 +1397,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     }
 
     this._planProjections.set(modelId, settings);
-    this._json3d.planProjections![modelId] = settings.toJSON();
+    expectDefined(this._json3d.planProjections)[modelId] = settings.toJSON();
   }
 
   /** An iterator over all of the defined plan projection settings. The iterator includes the Id of the model associated with each settings object. */

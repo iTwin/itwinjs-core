@@ -147,7 +147,9 @@ describe("PresentationManager", () => {
           expect(await getAreaDisplayValue("usSurvey", defaultFormats)).to.eq("0.018 yrd² (US Survey)");
         });
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         async function getAreaDisplayValue(unitSystem: UnitSystemKey, defaultFormats?: FormatsMap): Promise<DisplayValue> {
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           using manager = new PresentationManager({ defaultFormats, ...config });
           const descriptor = await manager.getContentDescriptor({
             imodel,
@@ -193,6 +195,7 @@ describe("PresentationManager", () => {
     it("cancels 'getNodes' request", async () => {
       using manager = new PresentationManager();
       const cancelEvent = new BeEvent<() => void>();
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const promise = manager.getNodes({
         imodel,
         rulesetOrId: {
@@ -202,6 +205,7 @@ describe("PresentationManager", () => {
               ruleType: RuleTypes.RootNodes,
               specifications: [
                 {
+                  // eslint-disable-next-line @typescript-eslint/no-deprecated
                   specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
                   classes: { schemaName: "Generic", classNames: ["PhysicalObject"] },
                 },

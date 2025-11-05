@@ -206,12 +206,12 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     return result;
   }
   /** Return the start point of the curve. */
-  public override startPoint(): Point3d {
-    return this.evaluatePointInSpan(0, 0.0);
+  public override startPoint(result?: Point3d): Point3d {
+    return this.evaluatePointInSpan(0, 0.0, result);
   }
   /** Return the end point of the curve. */
-  public override endPoint(): Point3d {
-    return this.evaluatePointInSpan(this.numSpan - 1, 1.0);
+  public override endPoint(result?: Point3d): Point3d {
+    return this.evaluatePointInSpan(this.numSpan - 1, 1.0, result);
   }
   /**
    * Reverse the curve in place.
@@ -639,9 +639,9 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     return curve;
   }
   /** Evaluate the curve at a fractional position within a given span. */
-  public evaluatePointInSpan(spanIndex: number, spanFraction: number): Point3d {
+  public evaluatePointInSpan(spanIndex: number, spanFraction: number, result?: Point3d): Point3d {
     this._bcurve.evaluateBuffersInSpan(spanIndex, spanFraction);
-    return Point3d.createFrom(this._bcurve.poleBuffer);
+    return Point3d.createFrom(this._bcurve.poleBuffer, result);
   }
   /**
    * Evaluate the curve and derivative at a fractional position within a given span.

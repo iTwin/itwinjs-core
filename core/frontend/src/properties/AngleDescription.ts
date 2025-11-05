@@ -27,7 +27,7 @@ export class AngleDescription extends FormattedQuantityDescription {
 
   public get formatterQuantityType(): QuantityType { return QuantityType.Angle; }
   /**
-   * @deprecated in 5.0. Use the `kindOfQuantityName` property instead.
+   * @deprecated in 5.0 - will not be removed until after 2026-06-13. Use the `kindOfQuantityName` property instead.
    */
   public get quantityType(): string { return "Angle"; }
 

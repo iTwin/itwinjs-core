@@ -6,6 +6,7 @@
 import { describe, expect, it } from "vitest";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Geometry } from "../../Geometry";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
 import { IndexedPolyface } from "../../polyface/Polyface";
@@ -16,8 +17,6 @@ import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "../../topology/HalfEdgeGraphSearch";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-
-// cspell:word internaldocs
 
 describe("HalfEdgeGraphSearch", () => {
   it("collectConnectedComponentsWithExteriorParityMasks", () => {
@@ -69,6 +68,7 @@ describe("HalfEdgeGraphSearch", () => {
   });
   it("collectConnectedComponentsSimpleMesh", () => {
     const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
     const graph = new HalfEdgeGraph();
     const node0 = graph.addEdgeXY(1, 1, 0, 0);
     const node1 = node0.faceSuccessor;
@@ -102,15 +102,22 @@ describe("HalfEdgeGraphSearch", () => {
     node10.setMaskAroundFace(HalfEdgeMask.BOUNDARY_EDGE);
     node11.setMaskAroundFace(HalfEdgeMask.BOUNDARY_EDGE);
     node11.setMaskAroundFace(HalfEdgeMask.EXTERIOR);
-
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph, undefined, undefined, () => true));
     const connectedComponents = HalfEdgeGraphSearch.collectConnectedComponents(graph);
-    // note that all exterior nodes are ignored
+    // note that all exterior nodes are ignored, and that edge ids are sequentially assigned
     ck.testExactNumber(connectedComponents.length, 2);
-    ck.testExactNumber(connectedComponents[0].length, 2);
-    ck.testExactNumber(connectedComponents[0][0].id, 0);
-    ck.testExactNumber(connectedComponents[0][1].id, 5);
-    ck.testExactNumber(connectedComponents[1].length, 1);
-    ck.testExactNumber(connectedComponents[1][0].id, 10);
+    for (const component of connectedComponents) {
+      if (component.length === 2) {
+        ck.testTrue(component[0].id !== component[1].id, "larger component has distinct nodes");
+        ck.testTrue(Geometry.isAlmostEqualAnyNumber(Math.min(component[0].id, component[1].id), [node0.id, node2.id, node4.id], 0.0), "larger component has an edge from one of the expected face loops");
+        ck.testTrue(Geometry.isAlmostEqualAnyNumber(Math.max(component[0].id, component[1].id), [node5.id, node6.id, node8.id], 0.0), "larger component has an edge from the other expected face loop");
+      } else if (component.length === 1) {
+        ck.testTrue(Geometry.isAlmostEqualAnyNumber(component[0].id, [node10.id, node12.id, node15.id]), "smaller component has an edge in the expected face loop");
+      } else {
+        ck.announceError("unexpected component size");
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "HalfEdgeGraphSearch", "collectConnectedComponentsSimpleMesh");
     expect(ck.getNumErrors()).toBe(0);
   });
   function getSampleMesh(): IndexedPolyface {
@@ -154,7 +161,7 @@ describe("HalfEdgeGraphSearch", () => {
     const ck = new Checker();
     const graph = new HalfEdgeGraph();
     const node0 = graph.addEdgeXY(2, 2, 4, 2);
-    const position = HalfEdgeGraphSearch.pointInOrOnFaceXY(node0, 3, 2)!;
+    const position = HalfEdgeGraphSearch.pointInOrOnFaceXY(node0, 3, 2);
     ck.testExactNumber(position, 0); // point is on
     expect(ck.getNumErrors()).toBe(0);
   });
@@ -162,7 +169,7 @@ describe("HalfEdgeGraphSearch", () => {
     const ck = new Checker();
     const graph = new HalfEdgeGraph();
     const node0 = graph.addEdgeXY(2, 2, 4, 2);
-    const position = HalfEdgeGraphSearch.pointInOrOnFaceXY(node0, 1, 2)!;
+    const position = HalfEdgeGraphSearch.pointInOrOnFaceXY(node0, 1, 2);
     ck.testExactNumber(position, -1); // point is out
     expect(ck.getNumErrors()).toBe(0);
   });
@@ -182,16 +189,17 @@ describe("HalfEdgeGraphSearch", () => {
     HalfEdge.pinch(node5, node6);
     HalfEdge.pinch(node7, node0);
 
-    let position = HalfEdgeGraphSearch.pointInOrOnFaceXY(node0, 1, 1)!;
+    let position = HalfEdgeGraphSearch.pointInOrOnFaceXY(node0, 1, 1);
     ck.testExactNumber(position, 1); // point is in
-    position = HalfEdgeGraphSearch.pointInOrOnFaceXY(node0, 1, 0)!;
+    position = HalfEdgeGraphSearch.pointInOrOnFaceXY(node0, 1, 0);
     ck.testExactNumber(position, 0); // point is on an edge
-    position = HalfEdgeGraphSearch.pointInOrOnFaceXY(node0, 6, 0)!;
+    position = HalfEdgeGraphSearch.pointInOrOnFaceXY(node0, 6, 0);
     ck.testExactNumber(position, -1); // point is out
     expect(ck.getNumErrors()).toBe(0);
   });
   it("collectExtendedBoundaryLoopsInGraph.BoundaryEdge", () => {
     const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
     // see graph visual at geometry/internaldocs/Graph.md under "Collect Boundary Loops" section.
     const graph = new HalfEdgeGraph();
     const node0 = graph.addEdgeXY(1, 1, 0, 0);
@@ -222,29 +230,46 @@ describe("HalfEdgeGraphSearch", () => {
     HalfEdge.pinch(node5, node9);
     graph.setMask(HalfEdgeMask.BOUNDARY_EDGE);
     node4.clearMaskAroundEdge(HalfEdgeMask.BOUNDARY_EDGE);
-
-    let boundaryLoops = HalfEdgeGraphSearch.collectExtendedBoundaryLoopsInGraph(graph, HalfEdgeMask.EXTERIOR);
-    ck.testExactNumber(boundaryLoops.length, 2);
-    ck.testExactNumber(boundaryLoops[0].length, 2);
-    ck.testExactNumber(boundaryLoops[0][0].id, 0);
-    ck.testExactNumber(boundaryLoops[0][1].id, 2);
-    ck.testExactNumber(boundaryLoops[1].length, 1);
-    ck.testExactNumber(boundaryLoops[1][0].id, 8);
-
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph, undefined, undefined, () => true));
+    const boundaryChains = HalfEdgeGraphSearch.collectExtendedBoundaryLoopsInGraph(graph, HalfEdgeMask.EXTERIOR);
+    // since EXTERIOR mask is not consistently set, multiple configurations of boundary edge chains will be returned
+    if (boundaryChains.length === 3) {
+      ck.testTrue(boundaryChains.every((chain: HalfEdge[]) => chain.length === 1), "all chains are singletons");
+      ck.testTrue(boundaryChains[0][0].id !== boundaryChains[1][0].id, "first two singleton chains are distinct");
+      ck.testTrue(boundaryChains[1][0].id !== boundaryChains[2][0].id, "last two singleton chains are distinct");
+      ck.testTrue(boundaryChains[0][0].id !== boundaryChains[2][0].id, "first and last singleton chains are unique");
+      ck.testTrue(boundaryChains.every((chain: HalfEdge[]) => Geometry.isAlmostEqualAnyNumber(chain[0].id, [node0.id, node2.id, node8.id], 0.0)), "singleton chains have the expected ids");
+    } else if (boundaryChains.length === 2) {
+      ck.testTrue(3 === boundaryChains.reduce((sum: number, chain: HalfEdge[]) => sum + chain.length, 0), "two chains have total of 3 boundary edges");
+      for (let i = 0; i < boundaryChains.length; i++) {
+        const chain = boundaryChains[i];
+        const otherChain = boundaryChains[Geometry.modulo(i + 1, 2)];
+        if (chain.length === 2) {
+          ck.testTrue(chain[0].id !== chain[1].id, "2-chain has distinct edges");
+          ck.testTrue(chain.every((edge: HalfEdge) => Geometry.isAlmostEqualAnyNumber(edge.id, [node0.id, node2.id, node8.id], 0.0)), "2-chain edges have the expected ids");
+        } else if (chain.length === 1) {
+          ck.testTrue(chain[0].id !== otherChain[0].id && chain[0].id !== otherChain[1].id, "singleton chain is distinct from 2-chain edges");
+          ck.testTrue(Geometry.isAlmostEqualAnyNumber(chain[0].id, [node0.id, node2.id, node8.id], 0.0), "singleton chain has expected id");
+        } else {
+          ck.announceError("unexpected boundary chain size");
+        }
+      }
+    } else {
+      ck.announceError("unexpected number of boundary loops for inconsistently masked graph");
+    }
     // now set the mask on node7 to make boundary edges consistent
     node7.setMask(HalfEdgeMask.EXTERIOR);
-    boundaryLoops = HalfEdgeGraphSearch.collectExtendedBoundaryLoopsInGraph(graph, HalfEdgeMask.EXTERIOR);
+    const boundaryLoops = HalfEdgeGraphSearch.collectExtendedBoundaryLoopsInGraph(graph, HalfEdgeMask.EXTERIOR);
     ck.testExactNumber(boundaryLoops.length, 1);
     ck.testExactNumber(boundaryLoops[0].length, 4);
-    ck.testExactNumber(boundaryLoops[0][0].id, 0);
-    ck.testExactNumber(boundaryLoops[0][1].id, 2);
-    ck.testExactNumber(boundaryLoops[0][2].id, 6);
-    ck.testExactNumber(boundaryLoops[0][3].id, 8);
+    ck.testTrue(boundaryLoops[0].every((edge: HalfEdge) => Geometry.isAlmostEqualAnyNumber(edge.id, [node0.id, node2.id, node6.id, node8.id], 0.0)), "4-chain edges have the expected ids");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "HalfEdgeGraphSearch", "collectExtendedBoundaryLoopsInGraph.BoundaryEdge");
     expect(ck.getNumErrors()).toBe(0);
   });
   it("HalfEdgeGraphSearch.graphToPolyface", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
+
     const graph = new HalfEdgeGraph();
     const node0 = graph.addEdgeXY(1, 1, 0, 0);
     const node1 = node0.faceSuccessor;

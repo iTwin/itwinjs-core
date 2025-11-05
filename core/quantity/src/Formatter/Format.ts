@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Quantity
  */
@@ -15,7 +15,7 @@ import {
   RatioType, ScientificType,
   ShowSignOption,
 } from "./FormatEnums";
-import { CloneOptions, CustomFormatProps, FormatProps, isCustomFormatProps } from "./Interfaces";
+import { CloneOptions, FormatProps, ResolvedFormatProps } from "./Interfaces";
 
 // cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses
 // cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative
@@ -39,6 +39,7 @@ export class BaseFormat {
   protected _minWidth?: number; // optional; positive int
   protected _scientificType?: ScientificType; // required if type is scientific; options: normalized, zeroNormalized
   protected _stationOffsetSize?: number; // required when type is station; positive integer > 0
+  protected _stationBaseFactor?: number; // optional positive integer base factor for station formatting; default is 1
   protected _ratioType?: RatioType; // required if type is ratio; options: oneToN, NToOne, ValueBased, useGreatestCommonDivisor
   protected _azimuthBase?: number; // value always clockwise from north
   protected _azimuthBaseUnit?: UnitProps; // unit for azimuthBase value
@@ -88,6 +89,16 @@ export class BaseFormat {
   public get stationOffsetSize(): number | undefined { return this._stationOffsetSize; }
   public set stationOffsetSize(stationOffsetSize: number | undefined) { stationOffsetSize = this._stationOffsetSize = stationOffsetSize; }
 
+  /** Gets the station base factor used for station formatting. This is a positive integer that acts as a multiplier
+   * for the base offset calculation. The default value is 1.
+   */
+  public get stationBaseFactor(): number | undefined {
+    return this._stationBaseFactor;
+  }
+  public set stationBaseFactor(stationBaseFactor: number | undefined) {
+    this._stationBaseFactor = stationBaseFactor;
+  }
+
   public get allowMathematicOperations(): boolean { return this._allowMathematicOperations; }
   public set allowMathematicOperations(allowMathematicOperations: boolean) { this._allowMathematicOperations = allowMathematicOperations; }
 
@@ -129,7 +140,7 @@ export class BaseFormat {
     return (this._formatTraits & formatTrait) === formatTrait;
   }
 
-  public loadFormatProperties(formatProps: FormatProps) {
+  public loadFormatProperties(formatProps: FormatProps | ResolvedFormatProps) {
     this._type = parseFormatType(formatProps.type, this.name);
 
     if (formatProps.precision !== undefined) {
@@ -167,9 +178,16 @@ export class BaseFormat {
     if (FormatType.Station === this.type) {
       if (undefined === formatProps.stationOffsetSize)
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Station' type therefore the attribute 'stationOffsetSize' is required.`);
-      if (!Number.isInteger(formatProps.stationOffsetSize) || formatProps.stationOffsetSize < 0) // must be a positive int > 0
+      if (!Number.isInteger(formatProps.stationOffsetSize) || formatProps.stationOffsetSize <= 0) // must be a positive int > 0
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
       this._stationOffsetSize = formatProps.stationOffsetSize;
+
+      if (undefined !== formatProps.stationBaseFactor) {
+        // optional - must be a positive integer
+        if (!Number.isInteger(formatProps.stationBaseFactor) || formatProps.stationBaseFactor <= 0)
+          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationBaseFactor' attribute. It should be a positive integer.`);
+        this._stationBaseFactor = formatProps.stationBaseFactor;
+      }
     }
 
     if (undefined !== formatProps.showSignOption) { // optional; default is "onlyNegative"
@@ -259,20 +277,6 @@ export class Format extends BaseFormat {
     return formatTraits.find((traitEntry) => traitStr === traitEntry) ? true : false;
   }
 
-  private async createUnit(unitsProvider: UnitsProvider, name: string, label?: string): Promise<void> {
-    if (name === undefined || typeof (name) !== "string" || (label !== undefined && typeof (label) !== "string")) // throws if name is undefined or name isn't a string or if label is defined and isn't a string
-      throw new QuantityError(QuantityStatus.InvalidJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
-    for (const unit of this.units!) {
-      const unitObj = unit[0].name;
-      if (unitObj.toLowerCase() === name.toLowerCase()) // duplicate names are not allowed
-        throw new QuantityError(QuantityStatus.InvalidJson, `The unit ${unitObj} has a duplicate name.`);
-    }
-    const newUnit: UnitProps = await unitsProvider.findUnitByName(name);
-    if (!newUnit || !newUnit.isValid)
-      throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${name}'.`);
-    this.units!.push([newUnit, label]);
-  }
-
   /**
    *  Clone Format
    */
@@ -289,6 +293,7 @@ export class Format extends BaseFormat {
     newFormat._uomSeparator = this._uomSeparator;
     newFormat._stationSeparator = this._stationSeparator;
     newFormat._stationOffsetSize = this._stationOffsetSize;
+    newFormat._stationBaseFactor = this._stationBaseFactor;
     newFormat._formatTraits = this._formatTraits;
     newFormat._spacer = this._spacer;
     newFormat._includeZero = this._includeZero;
@@ -336,10 +341,13 @@ export class Format extends BaseFormat {
    * Populates this Format with the values from the provided.
    */
   public async fromJSON(unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<void> {
-    this.loadFormatProperties(jsonObj);
+    const json = await resolveFormatProps(this.name, unitsProvider, jsonObj);
+    return this.fromFullyResolvedJSON(json);
+  }
 
-    if (isCustomFormatProps(jsonObj))
-      this._customProps = jsonObj.custom;
+  public fromFullyResolvedJSON(jsonObj: ResolvedFormatProps): void {
+    this.loadFormatProperties(jsonObj);
+    this._customProps = jsonObj.custom;
 
     if (undefined !== jsonObj.composite) { // optional
       this._units = new Array<[UnitProps, string | undefined]>();
@@ -360,15 +368,21 @@ export class Format extends BaseFormat {
           throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'units' attribute. It must be of type 'array'`);
         }
         if (jsonObj.composite.units.length > 0 && jsonObj.composite.units.length <= 4) { // Composite requires 1-4 units
-          try {
-            const createUnitPromises: Array<Promise<void>> = [];
-            for (const unit of jsonObj.composite.units) {
-              createUnitPromises.push(this.createUnit(unitsProvider, unit.name, unit.label));
+          for (const nextUnit of jsonObj.composite.units) {
+            if (this._units) {
+              for (const existingUnit of this._units) {
+                const unitObj = existingUnit[0].name;
+                if (unitObj.toLowerCase() === nextUnit.unit.name.toLowerCase()) {
+                  throw new QuantityError(QuantityStatus.InvalidJson, `The unit ${unitObj} has a duplicate name.`);
+                }
+              }
             }
 
-            await Promise.all(createUnitPromises);
-          } catch (e) {
-            throw e;
+            if (undefined === this._units) {
+              this._units = [];
+            }
+
+            this._units.push([nextUnit.unit, nextUnit.label]);
           }
         }
       }
@@ -377,29 +391,8 @@ export class Format extends BaseFormat {
     }
 
     if(this.type === FormatType.Azimuth || this.type === FormatType.Bearing) {
-      // these units cannot be loaded from loadFormatProperties() because they require an async call, and the method signature is already public
-
-      if (undefined !== jsonObj.azimuthBaseUnit) {
-        if (typeof (jsonObj.azimuthBaseUnit) !== "string")
-          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'azimuthBaseUnit' attribute. It should be of type 'string'.`);
-
-        const baseUnit: UnitProps = await unitsProvider.findUnitByName(jsonObj.azimuthBaseUnit);
-        if (!baseUnit || !baseUnit.isValid)
-          throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${jsonObj.azimuthBaseUnit}' for azimuthBaseUnit in Format '${this.name}'.`);
-
-        this._azimuthBaseUnit = baseUnit;
-      }
-
-      if (undefined !== jsonObj.revolutionUnit) {
-        if (typeof (jsonObj.revolutionUnit) !== "string")
-          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'revolutionUnit' attribute. It should be of type 'string'.`);
-
-        const revolutionUnit: UnitProps = await unitsProvider.findUnitByName(jsonObj.revolutionUnit);
-        if (!revolutionUnit || !revolutionUnit.isValid)
-          throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${jsonObj.revolutionUnit}' for revolutionUnit in Format '${this.name}'.`);
-
-        this._revolutionUnit = revolutionUnit;
-      }
+      this._azimuthBaseUnit = jsonObj.azimuthBaseUnit;
+      this._revolutionUnit = jsonObj.revolutionUnit;
 
       if (this._revolutionUnit === undefined)
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Azimuth' or 'Bearing' type therefore the attribute 'revolutionUnit' is required.`);
@@ -415,17 +408,38 @@ export class Format extends BaseFormat {
     return actualFormat;
   }
 
+  public static createFromFullyResolvedJSON(name: string, formatProps: ResolvedFormatProps) {
+    const actualFormat = new Format(name);
+    actualFormat.fromFullyResolvedJSON(formatProps);
+    return actualFormat;
+  }
+
   /**
    * Returns a JSON object that contain the specification for this Format.
    */
   public toJSON(): FormatProps {
+    const json = this.toFullyResolvedJSON();
+    return {
+      ...json,
+      azimuthBaseUnit: json.azimuthBaseUnit?.name,
+      revolutionUnit: json.revolutionUnit?.name,
+      composite: json.composite ? {
+        ...json.composite,
+        units: json.composite.units.map((unit) => {
+          return undefined !== unit.label ? { name: unit.unit.name, label: unit.label } : { name: unit.unit.name };
+        }),
+      } : undefined,
+    }
+  }
+
+  public toFullyResolvedJSON(): ResolvedFormatProps {
     let composite;
     if (this.units) {
       const units = this.units.map((value) => {
         if (undefined !== value[1])
-          return { name: value[0].name, label: value[1] };
+          return { unit: value[0], label: value[1] };
         else
-          return { name: value[0].name };
+          return { unit: value[0] };
       });
 
       composite = {
@@ -435,10 +449,10 @@ export class Format extends BaseFormat {
       };
     }
 
-    const azimuthBaseUnit = this.azimuthBaseUnit ? this.azimuthBaseUnit.name : undefined;
-    const revolutionUnit = this.revolutionUnit ? this.revolutionUnit.name : undefined;
+    const azimuthBaseUnit = this.azimuthBaseUnit;
+    const revolutionUnit = this.revolutionUnit;
 
-    const baseFormatProps: FormatProps = {
+    const baseFormatProps: ResolvedFormatProps = {
       type: this.type,
       precision: this.precision,
       roundFactor: this.roundFactor,
@@ -452,19 +466,81 @@ export class Format extends BaseFormat {
       ratioType: this.ratioType,
       stationOffsetSize: this.stationOffsetSize,
       stationSeparator: this.stationSeparator,
+      stationBaseFactor: this.stationBaseFactor,
       azimuthBase: this.azimuthBase,
       azimuthBaseUnit,
       azimuthCounterClockwise: this.azimuthCounterClockwise,
       revolutionUnit,
       composite,
+      custom: this.customProps,
     };
-
-    if (this.customProps)
-      return {
-        ...baseFormatProps,
-        custom: this.customProps,
-      } as CustomFormatProps;
 
     return baseFormatProps;
   }
+}
+
+async function resolveCompositeUnit(provider: UnitsProvider, name: string, label?: string): Promise<UnitProps> {
+  if (typeof name !== "string" || (undefined !== label && typeof label !== "string")) {
+    throw new QuantityError(QuantityStatus.InvalidJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
+  }
+
+  const unit = await provider.findUnitByName(name);
+  if (!unit || !unit.isValid) {
+    throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${name}'.`);
+  }
+
+  return unit;
+}
+
+async function resolveAzimuthBearingUnit(formatName: string, jsonObj: FormatProps, key: "revolutionUnit" | "azimuthBaseUnit", provider: UnitsProvider): Promise<UnitProps | undefined> {
+  const unitName = jsonObj[key];
+  if (undefined !== unitName) {
+    if (typeof unitName !== "string") {
+      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid '${key}' attribute. It should be of type 'string'.`);
+    }
+
+    const unit = await provider.findUnitByName(unitName);
+    if (!unit || !unit.isValid) {
+      throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${unitName}' for ${key} in Format '${formatName}'.`);
+    }
+
+    return unit;
+  }
+
+  return undefined;
+}
+
+async function resolveFormatProps(formatName: string, unitsProvider: UnitsProvider, jsonObj: FormatProps): Promise<ResolvedFormatProps> {
+  let units: Array<{ unit: UnitProps, label?: string }> | undefined;
+  if (undefined !== jsonObj.composite?.units) {
+    units = await Promise.all(jsonObj.composite.units.map(async (entry) => {
+      const unit = await resolveCompositeUnit(unitsProvider, entry.name);
+      return { unit, label: entry.label };
+    }));
+  }
+
+  let azimuthBaseUnit, revolutionUnit;
+  const type = parseFormatType(jsonObj.type, formatName);
+  if (type === FormatType.Azimuth || type === FormatType.Bearing) {
+    azimuthBaseUnit = await resolveAzimuthBearingUnit(formatName, jsonObj, "azimuthBaseUnit", unitsProvider);
+    revolutionUnit = await resolveAzimuthBearingUnit(formatName, jsonObj, "revolutionUnit", unitsProvider);
+
+    if (!revolutionUnit) {
+      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} is 'Azimuth' or 'Bearing' type therefore the attribute 'revolutionUnit' is required.`);
+    }
+
+    if (jsonObj.azimuthBase !== undefined && !azimuthBaseUnit) {
+      throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an 'azimuthBase' attribute therefore the attribute 'azimuthBaseUnit' is required.`);
+    }
+  }
+
+  return {
+    ...jsonObj,
+    azimuthBaseUnit,
+    revolutionUnit,
+    composite: units ? {
+      ...jsonObj.composite,
+      units,
+    } : undefined,
+  };
 }

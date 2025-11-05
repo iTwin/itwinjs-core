@@ -16,7 +16,7 @@ import { CategoryOwnsSubCategories } from "./NavigationRelationship";
 import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow } from "./Entity";
 
 /** Defines the appearance for graphics in Geometric elements
- * @public
+ * @public @preview
  */
 export class SubCategory extends DefinitionElement {
   public static override get className(): string { return "SubCategory"; }
@@ -138,7 +138,7 @@ export class SubCategory extends DefinitionElement {
 }
 
 /** A Category element is the target of the `category` member of [[GeometricElement]].
- * @public
+ * @public @preview
  */
 export class Category extends DefinitionElement {
   public static override get className(): string { return "Category"; }
@@ -209,7 +209,7 @@ export class Category extends DefinitionElement {
 }
 
 /** Categorizes 2d GeometricElements.
- * @public
+ * @public @preview
  */
 export class DrawingCategory extends Category {
   public static override get className(): string { return "DrawingCategory"; }
@@ -271,7 +271,7 @@ export class DrawingCategory extends Category {
 }
 
 /** Categorizes SpatialElements. See [how to create a SpatialCategory]($docs/learning/backend/CreateElements.md#SpatialCategory).
- * @public
+ * @public @preview
  */
 export class SpatialCategory extends Category {
   public static override get className(): string { return "SpatialCategory"; }

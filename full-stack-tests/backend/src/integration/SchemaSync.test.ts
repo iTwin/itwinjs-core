@@ -852,11 +852,11 @@ describe("Schema synchronization", function (this: Suite) {
       briefcaseId: 2,
     }, {
       description: "final push by b2",
-      changesType: 65,
+      changesType: 0,
       briefcaseId: 3,
     }, {
       description: "final push by b3",
-      changesType: 65,
+      changesType: 0,
       briefcaseId: 4,
     },
     ];
@@ -1196,11 +1196,11 @@ describe("Schema synchronization", function (this: Suite) {
       briefcaseId: 2,
     }, {
       description: "final push by b2",
-      changesType: 65,
+      changesType: 0,
       briefcaseId: 3,
     }, {
       description: "final push by b3",
-      changesType: 65,
+      changesType: 0,
       briefcaseId: 4,
     },
     ];
@@ -1389,7 +1389,7 @@ describe("Schema synchronization", function (this: Suite) {
       briefcaseId: 3,
     }, {
       description: "schema with 30 props in test2:Pipe1",
-      changesType: 65,
+      changesType: 0,
       briefcaseId: 4,
     }];
 

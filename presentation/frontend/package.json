@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "5.1.0-dev.26",
+  "version": "5.4.0-dev.5",
   "description": "Frontend of iModel.js Presentation library",
   "license": "MIT",
   "repository": {
@@ -42,6 +42,7 @@
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=lib/esm/presentation-frontend",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
+    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
     "test": "mocha --enable-source-maps --config ./.mocharc.json",
     "prettier:fix": "prettier --write ."
   },
@@ -66,7 +67,7 @@
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/eslint-plugin": "5.2.2-dev.2",
     "@itwin/presentation-common": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
@@ -84,8 +85,8 @@
     "cpx2": "^8.0.0",
     "cross-env": "^7.0.3",
     "deep-equal": "^1",
-    "eslint": "^9.13.0",
-    "eslint-config-prettier": "^9.1.0",
+    "eslint": "^9.31.0",
+    "eslint-config-prettier": "^9.1.2",
     "internal-tools": "workspace:*",
     "jsdom": "^26.0.0",
     "mocha": "^11.1.0",

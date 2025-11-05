@@ -4,10 +4,9 @@ publish: false
 
 # NextVersion
 
-Table of contents:
+- [NextVersion](#nextversion)
+  - [Node.js 24 support](#nodejs-24-support)
 
-- [Electron 36 support](#electron-36-support)
+## Node.js 24 support
 
-## Electron 36 support
-
-In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 36](https://www.electronjs.org/blog/electron-36-0).
+In addition to [already supported Node.js versions](../learning/SupportedPlatforms.md#supported-nodejs-versions), iTwin.js now supports [Node.js 24](https://nodejs.org/en/blog/release/v24.11.0).

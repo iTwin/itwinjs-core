@@ -324,17 +324,23 @@ export interface UnitFormattingSettingsProvider {
  */
 export class QuantityTypeFormatsProvider implements FormatsProvider {
   public onFormatsChanged = new BeEvent<(args: FormatsChangedArgs) => void>();
-
+  private _removeListeners: (() => void)[] = [];
   public constructor() {
-    IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener(() => {
+    this._removeListeners.push(IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener(() => {
       this.onFormatsChanged.raiseEvent({ formatsChanged: "all" });
-    });
+    }));
   }
+
+  public [Symbol.dispose]() {
+    this._removeListeners.forEach(listener => listener());
+  }
+
   private _kindOfQuantityMap = new Map<string, QuantityType>([
     ["AecUnits.LENGTH", QuantityType.Length],
     ["AecUnits.ANGLE", QuantityType.Angle],
     ["AecUnits.AREA", QuantityType.Area],
     ["AecUnits.VOLUME", QuantityType.Volume],
+    ["AecUnits.LENGTH_COORDINATE", QuantityType.Coordinate],
     ["RoadRailUnits.STATION", QuantityType.Stationing],
     ["RoadRailUnits.LENGTH", QuantityType.LengthSurvey],
   ]);
@@ -519,10 +525,9 @@ export class QuantityFormatter implements UnitsProvider {
     const formatPropsByType = new Map<QuantityTypeDefinition, FormatProps>();
 
     // load cache for every registered QuantityType
-    [...this.quantityTypesRegistry.keys()].forEach((key) => {
-      const entry = this.quantityTypesRegistry.get(key)!;
+    for (const [_, entry] of this.quantityTypesRegistry) {
       formatPropsByType.set(entry, this.getFormatPropsByQuantityTypeEntryAndSystem(entry, systemKey));
-    });
+    };
 
     for (const [entry, formatProps] of formatPropsByType) {
       await this.loadFormatAndParserSpec(entry, formatProps);
@@ -563,6 +568,8 @@ export class QuantityFormatter implements UnitsProvider {
       const props = overrideEntry[unitSystemKey];
       if (props) {
         if (this._overrideFormatPropsByUnitSystem.has(unitSystemKey)) {
+          // We just verified that unitSystemKey is present.
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           this._overrideFormatPropsByUnitSystem.get(unitSystemKey)!.set(typeKey, props);
         } else {
           const newMap = new Map<string, FormatProps>();
@@ -607,7 +614,7 @@ export class QuantityFormatter implements UnitsProvider {
   public async onInitialized() {
     await this.initializeQuantityTypesRegistry();
 
-    const initialKoQs = [["AecUnits.LENGTH", "Units.M"], ["AecUnits.ANGLE", "Units.RAD"], ["AecUnits.AREA", "Units.SQ_M"], ["AecUnits.VOLUME", "Units.CUB_M"], ["RoadRailUnits.STATION", "Units.M"], ["RoadRailUnits.LENGTH", "Units.M"]];
+    const initialKoQs = [["AecUnits.LENGTH", "Units.M"], ["AecUnits.ANGLE", "Units.RAD"], ["AecUnits.AREA", "Units.SQ_M"], ["AecUnits.VOLUME", "Units.CUB_M"], ["AecUnits.LENGTH_COORDINATE", "Units.M"], ["RoadRailUnits.STATION", "Units.M"], ["RoadRailUnits.LENGTH", "Units.M"]];
     for (const entry of initialKoQs) {
       try {
         await this.addFormattingSpecsToRegistry(entry[0], entry[1]);
@@ -929,7 +936,7 @@ export class QuantityFormatter implements UnitsProvider {
    * @return a formatted string.
    */
   public formatQuantity(magnitude: number, formatSpec?: FormatterSpec): string;
-  // eslint-disable-next-line @typescript-eslint/promise-function-async
+
   public formatQuantity(args: number | object, spec?: FormatterSpec): string | Promise<string> {
     if (typeof args === "number") {
       /** Format a quantity value. Default FormatterSpec implementation uses Formatter.formatQuantity. */
@@ -977,7 +984,7 @@ export class QuantityFormatter implements UnitsProvider {
    * @return QuantityParseResult object containing either the parsed value or an error value if unsuccessful.
    */
   public parseToQuantityValue(inString: string, parserSpec?: ParserSpec): QuantityParseResult;
-  // eslint-disable-next-line @typescript-eslint/promise-function-async
+
   public parseToQuantityValue(args: string | object, parserSpec?: ParserSpec): QuantityParseResult | Promise<QuantityParseResult> {
     if (typeof args === "string") {
       /** Parse a quantity value. Default ParserSpec implementation uses ParserSpec.parseToQuantityValue. */

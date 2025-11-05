@@ -288,15 +288,27 @@ describe("CloudSqlite", () => {
     checkOptionalReturnValues(stats, false);
     expect(cache.isDaemon).to.be.false;
     // daemonless is always 0 locked blocks.
-    expect(stats.lockedCacheslots).to.equal(0);
+    expect(parseInt(stats.lockedCacheslots, 16)).to.equal(0);
     // we haven't opened any databases yet, so have 0 entries in the cache.
-    expect(stats.populatedCacheslots).to.equal(0);
+    expect(parseInt(stats.populatedCacheslots, 16)).to.equal(0);
     // 10 gb in bytes, current cache size defined by this test suite.
     const tenGb = 10 * (1024 * 1024 * 1024);
     // 64 kb, current block size defined by this test suite.
     const blockSize = 64 * 1024;
     // totalCacheslots is the number of entries allowed in the cachefile.
-    expect(stats.totalCacheslots).to.equal(tenGb / blockSize);
+    expect(parseInt(stats.totalCacheslots, 16)).to.equal(tenGb / blockSize);
+
+    // memoryUsed is the amount of memory used by sqlite.
+    expect(stats.memoryUsed).to.not.be.undefined;
+    assert(stats.memoryUsed !== undefined);
+    // memoryHighwater is the high water amount for sqlite memory usage.
+    expect(stats.memoryHighwater).to.not.be.undefined;
+    assert(stats.memoryHighwater !== undefined);
+    expect(parseInt(stats.memoryHighwater, 16)).to.be.greaterThanOrEqual(parseInt(stats.memoryUsed, 16));
+    // memoryManifest is the amount of memory used for the manifests for each attached container.
+    expect(stats.memoryManifest).to.not.be.undefined;
+    assert(stats.memoryManifest !== undefined);
+    expect(parseInt(stats.memoryManifest, 16)).to.be.greaterThan(0);
 
     const dbs = container.queryDatabases();
     expect(dbs.length).to.be.greaterThanOrEqual(1);
@@ -310,9 +322,16 @@ describe("CloudSqlite", () => {
     expect(db!.localBlocks).to.equal(db!.totalBlocks);
     stats = container.queryBcvStats({ addClientInformation: true });
     checkOptionalReturnValues(stats, true);
-    expect(stats.lockedCacheslots).to.equal(0);
-    expect(stats.populatedCacheslots).to.equal(db!.totalBlocks);
-    expect(stats.totalCacheslots).to.equal(tenGb / blockSize);
+    expect(parseInt(stats.lockedCacheslots, 16)).to.equal(0);
+    expect(parseInt(stats.populatedCacheslots, 16)).to.equal(db!.totalBlocks);
+    expect(parseInt(stats.totalCacheslots, 16)).to.equal(tenGb / blockSize);
+    // memoryUsed is the amount of memory used by sqlite.
+    expect(stats.memoryUsed).to.not.be.undefined;
+    assert(stats.memoryUsed !== undefined);
+    // memoryHighwater is the high water amount for sqlite memory usage.
+    expect(stats.memoryHighwater).to.not.be.undefined;
+    assert(stats.memoryHighwater !== undefined);
+    expect(parseInt(stats.memoryHighwater, 16)).to.be.greaterThanOrEqual(parseInt(stats.memoryUsed, 16));
     container.disconnect({ detach: true });
   });
 

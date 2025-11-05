@@ -944,10 +944,6 @@ export const enum FragmentShaderComponent {
   // (Optional) Override render order to be output to pick buffers.
   // float overrideRenderOrder(float renderOrder)
   OverrideRenderOrder,
-  // (Optional) Compute the contour line information to be output to pick buffers.
-  // vec4 computeContourLineInfo()
-  // Defaults to vec4(0.0) indicating no contour line.
-  ComputeContourLineInfo,
   // (Optional) Apply atmospheric scattering effect. (For Skybox and RealityMesh only)
   // vec4 applyAtmosphericScattering()
   ApplyAtmosphericScattering,

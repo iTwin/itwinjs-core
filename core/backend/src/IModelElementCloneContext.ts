@@ -53,7 +53,7 @@ export class IModelElementCloneContext {
   /** Dispose any native resources associated with this IModelElementCloneContext. */
   public [Symbol.dispose](): void { this._nativeContext.dispose(); }
 
-  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  /** @deprecated in 5.0 - will not be removed until after 2026-06-13. Use [Symbol.dispose] instead. */
   public dispose() {
     this[Symbol.dispose]();
   }
@@ -148,7 +148,7 @@ export class IModelElementCloneContext {
   /** Clone the specified source Element into ElementProps for the target iModel.
    * @internal
    */
-  public cloneElement(sourceElement: Element, cloneOptions?: IModelJsNative.CloneElementOptions): ElementProps {
+  public async cloneElement(sourceElement: Element, cloneOptions?: IModelJsNative.CloneElementOptions): Promise<ElementProps> {
     const targetElementProps: ElementProps = this._nativeContext.cloneElement(sourceElement.id, cloneOptions);
     // Ensure that all NavigationProperties in targetElementProps have a defined value so "clearing" changes will be part of the JSON used for update
     // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -170,7 +170,7 @@ export class IModelElementCloneContext {
     }
     const jsClass = this.sourceDb.getJsClass<typeof Element>(sourceElement.classFullName);
     // eslint-disable-next-line @typescript-eslint/dot-notation
-    jsClass["onCloned"](this, sourceElement.toJSON(), targetElementProps);
+    await jsClass["onCloned"](this, sourceElement.toJSON(), targetElementProps);
     return targetElementProps;
   }
 

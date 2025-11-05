@@ -8,7 +8,7 @@
 
 import * as path from "node:path";
 import { ClassRegistry, KnownLocations, Schema, Schemas } from "@itwin/core-backend";
-import * as elementsModule from "./PhysicalMaterialElements.js";
+import * as elementsModule from "./PhysicalMaterialElements";
 
 /** The PhysicalMaterialSchema contains standard physical material classes.
  * A physical material defines the matter that makes up physical elements.

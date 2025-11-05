@@ -5,15 +5,19 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { BentleyError, GuidString, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
+import { BentleyError, BentleyStatus, GuidString, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
 import { Cartographic, EcefLocation, OrbitGtBlobProps, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
+import { Range3d } from "@itwin/core-geometry";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAssetUrl } from "./tile/internal";
 import { RealityDataSourceTilesetUrlImpl } from "./RealityDataSourceTilesetUrlImpl";
 import { RealityDataSourceContextShareImpl } from "./RealityDataSourceContextShareImpl";
 import { RealityDataSourceCesiumIonAssetImpl } from "./RealityDataSourceCesiumIonAssetImpl";
+import { RealityDataSourceGoogle3dTilesImpl } from "./internal/RealityDataSourceGoogle3dTilesImpl";
 import { IModelApp } from "./IModelApp";
-import { Range3d } from "@itwin/core-geometry";
+import { getCopyrights, GoogleMapsDecorator } from "./internal/GoogleMapsDecorator";
+import { DecorateContext } from "./ViewContext";
+import { ScreenViewport } from "./Viewport";
 
 const loggerCategory: string = FrontendLoggerCategory.RealityData;
 
@@ -219,8 +223,9 @@ export namespace RealityDataSource {
  * The provider's name is stored in a [RealityDataSourceKey]($common). When the [[RealityDataSource]] is requested from the key,
  * the provider is looked up in [[IModelApp.realityDataSourceProviders]] by its name and, if found, its [[createRealityDataSource]] method
  * is invoked to produce the reality data source.
- * @alpha
+ * @beta
  */
+
 export interface RealityDataSourceProvider {
   /** Produce a RealityDataSource for the specified `key`.
    * @param key Identifies the reality data source.
@@ -228,12 +233,20 @@ export interface RealityDataSourceProvider {
    * @returns the requested reality data source, or `undefined` if it could not be produced.
    */
   createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
+  /** Optionally add any decorations specific to this reality data source provider.
+   * For example, the Google Photorealistic 3D Tiles reality data source provider will add the Google logo.
+   */
+  decorate?(_context: DecorateContext): void;
+  /** Optionally add attribution logo cards to the viewport's logo div. */
+  addAttributions?(cards: HTMLTableElement, vp: ScreenViewport): Promise<void>;
+  /** Enables cached decorations for this provider. @see [[ViewportDecorator.useCachedDecorations]] */
+  useCachedDecorations?: true | undefined;
 }
 
 /** A registry of [[RealityDataSourceProvider]]s identified by their unique names. The registry can be accessed via [[IModelApp.realityDataSourceProviders]].
  * It includes a handful of built-in providers for sources like Cesium ION, ContextShare, OrbitGT, and arbitrary public-accessible URLs.
- * Any number of additional providers can be registered. They should typically be registered just after [[IModelAp.startup]].
- * @alpha
+ * Any number of additional providers can be registered. They should typically be registered just after [[IModelApp.startup]].
+ * @beta
  */
 export class RealityDataSourceProviderRegistry {
   private readonly _providers = new Map<string, RealityDataSourceProvider>();
@@ -264,4 +277,110 @@ export class RealityDataSourceProviderRegistry {
   public find(name: string): RealityDataSourceProvider | undefined {
     return this._providers.get(name);
   }
+}
+
+/**
+ * Options for creating a Google Photorealistic 3D Tiles reality data source provider.
+ * The caller must provide either an API key or a function that returns an auth token.
+ * @beta
+ */
+export type Google3dTilesProviderOptions = {
+  /** Google Map Tiles API Key used to access Google 3D Tiles. */
+  apiKey: string;
+  getAuthToken?: never;
+  /** If true, the data attributions/copyrights from the Google 3D Tiles will be displayed on screen. The Google Maps logo will always be displayed. Defaults to `true`. */
+  showCreditsOnScreen?: boolean
+} | {
+  apiKey?: never;
+  /** Function that returns an OAuth token for authenticating with Google 3D Tiles. This token is expected to not contain the "Bearer" prefix. */
+  getAuthToken: () => Promise<string>;
+  /** If true, the data attributions/copyrights from the Google 3D Tiles will be displayed on screen. The Google Maps logo will always be displayed. Defaults to `true`. */
+  showCreditsOnScreen?: boolean;
+};
+
+/**
+ * Will provide Google Photorealistic 3D Tiles (in 3dTile format).
+ * A valid API key or getAuthToken fuction must be supplied when creating this provider.
+ * To use this provider, you must register it with [[IModelApp.realityDataSourceProviders]].
+ * Example usage:
+ * ```ts
+ * [[include:GooglePhotorealistic3dTiles_providerApiKey]]
+ * ```
+ * @see [Google Photorealistic 3D Tiles]($docs/learning/frontend/GooglePhotorealistic3dTiles.md)
+ * @beta
+ */
+export class Google3dTilesProvider implements RealityDataSourceProvider {
+  /** Google Map Tiles API Key used to access Google 3D Tiles. */
+  private _apiKey?: string;
+  /** Function that returns an OAuth token for authenticating with Google 3D Tiles. This token is expected to not contain the "Bearer" prefix. */
+  private _getAuthToken?: () => Promise<string | undefined>;
+  /** Decorator for Google Maps logos. */
+  private _decorator: GoogleMapsDecorator;
+  /** Enables cached decorations for this provider. @see [[ViewportDecorator.useCachedDecorations]] */
+  public readonly useCachedDecorations = true;
+
+  public async createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
+    if (!this._apiKey && !this._getAuthToken) {
+      Logger.logError(loggerCategory, "Either an API key or getAuthToken function are required to create a Google3dTilesProvider.");
+      return undefined;
+    }
+    return RealityDataSourceGoogle3dTilesImpl.createFromKey(key, iTwinId, this._apiKey, this._getAuthToken);
+  }
+
+  public constructor(options: Google3dTilesProviderOptions) {
+    this._apiKey = options.apiKey;
+    this._getAuthToken = options.getAuthToken;
+    this._decorator = new GoogleMapsDecorator(options.showCreditsOnScreen ?? true);
+  }
+
+  /**
+   * Initialize the Google 3D Tiles reality data source provider by activating its decorator, which consists of loading the correct Google Maps logo.
+   * @returns `true` if the decorator was successfully activated, otherwise `false`.
+   */
+  public async initialize(): Promise<boolean> {
+    const isActivated = await this._decorator.activate("satellite");
+    if (!isActivated) {
+      const msg = "Failed to activate decorator";
+      Logger.logError(loggerCategory, msg);
+      throw new BentleyError(BentleyStatus.ERROR, msg);
+    }
+    return isActivated;
+  }
+
+  public decorate(_context: DecorateContext): void {
+    this._decorator.decorate(_context);
+  }
+
+  public async addAttributions(cards: HTMLTableElement, vp: ScreenViewport): Promise<void> {
+    const copyrightMap = getCopyrights(vp);
+
+    // Only add another logo card if the tiles have copyright
+    if (copyrightMap.size > 0) {
+      // Order by most occurances to least
+      // See https://developers.google.com/maps/documentation/tile/create-renderer#display-attributions
+      const sortedCopyrights = [...copyrightMap.entries()].sort((a, b) => b[1] - a[1]);
+
+      let copyrightMsg = "Data provided by:<br><ul>";
+      copyrightMsg += sortedCopyrights.map(([key]) => `<li>${key}</li>`).join("");
+      copyrightMsg += "</ul>";
+
+      const iconSrc = document.createElement("img");
+      iconSrc.src = `${IModelApp.publicPath}images/GoogleMaps_Logo_Gray.svg`;
+      iconSrc.style.padding = "10px 10px 5px 10px";
+
+      cards.appendChild(IModelApp.makeLogoCard({
+        iconSrc,
+        iconWidth: 98,
+        heading: "Google Photorealistic 3D Tiles",
+        notice: copyrightMsg
+      }));
+    }
+  }
+}
+
+/** Returns the URL used for retrieving Google Photorealistic 3D Tiles.
+ * @beta
+ */
+export function getGoogle3dTilesUrl() {
+  return "https://tile.googleapis.com/v1/3dtiles/root.json";
 }

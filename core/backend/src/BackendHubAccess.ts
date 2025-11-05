@@ -31,7 +31,7 @@ export class LockConflict extends IModelError {
 }
 
 /** The state of a lock. See [Acquiring locks on elements.]($docs/learning/backend/ConcurrencyControl.md#acquiring-locks-on-elements).
- * @deprecated in 4.7 Use [LockState]($common)
+ * @deprecated in 4.7 - will not be removed until after 2026-06-13. Use [LockState]($common)
  * @public
  */
 export enum LockState {
@@ -111,6 +111,8 @@ export interface IModelIdArg extends TokenArg {
 export interface AcquireNewBriefcaseIdArg extends IModelIdArg {
   /** A string to be reported to other users to identify this briefcase, for example in the case of conflicts or lock collisions. */
   readonly briefcaseAlias?: string;
+  /** A string to represent the device that holds the briefcase. */
+  readonly deviceName?: string;
 }
 
 /** Argument for methods that must supply an IModel name and iTwinId

@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, BeEvent, dispose, Id64String } from "@itwin/core-bentley";
+import { assert, BeEvent, dispose, expectDefined, expectNotNull, Id64String } from "@itwin/core-bentley";
 import {
   ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture, TextureData, TextureTransparency,
 } from "@itwin/core-common";
@@ -43,7 +43,7 @@ function computeBytesUsed(width: number, height: number, format: GL.Texture.Form
 function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreateParams, bytes?: Texture2DData, source?: TexImageSource): void {
   handle.bytesUsed = undefined !== bytes ? bytes.byteLength : computeBytesUsed(params.width, params.height, params.format, params.dataType);
 
-  const tex = handle.getHandle()!;
+  const tex = expectDefined(handle.getHandle());
   const gl = System.instance.context;
 
   // Use tightly packed data
@@ -98,7 +98,7 @@ function loadTextureFromBytes(handle: TextureHandle, params: Texture2DCreatePara
 function loadTextureCubeImageData(handle: TextureHandle, params: TextureCubeCreateParams, images: TexImageSource[]): void {
   handle.bytesUsed = computeBytesUsed(params.dim * 6, params.dim, params.format, params.dataType);
 
-  const tex = handle.getHandle()!;
+  const tex = expectDefined(handle.getHandle());
   const gl = System.instance.context;
 
   // Use tightly packed data
@@ -243,7 +243,7 @@ class Texture2DCreateParams {
       canvas.width = targetWidth;
       canvas.height = targetHeight;
 
-      const context = canvas.getContext("2d")!;
+      const context = expectNotNull(canvas.getContext("2d"));
       context.drawImage(image, 0, 0, canvas.width, canvas.height);
 
       element = canvas;
@@ -280,7 +280,7 @@ class Texture2DCreateParams {
       const canvas = document.createElement("canvas");
       canvas.width = targetWidth;
       canvas.height = targetHeight;
-      const context = canvas.getContext("2d")!;
+      const context = expectNotNull(canvas.getContext("2d"));
       context.drawImage(image, 0, 0, canvas.width, canvas.height);
 
       source = canvas;
@@ -369,7 +369,7 @@ export abstract class TextureHandle implements WebGLDisposable {
 
   public [Symbol.dispose]() {
     if (!this.isDisposed) {
-      System.instance.disposeTexture(this._glTexture!);
+      System.instance.disposeTexture(expectDefined(this._glTexture));
       this._glTexture = undefined;
       this.bytesUsed = 0;
     }
@@ -418,7 +418,7 @@ export abstract class TextureHandle implements WebGLDisposable {
     const gl = System.instance.context;
     const fbo = gl.createFramebuffer();
     gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.getHandle()!, 0);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, expectDefined(this.getHandle()), 0);
     if (gl.FRAMEBUFFER_COMPLETE === gl.checkFramebufferStatus(gl.FRAMEBUFFER)) {
       const w = this.width;
       const h = this.height;
@@ -427,7 +427,7 @@ export abstract class TextureHandle implements WebGLDisposable {
 
       const buffer = ImageBuffer.create(pixels, ImageBufferFormat.Rgba, w);
       const url = imageBufferToPngDataUrl(buffer, false);
-      openImageDataUrlInNewWindow(url!, "Classifiers");
+      openImageDataUrlInNewWindow(expectDefined(url), "Classifiers");
     }
 
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -493,7 +493,7 @@ export class Texture2DHandle extends TextureHandle {
   public replaceTextureData(data: Texture2DData): boolean {
     assert((GL.Texture.DataType.Float === this._dataType) === (data instanceof Float32Array));
 
-    const tex = this.getHandle()!;
+    const tex = expectDefined(this.getHandle());
     if (undefined === tex)
       return false;
 
@@ -618,6 +618,8 @@ export class ExternalTextureLoader { /* currently exported for tests only */
   private async _nextRequest(prevReq: ExternalTextureRequest) {
     this._activeRequests.splice(this._activeRequests.indexOf(prevReq), 1);
     if (this._activeRequests.length < this._maxActiveRequests && this._pendingRequests.length > 0) {
+      // length is verified to be > 0, so shift will not return undefined
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const req = this._pendingRequests.shift()!;
       await this._activateRequest(req);
     }

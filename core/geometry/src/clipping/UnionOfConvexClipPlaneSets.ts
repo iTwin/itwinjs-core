@@ -20,6 +20,7 @@ import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
 import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix4d } from "../geometry4d/Matrix4d";
+import { ClipPlane } from "./ClipPlane";
 import { Clipper, ClipPlaneContainment, ClipUtilities, PolygonClipper } from "./ClipUtils";
 import { ConvexClipPlaneSet, ConvexClipPlaneSetProps } from "./ConvexClipPlaneSet";
 
@@ -203,17 +204,36 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     return ClipPlaneContainment.StronglyOutside;
   }
   /**
-   * Clip a polygon using this ClipPlaneSet, returning new polygon boundaries. Note that each polygon may lie
-   * next to the previous, or be disconnected.
+   * Clip a polygon to the planes of the clip sets, returning new polygon boundaries.
+   * * The output polygons may lie next to each other, or be disconnected.
+   * * For a convex input polygon, the output polygon(s) are also convex.
+   * * For non-convex input, the output polygon(s) may have double-back edges along plane intersections. This is still a
+   * valid clip in a parity sense (overlapping regions cancel).
+   * * This method differs from [[appendPolygonClip]] by clipping the same input polygon with each [[ConvexClipPlaneSet]]
+   * in the instance, and returning only the inside pieces.
+   * @param input polygon, usually convex. Unchanged.
+   * @param output output polygon
+   * @param work optional work array.
+   * @param planeToSkip if this plane is found in the convex set, it is NOT applied.
+   * This is useful when caller knows the polygon lies in one of the instance planes.
+   * @param tolerance distance tolerance for "on plane" decision. Default value is [[Geometry.smallMetricDistance]].
+   * @see appendPolygonClip
    */
-  public polygonClip(input: GrowableXYZArray | Point3d[], output: GrowableXYZArray[]) {
+  public polygonClip(
+    input: GrowableXYZArray | Point3d[],
+    output: GrowableXYZArray[],
+    work?: GrowableXYZArray,
+    planeToSkip?: ClipPlane,
+    tolerance: number = Geometry.smallMetricDistance,
+  ): void {
     output.length = 0;
     if (Array.isArray(input))
       input = GrowableXYZArray.create(input);
-    const work = new GrowableXYZArray();
+    if (!work)
+      work = new GrowableXYZArray();
     for (const convexSet of this._convexSets) {
       const convexSetOutput = new GrowableXYZArray();
-      convexSet.polygonClip(input, convexSetOutput, work);
+      convexSet.polygonClip(input, convexSetOutput, work, planeToSkip, tolerance);
       if (convexSetOutput.length !== 0)
         output.push(convexSetOutput);
     }
@@ -257,9 +277,8 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
   }
   /**
    * Collect the output from computePlanePlanePlaneIntersections in all the contained convex sets.
-   * @param transform (optional) transform to apply to the points.
    * @param points (optional) array to which computed points are to be added.
-   * @param range (optional) range to be extended by the computed points.
+   * @param rangeToExtend (optional) range to be extended by the computed points.
    * @param transform (optional) transform to apply to the accepted points.
    * @param testContainment if true, test each point to see if it is within the convex set (send false if confident
    * that the convex set is rectilinear set such as a slab. Send true if chiseled corners are possible).
@@ -326,12 +345,16 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
   }
   /**
    * Implement appendPolygonClip, as defined in interface PolygonClipper.
+   * * This method differs from [[polygonClip]] by clipping the outside fragments resulting from the previous
+   * [[ConvexClipPlaneSet]] with the following one, and returning both inside and outside pieces.
+   * In this way, it always produces disjoint inside fragments, even if the clippers are not disjoint (uncommon).
    * @param xyz convex polygon. This is not changed.
    * @param insideFragments Array to receive "inside" fragments. Each fragment is a GrowableXYZArray grabbed from
    * the cache. This is NOT cleared.
    * @param outsideFragments Array to receive "outside" fragments. Each fragment is a GrowableXYZArray grabbed from
    * the cache. This is NOT cleared.
    * @param arrayCache cache for reusable GrowableXYZArray.
+   * @see polygonClip
    */
   public appendPolygonClip(
     xyz: IndexedXYZCollection,

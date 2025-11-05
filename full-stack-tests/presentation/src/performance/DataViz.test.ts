@@ -352,13 +352,16 @@ describe("#performance DataViz requests", () => {
         const createWhereClause = (propertyClassAlias: string, filteredProperty: PropertyInfo, values: Value[]) => {
           return values.reduce((filter, rawValue) => {
             if (filter !== "") {
+              // eslint-disable-next-line @typescript-eslint/no-base-to-string
               filter += " OR ";
             }
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
             filter += `${propertyClassAlias}.${filteredProperty.name}`;
             if (rawValue === undefined || rawValue === null) {
+              // eslint-disable-next-line @typescript-eslint/no-base-to-string
               filter += " IS NULL";
             } else {
-              // eslint-disable-next-line @typescript-eslint/no-base-to-string
+              // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions
               filter += ` = ${filteredProperty.type.toLowerCase() === "string" ? `'${rawValue}'` : rawValue}`;
             }
             return filter;
@@ -379,6 +382,7 @@ describe("#performance DataViz requests", () => {
           ) => {
             for (const distinctValuesEntry of distinctValues) {
               const [displayValue, rawValues] = distinctValuesEntry;
+              // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions
               const filteredClassesQuery = `${queryBase}${createWhereClause(propertyClassAlias, filteredProperty, [...rawValues])}`;
               for await (const { classId } of iModel.createQueryReader(filteredClassesQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
                 pushValues(displayValueEntries, displayValue, [
@@ -432,6 +436,7 @@ describe("#performance DataViz requests", () => {
                     ruleType: RuleTypes.RootNodes,
                     specifications: [
                       {
+                        // eslint-disable-next-line @typescript-eslint/no-deprecated
                         specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
                         classes: { schemaName: contentClassInfo.schemaName, classNames: [contentClassInfo.name], arePolymorphic: false },
                         relatedInstances:
@@ -460,7 +465,7 @@ describe("#performance DataViz requests", () => {
                           if (rawValue === undefined || rawValue === null) {
                             filter += "NULL";
                           } else if (filteredProperty.type.toLowerCase() === "string") {
-                            // eslint-disable-next-line @typescript-eslint/no-base-to-string
+                            // eslint-disable-next-line @typescript-eslint/no-base-to-string, @typescript-eslint/restrict-template-expressions
                             filter += `"${rawValue}"`;
                           } else {
                             // eslint-disable-next-line @typescript-eslint/no-base-to-string
@@ -493,9 +498,11 @@ describe("#performance DataViz requests", () => {
         };
         const idEntries = new Map<string, { elementIds: Id64String[]; childIds: Id64String[] }>();
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         async function getNodeKeys(ruleset: Ruleset, node: Node) {
           const keys: InstanceKey[] = [];
           const key = node.key;
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           if (NodeKey.isInstancesNodeKey(key)) {
             pushToArrayNoSpread(keys, key.instanceKeys);
           }
@@ -505,8 +512,10 @@ describe("#performance DataViz requests", () => {
           return keys;
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         async function loadHierarchy(ruleset: Ruleset, parentKey?: NodeKey): Promise<InstanceKey[]> {
           ++requestsCount.elementIds;
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           const { items } = await Presentation.presentation.getNodesIterator({
             imodel: iModel,
             rulesetOrId: ruleset,

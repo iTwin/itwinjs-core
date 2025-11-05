@@ -103,11 +103,11 @@ describeContentTestSuite("Element properties", ({ getDefaultSuiteIModel }) => {
             },
             ["True-False"]: {
               type: "primitive",
-              value: "False",
+              value: "Fàlsé",
             },
             ["True-False #2"]: {
               type: "primitive",
-              value: "True",
+              value: "Trµé",
             },
             ["User Label"]: {
               type: "primitive",

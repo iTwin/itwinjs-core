@@ -33,7 +33,8 @@ export abstract class FormattedQuantityDescription extends BaseQuantityDescripti
   constructor(name: string, displayLabel: string, iconSpec?: string, kindOfQuantityName?: string);
   constructor(argsOrName: FormattedQuantityDescriptionArgs | string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string) {
     if (typeof argsOrName === "string") {
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      // if argsOrName is a string, displayLabel must be defined.
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       super(argsOrName, displayLabel!, iconSpec, kindOfQuantityName);
     } else {
       super(argsOrName.name, argsOrName.displayLabel, argsOrName.iconSpec, argsOrName.kindOfQuantityName);

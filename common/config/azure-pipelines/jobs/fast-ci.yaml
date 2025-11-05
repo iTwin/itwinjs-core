@@ -76,7 +76,7 @@ jobs:
         persistCredentials: true
       - task: UseNode@1
         inputs:
-          version: "22.x"
+          version: "24.x"
 
       - bash: |
           if [[ "$(Build.Reason)" == "PullRequest" ]]; then
@@ -106,18 +106,95 @@ jobs:
           GITHUB_TOKEN: $(GH_TOKEN)
         name: checkForPr
 
-  - job: Build
+  - job: ParseCommitNotes
+    displayName: Parse Commit Notes
     dependsOn: CheckLinkedPR
     condition: succeeded()
+    continueOnError: true
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+      - checkout: self
+
+      - bash: git fetch https://$(GH_TOKEN)@github.com/iTwin/itwinjs-core refs/notes/commits:refs/notes/commits
+        displayName: git fetch refs/notes/commits
+
+      - bash: |
+          commitId="$(Build.SourceVersion)"
+          commitNote=$(git notes show $commitId | tr '\n' ' ')
+          echo "Commit $commitId has note: \"$commitNote\""
+          echo "##vso[task.setvariable variable=notes;isOutput=true]$commitNote"
+        displayName: Get commit notes
+        name: getCommit
+
+      - bash: |
+          # This note indicates that the commit should be published to npm
+          commitId="$(Build.SourceVersion)"
+          shouldPublishRegex="SHOULD_PUBLISH"
+          if [[ "$(getCommit.notes)" =~ $shouldPublishRegex ]]; then
+            echo "$commitId will be published because it's a version bump"
+            echo '##vso[task.setvariable variable=shouldPublish;isOutput=true]true'
+          else
+            echo "$commitId won't be published because it's not a version bump"
+            echo '##vso[task.setvariable variable=shouldPublish;isOutput=true]false'
+          fi
+        displayName: Parse SHOULD_PUBLISH git commit note
+        name: publishNote
+
+      - bash: |
+          # This note indicates that changes from the ESLint deprecation rule must be reviewed
+          # and approved before continuing with the release process.
+          commitId="$(Build.SourceVersion)"
+          deprecationCommentChangesRegex="DEPRECATION_COMMENT_CHANGES_PR"
+          if [[ "$(getCommit.notes)" =~ $deprecationCommentChangesRegex ]]; then
+            echo "$commitId has deprecation comment changes that should be reviewed before release"
+            echo '##vso[task.setvariable variable=shouldRequireApproval;isOutput=true]true'
+          else
+            echo "$commitId doesn't have any deprecation comment changes that need reviewal"
+            echo '##vso[task.setvariable variable=shouldRequireApproval;isOutput=true]false'
+          fi
+        displayName: Parse DEPRECATION_COMMENT_CHANGES_PR note
+        name: deprecationCommentNote
+
+  - job: WaitForCodeChangeValidation
+    displayName: Wait for code change validation
+    dependsOn: ParseCommitNotes
+    condition: and(succeeded(), eq(dependencies.ParseCommitNotes.outputs['deprecationCommentNote.shouldRequireApproval'], 'true'))
+    pool: server
+    timeoutInMinutes: 5760 # 4 days
+    steps:
+      - task: ManualValidation@0
+        timeoutInMinutes: 4320 # 3 days
+        inputs:
+          notifyUsers: |
+            Arun.George@bentley.com
+            Nick.Tessier@bentley.com
+            Paul.Connelly@bentley.com
+            Caleb.Shafer@bentley.com
+            Bill.Goehrig@bentley.com
+            Ben.Polinsky@bentley.com
+          instructions: |
+            Current commit is a version bump and it will be released to npm.
+            This check was added as an additional safety mechanism until new changes made in run-eslint-deprecation.yaml mature.
+            Please validate ESLint deprecation date rule changes before approving this check.
+            To do so find the commit named "Apply deprecation date rule for vX.X.X" on this branch
+            and inspect the changes for any anomalies.
+          onTimeout: "reject"
+
+  - job: Build
+    dependsOn:
+      - WaitForCodeChangeValidation
+      - ParseCommitNotes
+    condition: and(succeeded('ParseCommitNotes'), not(canceled()))
     strategy:
       matrix:
-        "Windows_Node_22":
+        "Windows_Node_24":
           platform: Windows_NT
           name: $(win_pool)
-        "Linux_Node_22":
+        "Linux_Node_24":
           platform: Linux
           name: $(linux_pool)
-        "MacOS_Node_22":
+        "MacOS_Node_24":
           platform: Darwin
           name: $(mac_pool)
 
@@ -131,17 +208,22 @@ jobs:
     workspace:
       clean: all
 
+    variables:
+      shouldPublishNpm: $[ dependencies.ParseCommitNotes.outputs['publishNote.shouldPublish'] ]
+
     steps:
       - checkout: self
         clean: true
+        timeoutInMinutes: 5
+        retryCountOnTaskFailure: 1
       - template: ../templates/core-build.yaml
         parameters:
-          nodeVersion: 22.x
+          nodeVersion: 24.x
           buildMobile: true
       # Will run if even there is a failure somewhere else in the pipeline.
       - template: ../templates/publish-test-results.yaml
         parameters:
-          nodeVersion: 22.x
+          nodeVersion: 24.x
       # The publish script identifies any new packages not previously published and tags the build
       - template: ../templates/publish.yaml
 

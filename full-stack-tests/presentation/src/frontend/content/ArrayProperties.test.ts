@@ -56,7 +56,7 @@ describeContentTestSuite("Array properties", () => {
     const content = await getContent(imodel, elementKey);
     const field = getFieldByLabel(content.descriptor.fields, "Prop");
     const displayValue = getDisplayValue(content, [field]);
-    expect(displayValue).to.deep.eq([undefined, "test"]);
+    expect(displayValue).to.deep.eq(["", "test"]);
   });
 
   async function getContent(imodel: IModelConnection, key: InstanceKey): Promise<Content> {
