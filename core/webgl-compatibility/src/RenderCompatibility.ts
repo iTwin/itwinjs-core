@@ -84,7 +84,7 @@ export interface GraphicsDriverBugs {
    * Early Z elides execution of the fragment shader if the depth test fails; but if the fragment shader contains code that can alter the depth, it
    * must be executed. The primary symptom of this bug is transparent geometry appearing to be behind opaque geometry despite actually being in front of it.
    *
-   * Affects Intel HD/UHD Graphics 620/630, and Intel Graphics 7D40.
+   * Affects Intel HD/UHD Graphics 620/630.
    *
    * The workaround for this bug has minimal impact on performance and no impact on visual fidelity.
    */
@@ -155,7 +155,7 @@ function createDefaultContext(canvas: HTMLCanvasElement, useWebGL2: boolean = tr
 export function queryRenderCompatibility(useWebGL2: boolean, createContext?: ContextCreator): WebGLRenderCompatibilityInfo {
   const canvas = document.createElement("canvas");
   if (null === canvas)
-    return { status: WebGLRenderCompatibilityStatus.CannotCreateContext, missingOptionalFeatures: [], missingRequiredFeatures: [], userAgent: navigator.userAgent, driverBugs: { } };
+    return { status: WebGLRenderCompatibilityStatus.CannotCreateContext, missingOptionalFeatures: [], missingRequiredFeatures: [], userAgent: navigator.userAgent, driverBugs: {} };
 
   let errorMessage: string | undefined;
   canvas.addEventListener("webglcontextcreationerror", (event) => {
