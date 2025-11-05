@@ -73,9 +73,9 @@ const buggyIntelMatchers = [
   /ANGLE \(Intel, Intel\(R\) (U)?HD Graphics 6(2|3)0 Direct3D11/,
 ];
 
-// Regexes to match Intel 7th generation integrated GPUs that suffer from GraphicsDriverBugs.????.
+// Regexes to match Intel 7th generation integrated GPUs that suffer from GraphicsDriverBugs.vertexDiscardWillGlitch.
 const buggyIntelMatchers2 = [
-  // Certain Intel Ultra 7 reported in https://github.com/iTwin/itwinjs-core/issues/815
+  // Certain Intel Ultra 7 chipsets reported in https://github.com/iTwin/itwinjs-core/issues/815, https://github.com/IGCIT/Intel-GPU-Community-Issue-Tracker-IGCIT/issues/1165, and elsewhere.
   /ANGLE \(Intel, Intel\(\R\) Graphics \(0x00007D40\) Direct3D11/,
   /ANGLE \(Intel, Intel\(\R\) Graphics \(0x00007D45\) Direct3D11/,
 ];
@@ -94,7 +94,7 @@ const integratedIntelGpuMatchers = [
   /Iris/,
 ];
 
-function isIntegratedGraphics(args: {unmaskedVendor?: string, unmaskedRenderer?: string}): boolean {
+function isIntegratedGraphics(args: { unmaskedVendor?: string, unmaskedRenderer?: string }): boolean {
   if (args.unmaskedRenderer && args.unmaskedRenderer.includes("Intel") && integratedIntelGpuMatchers.some((x) => x.test(args.unmaskedRenderer!)))
     return true;
 
@@ -273,9 +273,8 @@ export class Capabilities {
     if (unmaskedRenderer && buggyIntelMatchers.some((x) => x.test(unmaskedRenderer)))
       this._driverBugs.fragDepthDoesNotDisableEarlyZ = true;
 
-    let hasBuggyIntelDriver2 = false;
     if (unmaskedRenderer && buggyIntelMatchers2.some((x) => x.test(unmaskedRenderer)))
-      hasBuggyIntelDriver2 = true;
+      this._driverBugs.vertexDiscardWillGlitch = true;
 
     if (unmaskedRenderer && buggyMaliMatchers.some((x) => x.test(unmaskedRenderer)))
       this._driverBugs.msaaWillHang = true;
@@ -326,9 +325,7 @@ export class Capabilities {
       // It uses specifically Mali-G71 MP20 but reports its renderer as follows.
       // Samsung Galaxy A50 and S9 exhibits same issue; they use Mali-G72.
       // HUAWEI P30 exhibits same issue; it uses Mali-G76.
-      && unmaskedRenderer !== "Mali-G71" && unmaskedRenderer !== "Mali-G72" && unmaskedRenderer !== "Mali-G76"
-      // Potential buggy Intel driver
-      && !hasBuggyIntelDriver2;
+      && unmaskedRenderer !== "Mali-G71" && unmaskedRenderer !== "Mali-G72" && unmaskedRenderer !== "Mali-G76";
 
     if (allowFloatRender && undefined !== this.queryExtensionObject("EXT_float_blend") && this.isTextureRenderable(gl, gl.FLOAT)) {
       this._maxRenderType = RenderType.TextureFloat;

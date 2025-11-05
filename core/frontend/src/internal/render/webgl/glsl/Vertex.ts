@@ -344,9 +344,38 @@ const discardVertex = ` {
   }
 `;
 
+const earlyVertexDiscard = `  if (checkForEarlyDiscard(rawPosition))${discardVertex}`;
+const vertexDiscard = `  if (checkForDiscard())${discardVertex}`;
+const lateVertexDiscard = `  if (checkForLateDiscard())${discardVertex}`;
+
+// Alternate approach to discard the vertex in the case of a driver that does not handle degenerate
+// triangles properly.
+const discardVertexInFrag = ` {
+    v_vertexDiscard = 1.0;
+  }
+`;
+
+const earlyVertexDiscardInFrag = `  if (checkForEarlyDiscard(rawPosition))${discardVertexInFrag}`;
+const vertexDiscardInFrag = `  if (checkForDiscard())${discardVertexInFrag}`;
+const lateVertexDiscardInFrag = `  if (checkForLateDiscard())${discardVertexInFrag}`;
+
 /** @internal */
-export const earlyVertexDiscard = `  if (checkForEarlyDiscard(rawPosition))${discardVertex}`;
+export function getEarlyVertexDiscard(useFragWorkaround?: boolean): string {
+  if (useFragWorkaround)
+    return earlyVertexDiscardInFrag;
+  return earlyVertexDiscard;
+}
+
 /** @internal */
-export const vertexDiscard = `  if (checkForDiscard())${discardVertex}`;
+export function getVertexDiscard(useFragWorkaround?: boolean): string {
+  if (useFragWorkaround)
+    return vertexDiscardInFrag;
+  return vertexDiscard;
+}
+
 /** @internal */
-export const lateVertexDiscard = `  if (checkForLateDiscard())${discardVertex}`;
+export function getLateVertexDiscard(useFragWorkaround?: boolean): string {
+  if (useFragWorkaround)
+    return lateVertexDiscardInFrag;
+  return lateVertexDiscard;
+}

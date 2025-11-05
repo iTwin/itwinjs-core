@@ -15,11 +15,12 @@ import {
 import { FeatureMode, TechniqueFlags } from "../TechniqueFlags";
 import { addExtractNthBit, addEyeSpace, addUInt32s } from "./Common";
 import { decodeDepthRgb, decodeUint24 } from "./Decode";
-import { addWindowToTexCoords, assignFragColor, computeLinearDepth } from "./Fragment";
+import { addWindowToTexCoords, assignFragColor, computeLinearDepth, fragCheckForVertexDiscard } from "./Fragment";
 import { addLookupTable } from "./LookupTable";
 import { addRenderPass } from "./RenderPass";
 import { addAlpha, addLineWeight, replaceLineCode, replaceLineWeight } from "./Vertex";
 import { OvrFlags } from "../../../../common/internal/render/OvrFlags";
+import { System } from "../System";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -277,6 +278,10 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
       addTransparencyDiscardFlags(vert);
 
       vert.set(VertexShaderComponent.CheckForDiscard, checkVertexDiscard);
+      if (System.instance.vertexDiscardWillGlitch) {
+        builder.addVarying("v_vertexDiscard", VariableType.Float);
+        builder.frag.set(FragmentShaderComponent.CheckForVertexDiscard, fragCheckForVertexDiscard);
+      }
     }
   }
 
@@ -368,6 +373,10 @@ export function addHiliter(builder: ProgramBuilder, wantWeight: boolean = false)
   addEmphasisFlags(builder.vert);
   builder.vert.set(VertexShaderComponent.ComputeFeatureOverrides, wantWeight ? computeHiliteOverridesWithWeight : computeHiliteOverrides);
   builder.vert.set(VertexShaderComponent.CheckForDiscard, checkVertexHiliteDiscard);
+  if (System.instance.vertexDiscardWillGlitch) {
+    builder.addVarying("v_vertexDiscard", VariableType.Float);
+    builder.frag.set(FragmentShaderComponent.CheckForVertexDiscard, fragCheckForVertexDiscard);
+  }
 
   addEmphasisFlags(builder.frag);
   addExtractNthBit(builder.frag);
@@ -560,6 +569,10 @@ export function addSurfaceDiscard(builder: ProgramBuilder, flags: TechniqueFlags
       uniform.setUniform1f(params.target.currentTransparencyThreshold);
     });
   });
+  if (System.instance.vertexDiscardWillGlitch) {
+    builder.addVarying("v_vertexDiscard", VariableType.Float);
+    builder.frag.set(FragmentShaderComponent.CheckForVertexDiscard, fragCheckForVertexDiscard);
+  }
 
   if (isEdgeTestNeeded) {
     addWindowToTexCoords(frag);
@@ -821,6 +834,10 @@ export function addUniformFeatureSymbology(builder: ProgramBuilder, addFeatureCo
     builder.vert.set(VertexShaderComponent.CheckForDiscard, checkVertexDiscard);
   } else {
     builder.vert.set(VertexShaderComponent.CheckForDiscard, "return feature_invisible;");
+  }
+  if (System.instance.vertexDiscardWillGlitch) {
+    builder.addVarying("v_vertexDiscard", VariableType.Float);
+    builder.frag.set(FragmentShaderComponent.CheckForVertexDiscard, fragCheckForVertexDiscard);
   }
 
   // Non-Locatable...  Discard if picking

@@ -335,6 +335,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public override get supportsCreateImageBitmap(): boolean { return this._capabilities.supportsCreateImageBitmap; }
   public get maxRenderType() { return this._capabilities.maxRenderType; }
   public get fragDepthDoesNotDisableEarlyZ() { return this._capabilities.driverBugs.fragDepthDoesNotDisableEarlyZ; }
+  public get vertexDiscardWillGlitch() { return this._capabilities.driverBugs.vertexDiscardWillGlitch; }
   public get maxAntialiasSamples() { return this._capabilities.maxAntialiasSamples; }
   public get supportsNonPowerOf2Textures() { return this._capabilities.supportsNonPowerOf2Textures; }
   public get maxTexSizeAllow() { return this._capabilities.maxTexSizeAllow; }

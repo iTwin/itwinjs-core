@@ -10,9 +10,10 @@ import { assert } from "@itwin/core-bentley";
 import { AttributeDetails } from "./AttributeMap";
 import { addInstancedModelMatrixRTC } from "./glsl/Instancing";
 import { volClassOpaqueColor } from "./glsl/PlanarClassification";
-import { addPosition, earlyVertexDiscard, lateVertexDiscard, vertexDiscard } from "./glsl/Vertex";
+import { addPosition, getEarlyVertexDiscard, getLateVertexDiscard, getVertexDiscard } from "./glsl/Vertex";
 import { ShaderProgram } from "./ShaderProgram";
 import { PositionType } from "./TechniqueFlags";
+import { System } from "./System";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -774,10 +775,14 @@ export class VertexShaderBuilder extends ShaderBuilder {
       main.addline("  rawPosition = adjustRawPosition(rawPosition);");
     }
 
+    const vertexDiscardWillGlitch = System.instance.vertexDiscardWillGlitch;
+
     const checkForEarlyDiscard = this.get(VertexShaderComponent.CheckForEarlyDiscard);
     if (undefined !== checkForEarlyDiscard) {
       prelude.addFunction("bool checkForEarlyDiscard(vec4 rawPos)", checkForEarlyDiscard);
-      main.add(earlyVertexDiscard);
+      if (vertexDiscardWillGlitch)
+        main.addline("  v_vertexDiscard = 0.0;");
+      main.add(getEarlyVertexDiscard(vertexDiscardWillGlitch));
     }
 
     const computeFeatureOverrides = this.get(VertexShaderComponent.ComputeFeatureOverrides);
@@ -822,7 +827,9 @@ export class VertexShaderBuilder extends ShaderBuilder {
     const checkForDiscard = this.get(VertexShaderComponent.CheckForDiscard);
     if (undefined !== checkForDiscard) {
       prelude.addFunction("bool checkForDiscard()", checkForDiscard);
-      main.add(vertexDiscard);
+      if (vertexDiscardWillGlitch)
+        main.addline("  v_vertexDiscard = 0.0;");
+      main.add(getVertexDiscard(vertexDiscardWillGlitch));
     }
 
     main.addline("  gl_Position = computePosition(rawPosition);");
@@ -846,7 +853,9 @@ export class VertexShaderBuilder extends ShaderBuilder {
     const checkForLateDiscard = this.get(VertexShaderComponent.CheckForLateDiscard);
     if (undefined !== checkForLateDiscard) {
       prelude.addFunction("bool checkForLateDiscard()", checkForLateDiscard);
-      main.addline(lateVertexDiscard);
+      if (vertexDiscardWillGlitch)
+        main.addline("  v_vertexDiscard = 0.0;");
+      main.addline(getLateVertexDiscard(vertexDiscardWillGlitch));
     }
 
     prelude.addMain(main.source);
@@ -866,6 +875,9 @@ export const enum FragmentShaderComponent {
   // (Optional) Return true to immediately discard this fragment.
   // bool checkForEarlyDiscard()
   CheckForEarlyDiscard,
+  // (Optional) Return true if we need to discard this fragment based on v_vertexDiscard from the vertex shader.
+  // bool checkForVertexDiscard()
+  CheckForVertexDiscard,
   // (Required) Compute this fragment's base color
   // vec4 computeBaseColor()
   ComputeBaseColor,
@@ -992,6 +1004,12 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     if (undefined !== checkForEarlyDiscard) {
       prelude.addFunction("bool checkForEarlyDiscard()", checkForEarlyDiscard);
       main.addline("  if (checkForEarlyDiscard()) { discard; return; }");
+    }
+
+    const checkForVertexDiscard = this.get(FragmentShaderComponent.CheckForVertexDiscard);
+    if (undefined !== checkForVertexDiscard) {
+      prelude.addFunction("bool checkForVertexDiscard()", checkForVertexDiscard);
+      main.addline("  if (checkForVertexDiscard()) { discard; return; }");
     }
 
     const finalizeNormal = this.get(FragmentShaderComponent.FinalizeNormal);
