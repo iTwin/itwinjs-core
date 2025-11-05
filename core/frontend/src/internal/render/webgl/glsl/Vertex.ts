@@ -339,7 +339,8 @@ export function replaceLineCode(vert: VertexShaderBuilder, func: string): void {
 // This vertex belongs to a triangle which should not be rendered. Produce a degenerate triangle.
 // Also place it outside NDC range (for GL_POINTS)
 const discardVertex = ` {
-    gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
+    int vertId = gl_VertexID % 3;
+    gl_Position = vec4(2.0 + float(vertId == 1), 2.0 + float(vertId == 2), 2.0, 1.0);
     return;
   }
 `;
