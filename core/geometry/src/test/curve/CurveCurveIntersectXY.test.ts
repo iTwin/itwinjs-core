@@ -2370,54 +2370,54 @@ describe("CurveCurveIntersectXY", () => {
 
   function visualizeAndTestSpiralIntersection(
     ck: Checker, allGeometry: GeometryQuery[],
-    spiral: TransitionSpiral3d, curvePrimitive: CurvePrimitive,
-    spiralType: string, numExpected: number, dx: number, dy: number,
+    spiral: TransitionSpiral3d, curve: CurvePrimitive, spiralType: string,
+    numExpected: number, dx: number, dy: number,
   ) {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, spiral, dx, dy);
-    if (curvePrimitive instanceof TransitionSpiral3d)
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, curvePrimitive, dx, dy);
+    if (curve instanceof TransitionSpiral3d)
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve, dx, dy);
     else
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, curvePrimitive, dx, dy);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve, dx, dy);
 
     const testSpiralIntersection = (intersections: CurveLocationDetailPair[], reversed: boolean) => {
       GeometryCoreTestIO.captureCurveLocationDetails(allGeometry, intersections, 5, dx, dy);
-      const curvePrimitiveName = curvePrimitive.constructor.name;
+      const curveName = curve.constructor.name;
       ck.testCoordinate(
         numExpected,
         intersections.length,
-        `expect ${numExpected} intersection(s) between ${curvePrimitiveName} and ${spiralType}`,
+        `expect ${numExpected} intersection(s) between ${curveName} and ${spiralType}`,
       );
       for (const intersection of intersections) {
-        let detail0 = intersection.detailA;
-        let detail1 = intersection.detailB;
-        if (reversed && curvePrimitive instanceof TransitionSpiral3d) {
-          detail0 = intersection.detailB;
-          detail1 = intersection.detailA;
+        let spiralDetail = intersection.detailA;
+        let curveDetail = intersection.detailB;
+        if (reversed && curveDetail.curve instanceof TransitionSpiral3d) {
+          curveDetail = intersection.detailA;
+          spiralDetail = intersection.detailB;
         }
-        const pointOnSpiral = detail0.point;
-        const intersectionPoint0 = spiral.fractionToPoint(detail0.fraction);
+        const pointOnSpiral = spiralDetail.point;
+        const intersectionPoint0 = spiral.fractionToPoint(spiralDetail.fraction);
         ck.testPoint3dXY(
           pointOnSpiral,
           intersectionPoint0,
-          `intersection point on ${spiralType} matches ${spiralType}.fractionToPoint`,
+          `intersection point on ${spiralType} should match ${spiralType}.fractionToPoint`,
         );
-        const pointOnCurve = detail1.point;
-        const intersectionPoint1 = curvePrimitive.fractionToPoint(detail1.fraction);
+        const pointOnCurve = curveDetail.point;
+        const intersectionPoint1 = curve.fractionToPoint(curveDetail.fraction);
         ck.testPoint3dXY(
           pointOnCurve,
           intersectionPoint1,
-          `intersection point on ${curvePrimitiveName} matches ${curvePrimitiveName}.fractionToPoint`,
+          `intersection point on ${curveName} should match ${curveName}.fractionToPoint`,
         );
       }
     }
     // test both paths
-    const intersectionsAB = CurveCurve.intersectionXYPairs(spiral, false, curvePrimitive, false);
+    const intersectionsAB = CurveCurve.intersectionXYPairs(spiral, false, curve, false);
     testSpiralIntersection(intersectionsAB, false);
-    const intersectionsBA = CurveCurve.intersectionXYPairs(curvePrimitive, false, spiral, false);
+    const intersectionsBA = CurveCurve.intersectionXYPairs(curve, false, spiral, false);
     testSpiralIntersection(intersectionsBA, true);
   };
 
-  it("SpiralCurvePrimitiveIntersection", () => {
+  it("SpiralVsCurveIntersection", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let dx = 0;
@@ -2469,23 +2469,38 @@ describe("CurveCurveIntersectXY", () => {
       }
     }
 
-    const curvePrimitives = [
-      LineSegment3d.create(Point3d.create(70, 30), Point3d.create(70, -30)),
-      LineString3d.create(
-        Point3d.create(20, 20), Point3d.create(40, 20), Point3d.create(70, -40),
-        Point3d.create(90, -40), Point3d.create(70, 20), Point3d.create(130, 20),
+    const lineSegment = LineSegment3d.create(Point3d.create(70, 30), Point3d.create(70, -30));
+    const lineString = LineString3d.create(
+      Point3d.create(20, 20), Point3d.create(40, 20), Point3d.create(70, -40),
+      Point3d.create(90, -40), Point3d.create(70, 20), Point3d.create(130, 20),
+    );
+    const arc = Arc3d.createXY(Point3d.create(50, 10), 30);
+    const bspline = BSplineCurve3d.createUniformKnots(
+      [
+        Point3d.create(70, 50, 0),
+        Point3d.create(70, 30, 0),
+        Point3d.create(50, 0, 0),
+        Point3d.create(30, -30, 0),
+        Point3d.create(30, -50, 0),
+      ],
+      3,
+    )!;
+    const path = Path.create(
+      Arc3d.create(
+        Point3d.create(80, 40), Vector3d.create(10, 0), Vector3d.create(0, 50), AngleSweep.createStartEndDegrees(250, 90),
       ),
-      Arc3d.createXY(Point3d.create(50, 10), 30),
-      BSplineCurve3d.createUniformKnots(
-        [
-          Point3d.create(70, 50, 0),
-          Point3d.create(70, 30, 0),
-          Point3d.create(50, 0, 0),
-          Point3d.create(30, -30, 0),
-          Point3d.create(30, -50, 0),
-        ],
-        3,
-      )!,
+      LineString3d.create(Point3d.create(80, 90), Point3d.create(90, -100), Point3d.create(40, -100)),
+      LineSegment3d.create(Point3d.create(40, -100), Point3d.create(40, 30)),
+      LineSegment3d.create(Point3d.create(40, 30), Point3d.create(70, -70)),
+      integratedSpirals[1],
+    );
+    const curveChain = CurveChainWithDistanceIndex.createCapture(path);
+
+    const curves = [
+      lineSegment,
+      lineString,
+      arc,
+      bspline,
       // add rotated spirals
       integratedSpirals[1],
       integratedSpirals[3],
@@ -2503,22 +2518,22 @@ describe("CurveCurveIntersectXY", () => {
       // directSpirals[15],
       // directSpirals[17],
       // directSpirals[19],
+      curveChain,
     ];
     const numExpectedIntersections = [
       1, 3, 2, 1, // curve primitives other than spirals
       1, 1, 1, 1, 1, // rotated integrated spirals
       1, 1, 1, 1, 1, 1, // 1, 1, 1, 1 // rotated direct spirals
+      5, // curve chain
     ];
-    ck.testCoordinate(curvePrimitives.length, numExpectedIntersections.length, "matching arrays");
-
-    // TODO: test curve chain
+    ck.testCoordinate(curves.length, numExpectedIntersections.length, "matching arrays");
 
     const test = (spiral: TransitionSpiral3d) => {
-      for (let j = 0; j < curvePrimitives.length; j++) {
-        const curvePrimitive = curvePrimitives[j];
+      for (let j = 0; j < curves.length; j++) {
+        const curvePrimitive = curves[j];
         const numExpected = numExpectedIntersections[j];
         visualizeAndTestSpiralIntersection(
-          ck, allGeometry, spiral, curvePrimitive, spiral.constructor.name, numExpected, dx, dy,
+          ck, allGeometry, spiral, curvePrimitive, spiral.spiralType, numExpected, dx, dy,
         );
         dy += 200;
       }
@@ -2531,7 +2546,7 @@ describe("CurveCurveIntersectXY", () => {
     for (let i = 0; i < directSpirals.length; i += 2)  // skip rotated spirals
       test(directSpirals[i]);
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "SpiralCurvePrimitiveIntersection");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "SpiralVsCurveIntersection");
     expect(ck.getNumErrors()).toBe(0);
   });
 });

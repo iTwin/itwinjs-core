@@ -875,7 +875,7 @@ describe("Voronoi", () => {
       for (const clipper of clippers)
         clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipper)); // use path to avoid region clip logic
 
-      // TODO: Restore this line after backlog issue 1580 is addressed.
+      // TODO: Restore this line after backlog issues 1574, 1580, 1694 are addressed.
       // comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "LoopFromJson0");
@@ -936,7 +936,7 @@ describe("Voronoi", () => {
       for (const clipper of clippers)
         clippedCurves.push(ClipUtilities.clipAnyCurve(approximatedPath, clipper));
 
-      // TODO: Restore this line after backlog issues 1574 and 1580 are addressed.
+      // TODO: Restore this line after backlog issues 1574, 1580, 1694 are addressed.
       // comparePathToClippedCurves(allGeometry, ck, approximatedPath, clippedCurves);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "PathFromJson2");
