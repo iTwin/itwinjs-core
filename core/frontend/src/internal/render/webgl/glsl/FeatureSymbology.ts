@@ -622,6 +622,7 @@ const computeFeatureOverrides = `
     feature_invisible = true;
     return;
   }
+    
   v_feature_emphasis = kEmphFlag_Hilite * extractNthBit(emphFlags, kOvrBit_Hilited) + kEmphFlag_Emphasize * extractNthBit(emphFlags, kOvrBit_Emphasized);
 
   float flags = value.x * 256.0;
