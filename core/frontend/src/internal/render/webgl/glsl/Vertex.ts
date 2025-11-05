@@ -346,9 +346,7 @@ const discardVertex = ` {
 
 /** @internal */
 export const earlyVertexDiscard = `  if (checkForEarlyDiscard(rawPosition))${discardVertex}`;
-
 /** @internal */
 export const vertexDiscard = `  if (checkForDiscard())${discardVertex}`;
-
 /** @internal */
 export const lateVertexDiscard = `  if (checkForLateDiscard())${discardVertex}`;
