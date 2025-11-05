@@ -156,12 +156,12 @@ describe("Render Compatibility", () => {
 
   it("detects vertex discard glitch driver bug", () => {
     const renderers = [
-      ["ANGLE (Intel, Intel(R) Graphics (0x00007D40) Direct3D11 vs_5_0 ps_5_0, D3D11)", true],
-      ["ANGLE (Intel, Intel(R) Graphics (0x00007D40) Direct3D11)", true],
-      ["ANGLE (Intel, Intel(R) Graphics (0x00007D45) Direct3D11 vs_5_0 ps_5_0, D3D11)", true],
-      ["ANGLE (Intel, Intel(R) Graphics (0x00007D45) Direct3D11)", true],
-      ["ANGLE (Intel HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", false],
-      ["ANGLE (NVIDIA GeForce GTX 970 Direct3D11 vs_5_0 ps_5_0)", false],
+      [ "ANGLE (Intel, Intel(R) Graphics (0x00007D40) Direct3D11 vs_5_0 ps_5_0, D3D11)", true ],
+      [ "ANGLE (Intel, Intel(R) Graphics (0x00007D40) Direct3D11)", true ],
+      [ "ANGLE (Intel, Intel(R) Graphics (0x00007D45) Direct3D11 vs_5_0 ps_5_0, D3D11)", true],
+      [ "ANGLE (Intel, Intel(R) Graphics (0x00007D45) Direct3D11)", true],
+      [ "ANGLE (Intel HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", false ],
+      [ "ANGLE (NVIDIA GeForce GTX 970 Direct3D11 vs_5_0 ps_5_0)", false ],
     ];
 
     for (const renderer of renderers) {
@@ -187,43 +187,43 @@ describe("Render Compatibility", () => {
 
   it("detects early Z culling driver bug", () => {
     const renderers = [
-      ["ANGLE (Intel(R) HD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true],
-      ["ANGLE (Intel(R) UHD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true],
-      ["ANGLE (Intel(R) HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", true],
-      ["ANGLE (Intel(R) UHD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", true],
-      ["ANGLE (Intel HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", false],
+      [ "ANGLE (Intel(R) HD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true ],
+      [ "ANGLE (Intel(R) UHD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true ],
+      [ "ANGLE (Intel(R) HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", true ],
+      [ "ANGLE (Intel(R) UHD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", true ],
+      [ "ANGLE (Intel HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", false ],
 
       // Bug only confirmed on 620 and 630
-      ["ANGLE (Intel(R) HD Graphics 610 Direct3D11 vs_5_0 ps_5_0)", false],
-      ["ANGLE (Intel(R) HD Graphics 610 Direct3D11 vs_5_0 ps_5_0)", false],
-      ["ANGLE (Intel(R) HD Graphics 615 Direct3D11 vs_5_0 ps_5_0)", false],
-      ["ANGLE (Intel(R) HD Graphics 500 Direct3D11 vs_5_0 ps_5_0)", false],
-      ["ANGLE (Intel(R) UHD Graphics 520 Direct3D11 vs_5_0 ps_5_0)", false],
-      ["ANGLE (Intel(R) UHD Graphics 615 Direct3D11 vs_5_0 ps_5_0)", false],
-      ["ANGLE (Intel(R) UHD Graphics 500 Direct3D11 vs_5_0 ps_5_0)", false],
-      ["ANGLE (Intel(R) UHD Graphics 520 Direct3D11 vs_5_0 ps_5_0)", false],
+      [ "ANGLE (Intel(R) HD Graphics 610 Direct3D11 vs_5_0 ps_5_0)", false ],
+      [ "ANGLE (Intel(R) HD Graphics 610 Direct3D11 vs_5_0 ps_5_0)", false ],
+      [ "ANGLE (Intel(R) HD Graphics 615 Direct3D11 vs_5_0 ps_5_0)", false ],
+      [ "ANGLE (Intel(R) HD Graphics 500 Direct3D11 vs_5_0 ps_5_0)", false ],
+      [ "ANGLE (Intel(R) UHD Graphics 520 Direct3D11 vs_5_0 ps_5_0)", false ],
+      [ "ANGLE (Intel(R) UHD Graphics 615 Direct3D11 vs_5_0 ps_5_0)", false ],
+      [ "ANGLE (Intel(R) UHD Graphics 500 Direct3D11 vs_5_0 ps_5_0)", false ],
+      [ "ANGLE (Intel(R) UHD Graphics 520 Direct3D11 vs_5_0 ps_5_0)", false ],
 
       // Bug only confirmed for Direct3D11; if Direct3D11 not present, we're not on Windows or using a different renderer.
-      ["ANGLE (Intel(R) HD Graphics 630)", false],
-      ["ANGLE (Intel(R) UHD Graphics 630)", false],
-      ["ANGLE (Intel(R) HD Graphics 620)", false],
-      ["ANGLE (Intel(R) UHD Graphics 620)", false],
-      ["ANGLE (Intel HD Graphics 620)", false],
-      ["ANGLE (Intel(R) UHD Graphics 610)", false],
+      [ "ANGLE (Intel(R) HD Graphics 630)", false ],
+      [ "ANGLE (Intel(R) UHD Graphics 630)", false ],
+      [ "ANGLE (Intel(R) HD Graphics 620)", false ],
+      [ "ANGLE (Intel(R) UHD Graphics 620)", false ],
+      [ "ANGLE (Intel HD Graphics 620)", false ],
+      [ "ANGLE (Intel(R) UHD Graphics 610)", false ],
 
       // Bug only confirmed on Windows; if ANGLE not present, we're not running on Windows.
-      ["Intel(R) HD Graphics 630", false],
-      ["Intel(R) UHD Graphics 630", false],
-      ["Intel(R) HD Graphics 620", false],
-      ["Intel(R) UHD Graphics 620", false],
-      ["Intel HD Graphics 620", false],
-      ["Intel(R) UHD Graphics 610", false],
+      [ "Intel(R) HD Graphics 630", false ],
+      [ "Intel(R) UHD Graphics 630", false ],
+      [ "Intel(R) HD Graphics 620", false ],
+      [ "Intel(R) UHD Graphics 620", false ],
+      [ "Intel HD Graphics 620", false ],
+      [ "Intel(R) UHD Graphics 610", false ],
 
-      ["ANGLE (NVIDIA GeForce GTX 970 Direct3D11 vs_5_0 ps_5_0)", false],
+      [ "ANGLE (NVIDIA GeForce GTX 970 Direct3D11 vs_5_0 ps_5_0)", false ],
 
       // Around October 2021 slightly different unmasked renderer strings began showing up, containing "Intel, Intel(R)" instead of just "Intel(R)".
-      ["ANGLE (Intel, Intel(R) HD Graphics 620 Direct3D11 vs_5_0 ps_5_0, D3D11-27.20.100.8681)", true],
-      ["ANGLE (Intel, Intel(R) UHD Graphics 630 Direct3D11", true],
+      [ "ANGLE (Intel, Intel(R) HD Graphics 620 Direct3D11 vs_5_0 ps_5_0, D3D11-27.20.100.8681)", true ],
+      [ "ANGLE (Intel, Intel(R) UHD Graphics 630 Direct3D11", true ],
     ];
 
     for (const renderer of renderers) {
@@ -249,11 +249,11 @@ describe("Render Compatibility", () => {
 
   it("detects integrated and dedicated graphics", () => {
     const renderers = [
-      ["ANGLE (Intel(R) HD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true],
-      ["ANGLE (Intel(R) UHD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true],
-      ["ANGLE (Intel HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", true],
-      ["Intel(R) Iris(TM) Graphics 6100", true],
-      ["ANGLE (NVIDIA GeForce GTX 970 Direct3D11 vs_5_0 ps_5_0)", false],
+      [ "ANGLE (Intel(R) HD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true ],
+      [ "ANGLE (Intel(R) UHD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true ],
+      [ "ANGLE (Intel HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)",  true ],
+      [ "Intel(R) Iris(TM) Graphics 6100", true ],
+      [ "ANGLE (NVIDIA GeForce GTX 970 Direct3D11 vs_5_0 ps_5_0)", false ],
     ];
 
     for (const renderer of renderers) {
@@ -275,11 +275,11 @@ describe("Render Compatibility", () => {
 
   it("detects MSAA hang bug", () => {
     const renderers = [
-      ["Mali-G71", true],
-      ["Mali-G72", true],
-      ["Mali-G76", true],
-      ["ANGLE (Intel HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", false],
-      ["Mali-G79", false],
+      [ "Mali-G71", true ],
+      [ "Mali-G72", true ],
+      [ "Mali-G76", true ],
+      [ "ANGLE (Intel HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)",  false ],
+      [ "Mali-G79", false ],
     ];
 
     for (const renderer of renderers) {
