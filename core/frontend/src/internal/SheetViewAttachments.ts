@@ -6,13 +6,15 @@
  * @module Views
  */
 
-import { ColorDef, HydrateViewStateRequestProps, HydrateViewStateResponseProps, ViewAttachmentProps } from "@itwin/core-common";
-import { ViewState } from "../ViewState";
+import { ColorDef, HydrateViewStateRequestProps, HydrateViewStateResponseProps, Placement2d, ViewAttachmentProps } from "@itwin/core-common";
+import { ComputeDisplayTransformArgs, GetAttachmentViewportArgs, ViewState } from "../ViewState";
 import { assert, CompressedId64Set, Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { createViewAttachmentRenderer, ViewAttachmentRenderer } from "./ViewAttachmentRenderer";
 import { Frustum2d } from "../Frustum2d";
+import { Range3d, Transform } from "@itwin/core-geometry";
+import { DisclosedTileTreeSet, RenderMemory, SceneContext, Viewport } from "../core-frontend";
 
 interface Attachments {
   clone(iModel: IModelConnection): Attachments;
@@ -257,6 +259,72 @@ export class SheetViewAttachments implements Disposable {
     this._renderers = undefined;
   }
 
+  public areAllTileTreesLoaded(displayedExtents: Range3d): boolean {
+    if (this._reload) {
+      return false;
+    } else if (!this._renderers) {
+      return true;
+    }
+
+    return this._renderers.every((renderer) => {
+      const attachmentRange = Placement2d.fromJSON(renderer.viewAttachmentProps.placement).calculateRange();
+      return !attachmentRange.intersectsRangeXY(displayedExtents) || renderer.areAllTileTreesLoaded;
+    });
+  }
+
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
+    for (const renderer of this.renderers()) {
+      trees.disclose(renderer);
+    }
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    for (const renderer of this.renderers()) {
+      renderer.collectStatistics(stats);
+    }
+  }
+
+  public addToScene(context: SceneContext): void {
+    for (const renderer of this.renderers()) {
+      renderer.addToScene(context);
+    }
+  }
+
+  public getAttachmentViewport(args: GetAttachmentViewportArgs): Viewport | undefined {
+    const renderer = args.viewAttachmentId ? this.findRendererById(args.viewAttachmentId) : undefined;
+    if (!renderer) {
+      return undefined;
+    }
+
+    return args.inSectionDrawingAttachment ? renderer.viewport?.view.getAttachmentViewport({ inSectionDrawingAttachment: true }) : renderer.viewport;
+  }
+
+  public computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined {
+    const renderer = undefined !== args.viewAttachmentId ? this.findRendererById(args.viewAttachmentId) : undefined;
+    const ortho = renderer?.ortho;
+    const sheetTransform = ortho?.toSheet;
+    if (!sheetTransform) {
+      return undefined;
+    }
+
+    const sectionTransform = args.inSectionDrawingAttachment ? ortho.view.computeDisplayTransform(args) : undefined;
+    if (!sectionTransform) {
+      return sheetTransform.clone(args.output);
+    }
+
+    return sheetTransform.multiplyTransformTransform(sectionTransform, args.output);
+  }
+
+  /** Strictly for tests. */
+  public areAllAttachmentsLoaded(): boolean {
+    return !this._reload && (!this._renderers || this._renderers.every((x) => x.areAllTileTreesLoaded));
+  }
+
+  /** Strictly for tests. */
+  public get attachments(): object[] {
+    return this._renderers ?? [];
+  }
+
   private loadRenderers(): void {
     const args = this._rendererArgs;
     assert(undefined !== args);
@@ -278,5 +346,17 @@ export class SheetViewAttachments implements Disposable {
       this._maxDepth = Math.max(this._maxDepth, renderer.zDepth);
       return renderer;
     });
+  }
+
+  private *renderers(): Iterable<ViewAttachmentRenderer> {
+    if (this._renderers) {
+      for (const renderer of this._renderers) {
+        yield renderer;
+      }
+    }
+  }
+
+  private findRendererById(id: Id64String): ViewAttachmentRenderer | undefined {
+    return this._renderers?.find((x) => x.viewAttachmentProps.id === id);
   }
 }

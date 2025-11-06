@@ -23,6 +23,10 @@ export interface ViewAttachmentRenderer extends Disposable {
   collectStatistics: (stats: RenderMemory.Statistics) => void;
   viewAttachmentProps: ViewAttachmentProps;
   readonly viewport?: Viewport;
+  readonly ortho?: {
+    readonly toSheet: Transform;
+    readonly view: ViewState;
+  };
 }
 
 export function createViewAttachmentRenderer(args: {
@@ -335,8 +339,11 @@ class OrthographicAttachment {
     // Handled by discloseTileTrees()
   }
 
-  public get toSheet(): Transform {
-    return this._toSheet;
+  public get ortho() {
+    return {
+      toSheet: this._toSheet,
+      view: this.view,
+    }
   }
 }
 
