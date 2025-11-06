@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Enhance rebase event handling in TxnManager ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
