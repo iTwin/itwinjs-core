@@ -18,7 +18,6 @@ import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { Path } from "../../curve/Path";
 import { RegionOps } from "../../curve/RegionOps";
-import { IntegratedSpiral3d } from "../../curve/spiral/IntegratedSpiral3d";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
@@ -875,7 +874,7 @@ describe("Voronoi", () => {
       for (const clipper of clippers)
         clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipper)); // use path to avoid region clip logic
 
-      // TODO: Restore this line after backlog issues 1574, 1580, 1694 are addressed.
+      // TODO: Restore this line after backlog issues 1580 and 1694 are addressed.
       // comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "LoopFromJson0");
@@ -914,30 +913,19 @@ describe("Voronoi", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path);
     ck.testExactNumber(path.children.length, 9, "path should have 9 children");
 
-    // TODO: remove approximation logic after backlog issue 1574 is fixed.
-    const approximatedPath: Path = Path.create();
-    for (const child of path.children) {
-      if (child instanceof IntegratedSpiral3d) {
-        const bspline = child.constructOffsetXY(0.0);
-        if (ck.testDefined(bspline, "bspline should be defined"))
-          approximatedPath.children.push(bspline);
-      } else {
-        approximatedPath.children.push(child);
-      }
-    }
     const strokeOptions = StrokeOptions.createForCurves();
     const distanceTol = undefined;
     const bbox = Range2d.createXYXY(2500, 4400, 15000, 8400);
-    const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(approximatedPath, strokeOptions, distanceTol, bbox);
-    visualizeAndVerifyCurveBasedVoronoiDiagram(ck, allGeometry, approximatedPath, strokeOptions, distanceTol, bbox, false, true);
+    const clippers = ClipUtilities.createClippersForRegionsClosestToCurvePrimitivesXY(path, strokeOptions, distanceTol, bbox);
+    visualizeAndVerifyCurveBasedVoronoiDiagram(ck, allGeometry, path, strokeOptions, distanceTol, bbox, false, true);
     if (ck.testDefined(clippers, "Clippers should be defined")) {
-      ck.testExactNumber(clippers.length, approximatedPath.children.length, "Voronoi should have 9 faces");
+      ck.testExactNumber(clippers.length, path.children.length, "Voronoi should have 9 faces");
       const clippedCurves: AnyCurve[][] = [];
       for (const clipper of clippers)
-        clippedCurves.push(ClipUtilities.clipAnyCurve(approximatedPath, clipper));
+        clippedCurves.push(ClipUtilities.clipAnyCurve(path, clipper));
 
-      // TODO: Restore this line after backlog issues 1574, 1580, 1694 are addressed.
-      // comparePathToClippedCurves(allGeometry, ck, approximatedPath, clippedCurves);
+      // TODO: Restore this line after backlog issues 1580 and 1694 are addressed.
+      // comparePathToClippedCurves(allGeometry, ck, path, clippedCurves);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Voronoi", "PathFromJson2");
     expect(ck.getNumErrors()).toBe(0);
