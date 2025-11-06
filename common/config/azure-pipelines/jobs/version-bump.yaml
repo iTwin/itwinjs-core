@@ -158,9 +158,9 @@ jobs:
       - checkout: self
 
       - task: UseNode@1
-        displayName: Use Node 20.x
+        displayName: Use Node 24.x
         inputs:
-          version: 22.x
+          version: 24.x
           checkLatest: true
 
       - bash: |
@@ -391,9 +391,9 @@ jobs:
     steps:
       - checkout: self
       - task: UseNode@1
-        displayName: "Use Node 20.x"
+        displayName: "Use Node 24.x"
         inputs:
-          version: 22.x
+          version: 24.x
           checkLatest: true
 
       - bash: |

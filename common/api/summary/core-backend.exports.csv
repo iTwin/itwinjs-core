@@ -96,6 +96,7 @@ public;interface;CreateNewIModelProps
 beta;interface;CreateNewWorkspaceContainerArgs
 beta;interface;CreateNewWorkspaceDbVersionArgs
 public;interface;CreateSheetViewDefinitionArgs
+beta;function;createTerminatorGeometry
 beta;interface;CustomHandledProperty
 public;class;DefinitionContainer
 preview;class;DefinitionContainer
@@ -215,6 +216,7 @@ alpha;namespace;EntityReferences
 internal;function;isValid
 internal;function;makeInvalid
 internal;function;typeFromClass
+beta;interface;EvaluateFieldsArgs
 public;namespace;ExportGraphics
 public;type;ExportGraphicsFunction
 public;interface;ExportGraphicsInfo

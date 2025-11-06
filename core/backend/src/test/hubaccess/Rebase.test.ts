@@ -9,7 +9,7 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { Suite } from "mocha";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
-import { BriefcaseDb, BriefcaseManager, ChannelControl, DrawingCategory, IModelHost, SqliteChangesetReader, TxnProps } from "../../core-backend";
+import { BriefcaseDb, BriefcaseManager, ChangesetECAdaptor, ChannelControl, DrawingCategory, IModelHost, SqliteChangesetReader, TxnProps } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { StashManager } from "../../StashManager";
 import { existsSync, unlinkSync, writeFileSync } from "fs";
@@ -970,6 +970,68 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     const e3Props = await findElement(e3);
     chai.expect(e3Props).to.exist;
+  });
+it("enum txn changes in recompute", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const e1 = await testIModel.insertElement(b1);
+    const e2 = await testIModel.insertElement(b1, true);
+    b1.saveChanges();
+    await b1.pushChanges({ description: "insert element 1 direct and 1 indirect" });
+
+    await b2.pullChanges();
+
+    await testIModel.updateElement(b1, e1);
+    await testIModel.updateElement(b1, e2, true);
+    b1.saveChanges();
+    await b1.pushChanges({ description: "update element 1 direct and 1 indirect" });
+
+
+    await testIModel.insertElement(b2);
+    await testIModel.insertElement(b2, true);
+    b2.saveChanges("first change");
+
+    await testIModel.insertElement(b2);
+    await testIModel.insertElement(b2, true);
+    b2.saveChanges("second change");
+
+    await testIModel.insertElement(b2);
+    await testIModel.insertElement(b2, true);
+    b2.saveChanges("third change");
+
+    let txnVerified = 0;
+    b2.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txn: TxnProps) => {
+        return true;
+      },
+      recompute: async (txn: TxnProps): Promise<void> => {
+        const reader = SqliteChangesetReader.openTxn({txnId: txn.id, db: b2, disableSchemaCheck: true});
+        const adaptor = new ChangesetECAdaptor(reader);
+        adaptor.acceptClass("TestDomain:a1");
+        const ids = new Set<Id64String>();
+        while(adaptor.step()) {
+          if (!adaptor.reader.isIndirect)
+            ids.add(adaptor.inserted?.ECInstanceId || adaptor.deleted?.ECInstanceId as Id64String);
+        }
+        adaptor.close();
+
+        if (txn.props.description  === "first change") {
+          chai.expect(Array.from(ids.keys())).deep.equal(["0x40000000001"]);
+          txnVerified++;
+        } else if (txn.props.description  === "second change") {
+          chai.expect(Array.from(ids.keys())).deep.equal(["0x40000000003"]);
+          txnVerified++;
+        } else if (txn.props.description  === "third change") {
+          chai.expect(Array.from(ids.keys())).deep.equal(["0x40000000005"]);
+          txnVerified++;
+        } else {
+          txnVerified++;
+        }
+      },
+    });
+    await b2.pullChanges();
+    chai.expect(txnVerified).to.equal(3);
   });
 });
 

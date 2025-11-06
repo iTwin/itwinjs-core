@@ -187,5 +187,12 @@ describe("Field formatting", () => {
       expect(formatFieldValue(date, "datetime", options)).to.be.undefined;
     });
   });
+
+  describe("coordinate", () => {
+    it("applies basic formatting", () => {
+      expect(formatFieldValue({ x: 1, y: 2 }, "coordinate", undefined)).to.equal("(1, 2)");
+      expect(formatFieldValue({ x: 1, y: 2, z: 3 }, "coordinate", undefined)).to.equal("(1, 2, 3)");
+    });
+  })
 });
 

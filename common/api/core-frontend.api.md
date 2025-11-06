@@ -6063,7 +6063,7 @@ export abstract class MapLayerImageryProvider {
     setStatus(status: MapLayerImageryProviderStatus): void;
     // (undocumented)
     protected readonly _settings: ImageMapLayerSettings;
-    // @internal (undocumented)
+    // @public @preview
     get status(): MapLayerImageryProviderStatus;
     // @public
     get supportsMapFeatureInfo(): boolean;
@@ -10220,6 +10220,8 @@ export { Storage_2 as Storage }
 export class SubCategoriesCache {
     constructor(imodel: IModelConnection);
     add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance, override: boolean): void;
+    // (undocumented)
+    attachToBriefcase(imodel: IModelConnection): void;
     // (undocumented)
     clear(): void;
     // (undocumented)

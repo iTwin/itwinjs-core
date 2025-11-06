@@ -1,10 +1,10 @@
 {
   "name": "@itwin/core-mobile",
-  "version": "5.4.0-dev.2",
+  "version": "5.4.0-dev.6",
   "description": "iTwin.js MobileHost and MobileApp",
   "license": "MIT",
   "engines": {
-    "node": "^20.0.0 || ^22.0.0"
+    "node": "^20.0.0 || ^22.0.0 || ^24.0.0"
   },
   "scripts": {
     "build": "npm run -s build:cjs",
