@@ -1165,20 +1165,20 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * the Newton iteration to locate the intersection between the actual spiral and the curve primitive.
    * @param spiral The transition spiral.
    * @param curvePrimitive The other curve primitive.
-   * @param numberOfNewResults The number of results to be refined.
+   * @param numberOfNewResults The number of results in the tail of `this._results` to be refined.
    * @param reversed Whether the spiral is geometryA (false) or geometryB (true).
    */
   private refineSpiralResultsByNewton(
-    spiral: TransitionSpiral3d, curvePrimitive: CurvePrimitive, numberOfNewResults: number, reversed = true,
+    spiral: TransitionSpiral3d, curvePrimitive: CurvePrimitive, numberOfNewResults: number, reversed = false,
   ): void {
     const resultsToBeRefined = this._results.slice(this._results.length - numberOfNewResults);
-    this._results = this._results.slice(0, this._results.length - numberOfNewResults); // keep already refined results
+    this._results.length -= numberOfNewResults; // keep already refined results
     for (const detail of resultsToBeRefined) {
-      let spiralFraction = detail.detailA.fraction;
-      let geometryBFraction = detail.detailB.fraction;
+      let geometryBFraction = detail.detailA.fraction;
+      let spiralFraction = detail.detailB.fraction;
       if (reversed) {
-        spiralFraction = detail.detailB.fraction;
-        geometryBFraction = detail.detailA.fraction;
+        spiralFraction = detail.detailA.fraction;
+        geometryBFraction = detail.detailB.fraction;
       }
       const xyMatchingFunction = new CurveCurveIntersectionXYRRToRRD(spiral, curvePrimitive);
       const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction);
@@ -1187,25 +1187,19 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         spiralFraction = newtonSearcher.getU();
         geometryBFraction = newtonSearcher.getV();
       }
-      if (this.acceptFraction(false, spiralFraction, false) && this.acceptFraction(false, geometryBFraction, false)) {
-        if (reversed)
-          this.recordPointWithLocalFractions(geometryBFraction, curvePrimitive, 0, 1, spiralFraction, spiral, 0, 1, false);
-        else
-          this.recordPointWithLocalFractions(spiralFraction, spiral, 0, 1, geometryBFraction, curvePrimitive, 0, 1, false);
-      }
+      if (this.acceptFraction(false, spiralFraction, false) && this.acceptFraction(false, geometryBFraction, false))
+        this.recordPointWithLocalFractions(geometryBFraction, curvePrimitive, 0, 1, spiralFraction, spiral, 0, 1, reversed);
     }
   }
   /** Double dispatch handler for strongly typed spiral curve. */
   public override handleTransitionSpiral(spiral: TransitionSpiral3d): any {
-    if (this._geometryB instanceof CurvePrimitive) {
+    if (this._geometryB instanceof CurvePrimitive) { // this also handles CurveChainWithDistanceIndex
       const spiralApproximation = LineString3d.create();
       spiral.emitStrokes(spiralApproximation);
       const numPreviousResults = this._results.length;
       this.handleLineString3d(spiralApproximation);
       const numberOfNewResults = this._results.length - numPreviousResults;
-      this.refineSpiralResultsByNewton(spiral, this._geometryB, numberOfNewResults, false);
-    } else if (this._geometryB instanceof CurveChainWithDistanceIndex) {
-      this.dispatchCurveChainWithDistanceIndex(spiral, this.handleBSplineCurve3d.bind(this));
+      this.refineSpiralResultsByNewton(spiral, this._geometryB, numberOfNewResults, true);
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(spiral, this.handleBSplineCurve3d.bind(this));
     }
