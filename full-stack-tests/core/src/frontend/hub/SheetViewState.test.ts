@@ -7,10 +7,11 @@ import { BriefcaseConnection, CheckpointConnection, SheetViewState, ViewState } 
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "../TestUtility";
-import { coreFullStackTestIpc } from "../Editing";
+import { coreFullStackTestIpc, deleteElements } from "../Editing";
 import * as path from "path";
 import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
 import { Id64String, OpenMode } from "@itwin/core-bentley";
+import { ViewAttachmentProps } from "@itwin/core-common";
 
 describe("SheetViewState (#integration)", () => {
   let imodel: CheckpointConnection;
@@ -174,7 +175,7 @@ describe("SheetViewState (#integration)", () => {
   });
 });
 
-describe.only("SheetViewState", () => {
+describe("SheetViewState", () => {
   let iModel: BriefcaseConnection;
   let sheetViewId: Id64String;
 
@@ -243,17 +244,62 @@ describe.only("SheetViewState", () => {
       });
     });
 
-    describe("are reloaded when ViewAttachments are inserted, updated, or deleted", () => {
+    describe.only("are reloaded when ViewAttachments are inserted, updated, or deleted", () => {
       it("when not attached to a viewport", async () => {
-        await testOnScreenViewport(sheetViewId, iModel, 1, 1, async (vp) => {
+        const view = await iModel.views.load(sheetViewId) as SheetViewState;
+        expect(view).instanceof(SheetViewState);
+        expect(view.viewAttachmentProps.length).to.equal(1);
+        expect(view.attachments).to.be.undefined;
+
+        expect(view.viewAttachmentProps[0].placement?.origin).to.deep.equal([100, 100]);
+
+        // Modify the placement of the attachment.
+        const oldAttachmentId = view.viewAttachmentProps[0].id!;
+        expect(oldAttachmentId).not.to.be.undefined;
+        const props = await iModel.elements.loadProps(oldAttachmentId) as ViewAttachmentProps;
+        expect(props.placement).not.to.be.undefined;
+        props.placement!.origin = [101, 99];
+        await coreFullStackTestIpc.updateElement(iModel.key, props);
+        await iModel.saveChanges();
+
+        expect(view.viewAttachmentProps[0].placement?.origin).to.deep.equal([101, 99]);
+
+        // Add a new attachment
+        props.placement!.origin = [102, 98];
+        props.federationGuid = props.id = undefined;
+        const newAttachmentId = await coreFullStackTestIpc.insertElement(iModel.key, props);
+
+        expect(view.viewAttachmentProps.length).to.equal(2);
+        expect(view.viewAttachmentProps[1].id).to.equal(newAttachmentId);
+        expect(view.viewAttachmentProps[1].placement?.origin).to.deep.equal([102, 98]);
+
+        // Delete an attachment
+        await deleteElements(iModel, [newAttachmentId]);
+        expect(view.viewAttachmentProps.length).to.equal(1);
+        expect(view.viewAttachmentProps[0].id).to.equal(oldAttachmentId);
+        expect(view.viewAttachmentProps[0].placement?.origin).to.deep.equal([101, 99]);
+
+        // Undo everything so we don't affect subsequent tests (and to verify the SheetViewState reacts).
+        // -- undo delete
+        await iModel.txns.reverseSingleTxn();
+        expect(view.viewAttachmentProps.length).to.equal(2);
+
+        // -- undo insert
+        await iModel.txns.reverseSingleTxn();
+        expect(view.viewAttachmentProps.length).to.equal(1);
+
+        // -- undo update
+        await iModel.txns.reverseSingleTxn();
+        expect(view.viewAttachmentProps.length).to.equal(1);
+        expect(view.viewAttachmentProps[0].placement?.origin).to.deep.equal([100, 100]);
+      });
+
+      it("when attached to a viewport", async () => {
+        await testOnScreenViewport(sheetViewId, iModel, 250, 250, async (vp) => {
           const view = vp.view as SheetViewState;
           expect(view.viewAttachmentProps.length).to.equal(1);
           expect(view.attachments).not.to.be.undefined;
         });
-      });
-
-      it("when attached to a viewport", async () => {
-
       });
     });
   });
