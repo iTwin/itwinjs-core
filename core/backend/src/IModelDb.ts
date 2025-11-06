@@ -1040,6 +1040,26 @@ export abstract class IModelDb extends IModel {
     return this[_nativeDb].importSchemas(schemaFileNames, { ecSchemaXmlContext: customNativeContext, schemaLockHeld: true });
   }
 
+  /** Attempt to lock just for additive changes first, and if that isn't enough, do the real thing.
+   * @internal
+   */
+  private async importSchemaStringsWithLocking(serializedXmlSchemas: string[]): Promise<DbResult> {
+    if (this.holdsSchemaLock) // We already hold the maximum lock, so we can just import the schemas
+      return this[_nativeDb].importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
+
+    await this.acquireAdditiveSchemaChangeOnlyLock();
+    const result = this[_nativeDb].importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: false });
+    if (result === DbResult.BE_SQLITE_OK)
+      return result;
+
+    if (result !== DbResult.BE_SQLITE_ERROR_DataTransformRequired) {
+      return result;
+    }
+
+    await this.acquireSchemaLock();
+    return this[_nativeDb].importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
+  }
+
   /** Import ECSchema(s) serialized to XML. On success, the schema definition is stored in the iModel.
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
@@ -1085,8 +1105,8 @@ export abstract class IModelDb extends IModel {
         }
       });
     } else {
-      if (this.iTwinId && this.iTwinId !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
-        await this.acquireSchemaLock();
+      if (this[_nativeDb].getITwinId() !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
+        await this.importSchemaStringsWithLocking(serializedXmlSchemas); // TODO: None of these calls respect the DbResult returned from the call
 
       try {
         this[_nativeDb].importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });

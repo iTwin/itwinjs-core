@@ -11,6 +11,7 @@ import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { Guid } from "@itwin/core-bentley";
 import { Code, GeometricElementProps, IModel, QueryBinder, SubCategoryAppearance } from "@itwin/core-common";
+import { EntityClass, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
 
 describe.only("Schema lock tests", function (this: Suite) {
   this.timeout(0);
@@ -49,6 +50,7 @@ describe.only("Schema lock tests", function (this: Suite) {
       </ECSchema>`;
       await user1Briefcase.importSchemaStrings([schema]);
       user1Briefcase.saveChanges();
+      assert.isTrue(user1Briefcase.holdsSchemaLock, "User 1 should hold schema lock initially");
       await user1Briefcase.pushChanges({ description: "import schema", accessToken: user1AccessToken });
 
       // Insert an element of the new class
@@ -68,7 +70,10 @@ describe.only("Schema lock tests", function (this: Suite) {
       const firstElementId = user1Briefcase.elements.insertElement(firstElement.toJSON());
       assert.isTrue(firstElementId !== undefined, "First element should be inserted");
       user1Briefcase.saveChanges();
+
       await user1Briefcase.pushChanges({ description: "insert element of new class", accessToken: user1AccessToken });
+      assert.isFalse(user1Briefcase.holdsSchemaLock);
+      assert.isFalse(user1Briefcase.holdsAdditiveSchemaChangeOnlyLock);
 
       // Open briefcase as user 2.
       user2Briefcase = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken: user2AccessToken });
@@ -82,11 +87,11 @@ describe.only("Schema lock tests", function (this: Suite) {
           </ECEntityClass>
       </ECSchema>`;
       await user2Briefcase.importSchemaStrings([updatedSchemaUser2]);
-
-      // TODO: Verify we hold a schema lock here (and not a full data lock)
-
+      assert.isFalse(user2Briefcase.holdsSchemaLock);
+      assert.isTrue(user2Briefcase.holdsAdditiveSchemaChangeOnlyLock);
       user2Briefcase.saveChanges();
 
+      // Try what we can do now in briefcase 1 (user 1)
       const updatedSchemaUser1 = `<?xml version="1.0" encoding="UTF-8"?>
       <ECSchema schemaName="TestDomain" alias="ts" version="01.00.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
           <ECSchemaReference name="BisCore" version="01.00.23" alias="bis"/>
@@ -96,16 +101,36 @@ describe.only("Schema lock tests", function (this: Suite) {
               <ECProperty propertyName="MyPropertyForUser1" typeName="string"/>
           </ECEntityClass>
       </ECSchema>`;
-
       await expect(user1Briefcase.importSchemaStrings([updatedSchemaUser1]))
         .to.be.rejectedWith("exclusive lock is already held");
-
-      // Try to modify the existing element - should also be rejected due to schema lock
+      // Try to modify the existing element - should work since user2 only holds a schema lock.
       const element = user1Briefcase.elements.getElement(firstElementId);
       (element as any).myProperty = "UPDATED_VALUE";
       await user1Briefcase.locks.acquireLocks({ exclusive: firstElementId }); // should not throw, schema lock allows shared locks
       user1Briefcase.elements.updateElement(element.toJSON()); // should not throw
+      user1Briefcase.saveChanges();
+      await user1Briefcase.pushChanges({ description: "modify element after user2 schema change", accessToken: user1AccessToken });
+      await user2Briefcase.pullChanges({ accessToken: user2AccessToken });
+      await user2Briefcase.pushChanges({ description: "user2 pushing after pulling user1 changes", accessToken: user2AccessToken });
+      await user1Briefcase.pullChanges({ accessToken: user1AccessToken });
 
+      assert.isFalse(user1Briefcase.holdsSchemaLock);
+      assert.isFalse(user1Briefcase.holdsAdditiveSchemaChangeOnlyLock);
+      assert.isFalse(user2Briefcase.holdsSchemaLock);
+      assert.isFalse(user2Briefcase.holdsAdditiveSchemaChangeOnlyLock);
+
+      // verify schema and updated element on both sides
+      for (const briefcase of [user1Briefcase, user2Briefcase]) {
+        const entityClass = await briefcase.schemaContext.getSchemaItem(new SchemaItemKey("Test2dElement", new SchemaKey("TestDomain", 1, 0, 1)), EntityClass);
+        assert.isDefined(entityClass, "Entity class should be defined");
+        const user1Prop = entityClass?.getProperty("MyPropertyForUser1");
+        assert.isUndefined(user1Prop, "User1 property should not be present in final schema");
+        const user2Prop = entityClass?.getProperty("MyPropertyForUser2");
+        assert.isDefined(user2Prop, "User2 property should be present in final schema");
+
+        const finalElement = briefcase.elements.getElement(firstElementId);
+        assert.equal((finalElement as any).myProperty, "UPDATED_VALUE", "Element property should be updated");
+      }
     } finally {
       user1Briefcase?.close();
       user2Briefcase?.close();
