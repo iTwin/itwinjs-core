@@ -596,10 +596,7 @@ export class PolyfaceData {
   public compress(tolerance: number = Geometry.smallMetricDistance): void {
     // more info can be found at geometry/internaldocs/Polyface.md
     const packedPoints = ClusterableArray.clusterGrowablePoint3dArray(this.point, tolerance);
-    let growablePackedPoints = packedPoints.growablePackedPoints;
-    if (!growablePackedPoints)
-      return;
-    this.point = growablePackedPoints;
+    this.point = packedPoints.growablePackedPoints;
     packedPoints.updateIndices(this.pointIndex);
     // for now, normals, params, and colors use the default tolerance for clustering
     if (this.normalIndex && this.normal) {
@@ -626,10 +623,7 @@ export class PolyfaceData {
       } else if (3 === dataSize) {
         const blockedData = GrowableXYZArray.create(this.auxData.channels[0].data[0].values);
         const packedData = ClusterableArray.clusterGrowablePoint3dArray(blockedData);
-        growablePackedPoints = packedData.growablePackedPoints;
-        if (!growablePackedPoints)
-          return;
-        this.auxData.channels[0].data[0].values = NumberArray.create(growablePackedPoints.float64Data());
+        this.auxData.channels[0].data[0].values = NumberArray.create(packedData.growablePackedPoints.float64Data());
         packedData.updateIndices(this.auxData.indices);
       }
     }
