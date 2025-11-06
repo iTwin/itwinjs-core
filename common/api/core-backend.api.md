@@ -584,7 +584,7 @@ export class BriefcaseDb extends IModelDb {
     close(): void;
     // (undocumented)
     disableChangesetStatTracking(): Promise<void>;
-    // @alpha
+    // @preview
     discardChanges(args?: {
         retainLocks?: true;
     }): Promise<void>;
@@ -5257,6 +5257,7 @@ export class RebaseManager {
     }): void;
     canAbort(): boolean;
     inProgress(): boolean;
+    get isAborting(): boolean;
     get isMerging(): boolean;
     get isRebasing(): boolean;
     onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
