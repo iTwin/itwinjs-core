@@ -6,16 +6,19 @@
  * @module Views
  */
 
-import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, ViewAttachmentProps } from "@itwin/core-common";
+import { ColorDef, HydrateViewStateRequestProps, HydrateViewStateResponseProps, ViewAttachmentProps } from "@itwin/core-common";
 import { ViewState } from "../ViewState";
-import { assert, CompressedId64Set, dispose, Id64String } from "@itwin/core-bentley";
+import { assert, CompressedId64Set, Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
+import { createViewAttachmentRenderer, ViewAttachmentRenderer } from "./ViewAttachmentRenderer";
+import { Frustum2d } from "../Frustum2d";
 
 interface Attachments {
   clone(iModel: IModelConnection): Attachments;
   preload(request: HydrateViewStateRequestProps): void;
   postload(response: HydrateViewStateResponseProps, iModel: IModelConnection): Promise<Attachments>;
+  readonly infos?: ViewAttachmentInfo[];
 }
 
 interface ViewAttachmentInfo extends ViewAttachmentProps {
@@ -107,14 +110,14 @@ class AttachmentIds implements Attachments {
 }
 
 class AttachmentInfos implements Attachments {
-  private readonly _infos: ViewAttachmentInfo[];
+  public readonly infos: ViewAttachmentInfo[];
 
   public constructor(infos: ViewAttachmentInfo[]) {
-    this._infos = infos;
+    this.infos = infos;
   }
 
   public clone(iModel: IModelConnection): Attachments {
-    const infos = this._infos.map((info) => {
+    const infos = this.infos.map((info) => {
       return {
         ...info,
         attachedView: info.attachedView.clone(iModel),
@@ -172,16 +175,28 @@ async function reloadAttachments(sheetModelId: Id64String, iModel: IModelConnect
   return new AttachmentInfos(infos);
 }
 
+function disposeRenderers(renderers: ViewAttachmentRenderer[] | undefined) {
+  if (renderers) {
+    for (const renderer of renderers) {
+      renderer[Symbol.dispose]();
+    }
+  }
+}
+
 export class SheetViewAttachments implements Disposable {
   private _impl: Attachments;
   private _reload?: Promise<Attachments>;
+  private _maxDepth = Frustum2d.minimumZDistance;
+  private _rendererArgs?: { sheetModelId: Id64String, backgroundColor: ColorDef };
+  private _renderers?: ViewAttachmentRenderer[];
 
   private constructor(impl: Attachments) {
     this._impl = impl;
   }
 
   public [Symbol.dispose](): void {
-    // ###TODO dispose of ViewAttachmentRenderers
+    disposeRenderers(this._renderers);
+    this._renderers = this._rendererArgs = undefined;
     this._reload = undefined;
   }
 
@@ -203,11 +218,65 @@ export class SheetViewAttachments implements Disposable {
   }
 
   public async reload(sheetModelId: Id64String, iModel: IModelConnection): Promise<void> {
+    const renderers = this._renderers;
     const reload = this._reload = reloadAttachments(sheetModelId, iModel);
     const impl = await this._reload;
+
+    // We keep the previous renderers until reloading completes, to avoid drawing a blank view while waiting.
+    // Afterward, always destroy the previous renderers.
+    disposeRenderers(renderers);
+
+    // If reload was not called again while we waited...
     if (this._reload === reload) {
       this._impl = impl;
-      this._reload = undefined;
+      this._reload = this._renderers = undefined;
+
+      if (this._rendererArgs) {
+        // We are attached to a Viewport - reload the renderers.
+        this.loadRenderers();
+      }
     }
+  }
+
+  public attachToViewport(args: {
+    backgroundColor: ColorDef,
+    sheetModelId: Id64String,
+  }): void {
+    assert(undefined === this._renderers);
+    assert(undefined === this._rendererArgs);
+
+    this._rendererArgs = args;
+    this.loadRenderers();
+  }
+
+  public detachFromViewport(): void {
+    assert(undefined !== this._rendererArgs);
+    this._rendererArgs = undefined;
+
+    disposeRenderers(this._renderers);
+    this._renderers = undefined;
+  }
+
+  private loadRenderers(): void {
+    const args = this._rendererArgs;
+    assert(undefined !== args);
+    assert(undefined === this._renderers);
+
+    this._maxDepth = Frustum2d.minimumZDistance;
+
+    const infos = this._impl.infos;
+    if (!infos) {
+      return;
+    }
+
+    this._renderers = infos.map((info) => {
+      const renderer = createViewAttachmentRenderer({
+        ...args,
+        props: info,
+        view: info.attachedView,
+      });
+      this._maxDepth = Math.max(this._maxDepth, renderer.zDepth);
+      return renderer;
+    });
   }
 }
