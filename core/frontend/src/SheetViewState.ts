@@ -131,6 +131,7 @@ export class SheetViewState extends ViewState2d {
   public readonly sheetSize: Point2d;
   private _viewAttachments: SheetViewAttachments;
   private readonly _viewedExtents: AxisAlignedBox3d;
+  private _onViewAttachmentsReloaded: () => void = () => undefined;
 
   public get attachmentIds(): readonly string[] {
     return this._viewAttachments.attachmentIds;
@@ -198,6 +199,23 @@ export class SheetViewState extends ViewState2d {
       const margin = 1.1;
       extents.scaleAboutCenterInPlace(margin);
       this._viewedExtents = extents;
+    }
+
+    if (iModel.isBriefcaseConnection()) {
+      iModel.txns.onElementsChanged.addListener(async (changes) => {
+        let reload = false;
+        for (const change of changes.filter({ includeMetadata: (meta) => meta.is("BisCore.ViewAttachment")})) {
+          if (change.type === "inserted" || this._viewAttachments.attachmentIds.includes(change.id)) {
+            reload = true;
+            break;
+          }
+        }
+
+        if (reload) {
+          await this._viewAttachments.reload(this.baseModelId, iModel);
+          this._onViewAttachmentsReloaded();
+        }
+      });
     }
   }
 
@@ -284,12 +302,15 @@ export class SheetViewState extends ViewState2d {
       backgroundColor: this.displayStyle.backgroundColor,
       sheetModelId: this.baseModelId,
     });
+
+    this._onViewAttachmentsReloaded = () => args.invalidateController();
   }
 
   /** See [[ViewState.detachFromViewport]]. */
   public override detachFromViewport(): void {
     super.detachFromViewport();
     this._viewAttachments.detachFromViewport();
+    this._onViewAttachmentsReloaded = () => undefined;
   }
 
   public override get areAllTileTreesLoaded(): boolean {
