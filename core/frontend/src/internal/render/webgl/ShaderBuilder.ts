@@ -774,6 +774,8 @@ export class VertexShaderBuilder extends ShaderBuilder {
       main.addline("  rawPosition = adjustRawPosition(rawPosition);");
     }
 
+    main.addline("  gl_Position = computePosition(rawPosition);");
+
     const checkForEarlyDiscard = this.get(VertexShaderComponent.CheckForEarlyDiscard);
     if (undefined !== checkForEarlyDiscard) {
       prelude.addFunction("bool checkForEarlyDiscard(vec4 rawPos)", checkForEarlyDiscard);
@@ -824,8 +826,6 @@ export class VertexShaderBuilder extends ShaderBuilder {
       prelude.addFunction("bool checkForDiscard()", checkForDiscard);
       main.add(vertexDiscard);
     }
-
-    main.addline("  gl_Position = computePosition(rawPosition);");
 
     const finalizePos = this.get(VertexShaderComponent.FinalizePosition);
     if (undefined !== finalizePos) {
