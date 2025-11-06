@@ -105,13 +105,13 @@ export class PolyfaceClip {
    * Clip each facet of polyface to the ClipPlane.
    * * Return all surviving clip as a new mesh.
    * * WARNING: The new mesh is "points only" -- parameters, normals, etc are not interpolated
-   * * Returns a default empty polyface if clipping failed.
    */
   public static clipPolyfaceClipPlane(source: Polyface | PolyfaceVisitor, clipper: ClipPlane, insideClip: boolean = true, buildClosureFaces: boolean = false): IndexedPolyface {
     const builders = ClippedPolyfaceBuilders.create(insideClip, !insideClip, buildClosureFaces);
     this.clipPolyfaceInsideOutside(source, clipper, builders);
     const polyface = builders.claimPolyface(insideClip ? 0 : 1, true);
-    return polyface ?? IndexedPolyface.create();
+    assert(polyface !== undefined, "expect defined because builders has exactly one builder");
+    return polyface;
   }
 
   /**
@@ -307,8 +307,7 @@ export class PolyfaceClip {
       for (visitor.reset(); visitor.moveToNextFacet();) {
         for (const chainContext of chainContexts) {
           const plane = chainContext.plane;
-          if (!plane)
-            continue;
+          assert(plane !== undefined, "expect defined because chainContexts contains only contexts that have a plane");
           facetPoints.clear();
           facetPoints.pushFrom(visitor.point);
           IndexedXYZCollectionPolygonOps.clipConvexPolygonInPlace(plane, facetPoints, workPoints);
@@ -381,8 +380,8 @@ export class PolyfaceClip {
 
   /**
    * Gather loops out of the ChainMergeContext.  Add to destination arrays.
-   * @param chainContext ASSUMED TO HAVE A PLANE; OTHERWISE THE METHOD DOES NOTHING
-   * @param destination
+   * @param chainContext assumed to have a plane.
+   * @param destination builders to receive facets
    */
   private static addClosureFacets(chainContext: ChainMergeContext, destination: ClippedPolyfaceBuilders, cache: GrowableXYZArrayCache): void {
     const clipper = chainContext.convexClipper;
@@ -571,8 +570,7 @@ export class PolyfaceClip {
     const below = new GrowableXYZArray(10);
     const above = new GrowableXYZArray(10);
     const planeOfFacet = ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, 0);
-    if (!planeOfFacet)
-      return;
+    assert(planeOfFacet !== undefined, "expect defined plane from hardcoded coordinates");
     const altitudeRange = Range1d.createNull();
 
     for (visitorB.reset(); visitorB.moveToNextFacet();) {
