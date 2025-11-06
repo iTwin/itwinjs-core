@@ -237,7 +237,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       this._fractions = new GrowableFloat64Array();
     this._fractions.push(fraction);
   }
-  /** Ensure that the fraction array exists with no fractions but at least the capacity of the point array. */
+  /** Ensure that the fractions array exists with length 0 but at least the capacity of the point array. */
   public ensureEmptyFractions(): GrowableFloat64Array {
     const n = this.numPoints();
     if (!this._fractions) {
@@ -248,7 +248,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     this._fractions.ensureCapacity(n);
     return this._fractions;
   }
-  /** Ensure that the parameter array exists with no points but at least the capacity of the point array. */
+  /** Ensure that the uvParams array exists with length 0 but at least the capacity of the point array. */
   public ensureEmptyUVParams(): GrowableXYArray {
     const n = this.numPoints();
     if (!this._uvParams) {
@@ -259,7 +259,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     this._uvParams.ensureCapacity(n);
     return this._uvParams;
   }
-  /** Ensure that the surfaceNormals array exists with no points but at least the capacity of the point array. */
+  /** Ensure that the surfaceNormals array exists with length 0 but at least the capacity of the point array. */
   public ensureEmptySurfaceNormals(): GrowableXYZArray {
     const n = this.numPoints();
     if (!this._surfaceNormals) {
@@ -270,7 +270,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     this._surfaceNormals.ensureCapacity(n);
     return this._surfaceNormals;
   }
-  /** Ensure that the surfaceNormals array exists with no points but at least the capacity of the point array. */
+  /** Ensure that the derivatives array exists with length 0 but at least the capacity of the point array. */
   public ensureEmptyDerivatives(): GrowableXYZArray {
     const n = this.numPoints();
     if (!this._derivatives) {
@@ -281,7 +281,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     this._derivatives.ensureCapacity(n);
     return this._derivatives;
   }
-  /** Ensure that the surfaceNormals array exists with no points but at least the capacity of the point array. */
+  /** Ensure that the normalIndices array exists with length 0 but at least the capacity of the point array. */
   public ensureEmptyNormalIndices(): GrowableFloat64Array {
     const n = this.numPoints();
     if (!this._normalIndices) {
@@ -292,7 +292,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     this._normalIndices.ensureCapacity(n);
     return this._normalIndices;
   }
-  /** Ensure that the surfaceNormals array exists with no points but at least the capacity of the point array. */
+  /** Ensure that the uvIndices array exists with length 0 but at least the capacity of the point array. */
   public ensureEmptyUVIndices(): GrowableFloat64Array {
     const n = this.numPoints();
     if (!this._uvIndices) {
@@ -303,7 +303,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     this._uvIndices.ensureCapacity(n);
     return this._uvIndices;
   }
-  /** Ensure that the surfaceNormals array exists with no points but at least the capacity of the point array. */
+  /** Ensure that the pointIndices array exists with length 0 but at least the capacity of the point array. */
   public ensureEmptyPointIndices(): GrowableFloat64Array {
     const n = this.numPoints();
     if (!this._pointIndices) {
@@ -691,14 +691,14 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   /** If i is a valid index, return that point. */
   public pointAt(i: number, result?: Point3d): Point3d | undefined {
     if (this._points.isIndexValid(i))
-      return this.uncheckedPointAt(i, result);
+      return this.pointAtUnchecked(i, result);
     return undefined;
   }
   /**
    * Return the point for the given index.
    * * This method does not check for index validity. Use [[pointAt]] to have validity test.
    */
-  public uncheckedPointAt(i: number, result?: Point3d): Point3d {
+  public pointAtUnchecked(i: number, result?: Point3d): Point3d {
     return this._points.getPoint3dAtUncheckedPointIndex(i, result);
   }
   /** If i and j are both valid indices, return the vector from point i to point j */

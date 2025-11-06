@@ -514,6 +514,21 @@ export class Transform implements BeJSONFunctions {
     );
   }
   /**
+   * Multiply the point by the inverse Transform, and return its xy-coordinates.
+   * @param point point to transform
+   * @param result optional pre-allocated result to populate and return
+   * @returns xy-coordinates of the transformed point, or `undefined` if the instance is singular.
+   * @see [[multiplyInversePoint3d]]
+   */
+  public multiplyInversePoint3dAsPoint2d(point: XYAndZ, result?: Point2d): Point2d | undefined {
+    return this._matrix.multiplyInverseXYZAsPoint2d(
+      point.x - this._origin.x,
+      point.y - this._origin.y,
+      point.z - this._origin.z,
+      result,
+    );
+  }
+  /**
    * Multiply the homogenous point by the inverse Transform.
    * * If for a point `p` we have `Tp = M*p + o = q`, then `p = MInverse*(q - o) = TInverse q` so `TInverse` Transform
    * has matrix part `MInverse` and origin part `-MInverse*o`.

@@ -58,7 +58,7 @@ export class LineString3dRangeTreeContext {
     const linestring = points instanceof LineString3d ? points : LineString3d.createPoints(points);
     const rangeTreeRoot = RangeTreeOps.createByIndexSplits<number>(
       ((index: number): Range3d => {
-        return Range3d.create(linestring.uncheckedPointAt(index), linestring.uncheckedPointAt(index + 1));
+        return Range3d.create(linestring.pointAtUnchecked(index), linestring.pointAtUnchecked(index + 1));
       }),
       ((index: number): number => { return index; }),
       linestring.numPoints() - 1,   // number of segments

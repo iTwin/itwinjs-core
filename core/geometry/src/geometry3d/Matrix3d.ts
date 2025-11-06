@@ -2085,6 +2085,22 @@ export class Matrix3d implements BeJSONFunctions {
     return undefined;
   }
   /**
+   * Multiply the point by the inverse matrix, and return its xy-coordinates.
+   * @param result optional pre-allocated result to populate and return
+   * @returns xy-coordinates of the transformed point, or `undefined` if the instance is singular.
+   * @see [[multiplyInverseXYZAsPoint3d]]
+   */
+  public multiplyInverseXYZAsPoint2d(x: number, y: number, z: number, result?: Point2d): Point2d | undefined {
+    if (this.computeCachedInverse(true)) {
+      return Point2d.create(
+        this.inverseCoffs[0] * x + this.inverseCoffs[1] * y + this.inverseCoffs[2] * z,
+        this.inverseCoffs[3] * x + this.inverseCoffs[4] * y + this.inverseCoffs[5] * z,
+        result,
+      );
+    }
+    return undefined;
+  }
+  /**
    * Invoke a given matrix*matrix operation to compute the inverse matrix and set this.inverseCoffs
    * * If either input coffA or coffB is `undefined`, set state to `InverseMatrixState.unknown` but
    * leave the inverseCoffs untouched.
@@ -2411,7 +2427,7 @@ export class Matrix3d implements BeJSONFunctions {
    * recompute the inverse.
    * @returns return `true` if the inverse is computed. Return `false` if matrix is singular.
    */
-  public computeCachedInverse(useCacheIfAvailable: boolean): this is { inverseCoffs: Float64Array} {
+  public computeCachedInverse(useCacheIfAvailable: boolean): this is { inverseCoffs: Float64Array } {
     if (useCacheIfAvailable && Matrix3d.useCachedInverse && this.inverseState !== InverseMatrixState.unknown) {
       Matrix3d.numUseCache++;
       return this.inverseState === InverseMatrixState.inverseStored;
