@@ -10,8 +10,9 @@ import { TestUtility } from "../TestUtility";
 import { coreFullStackTestIpc } from "../Editing";
 import * as path from "path";
 import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
+import { Id64String, OpenMode } from "@itwin/core-bentley";
 
-describe("Sheet views (#integration)", () => {
+describe("SheetViewState (#integration)", () => {
   let imodel: CheckpointConnection;
   const sheetViewId = "0x96";
   const attachmentCategoryId = "0x93";
@@ -173,22 +174,26 @@ describe("Sheet views (#integration)", () => {
   });
 });
 
-describe("Sheet views", () => {
+describe.only("SheetViewState", () => {
+  let iModel: BriefcaseConnection;
+  let sheetViewId: Id64String;
+
   before(async () => {
     await TestUtility.startFrontend(undefined, undefined, true);
+
+    // Create Sheet View with attachment
+    const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/sheetViewTest.bim");
+    sheetViewId = await coreFullStackTestIpc.insertSheetViewWithAttachment(filePath);
+    iModel = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
   });
 
   after(async () => {
+    await iModel.close();
     await TestUtility.shutdownFrontend();
   });
 
   describe("ViewAttachments", () => {
     it("areAllTileTreesLoaded should return true when attachments are outside of the viewed extents", async () => {
-      // Create Sheet View with attachment
-      const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/sheetViewTest.bim");
-      const sheetViewId = await coreFullStackTestIpc.insertSheetViewWithAttachment(filePath);
-      const iModel = await BriefcaseConnection.openStandalone(filePath);
-
       await testOnScreenViewport(sheetViewId, iModel, 1, 1, async (vp) => {
 
         // get view from viewport
@@ -236,8 +241,20 @@ describe("Sheet views", () => {
         expect(sheetView.areAllAttachmentsLoaded()).to.be.true;
         expect(sheetView.areAllTileTreesLoaded).to.be.true;
       });
+    });
 
-      await iModel.close();
+    describe("are reloaded when ViewAttachments are inserted, updated, or deleted", () => {
+      it("when not attached to a viewport", async () => {
+        await testOnScreenViewport(sheetViewId, iModel, 1, 1, async (vp) => {
+          const view = vp.view as SheetViewState;
+          expect(view.viewAttachmentProps.length).to.equal(1);
+          expect(view.attachments).not.to.be.undefined;
+        });
+      });
+
+      it("when attached to a viewport", async () => {
+
+      });
     });
   });
 });
