@@ -104,6 +104,7 @@ export enum DepthType {
 export interface GraphicsDriverBugs {
     fragDepthDoesNotDisableEarlyZ?: true;
     msaaWillHang?: true;
+    vertexDiscardWillGlitch?: true;
 }
 
 // @public
