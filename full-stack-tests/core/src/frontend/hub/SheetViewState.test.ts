@@ -244,7 +244,7 @@ describe("SheetViewState", () => {
       });
     });
 
-    describe.only("are reloaded when ViewAttachments are inserted, updated, or deleted", () => {
+    describe("are reloaded when ViewAttachments are inserted, updated, or deleted", () => {
       it("when not attached to a viewport", async () => {
         const view = await iModel.views.load(sheetViewId) as SheetViewState;
         expect(view).instanceof(SheetViewState);
