@@ -79,6 +79,8 @@ const buggyIntelMatchers2 = [
   /ANGLE \(Intel, Intel\(\R\) Graphics \(0x00007D40\) Direct3D11/,
   /ANGLE \(Intel, Intel\(\R\) Graphics \(0x00007D45\) Direct3D11/,
   /ANGLE \(Intel, Intel\(\R\) Iris\(\R\) Xe Graphics \(0x00009A49\) Direct3D11/,
+  /ANGLE \(Intel, Intel\(\R\) Arc\(TM\) 140V GPU \(16GB\) \(0x000064A0\) Direct3D11/,
+  /ANGLE \(Intel, Intel\(\R\) Arc\(TM\) Graphics \(0x00007D55\) Direct3D11/,
 ];
 
 // Regexes to match Mali GPUs known to suffer from GraphicsDriverBugs.msaaWillHang.
