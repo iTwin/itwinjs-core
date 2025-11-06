@@ -50,7 +50,8 @@ describe.only("Schema lock tests", function (this: Suite) {
       </ECSchema>`;
       await user1Briefcase.importSchemaStrings([schema]);
       user1Briefcase.saveChanges();
-      assert.isTrue(user1Briefcase.holdsSchemaLock, "User 1 should hold schema lock initially");
+      assert.isFalse(user1Briefcase.holdsSchemaLock);
+      assert.isTrue(user1Briefcase.holdsAdditiveSchemaChangeOnlyLock);
       await user1Briefcase.pushChanges({ description: "import schema", accessToken: user1AccessToken });
 
       // Insert an element of the new class
@@ -123,9 +124,9 @@ describe.only("Schema lock tests", function (this: Suite) {
       for (const briefcase of [user1Briefcase, user2Briefcase]) {
         const entityClass = await briefcase.schemaContext.getSchemaItem(new SchemaItemKey("Test2dElement", new SchemaKey("TestDomain", 1, 0, 1)), EntityClass);
         assert.isDefined(entityClass, "Entity class should be defined");
-        const user1Prop = entityClass?.getProperty("MyPropertyForUser1");
+        const user1Prop = await entityClass?.getProperty("MyPropertyForUser1");
         assert.isUndefined(user1Prop, "User1 property should not be present in final schema");
-        const user2Prop = entityClass?.getProperty("MyPropertyForUser2");
+        const user2Prop = await entityClass?.getProperty("MyPropertyForUser2");
         assert.isDefined(user2Prop, "User2 property should be present in final schema");
 
         const finalElement = briefcase.elements.getElement(firstElementId);
