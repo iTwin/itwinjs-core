@@ -8,7 +8,7 @@
 
 import { ColorDef, HydrateViewStateRequestProps, HydrateViewStateResponseProps, Placement2d, ViewAttachmentProps } from "@itwin/core-common";
 import { ComputeDisplayTransformArgs, GetAttachmentViewportArgs, ViewState } from "../ViewState";
-import { assert, CompressedId64Set, Id64String } from "@itwin/core-bentley";
+import { assert, CompressedId64Set, expectDefined, Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { createViewAttachmentRenderer, ViewAttachmentRenderer } from "./ViewAttachmentRenderer";
@@ -21,6 +21,7 @@ interface Attachments {
   preload(request: HydrateViewStateRequestProps): void;
   postload(response: HydrateViewStateResponseProps, iModel: IModelConnection): Promise<Attachments>;
   readonly infos?: ViewAttachmentInfo[];
+  readonly attachmentIds: readonly string[];
 }
 
 interface ViewAttachmentInfo extends ViewAttachmentProps {
@@ -49,6 +50,10 @@ class EmptyAttachments implements Attachments {
   public async postload(): Promise<Attachments> {
     return this;
   }
+
+  public get attachmentIds() {
+    return [];
+  }
 }
 
 class AttachmentIds implements Attachments {
@@ -56,6 +61,10 @@ class AttachmentIds implements Attachments {
 
   public constructor(ids: Id64String[]) {
     this._ids = ids;
+  }
+
+  public get attachmentIds() {
+    return this._ids;
   }
 
   public clone(): Attachments {
@@ -116,6 +125,10 @@ class AttachmentInfos implements Attachments {
 
   public constructor(infos: ViewAttachmentInfo[]) {
     this.infos = infos;
+  }
+
+  public get attachmentIds() {
+    return this.infos.map((x) => expectDefined(x.id));
   }
 
   public clone(iModel: IModelConnection): Attachments {
@@ -192,6 +205,20 @@ export class SheetViewAttachments implements Disposable {
   private _rendererArgs?: { sheetModelId: Id64String, backgroundColor: ColorDef };
   private _renderers?: ViewAttachmentRenderer[];
 
+  public get maxDepth(): number {
+    return this._maxDepth;
+  }
+
+  public *getSecondaryViewports(): Iterable<Viewport> {
+    if (this._renderers) {
+      for (const renderer of this._renderers) {
+        if (renderer.viewport) {
+          yield renderer.viewport;
+        }
+      }
+    }
+  }
+
   private constructor(impl: Attachments) {
     this._impl = impl;
   }
@@ -205,6 +232,10 @@ export class SheetViewAttachments implements Disposable {
   public static create(attachmentIds: Id64String[]): SheetViewAttachments {
     const impl = attachmentIds.length === 0 ? EmptyAttachments.get() : new AttachmentIds([...attachmentIds]);
     return new this(impl);
+  }
+
+  public get attachmentIds(): readonly string[] {
+    return this._impl.attachmentIds;
   }
 
   public clone(iModel: IModelConnection): SheetViewAttachments {
@@ -321,8 +352,29 @@ export class SheetViewAttachments implements Disposable {
   }
 
   /** Strictly for tests. */
-  public get attachments(): object[] {
-    return this._renderers ?? [];
+  public get attachments(): object[] | undefined {
+    return this._renderers;
+  }
+
+  /** Strictly for tests. */
+  public get attachmentProps(): Array<Readonly<ViewAttachmentProps>> {
+    const infos = this._impl.infos;
+    if (!infos) {
+      return [];
+    }
+
+    return infos.map((x) => {
+      return {
+        ...x,
+        attachedView: undefined,
+      };
+    });
+  }
+
+  /** Strictly for tests. */
+  public get attachmentInfos(): readonly Id64String[] | Array<{ attachedView: ViewState }> {
+    const infos = this._impl.infos;
+    return infos ?? this._impl.attachmentIds;
   }
 
   private loadRenderers(): void {
