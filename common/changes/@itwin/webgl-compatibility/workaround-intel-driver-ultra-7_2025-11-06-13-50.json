@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/webgl-compatibility",
+      "comment": "Work around Intel Ultra 7 vertex discard glitch",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/webgl-compatibility"
+}
