@@ -379,7 +379,8 @@ export class RebaseManager {
     const nativeDb = this._iModel[_nativeDb];
     const txns = this._iModel.txns;
     try {
-      nativeDb.pullMergeRebaseBegin();
+      const reversedTxns = nativeDb.pullMergeRebaseBegin();
+      txns.onRebaseBegin.raiseEvent(reversedTxns);
       let txnId = nativeDb.pullMergeRebaseNext();
       while (txnId) {
         const txnProps = txns.getTxnProps(txnId);
@@ -415,6 +416,9 @@ export class RebaseManager {
     } catch (err) {
       nativeDb.pullMergeRebaseAbortTxn();
       throw err;
+    }
+    finally {
+      txns.onRebaseEnd.raiseEvent();
     }
   }
 
@@ -888,11 +892,25 @@ export class TxnManager {
    * Event raised when a rebase transaction begins.
    */
   public readonly onRebaseTxnBegin = new BeEvent<(txn: TxnProps) => void>();
+  
   /**
    * @alpha
    * Event raised when a rebase transaction ends.
    */
   public readonly onRebaseTxnEnd = new BeEvent<(txn: TxnProps) => void>();
+
+    /**
+   * @alpha
+   * Event raised when a rebase begins.
+   */
+  public readonly onRebaseBegin = new BeEvent<(txns: TxnIdString[]) => void>();
+
+  /**
+   * @alpha
+   * Event raised when a rebase ends.
+   */
+  public readonly onRebaseEnd = new BeEvent<() => void>();
+
   /**
    * if handler is set and it does not return undefined then default handler will not be called
    * @internal
