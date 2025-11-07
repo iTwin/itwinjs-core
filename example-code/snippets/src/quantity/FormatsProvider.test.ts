@@ -175,7 +175,7 @@ describe("FormatsProvider examples", () => {
           type: "Decimal"
         } as FormatDefinition,
         // DISTANCE references LENGTH via string
-        "AecUnits.LENGTH": "RoadRailUnits.LENGTH",
+        "DefaultToolsUnits.LENGTH": "CivilUnits.LENGTH",
       }
     };
 
@@ -183,7 +183,7 @@ describe("FormatsProvider examples", () => {
     const formatsProvider = new FormatSetFormatsProvider({ formatSet });
 
     // Getting AecUnits.LENGTH resolves to the RoadRailUnits.LENGTH format definition
-    const lengthFormat = await formatsProvider.getFormat("AecUnits.LENGTH");
+    const lengthFormat = await formatsProvider.getFormat("DefaultToolsUnits.LENGTH");
     const format = await Format.createFromJSON("length", unitsProvider, lengthFormat!);
     const formatSpec = await FormatterSpec.create("LengthSpec", format, unitsProvider, persistenceUnit);
 
