@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Added `MapLayerImageryProvider.status` API.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
