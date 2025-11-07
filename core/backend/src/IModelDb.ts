@@ -12,7 +12,7 @@ import * as touch from "touch";
 import { IModelJsNative, SchemaWriteStatus } from "@bentley/imodeljs-native";
 import {
   AccessToken, assert, BeEvent, BentleyStatus, ChangeSetStatus, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult,
-  Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils, Logger, LogLevel, LRUMap, OpenMode
+  Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String, IModelStatus, ITwinError, JsonUtils, Logger, LogLevel, LRUMap, OpenMode
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetHealthStats, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
@@ -955,6 +955,79 @@ export abstract class IModelDb extends IModel {
     }
   }
 
+  /** Shared implementation for importing schemas from file or string.
+   */
+  private async importSchemasInternal<T>(
+    schemaData: T[],
+    importOp: (data: T[], options: any) => DbResult,
+    customNativeContext?: IModelJsNative.ECSchemaXmlContext | undefined,
+  ): Promise<void> {
+    if (schemaData.length === 0)
+      return;
+
+    if (this instanceof BriefcaseDb) {
+      if (this.txns.rebaser.isRebasing) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
+      }
+      if (this.txns.isIndirectChanges) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change scope");
+      }
+    }
+
+    if (this[_nativeDb].schemaSyncEnabled()) {
+      await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
+        const schemaSyncDbUri = syncAccess.getUri();
+        this.saveChanges();
+
+        try {
+          importOp(schemaData, { schemaLockHeld: false, ecSchemaXmlContext: customNativeContext, schemaSyncDbUri });
+        } catch (outerErr: any) {
+          if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === outerErr.errorNumber) {
+            this.abandonChanges();
+            if (this[_nativeDb].getITwinId() !== Guid.empty)
+              await this.acquireSchemaLock();
+            try {
+              importOp(schemaData, { schemaLockHeld: true, ecSchemaXmlContext: customNativeContext, schemaSyncDbUri });
+            } catch (innerErr: any) {
+              throw new IModelError(innerErr.errorNumber, innerErr.message);
+            }
+          } else {
+            throw new IModelError(outerErr.errorNumber, outerErr.message);
+          }
+        }
+      });
+    } else {
+      if (this[_nativeDb].getITwinId() !== Guid.empty) { // if this iModel is associated with an iTwin, importing schema requires the schema lock
+        // Attempt to lock just for additive changes first, and if that isn't enough, do the real thing.
+        if (!this.holdsSchemaLock) { // We already hold the maximum lock, so we can skip acquiring locks
+          await this.acquireAdditiveSchemaChangeOnlyLock();
+          try {
+            importOp(schemaData, { ecSchemaXmlContext: customNativeContext, schemaLockHeld: false });
+          } catch (err: any) {
+            if (ITwinError.isError(err, "be-sqlite", "BE_SQLITE_ERROR_DataTransformRequired")) {
+              await this.acquireSchemaLock();
+              importOp(schemaData, { ecSchemaXmlContext: customNativeContext, schemaLockHeld: true });
+            } else {
+              throw err;
+            }
+          }
+          this.clearCaches();
+          return;
+        }
+      }
+
+      try {
+        importOp(schemaData, {
+          schemaLockHeld: true,
+          ecSchemaXmlContext: customNativeContext,
+        });
+      } catch (err: any) {
+        throw new IModelError(err.errorNumber, err.message);
+      }
+    }
+    this.clearCaches();
+  }
+
   /** Import an ECSchema. On success, the schema definition is stored in the iModel.
    * This method is asynchronous (must be awaited) because, in the case where this IModelDb is a briefcase, this method first obtains the schema lock from the iModel server.
    * You must import a schema into an iModel before you can insert instances of the classes in that schema. See [[Element]]
@@ -968,96 +1041,12 @@ export abstract class IModelDb extends IModel {
   * @see querySchemaVersion
    */
   public async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
-    if (schemaFileNames.length === 0)
-      return;
-
-    if (this instanceof BriefcaseDb) {
-      if (this.txns.rebaser.isRebasing) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
-      }
-      if (this.txns.isIndirectChanges) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change scope");
-      }
-    }
-
     const maybeCustomNativeContext = options?.ecSchemaXmlContext?.nativeContext;
-    if (this[_nativeDb].schemaSyncEnabled()) {
-
-      await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schema sync" }, async (syncAccess) => {
-        const schemaSyncDbUri = syncAccess.getUri();
-        this.saveChanges();
-
-        try {
-          this[_nativeDb].importSchemas(schemaFileNames, { schemaLockHeld: false, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
-        } catch (outerErr: any) {
-          if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === outerErr.errorNumber) {
-            this.abandonChanges();
-            if (this[_nativeDb].getITwinId() !== Guid.empty)
-              await this.acquireSchemaLock();
-            try {
-              this[_nativeDb].importSchemas(schemaFileNames, { schemaLockHeld: true, ecSchemaXmlContext: maybeCustomNativeContext, schemaSyncDbUri });
-            } catch (innerErr: any) {
-              throw new IModelError(innerErr.errorNumber, innerErr.message);
-            }
-          } else {
-            throw new IModelError(outerErr.errorNumber, outerErr.message);
-          }
-        }
-      });
-    } else {
-      if (this[_nativeDb].getITwinId() !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
-        await this.importSchemasWithLocking(schemaFileNames, maybeCustomNativeContext); // TODO: None of these calls respect the DbResult returned from the call
-
-      try {
-        this[_nativeDb].importSchemas(schemaFileNames, {
-          schemaLockHeld: true,
-          ecSchemaXmlContext: maybeCustomNativeContext,
-        });
-      } catch (err: any) {
-        throw new IModelError(err.errorNumber, err.message);
-      }
-    }
-    this.clearCaches();
-  }
-
-  /** Attempt to lock just for additive changes first, and if that isn't enough, do the real thing.
-   * @internal
-   */
-  private async importSchemasWithLocking(schemaFileNames: LocalFileName[], customNativeContext?: IModelJsNative.ECSchemaXmlContext | undefined): Promise<DbResult> {
-    if (this.holdsSchemaLock) // We already hold the maximum lock, so we can just import the schemas
-      return this[_nativeDb].importSchemas(schemaFileNames, { ecSchemaXmlContext: customNativeContext, schemaLockHeld: true });
-
-    await this.acquireAdditiveSchemaChangeOnlyLock();
-    const result = this[_nativeDb].importSchemas(schemaFileNames, { ecSchemaXmlContext: customNativeContext, schemaLockHeld: false });
-    if (result === DbResult.BE_SQLITE_OK)
-      return result;
-
-    if (result !== DbResult.BE_SQLITE_ERROR_DataTransformRequired) {
-      return result;
-    }
-
-    await this.acquireSchemaLock();
-    return this[_nativeDb].importSchemas(schemaFileNames, { ecSchemaXmlContext: customNativeContext, schemaLockHeld: true });
-  }
-
-  /** Attempt to lock just for additive changes first, and if that isn't enough, do the real thing.
-   * @internal
-   */
-  private async importSchemaStringsWithLocking(serializedXmlSchemas: string[]): Promise<DbResult> {
-    if (this.holdsSchemaLock) // We already hold the maximum lock, so we can just import the schemas
-      return this[_nativeDb].importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
-
-    await this.acquireAdditiveSchemaChangeOnlyLock();
-    const result = this[_nativeDb].importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: false });
-    if (result === DbResult.BE_SQLITE_OK)
-      return result;
-
-    if (result !== DbResult.BE_SQLITE_ERROR_DataTransformRequired) {
-      return result;
-    }
-
-    await this.acquireSchemaLock();
-    return this[_nativeDb].importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
+    await this.importSchemasInternal(
+      schemaFileNames,
+      (data, opts) => this[_nativeDb].importSchemas(data, opts),
+      maybeCustomNativeContext
+    );
   }
 
   /** Import ECSchema(s) serialized to XML. On success, the schema definition is stored in the iModel.
@@ -1071,50 +1060,11 @@ export abstract class IModelDb extends IModel {
    * @alpha
    */
   public async importSchemaStrings(serializedXmlSchemas: string[]): Promise<void> {
-    if (serializedXmlSchemas.length === 0)
-      return;
-
-    if (this instanceof BriefcaseDb) {
-      if (this.txns.rebaser.isRebasing) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
-      }
-      if (this.txns.isIndirectChanges) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change scope");
-      }
-    }
-
-    if (this[_nativeDb].schemaSyncEnabled()) {
-      await SchemaSync.withLockedAccess(this, { openMode: OpenMode.Readonly, operationName: "schemaSync" }, async (syncAccess) => {
-        const schemaSyncDbUri = syncAccess.getUri();
-        this.saveChanges();
-        try {
-          this[_nativeDb].importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: false, schemaSyncDbUri });
-        } catch (outerErr: any) {
-          if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === outerErr.errorNumber) {
-            this.abandonChanges();
-            if (this[_nativeDb].getITwinId() !== Guid.empty)
-              await this.acquireSchemaLock();
-            try {
-              this[_nativeDb].importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true, schemaSyncDbUri });
-            } catch (innerErr: any) {
-              throw new IModelError(innerErr.errorNumber, innerErr.message);
-            }
-          } else {
-            throw new IModelError(outerErr.errorNumber, outerErr.message);
-          }
-        }
-      });
-    } else {
-      if (this[_nativeDb].getITwinId() !== Guid.empty) // if this iModel is associated with an iTwin, importing schema requires the schema lock
-        await this.importSchemaStringsWithLocking(serializedXmlSchemas); // TODO: None of these calls respect the DbResult returned from the call
-
-      try {
-        this[_nativeDb].importXmlSchemas(serializedXmlSchemas, { schemaLockHeld: true });
-      } catch (err: any) {
-        throw new IModelError(err.errorNumber, err.message);
-      }
-    }
-    this.clearCaches();
+    await this.importSchemasInternal(
+      serializedXmlSchemas,
+      (data, opts) => this[_nativeDb].importXmlSchemas(data, opts),
+      undefined,
+    );
   }
 
   /** Find an opened instance of any subclass of IModelDb, by filename
