@@ -779,8 +779,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
 
     The graphics driver will glitch when discarding triangles using the vertex shader (setting all vertices to the same value) if gl_Position was not initialized to a valid position beforehand.
 
-    The workaround for this bug involves ensuring that gl_Position is initialized to a valid position before
-    attempting a discard using a degenerate triangle.
+    The workaround for this bug involves ensuring that gl_Position is initialized to a valid position before attempting a discard using a degenerate triangle.
     */
     main.addline("  gl_Position = computePosition(rawPosition);");
 
