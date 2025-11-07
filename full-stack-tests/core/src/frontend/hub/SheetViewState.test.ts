@@ -7,11 +7,11 @@ import { BriefcaseConnection, CheckpointConnection, SheetViewState, ViewState } 
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { testOnScreenViewport } from "../TestViewport";
 import { TestUtility } from "../TestUtility";
-import { coreFullStackTestIpc, deleteElements } from "../Editing";
+import { coreFullStackTestIpc, deleteElements, initializeEditTools } from "../Editing";
 import * as path from "path";
 import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
-import { Id64String, OpenMode } from "@itwin/core-bentley";
-import { ViewAttachmentProps } from "@itwin/core-common";
+import { CompressedId64Set, Guid, Id64String, OpenMode } from "@itwin/core-bentley";
+import { ColorDef, ViewAttachmentProps } from "@itwin/core-common";
 
 describe("SheetViewState (#integration)", () => {
   let imodel: CheckpointConnection;
@@ -181,6 +181,7 @@ describe("SheetViewState", () => {
 
   before(async () => {
     await TestUtility.startFrontend(undefined, undefined, true);
+    await initializeEditTools();
 
     // Create Sheet View with attachment
     const filePath = path.join(process.env.IMODELJS_CORE_DIRNAME!, "core/backend/lib/cjs/test/assets/sheetViewTest.bim");
@@ -246,6 +247,24 @@ describe("SheetViewState", () => {
 
     describe.only("are reloaded when ViewAttachments are inserted, updated, or deleted", () => {
       it("when not attached to a viewport", async () => {
+        const changedElements = new Set<Id64String>();
+        iModel.txns.onElementsChanged.addListener((changes) => {
+          for (const key of ["inserted", "updated", "deleted"] as const) {
+            const elems = changes[key];
+            if (undefined !== elems) {
+              for (const elem of CompressedId64Set.iterable(elems)) {
+                changedElements.add(elem);
+              }
+            }
+          }
+        });
+
+        function expectChanges(expected: Id64String[]): void {
+          const actual = Array.from(changedElements);
+          changedElements.clear();
+          expect(actual).to.deep.equal(expected);
+        }
+
         const view = await iModel.views.load(sheetViewId) as SheetViewState;
         expect(view).instanceof(SheetViewState);
         expect(view.viewAttachmentProps.length).to.equal(1);
@@ -260,7 +279,11 @@ describe("SheetViewState", () => {
         expect(props.placement).not.to.be.undefined;
         props.placement!.origin = [101, 99];
         await coreFullStackTestIpc.updateElement(iModel.key, props);
+
+        const cat = await coreFullStackTestIpc.createAndInsertSpatialCategory(iModel.key, await iModel.models.getDictionaryModel(), Guid.createValue(), { color: ColorDef.blue.toJSON() });
+
         await iModel.saveChanges();
+        expectChanges([cat, oldAttachmentId]);
 
         // Verify we really did update the element's placement.
         const newProps = await iModel.elements.loadProps(oldAttachmentId) as ViewAttachmentProps;

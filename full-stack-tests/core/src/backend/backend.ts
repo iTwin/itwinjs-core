@@ -122,7 +122,6 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
       client: "integration tests",
       globalOrigin: { x: 0, y: 0 },
       projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
-      guid: Guid.createValue(),
     });
 
     const getOrCreateDocumentList = async (db: IModelDb): Promise<Id64String> => {
