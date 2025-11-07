@@ -2566,7 +2566,7 @@ describe("CurveCurveIntersectXY", () => {
     // curve chain/collection vs curve chain/collection
     dx = 0;
     dy = 3800;
-    let numExpected = 12;
+    const numExpected = 12;
     visualizeAndTestSpiralIntersection(ck, allGeometry, curveChain0, curveChain1, numExpected, dx, dy);
     dy += 200;
     visualizeAndTestSpiralIntersection(ck, allGeometry, path0, path1, numExpected, dx, dy);

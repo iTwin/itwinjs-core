@@ -1164,19 +1164,19 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * Use the intersection found between the spiral approximation and the curve primitive as the initial guess for
    * the Newton iteration to locate the intersection between the actual spiral and the curve primitive.
    * @param spiral The transition spiral.
-   * @param curvePrimitive The other curve primitive.
+   * @param otherCurve The other curve primitive.
    * @param numberOfNewResults The number of results in the tail of `this._results` to be refined.
    * @param reversed Whether the spiral is geometryA (true) or geometryB (false).
    */
   private refineSpiralResultsByNewton(
-    curvePrimitive: CurvePrimitive, spiral: TransitionSpiral3d, numberOfNewResults: number, reversed = false,
+    otherCurve: CurvePrimitive, spiral: TransitionSpiral3d, numberOfNewResults: number, reversed = false,
   ): void {
     const resultsToBeRefined = this._results.slice(this._results.length - numberOfNewResults);
     this._results.length -= numberOfNewResults; // keep already refined results
     for (const detail of resultsToBeRefined) {
       let spiralFraction = reversed ? detail.detailA.fraction : detail.detailB.fraction;
       let otherFraction = reversed ? detail.detailB.fraction : detail.detailA.fraction;
-      const xyMatchingFunction = new CurveCurveIntersectionXYRRToRRD(spiral, curvePrimitive);
+      const xyMatchingFunction = new CurveCurveIntersectionXYRRToRRD(spiral, otherCurve);
       const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction);
       newtonSearcher.setUV(spiralFraction, otherFraction);
       if (newtonSearcher.runIterations()) {
@@ -1184,7 +1184,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         otherFraction = newtonSearcher.getV();
       }
       if (this.acceptFraction(false, spiralFraction, false) && this.acceptFraction(false, otherFraction, false))
-        this.recordPointWithLocalFractions(otherFraction, curvePrimitive, 0, 1, spiralFraction, spiral, 0, 1, reversed);
+        this.recordPointWithLocalFractions(otherFraction, otherCurve, 0, 1, spiralFraction, spiral, 0, 1, reversed);
     }
   }
   /** Double dispatch handler for strongly typed spiral curve. */
