@@ -57,11 +57,10 @@ export class LineString3dRangeTreeContext {
   public static createCapture(points: Point3d[] | LineString3d, maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4): LineString3dRangeTreeContext | undefined {
     const linestring = points instanceof LineString3d ? points : LineString3d.createPoints(points);
     const rangeTreeRoot = RangeTreeOps.createByIndexSplits<number>(
-      ((index: number): Range3d => {
-        return Range3d.create(linestring.pointAtUnchecked(index), linestring.pointAtUnchecked(index + 1));
-      }),
-      ((index: number): number => { return index; }),
-      linestring.numPoints() - 1,   // number of segments
+      // callbacks are invoked with 0 <= iSegment < numEdges, thus iSegment and iSegment+1 are valid linestring indices
+      (iSegment: number) => Range3d.create(linestring.pointAtUnchecked(iSegment), linestring.pointAtUnchecked(iSegment + 1)),
+      (iSegment: number) => iSegment,
+      linestring.numEdges(),
       maxChildPerNode,
       maxAppDataPerLeaf,
     );
