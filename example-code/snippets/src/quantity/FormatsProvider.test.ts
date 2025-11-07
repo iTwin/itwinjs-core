@@ -164,7 +164,7 @@ describe("FormatsProvider examples", () => {
       unitSystem: "metric" as const,
       formats: {
         // Base format definition
-        "RoadRailUnits.LENGTH": {
+        "CivilUnits.LENGTH": {
           composite: {
             includeZero: true,
             spacer: " ",
