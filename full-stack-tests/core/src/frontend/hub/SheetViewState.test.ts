@@ -262,6 +262,11 @@ describe("SheetViewState", () => {
         await coreFullStackTestIpc.updateElement(iModel.key, props);
         await iModel.saveChanges();
 
+        // Verify we really did update the element's placement.
+        const newProps = await iModel.elements.loadProps(oldAttachmentId) as ViewAttachmentProps;
+        expect(newProps.placement?.origin).to.deep.equal([101, 99]);
+
+        // Verify the view reloaded the attachment with the updated placement.
         expect(view.viewAttachmentProps[0].placement?.origin).to.deep.equal([101, 99]);
 
         // Add a new attachment
