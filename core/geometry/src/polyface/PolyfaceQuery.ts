@@ -915,15 +915,11 @@ export class PolyfaceQuery {
   public static awaitBlockCount = 0;
   /** Execute `context.projectToPolygon` until its work estimates accumulate to workLimit.  */
   private static async continueAnnounceSweepLinestringToConvexPolyfaceXY(
-    context: SweepLineStringToFacetContext, visitor: PolyfaceVisitor, announce: AnnounceDrapePanel,
+    context: SweepLineStringToFacetContext, polyface: Polyface, visitor: PolyfaceVisitor, announce: AnnounceDrapePanel,
   ): Promise<number> {
     let workCount = 0;
-    let clientPolyface: Polyface | undefined;
-    while ((workCount < this.asyncWorkLimit) && visitor.moveToNextFacet()) {
-      clientPolyface = visitor.clientPolyface();
-      if (clientPolyface)
-        workCount += context.projectToPolygon(visitor.point, announce, clientPolyface, visitor.currentReadIndex());
-    }
+    while ((workCount < this.asyncWorkLimit) && visitor.moveToNextFacet())
+      workCount += context.projectToPolygon(visitor.point, announce, polyface, visitor.currentReadIndex());
     return workCount;
   }
   /**
@@ -943,7 +939,7 @@ export class PolyfaceQuery {
     if (context) {
       const visitor = polyface.createVisitor(0);
       let workCount;
-      while (0 < (workCount = await Promise.resolve(PolyfaceQuery.continueAnnounceSweepLinestringToConvexPolyfaceXY(context, visitor, announce)))) {
+      while (0 < (workCount = await Promise.resolve(PolyfaceQuery.continueAnnounceSweepLinestringToConvexPolyfaceXY(context, polyface, visitor, announce)))) {
         workTotal += workCount;
         this.awaitBlockCount++;
         // GeometryCoreTestIO.consoleLog({ myWorkCount: workCount, myBlockCount: this.awaitBlockCount });
@@ -1585,21 +1581,21 @@ export class PolyfaceQuery {
   /**
    * Clone the facets, inserting vertices (within edges) where points not part of each facet's vertex indices
    * impinge within edges.
-   * If clone failed, a default empty IndexedPolyface is returned.
    */
   public static cloneWithTVertexFixup(polyface: Polyface): IndexedPolyface {
     const oldFacetVisitor = polyface.createVisitor(1); // this is to visit the existing facets
     const newFacetVisitor = polyface.createVisitor(0); // this is to build the new facets
     const rangeSearcher = XYPointBuckets.create(polyface.data.point, 30);
-    if (!rangeSearcher)
-      return IndexedPolyface.create();
     const builder = PolyfaceBuilder.create();
+    if (!rangeSearcher) {
+      builder.addFacetsFromVisitor(oldFacetVisitor);
+      return builder.claimPolyface(false);
+    }
     const edgeRange = Range3d.createNull();
     const point0 = Point3d.create();
     const point1 = Point3d.create();
     const spacePoint = Point3d.create();
     const segment = LineSegment3d.create(point0, point1);
-
     for (oldFacetVisitor.reset(); oldFacetVisitor.moveToNextFacet();) {
       newFacetVisitor.clearArrays();
       for (let i = 0; i + 1 < oldFacetVisitor.point.length; i++) {
