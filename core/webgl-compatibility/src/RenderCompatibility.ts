@@ -96,13 +96,6 @@ export interface GraphicsDriverBugs {
    * The workaround for this bug means MSAA cannot be enabled on those devices.
    */
   msaaWillHang?: true;
-  /** If true, the graphics driver will glitch when discarding triangles using the vertex shader (setting all vertices to the same value) if gl_Position was not initialized to a valid position beforehand.
-   *
-   * Known to affect much of the Intel Ultra 7 family of chipsets when using Intel driver from some point after driver version 32.0.101.6078 (9/13/2024).
-   *
-   * The workaround for this bug involves ensuring that gl_Position is initialized to a valid position before attempting a discard using a degenerate triangle.
-   */
-  vertexDiscardWillGlitch?: true;
 }
 
 /** Describes the level of compatibility of a client device/browser with the iTwin.js rendering system.
@@ -155,7 +148,7 @@ function createDefaultContext(canvas: HTMLCanvasElement, useWebGL2: boolean = tr
 export function queryRenderCompatibility(useWebGL2: boolean, createContext?: ContextCreator): WebGLRenderCompatibilityInfo {
   const canvas = document.createElement("canvas");
   if (null === canvas)
-    return { status: WebGLRenderCompatibilityStatus.CannotCreateContext, missingOptionalFeatures: [], missingRequiredFeatures: [], userAgent: navigator.userAgent, driverBugs: {} };
+    return { status: WebGLRenderCompatibilityStatus.CannotCreateContext, missingOptionalFeatures: [], missingRequiredFeatures: [], userAgent: navigator.userAgent, driverBugs: { } };
 
   let errorMessage: string | undefined;
   canvas.addEventListener("webglcontextcreationerror", (event) => {

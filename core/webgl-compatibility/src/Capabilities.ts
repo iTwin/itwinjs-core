@@ -73,16 +73,6 @@ const buggyIntelMatchers = [
   /ANGLE \(Intel, Intel\(R\) (U)?HD Graphics 6(2|3)0 Direct3D11/,
 ];
 
-// Regexes to match Intel 7th generation integrated GPUs that suffer from GraphicsDriverBugs.vertexDiscardWillGlitch.
-const buggyIntelMatchers2 = [
-  // Certain Intel Ultra 7 chipsets reported in https://github.com/iTwin/itwinjs-core/issues/815, https://github.com/IGCIT/Intel-GPU-Community-Issue-Tracker-IGCIT/issues/1165, and elsewhere.
-  /ANGLE \(Intel, Intel\(\R\) Graphics \(0x00007D40\) Direct3D11/,
-  /ANGLE \(Intel, Intel\(\R\) Graphics \(0x00007D45\) Direct3D11/,
-  /ANGLE \(Intel, Intel\(\R\) Iris\(\R\) Xe Graphics \(0x00009A49\) Direct3D11/,
-  /ANGLE \(Intel, Intel\(\R\) Arc\(TM\) 140V GPU \(16GB\) \(0x000064A0\) Direct3D11/,
-  /ANGLE \(Intel, Intel\(\R\) Arc\(TM\) Graphics \(0x00007D55\) Direct3D11/,
-];
-
 // Regexes to match Mali GPUs known to suffer from GraphicsDriverBugs.msaaWillHang.
 const buggyMaliMatchers = [
   /Mali-G71/,
@@ -97,7 +87,7 @@ const integratedIntelGpuMatchers = [
   /Iris/,
 ];
 
-function isIntegratedGraphics(args: { unmaskedVendor?: string, unmaskedRenderer?: string }): boolean {
+function isIntegratedGraphics(args: {unmaskedVendor?: string, unmaskedRenderer?: string}): boolean {
   if (args.unmaskedRenderer && args.unmaskedRenderer.includes("Intel") && integratedIntelGpuMatchers.some((x) => x.test(args.unmaskedRenderer!)))
     return true;
 
@@ -276,9 +266,6 @@ export class Capabilities {
     if (unmaskedRenderer && buggyIntelMatchers.some((x) => x.test(unmaskedRenderer)))
       this._driverBugs.fragDepthDoesNotDisableEarlyZ = true;
 
-    if (unmaskedRenderer && buggyIntelMatchers2.some((x) => x.test(unmaskedRenderer)))
-      this._driverBugs.vertexDiscardWillGlitch = true;
-
     if (unmaskedRenderer && buggyMaliMatchers.some((x) => x.test(unmaskedRenderer)))
       this._driverBugs.msaaWillHang = true;
 
@@ -353,7 +340,7 @@ export class Capabilities {
       missingOptionalFeatures,
       unmaskedRenderer,
       unmaskedVendor,
-      usingIntegratedGraphics: isIntegratedGraphics({ unmaskedVendor, unmaskedRenderer }),
+      usingIntegratedGraphics: isIntegratedGraphics({unmaskedVendor, unmaskedRenderer}),
       driverBugs: { ...this._driverBugs },
       userAgent: navigator.userAgent,
       createdContext: gl,

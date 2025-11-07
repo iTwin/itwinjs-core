@@ -154,44 +154,6 @@ describe("Render Compatibility", () => {
     expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.AllOkay);
   });
 
-  it("detects vertex discard glitch driver bug", () => {
-    const renderers = [
-      [ "ANGLE (Intel, Intel(R) Graphics (0x00007D40) Direct3D11 vs_5_0 ps_5_0, D3D11)", true ],
-      [ "ANGLE (Intel, Intel(R) Graphics (0x00007D40) Direct3D11)", true ],
-      [ "ANGLE (Intel, Intel(R) Graphics (0x00007D45) Direct3D11 vs_5_0 ps_5_0, D3D11)", true],
-      [ "ANGLE (Intel, Intel(R) Graphics (0x00007D45) Direct3D11)", true],
-      [ "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11 vs_5_0 ps_5_0, D3D11)", true],
-      [ "ANGLE (Intel, Intel(R) Iris(R) Xe Graphics (0x00009A49) Direct3D11)", true],
-      [ "ANGLE (Intel, Intel(R) Arc(TM) 140V GPU (16GB) (0x000064A0) Direct3D11 vs_5_0 ps_5_0, D3D11)", true],
-      [ "ANGLE (Intel, Intel(R) Arc(TM) 140V GPU (16GB) (0x000064A0) Direct3D11)", true],
-      [ "ANGLE (Intel, Intel(R) Arc(TM) Graphics (0x00007D55) Direct3D11 vs_5_0 ps_5_0, D3D11)", true],
-      [ "ANGLE (Intel, Intel(R) Arc(TM) Graphics (0x00007D55) Direct3D11)", true],
-
-      [ "ANGLE (Intel HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)", false ],
-      [ "ANGLE (NVIDIA GeForce GTX 970 Direct3D11 vs_5_0 ps_5_0)", false ],
-    ];
-
-    for (const renderer of renderers) {
-      overriddenFunctions.overrideCreateContext((ctx: WebGLContext, pname: number) => {
-        const ext = ctx.getExtension("WEBGL_debug_renderer_info");
-        if (ext && pname === ext.UNMASKED_RENDERER_WEBGL)
-          return renderer[0];
-
-        return undefined;
-      });
-
-      const context = makeTestContext(true);
-      const caps = new Capabilities();
-      const compatibility = caps.init(context);
-
-      expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.AllOkay);
-
-      const expected = renderer[1] ? true : undefined;
-      expect(compatibility.driverBugs.vertexDiscardWillGlitch).to.equal(expected);
-      expect(caps.driverBugs.vertexDiscardWillGlitch).to.equal(expected);
-    }
-  });
-
   it("detects early Z culling driver bug", () => {
     const renderers = [
       [ "ANGLE (Intel(R) HD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true ],
