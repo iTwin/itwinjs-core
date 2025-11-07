@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add APIs for project and sheet information.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

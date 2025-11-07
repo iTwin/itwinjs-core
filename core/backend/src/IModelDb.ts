@@ -396,7 +396,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public [_resetIModelDb] () {
+  public [_resetIModelDb]() {
     this.loadIModelSettings();
     GeoCoordConfig.loadForImodel(this.workspace.settings); // load gcs data specified by iModel's settings dictionaries, must be done before calling initializeIModelDb
     this.initializeIModelDb();
@@ -823,30 +823,38 @@ export abstract class IModelDb extends IModel {
    * @param description Optional description of the changes.
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    * @note This will not push changes to the iModelHub.
+   * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync}, {TxnManager.withIndirectTxnMode} or {RebaseHandler.recompute}.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
    */
-  public saveChanges(description?: string): void ;
+  public saveChanges(description?: string): void;
 
   /** Commit unsaved changes in memory as a Txn to this iModelDb. This is preferable for case where application like to store additional structured information with the change that could be useful later when rebasing.
    * @alpha
    * @param args Provide [[SaveChangesArgs]] of the changes.
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    * @note This will not push changes to the iModelHub.
+   * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync}, {TxnManager.withIndirectTxnMode} or {RebaseHandler.recompute}.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
    */
-    public saveChanges(args: SaveChangesArgs): void;
+  public saveChanges(args: SaveChangesArgs): void;
 
   /** Commit unsaved changes in memory as a Txn to this iModelDb.
    * @internal
    * @param descriptionOrArgs Optionally provide description or [[SaveChangesArgs]] args for the changes.
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    * @note This will not push changes to the iModelHub.
+   * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync}, {TxnManager.withIndirectTxnMode} or {RebaseHandler.recompute}.
    * @see [[IModelDb.pushChanges]] to push changes to the iModelHub.
    */
   public saveChanges(descriptionOrArgs?: string | SaveChangesArgs): void {
     if (this.openMode === OpenMode.Readonly)
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only");
 
+    if (this instanceof BriefcaseDb) {
+      if (this.txns.isIndirectChanges) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot save changes while in an indirect change scope");
+      }
+    }
     const args = typeof descriptionOrArgs === "string" ? { description: descriptionOrArgs } : descriptionOrArgs;
     if (!this[_nativeDb].hasUnsavedChanges()) {
       Logger.logWarning(loggerCategory, "there are no unsaved changes", () => args);
@@ -942,7 +950,8 @@ export abstract class IModelDb extends IModel {
    * @note Changes are saved if importSchemas is successful and abandoned if not successful.
    * - You can use NativeLoggerCategory to turn on the native logs. You can also control [what exactly is logged by the loggers](https://www.itwinjs.org/learning/common/logging/#controlling-what-is-logged).
    * - See [Schema Versioning]($docs/bis/guide/schema-evolution/schema-versioning-and-generations.md) for more information on acceptable changes to schemas.
-   * @see querySchemaVersion
+   * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
+  * @see querySchemaVersion
    */
   public async importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void> {
     if (schemaFileNames.length === 0)
@@ -953,7 +962,7 @@ export abstract class IModelDb extends IModel {
         throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
       }
       if (this.txns.isIndirectChanges) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change transaction");
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change scope");
       }
     }
 
@@ -1005,6 +1014,7 @@ export abstract class IModelDb extends IModel {
    * @param serializedXmlSchemas  The xml string(s) created from a serialized ECSchema.
    * @throws [[IModelError]] if the schema lock cannot be obtained or there is a problem importing the schema.
    * @note Changes are saved if importSchemaStrings is successful and abandoned if not successful.
+   * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
    * @see querySchemaVersion
    * @alpha
    */
@@ -1017,7 +1027,7 @@ export abstract class IModelDb extends IModel {
         throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while rebasing");
       }
       if (this.txns.isIndirectChanges) {
-        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change transaction");
+        throw new IModelError(IModelStatus.BadRequest, "Cannot import schemas while in an indirect change scope");
       }
     }
 
@@ -1489,6 +1499,26 @@ export abstract class IModelDb extends IModel {
     });
   }
 
+  /** Returns true if the specified schema exists in the iModel and is no older than the specified minimum version.
+   * @beta
+   */
+  public meetsMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion): boolean {
+    const actualVersion = this.querySchemaVersionNumbers(schemaName);
+    return undefined !== actualVersion && actualVersion.compare(minimumVersion) >= 0;
+  }
+
+  /** Throws an error if the version of the schema specified by `schemaName` is older than `minimumVersion`.
+   * The error will indicate the `featureName` that requires this minimum version.
+   * Use this to produce more helpful errors when interacting with APIs that operate on classes introduced as
+   * schemas evolve.
+   * @beta
+   */
+  public requireMinimumSchemaVersion(schemaName: string, minimumVersion: ECVersion, featureName: string): void {
+    if (!this.meetsMinimumSchemaVersion(schemaName, minimumVersion)) {
+      throw new Error(`${featureName} requires ${schemaName} v${minimumVersion.toString()} or newer`);
+    }
+  }
+
   /** Retrieve a named texture image from this iModel, as a TextureData.
    * @param props the texture load properties which must include the name of the texture to load
    * @returns the TextureData or undefined if the texture image is not present.
@@ -1515,15 +1545,27 @@ export abstract class IModelDb extends IModel {
   /** Save a "file property" to this iModel
    * @param prop the FilePropertyProps that describes the new property
    * @param value either a string or a blob to save as the file property
+   * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {TxnManager.withIndirectTxnMode}.
    */
   public saveFileProperty(prop: FilePropertyProps, strValue: string | undefined, blobVal?: Uint8Array): void {
+    if (this instanceof BriefcaseDb) {
+      if (this.txns.isIndirectChanges) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot save file property while in an indirect change scope");
+      }
+    }
     this[_nativeDb].saveFileProperty(prop, strValue, blobVal);
   }
 
   /** delete a "file property" from this iModel
    * @param prop the FilePropertyProps that describes the property
+   * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {TxnManager.withIndirectTxnMode}.
    */
   public deleteFileProperty(prop: FilePropertyProps): void {
+    if (this instanceof BriefcaseDb) {
+      if (this.txns.isIndirectChanges) {
+        throw new IModelError(IModelStatus.BadRequest, "Cannot delete file property while in an indirect change scope");
+      }
+    }
     this[_nativeDb].saveFileProperty(prop, undefined, undefined);
   }
 
@@ -3081,7 +3123,6 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /**
-   * @alpha
    * Permanently discards any local changes made to this briefcase, reverting the briefcase to its last synchronized state.
    * This operation cannot be undone. By default, all locks held by this briefcase will be released unless the `retainLocks` option is specified.
    * @Note This operation can be performed at any point including after failed rebase attempts.
@@ -3089,9 +3130,19 @@ export class BriefcaseDb extends IModelDb {
    * @param args.retainLocks - If `true`, retains all currently held locks after discarding changes. If omitted or `false`, all locks will be released.
    * @returns A promise that resolves when the operation is complete.
    * @throws May throw if discarding changes fails.
+   *
+   * @public @preview
    */
   public async discardChanges(args?: { retainLocks?: true }): Promise<void> {
     Logger.logInfo(loggerCategory, "Discarding local changes");
+    if (this.txns.isIndirectChanges) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot discard changes when there are indirect changes");
+    }
+
+    if (this.txns.rebaser.inProgress() && !this.txns.rebaser.isAborting) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot discard changes while a rebase is in progress");
+    }
+
     this.clearCaches();
     this[_nativeDb].clearECDbCache();
     this[_nativeDb].discardLocalChanges();
@@ -3472,7 +3523,10 @@ export class BriefcaseDb extends IModelDb {
       throw new Error("closeAndReopen detected change in iModelId and/or iTwinId");
   }
 
-  /** Pull and apply changesets from iModelHub */
+  /**
+   * Pull and apply changesets from iModelHub
+   * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
+  */
   public async pullChanges(arg?: PullChangesArgs): Promise<void> {
     await this.executeWritable(async () => {
       await BriefcaseManager.pullAndApplyChangesets(this, arg ?? {});
@@ -3557,7 +3611,10 @@ export class BriefcaseDb extends IModelDb {
     }
   }
 
-  /** Push changes to iModelHub. */
+  /**
+   * Push changes to iModelHub.
+   * @note This method should not be called from {TxnManager.withIndirectTxnModeAsync} or {RebaseHandler.recompute}.
+   */
   public async pushChanges(arg: PushChangesArgs): Promise<void> {
     if (this.briefcaseId === BriefcaseIdValue.Unassigned)
       return;

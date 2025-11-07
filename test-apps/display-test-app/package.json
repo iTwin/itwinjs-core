@@ -7,9 +7,6 @@
     "url": "http://www.bentley.com"
   },
   "version": "1.8.0",
-  "engines": {
-    "node": "^20.0.0 || ^22.0.0"
-  },
   "private": true,
   "scripts": {
     "build": "npm run -s build:frontend && npm run -s build:backend",
@@ -99,7 +96,7 @@
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.5",
     "dotenv-expand": "^5.1.0",
-    "electron": "^38.1.2",
+    "electron": "^39.0.0",
     "eslint": "^9.31.0",
     "express": "^4.21.2",
     "express-ws": "^5.0.2",
@@ -116,7 +113,7 @@
     "rollup-plugin-webpack-stats": "^2.0.0",
     "rollup-plugin-external-globals": "0.11.0",
     "typescript": "~5.6.2",
-    "vite": "^7.1.7",
+    "vite": "^6.4.0",
     "vite-plugin-env-compatible": "^2.0.1",
     "webpack": "^5.97.1"
   },

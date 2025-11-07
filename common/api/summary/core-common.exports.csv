@@ -683,6 +683,8 @@ internal;interface;PrimaryTileTreeId
 beta;enum;PrimitiveTypeCode
 public;interface;PriorityPlanarClipMaskArgs
 beta;enum;ProfileOptions
+beta;interface;ProjectInformation
+beta;type;ProjectInformationRecordProps
 public;class;Projection
 public;type;ProjectionMethod
 public;interface;ProjectionProps
@@ -860,6 +862,9 @@ beta;interface;SheetBorderTemplateProps
 beta;interface;SheetIndexEntryProps
 beta;type;SheetIndexFolderProps
 beta;interface;SheetIndexReferenceProps
+beta;interface;SheetInformation
+beta;type;SheetInformationAspectProps
+beta;interface;SheetInformationProps
 public;interface;SheetProps
 preview;interface;SheetProps
 beta;interface;SheetReferenceProps
@@ -916,6 +921,8 @@ beta;interface;SynchronizationConfigLinkProps
 public;enum;SyncMode
 beta;class;TabRun
 beta;interface;TabRunProps
+beta;type;TerminatorShape
+beta;const;terminatorShapes
 public;enum;TerrainHeightOriginMode
 public;interface;TerrainProps
 public;class;TerrainSettings
