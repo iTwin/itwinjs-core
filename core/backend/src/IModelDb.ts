@@ -309,17 +309,17 @@ export abstract class IModelDb extends IModel {
     return this.locks.holdsExclusiveLock(IModel.rootSubjectId);
   }
 
-  /** Acquire the additive only schema change schema lock on this iModel.
-   * @note: We obtain a shared lock on rootSubjectId so this does not clash with earlier versions
-   * of itwinjs-core which used exclusive locks on that Id to indicate schema changes.
-   * TODO: It would be nice to be able to release these locks specifically on failed imports that changed nothing, however the current lock API does not support that.
+  /** Acquire the schema table lock.
+   * @note This is a less restrictive lock than the full schema lock, allowing schema modifications that do not transform data.
    */
-  public async acquireAdditiveSchemaChangeOnlyLock(): Promise<void> {
+  public async acquireSchemaTableLock(): Promise<void> {
     return this.locks.acquireLocks({ shared: IModel.rootSubjectId, exclusive: IModel.schemaElementId });
   }
 
-  /** determine whether the additive only schema change lock is currently held for this iModel. */
-  public get holdsAdditiveSchemaChangeOnlyLock() {
+  /** Determine whether the schema table lock is currently held.
+   * @note This is a less restrictive lock than the full schema lock, allowing schema modifications that do not transform data.
+   */
+  public get holdsSchemaTableLock() {
     return this.locks.holdsExclusiveLock(IModel.schemaElementId) && this.locks.holdsSharedLock(IModel.rootSubjectId);
   }
 
@@ -1000,7 +1000,7 @@ export abstract class IModelDb extends IModel {
       if (this[_nativeDb].getITwinId() !== Guid.empty) { // if this iModel is associated with an iTwin, importing schema requires the schema lock
         // Attempt to lock just for additive changes first, and if that isn't enough, do the real thing.
         if (!this.holdsSchemaLock) { // We already hold the maximum lock, so we can skip acquiring locks
-          await this.acquireAdditiveSchemaChangeOnlyLock();
+          await this.acquireSchemaTableLock();
           try {
             importOp(schemaData, { ecSchemaXmlContext: customNativeContext, schemaLockHeld: false });
           } catch (err: any) {

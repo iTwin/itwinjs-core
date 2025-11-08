@@ -51,7 +51,7 @@ describe.only("Schema lock tests", function (this: Suite) {
       await user1Briefcase.importSchemaStrings([schema]);
       user1Briefcase.saveChanges();
       assert.isFalse(user1Briefcase.holdsSchemaLock);
-      assert.isTrue(user1Briefcase.holdsAdditiveSchemaChangeOnlyLock);
+      assert.isTrue(user1Briefcase.holdsSchemaTableLock);
       await user1Briefcase.pushChanges({ description: "import schema", accessToken: user1AccessToken });
 
       // Insert an element of the new class
@@ -74,7 +74,7 @@ describe.only("Schema lock tests", function (this: Suite) {
 
       await user1Briefcase.pushChanges({ description: "insert element of new class", accessToken: user1AccessToken });
       assert.isFalse(user1Briefcase.holdsSchemaLock);
-      assert.isFalse(user1Briefcase.holdsAdditiveSchemaChangeOnlyLock);
+      assert.isFalse(user1Briefcase.holdsSchemaTableLock);
 
       // Open briefcase as user 2.
       user2Briefcase = await HubWrappers.downloadAndOpenBriefcase({ iTwinId, iModelId, accessToken: user2AccessToken });
@@ -89,7 +89,7 @@ describe.only("Schema lock tests", function (this: Suite) {
       </ECSchema>`;
       await user2Briefcase.importSchemaStrings([updatedSchemaUser2]);
       assert.isFalse(user2Briefcase.holdsSchemaLock);
-      assert.isTrue(user2Briefcase.holdsAdditiveSchemaChangeOnlyLock);
+      assert.isTrue(user2Briefcase.holdsSchemaTableLock);
       user2Briefcase.saveChanges();
 
       // Try what we can do now in briefcase 1 (user 1)
@@ -116,9 +116,9 @@ describe.only("Schema lock tests", function (this: Suite) {
       await user1Briefcase.pullChanges({ accessToken: user1AccessToken });
 
       assert.isFalse(user1Briefcase.holdsSchemaLock);
-      assert.isFalse(user1Briefcase.holdsAdditiveSchemaChangeOnlyLock);
+      assert.isFalse(user1Briefcase.holdsSchemaTableLock);
       assert.isFalse(user2Briefcase.holdsSchemaLock);
-      assert.isFalse(user2Briefcase.holdsAdditiveSchemaChangeOnlyLock);
+      assert.isFalse(user2Briefcase.holdsSchemaTableLock);
 
       // verify schema and updated element on both sides
       for (const briefcase of [user1Briefcase, user2Briefcase]) {
@@ -175,7 +175,7 @@ describe.only("Schema lock tests", function (this: Suite) {
       await user1Briefcase.importSchemaStrings([initialSchema]);
       user1Briefcase.saveChanges();
       assert.isFalse(user1Briefcase.holdsSchemaLock);
-      assert.isTrue(user1Briefcase.holdsAdditiveSchemaChangeOnlyLock);
+      assert.isTrue(user1Briefcase.holdsSchemaTableLock);
       await user1Briefcase.pushChanges({ description: "import initial schema", accessToken: user1AccessToken });
 
       // Insert an element of the new class
@@ -199,7 +199,7 @@ describe.only("Schema lock tests", function (this: Suite) {
 
       await user1Briefcase.pushChanges({ description: "insert element of new class", accessToken: user1AccessToken });
       assert.isFalse(user1Briefcase.holdsSchemaLock);
-      assert.isFalse(user1Briefcase.holdsAdditiveSchemaChangeOnlyLock);
+      assert.isFalse(user1Briefcase.holdsSchemaTableLock);
 
       // Helper function to query and verify element properties
       // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -241,7 +241,7 @@ describe.only("Schema lock tests", function (this: Suite) {
 
       await user2Briefcase.importSchemaStrings([updatedSchemaUser2]);
       assert.isTrue(user2Briefcase.holdsSchemaLock, "Should hold full schema lock for data transformation");
-      assert.isFalse(user2Briefcase.holdsAdditiveSchemaChangeOnlyLock, "Should not hold additive-only lock when holding full lock");
+      assert.isTrue(user2Briefcase.holdsSchemaTableLock, "Should not hold additive-only lock when holding full lock");
       user2Briefcase.saveChanges();
 
       // Try what user1 can do while user2 holds the full schema lock
@@ -276,7 +276,7 @@ describe.only("Schema lock tests", function (this: Suite) {
       // User2 pushes the schema change
       await user2Briefcase.pushChanges({ description: "update schema with data transformation", accessToken: user2AccessToken });
       assert.isFalse(user2Briefcase.holdsSchemaLock);
-      assert.isFalse(user2Briefcase.holdsAdditiveSchemaChangeOnlyLock);
+      assert.isFalse(user2Briefcase.holdsSchemaTableLock);
 
       // User1 pulls the changes
       await user1Briefcase.pullChanges({ accessToken: user1AccessToken });
@@ -291,9 +291,9 @@ describe.only("Schema lock tests", function (this: Suite) {
       await user2Briefcase.pullChanges({ accessToken: user2AccessToken });
 
       assert.isFalse(user1Briefcase.holdsSchemaLock);
-      assert.isFalse(user1Briefcase.holdsAdditiveSchemaChangeOnlyLock);
+      assert.isFalse(user1Briefcase.holdsSchemaTableLock);
       assert.isFalse(user2Briefcase.holdsSchemaLock);
-      assert.isFalse(user2Briefcase.holdsAdditiveSchemaChangeOnlyLock);
+      assert.isFalse(user2Briefcase.holdsSchemaTableLock);
 
       // Verify schema and element data on both sides
       for (const briefcase of [user1Briefcase, user2Briefcase]) {
