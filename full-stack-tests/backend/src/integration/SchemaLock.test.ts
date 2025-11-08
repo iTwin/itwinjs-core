@@ -78,7 +78,7 @@ describe.only("Schema lock tests", function (this: Suite) {
   const user1Token = "token 1";
   const user2Token = "token 2";
   let iModelId: string;
-  let openBriefcases: BriefcaseDb[] = [];
+  let briefcases: BriefcaseDb[] = [];
 
   /** Setup a new iModel and store the iModelId in shared context */
   const setupIModel = async (accessToken: string): Promise<void> => {
@@ -135,8 +135,8 @@ describe.only("Schema lock tests", function (this: Suite) {
   });
 
   afterEach(() => {
-    openBriefcases.forEach((bc) => bc.close());
-    openBriefcases = [];
+    briefcases.forEach((bc) => bc.close());
+    briefcases = [];
     HubMock.shutdown();
   });
 
@@ -144,7 +144,7 @@ describe.only("Schema lock tests", function (this: Suite) {
     // Setup iModel
     await setupIModel(user1Token);
     const user1Briefcase = await openBriefcase(user1Token);
-    openBriefcases.push(user1Briefcase);
+    briefcases.push(user1Briefcase);
 
     // Import base schema
     await user1Briefcase.importSchemaStrings([testSchemas.baseSchema]);
@@ -165,7 +165,7 @@ describe.only("Schema lock tests", function (this: Suite) {
 
     // User2 opens briefcase and imports trivial schema update
     const user2Briefcase = await openBriefcase(user2Token);
-    openBriefcases.push(user2Briefcase);
+    briefcases.push(user2Briefcase);
     await user2Briefcase.importSchemaStrings([testSchemas.trivialUpdate]);
     assert.isFalse(user2Briefcase.holdsSchemaLock);
     assert.isTrue(user2Briefcase.holdsSchemaTableLock);
@@ -178,6 +178,7 @@ describe.only("Schema lock tests", function (this: Suite) {
     // User1 can modify element while user2 holds table lock
     await user1Briefcase.locks.acquireLocks({ exclusive: elementId });
     updateElementProperty(user1Briefcase, elementId, "propA", "UPDATED_A");
+    updateElementProperty(user1Briefcase, elementId, "propC", "UPDATED_C");
     user1Briefcase.saveChanges();
     await user1Briefcase.pushChanges({ description: "modify element", accessToken: user1Token });
 
@@ -199,6 +200,71 @@ describe.only("Schema lock tests", function (this: Suite) {
 
       const element = briefcase.elements.getElement(elementId);
       assert.equal((element as any).propA, "UPDATED_A", "Element should have updated propA");
+      assert.equal((element as any).propC, "UPDATED_C", "Element should have updated propC");
+    }
+  });
+
+  it("trivial schema import reversed push pull order", async () => {
+    // Same as previous test just a bit condensed and with swapped push/pull order to verify consistency
+    // Setup iModel
+    await setupIModel(user1Token);
+    const user1Briefcase = await openBriefcase(user1Token);
+    briefcases.push(user1Briefcase);
+
+    // Import base schema
+    await user1Briefcase.importSchemaStrings([testSchemas.baseSchema]);
+    user1Briefcase.saveChanges();
+    assert.isFalse(user1Briefcase.holdsSchemaLock);
+    assert.isTrue(user1Briefcase.holdsSchemaTableLock);
+    await user1Briefcase.pushChanges({ description: "import schema", accessToken: user1Token });
+
+    // Insert element using base schema
+    await user1Briefcase.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const [modelId, categoryId] = insertModelAndCategory(user1Briefcase);
+    const elementId = insertTestElement(user1Briefcase, modelId, categoryId, "INITIAL_A", "INITIAL_C");
+    user1Briefcase.saveChanges();
+
+    await user1Briefcase.pushChanges({ description: "insert element", accessToken: user1Token });
+    assert.isFalse(user1Briefcase.holdsSchemaLock);
+    assert.isFalse(user1Briefcase.holdsSchemaTableLock);
+
+    // User2 opens briefcase and imports trivial schema update
+    const user2Briefcase = await openBriefcase(user2Token);
+    briefcases.push(user2Briefcase);
+    await user2Briefcase.importSchemaStrings([testSchemas.trivialUpdate]);
+    assert.isFalse(user2Briefcase.holdsSchemaLock);
+    assert.isTrue(user2Briefcase.holdsSchemaTableLock);
+    user2Briefcase.saveChanges();
+
+    // User1 cannot import conflicting schema while user2 holds table lock
+    await expect(user1Briefcase.importSchemaStrings([testSchemas.trivialUpdate]))
+      .to.be.rejectedWith("exclusive lock is already held");
+
+    // User1 can modify element while user2 holds table lock
+    await user1Briefcase.locks.acquireLocks({ exclusive: elementId });
+    updateElementProperty(user1Briefcase, elementId, "propA", "UPDATED_A");
+    updateElementProperty(user1Briefcase, elementId, "propC", "UPDATED_C");
+    user1Briefcase.saveChanges();
+    await user2Briefcase.pushChanges({ description: "push schema change", accessToken: user2Token });
+    await user1Briefcase.pullChanges({ accessToken: user1Token });
+    await user1Briefcase.pushChanges({ description: "modify element", accessToken: user1Token });
+    await user2Briefcase.pullChanges({ accessToken: user2Token });
+
+    assert.isFalse(user1Briefcase.holdsSchemaLock);
+    assert.isFalse(user1Briefcase.holdsSchemaTableLock);
+    assert.isFalse(user2Briefcase.holdsSchemaLock);
+    assert.isFalse(user2Briefcase.holdsSchemaTableLock);
+
+    // Verify final state: user2's schema change won, element was updated
+    for (const briefcase of [user1Briefcase, user2Briefcase]) {
+      const entityClass = await briefcase.schemaContext.getSchemaItem(new SchemaItemKey("C", new SchemaKey("TestDomain", 1, 0, 1)), EntityClass);
+      assert.isDefined(entityClass, "Entity class should be defined");
+      const propC2 = await entityClass?.getProperty("PropC2");
+      assert.isDefined(propC2, "PropC2 should be present (user2's change)");
+
+      const element = briefcase.elements.getElement(elementId);
+      assert.equal((element as any).propA, "UPDATED_A", "Element should have updated propA");
+      assert.equal((element as any).propC, "UPDATED_C", "Element should have updated propC");
     }
   });
 
@@ -206,7 +272,7 @@ describe.only("Schema lock tests", function (this: Suite) {
     // Setup iModel
     await setupIModel(user1Token);
     const user1Briefcase = await openBriefcase(user1Token);
-    openBriefcases.push(user1Briefcase);
+    briefcases.push(user1Briefcase);
 
     // Import base schema
     await user1Briefcase.importSchemaStrings([testSchemas.baseSchema]);
@@ -227,7 +293,7 @@ describe.only("Schema lock tests", function (this: Suite) {
 
     // User2 opens and imports data transformation schema
     const user2Briefcase = await openBriefcase(user2Token);
-    openBriefcases.push(user2Briefcase);
+    briefcases.push(user2Briefcase);
     await user2Briefcase.importSchemaStrings([testSchemas.dataTransformUpdate]);
     assert.isTrue(user2Briefcase.holdsSchemaLock, "Should hold full schema lock for data transformation");
     assert.isTrue(user2Briefcase.holdsSchemaTableLock);
@@ -250,6 +316,7 @@ describe.only("Schema lock tests", function (this: Suite) {
     await user1Briefcase.pullChanges({ accessToken: user1Token });
     await user1Briefcase.locks.acquireLocks({ exclusive: elementId });
     updateElementProperty(user1Briefcase, elementId, "propA", "UPDATED_A");
+    updateElementProperty(user1Briefcase, elementId, "propC", "UPDATED_C");
     user1Briefcase.saveChanges();
     await user1Briefcase.pushChanges({ description: "modify element", accessToken: user1Token });
 
@@ -269,7 +336,147 @@ describe.only("Schema lock tests", function (this: Suite) {
 
       const element = briefcase.elements.getElement(elementId);
       assert.equal((element as any).propA, "UPDATED_A");
-      assert.equal((element as any).propC, "INITIAL_C", "PropC value preserved through transformation");
+      assert.equal((element as any).propC, "UPDATED_C", "PropC value updated after transformation");
+    }
+  });
+
+  it("Pending incoming data transform change with local element update", async () => {
+    // Setup iModel
+    await setupIModel(user1Token);
+    const user1Briefcase = await openBriefcase(user1Token);
+    briefcases.push(user1Briefcase);
+
+    // Import base schema
+    await user1Briefcase.importSchemaStrings([testSchemas.baseSchema]);
+    user1Briefcase.saveChanges();
+    assert.isFalse(user1Briefcase.holdsSchemaLock);
+    assert.isTrue(user1Briefcase.holdsSchemaTableLock);
+    await user1Briefcase.pushChanges({ description: "import initial schema", accessToken: user1Token });
+
+    // Insert element using base schema
+    await user1Briefcase.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const [modelId, categoryId] = insertModelAndCategory(user1Briefcase);
+    const elementId = insertTestElement(user1Briefcase, modelId, categoryId, "INITIAL_A", "INITIAL_C");
+
+    // Insert a second element which will not be modified later, so we can verify data transformation worked correctly
+    const secondElementId = insertTestElement(user1Briefcase, modelId, categoryId, "SECOND_ELEM_A", "SECOND_ELEM_C");
+
+    user1Briefcase.saveChanges();
+    await user1Briefcase.pushChanges({ description: "insert element", accessToken: user1Token });
+    assert.isFalse(user1Briefcase.holdsSchemaLock);
+    assert.isFalse(user1Briefcase.holdsSchemaTableLock);
+
+    // User2 opens, imports data transformation schema and pushes it which releases locks
+    const user2Briefcase = await openBriefcase(user2Token);
+    briefcases.push(user2Briefcase);
+    await user2Briefcase.importSchemaStrings([testSchemas.dataTransformUpdate]);
+    assert.isTrue(user2Briefcase.holdsSchemaLock, "Should hold full schema lock for data transformation");
+    assert.isTrue(user2Briefcase.holdsSchemaTableLock);
+    user2Briefcase.saveChanges();
+    await user2Briefcase.pushChanges({ description: "data transformation schema", accessToken: user2Token });
+    assert.isFalse(user2Briefcase.holdsSchemaLock);
+    assert.isFalse(user2Briefcase.holdsSchemaTableLock);
+
+    // User1 now has a pending incoming schema change
+    // User1 modifies element locally
+    await user1Briefcase.locks.acquireLocks({ exclusive: elementId });
+    updateElementProperty(user1Briefcase, elementId, "propA", "UPDATED_A");
+    updateElementProperty(user1Briefcase, elementId, "propC", "UPDATED_C");
+    user1Briefcase.saveChanges();
+    // We push directly without pulling - however, push implicitly pulls first, so this does not fail.
+    await user1Briefcase.pushChanges({ description: "modify element", accessToken: user1Token });
+
+    await user2Briefcase.pullChanges({ accessToken: user2Token });
+
+    assert.isFalse(user1Briefcase.holdsSchemaLock);
+    assert.isFalse(user1Briefcase.holdsSchemaTableLock);
+    assert.isFalse(user2Briefcase.holdsSchemaLock);
+    assert.isFalse(user2Briefcase.holdsSchemaTableLock);
+
+    // Verify PropC moved to base class A and element data preserved
+    for (const briefcase of [user1Briefcase, user2Briefcase]) {
+      const baseClass = await briefcase.schemaContext.getSchemaItem(new SchemaItemKey("A", new SchemaKey("TestDomain", 1, 1, 0)), EntityClass);
+      assert.isDefined(baseClass, "Base class A should be defined");
+      const propC = await baseClass?.getProperty("PropC");
+      assert.isDefined(propC, "PropC should be on base class A after transformation");
+
+      const element = briefcase.elements.getElement(elementId);
+      assert.equal((element as any).propA, "UPDATED_A");
+      assert.equal((element as any).propC, "UPDATED_C", "PropC value updated after transformation");
+
+      const secondElement = briefcase.elements.getElement(secondElementId);
+      assert.equal((secondElement as any).propA, "SECOND_ELEM_A");
+      assert.equal((secondElement as any).propC, "SECOND_ELEM_C", "Second element PropC value preserved through transformation");
+    }
+  });
+
+  it("Pending incoming element update with local data transform change", async () => {
+    // Setup iModel
+    await setupIModel(user1Token);
+    const user1Briefcase = await openBriefcase(user1Token);
+    briefcases.push(user1Briefcase);
+
+    // Import base schema
+    await user1Briefcase.importSchemaStrings([testSchemas.baseSchema]);
+    user1Briefcase.saveChanges();
+    assert.isFalse(user1Briefcase.holdsSchemaLock);
+    assert.isTrue(user1Briefcase.holdsSchemaTableLock);
+    await user1Briefcase.pushChanges({ description: "import initial schema", accessToken: user1Token });
+
+    // Insert element using base schema
+    await user1Briefcase.locks.acquireLocks({ shared: IModel.dictionaryId });
+    const [modelId, categoryId] = insertModelAndCategory(user1Briefcase);
+    const elementId = insertTestElement(user1Briefcase, modelId, categoryId, "INITIAL_A", "INITIAL_C");
+
+    // Insert a second element which will not be modified later, so we can verify data transformation worked correctly
+    const secondElementId = insertTestElement(user1Briefcase, modelId, categoryId, "SECOND_ELEM_A", "SECOND_ELEM_C");
+
+    user1Briefcase.saveChanges();
+    await user1Briefcase.pushChanges({ description: "insert element", accessToken: user1Token });
+    assert.isFalse(user1Briefcase.holdsSchemaLock);
+    assert.isFalse(user1Briefcase.holdsSchemaTableLock);
+    const user2Briefcase = await openBriefcase(user2Token);
+    briefcases.push(user2Briefcase);
+
+    // User1 modifies element locally
+    await user1Briefcase.locks.acquireLocks({ exclusive: elementId });
+    updateElementProperty(user1Briefcase, elementId, "propA", "UPDATED_A");
+    updateElementProperty(user1Briefcase, elementId, "propC", "UPDATED_C");
+    user1Briefcase.saveChanges();
+    // We push directly without pulling - however, push implicitly pulls first, so this does not fail.
+    await user1Briefcase.pushChanges({ description: "modify element", accessToken: user1Token });
+
+    // User2 imports data transformation schema and pushes it which releases locks
+    await user2Briefcase.importSchemaStrings([testSchemas.dataTransformUpdate]);
+    assert.isTrue(user2Briefcase.holdsSchemaLock, "Should hold full schema lock for data transformation");
+    assert.isTrue(user2Briefcase.holdsSchemaTableLock);
+    user2Briefcase.saveChanges();
+    await user2Briefcase.pushChanges({ description: "data transformation schema", accessToken: user2Token });
+    assert.isFalse(user2Briefcase.holdsSchemaLock);
+    assert.isFalse(user2Briefcase.holdsSchemaTableLock);
+
+    // User1 now has a pending incoming schema change
+    await user1Briefcase.pullChanges({ accessToken: user2Token });
+
+    assert.isFalse(user1Briefcase.holdsSchemaLock);
+    assert.isFalse(user1Briefcase.holdsSchemaTableLock);
+    assert.isFalse(user2Briefcase.holdsSchemaLock);
+    assert.isFalse(user2Briefcase.holdsSchemaTableLock);
+
+    // Verify PropC moved to base class A and element data preserved
+    for (const briefcase of [user1Briefcase, user2Briefcase]) {
+      const baseClass = await briefcase.schemaContext.getSchemaItem(new SchemaItemKey("A", new SchemaKey("TestDomain", 1, 1, 0)), EntityClass);
+      assert.isDefined(baseClass, "Base class A should be defined");
+      const propC = await baseClass?.getProperty("PropC");
+      assert.isDefined(propC, "PropC should be on base class A after transformation");
+
+      const element = briefcase.elements.getElement(elementId);
+      assert.equal((element as any).propA, "UPDATED_A");
+      assert.equal((element as any).propC, "UPDATED_C", "PropC value updated after transformation");
+
+      const secondElement = briefcase.elements.getElement(secondElementId);
+      assert.equal((secondElement as any).propA, "SECOND_ELEM_A");
+      assert.equal((secondElement as any).propC, "SECOND_ELEM_C", "Second element PropC value preserved through transformation");
     }
   });
 });
