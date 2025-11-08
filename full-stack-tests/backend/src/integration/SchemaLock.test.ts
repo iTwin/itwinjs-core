@@ -456,6 +456,8 @@ describe.only("Schema lock tests", function (this: Suite) {
     assert.isFalse(user2Briefcase.holdsSchemaTableLock);
 
     // User1 now has a pending incoming schema change
+    const elementBeforeRebase = user1Briefcase.elements.getElement(elementId);
+    assert.equal((elementBeforeRebase as any).propC, "UPDATED_C", "PropC value updated before");
     await user1Briefcase.pullChanges({ accessToken: user2Token });
 
     assert.isFalse(user1Briefcase.holdsSchemaLock);
@@ -472,7 +474,7 @@ describe.only("Schema lock tests", function (this: Suite) {
 
       const element = briefcase.elements.getElement(elementId);
       assert.equal((element as any).propA, "UPDATED_A");
-      assert.equal((element as any).propC, "UPDATED_C", "PropC value updated after transformation");
+      assert.equal((element as any).propC, "UPDATED_C", "PropC value updated after transformation"); // PROBLEM: value is set to INITIAL_C!
 
       const secondElement = briefcase.elements.getElement(secondElementId);
       assert.equal((secondElement as any).propA, "SECOND_ELEM_A");
