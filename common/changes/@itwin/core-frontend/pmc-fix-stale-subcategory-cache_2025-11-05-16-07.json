@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Update frontend cache when the backend modifies categories and subcategories.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
