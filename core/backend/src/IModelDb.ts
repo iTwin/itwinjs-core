@@ -72,6 +72,7 @@ import { _cache, _close, _hubAccess, _instanceKeyCache, _nativeDb, _releaseAllLo
 import { ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
+import { DeQueue, EditCommandIds } from "./UtilityFunctions";
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -261,6 +262,16 @@ export abstract class IModelDb extends IModel {
 
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
+
+  private static _editScopes: DeQueue<EditCommandIds> = new DeQueue();
+
+  /** @alpha */
+  public static activeEditScope(): EditCommandIds | undefined { return IModelDb._editScopes.peek(); }
+  public static enqueueEditScope(idPair: EditCommandIds) { IModelDb._editScopes.enqueue(idPair); }
+  public static enqueueNestedEditScope(idPair: EditCommandIds) { IModelDb._editScopes.enqueueFront(idPair); }
+  public static dequeueEditScope(): void { IModelDb._editScopes.dequeue(); }
+  public static printQueue(): Promise<void> { return IModelDb._editScopes.printDeQueue(); }
+
   /** @internal */
   protected _locks?: LockControl = createNoOpLockControl();
 

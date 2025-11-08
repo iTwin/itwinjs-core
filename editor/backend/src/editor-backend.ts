@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 export * from "./EditCommand";
 export * from "./EditBuiltInCommand";
+export * from "./IModelEditCommand";
 
 /** @docs-package-description
  * The editor-backend package contains backend functionality for editing iModels.

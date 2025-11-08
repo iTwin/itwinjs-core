@@ -1633,9 +1633,27 @@ importers:
       '@itwin/eslint-plugin':
         specifier: 5.2.2-dev.2
         version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
+      '@types/chai':
+        specifier: 4.3.1
+        version: 4.3.1
+      '@types/chai-as-promised':
+        specifier: ^7
+        version: 7.1.0
+      '@types/mocha':
+        specifier: ^10.0.6
+        version: 10.0.6
+      chai:
+        specifier: ^4.3.10
+        version: 4.3.10
+      chai-as-promised:
+        specifier: ^7.1.1
+        version: 7.1.1(chai@4.3.10)
       eslint:
         specifier: ^9.31.0
         version: 9.31.0
+      mocha:
+        specifier: ^11.1.0
+        version: 11.1.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -12120,7 +12138,7 @@ snapshots:
     dependencies:
       '@types/estree': 1.0.8
       estree-walker: 2.0.2
-      picomatch: 4.0.2
+      picomatch: 4.0.3
     optionalDependencies:
       rollup: 4.52.3
 
@@ -15434,7 +15452,7 @@ snapshots:
 
   istanbul-lib-source-maps@4.0.1:
     dependencies:
-      debug: 4.4.0
+      debug: 4.4.1(supports-color@8.1.1)
       istanbul-lib-coverage: 3.2.2
       source-map: 0.6.1
     transitivePeerDependencies:
@@ -15443,7 +15461,7 @@ snapshots:
   istanbul-lib-source-maps@5.0.6:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.25
-      debug: 4.4.0
+      debug: 4.4.1(supports-color@8.1.1)
       istanbul-lib-coverage: 3.2.2
     transitivePeerDependencies:
       - supports-color

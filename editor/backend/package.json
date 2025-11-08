@@ -18,7 +18,8 @@
     "extract-api": "betools extract-api --entry=editor-backend",
     "lint": "eslint --max-warnings 0 ./src/**/*.ts 1>&2",
     "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
-    "test": "",
+    "test": "mocha",
+    "test:debug": "mocha --inspect-brk",
     "cover": ""
   },
   "repository": {
@@ -54,9 +55,15 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/eslint-plugin": "5.2.2-dev.2",
+    "@types/chai": "4.3.1",
+    "@types/chai-as-promised": "^7",
+    "@types/mocha": "^10.0.6",
     "eslint": "^9.31.0",
     "rimraf": "^6.0.1",
-    "typescript": "~5.6.2"
+    "typescript": "~5.6.2",
+    "chai": "^4.3.10",
+    "chai-as-promised": "^7.1.1",
+    "mocha": "^11.1.0"
   },
   "dependencies": {
     "@itwin/editor-common": "workspace:*"
