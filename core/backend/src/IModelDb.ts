@@ -263,14 +263,29 @@ export abstract class IModelDb extends IModel {
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
 
+  /** @internal */
   private static _editScopes: DeQueue<EditCommandIds> = new DeQueue();
-
-  /** @alpha */
-  public static activeEditScope(): EditCommandIds | undefined { return IModelDb._editScopes.peek(); }
+  private static _nestedEditScopes: EditCommandIds[] = [];
+  public static activeEditScope(): EditCommandIds | undefined { return IModelDb._editScopes.peek; }
   public static enqueueEditScope(idPair: EditCommandIds) { IModelDb._editScopes.enqueue(idPair); }
-  public static enqueueNestedEditScope(idPair: EditCommandIds) { IModelDb._editScopes.enqueueFront(idPair); }
   public static dequeueEditScope(): void { IModelDb._editScopes.dequeue(); }
-  public static printQueue(): Promise<void> { return IModelDb._editScopes.printDeQueue(); }
+  public static enqueueNestedEditScope(idPair: EditCommandIds) { IModelDb._nestedEditScopes.push(idPair); }
+  public static dequeueNestedEditScope(): void {
+    const activeEditCommand = IModelDb._editScopes.peek;
+
+    if (!activeEditCommand)
+      throw new IModelError(IModelStatus.NotOpen, "Trying to end a nested edit scope without a corresponding active edit scope. Are you off the rocker ?!");
+
+    if (IModelDb._nestedEditScopes.length === 0)
+      throw new IModelError(IModelStatus.NotOpen, "Trying to end a nested edit scope when there are no nested edit scopes. Are you off the rocker ?!");
+
+    // If this was a nested scope, remove it from the nested scopes array
+    const nestedIndex = IModelDb._nestedEditScopes.findIndex((nested) => nested.parentScopeId === activeEditCommand.scopeId);
+    if (nestedIndex !== -1) {
+      IModelDb._nestedEditScopes.splice(nestedIndex, 1);
+    }
+  }
+  public static async printQueue(): Promise<void> { return IModelDb._editScopes.printDeQueue(); }
 
   /** @internal */
   protected _locks?: LockControl = createNoOpLockControl();

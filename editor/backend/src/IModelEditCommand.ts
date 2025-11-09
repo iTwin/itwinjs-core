@@ -1,6 +1,11 @@
-import { IModelDb, _nativeDb } from "@itwin/core-backend";
+import { _nativeDb, IModelDb } from "@itwin/core-backend";
 import { BeDuration, Guid } from "@itwin/core-bentley";
 import { AsyncLocalStorage } from "async_hooks";
+
+// This rule was deprecated in ESLint v8.46.0.
+/* eslint-disable @typescript-eslint/return-await */
+
+/* eslint-disable @typescript-eslint/naming-convention */
 
 /**
  * Represents a transactional scope that can be saved or abandoned.
@@ -28,7 +33,7 @@ export enum EditCommandState {
   /** Command has been constructed but not started */
   NotStarted = "NotStarted",
 
-  /** Command is starting (onStart executing) */
+  /** Command is starting */
   Starting = "Starting",
 
   /** Command is active and ready for operations */
@@ -51,53 +56,82 @@ export enum EditCommandState {
 }
 
 /**
+ * Arguments for the command to use
  * @alpha
  */
 export interface EditCommandArgs {
   description?: string;
 }
 
-const commandExecutionContext = new AsyncLocalStorage<string[]>();
-
 /**
  * EditScope implementation for iModel transactions to prevent concurrent modifications/saves/abandons.
- */
-/**
  * @alpha
  */
 export class EditScope implements IEditScope {
   public readonly scopeId: string;
-  public readonly commandId: string;
-  public readonly iModel: IModelDb;
-  private _startTxnId?: string;
+  private readonly commandId: string;
+  private readonly iModel: IModelDb;
   public readonly parentScopeId?: string;
+  private readonly startTxnId?: string;
+
+  private _state = EditCommandState.NotStarted;
+
+  private static commandExecutionContext = new AsyncLocalStorage<string>();
 
   private constructor(iModel: IModelDb, commandId: string, parentScopeId?: string) {
     this.scopeId = Guid.createValue();
-    this.iModel = iModel;
     this.commandId = commandId;
+    this.iModel = iModel;
     this.parentScopeId = parentScopeId;
 
     // Capture starting transaction ID
     if (iModel.isBriefcaseDb()) {
-      this._startTxnId = iModel.txns.getCurrentTxnId();
+      this.startTxnId = iModel.txns.getCurrentTxnId();
     }
   }
 
-  public static start(iModel: IModelDb, commandId: string): EditScope {
-    iModel[_nativeDb].beginMultiTxnOperation();
+  public get state(): EditCommandState {
+    return this._state;
+  }
 
-    // Check if this command is being called from within another command's execution
-    const executingCommandIds = commandExecutionContext.getStore();
+  public get isActive(): boolean {
     const activeScope = IModelDb.activeEditScope();
-    const isNested = executingCommandIds !== undefined && executingCommandIds.length > 0 &&
-      executingCommandIds.find((commandId) => commandId === activeScope?.commandId) !== undefined;
 
+    if (activeScope === undefined) {
+      return false;
+    }
+
+    // For a scope to be considered active, it should satisfy either of the following:
+    // 1. The scope's id should match the currently active scope's id exactly.
+    // 2. The scope is a nested command AND its parent's scope id matches the currently active scope's id.
+
+    // Direct match - this scope is the active scope
+    if (activeScope.scopeId === this.scopeId && activeScope.commandId === this.commandId) {
+      return true;
+    }
+
+    // Nested command check - this command's parent is the active scope
+    // AND we're being called from within that parent's execution context
+    if (this.parentScopeId !== undefined && activeScope.scopeId === this.parentScopeId) {
+      const executingCommandId = EditScope.commandExecutionContext.getStore();
+      // Only active if we're being called from within the parent command's execution
+      return executingCommandId === activeScope.commandId;
+    }
+
+    return false;
+  }
+
+  public static start(iModel: IModelDb, commandId: string): EditScope {
+    // Check if this command is being called from within another command's execution
+    const activeScope = IModelDb.activeEditScope();
+    const executingCommandId = EditScope.commandExecutionContext.getStore();
+
+    const isNested = executingCommandId !== undefined && executingCommandId === activeScope?.commandId;
     if (isNested) {
-      const scope = new EditScope(iModel, commandId, activeScope?.scopeId);
-      // Enqueue to front of queue (stack behavior for nested calls)
-      IModelDb.enqueueNestedEditScope({ scopeId: scope.scopeId, commandId: scope.commandId } as any);
-      return scope;
+      // Create a new scope that has a parent scope id set
+      const nestedScope = new EditScope(iModel, commandId, activeScope?.scopeId);
+      IModelDb.enqueueNestedEditScope({ scopeId: nestedScope.scopeId, commandId: nestedScope.commandId, parentScopeId: nestedScope.parentScopeId } as any);
+      return nestedScope;
     }
 
     // External command - enqueue normally
@@ -107,29 +141,76 @@ export class EditScope implements IEditScope {
   }
 
   private end(): void {
-    if (!this.parentScopeId) {
+    if (this.parentScopeId) {
+      IModelDb.dequeueNestedEditScope();
+    } else {
       this.iModel[_nativeDb].endMultiTxnOperation();
+      IModelDb.dequeueEditScope();
     }
-    IModelDb.dequeueEditScope();
   }
 
-  public async execute<T>(operation: (args?: any) => Promise<T>): Promise<T> {
-    if (!this.isActive) {
-      throw new Error("Cannot run operation - scope is not active");
+  // TODO Rohit: Review/Remove:
+  // Polling ? Really ??
+  // Look into a bit more efficient way to figure out when this scope is active
+  public async execute<T>(operation: (args?: any) => Promise<T>, commandDescription?: string): Promise<T> {
+    // Wait until this scope becomes active before proceeding
+    // For nested commands, they should become active immediately if called from parent
+    // For external commands, they must wait their turn in the queue
+    let retries = 30;
+    while (!this.isActive) {
+      await BeDuration.fromMilliseconds(1000).wait();
+      if (--retries === 0) {
+        throw new Error(`EditScope ${this.scopeId} did not become active after waiting`);
+      }
     }
-    return await operation();
-  }
 
-  public get isActive(): boolean {
-    const activeScope = IModelDb.activeEditScope();
-    return activeScope !== undefined && activeScope.scopeId === this.scopeId && activeScope.commandId === this.commandId;
+    // Begin multi-txn operation for root commands only
+    if (this.parentScopeId === undefined) {
+      this.iModel[_nativeDb].beginMultiTxnOperation();
+    }
+
+    try {
+      this._state = EditCommandState.Starting;
+
+      // Execute within the command's context
+      const result = await EditScope.commandExecutionContext.run(this.commandId, async () => {
+        this._state = EditCommandState.Active;
+        return await operation();
+      });
+
+      if (result === undefined) {
+        throw new Error("Command execution did not return a result.");
+      }
+
+      this._state = EditCommandState.Saving;
+      await this.saveChanges(commandDescription ?? `Saved ${this.commandId} changes`);
+
+      return result;
+    } catch (error: any) {
+      console.log(`Error during command execution: ${error.message}`);
+      this._state = EditCommandState.Abandoning;
+
+      await this.abandonChanges();
+      this._state = EditCommandState.Failed;
+
+      throw error;
+    } finally {
+      // End multi-txn operation for root commands only
+      if (this.parentScopeId === undefined) {
+        this.iModel[_nativeDb].endMultiTxnOperation();
+      }
+    }
   }
 
   public async saveChanges(description: string): Promise<void> {
+    if (this._state !== EditCommandState.Active && this._state !== EditCommandState.Saving) {
+      throw new Error(`Cannot save EditCommand in state ${this._state}`);
+    }
     // For nested scopes, don't actually save - just mark as completed
     // The parent scope will handle the actual save
     if (this.parentScopeId) {
       this.end();
+      this._state = EditCommandState.Completed;
       return;
     }
 
@@ -137,25 +218,31 @@ export class EditScope implements IEditScope {
       throw new Error("Cannot save - scope is not active");
     }
 
-    let errorCaught: any = undefined;
     try {
       this.iModel.saveChanges(description);
-    } catch (error) {
-      errorCaught = error;
+      this._state = EditCommandState.Completed;
     } finally {
       this.end();
-
-      if (errorCaught) {
-        throw errorCaught;
-      }
+      this._state = EditCommandState.Failed;
     }
   }
 
+  // TODO Rohit: It was straightforward with saves, the parent can call save on the whole lot.
+  // But what about abandon?
+  // If a nested command fails, do we abandon just the changes made by the command ?
+  // I think the all or none approach would be better. The parent can abandon the whole command's work.
+  // But what if this command failed, but another nested command succeeded?
+  // Maybe have a way to signal to the calling command to fail right away ?
   public async abandonChanges(): Promise<void> {
-    // For nested scopes, don't actually abandon - just unwind
+    if (this._state !== EditCommandState.Active && this._state !== EditCommandState.Failed) {
+      throw new Error(`Cannot abandon EditCommand in state ${this._state}`);
+    }
+
+    // For nested scopes, don't actually abandon
     // The parent scope will handle the actual abandon
     if (this.parentScopeId) {
       this.end();
+      this._state = EditCommandState.Completed;
       return;
     }
 
@@ -166,14 +253,15 @@ export class EditScope implements IEditScope {
       this.iModel.abandonChanges();
 
       // Roll back to starting transaction if needed
-      if (this.iModel.isBriefcaseDb() && this._startTxnId) {
+      if (this.iModel.isBriefcaseDb() && this.startTxnId) {
         const currentTxnId = this.iModel.txns.getCurrentTxnId();
-        if (this._startTxnId !== currentTxnId) {
-          this.iModel.txns.cancelTo(this._startTxnId);
+        if (this.startTxnId !== currentTxnId) {
+          this.iModel.txns.cancelTo(this.startTxnId);
         }
       }
     } finally {
       this.end();
+      this._state = EditCommandState.Completed;
     }
   }
 }
@@ -184,57 +272,24 @@ export class EditScope implements IEditScope {
 export abstract class ImmediateCommand<TArgs extends EditCommandArgs = EditCommandArgs, TResult = void> {
   protected _commandId: string;
   protected _iModel: IModelDb;
-  private _state = EditCommandState.NotStarted;
-  private commandArgs?: TArgs;
-
-  private _editScope?: EditScope;
+  protected _editScope?: EditScope;
 
   constructor(iModel: IModelDb) {
     this._iModel = iModel;
     this._commandId = Guid.createValue();
   }
 
-  public get iModel(): IModelDb {
-    return this._iModel;
-  }
-
-  public get state(): EditCommandState {
-    return this._state;
-  }
-
-  public get editScope(): EditScope | undefined {
-    return this._editScope;
-  }
-
   /**
    * Override to perform work before saving.
-   * Called automatically during saveChanges().
    */
   protected async onBeforeSave(): Promise<void> {
     // Default: no-op
   }
 
   /**
-   * Override to perform work after saving.
-   * Called automatically after scope.saveChanges().
-   */
-  protected async onAfterSave(): Promise<void> {
-    // Default: no-op
-  }
-
-  /**
    * Override to perform work before abandoning.
-   * Called automatically during abandonChanges().
    */
   protected async onBeforeAbandon(): Promise<void> {
-    // Default: no-op
-  }
-
-  /**
-   * Override to perform work after abandoning.
-   * Called automatically after scope.abandon().
-   */
-  protected async onAfterAbandon(): Promise<void> {
     // Default: no-op
   }
 
@@ -247,91 +302,29 @@ export abstract class ImmediateCommand<TArgs extends EditCommandArgs = EditComma
   public async execute(
     fn: (args?: TArgs) => Promise<TResult>
   ): Promise<TResult> {
-    this._state = EditCommandState.Starting;
-
-    try {
-      // Create the scope
-      this._editScope = EditScope.start(this._iModel, this._commandId);
-
-      const isNestedCommand = !!this._editScope.parentScopeId;
-
-      // TODO Rohit: Review/replace this polling logic. This race condition is inherent with what we have right ?
-      // Block until the our edit scope is ready for execution
-      let retries = 10;
-      while (true) {
-        if (this._editScope.isActive)
-          break;
-        await BeDuration.fromMilliseconds(1000).wait();
-        if (--retries === 0) {
-          throw new Error("EditScope did not become active");
-        }
-      }
-
-      let executingCommandIds = commandExecutionContext.getStore();
-      if (executingCommandIds === undefined) {
-        executingCommandIds = new Array<string>();
-      }
-      executingCommandIds.push(this._commandId);
-
-      // Execute within the command's context
-      const result = await commandExecutionContext.run(executingCommandIds, async () => {
-        return await this.editScope?.execute((args) => {
-          this.commandArgs = args;
-          return fn();
-        });
-      });
-
-      this._state = EditCommandState.Active;
-
-      if (result === undefined) {
-        throw new Error("EditScope execution did not return a result.");
-      }
-
-      // Only save if this is a top-level command
-      // Nested commands just return their result and let parent handle saving
-      if (!isNestedCommand) {
-        await this.saveChanges(this.commandArgs?.description ?? `Saved ${this._commandId} changes`);
-      } else {
-        this._state = EditCommandState.Completed;
-        // Clean up the nested scope from the queue
-        if (this._editScope) {
-          await this._editScope.saveChanges(this.commandArgs?.description ?? `Nested scope completed`);
-        }
-      }
-
-      return result;
-    } catch (error) {
-      this._state = EditCommandState.Failed;
-
-      await this.abandonChanges();
-
-      throw error;
-    }
+    // Create the scope
+    this._editScope = EditScope.start(this._iModel, this._commandId);
+    return await this._editScope.execute(async (args) => {
+      return await fn(args);
+    });
   }
 
   /**
    * Save all changes made by this command.
    */
   public async saveChanges(description: string): Promise<void> {
-    if (this._state !== EditCommandState.Active) {
-      throw new Error(`Cannot save EditCommand in state ${this._state}`);
+    if (this._editScope?.state !== EditCommandState.Active) {
+      throw new Error(`Cannot save EditCommand in state ${this._editScope?.state}`);
     }
 
     if (!this._editScope) {
-      throw new Error("EditCommand has no scope - was onStart() called?");
+      throw new Error("EditCommand has no scope.");
     }
-
-    this._state = EditCommandState.Saving;
 
     try {
       await this.onBeforeSave();
       await this._editScope?.saveChanges(description);
-      await this.onAfterSave();
-
-      this._state = EditCommandState.Completed;
     } catch (error) {
-      this._state = EditCommandState.Failed;
-
       // Try to abandon
       if (this._editScope?.isActive) {
         await this._editScope.abandonChanges();
@@ -345,25 +338,14 @@ export abstract class ImmediateCommand<TArgs extends EditCommandArgs = EditComma
    * Abandon all changes made by this command.
    */
   public async abandonChanges(): Promise<void> {
-    // Allow abandon from Active or Failed states
-    if (this._state !== EditCommandState.Active && this._state !== EditCommandState.Failed) {
-      throw new Error(`Cannot abandon EditCommand in state ${this._state}`);
-    }
-
     if (!this._editScope) {
-      throw new Error("EditCommand has no scope - was onStart() called?");
+      throw new Error("EditCommand has no scope.");
     }
-
-    this._state = EditCommandState.Abandoning;
 
     try {
       await this.onBeforeAbandon();
       await this._editScope?.abandonChanges();
-      await this.onAfterAbandon();
-
-      this._state = EditCommandState.Abandoned;
     } catch (error) {
-      this._state = EditCommandState.Failed;
       throw error;
     }
   }

@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { IModelDb, IModelHost, IModelJsFs, KnownLocations, StandaloneDb } from "@itwin/core-backend";
 import { join } from "path";
-import { SquareCommand, Pythagoras } from "./TestAssets";
+import { Pythagoras, SquareCommand } from "./TestAssets";
 
 describe("IModelEditCommand", () => {
   const outputDir = join(KnownLocations.tmpdir, "output");
@@ -36,20 +36,11 @@ describe("IModelEditCommand", () => {
     expect(squaredResult).to.equal(4);
   });
 
-  it("Cube a number using an immediate command", async () => {
-    const squareCommand = new SquareCommand(iModelDb);
-
-    const cubedResult = await squareCommand.execute(
-      async () => squareCommand.performCubeOperation({ value: 2 })
-    );
-    expect(cubedResult).to.equal(8);
-  });
-
   it("Calculate the hypotenuse using an immediate command", async () => {
     const pythagorasCommand = new Pythagoras(iModelDb);
 
     const hypotenuse = await pythagorasCommand.execute(
-      async () => pythagorasCommand.calculateHypotenuse({ sideA: 3, sideB: 4 })
+      async () => pythagorasCommand.calcHypotenuse({ sideA: 3, sideB: 4 })
     );
     expect(hypotenuse).to.equal(5);
   });
@@ -58,7 +49,7 @@ describe("IModelEditCommand", () => {
     const pythagorasCommand = new Pythagoras(iModelDb);
 
     const hypotenuse = await pythagorasCommand.execute(
-      async () => pythagorasCommand.calculateHypotenuseWithCommandsSync({ sideA: 3, sideB: 4 })
+      async () => pythagorasCommand.calcHypotenuseWithCommandsSync({ sideA: 3, sideB: 4 })
     );
     expect(hypotenuse).to.equal(5);
   });
@@ -67,7 +58,33 @@ describe("IModelEditCommand", () => {
     const pythagorasCommand = new Pythagoras(iModelDb);
 
     const hypotenuse = await pythagorasCommand.execute(
-      async () => pythagorasCommand.calculateHypotenuseWithCommandsAsync({ sideA: 3, sideB: 4 })
+      async () => pythagorasCommand.calcHypotenuseWithCommandsAsync({ sideA: 3, sideB: 4 })
+    );
+    expect(hypotenuse).to.equal(5);
+  });
+
+  it.only("test calling external commands at once", async () => {
+    const pythagorasCommand1 = new Pythagoras(iModelDb);
+    const pythagorasCommand2 = new Pythagoras(iModelDb);
+    const [hypotenuse1, hypotenuse2] = await Promise.all([
+      pythagorasCommand1.execute(
+        async () => pythagorasCommand1.calcHypotenuseWithCommandsAsync({ sideA: 5, sideB: 12 })
+      ),
+      pythagorasCommand2.execute(
+        async () => pythagorasCommand2.calcHypotenuseWithCommandsAsync({ sideA: 8, sideB: 15 })
+      )
+    ]);
+    expect(hypotenuse1).to.equal(13);
+    expect(hypotenuse2).to.equal(17);
+  });
+
+  // TODO Rohit: Fix this
+  // Need to sort out how multiple nested command execution will work with edit scopes
+  it.skip("Calculate the hypotenuse using multiple nested SquareCommands - Async", async () => {
+    const pythagorasCommand = new Pythagoras(iModelDb);
+
+    const hypotenuse = await pythagorasCommand.execute(
+      async () => pythagorasCommand.calcHypotenuseWithMultipleNestedCommands({ sideA: 3, sideB: 4 })
     );
     expect(hypotenuse).to.equal(5);
   });

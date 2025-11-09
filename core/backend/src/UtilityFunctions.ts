@@ -8,6 +8,7 @@ import { Id64String } from "@itwin/core-bentley";
 export interface EditCommandIds {
   scopeId: Id64String;
   commandId: string;
+  parentScopeId?: Id64String;
 }
 
 /**
@@ -29,19 +30,15 @@ export class DeQueue<T> {
     return this._queue.shift();
   }
 
-  public peek(): T | undefined {
-    return this._queue[0];
-  }
-
-  public isEmpty(): boolean {
-    return this._queue.length === 0;
-  }
-
   public clear(): void {
     this._queue = [];
   }
 
-  public printDeQueue(): Promise<void> {
+  public get peek(): T | undefined { return this._queue[0]; }
+
+  public get isEmpty(): boolean { return this._queue.length === 0; }
+
+  public async printDeQueue(): Promise<void> {
     return new Promise((resolve) => {
       this._queue.forEach((item, index) => {
         console.log(`Queue[${index}]: ${JSON.stringify(item)}`);
