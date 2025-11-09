@@ -1,7 +1,7 @@
 import { expect } from "chai";
-import { EditCommandArgs, ImmediateCommand } from "../IModelEditCommand";
 import { IModelDb, IModelHost, IModelJsFs, KnownLocations, StandaloneDb } from "@itwin/core-backend";
 import { join } from "path";
+import { SquareCommand, Pythagoras } from "./TestAssets";
 
 describe("IModelEditCommand", () => {
   const outputDir = join(KnownLocations.tmpdir, "output");
@@ -13,135 +13,62 @@ describe("IModelEditCommand", () => {
       IModelJsFs.mkdirSync(outputDir);
   })
 
-  describe("Simple Immediate command", () => {
-
-    beforeEach(async () => {
-      await IModelHost.startup();
-      iModelDb = StandaloneDb.createEmpty(join(KnownLocations.tmpdir, "output", "IModelEditCommandTest.bim"), {
-        rootSubject: { name: "IModelEditCommandTest", description: "Test of the IModelEditCommand class." },
-      });
-      iModelPath = iModelDb.pathName;
+  beforeEach(async () => {
+    await IModelHost.startup();
+    iModelDb = StandaloneDb.createEmpty(join(KnownLocations.tmpdir, "output", "IModelEditCommandTest.bim"), {
+      rootSubject: { name: "IModelEditCommandTest", description: "Test of the IModelEditCommand class." },
     });
+    iModelPath = iModelDb.pathName;
+  });
 
-    afterEach(async () => {
-      iModelDb.close();
-      IModelJsFs.unlinkSync(iModelPath);
-      await IModelHost.shutdown();
-    });
+  afterEach(async () => {
+    iModelDb.close();
+    IModelJsFs.unlinkSync(iModelPath);
+    await IModelHost.shutdown();
+  });
 
-    interface SquareCommandArgs extends EditCommandArgs {
-      value: number;
-    }
+  it("Square a number using an immediate command", async () => {
+    const squareCommand = new SquareCommand(iModelDb);
 
-    // Simple command that takes a numerical value and multiples it by itself`
-    class SquareCommand extends ImmediateCommand<SquareCommandArgs, number> {
+    const squaredResult = await squareCommand.execute(
+      async () => squareCommand.performSquareOperation({ value: 2 })
+    );
+    expect(squaredResult).to.equal(4);
+  });
 
-      public async performSquareOperation(args: SquareCommandArgs): Promise<number> {
-        return args.value * args.value;
-      }
+  it("Cube a number using an immediate command", async () => {
+    const squareCommand = new SquareCommand(iModelDb);
 
-      public async getArgumentValue(args: SquareCommandArgs): Promise<number> {
-        return args.value;
-      }
+    const cubedResult = await squareCommand.execute(
+      async () => squareCommand.performCubeOperation({ value: 2 })
+    );
+    expect(cubedResult).to.equal(8);
+  });
 
-      public async performCubeOperation(args: SquareCommandArgs): Promise<number> {
-        const squaredValue = this.performSquareOperation(args);
+  it("Calculate the hypotenuse using an immediate command", async () => {
+    const pythagorasCommand = new Pythagoras(iModelDb);
 
-        const squareCommand = new SquareCommand(this.iModel);
+    const hypotenuse = await pythagorasCommand.execute(
+      async () => pythagorasCommand.calculateHypotenuse({ sideA: 3, sideB: 4 })
+    );
+    expect(hypotenuse).to.equal(5);
+  });
 
-        return await squaredValue * await squareCommand.execute(
-          { value: args.value },
-          async (squareArgs: SquareCommandArgs) => squareCommand.getArgumentValue(squareArgs)
-        );
-      }
-    }
+  it("Calculate the hypotenuse using a nested SquareCommand - Sync", async () => {
+    const pythagorasCommand = new Pythagoras(iModelDb);
 
-    it.skip("Simple immediate command test", async () => {
-      const squareCommand = new SquareCommand(iModelDb);
+    const hypotenuse = await pythagorasCommand.execute(
+      async () => pythagorasCommand.calculateHypotenuseWithCommandsSync({ sideA: 3, sideB: 4 })
+    );
+    expect(hypotenuse).to.equal(5);
+  });
 
-      const squaredResult = await squareCommand.execute(
-        { value: 2 },
-        async (args: SquareCommandArgs) => squareCommand.performSquareOperation(args)
-      );
-      expect(squaredResult).to.equal(4);
-    });
+  it("Calculate the hypotenuse using a nested SquareCommand - Async", async () => {
+    const pythagorasCommand = new Pythagoras(iModelDb);
 
-    interface PythagorasArgs extends EditCommandArgs {
-      sideA: number;
-      sideB: number;
-    }
-
-    // Simple command that calculates the hypotenuse of a right triangle
-    class Pythagoras extends ImmediateCommand<PythagorasArgs, number> {
-
-      public async simpleStep1(args: PythagorasArgs): Promise<number> {
-        return args.sideA * args.sideA + args.sideB * args.sideB;
-      }
-
-      public async simpleStep2(value: number): Promise<number> {
-        return Math.sqrt(value);
-      }
-
-      public async calculateHypotenuse(args: PythagorasArgs): Promise<number> {
-        const squareValue = await this.simpleStep1(args);
-
-        const pythagorasCommand = new Pythagoras(this.iModel);
-
-        return await pythagorasCommand.execute(
-          { sideA: args.sideA, sideB: args.sideB },
-          async () => pythagorasCommand.simpleStep2(squareValue)
-        );
-      }
-
-      // Perform a^2 + b^2
-      public async performStep1(args: PythagorasArgs): Promise<number> {
-        const sideASquareCommand = new SquareCommand(this.iModel);
-        const sideBSquareCommand = new SquareCommand(this.iModel);
-
-        const [sideASquared, sideBSquared] = await Promise.all([
-          sideASquareCommand.execute(
-            { value: args.sideA },
-            async (squareArgs: SquareCommandArgs) => sideASquareCommand.getArgumentValue(squareArgs)
-          ),
-          sideBSquareCommand.execute(
-            { value: args.sideB },
-            async (squareArgs: SquareCommandArgs) => sideBSquareCommand.getArgumentValue(squareArgs)
-          )
-        ]);
-
-        return sideASquared + sideBSquared;
-      }
-
-      public async calculateHypotenuseWithCommands(args: PythagorasArgs): Promise<number> {
-        const step1Value = await this.performStep1(args);
-
-        const pythagorasCommand = new Pythagoras(this.iModel);
-
-        return await pythagorasCommand.execute(
-          { sideA: args.sideA, sideB: args.sideB },
-          async () => pythagorasCommand.simpleStep2(step1Value)
-        );
-      }
-    }
-
-    it.skip("Nested simple immediate command test", async () => {
-      const squareCommand = new Pythagoras(iModelDb);
-
-      const squaredResult = await squareCommand.execute(
-        { sideA: 3, sideB: 4 },
-        async (args: PythagorasArgs) => squareCommand.calculateHypotenuse(args)
-      );
-      expect(squaredResult).to.equal(5);
-    });
-
-    it("Multiple commands", async () => {
-      const squareCommand = new Pythagoras(iModelDb);
-
-      const squaredResult = await squareCommand.execute(
-        { sideA: 3, sideB: 4 },
-        async (args: PythagorasArgs) => squareCommand.calculateHypotenuseWithCommands(args)
-      );
-      expect(squaredResult).to.equal(5);
-    });
+    const hypotenuse = await pythagorasCommand.execute(
+      async () => pythagorasCommand.calculateHypotenuseWithCommandsAsync({ sideA: 3, sideB: 4 })
+    );
+    expect(hypotenuse).to.equal(5);
   });
 });

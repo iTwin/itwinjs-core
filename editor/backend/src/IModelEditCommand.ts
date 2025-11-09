@@ -1,6 +1,5 @@
 import { IModelDb, _nativeDb } from "@itwin/core-backend";
-import { BeDuration, Guid, IModelStatus } from "@itwin/core-bentley";
-import { IModelError } from "@itwin/core-common";
+import { BeDuration, Guid } from "@itwin/core-bentley";
 import { AsyncLocalStorage } from "async_hooks";
 
 /**
@@ -53,7 +52,7 @@ export interface EditCommandArgs {
   description?: string;
 }
 
-const commandExecutionContext = new AsyncLocalStorage<string>();
+const commandExecutionContext = new AsyncLocalStorage<string[]>();
 
 /**
  * EditScope implementation for iModel transactions to prevent concurrent modifications/saves/abandons.
@@ -81,39 +80,35 @@ export class EditScope implements IEditScope {
     iModel[_nativeDb].beginMultiTxnOperation();
 
     // Check if this command is being called from within another command's execution
-    const executingCommandId = commandExecutionContext.getStore();
+    const executingCommandIds = commandExecutionContext.getStore();
     const activeScope = IModelDb.activeEditScope();
-    const isNested = executingCommandId !== undefined && activeScope?.commandId === executingCommandId;
+    const isNested = executingCommandIds !== undefined && executingCommandIds.length > 0 &&
+      executingCommandIds.find((commandId) => commandId === activeScope?.commandId) !== undefined;
 
     if (isNested) {
       const scope = new EditScope(iModel, commandId, activeScope?.scopeId);
       // Enqueue to front of queue (stack behavior for nested calls)
       IModelDb.enqueueNestedEditScope({ scopeId: scope.scopeId, commandId: scope.commandId } as any);
-      console.log(`Created nested scope ${scope.scopeId} (${commandId}) from executing command ${executingCommandId}`);
       return scope;
     }
 
     // External command - enqueue normally
     const scope = new EditScope(iModel, commandId);
     IModelDb.enqueueEditScope({ scopeId: scope.scopeId, commandId: scope.commandId } as any);
-    console.log(`Created top-level scope ${scope.scopeId} (${commandId})`);
     return scope;
   }
 
   private end(): void {
-    if (IModelDb.activeEditScope()?.scopeId !== this.scopeId) {
-      throw new IModelError(IModelStatus.BadRequest, "What the hell went wrong ?!?! How is this not the active scope ? How did we even get here !?");
+    if (!this.parentScopeId) {
+      this.iModel[_nativeDb].endMultiTxnOperation();
     }
-    this.iModel[_nativeDb].endMultiTxnOperation();
     IModelDb.dequeueEditScope();
   }
 
-  public async execute<T>(operation: () => Promise<T>): Promise<T> {
+  public async execute<T>(operation: (args?: any) => Promise<T>): Promise<T> {
     if (!this.isActive) {
       throw new Error("Cannot run operation - scope is not active");
     }
-
-    console.log(`Running operation from edit scope for ${this.scopeId} : ${this.commandId}`)
     return await operation();
   }
 
@@ -126,7 +121,6 @@ export class EditScope implements IEditScope {
     // For nested scopes, don't actually save - just mark as completed
     // The parent scope will handle the actual save
     if (this.parentScopeId) {
-      console.log(`Nested scope ${this.scopeId} skipping save, parent will handle it`);
       this.end();
       return;
     }
@@ -153,7 +147,6 @@ export class EditScope implements IEditScope {
     // For nested scopes, don't actually abandon - just unwind
     // The parent scope will handle the actual abandon
     if (this.parentScopeId) {
-      console.log(`Nested scope ${this.scopeId} skipping abandon, parent will handle it`);
       this.end();
       return;
     }
@@ -181,6 +174,7 @@ export abstract class ImmediateCommand<TArgs extends EditCommandArgs = EditComma
   protected _commandId: string;
   protected _iModel: IModelDb;
   private _state = EditCommandState.NotStarted;
+  private commandArgs?: TArgs;
 
   private _editScope?: EditScope;
 
@@ -234,31 +228,23 @@ export abstract class ImmediateCommand<TArgs extends EditCommandArgs = EditComma
   }
 
   /**
-   * Override of EditCommand.onStart().
-   * DO NOT OVERRIDE.
+   * Execute a command operation within a transactional scope.
+   * @param args - Arguments for the command execution (includes optional description)
+   * @param fn - Callback function to execute. Args are available in the closure.
+   * @returns The result of the callback function
    */
-  // TODO Rohit: This is a bit too generic. OS+ is using Zod to validate the arguments supplied. Right now, any args will do and anything goes. Maybe look into that ?
   public async execute(
-    args: TArgs,
-    fn: (args: TArgs) => Promise<TResult>
+    fn: (args?: TArgs) => Promise<TResult>
   ): Promise<TResult> {
-    if (this._state !== EditCommandState.NotStarted) {
-      throw new Error(`Cannot start EditCommand in state ${this._state}`);
-    }
-
     this._state = EditCommandState.Starting;
 
     try {
       // Create the scope
-      console.log("\nHere 1: ")
-      IModelDb.printQueue();
       this._editScope = EditScope.start(this._iModel, this._commandId);
-      console.log("\nHere 2: ")
-      IModelDb.printQueue();
 
       const isNestedCommand = !!this._editScope.parentScopeId;
 
-      // TODO Rohit: Review/replace this polling logic. This race condition is inherent what we have right ?
+      // TODO Rohit: Review/replace this polling logic. This race condition is inherent with what we have right ?
       // Block until the our edit scope is ready for execution
       let retries = 10;
       while (true) {
@@ -270,9 +256,18 @@ export abstract class ImmediateCommand<TArgs extends EditCommandArgs = EditComma
         }
       }
 
+      let executingCommandIds = commandExecutionContext.getStore();
+      if (executingCommandIds === undefined) {
+        executingCommandIds = new Array<string>();
+      }
+      executingCommandIds.push(this._commandId);
+
       // Execute within the command's context
-      const result = await commandExecutionContext.run(this._commandId, async () => {
-        return await this.editScope?.execute(() => fn(args));
+      const result = await commandExecutionContext.run(executingCommandIds, async () => {
+        return await this.editScope?.execute((args) => {
+          this.commandArgs = args;
+          return fn();
+        });
       });
 
       this._state = EditCommandState.Active;
@@ -284,13 +279,12 @@ export abstract class ImmediateCommand<TArgs extends EditCommandArgs = EditComma
       // Only save if this is a top-level command
       // Nested commands just return their result and let parent handle saving
       if (!isNestedCommand) {
-        await this.saveChanges(args.description ?? `Saved ${this._commandId} changes`);
+        await this.saveChanges(this.commandArgs?.description ?? `Saved ${this._commandId} changes`);
       } else {
-        console.log(`Nested command ${this._editScope.scopeId} completing without save`);
         this._state = EditCommandState.Completed;
         // Clean up the nested scope from the queue
         if (this._editScope) {
-          await this._editScope.saveChanges(args.description ?? `Nested command completed`);
+          await this._editScope.saveChanges(this.commandArgs?.description ?? `Nested scope completed`);
         }
       }
 
