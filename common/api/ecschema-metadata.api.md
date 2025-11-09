@@ -2116,7 +2116,7 @@ export interface SchemaItemUnitProps extends SchemaItemProps {
 
 // @public @preview
 export class SchemaJsonLocater implements ISchemaLocater {
-    constructor(_getSchema: SchemaPropsGetter);
+    constructor(schemaPropschemaGetter: SchemaPropsGetter);
     getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined>;
     getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
     getSchemaSync(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): Schema | undefined;
