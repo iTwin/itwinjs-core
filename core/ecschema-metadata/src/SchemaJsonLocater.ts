@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Logger } from "@itwin/core-bentley";
 import { ISchemaLocater, SchemaContext } from "./Context";
 import { SchemaProps } from "./Deserialization/JsonProps";
 import { SchemaMatchType } from "./ECObjects";
@@ -23,7 +24,21 @@ export type SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined;
  * @public @preview
  */
 export class SchemaJsonLocater implements ISchemaLocater {
-  public constructor(private _getSchema: SchemaPropsGetter) { }
+  private _getSchema: SchemaPropsGetter;
+
+  public constructor(schemaPropschemaGetter: SchemaPropsGetter) {
+    // Since the schemaPropschemaGetter may throw an error, but the locater contract defines that
+    // getSchema should return undefined if the schema could not be located, we wrap the provided
+    // lookup function in a safe block and log any errors that occured.
+    this._getSchema = (schemaName) => {
+      try {
+        return schemaPropschemaGetter(schemaName);
+      } catch (error: any) {
+        Logger.logError("SchemaJsonLocater", `Failed to get schema JSON for schema ${schemaName}: ${error.message}`);
+        return undefined;
+      }
+    };
+  }
 
   /** Get a schema by [SchemaKey]
    * @param schemaKey The [SchemaKey] that identifies the schema.
