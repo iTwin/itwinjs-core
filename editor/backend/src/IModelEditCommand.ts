@@ -4,6 +4,7 @@ import { AsyncLocalStorage } from "async_hooks";
 
 /**
  * Represents a transactional scope that can be saved or abandoned.
+ * @alpha
  */
 export interface IEditScope {
   /** Unique identifier for this scope */
@@ -21,6 +22,7 @@ export interface IEditScope {
 
 /**
  * Lifecycle states for an EditCommand.
+ * @alpha
  */
 export enum EditCommandState {
   /** Command has been constructed but not started */
@@ -48,6 +50,9 @@ export enum EditCommandState {
   Failed = "Failed",
 }
 
+/**
+ * @alpha
+ */
 export interface EditCommandArgs {
   description?: string;
 }
@@ -56,6 +61,9 @@ const commandExecutionContext = new AsyncLocalStorage<string[]>();
 
 /**
  * EditScope implementation for iModel transactions to prevent concurrent modifications/saves/abandons.
+ */
+/**
+ * @alpha
  */
 export class EditScope implements IEditScope {
   public readonly scopeId: string;
@@ -170,6 +178,9 @@ export class EditScope implements IEditScope {
   }
 }
 
+/**
+ * @alpha
+ */
 export abstract class ImmediateCommand<TArgs extends EditCommandArgs = EditCommandArgs, TResult = void> {
   protected _commandId: string;
   protected _iModel: IModelDb;
