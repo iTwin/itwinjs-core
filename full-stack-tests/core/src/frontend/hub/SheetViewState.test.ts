@@ -245,14 +245,7 @@ describe("SheetViewState", () => {
       });
     });
 
-    describe.only("are reloaded when ViewAttachments are inserted, updated, or deleted", () => {
-      function getDefaultSubCategoryId(categoryId: string): string {
-        const parts = Id64.getUint32Pair(categoryId);
-        expect(parts.upper).to.equal(0);
-        parts.lower += 1;
-        return Id64.fromUint32PairObject(parts);
-      }
-
+    describe("are reloaded when ViewAttachments are inserted, updated, or deleted", () => {
       async function waitForViewAttachmentsToReload(view: SheetViewState): Promise<void> {
         return new Promise((resolve) => {
           view.onViewAttachmentsReloaded.addOnce(() => {
@@ -295,11 +288,9 @@ describe("SheetViewState", () => {
         props.placement!.origin = [101, 99];
         await coreFullStackTestIpc.updateElement(iModel.key, props);
 
-        const cat = await coreFullStackTestIpc.createAndInsertSpatialCategory(iModel.key, await iModel.models.getDictionaryModel(), Guid.createValue(), { color: ColorDef.blue.toJSON() });
-
         await iModel.saveChanges();
         await waitForViewAttachmentsToReload(view);
-        expectChanges([cat, getDefaultSubCategoryId(cat), oldAttachmentId]);
+        expectChanges([oldAttachmentId]);
 
         // Verify we really did update the element's placement.
         const newProps = await iModel.elements.loadProps(oldAttachmentId) as ViewAttachmentProps;
@@ -350,6 +341,83 @@ describe("SheetViewState", () => {
           const view = vp.view as SheetViewState;
           expect(view.viewAttachmentProps.length).to.equal(1);
           expect(view.attachments).not.to.be.undefined;
+
+          expect(view.viewAttachmentProps[0].placement?.origin).to.deep.equal([100, 100]);
+          await vp.waitForSceneCompletion();
+          expect(vp.areAllTilesLoaded).to.be.true;
+
+          // Modify the placement of the attachment
+          async function waitForReload() {
+            await waitForViewAttachmentsToReload(view);
+            await vp.waitForSceneCompletion();
+          }
+
+          const oldAttachmentId = view.viewAttachmentProps[0].id!;
+          expect(oldAttachmentId).not.to.be.undefined;
+          const props = await iModel.elements.loadProps(oldAttachmentId) as ViewAttachmentProps;
+          expect(props.placement).not.to.be.undefined;
+          props.placement!.origin = [101, 99];
+          await coreFullStackTestIpc.updateElement(iModel.key, props);
+
+          expect(vp.areAllTilesLoaded).to.be.true;
+          await iModel.saveChanges();
+          expect(vp.areAllTilesLoaded).to.be.false;
+          await waitForReload();
+          expect(vp.areAllTilesLoaded).to.be.true;
+
+          // Verify the view reloaded the attachment with the updated placement.
+          expect(view.viewAttachmentProps[0].placement?.origin).to.deep.equal([101, 99]);
+
+          // Add a new attachment
+          props.placement!.origin = [102, 98];
+          props.federationGuid = props.id = undefined;
+          const newAttachmentId = await coreFullStackTestIpc.insertElement(iModel.key, props);
+
+          expect(vp.areAllTilesLoaded).to.be.true;
+          await iModel.saveChanges();
+          expect(vp.areAllTilesLoaded).to.be.false;
+          await waitForReload();
+          expect(vp.areAllTilesLoaded).to.be.true;
+
+          expect(view.viewAttachmentProps.length).to.equal(2);
+          expect(view.viewAttachmentProps[1].id).to.equal(newAttachmentId);
+          expect(view.viewAttachmentProps[1].placement?.origin).to.deep.equal([102, 98]);
+
+          // Delete an attachment
+          await deleteElements(iModel, [newAttachmentId]);
+          expect(vp.areAllTilesLoaded).to.be.true;
+          await iModel.saveChanges();
+          expect(vp.areAllTilesLoaded).to.be.false;
+          await waitForReload();
+          expect(vp.areAllTilesLoaded).to.be.true;
+
+          expect(view.viewAttachmentProps.length).to.equal(1);
+          expect(view.viewAttachmentProps[0].id).to.equal(oldAttachmentId);
+          expect(view.viewAttachmentProps[0].placement?.origin).to.deep.equal([101, 99]);
+
+          // Undo everything so we don't affect subsequent tests (and to verify the Viewport reacts).
+          // -- undo delete
+          await iModel.txns.reverseSingleTxn();
+          expect(vp.areAllTilesLoaded).to.be.false;
+          await waitForReload();
+          expect(vp.areAllTilesLoaded).to.be.true;
+          expect(view.viewAttachmentProps.length).to.equal(2);
+
+          // -- undo insert
+          await iModel.txns.reverseSingleTxn();
+          expect(vp.areAllTilesLoaded).to.be.false;
+          await waitForReload();
+          expect(vp.areAllTilesLoaded).to.be.true;
+          expect(view.viewAttachmentProps.length).to.equal(1);
+
+          // -- undo update
+          await iModel.txns.reverseSingleTxn();
+          expect(vp.areAllTilesLoaded).to.be.false;
+          await waitForReload();
+
+          expect(vp.areAllTilesLoaded).to.be.true;
+          expect(view.viewAttachmentProps.length).to.equal(1);
+          expect(view.viewAttachmentProps[0].placement?.origin).to.deep.equal([100, 100]);
         });
       });
     });
