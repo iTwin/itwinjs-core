@@ -4010,6 +4010,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
     // (undocumented)
     static defaultTileRequestTimeout: number;
     // @beta
+    disableIncrementalSchemaLoading?: boolean;
+    // @beta
     disableRestorePointOnPullMerge?: true;
     // @beta
     disableThinnedNativeInstanceWorkflow?: boolean;
@@ -4040,6 +4042,8 @@ export interface IModelHostOptions {
     compressCachedTiles?: boolean;
     // @internal
     crashReportingConfig?: CrashReportingConfig;
+    // @beta
+    disableIncrementalSchemaLoading?: boolean;
     // @beta
     disableRestorePointOnPullMerge?: true;
     disableThinnedNativeInstanceWorkflow?: boolean;

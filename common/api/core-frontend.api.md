@@ -4943,6 +4943,8 @@ export class IModelApp {
     static get initialized(): boolean;
     // @internal
     static get isEventLoopStarted(): boolean;
+    // @beta
+    static get isIncrementalSchemaLoadingDisabled(): boolean;
     static get localization(): Localization;
     // (undocumented)
     static get locateManager(): ElementLocateManager;
@@ -5012,6 +5014,8 @@ export interface IModelAppOptions {
     applicationId?: string;
     applicationVersion?: string;
     authorizationClient?: AuthorizationClient;
+    // @beta
+    disableIncrementalSchemaLoading?: boolean;
     formatsProvider?: FormatsProvider;
     hubAccess?: FrontendHubAccess;
     localization?: Localization;

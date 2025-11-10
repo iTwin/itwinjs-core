@@ -68,7 +68,6 @@ internal;interface;ECSqlSchemaLocaterOptions
 internal;class;ECStringConstants
 public;class;ECVersion
 preview;class;ECVersion
-internal;function;enableIncrementalSchemaLoading
 public;class;EntityClass
 preview;class;EntityClass
 public;interface;EntityClassProps

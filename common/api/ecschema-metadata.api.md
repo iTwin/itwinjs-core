@@ -565,9 +565,6 @@ export class ECVersion {
     get write(): number;
 }
 
-// @internal
-export function enableIncrementalSchemaLoading(enable: boolean): void;
-
 // @public @preview
 export class EntityClass extends ECClass implements HasMixins {
     // @internal (undocumented)
