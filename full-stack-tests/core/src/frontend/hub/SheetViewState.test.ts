@@ -312,6 +312,8 @@ describe("SheetViewState", () => {
         props.placement!.origin = [102, 98];
         props.federationGuid = props.id = undefined;
         const newAttachmentId = await coreFullStackTestIpc.insertElement(iModel.key, props);
+        await iModel.saveChanges();
+        await waitForViewAttachmentsToReload(view);
 
         expect(view.viewAttachmentProps.length).to.equal(2);
         expect(view.viewAttachmentProps[1].id).to.equal(newAttachmentId);
@@ -319,6 +321,8 @@ describe("SheetViewState", () => {
 
         // Delete an attachment
         await deleteElements(iModel, [newAttachmentId]);
+        await iModel.saveChanges();
+        await waitForViewAttachmentsToReload(view);
         expect(view.viewAttachmentProps.length).to.equal(1);
         expect(view.viewAttachmentProps[0].id).to.equal(oldAttachmentId);
         expect(view.viewAttachmentProps[0].placement?.origin).to.deep.equal([101, 99]);
@@ -326,14 +330,17 @@ describe("SheetViewState", () => {
         // Undo everything so we don't affect subsequent tests (and to verify the SheetViewState reacts).
         // -- undo delete
         await iModel.txns.reverseSingleTxn();
+        await waitForViewAttachmentsToReload(view);
         expect(view.viewAttachmentProps.length).to.equal(2);
 
         // -- undo insert
         await iModel.txns.reverseSingleTxn();
+        await waitForViewAttachmentsToReload(view);
         expect(view.viewAttachmentProps.length).to.equal(1);
 
         // -- undo update
         await iModel.txns.reverseSingleTxn();
+        await waitForViewAttachmentsToReload(view);
         expect(view.viewAttachmentProps.length).to.equal(1);
         expect(view.viewAttachmentProps[0].placement?.origin).to.deep.equal([100, 100]);
       });
