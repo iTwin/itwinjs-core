@@ -1165,7 +1165,7 @@ it("before and after rebase events", async () => {
     chai.expect(b2.txns.beginMultiTxnOperation()).to.be.equals(DbResult.BE_SQLITE_OK);
     let elId = await testIModel.insertElement(b2);
     b2.saveChanges(`insert element ${elId}`);
-    elId =  await testIModel.insertElement(b2);
+    elId = await testIModel.insertElement(b2);
     b2.saveChanges(`insert element ${elId}`);
     elId = await testIModel.insertElement(b2);
     b2.saveChanges(`insert element ${elId}`);
@@ -1200,7 +1200,7 @@ it("before and after rebase events", async () => {
     chai.expect(txns[3].reversed).to.be.equals(false);
 
     // reverse single txn 0x100000003
-    chai.expect(b2.txns.reverseSingleTxn()).to.be.equals(DbResult.BE_SQLITE_OK) ;
+    chai.expect(b2.txns.reverseSingleTxn()).to.be.equals(DbResult.BE_SQLITE_OK);
     txns = Array.from(b2.txns.queryTxns());
 
     chai.expect(txns[0].id).to.be.equals("0x100000000"); // 1st after beginMultiTxnOperation()
@@ -1228,7 +1228,7 @@ it("before and after rebase events", async () => {
     chai.expect(txns[3].reversed).to.be.equals(true);
 
     // reverse multi txn. should reverse 0x100000000, 0x100000001 & 0x100000002
-    chai.expect(b2.txns.reverseSingleTxn()).to.be.equals(DbResult.BE_SQLITE_OK) ;
+    chai.expect(b2.txns.reverseSingleTxn()).to.be.equals(DbResult.BE_SQLITE_OK);
     txns = Array.from(b2.txns.queryTxns());
 
     chai.expect(txns[0].id).to.be.equals("0x100000000"); // 1st after beginMultiTxnOperation()
