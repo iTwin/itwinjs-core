@@ -7,6 +7,7 @@ import { DisplayValue, IContentVisitor, ProcessPrimitiveValueProps, traverseCont
 import { initialize, terminate } from "../IntegrationTests.js";
 import { IModelDb, SnapshotDb } from "@itwin/core-backend";
 import { Presentation } from "@itwin/presentation-backend";
+import { collect } from "../Utils.js";
 
 describe("Learning Snippets", () => {
   let imodel: IModelDb;
@@ -121,7 +122,7 @@ describe("Learning Snippets", () => {
         });
         // __PUBLISH_EXTRACT_END__
 
-        const batches = await fromAsync(result.iterator());
+        const batches = await collect(result.iterator());
         expect(batches).to.have.lengthOf(1);
         const firstBatch = batches[0];
         expect(firstBatch)
@@ -143,11 +144,3 @@ describe("Learning Snippets", () => {
     });
   });
 });
-
-async function fromAsync<T>(source: Iterable<T> | AsyncIterable<T>): Promise<T[]> {
-  const items: T[] = [];
-  for await (const item of source) {
-    items.push(item);
-  }
-  return items;
-}

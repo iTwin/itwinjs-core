@@ -3,15 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Guid, Id64String } from "@itwin/core-bentley";
+import { Guid, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Code, GeometricElement2dProps, IModel, QueryBinder, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { Suite } from "mocha";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
-import { BriefcaseDb, BriefcaseManager, ChannelControl, DrawingCategory, IModelHost, SqliteChangesetReader, TxnProps } from "../../core-backend";
+import { BriefcaseDb, BriefcaseManager, ChangesetECAdaptor, ChannelControl, DrawingCategory, IModelHost, SqliteChangesetReader, TxnProps } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { StashManager } from "../../StashManager";
+import { existsSync, unlinkSync, writeFileSync } from "fs";
+import * as path from "path";
 chai.use(chaiAsPromised);
 
 class TestIModel {
@@ -391,6 +393,165 @@ describe("rebase changes & stashing api", function (this: Suite) {
     StashManager.dropAllStashes(b1);
     chai.expect(StashManager.getStashes(b1)).to.have.lengthOf(0);
   });
+  it("recursively calling withIndirectTxnMode()", async () => {
+    const b1 = await testIModel.openBriefcase();
+    chai.expect(b1.txns.getMode()).to.equal("direct");
+    b1.txns.withIndirectTxnMode(() => {
+      chai.expect(b1.txns.getMode()).to.equal("indirect");
+    });
+
+    chai.expect(b1.txns.getMode()).to.equal("direct");
+
+    b1.txns.withIndirectTxnMode(() => {
+      chai.expect(b1.txns.getMode()).to.equal("indirect");
+      b1.txns.withIndirectTxnMode(() => {
+        chai.expect(b1.txns.getMode()).to.equal("indirect");
+        b1.txns.withIndirectTxnMode(() => {
+          chai.expect(b1.txns.getMode()).to.equal("indirect");
+          b1.txns.withIndirectTxnMode(() => {
+            chai.expect(b1.txns.getMode()).to.equal("indirect");
+          });
+          chai.expect(b1.txns.getMode()).to.equal("indirect");
+        });
+        chai.expect(b1.txns.getMode()).to.equal("indirect");
+      });
+    });
+
+    chai.expect(b1.txns.getMode()).to.equal("direct");
+
+    chai.expect(() =>
+      b1.txns.withIndirectTxnMode(() => {
+        chai.expect(b1.txns.getMode()).to.equal("indirect");
+        throw new Error("Test error");
+      })).to.throw();
+
+    chai.expect(b1.txns.getMode()).to.equal("direct");
+  });
+  it("should fail to importSchemas() & importSchemaStrings() in indirect scope", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const schema = `<?xml version="1.0" encoding="UTF-8"?>
+    <ECSchema schemaName="MySchema" alias="ms1" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
+        <ECEntityClass typeName="my_class">
+            <BaseClass>bis:GraphicalElement2d</BaseClass>
+            <ECProperty propertyName="prop1" typeName="string" />
+        </ECEntityClass>
+    </ECSchema>`;
+
+    const schemaFile = path.join(KnownTestLocations.outputDir, "MySchema.01.00.00.ecschema.xml");
+    if (existsSync(schemaFile)) {
+      unlinkSync(schemaFile);
+    }
+    writeFileSync(schemaFile, schema, { encoding: "utf8" });
+
+    await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
+      await b1.importSchemas([schema]);
+    })).to.be.rejectedWith("Cannot import schemas while in an indirect change scope");
+
+    b1.abandonChanges();
+
+    await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
+      await b1.importSchemaStrings([schema]);
+    })).to.be.rejectedWith("Cannot import schemas while in an indirect change scope");
+
+    b1.abandonChanges();
+    await b1.importSchemaStrings([schema]);
+
+    b1.saveChanges();
+    await b1.pushChanges({description: "import schema"});
+  });
+
+  it("should fail to saveChanges() & pushChanges() in indirect scope", async () => {
+    const b1 = await testIModel.openBriefcase();
+
+    await testIModel.insertElement(b1);
+
+    await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
+      b1.saveChanges();
+    })).to.be.rejectedWith("Cannot save changes while in an indirect change scope");
+
+    chai.expect(() => b1.txns.withIndirectTxnMode(() => {
+      b1.saveChanges();
+    })).to.be.throws("Cannot save changes while in an indirect change scope");
+
+    b1.saveChanges();
+
+    await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
+      await b1.pushChanges({description: "test"});
+    })).to.be.rejectedWith("Cannot push changeset while in an indirect change scope");
+
+    await b1.pushChanges({description: "test"});
+  });
+
+  it("should fail to saveFileProperty/deleteFileProperty in indirect scope", async () => {
+    // pull/push/saveFileProperty/deleteFileProperty should be called inside indirect change scope.
+    const b1 = await testIModel.openBriefcase();
+    b1.saveFileProperty({ namespace: "test", name: "test" }, "Hello, World");
+
+    await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
+      b1.saveFileProperty({ namespace: "test", name: "test" }, "This should fail 1");
+    })).to.be.rejectedWith("Cannot save file property while in an indirect change scope");
+
+    chai.expect(b1.queryFilePropertyString({ namespace: "test", name: "test" })).to.equal("Hello, World");
+
+    await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
+      b1.deleteFileProperty({ namespace: "test", name: "test" });
+    })).to.be.rejectedWith("Cannot delete file property while in an indirect change scope");
+
+    chai.expect(b1.queryFilePropertyString({ namespace: "test", name: "test" })).to.equal("Hello, World");
+
+    chai.expect(() => b1.txns.withIndirectTxnMode(() => {
+      b1.saveFileProperty({ namespace: "test", name: "test" }, "This should fail 2");
+    })).to.be.throws("Cannot save file property while in an indirect change scope");
+
+    chai.expect(b1.queryFilePropertyString({ namespace: "test", name: "test" })).to.equal("Hello, World");
+
+    chai.expect(() => b1.txns.withIndirectTxnMode(() => {
+      b1.deleteFileProperty({ namespace: "test", name: "test" });
+    })).to.be.throws("Cannot delete file property while in an indirect change scope");
+
+    b1.saveChanges();
+  });
+
+  it("recursively calling withIndirectTxnModeAsync()", async () => {
+    const b1 = await testIModel.openBriefcase();
+    chai.expect(b1.txns.getMode()).to.equal("direct");
+    await b1.txns.withIndirectTxnModeAsync(async () => {
+      chai.expect(b1.txns.getMode()).to.equal("indirect");
+    });
+
+    chai.expect(b1.txns.getMode()).to.equal("direct");
+
+    await b1.txns.withIndirectTxnModeAsync(async () => {
+      chai.expect(b1.txns.getMode()).to.equal("indirect");
+      await b1.txns.withIndirectTxnModeAsync(async () => {
+        chai.expect(b1.txns.getMode()).to.equal("indirect");
+        await b1.txns.withIndirectTxnModeAsync(async () => {
+          chai.expect(b1.txns.getMode()).to.equal("indirect");
+          await b1.txns.withIndirectTxnModeAsync(async () => {
+            chai.expect(b1.txns.getMode()).to.equal("indirect");
+            await b1.txns.withIndirectTxnModeAsync(async () => {
+              chai.expect(b1.txns.getMode()).to.equal("indirect");
+            });
+            chai.expect(b1.txns.getMode()).to.equal("indirect");
+          });
+          chai.expect(b1.txns.getMode()).to.equal("indirect");
+        });
+      });
+      b1.txns.withIndirectTxnMode(() => {
+        chai.expect(b1.txns.getMode()).to.equal("indirect");
+      });
+    });
+
+    chai.expect(b1.txns.getMode()).to.equal("direct");
+    await chai.expect(
+      b1.txns.withIndirectTxnModeAsync(async () => {
+        chai.expect(b1.txns.getMode()).to.equal("indirect");
+        throw new Error("Test error");
+      })).rejectedWith(Error);
+
+    chai.expect(b1.txns.getMode()).to.equal("direct");
+  });
   it("should restore mutually exclusive stashes", async () => {
     const b1 = await testIModel.openBriefcase();
 
@@ -696,6 +857,44 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.false;
   });
+  it("calling discardChanges() from inside indirect scope is not allowed", async () => {
+    const b1 = await testIModel.openBriefcase();
+    await testIModel.insertElement(b1);
+    b1.saveChanges();
+    const p1 = b1.txns.withIndirectTxnModeAsync(async () => {
+      await b1.discardChanges();
+    });
+    await chai.expect(p1).to.be.rejectedWith("Cannot discard changes when there are indirect changes");
+    b1.saveChanges();
+  });
+  it("calling discardChanges() during rebasing is not allowed", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+    await testIModel.insertElement(b1);
+    await testIModel.insertElement(b1);
+    b1.saveChanges();
+    await b1.pushChanges({description: "inserted element"});
+
+    await testIModel.insertElement(b2);
+    await testIModel.insertElement(b2);
+    b2.saveChanges();
+
+    b2.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txnProps: TxnProps) => {
+        return true;
+      },
+      recompute: async (_txnProps: TxnProps) => {
+        chai.expect(b2.txns.rebaser.isAborting).is.false;
+        await b2.discardChanges();
+      },
+    });
+
+    chai.expect(b2.txns.rebaser.isAborting).is.false;
+    const p1 = b2.pullChanges();
+    await chai.expect(p1).to.be.rejectedWith("Cannot discard changes while a rebase is in progress");
+    chai.expect(b2.txns.rebaser.canAbort()).is.true;
+    await b2.txns.rebaser.abort();
+  });
   it("getStash() should throw exception", async () => {
     const b1 = await testIModel.openBriefcase();
     chai.expect(() => StashManager.getStash({ db: b1, stash: "invalid_stash" })).to.throw("Invalid stash");
@@ -729,12 +928,12 @@ describe("rebase changes & stashing api", function (this: Suite) {
     const b1 = await testIModel.openBriefcase();
     const findElement = async (id: Id64String) => {
       const reader = b1.createQueryReader(`SELECT ECInstanceId, ec_className(ECClassId), Prop1 FROM ts.A1 WHERE ECInstanceId = ${id}`, QueryBinder.from([id]));
-      if(await reader.step())
+      if (await reader.step())
         return { id: reader.current[0], className: reader.current[1], prop1: reader.current[2] };
       return undefined;
     }
 
-    const runQuery  = async (query: string) => {
+    const runQuery = async (query: string) => {
       const reader = b1.createQueryReader(query);
       let rows = 0;
       while (await reader.step()) {
@@ -771,6 +970,186 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     const e3Props = await findElement(e3);
     chai.expect(e3Props).to.exist;
+  });
+it("enum txn changes in recompute", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const e1 = await testIModel.insertElement(b1);
+    const e2 = await testIModel.insertElement(b1, true);
+    b1.saveChanges();
+    await b1.pushChanges({ description: "insert element 1 direct and 1 indirect" });
+
+    await b2.pullChanges();
+
+    await testIModel.updateElement(b1, e1);
+    await testIModel.updateElement(b1, e2, true);
+    b1.saveChanges();
+    await b1.pushChanges({ description: "update element 1 direct and 1 indirect" });
+
+
+    await testIModel.insertElement(b2);
+    await testIModel.insertElement(b2, true);
+    b2.saveChanges("first change");
+
+    await testIModel.insertElement(b2);
+    await testIModel.insertElement(b2, true);
+    b2.saveChanges("second change");
+
+    await testIModel.insertElement(b2);
+    await testIModel.insertElement(b2, true);
+    b2.saveChanges("third change");
+
+    let txnVerified = 0;
+    b2.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txn: TxnProps) => {
+        return true;
+      },
+      recompute: async (txn: TxnProps): Promise<void> => {
+        const reader = SqliteChangesetReader.openTxn({txnId: txn.id, db: b2, disableSchemaCheck: true});
+        const adaptor = new ChangesetECAdaptor(reader);
+        adaptor.acceptClass("TestDomain:a1");
+        const ids = new Set<Id64String>();
+        while(adaptor.step()) {
+          if (!adaptor.reader.isIndirect)
+            ids.add(adaptor.inserted?.ECInstanceId || adaptor.deleted?.ECInstanceId as Id64String);
+        }
+        adaptor.close();
+
+        if (txn.props.description  === "first change") {
+          chai.expect(Array.from(ids.keys())).deep.equal(["0x40000000001"]);
+          txnVerified++;
+        } else if (txn.props.description  === "second change") {
+          chai.expect(Array.from(ids.keys())).deep.equal(["0x40000000003"]);
+          txnVerified++;
+        } else if (txn.props.description  === "third change") {
+          chai.expect(Array.from(ids.keys())).deep.equal(["0x40000000005"]);
+          txnVerified++;
+        } else {
+          txnVerified++;
+        }
+      },
+    });
+    await b2.pullChanges();
+    chai.expect(txnVerified).to.equal(3);
+  });
+it("before and after rebase events", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const e1 = await testIModel.insertElement(b1);
+    const e2 = await testIModel.insertElement(b1, true);
+    b1.saveChanges();
+    await b1.pushChanges({ description: "insert element 1 direct and 1 indirect" });
+
+    await b2.pullChanges();
+
+    await testIModel.updateElement(b1, e1);
+    await testIModel.updateElement(b1, e2, true);
+    b1.saveChanges();
+    await b1.pushChanges({ description: "update element 1 direct and 1 indirect" });
+
+
+    await testIModel.insertElement(b2);
+    await testIModel.insertElement(b2, true);
+    b2.saveChanges("first change");
+
+    await testIModel.insertElement(b2);
+    await testIModel.insertElement(b2, true);
+    b2.saveChanges("second change");
+
+    await testIModel.insertElement(b2);
+    await testIModel.insertElement(b2, true);
+    b2.saveChanges("third change");
+
+
+    const events = {
+      onRebase: {
+        beginCount: 0,
+        endCount: 0,
+        beginIds: [] as Id64Array,
+      },
+      onRebaseTxn: {
+        beginTxns: [] as TxnProps[],
+        endTxns: [] as TxnProps[],
+      },
+      rebaseHandler: {
+        shouldReinstate: [] as TxnProps[],
+        recompute: [] as TxnProps[],
+      }
+    };
+
+    const resetEvent = () => {
+      events.onRebase.beginCount = 0;
+      events.onRebase.endCount = 0;
+      events.onRebase.beginIds = [];
+      events.onRebaseTxn.beginTxns = [];
+      events.onRebaseTxn.endTxns = [];
+      events.rebaseHandler.shouldReinstate = [];
+      events.rebaseHandler.recompute = [];
+    };
+
+    b2.txns.onRebaseBegin.addListener((ids: Id64Array) => {
+      events.onRebase.beginCount++;
+      events.onRebase.beginIds.push(...ids);
+    });
+
+    b2.txns.onRebaseEnd.addListener(() => {
+      events.onRebase.endCount++;
+    });
+
+    b2.txns.onRebaseTxnBegin.addListener((txn: TxnProps) => {
+      events.onRebaseTxn.beginTxns.push(txn);
+    });
+
+    b2.txns.onRebaseTxnEnd.addListener((txn: TxnProps) => {
+      events.onRebaseTxn.endTxns.push(txn);
+    });
+
+    b2.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txn: TxnProps) => {
+        events.rebaseHandler.shouldReinstate.push(_txn);
+        return true;
+      },
+      recompute: async (_txn: TxnProps): Promise<void> => {
+        events.rebaseHandler.recompute.push(_txn);
+      },
+    });
+
+    resetEvent();
+    await b2.pullChanges();
+
+    chai.expect(events.onRebase.beginCount).to.equal(1);
+    chai.expect(events.onRebase.endCount).to.equal(1);
+    chai.expect(events.onRebase.beginIds).to.deep.equal(["0x100000000", "0x100000001", "0x100000002"]);
+
+    chai.expect(events.onRebaseTxn.beginTxns.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002"]);
+    chai.expect(events.onRebaseTxn.endTxns.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002"]);
+
+    chai.expect(events.rebaseHandler.shouldReinstate.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002"]);
+    chai.expect(events.rebaseHandler.recompute.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002"]);
+
+    await testIModel.updateElement(b1, e1);
+    await testIModel.updateElement(b1, e2, true);
+    b1.saveChanges();
+    await b1.pushChanges({ description: "update element 1 direct and 1 indirect" });
+
+    await testIModel.insertElement(b2);
+    await testIModel.insertElement(b2, true);
+    b2.saveChanges("forth change");
+
+    resetEvent();
+    await b2.pullChanges();
+
+    chai.expect(events.onRebase.beginCount).to.equal(1);
+    chai.expect(events.onRebase.endCount).to.equal(1);
+    chai.expect(events.onRebase.beginIds).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
+
+    chai.expect(events.onRebaseTxn.beginTxns.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
+    chai.expect(events.onRebaseTxn.endTxns.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
+
+    chai.expect(events.rebaseHandler.shouldReinstate.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
+    chai.expect(events.rebaseHandler.recompute.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
   });
 });
 

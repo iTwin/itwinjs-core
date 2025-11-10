@@ -369,6 +369,9 @@ export enum ContentSpecificationTypes {
 export type ContentUpdateInfo = typeof UPDATE_FULL;
 
 // @public
+export function createContentFormatter(props: ContentFormatterProps): ContentFormatter;
+
+// @public
 export function createFieldHierarchies(fields: Field[], ignoreCategories?: boolean): FieldHierarchy[];
 
 // @public
