@@ -21,20 +21,6 @@ interface IncrementalSchemaInfo extends SchemaInfo {
 
 type LoadSchemaInfoHandler = (context: SchemaContext) => Promise<Iterable<SchemaInfo>>;
 
-// Global options for incremental schema loading.
-const schemaLoadingOptions = {
-  isEnabled: false,
-};
-
-/**
- * Enables or disables incremental schema loading globally.
- * @param enable Set to true to enable incremental schema loading, false to disable it. Default is false.
- * @internal
- */
-export function enableIncrementalSchemaLoading(enable: boolean) {
-  schemaLoadingOptions.isEnabled = enable;
-}
-
 /**
  * Defines the SchemaLocater Options which determine how each schema is to be loaded.
  * All options are optional.
@@ -84,10 +70,6 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
    * @param context     The [[SchemaContext]] for loading schema references.
    */
   public async getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
-    if(!schemaLoadingOptions.isEnabled) {
-      return undefined;
-    }
-
     return this._schemaInfoCache.lookup(schemaKey, matchType, context);
   }
 
@@ -99,10 +81,6 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
    * @param context     The [[SchemaContext]] for loading schema references.
    */
   public async getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined> {
-    if(!schemaLoadingOptions.isEnabled) {
-      return undefined;
-    }
-
     const schemaInfo = await this.getSchemaInfo(schemaKey, matchType, context);
     return schemaInfo
       ? this.loadSchema(schemaInfo, context)

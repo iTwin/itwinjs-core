@@ -207,6 +207,11 @@ export interface IModelHostOptions {
    * @beta
    */
   disableRestorePointOnPullMerge?: true;
+  /**
+   * Configuration controlling whether incremental schema loading is disabled.
+   * @beta
+   */
+  disableIncrementalSchemaLoading?: boolean;
 }
 
 /** Configuration of core-backend.
@@ -253,6 +258,11 @@ export class IModelHostConfiguration implements IModelHostOptions {
    * @beta
    */
   public disableRestorePointOnPullMerge?: true;
+  /**
+   * Configuration controlling whether incremental schema loading is disabled.
+   * @beta
+   */
+  public disableIncrementalSchemaLoading?: boolean;
 }
 
 /**

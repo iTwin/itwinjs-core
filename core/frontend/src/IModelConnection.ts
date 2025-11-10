@@ -629,7 +629,11 @@ export abstract class IModelConnection extends IModel {
   public get schemaContext(): SchemaContext {
     if (this._schemaContext === undefined) {
       const context = new SchemaContext();
-      context.addLocater(new RpcIncrementalSchemaLocater(this._getRpcProps()));
+      // While incremental schema loading is the prefered way to load schemas on the frontend, there might be cases where clients
+      // would want to use their own locaters, so if incremenal schema loading is disabled, the locater is not registered.
+      if(IModelApp.isIncrementalSchemaLoadingDisabled !== true) {
+        context.addLocater(new RpcIncrementalSchemaLocater(this._getRpcProps()));
+      }
       context.addFallbackLocater(new ECSchemaRpcLocater(this._getRpcProps()));
       this._schemaContext = context;
     }

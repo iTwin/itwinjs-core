@@ -1,4 +1,4 @@
-import { ECClass, enableIncrementalSchemaLoading, Schema, SchemaContext, SchemaInfo, SchemaItem, SchemaItemKey,
+import { ECClass, Schema, SchemaContext, SchemaInfo, SchemaItem, SchemaItemKey,
   SchemaItemType, SchemaJsonLocater, SchemaKey, SchemaMatchType, SchemaProps, WithSchemaKey }
   from "@itwin/ecschema-metadata";
 import { expect } from "chai";
@@ -24,7 +24,6 @@ describe("Incremental Schema Loading", function () {
     let testSchemaConfiguration: any;
 
     before("Setup", async function () {
-      enableIncrementalSchemaLoading(true);
       await IncrementalTestHelper.setup();
       testSchemaConfiguration = simpleConfiguration.schemas[0];
       testSchemaKey = new SchemaKey(testSchemaConfiguration.name, 1, 0, 0);
@@ -32,7 +31,6 @@ describe("Incremental Schema Loading", function () {
     });
 
     after(async () => {
-      enableIncrementalSchemaLoading(false);
       await IncrementalTestHelper.close();
     });
 
@@ -214,14 +212,12 @@ describe("Incremental Schema Loading", function () {
     }
 
     before("Setup", async function () {
-      enableIncrementalSchemaLoading(true);
-      await IncrementalTestHelper.setup(oldConfiguration.bimFile);
+      await IncrementalTestHelper.setup({ bimName: oldConfiguration.bimFile });
       testSchemaConfiguration = oldConfiguration.schemas[0];
       testSchemaKey = await resolveSchemaKey(testSchemaConfiguration.name);
     });
 
     after(async () => {
-      enableIncrementalSchemaLoading(false);
       await IncrementalTestHelper.close();
     });
 
@@ -256,6 +252,22 @@ describe("Incremental Schema Loading", function () {
           expect(itemProps).to.have.property(propertyName).deep.equalInAnyOrder(propertyValue);
         }
       }
+    });
+  });
+
+  describe("Test Incremental Loading disabled", () => {
+    before("Setup", async function () {
+      await IncrementalTestHelper.setup({ disableSchemaLoading: true });
+    });
+
+    after(async () => {
+      await IncrementalTestHelper.close();
+    });
+
+    it("Schema context should not have an instance of incremental schema locater if loading is disabled", () => {
+      const locaters = IncrementalTestHelper.iModel.schemaContext.locaters;
+      const incrementalLocater = locaters.find((locater) => locater instanceof IModelIncrementalSchemaLocater);
+      expect(incrementalLocater).to.be.undefined;
     });
   });
 });

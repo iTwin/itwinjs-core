@@ -1227,7 +1227,9 @@ export abstract class IModelDb extends IModel {
   public get schemaContext(): SchemaContext {
     if (this._schemaContext === undefined) {
       const context = new SchemaContext();
-      context.addLocater(new IModelIncrementalSchemaLocater(this));
+      if(IModelHost.configuration?.disableIncrementalSchemaLoading !== true) {
+        context.addLocater(new IModelIncrementalSchemaLocater(this));
+      }
       context.addLocater(new SchemaJsonLocater((name) => this.getSchemaProps(name)));
       this._schemaContext = context;
     }
