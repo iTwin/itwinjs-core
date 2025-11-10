@@ -584,7 +584,7 @@ export class BriefcaseDb extends IModelDb {
     close(): void;
     // (undocumented)
     disableChangesetStatTracking(): Promise<void>;
-    // @alpha
+    // @preview
     discardChanges(args?: {
         retainLocks?: true;
     }): Promise<void>;
@@ -5257,6 +5257,7 @@ export class RebaseManager {
     }): void;
     canAbort(): boolean;
     inProgress(): boolean;
+    get isAborting(): boolean;
     get isMerging(): boolean;
     get isRebasing(): boolean;
     onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
@@ -6820,6 +6821,10 @@ export class TxnManager {
     protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
+    // @alpha
+    readonly onRebaseBegin: BeEvent<(txns: TxnIdString[]) => void>;
+    // @alpha
+    readonly onRebaseEnd: BeEvent<() => void>;
     // @alpha
     readonly onRebaseTxnBegin: BeEvent<(txn: TxnProps) => void>;
     // @alpha

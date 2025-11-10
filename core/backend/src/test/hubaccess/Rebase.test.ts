@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Guid, Id64String } from "@itwin/core-bentley";
+import { Guid, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Code, GeometricElement2dProps, IModel, QueryBinder, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
@@ -857,6 +857,44 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     chai.expect(BriefcaseManager.containsRestorePoint(b2, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)).is.false;
   });
+  it("calling discardChanges() from inside indirect scope is not allowed", async () => {
+    const b1 = await testIModel.openBriefcase();
+    await testIModel.insertElement(b1);
+    b1.saveChanges();
+    const p1 = b1.txns.withIndirectTxnModeAsync(async () => {
+      await b1.discardChanges();
+    });
+    await chai.expect(p1).to.be.rejectedWith("Cannot discard changes when there are indirect changes");
+    b1.saveChanges();
+  });
+  it("calling discardChanges() during rebasing is not allowed", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+    await testIModel.insertElement(b1);
+    await testIModel.insertElement(b1);
+    b1.saveChanges();
+    await b1.pushChanges({description: "inserted element"});
+
+    await testIModel.insertElement(b2);
+    await testIModel.insertElement(b2);
+    b2.saveChanges();
+
+    b2.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txnProps: TxnProps) => {
+        return true;
+      },
+      recompute: async (_txnProps: TxnProps) => {
+        chai.expect(b2.txns.rebaser.isAborting).is.false;
+        await b2.discardChanges();
+      },
+    });
+
+    chai.expect(b2.txns.rebaser.isAborting).is.false;
+    const p1 = b2.pullChanges();
+    await chai.expect(p1).to.be.rejectedWith("Cannot discard changes while a rebase is in progress");
+    chai.expect(b2.txns.rebaser.canAbort()).is.true;
+    await b2.txns.rebaser.abort();
+  });
   it("getStash() should throw exception", async () => {
     const b1 = await testIModel.openBriefcase();
     chai.expect(() => StashManager.getStash({ db: b1, stash: "invalid_stash" })).to.throw("Invalid stash");
@@ -994,6 +1032,124 @@ it("enum txn changes in recompute", async () => {
     });
     await b2.pullChanges();
     chai.expect(txnVerified).to.equal(3);
+  });
+it("before and after rebase events", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const e1 = await testIModel.insertElement(b1);
+    const e2 = await testIModel.insertElement(b1, true);
+    b1.saveChanges();
+    await b1.pushChanges({ description: "insert element 1 direct and 1 indirect" });
+
+    await b2.pullChanges();
+
+    await testIModel.updateElement(b1, e1);
+    await testIModel.updateElement(b1, e2, true);
+    b1.saveChanges();
+    await b1.pushChanges({ description: "update element 1 direct and 1 indirect" });
+
+
+    await testIModel.insertElement(b2);
+    await testIModel.insertElement(b2, true);
+    b2.saveChanges("first change");
+
+    await testIModel.insertElement(b2);
+    await testIModel.insertElement(b2, true);
+    b2.saveChanges("second change");
+
+    await testIModel.insertElement(b2);
+    await testIModel.insertElement(b2, true);
+    b2.saveChanges("third change");
+
+
+    const events = {
+      onRebase: {
+        beginCount: 0,
+        endCount: 0,
+        beginIds: [] as Id64Array,
+      },
+      onRebaseTxn: {
+        beginTxns: [] as TxnProps[],
+        endTxns: [] as TxnProps[],
+      },
+      rebaseHandler: {
+        shouldReinstate: [] as TxnProps[],
+        recompute: [] as TxnProps[],
+      }
+    };
+
+    const resetEvent = () => {
+      events.onRebase.beginCount = 0;
+      events.onRebase.endCount = 0;
+      events.onRebase.beginIds = [];
+      events.onRebaseTxn.beginTxns = [];
+      events.onRebaseTxn.endTxns = [];
+      events.rebaseHandler.shouldReinstate = [];
+      events.rebaseHandler.recompute = [];
+    };
+
+    b2.txns.onRebaseBegin.addListener((ids: Id64Array) => {
+      events.onRebase.beginCount++;
+      events.onRebase.beginIds.push(...ids);
+    });
+
+    b2.txns.onRebaseEnd.addListener(() => {
+      events.onRebase.endCount++;
+    });
+
+    b2.txns.onRebaseTxnBegin.addListener((txn: TxnProps) => {
+      events.onRebaseTxn.beginTxns.push(txn);
+    });
+
+    b2.txns.onRebaseTxnEnd.addListener((txn: TxnProps) => {
+      events.onRebaseTxn.endTxns.push(txn);
+    });
+
+    b2.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txn: TxnProps) => {
+        events.rebaseHandler.shouldReinstate.push(_txn);
+        return true;
+      },
+      recompute: async (_txn: TxnProps): Promise<void> => {
+        events.rebaseHandler.recompute.push(_txn);
+      },
+    });
+
+    resetEvent();
+    await b2.pullChanges();
+
+    chai.expect(events.onRebase.beginCount).to.equal(1);
+    chai.expect(events.onRebase.endCount).to.equal(1);
+    chai.expect(events.onRebase.beginIds).to.deep.equal(["0x100000000", "0x100000001", "0x100000002"]);
+
+    chai.expect(events.onRebaseTxn.beginTxns.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002"]);
+    chai.expect(events.onRebaseTxn.endTxns.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002"]);
+
+    chai.expect(events.rebaseHandler.shouldReinstate.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002"]);
+    chai.expect(events.rebaseHandler.recompute.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002"]);
+
+    await testIModel.updateElement(b1, e1);
+    await testIModel.updateElement(b1, e2, true);
+    b1.saveChanges();
+    await b1.pushChanges({ description: "update element 1 direct and 1 indirect" });
+
+    await testIModel.insertElement(b2);
+    await testIModel.insertElement(b2, true);
+    b2.saveChanges("forth change");
+
+    resetEvent();
+    await b2.pullChanges();
+
+    chai.expect(events.onRebase.beginCount).to.equal(1);
+    chai.expect(events.onRebase.endCount).to.equal(1);
+    chai.expect(events.onRebase.beginIds).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
+
+    chai.expect(events.onRebaseTxn.beginTxns.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
+    chai.expect(events.onRebaseTxn.endTxns.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
+
+    chai.expect(events.rebaseHandler.shouldReinstate.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
+    chai.expect(events.rebaseHandler.recompute.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
   });
 });
 
