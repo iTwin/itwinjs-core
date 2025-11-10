@@ -221,6 +221,12 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     }
 
     standaloneModel.close();
+
+    // Adds the crucial entry to be_Local to enable editing with txns.
+    // Without this, we won't get notified when changes are made to the iModel.
+    // (e.g. BriefcaseTxns.onElementsChanged which tests rely upon won't be invoked).
+    StandaloneDb.convertToStandalone(filePath);
+
     return sheetViewId;
   }
 }

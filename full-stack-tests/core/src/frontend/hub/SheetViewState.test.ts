@@ -10,7 +10,7 @@ import { TestUtility } from "../TestUtility";
 import { coreFullStackTestIpc, deleteElements, initializeEditTools } from "../Editing";
 import * as path from "path";
 import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
-import { CompressedId64Set, Guid, Id64String, OpenMode } from "@itwin/core-bentley";
+import { CompressedId64Set, Guid, Id64, Id64String, OpenMode } from "@itwin/core-bentley";
 import { ColorDef, ViewAttachmentProps } from "@itwin/core-common";
 
 describe("SheetViewState (#integration)", () => {
@@ -246,6 +246,13 @@ describe("SheetViewState", () => {
     });
 
     describe.only("are reloaded when ViewAttachments are inserted, updated, or deleted", () => {
+      function getDefaultSubCategoryId(categoryId: string): string {
+        const parts = Id64.getUint32Pair(categoryId);
+        expect(parts.upper).to.equal(0);
+        parts.lower += 1;
+        return Id64.fromUint32PairObject(parts);
+      }
+
       it("when not attached to a viewport", async () => {
         const changedElements = new Set<Id64String>();
         iModel.txns.onElementsChanged.addListener((changes) => {
@@ -283,7 +290,7 @@ describe("SheetViewState", () => {
         const cat = await coreFullStackTestIpc.createAndInsertSpatialCategory(iModel.key, await iModel.models.getDictionaryModel(), Guid.createValue(), { color: ColorDef.blue.toJSON() });
 
         await iModel.saveChanges();
-        expectChanges([cat, oldAttachmentId]);
+        expectChanges([cat, getDefaultSubCategoryId(cat), oldAttachmentId]);
 
         // Verify we really did update the element's placement.
         const newProps = await iModel.elements.loadProps(oldAttachmentId) as ViewAttachmentProps;
