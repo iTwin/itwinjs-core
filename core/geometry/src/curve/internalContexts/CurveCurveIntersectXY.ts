@@ -1161,8 +1161,9 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     return undefined;
   }
   /**
-   * Use the intersection found between the spiral approximation and the curve primitive as the initial guess for
-   * the Newton iteration to locate the intersection between the actual spiral and the curve primitive.
+   * Assuming the tail of `this._results` holds the given number of approximate solutions to the curve-spiral
+   * xy-intersection problem, replace each with its Newton refinement, unless it doesn't converge, in which case
+   * it is removed.
    * @param spiral The transition spiral.
    * @param otherCurve The other curve primitive.
    * @param numberOfNewResults The number of results in the tail of `this._results` to be refined.

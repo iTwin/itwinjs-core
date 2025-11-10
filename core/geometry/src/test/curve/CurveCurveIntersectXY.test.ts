@@ -2397,8 +2397,10 @@ describe("CurveCurveIntersectXY", () => {
           curve0Detail = intersection.detailB;
           curve1Detail = intersection.detailA;
         }
+        let pointOnCurve0 = Point3d.create();
+        let pointOnCurve1 = Point3d.create();
         if (!(curve0 instanceof CurveCollection)) {
-          const pointOnCurve0 = curve0Detail.point;
+          pointOnCurve0 = curve0Detail.point;
           const intersectionPoint0 = curve0.fractionToPoint(curve0Detail.fraction);
           ck.testPoint3dXY(
             pointOnCurve0,
@@ -2407,12 +2409,19 @@ describe("CurveCurveIntersectXY", () => {
           );
         }
         if (!(curve1 instanceof CurveCollection)) {
-          const pointOnCurve1 = curve1Detail.point;
+          pointOnCurve1 = curve1Detail.point;
           const intersectionPoint1 = curve1.fractionToPoint(curve1Detail.fraction);
           ck.testPoint3dXY(
             pointOnCurve1,
             intersectionPoint1,
             `intersection point on ${curveName1} should match ${curveName1}.fractionToPoint`,
+          );
+        }
+        if (!(curve0 instanceof CurveCollection) && !(curve1 instanceof CurveCollection)) {
+          ck.testPoint3dXY(
+            pointOnCurve0,
+            pointOnCurve1,
+            `point on ${curveName0} should match point on ${curveName1}`,
           );
         }
       }
@@ -2434,13 +2443,20 @@ describe("CurveCurveIntersectXY", () => {
       Point3d.create(70, 0),
       Matrix3d.createRotationAroundVector(Vector3d.create(0, 0, 1), Angle.createDegrees(90))!,
     );
+    const moveTransform = Transform.createTranslationXYZ(0, 0, 10);
+    let nonPlanarTransform = Transform.createZero();
+    nonPlanarTransform.setMultiplyTransformTransform(rotationTransform, moveTransform);
     // integrated spirals
     const integratedSpirals = [];
     const r0 = 0;
     const r1 = 50;
     const activeInterval = Segment1d.create(0, 1);
     for (const integratedSpiralType of ["clothoid", "bloss", "biquadratic", "sine", "cosine"]) {
-      for (const transform of [Transform.createIdentity(), rotationTransform]) { // rotated spirals have odd indices
+      for (const transform of [
+        Transform.createIdentity(),
+        rotationTransform, // rotated spirals have indices (n*i)+1
+        nonPlanarTransform, // non-planar spirals have indices (n*i)+2
+      ]) {
         integratedSpirals.push(
           IntegratedSpiral3d.createRadiusRadiusBearingBearing(
             Segment1d.create(r0, r1),
@@ -2468,7 +2484,11 @@ describe("CurveCurveIntersectXY", () => {
       // "MXCubicAlongArc",
       // "Polish",
     ]) {
-      for (const transform of [Transform.createIdentity(), rotationTransform]) { // rotated spirals have odd indices
+      for (const transform of [
+        Transform.createIdentity(),
+        rotationTransform, // rotated spirals have indices (n*i)+1
+        nonPlanarTransform, // non-planar spirals have indices (n*i)+2
+      ]) {
         directSpirals.push(
           DirectSpiral3d.createFromLengthAndRadius(
             directSpiralType, r0, r1, undefined, undefined, length, activeInterval, transform,
@@ -2518,23 +2538,38 @@ describe("CurveCurveIntersectXY", () => {
       lineString0,
       arc0,
       bspline0,
-      // add rotated spirals
+      // add rotated and non-planar spirals
       integratedSpirals[1],
-      integratedSpirals[3],
+      integratedSpirals[2],
+      integratedSpirals[4],
       integratedSpirals[5],
       integratedSpirals[7],
-      integratedSpirals[9],
+      integratedSpirals[8],
+      integratedSpirals[10],
+      integratedSpirals[11],
+      integratedSpirals[13],
+      integratedSpirals[14],
       directSpirals[1],
-      directSpirals[3],
+      directSpirals[2],
+      directSpirals[4],
       directSpirals[5],
       directSpirals[7],
-      directSpirals[9],
+      directSpirals[8],
+      directSpirals[10],
       directSpirals[11],
+      directSpirals[13],
+      directSpirals[14],
+      directSpirals[16],
+      directSpirals[17],
       // TODO: enable below lines after https://github.com/iTwin/itwinjs-backlog/issues/1693 is resolved
-      // directSpirals[13],
-      // directSpirals[15],
-      // directSpirals[17],
       // directSpirals[19],
+      // directSpirals[20],
+      // directSpirals[22],
+      // directSpirals[23],
+      // directSpirals[25],
+      // directSpirals[26],
+      // directSpirals[28],
+      // directSpirals[29],
       path0,
       loop,
       curveChain0,
@@ -2542,8 +2577,8 @@ describe("CurveCurveIntersectXY", () => {
     ];
     const numExpectedIntersections = [
       1, 3, 2, 1, // curve primitives other than spirals
-      1, 1, 1, 1, 1, // rotated integrated spirals
-      1, 1, 1, 1, 1, 1, // 1, 1, 1, 1 // rotated direct spirals
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // rotated and non-planar integrated spirals
+      1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 1, 1, 1, 1, 1, 1, 1, 1 // rotated and non-planar direct spirals
       5, 6, 5, 10, // path, loop, curve chain, and bag of curves
     ];
     ck.testCoordinate(curves.length, numExpectedIntersections.length, "matching arrays");
@@ -2558,14 +2593,16 @@ describe("CurveCurveIntersectXY", () => {
       dy = 0;
       dx += 200;
     }
-    for (let i = 0; i < integratedSpirals.length; i += 2) // skip rotated spirals
-      test(integratedSpirals[i]);
+    for (let i = 0; i < integratedSpirals.length; i++) // skip rotated and non-planar integrated spirals
+      if (i % 3 === 0)
+        test(integratedSpirals[i]);
     dx += 250;
-    for (let i = 0; i < directSpirals.length; i += 2) // skip rotated spirals
-      test(directSpirals[i]);
+    for (let i = 0; i < directSpirals.length; i++) // skip rotated and non-planar direct spirals
+      if (i % 3 === 0)
+        test(directSpirals[i]);
     // curve chain/collection vs curve chain/collection
     dx = 0;
-    dy = 3800;
+    dy = 6000;
     const numExpected = 12;
     visualizeAndTestSpiralIntersection(ck, allGeometry, curveChain0, curveChain1, numExpected, dx, dy);
     dy += 200;
