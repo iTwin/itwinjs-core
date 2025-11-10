@@ -253,6 +253,14 @@ describe("SheetViewState", () => {
         return Id64.fromUint32PairObject(parts);
       }
 
+      async function waitForViewAttachmentsToReload(view: SheetViewState): Promise<void> {
+        return new Promise((resolve) => {
+          view.onViewAttachmentsReloaded.addOnce(() => {
+            resolve();
+          });
+        });
+      }
+
       it("when not attached to a viewport", async () => {
         const changedElements = new Set<Id64String>();
         iModel.txns.onElementsChanged.addListener((changes) => {
@@ -290,6 +298,7 @@ describe("SheetViewState", () => {
         const cat = await coreFullStackTestIpc.createAndInsertSpatialCategory(iModel.key, await iModel.models.getDictionaryModel(), Guid.createValue(), { color: ColorDef.blue.toJSON() });
 
         await iModel.saveChanges();
+        await waitForViewAttachmentsToReload(view);
         expectChanges([cat, getDefaultSubCategoryId(cat), oldAttachmentId]);
 
         // Verify we really did update the element's placement.

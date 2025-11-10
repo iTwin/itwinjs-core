@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { assert, CompressedId64Set, dispose, expectDefined, Id64Array, Id64String } from "@itwin/core-bentley";
+import { assert, BeEvent, CompressedId64Set, dispose, expectDefined, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Angle, ClipShape, ClipVector, Constant, Matrix3d, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
 import {
   AxisAlignedBox3d, ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, HiddenLine, HydrateViewStateRequestProps, HydrateViewStateResponseProps, PackedFeatureTable, Placement2d, SheetProps,
@@ -133,6 +133,9 @@ export class SheetViewState extends ViewState2d {
   private readonly _viewedExtents: AxisAlignedBox3d;
   private _onViewAttachmentsReloaded: () => void = () => undefined;
 
+  /** Strictly for tests. */
+  public readonly onViewAttachmentsReloaded = new BeEvent<() => void>();
+
   public get attachmentIds(): readonly string[] {
     return this._viewAttachments.attachmentIds;
   }
@@ -204,7 +207,7 @@ export class SheetViewState extends ViewState2d {
     if (iModel.isBriefcaseConnection()) {
       iModel.txns.onElementsChanged.addListener(async (changes) => {
         let reload = false;
-        for (const change of changes.filter({ includeMetadata: (meta) => meta.is("BisCore.ViewAttachment")})) {
+        for (const change of changes.filter({ includeMetadata: (meta) => meta.is("BisCore:ViewAttachment")})) {
           if (change.type === "inserted" || this._viewAttachments.attachmentIds.includes(change.id)) {
             reload = true;
             break;
@@ -214,6 +217,7 @@ export class SheetViewState extends ViewState2d {
         if (reload) {
           await this._viewAttachments.reload(this.baseModelId, iModel);
           this._onViewAttachmentsReloaded();
+          this.onViewAttachmentsReloaded.raiseEvent();
         }
       });
     }
