@@ -1,4 +1,4 @@
-import { EditCommandArgs, ImmediateCommand } from "../IModelEditCommand";
+import { EditCommandArgs, ImmediateCommand, InteractiveCommand } from "../IModelEditCommand";
 
 // This rule was deprecated in ESLint v8.46.0.
 /* eslint-disable @typescript-eslint/return-await */
@@ -37,6 +37,15 @@ export class SquareCommand extends ImmediateCommand<SquareCommandArgs, number> {
   // Multiples the input value by itself
   public async performSquareOperation(args: SquareCommandArgs): Promise<number> {
     return args.value * args.value;
+  }
+}
+
+// Simple command that takes a numerical value and gets the square root
+export class SquareRootCommand extends ImmediateCommand<SquareCommandArgs, number> {
+
+  // Multiples the input value by itself
+  public async performSquareRootOperation(args: SquareCommandArgs): Promise<number> {
+    return Math.sqrt(args.value);
   }
 }
 
@@ -139,5 +148,165 @@ export class Pythagoras extends ImmediateCommand<PythagorasArgs, number> {
     );
 
     return await this.simpleSquareRoot(sumOfSquares);
+  }
+}
+
+export class InteractivePythagoras extends InteractiveCommand<PythagorasArgs, number> {
+  private _sideA?: number;
+  private _sideB?: number;
+
+  // Simulate accepting user input (e.g., from UI)
+  public async acceptInputNumber(): Promise<number> {
+    return Math.random() * 100;
+  }
+
+  // Set side A of the triangle
+  public async setSideA(value: number): Promise<void> {
+    return await this.executeOperation(async () => {
+      this._sideA = value;
+    });
+  }
+
+  // Set side B of the triangle
+  public async setSideB(value: number): Promise<void> {
+    return await this.executeOperation(async () => {
+      this._sideB = value;
+    });
+  }
+
+  // Get the current sum of squares (a^2 + b^2)
+  public async getSumOfSquares(): Promise<number> {
+    return await this.executeOperation(async () => {
+      if (this._sideA === undefined || this._sideB === undefined) {
+        throw new Error("Both sides must be set before calculating sum of squares");
+      }
+      return (this._sideA * this._sideA) + (this._sideB * this._sideB);
+    });
+  }
+
+  // Calculate and return the hypotenuse
+  public async calcHypotenuse(args: PythagorasArgs): Promise<number> {
+    await this.startCommandScope();
+    try {
+      // Set the sides
+      await this.setSideA(args.sideA);
+      await this.setSideB(args.sideB);
+
+      // Calculate sum of squares
+      const sumOfSquares = await this.getSumOfSquares();
+
+      // Calculate hypotenuse
+      const result = Math.sqrt(sumOfSquares);
+
+      await this.saveChanges("Calculated hypotenuse");
+      return result;
+    } catch (error) {
+      await this.abandonChanges();
+      throw error;
+    } finally {
+      await this.endCommandScope();
+    }
+  }
+
+  // Calculate hypotenuse using nested immediate commands
+  public async calcHypotenuseWithNestedCommands(args: PythagorasArgs): Promise<number> {
+    await this.startCommandScope();
+    try {
+      return await this.executeOperation(async () => {
+        // Use immediate commands for square operations
+        const squareCommand = new SquareCommand(this._iModel);
+        const [sideASquared, sideBSquared] = await Promise.all([
+          squareCommand.execute(async () => squareCommand.performSquareOperation({ value: args.sideA })),
+          squareCommand.execute(async () => squareCommand.performSquareOperation({ value: args.sideB }))
+        ]);
+
+        const squareRootCommand = new SquareRootCommand(this._iModel);
+        const result = await squareRootCommand.execute(
+          async () => squareRootCommand.performSquareRootOperation({ value: sideASquared + sideBSquared })
+        );
+
+        await this.saveChanges("Calculated hypotenuse with nested commands");
+        return result;
+      });
+    } catch (error) {
+      await this.abandonChanges();
+      throw error;
+    } finally {
+      await this.endCommandScope();
+    }
+  }
+
+  // Simulate multiple incremental updates (like dragging a vertex)
+  public async calcHypotenuseWithMultipleUpdates(initialA: number, initialB: number, numUpdates: number = 5): Promise<number> {
+    await this.startCommandScope();
+    try {
+      // Initial position
+      await this.setSideA(initialA);
+      await this.setSideB(initialB);
+
+      // Simulate multiple drag movements
+      for (let i = 0; i < numUpdates; i++) {
+        const deltaA = Math.random() * 0.1 - 0.05; // Small random change
+        const deltaB = Math.random() * 0.1 - 0.05;
+
+        await this.setSideA((this._sideA ?? 0) + deltaA);
+        await this.setSideB((this._sideB ?? 0) + deltaB);
+
+        // Could check intermediate state
+        await this.getSumOfSquares();
+      }
+
+      const sumOfSquares = await this.getSumOfSquares();
+      const result = Math.sqrt(sumOfSquares);
+
+      await this.saveChanges("Calculated hypotenuse with multiple updates");
+      return result;
+    } catch (error) {
+      await this.abandonChanges();
+      throw error;
+    } finally {
+      await this.endCommandScope();
+    }
+  }
+}
+
+// Interactive command for managing a polygon
+export class InteractivePolygonEditor extends InteractiveCommand<EditCommandArgs, string> {
+  private _vertices: Array<{ x: number, y: number }> = [];
+
+  public async addVertex(x: number, y: number): Promise<void> {
+    return await this.executeOperation(async () => {
+      this._vertices.push({ x, y });
+    });
+  }
+
+  public async removeLastVertex(): Promise<void> {
+    return await this.executeOperation(async () => {
+      if (this._vertices.length === 0) {
+        throw new Error("No vertices to remove");
+      }
+      this._vertices.pop();
+    });
+  }
+
+  public async moveVertex(index: number, newX: number, newY: number): Promise<void> {
+    return await this.executeOperation(async () => {
+      if (index < 0 || index >= this._vertices.length) {
+        throw new Error("Invalid vertex index");
+      }
+      this._vertices[index] = { x: newX, y: newY };
+    });
+  }
+
+  public async getVertexCount(): Promise<number> {
+    return await this.executeOperation(async () => {
+      return this._vertices.length;
+    });
+  }
+
+  public async getPolygonDescription(): Promise<string> {
+    return await this.executeOperation(async () => {
+      return `Polygon with ${this._vertices.length} vertices: ${JSON.stringify(this._vertices)}`;
+    });
   }
 }

@@ -4,7 +4,6 @@ import { AsyncLocalStorage } from "async_hooks";
 
 // This rule was deprecated in ESLint v8.46.0.
 /* eslint-disable @typescript-eslint/return-await */
-
 /* eslint-disable @typescript-eslint/naming-convention */
 
 /**
@@ -56,6 +55,15 @@ export enum EditCommandState {
 }
 
 /**
+ * Types of EditCommands.
+ * @alpha
+ */
+export enum CommandType {
+  Immediate = "Immediate",
+  Interactive = "Interactive",
+}
+
+/**
  * Arguments for the command to use
  * @alpha
  */
@@ -72,16 +80,18 @@ export class EditScope implements IEditScope {
   private readonly iModel: IModelDb;
   public readonly parentScopeId?: string;
   private readonly startTxnId?: string;
+  private readonly commandType: CommandType;
 
   private _state = EditCommandState.NotStarted;
 
   // TODO Rohit: Review access modifier
   public static commandExecutionContext = new AsyncLocalStorage<string[]>();
 
-  private constructor(iModel: IModelDb, parentScopeId?: string) {
+  private constructor(iModel: IModelDb, commandType: CommandType, parentScopeId?: string) {
     this.scopeId = Guid.createValue();
     this.iModel = iModel;
     this.parentScopeId = parentScopeId;
+    this.commandType = commandType;
 
     // Capture starting transaction ID
     if (iModel.isBriefcaseDb()) {
@@ -91,6 +101,10 @@ export class EditScope implements IEditScope {
 
   public get state(): EditCommandState {
     return this._state;
+  }
+
+  public set state(newState: EditCommandState) {
+    this._state = newState;
   }
 
   public get isActive(): boolean {
@@ -120,26 +134,30 @@ export class EditScope implements IEditScope {
     return false;
   }
 
-  public static start(iModel: IModelDb): EditScope {
+  public static start(iModel: IModelDb, commandType: CommandType): EditScope {
     // Check if this command is being called from within another command's execution context
     const activeScope = IModelDb.activeEditScope();
-    const executingScopeIds = EditScope.commandExecutionContext.getStore();
 
+    if (activeScope !== undefined && activeScope.commandType === CommandType.Interactive && commandType === CommandType.Interactive) {
+      throw new Error("Cannot start an Interactive EditCommand from within another Interactive EditCommand.");
+    }
+
+    const executingScopeIds = EditScope.commandExecutionContext.getStore();
     const isNested = executingScopeIds !== undefined && activeScope !== undefined && executingScopeIds.includes(activeScope.scopeId);
     if (isNested) {
       // Create a new scope that has a parent scope id set
-      const nestedScope = new EditScope(iModel, activeScope.scopeId);
+      const nestedScope = new EditScope(iModel, commandType, activeScope.scopeId);
       IModelDb.enqueueNestedEditScope({ scopeId: nestedScope.scopeId, parentScopeId: nestedScope.parentScopeId } as any);
       return nestedScope;
     }
 
     // External command - enqueue normally
-    const scope = new EditScope(iModel);
+    const scope = new EditScope(iModel, commandType);
     IModelDb.enqueueEditScope({ scopeId: scope.scopeId } as any);
     return scope;
   }
 
-  private end(): void {
+  public end(): void {
     if (this.parentScopeId) {
       IModelDb.dequeueNestedEditScope();
     } else {
@@ -150,19 +168,22 @@ export class EditScope implements IEditScope {
 
   // TODO Rohit: Review/Remove: Polling ? Really ??
   // Look into a bit more efficient way to figure out when this scope is active
-
-  // TODO Rohit: Command Description basically does nothing right now. See how we can extract it from the callback arguments.
-  public async execute<T>(operation: (args?: any) => Promise<T>, commandDescription?: string): Promise<T> {
+  public async waitForActivation(): Promise<void> {
     // Wait until this scope becomes active before proceeding
     // For nested commands, they should become active immediately if called from parent
     // For external commands, they must wait their turn in the queue
-    let retries = 30; // Increased retries for better reliability
+    let retries = 30;
     while (!this.isActive) {
       await BeDuration.fromMilliseconds(1000).wait();
       if (--retries === 0) {
         throw new Error(`EditScope ${this.scopeId} did not become active after waiting`);
       }
     }
+  }
+
+  // TODO Rohit: Command Description basically does nothing right now. See how we can extract it from the callback arguments.
+  public async execute<T>(operation: (args?: any) => Promise<T>, commandDescription?: string): Promise<T> {
+    await this.waitForActivation();
 
     this._state = EditCommandState.Starting;
 
@@ -261,7 +282,7 @@ export class EditScope implements IEditScope {
 /**
  * @alpha
  */
-export abstract class ImmediateCommand<TArgs extends EditCommandArgs = EditCommandArgs, TResult = void> {
+export abstract class EditCommandBase<_TArgs extends EditCommandArgs = EditCommandArgs, _TResult = void> {
   protected _iModel: IModelDb;
   protected _editScope?: EditScope;
 
@@ -269,44 +290,10 @@ export abstract class ImmediateCommand<TArgs extends EditCommandArgs = EditComma
     this._iModel = iModel;
   }
 
-  /**
-   * Override to perform work before saving.
-   */
-  protected async onBeforeSave(): Promise<void> {
-    // Default: no-op
-  }
+  protected async onBeforeSave(): Promise<void> { }
+  protected async onBeforeAbandon(): Promise<void> { }
 
-  /**
-   * Override to perform work before abandoning.
-   */
-  protected async onBeforeAbandon(): Promise<void> {
-    // Default: no-op
-  }
-
-  /**
-   * Execute a command operation within a transactional scope.
-   * @param args - Arguments for the command execution (includes optional description)
-   * @param fn - Callback function to execute. Args are available in the closure.
-   * @returns The result of the callback function
-   */
-  public async execute(
-    fn: (args?: TArgs) => Promise<TResult>
-  ): Promise<TResult> {
-    // Create the scope
-    this._editScope = EditScope.start(this._iModel);
-
-    if (this._editScope === undefined) {
-      throw new Error("Failed to create EditScope for command.");
-    }
-
-    return await EditScope.commandExecutionContext.run([...EditScope.commandExecutionContext.getStore() ?? [], this._editScope.scopeId], async () => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return await this._editScope!.execute(async (args) => {
-        return await fn(args);
-      });
-    });
-  }
-
+  // Shared save/abandon methods
   /**
    * Save all changes made by this command.
    */
@@ -346,5 +333,84 @@ export abstract class ImmediateCommand<TArgs extends EditCommandArgs = EditComma
     } catch (error) {
       throw error;
     }
+  }
+}
+
+/**
+ * @alpha
+ */
+export abstract class ImmediateCommand<TArgs extends EditCommandArgs = EditCommandArgs, TResult = void> extends EditCommandBase<TArgs, TResult> {
+  /**
+   * Execute a command operation within a transactional scope.
+   * @param args - Arguments for the command execution (includes optional description)
+   * @param fn - Callback function to execute. Args are available in the closure.
+   * @returns The result of the callback function
+   */
+  public async execute(
+    fn: (args?: TArgs) => Promise<TResult>
+  ): Promise<TResult> {
+    // Create the scope
+    this._editScope = EditScope.start(this._iModel, CommandType.Immediate);
+
+    if (this._editScope === undefined) {
+      throw new Error("Failed to create EditScope for command.");
+    }
+
+    return await EditScope.commandExecutionContext.run([...EditScope.commandExecutionContext.getStore() ?? [], this._editScope.scopeId], async () => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      return await this._editScope!.execute(async (args) => {
+        return await fn(args);
+      });
+    });
+  }
+}
+
+/**
+ * @alpha
+ */
+export abstract class InteractiveCommand<TArgs extends EditCommandArgs = EditCommandArgs, TResult = void> extends EditCommandBase<TArgs, TResult> {
+
+  constructor(iModel: IModelDb) {
+    super(iModel);
+    this._editScope = EditScope.start(this._iModel, CommandType.Interactive);
+  }
+
+  // DO NOT OVERRIDE
+  public async startCommandScope(): Promise<void> {
+    if (!this._editScope) {
+      throw new Error("EditCommand has no scope.");
+    }
+
+    try {
+      await this._editScope.waitForActivation();
+    } catch (error) {
+      console.log("Error waiting for activation:", error);
+      throw error;
+    }
+  }
+
+  // DO NOT OVERRIDE
+  public async endCommandScope(): Promise<void> {
+    if (!this._editScope) {
+      throw new Error("EditCommand has no scope.");
+    }
+    this._editScope.end();
+  }
+
+  // DO NOT OVERRIDE
+  protected async executeOperation<T>(operation: (args?: TArgs) => Promise<T>): Promise<T> {
+    if (!this._editScope) {
+      throw new Error("EditCommand has no scope.");
+    }
+
+    if (!this._editScope.isActive) {
+      throw new Error("EditScope is not active.");
+    }
+
+    this._editScope.state = EditCommandState.Active;
+
+    return await EditScope.commandExecutionContext.run([...EditScope.commandExecutionContext.getStore() ?? [], this._editScope.scopeId], async () => {
+      return await operation();
+    });
   }
 }

@@ -5,9 +5,9 @@
 
 import { Id64String } from "@itwin/core-bentley";
 
-export interface EditCommandIds {
+export interface EditCommandInfo {
   scopeId: Id64String;
-  commandId: string;
+  commandType: string;
   parentScopeId?: Id64String;
 }
 

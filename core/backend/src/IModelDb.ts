@@ -72,7 +72,7 @@ import { _cache, _close, _hubAccess, _instanceKeyCache, _nativeDb, _releaseAllLo
 import { ECVersion, SchemaContext, SchemaJsonLocater } from "@itwin/ecschema-metadata";
 import { SchemaMap } from "./Schema";
 import { ElementLRUCache, InstanceKeyLRUCache } from "./internal/ElementLRUCache";
-import { DeQueue, EditCommandIds } from "./UtilityFunctions";
+import { DeQueue, EditCommandInfo } from "./UtilityFunctions";
 // spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
@@ -264,12 +264,12 @@ export abstract class IModelDb extends IModel {
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
 
   /** @internal */
-  private static _editScopes: DeQueue<EditCommandIds> = new DeQueue();
-  private static _nestedEditScopes: EditCommandIds[] = [];
-  public static activeEditScope(): EditCommandIds | undefined { return IModelDb._editScopes.peek; }
-  public static enqueueEditScope(idPair: EditCommandIds) { IModelDb._editScopes.enqueue(idPair); }
+  private static _editScopes: DeQueue<EditCommandInfo> = new DeQueue();
+  private static _nestedEditScopes: EditCommandInfo[] = [];
+  public static activeEditScope(): EditCommandInfo | undefined { return IModelDb._editScopes.peek; }
+  public static enqueueEditScope(idPair: EditCommandInfo) { IModelDb._editScopes.enqueue(idPair); }
   public static dequeueEditScope(): void { IModelDb._editScopes.dequeue(); }
-  public static enqueueNestedEditScope(idPair: EditCommandIds) { IModelDb._nestedEditScopes.push(idPair); }
+  public static enqueueNestedEditScope(idPair: EditCommandInfo) { IModelDb._nestedEditScopes.push(idPair); }
   public static dequeueNestedEditScope(): void {
     const activeEditCommand = IModelDb._editScopes.peek;
 
