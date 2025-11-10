@@ -10,7 +10,7 @@ import {
   BriefcaseDb, CategorySelector, DefinitionModel, DisplayStyle2d, DocumentListModel, DocumentPartition, Drawing, DrawingCategory, DrawingViewDefinition, FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
   Sheet, SheetModel, SheetViewDefinition, SpatialCategory, StandaloneDb, Subject, SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
-import { Guid, Id64String, Logger, LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
+import { Id64String, Logger, LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, ChannelControlError, Code, CodeProps, ConflictingLock, ConflictingLocksError, ElementProps, GeometricModel2dProps, IModel, RelatedElement, RpcConfiguration, SheetProps, SubCategoryAppearance, ViewAttachmentProps } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
@@ -122,7 +122,6 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
       client: "integration tests",
       globalOrigin: { x: 0, y: 0 },
       projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
-      guid: Guid.createValue(),
     });
 
     const getOrCreateDocumentList = async (db: IModelDb): Promise<Id64String> => {
@@ -222,6 +221,12 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     }
 
     standaloneModel.close();
+
+    // Adds the crucial entry to be_Local to enable editing with txns.
+    // Without this, we won't get notified when changes are made to the iModel.
+    // (e.g. BriefcaseTxns.onElementsChanged which tests rely upon won't be invoked).
+    StandaloneDb.convertToStandalone(filePath);
+
     return sheetViewId;
   }
 }
