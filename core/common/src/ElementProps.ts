@@ -168,11 +168,16 @@ export interface GeometricElement3dProps extends GeometricElementProps {
  * @extensions
  */
 export interface TextAnnotation3dProps extends GeometricElement3dProps {
-  /** The stringified JSON representation of the text annotation.
-   * @see [[TextAnnotationProps]] for the JSON representation.
+  /** The stringified versioned JSON representation of the text annotation.
+   * @see [[VersionedJSON]] for the JSON representation.
+   * @see [[TextAnnotationProps]] for the data model.
    * @note Don't set this property directly - use [TextAnnotation3d.setAnnotation]($backend) instead.
    */
   textAnnotationData?: string;
+  /** The default [AnnotationTextStyle]($backend) element used by the text annotation.
+   * @beta
+   */
+  defaultTextStyle?: RelatedElementProps;
 }
 
 /** Properties that define a [PhysicalElement]($backend)
@@ -255,11 +260,16 @@ export interface GeometricElement2dProps extends GeometricElementProps {
  * @extensions
  */
 export interface TextAnnotation2dProps extends GeometricElement2dProps {
-  /** The stringified JSON representation of the text annotation.
-   * @see [[TextAnnotationProps]] for the JSON representation.
+  /** The stringified versioned JSON representation of the text annotation.
+   * @see [[VersionedJSON]] for the JSON representation.
+   * @see [[TextAnnotationProps]] for the data model.
    * @note Don't set this property directly - use [TextAnnotation2d.setAnnotation]($backend) instead.
    */
   textAnnotationData?: string;
+  /** The default [AnnotationTextStyle]($backend) element used by the text annotation.
+   * @beta
+   */
+  defaultTextStyle?: RelatedElementProps;
 }
 
 /** Properties of a [GeometryPart]($backend)
@@ -636,8 +646,78 @@ export interface SheetReferenceProps extends SheetIndexEntryProps {
 export interface AnnotationTextStyleProps extends DefinitionElementProps {
   /** An optional human-readable description of the text style.*/
   description?: string;
-  /** The stringified JSON representation of the text style.
-   * @see [[TextStyleSettingsProps]]
+  /** The stringified versioned JSON representation of the text style.
+   * @see [[VersionedJSON]] for the JSON representation.
+   * @see [[TextStyleSettingsProps]] for the data model.
    */
   settings?: string;
 }
+
+/** A string in the format `read.write.minor` where the semantics match those of [ECVersion]($ecschema-metadata).
+ * @beta
+ */
+export type ECVersionString = `${string}.${string}.${string}`
+
+/** Wrapper for versioned JSON data.
+ * @beta
+ */
+export interface VersionedJSON<T> {
+  /** The semver version of the JSON data.
+   * Uses the same semantics as [ECVersion]($ecschema-metadata).
+   */
+  version: ECVersionString;
+  /** The JSON data. */
+  data: T;
+}
+
+/** Project-level properties hosted by a [ProjectInformationRecord]($backend) element.
+ * @beta
+ */
+export interface ProjectInformation {
+  /** A name that uniquely identifies this project within an organization. */
+  projectNumber?: string;
+  /** A human-readable display label for the project. Unlike [[projectNumber]], this needn't be unique. */
+  projectName?: string;
+  /** A human-readable description of the geographic location of the project - often, the name of a city or a street address. */
+  location?: string;
+}
+
+/** JSON representation of a [ProjectInformationRecord]($backend).
+ * @beta
+ */
+export type ProjectInformationRecordProps = ElementProps & ProjectInformation;
+
+/** Captures basic metadata about a [Sheet]($backend). This information is typically included in the Sheet's graphical representation, often
+ * as part of its title block.
+ * This information is stored in a [SheetInformationAspect]($backend).
+ * @beta
+ */
+export interface SheetInformation {
+  /** A user-supplied string describing who designed the sheet contents. */
+  designedBy?: string;
+  /** A user-supplied date describing when the sheet contents were designed. */
+  designedDate?: Date;
+  /** A user-supplied string describing who drew the sheet contents. */
+  drawnBy?: string;
+  /** A user-supplied string describing who verified the sheet contents. */
+  checkedBy?: string;
+}
+
+/** JSON representation of a [[SheetInformation]].
+ * @beta
+ */
+export interface SheetInformationProps {
+  /** A user-supplied string describing who designed the sheet contents. */
+  designedBy?: string;
+  /** The [ISO string representation](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString) of a user-supplied date describing when the sheet contents were designed. */
+  designedDate?: string;
+  /** A user-supplied string describing who drew the sheet contents. */
+  drawnBy?: string;
+  /** A user-supplied string describing who verified the sheet contents. */
+  checkedBy?: string;
+}
+
+/** JSON representation of a [SheetInformationAspect]($backend).
+ * @beta
+ */
+export type SheetInformationAspectProps = ElementAspectProps & SheetInformationProps;

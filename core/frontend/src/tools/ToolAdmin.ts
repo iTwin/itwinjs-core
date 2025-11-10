@@ -790,6 +790,10 @@ export class ToolAdmin {
    * @internal
    */
   public static addEvent(ev: Event, vp?: ScreenViewport): void {
+    // Don't add events to queue if event loop hasn't been started to process them...
+    if (!IModelApp.isEventLoopStarted)
+      return;
+
     if (!ToolAdmin.tryReplace(ev, vp)) // see if this event replaces the last event in the queue
       this._toolEvents.push({ ev, vp }); // otherwise put it at the end of the queue.
 
@@ -1281,11 +1285,23 @@ export class ToolAdmin {
       snap.adjustedPoint.setFrom(point);
   }
 
+  /** Application sub-classes can override this method to intercept button events before they are sent to the active tool.
+   * An example use for this event would be to implement a shift + right-click or right-press menu.
+   * @return true if event was handled and should not propagate to the active tool.
+   */
+  protected onPreButtonEvent(_ev: BeButtonEvent): boolean {
+    return false;
+  }
+
   /** @internal */
   public async sendButtonEvent(ev: BeButtonEvent): Promise<any> {
     const overlayHit = this.pickCanvasDecoration(ev);
     if (undefined !== overlayHit && undefined !== overlayHit.onMouseButton && overlayHit.onMouseButton(ev))
       return;
+
+    if (this.onPreButtonEvent(ev))
+      return;
+
     if (IModelApp.accuSnap.onPreButtonEvent(ev))
       return;
 

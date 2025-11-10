@@ -190,6 +190,7 @@ internal;interface;CustomViewState3dProps
 public;class;CutStyle
 public;interface;CutStyleProps
 public;type;DanishSystem34Region
+beta;interface;DateTimeFieldFormatOptions
 internal;interface;DbBlobRequest
 internal;interface;DbBlobResponse
 internal;interface;DbQueryConfig
@@ -246,6 +247,7 @@ public;interface;ECSchemaReferenceProps
 public;class;ECSqlReader
 public;enum;ECSqlSystemProperty
 public;enum;ECSqlValueType
+beta;type;ECVersionString
 internal;interface;EdgeAppearanceOverrides
 internal;class;EdgeArgs
 internal;interface;EdgeOptions
@@ -313,11 +315,15 @@ public;class;FeatureOverrides
 public;enum;FeatureOverrideType
 public;class;FeatureTable
 internal;class;FeatureTableHeader
-beta;interface;FieldFormatter
+beta;type;FieldCase
+beta;interface;FieldFormatOptions
+internal;type;FieldPrimitiveValue
 beta;interface;FieldPropertyHost
 beta;interface;FieldPropertyPath
+beta;type;FieldPropertyType
 beta;class;FieldRun
 beta;interface;FieldRunProps
+internal;interface;FieldValue
 public;interface;FilePropertyProps
 public;enum;FillDisplay
 public;enum;FillFlags
@@ -332,6 +338,7 @@ public;interface;FontMapProps
 deprecated;interface;FontMapProps
 public;interface;FontProps
 public;enum;FontType
+internal;function;formatFieldValue
 internal;interface;FormDataCommon
 beta;class;FractionRun
 beta;interface;FractionRunProps
@@ -398,12 +405,14 @@ public;type;GeometryStreamProps
 public;interface;GeometrySummaryOptions
 public;interface;GeometrySummaryRequestProps
 public;enum;GeometrySummaryVerbosity
+beta;function;getMarkerText
 internal;function;getMaximumMajorTileFormatVersion
 internal;const;getPullChangesIpcChannel
 internal;function;getTileObjectReference
 internal;class;GlbHeader
 public;enum;GlobeMode
 internal;interface;GltfChunk
+internal;class;GltfHeader
 internal;enum;GltfV2ChunkTypes
 internal;enum;GltfVersions
 public;namespace;Gradient
@@ -499,6 +508,7 @@ internal;namespace;IpcWebSocketMessage
 internal;enum;IpcWebSocketMessageType
 internal;class;IpcWebSocketTransport
 public;function;isBinaryImageSource
+internal;function;isKnownFieldPropertyType
 internal;function;isKnownTileFormat
 public;function;isPlacement2dProps
 preview;function;isPlacement2dProps
@@ -521,6 +531,10 @@ public;enum;LinePixels
 public;namespace;LineStyle
 public;interface;LineStyleProps
 preview;interface;LineStyleProps
+beta;class;List
+beta;interface;ListMarker
+beta;enum;ListMarkerEnumerator
+beta;interface;ListProps
 public;type;LocalAlignedBox3d
 public;interface;LocalBriefcaseProps
 public;type;LocalDirName
@@ -669,6 +683,8 @@ internal;interface;PrimaryTileTreeId
 beta;enum;PrimitiveTypeCode
 public;interface;PriorityPlanarClipMaskArgs
 beta;enum;ProfileOptions
+beta;interface;ProjectInformation
+beta;type;ProjectInformationRecordProps
 public;class;Projection
 public;type;ProjectionMethod
 public;interface;ProjectionProps
@@ -846,6 +862,9 @@ beta;interface;SheetBorderTemplateProps
 beta;interface;SheetIndexEntryProps
 beta;type;SheetIndexFolderProps
 beta;interface;SheetIndexReferenceProps
+beta;interface;SheetInformation
+beta;type;SheetInformationAspectProps
+beta;interface;SheetInformationProps
 public;interface;SheetProps
 preview;interface;SheetProps
 beta;interface;SheetReferenceProps
@@ -887,6 +906,7 @@ beta;namespace;SqliteError
 beta;type;StackedFractionType
 public;type;StandaloneOpenOptions
 beta;type;StorageValue
+beta;type;StructuralTextBlockComponent
 public;class;SubCategoryAppearance
 public;namespace;SubCategoryAppearance
 public;class;SubCategoryOverride
@@ -901,6 +921,8 @@ beta;interface;SynchronizationConfigLinkProps
 public;enum;SyncMode
 beta;class;TabRun
 beta;interface;TabRunProps
+beta;type;TerminatorShape
+beta;const;terminatorShapes
 public;enum;TerrainHeightOriginMode
 public;interface;TerrainProps
 public;class;TerrainSettings
@@ -923,12 +945,13 @@ beta;class;TextBlockComponent
 beta;interface;TextBlockComponentProps
 beta;interface;TextBlockGeometryProps
 beta;type;TextBlockGeometryPropsEntry
-beta;type;TextBlockJustification
 beta;interface;TextBlockLayoutResult
 beta;interface;TextBlockMargins
 beta;interface;TextBlockProps
+beta;interface;TextBlockStringifyContext
 beta;interface;TextBlockStringifyOptions
 beta;interface;TextFrameStyleProps
+beta;type;TextJustification
 beta;interface;TextLeaderStyleProps
 beta;class;TextRun
 beta;interface;TextRunProps
@@ -983,6 +1006,7 @@ internal;interface;TileTreeMetadata
 internal;interface;TileTreeProps
 public;interface;TileVersionInfo
 public;interface;TranslationOptions
+beta;function;traverseTextBlockComponent
 alpha;enum;TreeFlags
 public;class;Tween
 public;type;TweenCallback
@@ -1000,6 +1024,7 @@ public;type;UpdateCallback
 beta;interface;UpgradeOptions
 public;interface;UrlLinkProps
 preview;interface;UrlLinkProps
+beta;interface;VersionedJSON
 public;class;VerticalCRS
 public;interface;VerticalCRSProps
 public;interface;ViewAttachmentLabelProps

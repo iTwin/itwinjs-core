@@ -34,3 +34,4 @@ matchChildUrls:
 - [Wire format](./WireFormat.md)
 - [Guidelines and tips](./guidelines/index.md)
 - [Glossary](./Glossary.md)
+- [Cesium Geospatial Guide](https://github.com/CesiumGS/community/tree/main/GeospatialGuide)
