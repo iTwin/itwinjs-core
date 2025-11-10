@@ -255,19 +255,30 @@ describe("Incremental Schema Loading", function () {
     });
   });
 
-  describe("Test Incremental Loading disabled", () => {
-    before("Setup", async function () {
-      await IncrementalTestHelper.setup({ disableSchemaLoading: true });
-    });
-
-    after(async () => {
+  describe("Test Incremental Loading setup", () => {
+    afterEach(async () => {
       await IncrementalTestHelper.close();
     });
 
-    it("Schema context should not have an instance of incremental schema locater if loading is disabled", () => {
+    it("schema context should not have an instance of incremental schema locater if loading is disabled", async () => {
+      await IncrementalTestHelper.setup({ disableSchemaLoading: true });
       const locaters = IncrementalTestHelper.iModel.schemaContext.locaters;
       const incrementalLocater = locaters.find((locater) => locater instanceof IModelIncrementalSchemaLocater);
       expect(incrementalLocater).to.be.undefined;
+    });
+
+    it("schema context should not have an instance of incremental schema locater if loading is not specified", async () => {
+      await IncrementalTestHelper.setup();
+      const locaters = IncrementalTestHelper.iModel.schemaContext.locaters;
+      const incrementalLocater = locaters.find((locater) => locater instanceof IModelIncrementalSchemaLocater);
+      expect(incrementalLocater).to.be.undefined;
+    });
+
+    it("schema context should have an instance of incremental schema locater if loading is enabled", async () => {
+      await IncrementalTestHelper.setup({ disableSchemaLoading: false });
+      const locaters = IncrementalTestHelper.iModel.schemaContext.locaters;
+      const incrementalLocater = locaters.find((locater) => locater instanceof IModelIncrementalSchemaLocater);
+      expect(incrementalLocater).to.be.not.undefined;
     });
   });
 });

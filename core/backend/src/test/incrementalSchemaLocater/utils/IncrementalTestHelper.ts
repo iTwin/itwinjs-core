@@ -46,11 +46,11 @@ export class IncrementalTestHelper {
       this._iModel = StandaloneDb.openFile(this.testBimFile, OpenMode.ReadWrite);
     }
 
-    if(IModelHost.configuration) {
-      const configuration = IModelHost.configuration;
+    const configuration = IModelHost.configuration;
+    if(configuration && options && options.disableSchemaLoading !== undefined) {
       const previousSetting = configuration.disableIncrementalSchemaLoading;
-      configuration.disableIncrementalSchemaLoading = options?.disableSchemaLoading || false;
-      IModelHost.onBeforeShutdown.addOnce(() => {
+      configuration.disableIncrementalSchemaLoading = options.disableSchemaLoading;
+      this._iModel.onBeforeClose.addOnce(() => {
         configuration.disableIncrementalSchemaLoading = previousSetting;
       });
     }
