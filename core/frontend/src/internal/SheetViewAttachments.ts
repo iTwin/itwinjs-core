@@ -16,6 +16,7 @@ import { Frustum2d } from "../Frustum2d";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { DisclosedTileTreeSet, RenderMemory, SceneContext, Viewport } from "../core-frontend";
 
+/** Represents the current state of the view attachments to be displayed by a SheetViewAttachments. */
 interface Attachments {
   clone(iModel: IModelConnection): Attachments;
   preload(request: HydrateViewStateRequestProps): void;
@@ -24,28 +25,27 @@ interface Attachments {
   readonly attachmentIds: readonly string[];
 }
 
+/** The properties describing a view attachment, plus the ViewState created from them. */
 interface ViewAttachmentInfo extends ViewAttachmentProps {
   attachedView: ViewState;
 }
 
+/** Stateless state for a sheet that has no view attachments. */
 class EmptyAttachments implements Attachments {
+  // We only need one instance of this stateless class.
   private static _instance?: Attachments;
 
   public static get(): Attachments {
     return this._instance ?? (this._instance = new EmptyAttachments());
   }
 
-  private constructor() {
-    // We only need one instance of this stateless class.
-  }
+  private constructor() { }
 
   public clone(): Attachments {
     return this;
   }
 
-  public preload(): void {
-    // nothing to load.
-  }
+  public preload(): void { }
 
   public async postload(): Promise<Attachments> {
     return this;
@@ -56,6 +56,7 @@ class EmptyAttachments implements Attachments {
   }
 }
 
+/** Holds the element Ids of the view attachments to be loaded for display. */
 class AttachmentIds implements Attachments {
   private readonly _ids: Id64String[];
 
@@ -86,7 +87,7 @@ class AttachmentIds implements Attachments {
       return this;
     }
 
-    const viewStateProps = response.sheetViewViews; // This is viewstateProps, need to turn this into ViewState
+    const viewStateProps = response.sheetViewViews;
     const promises = [];
     for (const viewProps of viewStateProps) {
       const loadView = async () => {
@@ -120,6 +121,7 @@ class AttachmentIds implements Attachments {
   }
 }
 
+/** Fully loaded view attachments. */
 class AttachmentInfos implements Attachments {
   public readonly infos: ViewAttachmentInfo[];
 
@@ -152,6 +154,7 @@ class AttachmentInfos implements Attachments {
   }
 }
 
+/** Reloads the attachments after a change to the database. */
 async function reloadAttachments(sheetModelId: Id64String, iModel: IModelConnection): Promise<Attachments> {
   const ecsql = `SELECT ECInstanceId as attachmentId FROM bis.ViewAttachment WHERE model.Id=${sheetModelId}`;
   const ids: string[] = [];
@@ -198,6 +201,9 @@ function disposeRenderers(renderers: ViewAttachmentRenderer[] | undefined) {
   }
 }
 
+/** Manages the set of ViewAttachment elements to be rendered by a SheetViewState.
+ * Takes care of reloading them after ViewAttachment elements are modified, deleted, or inserted.
+ */
 export class SheetViewAttachments implements Disposable {
   private _impl: Attachments;
   private _reload?: Promise<Attachments>;

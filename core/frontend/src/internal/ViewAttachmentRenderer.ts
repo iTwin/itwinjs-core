@@ -43,8 +43,7 @@ export function createViewAttachmentRenderer(args: {
   }
 }
 
-/** A mostly no-op RenderTarget for an OrthographicAttachment.
- */
+/** A mostly no-op RenderTarget for an OrthographicAttachment. */
 class AttachmentTarget extends MockRender.OffScreenTarget {
   private readonly _attachment: OrthographicAttachment;
 
@@ -394,7 +393,7 @@ function createRasterAttachmentViewport(_view: ViewState, _rect: ViewRect, _atta
   return new RasterAttachmentViewport(_view, _rect, _attachment);
 }
 
-/** Draws a 3d view with camera enabled into a sheet view by producing an image of the view's contents offscreen. */
+/** Draws a 3d view (usually with camera enabled) into a sheet view by producing an image of the view's contents offscreen. */
 class RasterAttachment {
   private readonly _props: ViewAttachmentProps;
   private readonly _placement: Placement2d;
