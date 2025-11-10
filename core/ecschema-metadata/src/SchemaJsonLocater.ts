@@ -2,8 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import { Logger } from "@itwin/core-bentley";
 import { ISchemaLocater, SchemaContext } from "./Context";
 import { SchemaProps } from "./Deserialization/JsonProps";
 import { SchemaMatchType } from "./ECObjects";
@@ -24,17 +22,17 @@ export type SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined;
  * @public @preview
  */
 export class SchemaJsonLocater implements ISchemaLocater {
-  private _getSchema: SchemaPropsGetter;
+  private _getSchemaProps: SchemaPropsGetter;
 
-  public constructor(schemaPropschemaGetter: SchemaPropsGetter) {
-    // Since the schemaPropschemaGetter may throw an error, but the locater contract defines that
+  public constructor(getSchemaProps: SchemaPropsGetter) {
+    // Since the getSchemaProps may throw an error, but the locater contract defines that
     // getSchema should return undefined if the schema could not be located, we wrap the provided
-    // lookup function in a safe block and log any errors that occured.
-    this._getSchema = (schemaName) => {
+    // lookup function in a safe block.
+    this._getSchemaProps = (schemaName) => {
       try {
-        return schemaPropschemaGetter(schemaName);
-      } catch (error: any) {
-        Logger.logError("SchemaJsonLocater", `Failed to get schema JSON for schema ${schemaName}: ${error.message}`);
+        return getSchemaProps(schemaName);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      } catch (error) {
         return undefined;
       }
     };
@@ -57,7 +55,7 @@ export class SchemaJsonLocater implements ISchemaLocater {
    * @param matchType The match type to use when locating the schema
    */
   public async getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
-    const schemaProps = this._getSchema(schemaKey.name);
+    const schemaProps = this._getSchemaProps(schemaKey.name);
     if (!schemaProps)
       return undefined;
 
@@ -75,7 +73,7 @@ export class SchemaJsonLocater implements ISchemaLocater {
    * @throws [Error]($ecschema-metadata) if the schema exists, but cannot be loaded.
    */
   public getSchemaSync(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): Schema | undefined {
-    const schemaProps = this._getSchema(schemaKey.name);
+    const schemaProps = this._getSchemaProps(schemaKey.name);
     if (!schemaProps)
       return undefined;
 
