@@ -1,6 +1,48 @@
 # Change Log - @itwin/ecschema-rpcinterface-common
 
-This log was last generated on Wed, 17 Sep 2025 17:22:51 GMT and should not be manually modified.
+This log was last generated on Thu, 06 Nov 2025 20:30:21 GMT and should not be manually modified.
+
+## 5.3.1
+Thu, 06 Nov 2025 20:29:06 GMT
+
+_Version update only_
+
+## 5.3.0
+Mon, 03 Nov 2025 19:02:35 GMT
+
+_Version update only_
+
+## 5.2.4
+Fri, 24 Oct 2025 16:20:38 GMT
+
+_Version update only_
+
+## 5.2.3
+Thu, 16 Oct 2025 23:00:31 GMT
+
+_Version update only_
+
+## 5.2.2
+Fri, 10 Oct 2025 14:49:15 GMT
+
+_Version update only_
+
+## 5.2.1
+Thu, 09 Oct 2025 17:10:26 GMT
+
+_Version update only_
+
+## 5.2.0
+Wed, 01 Oct 2025 20:22:54 GMT
+
+### Updates
+
+- Moved exception handling of 'schema not found' to backend implementation to avoid RPC error logging.
+
+## 5.1.9
+Wed, 24 Sep 2025 17:38:08 GMT
+
+_Version update only_
 
 ## 5.1.8
 Wed, 17 Sep 2025 17:17:16 GMT

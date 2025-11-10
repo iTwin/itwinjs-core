@@ -9,7 +9,7 @@
 import { assert } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { KindOfQuantityInfo, PropertyInfo } from "../EC.js";
-import { KoqPropertyValueFormatter } from "../KoqPropertyValueFormatter.js";
+import { FormatOptions } from "../KoqPropertyValueFormatter.js";
 import { ValuesDictionary } from "../Utils.js";
 import { Content } from "./Content.js";
 import { Descriptor } from "./Descriptor.js";
@@ -17,8 +17,43 @@ import { ArrayPropertiesField, Field, PropertiesField, StructPropertiesField } f
 import { Item } from "./Item.js";
 import { DisplayValue, DisplayValuesMap, NestedContentValue, Value, ValuesArray, ValuesMap } from "./Value.js";
 
-/** @internal */
-export class ContentFormatter {
+/**
+ * An interface for something that can format `Content` and its `Item`s.
+ * @public
+ */
+interface ContentFormatter {
+  /** Format content in place and return it. */
+  formatContent(content: Content): Promise<Content>;
+  /** Format content `Item`s in place and return them. */
+  formatContentItems(items: Item[], descriptor: Descriptor): Promise<Item[]>;
+}
+
+/**
+ * Props for `createContentFormatter`.
+ * @public
+ */
+interface ContentFormatterProps {
+  /**
+   * An interface for something that knows how to format a single numeric value using
+   * a given kind-of-quantity (contained within the options object argument).
+   */
+  propertyValueFormatter: {
+    format(value: number, options: FormatOptions): Promise<string | undefined>;
+  };
+  /** An optional unit system to format content in. */
+  unitSystem?: UnitSystemKey;
+}
+
+/**
+ * Create a `ContentFormatter` that knows how to format `Content` and its `Item`s.
+ * @public
+ */
+export function createContentFormatter(props: ContentFormatterProps): ContentFormatter {
+  const propertyValueFormatter = new ContentPropertyValueFormatter(props.propertyValueFormatter);
+  return new ContentFormatterImpl(propertyValueFormatter, props.unitSystem);
+}
+
+export class ContentFormatterImpl implements ContentFormatter {
   constructor(
     private _propertyValueFormatter: { formatPropertyValue: (field: Field, value: Value, unitSystem?: UnitSystemKey) => Promise<DisplayValue> },
     private _unitSystem?: UnitSystemKey,
@@ -108,15 +143,14 @@ export class ContentFormatter {
   }
 }
 
-/** @internal */
 export class ContentPropertyValueFormatter {
-  constructor(private _koqValueFormatter: KoqPropertyValueFormatter) {}
+  constructor(private _propertyValueFormatter: ContentFormatterProps["propertyValueFormatter"]) {}
 
   public async formatPropertyValue(field: Field, value: Value, unitSystem?: UnitSystemKey): Promise<DisplayValue> {
     const doubleFormatter = isFieldWithKoq(field)
       ? async (rawValue: number) => {
           const koq = field.properties[0].property.kindOfQuantity;
-          const formattedValue = await this._koqValueFormatter.format(rawValue, { koqName: koq.name, unitSystem });
+          const formattedValue = await this._propertyValueFormatter.format(rawValue, { koqName: koq.name, unitSystem });
           if (formattedValue !== undefined) {
             return formattedValue;
           }

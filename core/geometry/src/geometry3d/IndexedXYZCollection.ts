@@ -16,28 +16,25 @@ import { XAndY, XYAndZ } from "./XYZProps";
 class PointsIterator implements Iterator<Point3d>, Iterable<Point3d> {
   private readonly _collection: IndexedXYZCollection;
   private _curIndex = -1;
-
   public constructor(collection: IndexedXYZCollection) {
     this._collection = collection;
   }
-
   public next(): IteratorResult<Point3d> {
     if (++this._curIndex >= this._collection.length) {
-      // The ECMAScript spec states that value=undefined is valid if done=true. The TypeScript interface violates the spec hence the cast to any and back below.
+      // the ECMAScript spec states that value=undefined is valid if done=true
+      // the TypeScript interface violates the spec hence the cast to any and back below
       return { done: true } as any as IteratorResult<Point3d>;
     }
-
     return {
       value: this._collection.getPoint3dAtUncheckedPointIndex(this._curIndex),
       done: false,
     };
   }
-
   public [Symbol.iterator](): Iterator<Point3d> { return this; }
 }
 /**
- * abstract base class for read-only access to XYZ data with indexed reference.
- * * This allows algorithms to work with Point3d[] or GrowableXYZ.
+ * Abstract base class for read-only access to XYZ data with indexed reference.
+ * * This allows algorithms to work with Point3d[] or [[GrowableXYZArray]].
  *   * GrowableXYZArray implements these for its data.
  *   * Point3dArrayCarrier carries a (reference to) a Point3d[] and implements the methods with calls on that array reference.
  * * In addition to "point by point" accessors, other abstract members compute commonly useful vector data "between points".
@@ -47,47 +44,47 @@ class PointsIterator implements Iterator<Point3d>, Iterable<Point3d> {
 export abstract class IndexedXYZCollection {
   /**
    * Return the point at `index` as a strongly typed Point3d.
-   * @param index index of point within the array
-   * @param result caller-allocated destination
-   * @returns undefined if the index is out of bounds
+   * @param index index of point within the array.
+   * @param result caller-allocated destination.
+   * @returns undefined if the index is out of bounds.
    */
   public abstract getPoint3dAtCheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
   /**
    * Return the point at `index` as a strongly typed Point3d, without checking the point index validity.
-   * @param index index of point within the array
-   * @param result caller-allocated destination
-   * @returns undefined if the index is out of bounds
+   * @param index index of point within the array.
+   * @param result caller-allocated destination.
+   * @returns undefined if the index is out of bounds.
    */
   public abstract getPoint3dAtUncheckedPointIndex(index: number, result?: Point3d): Point3d;
   /**
    * Get from `index` as a strongly typed Vector3d.
-   * @param index index of point within the array
-   * @param result caller-allocated destination
-   * @returns undefined if the index is out of bounds
+   * @param index index of point within the array.
+   * @param result caller-allocated destination.
+   * @returns undefined if the index is out of bounds.
    */
   public abstract getVector3dAtCheckedVectorIndex(index: number, result?: Vector3d): Vector3d | undefined;
   /**
-   * Return a vector from the point at `indexA` to the point at `indexB`
-   * @param indexA index of point within the array
-   * @param indexB index of point within the array
+   * Return a vector from the point at `indexA` to the point at `indexB`.
+   * @param indexA index of point within the array.
+   * @param indexB index of point within the array.
    * @param result caller-allocated vector.
-   * @returns undefined if either index is out of bounds
+   * @returns undefined if either index is out of bounds.
    */
   public abstract vectorIndexIndex(indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
   /**
-   * Return a vector from `origin` to the point at `indexB`
-   * @param origin origin for vector
-   * @param indexB index of point within the array
+   * Return a vector from `origin` to the point at `indexB`.
+   * @param origin origin for vector.
+   * @param indexB index of point within the array.
    * @param result caller-allocated vector.
-   * @returns undefined if index is out of bounds
+   * @returns undefined if index is out of bounds.
    */
   public abstract vectorXYAndZIndex(origin: XYAndZ, indexB: number, result?: Vector3d): Vector3d | undefined;
   /**
-   * Return a vector from the point at `indexA` to `target`
-   * @param indexA index of point within the array
-   * @param target target for vector
+   * Return a vector from the point at `indexA` to `target`.
+   * @param indexA index of point within the array.
+   * @param target target for vector.
    * @param result caller-allocated vector.
-   * @returns undefined if index is out of bounds
+   * @returns undefined if index is out of bounds.
    */
   public vectorIndexXYAndZ(indexA: number, target: XYAndZ, result?: Vector3d): Vector3d | undefined {
     const reversed = this.vectorXYAndZIndex(target, indexA, result);
@@ -95,10 +92,10 @@ export abstract class IndexedXYZCollection {
   }
   /**
    * Return the dot product of the vectors from the point at `origin` to the points at `indexA` and `indexB`.
-   * @param origin index of point within the array; origin of both vectors
-   * @param indexA index of point within the array; target of the first vector
-   * @param indexA index of point within the array; target of the second vector
-   * @returns undefined if index is out of bounds
+   * @param origin index of point within the array; origin of both vectors.
+   * @param indexA index of point within the array; target of the first vector.
+   * @param indexB index of point within the array; target of the second vector.
+   * @returns undefined if index is out of bounds.
    */
   public dotProductIndexIndexIndex(origin: number, indexA: number, indexB: number): number | undefined {
     if (origin < 0 || origin >= this.length || indexA < 0 || indexA >= this.length || indexB < 0 || indexB >= this.length)
@@ -107,15 +104,15 @@ export abstract class IndexedXYZCollection {
     const y0 = this.getYAtUncheckedPointIndex(origin);
     const z0 = this.getZAtUncheckedPointIndex(origin);
     return (this.getXAtUncheckedPointIndex(indexA) - x0) * (this.getXAtUncheckedPointIndex(indexB) - x0) +
-           (this.getYAtUncheckedPointIndex(indexA) - y0) * (this.getYAtUncheckedPointIndex(indexB) - y0) +
-           (this.getZAtUncheckedPointIndex(indexA) - z0) * (this.getZAtUncheckedPointIndex(indexB) - z0);
+      (this.getYAtUncheckedPointIndex(indexA) - y0) * (this.getYAtUncheckedPointIndex(indexB) - y0) +
+      (this.getZAtUncheckedPointIndex(indexA) - z0) * (this.getZAtUncheckedPointIndex(indexB) - z0);
   }
   /**
    * Return the dot product of the vectors from the point at `origin` to the point at `indexA` and to `targetB`.
-   * @param origin index of point within the array; origin of both vectors
-   * @param indexA index of point within the array; target of the first vector
-   * @param targetB target for second vector
-   * @returns undefined if index is out of bounds
+   * @param origin index of point within the array; origin of both vectors.
+   * @param indexA index of point within the array; target of the first vector.
+   * @param targetB target for second vector.
+   * @returns undefined if index is out of bounds.
    */
   public dotProductIndexIndexXYAndZ(origin: number, indexA: number, targetB: XYAndZ): number | undefined {
     if (origin < 0 || origin >= this.length || indexA < 0 || indexA >= this.length)
@@ -124,25 +121,25 @@ export abstract class IndexedXYZCollection {
     const y0 = this.getYAtUncheckedPointIndex(origin);
     const z0 = this.getZAtUncheckedPointIndex(origin);
     return (this.getXAtUncheckedPointIndex(indexA) - x0) * (targetB.x - x0) +
-           (this.getYAtUncheckedPointIndex(indexA) - y0) * (targetB.y - y0) +
-           (this.getZAtUncheckedPointIndex(indexA) - z0) * (targetB.z - z0);
+      (this.getYAtUncheckedPointIndex(indexA) - y0) * (targetB.y - y0) +
+      (this.getZAtUncheckedPointIndex(indexA) - z0) * (targetB.z - z0);
   }
   /**
-   * Return the cross product of the vectors from `origin` to points at `indexA` and `indexB`
-   * @param origin origin for vector
-   * @param indexA index of first target within the array
-   * @param indexB index of second target within the array
+   * Return the cross product of the vectors from `origin` to points at `indexA` and `indexB`.
+   * @param origin origin for vector.
+   * @param indexA index of first target within the array.
+   * @param indexB index of second target within the array.
    * @param result caller-allocated vector.
-   * @returns undefined if either index is out of bounds
+   * @returns undefined if either index is out of bounds.
    */
   public abstract crossProductXYAndZIndexIndex(origin: XYAndZ, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
   /**
-   * Return the cross product of the vectors from `origin` to the point at `indexA` and to `targetB`
-   * @param origin index of point within the array; origin of both vectors
-   * @param indexA index of point within the array; target of the first vector
-   * @param targetB target of second vector
-   * @param result optional caller-allocated result to fill and return
-   * @returns undefined if an index is out of bounds
+   * Return the cross product of the vectors from `origin` to the point at `indexA` and to `targetB`.
+   * @param origin index of point within the array; origin of both vectors.
+   * @param indexA index of point within the array; target of the first vector.
+   * @param targetB target of second vector.
+   * @param result optional caller-allocated result to fill and return.
+   * @returns undefined if an index is out of bounds.
    */
   public crossProductIndexIndexXYAndZ(origin: number, indexA: number, targetB: XYAndZ, result?: Vector3d): Vector3d | undefined {
     if (origin < 0 || origin >= this.length || indexA < 0 || indexA >= this.length)
@@ -150,46 +147,46 @@ export abstract class IndexedXYZCollection {
     const x0 = this.getXAtUncheckedPointIndex(origin);
     const y0 = this.getYAtUncheckedPointIndex(origin);
     const z0 = this.getZAtUncheckedPointIndex(origin);
-    return Vector3d.createCrossProduct(this.getXAtUncheckedPointIndex(indexA) - x0,
-                                       this.getYAtUncheckedPointIndex(indexA) - y0,
-                                       this.getZAtUncheckedPointIndex(indexA) - z0,
-                                       targetB.x - x0,
-                                       targetB.y - y0,
-                                       targetB.z - z0, result);
+    return Vector3d.createCrossProduct(
+      this.getXAtUncheckedPointIndex(indexA) - x0,
+      this.getYAtUncheckedPointIndex(indexA) - y0,
+      this.getZAtUncheckedPointIndex(indexA) - z0,
+      targetB.x - x0,
+      targetB.y - y0,
+      targetB.z - z0,
+      result,
+    );
   }
   /**
-   * Return the cross product of vectors from `origin` to points at `indexA` and `indexB`
-   * @param origin origin for vector
-   * @param indexA index of first target within the array
-   * @param indexB index of second target within the array
+   * Return the cross product of vectors from `origin` to points at `indexA` and `indexB`.
+   * @param origin origin for vector.
+   * @param indexA index of first target within the array.
+   * @param indexB index of second target within the array.
    * @param result optional caller-allocated vector.
-   * @returns undefined if either index is out of bounds
+   * @returns undefined if either index is out of bounds.
    */
   public abstract crossProductIndexIndexIndex(origin: number, indexA: number, indexB: number, result?: Vector3d): Vector3d | undefined;
   /**
-   * Return the cross product of vectors from origin point at `indexA` to target points at `indexB` and `indexC`
-   * @param origin index of origin
-   * @param indexA index of first target within the array
-   * @param indexB index of second target within the array
+   * Return the cross product of vectors from origin point at `indexA` to target points at `indexB` and `indexC`.
+   * @param origin index of origin.
+   * @param indexA index of first target within the array.
+   * @param indexB index of second target within the array.
    * @param result caller-allocated vector.
-   * @returns return true if indexA, indexB both valid
+   * @returns return true if indexA, indexB both valid.
    */
   public abstract accumulateCrossProductIndexIndexIndex(origin: number, indexA: number, indexB: number, result: Vector3d): void;
-
-  /**
-   * read-only property for number of XYZ in the collection.
-   */
+  /** Read-only property for number of XYZ in the collection. */
   public abstract get length(): number;
   /**
    * Return distance squared between indicated points.
-   * @param index0 first point index
-   * @param index1 second point index
+   * @param index0 first point index.
+   * @param index1 second point index.
    */
   public abstract distanceSquaredIndexIndex(index0: number, index1: number): number | undefined;
   /**
    * Return distance squared between the point at index0 and target.
-   * @param index0 first point index
-   * @param target second point
+   * @param index0 first point index.
+   * @param target second point.
    */
   public distanceSquaredIndexXYAndZ(index0: number, target: XYAndZ): number | undefined {
     if (index0 < 0 || index0 >= this.length)
@@ -197,12 +194,13 @@ export abstract class IndexedXYZCollection {
     return Geometry.hypotenuseSquaredXYZ(
       target.x - this.getXAtUncheckedPointIndex(index0),
       target.y - this.getYAtUncheckedPointIndex(index0),
-      target.z - this.getZAtUncheckedPointIndex(index0));
+      target.z - this.getZAtUncheckedPointIndex(index0),
+    );
   }
   /**
    * Return distance between indicated points.
-   * @param index0 first point index
-   * @param index1 second point index
+   * @param index0 first point index.
+   * @param index1 second point index.
    */
   public abstract distanceIndexIndex(index0: number, index1: number): number | undefined;
   /**
@@ -231,14 +229,13 @@ export abstract class IndexedXYZCollection {
     }
     return range;
   }
-
   /**
    * For each subset of `k` successive points within tolerance of the first point in the subset, return the indices of
    * the last `k-1` duplicates.
    * * Index `0` is never returned.
-   * @param tolerance optional distance tol for compression (default [[Geometry.smallMetricDistance]])
+   * @param tolerance optional distance tol for compression (default [[Geometry.smallMetricDistance]]).
    * @param preserveLast if the last `k < this.length` points of the instance are duplicates, whether to return the
-   * indices of the *first* `k-1` duplicates for this last run. If true, index `this.length - 1` is not returned
+   * indices of the *first* `k-1` duplicates for this last run. If true, index `this.length - 1` is not returned.
    * unless all points are duplicates, in which case all indices but `0` are returned. Default value is false.
    * @return ordered array of 0-based indices of duplicate points
    */
@@ -260,13 +257,13 @@ export abstract class IndexedXYZCollection {
     }
     return indices;
   }
-
-  /** Accumulate scale times the x,y,z values at index.
+  /**
+   * Accumulate scale times the x,y,z values at index.
    * * No action if index is out of bounds.
    */
   public abstract accumulateScaledXYZ(index: number, scale: number, sum: Point3d): void;
-
-  /** Compute the linear combination s of the indexed p_i and given scales s_i.
+  /**
+   * Compute the linear combination s of the indexed p_i and given scales s_i.
    * @param scales array of scales. For best results, scales should have same length as the instance.
    * @param result optional pre-allocated object to fill and return
    * @return s = sum(p_i * s_i), where i ranges from 0 to min(this.length, scales.length).
@@ -281,33 +278,29 @@ export abstract class IndexedXYZCollection {
     }
     return sum;
   }
-
   /**
    * Interpolate the points at the given indices.
-   * @param index0 index of point p0 within the array
-   * @param fraction fraction f such that returned point is p0 + f * (p1 - p0)
-   * @param index1 index of point p1 within the array
-   * @param result optional caller-allocated result to fill and return
-   * @returns undefined if an index is out of bounds
+   * @param index0 index of point p0 within the array.
+   * @param fraction fraction f such that returned point is p0 + f * (p1 - p0).
+   * @param index1 index of point p1 within the array.
+   * @param result optional caller-allocated result to fill and return.
+   * @returns undefined if an index is out of bounds.
    */
   public interpolateIndexIndex(index0: number, fraction: number, index1: number, result?: Point3d): Point3d | undefined {
     if (index0 < 0 || index0 >= this.length || index1 < 0 || index1 >= this.length)
       return undefined;
     return Point3d.create(Geometry.interpolate(this.getXAtUncheckedPointIndex(index0), fraction, this.getXAtUncheckedPointIndex(index1)),
-                          Geometry.interpolate(this.getYAtUncheckedPointIndex(index0), fraction, this.getYAtUncheckedPointIndex(index1)),
-                          Geometry.interpolate(this.getZAtUncheckedPointIndex(index0), fraction, this.getZAtUncheckedPointIndex(index1)), result);
+      Geometry.interpolate(this.getYAtUncheckedPointIndex(index0), fraction, this.getYAtUncheckedPointIndex(index1)),
+      Geometry.interpolate(this.getZAtUncheckedPointIndex(index0), fraction, this.getZAtUncheckedPointIndex(index1)), result);
   }
-
-  /** access x of indexed point */
+  /** Access x of indexed point. */
   public abstract getXAtUncheckedPointIndex(pointIndex: number): number;
-
-  /** access y of indexed point */
+  /** Access y of indexed point. */
   public abstract getYAtUncheckedPointIndex(pointIndex: number): number;
-
-  /** access z of indexed point */
+  /** Access z of indexed point. */
   public abstract getZAtUncheckedPointIndex(pointIndex: number): number;
-
-  /** Return iterator over the points in this collection. Usage:
+  /**
+   * Return iterator over the points in this collection. Usage:
    * ```ts
    *  for (const point: Point3d of collection.points) { ... }
    * ```
@@ -315,7 +308,7 @@ export abstract class IndexedXYZCollection {
   public get points(): Iterable<Point3d> {
     return new PointsIterator(this);
   }
-  /** convert to Point3d[] */
+  /** Convert to Point3d[]. */
   public getArray(): Point3d[] {
     const result = [];
     for (const p of this.points)
@@ -336,8 +329,8 @@ export abstract class IndexedXYZCollection {
   }
   /**
    * Test whether the indexed points are equal within tolerance.
-   * @param index0 index of first point
-   * @param index1 index of second point
+   * @param index0 index of first point.
+   * @param index1 index of second point.
    * @param tolerance max coordinate difference to be considered equal. For exact test, pass 0. Defaults to `Geometry.smallMetricDistance`.
    * @returns whether the points are equal within tolerance, or `undefined` if either index is invalid.
    */
@@ -350,8 +343,8 @@ export abstract class IndexedXYZCollection {
   }
   /**
    * Test whether the xy-coordinates of the indexed points are equal within tolerance. The z-coordinates are ignored.
-   * @param index0 index of first point
-   * @param index1 index of second point
+   * @param index0 index of first point.
+   * @param index1 index of second point.
    * @param tolerance max coordinate difference to be considered equal. For exact test, pass 0. Defaults to `Geometry.smallMetricDistance`.
    * @returns whether the xy-coordinates of the points are equal within tolerance, or `undefined` if either index is invalid.
    */
@@ -362,27 +355,21 @@ export abstract class IndexedXYZCollection {
       && Geometry.isSameCoordinate(this.getYAtUncheckedPointIndex(index0), this.getYAtUncheckedPointIndex(index1), tolerance);
   }
 }
+
 /**
- * abstract base class extends IndexedXYZCollection, adding methods to push, peek, and pop, and rewrite.
+ * Abstract base class extends [[IndexedXYZCollection]] with methods that modify the collection.
  * @public
  */
 export abstract class IndexedReadWriteXYZCollection extends IndexedXYZCollection {
-  /** push a (clone of) point onto the collection
-   * * point itself is not pushed -- xyz data is extracted into the native form of the collection.
-   */
-  public abstract push(data: XYAndZ): void;
-  /**
-   * push a new point (given by coordinates) onto the collection
-   * @param x x coordinate
-   * @param y y coordinate
-   * @param z z coordinate
-   */
+  /** Push a (clone of) point onto the collection. */
+  public abstract push(point: XYAndZ): void;
+  /** Push a new point (given by xyz coordinates) onto the collection. */
   public abstract pushXYZ(x?: number, y?: number, z?: number): void;
-  /** remove the final point. */
+  /** Remove the final point. */
   public abstract pop(): void;
-  /**  clear all entries */
+  /** Remove all entries. */
   public abstract clear(): void;
-  /** reverse the points in place. */
+  /** Reverse the points in place. */
   public abstract reverseInPlace(): void;
 }
 

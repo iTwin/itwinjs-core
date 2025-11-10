@@ -32,7 +32,7 @@ let iModelJsCss: string | undefined = `
 }
 
 .logo-card-logo {
-  width:124px;
+  width:144px;
   overflow:hidden;
   vertical-align:text-top;
   text-align:center
@@ -50,6 +50,10 @@ let iModelJsCss: string | undefined = `
   margin-block-end:3em;
   width:90%;
   opacity:.7
+}
+
+.itwinjs-header-lead {
+  font-weight:normal;
 }
 
 .logo-card-header {

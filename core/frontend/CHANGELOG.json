@@ -2,6 +2,141 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "5.3.1",
+      "tag": "@itwin/core-frontend_v5.3.1",
+      "date": "Thu, 06 Nov 2025 20:29:06 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update frontend cache when the backend modifies categories and subcategories."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.3.0",
+      "tag": "@itwin/core-frontend_v5.3.0",
+      "date": "Mon, 03 Nov 2025 19:02:35 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added custom `portal` property for ArcGIS map-layers, to support OAuth2 authentication."
+          },
+          {
+            "comment": "Added `MapLayerImageryProvider.status` API."
+          },
+          {
+            "comment": "Add range validation for WMS maplayers"
+          },
+          {
+            "comment": "Fix unsafe-inline CSP violation"
+          },
+          {
+            "comment": "Ensure viewport contents update when the view's category selector changes."
+          },
+          {
+            "comment": "Remove beta support for reading contour line information from the GPU."
+          },
+          {
+            "comment": "Increase logo card width in attribution popup to fix Google Maps image clipping"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.2.4",
+      "tag": "@itwin/core-frontend_v5.2.4",
+      "date": "Fri, 24 Oct 2025 16:20:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.2.3",
+      "tag": "@itwin/core-frontend_v5.2.3",
+      "date": "Thu, 16 Oct 2025 23:00:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Ensure viewport contents update when the view's category selector changes."
+          },
+          {
+            "comment": "Increase logo card width in attribution popup to fix Google Maps image clipping"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.2.2",
+      "tag": "@itwin/core-frontend_v5.2.2",
+      "date": "Fri, 10 Oct 2025 14:49:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.2.1",
+      "tag": "@itwin/core-frontend_v5.2.1",
+      "date": "Thu, 09 Oct 2025 17:10:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added custom `portal` property for ArcGIS map-layers, to support OAuth2 authentication."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.2.0",
+      "tag": "@itwin/core-frontend_v5.2.0",
+      "date": "Wed, 01 Oct 2025 20:22:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update Google Maps attribution"
+          },
+          {
+            "comment": "fix: allow IModelApp.publicPath to be passed without a trailing slash `/`"
+          },
+          {
+            "comment": "Changed queryExtents to use ECSqlReader"
+          },
+          {
+            "comment": "Draco-decoding resources are now bundled locally into iTwin.js, rather than querying them from a CDN."
+          },
+          {
+            "comment": "Add support for new KindOfQuantity for coordinate length"
+          },
+          {
+            "comment": "Improve performance of model masking when using pregenerated tiles."
+          },
+          {
+            "comment": "Add DynamicsContext.addOverlay"
+          },
+          {
+            "comment": "Improve frame rate during interactive editing."
+          },
+          {
+            "comment": "Fix 'ghost' elements when using GraphicalEditingScope with model masking."
+          },
+          {
+            "comment": "A model drawn as only contour lines will only mask the background map where the contour lines draw."
+          },
+          {
+            "comment": "Fix an exception when terrain is enabled."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.1.9",
+      "tag": "@itwin/core-frontend_v5.1.9",
+      "date": "Wed, 24 Sep 2025 17:38:08 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Improve performance of model masking when using pregenerated tiles."
+          }
+        ]
+      }
+    },
+    {
       "version": "5.1.8",
       "tag": "@itwin/core-frontend_v5.1.8",
       "date": "Wed, 17 Sep 2025 17:17:16 GMT",
