@@ -14,7 +14,10 @@ import { IModelApp } from "../IModelApp";
 import { createViewAttachmentRenderer, ViewAttachmentRenderer } from "./ViewAttachmentRenderer";
 import { Frustum2d } from "../Frustum2d";
 import { Range3d, Transform } from "@itwin/core-geometry";
-import { DisclosedTileTreeSet, RenderMemory, SceneContext, Viewport } from "../core-frontend";
+import { SceneContext } from "../ViewContext";
+import { Viewport } from "../Viewport";
+import { RenderMemory } from "../render/RenderMemory";
+import { DisclosedTileTreeSet } from "../tile/internal";
 
 /** Represents the current state of the view attachments to be displayed by a SheetViewAttachments. */
 interface Attachments {

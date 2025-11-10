@@ -6,34 +6,24 @@
  * @module Views
  */
 
-import { assert, BeEvent, CompressedId64Set, dispose, expectDefined, Id64Array, Id64String } from "@itwin/core-bentley";
-import { Angle, ClipShape, ClipVector, Constant, Matrix3d, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
+import { BeEvent, dispose, expectDefined, Id64Array, Id64String } from "@itwin/core-bentley";
+import { Angle, Constant, Point2d, Point3d, Range2d, Range3d, Transform } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, HiddenLine, HydrateViewStateRequestProps, HydrateViewStateResponseProps, PackedFeatureTable, Placement2d, SheetProps,
-  TextureTransparency, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
+  AxisAlignedBox3d, ColorDef, Gradient, GraphicParams, HydrateViewStateRequestProps, HydrateViewStateResponseProps, SheetProps,
+  ViewAttachmentProps, ViewDefinition2dProps, ViewStateProps,
 } from "@itwin/core-common";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState } from "./DisplayStyleState";
 import { IModelConnection } from "./IModelConnection";
 import { GraphicBuilder } from "./render/GraphicBuilder";
 import { RenderGraphic } from "./render/RenderGraphic";
-import { GraphicBranch } from "./render/GraphicBranch";
 import { Frustum2d } from "./Frustum2d";
-import { Scene } from "./render/Scene";
-import { Decorations } from "./render/Decorations";
-import { MockRender } from "./internal/render/MockRender";
-import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
-import { FeatureSymbology } from "./render/FeatureSymbology";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { IModelApp } from "./IModelApp";
-import { CoordSystem } from "./CoordSystem";
-import { OffScreenViewport, Viewport } from "./Viewport";
+import { Viewport } from "./Viewport";
 import { AttachToViewportArgs, ComputeDisplayTransformArgs, GetAttachmentViewportArgs, ViewState, ViewState2d } from "./ViewState";
 import { DrawingViewState } from "./DrawingViewState";
-import { createDefaultViewFlagOverrides, DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
-import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./common/ImageUtil";
-import { ViewRect } from "./common/ViewRect";
+import { DisclosedTileTreeSet } from "./tile/internal";
 import { GraphicType } from "./common/render/GraphicType";
 import { SheetViewAttachments } from "./internal/SheetViewAttachments";
 

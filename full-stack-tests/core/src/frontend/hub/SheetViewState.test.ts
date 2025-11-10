@@ -10,8 +10,8 @@ import { TestUtility } from "../TestUtility";
 import { coreFullStackTestIpc, deleteElements, initializeEditTools } from "../Editing";
 import * as path from "path";
 import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
-import { CompressedId64Set, Guid, Id64, Id64String, OpenMode } from "@itwin/core-bentley";
-import { ColorDef, ViewAttachmentProps } from "@itwin/core-common";
+import { CompressedId64Set, Id64String, OpenMode } from "@itwin/core-bentley";
+import { ViewAttachmentProps } from "@itwin/core-common";
 
 describe("SheetViewState (#integration)", () => {
   let imodel: CheckpointConnection;

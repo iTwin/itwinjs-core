@@ -7,7 +7,21 @@
  */
 
 import { ColorDef, Feature, FeatureTable, Frustum, GraphicParams, HiddenLine, PackedFeatureTable, Placement2d, TextureTransparency, ViewAttachmentProps, ViewFlagOverrides } from "@itwin/core-common";
-import { CoordSystem, DisclosedTileTreeSet, FeatureSymbology, Frustum2d, GraphicBranch, GraphicType, imageBufferToPngDataUrl, IModelApp, OffScreenViewport, openImageDataUrlInNewWindow, RenderClipVolume, RenderGraphic, RenderMemory, Scene, TileGraphicType, Viewport, ViewRect, ViewState } from "../core-frontend";
+import { CoordSystem } from "../CoordSystem";
+import { Frustum2d } from "../Frustum2d";
+import { IModelApp } from "../IModelApp";
+import { ViewState } from "../ViewState";
+import { OffScreenViewport, Viewport } from "../Viewport";
+import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "../common/ImageUtil";
+import { ViewRect } from "../common/ViewRect";
+import { GraphicType } from "../common/render/GraphicType";
+import { FeatureSymbology } from "../render/FeatureSymbology";
+import { GraphicBranch } from "../render/GraphicBranch";
+import { RenderClipVolume } from "../render/RenderClipVolume";
+import { RenderGraphic } from "../render/RenderGraphic";
+import { RenderMemory } from "../render/RenderMemory";
+import { Scene } from "../render/Scene";
+import { DisclosedTileTreeSet, TileGraphicType } from "../tile/internal";
 import { SceneContext } from "../ViewContext";
 import { MockRender } from "./render/MockRender";
 import { assert, dispose, expectDefined, Id64String } from "@itwin/core-bentley";
