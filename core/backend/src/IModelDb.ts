@@ -169,6 +169,13 @@ const withBriefcaseDb = async (briefcase: OpenBriefcaseArgs, fn: (_db: Briefcase
   }
 };
 
+function isDataTransformRequiredError(error: unknown): error is ITwinError {
+  // We would like to do this, however, some stacks re-throw a new error only preserving the errorNumber and message.
+  //return ITwinError.isError(error, "be-sqlite", "BE_SQLITE_ERROR_DataTransformRequired");
+  // So we do this instead for now:
+  return typeof error === "object" && error !== null && "errorNumber" in error && DbResult.BE_SQLITE_ERROR_DataTransformRequired === error.errorNumber;
+}
+
 /**
  * Settings for an individual iModel. May only include settings priority for iModel, iTwin and organization.
  * @note if there is more than one iModel for an iTwin or organization, they will *each* hold an independent copy of the settings for those priorities.
@@ -982,7 +989,7 @@ export abstract class IModelDb extends IModel {
         try {
           importOp(schemaData, { schemaLockHeld: false, ecSchemaXmlContext: customNativeContext, schemaSyncDbUri });
         } catch (outerErr: any) {
-          if (ITwinError.isError(outerErr, "be-sqlite", "BE_SQLITE_ERROR_DataTransformRequired")) {
+          if (isDataTransformRequiredError(outerErr)) {
             this.abandonChanges();
             if (this[_nativeDb].getITwinId() !== Guid.empty)
               await this.acquireSchemaLock();
@@ -1011,7 +1018,7 @@ export abstract class IModelDb extends IModel {
             importOp(schemaData, { ecSchemaXmlContext: customNativeContext, schemaLockHeld: false });
             Logger.logInfo(loggerCategory, `Successfully imported ${schemaData.length} schema(s) using schema table lock`);
           } catch (err: any) {
-            if (ITwinError.isError(err, "be-sqlite", "BE_SQLITE_ERROR_DataTransformRequired")) {
+            if (isDataTransformRequiredError(err)) {
               await this.acquireSchemaLock();
               importOp(schemaData, { ecSchemaXmlContext: customNativeContext, schemaLockHeld: true });
               Logger.logInfo(loggerCategory, `Successfully imported ${schemaData.length} schema(s) using full lock`);
@@ -3255,7 +3262,7 @@ export class BriefcaseDb extends IModelDb {
     try {
       await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade }, "Upgraded profile");
     } catch (error: any) {
-      if (ITwinError.isError(error, "be-sqlite", "BE_SQLITE_ERROR_DataTransformRequired")) {
+      if (isDataTransformRequiredError(error)) {
         Logger.logInfo(loggerCategory, `Profile upgrade contains data transform. Retrying upgrade with a schema lock.`);
         try {
           await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
@@ -3271,7 +3278,7 @@ export class BriefcaseDb extends IModelDb {
     try {
       await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade }, "Upgraded domain schemas");
     } catch (error: any) {
-      if (ITwinError.isError(error, "be-sqlite", "BE_SQLITE_ERROR_DataTransformRequired")) {
+      if (isDataTransformRequiredError(error)) {
         Logger.logInfo(loggerCategory, `Domain schema upgrade contains data transform. Retrying upgrade with a schema lock.`);
         try {
           await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
