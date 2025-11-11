@@ -2402,7 +2402,7 @@ describe("CurveCurveIntersectXY", () => {
         if (!(curve0 instanceof CurveCollection)) {
           pointOnCurve0 = curve0Detail.point;
           const intersectionPoint0 = curve0.fractionToPoint(curve0Detail.fraction);
-          ck.testPoint3dXY(
+          ck.testPoint3d(
             pointOnCurve0,
             intersectionPoint0,
             `intersection point on ${curveName0} should match ${curveName0}.fractionToPoint`,
@@ -2411,7 +2411,7 @@ describe("CurveCurveIntersectXY", () => {
         if (!(curve1 instanceof CurveCollection)) {
           pointOnCurve1 = curve1Detail.point;
           const intersectionPoint1 = curve1.fractionToPoint(curve1Detail.fraction);
-          ck.testPoint3dXY(
+          ck.testPoint3d(
             pointOnCurve1,
             intersectionPoint1,
             `intersection point on ${curveName1} should match ${curveName1}.fractionToPoint`,
