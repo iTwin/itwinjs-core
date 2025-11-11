@@ -138,8 +138,8 @@ export class EditScope implements IEditScope {
     // Check if this command is being called from within another command's execution context
     const activeScope = IModelDb.activeEditScope();
 
-    if (activeScope !== undefined && activeScope.commandType === CommandType.Interactive && commandType === CommandType.Interactive) {
-      throw new Error("Cannot start an Interactive EditCommand from within another Interactive EditCommand.");
+    if (activeScope !== undefined && activeScope.commandType === CommandType.Interactive.valueOf() && commandType === CommandType.Interactive.valueOf()) {
+      throw new Error("Cannot start an Interactive EditCommand from while another Interactive EditCommand is active.");
     }
 
     const executingScopeIds = EditScope.commandExecutionContext.getStore();
@@ -147,13 +147,13 @@ export class EditScope implements IEditScope {
     if (isNested) {
       // Create a new scope that has a parent scope id set
       const nestedScope = new EditScope(iModel, commandType, activeScope.scopeId);
-      IModelDb.enqueueNestedEditScope({ scopeId: nestedScope.scopeId, parentScopeId: nestedScope.parentScopeId } as any);
+      IModelDb.enqueueNestedEditScope({ scopeId: nestedScope.scopeId, commandType: nestedScope.commandType, parentScopeId: nestedScope.parentScopeId } as any);
       return nestedScope;
     }
 
     // External command - enqueue normally
     const scope = new EditScope(iModel, commandType);
-    IModelDb.enqueueEditScope({ scopeId: scope.scopeId } as any);
+    IModelDb.enqueueEditScope({ scopeId: scope.scopeId, commandType: scope.commandType } as any);
     return scope;
   }
 
@@ -280,6 +280,42 @@ export class EditScope implements IEditScope {
 }
 
 /**
+ *
+ * Use this decorator on methods in ImmediateCommand and InteractiveCommand subclasses to ensure they execute
+ * within the proper scope context.
+ *
+ * @alpha
+ */
+export function makeScopeSafe(
+  target: any,
+  propertyKey: string,
+  descriptor: PropertyDescriptor
+): PropertyDescriptor {
+  const originalMethod = descriptor.value;
+
+  if (typeof originalMethod !== "function") {
+    throw new Error(`@makeScopeSafe can only be applied to methods, but ${propertyKey} is not a function`);
+  }
+
+  descriptor.value = async function (this: any, ...args: any[]) {
+    // 'this' refers to the command instance at runtime
+    if (typeof this.executeOperation !== "function") {
+      throw new Error(
+        `@scopeSafe decorator requires the class to have an executeOperation method. ` +
+        `Ensure ${target.constructor.name} extends InteractiveCommand or ImmediateCommand.`
+      );
+    }
+
+    // Wrap the original method in executeOperation
+    return await this.executeOperation(async () => {
+      return await originalMethod.apply(this, args);
+    });
+  };
+
+  return descriptor;
+}
+
+/**
  * @alpha
  */
 export abstract class EditCommandBase<_TArgs extends EditCommandArgs = EditCommandArgs, _TResult = void> {
@@ -341,12 +377,12 @@ export abstract class EditCommandBase<_TArgs extends EditCommandArgs = EditComma
  */
 export abstract class ImmediateCommand<TArgs extends EditCommandArgs = EditCommandArgs, TResult = void> extends EditCommandBase<TArgs, TResult> {
   /**
-   * Execute a command operation within a transactional scope.
+   * Execute a command operation within a transactional scope. The operation will start an edit scope and will end with a save/abandon based on success/failure.
    * @param args - Arguments for the command execution (includes optional description)
    * @param fn - Callback function to execute. Args are available in the closure.
    * @returns The result of the callback function
    */
-  public async execute(
+  private async executeOperation(
     fn: (args?: TArgs) => Promise<TResult>
   ): Promise<TResult> {
     // Create the scope
@@ -375,7 +411,7 @@ export abstract class InteractiveCommand<TArgs extends EditCommandArgs = EditCom
     this._editScope = EditScope.start(this._iModel, CommandType.Interactive);
   }
 
-  // DO NOT OVERRIDE
+  // DO NOT OVERRIDE or mark @makeScopeSafe
   public async startCommandScope(): Promise<void> {
     if (!this._editScope) {
       throw new Error("EditCommand has no scope.");
@@ -389,7 +425,7 @@ export abstract class InteractiveCommand<TArgs extends EditCommandArgs = EditCom
     }
   }
 
-  // DO NOT OVERRIDE
+  // DO NOT OVERRIDE or mark @makeScopeSafe
   public async endCommandScope(): Promise<void> {
     if (!this._editScope) {
       throw new Error("EditCommand has no scope.");
@@ -397,8 +433,13 @@ export abstract class InteractiveCommand<TArgs extends EditCommandArgs = EditCom
     this._editScope.end();
   }
 
-  // DO NOT OVERRIDE
-  protected async executeOperation<T>(operation: (args?: TArgs) => Promise<T>): Promise<T> {
+  /**
+   * Execute a command operation within a transactional scope. The operation will NOT save/abandon - that is left to the caller when they end this long-spanning command.
+   * @param args - Arguments for the command execution (includes optional description)
+   * @param fn - Callback function to execute. Args are available in the closure.
+   * @returns The result of the callback function
+   */
+  private async executeOperation<T>(operation: (args?: TArgs) => Promise<T>): Promise<T> {
     if (!this._editScope) {
       throw new Error("EditCommand has no scope.");
     }
