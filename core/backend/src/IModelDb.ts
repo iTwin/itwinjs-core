@@ -959,7 +959,7 @@ export abstract class IModelDb extends IModel {
    */
   private async importSchemasInternal<T>(
     schemaData: T[],
-    importOp: (data: T[], options: any) => DbResult,
+    importOp: (data: T[], options: any) => void,
     customNativeContext?: IModelJsNative.ECSchemaXmlContext | undefined,
   ): Promise<void> {
     if (schemaData.length === 0)
