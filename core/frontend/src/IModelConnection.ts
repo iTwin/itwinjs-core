@@ -270,7 +270,7 @@ export abstract class IModelConnection extends IModel {
       return this.createRPCQueryReader(ecsql, params, config);
     }
     const parsedParams = params ? this.parseBinderToArgs(params) : undefined;
-    return this._iModelReadApi.runQuery({ query: ecsql, args: parsedParams, options: { includeMetadata: config?.includeMetaData ?? true }});
+    return this._iModelReadApi.runQuery({ query: ecsql, args: parsedParams, includeMetadata: config?.includeMetaData ?? true });
   }
 
   private hasUnsupportedQueryOptions(options: QueryOptions): boolean {
