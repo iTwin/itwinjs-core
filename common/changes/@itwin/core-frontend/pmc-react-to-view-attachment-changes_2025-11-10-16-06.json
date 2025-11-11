@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Update view when view attachment elements are modified.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
