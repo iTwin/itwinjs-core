@@ -45,6 +45,7 @@ importers:
       form-data: ^4.0.4
       fs-extra: ^8.1.0
       internal-tools: workspace:*
+      inversify: ~6.0.1
       json5: ^2.2.3
       linebreak: ^1.1.0
       marked: ^14.1.3
@@ -53,6 +54,7 @@ importers:
       node-simctl: ~7.6.1
       null-loader: ^4.0.1
       nyc: ^15.1.0
+      reflect-metadata: ^0.1.13
       rimraf: ^3.0.2
       semver: ^7.5.2
       sinon: ^17.0.2
@@ -65,15 +67,17 @@ importers:
     dependencies:
       '@azure/storage-blob': 12.29.1
       '@bentley/imodeljs-native': 4.11.39
-      '@itwin/cloud-agnostic-core': 2.2.4
+      '@itwin/cloud-agnostic-core': 2.2.4_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
-      '@itwin/object-storage-azure': 3.0.4
-      '@itwin/object-storage-core': 3.0.4
+      '@itwin/object-storage-azure': 3.0.4_scz6qrwecfbbxg4vskopkl3a7u
+      '@itwin/object-storage-core': 3.0.4_scz6qrwecfbbxg4vskopkl3a7u
       form-data: 4.0.4
       fs-extra: 8.1.0
+      inversify: 6.0.1
       json5: 2.2.3
       linebreak: 1.1.0
       multiparty: 4.2.1
+      reflect-metadata: 0.1.13
       semver: 7.5.2
       touch: 3.1.0
       ws: 7.5.10
@@ -4267,6 +4271,16 @@ packages:
       reflect-metadata: ^0.1.13
     dev: false
 
+  /@itwin/cloud-agnostic-core/2.2.4_scz6qrwecfbbxg4vskopkl3a7u:
+    resolution: {integrity: sha512-RDo8m4wmfNQJHQGsiwoFSAzuYFHDTDtgSWE8cAyuLTVRFAUZhoIU7CTvP2auUaa3+2DwAI2Bmh1hOIS6n7AMFg==}
+    peerDependencies:
+      inversify: ^6.0.1
+      reflect-metadata: ^0.1.13
+    dependencies:
+      inversify: 6.0.1
+      reflect-metadata: 0.1.13
+    dev: false
+
   /@itwin/cloud-agnostic-core/2.3.0:
     resolution: {integrity: sha512-oFSaERSqnuXtpzJ/dX61/p47eFoNoZ3NG0F9NUpndmiErVYba8aEnlVHQqXBQb5kycXBd7c9a5Ihnif1ussLLw==}
     peerDependencies:
@@ -4289,6 +4303,21 @@ packages:
         optional: true
       reflect-metadata:
         optional: true
+
+  /@itwin/cloud-agnostic-core/3.0.4_scz6qrwecfbbxg4vskopkl3a7u:
+    resolution: {integrity: sha512-aOgtonCzp1mm8IueeF+7wcIsp/lpkkv3qSyPXj+C141xQItnHL6vjhSD8W8X3OWPlGZKS1JqB/mB20/2X14dFQ==}
+    peerDependencies:
+      inversify: ^7.5.2
+      reflect-metadata: ^0.2.2
+    peerDependenciesMeta:
+      inversify:
+        optional: true
+      reflect-metadata:
+        optional: true
+    dependencies:
+      inversify: 6.0.1
+      reflect-metadata: 0.1.13
+    dev: false
 
   /@itwin/core-bentley/4.10.13:
     resolution: {integrity: sha512-uTdJLFx5/ylplrUi5BvuAeUcnu05URdVxS321QrdLnbh/+PrMlbtbM9RUSg1chd5wNGK9YtGjmxu4lwCnLOyiA==}
@@ -4465,7 +4494,7 @@ packages:
       - supports-color
     dev: false
 
-  /@itwin/object-storage-azure/3.0.4:
+  /@itwin/object-storage-azure/3.0.4_scz6qrwecfbbxg4vskopkl3a7u:
     resolution: {integrity: sha512-KtXn8DCTpnRcPRQv2v6XNSa9Zb266vL8C71oH5RKbAPjl6QHtj1A1uN5m+pHt23b1UvJYB3QZz+7YKWeqU9dqQ==}
     peerDependencies:
       inversify: ^7.5.2
@@ -4478,8 +4507,10 @@ packages:
     dependencies:
       '@azure/core-paging': 1.6.2
       '@azure/storage-blob': 12.29.1
-      '@itwin/cloud-agnostic-core': 3.0.4
-      '@itwin/object-storage-core': 3.0.4
+      '@itwin/cloud-agnostic-core': 3.0.4_scz6qrwecfbbxg4vskopkl3a7u
+      '@itwin/object-storage-core': 3.0.4_scz6qrwecfbbxg4vskopkl3a7u
+      inversify: 6.0.1
+      reflect-metadata: 0.1.13
     transitivePeerDependencies:
       - debug
       - supports-color
@@ -4517,6 +4548,25 @@ packages:
       axios: 1.13.1
     transitivePeerDependencies:
       - debug
+
+  /@itwin/object-storage-core/3.0.4_scz6qrwecfbbxg4vskopkl3a7u:
+    resolution: {integrity: sha512-CnNpqI3ZgCMM6sFMXqvToFjN6/9K4xCOQZf6svL0PgaMhNF0cfqhqtgJG58CGuH/fvVENcCqXmn+4esX0KiOjQ==}
+    peerDependencies:
+      inversify: ^7.5.2
+      reflect-metadata: ^0.2.2
+    peerDependenciesMeta:
+      inversify:
+        optional: true
+      reflect-metadata:
+        optional: true
+    dependencies:
+      '@itwin/cloud-agnostic-core': 3.0.4_scz6qrwecfbbxg4vskopkl3a7u
+      axios: 1.13.1
+      inversify: 6.0.1
+      reflect-metadata: 0.1.13
+    transitivePeerDependencies:
+      - debug
+    dev: false
 
   /@itwin/oidc-signin-tool/5.0.2_mdtbcqczpmeuv6yjzfaigjndwi:
     resolution: {integrity: sha512-71rD1C1YTfz+PkXrxg0yp9XXavfvi2DAXfebR7/8QSAfhCeK3bnhWlGJExoE8l/SfVbOjbjPrfpNTS9kugqddw==}
@@ -9809,6 +9859,10 @@ packages:
     engines: {node: '>=10.13.0'}
     dev: true
 
+  /inversify/6.0.1:
+    resolution: {integrity: sha512-B3ex30927698TJENHR++8FfEaJGqoWOgI6ZY5Ht/nLUsFCwHn6akbwtnUAPCgUepAnTpe2qHxhDNjoKLyz6rgQ==}
+    dev: false
+
   /ipaddr.js/1.9.1:
     resolution: {integrity: sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g==}
     engines: {node: '>= 0.10'}
@@ -12309,6 +12363,10 @@ packages:
     dependencies:
       resolve: 1.22.10
     dev: true
+
+  /reflect-metadata/0.1.13:
+    resolution: {integrity: sha512-Ts1Y/anZELhSsjMcU605fU9RE4Oi3p5ORujwbIKXfWa+0Zxs510Qrmrce5/Jowq3cHSZSJqBjypxmHarc+vEWg==}
+    dev: false
 
   /reflect.getprototypeof/1.0.10:
     resolution: {integrity: sha512-00o4I+DVrefhv+nX0ulyi3biSHCPDe+yLv5o/p6d/UVlirijB8E16FtfwSAi4g3tcqrQ4lRAqQSoFEZJehYEcw==}
