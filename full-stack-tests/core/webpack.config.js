@@ -87,6 +87,8 @@ function createConfig(shouldInstrument) {
     },
     externals: {
       electron: "commonjs electron",
+      inversify: "commonjs inversify",
+      "reflect-metadata": "commonjs reflect-metadata",
       fs
     },
     plugins: [
