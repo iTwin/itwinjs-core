@@ -2444,7 +2444,7 @@ describe("CurveCurveIntersectXY", () => {
       Matrix3d.createRotationAroundVector(Vector3d.create(0, 0, 1), Angle.createDegrees(90))!,
     );
     const moveTransform = Transform.createTranslationXYZ(0, 0, 10);
-    let nonPlanarTransform = Transform.createZero();
+    const nonPlanarTransform = Transform.createZero();
     nonPlanarTransform.setMultiplyTransformTransform(rotationTransform, moveTransform);
     // integrated spirals
     const integratedSpirals = [];
