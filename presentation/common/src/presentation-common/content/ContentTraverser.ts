@@ -283,33 +283,54 @@ export function traverseFieldHierarchy(hierarchy: FieldHierarchy, cb: (h: FieldH
   }
 }
 
+/* c8 ignore start */
+
 /**
  * An utility to traverse content using provided visitor. Provides means to parse content into different formats,
  * for different components.
  * @public
+ * @deprecated in 5.4. Use [[createContentTraverser]] instead.
  */
 export function traverseContent(visitor: IContentVisitor, content: Content) {
-  if (!visitor.startContent({ descriptor: content.descriptor })) {
-    return;
-  }
-
-  try {
-    const fieldHierarchies = createFieldHierarchies(content.descriptor.fields);
-    visitor.processFieldHierarchies({ hierarchies: fieldHierarchies });
-    content.contentSet.forEach((item) => {
-      traverseContentItemFields(visitor, fieldHierarchies, item);
-    });
-  } finally {
-    visitor.finishContent();
-  }
+  return createContentTraverser(visitor, content.descriptor)(content.contentSet);
 }
 
 /**
  * An utility for calling [[traverseContent]] when there's only one content item.
  * @public
+ * @deprecated in 5.4. Use [[createContentTraverser]] instead.
  */
 export function traverseContentItem(visitor: IContentVisitor, descriptor: Descriptor, item: Item) {
-  traverseContent(visitor, new Content(descriptor, [item]));
+  return createContentTraverser(visitor, descriptor)([item]);
+}
+
+/* c8 ignore end */
+
+/**
+ * An utility to traverse content using provided visitor. Provides means to parse content into different formats,
+ * for different components.
+ * @public
+ */
+export function createContentTraverser(visitor: IContentVisitor, descriptor: Descriptor) {
+  let cachedFieldHierarchies: FieldHierarchy[] | undefined;
+
+  return (items: Item[]) => {
+    if (!visitor.startContent({ descriptor })) {
+      return;
+    }
+    try {
+      const fieldHierarchies = (cachedFieldHierarchies ??= (() => {
+        const fh = createFieldHierarchies(descriptor.fields);
+        visitor.processFieldHierarchies({ hierarchies: fh });
+        return fh;
+      })());
+      items.forEach((item) => {
+        traverseContentItemFields(visitor, fieldHierarchies, item);
+      });
+    } finally {
+      visitor.finishContent();
+    }
+  };
 }
 
 class VisitedCategories implements Disposable {

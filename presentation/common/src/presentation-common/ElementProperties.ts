@@ -9,6 +9,7 @@
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { CategoryDescription } from "./content/Category.js";
 import {
+  createContentTraverser,
   IContentVisitor,
   ProcessFieldHierarchiesProps,
   ProcessMergedValueProps,
@@ -19,7 +20,6 @@ import {
   StartFieldProps,
   StartItemProps,
   StartStructProps,
-  traverseContentItem,
 } from "./content/ContentTraverser.js";
 import { Descriptor } from "./content/Descriptor.js";
 import { Item } from "./content/Item.js";
@@ -150,10 +150,16 @@ export type ElementPropertiesPropertyItem = ElementPropertiesPrimitivePropertyIt
 export type ElementPropertiesItem = ElementPropertiesCategoryItem | ElementPropertiesPropertyItem;
 
 /** @internal */
-export const buildElementProperties = (descriptor: Descriptor, item: Item): ElementProperties => {
+export const createElementPropertiesBuilder = (): ((descriptor: Descriptor, item: Item) => ElementProperties) => {
   const builder = new ElementPropertiesBuilder();
-  traverseContentItem(builder, descriptor, item);
-  return builder.items[0];
+  let memo: { descriptor: Descriptor; traverser: ReturnType<typeof createContentTraverser> } | undefined;
+  return (descriptor: Descriptor, item: Item) => {
+    if (memo?.descriptor !== descriptor) {
+      memo = { descriptor, traverser: createContentTraverser(builder, descriptor) };
+    }
+    memo.traverser([item]);
+    return builder.items[0];
+  };
 };
 
 interface IPropertiesAppender {
@@ -294,6 +300,9 @@ class ElementPropertiesBuilder implements IContentVisitor {
   }
 
   public startContent(_props: StartContentProps): boolean {
+    this._appendersStack = [];
+    this._items = [];
+    this._elementPropertiesAppender = undefined;
     return true;
   }
   public finishContent(): void {}
