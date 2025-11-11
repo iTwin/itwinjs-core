@@ -3496,7 +3496,7 @@ describe("iModel", () => {
   });
 
 
-  it.only("Should retain reserved element ids", async () => {
+  it("Should retain reserved element ids", async () => {
     /* We want to make sure Element ID 2 through 15 are never assigned to inserted elements.
     This implicitly happens because new imodels insert a dictionary with ID 16 (0x10) and a LinkPartition at ID 14 (0xe) so subsequent
     inserts increment from there.

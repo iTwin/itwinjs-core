@@ -998,19 +998,33 @@ export abstract class IModelDb extends IModel {
       });
     } else {
       if (this[_nativeDb].getITwinId() !== Guid.empty) { // if this iModel is associated with an iTwin, importing schema requires the schema lock
-        // Attempt to lock just for additive changes first, and if that isn't enough, do the real thing.
-        if (!this.holdsSchemaLock) { // We already hold the maximum lock, so we can skip acquiring locks
+        if (this.holdsSchemaLock) { // We already hold the maximum lock, so we can skip acquiring locks
+          importOp(schemaData, { ecSchemaXmlContext: customNativeContext, schemaLockHeld: true });
+          this.clearCaches();
+          return;
+        }
+
+        if (IModelHost.configuration?.enableSchemaTableLocks === true) {
+          // Attempt to lock just for additive changes first, and if that isn't enough, do the real thing.
           await this.acquireSchemaTableLock();
           try {
             importOp(schemaData, { ecSchemaXmlContext: customNativeContext, schemaLockHeld: false });
+            Logger.logInfo(loggerCategory, `Successfully imported ${schemaData.length} schema(s) using schema table lock`);
           } catch (err: any) {
             if (ITwinError.isError(err, "be-sqlite", "BE_SQLITE_ERROR_DataTransformRequired")) {
               await this.acquireSchemaLock();
               importOp(schemaData, { ecSchemaXmlContext: customNativeContext, schemaLockHeld: true });
+              Logger.logInfo(loggerCategory, `Successfully imported ${schemaData.length} schema(s) using full lock`);
             } else {
               throw err;
             }
           }
+          this.clearCaches();
+          return;
+        } else {
+          await this.acquireSchemaLock();
+          importOp(schemaData, { ecSchemaXmlContext: customNativeContext, schemaLockHeld: true });
+          Logger.logInfo(loggerCategory, `Successfully imported ${schemaData.length} schema(s) using full lock (table locks disabled)`);
           this.clearCaches();
           return;
         }

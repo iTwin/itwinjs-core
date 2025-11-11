@@ -13,7 +13,7 @@ import { Guid } from "@itwin/core-bentley";
 import { Code, GeometricElementProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { EntityClass, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
 
-describe.only("Schema lock tests", function (this: Suite) {
+describe("Schema lock tests", function (this: Suite) {
   /** Test schemas with a basic hierarchy: C->A, D->A. PropC and PropD occupy the same shared column */
   const testSchemas = {
     /** Initial schema v01.00.00 */
@@ -340,7 +340,8 @@ describe.only("Schema lock tests", function (this: Suite) {
     }
   });
 
-  it("Pending incoming data transform change with local element update", async () => {
+  // Disabled because HubMock does not yet support this scenario correctly yet
+  it.skip("Pending incoming data transform change with local element update", async () => {
     // Setup iModel
     await setupIModel(user1Token);
     const user1Briefcase = await openBriefcase(user1Token);
@@ -410,7 +411,8 @@ describe.only("Schema lock tests", function (this: Suite) {
     }
   });
 
-  it("Pending incoming element update with local data transform change", async () => {
+  // Disabled because HubMock does not yet support this scenario correctly yet
+  it.skip("Pending incoming element update with local data transform change", async () => {
     // Setup iModel
     await setupIModel(user1Token);
     const user1Briefcase = await openBriefcase(user1Token);
