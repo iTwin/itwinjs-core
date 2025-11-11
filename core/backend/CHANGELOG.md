@@ -1,6 +1,40 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Fri, 24 Oct 2025 16:22:31 GMT and should not be manually modified.
+This log was last generated on Thu, 06 Nov 2025 20:30:21 GMT and should not be manually modified.
+
+## 5.3.1
+Thu, 06 Nov 2025 20:29:06 GMT
+
+### Updates
+
+- Enhance rebase event handling in TxnManager 
+- Make discardChanges() public preview
+
+## 5.3.0
+Mon, 03 Nov 2025 19:02:35 GMT
+
+### Updates
+
+- Add SqliteChangesetReader.openInMemory() to allow read unsaved changes
+- Fix crash when their is a cycle in EDE.
+- ECSqlReader/ConcurrentQuery unable to see modification to file
+- add withIndirectTxnModeAsync()
+- Allow recursive calls to withIndirectTxnMode
+- `TextAnnotation2d/3d` and `AnnotationTextStyle` now persist a stringified `VersionedJSON<T>` in their JSON properties. This bundles a version number with the JSON data to allow data version checking and migration.
+- `justification` and `margins` are now text block level text style properties. `textHeight` replaces `lineHeight` allowing multi-sized text and changing the baseline that text vertically aligns to in a line.
+- load default geo coord dbs when getting available crs
+- clear instanceKeyCache during updateElement
+- Fixed tests for biscore version 01.00.24 release
+- Fixed test cases
+- Remap fields and text styles when cloning text annotation elements between iModels.
+- Element.onCloned can now invoke asynchronous operations.
+- Fixes and enhancements for text fields.
+- Add support for text fields referring to properties of EC views.
+- Fix generateElementGraphics ignoring geometry beyond 2048 entries.
+- Add APIs for project and sheet information.
+- Added deleteInstances to delete multiple relationship instances
+- Added new api to create leader terminator geometry for different shapes
+- Added ECSqlWriteStatement disposal inside WithWriteStatement
 
 ## 5.2.4
 Fri, 24 Oct 2025 16:20:38 GMT

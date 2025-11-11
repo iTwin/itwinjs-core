@@ -1,6 +1,19 @@
 # Change Log - @itwin/certa
 
-This log was last generated on Fri, 24 Oct 2025 16:22:31 GMT and should not be manually modified.
+This log was last generated on Thu, 06 Nov 2025 20:30:21 GMT and should not be manually modified.
+
+## 5.3.1
+Thu, 06 Nov 2025 20:29:06 GMT
+
+_Version update only_
+
+## 5.3.0
+Mon, 03 Nov 2025 19:02:35 GMT
+
+### Updates
+
+- Bump `playwright` version to `~1.56.1`.
+- Add support for Electron 39
 
 ## 5.2.4
 Fri, 24 Oct 2025 16:20:38 GMT

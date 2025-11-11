@@ -33,8 +33,48 @@ export class SubCategoriesCache {
   private readonly _imodel: IModelConnection;
   private _missingAtTimeOfPreload: Id64Set | undefined;
 
-  public constructor(imodel: IModelConnection) { this._imodel = imodel; }
+  public constructor(imodel: IModelConnection) {
+    this._imodel = imodel;
+  }
 
+  public attachToBriefcase(imodel: IModelConnection): void {
+    // We want to do this in the constructor but can't, because IModelConnection.subcategories is initialized before
+    // BriefcaseConnection.txns.
+    assert(imodel === this._imodel);
+    assert(imodel.isBriefcaseConnection());
+    imodel.txns.onElementsChanged.addListener((changes) => {
+      const affectedSubCategories = new Set<string>();
+      for (const change of changes) {
+        if (change.metadata.is("BisCore:Category")) {
+          if (change.type === "deleted") {
+            this._byCategoryId.delete(change.id);
+          }
+        } else if (change.metadata.is("BisCore:SubCategory")) {
+          if (change.type === "inserted") {
+            // We don't know to which category the subcategory belongs. Blow away the entire cache.
+            this._byCategoryId.clear();
+            this._appearances.clear();
+            return;
+          }
+
+          this._appearances.delete(change.id);
+          affectedSubCategories.add(change.id);
+        }
+      }
+
+      if (affectedSubCategories.size > 0) {
+        for (const [catId, subCatIds] of this._byCategoryId) {
+          for (const subCatId of affectedSubCategories) {
+            if (subCatIds.has(subCatId)) {
+              this._byCategoryId.delete(catId);
+              affectedSubCategories.delete(subCatId);
+              break;
+            }
+          }
+        }
+      }
+    });
+  }
   /** Get the Ids of all subcategories belonging to the category with the specified Id, or undefined if no such information is present. */
   public getSubCategories(categoryId: string): Id64Set | undefined { return this._byCategoryId.get(categoryId); }
 
