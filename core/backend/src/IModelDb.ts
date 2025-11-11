@@ -982,7 +982,7 @@ export abstract class IModelDb extends IModel {
         try {
           importOp(schemaData, { schemaLockHeld: false, ecSchemaXmlContext: customNativeContext, schemaSyncDbUri });
         } catch (outerErr: any) {
-          if (DbResult.BE_SQLITE_ERROR_DataTransformRequired === outerErr.errorNumber) {
+          if (ITwinError.isError(outerErr, "be-sqlite", "BE_SQLITE_ERROR_DataTransformRequired")) {
             this.abandonChanges();
             if (this[_nativeDb].getITwinId() !== Guid.empty)
               await this.acquireSchemaLock();
@@ -3255,7 +3255,7 @@ export class BriefcaseDb extends IModelDb {
     try {
       await this.doUpgrade(briefcase, { profile: ProfileOptions.Upgrade }, "Upgraded profile");
     } catch (error: any) {
-      if (error.errorNumber === DbResult.BE_SQLITE_ERROR_DataTransformRequired) {
+      if (ITwinError.isError(error, "be-sqlite", "BE_SQLITE_ERROR_DataTransformRequired")) {
         Logger.logInfo(loggerCategory, `Profile upgrade contains data transform. Retrying upgrade with a schema lock.`);
         try {
           await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
@@ -3271,7 +3271,7 @@ export class BriefcaseDb extends IModelDb {
     try {
       await this.doUpgrade(briefcase, { domain: DomainOptions.Upgrade }, "Upgraded domain schemas");
     } catch (error: any) {
-      if (error.errorNumber === DbResult.BE_SQLITE_ERROR_DataTransformRequired) {
+      if (ITwinError.isError(error, "be-sqlite", "BE_SQLITE_ERROR_DataTransformRequired")) {
         Logger.logInfo(loggerCategory, `Domain schema upgrade contains data transform. Retrying upgrade with a schema lock.`);
         try {
           await withBriefcaseDb(briefcase, async (db) => db.acquireSchemaLock()); // may not really acquire lock if iModel uses "noLocks" mode.
