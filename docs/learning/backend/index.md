@@ -9,7 +9,8 @@ Backend code is the portion of an app that:
 A backend package can be a [service](../../learning/App.md#agents-and-services), an [agent](../../learning/App.md#agents-and-services), or an [app-specific backend](../../learning/App.md#app-backend).
 
 - See the [app architecture overview](../../learning/SoftwareArchitecture.md) for how iTwin.js apps are structured.
-- See [iModel contents](./iModelContents.md) for guidance on whether a data type belongs in the iModel or should be stored in a separate repository.
+- See [iModel contents](./IModelContents.md) for guidance on whether a data type belongs in the iModel or should be stored in a separate repository.
+- See [iModel file format](./IModelFileFormat.md) for details about the internal structure and reserved elements in iModel files.
 - See [best practices](./BestPractices.md) for writing backend code.
 
 App backends require the `@itwin/core-backend` npm package.
