@@ -117,7 +117,7 @@ async function initializeContainer(containerProps: { containerId: string, isPubl
   return { ...containerProps, accessToken, storageType } as const;
 };
 
-describe("Schema synchronization", function (this: Suite) {
+describe.only("Schema synchronization", function (this: Suite) {
   this.timeout(0);
 
   before(async () => {
@@ -127,6 +127,14 @@ describe("Schema synchronization", function (this: Suite) {
 
   after(async () => {
     IModelHost.authorizationClient = undefined;
+  });
+
+  beforeEach(() => {
+    HubMock.startup("test", KnownTestLocations.outputDir);
+  });
+
+  afterEach(() => {
+    HubMock.shutdown();
   });
 
   const synchronizeSchemas = async (iModel: IModelDb) => {
@@ -147,7 +155,6 @@ describe("Schema synchronization", function (this: Suite) {
     const user2AccessToken = "token 2";
     const user3AccessToken = "token 3";
 
-    HubMock.startup("test", KnownTestLocations.outputDir);
     const version0 = IModelTestUtils.prepareOutputFile("schemaSync", "imodel1.bim");
     SnapshotDb.createEmpty(version0, { rootSubject: { name: "testSchemaSync" } }).close();
 
@@ -241,7 +248,7 @@ describe("Schema synchronization", function (this: Suite) {
     b2.close();
     b3.close();
 
-    HubMock.shutdown();
+
   });
   it("import same schema from different briefcase", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-2" });
@@ -250,7 +257,7 @@ describe("Schema synchronization", function (this: Suite) {
     const user2AccessToken = "token 2";
     const user3AccessToken = "token 3";
 
-    HubMock.startup("test", KnownTestLocations.outputDir);
+
     const version0 = IModelTestUtils.prepareOutputFile("schemaSync", "imodel1.bim");
     SnapshotDb.createEmpty(version0, { rootSubject: { name: "testSchemaSync" } }).close();
 
@@ -333,7 +340,7 @@ describe("Schema synchronization", function (this: Suite) {
     b2.close();
     b3.close();
 
-    HubMock.shutdown();
+
   });
   it("override schema sync container", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
@@ -343,7 +350,7 @@ describe("Schema synchronization", function (this: Suite) {
     const user2AccessToken = "token 2";
     const user3AccessToken = "token 3";
 
-    HubMock.startup("test", KnownTestLocations.outputDir);
+
     const version0 = IModelTestUtils.prepareOutputFile("schemaSync", "imodel1.bim");
     SnapshotDb.createEmpty(version0, { rootSubject: { name: "testSchemaSync" } }).close();
 
@@ -514,7 +521,7 @@ describe("Schema synchronization", function (this: Suite) {
       b.saveChanges();
       b.close();
     });
-    HubMock.shutdown();
+
   });
 
   it("test schema sync with profile and domain schema upgrade (from 4.0.0.1)", async () => {
@@ -525,7 +532,7 @@ describe("Schema synchronization", function (this: Suite) {
     const user2AccessToken = "token 2";
     const user3AccessToken = "token 3";
 
-    HubMock.startup("test", KnownTestLocations.outputDir);
+
 
     // Setup seed file from existing 4.0.0.3 imodel
     const testFile = SnapshotDb.openDgnDb({ path: path.join(imodelJsCoreDirname, "core/backend/lib/cjs/test/assets/test_ec_4001.bim") }, OpenMode.ReadWrite);
@@ -866,7 +873,7 @@ describe("Schema synchronization", function (this: Suite) {
       b.saveChanges();
       b.close();
     });
-    HubMock.shutdown();
+
   });
   it("test schema sync with profile and domain schema upgrade (from 4.0.0.3)", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
@@ -876,7 +883,7 @@ describe("Schema synchronization", function (this: Suite) {
     const user2AccessToken = "token 2";
     const user3AccessToken = "token 3";
 
-    HubMock.startup("test", KnownTestLocations.outputDir);
+
 
     // Setup seed file from existing 4.0.0.3 imodel
     const testFile = SnapshotDb.openDgnDb({ path: path.join(imodelJsCoreDirname, "core/backend/lib/cjs/test/assets/test_ec_4003.bim") }, OpenMode.ReadWrite);
@@ -1210,7 +1217,7 @@ describe("Schema synchronization", function (this: Suite) {
       b.saveChanges();
       b.close();
     });
-    HubMock.shutdown();
+
   });
   it("import schema acquire schema lock when need to transform data", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-2" });
@@ -1220,7 +1227,7 @@ describe("Schema synchronization", function (this: Suite) {
     const user3AccessToken = "token 3";
     const user4AccessToken = "token 4";
 
-    HubMock.startup("test", KnownTestLocations.outputDir);
+
     const version0 = IModelTestUtils.prepareOutputFile("schemaSync", "imodel1.bim");
     SnapshotDb.createEmpty(version0, { rootSubject: { name: "testSchemaSync" } }).close();
 
@@ -1398,12 +1405,12 @@ describe("Schema synchronization", function (this: Suite) {
       b.saveChanges();
       b.close();
     });
-    HubMock.shutdown();
+
   });
 
   it("revert timeline changes", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
-    HubMock.startup("test", KnownTestLocations.outputDir);
+
     const adminToken = "super manager token";
     const iModelName = "test";
     const iTwinId = HubMock.iTwinId;
@@ -1623,6 +1630,6 @@ describe("Schema synchronization", function (this: Suite) {
     b1.close();
     b2.close();
     b3.close();
-    HubMock.shutdown();
+
   });
 });
