@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Adjusted API to a change made long ago (importSchemas returns void)",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
