@@ -176,12 +176,12 @@ export class BGFBReader {
   /**
    * Extract a bspline curve
    * @param variant read position in the flat buffer.
-   * Return undefined if the spiral cannot be constructed.
    */
   public readTransitionSpiral(header: BGFBAccessors.TransitionSpiral): TransitionSpiral3d | undefined {
     const detailHeader = header.detail();
     if (detailHeader) {
-      const directDetailHeader = header.directDetail();
+      const directDetailHeader = header.directDetail();   // unpersisted but repopulated
+      // const extraDataArray = header.extraDataArray();  // unpersisted and ignored
       const spiralTypeName = DgnSpiralTypeQueries.typeCodeToString(detailHeader.spiralType());
       if (!spiralTypeName)
         return undefined;
@@ -226,44 +226,38 @@ export class BGFBReader {
   /**
    * Extract a curve primitive
    * @param variant read position in the flat buffer.
-   * Return undefined if the curve primitive cannot be constructed.
    */
   public readCurvePrimitiveFromVariant(variant: BGFBAccessors.VariantGeometry): CurvePrimitive | undefined {
     const geometryType = variant.geometryType();
     if (geometryType === BGFBAccessors.VariantGeometryUnion.tagLineSegment) {
       const offsetToLineSegment = variant.geometry(new BGFBAccessors.LineSegment());
-      if (!offsetToLineSegment)
-        return undefined;
+      assert(offsetToLineSegment !== null, "expect defined because LineSegment is defined by VariantGeometryUnion schema");
       const offsetToCoordinates = offsetToLineSegment.segment();
-      if (!offsetToCoordinates)
-        return undefined;
+      assert(offsetToCoordinates !== null, "expect defined because `segment` is defined by LineSegment schema");
       return LineSegment3d.createXYZXYZ(
         offsetToCoordinates.point0X(), offsetToCoordinates.point0Y(), offsetToCoordinates.point0Z(),
         offsetToCoordinates.point1X(), offsetToCoordinates.point1Y(), offsetToCoordinates.point1Z());
     } else if (geometryType === BGFBAccessors.VariantGeometryUnion.tagEllipticArc) {
       const offsetToEllipticArc = variant.geometry(new BGFBAccessors.EllipticArc());
-      if (!offsetToEllipticArc)
-        return undefined;
+      assert(offsetToEllipticArc !== null, "expect defined because EllipticArc is defined by VariantGeometryUnion schema");
       const offsetToCoordinates = offsetToEllipticArc.arc();
-      if (!offsetToCoordinates)
-        return undefined;
+      assert(offsetToCoordinates !== null, "expect defined because `arc` is defined by EllipticArc schema");
       return Arc3d.createXYZXYZXYZ(
         offsetToCoordinates.centerX(), offsetToCoordinates.centerY(), offsetToCoordinates.centerZ(),
         offsetToCoordinates.vector0X(), offsetToCoordinates.vector0Y(), offsetToCoordinates.vector0Z(),
         offsetToCoordinates.vector90X(), offsetToCoordinates.vector90Y(), offsetToCoordinates.vector90Z(),
-        AngleSweep.createStartSweepRadians(offsetToCoordinates.startRadians(), offsetToCoordinates?.sweepRadians()));
+        AngleSweep.createStartSweepRadians(offsetToCoordinates.startRadians(), offsetToCoordinates.sweepRadians()));
     } else if (geometryType === BGFBAccessors.VariantGeometryUnion.tagLineString) {
       const offsetToLineString = variant.geometry(new BGFBAccessors.LineString());
-      if (!offsetToLineString)
-        return undefined;
+      assert(offsetToLineString !== null, "expect defined because LineString is defined by VariantGeometryUnion schema");
       const numCoordinates = offsetToLineString.pointsLength();
       const result = LineString3d.create();
       for (let i = 0; i + 2 < numCoordinates; i += 3) {
         const p0 = offsetToLineString.points(i);
         const p1 = offsetToLineString.points(i + 1);
         const p2 = offsetToLineString.points(i + 2);
-        if (p0 !== null && p1 !== null && p2 !== null)
-          result.packedPoints.pushXYZ(p0, p1, p2);
+        assert(p0 !== null && p1 !== null && p2 !== null, "expect defined because `points` is defined by LineString schema and indices are valid");
+        result.packedPoints.pushXYZ(p0, p1, p2);
       }
       return result;
     } else if (geometryType === BGFBAccessors.VariantGeometryUnion.tagBsplineCurve) {
@@ -288,22 +282,20 @@ export class BGFBReader {
   /**
    * Extract a curve primitive
    * @param variant read position in the flat buffer.
-   * Return undefined if the point string cannot be constructed.
    */
   public readPointStringFromVariant(variant: BGFBAccessors.VariantGeometry): PointString3d | undefined {
     const geometryType = variant.geometryType();
     if (geometryType === BGFBAccessors.VariantGeometryUnion.tagPointString) {
       const offsetToLineString = variant.geometry(new BGFBAccessors.PointString());
-      if (!offsetToLineString)
-        return undefined;
+      assert(offsetToLineString !== null, "expect defined because PointString is defined by VariantGeometryUnion schema");
       const numCoordinates = offsetToLineString.pointsLength();
       const result = PointString3d.create();
       for (let i = 0; i + 2 < numCoordinates; i += 3) {
         const p0 = offsetToLineString.points(i);
         const p1 = offsetToLineString.points(i + 1);
         const p2 = offsetToLineString.points(i + 2);
-        if (p0 !== null && p1 !== null && p2 !== null)
-          result.points.push(Point3d.create(p0, p1, p2));
+        assert(p0 !== null && p1 !== null && p2 !== null, "expect defined because `points` is defined by PointString schema and indices are valid");
+        result.points.push(Point3d.create(p0, p1, p2));
       }
       return result;
     }
@@ -591,14 +583,12 @@ export class BGFBReader {
   /**
  * Extract a curve collection
  * @param variant read position in the flat buffer.
- * Return undefined if the curve collection cannot be constructed.
  */
   public readCurveCollectionFromVariantGeometry(variant: BGFBAccessors.VariantGeometry): CurveCollection | undefined {
     const geometryType = variant.geometryType();
     if (geometryType === BGFBAccessors.VariantGeometryUnion.tagCurveVector) {
       const cvTable = variant.geometry(new BGFBAccessors.CurveVector());
-      if (!cvTable)
-        return undefined;
+      assert(cvTable !== null, "expect defined because CurveVector is defined by VariantGeometryUnion schema");
       return this.readCurveCollectionFromCurveVectorTable(cvTable);
     }
     return undefined;
@@ -606,17 +596,14 @@ export class BGFBReader {
   /**
  * Extract a curve collection
  * @param variant read position in the flat buffer.
- * Return undefined if the solid primitive cannot be constructed.
  */
   public readSolidPrimitiveFromVariant(variant: BGFBAccessors.VariantGeometry): SolidPrimitive | undefined {
     const geometryType = variant.geometryType();
     if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnBox) {
       const header = variant.geometry(new BGFBAccessors.DgnBox());
-      if (!header)
-        return undefined;
+      assert(header !== null, "expect defined because DgnBox is defined by VariantGeometryUnion schema");
       const detail = header.detail();
-      if (!detail)
-        return undefined;
+      assert(detail !== null, "expect defined because `detail` is defined by DgnBox schema");
       return Box.createDgnBox(
         Point3d.create(detail.baseOriginX(), detail.baseOriginY(), detail.baseOriginZ()),
         Vector3d.create(detail.vectorXX(), detail.vectorXY(), detail.vectorXZ()),
@@ -626,28 +613,23 @@ export class BGFBReader {
         detail.capped());
     } if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnSphere) {
       const header = variant.geometry(new BGFBAccessors.DgnSphere());
-      if (!header)
-        return undefined;
+      assert(header !== null, "expect defined because DgnSphere is defined by VariantGeometryUnion schema");
       const detail = header.detail();
-      if (!detail)
-        return undefined;
-      const lToWDetail = detail.localToWorld();
-      if (!lToWDetail)
-        return undefined;
+      assert(detail !== null, "expect defined because `detail` is defined by DgnSphere schema");
+      const dLocalToWorld = detail.localToWorld();
+      assert(dLocalToWorld !== null, "expect defined because `localToWorld` is defined by DgnSphereDetail schema");
       const localToWorld = Transform.createRowValues(
-        lToWDetail.axx(), lToWDetail.axy(), lToWDetail.axz(), lToWDetail.axw(),
-        lToWDetail.ayx(), lToWDetail.ayy(), lToWDetail.ayz(), lToWDetail.ayw(),
-        lToWDetail.azx(), lToWDetail.azy(), lToWDetail.azz(), lToWDetail.azw());
+        dLocalToWorld.axx(), dLocalToWorld.axy(), dLocalToWorld.axz(), dLocalToWorld.axw(),
+        dLocalToWorld.ayx(), dLocalToWorld.ayy(), dLocalToWorld.ayz(), dLocalToWorld.ayw(),
+        dLocalToWorld.azx(), dLocalToWorld.azy(), dLocalToWorld.azz(), dLocalToWorld.azw());
       return Sphere.createEllipsoid(localToWorld,
         AngleSweep.createStartSweepRadians(detail.startLatitudeRadians(), detail.latitudeSweepRadians()),
         detail.capped());
     } if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnCone) {
       const header = variant.geometry(new BGFBAccessors.DgnCone());
-      if (!header)
-        return undefined;
+      assert(header !== null, "expect defined because DgnCone is defined by VariantGeometryUnion schema");
       const detail = header.detail();
-      if (!detail)
-        return undefined;
+      assert(detail !== null, "expect defined because `detail` is defined by DgnCone schema");
       const centerA = Point3d.create(detail.centerAX(), detail.centerAY(), detail.centerAZ());
       const centerB = Point3d.create(detail.centerBX(), detail.centerBY(), detail.centerBZ());
       const vector0 = Vector3d.create(detail.vector0X(), detail.vector0Y(), detail.vector0Z());
@@ -657,11 +639,9 @@ export class BGFBReader {
       return Cone.createBaseAndTarget(centerA, centerB, vector0, vector90, radiusA, radiusB, detail.capped());
     } if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnTorusPipe) {
       const header = variant.geometry(new BGFBAccessors.DgnTorusPipe());
-      if (!header)
-        return undefined;
+      assert(header !== null, "expect defined because DgnTorusPipe is defined by VariantGeometryUnion schema");
       const detail = header.detail();
-      if (!detail)
-        return undefined;
+      assert(detail !== null, "expect defined because `detail` is defined by DgnTorusPipe schema");
       const center = Point3d.create(detail.centerX(), detail.centerY(), detail.centerZ());
       const vectorX = Vector3d.create(detail.vectorXX(), detail.vectorXY(), detail.vectorXZ());
       const vectorY = Vector3d.create(detail.vectorYX(), detail.vectorYY(), detail.vectorYZ());
@@ -671,8 +651,7 @@ export class BGFBReader {
       return TorusPipe.createDgnTorusPipe(center, vectorX, vectorY, majorRadius, minorRadius, Angle.createRadians(sweepRadians), detail.capped());
     } if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnExtrusion) {
       const header = variant.geometry(new BGFBAccessors.DgnExtrusion());
-      if (!header)
-        return undefined;
+      assert(header !== null, "expect defined because DgnExtrusion is defined by VariantGeometryUnion schema");
       const dVector = new BGFBAccessors.DVector3d();
       header.extrusionVector(dVector);
       const extrusionVector = Vector3d.create(dVector.x(), dVector.y(), dVector.z());
@@ -683,8 +662,7 @@ export class BGFBReader {
       }
     } if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnRotationalSweep) {
       const header = variant.geometry(new BGFBAccessors.DgnRotationalSweep());
-      if (!header)
-        return undefined;
+      assert(header !== null, "expect defined because DgnRotationalSweep is defined by VariantGeometryUnion schema");
       const dAxis = new BGFBAccessors.DRay3d();
       header.axis(dAxis);
       const axis = Ray3d.createXYZUVW(dAxis.x(), dAxis.y(), dAxis.z(), dAxis.ux(), dAxis.uy(), dAxis.uz());
@@ -697,8 +675,7 @@ export class BGFBReader {
       }
     } if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnRuledSweep) {
       const header = variant.geometry(new BGFBAccessors.DgnRuledSweep());
-      if (!header)
-        return undefined;
+      assert(header !== null, "expect defined because DgnRuledSweep is defined by VariantGeometryUnion schema");
       const numCurves = header.curvesLength();
       const contours: CurveCollection[] = [];
       for (let i = 0; i < numCurves; i++) {
@@ -718,7 +695,6 @@ export class BGFBReader {
   /**
    * Extract any geometry type or array of geometry.
    * @param variant read position in the flat buffer.
-   * Return undefined if the geometry cannot be read.
    */
   public readGeometryQueryFromVariant(variant: BGFBAccessors.VariantGeometry): GeometryQuery | GeometryQuery[] | undefined {
     const rootType = variant.geometryType();
@@ -750,8 +726,7 @@ export class BGFBReader {
       case BGFBAccessors.VariantGeometryUnion.tagVectorOfVariantGeometry: {
         const geometry: GeometryQuery[] = [];
         const offsetToVectorOfVariantGeometry = variant.geometry(new BGFBAccessors.VectorOfVariantGeometry());
-        if (!offsetToVectorOfVariantGeometry)
-          return undefined;
+        assert(offsetToVectorOfVariantGeometry !== null, "expect defined because VectorOfVariantGeometry is defined by VariantGeometryUnion schema");
         for (let i = 0; i < offsetToVectorOfVariantGeometry.membersLength(); i++) {
           const child = offsetToVectorOfVariantGeometry.members(i);
           if (child !== null) {
