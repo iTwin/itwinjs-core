@@ -10,14 +10,14 @@ import { PresentationManager } from "@itwin/presentation-backend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests.js";
 import { collect, prepareOutputFilePath } from "../Utils.js";
+import { createValidIModelFileName } from "../IModelSetupUtils.js";
 
-// Skipped until https://github.com/iTwin/itwinjs-core/issues/8751 is fixed
-describe.skip("ReadWrite", () => {
+describe("ReadWrite", () => {
   let manager: PresentationManager;
   let imodel: IModelDb;
 
-  function createIModelFromSeed() {
-    const imodelPath = prepareOutputFilePath("ReadWrite.bim");
+  function createIModelFromSeed(testName: string) {
+    const imodelPath = prepareOutputFilePath(`${createValidIModelFileName(testName)}.bim`);
     fs.copyFileSync("assets/datasets/Properties_60InstancesWithUrl2.ibim", imodelPath);
     return StandaloneDb.openFile(imodelPath);
   }
@@ -31,9 +31,9 @@ describe.skip("ReadWrite", () => {
     await terminate();
   });
 
-  beforeEach(async () => {
+  beforeEach(function () {
     manager = new PresentationManager();
-    imodel = createIModelFromSeed();
+    imodel = createIModelFromSeed(this.test!.fullTitle());
   });
 
   afterEach(async () => {
