@@ -1185,7 +1185,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     chai.expect(events.rebaseHandler.shouldReinstate.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
     chai.expect(events.rebaseHandler.recompute.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
   });
-  it("onModelGeometryChanged() fired during pullChanges() with no local changes", async () => {
+  it("onModelGeometryChanged() fired during rebase/pullMerge with no local change", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
 
@@ -1234,7 +1234,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     chai.expect(geomGuidAfterPull).is.undefined;
     chai.expect(events.modelGeometryChanged.length).to.equal(0);
   });
-  it("onModelGeometryChanged() fired during rebase with geometric local change ", async () => {
+  it("onModelGeometryChanged() fired during rebase with geometric local change", async () => {
     // Test implementation here
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
