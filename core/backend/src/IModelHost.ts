@@ -10,14 +10,13 @@
 import "./IModelDb"; // DO NOT REMOVE OR MOVE THIS LINE!
 
 import { IModelNative, loadNativePlatform } from "./internal/NativePlatform";
-import * as os from "os";
-import "reflect-metadata"; // this has to be before @itwin/object-storage-* and @itwin/cloud-agnostic-core imports because those packages contain decorators that use this polyfill.
+import * as os from "node:os";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import { DependenciesConfig, Types as ExtensionTypes } from "@itwin/cloud-agnostic-core";
 import { AccessToken, assert, BeEvent, BentleyStatus, DbResult, Guid, GuidString, IModelStatus, Logger, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
-import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
-import { ServerStorage } from "@itwin/object-storage-core";
+import { AzureServerStorage, AzureServerStorageConfig, BlobServiceClientWrapper } from "@itwin/object-storage-azure";
+import { BlobServiceClient, StorageSharedKeyCredential } from "@azure/storage-blob";
+import type { ServerStorage } from "@itwin/object-storage-core";
 import { BackendHubAccess } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
@@ -37,7 +36,6 @@ import { TileStorage } from "./TileStorage";
 import { SettingsContainer, SettingsPriority } from "./workspace/Settings";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
 import { Workspace, WorkspaceOpts } from "./workspace/Workspace";
-import { Container } from "inversify";
 import { join, normalize as normalizeDir } from "path";
 import { constructWorkspace, OwnedWorkspace } from "./internal/workspace/WorkspaceImpl";
 import { SettingsImpl } from "./internal/workspace/SettingsImpl";
@@ -45,7 +43,7 @@ import { constructSettingsSchemas } from "./internal/workspace/SettingsSchemasIm
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
-// cspell:ignore nodereport fatalerror apicall alicloud rpcs inversify
+// cspell:ignore nodereport fatalerror apicall alicloud rpcs
 
 /** @internal */
 export interface CrashReportingConfigNameValuePair {
@@ -637,19 +635,17 @@ export class IModelHost {
   }
 
   private static setupAzureTileCache(credentials: AzureBlobStorageCredentials) {
-    const config = {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      ServerSideStorage: {
-        dependencyName: "azure",
-        accountName: credentials.account,
-        accountKey: credentials.accessKey,
-        baseUrl: credentials.baseUrl ?? `https://${credentials.account}.blob.core.windows.net`,
-      },
-    };
-    const ioc: Container = new Container();
-    ioc.bind<DependenciesConfig>(ExtensionTypes.dependenciesConfig).toConstantValue(config);
-    new AzureServerStorageBindings().register(ioc, config.ServerSideStorage);
-    IModelHost.tileStorage = new TileStorage(ioc.get(ServerStorage));
+    const storageConfig: AzureServerStorageConfig = {
+      accountName: credentials.account,
+      accountKey: credentials.accessKey,
+      baseUrl: credentials.baseUrl ?? `https://${credentials.account}.blob.core.windows.net`,
+    }
+    const blobServiceClient = new BlobServiceClient(
+      storageConfig.baseUrl,
+      new StorageSharedKeyCredential(storageConfig.accountName, storageConfig.accountKey),
+    );
+    const azureStorage: ServerStorage = new AzureServerStorage(storageConfig, new BlobServiceClientWrapper(blobServiceClient))
+    IModelHost.tileStorage = new TileStorage(azureStorage);
   }
 
   /** @internal */
