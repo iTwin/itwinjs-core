@@ -848,6 +848,7 @@ export namespace IModelJson {
       if (!interval)
         interval = Reader.parseSegment1dProperty(data, "activeInterval", undefined);
       const spiralType = Reader.parseStringProperty(data, "type", "clothoid");
+      assert(spiralType !== undefined, "expect defined because we passed a default value");
       // REMARK:  Our job is to parse and pass data along -- inscrutable validation happens in the implementation classes . . .
       if (origin) {
         let candidate: TransitionSpiral3d | undefined;
@@ -860,8 +861,6 @@ export namespace IModelJson {
           Transform.createOriginAndMatrix(origin, axes));
         if (candidate)
           return candidate;
-        if (undefined === spiralType)
-          return undefined;
         candidate = DirectSpiral3d.createFromLengthAndRadius(
           spiralType,
           startRadius, endRadius,
@@ -1172,8 +1171,7 @@ export namespace IModelJson {
       const topY = Reader.parseNumberProperty(json, "topY", baseY);
       const height = Reader.parseNumberProperty(json, "height", baseX);
       const axes = Reader.parseOrientation(json, true);
-      if (!axes)
-        return undefined;
+      assert(axes !== undefined, "expect defined because we passed true to return identity on failure");
       if (origin && !topOrigin && height)
         topOrigin = Matrix3d.xyzPlusMatrixTimesXYZ(origin, axes, Vector3d.create(0, 0, height));
 
@@ -1220,12 +1218,14 @@ export namespace IModelJson {
     /** Parse TorusPipe props to TorusPipe instance. */
     public static parseTorusPipe(json?: TorusPipeProps): TorusPipe | undefined {
       const axes = Reader.parseOrientation(json, true);  // force frame to be pure rotation (no scale or mirror)!
+      assert(axes !== undefined, "expect defined because we passed true to return identity on failure");
       const center = Reader.parsePoint3dProperty(json, "center");
       const radiusA = Reader.parseNumberProperty(json, "majorRadius");
       const radiusB = Reader.parseNumberProperty(json, "minorRadius");
       const sweepAngle = Reader.parseAngleProperty(json, "sweepAngle", undefined);
       const capped = Reader.parseBooleanProperty(json, "capped", false);
-      if (capped !== undefined && axes !== undefined && center
+      assert(capped !== undefined, "expect defined because we passed a default value");
+      if (center
         && radiusA !== undefined
         && radiusB !== undefined) {
         return TorusPipe.createDgnTorusPipe(center, axes.columnX(), axes.columnY(),
@@ -1703,16 +1703,13 @@ export namespace IModelJson {
           topOrigin: box.getTopOrigin().toJSON(),
         },
       };
-
       const outBox = out.box;
-      if (!outBox)
-        return undefined;
+      assert(outBox !== undefined, "expect defined because we just created it");
       Writer.insertXYOrientation(outBox, box.getVectorX(), box.getVectorY(), true);
       if (!Geometry.isSameCoordinate(box.getTopX(), box.getBaseX()))
         outBox.topX = box.getTopX();
       if (!Geometry.isSameCoordinate(box.getTopY(), box.getBaseY()))
         outBox.topY = box.getTopY();
-
       return out;
     }
 
@@ -1720,11 +1717,10 @@ export namespace IModelJson {
       assert(auxData === pf.data.auxData);
       const contents: AuxDataProps = { indices: [], channels: [] };
       const visitor = pf.createVisitor(0);
+      assert(visitor.auxData !== undefined, "expect visitor to have auxData because the polyface has auxData");
       while (visitor.moveToNextFacet()) {
-        for (let i = 0; i < visitor.indexCount; i++) {
-          if (visitor.auxData)
-            contents.indices.push(visitor.auxData.indices[i] + 1);
-        }
+        for (let i = 0; i < visitor.indexCount; i++)
+          contents.indices.push(visitor.auxData.indices[i] + 1);
         contents.indices.push(0);  // facet terminator.
       }
       for (const inChannel of auxData.channels) {
@@ -1809,13 +1805,12 @@ export namespace IModelJson {
 
       let edgeMateIndex: number[] | undefined;
       if (pf.data.edgeMateIndex) {
-        edgeMateIndex = [];
-        if (!SerializationHelpers.announceUncompressedZeroBasedReflexiveIndices(pf.data.edgeMateIndex, pf.facetStart,
+        const edgeMateIndices: number[] = [];
+        if (SerializationHelpers.announceUncompressedZeroBasedReflexiveIndices(pf.data.edgeMateIndex, pf.facetStart,
           SerializationHelpers.EdgeMateIndex.BlockSeparator, SerializationHelpers.EdgeMateIndex.NoEdgeMate,
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          (i: number) => (edgeMateIndex!).push(i), // edgeMateIndex is defined if we are here
+          (i: number) => edgeMateIndices.push(i),
         )) {
-          edgeMateIndex = undefined;
+          edgeMateIndex = edgeMateIndices;
         }
       }
 
