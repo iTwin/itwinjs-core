@@ -13,7 +13,8 @@
     "rollup-plugin-copy>globby": "^11.0.0", // https://github.com/vladshcherbin/rollup-plugin-copy/issues/77
     "elliptic": "^6.6.1", // https://github.com/advisories/GHSA-vjh7-7g9h-fjfh crypto-browserify>browserify-sign>elliptic
     "form-data": "^4.0.4", // https://github.com/advisories/GHSA-fjxv-7rqg-78g4 azurite>@azure/ms-rest-js>form-data
-    "axios": "^1.12.0" // https://github.com/advisories/GHSA-4hjh-wcwx-xvwj @itwin/object-storage-core>axios
+    "axios": "^1.12.0", // https://github.com/advisories/GHSA-4hjh-wcwx-xvwj @itwin/object-storage-core>axios
+    "playwright": "^1.55.1" // https://github.com/advisories/GHSA-7mvr-c777-76hp @itwin/oidc-signin-tool>playwright
   },
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures
