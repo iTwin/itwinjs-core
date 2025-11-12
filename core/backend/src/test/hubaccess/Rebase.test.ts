@@ -1293,7 +1293,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     chai.expect(geomGuidBeforePull).to.not.equal(geomGuidAfterPull);
     chai.expect(events.modelGeometryChanged.length).to.equal(4);
   });
-  it.only("onModelGeometryChanged() fired during rebase with none-geometric local change", async () => {
+  it("onModelGeometryChanged() fired during rebase with none-geometric local change", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
 
@@ -1343,6 +1343,55 @@ describe("rebase changes & stashing api", function (this: Suite) {
     const geomGuidAfterPull = getGeometryGuidFromB1("0x20000000001");
     chai.expect(geomGuidAfterPull).is.exist;
     chai.expect(events.modelGeometryChanged.length).to.equal(1);
+  });
+  it.only("onModelGeometryChanged() fired during rebase with geometric local change", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const pushChangeFromB2 = async () => {
+      await b2.pullChanges();
+      await testIModel.insertRecipe2d(b2)
+      b2.saveChanges();
+      await b2.pushChanges({ description: "insert element on b2" });
+    };
+
+    const events = {
+      modelGeometryChanged: [] as ReadonlyArray<ModelIdAndGeometryGuid>[],
+    };
+
+    const getGeometryGuidFromB1 = (modelId: string) => {
+      const modelProps = b1.models.tryGetModelProps<GeometricModelProps>(modelId);
+      return modelProps?.geometryGuid;
+    };
+
+    const clearEvents = () => {
+      events.modelGeometryChanged = [];
+    };
+
+    b1.txns.onModelGeometryChanged.addListener((changes: ReadonlyArray<ModelIdAndGeometryGuid>) => {
+      events.modelGeometryChanged.push(changes);
+    });
+
+    clearEvents();
+
+    b1.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txn: TxnProps) => {
+        return true;
+      },
+      recompute: async (_txn: TxnProps) => {
+        await testIModel.insertElement(b1);
+      },
+    });
+
+    await pushChangeFromB2();
+
+    clearEvents();
+    const geomGuidBeforePull = getGeometryGuidFromB1("0x20000000001");
+    chai.expect(geomGuidBeforePull).is.undefined;
+    await b1.pushChanges({ description: "push changes on b1" });
+    const geomGuidAfterPull = getGeometryGuidFromB1("0x20000000001");
+    chai.expect(geomGuidAfterPull).is.undefined;
+    chai.expect(events.modelGeometryChanged.length).to.equal(0);
   });
 });
 
