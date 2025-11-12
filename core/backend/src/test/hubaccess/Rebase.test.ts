@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Guid, Id64Array, Id64String } from "@itwin/core-bentley";
-import { Code, GeometricElement2dProps, IModel, QueryBinder, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import { Code, GeometricElement2dProps, GeometricModelProps, IModel, ModelIdAndGeometryGuid, QueryBinder, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { Suite } from "mocha";
@@ -36,6 +36,10 @@ class TestIModel {
             <BaseClass>bis:GraphicalElement2d</BaseClass>
             <ECProperty propertyName="prop1" typeName="string" />
         </ECEntityClass>
+        <ECEntityClass typeName="A1Recipe2d">
+            <BaseClass>bis:TemplateRecipe2d</BaseClass>
+            <ECProperty propertyName="prop1" typeName="string" />
+        </ECEntityClass>
         <ECRelationshipClass typeName="A1OwnsA1" modifier="None" strength="embedding">
             <BaseClass>bis:ElementOwnsChildElements</BaseClass>
             <Source multiplicity="(0..1)" roleLabel="owns" polymorphic="true">
@@ -58,6 +62,7 @@ class TestIModel {
     if (undefined === drawingCategoryId)
       drawingCategoryId = DrawingCategory.insert(b1, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance());
     this.drawingCategoryId = drawingCategoryId;
+
     b1.saveChanges();
     await b1.pushChanges({ description: "drawing category" });
     b1.close();
@@ -68,6 +73,35 @@ class TestIModel {
     b.saveChanges();
     this.briefcases.push(b);
     return b;
+  }
+  public async insertRecipe2d(b: BriefcaseDb, markAsIndirect?: true) {
+    await b.locks.acquireLocks({ shared: [IModel.dictionaryId] });
+    const baseProps = {
+      classFullName: "TestDomain:A1Recipe2d",
+      model: IModel.dictionaryId,
+      code: Code.createEmpty(),
+    };
+
+    let id: Id64String = "";
+    if (markAsIndirect) {
+      b.txns.withIndirectTxnMode(() => {
+        id = b.elements.insertElement({ ...baseProps, prop1: `${this._data++}` } as any);
+      });
+      return id;
+    }
+    return b.elements.insertElement({ ...baseProps, prop1: `${this._data++}` } as any);
+  }
+  public async updateRecipe2d(b: BriefcaseDb, id: Id64String, markAsIndirect?: true) {
+    await b.locks.acquireLocks({ shared: [IModel.dictionaryId], exclusive: [id] });
+    const elProps = b.elements.getElementProps(id);
+
+    if (markAsIndirect) {
+      b.txns.withIndirectTxnMode(() => {
+        b.elements.updateElement({ ...elProps, prop1: `${this._data++}` } as any);
+      });
+    } else {
+      b.elements.updateElement({ ...elProps, prop1: `${this._data++}` } as any);
+    }
   }
   public async insertElement(b: BriefcaseDb, markAsIndirect?: true) {
     await b.locks.acquireLocks({ shared: [this.drawingModelId] });
@@ -86,7 +120,7 @@ class TestIModel {
     }
     return b.elements.insertElement({ ...baseProps, prop1: `${this._data++}` } as any);
   }
-  public async insertElement2(b: BriefcaseDb, args?: { prop1?: string, markAsIndirect?: true, parent?: RelatedElementProps }) {
+  public async insertElementEx(b: BriefcaseDb, args?: { prop1?: string, markAsIndirect?: true, parent?: RelatedElementProps }) {
     await b.locks.acquireLocks({ shared: [this.drawingModelId] });
 
     const props: GeometricElement2dProps & { prop1: string } = {
@@ -458,7 +492,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     await b1.importSchemaStrings([schema]);
 
     b1.saveChanges();
-    await b1.pushChanges({description: "import schema"});
+    await b1.pushChanges({ description: "import schema" });
   });
 
   it("should fail to saveChanges() & pushChanges() in indirect scope", async () => {
@@ -477,10 +511,10 @@ describe("rebase changes & stashing api", function (this: Suite) {
     b1.saveChanges();
 
     await chai.expect(b1.txns.withIndirectTxnModeAsync(async () => {
-      await b1.pushChanges({description: "test"});
+      await b1.pushChanges({ description: "test" });
     })).to.be.rejectedWith("Cannot push changeset while in an indirect change scope");
 
-    await b1.pushChanges({description: "test"});
+    await b1.pushChanges({ description: "test" });
   });
 
   it("should fail to saveFileProperty/deleteFileProperty in indirect scope", async () => {
@@ -873,7 +907,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     await testIModel.insertElement(b1);
     await testIModel.insertElement(b1);
     b1.saveChanges();
-    await b1.pushChanges({description: "inserted element"});
+    await b1.pushChanges({ description: "inserted element" });
 
     await testIModel.insertElement(b2);
     await testIModel.insertElement(b2);
@@ -905,7 +939,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     const b2 = await testIModel.openBriefcase();
 
     const parentId = await testIModel.insertElement(b1);
-    const childId = await testIModel.insertElement2(b1, { parent: { id: parentId, relClassName: "TestDomain:A1OwnsA1" } });
+    const childId = await testIModel.insertElementEx(b1, { parent: { id: parentId, relClassName: "TestDomain:A1OwnsA1" } });
     b1.saveChanges("insert parent and child");
     await b1.pushChanges({ description: `inserted parent ${parentId} and child ${childId}` });
     await b2.pullChanges();
@@ -914,7 +948,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     await testIModel.deleteElement(b1, childId);
     b1.saveChanges("delete child");
     // no exclusive lock required on child1
-    const grandChildId = await testIModel.insertElement2(b2, { parent: { id: childId, relClassName: "TestDomain:A1OwnsA1" }, markAsIndirect: true });
+    const grandChildId = await testIModel.insertElementEx(b2, { parent: { id: childId, relClassName: "TestDomain:A1OwnsA1" }, markAsIndirect: true });
     b2.saveChanges("delete child and insert grandchild");
 
     await b1.pushChanges({ description: `deleted child ${childId}` });
@@ -971,7 +1005,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     const e3Props = await findElement(e3);
     chai.expect(e3Props).to.exist;
   });
-it("enum txn changes in recompute", async () => {
+  it("enum txn changes in recompute", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
 
@@ -1006,23 +1040,23 @@ it("enum txn changes in recompute", async () => {
         return true;
       },
       recompute: async (txn: TxnProps): Promise<void> => {
-        const reader = SqliteChangesetReader.openTxn({txnId: txn.id, db: b2, disableSchemaCheck: true});
+        const reader = SqliteChangesetReader.openTxn({ txnId: txn.id, db: b2, disableSchemaCheck: true });
         const adaptor = new ChangesetECAdaptor(reader);
         adaptor.acceptClass("TestDomain:a1");
         const ids = new Set<Id64String>();
-        while(adaptor.step()) {
+        while (adaptor.step()) {
           if (!adaptor.reader.isIndirect)
             ids.add(adaptor.inserted?.ECInstanceId || adaptor.deleted?.ECInstanceId as Id64String);
         }
         adaptor.close();
 
-        if (txn.props.description  === "first change") {
+        if (txn.props.description === "first change") {
           chai.expect(Array.from(ids.keys())).deep.equal(["0x40000000001"]);
           txnVerified++;
-        } else if (txn.props.description  === "second change") {
+        } else if (txn.props.description === "second change") {
           chai.expect(Array.from(ids.keys())).deep.equal(["0x40000000003"]);
           txnVerified++;
-        } else if (txn.props.description  === "third change") {
+        } else if (txn.props.description === "third change") {
           chai.expect(Array.from(ids.keys())).deep.equal(["0x40000000005"]);
           txnVerified++;
         } else {
@@ -1033,7 +1067,7 @@ it("enum txn changes in recompute", async () => {
     await b2.pullChanges();
     chai.expect(txnVerified).to.equal(3);
   });
-it("before and after rebase events", async () => {
+  it("before and after rebase events", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
 
@@ -1150,6 +1184,165 @@ it("before and after rebase events", async () => {
 
     chai.expect(events.rebaseHandler.shouldReinstate.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
     chai.expect(events.rebaseHandler.recompute.map((txn) => txn.id)).to.deep.equal(["0x100000000", "0x100000001", "0x100000002", "0x100000003"]);
+  });
+  it("onModelGeometryChanged() fired during pullChanges() with no local changes", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const pushChangeFromB2 = async () => {
+      await b2.pullChanges();
+      await testIModel.insertElement(b2)
+      b2.saveChanges();
+      await b2.pushChanges({ description: "insert element on b2" });
+    };
+
+    const events = {
+      modelGeometryChanged: [] as ReadonlyArray<ModelIdAndGeometryGuid>[],
+    };
+
+    const getGeometryGuidFromB1 = (modelId: string) => {
+      const modelProps = b1.models.tryGetModelProps<GeometricModelProps>(modelId);
+      return modelProps?.geometryGuid;
+    };
+
+    const clearEvents = () => {
+      events.modelGeometryChanged = [];
+    };
+
+    b1.txns.onModelGeometryChanged.addListener((changes: ReadonlyArray<ModelIdAndGeometryGuid>) => {
+      events.modelGeometryChanged.push(changes);
+    });
+
+    clearEvents();
+
+    b1.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txn: TxnProps) => {
+        return true;
+      },
+      recompute: async (_txn: TxnProps) => {
+        // await testIModel.insertElement(b1);
+      },
+    });
+
+    await pushChangeFromB2();
+
+    clearEvents();
+    const geomGuidBeforePull = getGeometryGuidFromB1("0x20000000001");
+    chai.expect(geomGuidBeforePull).is.undefined;
+    await b1.pushChanges({ description: "push changes on b1" });
+    const geomGuidAfterPull = getGeometryGuidFromB1("0x20000000001");
+    chai.expect(geomGuidAfterPull).is.undefined;
+    chai.expect(events.modelGeometryChanged.length).to.equal(0);
+  });
+  it("onModelGeometryChanged() fired during rebase with geometric local change ", async () => {
+    // Test implementation here
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const pushChangeFromB2 = async () => {
+      await b2.pullChanges();
+      await testIModel.insertElement(b2)
+      b2.saveChanges();
+      await b2.pushChanges({ description: "insert element on b2" });
+    };
+
+    const events = {
+      modelGeometryChanged: [] as ReadonlyArray<ModelIdAndGeometryGuid>[],
+    };
+
+    const getGeometryGuidFromB1 = (modelId: string) => {
+      const modelProps = b1.models.tryGetModelProps<GeometricModelProps>(modelId);
+      return modelProps?.geometryGuid;
+    };
+
+    const clearEvents = () => {
+      events.modelGeometryChanged = [];
+    };
+
+    b1.txns.onModelGeometryChanged.addListener((changes: ReadonlyArray<ModelIdAndGeometryGuid>) => {
+      events.modelGeometryChanged.push(changes);
+    });
+
+    clearEvents();
+    const e1 = await testIModel.insertElement(b1);
+    const e2 = await testIModel.insertElement(b1, true);
+    chai.expect(e1).to.exist;
+    chai.expect(e2).to.exist;
+    b1.saveChanges(`insert element ${e1} and ${e2}`);
+
+    chai.expect(events.modelGeometryChanged.length).to.equal(1);
+    chai.expect(events.modelGeometryChanged[0].length).to.equal(1);
+    chai.expect(events.modelGeometryChanged[0][0].id).to.equal("0x20000000001");
+    chai.assert(Guid.isGuid(events.modelGeometryChanged[0][0].guid));
+
+    b1.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txn: TxnProps) => {
+        return true;
+      },
+      recompute: async (_txn: TxnProps) => {
+        await testIModel.insertElement(b1);
+      },
+    });
+
+    await pushChangeFromB2();
+
+    clearEvents();
+    const geomGuidBeforePull = getGeometryGuidFromB1("0x20000000001");
+    await b1.pushChanges({ description: "push changes on b1" });
+    const geomGuidAfterPull = getGeometryGuidFromB1("0x20000000001");
+    chai.expect(geomGuidBeforePull).to.not.equal(geomGuidAfterPull);
+    chai.expect(events.modelGeometryChanged.length).to.equal(4);
+  });
+  it.only("onModelGeometryChanged() fired during rebase with none-geometric local change", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
+
+    const pushChangeFromB2 = async () => {
+      await b2.pullChanges();
+      await testIModel.insertElement(b2)
+      b2.saveChanges();
+      await b2.pushChanges({ description: "insert element on b2" });
+    };
+
+    const events = {
+      modelGeometryChanged: [] as ReadonlyArray<ModelIdAndGeometryGuid>[],
+    };
+
+    const getGeometryGuidFromB1 = (modelId: string) => {
+      const modelProps = b1.models.tryGetModelProps<GeometricModelProps>(modelId);
+      return modelProps?.geometryGuid;
+    };
+
+    const clearEvents = () => {
+      events.modelGeometryChanged = [];
+    };
+
+    b1.txns.onModelGeometryChanged.addListener((changes: ReadonlyArray<ModelIdAndGeometryGuid>) => {
+      events.modelGeometryChanged.push(changes);
+    });
+
+    clearEvents();
+
+    b1.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txn: TxnProps) => {
+        return true;
+      },
+      recompute: async (_txn: TxnProps) => {
+        // await testIModel.insertElement(b1);
+      },
+    });
+
+    await pushChangeFromB2();
+    await testIModel.insertRecipe2d(b1);
+    b1.saveChanges();
+
+    clearEvents();
+    const geomGuidBeforePull = getGeometryGuidFromB1("0x20000000001");
+    chai.expect(geomGuidBeforePull).is.undefined;
+    await b1.pushChanges({ description: "push changes on b1" });
+    const geomGuidAfterPull = getGeometryGuidFromB1("0x20000000001");
+    chai.expect(geomGuidAfterPull).is.exist;
+    chai.expect(events.modelGeometryChanged.length).to.equal(1);
   });
 });
 
