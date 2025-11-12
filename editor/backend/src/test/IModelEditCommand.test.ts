@@ -93,16 +93,15 @@ describe("IModelEditCommand", () => {
       });
     });
 
-    // Real-world scenario: Alternating external and nested commands
     it("Alternating external commands with nested commands", async () => {
-      const pyth1 = new PythagorasCommand(iModelDb);
-      const pyth2 = new PythagorasCommand(iModelDb);
+      const pythagorasCommand1 = new PythagorasCommand(iModelDb);
+      const pythagorasCommand2 = new PythagorasCommand(iModelDb);
       const square = new SquareCommand(iModelDb);
 
       const [result1, result2, result3] = await Promise.all([
-        pyth1.calcHypotenuseWithCommandsAsync({ sideA: 3, sideB: 4 }),
+        pythagorasCommand1.calcHypotenuseWithCommandsAsync({ sideA: 3, sideB: 4 }),
         square.performSquareOperation({ value: 7 }),
-        pyth2.calcHypotenuseWithCommandsAsync({ sideA: 5, sideB: 12 }),
+        pythagorasCommand2.calcHypotenuseWithCommandsAsync({ sideA: 5, sideB: 12 }),
       ]);
 
       expect(result1).to.equal(5);
@@ -131,8 +130,6 @@ describe("IModelEditCommand", () => {
       expect(fast2).to.equal(9);
     });
 
-    // TODO Rohit: Fix this
-    // Need to sort out how multiple nested command execution will work with edit scopes
     it("Calculate the hypotenuse using multiple nested SquareCommands - Async", async () => {
       const pythagorasCommand = new PythagorasCommand(iModelDb);
 
@@ -440,5 +437,7 @@ describe("IModelEditCommand", () => {
     // TODO Rohit: Just like saveChanges and abandonChanges, there are other iModel APIs that should not be allowed during an active command
     // viz discardChanges, reverseTxns, reinstateTxns, pullChanges, pushChanges, revertAndPushChanges, et cetera.
     // These functions need to be updated and tests must be added for those as well.
+
+    // TODO Rohit: Review locking behavior during active edit commands
   });
 });
