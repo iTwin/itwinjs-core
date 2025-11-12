@@ -9,6 +9,9 @@ publish: false
   - [Frontend](#frontend)
     - [QuantityFormatter](#quantityformatter)
       - [Updated migration guidance from QuantityType to KindOfQuantity](#updated-migration-guidance-from-quantitytype-to-kindofquantity)
+  - [Presentation changes](#presentation-changes)
+  - [API deprecations](#api-deprecations)
+    - [@itwin/presentation-common](#itwinpresentation-common)
 
 ## Node.js 24 support
 
@@ -29,3 +32,28 @@ The [QuantityFormatter]($frontend) has been updated to use new schema references
 For developers using `QuantityType` enum values in their applications, no code changes are required as the mapping to the new schemas is handled internally. However, for domain agnostic tools directly using KindOfQuantity names or implementing custom property descriptions, update your code to reference the new schema names.
 
 For detailed information about the recommended KindOfQuantity to use in your tools and components, including a complete mapping table of measurements to their corresponding KindOfQuantity names and persistence units, see the [Quantity Formatting and Parsing documentation](../learning/quantity/index.md#using-kindofquantities-to-retrieve-formats).
+## Presentation changes
+
+- Changed content traversal to have internal state, improving performance when traversing large contents. See [API deprecations for `@itwin/presentation-common`](#itwinpresentation-common) for more details.
+
+## API deprecations
+
+### @itwin/presentation-common
+
+- Deprecated `traverseContent` and `traverseContentItem` in favor of `createContentTraverser` factory function. The change allows caching some state between calls to traverser methods, improving performance when traversing large contents.
+
+  Migration example:
+
+  ```ts
+  // before
+  traverseContent(myVisitor, content);
+  // ... or
+  content.contentSet.forEach((item) => traverseContentItem(myVisitor, content.descriptor, item));
+
+  // now
+  const traverseContentItems = createContentTraverser(myVisitor, content.descriptor);
+  traverseContentItems(content.contentSet);
+  // ... or
+  const traverseContent = createContentTraverser(myVisitor);
+  traverseContent(content.descriptor, content.contentSet);
+  ```

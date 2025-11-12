@@ -8,7 +8,7 @@
 
 export { PRESENTATION_IPC_CHANNEL_NAME, PresentationIpcEvents, PresentationIpcInterface } from "./presentation-common/PresentationIpcInterface.js";
 export { combineDiagnosticsSeverities, compareDiagnosticsSeverities } from "./presentation-common/Diagnostics.js";
-export { buildElementProperties } from "./presentation-common/ElementProperties.js";
+export { createElementPropertiesBuilder } from "./presentation-common/ElementProperties.js";
 export { createCancellableTimeoutPromise, deepReplaceNullsToUndefined } from "./presentation-common/Utils.js";
 export { LocalizationHelper } from "./presentation-common/LocalizationHelper.js";
 export { isSingleElementPropertiesRequestOptions } from "./presentation-common/PresentationManagerOptions.js";
