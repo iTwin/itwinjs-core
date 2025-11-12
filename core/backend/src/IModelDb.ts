@@ -903,7 +903,7 @@ export abstract class IModelDb extends IModel {
     // Check if this call is from within an edit command
     const activeScope = IModelDb.activeEditScope();
     if (activeScope !== undefined && !IModelDb.isCalledFromActiveCommand()) {
-      throw new IModelError(IModelStatus.BadRequest, "Cannot call saveChanges while an EditCommand is active. Use the EditCommand's saveChanges method instead.");
+      throw new IModelError(IModelStatus.BadRequest, "Cannot call saveChanges while an EditCommand is active.");
     }
 
     if (this instanceof BriefcaseDb) {
@@ -931,7 +931,7 @@ export abstract class IModelDb extends IModel {
     // Check if this call is from within an edit command
     const activeScope = IModelDb.activeEditScope();
     if (activeScope !== undefined && !IModelDb.isCalledFromActiveCommand()) {
-      throw new IModelError(IModelStatus.BadRequest, "Cannot call abandonChanges while an EditCommand is active. Use the EditCommand's abandonChanges method instead.");
+      throw new IModelError(IModelStatus.BadRequest, "Cannot call abandonChanges while an EditCommand is active.");
     }
     this.clearCaches();
     this[_nativeDb].abandonChanges();
