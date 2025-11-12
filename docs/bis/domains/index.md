@@ -14,6 +14,6 @@ BIS domains are organized in this reference according to their intended [layer](
 
 ### [Discipline-Other domains](./discipline-other-domains.md)
 
-### [Application schemas](./application-schemas.md)
+### [Application domains](./application-domains.md)
 
 ### [Standard schemas](./standard-schemas.md)
