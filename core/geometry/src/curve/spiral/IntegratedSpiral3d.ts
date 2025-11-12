@@ -33,6 +33,7 @@ import { GeometryQuery } from "../GeometryQuery";
  * * [[TransitionConditionalProperties]] implements the computations of the interrelationship of radii, bearing, and length.
  * @public
  */
+// see internaldocs/Spiral.md for more info
 export class IntegratedSpiral3d extends TransitionSpiral3d {
   /** String name for schema properties. */
   public readonly curvePrimitiveType = "transitionSpiral";
@@ -85,11 +86,13 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
   public static readonly defaultSpiralType = "clothoid";
   /** Use the integrated function to return an angle at fractional position. */
   public globalFractionToBearingRadians(fraction: number): number {
+    // calculate area under curvature curve from 0 to fraction and add it to start angle to get angle at the given fraction
+    // see internaldocs/Spiral.md for more info
     const areaFraction = this._evaluator.fractionToArea(fraction);
-    const dx = this._arcLength01;
+    const arcLength = this._arcLength01;
     return this.bearing01.startRadians
-      + areaFraction * dx * this._curvature01.signedDelta()
-      + fraction * this._curvature01.x0 * dx;
+      + fraction * arcLength * this._curvature01.x0
+      + areaFraction * arcLength * this._curvature01.signedDelta();
   }
   /** Use the integrated function to return an angle at fractional position. */
   public globalFractionToCurvature(fraction: number): number {
@@ -128,9 +131,10 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
    * @param xyz advancing integrated point.
    * @param fractionA fraction at start of interval.
    * @param fractionB fraction at end of interval.
-   * @param unitArcLength length of curve for 0 to 1 fractional.
+   * @param applyMatrix if true, apply the localToWorld matrix to the computed delta before adding to xyz.
    */
-  private fullSpiralIncrementalIntegral(xyz: Point3d, fractionA: number, fractionB: number, applyMatrix: boolean) {
+  private fullSpiralIncrementalIntegral(xyz: Point3d, fractionA: number, fractionB: number, applyMatrix: boolean): void {
+    // see internaldocs/Spiral.md for more info
     const gaussFraction = IntegratedSpiral3d._gaussFraction;
     const gaussWeight = IntegratedSpiral3d._gaussWeight;
     const numEval = IntegratedSpiral3d._gaussMapper(fractionA, fractionB, gaussFraction, gaussWeight);
@@ -183,7 +187,7 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
   /**
    * Create a transition spiral with radius and bearing conditions.
    * @param radius01 radius (inverse curvature) at start and end (radius of zero means straight line).
-   * @param bearing01 bearing angles at start and end.  bearings are measured from the x axis, positive clockwise
+   * @param bearing01 bearing angles at start and end. Bearings are measured from the x axis, positive clockwise
    * towards y axis.
    * @param activeFractionInterval fractional limits of the active portion of the spiral.
    * @param localToWorld placement frame. Fractional coordinate 0 is at the origin.

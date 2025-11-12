@@ -372,6 +372,12 @@ export type ContentUpdateInfo = typeof UPDATE_FULL;
 export function createContentFormatter(props: ContentFormatterProps): ContentFormatter;
 
 // @public
+export function createContentTraverser(visitor: IContentVisitor): (descriptor: Descriptor, items: Item[]) => void;
+
+// @public
+export function createContentTraverser(visitor: IContentVisitor, descriptor: Descriptor): (items: Item[]) => void;
+
+// @public
 export function createFieldHierarchies(fields: Field[], ignoreCategories?: boolean): FieldHierarchy[];
 
 // @public
@@ -2516,10 +2522,10 @@ export interface SupplementationInfo {
     supplementationPurpose: string;
 }
 
-// @public
+// @public @deprecated
 export function traverseContent(visitor: IContentVisitor, content: Content): void;
 
-// @public
+// @public @deprecated
 export function traverseContentItem(visitor: IContentVisitor, descriptor: Descriptor, item: Item): void;
 
 // @public
