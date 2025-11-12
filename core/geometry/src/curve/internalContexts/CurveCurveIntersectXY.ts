@@ -1183,9 +1183,9 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       if (newtonSearcher.runIterations()) {
         spiralFraction = newtonSearcher.getU();
         otherFraction = newtonSearcher.getV();
+        if (this.acceptFraction(false, spiralFraction, false) && this.acceptFraction(false, otherFraction, false))
+          this.recordPointWithLocalFractions(otherFraction, otherCurve, 0, 1, spiralFraction, spiral, 0, 1, reversed);
       }
-      if (this.acceptFraction(false, spiralFraction, false) && this.acceptFraction(false, otherFraction, false))
-        this.recordPointWithLocalFractions(otherFraction, otherCurve, 0, 1, spiralFraction, spiral, 0, 1, reversed);
     }
   }
   /** Double dispatch handler for strongly typed spiral curve. */

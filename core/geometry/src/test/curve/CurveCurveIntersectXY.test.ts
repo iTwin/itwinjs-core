@@ -2397,10 +2397,10 @@ describe("CurveCurveIntersectXY", () => {
           curve0Detail = intersection.detailB;
           curve1Detail = intersection.detailA;
         }
-        let pointOnCurve0 = Point3d.create();
-        let pointOnCurve1 = Point3d.create();
+        const pointOnCurve0 = Point3d.create();
+        const pointOnCurve1 = Point3d.create();
         if (!(curve0 instanceof CurveCollection)) {
-          pointOnCurve0 = curve0Detail.point;
+          pointOnCurve0.setFrom(curve0Detail.point);
           const intersectionPoint0 = curve0.fractionToPoint(curve0Detail.fraction);
           ck.testPoint3d(
             pointOnCurve0,
@@ -2409,7 +2409,7 @@ describe("CurveCurveIntersectXY", () => {
           );
         }
         if (!(curve1 instanceof CurveCollection)) {
-          pointOnCurve1 = curve1Detail.point;
+          pointOnCurve1.setFrom(curve1Detail.point);
           const intersectionPoint1 = curve1.fractionToPoint(curve1Detail.fraction);
           ck.testPoint3d(
             pointOnCurve1,
@@ -2439,13 +2439,18 @@ describe("CurveCurveIntersectXY", () => {
     let dx = 0;
     let dy = 0;
 
-    const rotationTransform = Transform.createFixedPointAndMatrix(
+    const rotationTransform0 = Transform.createFixedPointAndMatrix(
       Point3d.create(70, 0),
       Matrix3d.createRotationAroundVector(Vector3d.create(0, 0, 1), Angle.createDegrees(90))!,
     );
+    const rotationTransform1 = Transform.createFixedPointAndMatrix(
+      Point3d.create(0, 0),
+      Matrix3d.createRotationAroundVector(Vector3d.create(0, 1, 0), Angle.createDegrees(45))!,
+    );
     const moveTransform = Transform.createTranslationXYZ(0, 0, 10);
     const nonPlanarTransform = Transform.createZero();
-    nonPlanarTransform.setMultiplyTransformTransform(rotationTransform, moveTransform);
+    nonPlanarTransform.setMultiplyTransformTransform(rotationTransform0, moveTransform);
+    nonPlanarTransform.setMultiplyTransformTransform(rotationTransform1, nonPlanarTransform);
     // integrated spirals
     const integratedSpirals = [];
     const r0 = 0;
@@ -2454,7 +2459,7 @@ describe("CurveCurveIntersectXY", () => {
     for (const integratedSpiralType of ["clothoid", "bloss", "biquadratic", "sine", "cosine"]) {
       for (const transform of [
         Transform.createIdentity(),
-        rotationTransform, // rotated spirals have indices (n*i)+1
+        rotationTransform0, // rotated spirals have indices (n*i)+1
         nonPlanarTransform, // non-planar spirals have indices (n*i)+2
       ]) {
         integratedSpirals.push(
@@ -2486,7 +2491,7 @@ describe("CurveCurveIntersectXY", () => {
     ]) {
       for (const transform of [
         Transform.createIdentity(),
-        rotationTransform, // rotated spirals have indices (n*i)+1
+        rotationTransform0, // rotated spirals have indices (n*i)+1
         nonPlanarTransform, // non-planar spirals have indices (n*i)+2
       ]) {
         directSpirals.push(
