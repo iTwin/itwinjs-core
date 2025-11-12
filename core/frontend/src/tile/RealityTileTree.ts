@@ -418,10 +418,13 @@ export class RealityTileTree extends TileTree {
           const getReprojectedPoint = (original: Point3d, reprojectedXYZ: XYZProps) => {
             scratchPoint.setFromJSON(reprojectedXYZ);
             const cartesianDistance = this.cartesianRange.distanceToPoint(scratchPoint);
-            if (cartesianDistance < this.cartesianTransitionDistance)
-              return scratchPoint.interpolate(cartesianDistance / this.cartesianTransitionDistance, original, scratchPoint);
-            else
+            // Check cartesian transition distance
+            if (cartesianDistance < this.cartesianTransitionDistance) {
+              const newPoint = scratchPoint.interpolate(cartesianDistance / this.cartesianTransitionDistance, original, scratchPoint);
+              return newPoint;
+            } else {
               return original;
+            }
           };
 
           let responseIndex = 0;
@@ -436,6 +439,10 @@ export class RealityTileTree extends TileTree {
                 const dbReprojection = Transform.createMatrixPickupPutdown(matrix, reprojection.dbPoints[0], reprojectedOrigin, scratchTransform);
                 if (dbReprojection) {
                   const rootReprojection = dbToRoot.multiplyTransformTransform(dbReprojection).multiplyTransformTransform(rootToDb);
+                  console.log("Tile ID:", reprojection.child.contentId);
+                  console.log("Reprojection transform:", rootReprojection.matrix);
+                  console.log("Original Z:", reprojection.dbPoints[0].z);
+                  console.log("Reprojected Z:", reprojectedOrigin.z);
                   reprojection.child.reproject(rootReprojection);
                 }
               }

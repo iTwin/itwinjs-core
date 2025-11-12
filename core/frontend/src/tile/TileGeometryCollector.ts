@@ -91,6 +91,7 @@ export class TileGeometryCollector {
    * it returns "accept" or "continue", apply their own criteria to the tile.
    */
   public collectTile(tile: Tile): CollectTileStatus {
+    const _transform = this._options.transform;
     const range = this._options.transform ? this._options.transform.multiplyRange(tile.range) : tile.range;
     if (!range.intersectsRange(this._options.range))
       return "reject";
@@ -99,7 +100,12 @@ export class TileGeometryCollector {
       return "continue";
 
     const tolerance = tile.radius / tile.maximumSize;
-    return tolerance < this._options.chordTolerance ? "accept" : "continue";
+    const status = tolerance < this._options.chordTolerance ? "accept" : "continue";
+
+    if (status === "accept") {
+      // Apply reprojection to collected polyfaces
+    }
+    return status;
   }
 }
 
