@@ -1058,17 +1058,6 @@ export namespace CloudSqlite {
     }
     // @internal
     export interface BcvStats {
-<<<<<<< HEAD
-        readonly activeClients?: number;
-        readonly attachedContainers?: number;
-        readonly lockedCacheslots: number;
-        readonly memoryHighwater?: number;
-        readonly memoryUsed?: number;
-        readonly ongoingPrefetches?: number;
-        readonly populatedCacheslots: number;
-        readonly totalCacheslots: number;
-        readonly totalClients?: number;
-=======
         readonly activeClients?: string;
         readonly attachedContainers?: string;
         readonly lockedCacheslots: string;
@@ -1081,7 +1070,6 @@ export namespace CloudSqlite {
         readonly populatedCacheslots: string;
         readonly totalCacheslots: string;
         readonly totalClients?: string;
->>>>>>> f72400fc56 (Update to support bcv memory_client_* fields (#8696))
     }
     // @internal
     export interface BcvStatsFilterOptions {

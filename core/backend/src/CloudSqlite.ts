@@ -253,9 +253,6 @@ export namespace CloudSqlite {
     /** The total amount of memory used by sqlite, in bytes. */
     readonly memoryUsed?: number;
     /** The maximum value of memoryUsed since high-water mark was last reset, in bytes. */
-<<<<<<< HEAD
-    readonly memoryHighwater?: number;
-=======
     readonly memoryHighwater?: string;
     /** The total amount of memory used for the manifests for each attached container, in bytes. */
     readonly memoryManifest?: string;
@@ -268,7 +265,6 @@ export namespace CloudSqlite {
      * @note this value is only present when running in daemon mode.
      */
     readonly memoryClientManifest?: string;
->>>>>>> f72400fc56 (Update to support bcv memory_client_* fields (#8696))
   }
 
   /** The base name of a CloudSqlite database, without any version information.
