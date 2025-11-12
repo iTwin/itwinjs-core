@@ -59,6 +59,7 @@ public;enum;ContentSpecificationTypes
 public;type;ContentUpdateInfo
 public;function;createContentFormatter
 public;function;createContentTraverser
+public;function;createContentTraverser
 public;function;createFieldHierarchies
 public;type;CustomizationRule
 public;interface;CustomNodeSpecification

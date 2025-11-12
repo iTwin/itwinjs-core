@@ -2,8 +2,9 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
-import { DisplayValue, IContentVisitor, ProcessPrimitiveValueProps, traverseContentItem, Value } from "@itwin/presentation-common";
+import { createContentTraverser, DisplayValue, IContentVisitor, ProcessPrimitiveValueProps, Value } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests.js";
 import { IModelDb, SnapshotDb } from "@itwin/core-backend";
 import { Presentation } from "@itwin/presentation-backend";
@@ -111,12 +112,13 @@ describe("Learning Snippets", () => {
             return { rawValue, displayValue };
           }
         }
+        const propertiesBuilder = new PrimitivePropertiesBuilder();
+        const traverseContent = createContentTraverser(propertiesBuilder);
         const result = await Presentation.getManager().getElementProperties({
           imodel,
           contentParser(descriptor, item) {
-            const builder = new PrimitivePropertiesBuilder();
-            traverseContentItem(builder, descriptor, item);
-            return builder.getResult();
+            traverseContent(descriptor, [item]);
+            return propertiesBuilder.getResult();
           },
           elementClasses: ["BisCore:PhysicalPartition"],
         });

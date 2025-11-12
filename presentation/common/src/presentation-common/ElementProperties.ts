@@ -152,12 +152,9 @@ export type ElementPropertiesItem = ElementPropertiesCategoryItem | ElementPrope
 /** @internal */
 export const createElementPropertiesBuilder = (): ((descriptor: Descriptor, item: Item) => ElementProperties) => {
   const builder = new ElementPropertiesBuilder();
-  let memo: { descriptor: Descriptor; traverser: ReturnType<typeof createContentTraverser> } | undefined;
+  const traverseContent = createContentTraverser(builder);
   return (descriptor: Descriptor, item: Item) => {
-    if (memo?.descriptor !== descriptor) {
-      memo = { descriptor, traverser: createContentTraverser(builder, descriptor) };
-    }
-    memo.traverser([item]);
+    traverseContent(descriptor, [item]);
     return builder.items[0];
   };
 };

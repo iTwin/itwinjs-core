@@ -16,7 +16,7 @@ In addition to [already supported Node.js versions](../learning/SupportedPlatfor
 
 ## Presentation changes
 
-- Changed content traversal to have internal state, improving performance when traversing large contents. See [API deprecations](#api-deprecations) for more details.
+- Changed content traversal to have internal state, improving performance when traversing large contents. See [API deprecations for `@itwin/presentation-common`](#itwinpresentation-common) for more details.
 
 ## API deprecations
 
@@ -33,6 +33,9 @@ In addition to [already supported Node.js versions](../learning/SupportedPlatfor
   content.contentSet.forEach((item) => traverseContentItem(myVisitor, content.descriptor, item));
 
   // now
-  const traverser = createContentTraverser(myVisitor, content.descriptor);
-  traverser(content.contentSet);
+  const traverseContentItems = createContentTraverser(myVisitor, content.descriptor);
+  traverseContentItems(content.contentSet);
+  // ... or
+  const traverseContent = createContentTraverser(myVisitor);
+  traverseContent(content.descriptor, content.contentSet);
   ```
