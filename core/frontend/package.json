@@ -71,7 +71,7 @@
     "cpx2": "^3.0.0",
     "eslint": "^9.31.0",
     "glob": "^10.3.12",
-    "playwright": "~1.47.1",
+    "playwright": "~1.56.1",
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
     "typescript": "~5.6.2",
@@ -87,7 +87,7 @@
   ],
   "dependencies": {
     "@itwin/cloud-agnostic-core": "^2.2.4",
-    "@itwin/object-storage-core": "^2.3.0",
+    "@itwin/object-storage-core": "^3.0.4",
     "@itwin/core-i18n": "workspace:*",
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
