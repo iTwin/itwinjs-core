@@ -155,6 +155,9 @@ export class ClassRegistry {
    */
   // eslint-disable-next-line @typescript-eslint/no-deprecated
   private static generateClassForEntity(entityMetaData: EntityMetaData, iModel: IModelDb): typeof Entity {
+    if(entityMetaData.ecclass === undefined)
+      throw new IModelError(IModelStatus.NotFound, `ecclass not found for meta data`);
+
     const name = entityMetaData.ecclass.split(":");
     const domainName = name[0];
     const className = name[1];
@@ -280,9 +283,7 @@ export class ClassRegistry {
    */
   private static generateClass(classFullName: string, iModel: IModelDb): typeof Entity {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
-    const metadata: EntityMetaData | undefined = iModel.classMetaDataRegistry.find(classFullName);
-    if (metadata === undefined || metadata.ecclass === undefined)
-      throw this.makeMetaDataNotFoundError(classFullName);
+    const metadata: EntityMetaData | undefined = iModel.getMetaData(classFullName);
 
     // Make sure we have all base classes registered.
     if (metadata.baseClasses && (0 !== metadata.baseClasses.length))

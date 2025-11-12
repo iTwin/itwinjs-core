@@ -1281,17 +1281,7 @@ export abstract class IModelDb extends IModel {
 
   /** Get the JavaScript class that handles a given entity class.  */
   public getJsClass<T extends typeof Entity>(classFullName: string): T {
-    try {
-      return ClassRegistry.getClass(classFullName, this) as T;
-    } catch (err) {
-      if (!ClassRegistry.isNotFoundError(err)) {
-        throw err;
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-deprecated
-      this.loadMetaData(classFullName);
-      return ClassRegistry.getClass(classFullName, this) as T;
-    }
+    return ClassRegistry.getClass(classFullName, this) as T;
   }
 
   /** Constructs a ResolveInstanceKeyArgs from given parameters
