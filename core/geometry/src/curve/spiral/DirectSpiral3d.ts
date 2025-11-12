@@ -31,18 +31,20 @@ import { XYCurveEvaluator } from "./XYCurveEvaluator";
 * DirectSpiral3d acts like a TransitionSpiral3d for serialization purposes, but implements spiral types that have
 * "direct" xy calculations without the integrations required for IntegratedSpiral3d.
 * * Each DirectSpiral3d carries an XYCurveEvaluator to give it specialized behavior.
-* * Direct spirals that flow through serialization to native imodel02 are created with these static methods:
+* * Direct spirals are created with these static methods:
 *   * createArema
 *   * createJapaneseCubic
-*   * createAustralianRail
-*   * createDirectHalfCosine
 *   * createChineseCubic
+*   * createWesternAustralian
+*   * createDirectHalfCosine
+*   * createAustralianRail
 *   * createCzechCubic
 *   * createPolishCubic
+*   * createMXCubicAlongArc
 *   * createItalian
-*   * createWesternAustralian
 * @public
 */
+// see internaldocs/Spiral.md for more info
 export class DirectSpiral3d extends TransitionSpiral3d {
   /** String name for schema properties. */
   public readonly curvePrimitiveType = "transitionSpiral";
@@ -247,11 +249,11 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   /**
    * Create an MX Cubic whose nominal length is close to along the curve.
    * This is y = m*x^3 with
-   * * m is 1/(6RL1).
+   * * m is 1/(6RL).
    *    * 1/(6RL) is the leading term of the sine series.
    * * L1 is an along-the-x-axis distance that is slightly LESS THAN the nominal length.
    * * x is axis position that is slightly LESS than nominal distance along.
-   * * L1, x use the approximation `x = s * ( 1 - s^4/ (40 R R L L))
+   * * L1, x use the approximation `x = s * ( 1 - s^4/ (40 RR LL))
    * @param localToWorld
    * @param nominalL1
    * @param nominalR1
