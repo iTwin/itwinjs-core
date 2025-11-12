@@ -6,6 +6,17 @@ import { AsyncLocalStorage } from "async_hooks";
 /* eslint-disable @typescript-eslint/return-await */
 /* eslint-disable @typescript-eslint/naming-convention */
 
+// Register the command context with IModelDb
+IModelDb.registerActiveCommands(() => {
+  const activeScope = IModelDb.activeEditScope();
+  if (!activeScope) {
+    return false;
+  }
+
+  const executingScopeIds = EditScope.commandExecutionContext.getStore();
+  return executingScopeIds !== undefined && executingScopeIds.includes(activeScope.scopeId);
+});
+
 /**
  * Represents a transactional scope that can be saved or abandoned.
  * @alpha
@@ -86,6 +97,11 @@ export class EditScope implements IEditScope {
 
   // TODO Rohit: Review access modifier
   public static commandExecutionContext = new AsyncLocalStorage<string[]>();
+
+  /** Get the command execution context for checking if a call is made from within a command */
+  public static getExecutionContext(): AsyncLocalStorage<string[]> {
+    return EditScope.commandExecutionContext;
+  }
 
   private constructor(iModel: IModelDb, commandType: CommandType, parentScopeId?: string) {
     this.scopeId = Guid.createValue();
@@ -198,15 +214,12 @@ export class EditScope implements IEditScope {
       // Execute within the command's context
       const result = await operation();
 
-      if (result === undefined) {
-        throw new Error("Command execution did not return a result.");
-      }
-
       this._state = EditCommandState.Saving;
       await this.saveChanges(commandDescription ?? `Saved changes`);
 
       return result;
     } catch (error: any) {
+      console.log(`Caught Error: ${JSON.stringify(error)}`);
       this._state = EditCommandState.Abandoning;
 
       await this.abandonChanges();
@@ -247,7 +260,7 @@ export class EditScope implements IEditScope {
   // But what if this command failed, but another nested command succeeded?
   // Maybe have a way to signal to the calling command to fail right away ?
   public async abandonChanges(): Promise<void> {
-    if (this._state !== EditCommandState.Active && this._state !== EditCommandState.Failed) {
+    if (this._state !== EditCommandState.Active && this._state !== EditCommandState.Failed && this._state !== EditCommandState.Abandoning) {
       throw new Error(`Cannot abandon EditCommand in state ${this._state}`);
     }
 
@@ -318,7 +331,7 @@ export function makeScopeSafe(
 /**
  * @alpha
  */
-export abstract class EditCommandBase<_TArgs extends EditCommandArgs = EditCommandArgs, _TResult = void> {
+export abstract class EditCommandBase<_TArgs extends EditCommandArgs = EditCommandArgs, TResult = void> {
   protected _iModel: IModelDb;
   protected _editScope?: EditScope;
 
@@ -370,6 +383,15 @@ export abstract class EditCommandBase<_TArgs extends EditCommandArgs = EditComma
       throw error;
     }
   }
+
+  /**
+   * Overridable method to validate command result.
+   * @param result - The result of the command execution
+   */
+  public async validateCommandResult(_result: Awaited<TResult>): Promise<boolean> {
+    // Default implementation does nothing
+    return true;
+  }
 }
 
 /**
@@ -395,7 +417,11 @@ export abstract class ImmediateCommand<TArgs extends EditCommandArgs = EditComma
     return await EditScope.commandExecutionContext.run([...EditScope.commandExecutionContext.getStore() ?? [], this._editScope.scopeId], async () => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return await this._editScope!.execute(async (args) => {
-        return await fn(args);
+        const result = await fn(args);
+        if (!await this.validateCommandResult(result)) {
+          throw new Error("Command result validation failed.");
+        }
+        return result;
       });
     });
   }
@@ -439,7 +465,7 @@ export abstract class InteractiveCommand<TArgs extends EditCommandArgs = EditCom
    * @param fn - Callback function to execute. Args are available in the closure.
    * @returns The result of the callback function
    */
-  private async executeOperation<T>(operation: (args?: TArgs) => Promise<T>): Promise<T> {
+  private async executeOperation(operation: (args?: TArgs) => Promise<TResult>): Promise<TResult> {
     if (!this._editScope) {
       throw new Error("EditCommand has no scope.");
     }
@@ -451,7 +477,11 @@ export abstract class InteractiveCommand<TArgs extends EditCommandArgs = EditCom
     this._editScope.state = EditCommandState.Active;
 
     return await EditScope.commandExecutionContext.run([...EditScope.commandExecutionContext.getStore() ?? [], this._editScope.scopeId], async () => {
-      return await operation();
+      const result = await operation();
+      if (await this.validateCommandResult(result) === false) {
+        throw new Error("Command result validation failed.");
+      }
+      return result;
     });
   }
 }

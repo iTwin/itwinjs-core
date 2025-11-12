@@ -1,14 +1,20 @@
-import { expect } from "chai";
-import { IModelDb, IModelHost, IModelJsFs, KnownLocations, StandaloneDb } from "@itwin/core-backend";
+import { assert, expect } from "chai";
+import { _nativeDb, ClassRegistry, Element, IModelDb, IModelHost, IModelJsFs, KnownLocations, PhysicalModel, PhysicalPartition, Schemas, SpatialCategory, StandaloneDb, SubjectOwnsPartitionElements } from "@itwin/core-backend";
 import { join } from "path";
-import { InteractivePolygonEditor, InteractivePythagorasCommand, PythagorasCommand, SquareCommand } from "./TestAssets";
+import { InteractivePolygonEditor, InteractivePythagorasCommand, PythagorasCommand, SquareCommand } from "./TestEditCommands";
+import { CreateElementCommand, DeleteElementCommand, TestEditCommandSchema, TestElement, UpdateElementCommand } from "./ElementEditCommands";
+import * as path from "path"
+import { Code, CodeProps, ElementProps, IModel, RelatedElement, SubCategoryAppearance } from "@itwin/core-common";
+import { Id64, Id64String, OpenMode } from "@itwin/core-bentley";
 
 describe("IModelEditCommand", () => {
   const outputDir = join(KnownLocations.tmpdir, "output");
   let iModelDb: IModelDb;
   let iModelPath: string;
+  let modelId: Id64String;
+  let categoryId: Id64String | undefined;
 
-  before(() => {
+  before(async () => {
     if (!IModelJsFs.existsSync(outputDir))
       IModelJsFs.mkdirSync(outputDir);
   })
@@ -224,5 +230,215 @@ describe("IModelEditCommand", () => {
 
       await polygonEditor.endCommandScope();
     });
+  });
+
+  describe("Element API  with edit commands", () => {
+    let templateTestElementProps: any;
+
+    before(async () => {
+      // Register the test schema
+      if (!Schemas.getRegisteredSchema(TestEditCommandSchema.schemaName)) {
+        Schemas.registerSchema(TestEditCommandSchema);
+        ClassRegistry.register(TestElement, TestEditCommandSchema);
+      }
+    });
+
+    beforeEach(async () => {
+      // Import the test schema
+      await iModelDb.importSchemas([path.join(__dirname, "assets", "BisCore.01.00.25.ecschema.xml")]);
+      await iModelDb.importSchemaStrings([TestEditCommandSchema.schemaXml])
+
+      const [, newModelId] = createAndInsertPhysicalPartitionAndModel(iModelDb, Code.createEmpty(), true);
+      let spatialCategoryId = SpatialCategory.queryCategoryIdByName(iModelDb, IModel.dictionaryId, "TestCategory");
+      if (undefined === spatialCategoryId)
+        spatialCategoryId = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "TestCategory", new SubCategoryAppearance());
+      modelId = newModelId;
+      categoryId = spatialCategoryId;
+
+      assert.isTrue(Id64.isValidId64(modelId));
+      assert.isTrue(Id64.isValidId64(categoryId));
+
+      iModelDb.saveChanges("Import TestEditCommand schema");
+
+      templateTestElementProps = {
+        userLabel: "TestElement-Insert",
+        testElementProps: {
+          classFullName: TestElement.fullClassName,
+          model: modelId,
+          category: categoryId!,
+          code: Code.createEmpty(),
+          intProperty: 42,
+          stringProperty: "TestStringProperty",
+          doubleProperty: 3.14,
+        },
+      };
+    });
+
+    /**
+     * Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
+     * @return [modeledElementId, modelId]
+     */
+    function createAndInsertPhysicalPartitionAndModel(testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false): Id64String[] {
+      const model = IModel.repositoryModelId;
+      const parent = new SubjectOwnsPartitionElements(IModel.rootSubjectId);
+
+      const modeledElementProps: ElementProps = {
+        classFullName: PhysicalPartition.classFullName,
+        parent,
+        model,
+        code: newModelCode,
+      };
+      const modeledElement: Element = testImodel.elements.createElement(modeledElementProps);
+      const eid = testImodel.elements.insertElement(modeledElement.toJSON());
+
+      const modeledElementRef = new RelatedElement({ id: eid });
+      const newModel = testImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
+      const newModelId = newModel.id = testImodel.models.insertModel(newModel.toJSON());
+      assert.isTrue(Id64.isValidId64(newModelId));
+      assert.isTrue(Id64.isValidId64(newModel.id));
+      assert.deepEqual(newModelId, newModel.id);
+      return [eid, newModelId];
+    }
+
+    function closeAndReopen(iModelDb: IModelDb, openMode: OpenMode, fileName: string) {
+      // Unclosed statements will produce BUSY error when attempting to close.
+      iModelDb.clearCaches();
+
+      // The following resets the native db's pointer to this JavaScript object.
+      iModelDb[_nativeDb].closeFile();
+      iModelDb[_nativeDb].openIModel(fileName, openMode);
+
+      // Restore the native db's pointer to this JavaScript object.
+      iModelDb[_nativeDb].setIModelDb(iModelDb);
+
+      // refresh cached properties that could have been changed by another process writing to the same briefcase
+      iModelDb.changeset = iModelDb[_nativeDb].getCurrentChangeset();
+
+      // assert what should never change
+      if (iModelDb.iModelId !== iModelDb[_nativeDb].getIModelId() || iModelDb.iTwinId !== iModelDb[_nativeDb].getITwinId())
+        throw new Error("closeAndReopen detected change in iModelId and/or iTwinId");
+    }
+
+    it("Create element and verify save", async () => {
+      const createElementCmd = new CreateElementCommand(iModelDb);
+      // Insert the element using the command
+      const elementId = await createElementCmd.createElement(templateTestElementProps);
+
+      assert.isTrue(Id64.isValidId64(elementId));
+
+      // Close and reopen the iModel to verify changes were saved
+      closeAndReopen(iModelDb, OpenMode.ReadWrite, iModelPath);
+      assert.isTrue(iModelDb.isOpen);
+      // Verify element was saved
+      const element = iModelDb.elements.tryGetElement<TestElement>(elementId);
+      expect(element).to.not.be.undefined;
+      expect(element?.userLabel).to.equal("TestElement-Insert");
+      expect(element?.intProperty).to.equal(42);
+      expect(element?.stringProperty).to.equal("TestStringProperty");
+      expect(element?.doubleProperty).to.equal(3.14);
+    });
+
+    it("Update element and verify changes are saved", async () => {
+      // First create an element
+      const createElementCmd = new CreateElementCommand(iModelDb);
+
+      // Insert the element using the command
+      const elementId = await createElementCmd.createElement(templateTestElementProps);
+      assert.isTrue(Id64.isValidId64(elementId));
+
+      // Update the element
+      const updateCmd = new UpdateElementCommand(iModelDb);
+      await updateCmd.updateElement({
+        elementId,
+        intProperty: 20,
+        stringProperty: "Updated-StringProperty",
+        // leave doubleProperty unchanged
+      });
+
+      // Close and reopen the iModel to verify changes were saved
+      closeAndReopen(iModelDb, OpenMode.ReadWrite, iModelPath);
+      assert.isTrue(iModelDb.isOpen);
+
+      // Verify update was saved
+      const element = iModelDb.elements.tryGetElement<TestElement>(elementId);
+      expect(element).to.not.be.undefined;
+      expect(element?.intProperty).to.equal(20);
+      expect(element?.stringProperty).to.equal("Updated-StringProperty");
+      expect(element?.doubleProperty).to.equal(3.14);  // Property unchanged
+    });
+
+    it("Delete element and verify it's gone", async () => {
+      // First create an element
+      const createElementCmd = new CreateElementCommand(iModelDb);
+
+      // Insert the element using the command
+      const elementId = await createElementCmd.createElement(templateTestElementProps);
+      assert.isTrue(Id64.isValidId64(elementId));
+
+      // Delete it
+      const deleteCmd = new DeleteElementCommand(iModelDb);
+      await deleteCmd.deleteElement({ elementId });
+
+      // Verify it's deleted
+      expect(() => iModelDb.elements.getElement(elementId)).to.throw();
+    });
+
+    it("should throw if abandonChanges is called externally during an active command", async () => {
+      const createElementCmd = new CreateElementCommand(iModelDb);
+      const elementId = await createElementCmd.createElement(templateTestElementProps);
+      assert.isTrue(Id64.isValidId64(elementId));
+
+      const updateCmd = new UpdateElementCommand(iModelDb);
+
+      // Start the update but do not await it yet
+      const updatePromise = updateCmd.updateElement({
+        elementId,
+        intProperty: 20,
+        stringProperty: "Updated-StringProperty",
+      });
+
+      // Wait a bit to ensure the command is active
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // Try to call abandonChanges while the command is active
+      expect(() => iModelDb.abandonChanges()).to.throw("Cannot call abandonChanges while an EditCommand is active");
+
+      // Now await the update to finish
+      await updatePromise;
+
+      // After the command completes, abandonChanges should work (though there may be no changes to abandon)
+      expect(() => iModelDb.abandonChanges()).to.not.throw();
+    });
+
+    it("should throw if saveChanges is called externally during an active command", async () => {
+      const createElementCmd = new CreateElementCommand(iModelDb);
+      const elementId = await createElementCmd.createElement(templateTestElementProps);
+      assert.isTrue(Id64.isValidId64(elementId));
+
+      const updateCmd = new UpdateElementCommand(iModelDb);
+
+      // Start the update but do not await it yet
+      const updatePromise = updateCmd.updateElement({
+        elementId,
+        intProperty: 30,
+        stringProperty: "Another-Update",
+      });
+
+      // Wait a bit to ensure the command is active
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      // Try to call saveChanges while the command is active
+      expect(() => iModelDb.saveChanges("External save attempt")).to.throw("Cannot call saveChanges while an EditCommand is active");
+
+      // Now await the update to finish
+      await updatePromise;
+
+      // After the command completes, saveChanges should work
+      expect(() => iModelDb.saveChanges("Save after command completes")).to.not.throw();
+    });
+
+    // TODO Rohit: Just like saveChanges and abandonChanges, there are other iModel APIs that should not be allowed during an active command
+    // viz discardChanges, reverseTxns, reinstateTxns, pullChanges, pushChanges, revertAndPushChanges, et cetera.
+    // These functions need to be updated and tests must be added for those as well.
   });
 });

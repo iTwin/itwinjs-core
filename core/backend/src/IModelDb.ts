@@ -285,6 +285,30 @@ export abstract class IModelDb extends IModel {
       IModelDb._nestedEditScopes.splice(nestedIndex, 1);
     }
   }
+
+  /**
+   * Function to check if current execution is within an edit command context.
+   * @internal
+   */
+  private static _isCalledFromActiveCommand?: () => boolean;
+
+  /**
+   * Register a function to check if we're within a command execution context.
+   * @internal
+   */
+  public static registerActiveCommands(checker: () => boolean): void {
+    IModelDb._isCalledFromActiveCommand = checker;
+  }
+
+  /**
+   * Check if the current code is executing within an edit command's context.
+   * @returns true if within a command's execution context, false otherwise
+   * @internal
+   */
+  private static isCalledFromActiveCommand(): boolean {
+    return IModelDb._isCalledFromActiveCommand?.() ?? false;
+  }
+
   public static async printQueue(): Promise<void> { return IModelDb._editScopes.printDeQueue(); }
 
   /** @internal */
@@ -876,6 +900,12 @@ export abstract class IModelDb extends IModel {
     if (this.openMode === OpenMode.Readonly)
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only");
 
+    // Check if this call is from within an edit command
+    const activeScope = IModelDb.activeEditScope();
+    if (activeScope !== undefined && !IModelDb.isCalledFromActiveCommand()) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot call saveChanges while an EditCommand is active. Use the EditCommand's saveChanges method instead.");
+    }
+
     if (this instanceof BriefcaseDb) {
       if (this.txns.isIndirectChanges) {
         throw new IModelError(IModelStatus.BadRequest, "Cannot save changes while in an indirect change scope");
@@ -898,6 +928,11 @@ export abstract class IModelDb extends IModel {
    * @note This will not delete Txns that have already been saved, even if they have not yet been pushed.
   */
   public abandonChanges(): void {
+    // Check if this call is from within an edit command
+    const activeScope = IModelDb.activeEditScope();
+    if (activeScope !== undefined && !IModelDb.isCalledFromActiveCommand()) {
+      throw new IModelError(IModelStatus.BadRequest, "Cannot call abandonChanges while an EditCommand is active. Use the EditCommand's abandonChanges method instead.");
+    }
     this.clearCaches();
     this[_nativeDb].abandonChanges();
   }

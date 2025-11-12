@@ -10,10 +10,11 @@
     "node": "^20.0.0 || ^22.0.0 || ^24.0.0"
   },
   "scripts": {
-    "build": "npm run -s build:cjs && npm run -s build:esm",
+    "build": "npm run -s build:cjs && npm run -s build:esm && npm run -s copy:test-assets ",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "tsc 1>&2 --module ES2022 --outDir lib/esm",
     "clean": "rimraf -g lib .rush/temp/package-deps*.json",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "docs": "betools docs --json=../../generated-docs/editor/editor-backend/file.json --tsIndexFile=./editor-backend.ts --onlyJson",
     "extract-api": "betools extract-api --entry=editor-backend",
     "lint": "eslint --max-warnings 0 ./src/**/*.ts 1>&2",
