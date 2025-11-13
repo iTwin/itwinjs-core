@@ -2,6 +2,12 @@
   "name": "@itwin/perf-tools",
   "entries": [
     {
+      "version": "5.2.6",
+      "tag": "@itwin/perf-tools_v5.2.6",
+      "date": "Thu, 13 Nov 2025 21:13:51 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.2.5",
       "tag": "@itwin/perf-tools_v5.2.5",
       "date": "Thu, 13 Nov 2025 07:45:15 GMT",
