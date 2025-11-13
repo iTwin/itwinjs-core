@@ -7,7 +7,7 @@
  * @module Topology
  */
 /**
- * Methods to "grab and drop" mask bits.
+ * Methods to "grab and drop" mask bits from a 32-bit field.
  * * Caller code (e.g. HalfEdgeGraph) initializes with a block of bits to be managed.
  * * Callers borrow and return masks with "grabMask" and "dropMask".
  * * Callers must exercise grab/drop balance discipline.
@@ -29,8 +29,10 @@ export class MaskManager {
   }
   /**
    * Create a MaskManager.
-   * Typical use: MaskManager.create(0xFFFF0000)
-   * * This makes bits 16 through 31 available to be borrowed, with lower bits available for fixed usage.
+   * Typical use: MaskManager.create(0xFFF00000)
+   * * This makes bits 20 through 31 available to be borrowed, with lower bits reserved for fixed usage.
+   * @param freeMasks mask with bits set to be available for grab/drop.
+   * @returns undefined if `freeMasks` has none of the bits [0,31] set.
    */
   public static create(freeMasks: number): MaskManager | undefined {
     // look for first bit up to bit 31

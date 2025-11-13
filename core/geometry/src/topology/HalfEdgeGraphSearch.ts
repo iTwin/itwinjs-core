@@ -6,6 +6,7 @@
 /** @packageDocumentation
  * @module Topology
  */
+import { assert } from "@itwin/core-bentley";
 import { Range1d } from "../geometry3d/Range";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction, NodeToNumberFunction } from "./Graph";
 import { SignedDataSummary } from "./SignedDataSummary";
@@ -173,8 +174,7 @@ export class HalfEdgeGraphSearch {
     HalfEdgeGraphSearch.pushAndMaskAllNodesInFace(faceSeed, allMasks, stack, faces);
     while (stack.length > 0) {
       const p = stack.pop();
-      if (!p)
-        break;
+      assert(p !== undefined, "expect defined; we just checked the stack length");
       const mate = p.edgeMate;
       if (!mate)
         continue;

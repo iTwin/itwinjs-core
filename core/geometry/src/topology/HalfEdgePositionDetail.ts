@@ -32,6 +32,7 @@ export enum HalfEdgeTopo {
  * * "at a certain node around a vertex"
  * * "at a fractional position along an edge"
  * * "within a face"
+ * @internal
  */
 export class HalfEdgePositionDetail {
   /** The relevant node. */
@@ -92,19 +93,22 @@ export class HalfEdgePositionDetail {
     const detail = new HalfEdgePositionDetail(undefined, 0, 0, 0, HalfEdgeTopo.None);
     return detail;
   }
-  public getITag(): number | undefined {
+  public get iTag(): number | undefined {
     return this._iTag;
   }
-  public setITag(value: number): void {
+  public set iTag(value: number) {
     this._iTag = value;
   }
-  public getDTag(): number | undefined {
+  public get dTag(): number | undefined {
     return this._dTag;
   }
-  public setDTag(value: number): void {
+  public set dTag(value: number) {
     this._dTag = value;
   }
-  public getTopo(): HalfEdgeTopo {
+  public hasDTag(): this is { get dTag(): number } {
+    return this._dTag !== undefined;
+  }
+  public get topo(): HalfEdgeTopo {
     return this._topo;
   }
   /** Create with node, fraction along edge, marked as "HalfEdgeTopo.Edge".  Compute interpolated xyz on the edge. */
@@ -196,16 +200,16 @@ export class HalfEdgePositionDetail {
     return this._isExteriorTarget !== undefined ? this._isExteriorTarget : false;
   }
   /** Return true if this detail is marked as being within a face. */
-  public get isFace(): boolean {
-    return this._topo === HalfEdgeTopo.Face;
+  public isFace(): this is { get node() : HalfEdge } {
+    return this._topo === HalfEdgeTopo.Face && this._node !== undefined;
   }
   /** Return true if this detail is marked as being within an edge. */
-  public get isEdge(): boolean {
-    return this._topo === HalfEdgeTopo.Edge;
+  public isEdge(): this is { get node() : HalfEdge } {
+    return this._topo === HalfEdgeTopo.Edge && this._node !== undefined;
   }
   /** Return true if this detail is marked as being at a vertex. */
-  public get isVertex(): boolean {
-    return this._topo === HalfEdgeTopo.Vertex;
+  public isVertex(): this is { get node() : HalfEdge } {
+    return this._topo === HalfEdgeTopo.Vertex && this._node !== undefined;
   }
   /** Return true if this detail has no vertex, edge, or face qualifier. */
   public get isUnclassified(): boolean {

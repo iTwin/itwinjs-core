@@ -7,7 +7,6 @@
  * @module Curve
  */
 
-import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../Geometry";
 import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";

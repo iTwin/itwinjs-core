@@ -40,9 +40,9 @@ function showPosition(allGeometry: GeometryQuery[], oldDetail: HalfEdgePositionD
     if (!point0.isAlmostEqualMetric(point1))
       GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createCapture(point0, point1), x0, y0, z0);
   }
-  if (newDetail.getTopo() === HalfEdgeTopo.Face) {
+  if (newDetail.topo === HalfEdgeTopo.Face) {
     GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, newDetail.clonePoint(), markerSize, x0, y0, z0);
-  } else if (newDetail.getTopo() === HalfEdgeTopo.Vertex) {
+  } else if (newDetail.topo === HalfEdgeTopo.Vertex) {
     const nodeB = newDetail.node!;
     const nodeC = nodeB.faceSuccessor;
     const nodeA = nodeB.facePredecessor;
@@ -52,7 +52,7 @@ function showPosition(allGeometry: GeometryQuery[], oldDetail: HalfEdgePositionD
     const theta = vectorBC.angleToXY(vectorBA);
     const bisector = vectorBC.rotateXY(Angle.createRadians(0.5 * theta.radians));
     GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(pointB, pointB.plusScaled(bisector, markerSize)), x0, y0, z0);
-  } else if (newDetail.getTopo() === HalfEdgeTopo.Edge) {
+  } else if (newDetail.topo === HalfEdgeTopo.Edge) {
     const node0 = newDetail.node!;
     const point0 = node0.fractionToPoint3d(0.0);
     const point1 = node0.fractionToPoint3d(1.0);
@@ -63,7 +63,7 @@ function showPosition(allGeometry: GeometryQuery[], oldDetail: HalfEdgePositionD
     const pointC = pointB.plusScaled(vector01, markerSize);
     GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(pointB, pointC), x0, y0, z0);
   } else {
-    GeometryCoreTestIO.consoleLog(" unknown topo type", newDetail.getTopo());
+    GeometryCoreTestIO.consoleLog(" unknown topo type", newDetail.topo);
   }
   oldDetail.setFrom(newDetail);
 }
@@ -135,12 +135,12 @@ describe("InsertAndRetriangulateContext", () => {
     }
     oldPosition.resetAsUnknown();
     context.resetSearch(Point3d.create(1.5, 0.5), false);
-    ck.testExactNumber(HalfEdgeTopo.Vertex, context.currentPosition.getTopo(), "Reset to vertex");
+    ck.testExactNumber(HalfEdgeTopo.Vertex, context.currentPosition.topo, "Reset to vertex");
     context.resetSearch(Point3d.create(1.5, 0.5), true);
-    ck.testExactNumber(HalfEdgeTopo.Edge, context.currentPosition.getTopo(), "Reset to edge search");
+    ck.testExactNumber(HalfEdgeTopo.Edge, context.currentPosition.topo, "Reset to edge search");
     // hit the "vertex sector" case. ..
     context.resetSearch(Point3d.create(-0.5, -0.5), true);
-    ck.testExactNumber(HalfEdgeTopo.Vertex, context.currentPosition.getTopo(), "Reset to edge search");
+    ck.testExactNumber(HalfEdgeTopo.Vertex, context.currentPosition.topo, "Reset to edge search");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "InsertAndRetriangulateContext", "moveTo");
     expect(ck.getNumErrors()).toBe(0);

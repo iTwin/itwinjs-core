@@ -7,6 +7,7 @@
  * @module Topology
  */
 
+import { assert } from "@itwin/core-bentley";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
@@ -173,11 +174,10 @@ export class ChainMergeContext {
   }
   /**
    * Return difference of sortData members as sort comparison.
-   * sortData members must be defined. Otherwise, return 0.
+   * Input node `sortData` must be defined.
    */
   private static nodeCompareSortData(nodeA: HalfEdge, nodeB: HalfEdge): number {
-    if (nodeA.sortData === undefined || nodeB.sortData === undefined)
-      return 0;
+    assert(nodeA.sortData !== undefined && nodeB.sortData !== undefined);
     return nodeA.sortData - nodeB.sortData;
   }
   /** test if nodeA is a dangling edge end (i.e. edges around vertex equal 1, but detect it without walking all the way around. */
@@ -210,14 +210,14 @@ export class ChainMergeContext {
     for (let i0 = 0; i0 < n; i0++) {
       const node0 = sortArray[i0];
       const qMin = node0.sortData;
-      if (undefined === qMin)
-        continue;
+      assert(qMin !== undefined, "expect defined; sortData was just populated");
       const qMax = qMin + xyzTolerance;
       if (ChainMergeContext.isIsolatedEnd(node0)) {
         for (let i1 = i0 + 1; i1 < n; i1++) {
           const node1 = sortArray[i1];
           if (ChainMergeContext.isIsolatedEnd(node1)) {
-            if (undefined !== node1.sortData && node1.sortData > qMax)
+            assert(node1.sortData !== undefined, "expect defined; sortData was just populated");
+            if (node1.sortData > qMax)
               break;
             if (node0.distanceXYZ(node1) <= xyzTolerance) {
               HalfEdge.pinch(node0, node1);

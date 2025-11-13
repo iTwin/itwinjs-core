@@ -1461,7 +1461,7 @@ export class HalfEdgeGraph {
   public constructor() {
     this.allHalfEdges = [];
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    this._maskManager = MaskManager.create(HalfEdgeMask.ALL_GRAB_DROP_MASKS)!; // guaranteed to not return undefined
+    this._maskManager = MaskManager.create(HalfEdgeMask.ALL_GRAB_DROP_MASKS)!;
   }
   /**
    * Ask for a mask (from the graph's free pool) for caller's use.
