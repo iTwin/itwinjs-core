@@ -496,8 +496,8 @@ describe("TransitionSpiral3d", () => {
       new NormalizedClothoidTransition(),
       new NormalizedBiQuadraticTransition(),
       new NormalizedBlossTransition(),
-      new NormalizedCosineTransition(),
       new NormalizedSineTransition(),
+      new NormalizedCosineTransition(),
     ];
     for (const snap of snapFunctions) {
       if (Checker.noisy.spirals)
