@@ -1,6 +1,14 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 13 Nov 2025 21:16:32 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Nov 2025 23:24:40 GMT and should not be manually modified.
+
+## 5.3.2
+Thu, 13 Nov 2025 23:23:23 GMT
+
+### Updates
+
+- Update view when view attachment elements are modified.
+- Work around Intel Ultra 7 vertex discard glitch
 
 ## 5.3.1
 Thu, 06 Nov 2025 20:29:06 GMT
