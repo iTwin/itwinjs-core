@@ -771,6 +771,158 @@ describe("Composite Formats tests:", () => {
       format.roundFactor = 0.0;
       format.precision = DecimalPrecision.Six;
     }
-  })
+  });
+
+  it("Fractional composite rounding with carry-over to parent unit", async () => {
+    const unitsProvider = new TestUnitsProvider();
+
+    const formatData = {
+      composite: {
+        includeZero: true,
+        spacer: "-",
+        units: [
+          {
+            label: "'",
+            name: "Units.FT",
+          },
+          {
+            label: "\"",
+            name: "Units.IN",
+          },
+        ],
+      },
+      formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+      precision: 8,
+      type: "Fractional",
+      uomSeparator: "",
+    };
+
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData);
+    expect(format.hasUnits).to.be.true;
+
+    const testQuantityData = [
+      // Cases where rounding SHOULD trigger carry-over (11.999+ inches rounds to 12" = 1')
+      { magnitude: 17.9999999, result: "18'-0\"", description: "17.9999999 ft rounds up to 18'" },
+      { magnitude: 11.9999999, result: "12'-0\"", description: "11.9999999 ft rounds up to 12'" },
+      { magnitude: 5.9999999, result: "6'-0\"", description: "5.9999999 ft rounds up to 6'" },
+      { magnitude: 0.9999999, result: "1'-0\"", description: "0.9999999 ft rounds up to 1'" },
+      { magnitude: 1.9999999, result: "2'-0\"", description: "1.9999999 ft rounds up to 2'" },
+
+      // Cases where rounding should NOT trigger carry-over
+      { magnitude: 17.99, result: "17'-11 7/8\"", description: "17.99 ft stays as 17'-11 7/8\"" },
+      { magnitude: 17.5, result: "17'-6\"", description: "17.5 ft stays as 17'-6\"" },
+      { magnitude: 17.0, result: "17'-0\"", description: "17.0 ft exact" },
+      { magnitude: 11.95, result: "11'-11 3/8\"", description: "11.95 ft stays as 11'-11 3/8\"" },
+      { magnitude: 0.5, result: "0'-6\"", description: "0.5 ft stays as 0'-6\"" },
+
+      // Edge cases with small values that shouldn't carry over
+      { magnitude: 0.083333333, result: "0'-1\"", description: "exactly 1 inch" },
+      { magnitude: 0.916666666, result: "0'-11\"", description: "exactly 11 inches" },
+
+      // Negative values with carry-over
+      { magnitude: -17.9999999, result: "-18'-0\"", description: "negative value with carry-over" },
+      { magnitude: -0.9999999, result: "-1'-0\"", description: "negative fraction with carry-over" },
+    ];
+
+    for (const testEntry of testQuantityData) {
+      const unit = new BasicUnit("Units.FT", "ft", "Units.LENGTH");
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
+      expect(formattedValue).to.be.equal(testEntry.result);
+    }
+  });
+
+  it("Fractional composite rounding with DMS (degrees-minutes-seconds)", async () => {
+    const unitsProvider = new TestUnitsProvider();
+
+    const formatData = {
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          {
+            label: "°",
+            name: "Units.ARC_DEG",
+          },
+          {
+            label: "'",
+            name: "Units.ARC_MINUTE",
+          },
+          {
+            label: "\"",
+            name: "Units.ARC_SECOND",
+          },
+        ],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 8,
+      type: "Fractional",
+      uomSeparator: "",
+    };
+
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData);
+    expect(format.hasUnits).to.be.true;
+
+    const testQuantityData = [
+      // Cases where rounding SHOULD trigger carry-over (59.999+ seconds rounds to 60" = 1')
+      { magnitude: 0.016666666, result: "0°1'0\"", description: "0.0166666... degrees (59.999... seconds rounds to 1 minute)" },
+      { magnitude: 0.5166666666, result: "0°31'0\"", description: "seconds round to full minute" },
+
+      // Cases where rounding should NOT trigger carry-over
+      { magnitude: 0.516, result: "0°30'57 5/8\"", description: "normal rounding without carry-over" },
+      { magnitude: 0.5, result: "0°30'0\"", description: "exact half degree" },
+    ];
+
+    for (const testEntry of testQuantityData) {
+      const unit = new BasicUnit("Units.ARC_DEG", "°", "Units.ANGLE");
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
+      expect(formattedValue).to.be.equal(testEntry.result);
+    }
+  });
+
+  it("Decimal composite should NOT use fractional carry-over logic", async () => {
+    const unitsProvider = new TestUnitsProvider();
+
+    const formatData = {
+      composite: {
+        includeZero: true,
+        spacer: "-",
+        units: [
+          {
+            label: "'",
+            name: "Units.FT",
+          },
+          {
+            label: "\"",
+            name: "Units.IN",
+          },
+        ],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 2,
+      type: "Decimal",
+      uomSeparator: "",
+    };
+
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData);
+    expect(format.hasUnits).to.be.true;
+
+    const testQuantityData = [
+      // Decimal format doesn't use the fractional carry-over logic
+      { magnitude: 17.9999999, result: "17'-12\"", description: "decimal format rounds 11.999... inches to 12 without carry-over" },
+      { magnitude: 17.99, result: "17'-11.88\"", description: "decimal format normal rounding" },
+    ];
+
+    for (const testEntry of testQuantityData) {
+      const unit = new BasicUnit("Units.FT", "ft", "Units.LENGTH");
+      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
+      expect(formattedValue).to.be.equal(testEntry.result);
+    }
+  });
 
 });
