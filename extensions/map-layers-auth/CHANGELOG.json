@@ -155,6 +155,12 @@
       }
     },
     {
+      "version": "4.11.7",
+      "tag": "@itwin/map-layers-auth_v4.11.7",
+      "date": "Thu, 13 Nov 2025 20:49:33 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.11.6",
       "tag": "@itwin/map-layers-auth_v4.11.6",
       "date": "Mon, 16 Jun 2025 15:00:15 GMT",

@@ -1,6 +1,6 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Thu, 13 Nov 2025 07:46:34 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Nov 2025 20:51:00 GMT and should not be manually modified.
 
 ## 5.3.1
 Thu, 06 Nov 2025 20:29:06 GMT
@@ -191,6 +191,13 @@ Fri, 13 Jun 2025 20:25:38 GMT
 - Removes re-exports from @itwin/core-bentley
 - Deprecate metadata types replaced by ecschema-metadata
 - Change core peer dependencies to strict version.
+
+## 4.11.7
+Thu, 13 Nov 2025 20:49:32 GMT
+
+### Updates
+
+- Bump `playwright` version to `~1.56.1`.
 
 ## 4.11.6
 Mon, 16 Jun 2025 15:00:15 GMT
