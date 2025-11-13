@@ -155,7 +155,7 @@ We expose APIs and interfaces to support persistence of formats. Different from 
   "label": "Metric",
   "unitSystem": "metric",
   "formats": {
-    "DefaultToolUnits.LENGTH": {
+    "DefaultToolsUnits.LENGTH": {
       "composite": {
         "includeZero": true,
         "spacer": "",
@@ -166,7 +166,7 @@ We expose APIs and interfaces to support persistence of formats. Different from 
       "type": "Decimal",
       "decimalSeparator": "."
     },
-    "DefaultToolUnits.ANGLE": {
+    "DefaultToolsUnits.ANGLE": {
       "description": "degrees (labeled) 2 decimal places",
       "composite": {
         "includeZero": true,
@@ -193,7 +193,7 @@ We expose APIs and interfaces to support persistence of formats. Different from 
   "label": "Imperial",
   "unitSystem": "imperial",
   "formats": {
-    "DefaultToolUnits.LENGTH": {
+    "DefaultToolsUnits.LENGTH": {
       "composite": {
         "includeZero": true,
         "spacer": "",
@@ -202,7 +202,7 @@ We expose APIs and interfaces to support persistence of formats. Different from 
       "precision": 4,
       "type": "Decimal",
     },
-    "DefaultToolUnits.ANGLE": {
+    "DefaultToolsUnits.ANGLE": {
       "description": "degrees minutes seconds (labeled) 0 decimal places",
       "composite": {
         "includeZero": true,
