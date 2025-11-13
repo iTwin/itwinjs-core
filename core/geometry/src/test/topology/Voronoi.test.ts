@@ -31,7 +31,7 @@ import { HalfEdgeGraphSearch, PolyfaceBuilder } from "../../polyface/PolyfaceBui
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Point3dArrayRangeTreeContext } from "../../polyface/RangeTree/Point3dArrayRangeTreeContext";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
-import { Sample } from "../../test/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, HalfEdgeToBooleanFunction } from "../../topology/Graph";
 import { HalfEdgeGraphOps } from "../../topology/Merging";
 import { Triangulator } from "../../topology/Triangulation";

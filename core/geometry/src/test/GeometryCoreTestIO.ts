@@ -481,8 +481,8 @@ export class GeometryCoreTestIO {
         this.captureCurveLocationDetails(collection, item, markerSize, dx, dy, dz);
       }
     } else if (data instanceof CurveLocationDetail) {
-      if (data.hasFraction1) {
-        if (data.curve && undefined !== data.fraction1) {
+      if (data.isInterval()) {
+        if (data.curve) {
           const partialCurve = data.curve.clonePartialCurve(data.fraction, data.fraction1);
           if (partialCurve) {
             const curveB = CurveChainWireOffsetContext.createSingleOffsetPrimitiveXY(partialCurve, 0.6 * markerSize);

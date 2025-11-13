@@ -550,17 +550,15 @@ export class Checker {
   public static setTransform(transform: Transform) { Checker._transform = transform; }
   public static getTransform(): Transform { return Checker._transform; }
 
-  public static saveTransformed(g: GeometryQuery, maxCoordinate: number = 1.0e12) {
+  public static saveTransformed(g: GeometryQuery, maxCoordinate: number = Geometry.largeCoordinateResult) {
     const range = g.range();
-
-    if (!range.isNull && range.maxAbs() <= maxCoordinate) {
-      const gClone = g.clone();
-      if (!gClone)
-        return;
+    const gClone = g.clone();
+    if (!range.isNull && range.maxAbs() <= maxCoordinate && gClone) {
       Checker._cache.push(gClone);
       Checker._cache[Checker._cache.length - 1].tryTransformInPlace(Checker._transform);
     }
   }
+
   public static saveTransformedLineString(points: Point3d[]) {
     const cv = LineString3d.createPoints(points);
     Checker.saveTransformed(cv);
