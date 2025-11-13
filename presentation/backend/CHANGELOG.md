@@ -1,6 +1,6 @@
 # Change Log - @itwin/presentation-backend
 
-This log was last generated on Thu, 13 Nov 2025 07:47:40 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Nov 2025 20:52:11 GMT and should not be manually modified.
 
 ## 5.3.1
 Thu, 06 Nov 2025 20:29:07 GMT
@@ -147,6 +147,11 @@ Fri, 13 Jun 2025 20:25:38 GMT
 - Clean up APIs deprecated in 3.x
 - Return errors in a way native to our RPC system. For web cases that also means proper HTTP response status codes.
 - Change core peer dependencies to strict version.
+
+## 4.11.7
+Thu, 13 Nov 2025 20:49:33 GMT
+
+_Version update only_
 
 ## 4.11.6
 Mon, 16 Jun 2025 15:00:15 GMT

@@ -1,6 +1,6 @@
 # Change Log - @itwin/appui-abstract
 
-This log was last generated on Thu, 13 Nov 2025 07:47:40 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Nov 2025 20:52:10 GMT and should not be manually modified.
 
 ## 5.3.1
 Thu, 06 Nov 2025 20:29:06 GMT
@@ -130,6 +130,11 @@ Fri, 13 Jun 2025 20:25:38 GMT
 - Deprecate `quantityType` in `PropertyDescription`, replaced by optional `kindOfQuantityName`
 - remove previously deprecated EditorPosition.columnSpan
 - Change core peer dependencies to strict version.
+
+## 4.11.7
+Thu, 13 Nov 2025 20:49:32 GMT
+
+_Version update only_
 
 ## 4.11.6
 Mon, 16 Jun 2025 15:00:15 GMT
