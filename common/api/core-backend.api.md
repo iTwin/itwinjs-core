@@ -1058,15 +1058,18 @@ export namespace CloudSqlite {
     }
     // @internal
     export interface BcvStats {
-        readonly activeClients?: number;
-        readonly attachedContainers?: number;
-        readonly lockedCacheslots: number;
-        readonly memoryHighwater?: number;
-        readonly memoryUsed?: number;
-        readonly ongoingPrefetches?: number;
-        readonly populatedCacheslots: number;
-        readonly totalCacheslots: number;
-        readonly totalClients?: number;
+        readonly activeClients?: string;
+        readonly attachedContainers?: string;
+        readonly lockedCacheslots: string;
+        readonly memoryClientArray?: string;
+        readonly memoryClientManifest?: string;
+        readonly memoryHighwater?: string;
+        readonly memoryManifest?: string;
+        readonly memoryUsed?: string;
+        readonly ongoingPrefetches?: string;
+        readonly populatedCacheslots: string;
+        readonly totalCacheslots: string;
+        readonly totalClients?: string;
     }
     // @internal
     export interface BcvStatsFilterOptions {

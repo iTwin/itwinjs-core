@@ -293,29 +293,30 @@ describe("Checkpoints", () => {
       let stats = container.queryBcvStats({ addClientInformation: true });
       const populatedCacheslots = stats.populatedCacheslots;
       // Opening the database causes some blocks to be downloaded.
-      expect(stats.populatedCacheslots).to.be.greaterThan(0);
+      expect(parseInt(stats.populatedCacheslots, 16)).to.be.greaterThan(0);
       // Only one database and this db has a default txn open so all it's local blocks should be locked.
-      expect(stats.lockedCacheslots).greaterThan(0);
+      expect(parseInt(stats.lockedCacheslots, 16)).to.be.greaterThan(0);
       // 10 GB (comes from daemonProps at the top of this test file) / 4 mb (imodel block size) should give us the number of total available entries in the cache.
-      expect(stats.totalCacheslots).to.equal((10 * 1024 * 1024 * 1024) / (4 * 1024 * 1024));
-      expect(stats.activeClients).to.equal(1);
-      expect(stats.attachedContainers).to.equal(1);
-      expect(stats.totalClients).to.equal(1);
+      expect(parseInt(stats.totalCacheslots, 16)).to.equal((10 * 1024 * 1024 * 1024) / (4 * 1024 * 1024));
+      expect(parseInt(stats.activeClients ?? "0x0", 16)).to.equal(1);
+      expect(parseInt(stats.attachedContainers ?? "0x0", 16)).to.equal(1);
+      expect(parseInt(stats.totalClients ?? "0x0", 16)).to.equal(1);
       // Sanity check that we have an addon with memory stats support
       expect(stats.memoryUsed).to.not.be.undefined;
       expect(stats.memoryHighwater).to.not.be.undefined;
+      expect(stats.memoryManifest).to.not.be.undefined;
       iModel.restartDefaultTxn();
       stats = container.queryBcvStats({ addClientInformation: true });
       expect(stats.populatedCacheslots).to.equal(populatedCacheslots);
-      expect(stats.lockedCacheslots).to.equal(0);
-      expect(stats.activeClients).to.equal(0);
-      expect(stats.totalClients).to.equal(1);
+      expect(parseInt(stats.lockedCacheslots, 16)).to.equal(0);
+      expect(parseInt(stats.activeClients ?? "0xffffffffffffffff", 16)).to.equal(0);
+      expect(parseInt(stats.totalClients ?? "0x0", 16)).to.equal(1);
       const prefetch = CloudSqlite.startCloudPrefetch(container, `${testChangeSet.id}.bim`);
       stats = container.queryBcvStats({ addClientInformation: true });
-      expect(stats.ongoingPrefetches).to.equal(1);
+      expect(parseInt(stats.ongoingPrefetches ?? "0x0", 16)).to.equal(1);
       prefetch.cancel();
       stats = container.queryBcvStats({ addClientInformation: true });
-      expect(stats.ongoingPrefetches).to.equal(0);
+      expect(parseInt(stats.ongoingPrefetches ?? "0xffffffffffffffff", 16)).to.equal(0);
 
       // Open multiple imodels from same container
       const iModel2 = await SnapshotDb.openCheckpointFromRpc({
@@ -325,21 +326,21 @@ describe("Checkpoints", () => {
         changeset: testChangeSetFirstVersion,
       });
       stats = container.queryBcvStats({ addClientInformation: true });
-      expect(stats.totalClients).to.equal(2);
-      expect(stats.activeClients).to.equal(1);
-      expect(stats.attachedContainers).to.equal(1);
+      expect(parseInt(stats.totalClients ?? "0x0", 16)).to.equal(2);
+      expect(parseInt(stats.activeClients ?? "0x0", 16)).to.equal(1);
+      expect(parseInt(stats.attachedContainers ?? "0x0", 16)).to.equal(1);
       iModel2.restartDefaultTxn();
       stats = container.queryBcvStats({ addClientInformation: true });
-      expect(stats.activeClients).to.equal(0);
-      expect(stats.totalClients).to.equal(2);
+      expect(parseInt(stats.activeClients ?? "0xffffffffffffffff", 16)).to.equal(0);
+      expect(parseInt(stats.totalClients ?? "0x0", 16)).to.equal(2);
 
       iModel.close();
       stats = container.queryBcvStats({ addClientInformation: true });
-      expect(stats.totalClients).to.equal(1);
+      expect(parseInt(stats.totalClients ?? "0x0", 16)).to.equal(1);
 
       iModel2.close();
       stats = container.queryBcvStats({ addClientInformation: true });
-      expect(stats.totalClients).to.equal(0);
+      expect(parseInt(stats.totalClients ?? "0xffffffffffffffff", 16)).to.equal(0);
     });
 
     it("should be able to open multiple checkpoints in same container when sas expires", async () => {
