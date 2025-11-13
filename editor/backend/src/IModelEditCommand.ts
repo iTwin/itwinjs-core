@@ -300,7 +300,7 @@ export class EditScope implements IEditScope {
  * @alpha
  */
 export function makeScopeSafe(
-  target: any,
+  _target: any,
   propertyKey: string,
   descriptor: PropertyDescriptor
 ): PropertyDescriptor {
@@ -311,13 +311,10 @@ export function makeScopeSafe(
   }
 
   descriptor.value = async function (this: any, ...args: any[]) {
-    // 'this' refers to the command instance at runtime
-    if (typeof this.executeOperation !== "function") {
-      throw new Error(
-        `@scopeSafe decorator requires the class to have an executeOperation method. ` +
-        `Ensure ${target.constructor.name} extends InteractiveCommand or ImmediateCommand.`
-      );
-    }
+    // Check if we're already in an Interactive command scope
+    // No need to create a new scope for the nested command.
+    // if (IModelDb.activeEditScope()?.commandType === CommandType.Interactive)
+    //   return await originalMethod.apply(this, args);
 
     // Wrap the original method in executeOperation
     return await this.executeOperation(async () => {
@@ -388,7 +385,7 @@ export abstract class EditCommandBase<_TArgs extends EditCommandArgs = EditComma
    * Overridable method to validate command result.
    * @param result - The result of the command execution
    */
-  public async validateCommandResult(_result: Awaited<TResult>): Promise<boolean> {
+  public async validateCommandResult(_result?: Awaited<TResult>): Promise<boolean> {
     // Default implementation does nothing
     return true;
   }
@@ -431,14 +428,14 @@ export abstract class ImmediateCommand<TArgs extends EditCommandArgs = EditComma
  * @alpha
  */
 export abstract class InteractiveCommand<TArgs extends EditCommandArgs = EditCommandArgs, TResult = void> extends EditCommandBase<TArgs, TResult> {
-
   constructor(iModel: IModelDb) {
     super(iModel);
-    this._editScope = EditScope.start(this._iModel, CommandType.Interactive);
   }
 
   // DO NOT OVERRIDE or mark @makeScopeSafe
   public async startCommandScope(): Promise<void> {
+    this._editScope = EditScope.start(this._iModel, CommandType.Interactive);
+
     if (!this._editScope) {
       throw new Error("EditCommand has no scope.");
     }
@@ -457,13 +454,19 @@ export abstract class InteractiveCommand<TArgs extends EditCommandArgs = EditCom
       throw new Error("EditCommand has no scope.");
     }
     this._editScope.end();
+    this._editScope = undefined;
+    if (await this.validateCommandResult() === false) {
+      this.abandonChanges();
+      throw new Error("Command result validation failed.");
+    }
+    this.saveChanges("Interactive command completed");
   }
 
   /**
    * Execute a command operation within a transactional scope. The operation will NOT save/abandon - that is left to the caller when they end this long-spanning command.
    * @param args - Arguments for the command execution (includes optional description)
    * @param fn - Callback function to execute. Args are available in the closure.
-   * @returns The result of the callback function
+   * @returns The result of the callback function`
    */
   private async executeOperation(operation: (args?: TArgs) => Promise<TResult>): Promise<TResult> {
     if (!this._editScope) {
@@ -477,11 +480,7 @@ export abstract class InteractiveCommand<TArgs extends EditCommandArgs = EditCom
     this._editScope.state = EditCommandState.Active;
 
     return await EditScope.commandExecutionContext.run([...EditScope.commandExecutionContext.getStore() ?? [], this._editScope.scopeId], async () => {
-      const result = await operation();
-      if (await this.validateCommandResult(result) === false) {
-        throw new Error("Command result validation failed.");
-      }
-      return result;
+      return await operation();
     });
   }
 }

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelDb, PhysicalElement, Schema } from "@itwin/core-backend";
 import { Code, PhysicalElementProps } from "@itwin/core-common";
-import { EditCommandArgs, ImmediateCommand, makeScopeSafe } from "../IModelEditCommand";
+import { EditCommandArgs, ImmediateCommand, InteractiveCommand, makeScopeSafe } from "../IModelEditCommand";
 import { Id64String } from "@itwin/core-bentley";
 
 // This rule was deprecated in ESLint v8.46.0.
@@ -157,5 +157,51 @@ export class DeleteElementCommand extends ImmediateCommand<DeleteElementArgs, Id
 
   public override async validateCommandResult(result: Id64String): Promise<boolean> {
     return this._iModel.elements.tryGetElement<TestElement>(result) === undefined;
+  }
+}
+
+interface InteractiveElementAPIArgs extends EditCommandArgs {
+  elementId?: Id64String;
+}
+
+export class InteractiveElementAPI extends InteractiveCommand<InteractiveElementAPIArgs, Id64String> {
+  @makeScopeSafe
+  public async createElementAndUpdateProperties(modelId: Id64String, categoryId: Id64String): Promise<Id64String> {
+    const createCmd = new CreateElementCommand(this._iModel);
+    const elementId = await createCmd.createElement({
+      userLabel: "InteractiveCreatedElement",
+      testElementProps: {
+        classFullName: TestElement.fullClassName,
+        code: Code.createEmpty(),
+        model: modelId,
+        category: categoryId,
+        intProperty: 10,
+        stringProperty: "FirstValue",
+        doubleProperty: 20.5,
+      },
+    });
+
+    const updateCmd = new UpdateElementCommand(this._iModel);
+    await updateCmd.updateElement({
+      elementId,
+      intProperty: 42,
+      stringProperty: "SecondValue",
+      doubleProperty: 84.0,
+    });
+
+    return elementId;
+  }
+
+  @makeScopeSafe
+  public async updateElement(elementId: Id64String, intProperty: number, stringProperty: string, doubleProperty: number): Promise<Id64String> {
+    const updateCmd = new UpdateElementCommand(this._iModel);
+    const updatedElementId = await updateCmd.updateElement({
+      elementId,
+      intProperty,
+      stringProperty,
+      doubleProperty,
+    });
+
+    return updatedElementId;
   }
 }

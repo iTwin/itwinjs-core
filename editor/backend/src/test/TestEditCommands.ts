@@ -174,14 +174,12 @@ export class InteractivePythagorasCommand extends InteractiveCommand<PythagorasA
   // Calculate and return the hypotenuse
   @makeScopeSafe
   public async calcHypotenuse(args: PythagorasArgs): Promise<number> {
-    await this.startCommandScope();
     // Set the sides
     await this.setSideA(args.sideA);
     await this.setSideB(args.sideB);
 
     // Calculate sum of squares
     const sumOfSquares = await this.getSumOfSquares();
-    await this.endCommandScope();
 
     // Calculate hypotenuse
     return Math.sqrt(sumOfSquares);
@@ -190,7 +188,6 @@ export class InteractivePythagorasCommand extends InteractiveCommand<PythagorasA
   // Calculate hypotenuse using nested immediate commands
   @makeScopeSafe
   public async calcHypotenuseWithNestedCommands(args: PythagorasArgs): Promise<number> {
-    await this.startCommandScope();
     // Use immediate commands for square operations
     const squareCommand = new SquareCommand(this._iModel);
     const [sideASquared, sideBSquared] = await Promise.all([
@@ -200,7 +197,6 @@ export class InteractivePythagorasCommand extends InteractiveCommand<PythagorasA
 
     const squareRootCommand = new SquareRootCommand(this._iModel);
     const result = await squareRootCommand.performSquareRootOperation({ value: sideASquared + sideBSquared });
-    await this.endCommandScope();
     return result;
   }
 }

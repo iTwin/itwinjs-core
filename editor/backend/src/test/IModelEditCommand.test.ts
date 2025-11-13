@@ -2,14 +2,17 @@ import { assert, expect } from "chai";
 import { _nativeDb, ClassRegistry, Element, IModelDb, IModelHost, IModelJsFs, KnownLocations, PhysicalModel, PhysicalPartition, Schemas, SpatialCategory, StandaloneDb, SubjectOwnsPartitionElements } from "@itwin/core-backend";
 import { join } from "path";
 import { InteractivePolygonEditor, InteractivePythagorasCommand, PythagorasCommand, SquareCommand } from "./TestEditCommands";
-import { CreateElementCommand, DeleteElementCommand, TestEditCommandSchema, TestElement, UpdateElementCommand } from "./ElementEditCommands";
+import { CreateElementCommand, DeleteElementCommand, InteractiveElementAPI, TestEditCommandSchema, TestElement, UpdateElementCommand } from "./ElementEditCommands";
 import * as path from "path"
-import { Code, CodeProps, ElementProps, IModel, RelatedElement, SubCategoryAppearance } from "@itwin/core-common";
-import { Id64, Id64String, OpenMode } from "@itwin/core-bentley";
+import { Code, CodeProps, ElementProps, IModel, IModelError, RelatedElement, SubCategoryAppearance } from "@itwin/core-common";
+import { Id64, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
+chai.use(chaiAsPromised);
 
 describe("IModelEditCommand", () => {
   const outputDir = join(KnownLocations.tmpdir, "output");
-  let iModelDb: IModelDb;
+  let iModelDb: StandaloneDb;
   let iModelPath: string;
   let modelId: Id64String;
   let categoryId: Id64String | undefined;
@@ -142,45 +145,36 @@ describe("IModelEditCommand", () => {
     it("Simple interactive command - calculate hypotenuse", async () => {
       const interactivePythagoras = new InteractivePythagorasCommand(iModelDb);
 
+      await interactivePythagoras.startCommandScope();
       const hypotenuse = await interactivePythagoras.calcHypotenuse({ sideA: 6, sideB: 8 });
+      await interactivePythagoras.endCommandScope();
       expect(hypotenuse).to.equal(10);
     });
 
     it("Interactive command with nested immediate commands", async () => {
       const interactivePythagoras = new InteractivePythagorasCommand(iModelDb);
 
+      await interactivePythagoras.startCommandScope();
       const hypotenuse = await interactivePythagoras.calcHypotenuseWithNestedCommands({ sideA: 5, sideB: 12 });
+      await interactivePythagoras.endCommandScope();
       expect(hypotenuse).to.equal(13);
     });
 
     // TODO Rohit: If a command throws, the command scope is not handled/ended properly - fix this
-    it("Multiple concurrent interactive commands", async () => {
-      const command1 = new InteractivePythagorasCommand(iModelDb);
-
-      // Should throw when trying to start a second interactive command concurrently
-      expect(() => new InteractivePythagorasCommand(iModelDb)).to.throw("Cannot start an Interactive EditCommand from while another Interactive EditCommand is active.");
-
-      // command1 should still work
-      expect(await command1.calcHypotenuse({ sideA: 3, sideB: 4 })).to.equal(5);
-      await command1.endCommandScope();
-
-      // After ending, a new interactive command should not throw
-      expect(async () => {
-        const command2 = new InteractivePythagorasCommand(iModelDb);
-        await command2.endCommandScope();
-      }).to.not.throw();
-    });
-
     it("Mix of immediate and interactive commands (which have nested immediate commands)", async () => {
       const immediateCmd = new SquareCommand(iModelDb);
       const interactiveCmd = new InteractivePythagorasCommand(iModelDb);
       const anotherImmediateCmd = new PythagorasCommand(iModelDb);
 
-      const [immediate1, interactive, immediate2] = await Promise.all([
-        immediateCmd.performSquareOperation({ value: 7 }),
-        interactiveCmd.calcHypotenuseWithNestedCommands({ sideA: 6, sideB: 8 }),
-        anotherImmediateCmd.calcHypotenuse({ sideA: 9, sideB: 12 }),
-      ]);
+      // Run immediate command before starting interactive scope
+      const immediate1 = await immediateCmd.performSquareOperation({ value: 7 });
+
+      await interactiveCmd.startCommandScope();
+      const interactive = await interactiveCmd.calcHypotenuseWithNestedCommands({ sideA: 6, sideB: 8 });
+      await interactiveCmd.endCommandScope();
+
+      // Run another immediate command after ending interactive scope
+      const immediate2 = await anotherImmediateCmd.calcHypotenuse({ sideA: 9, sideB: 12 });
 
       expect(immediate1).to.equal(49);
       expect(interactive).to.equal(10);
@@ -432,6 +426,53 @@ describe("IModelEditCommand", () => {
 
       // After the command completes, saveChanges should work
       expect(() => iModelDb.saveChanges("Save after command completes")).to.not.throw();
+    });
+
+    it("Interactive command with element API operations", async () => {
+      const interactiveCommand = new InteractiveElementAPI(iModelDb);
+
+      await interactiveCommand.startCommandScope();
+
+      const elementId = await interactiveCommand.createElementAndUpdateProperties(modelId, categoryId!);
+      await interactiveCommand.updateElement(elementId, 53, "ThirdValue", 73.85);
+
+      await interactiveCommand.endCommandScope();
+
+      const element2 = iModelDb.elements.tryGetElement<TestElement>(elementId);
+      expect(element2).to.not.be.undefined;
+      expect(element2?.intProperty).to.equal(53);
+      expect(element2?.stringProperty).to.equal("ThirdValue");
+      expect(element2?.doubleProperty).to.equal(73.85);
+    });
+
+    it("InteractiveCommand negative tests", async () => {
+      // Test 1: Calling a function without activating an edit scope first
+      const interactiveCommand = new InteractiveElementAPI(iModelDb);
+      await expect(interactiveCommand.createElementAndUpdateProperties(modelId, categoryId!)).to.eventually.be.rejectedWith(Error, "EditCommand has no scope.");
+
+      // Insert an element
+      await interactiveCommand.startCommandScope();
+      const elementId = await interactiveCommand.createElementAndUpdateProperties(modelId, categoryId!);
+
+      // Test 2: Starting a new edit scope while one is already active
+      await expect(interactiveCommand.startCommandScope()).to.eventually.be.rejectedWith(Error, "Cannot start an Interactive EditCommand from while another Interactive EditCommand is active.");
+      await interactiveCommand.endCommandScope();
+
+      // Test 3: Calling a function after ending the edit scope
+      await expect(interactiveCommand.endCommandScope()).to.eventually.be.rejectedWith(Error, "EditCommand has no scope.");
+
+      // Test 4: Calling a function after ending the edit scope
+      await expect(interactiveCommand.updateElement(elementId, 21, "UpdateAgain", 73.85)).to.eventually.be.rejectedWith(Error, "EditCommand has no scope.");
+
+      // Test 5: Save/abandon changes should work when no edit scope is active
+      expect(() => iModelDb.saveChanges("Save with no active command")).to.not.throw(Error, "Cannot call saveChanges while an EditCommand is active.");
+      expect(() => iModelDb.abandonChanges()).to.not.throw(Error, "Cannot call abandonChanges while an EditCommand is active.");
+
+      // Test 6: Save/abandon changes while an edit scope is active
+      await interactiveCommand.startCommandScope();
+      expect(() => iModelDb.saveChanges("Save with no active command")).to.throw(Error, "Cannot call saveChanges while an EditCommand is active.");
+      expect(() => iModelDb.abandonChanges()).to.throw(Error, "Cannot call abandonChanges while an EditCommand is active.");
+      await interactiveCommand.endCommandScope();
     });
 
     // TODO Rohit: Just like saveChanges and abandonChanges, there are other iModel APIs that should not be allowed during an active command
