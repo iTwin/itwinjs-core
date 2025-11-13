@@ -1,6 +1,6 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Thu, 13 Nov 2025 20:52:10 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Nov 2025 21:16:32 GMT and should not be manually modified.
 
 ## 5.3.1
 Thu, 06 Nov 2025 20:29:06 GMT
@@ -35,6 +35,11 @@ Mon, 03 Nov 2025 19:02:35 GMT
 - Added deleteInstances to delete multiple relationship instances
 - Added new api to create leader terminator geometry for different shapes
 - Added ECSqlWriteStatement disposal inside WithWriteStatement
+
+## 5.2.6
+Thu, 13 Nov 2025 21:13:51 GMT
+
+_Version update only_
 
 ## 5.2.5
 Thu, 13 Nov 2025 07:45:14 GMT
