@@ -4531,6 +4531,8 @@ export class LocalhostIpcHost {
 // @internal (undocumented)
 export interface LocalhostIpcHostOpts {
     // (undocumented)
+    host?: string;
+    // (undocumented)
     noServer?: boolean;
     // (undocumented)
     socketPort?: number;
