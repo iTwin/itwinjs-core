@@ -1,6 +1,6 @@
 # Change Log - @itwin/core-quantity
 
-This log was last generated on Thu, 13 Nov 2025 20:51:00 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Nov 2025 21:15:21 GMT and should not be manually modified.
 
 ## 5.3.1
 Thu, 06 Nov 2025 20:29:06 GMT
@@ -14,6 +14,11 @@ Mon, 03 Nov 2025 19:02:35 GMT
 
 - Return error result when unit labels aren't matched during quantity parsing
 - Handle formatting cases where after unit conversion, sign is changed
+
+## 5.2.6
+Thu, 13 Nov 2025 21:13:51 GMT
+
+_Version update only_
 
 ## 5.2.5
 Thu, 13 Nov 2025 07:45:14 GMT

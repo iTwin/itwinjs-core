@@ -1,6 +1,6 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 13 Nov 2025 20:51:00 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Nov 2025 21:15:21 GMT and should not be manually modified.
 
 ## 5.3.1
 Thu, 06 Nov 2025 20:29:06 GMT
@@ -21,6 +21,14 @@ Mon, 03 Nov 2025 19:02:35 GMT
 - Ensure viewport contents update when the view's category selector changes.
 - Remove beta support for reading contour line information from the GPU.
 - Increase logo card width in attribution popup to fix Google Maps image clipping
+
+## 5.2.6
+Thu, 13 Nov 2025 21:13:51 GMT
+
+### Updates
+
+- Fix unsafe-inline CSP violation
+- Work around Intel Ultra 7 vertex discard glitch
 
 ## 5.2.5
 Thu, 13 Nov 2025 07:45:14 GMT
