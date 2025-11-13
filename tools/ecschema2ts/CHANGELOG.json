@@ -14,6 +14,12 @@
       "comments": {}
     },
     {
+      "version": "5.2.5",
+      "tag": "@itwin/ecschema2ts_v5.2.5",
+      "date": "Thu, 13 Nov 2025 07:45:14 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.2.4",
       "tag": "@itwin/ecschema2ts_v5.2.4",
       "date": "Fri, 24 Oct 2025 16:20:38 GMT",

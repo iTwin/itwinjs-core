@@ -1,6 +1,6 @@
 # Change Log - @itwin/rpcinterface-full-stack-tests
 
-This log was last generated on Thu, 06 Nov 2025 20:30:21 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Nov 2025 07:47:40 GMT and should not be manually modified.
 
 ## 5.3.1
 Thu, 06 Nov 2025 20:29:07 GMT
@@ -13,6 +13,11 @@ Mon, 03 Nov 2025 19:02:35 GMT
 ### Updates
 
 - Bump `@itwin/oidc-signin-tool` to `^5.0.2`.
+
+## 5.2.5
+Thu, 13 Nov 2025 07:45:15 GMT
+
+_Version update only_
 
 ## 5.2.4
 Fri, 24 Oct 2025 16:20:38 GMT
