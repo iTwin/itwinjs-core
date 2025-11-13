@@ -913,7 +913,7 @@ describe("Composite Formats tests:", () => {
 
     const testQuantityData = [
       // Decimal format doesn't use the fractional carry-over logic
-      { magnitude: 17.9999999, result: "17'-12\"", description: "decimal format rounds 11.999... inches to 12 without carry-over" },
+      { magnitude: 17.9999999, result: "17'-12\"", description: "decimal format rounds 17.999... inches to 12 without carry-over" },
       { magnitude: 17.99, result: "17'-11.88\"", description: "decimal format normal rounding" },
     ];
 
