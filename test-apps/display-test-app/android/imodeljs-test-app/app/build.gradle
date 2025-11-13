@@ -42,11 +42,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.7.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.navigation:navigation-ui:2.5.3'
-<<<<<<< HEAD
     implementation 'com.github.itwin:mobile-native-android:5.3.31'
-=======
-    implementation 'com.github.itwin:mobile-native-android:5.2.30'
->>>>>>> 7d7c70c11f (Update to support bcv memory_client_* fields (backport #8696) [release/5.2.x] (#8761))
     implementation 'androidx.webkit:webkit:1.5.0'
 }
 

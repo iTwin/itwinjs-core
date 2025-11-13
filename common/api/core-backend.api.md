@@ -1067,11 +1067,8 @@ export namespace CloudSqlite {
         readonly activeClients?: string;
         readonly attachedContainers?: string;
         readonly lockedCacheslots: string;
-<<<<<<< HEAD
-=======
         readonly memoryClientArray?: string;
         readonly memoryClientManifest?: string;
->>>>>>> 7d7c70c11f (Update to support bcv memory_client_* fields (backport #8696) [release/5.2.x] (#8761))
         readonly memoryHighwater?: string;
         readonly memoryManifest?: string;
         readonly memoryUsed?: string;

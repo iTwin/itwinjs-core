@@ -113,16 +113,9 @@
     "webpack": "^5.97.1"
   },
   "dependencies": {
-<<<<<<< HEAD
     "@bentley/imodeljs-native": "5.3.31",
     "@itwin/object-storage-azure": "^3.0.4",
     "@azure/storage-blob": "^12.28.0",
-=======
-    "@bentley/imodeljs-native": "5.2.30",
-    "@itwin/cloud-agnostic-core": "^2.2.4",
-    "@itwin/object-storage-azure": "^2.3.0",
-    "@itwin/object-storage-core": "^2.3.0",
->>>>>>> 7d7c70c11f (Update to support bcv memory_client_* fields (backport #8696) [release/5.2.x] (#8761))
     "form-data": "^4.0.4",
     "fs-extra": "^8.1.0",
     "json5": "^2.2.3",
