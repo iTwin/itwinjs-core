@@ -44,6 +44,21 @@
       }
     },
     {
+      "version": "5.2.6",
+      "tag": "@itwin/core-frontend_v5.2.6",
+      "date": "Thu, 13 Nov 2025 21:13:51 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix unsafe-inline CSP violation"
+          },
+          {
+            "comment": "Work around Intel Ultra 7 vertex discard glitch"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.2.5",
       "tag": "@itwin/core-frontend_v5.2.5",
       "date": "Thu, 13 Nov 2025 07:45:14 GMT",
@@ -435,6 +450,18 @@
           },
           {
             "comment": "Change core peer dependencies to strict version."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.7",
+      "tag": "@itwin/core-frontend_v4.11.7",
+      "date": "Thu, 13 Nov 2025 20:49:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Work around Intel Ultra 7 vertex discard glitch"
           }
         ]
       }

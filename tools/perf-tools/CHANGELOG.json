@@ -20,6 +20,12 @@
       }
     },
     {
+      "version": "5.2.6",
+      "tag": "@itwin/perf-tools_v5.2.6",
+      "date": "Thu, 13 Nov 2025 21:13:51 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.2.5",
       "tag": "@itwin/perf-tools_v5.2.5",
       "date": "Thu, 13 Nov 2025 07:45:15 GMT",
@@ -149,6 +155,12 @@
       "version": "5.0.0",
       "tag": "@itwin/perf-tools_v5.0.0",
       "date": "Fri, 13 Jun 2025 20:25:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.11.7",
+      "tag": "@itwin/perf-tools_v4.11.7",
+      "date": "Thu, 13 Nov 2025 20:49:33 GMT",
       "comments": {}
     },
     {
