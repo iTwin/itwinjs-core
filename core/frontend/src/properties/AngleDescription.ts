@@ -18,11 +18,11 @@ export class AngleDescription extends FormattedQuantityDescription {
   constructor(name?: string, displayLabel?: string, iconSpec?: string, kindOfQuantityName?: string) {
     const defaultName = "angle";
     super({
-      name: name ? name : defaultName,
-      displayLabel: displayLabel ? displayLabel : IModelApp.localization.getLocalizedString("iModelJs:Properties.Angle"),
-      kindOfQuantityName: kindOfQuantityName ? kindOfQuantityName : "DefaultToolsUnits.ANGLE",
-      iconSpec
-    })
+      name: name ?? defaultName,
+      displayLabel: displayLabel ?? IModelApp.localization.getLocalizedString("iModelJs:Properties.Angle"),
+      kindOfQuantityName: kindOfQuantityName ?? "DefaultToolsUnits.ANGLE",
+      iconSpec,
+    });
   }
 
   public get formatterQuantityType(): QuantityType { return QuantityType.Angle; }
