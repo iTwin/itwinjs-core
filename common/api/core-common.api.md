@@ -5252,6 +5252,7 @@ export abstract class IModel implements IModelProps {
     get rootSubject(): RootSubjectProps;
     set rootSubject(subject: RootSubjectProps);
     static readonly rootSubjectId: Id64String;
+    // @internal
     static readonly schemaElementId: Id64String;
     setEcefLocation(ecef: EcefLocationProps): void;
     setGeographicCoordinateSystem(geoCRS: GeographicCRSProps): void;
