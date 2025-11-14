@@ -498,7 +498,7 @@ describe("Change merge method", () => {
     b1.close();
     b2.close();
   });
-  it("delete instance (data conflict)", async () => {
+  it("should keep element deleted when local update conflicts with remote delete", async () => {
     const b1 = await ctx.openB1(true /* = noLock */);
     const b2 = await ctx.openB2(true /* = noLock */);
 
