@@ -309,7 +309,7 @@ export abstract class IModelDb extends IModel {
    * will be able to acquire *any* locks while the schema lock is held.
    */
   public async acquireSchemaLock(): Promise<void> {
-    return this.locks.acquireLocks({ exclusive: IModel.rootSubjectId }); // TODO: ModelId treated like Element ID for the lock? This matches rootSubjectId.
+    return this.locks.acquireLocks({ exclusive: IModel.rootSubjectId });
   }
   /** determine whether the schema lock is currently held for this iModel. */
   public get holdsSchemaLock() {
