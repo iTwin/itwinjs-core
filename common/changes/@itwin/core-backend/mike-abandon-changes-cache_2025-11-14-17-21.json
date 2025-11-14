@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Changes iModelDb.abandonChanges() to only clear instanceKeyCaches instead of all backend caches",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
