@@ -2478,6 +2478,10 @@ describe("iModel", () => {
     const element2 = db.elements.getElementProps(id2);
     expect(element2).to.not.equal(element1);
 
+    // Make sure that the statement caches are not cleared
+    expect((db as any)._sqliteStatementCache.size).to.be.greaterThan(0);
+    expect((db as any)._statementCache.size).to.be.greaterThan(0);
+
     db.abandonChanges();
     db.close();
   });
