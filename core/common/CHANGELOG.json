@@ -2,6 +2,12 @@
   "name": "@itwin/core-common",
   "entries": [
     {
+      "version": "5.3.2",
+      "tag": "@itwin/core-common_v5.3.2",
+      "date": "Thu, 13 Nov 2025 23:23:23 GMT",
+      "comments": {}
+    },
+    {
       "version": "5.3.1",
       "tag": "@itwin/core-common_v5.3.1",
       "date": "Thu, 06 Nov 2025 20:29:06 GMT",
@@ -39,6 +45,12 @@
           }
         ]
       }
+    },
+    {
+      "version": "5.2.6",
+      "tag": "@itwin/core-common_v5.2.6",
+      "date": "Thu, 13 Nov 2025 21:13:51 GMT",
+      "comments": {}
     },
     {
       "version": "5.2.5",
@@ -351,6 +363,18 @@
           },
           {
             "comment": "Change core peer dependencies to strict version."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.7",
+      "tag": "@itwin/core-common_v4.11.7",
+      "date": "Thu, 13 Nov 2025 20:49:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Bump `playwright` version to `~1.56.1`."
           }
         ]
       }

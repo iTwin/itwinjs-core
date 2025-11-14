@@ -1,6 +1,11 @@
 # Change Log - @itwin/rpcinterface-full-stack-tests
 
-This log was last generated on Thu, 13 Nov 2025 07:47:40 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Nov 2025 23:24:40 GMT and should not be manually modified.
+
+## 5.3.2
+Thu, 13 Nov 2025 23:23:24 GMT
+
+_Version update only_
 
 ## 5.3.1
 Thu, 06 Nov 2025 20:29:07 GMT
@@ -13,6 +18,11 @@ Mon, 03 Nov 2025 19:02:35 GMT
 ### Updates
 
 - Bump `@itwin/oidc-signin-tool` to `^5.0.2`.
+
+## 5.2.6
+Thu, 13 Nov 2025 21:13:51 GMT
+
+_Version update only_
 
 ## 5.2.5
 Thu, 13 Nov 2025 07:45:15 GMT
@@ -132,6 +142,13 @@ Fri, 13 Jun 2025 20:25:38 GMT
 - Resolves CVE-2025-27152
 - change the assert in the test 'should be able to cancel a snap' to match the error message thrown on the frontend when a snap is successfully cancelled.
 - Deprecate unified selection related APIs.
+
+## 4.11.7
+Thu, 13 Nov 2025 20:49:33 GMT
+
+### Updates
+
+- Bump `@itwin/oidc-signin-tool` to `^5.0.2`.
 
 ## 4.11.6
 Mon, 16 Jun 2025 15:00:15 GMT
