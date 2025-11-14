@@ -78,20 +78,8 @@ export class PolyfacePrimitiveConverter extends PrimitiveConverter {
       asynchronous: false,
     });
 
+    (primitive as any).id = primitiveId;
     return primitive;
-  }
-
-  public override clearDecorations(scene: CesiumScene): void {
-    if (scene?.cesiumScene?.primitives) {
-      const polyfacePrimitives = [];
-      for (let i = scene.cesiumScene.primitives.length - 1; i >= 0; i--) {
-        const primitive = scene.cesiumScene.primitives.get(i);
-        if (primitive && primitive.id && typeof primitive.id === 'string' && primitive.id.includes('polyface')) {
-          polyfacePrimitives.push(primitive);
-        }
-      }
-      polyfacePrimitives.forEach(primitive => scene.cesiumScene.primitives.remove(primitive));
-    }
   }
 
   private convertPolyfaceToGeometry(polyface: Polyface, iModel?: IModelConnection): Geometry | undefined {

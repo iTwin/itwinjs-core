@@ -3,8 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { ViewDefinition3dProps } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
-import { Cartesian3, Clock, Color, defined, Ellipsoid, Globe, ImageryLayer, Ion, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler } from "@cesium/engine";
+import { Cartesian3, Clock, Color, createWorldImageryAsync, defined, Ellipsoid, Globe, ImageryLayer, Ion, IonWorldImageryStyle, OrthographicFrustum, PerspectiveFrustum, PointPrimitiveCollection, PolylineCollection, PrimitiveCollection, Scene, ScreenSpaceEventHandler } from "@cesium/engine";
+import { createCesiumCameraProps } from "./CesiumCamera.js";
 
 /** Options to configure a Cesium scene.
  * @internal
@@ -92,7 +94,9 @@ export class CesiumScene {
       Ion.defaultAccessToken = cesiumKey;
     }
 
-    this._scene.imageryLayers.add(ImageryLayer.fromWorldImagery({}));
+    const imageryProvider = createWorldImageryAsync({ style: IonWorldImageryStyle.AERIAL_WITH_LABELS });
+    const imageryLayer = ImageryLayer.fromProviderAsync(imageryProvider);
+    this._scene.imageryLayers.add(imageryLayer);
 
     // Create PointPrimitiveCollection for direct primitive rendering
     this._pointCollection = new PointPrimitiveCollection();
@@ -110,15 +114,13 @@ export class CesiumScene {
 
     const onRenderError = function (_scene: any, error: any) {
       const title =
-        "An error occurred while rendering.  Rendering has stopped.";
+        "An error occurred while rendering. Rendering has stopped.";
       // eslint-disable-next-line no-console
       console.log(title, error);
     };
     this._scene.renderError.addEventListener(onRenderError);
 
     IModelApp.viewManager.onBeginRender.addListener(() => {
-      // console.log("cesium scene render");
-
       this.resize();
 
       // ###TODO figure out how to handle the need to call `initializeFrame` in Cesium.
@@ -128,6 +130,38 @@ export class CesiumScene {
 
       const currentTime = this._clock.tick();
       this._scene.render(currentTime);
+    });
+
+    IModelApp.viewManager.onViewOpen.addListener((vp) => {
+
+      vp.onViewChanged.addListener((viewport) => {
+
+        const imodelEcef = viewport.iModel.ecefLocation;
+        const cesiumCam = createCesiumCameraProps({
+          viewDefinition: viewport.view.toJSON() as ViewDefinition3dProps,
+          ecefLoc: imodelEcef
+        });
+
+        if (cesiumCam.frustum.fov) {
+          this._scene.camera.frustum = new PerspectiveFrustum({
+            fov: cesiumCam.frustum.fov,
+            aspectRatio: this._canvas.width / this._canvas.height,
+          });
+        } else {
+          this._scene.camera.frustum = new OrthographicFrustum({
+            width: cesiumCam.frustum.width,
+            aspectRatio: this._canvas.width / this._canvas.height,
+          });
+        }
+
+        this._scene.camera.setView({
+          destination: new Cartesian3(cesiumCam.position.x, cesiumCam.position.y, cesiumCam.position.z),
+          orientation: {
+            direction: new Cartesian3(cesiumCam.direction.x, cesiumCam.direction.y, cesiumCam.direction.z),
+            up: new Cartesian3(cesiumCam.up.x, cesiumCam.up.y, cesiumCam.up.z)
+          },
+        });
+      });
     });
   }
 

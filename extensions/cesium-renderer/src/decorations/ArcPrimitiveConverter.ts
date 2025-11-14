@@ -110,6 +110,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
         asynchronous: false
       });
 
+      (primitive as any).id = primitiveId;
       return primitive;
     } else {
       const path = Path.create(arc);
@@ -129,6 +130,7 @@ export class ArcPrimitiveConverter extends PrimitiveConverter {
       // For non-filled arcs, use the stored scene reference to access polyline collection
       if (this._currentScene && this._currentScene.polylineCollection) {
         const polyline = this._currentScene.polylineCollection.add({
+          id: primitiveId,
           positions,
           width: 2,
           material: Material.fromType(Material.ColorType, { color }),

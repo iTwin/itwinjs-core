@@ -102,7 +102,7 @@ export class ShapePrimitiveConverter extends PrimitiveConverter<ShapeCoordinates
     geometryType: string,
     shapeId: string,
     _index: number,
-    primitivesCollection: PrimitiveCollection,
+    _primitivesCollection: PrimitiveCollection,
     iModel?: IModelConnection,
     originalShapes?: ShapeCoordinates[],
     _type?: string,
@@ -179,7 +179,7 @@ export class ShapePrimitiveConverter extends PrimitiveConverter<ShapeCoordinates
           })
         });
 
-        primitivesCollection.add(primitive);
+        (primitive as any).id = shapeId;
         return primitive;
     }
   }
