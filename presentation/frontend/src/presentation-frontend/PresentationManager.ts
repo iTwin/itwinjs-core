@@ -19,6 +19,7 @@ import {
   ContentRequestOptions,
   ContentSourcesRequestOptions,
   ContentUpdateInfo,
+  createContentFormatter,
   DefaultContentDisplayTypes,
   Descriptor,
   DescriptorOverrides,
@@ -53,13 +54,7 @@ import {
   UpdateInfo,
   VariableValueTypes,
 } from "@itwin/presentation-common";
-import {
-  buildElementProperties,
-  ContentFormatter,
-  ContentPropertyValueFormatter,
-  PresentationIpcEvents,
-  RpcRequestsHandler,
-} from "@itwin/presentation-common/internal";
+import { createElementPropertiesBuilder, PresentationIpcEvents, RpcRequestsHandler } from "@itwin/presentation-common/internal";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
 import { ensureIModelInitialized, startIModelInitialization } from "./IModelConnectionInitialization.js";
 import { _presentation_manager_ipcRequestsHandler, _presentation_manager_rpcRequestsHandler } from "./InternalSymbols.js";
@@ -584,7 +579,7 @@ export class PresentationManager implements Disposable {
       ...(firstPageSize ? { paging: { ...requestOptions.paging, size: firstPageSize } } : undefined),
     });
 
-    let contentFormatter: ContentFormatter | undefined;
+    let contentFormatter: ReturnType<typeof createContentFormatter> | undefined;
     if (!requestOptions.omitFormattedValues) {
       const schemaContext = this._schemaContextProvider(requestOptions.imodel);
       const unitSystem = requestOptions.unitSystem ?? this._explicitActiveUnitSystem ?? IModelApp.quantityFormatter.activeUnitSystem;
@@ -593,7 +588,7 @@ export class PresentationManager implements Disposable {
         formatsProvider: IModelApp.formatsProvider,
       });
       koqPropertyFormatter.defaultFormats = this._defaultFormats;
-      contentFormatter = new ContentFormatter(new ContentPropertyValueFormatter(koqPropertyFormatter), unitSystem);
+      contentFormatter = createContentFormatter({ propertyValueFormatter: koqPropertyFormatter, unitSystem });
     }
 
     let descriptor = requestOptions.descriptor instanceof Descriptor ? requestOptions.descriptor : undefined;
@@ -734,7 +729,7 @@ export class PresentationManager implements Disposable {
     startIModelInitialization(requestOptions.imodel);
     type TParser = Required<typeof requestOptions>["contentParser"];
     const { elementId, contentParser, ...optionsNoElementId } = requestOptions;
-    const parser: TParser = contentParser ?? (buildElementProperties as TParser);
+    const parser: TParser = contentParser ?? (createElementPropertiesBuilder() as TParser);
     const iter = await this.getContentIterator({
       ...optionsNoElementId,
       descriptor: {

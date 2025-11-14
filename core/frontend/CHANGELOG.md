@@ -1,6 +1,72 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 02 Oct 2025 14:56:13 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Nov 2025 23:24:40 GMT and should not be manually modified.
+
+## 5.3.2
+Thu, 13 Nov 2025 23:23:23 GMT
+
+### Updates
+
+- Update view when view attachment elements are modified.
+- Work around Intel Ultra 7 vertex discard glitch
+
+## 5.3.1
+Thu, 06 Nov 2025 20:29:06 GMT
+
+### Updates
+
+- Update frontend cache when the backend modifies categories and subcategories.
+
+## 5.3.0
+Mon, 03 Nov 2025 19:02:35 GMT
+
+### Updates
+
+- Added custom `portal` property for ArcGIS map-layers, to support OAuth2 authentication.
+- Added `MapLayerImageryProvider.status` API.
+- Add range validation for WMS maplayers
+- Fix unsafe-inline CSP violation
+- Ensure viewport contents update when the view's category selector changes.
+- Remove beta support for reading contour line information from the GPU.
+- Increase logo card width in attribution popup to fix Google Maps image clipping
+
+## 5.2.6
+Thu, 13 Nov 2025 21:13:51 GMT
+
+### Updates
+
+- Fix unsafe-inline CSP violation
+- Work around Intel Ultra 7 vertex discard glitch
+
+## 5.2.5
+Thu, 13 Nov 2025 07:45:14 GMT
+
+_Version update only_
+
+## 5.2.4
+Fri, 24 Oct 2025 16:20:38 GMT
+
+_Version update only_
+
+## 5.2.3
+Thu, 16 Oct 2025 23:00:31 GMT
+
+### Updates
+
+- Ensure viewport contents update when the view's category selector changes.
+- Increase logo card width in attribution popup to fix Google Maps image clipping
+
+## 5.2.2
+Fri, 10 Oct 2025 14:49:15 GMT
+
+_Version update only_
+
+## 5.2.1
+Thu, 09 Oct 2025 17:10:26 GMT
+
+### Updates
+
+- Added custom `portal` property for ArcGIS map-layers, to support OAuth2 authentication.
 
 ## 5.2.0
 Wed, 01 Oct 2025 20:22:54 GMT
@@ -169,6 +235,13 @@ Fri, 13 Jun 2025 20:25:38 GMT
 - HitDetail and Viewport.readPixels include contour line information.
 - Drop dependency on @itwin/core-telemetry
 - Change core peer dependencies to strict version.
+
+## 4.11.7
+Thu, 13 Nov 2025 20:49:32 GMT
+
+### Updates
+
+- Work around Intel Ultra 7 vertex discard glitch
 
 ## 4.11.6
 Mon, 16 Jun 2025 15:00:15 GMT

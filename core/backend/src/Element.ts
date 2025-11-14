@@ -10,7 +10,7 @@ import { CompressedId64Set, GuidString, Id64, Id64String, JsonUtils, OrderedId64
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, DrawingProps, ElementAlignedBox3d,
   ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
-  GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement2dProps, Placement3d, Placement3dProps, RelatedElement, RenderSchedule,
+  GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement2dProps, Placement3d, Placement3dProps, ProjectInformation, ProjectInformationRecordProps, RelatedElement, RenderSchedule,
   RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
   SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps
 } from "@itwin/core-common";
@@ -19,9 +19,9 @@ import { CustomHandledProperty, DeserializeEntityArgs, ECSqlRow, Entity } from "
 import { IModelDb } from "./IModelDb";
 import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel, SectionDrawingModel } from "./Model";
-import { SubjectOwnsSubjects } from "./NavigationRelationship";
+import { SubjectOwnsProjectInformationRecord, SubjectOwnsSubjects } from "./NavigationRelationship";
 import { _cache, _elementWasCreated, _nativeDb, _verifyChannel } from "./internal/Symbols";
-import { EntityClass } from "@itwin/ecschema-metadata";
+import { ECVersion, EntityClass } from "@itwin/ecschema-metadata";
 
 /** Argument for the `Element.onXxx` static methods
  * @beta
@@ -387,7 +387,7 @@ export class Element extends Entity {
    * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onCloned(_context: IModelElementCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void { }
+  protected static onCloned(_context: IModelElementCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): Promise<void> | void { }
 
   /** Called when a *root* element in a subgraph is changed and before its outputs are processed.
    * This special callback is made when:
@@ -2167,8 +2167,8 @@ export class RenderTimeline extends InformationRecordElement {
   }
 
   /** @alpha */
-  protected static override onCloned(context: IModelElementCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): void {
-    super.onCloned(context, sourceProps, targetProps);
+  protected static override async onCloned(context: IModelElementCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): Promise<void> {
+    await super.onCloned(context, sourceProps, targetProps);
     if (context.isBetweenIModels)
       targetProps.script = JSON.stringify(this.remapScript(context, this.parseScriptProps(targetProps.script)));
   }
@@ -2202,5 +2202,81 @@ export class RenderTimeline extends InformationRecordElement {
     }
 
     return scriptProps;
+  }
+}
+
+/** Arguments supplied to [[ProjectInformationRecord.create]].
+ * @beta
+ */
+export interface ProjectInformationRecordCreateArgs extends ProjectInformation {
+  /** The iModel in which to create the new element. */
+  iModel: IModelDb;
+  /** The new element's code. Defaults to an empty code. */
+  code?: Code;
+  /** The Id of the parent [[Subject]] whose project-level properties the ProjectInformationRecord element describes.
+   * The ProjectInformationRecord element will reside in the same [[Model]] as the parent Subject.
+   */
+  parentSubjectId: Id64String;
+}
+
+/** Captures project-level properties of the real-world entity represented by its parent [[Subject]].
+ * @beta
+ */
+export class ProjectInformationRecord extends InformationRecordElement {
+  public static override get className() { return "ProjectInformationRecord"; }
+
+  /** The properties of the project. */
+  public projectInformation: ProjectInformation;
+
+  private constructor(props: ProjectInformationRecordProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.projectInformation = {
+      projectNumber: props.projectNumber,
+      projectName: props.projectName,
+      location: props.location,
+    };
+  }
+
+  protected static override onInsert(arg: OnElementPropsArg) {
+    super.onInsert(arg);
+
+    const parentId = arg.props.parent?.id;
+    const subject = undefined !== parentId ? arg.iModel.elements.tryGetElement<Subject>(parentId) : undefined;
+    if (!(subject instanceof Subject)) {
+      throw new Error("ProjectInformationRecord must be a child of a Subject");
+    }
+  }
+
+  /** Create a new ProjectInformationRecord element ready to be inserted into the iModel.
+   * @throws Error if the iModel contains a version of the BisCore schema older than 01.00.25.
+   */
+  public static create(args: ProjectInformationRecordCreateArgs): ProjectInformationRecord {
+    args.iModel.requireMinimumSchemaVersion("BisCore", new ECVersion(1, 0, 25), "ProjectInformationRecord");
+
+    const parent = args.iModel.elements.getElement(args.parentSubjectId);
+
+    const props: ProjectInformationRecordProps = {
+      classFullName: this.classFullName,
+      model: parent.model,
+      code: args.code ?? Code.createEmpty(),
+      parent: new SubjectOwnsProjectInformationRecord(args.parentSubjectId),
+      projectName: args.projectName,
+      projectNumber: args.projectNumber,
+      location: args.location,
+    };
+
+    return new this(props, args.iModel);
+  }
+
+  public override toJSON(): ProjectInformationRecordProps {
+    const props = super.toJSON() as ProjectInformationRecordProps;
+    for (const key of ["projectNumber", "projectName", "location"] as const) {
+      const value = this.projectInformation[key];
+      if (undefined !== value) {
+        props[key] = value;
+      }
+    }
+
+    return props;
   }
 }

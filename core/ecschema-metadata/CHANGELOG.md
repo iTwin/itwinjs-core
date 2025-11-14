@@ -1,6 +1,53 @@
 # Change Log - @itwin/ecschema-metadata
 
-This log was last generated on Thu, 02 Oct 2025 14:56:13 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Nov 2025 23:24:40 GMT and should not be manually modified.
+
+## 5.3.2
+Thu, 13 Nov 2025 23:23:23 GMT
+
+_Version update only_
+
+## 5.3.1
+Thu, 06 Nov 2025 20:29:06 GMT
+
+_Version update only_
+
+## 5.3.0
+Mon, 03 Nov 2025 19:02:35 GMT
+
+### Updates
+
+- Update `FormatSet` interface, `FormatSetFormatsProvider` to support format referencing
+
+## 5.2.6
+Thu, 13 Nov 2025 21:13:51 GMT
+
+_Version update only_
+
+## 5.2.5
+Thu, 13 Nov 2025 07:45:14 GMT
+
+_Version update only_
+
+## 5.2.4
+Fri, 24 Oct 2025 16:20:38 GMT
+
+_Version update only_
+
+## 5.2.3
+Thu, 16 Oct 2025 23:00:31 GMT
+
+_Version update only_
+
+## 5.2.2
+Fri, 10 Oct 2025 14:49:15 GMT
+
+_Version update only_
+
+## 5.2.1
+Thu, 09 Oct 2025 17:10:26 GMT
+
+_Version update only_
 
 ## 5.2.0
 Wed, 01 Oct 2025 20:22:54 GMT
@@ -118,6 +165,11 @@ Fri, 13 Jun 2025 20:25:38 GMT
 - Since the properties on SchemaKey are already readonly, wrapping the type in a Readonly Utility-Type is not necessary. Changed the locater method argument from Readonly<SchemaKey> to SchemaKey and applied the change to all callers and implementations.
 - EC Schemas getItems was using a generic to specify the type of item to be removed, the items were never validated though if the schema items really match the given type. With this change, callers can make sure that if they use the overload with the item type (analog to getItem) only items of that type get's returned.
 - Change core peer dependencies to strict version.
+
+## 4.11.7
+Thu, 13 Nov 2025 20:49:33 GMT
+
+_Version update only_
 
 ## 4.11.6
 Mon, 16 Jun 2025 15:00:15 GMT
