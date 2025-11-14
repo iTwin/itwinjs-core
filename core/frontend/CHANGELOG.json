@@ -2,6 +2,21 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "5.3.2",
+      "tag": "@itwin/core-frontend_v5.3.2",
+      "date": "Thu, 13 Nov 2025 23:23:23 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update view when view attachment elements are modified."
+          },
+          {
+            "comment": "Work around Intel Ultra 7 vertex discard glitch"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.3.1",
       "tag": "@itwin/core-frontend_v5.3.1",
       "date": "Thu, 06 Nov 2025 20:29:06 GMT",
@@ -42,6 +57,27 @@
           }
         ]
       }
+    },
+    {
+      "version": "5.2.6",
+      "tag": "@itwin/core-frontend_v5.2.6",
+      "date": "Thu, 13 Nov 2025 21:13:51 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix unsafe-inline CSP violation"
+          },
+          {
+            "comment": "Work around Intel Ultra 7 vertex discard glitch"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.2.5",
+      "tag": "@itwin/core-frontend_v5.2.5",
+      "date": "Thu, 13 Nov 2025 07:45:14 GMT",
+      "comments": {}
     },
     {
       "version": "5.2.4",
@@ -429,6 +465,18 @@
           },
           {
             "comment": "Change core peer dependencies to strict version."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.7",
+      "tag": "@itwin/core-frontend_v4.11.7",
+      "date": "Thu, 13 Nov 2025 20:49:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Work around Intel Ultra 7 vertex discard glitch"
           }
         ]
       }

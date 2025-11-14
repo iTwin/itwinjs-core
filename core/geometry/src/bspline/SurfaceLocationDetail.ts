@@ -11,7 +11,7 @@ import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 
 /**
- * CurveLocationDetail carries point and paramter data about a point evaluated on a curve.
+ * CurveLocationDetail carries point and parameter data about a point evaluated on a curve.
  * * These are returned by a variety of queries.
  * * Particular contents can vary among the queries.
  * @public

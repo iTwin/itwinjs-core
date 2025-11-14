@@ -60,7 +60,7 @@ import {
   WithCancelEvent,
 } from "@itwin/presentation-common";
 import {
-  buildElementProperties,
+  createElementPropertiesBuilder,
   deepReplaceNullsToUndefined,
   isSingleElementPropertiesRequestOptions,
   LocalizationHelper,
@@ -650,7 +650,7 @@ export class PresentationManager {
   ): Promise<TParsedContent | undefined> {
     type TParser = Required<typeof requestOptions>["contentParser"];
     const { elementId, contentParser, ...optionsNoElementId } = requestOptions;
-    const parser: TParser = contentParser ?? (buildElementProperties as TParser);
+    const parser: TParser = contentParser ?? (createElementPropertiesBuilder() as TParser);
     const content = await this.getContent({
       ...optionsNoElementId,
       descriptor: {
@@ -672,7 +672,7 @@ export class PresentationManager {
     type TParser = Required<typeof requestOptions>["contentParser"];
     const { contentParser, batchSize: batchSizeOption, ...contentOptions } = requestOptions;
 
-    const parser: TParser = contentParser ?? (buildElementProperties as TParser);
+    const parser: TParser = contentParser ?? (createElementPropertiesBuilder() as TParser);
     const workerThreadsCount = this._props.workerThreadsCount ?? 2;
 
     // We don't want to request content for all classes at once - each class results in a huge content descriptor object that's cached in memory
@@ -736,7 +736,7 @@ export class PresentationManager {
       async *iterator() {
         for await (const itemsBatch of eachValueFrom(itemBatches)) {
           const { descriptor, items } = itemsBatch;
-          yield items.map((item) => parser(descriptor, item));
+          yield items.map((item): TParsedContent => parser(descriptor, item));
         }
       },
     };

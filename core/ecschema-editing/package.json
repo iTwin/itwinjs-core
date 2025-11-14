@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-editing",
-  "version": "5.4.0-dev.9",
+  "version": "5.4.0-dev.11",
   "description": "ECSchema editing and validation API",
   "license": "MIT",
   "main": "lib/cjs/ecschema-editing.js",
