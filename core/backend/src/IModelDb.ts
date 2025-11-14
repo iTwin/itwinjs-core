@@ -872,7 +872,7 @@ export abstract class IModelDb extends IModel {
    * @note This will not delete Txns that have already been saved, even if they have not yet been pushed.
   */
   public abandonChanges(): void {
-    // Clears instanceKey caches only, not the full caches, since the changes are not saved yet
+    // Clears instanceKey caches only, instead of all of the backend caches, since the changes are not saved yet
     this.elements[_instanceKeyCache].clear();
     this.models[_instanceKeyCache].clear();
     this[_nativeDb].abandonChanges();
