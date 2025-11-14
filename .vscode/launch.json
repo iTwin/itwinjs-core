@@ -50,6 +50,23 @@
       ]
     },
     {
+      "name": "Editor Backend Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/editor/backend/",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/editor/*/lib/**/*.js"
+      ]
+    },
+    {
       "name": "Bentley Tests",
       "presentation": {
         "group": "0_CoreTests",
