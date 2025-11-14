@@ -1,15 +1,16 @@
+import * as fs from "fs";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import * as fs from "fs";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BezierCurveBase } from "../../bspline/BezierCurveBase";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { BSplineWrapMode, KnotVector } from "../../bspline/KnotVector";
 import { CurveChain } from "../../curve/CurveCollection";
+import { CurveCurve } from "../../curve/CurveCurve";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -34,7 +35,6 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 import { prettyPrint } from "../testFunctions";
-import { CurveCurve } from "../../curve/CurveCurve";
 
 /** return knots [0,0,0, step, 2*step, ... N,N,N]
  * where there are:

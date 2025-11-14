@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import { DifferenceType, getSchemaDifferences, SchemaDifferenceResult, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { AnySchemaDifference, DifferenceType, getSchemaDifferences, SchemaDifferenceResult, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
 
 import sourceJson from "./sourceSchema.json";
@@ -120,6 +121,114 @@ describe("Schema Differences", () => {
     const differences = await getSchemaDifferences(targetSchema, sourceSchema);
     expect(differences.differences).has.lengthOf(0, "This test should not have differences.");
     expect(differences.conflicts).equals(undefined, "This test should not have conflicts.");
+  });
+
+  it("should return dynamic schema reference difference regardless of their version", async () => {
+    const sourceContext = await BisTestHelper.getNewContext();
+    await Schema.fromJson({
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "ReferenceA",
+      version: "3.0.0",
+      alias: "ref",
+      references: [
+        { name: "CoreCustomAttributes", version: "01.00.01" },
+      ],
+      customAttributes: [
+        { className: "CoreCustomAttributes.DynamicSchema" },
+      ],
+    }, sourceContext);
+
+    const sourceSchema = await Schema.fromJson({
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "SourceSchema",
+      version: "1.0.0",
+      alias: "source",
+      references: [
+        { name: "ReferenceA", version: "3.0.0" },
+      ]
+    }, sourceContext);
+
+    const targetContext = await BisTestHelper.getNewContext();
+    await Schema.fromJson({
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "ReferenceA",
+      version: "1.0.0",
+      alias: "ref",
+      references: [
+        { name: "CoreCustomAttributes", version: "01.00.01" },
+      ],
+      customAttributes: [
+        { className: "CoreCustomAttributes.DynamicSchema" },
+      ],
+    }, targetContext);
+
+    const targetSchema = await Schema.fromJson({
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "TargetSchema",
+      version: "1.0.0",
+      alias: "target",
+      references: [
+        { name: "ReferenceA", version: "1.0.0" },
+      ]
+    }, targetContext);
+
+    const differences = await getSchemaDifferences(targetSchema, sourceSchema);
+    expect(differences.conflicts).equals(undefined, "This test should not have conflicts.");
+    expect(differences.differences).has.lengthOf(1).and.satisfies(([result]: AnySchemaDifference[]) => {
+      expect(result).to.have.a.property("changeType", "modify");
+      expect(result).to.have.a.property("schemaType", "SchemaReference");
+      expect(result).to.have.a.nested.property("difference.name", "ReferenceA");
+      expect(result).to.have.a.nested.property("difference.version", "03.00.00");
+      return true;
+    });
+  });
+
+  it("should return schema reference change if target is more recent", async () => {
+    const sourceContext = new SchemaContext();
+    await Schema.fromJson({
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "ReferenceA",
+      version: "1.0.0",
+      alias: "ref"
+    }, sourceContext);
+
+    const sourceSchema = await Schema.fromJson({
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "SourceSchema",
+      version: "1.0.0",
+      alias: "source",
+      references: [
+        { name: "ReferenceA", version: "1.0.0" },
+      ]
+    }, sourceContext);
+
+    const targetContext = new SchemaContext();
+    await Schema.fromJson({
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "ReferenceA",
+      version: "1.0.1",
+      alias: "ref",
+    }, targetContext);
+
+    const targetSchema = await Schema.fromJson({
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "TargetSchema",
+      version: "1.0.0",
+      alias: "target",
+      references: [
+        { name: "ReferenceA", version: "1.0.1" },
+      ]
+    }, targetContext);
+
+    const differences = await getSchemaDifferences(targetSchema, sourceSchema);
+    expect(differences.conflicts).equals(undefined, "This test should not have conflicts.");
+    expect(differences.differences).has.lengthOf(1).and.satisfies(([result]: AnySchemaDifference[]) => {
+      expect(result).to.have.a.property("changeType", "modify");
+      expect(result).to.have.a.property("schemaType", "SchemaReference");
+      expect(result).to.have.a.nested.property("difference.name", "ReferenceA");
+      expect(result).to.have.a.nested.property("difference.version", "01.00.00");
+      return true;
+    });
   });
 
   it("should return changed or missing references", () => {
@@ -309,7 +418,7 @@ describe("Schema Differences", () => {
               {
                 name: "SourceSchema.MissingUnit",
                 label: "four",
-              }, 
+              },
               {
                 name: "SourceSchema.MissingInvertedUnit",
               },

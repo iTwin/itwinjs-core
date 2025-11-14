@@ -7,7 +7,7 @@
  */
 
 import {
-  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, isInstanceOf,
+  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, expectDefined, expectNotNull, Id64, Id64Arg, Id64Set, Id64String, isInstanceOf,
   StopWatch,
 } from "@itwin/core-bentley";
 import {
@@ -791,12 +791,13 @@ export abstract class Viewport implements Disposable, TileUser {
     this.updateSubCategories(categoryIds, enableAllSubCategories);
   }
 
-  private updateSubCategories(categoryIds: Id64Arg, enableAllSubCategories: boolean): void {
-    this.subcategories.push(this.iModel.subcategories, categoryIds, () => {
-      if (enableAllSubCategories)
+  private updateSubCategories(categoryIds: Id64Arg, enableAllSubCategories: boolean | undefined): void {
+    this.subcategories.push(this.iModel.subcategories, categoryIds, (anySubCategoriesLoaded) => {
+      if (true === enableAllSubCategories)
         this.enableAllSubCategories(categoryIds);
 
-      this._changeFlags.setViewedCategories();
+      if (undefined !== enableAllSubCategories || anySubCategoriesLoaded)
+        this._changeFlags.setViewedCategories();
     });
   }
 
@@ -1192,6 +1193,11 @@ export abstract class Viewport implements Disposable, TileUser {
     this.registerViewListeners();
     this.view.attachToViewport(this);
     this._mapTiledGraphicsProvider = new MapTiledGraphicsProvider(this.viewportId, this.displayStyle);
+
+    // ViewState.load loads all the subcategories for the categories in its category selector.
+    // But the set of categories may have changed since loading the view.
+    // Ensure we fill the cache for the current set of categories.
+    this.updateSubCategories(this.view.categorySelector.categories, undefined);
   }
 
   private registerViewListeners(): void {
@@ -1206,6 +1212,7 @@ export abstract class Viewport implements Disposable, TileUser {
 
     removals.push(view.onViewedCategoriesChanged.addListener(() => {
       this._changeFlags.setViewedCategories();
+      this.updateSubCategories(view.categorySelector.categories, undefined);
       this.maybeInvalidateScene();
     }));
 
@@ -1767,6 +1774,9 @@ export abstract class Viewport implements Disposable, TileUser {
     try {
       // The comparison `id !== previous` above ensures the following assertion, but the compiler doesn't recognize it.
       assert(undefined !== id || undefined !== previous);
+      // Note; we don't actually know that id is defined below, but since only current of previous needs to be
+      // defined, we only need to assert that one of them is defined. Either would work.
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       this.onFlashedIdChanged.raiseEvent(this, { current: id!, previous });
     } finally {
       this._assigningFlashedId = false;
@@ -3384,13 +3394,13 @@ export class ScreenViewport extends Viewport {
     locateOpts.preserveModelDisplayTransforms = true;
 
     if (0 !== this.picker.doPick(this, pickPoint, radius, locateOpts)) {
-      const hitDetail = this.picker.getHit(0)!;
+      const hitDetail = expectDefined(this.picker.getHit(0));
       const hitPoint = hitDetail.getPoint();
       if (hitDetail.isModelHit)
-        return { plane: Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getUpVector(hitPoint))!, source: DepthPointSource.Model, sourceId: hitDetail.sourceId };
+        return { plane: expectDefined(Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getUpVector(hitPoint))), source: DepthPointSource.Model, sourceId: hitDetail.sourceId };
       else if (hitDetail.isMapHit)
-        return { plane: Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getUpVector(hitPoint))!, source: DepthPointSource.Map, sourceId: hitDetail.sourceId };
-      return { plane: Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getZVector())!, source: DepthPointSource.Geometry, sourceId: hitDetail.sourceId };
+        return { plane: expectDefined(Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getUpVector(hitPoint))), source: DepthPointSource.Map, sourceId: hitDetail.sourceId };
+      return { plane: expectDefined(Plane3dByOriginAndUnitNormal.create(hitPoint, this.view.getZVector())), source: DepthPointSource.Geometry, sourceId: hitDetail.sourceId };
     }
 
     const eyePoint = this.worldToViewMap.transform1.columnZ();
@@ -3412,7 +3422,7 @@ export class ScreenViewport extends Viewport {
       if (undefined !== intersect) {
         const npcPt = this.worldToNpc(intersect.origin);
         if (npcPt.z < 1)    // Only if in front of eye.
-          return { plane: Plane3dByOriginAndUnitNormal.create(intersect.origin, intersect.direction)!, source: DepthPointSource.BackgroundMap };
+          return { plane: expectDefined(Plane3dByOriginAndUnitNormal.create(intersect.origin, intersect.direction)), source: DepthPointSource.BackgroundMap };
       }
     }
     // returns true if there's an intersection that isn't behind the front plane
@@ -3427,12 +3437,12 @@ export class ScreenViewport extends Viewport {
     if (this.view.getDisplayStyle3d().environment.displayGround) {
       const groundPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, this.view.getGroundElevation()), Vector3d.unitZ());
       if (undefined !== groundPlane && boresiteIntersect(groundPlane))
-        return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, groundPlane.getNormalRef())!, source: DepthPointSource.GroundPlane };
+        return { plane: expectDefined(Plane3dByOriginAndUnitNormal.create(projectedPt, groundPlane.getNormalRef())), source: DepthPointSource.GroundPlane };
     }
 
     const acsPlane = Plane3dByOriginAndUnitNormal.create(this.getAuxCoordOrigin(), this.getAuxCoordRotation().getRow(2));
     if (undefined !== acsPlane && boresiteIntersect(acsPlane))
-      return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, acsPlane.getNormalRef())!, source: (this.isGridOn && GridOrientationType.AuxCoord === this.view.getGridOrientation() ? DepthPointSource.Grid : DepthPointSource.ACS) };
+      return { plane: expectDefined(Plane3dByOriginAndUnitNormal.create(projectedPt, acsPlane.getNormalRef())), source: (this.isGridOn && GridOrientationType.AuxCoord === this.view.getGridOrientation() ? DepthPointSource.Grid : DepthPointSource.ACS) };
 
     const targetPointNpc = this.worldToNpc(this.view.getTargetPoint());
     if (targetPointNpc.z < 0.0 || targetPointNpc.z > 1.0)
@@ -3441,7 +3451,7 @@ export class ScreenViewport extends Viewport {
     this.worldToNpc(pickPoint, projectedPt);
     projectedPt.z = targetPointNpc.z;
     this.npcToWorld(projectedPt, projectedPt);
-    return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, this.view.getZVector())!, source: DepthPointSource.TargetPoint };
+    return { plane: expectDefined(Plane3dByOriginAndUnitNormal.create(projectedPt, this.view.getZVector())), source: DepthPointSource.TargetPoint };
   }
 
   /** Queue an animation that interpolates between this viewport's previous [Frustum]($common) and its current frustum.
@@ -3599,7 +3609,7 @@ export class ScreenViewport extends Viewport {
      * we don't add a new entry to the view undo buffer.
      */
     const now = BeTimePoint.now();
-    if (Viewport.undoDelay.isZero || backStack.length < 1 || backStack[backStack.length - 1].undoTime!.plus(Viewport.undoDelay).before(now)) {
+    if (Viewport.undoDelay.isZero || backStack.length < 1 || expectDefined(backStack[backStack.length - 1].undoTime).plus(Viewport.undoDelay).before(now)) {
       this._currentBaseline.undoTime = now; // save time we put this entry in undo buffer
       this._backStack.push(this._currentBaseline); // save previous state
       this._forwardStack.length = 0; // not possible to do redo after this
@@ -3614,6 +3624,8 @@ export class ScreenViewport extends Viewport {
       return;
 
     this._forwardStack.push(this._currentBaseline);
+    // Since stack length is guaranteed to be greater than 0, we can safely pop the last item.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this._currentBaseline = this._backStack.pop()!;
     this.view.applyPose(this._currentBaseline);
     this.finishUndoRedo(animationTime);
@@ -3626,6 +3638,8 @@ export class ScreenViewport extends Viewport {
       return;
 
     this._backStack.push(this._currentBaseline);
+    // Since stack length is guaranteed to be greater than 0, we can safely pop the last item.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this._currentBaseline = this._forwardStack.pop()!;
     this.view.applyPose(this._currentBaseline);
     this.finishUndoRedo(animationTime);
@@ -3809,7 +3823,7 @@ export class ScreenViewport extends Viewport {
 }
 
 function _clear2dCanvas(canvas: HTMLCanvasElement) {
-  const ctx = canvas.getContext("2d", { alpha: true })!;
+  const ctx = expectNotNull(canvas.getContext("2d", { alpha: true }));
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0); // revert any previous devicePixelRatio scale for clearRect() call below.
   ctx.clearRect(0, 0, canvas.width, canvas.height);

@@ -258,7 +258,7 @@ export class ClipStack {
     else
       this._texture = Texture2DHandle.createForData(1, this._numTotalRows, this._gpuBuffer, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
 
-    assert(this._texture!.height === this._numTotalRows);
+    assert((this._texture?.height ?? -1) === this._numTotalRows);
   }
 
   protected allocateGpuBuffer(): Texture2DData {

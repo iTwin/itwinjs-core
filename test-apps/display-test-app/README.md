@@ -21,7 +21,7 @@ The application contained within this directory provides a test environment for 
 
 The application may be run as an Electron app, Mobile app or within a browser. The following steps outline the procedure for successfully building the application as part of a larger monorepo, and then starting the application via npm scripts.
 
-* To get started, follow the instructions to setup the entire repository, located [here](../../README.md#Build\ Instructions).
+* To get started, follow the instructions to setup the entire repository, located [here](../../README.md#developer-quick-start). This automatically builds all test apps.
 
 * Before starting display-test-app, there are optional environment variables that may be set to be recognized by the application upon startup. For a full list, [see below](#environment-variables).
 
@@ -166,6 +166,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, do not allow visible or hidden edges to be displayed, and also do not create any UI related to them.
 * IMJS_USE_WEBGL2
   * Unless set to "0" or "false", the system will attempt to create a WebGL2 context before possibly falling back to WebGL1.
+* IMJS_USE_CESIUM
+  * If defined, display-test-app will use a prototype CesiumJS-based renderer from the cesium-renderer package for rendering graphics on the screen.
 * IMJS_DISABLE_UNIFORM_ERRORS
   * If defined, do not throw an error for missing shader uniforms, and call Logger instead.
 * IMJS_MAX_TILES_TO_SKIP
@@ -330,6 +332,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 display-test-app supplies minimal features for editing the contents of an iModel, strictly for testing purposes. To use it:
 
 * Set IMJS_READ_WRITE=1 in the environment.
+* Optionally set IMJS_ALLOWED_CHANNELS=channel1,channel1,... to permit display-test-app to write to the specified Channels.
 * Open a briefcase or an editable standalone iModel.
 * Use the key-ins below to make changes; typically:
   * `dta edit` to begin an editing scope;
@@ -344,7 +347,7 @@ display-test-app has access to all key-ins defined in the `@itwin/editor-fronten
 
 * `dta edit` - begin a new editing scope, or end the current editing scope. The title of the window or browser tab will update to reflect the current state: "[R/W]" indicating no current editing scope, or "[EDIT]" indicating an active editing scope.
 * `dta place line string` - start placing a line string. Each data point defines another point in the string; a reset (right mouse button) finishes. The element is placed into the first spatial model and spatial category in the viewport's model and category selectors.
-* `dta move element *elementId* *x* *y* *z*` - Move an element, given an element Id and an x y z offset (in world space, relative to its current). If Y and/or Z are not specified they will default to 0.
+* `dta move element e=*elementId* x=*x* y=*y* z=*z*` - Move an element, given an element Id and an x y z offset (in world space, relative to its current). If X, Y and/or Z are not specified they will default to 0. If element Id is not specified, all currently-selected elements will be moved. You must specify at least one argument.
 * `dta push` - push local changes to iModelHub. A description of the changes must be supplied. It should be enclosed in double quotes if it contains whitespace characters.
 * `dta pull` - pull and merge changes from iModelHub into the local briefcase. You must be signed in.
 * `dta create section drawing *drawingName*` - insert a spatial view matching the active viewport's current view and a section drawing referencing that view, then switch to a non-persistent drawing view to visualize the spatial view in a 2d context. Requires the camera to be turned off.

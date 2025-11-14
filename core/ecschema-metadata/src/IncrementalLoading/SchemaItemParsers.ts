@@ -3,9 +3,9 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { SchemaContext } from "../Context";
 import { AnySchemaItemProps, KindOfQuantityProps, SchemaItemProps } from "../Deserialization/JsonProps";
 import { parseSchemaItemType } from "../ECObjects";
+import { SchemaInfo } from "../Interfaces";
 import { OverrideFormat, OverrideFormatProps } from "../Metadata/OverrideFormat";
 import { SchemaItem } from "../Metadata/SchemaItem";
 import { parseCustomAttribute } from "./SchemaParser";
@@ -22,16 +22,16 @@ type MutableSchemaItemProps = {
  */
 export class SchemaItemParser {
   protected _schema: string;
-  protected _context: SchemaContext;
+  protected _schemaInfos: Iterable<SchemaInfo>;
 
   /**
    * Initializes a new SchemaItemParser.
    * @param schemaName The name the Schema containing the SchemaItems.
    * @param context The SchemaContext containing the Schema.
    */
-  public constructor(schemaName: string, context: SchemaContext) {
+  public constructor(schemaName: string, schemaInfos: Iterable<SchemaInfo>) {
     this._schema = schemaName;
-    this._context = context;
+    this._schemaInfos = schemaInfos;
   }
 
   /**
@@ -57,7 +57,7 @@ export class SchemaItemParser {
    * @param rawTypeName The name or aliased name of the SchemaItem.
    * @returns The full name of the SchemaItem, ie. 'BisCore.PhysicalElement'
    */
-  public async getQualifiedTypeName(rawTypeName: string): Promise<string> {
+  public getQualifiedTypeName(rawTypeName: string): string {
     const nameParts = rawTypeName.split(":");
     if (nameParts.length !== 2) {
       const [schemaName, itemName] = SchemaItem.parseFullName(rawTypeName);
@@ -66,17 +66,17 @@ export class SchemaItemParser {
       return rawTypeName;
     }
 
-    const resolvedName = await this.resolveNameFromAlias(nameParts[0].toLocaleLowerCase());
+    const resolvedName = this.resolveNameFromAlias(nameParts[0].toLocaleLowerCase());
     if (!resolvedName)
       throw new Error(`No valid schema found for alias '${nameParts[0]}'`);
 
     return `${resolvedName}.${nameParts[1]}`;
   }
 
-  private async resolveNameFromAlias(alias: string): Promise<string | undefined> {
-    for (const schema of this._context.getKnownSchemas()) {
-      if (schema.alias === alias)
-        return schema.schemaKey.name;
+  private resolveNameFromAlias(alias: string): string | undefined {
+    for (const schemaInfo of this._schemaInfos) {
+      if (schemaInfo.alias === alias)
+        return schemaInfo.schemaKey.name;
     }
     return undefined;
   }
@@ -102,38 +102,38 @@ export class KindOfQuantityParser extends SchemaItemParser {
     const mutableProps = await super.parse(data) as MutableKindOfQuantityProps;
 
     if (mutableProps.persistenceUnit) {
-      mutableProps.persistenceUnit = await this.getQualifiedTypeName(mutableProps.persistenceUnit);
+      mutableProps.persistenceUnit = this.getQualifiedTypeName(mutableProps.persistenceUnit);
     }
-    mutableProps.presentationUnits = await this.parsePresentationUnits(mutableProps);
+    mutableProps.presentationUnits = this.parsePresentationUnits(mutableProps);
 
     return mutableProps;
   }
 
-  private async parsePresentationUnits(props: KindOfQuantityProps): Promise<string[]> {
+  private parsePresentationUnits(props: KindOfQuantityProps): string[] {
     const presentationUnits: string[] = [];
     if (!props.presentationUnits)
       return [];
 
     for (const presentationUnit of props.presentationUnits) {
       const presFormatOverride: OverrideFormatProps = OverrideFormat.parseFormatString(presentationUnit);
-      const formatString = await this.createOverrideFormatString(presFormatOverride);
+      const formatString = this.createOverrideFormatString(presFormatOverride);
       presentationUnits.push(formatString);
     };
 
     return presentationUnits;
   }
 
-  private async createOverrideFormatString(overrideFormatProps: OverrideFormatProps): Promise<string> {
+  private createOverrideFormatString(overrideFormatProps: OverrideFormatProps): string {
 
-    let formatFullName = await this.getQualifiedTypeName(overrideFormatProps.name);
-    if (overrideFormatProps.precision)
+    let formatFullName = this.getQualifiedTypeName(overrideFormatProps.name);
+    if (overrideFormatProps.precision !== undefined)
       formatFullName += `(${overrideFormatProps.precision.toString()})`;
 
     if (undefined === overrideFormatProps.unitAndLabels)
       return formatFullName;
 
     for (const [unit, unitLabel] of overrideFormatProps.unitAndLabels) {
-      const unitFullName = await this.getQualifiedTypeName(unit);
+      const unitFullName = this.getQualifiedTypeName(unit);
 
       if (undefined === unitLabel)
         formatFullName += `[${unitFullName}]`;

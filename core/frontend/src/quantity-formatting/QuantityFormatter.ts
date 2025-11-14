@@ -324,12 +324,17 @@ export interface UnitFormattingSettingsProvider {
  */
 export class QuantityTypeFormatsProvider implements FormatsProvider {
   public onFormatsChanged = new BeEvent<(args: FormatsChangedArgs) => void>();
-
+  private _removeListeners: (() => void)[] = [];
   public constructor() {
-    IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener(() => {
+    this._removeListeners.push(IModelApp.quantityFormatter.onActiveFormattingUnitSystemChanged.addListener(() => {
       this.onFormatsChanged.raiseEvent({ formatsChanged: "all" });
-    });
+    }));
   }
+
+  public [Symbol.dispose]() {
+    this._removeListeners.forEach(listener => listener());
+  }
+
   private _kindOfQuantityMap = new Map<string, QuantityType>([
     ["AecUnits.LENGTH", QuantityType.Length],
     ["AecUnits.ANGLE", QuantityType.Angle],
@@ -520,10 +525,9 @@ export class QuantityFormatter implements UnitsProvider {
     const formatPropsByType = new Map<QuantityTypeDefinition, FormatProps>();
 
     // load cache for every registered QuantityType
-    [...this.quantityTypesRegistry.keys()].forEach((key) => {
-      const entry = this.quantityTypesRegistry.get(key)!;
+    for (const [_, entry] of this.quantityTypesRegistry) {
       formatPropsByType.set(entry, this.getFormatPropsByQuantityTypeEntryAndSystem(entry, systemKey));
-    });
+    };
 
     for (const [entry, formatProps] of formatPropsByType) {
       await this.loadFormatAndParserSpec(entry, formatProps);
@@ -564,6 +568,8 @@ export class QuantityFormatter implements UnitsProvider {
       const props = overrideEntry[unitSystemKey];
       if (props) {
         if (this._overrideFormatPropsByUnitSystem.has(unitSystemKey)) {
+          // We just verified that unitSystemKey is present.
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           this._overrideFormatPropsByUnitSystem.get(unitSystemKey)!.set(typeKey, props);
         } else {
           const newMap = new Map<string, FormatProps>();

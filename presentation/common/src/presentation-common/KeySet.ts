@@ -6,33 +6,40 @@
  * @module Core
  */
 
-import { CompressedId64Set, Guid, GuidString, Id64, Id64String } from "@itwin/core-bentley";
+import { assert, CompressedId64Set, Guid, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import { EntityProps } from "@itwin/core-common";
 import { InstanceId, InstanceKey } from "./EC.js";
-import { PresentationError, PresentationStatus } from "./Error.js";
 import { NodeKey } from "./hierarchy/Key.js";
 
 /**
  * A single key that identifies something in an iTwin.js application
  * @public
  */
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export type Key = Readonly<NodeKey> | Readonly<InstanceKey> | Readonly<EntityProps>;
 
 /** @public */
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export namespace Key {
-  /** Check if the supplied key is a `NodeKey` */
-  export function isNodeKey(key: Key): key is NodeKey {
+  /**
+   * Check if the supplied key is a `NodeKey`
+   *
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
+  export function isNodeKey(key: Key): key is Extract<Key, Readonly<NodeKey>> {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return !!(key as NodeKey).type;
   }
 
   /** Check if the supplied key is an `InstanceKey` */
-  export function isInstanceKey(key: Key): key is InstanceKey {
+  export function isInstanceKey(key: Key): key is Extract<Key, Readonly<InstanceKey>> {
     return !!(key as InstanceKey).className && !!(key as InstanceKey).id;
   }
 
   /** Check if the supplied key is an `EntityProps` */
-  export function isEntityProps(key: Key): key is EntityProps {
+  export function isEntityProps(key: Key): key is Extract<Key, Readonly<EntityProps>> {
     return !!(key as EntityProps).classFullName && !!(key as EntityProps).id;
   }
 }
@@ -50,7 +57,13 @@ export type Keys = ReadonlyArray<Key> | Readonly<KeySet>;
 export interface KeySetJSON {
   /** JSON representation of a list of instance keys */
   instanceKeys: Array<[string, string]>;
-  /** An array of serialized node keys */
+  /**
+   * An array of serialized node keys
+   *
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   nodeKeys: NodeKey[];
 }
 
@@ -121,10 +134,13 @@ export class KeySet {
   /**
    * Get a set of node keys stored in this KeySet
    *
-   * **Warning**: getting node keys might be expensive for
-   * large KeySets.
+   * **Warning**: getting node keys might be expensive for large KeySets.
+   *
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
    */
-  public get nodeKeys(): Set<NodeKey> {
+  public get nodeKeys() {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const set = new Set<NodeKey>();
     for (const serialized of this._nodeKeys) {
       set.add(JSON.parse(serialized));
@@ -134,6 +150,9 @@ export class KeySet {
 
   /**
    * Get node keys count
+   *
+   * @deprecated in 5.2 - will not be removed until after 2026-10-01. Use the new [@itwin/presentation-hierarchies](https://github.com/iTwin/presentation/blob/master/packages/hierarchies/README.md)
+   * package for creating hierarchies.
    */
   public get nodeKeysCount(): number {
     return this._nodeKeys.size;
@@ -186,6 +205,7 @@ export class KeySet {
   }
 
   private addKeySetJSON(keyset: Readonly<KeySetJSON>): void {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     for (const key of keyset.nodeKeys) {
       this._nodeKeys.add(JSON.stringify(key));
     }
@@ -207,9 +227,6 @@ export class KeySet {
    * @returns itself
    */
   public add(value: Keys | Key, pred?: (key: Key) => boolean): KeySet {
-    if (!value) {
-      throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
-    }
     const sizeBefore = this.size;
     if (this.isKeySet(value)) {
       this.addKeySet(value, pred);
@@ -226,10 +243,9 @@ export class KeySet {
         }
         this._lowerCaseMap.set(lcClassName, normalizedClassName);
         this._instanceKeys.get(lcClassName)!.add(value.id);
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
       } else if (Key.isNodeKey(value)) {
         this._nodeKeys.add(JSON.stringify(value));
-      } else {
-        throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${JSON.stringify(value)}`);
       }
     }
     if (this.size !== sizeBefore) {
@@ -258,9 +274,6 @@ export class KeySet {
    * @returns itself
    */
   public delete(value: Keys | Key): KeySet {
-    if (!value) {
-      throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
-    }
     const sizeBefore = this.size;
     if (this.isKeySet(value)) {
       this.deleteKeySet(value);
@@ -276,10 +289,9 @@ export class KeySet {
       if (set) {
         set.delete(value.id);
       }
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
     } else if (Key.isNodeKey(value)) {
       this._nodeKeys.delete(JSON.stringify(value));
-    } else {
-      throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${JSON.stringify(value)}`);
     }
     if (this.size !== sizeBefore) {
       this.recalculateGuid();
@@ -292,9 +304,6 @@ export class KeySet {
    * @param value The key to check.
    */
   public has(value: Key): boolean {
-    if (!value) {
-      throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
-    }
     if (Key.isEntityProps(value)) {
       return this.has({ className: value.classFullName, id: value.id! } as InstanceKey);
     }
@@ -303,10 +312,9 @@ export class KeySet {
       const set = this._instanceKeys.get(normalizedClassName.toLowerCase());
       return !!(set && set.has(value.id));
     }
-    if (Key.isNodeKey(value)) {
-      return this._nodeKeys.has(JSON.stringify(value));
-    }
-    throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${JSON.stringify(value)}`);
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    assert(Key.isNodeKey(value));
+    return this._nodeKeys.has(JSON.stringify(value));
   }
 
   private hasKeySet(readonlyKeys: Readonly<KeySet>, checkType: "all" | "any"): boolean {
@@ -372,16 +380,11 @@ export class KeySet {
    * @param keys The keys to check.
    */
   public hasAll(keys: Keys): boolean {
-    if (!keys) {
-      throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${keys}`);
-    }
     if (this.isKeySet(keys)) {
       return this.hasKeySet(keys, "all");
     }
-    if (this.isKeysArray(keys)) {
-      return this.hasKeysArray(keys, "all");
-    }
-    throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: keys = ${keys}`);
+    assert(this.isKeysArray(keys));
+    return this.hasKeysArray(keys, "all");
   }
 
   /**
@@ -389,16 +392,11 @@ export class KeySet {
    * @param keys The keys to check.
    */
   public hasAny(keys: Keys): boolean {
-    if (!keys) {
-      throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${keys}`);
-    }
     if (this.isKeySet(keys)) {
       return this.hasKeySet(keys, "any");
     }
-    if (this.isKeysArray(keys)) {
-      return this.hasKeysArray(keys, "any");
-    }
-    throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: keys = ${keys}`);
+    assert(this.isKeysArray(keys));
+    return this.hasKeysArray(keys, "any");
   }
 
   /**
@@ -432,6 +430,7 @@ export class KeySet {
   }
 
   /** Iterate over all keys in this keyset. */
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public forEach(callback: (key: InstanceKey | NodeKey, index: number) => void) {
     let index = 0;
     this._instanceKeys.forEach((ids: Set<Id64String>, className: string) => {
@@ -478,6 +477,7 @@ export class KeySet {
         instanceKeys.push([className!, compressedIds.length > 0 ? compressedIds : Id64.invalid]);
       }
     }
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const nodeKeys: NodeKey[] = [];
     for (const serializedKey of this._nodeKeys.values()) {
       nodeKeys.push(JSON.parse(serializedKey));

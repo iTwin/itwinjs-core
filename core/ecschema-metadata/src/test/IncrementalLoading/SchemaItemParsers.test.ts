@@ -32,26 +32,26 @@ describe("SchemaItemParsers Tests", function () {
     it("Parse SchemaItem, props parsed correctly", async function () {
       const item = new UnitSystem(schema, "TestUnitSystem");
       const fromDBProps = item.toJSON();
-      const parser = new SchemaItemParser(schema.name, schema.context);
+      const parser = new SchemaItemParser(schema.name, schema.context.getKnownSchemas());
       const props = await parser.parse(fromDBProps);
       expect(props).to.deep.equal(item.toJSON());
     });
 
     it("getQualifiedTypeName, no alias, fullname resolved", async function () {
-      const parser = new SchemaItemParser(schema.name, schema.context);
-      const name = await parser.getQualifiedTypeName("TestSchemaItem");
+      const parser = new SchemaItemParser(schema.name, schema.context.getKnownSchemas());
+      const name = parser.getQualifiedTypeName("TestSchemaItem");
       expect(name).to.equal("TestSchema.TestSchemaItem");
     });
 
     it("getQualifiedTypeName, with alias, fullname resolved", async function () {
-      const parser = new SchemaItemParser(schema.name, schema.context);
-      const name = await parser.getQualifiedTypeName("ts:TestSchemaItem");
+      const parser = new SchemaItemParser(schema.name, schema.context.getKnownSchemas());
+      const name = parser.getQualifiedTypeName("ts:TestSchemaItem");
       expect(name).to.equal("TestSchema.TestSchemaItem");
     });
 
     it("getQualifiedTypeName, with bad alias, throws", async function () {
-      const parser = new SchemaItemParser(schema.name, schema.context);
-      await expect(parser.getQualifiedTypeName("bad:TestSchemaItem")).to.be.rejectedWith("No valid schema found for alias 'bad'")
+      const parser = new SchemaItemParser(schema.name, schema.context.getKnownSchemas());
+      expect(() => parser.getQualifiedTypeName("bad:TestSchemaItem")).to.throw(Error, "No valid schema found for alias 'bad'");
     });
   });
 
@@ -81,7 +81,7 @@ describe("SchemaItemParsers Tests", function () {
       (fromDBProps as any).persistenceUnit = "f:YRD";
       (fromDBProps as any).presentationUnits = ["f:DoubleUnitFormat(6)[f:YRD|yard(s)][f:FT|feet]"];
 
-      const parser = new KindOfQuantityParser(schema.name, schema.context);
+      const parser = new KindOfQuantityParser(schema.name, schema.context.getKnownSchemas());
       const props = await parser.parse(fromDBProps);
       expect(props).to.deep.equal(item.toJSON());
     });
@@ -105,7 +105,7 @@ describe("SchemaItemParsers Tests", function () {
       (fromDBProps as any).persistenceUnit = "YRD";
       (fromDBProps as any).presentationUnits = ["DoubleUnitFormat(6)[YRD|yard(s)][FT|feet]"];
 
-      const parser = new KindOfQuantityParser(formatsSchema.name, schema.context);
+      const parser = new KindOfQuantityParser(formatsSchema.name, schema.context.getKnownSchemas());
       const props = await parser.parse(fromDBProps);
       expect(props).to.deep.equal(item.toJSON());
     });

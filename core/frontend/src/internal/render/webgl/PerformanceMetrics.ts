@@ -59,7 +59,7 @@ export class PerformanceMetrics {
 
   public endOperation() {
     const endTimePoint = BeTimePoint.now();
-    const beginTimePoint = this._beginTimePoints.length > 0 ? this._beginTimePoints.pop()! : endTimePoint;
+    const beginTimePoint = this._beginTimePoints.pop() ?? endTimePoint;
     const operationName = this._operationNames.pop();
     if (operationName) { // Add data to queue now, calculate time later; helps eliminate time spent timing things in 'Total Time'
       if (this._updateallTimePoints1) // Push to currently active allTimePoints buffer

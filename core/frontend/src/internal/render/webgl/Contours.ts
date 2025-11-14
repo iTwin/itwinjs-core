@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose, Id64, OrderedId64Iterable } from "@itwin/core-bentley";
+import { assert, dispose, expectDefined, Id64, OrderedId64Iterable } from "@itwin/core-bentley";
 import { ContourDisplay, PackedFeature, RenderFeatureTable } from "@itwin/core-common";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
@@ -63,15 +63,15 @@ export class Contours implements WebGLDisposable {
 
     const data = new Uint8Array(width * height * 4);
     const creator = new Texture2DDataUpdater(data);
-    this.buildLookupTable(creator, map, this.target.currentContours!);
+    this.buildLookupTable(creator, map, expectDefined(this.target.currentContours));
     this._lut = TextureHandle.createForData(width, height, data, true, GL.Texture.WrapMode.ClampToEdge);
     this._lutWidth = width;
   }
 
   private _update(map: RenderFeatureTable, lut: Texture2DHandle) {
     assert(this._numFeatures === map.numFeatures);
-    const updater = new Texture2DDataUpdater(lut.dataBytes!);
-    this.buildLookupTable(updater, map, this.target.currentContours!);
+    const updater = new Texture2DDataUpdater(expectDefined(lut.dataBytes));
+    this.buildLookupTable(updater, map, expectDefined(this.target.currentContours));
     lut.update(updater);
   }
 

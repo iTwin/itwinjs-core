@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { Id64String } from "@itwin/core-bentley";
+import { expectDefined, Id64String } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import {
   BatchType, ContourDisplay, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RealityModelDisplaySettings, RenderMode, ViewFlags,
@@ -73,7 +73,7 @@ export class BranchState {
   public get iModel() { return this._opts.iModel; }
   public get transformFromIModel() { return this._opts.transformFromIModel; }
   public get is3d() { return this._opts.is3d; }
-  public get frustumScale() { return this._opts.frustumScale!; }
+  public get frustumScale() { return expectDefined(this._opts.frustumScale); }
   public get appearanceProvider() { return this._opts.appearanceProvider; }
   public get secondaryClassifiers() { return this._opts.secondaryClassifiers; }
   public get realityModelDisplaySettings() { return this._opts.realityModelDisplaySettings; }

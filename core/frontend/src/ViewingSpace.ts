@@ -224,6 +224,8 @@ export class ViewingSpace {
       return;
 
     // if the camera is on, we need to make sure that the viewed volume is not behind the eye
+    // Note: this.eyePoint is always defined if view.isCameraOn is true.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const eyeOrg = this.eyePoint!.minus(origin);
     this.rotation.multiplyVectorInPlace(eyeOrg);
 

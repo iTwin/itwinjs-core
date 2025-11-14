@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "vitest";
-import { compareBooleans, compareNumbers, comparePossiblyUndefined, Dictionary, Id64String, SortedArray } from "@itwin/core-bentley";
+import { Dictionary, Id64String, SortedArray } from "@itwin/core-bentley";
 import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
 import { BlankConnection } from "../IModelConnection";
 import { ScreenViewport, Viewport } from "../Viewport";
@@ -12,7 +12,6 @@ import { ViewRect } from "../common/ViewRect";
 import { SpatialViewState } from "../SpatialViewState";
 import { Pixel } from "../render/Pixel";
 import { createBlankConnection } from "./createBlankConnection";
-import { ContourHit } from "../HitDetail";
 
 /** Options for openBlankViewport.
  * @internal
@@ -106,12 +105,6 @@ function compareFeatures(lhs?: Feature, rhs?: Feature): number {
     return lhs.compare(rhs);
 }
 
-function compareContours(lhs?: ContourHit, rhs?: ContourHit): number {
-  return comparePossiblyUndefined((a, b) => 
-    compareBooleans(a.isMajor, b.isMajor) || compareNumbers(a.elevation, b.elevation) || a.group.compare(b.group),
-    lhs, rhs);
-}
-
 function comparePixelData(lhs: Pixel.Data, rhs: Pixel.Data): number {
   let diff = lhs.distanceFraction - rhs.distanceFraction;
   if (0 === diff) {
@@ -120,9 +113,6 @@ function comparePixelData(lhs: Pixel.Data, rhs: Pixel.Data): number {
       diff = lhs.planarity - rhs.planarity;
       if (0 === diff) {
         diff = compareFeatures(lhs.feature, rhs.feature);
-        if (0 === diff) {
-          diff = compareContours(lhs.contour, rhs.contour);
-        }
       }
     }
   }
@@ -291,6 +281,7 @@ function hexifyColors(defs: ColorDef[]): string[] {
  */
 export function readUniqueColors(vp: Viewport, readRect?: ViewRect): ColorSet {
   const rect = undefined !== readRect ? readRect : vp.viewRect;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const buffer = vp.readImageBuffer({ rect })!;
   expect(buffer).toBeDefined();
   const u32 = new Uint32Array(buffer.data.buffer);
@@ -312,6 +303,7 @@ export function readColorCounts(vp: Viewport, readRect?: ViewRect): Dictionary<C
   const colors = new Dictionary<Color, number>((lhs, rhs) => lhs.compare(rhs));
 
   const rect = readRect ?? vp.viewRect;
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const buffer = vp.readImageBuffer({ rect })!;
   expect(buffer).toBeDefined();
   const u32 = new Uint32Array(buffer.data.buffer);

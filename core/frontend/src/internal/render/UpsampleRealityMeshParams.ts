@@ -13,6 +13,7 @@ import {
   OctEncodedNormal, QParams2d, QPoint2d, QPoint3d, Quantization,
 } from "@itwin/core-common";
 import { RealityMeshParams, RealityMeshParamsBuilder } from "../../render/RealityMeshParams";
+import { expectDefined } from "@itwin/core-bentley";
 
 class UpsampleIndexMap extends Map<number, number> {
   private _next = 0;
@@ -223,7 +224,7 @@ function addClipped(params: RealityMeshParams, triangleIndices: number[], indexM
       addedPoints.push(interpolateQPoint3d(getPoint(index, scratchQPoint3d), getPoint(nextIndex, scratchQPoint3d1), fraction));
       addedParams.push(interpolateQPoint2d(getParam(index, scratchQPoint2d), getParam(nextIndex, scratchQPoint2d1), fraction));
       if (parentNormals)
-        addedNormals.push(interpolateOctEncodedNormal(getNormal(index)!, getNormal(nextIndex)!, fraction));
+        addedNormals.push(interpolateOctEncodedNormal(expectDefined(getNormal(index)), expectDefined(getNormal(nextIndex)), fraction));
 
     }
   }

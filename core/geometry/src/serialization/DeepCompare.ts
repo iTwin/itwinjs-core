@@ -98,7 +98,7 @@ export class DeepCompare {
     if (a == null && b == null)
       return this.announce(true);
     if ((Object.keys(a)).length !== (Object.keys(b)).length) {
-      this.errorTracker.unshift(`Mismatched property lists [${Object.keys(a)}][${Object.keys(b)}`);
+      this.errorTracker.unshift(`Mismatched property lists [${Object.keys(a).toString()}][${Object.keys(b).toString()}`);
       return this.announce(false);
     }
     // Keep track of result for each property of object

@@ -7,7 +7,7 @@
  */
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Path, Point3d, Transform, Vector3d, XYZProps } from "@itwin/core-geometry";
-import { ContourGroup, GeometryClass, LinePixels } from "@itwin/core-common";
+import { GeometryClass, LinePixels } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { IconSprites, Sprite } from "./Sprites";
@@ -148,22 +148,6 @@ export interface HitPath {
   sectionDrawingAttachment?: SectionDrawingAttachmentHitInfo;
 };
 
-/** Information about a [contour line]($docs/learning/display/ContourDisplay.md) that generated a [[HitDetail]] or [[Pixel]].
- * @see [[HitDetail.contour]]
- * @see [[Pixel.Data.contour]]
- * @beta
- */
-export interface ContourHit {
-  /** The contour group that generated the contour line, as specified by [[ContourDisplay.groups]]. */
-  readonly group: ContourGroup;
-  /** True if the contour is a major contour line as specified by the [[group]] from which it originated, false if it is a minor contour line. */
-  readonly isMajor: boolean;
-  /** The height in world coordinates of the contour line. This is always a multiple of the [Contour.minorInterval]($common) defined for the [[group]].
-   * @note The multiple may be approximate due to the limitations of floating-point precision.
-   */
-  readonly elevation: number;
-}
-
 /** Arguments supplied to the [[HitDetail]] constructor.
  * @public
  */
@@ -208,10 +192,6 @@ export interface HitDetailProps {
    * @beta
    */
   readonly path?: HitPath;
-  /** Information about the [contour line]($docs/learning/display/ContourDisplay.md), if any, from which this hit originated.
-   * @beta
-   */
-  readonly contour?: ContourHit;
 }
 
 /** A HitDetail stores the result when locating geometry displayed in a view.
@@ -267,10 +247,6 @@ export class HitDetail {
    * @beta
    */
   public get path(): HitPath | undefined { return this._props.path; }
-  /** Information about the [contour line]($docs/learning/display/ContourDisplay.md), if any, from which this hit originated.
-   * @beta
-   */
-  public get contour(): ContourHit | undefined { return this._props.contour; }
 
   /** Create a new HitDetail from the inputs to and results of a locate operation. */
   public constructor(props: HitDetailProps);
@@ -322,7 +298,6 @@ export class HitDetail {
         tileId: arg0.tileId,
         isClassifier: arg0.isClassifier,
         path,
-        contour: arg0.contour,
       };
     }
   }
@@ -521,16 +496,19 @@ export class SnapDetail extends HitDetail {
       const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
       const outline = context.viewport.hilite.color.adjustedForContrast(context.viewport.view.backgroundColor, 50);
       const centerLine = context.viewport.hilite.color.adjustedForContrast(outline, 175);
-      const path = Path.create(this.getCurvePrimitive(singleSegment)!);
+      const curvePrimitive = this.getCurvePrimitive(singleSegment);
+      if (curvePrimitive !== undefined) {
+        const path = Path.create(curvePrimitive);
 
-      builder.setSymbology(outline, outline, 6);
-      builder.addPath(path);
+        builder.setSymbology(outline, outline, 6);
+        builder.addPath(path);
 
-      builder.setSymbology(centerLine, centerLine, 2);
-      builder.addPath(path);
+        builder.setSymbology(centerLine, centerLine, 2);
+        builder.addPath(path);
 
-      context.addDecorationFromBuilder(builder);
-      return;
+        context.addDecorationFromBuilder(builder);
+        return;
+      }
     }
     super.draw(context);
   }
@@ -616,6 +594,8 @@ export class HitList<T extends HitDetail> {
   public setHit(i: number, p: T | undefined): void {
     if (i < 0 || i >= this.length)
       return;
+    // While messy, the following is obviously intentional based on the function comment.
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     this.hits[i] = p!;
   }
 

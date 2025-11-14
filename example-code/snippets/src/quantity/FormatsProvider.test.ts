@@ -2,7 +2,7 @@ import { BeEvent } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { Format, FormatDefinition, FormatsChangedArgs, FormatterSpec, MutableFormatsProvider, ParsedQuantity, ParserSpec } from "@itwin/core-quantity";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
-import {  SchemaContext,  SchemaFormatsProvider,  SchemaUnitProvider } from "@itwin/ecschema-metadata";
+import {  FormatSetFormatsProvider, KindOfQuantity, SchemaContext,  SchemaFormatsProvider,  SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { assert } from "chai";
 import path from "path";
 
@@ -118,6 +118,80 @@ describe("FormatsProvider examples", () => {
     // __PUBLISH_EXTRACT_END__
 
     assert.equal(retrievedFormat, format);
+  });
+
+  it("using a KindOfQuantity to retrieve the persistenceUnit, and format", async () => {
+    // __PUBLISH_EXTRACT_START__ Quantity_Formatting.KindOfQuantityPersistenceUnitFormatting
+    const formatsProvider = new SchemaFormatsProvider(schemaContext, "metric");
+    const unitsProvider = new SchemaUnitProvider(schemaContext);
+    const kindOfQuantityName = "AecUnits.LENGTH";
+    // Get the format definition
+    const formatDef = await formatsProvider.getFormat(kindOfQuantityName);
+    if (!formatDef)
+      throw new Error(`Format not found for ${kindOfQuantityName}`);
+
+    const kindOfQuantity = await schemaContext.getSchemaItem(kindOfQuantityName, KindOfQuantity);
+    if (!kindOfQuantity)
+      throw new Error(`KindOfQuantity not found for ${kindOfQuantityName}`);
+
+    const persistenceUnit = kindOfQuantity.persistenceUnit;
+    if (!persistenceUnit)
+      throw new Error(`Persistence unit not found for ${kindOfQuantityName}`);
+
+    const persistenceUnitProps = await unitsProvider.findUnitByName(persistenceUnit.fullName);
+
+    const format = await Format.createFromJSON(formatDef.name ?? "", unitsProvider, formatDef);
+    const formatterSpec = await FormatterSpec.create(
+    formatDef.name ?? "",
+    format,
+    unitsProvider, // Use a schema units provider
+    persistenceUnitProps
+    );
+
+    const _formattedValue = formatterSpec.applyFormatting(123.45);
+    // __PUBLISH_EXTRACT_END__
+});
+
+  it("FormatSetFormatsProvider with string references", async () => {
+    // __PUBLISH_EXTRACT_START__ Quantity_Formatting.FormatSet_Formats_Provider_With_String_References
+    const unitsProvider = new SchemaUnitProvider(schemaContext);
+    const persistenceUnit = await unitsProvider.findUnitByName("Units.M");
+
+    // Create a format set with a base format and string references
+    const formatSet = {
+      name: "MyFormatSet",
+      label: "My Custom Formats",
+      unitSystem: "metric" as const,
+      formats: {
+        // Base format definition
+        "RoadRailUnits.LENGTH": {
+          composite: {
+            includeZero: true,
+            spacer: " ",
+            units: [{ label: "m", name: "Units.M" }]
+          },
+          formatTraits: ["keepSingleZero", "showUnitLabel"],
+          precision: 2,
+          type: "Decimal"
+        } as FormatDefinition,
+        // DISTANCE references LENGTH via string
+        "AecUnits.LENGTH": "RoadRailUnits.LENGTH",
+      }
+    };
+
+    // Create the provider
+    const formatsProvider = new FormatSetFormatsProvider({ formatSet });
+
+    // Getting AecUnits.LENGTH resolves to the RoadRailUnits.LENGTH format definition
+    const lengthFormat = await formatsProvider.getFormat("AecUnits.LENGTH");
+    const format = await Format.createFromJSON("length", unitsProvider, lengthFormat!);
+    const formatSpec = await FormatterSpec.create("LengthSpec", format, unitsProvider, persistenceUnit);
+
+    const result = formatSpec.applyFormatting(42.567);
+    // result is "42.57 m"
+    // __PUBLISH_EXTRACT_END__
+
+    assert.equal(result, "42.57 m");
   });
 
   it("on IModelConnection open, register schema formats provider", async () => {

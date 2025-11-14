@@ -9,6 +9,7 @@ import { Feature, FeatureTable } from "@itwin/core-common";
 import { InstancedGraphicProps } from "../../render/InstancedGraphicParams";
 import { OvrFlags } from "./OvrFlags";
 import { lineCodeFromLinePixels } from "./LineCode";
+import { assert } from "@itwin/core-bentley";
 
 const invalidFeature = new Feature();
 
@@ -47,7 +48,8 @@ export class InstancedGraphicPropsBuilder {
       const instance = this._instances[i];
       if (featureIds) {
         const feature = typeof instance.feature === "string" ? new Feature(instance.feature) : instance.feature;
-        const featureIndex = featureTable!.insert(feature ?? invalidFeature);
+        assert(undefined !== featureTable); // otherwise featureIds would be undefined
+        const featureIndex = featureTable.insert(feature ?? invalidFeature);
         featureIds[i * 3 + 0] = featureIndex & 0xff;
         featureIds[i * 3 + 1] = (featureIndex & 0xff00) >> 8;
         featureIds[i * 3 + 2] = (featureIndex & 0xff0000) >> 16;

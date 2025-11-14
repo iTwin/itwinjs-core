@@ -166,6 +166,29 @@ export class ECDb implements Disposable {
     }
   }
 
+  /** Removes unused schemas from the database.
+   *
+   * If the removal was successful, the database is automatically saved to disk.
+   * @param schemaNames Array of schema names to drop
+   * @throws [IModelError]($common) if the database if the operation failed.
+   * @alpha
+   */
+  public dropSchemas(schemaNames: string[]): void {
+    if (schemaNames.length === 0)
+      return;
+    if (this[_nativeDb].schemaSyncEnabled())
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, "Cannot drop schemas when schema sync is enabled");
+
+    try {
+      this[_nativeDb].dropSchemas(schemaNames);
+      this.saveChanges('dropped unused schemas');
+    } catch (error: any) {
+      Logger.logError(loggerCategory, `Failed to drop schemas: ${error}`);
+      this.abandonChanges();
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Failed to drop schemas: ${error}`);
+    }
+  }
+
   /**
    * Returns the full schema for the input name.
    * @param name The name of the schema e.g. 'ECDbMeta'
@@ -220,7 +243,7 @@ export class ECDb implements Disposable {
    */
   public withWriteStatement<T>(ecsql: string, callback: (stmt: ECSqlWriteStatement) => T, logErrors = true): T {
     const stmt = this.prepareWriteStatement(ecsql, logErrors);
-    const release = () => { };
+    const release = () => stmt[Symbol.dispose]();
     try {
       const val = callback(stmt);
       if (val instanceof Promise) {

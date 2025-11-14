@@ -76,8 +76,7 @@ export class Ray3d implements BeJSONFunctions {
     return this.origin.isAlmostEqual(other.origin, tolerance) && this.direction.isAlmostEqual(other.direction, tolerance);
   }
   /**
-   * Return the dot product of the ray's direction vector with a vector from the ray origin
-   * to the `spacePoint`.
+   * Return the dot product of the ray's direction vector with a vector from the ray origin to the `spacePoint`.
    * * If the instance is the unit normal of a plane, then this method returns the (signed) altitude
    * of `spacePoint` with respect to the plane.
    * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/ProjectVectorOnPlane
@@ -363,11 +362,9 @@ export class Ray3d implements BeJSONFunctions {
     if (range.isNull)
       return Range1d.createNull(result);
     const interval = Range1d.createXX(-Geometry.largeCoordinateResult, Geometry.largeCoordinateResult, result);
-    if (interval.clipLinearMapToInterval(this.origin.x, this.direction.x, range.low.x, range.high.x)
-      && interval.clipLinearMapToInterval(this.origin.y, this.direction.y, range.low.y, range.high.y)
-      && interval.clipLinearMapToInterval(this.origin.z, this.direction.z, range.low.z, range.high.z)
-    )
-      return interval;
+    interval.clipLinearMapToInterval(this.origin.x, this.direction.x, range.low.x, range.high.x);
+    interval.clipLinearMapToInterval(this.origin.y, this.direction.y, range.low.y, range.high.y);
+    interval.clipLinearMapToInterval(this.origin.z, this.direction.z, range.low.z, range.high.z);
     return interval;
   }
   /**

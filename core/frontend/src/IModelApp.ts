@@ -14,7 +14,7 @@ export const ITWINJS_CORE_VERSION = packageJson.version as string;
 const COPYRIGHT_NOTICE = `Copyright © 2017-${new Date().getFullYear()} <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>`;
 
 import { UiAdmin } from "@itwin/appui-abstract";
-import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, IModelStatus, Logger, ProcessDetector } from "@itwin/core-bentley";
+import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, expectDefined, Guid, GuidString, IModelStatus, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity } from "@itwin/core-common";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { FormatsProvider } from "@itwin/core-quantity";
@@ -27,7 +27,7 @@ import { ExtensionAdmin } from "./extension/ExtensionAdmin";
 import * as displayStyleState from "./DisplayStyleState";
 import * as drawingViewState from "./DrawingViewState";
 import { ElementLocateManager } from "./ElementLocateManager";
-import { EntityState } from "./EntityState";
+import { ElementState, EntityState } from "./EntityState";
 import { FrontendHubAccess } from "./FrontendHubAccess";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import * as modelselector from "./ModelSelectorState";
@@ -238,7 +238,7 @@ export class IModelApp {
    */
   public static get realityDataSourceProviders(): RealityDataSourceProviderRegistry { return this._realityDataSourceProviders; }
   /** The [[RenderSystem]] for this session. */
-  public static get renderSystem(): RenderSystem { return this._renderSystem!; }
+  public static get renderSystem(): RenderSystem { return expectDefined(this._renderSystem); }
   /** The [[ViewManager]] for this session. */
   public static get viewManager(): ViewManager { return this._viewManager; }
   /** The [[NotificationManager]] for this session. */
@@ -394,6 +394,7 @@ export class IModelApp {
     ].forEach((tool) => this.tools.registerModule(tool, toolsNs));
 
     this.registerEntityState(EntityState.classFullName, EntityState);
+    this.registerEntityState(ElementState.classFullName, ElementState);
     [
       modelState,
       sheetState,
@@ -426,6 +427,9 @@ export class IModelApp {
     this._formatsProviderManager = new FormatsProviderManager(opts.formatsProvider ?? new QuantityTypeFormatsProvider());
 
     this._publicPath = opts.publicPath ?? "";
+    if (this._publicPath !== "" && !this._publicPath.endsWith("/")) {
+      this._publicPath += "/";
+    }
 
     [
       this.renderSystem,
@@ -520,6 +524,11 @@ export class IModelApp {
         IModelApp.requestNextAnimation();
       }, IModelApp.animationInterval.milliseconds);
   }
+
+  /** Return true if the main event processing loop has been started.
+   * @internal
+   */
+  public static get isEventLoopStarted() { return IModelApp._wantEventLoop; }
 
   /** @internal */
   public static startEventLoop() {
@@ -728,7 +737,7 @@ export class IModelApp {
   public static makeIModelJsLogoCard() {
     return this.makeLogoCard({
       iconSrc: `${this.publicPath}images/about-imodeljs.svg`,
-      heading: `<span style="font-weight:normal">${this.localization.getLocalizedString("iModelJs:Notices.PoweredBy")}</span>&nbsp;iTwin.js`,
+      heading: `<span class="itwinjs-header-lead">${this.localization.getLocalizedString("iModelJs:Notices.PoweredBy")}</span>&nbsp;iTwin.js`,
       notice: `${ITWINJS_CORE_VERSION}<br>${COPYRIGHT_NOTICE}`,
     });
   }

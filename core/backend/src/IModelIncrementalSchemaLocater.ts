@@ -27,18 +27,11 @@ export class IModelIncrementalSchemaLocater extends ECSqlSchemaLocater {
   }
 
   /**
-   * Gets the [[IModelDb]] targeted by this schema loader.
-   */
-  public get iModelDb(): IModelDb {
-    return this._iModel;
-  }
-
-  /**
    * Gets [[SchemaProps]]($ecschema-metadata) for the given [[SchemaKey]]($ecschema-metadata).
    * This is the full schema json with all elements that are defined in the schema.
    * @param schemaKey The key of the schema to be resolved.
    */
-  public async getSchemaProps(schemaKey: SchemaKey): Promise<SchemaProps | undefined> {
+  protected async getSchemaProps(schemaKey: SchemaKey): Promise<SchemaProps | undefined> {
     // To keep the main thread from being blocked in sync loading cases the resolving
     // is triggered through a timeout. Even if there is no delay, it improves loading
     // time by ~3x.

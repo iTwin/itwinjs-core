@@ -260,10 +260,10 @@ export class BriefcaseConnection extends IModelConnection {
   public override isBriefcaseConnection(): this is BriefcaseConnection { return true; }
 
   /** The Guid that identifies the iTwin that owns this iModel. */
-  public override get iTwinId(): GuidString { return super.iTwinId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
+  public override get iTwinId(): GuidString { return super.iTwinId ?? Guid.empty; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
 
   /** The Guid that identifies this iModel. */
-  public override get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
+  public override get iModelId(): GuidString { return super.iModelId ?? Guid.empty; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
 
   protected constructor(props: IModelConnectionProps, openMode: OpenMode) {
     super(props);
@@ -272,6 +272,8 @@ export class BriefcaseConnection extends IModelConnection {
     this._modelsMonitor = new ModelChangeMonitor(this);
     if (OpenMode.ReadWrite === this._openMode)
       this.txns.onAfterUndoRedo.addListener(async () => { await IModelApp.toolAdmin.restartPrimitiveTool(); });
+
+    this.categories.cache.attachToBriefcase(this);
   }
 
   /** Open a BriefcaseConnection to a [BriefcaseDb]($backend). */

@@ -76,7 +76,7 @@ jobs:
         persistCredentials: true
       - task: UseNode@1
         inputs:
-          version: "22.x"
+          version: "24.x"
 
       - bash: |
           if [[ "$(Build.Reason)" == "PullRequest" ]]; then
@@ -145,7 +145,7 @@ jobs:
           # This note indicates that changes from the ESLint deprecation rule must be reviewed
           # and approved before continuing with the release process.
           commitId="$(Build.SourceVersion)"
-          deprecationCommentChangesRegex="DEPRECATION_COMMENT_CHANGES"
+          deprecationCommentChangesRegex="DEPRECATION_COMMENT_CHANGES_PR"
           if [[ "$(getCommit.notes)" =~ $deprecationCommentChangesRegex ]]; then
             echo "$commitId has deprecation comment changes that should be reviewed before release"
             echo '##vso[task.setvariable variable=shouldRequireApproval;isOutput=true]true'
@@ -153,7 +153,7 @@ jobs:
             echo "$commitId doesn't have any deprecation comment changes that need reviewal"
             echo '##vso[task.setvariable variable=shouldRequireApproval;isOutput=true]false'
           fi
-        displayName: Parse DEPRECATION_COMMENT_CHANGES note
+        displayName: Parse DEPRECATION_COMMENT_CHANGES_PR note
         name: deprecationCommentNote
 
   - job: WaitForCodeChangeValidation
@@ -188,13 +188,13 @@ jobs:
     condition: and(succeeded('ParseCommitNotes'), not(canceled()))
     strategy:
       matrix:
-        "Windows_Node_22":
+        "Windows_Node_24":
           platform: Windows_NT
           name: $(win_pool)
-        "Linux_Node_22":
+        "Linux_Node_24":
           platform: Linux
           name: $(linux_pool)
-        "MacOS_Node_22":
+        "MacOS_Node_24":
           platform: Darwin
           name: $(mac_pool)
 
@@ -214,14 +214,16 @@ jobs:
     steps:
       - checkout: self
         clean: true
+        timeoutInMinutes: 5
+        retryCountOnTaskFailure: 1
       - template: ../templates/core-build.yaml
         parameters:
-          nodeVersion: 22.x
+          nodeVersion: 24.x
           buildMobile: true
       # Will run if even there is a failure somewhere else in the pipeline.
       - template: ../templates/publish-test-results.yaml
         parameters:
-          nodeVersion: 22.x
+          nodeVersion: 24.x
       # The publish script identifies any new packages not previously published and tags the build
       - template: ../templates/publish.yaml
 

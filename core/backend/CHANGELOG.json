@@ -2,6 +2,348 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "5.3.2",
+      "tag": "@itwin/core-backend_v5.3.2",
+      "date": "Thu, 13 Nov 2025 23:23:23 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Listen on localhost only instead of all interfaces for LocalhostIpcHost"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.3.1",
+      "tag": "@itwin/core-backend_v5.3.1",
+      "date": "Thu, 06 Nov 2025 20:29:06 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Enhance rebase event handling in TxnManager "
+          },
+          {
+            "comment": "Make discardChanges() public preview"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.3.0",
+      "tag": "@itwin/core-backend_v5.3.0",
+      "date": "Mon, 03 Nov 2025 19:02:35 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add SqliteChangesetReader.openInMemory() to allow read unsaved changes"
+          },
+          {
+            "comment": "Fix crash when their is a cycle in EDE."
+          },
+          {
+            "comment": "ECSqlReader/ConcurrentQuery unable to see modification to file"
+          },
+          {
+            "comment": "add withIndirectTxnModeAsync()"
+          },
+          {
+            "comment": "Allow recursive calls to withIndirectTxnMode"
+          },
+          {
+            "comment": "`TextAnnotation2d/3d` and `AnnotationTextStyle` now persist a stringified `VersionedJSON<T>` in their JSON properties. This bundles a version number with the JSON data to allow data version checking and migration."
+          },
+          {
+            "comment": "`justification` and `margins` are now text block level text style properties. `textHeight` replaces `lineHeight` allowing multi-sized text and changing the baseline that text vertically aligns to in a line."
+          },
+          {
+            "comment": "load default geo coord dbs when getting available crs"
+          },
+          {
+            "comment": "clear instanceKeyCache during updateElement"
+          },
+          {
+            "comment": "Fixed tests for biscore version 01.00.24 release"
+          },
+          {
+            "comment": "Fixed test cases"
+          },
+          {
+            "comment": "Remap fields and text styles when cloning text annotation elements between iModels."
+          },
+          {
+            "comment": "Element.onCloned can now invoke asynchronous operations."
+          },
+          {
+            "comment": "Fixes and enhancements for text fields."
+          },
+          {
+            "comment": "Add support for text fields referring to properties of EC views."
+          },
+          {
+            "comment": "Fix generateElementGraphics ignoring geometry beyond 2048 entries."
+          },
+          {
+            "comment": "Add APIs for project and sheet information."
+          },
+          {
+            "comment": "Added deleteInstances to delete multiple relationship instances"
+          },
+          {
+            "comment": "Added new api to create leader terminator geometry for different shapes"
+          },
+          {
+            "comment": "Added ECSqlWriteStatement disposal inside WithWriteStatement"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.2.6",
+      "tag": "@itwin/core-backend_v5.2.6",
+      "date": "Thu, 13 Nov 2025 21:13:51 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.2.5",
+      "tag": "@itwin/core-backend_v5.2.5",
+      "date": "Thu, 13 Nov 2025 07:45:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.2.4",
+      "tag": "@itwin/core-backend_v5.2.4",
+      "date": "Fri, 24 Oct 2025 16:20:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "clear instanceKeyCache during updateElement"
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.2.3",
+      "tag": "@itwin/core-backend_v5.2.3",
+      "date": "Thu, 16 Oct 2025 23:00:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.2.2",
+      "tag": "@itwin/core-backend_v5.2.2",
+      "date": "Fri, 10 Oct 2025 14:49:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.2.1",
+      "tag": "@itwin/core-backend_v5.2.1",
+      "date": "Thu, 09 Oct 2025 17:10:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "ECSqlReader/ConcurrentQuery unable to see modification to file"
+          },
+          {
+            "comment": "Remap fields and text styles when cloning text annotation elements between iModels."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.2.0",
+      "tag": "@itwin/core-backend_v5.2.0",
+      "date": "Wed, 01 Oct 2025 20:22:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add SqliteChangesetReader.openInMemory() to allow read unsaved changes"
+          },
+          {
+            "comment": "Rework rebase and add stash api"
+          },
+          {
+            "comment": "`TextAnnotation2d/3d` and `AnnotationTextStyle` now persist a stringified `VersionedJSON<T>` in their JSON properties. This bundles a version number with the JSON data to allow data version checking and migration."
+          },
+          {
+            "comment": "Introducing new navigation property `defaultTextStyle` on the `TextAnnotation2d/3d` elements. Separating `scaleFactor` logic from `TextStyleResolver`."
+          },
+          {
+            "comment": "`justification` and `margins` are now text block level text style properties. `textHeight` replaces `lineHeight` allowing multi-sized text and changing the baseline that text vertically aligns to in a line."
+          },
+          {
+            "comment": "added new dropSchemas method"
+          },
+          {
+            "comment": "Adding support for lists in layoutTextBlock"
+          },
+          {
+            "comment": "Briefcase Manager now provides deviceName to acquired briefcases"
+          },
+          {
+            "comment": "Add support for formatting text fields."
+          }
+        ]
+      }
+    },
+    {
+      "version": "5.1.9",
+      "tag": "@itwin/core-backend_v5.1.9",
+      "date": "Wed, 24 Sep 2025 17:38:08 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.8",
+      "tag": "@itwin/core-backend_v5.1.8",
+      "date": "Wed, 17 Sep 2025 17:17:16 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.7",
+      "tag": "@itwin/core-backend_v5.1.7",
+      "date": "Tue, 09 Sep 2025 19:28:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.6",
+      "tag": "@itwin/core-backend_v5.1.6",
+      "date": "Mon, 08 Sep 2025 13:53:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.5",
+      "tag": "@itwin/core-backend_v5.1.5",
+      "date": "Thu, 04 Sep 2025 13:51:08 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.4",
+      "tag": "@itwin/core-backend_v5.1.4",
+      "date": "Fri, 22 Aug 2025 14:22:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.3",
+      "tag": "@itwin/core-backend_v5.1.3",
+      "date": "Wed, 20 Aug 2025 13:57:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.2",
+      "tag": "@itwin/core-backend_v5.1.2",
+      "date": "Thu, 14 Aug 2025 19:38:08 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.1",
+      "tag": "@itwin/core-backend_v5.1.1",
+      "date": "Fri, 08 Aug 2025 18:06:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "5.1.0",
+      "tag": "@itwin/core-backend_v5.1.0",
+      "date": "Fri, 08 Aug 2025 12:51:53 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add Symbols to prevent duplicate instances of package"
+          },
+          {
+            "comment": "Fix applychangeset issue"
+          },
+          {
+            "comment": "Mark iModel edit API as @preview"
+          },
+          {
+            "comment": "verify changeset id before pushing"
+          },
+          {
+            "comment": "add unit test for concurrent query"
+          },
+          {
+            "comment": "Add release tag to ECChangeUnifierCache namespace"
+          },
+          {
+            "comment": "Fix regression when using performCheckpoint()"
+          },
+          {
+            "comment": "TextAnnotation elements use new BIS property `textAnnotationData`. Introduce `AnnotationTextStyle` class to TypeScript layer. Add new `TextStyleResolver` class to resolve effective text styles from inheritance chain. Drawing scale is accounted for when creating geometry."
+          },
+          {
+            "comment": "Add SheetViewDefinition.create, CreateSheetViewDefinitionArgs"
+          },
+          {
+            "comment": "Fix recipe initialization in TypeDefinitionElement"
+          },
+          {
+            "comment": "optionally return world CRS from getAvailableCoordinateReferenceSystems"
+          },
+          {
+            "comment": "Refactoring the TextAnnotationGeometry and adding support for frames"
+          },
+          {
+            "comment": "Ensuring the order of geometry in FrameGeometry & adding tests"
+          },
+          {
+            "comment": "Added `TabRun`s to `TextBlockLayout`"
+          },
+          {
+            "comment": "Added IModelIncrementalSchemaLocater which is an ISchemaLocater implementation that provides asynchronous incremental loading of EC Schemas from iModels using ECSql queries."
+          },
+          {
+            "comment": "Improve change unifer to handle very large changeset"
+          },
+          {
+            "comment": "Add cache for resolveInstanceKey"
+          },
+          {
+            "comment": "Clear iModelDb Caches on abandonChanges"
+          },
+          {
+            "comment": "Thining iModelPlatform API"
+          },
+          {
+            "comment": "Allow Entity.forEach to support relationship classes"
+          },
+          {
+            "comment": "Add support for RelationshipClasses in Entity.getMetaData"
+          },
+          {
+            "comment": "Updates iModelDb Error Handling"
+          },
+          {
+            "comment": "Reduce Model and Element Cache Size"
+          },
+          {
+            "comment": "Fix IModelDb coordinate conversion results to include `fromCache` and also the point array if input point array was empty."
+          },
+          {
+            "comment": "Fix TextStyle.widthFactor multiplying by height instead of width during text layout."
+          },
+          {
+            "comment": "Add support for text fields."
+          },
+          {
+            "comment": "Added functionality to enable health stats tracking for changesets."
+          },
+          {
+            "comment": "Introducing Text Annotation Leaders"
+          },
+          {
+            "comment": "Snapshot/StandaloneDb.createBlank - set ecefLocation and geographicCoordinateSystem if provided"
+          },
+          {
+            "comment": "Add Beta downloadChangeset and downloadChangesets to BriefcaseManager."
+          },
+          {
+            "comment": "Make IModelHostConfiguration.hubAccess public."
+          },
+          {
+            "comment": "Updated deprecation comments to new template"
+          }
+        ]
+      }
+    },
+    {
       "version": "5.0.5",
       "tag": "@itwin/core-backend_v5.0.5",
       "date": "Wed, 06 Aug 2025 15:34:15 GMT",
@@ -210,6 +552,18 @@
           },
           {
             "comment": "Remove V1 Checkpoints API."
+          }
+        ]
+      }
+    },
+    {
+      "version": "4.11.7",
+      "tag": "@itwin/core-backend_v4.11.7",
+      "date": "Thu, 13 Nov 2025 20:49:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Bump `playwright` version to `~1.56.1`."
           }
         ]
       }

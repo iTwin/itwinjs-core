@@ -77,7 +77,7 @@ describe("SchemaParser Tests", function () {
     // Coming from database, customAttributes has a different form, so force a reset here.
     (fromDBProps as any).customAttributes = [attributeData];
 
-    const props = await SchemaParser.parse(fromDBProps, schema.context);
+    const props = await SchemaParser.parse(fromDBProps, schema.context.getKnownSchemas());
     expect(props).to.deep.equal(schema.toJSON());
   });
 
@@ -116,7 +116,7 @@ describe("SchemaParser Tests", function () {
     // Create the the array from the keyed Object.
     (fromDBProps as any).items = createItemRows(fromDBProps.items!);
 
-    const actualProps = await SchemaParser.parse(fromDBProps, schema.context);
+    const actualProps = await SchemaParser.parse(fromDBProps, schema.context.getKnownSchemas());
 
     expect(actualProps).to.deep.equal(schema.toJSON());
   });
@@ -130,7 +130,7 @@ describe("SchemaParser Tests", function () {
     // Create the the array from the keyed Object.
     (fromDBProps as any).items = createItemRows(fromDBProps.items!);
 
-    const actualProps = await SchemaParser.parse(fromDBProps, schema.context);
+    const actualProps = await SchemaParser.parse(fromDBProps, schema.context.getKnownSchemas());
 
     expect(actualProps).to.deep.equal(schema.toJSON());
   });
@@ -144,7 +144,7 @@ describe("SchemaParser Tests", function () {
     // Create the the array from the keyed Object.
     (fromDBProps as any).items = createItemRows(fromDBProps.items!);
 
-    const actualProps = await SchemaParser.parse(fromDBProps, schema.context);
+    const actualProps = await SchemaParser.parse(fromDBProps, schema.context.getKnownSchemas());
 
     expect(actualProps).to.deep.equal(schema.toJSON());
   });
@@ -216,7 +216,7 @@ describe("SchemaParser Tests", function () {
     // Create the the array from the keyed Object.
     (fromDBProps as any).items = createItemRows(fromDBProps.items!);
 
-    const actualProps = await SchemaParser.parse(fromDBProps, testSchema.context);
+    const actualProps = await SchemaParser.parse(fromDBProps, testSchema.context.getKnownSchemas());
 
     expect(actualProps).to.deep.equal(testSchema.toJSON());
   });
@@ -240,7 +240,7 @@ describe("SchemaParser Tests", function () {
     // SchemaItems from the query are in the form SchemaItemProp [].
     // Create the the array from the keyed Object.
     (fromDBProps as any).items = createItemRows(fromDBProps.items!);
-    const actualProps = await SchemaParser.parse(fromDBProps, testSchema.context);
+    const actualProps = await SchemaParser.parse(fromDBProps, testSchema.context.getKnownSchemas());
 
     expect(actualProps).to.deep.equal(testSchema.toJSON());
   });
@@ -266,7 +266,7 @@ describe("SchemaParser Tests", function () {
     // Create the the array from the keyed Object.
     (fromDBProps as any).items = createItemRows(fromDBProps.items!);
 
-    const actualProps = await SchemaParser.parse(fromDBProps, testSchema.context);
+    const actualProps = await SchemaParser.parse(fromDBProps, testSchema.context.getKnownSchemas());
 
     expect(actualProps).to.deep.equal(testSchema.toJSON());
   });
@@ -280,7 +280,7 @@ describe("SchemaParser Tests", function () {
     // Create the the array from the keyed Object.
     (fromDBProps as any).items = createItemRows(fromDBProps.items!);
 
-    const actualProps = await SchemaParser.parse(fromDBProps, schema.context);
+    const actualProps = await SchemaParser.parse(fromDBProps, schema.context.getKnownSchemas());
 
     expect(actualProps).to.deep.equal(schema.toJSON());
   });

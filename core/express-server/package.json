@@ -1,13 +1,13 @@
 {
   "name": "@itwin/express-server",
-  "version": "5.2.0-dev.3",
+  "version": "5.4.0-dev.11",
   "description": "iTwin.js express utilities",
   "main": "lib/cjs/express-server.js",
   "module": "lib/esm/express-server.js",
   "typings": "lib/cjs/express-server",
   "license": "MIT",
   "engines": {
-    "node": "^20.0.0 || ^22.0.0"
+    "node": "^20.0.0 || ^22.0.0 || ^24.0.0"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s build:esm",

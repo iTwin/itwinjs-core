@@ -10,6 +10,7 @@ import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { Arc3d } from "../../curve/Arc3d";
+import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection";
 import { CurveFactory } from "../../curve/CurveFactory";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
@@ -1182,6 +1183,48 @@ describe("RegionOps", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "constructAllXYRegionLoops");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("constructAllXYRegionLoops2", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const testCases: AnyCurve[][] = [];
+    // original test case: at tol=0.5, the left end of line1 sits inside a Manhattan tol-ball at the intersection with line0, and is skipped from the graph
+    const line0 = LineString3d.create([[30.55100017538586, 18.348248783237576, 10.984954476606127], [34.18540073622215, 16.104189376546724, 10.984954476606127]]);
+    const line1 = LineString3d.create([[30.66028077796634, 17.53205103504317, 10.984954476606127], [34.03919883795024, 20.6730171189719, 10.984954476606127]]);
+    const line2 = LineString3d.create([[32.86823543229491, 20.519132339710257, 10.984954476606127], [36.50191586768882, 18.048229643642387, 10.984954476606127]]);
+    const line3 = LineString3d.create([[36.527027943203905, 18.031153432292136, 10.984954476606127], [34.18540073622215, 16.10418937654672, 10.984954476606127]]);
+    const curves0: AnyCurve[] = [line0, line1, line2, line3];
+    testCases.push(curves0);
+    // this is why tol=0 graph has only 7 edges; the last edge touches no others, and so is ignored:
+    ck.testLT(0, line0.endPoint().distance(line3.endPoint()), "lines 0 and 3 do not end in the same point");
+    // manufactured test case
+    const gap = 0.0304;
+    const line = LineSegment3d.create(Point3d.create(0, 9), Point3d.create(10, 1));
+    const length = line.curveLength();
+    const path = CurveChainWithDistanceIndex.createCapture(Path.create(line));
+    const curves1: AnyCurve[] = [];
+    curves1.push(LineSegment3d.create(Point3d.create(-1, -1), Point3d.create(6, 6)));
+    curves1.push(LineString3d.create(Point3d.create(-2, 1), Point3d.create(6, -3), Point3d.create(10, 1)));
+    curves1.push(LineSegment3d.create(line.startPoint(), path.moveSignedDistanceFromFraction(0, length - gap, false).point));
+    testCases.push(curves1);
+    for (const testCase of testCases) {
+      x0 = 0;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, testCase, x0);
+      for (const tol of [0.0, undefined, 0.1, 0.5]) {
+        const signedLoops = RegionOps.constructAllXYRegionLoops(testCase, tol);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, signedLoops.map((component) => component.positiveAreaLoops).flat(), x0 += 10);
+        ck.testExactNumber(1, signedLoops.length, `tol ${tol} results in one component`);
+        if (tol === undefined || tol < gap)
+          ck.testExactNumber(0, signedLoops[0].positiveAreaLoops.length, `tol ${tol} < gap ${gap} results in no positive loops`);
+        else
+          ck.testExactNumber(1, signedLoops[0].positiveAreaLoops.length, `tol ${tol} results in 1 positive loop`);
+        // NOTE: the negative area loop has danglers! This is WAD.
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "constructAllXYRegionLoops2");
     expect(ck.getNumErrors()).toBe(0);
   });
 
@@ -2401,7 +2444,7 @@ describe("RegionOps.constructPolygonWireXYOffset", () => {
 });
 
 describe("RegionOps.constructCurveXYOffset", () => {
-  it("constructCurveXYOffsetDefaultOption", () => {
+  it("defaultOptions", () => {
     const allGeometry: GeometryQuery[] = [];
     const lineStrings: CurveChain[] = [
       Path.create([Point3d.create(-2, -1), Point3d.create(-2, 0), Point3d.create(-3, -1)]),
@@ -2430,10 +2473,10 @@ describe("RegionOps.constructCurveXYOffset", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveCollection);
       }
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", "CurveXYOffsetDefaultOption");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps.constructCurveXYOffset", "defaultOptions");
   });
 
-  it("constructCurveXYOffsetCustomOption", () => {
+  it("customOptions", () => {
     const allGeometry: GeometryQuery[] = [];
     const lineStrings: CurveChain[] = [
       Path.create([Point3d.create(-2, -1), Point3d.create(-2, 0), Point3d.create(-3, -1)]),
@@ -2468,10 +2511,10 @@ describe("RegionOps.constructCurveXYOffset", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveCollection);
       }
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", "CurveXYOffsetCustomOption");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps.constructCurveXYOffset", "customOptions");
   });
 
-  it("EllipsePreserveEllipticalArcsTrue", () => {
+  it("preserveEllipticalArcsTrue", () => {
     const allGeometry: GeometryQuery[] = [];
     const origin = Point3d.create(0, 0, 0);
     const vector0 = Vector3d.create(5, 0, 0);
@@ -2492,10 +2535,10 @@ describe("RegionOps.constructCurveXYOffset", () => {
       const curveCollection = RegionOps.constructCurveXYOffset(loop, jointOption);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveCollection);
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", "EllipsePreserveEllipticalArcsTrue");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps.constructCurveXYOffset", "preserveEllipticalArcsTrue");
   });
 
-  it("EllipsePreserveEllipticalArcsFalse", () => {
+  it("preserveEllipticalArcsFalse", () => {
     const allGeometry: GeometryQuery[] = [];
     const origin = Point3d.create(0, 0, 0);
     const vector0 = Vector3d.create(5, 0, 0);
@@ -2516,9 +2559,10 @@ describe("RegionOps.constructCurveXYOffset", () => {
       const curveCollection = RegionOps.constructCurveXYOffset(loop, jointOption);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveCollection);
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", "EllipsePreserveEllipticalArcsFalse");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps.constructCurveXYOffset", "preserveEllipticalArcsFalse");
   });
-  it("constructCurveXYOffsetMaxChamferDegree", () => {
+
+  it("maxChamferDegree", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const origin = Point3d.create(0, 0, 0);
@@ -2546,7 +2590,59 @@ describe("RegionOps.constructCurveXYOffset", () => {
       dx += 15;
     }
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", "constructCurveXYOffsetMaxChamferDegree");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps.constructCurveXYOffset", "maxChamferDegree");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("swallowsSegmentAtSeam", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const jointOptions = new JointOptions(-0.3109, 180, 360, true, true);
+    const loop = Loop.create(
+      LineString3d.create([[93089.5657959348, 272528.15824223746, 0], [93100.03808225933, 272531.43445330666, 0], [93101.22876909783, 272527.6284672965, 0]]),
+      Arc3d.create(Point3d.create(93099.77428488612, 272527.17343798134, 0), Vector3d.create(1.488251776014865, 0.32815034802058346, 0), Vector3d.create(0.3281503480205824, -1.4882517760148655, 0), AngleSweep.fromJSON([-4.937670015113557, 4.937670015113557])),
+      LineString3d.create([93101.28525819005, 272527.3722737793, 0]), // singleton line strings may be problematic elsewhere, but not for offset
+      Arc3d.create(Point3d.create(93099.77428488623, 272527.17343798134, 0), Vector3d.create(1.5226584933015492, 0.06393052644921698, 0), Vector3d.create(0.06393052644921829, -1.522658493301549, 0), AngleSweep.fromJSON([-5.092518821342509, 5.092518821342509])),
+      LineString3d.create([93101.29660767947, 272527.1019585258, 0]),
+      Arc3d.create(Point3d.create(93099.77428488602, 272527.1734379813, 0), Vector3d.create(1.510520957673389, -0.20224350780197875, 0), Vector3d.create(-0.20224350780197886, -1.5105209576733885, 0), AngleSweep.fromJSON([-4.937670013019398, 4.937670013019398])),
+      LineString3d.create([93101.2617926862, 272526.841931504, 0]),
+      Arc3d.create(Point3d.create(93099.77428488611, 272527.1734379812, 0), Vector3d.create(1.4168797543015519, -0.561273339465388, 0), Vector3d.create(-0.5612733394653889, -1.4168797543015517, 0), AngleSweep.fromJSON([-9.04652736096125, 9.04652736096125])),
+      LineString3d.create([93101.08528740756, 272526.39636115846, 0]),
+      Arc3d.create(Point3d.create(93099.77428488612, 272527.1734379812, 0), Vector3d.create(1.1534997964345772, -0.9959991060709421, 0), Vector3d.create(-0.9959991060709413, -1.1534997964345777, 0), AngleSweep.fromJSON([-10.152545440293755, 10.152545440293755])),
+      LineString3d.create([93100.73415881662, 272525.9897074218, 0]),
+      Arc3d.create(Point3d.create(93099.77428488611, 272527.1734379812, 0), Vector3d.create(0.7618084247839977, -1.319933302722175, 0), Vector3d.create(-1.3199333027221751, -0.7618084247839976, 0), AngleSweep.fromJSON([-9.046527362119292, 9.046527362119292])),
+      LineString3d.create([93100.31907550692, 272525.7501392848, 0]),
+      Arc3d.create(Point3d.create(93099.77428488618, 272527.1734379807, 0), Vector3d.create(0.4202627410270718, -1.4649079242989695, 0), Vector3d.create(-1.4649079242989695, -0.420262741027071, 0), AngleSweep.fromJSON([-4.937670014773152, 4.937670014773152])),
+      LineString3d.create([93100.06690049211, 272525.67779360275, 0]),
+      Arc3d.create(Point3d.create(93099.7742848862, 272527.1734379802, 0), Vector3d.create(0.15870081460091126, -1.5157143688814274, 0), Vector3d.create(-1.5157143688814272, -0.15870081460091198, 0), AngleSweep.fromJSON([-5.092518816611678, 5.092518816611678])),
+      LineString3d.create([93099.79781801868, 272525.64961968776, 0]),
+      Arc3d.create(Point3d.create(93099.77428488608, 272527.1734379793, 0), Vector3d.create(-0.10771223944506644, -1.5201888262126835, 0), Vector3d.create(-1.5201888262126835, 0.1077122394450671, 0), AngleSweep.fromJSON([-4.937670017137359, 4.937670017137359])),
+      LineString3d.create([[93099.53612673173, 272525.6681616965, 0], [93090.80016320662, 272527.050327199, 0]]),
+      Arc3d.create(Point3d.create(93091.03832136128, 272528.55560348375, 0), Vector3d.create(-0.4976031275002508, -1.4404746188394117, 0), Vector3d.create(-1.440474618839412, 0.49760312750025065, 0), AngleSweep.fromJSON([-10.066596761922968, 10.066596761922968])),
+      LineString3d.create([93090.29659421161, 272527.22428202163, 0]),
+      Arc3d.create(Point3d.create(93091.03832136106, 272528.5556034833, 0), Vector3d.create(-0.8299089173113726, -1.278212497007433, 0), Vector3d.create(-1.2782124970074327, 0.8299089173113732, 0), AngleSweep.fromJSON([-3.870822439014021, 3.870822439014021])),
+      LineString3d.create([93090.12401707575, 272527.33633170376, 0]),
+      Arc3d.create(Point3d.create(93091.03832136084, 272528.55560348294, 0), Vector3d.create(-0.9959991057076077, -1.1534997957220827, 0), Vector3d.create(-1.153499795722083, 0.9959991057076072, 0), AngleSweep.fromJSON([-3.9438437437170264, 3.9438437437170264])),
+      LineString3d.create([93089.9653446053, 272527.47333878366, 0]),
+      Arc3d.create(Point3d.create(93091.03832136112, 272528.55560348375, 0), Vector3d.create(-1.1435897437288622, -1.00736214820259, 0), Vector3d.create(-1.00736214820259, 1.1435897437288622, 0), AngleSweep.fromJSON([-3.87082243002207, 3.87082243002207])),
+      LineString3d.create([93089.82933617584, 272527.6277399047, 0]),
+      Arc3d.create(Point3d.create(93091.03832136087, 272528.55560348363, 0), Vector3d.create(-1.3525569735883416, -0.702257525417748, 0), Vector3d.create(-0.7022575254177474, 1.3525569735883416, 0), AngleSweep.fromJSON([-10.066596764821469, 10.066596764821469])),
+      LineString3d.create([[93089.58383714946, 272528.1005741686, 0], [93089.5657959348, 272528.15824223746, 0]]), // this last segment should be absent in the offset
+    );
+    const loopForDisplay = Loop.create(...loop.children.filter((c) => c.quickLength() > Geometry.smallFloatingPoint));  // can't import singleton linestrings in DGN!
+    GeometryCoreTestIO.captureGeometry(allGeometry, loopForDisplay);
+    const offset = RegionOps.constructCurveXYOffset(loop, jointOptions);
+    GeometryCoreTestIO.captureGeometry(allGeometry, offset);
+    if (ck.testDefined(offset, "RegionOps.constructCurveXYOffset succeeded")) {
+      if (ck.testType(offset, Loop, "RegionOps.constructCurveXYOffset returned a Loop")) {
+        ck.testExactNumber(offset.children.length, 4, "RegionOps.constructCurveXYOffset returned a Loop with 4 children");
+        const area = RegionOps.computeXYArea(offset);
+        if (ck.testDefined(area, "RegionOps.computeXYArea succeeded")) {
+          ck.testCoordinate(-30.77708229, area, "RegionOps.constructCurveXYOffset returned a Loop with expected area");
+        }
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps.constructCurveXYOffset", "swallowsSegmentAtSeam");
     expect(ck.getNumErrors()).toBe(0);
   });
 });

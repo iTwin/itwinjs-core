@@ -6,6 +6,7 @@
  * @module Rendering
  */
 
+import { expectDefined } from "@itwin/core-bentley";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
 import { addInstanceColor } from "./Instancing";
 
@@ -50,7 +51,7 @@ const computeBaseColor = "return v_color;";
 export function addColor(builder: ProgramBuilder) {
   builder.vert.addUniform("u_color", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_color", (uniform, params) => {
-      const lutGeom = params.geometry.asLUT!;
+      const lutGeom = expectDefined(params.geometry.asLUT);
       const color = lutGeom.getColor(params.target);
       if (color.isUniform) {
         color.uniform.bind(uniform);

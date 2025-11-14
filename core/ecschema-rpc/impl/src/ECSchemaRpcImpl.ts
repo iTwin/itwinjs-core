@@ -73,12 +73,20 @@ export class ECSchemaRpcImpl extends RpcInterface implements ECSchemaRpcInterfac
    * @param schemaName        The name of the schema that shall be returned.
    * @returns                 The SchemaProps.
    */
-  public async getSchemaJSON(tokenProps: IModelRpcProps, schemaName: string): Promise<SchemaProps> {
+  public async getSchemaJSON(tokenProps: IModelRpcProps, schemaName: string): Promise<SchemaProps | undefined> {
     if (schemaName === undefined || schemaName.length < 1) {
       throw new Error(`Schema name must not be undefined or empty.`);
     }
 
     const iModelDb = await this.getIModelDatabase(tokenProps);
-    return iModelDb[backend._nativeDb].getSchemaProps(schemaName);
+
+    try {
+      return iModelDb[backend._nativeDb].getSchemaProps(schemaName);
+    } catch(e: any) {
+      if (e.message && e.message === "schema not found")
+        return undefined;
+
+      throw(e);
+    }
   }
 }

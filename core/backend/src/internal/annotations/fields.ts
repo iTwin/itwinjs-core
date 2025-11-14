@@ -3,21 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECSqlValueType, FieldRun, RelationshipProps, TextBlock } from "@itwin/core-common";
+import { ECSqlValueType, FieldPrimitiveValue, FieldPropertyType, FieldRun, FieldValue, formatFieldValue, RelationshipProps, TextBlock, traverseTextBlockComponent } from "@itwin/core-common";
 import { IModelDb } from "../../IModelDb";
-import { assert, DbResult, Id64String, Logger } from "@itwin/core-bentley";
+import { assert, DbResult, expectDefined, Id64String, Logger } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../../BackendLoggerCategory";
-import { XAndY, XYAndZ } from "@itwin/core-geometry";
 import { isITextAnnotation } from "../../annotations/ElementDrivesTextAnnotation";
-import { AnyClass, EntityClass, Property, StructArrayProperty } from "@itwin/ecschema-metadata";
-
-// A FieldPropertyPath must ultimately resolve to one of these primitive types.
-export type FieldPrimitiveValue = boolean | number | string | Date | XAndY | XYAndZ | Uint8Array;
+import { AnyClass, EntityClass, PrimitiveType, Property, PropertyType, StructArrayProperty } from "@itwin/ecschema-metadata";
 
 interface FieldStructValue { [key: string]: any }
 
 // An intermediate value obtained while evaluating a FieldPropertyPath.
-type FieldValue = {
+type FieldValueType = {
   primitive: FieldPrimitiveValue;
   struct?: never;
   primitiveArray?: never;
@@ -39,28 +35,14 @@ type FieldValue = {
   structArray: FieldStructValue[];
 }
 
-// Metadata associated with a FieldProperty, providing info needed for formatting like kind-of-quantity, extended type, etc.
-// That information can be obtained from the EC Property. For JSON fields, we will need to allow the user to specify it explicitly
-// (TBD because formatting is not yet implemented).
-export interface FieldPropertyMetadata {
-  readonly property: Property;
-  // ###TODO probably want to know if it's a JSON property.
-}
-
-// The resolved primitive value of a field with metadata.
-export interface FieldProperty {
-  value: FieldPrimitiveValue;
-  metadata: FieldPropertyMetadata;
-}
-
 export interface UpdateFieldsContext {
-  readonly hostElementId: Id64String;
+  readonly hostElementId: Id64String | undefined;
 
-  getProperty(field: FieldRun): FieldProperty | undefined
+  getProperty(field: FieldRun): FieldValue | undefined
 }
 
 // Resolve the raw primitive value of the property that a field points to.
-function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | undefined {
+function getFieldPropertyValue(field: FieldRun, iModel: IModelDb): FieldValue | undefined {
   const host = field.propertyHost;
   const schemaItem = iModel.schemaContext.getSchemaItemSync(host.schemaName, host.className);
   if (!EntityClass.isEntityClass(schemaItem)) {
@@ -77,7 +59,7 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
   const isAspect = ecClass.isSync("ElementAspect", "BisCore");
   const where = ` WHERE ${isAspect ? "Element.Id" : "ECInstanceId"}=${host.elementId}`;
   // eslint-disable-next-line @typescript-eslint/no-deprecated
-  let curValue: FieldValue | undefined = iModel.withPreparedStatement(`SELECT ${propertyName} FROM ${host.schemaName}.${host.className} ${where}`, (stmt) => {
+  let curValue: FieldValueType | undefined = iModel.withPreparedStatement(`SELECT ${propertyName} FROM ${host.schemaName}.${host.className} ${where}`, (stmt) => {
     if (stmt.step() !== DbResult.BE_SQLITE_ROW) {
       return undefined;
     }
@@ -93,7 +75,7 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
       case ECSqlValueType.Boolean:
         return { primitive: rootValue.getBoolean() };
       case ECSqlValueType.DateTime:
-        return { primitive: rootValue.getDateTime() };
+        return { primitive: new Date(rootValue.getDateTime()) };
       case ECSqlValueType.Double:
         return { primitive: rootValue.getDouble() };
       case ECSqlValueType.Guid:
@@ -108,7 +90,8 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
       case ECSqlValueType.String:
         return { primitive: rootValue.getString() };
       case ECSqlValueType.Struct: {
-        assert(ecProp!.isStruct());
+        ecProp = expectDefined(ecProp);
+        assert(ecProp.isStruct());
         ecClass = ecProp.structClass;
         return { struct: rootValue.getStruct() };
       }
@@ -186,37 +169,9 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
     }
   }
 
-  if (field.propertyPath.jsonAccessors) {
-    if (!ecProp.isPrimitive() || ecProp.isArray() || ecProp.extendedTypeName !== "Json" || typeof curValue.primitive !== "string") {
-      return undefined;
-    }
-
-    let json = JSON.parse(curValue.primitive);
-    for (const accessor of field.propertyPath.jsonAccessors) {
-      if (typeof accessor === "number") {
-        if (!Array.isArray(json)) {
-          return undefined;
-        }
-
-        json = json[accessor < 0 ? json.length + accessor : accessor];
-      } else {
-        if (typeof json !== "object" || json === null) {
-          return undefined;
-        }
-
-        json = json[accessor];
-      }
-    }
-
-    switch (typeof json) {
-      case "string":
-      case "number":
-      case "boolean":
-        curValue = { primitive: json };
-        break;
-      default:
-        return undefined;
-    }
+  const propertyType = determineFieldPropertyType(ecProp);
+  if(!propertyType) {
+    return undefined;
   }
 
   // The ultimate result must be a primitive value.
@@ -224,32 +179,66 @@ function getFieldProperty(field: FieldRun, iModel: IModelDb): FieldProperty | un
     return undefined;
   }
 
-  return {
-    value: curValue.primitive,
-    metadata: { property: ecProp },
-  };
+  return { value: curValue.primitive, type: propertyType };
 }
 
-export function createUpdateContext(hostElementId: string, iModel: IModelDb, deleted: boolean): UpdateFieldsContext {
+function determineFieldPropertyType(prop: Property): FieldPropertyType | undefined {
+  if (prop.isEnumeration()) {
+    switch (prop.propertyType) {
+      case PropertyType.Integer_Enumeration:
+        return "int-enum";
+      case PropertyType.String_Enumeration:
+        return "string-enum";
+      default:
+        return undefined;
+    }
+  }
+
+  if (prop.isPrimitive()) {
+    switch (prop.primitiveType) {
+      case PrimitiveType.Boolean:
+        return "boolean";
+      case PrimitiveType.String:
+        return prop.extendedTypeName === "DateTime" ? "datetime" : "string";
+      case PrimitiveType.DateTime:
+        return "datetime";
+      case PrimitiveType.Double:
+      case PrimitiveType.Long:
+        return "quantity";
+      case PrimitiveType.Point2d:
+      case PrimitiveType.Point3d:
+        return "coordinate";
+      case PrimitiveType.Binary:
+        return prop.extendedTypeName === "BeGuid" ? "string" : undefined;
+      case PrimitiveType.Integer:
+      case PrimitiveType.Long:
+        return "string";
+      default:
+        return undefined;
+    }
+  }
+
+  return undefined;
+}
+
+export function createUpdateContext(hostElementId: string | undefined, iModel: IModelDb, deleted: boolean): UpdateFieldsContext {
   return {
     hostElementId,
-    getProperty: deleted ? () => undefined : (field) => getFieldProperty(field, iModel),
+    getProperty: deleted ? () => undefined : (field) => getFieldPropertyValue(field, iModel),
   };
 }
 
 // Recompute the display value of a single field, return false if it couldn't be evaluated.
 export function updateField(field: FieldRun, context: UpdateFieldsContext): boolean {
-  if (context.hostElementId !== field.propertyHost.elementId) {
+  if (context.hostElementId && context.hostElementId !== field.propertyHost.elementId) {
     return false;
   }
 
   let newContent: string | undefined;
   try {
-    const prop = context.getProperty(field);
-    if (undefined !== prop) {
-      // ###TODO formatting etc.
-      // eslint-disable-next-line @typescript-eslint/no-base-to-string
-      newContent = prop.value.toString();
+    const propValue = context.getProperty(field);
+    if (undefined !== propValue) {
+      newContent = formatFieldValue(propValue, field.formatOptions);
     }
   } catch (err) {
     Logger.logException(BackendLoggerCategory.IModelDb, err);
@@ -268,23 +257,20 @@ export function updateField(field: FieldRun, context: UpdateFieldsContext): bool
 // of fields whose display strings changed as a result.
 export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext): number {
   let numUpdated = 0;
-  for (const paragraph of textBlock.paragraphs) {
-    for (const run of paragraph.runs) {
-      if (run.type === "field" && updateField(run, context)) {
-        ++numUpdated;
-      }
+  for (const { child } of traverseTextBlockComponent(textBlock)) {
+    if (child.type === "field" && updateField(child, context)) {
+      ++numUpdated;
     }
   }
 
   return numUpdated;
 }
 
-// Invoked by ElementDrivesTextAnnotation to update fields in target element when source element changes or is deleted.
-export function updateElementFields(props: RelationshipProps, iModel: IModelDb, deleted: boolean): void {
+function doUpdateFields(annotationId: Id64String, sourceId: Id64String | undefined, iModel: IModelDb, deleted: boolean): void {
   try {
-    const target = iModel.elements.getElement(props.targetId);
+    const target = iModel.elements.getElement(annotationId);
     if (isITextAnnotation(target)) {
-      const context = createUpdateContext(props.sourceId, iModel, deleted);
+      const context = createUpdateContext(sourceId, iModel, deleted);
       const updatedBlocks = [];
       for (const block of target.getTextBlocks()) {
         if (updateFields(block.textBlock, context)) {
@@ -294,10 +280,20 @@ export function updateElementFields(props: RelationshipProps, iModel: IModelDb, 
 
       if (updatedBlocks.length > 0) {
         target.updateTextBlocks(updatedBlocks);
+        target.update();
       }
     }
   } catch (err) {
     Logger.logException(BackendLoggerCategory.IModelDb, err);
   }
+}
+
+// Invoked by ElementDrivesTextAnnotation to update fields in target element when source element changes or is deleted.
+export function updateElementFields(props: RelationshipProps, iModel: IModelDb, deleted: boolean): void {
+  doUpdateFields(props.targetId, props.sourceId, iModel, deleted);
+}
+
+export function updateAllFields(annotationElementId: Id64String, iModel: IModelDb): void {
+  doUpdateFields(annotationElementId, undefined, iModel, false);
 }
 

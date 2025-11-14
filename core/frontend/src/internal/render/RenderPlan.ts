@@ -41,7 +41,9 @@ export class RenderPlanEllipsoid {
   }
 }
 
-/** A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget. */
+/** A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget.
+ * @internal
+ */
 export interface RenderPlan {
   readonly is3d: boolean;
   readonly viewFlags: ViewFlags;

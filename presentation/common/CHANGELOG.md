@@ -1,6 +1,120 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Wed, 06 Aug 2025 15:37:23 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Nov 2025 23:24:40 GMT and should not be manually modified.
+
+## 5.3.2
+Thu, 13 Nov 2025 23:23:24 GMT
+
+_Version update only_
+
+## 5.3.1
+Thu, 06 Nov 2025 20:29:07 GMT
+
+_Version update only_
+
+## 5.3.0
+Mon, 03 Nov 2025 19:02:35 GMT
+
+### Updates
+
+- Added `createContentFormatter` factory function that creates a content formatter for formatting `Content` and its contained `Item` objects.
+
+## 5.2.6
+Thu, 13 Nov 2025 21:13:51 GMT
+
+_Version update only_
+
+## 5.2.5
+Thu, 13 Nov 2025 07:45:15 GMT
+
+_Version update only_
+
+## 5.2.4
+Fri, 24 Oct 2025 16:20:38 GMT
+
+_Version update only_
+
+## 5.2.3
+Thu, 16 Oct 2025 23:00:32 GMT
+
+_Version update only_
+
+## 5.2.2
+Fri, 10 Oct 2025 14:49:15 GMT
+
+_Version update only_
+
+## 5.2.1
+Thu, 09 Oct 2025 17:10:26 GMT
+
+_Version update only_
+
+## 5.2.0
+Wed, 01 Oct 2025 20:22:54 GMT
+
+### Updates
+
+- Fixed content formatting failure when struct property value has members with `undefined` value.
+- Deprecated hierarchies-related APIs
+- Fix `ContentTraverser` droping metadata available for struct member properties.
+- Add ability to override format used by `FormatterSpec`/`ParserSpec` created by `KoqPropertyValueFormatter`.
+
+## 5.1.9
+Wed, 24 Sep 2025 17:38:08 GMT
+
+_Version update only_
+
+## 5.1.8
+Wed, 17 Sep 2025 17:17:16 GMT
+
+_Version update only_
+
+## 5.1.7
+Tue, 09 Sep 2025 19:28:04 GMT
+
+_Version update only_
+
+## 5.1.6
+Mon, 08 Sep 2025 13:53:47 GMT
+
+_Version update only_
+
+## 5.1.5
+Thu, 04 Sep 2025 13:51:09 GMT
+
+### Updates
+
+- Fixed content formatting failure when struct property value has members with `undefined` value.
+
+## 5.1.4
+Fri, 22 Aug 2025 14:22:33 GMT
+
+_Version update only_
+
+## 5.1.3
+Wed, 20 Aug 2025 13:57:10 GMT
+
+_Version update only_
+
+## 5.1.2
+Thu, 14 Aug 2025 19:38:08 GMT
+
+_Version update only_
+
+## 5.1.1
+Fri, 08 Aug 2025 18:06:10 GMT
+
+_Version update only_
+
+## 5.1.0
+Fri, 08 Aug 2025 12:51:53 GMT
+
+### Updates
+
+- Export `Ruleset.schema.json` through exports field
+- Fix `InstanceKey.compare` implementation not taking into account different formats and casings of full class name.
+- `UnitSystemFormat`, `FormatsMap` and `KoqPropertyValueFormatter` constructor using the latter type have been deprecated. Instead, the constructor overload with "props" object should be used. The props object allows passing an optional `FormatsProvider` to use for finding formatting props for different types of values. When not specified, the `SchemaFormatsProvider` is used by default, so the behavior stays the same as before. Ideally, it's expected that frontend apps will pass `IModelApp.formatsProvider` for this prop.
+- Updated deprecation comments to new template
 
 ## 5.0.5
 Wed, 06 Aug 2025 15:34:16 GMT
@@ -54,6 +168,11 @@ Fri, 13 Jun 2025 20:25:38 GMT
 - Clean up APIs deprecated in 3.x
 - Refactor RPC "pending" response handling to rely on our RPC system rather than custom implementation
 - Change core peer dependencies to strict version.
+
+## 4.11.7
+Thu, 13 Nov 2025 20:49:33 GMT
+
+_Version update only_
 
 ## 4.11.6
 Mon, 16 Jun 2025 15:00:15 GMT

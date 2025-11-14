@@ -6,7 +6,8 @@
  * @module WebGL
  */
 
-import { InverseMatrixState, Matrix4d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { expectDefined } from "@itwin/core-bentley";
+import { InverseMatrixState, Matrix4d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Frustum, Npc } from "@itwin/core-common";
 import { UniformHandle } from "./UniformHandle";
 import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
@@ -51,7 +52,6 @@ export class FrustumUniforms {
   // GPU state
   private readonly _planeData: Float32Array = new Float32Array(4);
   private readonly _frustumData: Float32Array = new Float32Array(3);
-  private readonly _worldFrustumZRange: Float32Array = new Float32Array(2);
   public readonly projectionMatrix32 = new Matrix4();
   private readonly _logZData = new Float32Array(2);
   private readonly _viewUpVector32 = new Float32Array(3);
@@ -66,7 +66,6 @@ export class FrustumUniforms {
     viewX: new Vector3d(),
     viewY: new Vector3d(),
     viewZ: new Vector3d(),
-    range: new Range3d(),
   };
 
   public constructor() {
@@ -88,9 +87,6 @@ export class FrustumUniforms {
   // uniform vec3 u_frustum; // { near, far, type }
   public get frustum(): Float32Array { return this._frustumData; }
 
-  // uniform vec2 u_worldFrustumZRange // { min, max }
-  public get worldFrustumZRange(): Float32Array { return this._worldFrustumZRange; }
-
   public get nearPlane(): number { return this._frustumData[FrustumData.kNear]; }
   public get farPlane(): number { return this._frustumData[FrustumData.kFar]; }
   public get type(): FrustumUniformType { return this.frustum[FrustumData.kType] as FrustumUniformType; }
@@ -108,10 +104,6 @@ export class FrustumUniforms {
 
     newFrustum.clone(this.planFrustum);
 
-    const range = newFrustum.toRange(this._scratch.range);
-    this._worldFrustumZRange[0] = range.low.z;
-    this._worldFrustumZRange[1] = range.high.z;
-
     const farLowerLeft = newFrustum.getCorner(Npc.LeftBottomRear);
     const farLowerRight = newFrustum.getCorner(Npc.RightBottomRear);
     const farUpperLeft = newFrustum.getCorner(Npc.LeftTopRear);
@@ -125,7 +117,7 @@ export class FrustumUniforms {
 
     const viewX = normalizedDifference(nearLowerRight, nearLowerLeft, this._scratch.viewX);
     const viewY = normalizedDifference(nearUpperLeft, nearLowerLeft, this._scratch.viewY);
-    const viewZ = viewX.crossProduct(viewY, this._scratch.viewZ).normalize()!;
+    const viewZ = expectDefined(viewX.crossProduct(viewY, this._scratch.viewZ).normalize());
 
     this._planFraction = newFraction;
 

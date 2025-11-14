@@ -14,6 +14,7 @@ import { FormatsProvider } from '@itwin/core-quantity';
 import { FormatTraits } from '@itwin/core-quantity';
 import { FormatType } from '@itwin/core-quantity';
 import { FractionalPrecision } from '@itwin/core-quantity';
+import { MutableFormatsProvider } from '@itwin/core-quantity';
 import { ScientificType } from '@itwin/core-quantity';
 import { ShowSignOption } from '@itwin/core-quantity';
 import { UnitConversionProps } from '@itwin/core-quantity';
@@ -482,32 +483,30 @@ export interface ECSqlQueryOptions {
 export abstract class ECSqlSchemaLocater extends IncrementalSchemaLocater {
     constructor(options?: ECSqlSchemaLocaterOptions);
     protected abstract executeQuery<TRow>(query: string, options?: ECSqlQueryOptions): Promise<ReadonlyArray<TRow>>;
-    getConstants(schema: string, context: SchemaContext): Promise<ConstantProps[]>;
-    getCustomAttributeClasses(schema: string, context: SchemaContext, queryOverride?: string): Promise<CustomAttributeClassProps[]>;
-    getEntities(schema: string, context: SchemaContext, queryOverride?: string): Promise<EntityClassProps[]>;
-    getEnumerations(schema: string, context: SchemaContext): Promise<EnumerationProps[]>;
-    getFormats(schema: string, context: SchemaContext): Promise<SchemaItemFormatProps[]>;
-    getInvertedUnits(schema: string, context: SchemaContext): Promise<InvertedUnitProps[]>;
-    getKindOfQuantities(schema: string, context: SchemaContext): Promise<KindOfQuantityProps[]>;
-    getMixins(schema: string, context: SchemaContext, queryOverride?: string): Promise<MixinProps[]>;
-    getPhenomenon(schema: string, context: SchemaContext): Promise<PhenomenonProps[]>;
-    getPropertyCategories(schema: string, context: SchemaContext): Promise<PropertyCategoryProps[]>;
-    getRelationships(schema: string, context: SchemaContext, queryOverride?: string): Promise<RelationshipClassProps[]>;
-    getSchemaJson(schemaKey: SchemaKey, context: SchemaContext): Promise<SchemaProps | undefined>;
-    getSchemaNoItems(schemaName: string, context: SchemaContext): Promise<SchemaProps | undefined>;
-    getSchemaPartials(schemaKey: SchemaKey, context: SchemaContext): Promise<ReadonlyArray<SchemaProps> | undefined>;
+    protected getConstants(schema: string, context: SchemaContext): Promise<ConstantProps[]>;
+    protected getCustomAttributeClasses(schema: string, context: SchemaContext, queryOverride?: string): Promise<CustomAttributeClassProps[]>;
+    protected getEntities(schema: string, context: SchemaContext, queryOverride?: string): Promise<EntityClassProps[]>;
+    protected getEnumerations(schema: string, context: SchemaContext): Promise<EnumerationProps[]>;
+    protected getFormats(schema: string, context: SchemaContext): Promise<SchemaItemFormatProps[]>;
+    protected getInvertedUnits(schema: string, context: SchemaContext): Promise<InvertedUnitProps[]>;
+    protected getKindOfQuantities(schema: string, context: SchemaContext): Promise<KindOfQuantityProps[]>;
+    protected getMixins(schema: string, context: SchemaContext, queryOverride?: string): Promise<MixinProps[]>;
+    protected getPhenomenon(schema: string, context: SchemaContext): Promise<PhenomenonProps[]>;
+    protected getPropertyCategories(schema: string, context: SchemaContext): Promise<PropertyCategoryProps[]>;
+    protected getRelationships(schema: string, context: SchemaContext, queryOverride?: string): Promise<RelationshipClassProps[]>;
+    protected getSchemaJson(schemaKey: SchemaKey, context: SchemaContext): Promise<SchemaProps | undefined>;
+    protected getSchemaPartials(schemaKey: SchemaKey, context: SchemaContext): Promise<ReadonlyArray<SchemaProps> | undefined>;
     protected abstract getSchemaProps(schemaKey: SchemaKey): Promise<SchemaProps | undefined>;
-    getStructs(schema: string, context: SchemaContext, queryOverride?: string): Promise<StructClassProps[]>;
-    getUnits(schema: string, context: SchemaContext): Promise<SchemaItemUnitProps[]>;
-    getUnitSystems(schema: string, context: SchemaContext): Promise<UnitSystemProps[]>;
-    loadSchemaInfos(): Promise<ReadonlyArray<SchemaInfo>>;
+    protected getStructs(schema: string, context: SchemaContext, queryOverride?: string): Promise<StructClassProps[]>;
+    protected getUnits(schema: string, context: SchemaContext): Promise<SchemaItemUnitProps[]>;
+    protected getUnitSystems(schema: string, context: SchemaContext): Promise<UnitSystemProps[]>;
+    protected loadSchemaInfos(): Promise<ReadonlyArray<SchemaInfo>>;
     protected get options(): ECSqlSchemaLocaterOptions;
     protected supportPartialSchemaLoading(context: SchemaContext): Promise<boolean>;
 }
 
 // @internal
 export interface ECSqlSchemaLocaterOptions extends SchemaLocaterOptions {
-    readonly performanceLogger?: PerformanceLogger;
     readonly useMultipleQueries?: boolean;
 }
 
@@ -798,14 +797,27 @@ export class Format extends SchemaItem {
 
 // @beta
 export interface FormatSet {
-    // (undocumented)
+    description?: string;
     formats: {
-        [kindOfQuantityId: string]: SchemaItemFormatProps;
+        [kindOfQuantityId: string]: FormatDefinition | string;
     };
-    // (undocumented)
     label: string;
-    // (undocumented)
     name: string;
+    unitSystem: UnitSystemKey;
+}
+
+// @beta
+export class FormatSetFormatsProvider implements MutableFormatsProvider {
+    constructor(props: {
+        formatSet: FormatSet;
+        fallbackProvider?: FormatsProvider;
+    });
+    addFormat(name: string, format: FormatDefinition | string): Promise<void>;
+    clearFallbackProvider(): void;
+    getFormat(input: string): Promise<FormatDefinition | undefined>;
+    // (undocumented)
+    onFormatsChanged: BeEvent<(args: FormatsChangedArgs) => void>;
+    removeFormat(name: string): Promise<void>;
 }
 
 // @internal (undocumented)
@@ -828,9 +840,11 @@ export abstract class IncrementalSchemaLocater implements ISchemaLocater {
     protected abstract getSchemaJson(schemaKey: SchemaKey, context: SchemaContext): Promise<SchemaProps | undefined>;
     protected abstract getSchemaPartials(schemaKey: SchemaKey, context: SchemaContext): Promise<ReadonlyArray<SchemaProps> | undefined>;
     getSchemaSync(_schemaKey: Readonly<SchemaKey>, _matchType: SchemaMatchType, _context: SchemaContext): Schema | undefined;
-    loadSchema(schemaInfo: SchemaInfo, schemaContext: SchemaContext): Promise<Schema>;
-    abstract loadSchemaInfos(context: SchemaContext): Promise<Iterable<SchemaInfo>>;
+    protected loadSchema(schemaInfo: SchemaInfo, schemaContext: SchemaContext): Promise<Schema>;
+    protected abstract loadSchemaInfos(context: SchemaContext): Promise<Iterable<SchemaInfo>>;
     protected get options(): SchemaLocaterOptions;
+    // (undocumented)
+    protected readonly _schemaInfoCache: SchemaInfoCache;
     protected abstract supportPartialSchemaLoading(context: SchemaContext): Promise<boolean>;
 }
 
@@ -1817,6 +1831,7 @@ export class Schema implements CustomAttributeContainerProps {
     getStructClass(name: string): Promise<StructClass | undefined>;
     getUnit(name: string): Promise<Unit | undefined>;
     getUnitSystem(name: string): Promise<UnitSystem | undefined>;
+    get isDynamic(): boolean;
     // @internal (undocumented)
     static isSchema(object: any): object is Schema;
     // (undocumented)
@@ -2102,7 +2117,7 @@ export interface SchemaItemUnitProps extends SchemaItemProps {
 
 // @public @preview
 export class SchemaJsonLocater implements ISchemaLocater {
-    constructor(_getSchema: SchemaPropsGetter);
+    constructor(getSchemaProps: SchemaPropsGetter);
     getSchema(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<Schema | undefined>;
     getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined>;
     getSchemaSync(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): Schema | undefined;

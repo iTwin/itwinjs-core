@@ -360,12 +360,14 @@ export enum DbResult {
     BE_SQLITE_ERROR_InvalidChangeSetVersion = 234881034,
     BE_SQLITE_ERROR_InvalidProfileVersion = 117440522,
     BE_SQLITE_ERROR_NoPropertyTable = 50331658,
+    BE_SQLITE_ERROR_NOTOPEN = 16777217,
     BE_SQLITE_ERROR_NoTxnActive = 83886090,
     BE_SQLITE_ERROR_ProfileTooNew = 201326602,
     BE_SQLITE_ERROR_ProfileTooNewForReadWrite = 184549386,
     BE_SQLITE_ERROR_ProfileTooOld = 167772170,
     BE_SQLITE_ERROR_ProfileTooOldForReadWrite = 150994954,
     BE_SQLITE_ERROR_ProfileUpgradeFailed = 134217738,
+    BE_SQLITE_ERROR_PropagateChangesFailed = 33554433,
     BE_SQLITE_ERROR_SchemaImportFailed = 335544330,
     BE_SQLITE_ERROR_SchemaLockFailed = 301989898,
     BE_SQLITE_ERROR_SchemaTooNew = 268435466,
@@ -585,6 +587,12 @@ export abstract class ErrorCategory extends StatusCategory {
     // (undocumented)
     error: boolean;
 }
+
+// @internal
+export function expectDefined<T>(value: T | undefined, message?: string): T;
+
+// @internal
+export function expectNotNull<T>(value: T | null, message?: string): T;
 
 // @public
 export enum GeoServiceStatus {
@@ -1506,6 +1514,7 @@ export class ProcessDetector {
     static get isChromium(): boolean;
     static get isElectronAppBackend(): boolean;
     static get isElectronAppFrontend(): boolean;
+    static get isIEBrowser(): boolean;
     static get isIOSAppBackend(): boolean;
     static get isIOSAppFrontend(): boolean;
     static get isIOSBrowser(): boolean;
