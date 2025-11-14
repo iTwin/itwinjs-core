@@ -17,7 +17,7 @@ In addition to [already supported Node.js versions](../learning/SupportedPlatfor
 
 ## Schema table locks for concurrent schema modifications (experimental)
 
-A new locking mechanism has been to improve concurrency when importing schemas in multi-user scenarios.
+A new locking mechanism has been added to improve concurrency when importing schemas in multi-user scenarios.
 Instead of obtaining a full exclusive lock on the file during schema import, we will now distinguish between:
 
 - **Schema table lock** - Used for trivial schema changes (e.g., adding properties or classes) that don't require data transformation. This lock only blocks concurrent schema imports, allowing other users to continue modifying element data.
