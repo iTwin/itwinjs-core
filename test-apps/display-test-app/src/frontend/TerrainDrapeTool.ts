@@ -21,18 +21,18 @@ class DrapeLineStringCollector extends TileGeometryCollector {
     if ("reject" !== status && !this.rangeOverlapsLineString(tile.range))
       status = "reject";
 
-    if (status === "accept") {
-      console.log(`Collecting tile: ${tile.contentId}, Range Z: ${tile.range.low.z.toFixed(3)} to ${tile.range.high.z.toFixed(3)}`);
+    // if (status === "accept") {
+    //   // console.log(`Collecting tile: ${tile.contentId}, Range Z: ${tile.range.low.z.toFixed(3)} to ${tile.range.high.z.toFixed(3)}`);
 
-      // Log some sample Z-values from collected geometry
-      for (const polyface of this.polyfaces) {
-        const visitor = polyface.createVisitor(0);
-        if (visitor.moveToNextFacet()) {
-          const point = visitor.point.getPoint3dAtUncheckedPointIndex(0);
-          console.log(`Collected geometry Z: ${point.z.toFixed(3)}`);
-        }
-      }
-    }
+    //   // Log some sample Z-values from collected geometry
+    //   for (const polyface of this.polyfaces) {
+    //     const visitor = polyface.createVisitor(0);
+    //     if (visitor.moveToNextFacet()) {
+    //       const point = visitor.point.getPoint3dAtUncheckedPointIndex(0);
+    //       // console.log(`Collected geometry Z: ${point.z.toFixed(3)}`);
+    //     }
+    //   }
+    // }
 
     return status;
   }
@@ -91,29 +91,29 @@ class TerrainDraper implements TileUser {
       polygon = Loop.createPolygon(flatPoints);
     }
 
-    const _transform = tree?.iModelTransform.matrix;
+    // const _transform = tree?.iModelTransform.matrix;
 
     const collector = new DrapeLineStringCollector(this, tolerance, range, tree.iModelTransform, inPoints);
     this.treeRef.collectTileGeometry(collector);
     collector.requestMissingTiles();
 
-    console.log(`Input points Z range: ${inPoints.getPoint3dAtUncheckedPointIndex(0).z.toFixed(3)} to ${inPoints.getPoint3dAtUncheckedPointIndex(inPoints.length-1).z.toFixed(3)}`);
+    // console.log(`Input points Z range: ${inPoints.getPoint3dAtUncheckedPointIndex(0).z.toFixed(3)} to ${inPoints.getPoint3dAtUncheckedPointIndex(inPoints.length-1).z.toFixed(3)}`);
 
     for (const polyface of collector.polyfaces) {
 
-      const visitor = polyface.createVisitor(0);
-      let minZ = Number.MAX_VALUE;
-      let maxZ = Number.MIN_VALUE;
+      // const visitor = polyface.createVisitor(0);
+      // let minZ = Number.MAX_VALUE;
+      // let maxZ = Number.MIN_VALUE;
 
-      visitor.reset();
-      while (visitor.moveToNextFacet()) {
-        for (let i = 0; i < visitor.point.length; i++) {
-          const z = visitor.point.getPoint3dAtUncheckedPointIndex(i).z;
-          minZ = Math.min(minZ, z);
-          maxZ = Math.max(maxZ, z);
-        }
-      }
-      console.log(`Final collected polyface Z range: ${minZ.toFixed(3)} to ${maxZ.toFixed(3)}`);
+      // visitor.reset();
+      // while (visitor.moveToNextFacet()) {
+      //   for (let i = 0; i < visitor.point.length; i++) {
+      //     const z = visitor.point.getPoint3dAtUncheckedPointIndex(i).z;
+      //     minZ = Math.min(minZ, z);
+      //     maxZ = Math.max(maxZ, z);
+      //   }
+      // }
+      // console.log(`Final collected polyface Z range: ${minZ.toFixed(3)} to ${maxZ.toFixed(3)}`);
 
       if (polygon) {
         const mesh = PolyfaceClip.drapeRegion(polyface, polygon);

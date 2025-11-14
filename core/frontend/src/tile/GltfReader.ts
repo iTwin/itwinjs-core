@@ -555,6 +555,7 @@ export abstract class GltfReader {
 
   private getTileTransform(transformToRoot?: Transform, pseudoRtcBias?: Vector3d): Transform | undefined {
     let transform;
+    console.log(transformToRoot?.origin);
 
     if (this._returnToCenter || pseudoRtcBias || this._yAxisUp || transformToRoot) {
       if (this._returnToCenter)
@@ -631,7 +632,12 @@ export abstract class GltfReader {
 
     // Compute range in tileset/world space.
     let range = contentRange;
+    // console.log("readGltfAndCreateTemplate transform:", transformToRoot);
     const transform = this.getTileTransform(transformToRoot, pseudoRtcBias);
+    // console.log("getTileTransform:", transform);
+    if (transform) {
+      // console.log("equal =", transformToRoot?.isAlmostEqual(transform));
+    }
     const invTransform = transform?.inverse();
     if (invTransform)
       range = invTransform.multiplyRange(contentRange);
@@ -665,6 +671,7 @@ export abstract class GltfReader {
 
   public readGltfAndCreateGeometry(transformToRoot?: Transform, needNormals = false, needParams = false): RealityTileGeometry {
     const transformStack = new TransformStack(this.getTileTransform(transformToRoot));
+    // console.log("transformStack:", transformStack);
     const polyfaces: IndexedPolyface[] = [];
     for (const nodeKey of this._sceneNodes) {
       const node = this._nodes[nodeKey];

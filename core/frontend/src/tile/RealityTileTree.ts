@@ -205,6 +205,8 @@ export class RealityTileTree extends TileTree {
     this._rootTile = this.createTile(params.rootTile);
     this.cartesianRange = BackgroundMapGeometry.getCartesianRange(this.iModel);
     this.cartesianTransitionDistance = this.cartesianRange.diagonal().magnitudeXY() * .25;      // Transition distance from elliptical to cartesian.
+    this.loader.cartesianTransitionDistance = this.cartesianTransitionDistance;
+    this.loader.cartesianRange = this.cartesianRange;
     this._gcsConverter = params.gcsConverterAvailable ? params.iModel.geoServices.getConverter("WGS84") : undefined;
     if (params.rootToEcef) {
       this._rootToEcef = params.rootToEcef;
@@ -415,6 +417,7 @@ export class RealityTileTree extends TileTree {
 
           const reprojectedCoords = response.iModelCoords;
           const dbToRoot = expectDefined(rootToDb.inverse());
+          // I thought this function was doing the reprojection, but really it's INTERPOLATING between the original and reprojected points
           const getReprojectedPoint = (original: Point3d, reprojectedXYZ: XYZProps) => {
             scratchPoint.setFromJSON(reprojectedXYZ);
             const cartesianDistance = this.cartesianRange.distanceToPoint(scratchPoint);
@@ -428,21 +431,26 @@ export class RealityTileTree extends TileTree {
           };
 
           let responseIndex = 0;
+          // reprojectChildren = children TO BE reprojected
           for (const reprojection of reprojectChildren) {
             if (reprojectedCoords.every((coord) => coord.s === GeoCoordStatus.Success)) {
+
               const reprojectedOrigin = getReprojectedPoint(reprojection.dbPoints[0], reprojectedCoords[responseIndex++].p).clone(scratchOrigin);
               const xVector = Vector3d.createStartEnd(reprojectedOrigin, getReprojectedPoint(reprojection.dbPoints[1], reprojectedCoords[responseIndex++].p), scratchX);
               const yVector = Vector3d.createStartEnd(reprojectedOrigin, getReprojectedPoint(reprojection.dbPoints[2], reprojectedCoords[responseIndex++].p), scratchY);
               const zVector = Vector3d.createStartEnd(reprojectedOrigin, getReprojectedPoint(reprojection.dbPoints[3], reprojectedCoords[responseIndex++].p), scratchZ);
               const matrix = Matrix3d.createColumns(xVector, yVector, zVector, scratchMatrix);
               if (matrix !== undefined) {
+                // Use reprojected (interpolated) points to create a transform that is applied to the tile
+                // So rootReprojection should be the same as xForm in RealityTileLoader.loadGeometryFromStream, for the same tile
+                // Confirmed it is - so what's making the collected geometry appear offset?
+
+                // Maps from center of tile in imodel coordinates -> reprojected center of tile, still in imodel coordinates
                 const dbReprojection = Transform.createMatrixPickupPutdown(matrix, reprojection.dbPoints[0], reprojectedOrigin, scratchTransform);
                 if (dbReprojection) {
+                  // Now get that reprojection transform in tile's coordinates, which is later used in RealityTileLoader.loadGeometryFromStream
                   const rootReprojection = dbToRoot.multiplyTransformTransform(dbReprojection).multiplyTransformTransform(rootToDb);
-                  console.log("Tile ID:", reprojection.child.contentId);
-                  console.log("Reprojection transform:", rootReprojection.matrix);
-                  console.log("Original Z:", reprojection.dbPoints[0].z);
-                  console.log("Reprojected Z:", reprojectedOrigin.z);
+                  // console.log("rootReprojection:", rootReprojection);
                   reprojection.child.reproject(rootReprojection);
                 }
               }
