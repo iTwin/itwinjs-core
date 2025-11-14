@@ -318,6 +318,7 @@ export abstract class IModelDb extends IModel {
 
   /** Acquire the schema table lock.
    * @note This is a less restrictive lock than the full schema lock, allowing schema modifications that do not transform data.
+   * @internal
    */
   public async acquireSchemaTableLock(): Promise<void> {
     return this.locks.acquireLocks({ shared: IModel.rootSubjectId, exclusive: IModel.schemaElementId });
@@ -325,6 +326,7 @@ export abstract class IModelDb extends IModel {
 
   /** Determine whether the schema table lock is currently held.
    * @note This is a less restrictive lock than the full schema lock, allowing schema modifications that do not transform data.
+   * @internal
    */
   public get holdsSchemaTableLock() {
     return this.locks.holdsExclusiveLock(IModel.schemaElementId) && this.locks.holdsSharedLock(IModel.rootSubjectId);
