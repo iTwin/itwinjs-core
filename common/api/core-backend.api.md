@@ -3574,6 +3574,7 @@ export abstract class IModelDb extends IModel {
     });
     abandonChanges(): void;
     acquireSchemaLock(): Promise<void>;
+    // @internal
     acquireSchemaTableLock(): Promise<void>;
     attachDb(fileName: string, alias: string): void;
     // @internal
@@ -3651,6 +3652,7 @@ export abstract class IModelDb extends IModel {
     getMetaData(classFullName: string): EntityMetaData;
     getSchemaProps(name: string): ECSchemaProps;
     get holdsSchemaLock(): boolean;
+    // @internal
     get holdsSchemaTableLock(): boolean;
     get iModelId(): GuidString;
     importSchemas(schemaFileNames: LocalFileName[], options?: SchemaImportOptions): Promise<void>;
