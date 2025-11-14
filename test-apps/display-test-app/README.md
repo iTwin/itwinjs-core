@@ -332,6 +332,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 display-test-app supplies minimal features for editing the contents of an iModel, strictly for testing purposes. To use it:
 
 * Set IMJS_READ_WRITE=1 in the environment.
+* Optionally set IMJS_ALLOWED_CHANNELS=channel1,channel1,... to permit display-test-app to write to the specified Channels.
 * Open a briefcase or an editable standalone iModel.
 * Use the key-ins below to make changes; typically:
   * `dta edit` to begin an editing scope;

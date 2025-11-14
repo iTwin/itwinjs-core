@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Listen on localhost only instead of all interfaces for LocalhostIpcHost",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

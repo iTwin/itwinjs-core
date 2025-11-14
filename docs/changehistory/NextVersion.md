@@ -1,14 +1,41 @@
 ---
 publish: false
 ---
+
 # NextVersion
 
 - [NextVersion](#nextversion)
-  - [@itwin/core-quantity](#itwincore-quantity)
-    - [Changes](#changes)
+  - [Node.js 24 support](#nodejs-24-support)
+  - [Presentation changes](#presentation-changes)
+  - [API deprecations](#api-deprecations)
+    - [@itwin/presentation-common](#itwinpresentation-common)
 
-## @itwin/core-quantity
+## Node.js 24 support
 
-### Changes
+In addition to [already supported Node.js versions](../learning/SupportedPlatforms.md#supported-nodejs-versions), iTwin.js now supports [Node.js 24](https://nodejs.org/en/blog/release/v24.11.0).
 
-- Fixed a bug in [Parser]($quantity) where invalid unit labels were silently ignored during parsing when no format units were specified, leading to incorrect results. Previously, when using a unitless format with input like "12 im" (a typo "in" for inches), the parser would successfully parse it as "12 meters" when the persistence unit was set to meters. The parser now correctly returns `ParseError.UnitLabelSuppliedButNotMatched` when a unitless format is used and a unit label is provided but cannot be matched to any known unit. This fix ensures parsing errors are noticed and properly handled by the caller, preventing silent failures and ensuring data integrity.
+## Presentation changes
+
+- Changed content traversal to have internal state, improving performance when traversing large contents. See [API deprecations for `@itwin/presentation-common`](#itwinpresentation-common) for more details.
+
+## API deprecations
+
+### @itwin/presentation-common
+
+- Deprecated `traverseContent` and `traverseContentItem` in favor of `createContentTraverser` factory function. The change allows caching some state between calls to traverser methods, improving performance when traversing large contents.
+
+  Migration example:
+
+  ```ts
+  // before
+  traverseContent(myVisitor, content);
+  // ... or
+  content.contentSet.forEach((item) => traverseContentItem(myVisitor, content.descriptor, item));
+
+  // now
+  const traverseContentItems = createContentTraverser(myVisitor, content.descriptor);
+  traverseContentItems(content.contentSet);
+  // ... or
+  const traverseContent = createContentTraverser(myVisitor);
+  traverseContent(content.descriptor, content.contentSet);
+  ```

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Deprecate `traverseContent` and `traverseContentItem` in favor of newly added, more performant `createContentTraverser` factory function.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}

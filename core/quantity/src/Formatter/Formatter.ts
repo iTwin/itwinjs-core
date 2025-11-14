@@ -244,7 +244,30 @@ export class Formatter {
       }
 
       if (i < (spec.format.units?.length ?? 0) - 1) {
-        const wholePart = Math.trunc(unitValue);
+        let wholePart = Math.trunc(unitValue);
+
+        // Check if the remaining fractional part will round up to a full unit in the next (smaller) component
+        if (spec.format.type === FormatType.Fractional && i === spec.unitConversions.length - 2) {
+          // For the second-to-last unit with fractional formatting, check if rounding causes carry-over
+          const fractionalPart = unitValue - wholePart;
+          const nextUnitValue = applyConversion(fractionalPart, spec.unitConversions[i + 1].conversion);
+
+          // Create a FractionalNumeric to determine what the rounded value would be
+          const fn = new FractionalNumeric(Math.abs(nextUnitValue), spec.format.precision as FractionalPrecision, true);
+
+          // If the fractional numeric rounds to a whole unit (integral part increased due to rounding)
+          // and the next unit value would round to equal the conversion factor, we need to carry it over
+          const roundedNextValue = parseFloat(fn.getIntegralString());
+          const expectedNextValue = Math.floor(Math.abs(nextUnitValue));
+
+          // Check if rounding caused the value to reach the conversion factor (1 full unit of the parent)
+          const conversionFactor = spec.unitConversions[i + 1].conversion.factor;
+          if (roundedNextValue > expectedNextValue && Math.abs(roundedNextValue - conversionFactor) < this.FPV_MINTHRESHOLD) {
+            // The rounding caused a carry-over to a full parent unit, add 1 to the current unit's whole part
+            wholePart += (unitValue >= 0 ? 1 : -1);
+          }
+        }
+
         const componentText = Formatter.formatCompositePart(Math.abs(wholePart), false, currentLabel, spec);
         remainingMagnitude = unitValue - wholePart;
         compositeStrings.push(componentText);
