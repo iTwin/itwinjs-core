@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Cleared ECDb Cache while applying single changeset if the changeset file is of type Schema or Schema Sync",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
