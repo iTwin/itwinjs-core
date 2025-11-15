@@ -40,6 +40,7 @@ import { Loop } from "../Loop";
 import { Path } from "../Path";
 import { ProxyCurve } from "../ProxyCurve";
 import { TransitionSpiral3d } from "../spiral/TransitionSpiral3d";
+import { CurveCurve } from "../CurveCurve";
 
 // cspell:word XYRR
 /**
@@ -1057,7 +1058,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const spiralApproximation = LineString3d.create();
       this._geometryB.emitStrokes(spiralApproximation);
       const numPreviousResults = this._results.length;
-      this.computeSegmentLineString(segmentA, this._extendA0, this._extendA1, spiralApproximation, false, false, false);
+      // this.computeSegmentLineString(segmentA, this._extendA0, this._extendA1, spiralApproximation, false, false, false);
+      this._results.push(...CurveCurve.closeApproachProjectedXYPairs(segmentA, spiralApproximation, Geometry.smallMetricDistance));
       const numberOfNewResults = this._results.length - numPreviousResults;
       this.refineSpiralResultsByNewton(segmentA, this._geometryB, numberOfNewResults);
     } else if (this._geometryB instanceof CurveCollection) {
@@ -1088,7 +1090,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const spiralApproximation = LineString3d.create();
       this._geometryB.emitStrokes(spiralApproximation);
       const numPreviousResults = this._results.length;
-      this.computeLineStringLineString(lsA, this._extendA0, this._extendA1, spiralApproximation, false, false, false);
+      // this.computeLineStringLineString(lsA, this._extendA0, this._extendA1, spiralApproximation, false, false, false);
+      this._results.push(...CurveCurve.closeApproachProjectedXYPairs(lsA, spiralApproximation, Geometry.smallMetricDistance));
       const numberOfNewResults = this._results.length - numPreviousResults;
       this.refineSpiralResultsByNewton(lsA, this._geometryB, numberOfNewResults);
     } else if (this._geometryB instanceof CurveCollection) {
@@ -1119,7 +1122,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const spiralApproximation = LineString3d.create();
       this._geometryB.emitStrokes(spiralApproximation);
       const numPreviousResults = this._results.length;
-      this.computeArcLineString(arc0, this._extendA0, this._extendA1, spiralApproximation, false, false, false);
+      // this.computeArcLineString(arc0, this._extendA0, this._extendA1, spiralApproximation, false, false, false);
+      this._results.push(...CurveCurve.closeApproachProjectedXYPairs(arc0, spiralApproximation, Geometry.smallMetricDistance));
       const numberOfNewResults = this._results.length - numPreviousResults;
       this.refineSpiralResultsByNewton(arc0, this._geometryB, numberOfNewResults);
     } else if (this._geometryB instanceof CurveCollection) {
@@ -1150,7 +1154,8 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const spiralApproximation = LineString3d.create();
       this._geometryB.emitStrokes(spiralApproximation);
       const numPreviousResults = this._results.length;
-      this.dispatchLineStringBSplineCurve(spiralApproximation, false, false, curve, this._extendA0, this._extendA1, true);
+      // this.dispatchLineStringBSplineCurve(spiralApproximation, false, false, curve, this._extendA0, this._extendA1, true);
+      this._results.push(...CurveCurve.closeApproachProjectedXYPairs(curve, spiralApproximation, Geometry.smallMetricDistance));
       const numberOfNewResults = this._results.length - numPreviousResults;
       this.refineSpiralResultsByNewton(curve, this._geometryB, numberOfNewResults);
     } else if (this._geometryB instanceof CurveCollection) {
@@ -1177,6 +1182,10 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     for (const detail of resultsToBeRefined) {
       let spiralFraction = reversed ? detail.detailA.fraction : detail.detailB.fraction;
       let otherFraction = reversed ? detail.detailB.fraction : detail.detailA.fraction;
+      if (spiral.fractionToPoint(spiralFraction).isAlmostEqualXY(otherCurve.fractionToPoint(otherFraction))) { // already an accurate intersection
+        this.recordPointWithLocalFractions(otherFraction, otherCurve, 0, 1, spiralFraction, spiral, 0, 1, reversed);
+        continue;
+      }
       const xyMatchingFunction = new CurveCurveIntersectionXYRRToRRD(spiral, otherCurve);
       const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction);
       newtonSearcher.setUV(spiralFraction, otherFraction);
@@ -1190,11 +1199,20 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   }
   /** Double dispatch handler for strongly typed spiral curve. */
   public override handleTransitionSpiral(spiral: TransitionSpiral3d): any {
-    if (this._geometryB instanceof CurvePrimitive) { // this also handles CurveChainWithDistanceIndex
+    if (this._geometryB instanceof CurveChainWithDistanceIndex) {
+      this.dispatchCurveChainWithDistanceIndex(spiral, this.handleTransitionSpiral.bind(this));
+    } else if (this._geometryB instanceof CurvePrimitive) {
       const spiralApproximation = LineString3d.create();
       spiral.emitStrokes(spiralApproximation);
+      const geomBApproximation = LineString3d.create();
+      if (this._geometryB instanceof TransitionSpiral3d)
+        this._geometryB.emitStrokes(geomBApproximation);
       const numPreviousResults = this._results.length;
-      this.handleLineString3d(spiralApproximation);
+      // this.handleLineString3d(spiralApproximation);
+      if (this._geometryB instanceof TransitionSpiral3d)
+        this._results.push(...CurveCurve.closeApproachProjectedXYPairs(spiralApproximation, geomBApproximation, Geometry.smallMetricDistance));
+      else
+        this._results.push(...CurveCurve.closeApproachProjectedXYPairs(spiralApproximation, this._geometryB, Geometry.smallMetricDistance));
       const numberOfNewResults = this._results.length - numPreviousResults;
       this.refineSpiralResultsByNewton(this._geometryB, spiral, numberOfNewResults, true);
     } else if (this._geometryB instanceof CurveCollection) {
