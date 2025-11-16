@@ -466,7 +466,6 @@ export class BriefcaseManager {
   private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps, fastForward: boolean) {
     if (changesetFile.changesType === ChangesetType.Schema || changesetFile.changesType === ChangesetType.SchemaSync) {
       db.clearCaches(); // for schema changesets, statement caches may become invalid. Do this *before* applying, in case db needs to be closed (open statements hold db open.)
-      db[_nativeDb].clearECDbCache(); // if schema changesets are pushed by a different briefcase and pulled by some briefcase which already contained data changes, tables are locked in some cases, so ECDb cache needs to be cleared
     }
 
     db[_nativeDb].applyChangeset(changesetFile, fastForward);

@@ -106,7 +106,7 @@ describe("apply changesets", function (this: Suite) {
     HubMock.shutdown();
   });
 
-  it("Pulling profile upgrade after inserting element should pass", async () => {
+  it.only("Pulling profile upgrade after inserting element should pass", async () => {
     // startup
     HubMock.startup("ProfileUpgradeAfterInsertElement", KnownTestLocations.outputDir);
 
