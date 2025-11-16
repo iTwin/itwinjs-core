@@ -464,9 +464,8 @@ export class BriefcaseManager {
   }
 
   private static async applySingleChangeset(db: IModelDb, changesetFile: ChangesetFileProps, fastForward: boolean) {
-    if (changesetFile.changesType === ChangesetType.Schema || changesetFile.changesType === ChangesetType.SchemaSync) {
+    if (changesetFile.changesType === ChangesetType.Schema || changesetFile.changesType === ChangesetType.SchemaSync)
       db.clearCaches(); // for schema changesets, statement caches may become invalid. Do this *before* applying, in case db needs to be closed (open statements hold db open.)
-    }
 
     db[_nativeDb].applyChangeset(changesetFile, fastForward);
     db.changeset = db[_nativeDb].getCurrentChangeset();
