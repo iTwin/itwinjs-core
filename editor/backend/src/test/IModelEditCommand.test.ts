@@ -511,7 +511,6 @@ describe("IModelEditCommand", () => {
     // TODO Rohit: The code is set up to not queue nested commands and allow the user to run them async.
     // My idea was to give the onus to the user to ensure they are running their logic correctly and not executing nested commands in a way that might trigger a race condition.
     // However, this contradicts the original need to have an edit scope and to bring the responsibilty back into itwinjs-core.
-    // This test is a placeholder to demo this.
     // Will have to update the nested command behavior. Serializing all is not optimal and the user might have unrelated commands that are safe to execute in parallel.
     // Maybe give user different API calls that serialize or parallelize nested commands for the parent command ?
     // Food for thought as of right now...

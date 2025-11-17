@@ -26,7 +26,7 @@ export interface SumOfSquaresArgs extends EditCommandArgs {
   secondNumber: number;
 }
 
-// Simple command that takes a numerical value and multiples it by itself
+// Simple command that takes two numerical values and adds them.
 export class AddCommand extends ImmediateCommand<AddCommandArgs, number> {
 
   // Adds the two input values
@@ -44,7 +44,7 @@ export class SquareCommand extends ImmediateCommand<SquareCommandArgs, number> {
   }
 }
 
-// Simple command that takes a numerical value and gets the square root
+// Simple command that takes a numerical value and gets the square.
 export class SquareRootCommand extends ImmediateCommand<SquareCommandArgs, number> {
 
   // Multiples the input value by itself
