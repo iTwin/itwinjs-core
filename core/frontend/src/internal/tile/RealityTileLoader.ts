@@ -90,65 +90,12 @@ export abstract class RealityTileLoader {
     if (reader)
       reader.defaultWrapMode = GltfWrapMode.ClampToEdge;
 
-    const geom = reader?.readGltfAndCreateGeometry(tile.tree.iModelTransform);
+    let transform = tile.tree.iModelTransform;
+    if (tile.transformToRoot) {
+      transform = transform.multiplyTransformTransform(tile.transformToRoot)
+    }
+    const geom = reader?.readGltfAndCreateGeometry(transform);
     const xForm = tile.reprojectionTransform;
-
-    // const scratchPoint = Point3d.createZero();
-
-    // const getReprojectedPoint = (original: Point3d, reprojectedXYZ: XYZProps) => {
-    //   if (this.cartesianTransitionDistance && this.cartesianRange) {
-    //     scratchPoint.setFromJSON(reprojectedXYZ);
-    //     // cartesianDistance will be 0 if scratchPoint is in range
-    //     const cartesianDistance = this.cartesianRange.distanceToPoint(scratchPoint);
-
-    //     // Check cartesian transition distance
-    //     if (cartesianDistance < this.cartesianTransitionDistance) {
-    //       // If cartesianDistance = 0, newPoint will = scratchPoint = reprojectedPoint
-    //       const newPoint = scratchPoint.interpolate(cartesianDistance / this.cartesianTransitionDistance, original, scratchPoint);
-    //       return newPoint;
-    //     } else {
-    //       return original;
-    //     }
-    //   } else {
-    //     return undefined;
-    //   }
-    // };
-
-    // if (this.cartesianTransitionDistance && this.cartesianRange && geom?.polyfaces && xForm) {
-    //   // Do cartesian transition/blending
-    //   // getReprojectedPoint(original point from polyface, reprojected point from polyface (aka transformed by xForm))
-    //   const newPolyfaces: IndexedPolyface[] = [];
-    //   geom.polyfaces.forEach((polyface, _faceIndex) => {
-
-    //     // TODO cannot do this - can't clone and then modify polyface's points!
-    //     // How to make a new polyface from these points?
-    //     // Does this mean this step must be done before L93 - readGltfAndCreateGeometry?
-
-    //     const newPolyface = polyface.clone();
-    //     for (let i = 0; i < polyface.data.pointCount; i++) {
-    //       const originalPoint = polyface.data.point.getPoint3dAtCheckedPointIndex(i, scratchPoint);
-    //       if (!originalPoint) {
-    //         console.log("Could not get point at index", i);
-    //         break;
-    //       }
-    //       const reprojectedPoint = xForm.multiplyPoint3d(originalPoint);
-    //       const finalReprojectedPoint = getReprojectedPoint(originalPoint, reprojectedPoint);
-
-    //       if (finalReprojectedPoint) {
-    //         newPolyface.data.point.setXYZAtCheckedPointIndex(i, finalReprojectedPoint.x, finalReprojectedPoint.y, finalReprojectedPoint.z);
-    //         newPolyfaces.push(newPolyface);
-    //       }
-    //     }
-    //   });
-
-    //   return { geometry: { polyfaces: newPolyfaces }};
-    // } else {
-    //   return { geometry: geom };
-    // }
-
-    // xFrom = rootReprojection from RealityTileTree.reprojectAndResolveChildren
-
-    // console.log("xForm in loadGeometryFromStream:", xForm);
 
     if (tile.tree.reprojectGeometry && geom?.polyfaces && xForm) {
       const polyfaces = geom.polyfaces.map((pf) => pf.cloneTransformed(xForm));
