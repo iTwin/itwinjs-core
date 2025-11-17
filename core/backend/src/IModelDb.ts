@@ -933,7 +933,11 @@ export abstract class IModelDb extends IModel {
     if (activeScope !== undefined && !IModelDb.isCalledFromActiveCommand()) {
       throw new IModelError(IModelStatus.BadRequest, "Cannot call abandonChanges while an EditCommand is active.");
     }
-    this.clearCaches();
+    // Clears instanceKey caches only, instead of all of the backend caches, since the changes are not saved yet
+    this.elements[_cache].clear();
+    this.models[_cache].clear();
+    this.elements[_instanceKeyCache].clear();
+    this.models[_instanceKeyCache].clear();
     this[_nativeDb].abandonChanges();
   }
 
