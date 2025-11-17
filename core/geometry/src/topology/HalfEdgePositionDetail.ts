@@ -204,8 +204,8 @@ export class HalfEdgePositionDetail {
     return this._topo === HalfEdgeTopo.Face && this._node !== undefined;
   }
   /** Return true if this detail is marked as being within an edge. */
-  public isEdge(): this is { get node() : HalfEdge } {
-    return this._topo === HalfEdgeTopo.Edge && this._node !== undefined;
+  public isEdge(): this is { get node() : HalfEdge, get edgeFraction() : number } {
+    return this._topo === HalfEdgeTopo.Edge && this._node !== undefined && this._edgeFraction !== undefined;
   }
   /** Return true if this detail is marked as being at a vertex. */
   public isVertex(): this is { get node() : HalfEdge } {
@@ -238,7 +238,7 @@ export class HalfEdgePositionDetail {
       return false;
     }
   */
-  public isAtXY(x: number, y: number): boolean {
-    return this._topo !== HalfEdgeTopo.None && Geometry.isSameCoordinate(this.x, x) && Geometry.isSameCoordinate(this.y, y);
+  public isAtXY(x: number, y: number, tolerance: number = Geometry.smallMetricDistance): boolean {
+    return this._topo !== HalfEdgeTopo.None && Geometry.isSameCoordinateXY(this.x, this.y, x, y, tolerance);
   }
 }

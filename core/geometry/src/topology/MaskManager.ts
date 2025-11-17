@@ -51,7 +51,7 @@ export class MaskManager {
   }
   /** Find a mask bit that is not "in use" in order to borrow that mask. */
   public grabMask(): number {
-    if (this._freeMasks === 0)
+    if (!this.hasFreeMask)
       return 0;
     let mask = this._firstFreeMask;
     while (!(mask & this._freeMasks))
@@ -63,5 +63,9 @@ export class MaskManager {
   public dropMask(mask: number) {
     mask &= this._originalFreeMasks; // prevent "drop" of mask that is not in the pool.
     this._freeMasks |= mask;
+  }
+  /** Whether there is a mask bit still available to grab. */
+  public get hasFreeMask(): boolean {
+    return this._freeMasks !== 0;
   }
 }

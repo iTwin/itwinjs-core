@@ -721,7 +721,7 @@ describe("VUGraph", () => {
     const walker = HalfEdgePositionDetail.createEdgeAtFraction(edgeA, 0.4);
     ck.testTrue(walker.isEdge(), "start on edge");
     markPosition(outputManager, walker);
-    const context = InsertAndRetriangulateContext.create(graph);
+    const context = InsertAndRetriangulateContext.create(graph)!;
     moveAndMark(ck, outputManager, context, walker, pointP, HalfEdgeTopo.Face);
     moveAndMark(ck, outputManager, context, walker, pointQ, HalfEdgeTopo.Face);
     moveAndMark(ck, outputManager, context, walker, pointA, HalfEdgeTopo.Vertex);

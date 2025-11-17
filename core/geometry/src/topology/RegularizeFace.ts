@@ -150,8 +150,7 @@ export class RegularizationContext {
    * @param candidates Array of nodes to search
    * @param nodeComparisonFunction function for lexical comparison.
    */
-  private findTopVisibleEdge(node: HalfEdge, candidates: HalfEdge[],
-    directionSign: number) {
+  private findTopVisibleEdge(node: HalfEdge, candidates: HalfEdge[], directionSign: number): HalfEdge | undefined {
     const y0 = node.y;
     const x0 = node.x;
     let dx;

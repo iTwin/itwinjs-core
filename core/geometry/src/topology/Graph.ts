@@ -1478,6 +1478,10 @@ export class HalfEdgeGraph {
   public dropMask(mask: HalfEdgeMask) {
     this._maskManager.dropMask(mask);
   }
+  /** Whether there is a mask available to grab. */
+  public get hasFreeMask(): boolean {
+    return this._maskManager.hasFreeMask;
+  }
   /**
    * Create 2 half edges forming 2 vertices, 1 edge, and 1 face.
    * * The two half edges are joined as edgeMate pair.

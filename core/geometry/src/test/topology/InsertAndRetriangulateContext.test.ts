@@ -92,7 +92,7 @@ describe("InsertAndRetriangulateContext", () => {
     }
     const z1 = 0.05;   // draw linework a little above the polyface.
     HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph);
-    const context = InsertAndRetriangulateContext.create(graph);
+    const context = InsertAndRetriangulateContext.create(graph)!;
     const position = HalfEdgePositionDetail.create();
     const oldPosition = HalfEdgePositionDetail.create();
     GraphChecker.captureAnnotatedGraph(allGeometry, graph, x0, y0);
@@ -168,7 +168,7 @@ describe("InsertAndRetriangulateContext", () => {
     }
     HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph1);
     GraphChecker.captureAnnotatedGraph(allGeometry, graph1, x0, y0);
-    const context1 = InsertAndRetriangulateContext.create(graph1);
+    const context1 = InsertAndRetriangulateContext.create(graph1)!;
     const graph2 = new HalfEdgeGraph();
     const points = [];
     for (let degrees = 0; degrees < 359; degrees += 25) {
@@ -180,7 +180,7 @@ describe("InsertAndRetriangulateContext", () => {
     HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph2);
     GraphChecker.captureAnnotatedGraph(allGeometry, graph2, x0 + 30, y0);
 
-    const context2 = InsertAndRetriangulateContext.create(graph2);
+    const context2 = InsertAndRetriangulateContext.create(graph2)!;
     for (const context of [context1, context2]) {
       y0 = 0;
       let numPointsInserted = 0;

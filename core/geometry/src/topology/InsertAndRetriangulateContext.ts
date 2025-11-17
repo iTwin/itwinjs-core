@@ -53,15 +53,21 @@ export class InsertAndRetriangulateContext {
   private _searcher: HalfEdgePositionDetail;
   private _tolerance: number;
 
+  /** Constructor. NOTE: graph is assumed to have a free mask available. */
   private constructor(graph: HalfEdgeGraph, tolerance: number) {
     this._graph = graph;
-    this._edgeSet = MarkedEdgeSet.create(graph) as MarkedEdgeSet;
+    const edgeSet = MarkedEdgeSet.create(graph);
+    assert(edgeSet !== undefined, "expect defined; the only caller ensures graph has free mask");
+    this._edgeSet = edgeSet;
     this._searcher = HalfEdgePositionDetail.create();
     this._tolerance = tolerance;
   }
-  /** Create a new context referencing the graph. */
-  public static create(graph: HalfEdgeGraph, tolerance: number = Geometry.smallMetricDistance) {
-    return new InsertAndRetriangulateContext(graph, tolerance);
+  /**
+   * Create a new context referencing the graph.
+   * @return `undefined` if graph has no free mask available
+  */
+  public static create(graph: HalfEdgeGraph, tolerance: number = Geometry.smallMetricDistance): InsertAndRetriangulateContext | undefined {
+    return graph.hasFreeMask ? new InsertAndRetriangulateContext(graph, tolerance) : undefined;
   }
   /** Query the (pointer to) the graph in the context. */
   public get graph(): HalfEdgeGraph {
@@ -97,33 +103,30 @@ export class InsertAndRetriangulateContext {
   /** Linear search for the nearest graph edge or vertex. */
   public searchForNearestEdgeOrVertex(xyz: Point3d): HalfEdgePositionDetail {
     const position = HalfEdgePositionDetail.create();
-    position.setDTag(Number.MAX_VALUE);
+    position.dTag = Number.MAX_VALUE;
     const xyzC = Point3d.create();
     let fractionC;
     let distanceC;
-    let tag: number | undefined;
     for (const nodeA of this._graph.allHalfEdges) {
       const nodeB = nodeA.faceSuccessor;
       fractionC = SmallSystem.lineSegment3dXYClosestPointUnbounded(nodeA, nodeB, xyz);
-      tag = position.getDTag();
-      if (tag !== undefined && fractionC !== undefined) {
+      if (fractionC !== undefined) {
         if (fractionC > 1.0) {
           distanceC = xyz.distanceXY(nodeB);
-          if (distanceC < tag) {
+          if (distanceC < position.dTag) {
             position.resetAsVertex(nodeB);
-            position.setDTag(distanceC);
+            position.dTag = distanceC;
           }
         } else if (fractionC < 0.0) {
           distanceC = xyz.distanceXY(nodeA);
-          if (distanceC < tag) {
+          if (distanceC < position.dTag) {
             position.resetAsVertex(nodeA);
-            position.setDTag(distanceC);
+            position.dTag = distanceC;
           }
         } else {
           nodeA.fractionToPoint3d(fractionC, xyzC);
-
           distanceC = xyz.distanceXY(xyzC);
-          if (distanceC < tag) {
+          if (distanceC < position.dTag) {
             position.resetAtEdgeAndFraction(nodeA, fractionC);
           }
         }
@@ -134,15 +137,13 @@ export class InsertAndRetriangulateContext {
   /** Linear search for the nearest graph vertex. */
   public searchForNearestVertex(xyz: Point3d): HalfEdgePositionDetail {
     const position = HalfEdgePositionDetail.create();
-    position.setDTag(Number.MAX_VALUE);
+    position.dTag = Number.MAX_VALUE;
     let distanceA;
-    let tag : number | undefined;
     for (const nodeA of this._graph.allHalfEdges) {
       distanceA = xyz.distanceXY(nodeA);
-      tag = position.getDTag();
-      if (undefined !== tag && distanceA < tag) {
+      if (distanceA < position.dTag) {
         position.resetAsVertex(nodeA);
-        position.setDTag(distanceA);
+        position.dTag = distanceA;
       }
     }
     return position;
@@ -160,7 +161,7 @@ export class InsertAndRetriangulateContext {
   }
   /** Reclassify the current interior face hit if it is too close to an edge of the face. */
   private reclassifyFaceHit(point: Point3d): boolean {
-    if (undefined === this._searcher.node || !this._searcher.isFace || this._searcher.node.isMaskSet(HalfEdgeMask.EXTERIOR))
+    if (undefined === this._searcher.node || !this._searcher.isFace() || this._searcher.node.isMaskSet(HalfEdgeMask.EXTERIOR))
       return false;
     const pointXY = Point3d.create(point.x, point.y);
     const face = this._searcher.node.collectAroundFace((node: HalfEdge) => {
@@ -182,7 +183,7 @@ export class InsertAndRetriangulateContext {
   }
   /** Reclassify the current interior edge hit if it is too close to an edge of either adjacent face. */
   private reclassifyEdgeHit(point: Point3d): boolean {
-    if (undefined === this._searcher.node || !this._searcher.isEdge || this._searcher.node.isMaskSet(HalfEdgeMask.BOUNDARY_EDGE))
+    if (undefined === this._searcher.node || !this._searcher.isEdge() || this._searcher.node.isMaskSet(HalfEdgeMask.BOUNDARY_EDGE))
       return false;
     const pointXY = Point3d.create(point.x, point.y);
     const superFace: Point3d[] = [];
@@ -239,7 +240,7 @@ export class InsertAndRetriangulateContext {
     // adjacent to the hull.
     if (!this.reclassifyFaceHit(point))
       this.reclassifyEdgeHit(point);
-    if (this._searcher.isFace) {
+    if (this._searcher.isFace()) {
       // insert point into the graph if it lies in an interior face
       if (!this._searcher.node.isMaskSet(HalfEdgeMask.EXTERIOR)) {
         const newNode = this._graph.createEdgeXYZHalfEdge(point.x, point.y, point.z, 0, this._searcher.node, 0);
@@ -247,19 +248,16 @@ export class InsertAndRetriangulateContext {
         Triangulator.flipTrianglesInEdgeSet(this._graph, this._edgeSet);
         this._searcher.resetAsVertex(newNode);
       }
-    } else if (this._searcher.isEdge) {
+    } else if (this._searcher.isEdge()) {
       // insert point into the graph by splitting its containing edge
-      const edgeFraction = this._searcher.edgeFraction;
-      if (undefined === edgeFraction)
-        return false;
-      const newA = this._graph.splitEdgeAtFraction(this._searcher.node, edgeFraction);
+      const newA = this._graph.splitEdgeAtFraction(this._searcher.node, this._searcher.edgeFraction);
       const newB = newA.vertexPredecessor;
       this.updateZAroundVertex(newA, point, InsertedVertexZOptions.Replace);  // always replace
       this.retriangulateFromBaseVertex(newA);
       this.retriangulateFromBaseVertex(newB);
       Triangulator.flipTrianglesInEdgeSet(this._graph, this._edgeSet);
       this._searcher.resetAsVertex(newA);
-    } else if (this._searcher.isVertex) {
+    } else if (this._searcher.isVertex()) {
       // no need to insert point as there's already a vertex there, but maybe update its z-coord
       this.updateZAroundVertex(this._searcher.node, point, newZWins);
     }
@@ -278,7 +276,7 @@ export class InsertAndRetriangulateContext {
     announcer?: (position: HalfEdgePositionDetail) => boolean,
   ): boolean {
     const psc = PointSearchContext.create(this._tolerance);
-    movingPosition.setITag(0);
+    movingPosition.iTag = 0;
     if (movingPosition.isUnclassified) {
       moveToAnyUnmaskedEdge(this.graph, movingPosition, 0.5, HalfEdgeMask.NULL_MASK);
       if (movingPosition.isUnclassified)
@@ -286,22 +284,19 @@ export class InsertAndRetriangulateContext {
     }
     let trap = 0;
     const ray = Ray3d.createXAxis();
-    for (; movingPosition.getITag() === 0 && trap < 2;) {
+    for (; movingPosition.iTag === 0 && trap < 2;) {
       if (announcer !== undefined) {
         const continueSearch = announcer(movingPosition);
         if (!continueSearch)
           break;
       }
-      if (!psc.setSearchRay(movingPosition, target, ray)) {
+      if (!psc.setSearchRay(movingPosition, target, ray))
         return false;
-      } else if (movingPosition.isFace) {
+      assert(ray.a !== undefined, "expect defined by successful return of setSearchRay");
+      if (movingPosition.isFace()) {
         const lastBefore = HalfEdgePositionDetail.create();
         const firstAfter = HalfEdgePositionDetail.create();
-        const node = movingPosition.node;
-        const a = ray.a;
-        if (!node || undefined === a)
-          return false;
-        const rc = psc.reAimAroundFace(node, ray, a, lastBefore, firstAfter);
+        const rc = psc.reAimAroundFace(movingPosition.node, ray, ray.a, lastBefore, firstAfter);
         // reAimAroundFace returns lots of cases in `lastBefore`
         switch (rc) {
           case RayClassification.NoHits: {
@@ -310,28 +305,28 @@ export class InsertAndRetriangulateContext {
           }
           case RayClassification.TargetOnVertex: {
             movingPosition.setFrom(lastBefore);
-            movingPosition.setITag(1);
+            movingPosition.iTag = 1;
             break;
           }
           case RayClassification.TargetOnEdge: {
             movingPosition.setFrom(lastBefore);
-            movingPosition.setITag(1);
+            movingPosition.iTag = 1;
             break;
           }
           case RayClassification.Bracket: {
             movingPosition.resetAsFace(lastBefore.node, target);
-            movingPosition.setITag(1);
+            movingPosition.iTag = 1;
             break;
           }
           case RayClassification.TargetBefore: { // do we ever get here?
             movingPosition.resetAsFace(movingPosition.node, target);
-            movingPosition.setITag(1);
+            movingPosition.iTag = 1;
             break;
           }
           case RayClassification.TargetAfter: {
             if (movingPosition.node === lastBefore.node
-              && movingPosition.isFace
-              && (lastBefore.isEdge || lastBefore.isVertex)) {
+              && movingPosition.isFace()
+              && (lastBefore.isEdge() || lastBefore.isVertex())) {
               trap++;
             } else {
               trap = 0;
@@ -340,35 +335,29 @@ export class InsertAndRetriangulateContext {
             break;
           }
         }
-      } else if (movingPosition.isEdge) {
-        const a = ray.a;
-        if (undefined === a)
-          return false;
-        psc.reAimFromEdge(movingPosition, ray, a);
+      } else if (movingPosition.isEdge()) {
+        psc.reAimFromEdge(movingPosition, ray, ray.a);
         if (movingPosition.isUnclassified)
           break;
-      } else if (movingPosition.isVertex) {
-        const a = ray.a;
-        if (undefined === a)
-          return false;
-        psc.reAimFromVertex(movingPosition, ray, a);
+      } else if (movingPosition.isVertex()) {
+        psc.reAimFromVertex(movingPosition, ray, ray.a);
         if (movingPosition.isUnclassified)
           break;
       }
     }
-    if (movingPosition.isAtXY(target.x, target.y))
+    if (movingPosition.isAtXY(target.x, target.y, this._tolerance))
       return true;
     if (trap > 1) {
-      // ugh! We exited the loop by repeatedly hitting the same node with edge or vertex type in lastBefore.
+      // Ugh! We exited the loop by repeatedly hitting the same node with edge or vertex type in lastBefore.
       // This happens only when the target point is exterior (heavy triangulation use cases start with a convex
-      // hull and only do interior intersections, so case only happens in contrived unit tests so far
-      // What to mark? Leave it as is, but mark as exterior target
+      // hull and only do interior intersections, so this case only happens in contrived unit tests so far).
+      // What to mark? Leave it as is, but mark as exterior target.
       if (movingPosition.node !== undefined) {
         movingPosition.setIsExteriorTarget(true);
       }
       return false;
     }
-    // murky here; should never be hit. Has never been hit in unit tests.
+    assert(trap > 1, "Murky. Should never get here. Has never been hit in unit tests.");
     return false;
   }
 }
