@@ -4,15 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BriefcaseDb } from "@itwin/core-backend";
-import { assert, BeDuration, BeEvent } from "@itwin/core-bentley";
+import { assert, BeDuration, BeEvent, Id64String } from "@itwin/core-bentley";
 import { ModelIdAndGeometryGuid } from "@itwin/core-common";
 
-export interface DrawingChanges {
-  whatever: any;
-}
+export type DrawingUpdates = Map<Id64String, string>;
 
 export interface DrawingMonitor {
-  getChanges(): Promise<DrawingChanges>;
+  getUpdates(): Promise<DrawingUpdates>;
   terminate(): void;
 }
 
@@ -30,7 +28,7 @@ abstract class DrawingMonitorState {
 
   public constructor(protected readonly monitor: DrawingMonitorImpl) { }
 
-  public getCachedChanges(): DrawingChanges | undefined {
+  public getCachedUpdates(): DrawingUpdates | undefined {
     return undefined;
   }
 
@@ -54,9 +52,9 @@ abstract class DrawingMonitorState {
 }
 
 class DrawingMonitorImpl implements DrawingMonitor {
-  public delay: number;
+  public readonly delay: number;
   public readonly iModel: BriefcaseDb;
-  public readonly onStateChanged = new BeEvent<() => void>();
+  private readonly _onStateChanged = new BeEvent<() => void>();
   private _state: DrawingMonitorState;
   private _removeEventListeners: () => void;
 
@@ -67,7 +65,7 @@ class DrawingMonitorImpl implements DrawingMonitor {
   public set state(newState: DrawingMonitorState) {
     if (newState !== this._state) {
       this._state = newState;
-      this.onStateChanged.raiseEvent();
+      this._onStateChanged.raiseEvent();
     }
   }
 
@@ -87,15 +85,15 @@ class DrawingMonitorImpl implements DrawingMonitor {
     };
   }
 
-  public getChanges(): Promise<DrawingChanges> {
+  public getUpdates(): Promise<DrawingUpdates> {
     this.state = this._state.onResultsRequested();
-    const changes = this._state.getCachedChanges();
-    if (changes) {
-      return Promise.resolve(changes);
+    const updates = this._state.getCachedUpdates();
+    if (updates) {
+      return Promise.resolve(updates);
     }
 
-    return new Promise<DrawingChanges>((resolve) => {
-      this.awaitChanges(resolve);
+    return new Promise<DrawingUpdates>((resolve) => {
+      this.awaitUpdates(resolve);
     });
   }
 
@@ -107,14 +105,16 @@ class DrawingMonitorImpl implements DrawingMonitor {
     this._removeEventListeners = () => undefined;
   }
 
-  private awaitChanges(resolve: (changes: DrawingChanges) => void): void {
-    this.onStateChanged.addOnce(() => {
-      const changes = this._state.getCachedChanges();
-      if (changes) {
-        resolve(changes);
+  private awaitUpdates(resolve: (updates: DrawingUpdates) => void): void {
+    this._onStateChanged.addOnce(() => {
+      const updates = this._state.getCachedUpdates();
+      if (!updates) {
+        this.awaitUpdates(resolve);
+        return;
       }
 
-      this.awaitChanges(resolve);
+      this._state = new IdleState(this);
+      resolve(updates);
     });
   }
 
@@ -142,12 +142,12 @@ class IdleState extends DrawingMonitorState {
 class CachedState extends DrawingMonitorState {
   public get name(): "Cached" { return "Cached"; }
 
-  public constructor(monitor: DrawingMonitorImpl, private readonly _changes: DrawingChanges) {
+  public constructor(monitor: DrawingMonitorImpl, private readonly _updates: DrawingUpdates) {
     super(monitor);
   }
 
-  public override getCachedChanges() {
-    return this._changes;
+  public override getCachedUpdates() {
+    return this._updates;
   }
 
   public override onChangeDetected() {
@@ -167,9 +167,9 @@ class DelayedState extends DrawingMonitorState {
 
   public constructor(monitor: DrawingMonitorImpl) {
     super(monitor);
-    monitor.onStateChanged.addOnce(() => this._delay = undefined);
+
     this._delay = BeDuration.wait(monitor.delay).then(() => {
-      if (this._delay) {
+      if (this.monitor.state === this) {
         // ###TODO transition to requested state
       }
     });
