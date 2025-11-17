@@ -245,12 +245,17 @@ export class EditScope implements IEditScope {
       throw new Error("Cannot save - scope is not active");
     }
 
-    try {
-      this.iModel.saveChanges(description);
-      this._state = EditCommandState.Completed;
-    } finally {
-      this.end();
-    }
+    return await EditScope.commandExecutionContext.run(
+      [this.scopeId],
+      async () => {
+        try {
+          this.iModel.saveChanges(description);
+          this._state = EditCommandState.Completed;
+        } finally {
+          this.end();
+        }
+      }
+    );
   }
 
   // TODO Rohit: It was straightforward with saves, the parent can call save on the whole lot.
@@ -275,20 +280,25 @@ export class EditScope implements IEditScope {
     if (!this.isActive)
       throw new Error("Cannot abandon - scope is not active");
 
-    try {
-      this.iModel.abandonChanges();
+    return await EditScope.commandExecutionContext.run(
+      [this.scopeId],
+      async () => {
+        try {
+          this.iModel.abandonChanges();
 
-      // Roll back to starting transaction if needed
-      if (this.iModel.isBriefcaseDb() && this.startTxnId) {
-        const currentTxnId = this.iModel.txns.getCurrentTxnId();
-        if (this.startTxnId !== currentTxnId) {
-          this.iModel.txns.cancelTo(this.startTxnId);
+          // Roll back to starting transaction if needed
+          if (this.iModel.isBriefcaseDb() && this.startTxnId) {
+            const currentTxnId = this.iModel.txns.getCurrentTxnId();
+            if (this.startTxnId !== currentTxnId) {
+              this.iModel.txns.cancelTo(this.startTxnId);
+            }
+          }
+        } finally {
+          this.end();
+          this._state = EditCommandState.Abandoned;
         }
       }
-    } finally {
-      this.end();
-      this._state = EditCommandState.Abandoned;
-    }
+    );
   }
 }
 
@@ -311,12 +321,12 @@ export abstract class EditCommandBase<_TArgs extends EditCommandArgs = EditComma
    * Save all changes made by this command.
    */
   public async saveChanges(description: string): Promise<void> {
-    if (this._editScope?.state !== EditCommandState.Active) {
-      throw new Error(`Cannot save EditCommand in state ${this._editScope?.state}`);
-    }
-
     if (!this._editScope) {
       throw new Error("EditCommand has no scope.");
+    }
+
+    if (this._editScope?.state !== EditCommandState.Active) {
+      throw new Error(`Cannot save EditCommand in state ${this._editScope?.state}`);
     }
 
     try {
@@ -414,18 +424,18 @@ export abstract class InteractiveCommand<TArgs extends EditCommandArgs = EditCom
     }
   }
 
-  // DO NOT OVERRIDE or mark @makeScopeSafe
+  // DO NOT OVERRIDE
   public async endCommandScope(): Promise<void> {
     if (!this._editScope) {
       throw new Error("EditCommand has no scope.");
     }
-    this._editScope.end();
-    this._editScope = undefined;
     if (await this.validateCommandResult() === false) {
       await this.abandonChanges();
       throw new Error("Command result validation failed.");
     }
     await this.saveChanges("Interactive command completed");
+    this._editScope.end();
+    this._editScope = undefined;
   }
 
   /**
