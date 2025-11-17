@@ -2373,6 +2373,7 @@ describe("CurveCurveIntersectXY", () => {
     ck: Checker, allGeometry: GeometryQuery[],
     curve0: AnyCurve, curve1: AnyCurve,
     numExpected: number, dx: number, dy: number,
+    extend0 = false, extend1 = false,
   ) {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve0, dx, dy);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve1, dx, dy);
@@ -2427,9 +2428,9 @@ describe("CurveCurveIntersectXY", () => {
       }
     }
     // test both paths
-    const intersectionsAB = CurveCurve.intersectionXYPairs(curve0, false, curve1, false);
+    const intersectionsAB = CurveCurve.intersectionXYPairs(curve0, extend0, curve1, extend1);
     testSpiralIntersection(intersectionsAB, false);
-    const intersectionsBA = CurveCurve.intersectionXYPairs(curve1, false, curve0, false);
+    const intersectionsBA = CurveCurve.intersectionXYPairs(curve1, extend1, curve0, extend0);
     testSpiralIntersection(intersectionsBA, true);
   };
 
@@ -2540,9 +2541,9 @@ describe("CurveCurveIntersectXY", () => {
     const curveChain1 = CurveChainWithDistanceIndex.createCapture(path1);
     const bagOfCurves = BagOfCurves.create(path0, arc0, lineString0);
 
-    const curves: AnyCurve[] = [
-      lineSegment1,
+    let curves: AnyCurve[] = [
       lineSegment0,
+      lineSegment1,
       lineString0,
       arc0,
       arc1,
@@ -2584,7 +2585,7 @@ describe("CurveCurveIntersectXY", () => {
       curveChain0,
       bagOfCurves,
     ];
-    const numExpectedIntersections = [
+    let numExpectedIntersections = [
       1, 1, 3, 2, 1, 1, // curve primitives other than spirals
       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // rotated and non-planar integrated spirals
       1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 1, 1, 1, 1, 1, 1, 1, 1 // rotated and non-planar direct spirals
@@ -2592,14 +2593,14 @@ describe("CurveCurveIntersectXY", () => {
     ];
     ck.testCoordinate(curves.length, numExpectedIntersections.length, "matching arrays");
     // spiral vs all curves
-    const test0 = (spiral: TransitionSpiral3d) => {
+    const test0 = (spiral: TransitionSpiral3d, ddy = 0, extend = false) => {
       for (let j = 0; j < curves.length; j++) {
         const curve = curves[j];
         const numExpectedIntersection = numExpectedIntersections[j];
-        visualizeAndTestSpiralIntersection(ck, allGeometry, spiral, curve, numExpectedIntersection, dx, dy);
+        visualizeAndTestSpiralIntersection(ck, allGeometry, spiral, curve, numExpectedIntersection, dx, dy, false, extend);
         dy += 200;
       }
-      dy = 0;
+      dy = ddy;
       dx += 200;
     }
     for (let i = 0; i < integratedSpirals.length; i++) // skip rotated and non-planar integrated spirals
@@ -2638,6 +2639,30 @@ describe("CurveCurveIntersectXY", () => {
     for (let i = 0; i < directSpirals.length; i++) // skip rotated and non-planar direct spirals
       if (i % 3 === 0)
         test1(directSpirals[i]);
+    // extend curve primitive
+    dx = 0;
+    dy += 200;
+    const lineSegment5 = LineSegment3d.create(Point3d.create(50, 100), Point3d.create(60, 50));
+    const arc4 = Arc3d.createXY(Point3d.create(50, 10), 30, AngleSweep.createStartEndDegrees(90, 180));
+    const lineString4 = LineString3d.create(
+      Point3d.create(20, 20), Point3d.create(20, 40), Point3d.create(40, 40), Point3d.create(40, 20), Point3d.create(70, 20),
+    );
+    const lineString5 = LineString3d.create(
+      Point3d.create(10, 40), Point3d.create(10, 80), Point3d.create(30, 80),
+    );
+    const arc5 = Arc3d.createXY(Point3d.create(30, 60), 20, AngleSweep.createStartEndDegrees(90, -90));
+    const lineSegment6 = LineSegment3d.create(Point3d.create(30, 40), Point3d.create(50, 30));
+    const path2 = Path.create(lineString5, arc5, lineSegment6);
+    curves = [lineSegment5, arc4, lineString4, path2];
+    numExpectedIntersections = [1, 2, 2, 2];
+    ck.testCoordinate(curves.length, numExpectedIntersections.length, "matching arrays");
+    for (let i = 0; i < integratedSpirals.length; i++) // skip rotated and non-planar integrated spirals
+      if (i % 3 === 0)
+        test0(integratedSpirals[i], 7400, true);
+    dx += 250;
+    for (let i = 0; i < directSpirals.length; i++) // skip rotated and non-planar direct spirals
+      if (i % 3 === 0)
+        test0(directSpirals[i], 7400, true);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "SpiralIntersection");
     expect(ck.getNumErrors()).toBe(0);
