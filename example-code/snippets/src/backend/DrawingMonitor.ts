@@ -4,27 +4,36 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BriefcaseDb } from "@itwin/core-backend";
-import { assert, BeDuration, BeEvent, Id64String } from "@itwin/core-bentley";
+import { assert, BeDuration, BeEvent, Id64Set, Id64String } from "@itwin/core-bentley";
 import { ModelIdAndGeometryGuid } from "@itwin/core-common";
 
 export type DrawingUpdates = Map<Id64String, string>;
 
+/** Exported strictly for tests.
+ * @internal
+ */
+export type StateName = "Idle" | "Cached" | "Delayed" | "Requested" | "Terminated";
+
 export interface DrawingMonitor {
   getUpdates(): Promise<DrawingUpdates>;
   terminate(): void;
+  /** Strictly for unit tests. */
+  readonly stateName: StateName;
 }
 
 export interface DrawingMonitorCreateArgs {
   iModel: BriefcaseDb;
-  delay: number;
+  updateDelay: number;
+  computeUpdates(drawingsToRegenerate: Id64Set): Promise<DrawingUpdates>;
 }
 
 export function createDrawingMonitor(args: DrawingMonitorCreateArgs): DrawingMonitor {
   return new DrawingMonitorImpl(args);
 }
 
+
 abstract class DrawingMonitorState {
-  public abstract get name(): "Idle" | "Cached" | "Delayed" | "Requested" | "Terminated";
+  public abstract get name(): StateName;
 
   public constructor(protected readonly monitor: DrawingMonitorImpl) { }
 
@@ -37,13 +46,17 @@ abstract class DrawingMonitorState {
     return this;
   }
 
-  public onResultsRequested(): DrawingMonitorState {
-    this.assertBadTransition("results requested");
+  public onUpdatesRequested(): DrawingMonitorState {
+    this.assertBadTransition("updates requested");
     return this;
   }
 
-  public onTerminate(): void {
-
+  protected requestUpdates(): DrawingMonitorState {
+    // ###TODO
+    // Query affected drawing Ids
+    // If none, return undefined
+    // else return a Promise
+    return new CachedState(this.monitor, new Map<Id64String, string>());
   }
 
   private assertBadTransition(eventName: string): void {
@@ -54,12 +67,17 @@ abstract class DrawingMonitorState {
 class DrawingMonitorImpl implements DrawingMonitor {
   public readonly delay: number;
   public readonly iModel: BriefcaseDb;
+  public readonly computeUpdates: (drawingIds: Id64Set) => Promise<DrawingUpdates>;
   private readonly _onStateChanged = new BeEvent<() => void>();
   private _state: DrawingMonitorState;
   private _removeEventListeners: () => void;
 
   public get state() {
     return this._state;
+  }
+
+  public get stateName() {
+    return this._state.name;
   }
 
   public set state(newState: DrawingMonitorState) {
@@ -70,8 +88,9 @@ class DrawingMonitorImpl implements DrawingMonitor {
   }
 
   public constructor(args: DrawingMonitorCreateArgs) {
-    this.delay = args.delay;
+    this.delay = args.updateDelay;
     this.iModel = args.iModel;
+    this.computeUpdates = args.computeUpdates;
 
     // ###TODO check if any drawings need regeneration.
     // For now assume not.
@@ -86,7 +105,7 @@ class DrawingMonitorImpl implements DrawingMonitor {
   }
 
   public getUpdates(): Promise<DrawingUpdates> {
-    this.state = this._state.onResultsRequested();
+    this.state = this._state.onUpdatesRequested();
     const updates = this._state.getCachedUpdates();
     if (updates) {
       return Promise.resolve(updates);
@@ -98,7 +117,6 @@ class DrawingMonitorImpl implements DrawingMonitor {
   }
 
   public terminate(): void {
-    this._state.onTerminate();
     this.state = new TerminatedState(this);
 
     this._removeEventListeners();
@@ -126,21 +144,23 @@ class DrawingMonitorImpl implements DrawingMonitor {
 }
 
 class IdleState extends DrawingMonitorState {
-  public get name(): "Idle" { return "Idle"; }
+  public get name() { return "Idle" as const; }
 
   public override onChangeDetected() {
-    // ###TODO transition to DelayedState if delay > 0 else do onResultsRequested
-    return this;
+    if (this.monitor.delay > 0) {
+      return new DelayedState(this.monitor);
+    }
+
+    return this.onUpdatesRequested();
   }
 
-  public override onResultsRequested() {
-    // ###TODO transition to RequestedState, or CachedState if request (and therefore results) would be empty.
-    return this;
+  public override onUpdatesRequested() {
+    return this.requestUpdates();
   }
 }
 
 class CachedState extends DrawingMonitorState {
-  public get name(): "Cached" { return "Cached"; }
+  public get name() { return "Cached" as const; }
 
   public constructor(monitor: DrawingMonitorImpl, private readonly _updates: DrawingUpdates) {
     super(monitor);
@@ -151,41 +171,63 @@ class CachedState extends DrawingMonitorState {
   }
 
   public override onChangeDetected() {
-    // ###TODO same as IdleState
-    return this;
+    // Our cached results are no longer relevant.
+    if (this.monitor.delay > 0) {
+      return new DelayedState(this.monitor);
+    }
+
+    return this.requestUpdates();
   }
 
-  public override onResultsRequested() {
-    // Results are available.
+  public override onUpdatesRequested() {
+    // Updates are available.
     return this;
   }
 }
 
 class DelayedState extends DrawingMonitorState {
-  private _delay: Promise<void> | undefined;
-  public get name(): "Delayed" { return "Delayed"; }
+  public get name() { return "Delayed" as const; }
+  private readonly _delay: Promise<void>;
 
   public constructor(monitor: DrawingMonitorImpl) {
     super(monitor);
 
     this._delay = BeDuration.wait(monitor.delay).then(() => {
       if (this.monitor.state === this) {
-        // ###TODO transition to requested state
+        this.monitor.state = this.requestUpdates();
       }
     });
   }
 
-  public override onResultsRequested(): DrawingMonitorState {
-    this._delay = undefined;
-    // ###TODO same as IdleState
-    return this;
+  public override onUpdatesRequested(): DrawingMonitorState {
+    // Cancel the delay.
+    return this.requestUpdates();
+  }
+}
+
+class RequestedState extends DrawingMonitorState {
+  public get name() { return "Requested" as const; }
+
+  public constructor(monitor: DrawingMonitorImpl, private readonly _promise: Promise<DrawingUpdates>) {
+    super(monitor);
+
+    this._promise.then((updates) => {
+      if (this.monitor.state === this) {
+        this.monitor.state = new CachedState(this.monitor, updates);
+      }
+    });
+  }
+
+  public override onChangeDetected() {
+    // Make a new request.
+    return this.requestUpdates();
   }
 }
 
 class TerminatedState extends DrawingMonitorState {
-  public get name(): "Terminated" { return "Terminated"; }
+  public get name() { return "Terminated" as const; }
 
-  public override onResultsRequested(): DrawingMonitorState {
+  public override onUpdatesRequested(): DrawingMonitorState {
     throw new Error("Accessing a terminated DrawingMonitor");
   }
 }
