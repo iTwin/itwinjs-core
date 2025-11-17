@@ -8,14 +8,9 @@ import { AsyncLocalStorage } from "async_hooks";
 /* eslint-disable no-console */
 
 // Register the command context with IModelDb
-IModelDb.registerActiveCommands(() => {
-  const activeScope = IModelDb.activeEditScope();
-  if (!activeScope) {
-    return false;
-  }
-
+IModelDb.registerActiveCommands((scopeId: string) => {
   const executingScopeIds = EditScope.commandExecutionContext.getStore();
-  return executingScopeIds !== undefined && executingScopeIds.includes(activeScope.scopeId);
+  return executingScopeIds !== undefined && executingScopeIds.includes(scopeId);
 });
 
 /**
@@ -125,7 +120,7 @@ export class EditScope implements IEditScope {
   }
 
   public get isActive(): boolean {
-    const activeScope = IModelDb.activeEditScope();
+    const activeScope = this.iModel.activeEditScope();
 
     if (activeScope === undefined) {
       return false;
@@ -153,7 +148,7 @@ export class EditScope implements IEditScope {
 
   public static start(iModel: IModelDb, commandType: CommandType): EditScope {
     // Check if this command is being called from within another command's execution context
-    const activeScope = IModelDb.activeEditScope();
+    const activeScope = iModel.activeEditScope();
 
     if (activeScope !== undefined && activeScope.commandType === CommandType.Interactive.valueOf() && commandType === CommandType.Interactive) {
       throw new Error("Cannot start an Interactive EditCommand from while another Interactive EditCommand is active.");
@@ -164,22 +159,22 @@ export class EditScope implements IEditScope {
     if (isNested) {
       // Create a new scope that has a parent scope id set
       const nestedScope = new EditScope(iModel, commandType, activeScope.scopeId);
-      IModelDb.enqueueNestedEditScope({ scopeId: nestedScope.scopeId, commandType: nestedScope.commandType, parentScopeId: nestedScope.parentScopeId } as any);
+      iModel.enqueueNestedEditScope({ scopeId: nestedScope.scopeId, commandType: nestedScope.commandType, parentScopeId: nestedScope.parentScopeId } as any);
       return nestedScope;
     }
 
     // External command - enqueue normally
     const scope = new EditScope(iModel, commandType);
-    IModelDb.enqueueEditScope({ scopeId: scope.scopeId, commandType: scope.commandType } as any);
+    iModel.enqueueEditScope({ scopeId: scope.scopeId, commandType: scope.commandType } as any);
     return scope;
   }
 
   public end(): void {
     if (this.parentScopeId) {
-      IModelDb.dequeueNestedEditScope();
+      this.iModel.dequeueNestedEditScope();
     } else {
       this.iModel[_nativeDb].endMultiTxnOperation();
-      IModelDb.dequeueEditScope();
+      this.iModel.dequeueEditScope();
     }
   }
 
@@ -424,7 +419,7 @@ export abstract class InteractiveCommand<TArgs extends EditCommandArgs = EditCom
     }
   }
 
-  // DO NOT OVERRIDE
+  // DO NOT OVERRIDE or mark @makeScopeSafe
   public async endCommandScope(): Promise<void> {
     if (!this._editScope) {
       throw new Error("EditCommand has no scope.");
