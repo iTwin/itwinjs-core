@@ -5,6 +5,8 @@
 
 import { Id64String } from "@itwin/core-bentley";
 
+/* eslint-disable no-console */
+
 export interface EditCommandInfo {
   scopeId: Id64String;
   commandType: string;

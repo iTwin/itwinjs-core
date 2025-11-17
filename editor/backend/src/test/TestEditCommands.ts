@@ -1,7 +1,11 @@
-import { EditCommandArgs, ImmediateCommand, InteractiveCommand, makeScopeSafe } from "../IModelEditCommand";
+import { EditCommandArgs, ImmediateCommand, InteractiveCommand } from "../IModelEditCommand";
+import { Code } from "@itwin/core-common";
+import { Id64String } from "@itwin/core-bentley";
+import { CreateElementCommand, UpdateElementArgs, UpdateElementCommand } from "./ElementEditCommands";
 
 // This rule was deprecated in ESLint v8.46.0.
 /* eslint-disable @typescript-eslint/return-await */
+/* eslint-disable no-console */
 
 export interface AddCommandArgs extends EditCommandArgs {
   firstNumber: number;
@@ -26,8 +30,7 @@ export interface SumOfSquaresArgs extends EditCommandArgs {
 export class AddCommand extends ImmediateCommand<AddCommandArgs, number> {
 
   // Adds the two input values
-  @makeScopeSafe
-  public async performAddOperation(args: AddCommandArgs): Promise<number> {
+  protected async run(args: AddCommandArgs): Promise<number> {
     return args.firstNumber + args.secondNumber;
   }
 }
@@ -36,8 +39,7 @@ export class AddCommand extends ImmediateCommand<AddCommandArgs, number> {
 export class SquareCommand extends ImmediateCommand<SquareCommandArgs, number> {
 
   // Multiples the input value by itself
-  @makeScopeSafe
-  public async performSquareOperation(args: SquareCommandArgs): Promise<number> {
+  protected async run(args: SquareCommandArgs): Promise<number> {
     return args.value * args.value;
   }
 }
@@ -46,8 +48,7 @@ export class SquareCommand extends ImmediateCommand<SquareCommandArgs, number> {
 export class SquareRootCommand extends ImmediateCommand<SquareCommandArgs, number> {
 
   // Multiples the input value by itself
-  @makeScopeSafe
-  public async performSquareRootOperation(args: SquareCommandArgs): Promise<number> {
+  protected async run(args: SquareCommandArgs): Promise<number> {
     return Math.sqrt(args.value);
   }
 }
@@ -56,88 +57,31 @@ export class SquareRootCommand extends ImmediateCommand<SquareCommandArgs, numbe
 export class SumOfSquaresCommand extends ImmediateCommand<SumOfSquaresArgs, number> {
 
   // Multiples the input value by itself
-  @makeScopeSafe
-  public async performSumOfSquaresOperation(args: SumOfSquaresArgs): Promise<number> {
+  protected async run(args: SumOfSquaresArgs): Promise<number> {
     const sideASquareCommand = new SquareCommand(this._iModel);
     const sideBSquareCommand = new SquareCommand(this._iModel);
 
     const [sideASquared, sideBSquared] = await Promise.all([
-      sideASquareCommand.performSquareOperation({ value: args.firstNumber }),
-      sideBSquareCommand.performSquareOperation({ value: args.secondNumber })
+      sideASquareCommand.execute({ value: args.firstNumber, description: "Square first number" }),
+      sideBSquareCommand.execute({ value: args.secondNumber, description: "Square second number" })
     ]);
 
     const sumCommand = new AddCommand(this._iModel);
-    return await sumCommand.performAddOperation({ firstNumber: sideASquared, secondNumber: sideBSquared });
+    return await sumCommand.execute({ firstNumber: sideASquared, secondNumber: sideBSquared, description: "Sum of squares" });
   }
 }
 
 // Simple command that calculates the hypotenuse of a right triangle
 export class PythagorasCommand extends ImmediateCommand<PythagorasArgs, number> {
-
-  // Perform a^2 + b^2 directly without nested commands
-  public async simpleSumOfSquares(args: PythagorasArgs): Promise<number> {
-    return (args.sideA * args.sideA) + (args.sideB * args.sideB);
-  }
-
   // Get square root of given value
   public async simpleSquareRoot(value: number): Promise<number> {
     return Math.sqrt(value);
   }
 
-  // Calculate the hypotenuse using the two steps without nested commands
-  @makeScopeSafe
-  public async calcHypotenuse(args: PythagorasArgs): Promise<number> {
-    return await this.simpleSquareRoot(await this.simpleSumOfSquares(args));
-  }
-
-  // Perform a^2 + b^2 asynchronously using nested SquareCommands
-  @makeScopeSafe
-  public async sumOfSquaresAsync(args: PythagorasArgs): Promise<number> {
-    const sideASquareCommand = new SquareCommand(this._iModel);
-    const sideBSquareCommand = new SquareCommand(this._iModel);
-
-    const [sideASquared, sideBSquared] = await Promise.all([
-      sideASquareCommand.performSquareOperation({ value: args.sideA }),
-      sideBSquareCommand.performSquareOperation({ value: args.sideB })
-    ]);
-
-    const sumCommand = new AddCommand(this._iModel);
-    return await sumCommand.performAddOperation({ firstNumber: sideASquared, secondNumber: sideBSquared });
-  }
-
-  // Perform a^2 + b^2 synchronously using nested SquareCommands
-  @makeScopeSafe
-  public async sumOfSquaresSync(args: PythagorasArgs): Promise<number> {
-    const sideASquareCommand = new SquareCommand(this._iModel);
-    const sideBSquareCommand = new SquareCommand(this._iModel);
-
-    const sideASquared = await sideASquareCommand.performSquareOperation({ value: args.sideA });
-    const sideBSquared = await sideBSquareCommand.performSquareOperation({ value: args.sideB });
-
-    return sideASquared + sideBSquared;
-  }
-
-  // Calculate the hypotenuse using a single-level nested SquareCommands - Async
-  @makeScopeSafe
-  public async calcHypotenuseWithCommandsAsync(args: PythagorasArgs): Promise<number> {
-    const step1Value = await this.sumOfSquaresAsync(args);
-
-    return await this.simpleSquareRoot(step1Value);
-  }
-
-  // Calculate the hypotenuse using single-level nested SquareCommands - Sync
-  @makeScopeSafe
-  public async calcHypotenuseWithCommandsSync(args: PythagorasArgs): Promise<number> {
-    const step1Value = await this.sumOfSquaresSync(args);
-
-    return await this.simpleSquareRoot(step1Value);
-  }
-
   // Calculate the hypotenuse using multiple-level nested Commands - Sync
-  @makeScopeSafe
-  public async calcHypotenuseWithMultipleNestedCommands(args: PythagorasArgs): Promise<number> {
+  protected async run(args: PythagorasArgs): Promise<number> {
     const sumOfSquaresCommand = new SumOfSquaresCommand(this._iModel);
-    const sumOfSquares = await sumOfSquaresCommand.performSumOfSquaresOperation({ firstNumber: args.sideA, secondNumber: args.sideB })
+    const sumOfSquares = await sumOfSquaresCommand.execute({ firstNumber: args.sideA, secondNumber: args.sideB })
 
     return await this.simpleSquareRoot(sumOfSquares);
   }
@@ -162,8 +106,6 @@ export class InteractivePythagorasCommand extends InteractiveCommand<PythagorasA
     this._sideB = value;
   }
 
-  // Get the current sum of squares (a^2 + b^2)
-  @makeScopeSafe
   public async getSumOfSquares(): Promise<number> {
     if (this._sideA === undefined || this._sideB === undefined) {
       throw new Error("Both sides must be set before calculating sum of squares");
@@ -171,8 +113,6 @@ export class InteractivePythagorasCommand extends InteractiveCommand<PythagorasA
     return (this._sideA * this._sideA) + (this._sideB * this._sideB);
   }
 
-  // Calculate and return the hypotenuse
-  @makeScopeSafe
   public async calcHypotenuse(args: PythagorasArgs): Promise<number> {
     // Set the sides
     await this.setSideA(args.sideA);
@@ -185,54 +125,170 @@ export class InteractivePythagorasCommand extends InteractiveCommand<PythagorasA
     return Math.sqrt(sumOfSquares);
   }
 
-  // Calculate hypotenuse using nested immediate commands
-  @makeScopeSafe
   public async calcHypotenuseWithNestedCommands(args: PythagorasArgs): Promise<number> {
-    // Use immediate commands for square operations
-    const squareCommand = new SquareCommand(this._iModel);
-    const [sideASquared, sideBSquared] = await Promise.all([
-      squareCommand.performSquareOperation({ value: args.sideA }),
-      squareCommand.performSquareOperation({ value: args.sideB })
-    ]);
+    return this.execute(async () => {
+      // Use immediate commands for square operations
+      const squareCommand = new SquareCommand(this._iModel);
+      const [sideASquared, sideBSquared] = await Promise.all([
+        squareCommand.execute({ value: args.sideA }),
+        squareCommand.execute({ value: args.sideB })
+      ]);
 
-    const squareRootCommand = new SquareRootCommand(this._iModel);
-    const result = await squareRootCommand.performSquareRootOperation({ value: sideASquared + sideBSquared });
-    return result;
+      const squareRootCommand = new SquareRootCommand(this._iModel);
+      const result = await squareRootCommand.execute({ value: sideASquared + sideBSquared });
+      return result;
+    });
   }
 }
 
-// Interactive command for managing a polygon
-export class InteractivePolygonEditor extends InteractiveCommand<EditCommandArgs, string> {
-  private _vertices: Array<{ x: number, y: number }> = [];
+export interface PolygonEditorArgs extends EditCommandArgs {
+  modelId: Id64String;
+  categoryId: Id64String;
+}
 
-  @makeScopeSafe
-  public async addVertex(x: number, y: number): Promise<void> {
-    this._vertices.push({ x, y });
+export class InteractivePolygonEditor extends InteractiveCommand<PolygonEditorArgs, Id64String[]> {
+  private _vertexElementIds: Id64String[] = [];
+  private _modelId?: Id64String;
+  private _categoryId?: Id64String;
+
+  public async initialize(modelId: Id64String, categoryId: Id64String): Promise<void> {
+    this._modelId = modelId;
+    this._categoryId = categoryId;
   }
 
-  @makeScopeSafe
+  /**
+   * Add multiple vertices at once using nested ImmediateCommands.
+   */
+  public async addVertices(vertices: Array<{ x: number, y: number }>): Promise<Id64String[]> {
+    return this.execute(async () => {
+      const elementIds: Id64String[] = [];
+
+      if (!this._modelId || !this._categoryId) {
+        throw new Error("PolygonEditor not initialized with modelId and categoryId");
+      }
+
+      for (let i = 0; i < vertices.length; i++) {
+        const vertex = vertices[i];
+        const createCmd = new CreateElementCommand(this._iModel);
+        const elementId = await createCmd.execute({
+          userLabel: `BatchVertex-${i}`,
+          testElementProps: {
+            classFullName: "TestEditCommand:TestElement",
+            model: this._modelId,
+            category: this._categoryId,
+            code: Code.createEmpty(),
+            intProperty: 0,
+            doubleProperty: 0,
+            stringProperty: `(${vertex.x}, ${vertex.y})`,
+          },
+        });
+
+        console.log(`Added vertex ElementId: ${elementId} at position (${vertex.x}, ${vertex.y})`);
+        this._vertexElementIds.push(elementId);
+        elementIds.push(elementId);
+      }
+
+      return elementIds;
+    });
+  }
+
+  /**
+   * Remove the last vertex from the polygon by deleting its element.
+   */
   public async removeLastVertex(): Promise<void> {
-    if (this._vertices.length === 0) {
+    if (this._vertexElementIds.length === 0) {
       throw new Error("No vertices to remove");
     }
-    this._vertices.pop();
-  }
 
-  @makeScopeSafe
-  public async moveVertex(index: number, newX: number, newY: number): Promise<void> {
-    if (index < 0 || index >= this._vertices.length) {
-      throw new Error("Invalid vertex index");
+    console.log(`Removing vertex ElementId: ${this._vertexElementIds[this._vertexElementIds.length - 1]}`);
+    const elementId = this._vertexElementIds.pop();
+    if (!elementId) {
+      throw new Error("Failed to get last vertex element ID");
     }
-    this._vertices[index] = { x: newX, y: newY };
+    this._iModel.elements.deleteElement(elementId);
   }
 
-  @makeScopeSafe
+  /**
+   * Move a vertex to a new position by using an immediate command.
+   */
+  public async moveVertex(index: number, newX: number, newY: number): Promise<Id64String> {
+    return this.execute(async () => {
+      if (index < 0 || index >= this._vertexElementIds.length) {
+        throw new Error("Invalid vertex index");
+      }
+
+      const elementId = this._vertexElementIds[index];
+      const updateCmd = new UpdateElementCommand(this._iModel);
+
+      const updateArgs: UpdateElementArgs = {
+        elementId,
+        intProperty: 0,
+        doubleProperty: 0,
+        stringProperty: `(${newX}, ${newY})`,
+      };
+
+      console.log(`Moving vertex index ${index} (ElementId: ${elementId}) to new position (${newX}, ${newY})`);
+      await updateCmd.execute(updateArgs);
+      return elementId;
+    });
+  }
+
+  /**
+   * Update multiple vertices at once.
+   * Demonstrates concurrent nested command execution.
+   */
+  public async updateMultipleVertices(updates: Array<{ index: number, x: number, y: number }>): Promise<Id64String[]> {
+    return this.execute(async () => {
+      const updatePromises = updates.map(async (update) => {
+        if (update.index < 0 || update.index >= this._vertexElementIds.length) {
+          throw new Error(`Invalid vertex index: ${update.index}`);
+        }
+
+        const elementId = this._vertexElementIds[update.index];
+        const updateCmd = new UpdateElementCommand(this._iModel);
+
+        await updateCmd.execute({
+          elementId,
+          intProperty: 0,
+          doubleProperty: 0,
+          stringProperty: `(${update.x}, ${update.y})`,
+        });
+
+        return elementId;
+      });
+
+      return await Promise.all(updatePromises);
+    });
+  }
+
+  /**
+   * Get the count of vertices in the polygon.
+   */
   public async getVertexCount(): Promise<number> {
-    return this._vertices.length;
+    return this._vertexElementIds.length;
   }
 
-  @makeScopeSafe
-  public async getPolygonDescription(): Promise<string> {
-    return `Polygon with ${this._vertices.length} vertices: ${JSON.stringify(this._vertices)}`;
+  /**
+   * Get all vertex element IDs.
+   */
+  public async getVertexElementIds(): Promise<Id64String[]> {
+    return [...this._vertexElementIds];
+  }
+
+  /**
+   * Validate the command result by checking all vertex elements exist.
+   */
+  public override async validateCommandResult(result?: Id64String[]): Promise<boolean> {
+    if (!result) return true;
+
+    // Verify all vertex elements exist in the database
+    for (const elementId of result) {
+      const element = this._iModel.elements.tryGetElement(elementId);
+      if (!element) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }

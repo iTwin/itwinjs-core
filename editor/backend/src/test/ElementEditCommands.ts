@@ -4,11 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelDb, PhysicalElement, Schema } from "@itwin/core-backend";
 import { Code, PhysicalElementProps } from "@itwin/core-common";
-import { EditCommandArgs, ImmediateCommand, InteractiveCommand, makeScopeSafe } from "../IModelEditCommand";
+import { EditCommandArgs, ImmediateCommand, InteractiveCommand } from "../IModelEditCommand";
 import { Id64String } from "@itwin/core-bentley";
-
-// This rule was deprecated in ESLint v8.46.0.
-/* eslint-disable @typescript-eslint/return-await */
 
 /**
  * Test schema for element editing commands
@@ -91,8 +88,7 @@ export interface DeleteElementArgs extends EditCommandArgs {
  * Immediate command to create a test element
  */
 export class CreateElementCommand extends ImmediateCommand<CreateElementArgs, string> {
-  @makeScopeSafe
-  public async createElement(args: CreateElementArgs): Promise<Id64String> {
+  protected async run(args: CreateElementArgs): Promise<Id64String> {
     const props: TestElementProps = {
       classFullName: "TestEditCommand:TestElement",
       model: args.testElementProps.model,
@@ -117,7 +113,6 @@ export class CreateElementCommand extends ImmediateCommand<CreateElementArgs, st
  * Immediate command to update a test element
  */
 export class UpdateElementCommand extends ImmediateCommand<UpdateElementArgs, Id64String> {
-  @makeScopeSafe
   public async updateElement(args: UpdateElementArgs): Promise<Id64String> {
     const element = this._iModel.elements.getElement<TestElement>(args.elementId);
     const elementJson: any = element.toJSON();
@@ -140,6 +135,10 @@ export class UpdateElementCommand extends ImmediateCommand<UpdateElementArgs, Id
     return element.id;
   }
 
+  protected async run(args: UpdateElementArgs): Promise<Id64String> {
+    return this.updateElement(args);
+  }
+
   public override async validateCommandResult(result: Id64String): Promise<boolean> {
     return this._iModel.elements.tryGetElement<TestElement>(result) !== undefined;
   }
@@ -149,8 +148,7 @@ export class UpdateElementCommand extends ImmediateCommand<UpdateElementArgs, Id
  * Immediate command to delete a test element
  */
 export class DeleteElementCommand extends ImmediateCommand<DeleteElementArgs, Id64String> {
-  @makeScopeSafe
-  public async deleteElement(args: DeleteElementArgs): Promise<Id64String> {
+  protected async run(args: DeleteElementArgs): Promise<Id64String> {
     this._iModel.elements.deleteElement(args.elementId);
     return args.elementId;
   }
@@ -165,43 +163,46 @@ interface InteractiveElementAPIArgs extends EditCommandArgs {
 }
 
 export class InteractiveElementAPI extends InteractiveCommand<InteractiveElementAPIArgs, Id64String> {
-  @makeScopeSafe
   public async createElementAndUpdateProperties(modelId: Id64String, categoryId: Id64String): Promise<Id64String> {
-    const createCmd = new CreateElementCommand(this._iModel);
-    const elementId = await createCmd.createElement({
-      userLabel: "InteractiveCreatedElement",
-      testElementProps: {
-        classFullName: TestElement.fullClassName,
-        code: Code.createEmpty(),
-        model: modelId,
-        category: categoryId,
-        intProperty: 10,
-        stringProperty: "FirstValue",
-        doubleProperty: 20.5,
-      },
-    });
+    return this.execute(async () => {
+      const createCmd = new CreateElementCommand(this._iModel);
+      const elementId = await createCmd.execute({
+        userLabel: "InteractiveCreatedElement",
+        testElementProps: {
+          classFullName: TestElement.fullClassName,
+          code: Code.createEmpty(),
+          model: modelId,
+          category: categoryId,
+          intProperty: 10,
+          stringProperty: "FirstValue",
+          doubleProperty: 20.5,
+        }, description: "Create Test Element",
+      });
 
-    const updateCmd = new UpdateElementCommand(this._iModel);
-    await updateCmd.updateElement({
-      elementId,
-      intProperty: 42,
-      stringProperty: "SecondValue",
-      doubleProperty: 84.0,
-    });
+      const updateCmd = new UpdateElementCommand(this._iModel);
+      await updateCmd.updateElement({
+        elementId,
+        intProperty: 42,
+        stringProperty: "SecondValue",
+        doubleProperty: 84.0,
+      });
 
-    return elementId;
+      return elementId;
+    });
   }
 
-  @makeScopeSafe
   public async updateElement(elementId: Id64String, intProperty: number, stringProperty: string, doubleProperty: number): Promise<Id64String> {
-    const updateCmd = new UpdateElementCommand(this._iModel);
-    const updatedElementId = await updateCmd.updateElement({
-      elementId,
-      intProperty,
-      stringProperty,
-      doubleProperty,
-    });
+    return this.execute(async () => {
+      const updateCmd = new UpdateElementCommand(this._iModel);
+      const updatedElementId = await updateCmd.execute({
+        elementId,
+        intProperty,
+        stringProperty,
+        doubleProperty,
+        description: "Update Test Element",
+      });
 
-    return updatedElementId;
+      return updatedElementId;
+    });
   }
 }

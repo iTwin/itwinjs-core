@@ -5,6 +5,7 @@ import { AsyncLocalStorage } from "async_hooks";
 // This rule was deprecated in ESLint v8.46.0.
 /* eslint-disable @typescript-eslint/return-await */
 /* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable no-console */
 
 // Register the command context with IModelDb
 IModelDb.registerActiveCommands(() => {
@@ -154,7 +155,7 @@ export class EditScope implements IEditScope {
     // Check if this command is being called from within another command's execution context
     const activeScope = IModelDb.activeEditScope();
 
-    if (activeScope !== undefined && activeScope.commandType === CommandType.Interactive.valueOf() && commandType === CommandType.Interactive.valueOf()) {
+    if (activeScope !== undefined && activeScope.commandType === CommandType.Interactive.valueOf() && commandType === CommandType.Interactive) {
       throw new Error("Cannot start an Interactive EditCommand from while another Interactive EditCommand is active.");
     }
 
@@ -197,8 +198,7 @@ export class EditScope implements IEditScope {
     }
   }
 
-  // TODO Rohit: Command Description basically does nothing right now. See how we can extract it from the callback arguments.
-  public async execute<T>(operation: (args?: any) => Promise<T>, commandDescription?: string): Promise<T> {
+  public async execute<T>(operation: () => Promise<T>, commandDescription?: string): Promise<T> {
     await this.waitForActivation();
 
     this._state = EditCommandState.Starting;
@@ -293,39 +293,6 @@ export class EditScope implements IEditScope {
 }
 
 /**
- *
- * Use this decorator on methods in ImmediateCommand and InteractiveCommand subclasses to ensure they execute
- * within the proper scope context.
- *
- * @alpha
- */
-export function makeScopeSafe(
-  _target: any,
-  propertyKey: string,
-  descriptor: PropertyDescriptor
-): PropertyDescriptor {
-  const originalMethod = descriptor.value;
-
-  if (typeof originalMethod !== "function") {
-    throw new Error(`@makeScopeSafe can only be applied to methods, but ${propertyKey} is not a function`);
-  }
-
-  descriptor.value = async function (this: any, ...args: any[]) {
-    // Check if we're already in an Interactive command scope
-    // No need to create a new scope for the nested command.
-    // if (IModelDb.activeEditScope()?.commandType === CommandType.Interactive)
-    //   return await originalMethod.apply(this, args);
-
-    // Wrap the original method in executeOperation
-    return await this.executeOperation(async () => {
-      return await originalMethod.apply(this, args);
-    });
-  };
-
-  return descriptor;
-}
-
-/**
  * @alpha
  */
 export abstract class EditCommandBase<_TArgs extends EditCommandArgs = EditCommandArgs, TResult = void> {
@@ -395,15 +362,14 @@ export abstract class EditCommandBase<_TArgs extends EditCommandArgs = EditComma
  * @alpha
  */
 export abstract class ImmediateCommand<TArgs extends EditCommandArgs = EditCommandArgs, TResult = void> extends EditCommandBase<TArgs, TResult> {
+  protected abstract run(args: TArgs): Promise<TResult>;
+
   /**
    * Execute a command operation within a transactional scope. The operation will start an edit scope and will end with a save/abandon based on success/failure.
-   * @param args - Arguments for the command execution (includes optional description)
-   * @param fn - Callback function to execute. Args are available in the closure.
-   * @returns The result of the callback function
+   * @param args - Arguments for the command execution
+   * @returns The result of the command execution
    */
-  private async executeOperation(
-    fn: (args?: TArgs) => Promise<TResult>
-  ): Promise<TResult> {
+  public async execute(args: TArgs): Promise<TResult> {
     // Create the scope
     this._editScope = EditScope.start(this._iModel, CommandType.Immediate);
 
@@ -411,16 +377,15 @@ export abstract class ImmediateCommand<TArgs extends EditCommandArgs = EditComma
       throw new Error("Failed to create EditScope for command.");
     }
 
-    return await EditScope.commandExecutionContext.run([...EditScope.commandExecutionContext.getStore() ?? [], this._editScope.scopeId], async () => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return await this._editScope!.execute(async (args) => {
-        const result = await fn(args);
-        if (!await this.validateCommandResult(result)) {
-          throw new Error("Command result validation failed.");
-        }
-        return result;
-      });
-    });
+    // Preserve the parent execution context and add this scope to the stack
+    return await EditScope.commandExecutionContext.run(
+      [...EditScope.commandExecutionContext.getStore() ?? [], this._editScope.scopeId],
+      async () => {
+        // Execute the command's run method within the scope context
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        return await this._editScope!.execute(async () => this.run(args), args.description);
+      }
+    );
   }
 }
 
@@ -432,7 +397,7 @@ export abstract class InteractiveCommand<TArgs extends EditCommandArgs = EditCom
     super(iModel);
   }
 
-  // DO NOT OVERRIDE or mark @makeScopeSafe
+  // DO NOT OVERRIDE
   public async startCommandScope(): Promise<void> {
     this._editScope = EditScope.start(this._iModel, CommandType.Interactive);
 
@@ -442,6 +407,7 @@ export abstract class InteractiveCommand<TArgs extends EditCommandArgs = EditCom
 
     try {
       await this._editScope.waitForActivation();
+      this._editScope.state = EditCommandState.Active;
     } catch (error) {
       console.log("Error waiting for activation:", error);
       throw error;
@@ -456,31 +422,34 @@ export abstract class InteractiveCommand<TArgs extends EditCommandArgs = EditCom
     this._editScope.end();
     this._editScope = undefined;
     if (await this.validateCommandResult() === false) {
-      this.abandonChanges();
+      await this.abandonChanges();
       throw new Error("Command result validation failed.");
     }
-    this.saveChanges("Interactive command completed");
+    await this.saveChanges("Interactive command completed");
   }
 
   /**
-   * Execute a command operation within a transactional scope. The operation will NOT save/abandon - that is left to the caller when they end this long-spanning command.
-   * @param args - Arguments for the command execution (includes optional description)
-   * @param fn - Callback function to execute. Args are available in the closure.
-   * @returns The result of the callback function`
+   * Execute an operation within the interactive command's scope context.
+   * @param operation - The operation to execute within the scope context
+   * @returns The result of the operation
+   *
    */
-  private async executeOperation(operation: (args?: TArgs) => Promise<TResult>): Promise<TResult> {
+  protected async execute<T>(operation: () => Promise<T>): Promise<T> {
     if (!this._editScope) {
-      throw new Error("EditCommand has no scope.");
+      throw new Error("EditCommand has no scope. Call startCommandScope() first.");
     }
 
     if (!this._editScope.isActive) {
       throw new Error("EditScope is not active.");
     }
 
-    this._editScope.state = EditCommandState.Active;
-
-    return await EditScope.commandExecutionContext.run([...EditScope.commandExecutionContext.getStore() ?? [], this._editScope.scopeId], async () => {
-      return await operation();
-    });
+    // Add this scope to the execution context stack
+    // This allows nested commands to detect they're being called from within this interactive command
+    return await EditScope.commandExecutionContext.run(
+      [...EditScope.commandExecutionContext.getStore() ?? [], this._editScope.scopeId],
+      async () => {
+        return await operation();
+      }
+    );
   }
 }
