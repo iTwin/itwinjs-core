@@ -186,14 +186,14 @@ describe("PolygonOps", () => {
       const dy = 2.0 * range.yLength();
       sortablePolygon.reverseForAreaSign(1.0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, sortablePolygon.grabLoop(), x0, y0 + dy);
-      const polygonA = sortablePolygon.grabPolygon()!;
+      const polygonA = sortablePolygon.grabPolygon();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, Loop.createPolygon(polygonA), x0, y0 + 2 * dy);
       ck.testTrue(PolygonOps.areaXY(polygonA) > 0);
 
       sortablePolygon.reverseForAreaSign(-2.0);
-      const polygonB = sortablePolygon.grabPolygon()!;
+      const polygonB = sortablePolygon.grabPolygon();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, sortablePolygon.grabLoop(), x0, y0 + 4.0 * dy);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, Loop.createPolygon(sortablePolygon.grabPolygon()!), x0, y0 + 5 * dy);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, Loop.createPolygon(sortablePolygon.grabPolygon()), x0, y0 + 5 * dy);
       ck.testTrue(PolygonOps.areaXY(polygonB) < 0);
 
       x0 += 2.0 * range.xLength();

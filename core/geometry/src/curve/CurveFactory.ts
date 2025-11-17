@@ -321,7 +321,7 @@ export class CurveFactory {
   ): Path {
     const arcPath = Path.create();
     for (let i = 0; i + 1 < pathPoints.length; i++) {
-      const arc = ellipsoid.sectionArcWithIntermediateNormal(
+      const arc = ellipsoid.sectionArcInPlaneOfInterpolatedNormal(
         pathPoints[i].toAngles(),
         fractionForIntermediateNormal,
         pathPoints[i + 1].toAngles());

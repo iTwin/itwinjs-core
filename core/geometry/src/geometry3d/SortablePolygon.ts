@@ -8,8 +8,6 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { CurveChain } from "../curve/CurveCollection";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { AnyRegion } from "../curve/CurveTypes";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";

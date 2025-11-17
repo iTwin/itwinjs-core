@@ -7,7 +7,6 @@
  * @module Numerics
  */
 
-import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../Geometry";
 import { GrowableBlockedArray } from "../geometry3d/GrowableBlockedArray";
 import { GrowableXYArray } from "../geometry3d/GrowableXYArray";

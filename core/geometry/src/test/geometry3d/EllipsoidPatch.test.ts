@@ -1041,11 +1041,10 @@ function testEllipsoidPaths(ck: Checker, allGeometry: GeometryQuery[], ellipsoid
       GeometryCoreTestIO.captureMesh(allGeometry, EllipsoidPatch.createCapture(ellipsoid1, fullCircle, tropic), 32, 4, x0, y1);
       const arcLength = arc.curveLength();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, x0, y1);
-      const arcA = ellipsoid.sectionArcWithIntermediateNormal(angleA, 0.0, angleB);
-      const arcB = ellipsoid.sectionArcWithIntermediateNormal(angleA, 1.0, angleB);
-      ck.testDefined(arcA, "arcA defined");
-      ck.testDefined(arcB, "arcB defined");
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arcA, arcB], x0, y1);
+      const arcA = ellipsoid.sectionArcInPlaneOfInterpolatedNormal(angleA, 0.0, angleB);
+      const arcB = ellipsoid.sectionArcInPlaneOfInterpolatedNormal(angleA, 1.0, angleB);
+      if (ck.testDefined(arcA, "arcA defined") && ck.testDefined(arcB, "arcB defined"))
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arcA, arcB], x0, y1);
 
       for (const angle of [/* Angle.createDegrees(10), Angle.createDegrees(5), */ Angle.createDegrees(2)]) {
         const path = GeodesicPathSolver.createGeodesicPath(ellipsoid, angleA, angleB, angle);
