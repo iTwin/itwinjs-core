@@ -3,8 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelDb } from "@itwin/core-backend";
-import { assert, BeEvent } from "@itwin/core-bentley";
+import { BriefcaseDb } from "@itwin/core-backend";
+import { assert, BeDuration, BeEvent } from "@itwin/core-bentley";
+import { ModelIdAndGeometryGuid } from "@itwin/core-common";
 
 export interface DrawingChanges {
   whatever: any;
@@ -16,8 +17,8 @@ export interface DrawingMonitor {
 }
 
 export interface DrawingMonitorCreateArgs {
-  iModel: IModelDb;
-  delay(): Promise<void>;
+  iModel: BriefcaseDb;
+  delay: number;
 }
 
 export function createDrawingMonitor(args: DrawingMonitorCreateArgs): DrawingMonitor {
@@ -25,15 +26,12 @@ export function createDrawingMonitor(args: DrawingMonitorCreateArgs): DrawingMon
 }
 
 abstract class DrawingMonitorState {
-  public abstract get name(): "Idle" | "Cached" | "Requested" | "Terminated";
+  public abstract get name(): "Idle" | "Cached" | "Delayed" | "Requested" | "Terminated";
+
+  public constructor(protected readonly monitor: DrawingMonitorImpl) { }
 
   public getCachedChanges(): DrawingChanges | undefined {
     return undefined;
-  }
-
-  public onTimerExpired(): DrawingMonitorState {
-    this.assertBadTransition("timer expired");
-    return this;
   }
 
   public onChangeDetected(): DrawingMonitorState {
@@ -56,21 +54,41 @@ abstract class DrawingMonitorState {
 }
 
 class DrawingMonitorImpl implements DrawingMonitor {
-  private readonly _args: DrawingMonitorCreateArgs;
+  public delay: number;
+  public readonly iModel: BriefcaseDb;
+  public readonly onStateChanged = new BeEvent<() => void>();
   private _state: DrawingMonitorState;
-  private _onStateChanged = new BeEvent<() => void>();
+  private _removeEventListeners: () => void;
+
+  public get state() {
+    return this._state;
+  }
+
+  public set state(newState: DrawingMonitorState) {
+    if (newState !== this._state) {
+      this._state = newState;
+      this.onStateChanged.raiseEvent();
+    }
+  }
 
   public constructor(args: DrawingMonitorCreateArgs) {
-    this._args = { ...args };
+    this.delay = args.delay;
+    this.iModel = args.iModel;
 
     // ###TODO check if any drawings need regeneration.
-    this._state = new IdleState(this._args);
+    // For now assume not.
+    this._state = new IdleState(this);
 
-    // ###TODO register event listeners for iModel close and geometry changes.
+    const rmGeomListener = args.iModel.txns.onModelGeometryChanged.addListener((changes) => this.onGeometryChanged(changes));
+    const rmCloseListener = args.iModel.onBeforeClose.addListener(() => this.terminate());
+    this._removeEventListeners = () => {
+      rmGeomListener();
+      rmCloseListener();
+    };
   }
 
   public getChanges(): Promise<DrawingChanges> {
-    this.transition(this._state.onResultsRequested());
+    this.state = this._state.onResultsRequested();
     const changes = this._state.getCachedChanges();
     if (changes) {
       return Promise.resolve(changes);
@@ -83,18 +101,14 @@ class DrawingMonitorImpl implements DrawingMonitor {
 
   public terminate(): void {
     this._state.onTerminate();
-    this.transition(TerminatedState.instance);
-  }
+    this.state = new TerminatedState(this);
 
-  private transition(newState: DrawingMonitorState): void {
-    if (newState !== this._state) {
-      this._state = newState;
-      this._onStateChanged.raiseEvent();
-    }
+    this._removeEventListeners();
+    this._removeEventListeners = () => undefined;
   }
 
   private awaitChanges(resolve: (changes: DrawingChanges) => void): void {
-    this._onStateChanged.addOnce(() => {
+    this.onStateChanged.addOnce(() => {
       const changes = this._state.getCachedChanges();
       if (changes) {
         resolve(changes);
@@ -103,33 +117,72 @@ class DrawingMonitorImpl implements DrawingMonitor {
       this.awaitChanges(resolve);
     });
   }
+
+  private onGeometryChanged(_changes: ReadonlyArray<ModelIdAndGeometryGuid>): void {
+    // ###TODO check if the model is viewed by any section drawing's spatial view
+    // For now we just assume it is.
+    this.state = this._state.onChangeDetected();
+  }
 }
 
 class IdleState extends DrawingMonitorState {
   public get name(): "Idle" { return "Idle"; }
 
-  public constructor(private readonly _args: DrawingMonitorCreateArgs) {
-    super();
-  }
-
   public override onChangeDetected() {
-    // ###TODO
+    // ###TODO transition to DelayedState if delay > 0 else do onResultsRequested
     return this;
   }
 
   public override onResultsRequested() {
-    // ###TODO
+    // ###TODO transition to RequestedState, or CachedState if request (and therefore results) would be empty.
+    return this;
+  }
+}
+
+class CachedState extends DrawingMonitorState {
+  public get name(): "Cached" { return "Cached"; }
+
+  public constructor(monitor: DrawingMonitorImpl, private readonly _changes: DrawingChanges) {
+    super(monitor);
+  }
+
+  public override getCachedChanges() {
+    return this._changes;
+  }
+
+  public override onChangeDetected() {
+    // ###TODO same as IdleState
+    return this;
+  }
+
+  public override onResultsRequested() {
+    // Results are available.
+    return this;
+  }
+}
+
+class DelayedState extends DrawingMonitorState {
+  private _delay: Promise<void> | undefined;
+  public get name(): "Delayed" { return "Delayed"; }
+
+  public constructor(monitor: DrawingMonitorImpl) {
+    super(monitor);
+    monitor.onStateChanged.addOnce(() => this._delay = undefined);
+    this._delay = BeDuration.wait(monitor.delay).then(() => {
+      if (this._delay) {
+        // ###TODO transition to requested state
+      }
+    });
+  }
+
+  public override onResultsRequested(): DrawingMonitorState {
+    this._delay = undefined;
+    // ###TODO same as IdleState
     return this;
   }
 }
 
 class TerminatedState extends DrawingMonitorState {
-  private static _instance?: TerminatedState;
-
-  public static get instance(): DrawingMonitorState {
-    return this._instance ?? (this._instance = new TerminatedState());
-  }
-
   public get name(): "Terminated" { return "Terminated"; }
 
   public override onResultsRequested(): DrawingMonitorState {
