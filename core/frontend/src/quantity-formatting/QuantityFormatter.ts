@@ -336,13 +336,14 @@ export class QuantityTypeFormatsProvider implements FormatsProvider {
   }
 
   private _kindOfQuantityMap = new Map<string, QuantityType>([
-    ["AecUnits.LENGTH", QuantityType.Length],
-    ["AecUnits.ANGLE", QuantityType.Angle],
-    ["AecUnits.AREA", QuantityType.Area],
-    ["AecUnits.VOLUME", QuantityType.Volume],
-    ["AecUnits.LENGTH_COORDINATE", QuantityType.Coordinate],
-    ["RoadRailUnits.STATION", QuantityType.Stationing],
-    ["RoadRailUnits.LENGTH", QuantityType.LengthSurvey],
+    ["DefaultToolsUnits.LENGTH", QuantityType.Length],
+    ["DefaultToolsUnits.ANGLE", QuantityType.Angle],
+    ["DefaultToolsUnits.AREA", QuantityType.Area],
+    ["DefaultToolsUnits.VOLUME", QuantityType.Volume],
+    ["DefaultToolsUnits.LENGTH_COORDINATE", QuantityType.Coordinate],
+    ["CivilUnits.STATION", QuantityType.Stationing],
+    ["CivilUnits.LENGTH", QuantityType.LengthSurvey],
+    ["AecUnits.LENGTH", QuantityType.LengthEngineering]
   ]);
 
   public async getFormat(name: string): Promise<FormatDefinition | undefined> {
@@ -614,7 +615,7 @@ export class QuantityFormatter implements UnitsProvider {
   public async onInitialized() {
     await this.initializeQuantityTypesRegistry();
 
-    const initialKoQs = [["AecUnits.LENGTH", "Units.M"], ["AecUnits.ANGLE", "Units.RAD"], ["AecUnits.AREA", "Units.SQ_M"], ["AecUnits.VOLUME", "Units.CUB_M"], ["AecUnits.LENGTH_COORDINATE", "Units.M"], ["RoadRailUnits.STATION", "Units.M"], ["RoadRailUnits.LENGTH", "Units.M"]];
+    const initialKoQs = [["DefaultToolsUnits.LENGTH", "Units.M"], ["DefaultToolsUnits.ANGLE", "Units.RAD"], ["DefaultToolsUnits.AREA", "Units.SQ_M"], ["DefaultToolsUnits.VOLUME", "Units.CUB_M"], ["DefaultToolsUnits.LENGTH_COORDINATE", "Units.M"], ["CivilUnits.STATION", "Units.M"], ["CivilUnits.LENGTH", "Units.M"], ["AecUnits.LENGTH", "Units.M"]];
     for (const entry of initialKoQs) {
       try {
         await this.addFormattingSpecsToRegistry(entry[0], entry[1]);
