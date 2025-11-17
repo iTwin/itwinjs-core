@@ -501,7 +501,7 @@ describe("Quantity formatter", async () => {
     const quantityString = await quantityFormatter.formatQuantity({
       value: 0.3048,
       valueUnitName: "Units.M",
-      kindOfQuantityName: "AecUnits.LENGTH"
+      kindOfQuantityName: "DefaultToolsUnits.LENGTH"
     });
 
     expect(quantityString).toBe("1'-0\"");
@@ -511,7 +511,7 @@ describe("Quantity formatter", async () => {
     const parsedQuantity = await quantityFormatter.parseToQuantityValue({
       value: "1'-0\"",
       valueUnitName: "Units.M",
-      kindOfQuantityName: "AecUnits.LENGTH"
+      kindOfQuantityName: "DefaultToolsUnits.LENGTH"
     });
 
     expect(parsedQuantity).toBeDefined();
@@ -520,18 +520,18 @@ describe("Quantity formatter", async () => {
       expect(parsedQuantity.value).toBe(0.3048);
   });
 
-  it("should be able to get formatSpec for AecUnits.LENGTH_COORDINATE", async () => {
-    const formatSpec = quantityFormatter.getSpecsByName("AecUnits.LENGTH_COORDINATE");
+  it("should be able to get formatSpec for DefaultToolsUnits.LENGTH_COORDINATE", async () => {
+    const formatSpec = quantityFormatter.getSpecsByName("DefaultToolsUnits.LENGTH_COORDINATE");
     expect(formatSpec).toBeDefined();
     expect(formatSpec?.formatterSpec).toBeDefined();
     expect(formatSpec?.parserSpec).toBeDefined();
-    
+
     // Verify that the formatSpec can be used for formatting
     const testValue = 1000.0; // 1000 meters
     const formattedValue = quantityFormatter.formatQuantity(testValue, formatSpec?.formatterSpec);
     expect(formattedValue).toBeDefined();
     expect(typeof formattedValue).toBe("string");
-    
+
     // Verify that the parserSpec can be used for parsing
     const parsedValue = quantityFormatter.parseToQuantityValue(formattedValue, formatSpec?.parserSpec);
     expect(parsedValue.ok).toBe(true);
