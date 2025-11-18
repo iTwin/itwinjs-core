@@ -469,7 +469,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   }
   /**
    * Push coordinates from the source array to the end of this array.
-   * @param source source array
+   * @param source source array.
    * @returns number of points pushed.
    */
   public override pushIndexedXYZCollection(source: IndexedXYZCollection): number {
@@ -860,10 +860,10 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
   /**
    * Return the cross product of the vectors from `origin` to the point at `indexA` and to `targetB.
    * * This method does not check for index validity. Use [[crossProductIndexIndexXYAndZ]] to have validity test.
-   * @param origin index of point within the array; origin of both vectors
-   * @param indexA index of point within the array; target of the first vector
-   * @param targetB target of second vector
-   * @param result optional caller-allocated result to fill and return
+   * @param origin index of point within the array; origin of both vectors.
+   * @param indexA index of point within the array; target of the first vector.
+   * @param targetB target of second vector.
+   * @param result optional caller-allocated result to fill and return.
    */
   public override crossProductUncheckedIndexIndexXYAndZ(origin: number, indexA: number, targetB: XYAndZ, result?: Vector3d): Vector3d {
     const i = origin * 3;

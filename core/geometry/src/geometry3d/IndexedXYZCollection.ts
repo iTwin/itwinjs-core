@@ -74,8 +74,8 @@ export abstract class IndexedXYZCollection {
   /**
    * Return a vector from the point at `indexA` to the point at `indexB`.
    * * This method does not check for index validity. Use [[vectorIndexIndex]] to have validity test.
-   * @param indexA index of point within the array
-   * @param indexB index of point within the array
+   * @param indexA index of point within the array.
+   * @param indexB index of point within the array.
    * @param result caller-allocated vector.
    */
   public vectorUncheckedIndexIndex(indexA: number, indexB: number, result?: Vector3d): Vector3d {
@@ -91,8 +91,8 @@ export abstract class IndexedXYZCollection {
   }
   /**
    * Return a vector from `origin` to the point at `indexB`.
-   * @param origin origin for vector
-   * @param indexB index of point within the array
+   * @param origin origin for vector.
+   * @param indexB index of point within the array.
    * @param result caller-allocated vector.
    * @returns undefined if index is out of bounds.
    */
@@ -117,8 +117,8 @@ export abstract class IndexedXYZCollection {
   }
   /**
    * Return a vector from the point at `indexA` to `target`.
-   * @param indexA index of point within the array
-   * @param target target for vector
+   * @param indexA index of point within the array.
+   * @param target target for vector.
    * @param result caller-allocated vector.
    * @returns undefined if index is out of bounds.
    */
@@ -158,9 +158,9 @@ export abstract class IndexedXYZCollection {
   /**
    * Return the dot product of the vectors from the point at `origin` to the point at `indexA` and to `targetB`.
    * * This method does not check for index validity. Use [[dotProductIndexIndexXYAndZ]] to have validity test.
-   * @param origin index of point within the array; origin of both vectors
-   * @param indexA index of point within the array; target of the first vector
-   * @param targetB target for second vector
+   * @param origin index of point within the array; origin of both vectors.
+   * @param indexA index of point within the array; target of the first vector.
+   * @param targetB target for second vector.
    */
   public dotProductUncheckedIndexIndexXYAndZ(origin: number, indexA: number, targetB: XYAndZ): number {
     const x0 = this.getXAtUncheckedPointIndex(origin);
@@ -195,10 +195,10 @@ export abstract class IndexedXYZCollection {
   /**
    * Return the cross product of the vectors from `origin` to the point at `indexA` and to `targetB.
    * * This method does not check for index validity. Use [[crossProductIndexIndexXYAndZ]] to have validity test.
-   * @param origin index of point within the array; origin of both vectors
-   * @param indexA index of point within the array; target of the first vector
-   * @param targetB target of second vector
-   * @param result optional caller-allocated result to fill and return
+   * @param origin index of point within the array; origin of both vectors.
+   * @param indexA index of point within the array; target of the first vector.
+   * @param targetB target of second vector.
+   * @param result optional caller-allocated result to fill and return.
    */
   public crossProductUncheckedIndexIndexXYAndZ(origin: number, indexA: number, targetB: XYAndZ, result?: Vector3d): Vector3d {
     const x0 = this.getXAtUncheckedPointIndex(origin);
@@ -391,7 +391,6 @@ export abstract class IndexedXYZCollection {
     }
     return sum;
   }
-
   /**
    * Interpolate the points at the given indices.
    * @param index0 index of point p0 within the array.
@@ -467,8 +466,8 @@ export abstract class IndexedXYZCollection {
   /**
  * Test whether the indexed points are equal within tolerance.
  * * This method does not check for index validity. Use [[almostEqualIndexIndex]] to have validity test.
- * @param index0 index of first point
- * @param index1 index of second point
+ * @param index0 index of first point.
+ * @param index1 index of second point.
  * @param tolerance max coordinate difference to be considered equal. For exact test, pass 0. Defaults to `Geometry.smallMetricDistance`.
  * @returns whether the points are equal within tolerance.
  */
@@ -492,8 +491,8 @@ export abstract class IndexedXYZCollection {
   /**
    * Test whether the xy-coordinates of the indexed points are equal within tolerance. The z-coordinates are ignored.
    * * This method does not check for index validity. Use [[almostEqualXYIndexIndex]] to have validity test.
-   * @param index0 index of first point
-   * @param index1 index of second point
+   * @param index0 index of first point.
+   * @param index1 index of second point.
    * @param tolerance max coordinate difference to be considered equal. For exact test, pass 0. Defaults to `Geometry.smallMetricDistance`.
    * @returns whether the xy-coordinates of the points are equal within tolerance.
    */

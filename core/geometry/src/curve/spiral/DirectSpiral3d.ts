@@ -106,7 +106,6 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   }
   /**
    * Compute stroke data in an interval.
-   * * Strokes is not computed if suitable stroke data is not available.
    * @param strokes strokes to clear and refill.
    * @param fractionA start fraction.
    * @param fractionB end fraction.
