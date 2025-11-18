@@ -57,16 +57,9 @@
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "eslint": "^9.31.0",
-<<<<<<< HEAD
-    "glob": "^10.3.12",
+    "glob": "^10.5.0",
     "mocha": "^10.2.0",
     "rimraf": "^3.0.2",
-=======
-    "glob": "^10.5.0",
-    "internal-tools": "workspace:*",
-    "mocha": "^11.1.0",
-    "rimraf": "^6.0.1",
->>>>>>> 49a420ef6f (Address GHSA-5j98-mcp5-4vw2 (#8780))
     "sinon": "^17.0.2",
     "source-map-loader": "^4.0.0",
     "typescript": "~5.6.2",

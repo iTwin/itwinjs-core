@@ -34,13 +34,8 @@
     "cpx2": "^3.0.0",
     "cross-spawn": "^7.0.5",
     "fs-extra": "^8.1.0",
-<<<<<<< HEAD
-    "glob": "^10.3.12",
-    "mocha": "^10.2.0",
-=======
     "glob": "^10.5.0",
-    "mocha": "^11.1.0",
->>>>>>> 49a420ef6f (Address GHSA-5j98-mcp5-4vw2 (#8780))
+    "mocha": "^10.2.0",
     "mocha-junit-reporter": "^2.0.2",
     "rimraf": "^3.0.2",
     "tree-kill": "^1.2.2",
