@@ -56,7 +56,9 @@ const scratchFrustum = new Frustum();
  * @public
  */
 export class RealityTile extends Tile {
-  /** @internal */
+  /** Transform to go from tile's local coordinate system to the root tile's corodinate system.
+   * @see [[RealityModelTileLoader.findTileInJson]] to see how the transformToRoot is calculated.
+   * @internal */
   public readonly transformToRoot?: Transform;
   /** @internal */
   public readonly additiveRefinement?: boolean;
@@ -286,12 +288,6 @@ export class RealityTile extends Tile {
   /** @internal */
   public reproject(rootReprojection: Transform) {
     this._reprojectionTransform = rootReprojection;
-    // rootReprojection.multiplyRange(this.range, this.range);
-    // this.boundingSphere.transformBy(rootReprojection, this.boundingSphere);
-    // if (this.contentRange)
-    //   rootReprojection.multiplyRange(this.contentRange, this.contentRange);
-    // if (this.rangeCorners)
-    //   rootReprojection.multiplyPoint3dArrayInPlace(this.rangeCorners);
   }
 
   /** @internal */

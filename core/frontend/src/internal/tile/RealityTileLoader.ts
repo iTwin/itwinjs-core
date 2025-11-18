@@ -7,7 +7,7 @@
  */
 
 import { assert, ByteStream } from "@itwin/core-bentley";
-import { IndexedPolyface, Point2d, Point3d, Range3d, Transform, XYZProps } from "@itwin/core-geometry";
+import { Point2d, Point3d, Transform } from "@itwin/core-geometry";
 import { BatchType, CompositeTileHeader, TileFormat, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { GraphicBranch } from "../../render/GraphicBranch";
@@ -32,8 +32,6 @@ export abstract class RealityTileLoader {
   private _containsPointClouds = false;
   public readonly preloadRealityParentDepth: number;
   public readonly preloadRealityParentSkip: number;
-  public cartesianTransitionDistance: number | undefined;
-  public cartesianRange: Range3d | undefined;
 
   public constructor(private _produceGeometry?: ProduceGeometryOption) {
     this.preloadRealityParentDepth = IModelApp.tileAdmin.contextPreloadParentDepth;
@@ -95,8 +93,9 @@ export abstract class RealityTileLoader {
       transform = transform.multiplyTransformTransform(tile.transformToRoot)
     }
     const geom = reader?.readGltfAndCreateGeometry(transform);
-    const xForm = tile.reprojectionTransform;
 
+    // See RealityTileTree.reprojectAndResolveChildren for how reprojectionTransform is calculated
+    const xForm = tile.reprojectionTransform;
     if (tile.tree.reprojectGeometry && geom?.polyfaces && xForm) {
       const polyfaces = geom.polyfaces.map((pf) => pf.cloneTransformed(xForm));
       return { geometry: { polyfaces } };
