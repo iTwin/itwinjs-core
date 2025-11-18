@@ -62,11 +62,19 @@
     "chai": "^4.3.10",
     "cpx2": "^3.0.0",
     "eslint": "^9.31.0",
+<<<<<<< HEAD
     "glob": "^10.3.12",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
+=======
+    "glob": "^10.5.0",
+    "mocha": "^11.1.0",
+    "nyc": "^17.1.0",
+    "rimraf": "^6.0.1",
+    "source-map-loader": "^5.0.0",
+>>>>>>> 49a420ef6f (Address GHSA-5j98-mcp5-4vw2 (#8780))
     "typescript": "~5.6.2",
     "webpack": "^5.76.0"
   },
