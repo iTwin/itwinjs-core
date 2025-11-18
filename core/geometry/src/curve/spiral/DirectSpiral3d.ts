@@ -502,7 +502,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       && Geometry.isSameCoordinate(0.0, this.localToWorld.matrix.dotColumnY(plane.getNormalRef()));
   }
   /** Return length of the spiral. */
-  public quickLength() {
+  public quickLength(): number {
     const distanceData = this.activeStrokes.packedUVParams;
     const n = distanceData?.length ?? 0;
     assert(n > 0, "expect constructor to populate uvParams");
