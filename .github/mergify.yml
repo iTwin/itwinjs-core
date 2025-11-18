@@ -39,6 +39,8 @@ pull_request_rules:
       backport:
         branches:
           # current minor release branch
+          - "release/5.3.x"
+          # previous minor release branch
           - "release/5.2.x"
           # previous major release branch
           - "release/4.11.x"
