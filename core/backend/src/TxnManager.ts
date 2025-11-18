@@ -720,16 +720,16 @@ export class TxnManager {
 
   /** @internal */
   public _onChangesPushed(changeset: ChangesetIndexAndId) {
-    IpcHost.notifyTxns(this._iModel, "notifyPushedChanges", changeset);
     this.touchWatchFile();
     this.onChangesPushed.raiseEvent(changeset);
+    IpcHost.notifyTxns(this._iModel, "notifyPushedChanges", changeset);
   }
 
   /** @internal */
   public _onChangesPulled(changeset: ChangesetIndexAndId) {
-    IpcHost.notifyTxns(this._iModel, "notifyPulledChanges", changeset);
     this.touchWatchFile();
     this.onChangesPulled.raiseEvent(changeset);
+    IpcHost.notifyTxns(this._iModel, "notifyPulledChanges", changeset);
   }
 
   private _onRebaseLocalTxnConflict(internalArg: DbRebaseChangesetConflictArgs): DbConflictResolution {
