@@ -98,7 +98,7 @@
     "dotenv-expand": "^5.1.0",
     "eslint": "^9.31.0",
     "fs-extra": "^8.1.0",
-    "glob": "^11.1.0",
+    "glob": "^10.5.0",
     "internal-tools": "workspace:*",
     "mocha": "^11.1.0",
     "node-simctl": "~7.6.1",

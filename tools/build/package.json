@@ -1,54 +1,54 @@
 {
-  "name": "@itwin/build-tools",
-  "version": "5.4.0-dev.12",
-  "description": "Bentley build tools",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/iTwin/itwinjs-core.git",
-    "directory": "tools/build"
-  },
-  "bin": {
-    "betools": "bin/betools.js"
-  },
-  "scripts": {
-    "build": "tsc 1>&2",
-    "clean": "rimraf -g ../../modules .rush/temp/package-deps*.json",
-    "docs": "",
-    "lint": "eslint \"./src/**/*.ts\" 1>&2",
-    "lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
-    "test": "",
-    "cover": ""
-  },
-  "keywords": [
-    "Bentley",
-    "BIM",
-    "iModel"
-  ],
-  "author": {
-    "name": "Bentley Systems, Inc.",
-    "url": "http://www.bentley.com"
-  },
-  "dependencies": {
-    "@microsoft/api-extractor": "~7.52.3",
-    "chalk": "^3.0.0",
-    "cpx2": "^8.0.0",
-    "cross-spawn": "^7.0.5",
-    "fs-extra": "^8.1.0",
-    "glob": "^11.1.0",
-    "mocha": "^11.1.0",
-    "mocha-junit-reporter": "^2.0.2",
-    "rimraf": "^6.0.1",
-    "tree-kill": "^1.2.2",
-    "typedoc": "^0.26.11",
-    "typedoc-plugin-merge-modules": "^6.0.3",
-    "typescript": "~5.6.2",
-    "wtfnode": "^0.9.1",
-    "yargs": "^17.4.0"
-  },
-  "devDependencies": {
-    "@itwin/eslint-plugin": "5.2.2-dev.2",
-    "@types/node": "~20.17.0",
-    "eslint": "^9.31.0"
-  }
+	"name": "@itwin/build-tools",
+	"version": "5.4.0-dev.12",
+	"description": "Bentley build tools",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/iTwin/itwinjs-core.git",
+		"directory": "tools/build"
+	},
+	"bin": {
+		"betools": "bin/betools.js"
+	},
+	"scripts": {
+		"build": "tsc 1>&2",
+		"clean": "rimraf -g ../../modules .rush/temp/package-deps*.json",
+		"docs": "",
+		"lint": "eslint \"./src/**/*.ts\" 1>&2",
+		"lint-deprecation": "eslint --fix -f visualstudio --no-inline-config -c ../../common/config/eslint/eslint.config.deprecation-policy.js \"./src/**/*.ts\"",
+		"test": "",
+		"cover": ""
+	},
+	"keywords": [
+		"Bentley",
+		"BIM",
+		"iModel"
+	],
+	"author": {
+		"name": "Bentley Systems, Inc.",
+		"url": "http://www.bentley.com"
+	},
+	"dependencies": {
+		"@microsoft/api-extractor": "~7.52.3",
+		"chalk": "^3.0.0",
+		"cpx2": "^8.0.0",
+		"cross-spawn": "^7.0.5",
+		"fs-extra": "^8.1.0",
+		"glob": "^10.5.0",
+		"mocha": "^11.1.0",
+		"mocha-junit-reporter": "^2.0.2",
+		"rimraf": "^6.0.1",
+		"tree-kill": "^1.2.2",
+		"typedoc": "^0.26.11",
+		"typedoc-plugin-merge-modules": "^6.0.3",
+		"typescript": "~5.6.2",
+		"wtfnode": "^0.9.1",
+		"yargs": "^17.4.0"
+	},
+	"devDependencies": {
+		"@itwin/eslint-plugin": "5.2.2-dev.2",
+		"@types/node": "~20.17.0",
+		"eslint": "^9.31.0"
+	}
 }
