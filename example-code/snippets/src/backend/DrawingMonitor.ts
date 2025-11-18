@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BriefcaseDb } from "@itwin/core-backend";
-import { assert, BeDuration, BeEvent, Id64Set, Id64String } from "@itwin/core-bentley";
+import { assert, BeDuration, BeEvent, DbResult, Id64Set, Id64String } from "@itwin/core-bentley";
 import { ModelIdAndGeometryGuid } from "@itwin/core-common";
 
 export type DrawingUpdates = Map<Id64String, string>;
@@ -52,11 +52,22 @@ abstract class DrawingMonitorState {
   }
 
   protected requestUpdates(): DrawingMonitorState {
-    // ###TODO
-    // Query affected drawing Ids
-    // If none, return undefined
-    // else return a Promise
-    return new CachedState(this.monitor, new Map<Id64String, string>());
+    // ###TODO only request updates for drawings whose provenance is out of date.
+    const ecsql = `SELECT ECInstanceId FROM bis.SectionDrawing WHERE SpatialView IS NOT NULL`;
+    const drawingIds = this.monitor.iModel.withPreparedStatement(ecsql, (stmt) => {
+      const ids = [];
+      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        ids.push(stmt.getValue(0).getId());
+      }
+
+      return ids;
+    });
+
+    if (drawingIds.length === 0) {
+      return new CachedState(this.monitor, new Map<Id64String, string>());
+    }
+
+    return new RequestedState(this.monitor, this.monitor.computeUpdates(new Set(drawingIds)));
   }
 
   protected reactToChange(): DrawingMonitorState {
