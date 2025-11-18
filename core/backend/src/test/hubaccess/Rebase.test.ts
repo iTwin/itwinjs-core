@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Guid, Id64Array, Id64String } from "@itwin/core-bentley";
-import { Code, GeometricElement2dProps, GeometricModelProps, IModel, ModelIdAndGeometryGuid, QueryBinder, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import { Code, GeometricElement2dProps, GeometricModelProps, GeometryStreamBuilder, IModel, ModelGeometryChangesProps, ModelIdAndGeometryGuid, QueryBinder, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { Suite } from "mocha";
@@ -14,6 +14,7 @@ import { HubMock } from "../../internal/HubMock";
 import { StashManager } from "../../StashManager";
 import { existsSync, unlinkSync, writeFileSync } from "fs";
 import * as path from "path";
+import { LineSegment3d, Point3d } from "@itwin/core-geometry";
 chai.use(chaiAsPromised);
 
 class TestIModel {
@@ -105,16 +106,25 @@ class TestIModel {
   }
   public async insertElement(b: BriefcaseDb, markAsIndirect?: true) {
     await b.locks.acquireLocks({ shared: [this.drawingModelId] });
+    const builder = new GeometryStreamBuilder();
+    const p1 = Point3d.createZero();
+    const p2 = Point3d.createFrom({ x: Math.random() * 10.0 + 5.0, y: 0.0, z: 0.0 });
+    const circle = LineSegment3d.create(p1, p2);
+    builder.appendGeometry(circle);
+
     const baseProps = {
       classFullName: "TestDomain:a1",
       model: this.drawingModelId,
       category: this.drawingCategoryId,
       code: Code.createEmpty(),
-    };
+      geom: builder.geometryStream,
+      prop1: `${this._data++}`,
+    } as GeometricElement2dProps & { prop1: string };
+
     let id: Id64String = "";
     if (markAsIndirect) {
       b.txns.withIndirectTxnMode(() => {
-        id = b.elements.insertElement({ ...baseProps, prop1: `${this._data++}` } as any);
+        id = b.elements.insertElement(baseProps);
       });
       return id;
     }
@@ -122,6 +132,11 @@ class TestIModel {
   }
   public async insertElementEx(b: BriefcaseDb, args?: { prop1?: string, markAsIndirect?: true, parent?: RelatedElementProps }) {
     await b.locks.acquireLocks({ shared: [this.drawingModelId] });
+    const builder = new GeometryStreamBuilder();
+    const p1 = Point3d.createZero();
+    const p2 = Point3d.createFrom({ x: Math.random() * 10.0 + 5.0, y: 0.0, z: 0.0 });
+    const circle = LineSegment3d.create(p1, p2);
+    builder.appendGeometry(circle);
 
     const props: GeometricElement2dProps & { prop1: string } = {
       classFullName: "TestDomain:a1",
@@ -129,6 +144,7 @@ class TestIModel {
       category: this.drawingCategoryId,
       code: Code.createEmpty(),
       parent: args?.parent,
+      geom: builder.geometryStream,
       prop1: args?.prop1 ?? `${this._data++}`
     };
 
@@ -141,10 +157,18 @@ class TestIModel {
     }
     return b.elements.insertElement(props as any);
   }
-  public async updateElement(b: BriefcaseDb, id: Id64String, markAsIndirect?: true) {
+  public async updateElement(b: BriefcaseDb, id: Id64String, markAsIndirect?: true, updateGeom?: boolean) {
     await b.locks.acquireLocks({ shared: [this.drawingModelId], exclusive: [id] });
-    const elProps = b.elements.getElementProps(id);
+    const elProps = b.elements.getElementProps<GeometricElement2dProps & { prop1: string }>(id);
 
+    if (updateGeom) {
+      const builder = new GeometryStreamBuilder();
+      const p1 = Point3d.createZero();
+      const p2 = Point3d.createFrom({ x: Math.random() * 10.0 + 10.0, y: 0.0, z: 0.0 });
+      const circle = LineSegment3d.create(p1, p2);
+      builder.appendGeometry(circle);
+      elProps.geom = builder.geometryStream;
+    }
     if (markAsIndirect) {
       b.txns.withIndirectTxnMode(() => {
         b.elements.updateElement({ ...elProps, prop1: `${this._data++}` } as any);
@@ -169,7 +193,7 @@ class TestIModel {
   }
 }
 
-describe("rebase changes & stashing api", function (this: Suite) {
+describe.only("rebase changes & stashing api", function (this: Suite) {
   let testIModel: TestIModel;
   before(async () => {
     if (!IModelHost.isValid)
@@ -811,12 +835,12 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     chai.expect(b2.changeset.index).to.equals(4);
     const elBefore = b2.elements.tryGetElementProps(e1);
-    chai.expect((elBefore as any).prop1).to.equals("2");
+    chai.expect((elBefore as any).prop1).to.equals("3");
     // restore stash should succeed as now it can obtain lock
     await StashManager.restore({ db: b2, stash: b2Stash1 });
 
     const elAfter = b2.elements.tryGetElementProps(e1);
-    chai.expect((elAfter as any).prop1).to.equals("1");
+    chai.expect((elAfter as any).prop1).to.equals("2");
     await b2.pushChanges({ description: `${e1} updated` });
   });
   it("schema change should not be stashed", async () => {
@@ -828,6 +852,10 @@ describe("rebase changes & stashing api", function (this: Suite) {
                 <BaseClass>bis:GraphicalElement2d</BaseClass>
                 <ECProperty propertyName="prop1" typeName="string" />
                 <ECProperty propertyName="prop2" typeName="string" />
+            </ECEntityClass>
+            <ECEntityClass typeName="A1Recipe2d">
+                <BaseClass>bis:TemplateRecipe2d</BaseClass>
+                <ECProperty propertyName="prop1" typeName="string" />
             </ECEntityClass>
             <ECRelationshipClass typeName="A1OwnsA1" modifier="None" strength="embedding">
                 <BaseClass>bis:ElementOwnsChildElements</BaseClass>
@@ -1248,6 +1276,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     const events = {
       modelGeometryChanged: [] as ReadonlyArray<ModelIdAndGeometryGuid>[],
+      onGeometryChanged: [] as ModelGeometryChangesProps[][],
     };
 
     const getGeometryGuidFromB1 = (modelId: string) => {
@@ -1257,10 +1286,14 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     const clearEvents = () => {
       events.modelGeometryChanged = [];
+      events.onGeometryChanged = [];
     };
 
     b1.txns.onModelGeometryChanged.addListener((changes: ReadonlyArray<ModelIdAndGeometryGuid>) => {
       events.modelGeometryChanged.push(changes);
+    });
+    b1.txns.onGeometryChanged.addListener((changes: ModelGeometryChangesProps[]) => {
+      events.onGeometryChanged.push(changes);
     });
 
     clearEvents();
@@ -1280,7 +1313,8 @@ describe("rebase changes & stashing api", function (this: Suite) {
         return true;
       },
       recompute: async (_txn: TxnProps) => {
-        await testIModel.insertElement(b1);
+        await testIModel.updateElement(b1, e1);
+        await testIModel.updateElement(b1, e2);
       },
     });
 
@@ -1344,7 +1378,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     chai.expect(geomGuidAfterPull).is.exist;
     chai.expect(events.modelGeometryChanged.length).to.equal(1);
   });
-  it.only("onModelGeometryChanged() fired during rebase with geometric local change", async () => {
+  it("onModelGeometryChanged() fired during rebase with geometric local change", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
 
@@ -1357,6 +1391,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     const events = {
       modelGeometryChanged: [] as ReadonlyArray<ModelIdAndGeometryGuid>[],
+      onGeometryChanged: [] as ModelGeometryChangesProps[][],
     };
 
     const getGeometryGuidFromB1 = (modelId: string) => {
@@ -1366,10 +1401,15 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     const clearEvents = () => {
       events.modelGeometryChanged = [];
+      events.onGeometryChanged = [];
     };
 
     b1.txns.onModelGeometryChanged.addListener((changes: ReadonlyArray<ModelIdAndGeometryGuid>) => {
       events.modelGeometryChanged.push(changes);
+    });
+
+    b1.txns.onGeometryChanged.addListener((changes: ModelGeometryChangesProps[]) => {
+      events.onGeometryChanged.push(changes);
     });
 
     clearEvents();
