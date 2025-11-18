@@ -3539,8 +3539,7 @@ export class BriefcaseDb extends IModelDb {
       this.initializeIModelDb("pullMerge");
     });
 
-    IpcHost.notifyTxns(this, "notifyPulledChanges", this.changeset as ChangesetIndexAndId);
-    this.txns.touchWatchFile();
+    this.txns._onChangesPulled(this.changeset as ChangesetIndexAndId);
   }
 
   public async enableChangesetStatTracking(): Promise<void> {
@@ -3640,9 +3639,7 @@ export class BriefcaseDb extends IModelDb {
       this.initializeIModelDb("pullMerge");
     });
 
-    const changeset = this.changeset as ChangesetIndexAndId;
-    IpcHost.notifyTxns(this, "notifyPushedChanges", changeset);
-    this.txns.touchWatchFile();
+    this.txns._onChangesPushed(this.changeset as ChangesetIndexAndId);
   }
 
   public override close() {
