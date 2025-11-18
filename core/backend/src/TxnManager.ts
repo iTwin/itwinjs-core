@@ -16,7 +16,7 @@ import { BriefcaseDb, SaveChangesArgs, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
 import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
-import { _nativeDb } from "./internal/Symbols";
+import { _cache, _instanceKeyCache, _nativeDb } from "./internal/Symbols";
 import { DbRebaseChangesetConflictArgs, RebaseChangesetConflictArgs } from "./internal/ChangesetConflictArgs";
 import { BriefcaseManager } from "./BriefcaseManager";
 
@@ -699,7 +699,10 @@ export class TxnManager {
 
   /** @internal */
   protected _onChangesApplied() {
-    this._iModel.clearCaches();
+    this._iModel.elements[_cache].clear();
+    this._iModel.models[_cache].clear();
+    this._iModel.elements[_instanceKeyCache].clear();
+    this._iModel.models[_instanceKeyCache].clear();
     ChangedEntitiesProc.process(this._iModel, this);
     this.onChangesApplied.raiseEvent();
     IpcHost.notifyTxns(this._iModel, "notifyChangesApplied");
@@ -892,7 +895,7 @@ export class TxnManager {
    * Event raised when a rebase transaction begins.
    */
   public readonly onRebaseTxnBegin = new BeEvent<(txn: TxnProps) => void>();
-  
+
   /**
    * @alpha
    * Event raised when a rebase transaction ends.

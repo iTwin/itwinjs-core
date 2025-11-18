@@ -255,7 +255,7 @@ export abstract class IModelDb extends IModel {
   private _schemaMap?: SchemaMap;
   private _schemaContext?: SchemaContext;
   /** @deprecated in 5.0.0 - will not be removed until after 2026-06-13. Use [[fonts]]. */
-  protected _fontMap?: FontMap; // eslint-disable-line @typescript-eslint/no-deprecated
+  protected _fontMap?: FontMap;
   private readonly _fonts: IModelDbFonts = createIModelDbFonts(this);
   private _workspace?: OwnedWorkspace;
 
@@ -323,7 +323,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @deprecated in 5.0.0 - will not be removed until after 2026-06-13. Use [[fonts]]. */
-  public get fontMap(): FontMap { // eslint-disable-line @typescript-eslint/no-deprecated
+  public get fontMap(): FontMap {
     return this._fontMap ?? (this._fontMap = new FontMap(this[_nativeDb].readFontMap())); // eslint-disable-line @typescript-eslint/no-deprecated
   }
 
@@ -776,6 +776,7 @@ export abstract class IModelDb extends IModel {
     this.models[_cache].clear();
     this.elements[_instanceKeyCache].clear();
     this.models[_instanceKeyCache].clear();
+    this[_nativeDb].clearECDbCache();
   }
 
   /** Update the project extents for this iModel.
@@ -893,7 +894,6 @@ export abstract class IModelDb extends IModel {
       this.saveChanges();
       this.clearCaches();
       this[_nativeDb].concurrentQueryShutdown();
-      this[_nativeDb].clearECDbCache();
       this[_nativeDb].performCheckpoint();
     }
   }
@@ -1089,7 +1089,7 @@ export abstract class IModelDb extends IModel {
   public static findByKey(key: string): IModelDb {
     const iModelDb = this.tryFindByKey(key);
     if (undefined === iModelDb) {
-      // eslint-disable-next-line @typescript-eslint/only-throw-error
+
       throw new IModelNotFoundResponse(); // a very specific status for the RpcManager
     }
     return iModelDb;
@@ -1354,7 +1354,7 @@ export abstract class IModelDb extends IModel {
    * const metaData: EntityClass | undefined = imodel.schemaContext.getSchemaItemSync("SchemaName.ClassName", EntityClass);
    * ```
    */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
+
   public tryGetMetaData(classFullName: string): EntityMetaData | undefined {
     try {
       // eslint-disable-next-line @typescript-eslint/no-deprecated
@@ -1386,7 +1386,7 @@ export abstract class IModelDb extends IModel {
    * }, false);
    * ```
    */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
+
   public static forEachMetaData(iModel: IModelDb, classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     iModel.forEachMetaData(classFullName, wantSuper, func, includeCustom);
@@ -1413,7 +1413,7 @@ export abstract class IModelDb extends IModel {
    * });
    * ```
    */
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
+
   public forEachMetaData(classFullName: string, wantSuper: boolean, func: PropertyCallback, includeCustom: boolean = true) {
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     const meta = this.getMetaData(classFullName); // will load if necessary
@@ -1446,7 +1446,7 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(val.error.status, `Error getting class meta data for: ${classFullName}`);
 
     assert(undefined !== val.result);
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+
     const metaData = new EntityMetaData(JSON.parse(val.result));
     // eslint-disable-next-line @typescript-eslint/no-deprecated
     this.classMetaDataRegistry.add(classFullName, metaData);
@@ -2664,7 +2664,7 @@ export namespace IModelDb {
       const fullClassName = aspectClassFullName.replace(".", ":").split(":");
       const val = this._iModel[_nativeDb].getECClassMetaData(fullClassName[0], fullClassName[1]);
       if (val.result !== undefined) {
-        // eslint-disable-next-line @typescript-eslint/no-deprecated
+
         const metaData = new EntityMetaData(JSON.parse(val.result));
         if (metaData.modifier !== "Abstract") // Class is not abstract, use normal query to retrieve aspects
           return this._queryAspects(elementId, aspectClassFullName, excludedClassFullNames);
@@ -3148,7 +3148,6 @@ export class BriefcaseDb extends IModelDb {
     }
 
     this.clearCaches();
-    this[_nativeDb].clearECDbCache();
     this[_nativeDb].discardLocalChanges();
     this[_resetIModelDb]();
     if (args?.retainLocks) {
