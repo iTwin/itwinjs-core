@@ -525,6 +525,11 @@ export class IModelApp {
       }, IModelApp.animationInterval.milliseconds);
   }
 
+  /** Return true if the main event processing loop has been started.
+   * @internal
+   */
+  public static get isEventLoopStarted() { return IModelApp._wantEventLoop; }
+
   /** @internal */
   public static startEventLoop() {
     if (!IModelApp._wantEventLoop) {
@@ -732,7 +737,7 @@ export class IModelApp {
   public static makeIModelJsLogoCard() {
     return this.makeLogoCard({
       iconSrc: `${this.publicPath}images/about-imodeljs.svg`,
-      heading: `<span style="font-weight:normal">${this.localization.getLocalizedString("iModelJs:Notices.PoweredBy")}</span>&nbsp;iTwin.js`,
+      heading: `<span class="itwinjs-header-lead">${this.localization.getLocalizedString("iModelJs:Notices.PoweredBy")}</span>&nbsp;iTwin.js`,
       notice: `${ITWINJS_CORE_VERSION}<br>${COPYRIGHT_NOTICE}`,
     });
   }

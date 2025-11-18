@@ -6,27 +6,31 @@
 /** @packageDocumentation
  * @module Curve
  */
+
 /**
  * NormalizedTransition is the (abstract) base class for clothoid, bloss, biquadratic, sine, and cosine transition functions.
  * * Each function maps fractional progress to a curvature value.
  *   * f(0) === 0
  *   * f(1) === 1
- *   * f(u) === 1 - f (1-u)
+ *   * f(u) === 1 - f(1-u)
  * * Each implementation provides:
  *   * fractionToCurvature -- the f(u) function described above
  *   * fractionToCurvatureDerivative -- df(u)/du
- *   * fractionToArea -- integral of the area under f(u) from 0 to u.
- * * the symmetry condition ensures that the integral from 0 to 1 is 1/2
+ *   * fractionToArea -- antiderivative A of f, chosen such that A(0) = 0. The value of this function at
+ *     fraction u is the area under f from 0 to u. In particular, the symmetry condition on f implies that
+ *     1/2 = "integral of f over [0,1]" = A(1) - A(0) = A(1).
  * @internal
  */
+// see internaldocs/Spiral.md for more info
 export abstract class NormalizedTransition {
-  /** Constructor initializes with 0..1 values .. call "setBearingCurvatureLengthCurvature" to apply real values */
+  /** Constructor initializes with 0..1 values. Call "setBearingCurvatureLengthCurvature" to apply real values. */
   constructor() { }
   /** At fractional position on the x axis, return the (normalized) curvature fraction. */
   public abstract fractionToCurvatureFraction(fractionX: number): number;
-  /** Return the derivative of the (normalized) curvature fraction */
+  /** Return the derivative of the (normalized) curvature fraction. */
   public abstract fractionToCurvatureFractionDerivative(fractionX: number): number;
-  /** Return the integrated area under the curve
+  /**
+   * Return the integrated area under the curve.
    * * This is equal to the accumulated angle change.
    */
   public abstract fractionToArea(fractionX: number): number;
@@ -35,7 +39,6 @@ export abstract class NormalizedTransition {
   private static _blossEvaluator?: NormalizedBlossTransition;
   private static _sineEvaluator?: NormalizedSineTransition;
   private static _cosineEvaluator?: NormalizedCosineTransition;
-
   /**
    * Return a standard evaluator identified by string as:
    * * clothoid
@@ -62,18 +65,29 @@ export abstract class NormalizedTransition {
     return undefined;
   }
 }
+
 /**
  * Transition functions for clothoid spiral.
- * * curvature variation is linear from (0,0) to (1,1)
+ * * Curvature variation is linear from (0,0) to (1,1).
  * @internal
  */
 export class NormalizedClothoidTransition extends NormalizedTransition {
-  constructor() { super(); }
+  // clothoid curvature is f(x) = x
+  // derivative f'(x) = 1
+  // integral If(x) = x^2 / 2
+  constructor() {
+    super();
+  }
   /** At fractional position on the x axis, return the (normalized) curvature fraction. */
-  public fractionToCurvatureFraction(fractionX: number): number { return fractionX; }
-  /** Return the derivative of the (normalized) curvature fraction */
-  public fractionToCurvatureFractionDerivative(_u: number): number { return 1.0; }
-  /** Return the integrated area under the curve.
+  public fractionToCurvatureFraction(fractionX: number): number {
+    return fractionX;
+  }
+  /** Return the derivative of the (normalized) curvature fraction. */
+  public fractionToCurvatureFractionDerivative(_u: number): number {
+    return 1.0;
+  }
+  /**
+   * Return the integrated area under the curve.
    * * This fraction is the angular change fraction.
    */
   public fractionToArea(fractionX: number): number {
@@ -83,24 +97,26 @@ export class NormalizedClothoidTransition extends NormalizedTransition {
 
 /**
  * Transition functions for bloss spiral.
- * * curvature variation is cubic from (0,0) with slope 0 to (1,1) with slope 1
+ * * curvature variation is cubic from (0,0) with slope 0 to (1,1) with slope 1.
  * @internal
  */
 export class NormalizedBlossTransition extends NormalizedTransition {
-  // bloss curve is (3 - 2x) x ^2 = 3 x^2 - 2 x^3
-  //    derivative    6x (1-x)
-  //   2nd derivative 6 - 12 x
-  //     derivatives zero at 0,1
-  //     inflection zero at 0.5
-  //   integral is   x^3 - x^4 / 2 = x^3 ( 1-x/2)
-  constructor() { super(); }
+  // bloss curvature is x^2 (3 - 2x)
+  // derivative 6x (1-x)
+  // integral is x^3 (1-x/2)
+  constructor() {
+    super();
+  }
   /** At fractional position on the x axis, return the (normalized) curvature fraction. */
-  public fractionToCurvatureFraction(u: number): number { return u * u * (3 - 2 * u); }
-  /** Return the derivative of the (normalized) curvature fraction */
+  public fractionToCurvatureFraction(u: number): number {
+    return u * u * (3 - 2 * u);
+  }
+  /** Return the derivative of the (normalized) curvature fraction. */
   public fractionToCurvatureFractionDerivative(u: number): number {
     return 6.0 * u * (1.0 - u);
   }
-  /** Return the integrated area under the curve.
+  /**
+   * Return the integrated area under the curve.
    * * This fraction is the angular change fraction.
    */
   public fractionToArea(u: number): number {
@@ -109,61 +125,79 @@ export class NormalizedBlossTransition extends NormalizedTransition {
 }
 
 /**
- * Transition functions for biquadratic transition
+ * Transition functions for biquadratic transition.
  * * Curvature is a pair of joining quadratics.
- * * In lower half of the interval, the quadratic is from (0,0) to (0.5, 0.5) with zero slope at origin
- * * In upper half of the interval, the quadratic is from (0.5,0.5) to (1,1) with zero slope at 1
+ * * In lower half of the interval, the quadratic is from (0,0) to (0.5, 0.5) with zero slope at origin.
+ * * In upper half of the interval, the quadratic is from (0.5,0.5) to (1,1) with zero slope at 1.
  * @internal
  */
 export class NormalizedBiQuadraticTransition extends NormalizedTransition {
-  constructor() { super(); }
-  private integratedBasis(u: number): number { return u * u * u * (2.0 / 3.0); }
-  private basis(u: number): number { return 2 * u * u; }
-  private basisDerivative(u: number): number { return 4 * u; }
-  /** At fractional position on the x axis, return the (normalized) curvature fraction.
-   *  * * For [u <= 0.5, u >= 0.5]
-   *   * f(u) = [2 u^2, 1 - 2 (1-u)^2]
-   *   * f'(u) = [4 u, 4 (1-u)]
-   *   * If(u) = [2 u^3 / 3, 0.5 (1 -u )^3/3]
+  constructor() {
+    super();
+  }
+  private integratedBasis(u: number): number {
+    return u * u * u * (2.0 / 3.0);
+  }
+  private basis(u: number): number {
+    return 2 * u * u;
+  }
+  private basisDerivative(u: number): number {
+    return 4 * u;
+  }
+  /**
+   * At fractional position on the x axis, return the (normalized) curvature fraction.
+   *  * For [u <= 0.5, u > 0.5]
+   *    * f(u) = [2u^2, 1 - 2(1-u)^2]
+   *    * f'(u) = [4u, 4(1-u)]
+   *    * If(u) = [2u^3 / 3, u + 2(1-u)^3 /3]
    */
   public fractionToCurvatureFraction(u: number): number {
     return u <= 0.5 ? this.basis(u) : 1.0 - this.basis(1.0 - u);
   }
-  /** Return the derivative of the (normalized) curvature fraction */
+  /** Return the derivative of the (normalized) curvature fraction. */
   public fractionToCurvatureFractionDerivative(u: number): number {
-    return u < 0.5 ? this.basisDerivative(u) : this.basisDerivative(1 - u);
+    return u <= 0.5 ? this.basisDerivative(u) : this.basisDerivative(1 - u);
   }
-  /** Return the integrated area under the curve.
+  /**
+   * Return the integrated area under the curve.
    * * This fraction is the angular change fraction.
    */
   public fractionToArea(u: number): number {
     if (u <= 0.5)
       return this.integratedBasis(u);
+    // if u > 0.5, integral[0 to u] would be integral[0 to 0.5] of "2u^2" + integral[0.5 to u] of "1 - 2(1-u)^2"
     const v = 1 - u;
     return 0.5 - v + this.integratedBasis(v);
   }
 }
 
 /**
- * Transition functions for sine transition
+ * Transition functions for sine transition.
  * * curvature variation is the sum of
- *   * straight line from (0,0) to (1,1), like clothoid
- *   * additional full period of a sine wave, producing 0 slope at both ends
+ *   * straight line from (0,0) to (1,1), like clothoid.
+ *   * additional full period of a sine wave, producing 0 slope at both ends.
  * @internal
  */
 export class NormalizedSineTransition extends NormalizedTransition {
-  constructor() { super(); }
+  // sine transition curvature is x - sin(2 pi x) / (2 pi)
+  // derivative 1 - cos(2 pi x)
+  // integral x^2 / 2 + (cos(2 pi x) - 1) / (4 pi^2)
+  // note: this is the only snap function whose antiderivative is chosen with nonzero integration constant.
+  constructor() {
+    super();
+  }
   /** At fractional position on the x axis, return the (normalized) curvature fraction. */
   public fractionToCurvatureFraction(u: number): number {
     const a = 2.0 * Math.PI;
     return u - Math.sin(u * a) / a;
   }
-  /** Return the derivative of the (normalized) curvature fraction */
+  /** Return the derivative of the (normalized) curvature fraction. */
   public fractionToCurvatureFractionDerivative(u: number): number {
     const a = 2.0 * Math.PI;
     return 1 - Math.cos(u * a);
   }
-  /** Return the integrated area under the curve.
+  /**
+   * Return the integrated area under the curve.
    * * This fraction is the angular change fraction.
    */
   public fractionToArea(u: number): number {
@@ -171,24 +205,31 @@ export class NormalizedSineTransition extends NormalizedTransition {
     return 0.5 * u * u + (Math.cos(u * a) - 1.0) / (a * a);
   }
 }
+
 /**
- * Transition functions for cosine
- * * curvature variation is a half period of a cosine
+ * Transition functions for cosine.
+ * * curvature variation is a half period of a cosine.
  * @internal
  */
 export class NormalizedCosineTransition extends NormalizedTransition {
-  constructor() { super(); }
+  // cosine transition curvature is 0.5 (1 - cos(pi x))
+  // derivative 0.5 pi sin(pi x)
+  // integral 0.5 (x - sin(pi x) / pi)
+  constructor() {
+    super();
+  }
   /** At fractional position on the x axis, return the (normalized) curvature fraction. */
   public fractionToCurvatureFraction(u: number): number {
     const a = Math.PI;
     return 0.5 * (1 - Math.cos(u * a));
   }
-  /** Return the derivative of the (normalized) curvature fraction */
+  /** Return the derivative of the (normalized) curvature fraction. */
   public fractionToCurvatureFractionDerivative(u: number): number {
     const a = Math.PI;
     return 0.5 * a * Math.sin(u * a);
   }
-  /** Return the integrated area under the curve.
+  /**
+   * Return the integrated area under the curve.
    * * This fraction is the angular change fraction.
    */
   public fractionToArea(u: number): number {

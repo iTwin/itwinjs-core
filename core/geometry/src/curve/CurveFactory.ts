@@ -7,6 +7,7 @@
  * @module Curve
  */
 
+import { assert } from "@itwin/core-bentley";
 import { AxisIndex, AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { AngleSweep } from "../geometry3d/AngleSweep";
@@ -107,6 +108,28 @@ interface SmoothCurveData {
 };
 
 /**
+ * Interface bundling options for [[CurveFactory.createFilletsInLineString]].
+ * @public
+ */
+export interface CreateFilletsInLineStringOptions {
+  /**
+   * Allow creation of retrograde edges to join large-radius fillets.
+   * * If `true` (default), cusps are present in the output `Path` when the radius is too large.
+   * * If `false`, a fillet with overly large radius is disallowed, resulting in a simple corner.
+  */
+  allowCusp?: boolean;
+  /**
+   * Whether to fillet the closure.
+   * * If `true`, the input line string is treated as a polygon (closure point optional), and the output `Path` is
+   * closed and has a fillet at its start point. If both first and last input points are identical, the last point's
+   * entry in the radius array is ignored.
+   * * If `false` (default), the first and last points receive no fillet and their respective entries in the radius
+   * array are ignored.
+   */
+  filletClosure?: boolean;
+}
+
+/**
  * The `CurveFactory` class contains methods for specialized curve constructions.
  * @public
  */
@@ -138,84 +161,74 @@ export class CurveFactory {
    * Construct a sequence of alternating lines and arcs with the arcs creating tangent transition between consecutive edges.
    *  * If the radius parameter is a number, that radius is used throughout.
    *  * If the radius parameter is an array of numbers, `radius[i]` is applied at `point[i]`.
-   *    * Note that since no fillet is constructed at the initial or final point, those entries in `radius[]` are never referenced.
-   *    * A zero radius for any point indicates to leave the as a simple corner.
-   * @param points point source
+   *  * A zero radius for any point indicates to leave the as a simple corner.
+   * @param points point source.
    * @param radius fillet radius or array of radii indexed to correspond to the points.
-   * @param allowBackupAlongEdge true to allow edges to be created going "backwards" along edges if needed to create the blend.
+   * @param allowCuspOrOptions flag to allow cusps in output (default `true`), or a list of extended options.
    */
   public static createFilletsInLineString(
     points: LineString3d | IndexedXYZCollection | Point3d[],
     radius: number | number[],
-    allowBackupAlongEdge: boolean = true,
+    allowCuspOrOptions: boolean | CreateFilletsInLineStringOptions = true
   ): Path | undefined {
     if (Array.isArray(points))
-      return this.createFilletsInLineString(new Point3dArrayCarrier(points), radius, allowBackupAlongEdge);
+      return this.createFilletsInLineString(new Point3dArrayCarrier(points), radius, allowCuspOrOptions);
     if (points instanceof LineString3d)
-      return this.createFilletsInLineString(points.packedPoints, radius, allowBackupAlongEdge);
-    const n = points.length;
+      return this.createFilletsInLineString(points.packedPoints, radius, allowCuspOrOptions);
+    let allowCusp = true;
+    let filletClosure = false;
+    if (typeof allowCuspOrOptions === "boolean") {
+      allowCusp = allowCuspOrOptions;
+    } else {
+      allowCusp = allowCuspOrOptions.allowCusp ?? true;
+      filletClosure = allowCuspOrOptions.filletClosure ?? false;
+    }
+    let n = points.length;
+    if (filletClosure && points.almostEqualIndexIndex(0, n - 1))
+      n--; // ignore closure point
     if (n <= 1)
       return undefined;
-    const pointA = points.getPoint3dAtUncheckedPointIndex(0);
-    const pointB = points.getPoint3dAtUncheckedPointIndex(1);
-    // remark: n=2 and n=3 cases should fall out from loop logic
+    const pointA = Point3d.create();
+    const pointB = Point3d.create();
+    const pointC = Point3d.create();
     const blendArray: ArcBlendData[] = [];
-    // build one-sided blends at each end . .
-    blendArray.push({ fraction10: 0.0, fraction12: 0.0, point: pointA.clone() });
-    for (let i = 1; i + 1 < n; i++) {
-      const pointC = points.getPoint3dAtUncheckedPointIndex(i + 1);
-      let thisRadius = 0;
-      if (Array.isArray(radius)) {
-        if (i < radius.length)
-          thisRadius = radius[i];
-      } else if (Number.isFinite(radius))
-        thisRadius = radius;
-      if (thisRadius !== 0.0)
+    // remark: n=2 and n=3 cases should fall out from loop logic
+    for (let i = 0; i < n; i++) {
+      let thisRadius = Math.abs(Array.isArray(radius) ? (i < radius.length ? radius[i] : 0) : radius);
+      if (!Number.isFinite(thisRadius))
+        thisRadius = 0;
+      if (thisRadius === 0 || (!filletClosure && (i === 0 || i === n - 1))) {
+        blendArray.push({ fraction10: 0, fraction12: 0, point: points.getPoint3dAtUncheckedPointIndex(i) });
+      } else {
+        points.getPoint3dAtUncheckedPointIndex(Geometry.modulo(i - 1, n), pointA);
+        points.getPoint3dAtUncheckedPointIndex(i, pointB);
+        points.getPoint3dAtUncheckedPointIndex(Geometry.modulo(i + 1, n), pointC);
         blendArray.push(Arc3d.createFilletArc(pointA, pointB, pointC, thisRadius));
-      else
-        blendArray.push({ fraction10: 0.0, fraction12: 0.0, point: pointB.clone() });
-      pointA.setFromPoint3d(pointB);
-      pointB.setFromPoint3d(pointC);
+      }
     }
-    blendArray.push({ fraction10: 0.0, fraction12: 0.0, point: pointB.clone() });
-    if (!allowBackupAlongEdge) {
-      // suppress arcs that have overlap with both neighbors or flood either neighbor ..
-      for (let i = 1; i + 1 < n; i++) {
-        const b = blendArray[i];
-        if (b.fraction10 > 1.0
-          || b.fraction12 > 1.0
-          || 1.0 - b.fraction10 < blendArray[i - 1].fraction12
-          || b.fraction12 > 1.0 - blendArray[i + 1].fraction10) {
-          b.fraction10 = 0.0;
-          b.fraction12 = 0.0;
-          blendArray[i].arc = undefined;
+    assert(blendArray.length === n);
+    if (!allowCusp) {
+      // suppress arcs that overlap a neighboring arc, or that consume the entire segment
+      for (let i = 0; i < n; i++) {
+        const bB = blendArray[i];
+        if (!bB.arc)
+          continue;
+        const bA = blendArray[Geometry.modulo(i - 1, n)];
+        const bC = blendArray[Geometry.modulo(i + 1, n)];
+        if (bB.fraction10 > 1 || bB.fraction12 > 1 || 1 - bB.fraction10 < bA.fraction12 || bB.fraction12 > 1 - bC.fraction10) {
+          bB.fraction10 = bB.fraction12 = 0;
+          bB.arc = undefined;
         }
       }
-      /* The "1-b" logic above prevents this loop from ever doing anything.
-      // on edge with conflict, suppress the arc with larger fraction
-      for (let i = 1; i < n; i++) {
-        const b0 = blendArray[i - 1];
-        const b1 = blendArray[i];
-        if (b0.fraction12 > 1 - b1.fraction10) {
-          const b = b0.fraction12 > b1.fraction12 ? b1 : b0;
-          b.fraction10 = 0.0;
-          b.fraction12 = 0.0;
-          blendArray[i].arc = undefined;
-        }
-      } */
     }
     const path = Path.create();
-    this.addPartialSegment(
-      path, allowBackupAlongEdge,
-      blendArray[0].point, blendArray[1].point,
-      blendArray[0].fraction12, 1.0 - blendArray[1].fraction10,
-    );
-    // add each path and successor edge ...
-    for (let i = 1; i + 1 < points.length; i++) {
+    for (let i = 0; i < n; i++) {
       const b0 = blendArray[i];
-      const b1 = blendArray[i + 1];
       path.tryAddChild(b0.arc);
-      this.addPartialSegment(path, allowBackupAlongEdge, b0.point, b1.point, b0.fraction12, 1.0 - b1.fraction10);
+      if (i + 1 < n || filletClosure) {
+        const b1 = blendArray[Geometry.modulo(i + 1, n)];
+        this.addPartialSegment(path, allowCusp, b0.point, b1.point, b0.fraction12, 1 - b1.fraction10);
+      }
     }
     return path;
   }

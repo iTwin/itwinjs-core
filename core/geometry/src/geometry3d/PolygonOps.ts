@@ -482,7 +482,14 @@ export class PolygonOps {
   private static _matrixA = Matrix4d.createIdentity();
   private static _matrixB = Matrix4d.createIdentity();
   private static _matrixC = Matrix4d.createIdentity();
-  /** return a vector which is perpendicular to the polygon and has magnitude equal to the polygon area. */
+
+  /**
+   * Compute the area and normal of the polygon, packaged as a vector.
+   * * This is just [[areaNormal]] with expanded return type.
+   * @param points polygon vertices, closure point optional. Polygon can be in any plane.
+   * @param result optional pre-allocated vector to populate and return.
+   * @returns polygon normal with magnitude equal to polygon area, or `undefined` if colinear/insufficient points.
+   */
   public static areaNormalGo(points: IndexedXYZCollection, result?: Vector3d): Vector3d | undefined {
     if (!result)
       result = new Vector3d();
@@ -492,7 +499,7 @@ export class PolygonOps {
     if (n === 3) {
       points.crossProductIndexIndexIndex(0, 1, 2, result);
     } else if (n > 3) {
-      // This will work with or without closure edge.  If closure is given, the last vector is 000.
+      // Shoelace. This will work with or without closure point: if present, the last vector is 000.
       for (let i = 2; i < n; i++) {
         points.accumulateCrossProductIndexIndexIndex(0, i - 1, i, result);
       }
@@ -501,23 +508,34 @@ export class PolygonOps {
     result.scaleInPlace(0.5);
     return result.isZero ? undefined : result;
   }
-  /** return a vector which is perpendicular to the polygon and has magnitude equal to the polygon area. */
+  /**
+   * Compute the area and normal of the polygon, packaged as a vector.
+   * @param points polygon vertices, closure point optional. Polygon can be in any plane.
+   * @param result optional pre-allocated vector to populate and return.
+   * @returns polygon normal with magnitude equal to polygon area, or zero vector if colinear/insufficient points.
+   */
   public static areaNormal(points: Point3d[], result?: Vector3d): Vector3d {
     if (!result)
       result = Vector3d.create();
     PolygonOps.areaNormalGo(new Point3dArrayCarrier(points), result);
     return result;
   }
-  /** return the area of the polygon.
-   * * This assumes the polygon is planar
-   * * This does NOT assume the polygon is on the xy plane.
+  /**
+   * Compute the area of the polygon.
+   * @param points polygon vertices, closure point optional. Polygon can be in any plane.
+   * @returns polygon area.
    */
   public static area(points: Point3d[]): number {
     return PolygonOps.areaNormal(points).magnitude();
   }
-  /** return the projected XY area of the polygon. */
+  /**
+   * Compute the projected XY area of the polygon.
+   * @param points polygon vertices, closure point optional, z-coordinates ignored.
+   * @returns xy-projected polygon area.
+   */
   public static areaXY(points: Point3d[] | IndexedXYZCollection): number {
     let area = 0.0;
+    // Shoelace algorithm
     if (points instanceof IndexedXYZCollection) {
       if (points.length > 2) {
         const x0 = points.getXAtUncheckedPointIndex(0);
@@ -525,7 +543,7 @@ export class PolygonOps {
         let u1 = points.getXAtUncheckedPointIndex(1) - x0;
         let v1 = points.getYAtUncheckedPointIndex(1) - y0;
         let u2, v2;
-        for (let i = 2; i + 1 < points.length; i++, u1 = u2, v1 = v2) {
+        for (let i = 2; i < points.length; i++, u1 = u2, v1 = v2) {
           u2 = points.getXAtUncheckedPointIndex(i) - x0;
           v2 = points.getYAtUncheckedPointIndex(i) - y0;
           area += Geometry.crossProductXYXY(u1, v1, u2, v2);
@@ -537,7 +555,11 @@ export class PolygonOps {
     }
     return 0.5 * area;
   }
-  /** Sum the areaXY () values for multiple polygons */
+  /**
+   * Sum the result of [[areaXY]] for multiple polygons.
+   * @param polygons array of polygons, closure point optional for each, z-coordinates ignored.
+   * @returns sum of xy-projected polygon areas.
+   */
   public static sumAreaXY(polygons: Point3d[][]): number {
     let s = 0.0;
     for (const p of polygons)

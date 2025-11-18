@@ -615,8 +615,8 @@ describe("GrowablePoint3dArray", () => {
     data.compressAdjacentDuplicates(0.0001);
     ck.testExactNumber(n0, data.length, "compressed array big length", n1);
 
-    const pt0 = Point3d.create(1,2,3);
-    const pt1 = Point3d.create(4,5,6);
+    const pt0 = Point3d.create(1, 2, 3);
+    const pt1 = Point3d.create(4, 5, 6);
     const pt0e = pt0.plusXYZ(Geometry.smallMetricDistance / 2);
     const points: Point3d[] = [];
     points.push(pt0.clone(), pt0e.clone());

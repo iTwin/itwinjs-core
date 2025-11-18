@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added new api to create leader terminator geometry for different shapes",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
