@@ -914,9 +914,9 @@ export class TxnManager {
   public readonly onRebaseTxnEnd = new BeEvent<(txn: TxnProps) => void>();
 
   /**
- * @alpha
- * Event raised when a rebase begins.
- */
+   * @alpha
+   * Event raised when a rebase begins.
+   */
   public readonly onRebaseBegin = new BeEvent<(txns: TxnIdString[]) => void>();
 
   /**
