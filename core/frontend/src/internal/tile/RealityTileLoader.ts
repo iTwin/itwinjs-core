@@ -90,7 +90,7 @@ export abstract class RealityTileLoader {
 
     let transform = tile.tree.iModelTransform;
     if (tile.transformToRoot) {
-      transform = transform.multiplyTransformTransform(tile.transformToRoot)
+      transform = transform.multiplyTransformTransform(tile.transformToRoot);
     }
     const geom = reader?.readGltfAndCreateGeometry(transform);
 
