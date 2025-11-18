@@ -59,6 +59,14 @@ abstract class DrawingMonitorState {
     return new CachedState(this.monitor, new Map<Id64String, string>());
   }
 
+  protected reactToChange(): DrawingMonitorState {
+    if (this.monitor.delay > 0) {
+      return new DelayedState(this.monitor);
+    }
+
+    return this.requestUpdates();
+  }
+
   private assertBadTransition(eventName: string): void {
     assert(false, `No transition from DrawingMonitor state ${this.name} on ${eventName}`);
   }
@@ -147,11 +155,7 @@ class IdleState extends DrawingMonitorState {
   public get name() { return "Idle" as const; }
 
   public override onChangeDetected() {
-    if (this.monitor.delay > 0) {
-      return new DelayedState(this.monitor);
-    }
-
-    return this.onUpdatesRequested();
+    return this.reactToChange();
   }
 
   public override onUpdatesRequested() {
@@ -172,11 +176,7 @@ class CachedState extends DrawingMonitorState {
 
   public override onChangeDetected() {
     // Our cached results are no longer relevant.
-    if (this.monitor.delay > 0) {
-      return new DelayedState(this.monitor);
-    }
-
-    return this.requestUpdates();
+    return this.reactToChange();
   }
 
   public override onUpdatesRequested() {
@@ -199,6 +199,10 @@ class DelayedState extends DrawingMonitorState {
     });
   }
 
+  public override onChangeDetected(): DrawingMonitorState {
+    return this.reactToChange();
+  }
+
   public override onUpdatesRequested(): DrawingMonitorState {
     // Cancel the delay.
     return this.requestUpdates();
@@ -219,7 +223,7 @@ class RequestedState extends DrawingMonitorState {
   }
 
   public override onChangeDetected() {
-    // Make a new request.
+    // Make a new request immediately.
     return this.requestUpdates();
   }
 }
