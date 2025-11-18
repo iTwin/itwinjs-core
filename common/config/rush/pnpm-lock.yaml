@@ -8,6 +8,7 @@ overrides:
   rollup-plugin-copy>globby: ^11.0.0
   elliptic: ^6.6.1
   form-data: ^4.0.4
+  glob: ^10.5.0
   browserslist: latest
 
 pnpmfileChecksum: fm2bgttvmfglngapbjspr7zf2u
@@ -140,8 +141,8 @@ importers:
         specifier: ^9.31.0
         version: 9.31.0
       glob:
-        specifier: ^10.3.12
-        version: 10.3.12
+        specifier: ^10.5.0
+        version: 10.5.0
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
@@ -345,8 +346,8 @@ importers:
         specifier: ^8.1.0
         version: 8.1.0
       glob:
-        specifier: ^10.3.12
-        version: 10.3.12
+        specifier: ^10.5.0
+        version: 10.5.0
     devDependencies:
       '@bentley/aec-units-schema':
         specifier: ^1.0.3
@@ -414,9 +415,6 @@ importers:
       '@types/fs-extra':
         specifier: ^4.0.7
         version: 4.0.7
-      '@types/glob':
-        specifier: ^5.0.35
-        version: 5.0.35
       '@types/mocha':
         specifier: ^10.0.6
         version: 10.0.6
@@ -717,8 +715,8 @@ importers:
         specifier: ^9.31.0
         version: 9.31.0
       glob:
-        specifier: ^10.3.12
-        version: 10.3.12
+        specifier: ^10.5.0
+        version: 10.5.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -909,8 +907,8 @@ importers:
         specifier: ^9.31.0
         version: 9.31.0
       glob:
-        specifier: ^10.3.12
-        version: 10.3.12
+        specifier: ^10.5.0
+        version: 10.5.0
       playwright:
         specifier: ~1.56.1
         version: 1.56.1
@@ -1068,8 +1066,8 @@ importers:
         specifier: ^9.31.0
         version: 9.31.0
       glob:
-        specifier: ^10.3.12
-        version: 10.3.12
+        specifier: ^10.5.0
+        version: 10.5.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -1144,8 +1142,8 @@ importers:
         specifier: ^9.31.0
         version: 9.31.0
       glob:
-        specifier: ^10.3.12
-        version: 10.3.12
+        specifier: ^10.5.0
+        version: 10.5.0
       rimraf:
         specifier: ^6.0.1
         version: 6.0.1
@@ -1211,8 +1209,8 @@ importers:
         specifier: ^9.31.0
         version: 9.31.0
       glob:
-        specifier: ^10.3.12
-        version: 10.3.12
+        specifier: ^10.5.0
+        version: 10.5.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -1364,9 +1362,6 @@ importers:
       '@itwin/eslint-plugin':
         specifier: 5.2.2-dev.2
         version: 5.2.2-dev.2(eslint@9.31.0)(typescript@5.6.2)
-      '@types/glob':
-        specifier: ^5.0.35
-        version: 5.0.35
       '@vitest/coverage-v8':
         specifier: ^3.0.6
         version: 3.0.6(@vitest/browser@3.0.6)(vitest@3.0.6)
@@ -1417,8 +1412,8 @@ importers:
         specifier: ^9.31.0
         version: 9.31.0
       glob:
-        specifier: ^10.3.12
-        version: 10.3.12
+        specifier: ^10.5.0
+        version: 10.5.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -2012,8 +2007,8 @@ importers:
         specifier: ^9.31.0
         version: 9.31.0
       glob:
-        specifier: ^10.3.12
-        version: 10.3.12
+        specifier: ^10.5.0
+        version: 10.5.0
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
@@ -2550,8 +2545,8 @@ importers:
         specifier: ^9.31.0
         version: 9.31.0
       glob:
-        specifier: ^10.3.12
-        version: 10.3.12
+        specifier: ^10.5.0
+        version: 10.5.0
       https-browserify:
         specifier: ^1.0.0
         version: 1.0.0
@@ -2710,8 +2705,8 @@ importers:
         specifier: ^9.31.0
         version: 9.31.0
       glob:
-        specifier: ^10.3.12
-        version: 10.3.12
+        specifier: ^10.5.0
+        version: 10.5.0
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
@@ -2984,8 +2979,8 @@ importers:
         specifier: ^9.31.0
         version: 9.31.0
       glob:
-        specifier: ^10.3.12
-        version: 10.3.12
+        specifier: ^10.5.0
+        version: 10.5.0
       null-loader:
         specifier: ^4.0.1
         version: 4.0.1(webpack@5.97.1)
@@ -3123,8 +3118,8 @@ importers:
         specifier: ^9.31.0
         version: 9.31.0
       glob:
-        specifier: ^10.3.12
-        version: 10.3.12
+        specifier: ^10.5.0
+        version: 10.5.0
       internal-tools:
         specifier: workspace:*
         version: link:../../tools/internal
@@ -4168,8 +4163,8 @@ importers:
         specifier: ^8.1.0
         version: 8.1.0
       glob:
-        specifier: ^10.3.12
-        version: 10.3.12
+        specifier: ^10.5.0
+        version: 10.5.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -4373,8 +4368,8 @@ importers:
         specifier: workspace:*
         version: link:../build
       glob:
-        specifier: ^10.3.12
-        version: 10.3.12
+        specifier: ^10.5.0
+        version: 10.5.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -4446,8 +4441,8 @@ importers:
         specifier: ^9.31.0
         version: 9.31.0
       glob:
-        specifier: ^10.3.12
-        version: 10.3.12
+        specifier: ^10.5.0
+        version: 10.5.0
       mocha:
         specifier: ^11.1.0
         version: 11.1.0
@@ -4485,8 +4480,8 @@ importers:
         specifier: workspace:*
         version: link:../../core/common
       glob:
-        specifier: ^10.3.12
-        version: 10.3.12
+        specifier: ^10.5.0
+        version: 10.5.0
       yargs:
         specifier: ^17.4.0
         version: 17.4.0
@@ -4500,9 +4495,6 @@ importers:
       '@types/chai':
         specifier: 4.3.1
         version: 4.3.1
-      '@types/glob':
-        specifier: ^5.0.35
-        version: 5.0.35
       '@types/mocha':
         specifier: ^10.0.6
         version: 10.0.6
@@ -5797,9 +5789,6 @@ packages:
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
-  '@types/events@3.0.3':
-    resolution: {integrity: sha512-trOc4AAUThEz9hapPtSd7wf5tiQKvTtu5b371UxXdTuqzIh0ArcRspRP0i0Viu+LXstIQ1z96t1nsPxT9ol01g==}
-
   '@types/express-serve-static-core@4.19.6':
     resolution: {integrity: sha512-N4LZ2xG7DatVqhCZzOGb1Yi5lMbXSZcmdLDe9EzSndPV2HpWYWzRbaerl2n27irrm94EPpprqa8KpskPT085+A==}
 
@@ -5835,9 +5824,6 @@ packages:
 
   '@types/glob-to-regexp@0.4.4':
     resolution: {integrity: sha512-nDKoaKJYbnn1MZxUY0cA1bPmmgZbg0cTq7Rh13d0KWYNOiKbqoR+2d89SnRPszGh7ROzSwZ/GOjZ4jPbmmZ6Eg==}
-
-  '@types/glob@5.0.35':
-    resolution: {integrity: sha512-wc+VveszMLyMWFvXLkloixT4n0harUIVZjnpzztaZ0nKLuul7Z32iMt2fUFGAaZ4y1XWjFRMtCI5ewvyh4aIeg==}
 
   '@types/google-protobuf@3.15.6':
     resolution: {integrity: sha512-pYVNNJ+winC4aek+lZp93sIKxnXt5qMkuKmaqS3WGuTq0Bw1ZDYNBgzG5kkdtwcv+GmYJGo3yEg6z2cKKAiEdw==}
@@ -5895,9 +5881,6 @@ packages:
 
   '@types/mime@1.3.5':
     resolution: {integrity: sha512-/pyBZWSLD2n0dcHE3hq8s8ZvcETHtEuF+3E7XVt0Ig2nvsVQXdghHVcEkIWjy9A0wKfTn97a/PSDYohKIlnP/w==}
-
-  '@types/minimatch@5.1.2':
-    resolution: {integrity: sha512-K0VQKziLUWkVKiRVrx4a40iPaxTUefQmjtkQofBkYRcoaaL/8rhwDWww9qWbrgicNOgnpIsMxyNIUM4+n6dUIA==}
 
   '@types/mocha@10.0.6':
     resolution: {integrity: sha512-dJvrYWxP/UcXm36Qn36fxhUKu8A/xMRXVT2cliFF1Z7UA9liG5Psj3ezNSZw+5puH2czDXRLcXQxf8JbJt0ejg==}
@@ -7731,9 +7714,6 @@ packages:
     resolution: {integrity: sha512-yhlQgA6mnOJUKOsRUFsgJdQCvkKhcz8tlZG5HBQfReYZy46OwLcY+Zia0mtdHsOo9y/hP+CxMN0TU9QxoOtG4g==}
     engines: {node: '>=6 <7 || >=8'}
 
-  fs.realpath@1.0.0:
-    resolution: {integrity: sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==}
-
   fsevents@2.3.2:
     resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
@@ -7844,23 +7824,9 @@ packages:
     resolution: {integrity: sha512-ZyqlgowMbfj2NPjxaZZ/EtsXlOch28FRXgMd64vqZWk1bT9+wvSRLYD1om9M7QfQru51zJPAT17qXm4/zd+9QA==}
     engines: {node: '>= 0.10'}
 
-  glob@10.3.12:
-    resolution: {integrity: sha512-TCNv8vJ+xz4QiqTpfOJA7HvYv+tNIRHKfUWw/q+v2jdgN4ebz+KY9tGx5J4rHP0o84mNP+ApH66HRX8us3Khqg==}
-    engines: {node: '>=16 || 14 >=14.17'}
+  glob@10.5.0:
+    resolution: {integrity: sha512-DfXN8DfhJ7NH3Oe7cFmu3NCu1wKbkReJ8TorzSAFbSKrlNaQSKfIzqYqVY8zlbs2NLBbWpRiU52GX2PbaBVNkg==}
     hasBin: true
-
-  glob@10.4.5:
-    resolution: {integrity: sha512-7Bv8RF0k6xjo7d4A/PxYLbUCfb6c+Vpd2/mB2yRDlew7Jb5hEXiCD9ibfO7wpk8i4sevK6DFny9h7EYbM3/sHg==}
-    hasBin: true
-
-  glob@11.0.1:
-    resolution: {integrity: sha512-zrQDm8XPnYEKawJScsnM0QzobJxlT/kHOOlRTio8IH/GrmxRE5fjllkzdaHclIuNjUQTJYH2xHNIGfdpJkDJUw==}
-    engines: {node: 20 || >=22}
-    hasBin: true
-
-  glob@7.2.3:
-    resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
-    deprecated: Glob versions prior to v9 are no longer supported
 
   global-jsdom@26.0.0:
     resolution: {integrity: sha512-BqXpTNZFjP40N+s4k8Bk9HS8GFVPJB/+TKtwcShM84wLv6C5dH9o1dydI3pL6potanhfDiIAVDbaaGj/uSdRSA==}
@@ -8120,10 +8086,6 @@ packages:
     resolution: {integrity: sha512-6I/HUDeYFfuNCVS3td055BaXBwKYuzw7K3ExVMStBowKo9oOAMJIXIHvdyR3iboTCp1b+1i5DSkIZTcwIktuDw==}
     engines: {'0': node >= 0.4.0}
 
-  inflight@1.0.6:
-    resolution: {integrity: sha512-k92I/b08q4wvFscXCLvqfsHCrjrF7yiXsQuIVvVE7N82W3+aqpzuUdBbfhWcy/FZR3/4IgflMgKLOsvPDrGCJA==}
-    deprecated: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
-
   inherits@2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
 
@@ -8372,16 +8334,8 @@ packages:
     resolution: {integrity: sha512-H0dkQoCa3b2VEeKQBOxFph+JAbcrQdE7KC0UkqwpLmv2EC4P41QXP+rqo9wYodACiG5/WM5s9oDApTU8utwj9g==}
     engines: {node: '>= 0.4'}
 
-  jackspeak@2.3.6:
-    resolution: {integrity: sha512-N3yCS/NegsOBokc8GAdM8UcmfsKiSS8cipheD/nivzr700H+nsMOxJjQnvwOcRYVuFkdH0wGUvW2WbXGmrZGbQ==}
-    engines: {node: '>=14'}
-
   jackspeak@3.4.3:
     resolution: {integrity: sha512-OGlZQpz2yfahA/Rd1Y8Cd9SIEsqvXkLVoSw/cgwhnhFMDbsQFeZYoJJ7bIZBS9BcamUW96asq/npPWugM+RQBw==}
-
-  jackspeak@4.1.0:
-    resolution: {integrity: sha512-9DDdhb5j6cpeitCbvLO7n7J4IxnbM6hoF6O1g4HQ5TfhvvKN8ywDM7668ZhMHRqVmxqhps/F6syWK2KcPxYlkw==}
-    engines: {node: 20 || >=22}
 
   jest-diff@21.2.1:
     resolution: {integrity: sha512-E5fu6r7PvvPr5qAWE1RaUwIh/k6Zx/3OOkZ4rk5dBJkEWRrUuSgbMt2EO8IUTPTd6DOqU3LW6uTIwX5FRvXoFA==}
@@ -8681,10 +8635,6 @@ packages:
 
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
-
-  lru-cache@11.0.2:
-    resolution: {integrity: sha512-123qHRfJBmo2jXDbo/a5YOQrJoHF/GNQTLzQ5+IdK5pWpceK17yRc6ozlWd25FxvGKQbIUs91fDFkXmDHTKcyA==}
-    engines: {node: 20 || >=22}
 
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
@@ -9281,10 +9231,6 @@ packages:
     resolution: {integrity: sha512-ak9Qy5Q7jYb2Wwcey5Fpvg2KoAc/ZIhLSLOSBmRmygPsGwkVVt0fZa0qrtMz+m6tJTAHfZQ8FnmB4MG4LWy7/w==}
     engines: {node: '>=8'}
 
-  path-is-absolute@1.0.1:
-    resolution: {integrity: sha512-AVbw3UJ2e9bq64vSaS9Am0fje1Pa8pbGqTTsmXfaIiMpnr5DlDhfJOuLj9Sf95ZPVDAUerDfEk88MPmPe7UCQg==}
-    engines: {node: '>=0.10.0'}
-
   path-key@3.1.1:
     resolution: {integrity: sha512-ojmeN0qd+y0jszEtoY48r0Peq5dwMEkIlCOu6Q5f41lfkswXuKtYrhgoTpLnyIcHm24Uhqx+5Tqm2InSwLhE6Q==}
     engines: {node: '>=8'}
@@ -9299,10 +9245,6 @@ packages:
   path-scurry@1.11.1:
     resolution: {integrity: sha512-Xa4Nw17FS9ApQFJ9umLiJS4orGjm7ZzwUrwamcGQuHSzDyth9boKDaycYdDcZDuqYATXw4HFXgaqWTctW/v1HA==}
     engines: {node: '>=16 || 14 >=14.18'}
-
-  path-scurry@2.0.0:
-    resolution: {integrity: sha512-ypGJsmGtdXUOeM5u93TyeIEfEhM6s+ljAhrk5vAvSx8uyY/02OvrZnA0YNGUrPXfpJMgI1ODd3nwz8Npx4O4cg==}
-    engines: {node: 20 || >=22}
 
   path-to-regexp@0.1.12:
     resolution: {integrity: sha512-RA1GjUVMnvYFxuqovrEqZoxxW5NUZqbwKtYz/Tt7nXerk0LbLblQmrsgdeOxV5SFHf0UDggjS/bSeOZwt1pmEQ==}
@@ -12405,8 +12347,6 @@ snapshots:
 
   '@types/estree@1.0.8': {}
 
-  '@types/events@3.0.3': {}
-
   '@types/express-serve-static-core@4.19.6':
     dependencies:
       '@types/node': 20.17.24
@@ -12458,12 +12398,6 @@ snapshots:
   '@types/geojson@7946.0.16': {}
 
   '@types/glob-to-regexp@0.4.4': {}
-
-  '@types/glob@5.0.35':
-    dependencies:
-      '@types/events': 3.0.3
-      '@types/minimatch': 5.1.2
-      '@types/node': 20.17.0
 
   '@types/google-protobuf@3.15.6': {}
 
@@ -12519,8 +12453,6 @@ snapshots:
   '@types/methods@1.1.4': {}
 
   '@types/mime@1.3.5': {}
-
-  '@types/minimatch@5.1.2': {}
 
   '@types/mocha@10.0.6': {}
 
@@ -13776,7 +13708,7 @@ snapshots:
       debug: 4.4.0
       duplexer: 0.1.2
       fs-extra: 11.3.0
-      glob: 11.0.1
+      glob: 10.5.0
       glob2base: 0.0.12
       ignore: 6.0.2
       minimatch: 10.0.1
@@ -14726,8 +14658,6 @@ snapshots:
       jsonfile: 4.0.0
       universalify: 0.1.2
 
-  fs.realpath@1.0.0: {}
-
   fsevents@2.3.2:
     optional: true
 
@@ -14856,15 +14786,7 @@ snapshots:
     dependencies:
       find-index: 0.1.1
 
-  glob@10.3.12:
-    dependencies:
-      foreground-child: 3.3.1
-      jackspeak: 2.3.6
-      minimatch: 9.0.5
-      minipass: 7.1.2
-      path-scurry: 1.11.1
-
-  glob@10.4.5:
+  glob@10.5.0:
     dependencies:
       foreground-child: 3.3.1
       jackspeak: 3.4.3
@@ -14872,24 +14794,6 @@ snapshots:
       minipass: 7.1.2
       package-json-from-dist: 1.0.1
       path-scurry: 1.11.1
-
-  glob@11.0.1:
-    dependencies:
-      foreground-child: 3.3.1
-      jackspeak: 4.1.0
-      minimatch: 10.0.1
-      minipass: 7.1.2
-      package-json-from-dist: 1.0.1
-      path-scurry: 2.0.0
-
-  glob@7.2.3:
-    dependencies:
-      fs.realpath: 1.0.0
-      inflight: 1.0.6
-      inherits: 2.0.4
-      minimatch: 3.1.2
-      once: 1.4.0
-      path-is-absolute: 1.0.1
 
   global-jsdom@26.0.0(jsdom@26.0.0):
     dependencies:
@@ -15204,11 +15108,6 @@ snapshots:
 
   inflection@1.13.4: {}
 
-  inflight@1.0.6:
-    dependencies:
-      once: 1.4.0
-      wrappy: 1.0.2
-
   inherits@2.0.4: {}
 
   internal-slot@1.1.0:
@@ -15459,21 +15358,11 @@ snapshots:
       has-symbols: 1.1.0
       set-function-name: 2.0.2
 
-  jackspeak@2.3.6:
-    dependencies:
-      '@isaacs/cliui': 8.0.2
-    optionalDependencies:
-      '@pkgjs/parseargs': 0.11.0
-
   jackspeak@3.4.3:
     dependencies:
       '@isaacs/cliui': 8.0.2
     optionalDependencies:
       '@pkgjs/parseargs': 0.11.0
-
-  jackspeak@4.1.0:
-    dependencies:
-      '@isaacs/cliui': 8.0.2
 
   jest-diff@21.2.1:
     dependencies:
@@ -15800,8 +15689,6 @@ snapshots:
 
   lru-cache@10.4.3: {}
 
-  lru-cache@11.0.2: {}
-
   lru-cache@5.1.1:
     dependencies:
       yallist: 3.1.1
@@ -15998,7 +15885,7 @@ snapshots:
       diff: 5.2.0
       escape-string-regexp: 4.0.0
       find-up: 5.0.0
-      glob: 10.4.5
+      glob: 10.5.0
       he: 1.2.0
       js-yaml: 4.1.0
       log-symbols: 4.1.0
@@ -16231,7 +16118,7 @@ snapshots:
       find-up: 4.1.0
       foreground-child: 3.3.1
       get-package-type: 0.1.0
-      glob: 7.2.3
+      glob: 10.5.0
       istanbul-lib-coverage: 3.2.2
       istanbul-lib-hook: 3.0.0
       istanbul-lib-instrument: 6.0.3
@@ -16464,8 +16351,6 @@ snapshots:
 
   path-exists@4.0.0: {}
 
-  path-is-absolute@1.0.1: {}
-
   path-key@3.1.1: {}
 
   path-key@4.0.0: {}
@@ -16475,11 +16360,6 @@ snapshots:
   path-scurry@1.11.1:
     dependencies:
       lru-cache: 10.4.3
-      minipass: 7.1.2
-
-  path-scurry@2.0.0:
-    dependencies:
-      lru-cache: 11.0.2
       minipass: 7.1.2
 
   path-to-regexp@0.1.12: {}
@@ -16818,15 +16698,15 @@ snapshots:
 
   rimraf@3.0.2:
     dependencies:
-      glob: 7.2.3
+      glob: 10.5.0
 
   rimraf@5.0.10:
     dependencies:
-      glob: 10.4.5
+      glob: 10.5.0
 
   rimraf@6.0.1:
     dependencies:
-      glob: 11.0.1
+      glob: 10.5.0
       package-json-from-dist: 1.0.1
 
   rollup-plugin-copy@3.4.0:
@@ -17495,13 +17375,13 @@ snapshots:
   test-exclude@6.0.0:
     dependencies:
       '@istanbuljs/schema': 0.1.3
-      glob: 7.2.3
+      glob: 10.5.0
       minimatch: 3.1.2
 
   test-exclude@7.0.1:
     dependencies:
       '@istanbuljs/schema': 0.1.3
-      glob: 10.4.5
+      glob: 10.5.0
       minimatch: 9.0.5
 
   text-hex@1.0.0: {}
@@ -17703,7 +17583,7 @@ snapshots:
     dependencies:
       '@types/json-schema': 7.0.15
       '@types/node': 16.18.126
-      glob: 7.2.3
+      glob: 10.5.0
       path-equal: 1.2.5
       safe-stable-stringify: 2.5.0
       ts-node: 10.9.2(@types/node@16.18.126)(typescript@4.8.4)
