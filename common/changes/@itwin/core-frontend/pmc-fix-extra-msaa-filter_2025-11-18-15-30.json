@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix background color displaying instead of sky box on certain hardware.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
