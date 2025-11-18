@@ -288,6 +288,12 @@ export class RealityTile extends Tile {
   /** @internal */
   public reproject(rootReprojection: Transform) {
     this._reprojectionTransform = rootReprojection;
+    rootReprojection.multiplyRange(this.range, this.range);
+    this.boundingSphere.transformBy(rootReprojection, this.boundingSphere);
+    if (this.contentRange)
+      rootReprojection.multiplyRange(this.contentRange, this.contentRange);
+    if (this.rangeCorners)
+      rootReprojection.multiplyPoint3dArrayInPlace(this.rangeCorners);
   }
 
   /** @internal */
