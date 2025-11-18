@@ -1,31 +1,31 @@
 {
-	"name": "internal-tools",
-	"version": "3.0.0-dev.69",
-	"description": "Internal build tools for Tools for collecting and reporting performance data",
-	"license": "MIT",
-	"main": "bin/internal-tools.js",
-	"bin": {
-		"internal-tools": "./bin/internal-tools.js"
-	},
-	"scripts": {
-		"build": "",
-		"clean": "",
-		"docs": "",
-		"lint": "",
-		"lint-deprecation": "",
-		"test": "",
-		"cover": ""
-	},
-	"author": {
-		"name": "Bentley Systems, Inc.",
-		"url": "http://www.bentley.com"
-	},
-	"dependencies": {
-		"yargs": "^17.4.0"
-	},
-	"devDependencies": {
-		"@itwin/build-tools": "workspace:*",
-		"glob": "^10.5.0",
-		"mocha": "^11.1.0"
-	}
+  "name": "internal-tools",
+  "version": "3.0.0-dev.69",
+  "description": "Internal build tools for Tools for collecting and reporting performance data",
+  "license": "MIT",
+  "main": "bin/internal-tools.js",
+  "bin": {
+    "internal-tools": "./bin/internal-tools.js"
+  },
+  "scripts": {
+    "build": "",
+    "clean": "",
+    "docs": "",
+    "lint": "",
+    "lint-deprecation": "",
+    "test": "",
+    "cover": ""
+  },
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "dependencies": {
+    "yargs": "^17.4.0"
+  },
+  "devDependencies": {
+    "@itwin/build-tools": "workspace:*",
+    "glob": "^10.5.0",
+    "mocha": "^11.1.0"
+  }
 }
