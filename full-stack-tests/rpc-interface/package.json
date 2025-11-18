@@ -73,7 +73,7 @@
     "buffer": "^6.0.3",
     "cpx2": "^8.0.0",
     "eslint": "^9.31.0",
-    "glob": "^10.5.0",
+    "glob": "^11.1.0",
     "internal-tools": "workspace:*",
     "npm-run-all2": "^7.0.2",
     "null-loader": "^4.0.1",
