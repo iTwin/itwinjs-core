@@ -512,7 +512,7 @@ describe("Discarding local txns test", async () => {
       await firstBriefcase.pushChanges({ description: "Insert element", accessToken: adminToken });
       await firstBriefcase.locks.releaseAllLocks();
 
-      let pulledChangesets: ChangesetIndexAndId[] = [];
+      const pulledChangesets: ChangesetIndexAndId[] = [];
 
       // Listen to the onChangesPulled event in second briefcase
       const removeListener = secondBriefcase.txns.onChangesPulled.addListener((changeset: ChangesetIndexAndId) => {
