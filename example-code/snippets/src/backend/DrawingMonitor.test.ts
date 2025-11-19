@@ -7,19 +7,26 @@ import { StandaloneDb } from "@itwin/core-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { expect } from "chai";
 import { createDrawingMonitor, DrawingMonitor, DrawingUpdates } from "./DrawingMonitor";
-import { Id64Set } from "@itwin/core-bentley";
+import { BeDuration, BeEvent, Id64Set } from "@itwin/core-bentley";
 
 function createFakeTimer() {
-  let resolve, reject;
-  const promise = new Promise((res, rej) => {
-    resolve = res;
-    reject = rej;
+  const onResolved = new BeEvent<() => void>();
+  const onError = new BeEvent<(reason: string) => void>();
+  const promise = new Promise<void>((resolve, reject) => {
+    onResolved.addListener(() => resolve());
+    onError.addListener((reason) => reject(reason));
   });
 
   return {
     promise,
-    resolve,
-    reject,
+    resolve: async () => {
+      onResolved.raiseEvent();
+      return BeDuration.wait(1);
+    },
+    reject: async (reason: string) => {
+      onError.raiseEvent(reason);
+      return BeDuration.wait(1);
+    },
   };
 }
 
@@ -141,11 +148,18 @@ describe.only("DrawingMonitor", () => {
 
       describe("delay expired", () => {
         it("=> Requested if any drawings require regeneration", async () => {
-
         });
 
         it("=> Cached (empty) if no drawings require regeneration", async () => {
-
+          const timer = createFakeTimer();
+          await test(() => timer.promise, async (mon) => {
+            mon.fakeGeometryChange();
+            expect(mon.stateName).to.equal("Delayed");
+            await timer.resolve();
+            expect(mon.stateName).to.equal("Cached");
+            const results = await mon.getUpdates();
+            expect(results.size).to.equal(0);
+          });
         });
       });
 
