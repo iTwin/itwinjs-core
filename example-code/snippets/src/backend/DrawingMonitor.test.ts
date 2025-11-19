@@ -133,18 +133,18 @@ describe.only("DrawingMonitor", () => {
     });
 
     describe("Delayed", async () => {
-      /*
       it("change detected => Delayed (restart)", async () => {
-          const timer = createFakeTimer();
-          await test(() => , async (mon) => {
-            mon.fakeGeometryChange();
-            expect(mon.state.name).to.equal("Delayed");
-        
-            mon.fakeGeometryChange();
-            expect(mon.state.name).to.equal("Delayed");
-
+        const timer = createFakeTimer();
+        await test(() => timer.promise, async (mon) => {
+          mon.fakeGeometryChange();
+          const state = mon.state;
+          expect(state.name).to.equal("Delayed");
+      
+          mon.fakeGeometryChange();
+          expect(mon.state.name).to.equal("Delayed");
+          expect(mon.state).not.to.equal(state);
+        });
       });
-      */
 
       describe("delay expired", () => {
         it("=> Requested if any drawings require regeneration", async () => {
