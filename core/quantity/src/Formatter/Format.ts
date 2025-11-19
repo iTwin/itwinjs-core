@@ -414,6 +414,21 @@ export class Format extends BaseFormat {
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with no valid 'units'`);
     }
 
+    // Validate ratio format unit labels follow 'numerator/denominator' standard
+    if (this.type === FormatType.Ratio && this._units) {
+      for (const [_unit, label] of this._units) {
+        if (label !== undefined && label.length > 0) {
+          if (!label.includes('/')) {
+            throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Ratio' type therefore unit labels must follow the 'numerator/denominator' standard. The label '${label}' is missing the '/' separator.`);
+          }
+          const parts = label.split('/');
+          if (parts.length !== 2 || parts[0].length === 0 || parts[1].length === 0) {
+            throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Ratio' type therefore unit labels must follow the 'numerator/denominator' standard. The label '${label}' is invalid.`);
+          }
+        }
+      }
+    }
+
     if(this.type === FormatType.Azimuth || this.type === FormatType.Bearing) {
       this._azimuthBaseUnit = jsonObj.azimuthBaseUnit;
       this._revolutionUnit = jsonObj.revolutionUnit;

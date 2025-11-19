@@ -379,10 +379,17 @@ export function parsePrecision(precision: number, type: FormatType, formatName: 
     case FormatType.Decimal:
     case FormatType.Scientific:
     case FormatType.Station:
-    case FormatType.Ratio:
     case FormatType.Bearing:
     case FormatType.Azimuth:
       return parseDecimalPrecision(precision, formatName);
+    case FormatType.Ratio:
+      // Ratio type can use either decimal or fractional precision depending on ratioFormatType
+      // Try decimal first, if it fails, try fractional
+      try {
+        return parseDecimalPrecision(precision, formatName);
+      } catch {
+        return parseFractionalPrecision(precision, formatName);
+      }
     case FormatType.Fractional:
       return parseFractionalPrecision(precision, formatName);
     default:

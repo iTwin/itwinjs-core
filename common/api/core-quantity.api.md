@@ -93,6 +93,16 @@ export class BaseFormat {
     // (undocumented)
     protected _precision: number;
     // (undocumented)
+    get ratioFormatType(): RatioFormatType | undefined;
+    set ratioFormatType(ratioFormatType: RatioFormatType);
+    // (undocumented)
+    protected _ratioFormatType: RatioFormatType;
+    // (undocumented)
+    get ratioSeparator(): string;
+    set ratioSeparator(ratioSeparator: string);
+    // (undocumented)
+    protected _ratioSeparator: string;
+    // (undocumented)
     get ratioType(): RatioType | undefined;
     set ratioType(ratioType: RatioType | undefined);
     // (undocumented)
@@ -288,6 +298,8 @@ export interface FormatProps {
     readonly minWidth?: number;
     // (undocumented)
     readonly precision?: number;
+    readonly ratioFormatType?: string;
+    readonly ratioSeparator?: string;
     readonly ratioType?: string;
     readonly revolutionUnit?: string;
     // (undocumented)
@@ -493,6 +505,9 @@ export class Parser {
 }
 
 // @beta (undocumented)
+export function parseRatioFormatType(ratioFormatType: string, formatName: string): RatioFormatType;
+
+// @beta (undocumented)
 export function parseRatioType(ratioType: string, formatName: string): RatioType;
 
 // @beta
@@ -631,6 +646,12 @@ export enum QuantityStatus {
     UnknownUnit = 35045,
     // (undocumented)
     UnsupportedUnit = 35047
+}
+
+// @beta
+export enum RatioFormatType {
+    Decimal = "Decimal",
+    Fractional = "Fractional"
 }
 
 // @beta

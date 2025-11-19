@@ -6,9 +6,10 @@ publish: false
 
 - [NextVersion](#nextversion)
   - [Node.js 24 support](#nodejs-24-support)
-  - [Frontend](#frontend)
+  - [Quantity Formatting](#quantity-formatting)
     - [QuantityFormatter](#quantityformatter)
       - [Updated migration guidance from QuantityType to KindOfQuantity](#updated-migration-guidance-from-quantitytype-to-kindofquantity)
+    - [Ratio formatting now supports scale factors](#ratio-formatting-now-supports-scale-factors)
   - [Presentation changes](#presentation-changes)
   - [API deprecations](#api-deprecations)
     - [@itwin/presentation-common](#itwinpresentation-common)
@@ -17,7 +18,7 @@ publish: false
 
 In addition to [already supported Node.js versions](../learning/SupportedPlatforms.md#supported-nodejs-versions), iTwin.js now supports [Node.js 24](https://nodejs.org/en/blog/release/v24.11.0).
 
-## Frontend
+## Quantity Formatting
 
 ### QuantityFormatter
 
@@ -32,6 +33,19 @@ The [QuantityFormatter]($frontend) has been updated to use new schema references
 For developers using `QuantityType` enum values in their applications, no code changes are required as the mapping to the new schemas is handled internally. However, for domain agnostic tools directly using KindOfQuantity names or implementing custom property descriptions, update your code to reference the new schema names.
 
 For detailed information about the recommended KindOfQuantity to use in your tools and components, including a complete mapping table of measurements to their corresponding KindOfQuantity names and persistence units, see the [Quantity Formatting and Parsing documentation](../learning/quantity/index.md#using-kindofquantities-to-retrieve-formats).
+
+### Ratio formatting now supports scale factors
+
+The quantity formatting system now supports ratio formatting for displaying scale factors, slopes, and architectural drawing scales. Two new properties have been added to `FormatProps`:
+
+- **`ratioSeparator`** (optional, default: `":"`) - Single character separator between numerator and denominator (e.g., `":"`, `"="`, `"/"`)
+
+- **`ratioFormatType`** (optional, default: `"Decimal"`) - Controls numeric formatting within ratios:
+  - `"Decimal"` - Standard decimal numbers (e.g., `0.5:1`, `1:2.5`)
+  - `"Fractional"` - Fractional representation (e.g., `1/2:1`, `3/4"=1'`)
+
+For comprehensive documentation including parsing behavior, special cases, and code examples, see the [Ratio Format Properties section](../learning/quantity/index.md#ratio-format-properties).
+
 ## Presentation changes
 
 - Changed content traversal to have internal state, improving performance when traversing large contents. See [API deprecations for `@itwin/presentation-common`](#itwinpresentation-common) for more details.
