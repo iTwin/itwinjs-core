@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-markup",
-  "version": "5.4.0-dev.12",
+  "version": "5.4.0-dev.13",
   "description": "iTwin.js markup package",
   "main": "lib/cjs/core-markup.js",
   "module": "lib/esm/core-markup.js",
@@ -63,7 +63,7 @@
     "chai": "^4.3.10",
     "cpx2": "^8.0.0",
     "eslint": "^9.31.0",
-    "glob": "^10.3.12",
+    "glob": "^10.5.0",
     "mocha": "^11.1.0",
     "nyc": "^17.1.0",
     "rimraf": "^6.0.1",
