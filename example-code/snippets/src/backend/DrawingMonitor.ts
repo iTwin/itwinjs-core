@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BriefcaseDb } from "@itwin/core-backend";
-import { assert, BeDuration, BeEvent, DbResult, Id64Set, Id64String } from "@itwin/core-bentley";
+import { BriefcaseDb, IModelDb, ModelSelector } from "@itwin/core-backend";
+import { assert, BeDuration, BeEvent, DbResult, GuidString, Id64, Id64Set, Id64String } from "@itwin/core-bentley";
 import { ModelIdAndGeometryGuid } from "@itwin/core-common";
+import { ECVersion } from "@itwin/ecschema-metadata";
 
 export type DrawingUpdates = Map<Id64String, string>;
 
@@ -248,5 +249,40 @@ class TerminatedState extends DrawingMonitorState {
 
   public override onUpdatesRequested(): DrawingMonitorState {
     throw new Error("Accessing a terminated DrawingMonitor");
+  }
+}
+
+namespace Provenance {
+  const jsonKey = "bentley:section-drawing-annotation-provenance";
+  const jsonVersion = new ECVersion(1, 0, 0);
+
+  export interface Props {
+    guids: GuidString[];
+  }
+
+  export function compute(spatialViewId: Id64String, iModel: IModelDb): Props {
+    const modelSelectorId = iModel.withPreparedStatement(
+      `SELECT ModelSelector.Id FROM bis.SpatialViewDefinition WHERE ECInstanceId=${spatialViewId}`,
+      (stmt) => {
+        return DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValue(0).getId() : undefined;
+      },
+    );
+
+    const guids: GuidString[] = [];
+    const selector = modelSelectorId ? iModel.elements.tryGetElement<ModelSelector>(modelSelectorId) : undefined;
+    if (selector) {
+      iModel.withPreparedStatement(
+        `SELECT GeometryGuid FROM bis.GeometricModel WHERE ECInstanceId IN ${selector.models.join()}`,
+        (stmt) => {
+          while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+            guids.push(stmt.getValue(0).getGuid());
+          }
+        },
+      );
+
+      guids.sort();
+    }
+
+    return { guids };
   }
 }
