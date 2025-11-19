@@ -13,6 +13,7 @@ RpcManager.initializeInterface(IModelReadRpcInterface);
 
 export interface IModelTestUtilsOpenOptions {
   copyFilename?: string;
+  upgradeStandaloneSchemas?: boolean;
 }
 
 export class KnownTestLocations {
@@ -60,6 +61,9 @@ export class IModelTestUtils {
     const destStat = IModelTestUtils.getStat(dbName);
     if (!srcStat || !destStat || srcStat.mtimeMs !== destStat.mtimeMs)
       IModelJsFs.copySync(srcName, dbName, { preserveTimestamps: true });
+
+    if (opts.upgradeStandaloneSchemas)
+      StandaloneDb.upgradeStandaloneSchemas(dbName);
 
     return dbName;
   }

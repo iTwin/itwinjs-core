@@ -9,9 +9,7 @@ import { ModelIdAndGeometryGuid } from "@itwin/core-common";
 
 export type DrawingUpdates = Map<Id64String, string>;
 
-/** Exported strictly for tests.
- * @internal
- */
+/** @internal Exported strictly for tests. */
 export type StateName = "Idle" | "Cached" | "Delayed" | "Requested" | "Terminated";
 
 export interface DrawingMonitor {
