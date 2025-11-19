@@ -30,6 +30,24 @@ function createFakeTimer() {
   };
 }
 
+async function computeUpdates(drawingIds: Id64Set): Promise<DrawingUpdates> {
+  const map = new Map<string, string>();
+  for (const id of drawingIds) {
+    map.set(id, id);
+  }
+
+  return map;
+}
+
+async function awaitState(mon: DrawingMonitor, state: string): Promise<void> {
+  if (mon.state.name === state) {
+    return;
+  }
+
+  await BeDuration.wait(1);
+  return awaitState(mon, state);
+}
+
 describe.only("DrawingMonitor", () => {
   let db: StandaloneDb;
 
@@ -42,15 +60,6 @@ describe.only("DrawingMonitor", () => {
   });
 
   after(() => db.close());
-
-  async function computeUpdates(drawingIds: Id64Set): Promise<DrawingUpdates> {
-    const map = new Map<string, string>();
-    for (const id of drawingIds) {
-      map.set(id, id);
-    }
-
-    return map;
-  }
 
   async function test(getUpdateDelay: (() => Promise<void>) | undefined, func: (monitor: DrawingMonitor) => Promise<void>): Promise<void> {
     const monitor = createDrawingMonitor({
@@ -81,11 +90,11 @@ describe.only("DrawingMonitor", () => {
 
         });
 
-        it("=> Cached (empty) if no drawings require regeneration", async () => {
+        it("=> Idle (empty) if no drawings require regeneration", async () => {
           await test(undefined, async (mon) => {
             expect(mon.state.name).to.equal("Idle");
             const promise = mon.getUpdates();
-            expect(mon.state.name).to.equal("Cached");
+            expect(mon.state.name).to.equal("Idle");
             const results = await promise;
             expect(results.size).to.equal(0);
           })
@@ -148,6 +157,7 @@ describe.only("DrawingMonitor", () => {
 
       describe("delay expired", () => {
         it("=> Requested if any drawings require regeneration", async () => {
+
         });
 
         it("=> Cached (empty) if no drawings require regeneration", async () => {
@@ -168,12 +178,12 @@ describe.only("DrawingMonitor", () => {
 
         });
 
-        it("=> Cached (empty) if no drawings require regeneration", async () => {
+        it("=> Idle (empty) if no drawings require regeneration", async () => {
           await test(undefined, async (mon) => {
             mon.fakeGeometryChange();
             expect(mon.state.name).to.equal("Delayed");
             const promise = mon.getUpdates();
-            expect(mon.state.name).to.equal("Cached");
+            expect(mon.state.name).to.equal("Idle");
             const results = await promise;
             expect(results.size).to.equal(0);
           });
@@ -191,11 +201,47 @@ describe.only("DrawingMonitor", () => {
     });
 
     describe("Requested", async () => {
-
+      
     });
 
-    describe("Cached", async () => {
+    describe.skip("Cached", async () => {
+      describe("change detected", () => {
+        it("=> Delayed if not awaiting updates", async () => {
+          const timer = createFakeTimer();
+          await test(() => timer.promise, async (mon) => {
+            expect(mon.state.name).to.equal("Idle");
 
+            mon.fakeGeometryChange();
+            expect(mon.state.name).to.equal("Delayed");
+
+            await timer.resolve();
+            expect(mon.state.name).to.equal("Cached");
+
+            mon.fakeGeometryChange();
+            expect(mon.state.name).to.equal("Delayed"); // ###TODO actually Cached (timer already resolved, I think)
+          });
+        });
+
+        it("=> Requested if awaiting updates and drawings require regeneration", async () => {
+
+        });
+
+        it("=> Idle (empty) if awaiting updates and no drawings require regeneration", async () => {
+          await test(undefined, async (mon) => {
+            const promise = mon.getUpdates();
+            const state = mon.state;
+            expect(state.name).to.equal("Idle");
+
+            mon.fakeGeometryChange();
+            expect(mon.state.name).to.equal("Idle"); // ###TODO actually Delayed
+            expect(mon.state).not.to.equal(state);
+            const results = await promise;
+            expect(results.size).to.equal(0);
+          });
+        });
+      });
+
+      it("###TODO");
     });
   });
 });

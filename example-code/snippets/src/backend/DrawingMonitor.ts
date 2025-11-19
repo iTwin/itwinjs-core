@@ -62,7 +62,7 @@ abstract class DrawingMonitorState {
     });
 
     if (drawingIds.length === 0) {
-      return new CachedState(this.monitor, new Map<Id64String, string>());
+      return this.monitor.cacheUpdates(undefined);
     }
 
     return new RequestedState(this.monitor, this.monitor.computeUpdates(new Set(drawingIds)));
@@ -79,6 +79,7 @@ class DrawingMonitorImpl implements DrawingMonitor {
   public readonly getUpdateDelay: () => Promise<void>;
   private readonly _onStateChanged = new BeEvent<() => void>();
   private _state: DrawingMonitorState;
+  private _awaitingUpdates = false;
   private _removeEventListeners: () => void;
 
   public get state() {
@@ -110,12 +111,18 @@ class DrawingMonitorImpl implements DrawingMonitor {
   }
 
   public getUpdates(): Promise<DrawingUpdates> {
+    if (this._awaitingUpdates) {
+      throw new Error("DrawingMonitor.getUpdates called again while awaiting previous call");
+    }
+
     this.state = this._state.onUpdatesRequested();
     const updates = this._state.getCachedUpdates();
     if (updates) {
+      this.state = new IdleState(this);
       return Promise.resolve(updates);
     }
 
+    this._awaitingUpdates = true;
     return new Promise<DrawingUpdates>((resolve) => {
       this.awaitUpdates(resolve);
     });
@@ -128,12 +135,17 @@ class DrawingMonitorImpl implements DrawingMonitor {
     this._removeEventListeners = () => undefined;
   }
 
+  public cacheUpdates(updates: DrawingUpdates | undefined): DrawingMonitorState {
+    return new CachedState(this, updates ?? new Map(), this._awaitingUpdates);
+  }
+
   // ### TODO remove this - for initial testing only.
   public fakeGeometryChange(): void {
     this.onGeometryChanged([]);
   }
 
   private awaitUpdates(resolve: (updates: DrawingUpdates) => void): void {
+    assert(!this._awaitingUpdates);
     this._onStateChanged.addOnce(() => {
       const updates = this._state.getCachedUpdates();
       if (!updates) {
@@ -142,6 +154,7 @@ class DrawingMonitorImpl implements DrawingMonitor {
       }
 
       this._state = new IdleState(this);
+      this._awaitingUpdates = false;
       resolve(updates);
     });
   }
@@ -168,7 +181,7 @@ class IdleState extends DrawingMonitorState {
 class CachedState extends DrawingMonitorState {
   public get name() { return "Cached" as const; }
 
-  public constructor(monitor: DrawingMonitorImpl, private readonly _updates: DrawingUpdates) {
+  public constructor(monitor: DrawingMonitorImpl, private readonly _updates: DrawingUpdates, private readonly _ignoreDelayOnChange: boolean) {
     super(monitor);
   }
 
@@ -178,7 +191,7 @@ class CachedState extends DrawingMonitorState {
 
   public override onChangeDetected() {
     // Our cached results are no longer relevant.
-    return new DelayedState(this.monitor);
+    return this._ignoreDelayOnChange ? new DelayedState(this.monitor) : this.requestUpdates();
   }
 
   public override onUpdatesRequested() {
@@ -219,7 +232,7 @@ class RequestedState extends DrawingMonitorState {
 
     this._promise.then((updates) => {
       if (this.monitor.state === this) {
-        this.monitor.state = new CachedState(this.monitor, updates);
+        this.monitor.state = this.monitor.cacheUpdates(updates);
       }
     });
   }
