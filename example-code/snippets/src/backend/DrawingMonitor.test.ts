@@ -6,7 +6,7 @@
 import { StandaloneDb } from "@itwin/core-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { expect } from "chai";
-import { createDrawingMonitor, DrawingMonitor, DrawingMonitorCreateArgs, DrawingUpdates } from "./DrawingMonitor";
+import { createDrawingMonitor, DrawingMonitor, DrawingUpdates } from "./DrawingMonitor";
 import { Id64Set } from "@itwin/core-bentley";
 
 describe.only("DrawingMonitor", () => {

@@ -17,11 +17,13 @@ export interface DrawingMonitor {
   terminate(): void;
   /** Strictly for unit tests. */
   readonly stateName: StateName;
+  /** ###TODO remove this - for initial testing only. */
+  fakeGeometryChange(): void;
 }
 
 export interface DrawingMonitorCreateArgs {
   iModel: BriefcaseDb;
-  updateDelay: number;
+  getUpdateDelay?: () => Promise<void>;
   computeUpdates(drawingsToRegenerate: Id64Set): Promise<DrawingUpdates>;
 }
 
@@ -34,7 +36,6 @@ abstract class DrawingMonitorState {
   public abstract get name(): StateName;
 
   public constructor(protected readonly monitor: DrawingMonitorImpl) { }
-
   public getCachedUpdates(): DrawingUpdates | undefined {
     return undefined;
   }
@@ -69,11 +70,8 @@ abstract class DrawingMonitorState {
   }
 
   protected reactToChange(): DrawingMonitorState {
-    if (this.monitor.delay > 0) {
-      return new DelayedState(this.monitor);
-    }
-
-    return this.requestUpdates();
+    const delay = this.monitor.updateDelay;
+    return delay ? new DelayedState(this.monitor, delay) : this.requestUpdates();
   }
 
   private assertBadTransition(eventName: string): void {
@@ -82,19 +80,15 @@ abstract class DrawingMonitorState {
 }
 
 class DrawingMonitorImpl implements DrawingMonitor {
-  public readonly delay: number;
   public readonly iModel: BriefcaseDb;
   public readonly computeUpdates: (drawingIds: Id64Set) => Promise<DrawingUpdates>;
+  private readonly _getUpdateDelay?: () => Promise<void>;
   private readonly _onStateChanged = new BeEvent<() => void>();
   private _state: DrawingMonitorState;
   private _removeEventListeners: () => void;
 
   public get state() {
     return this._state;
-  }
-
-  public get stateName() {
-    return this._state.name;
   }
 
   public set state(newState: DrawingMonitorState) {
@@ -104,8 +98,16 @@ class DrawingMonitorImpl implements DrawingMonitor {
     }
   }
 
+  public get stateName() {
+    return this._state.name;
+  }
+
+  public get updateDelay(): Promise<void> | undefined {
+    return this._getUpdateDelay ? this._getUpdateDelay() : undefined;
+  }
+
   public constructor(args: DrawingMonitorCreateArgs) {
-    this.delay = args.updateDelay;
+    this._getUpdateDelay = args.getUpdateDelay;
     this.iModel = args.iModel;
     this.computeUpdates = args.computeUpdates;
 
@@ -138,6 +140,11 @@ class DrawingMonitorImpl implements DrawingMonitor {
 
     this._removeEventListeners();
     this._removeEventListeners = () => undefined;
+  }
+
+  // ### TODO remove this - for initial testing only.
+  public fakeGeometryChange(): void {
+    this.onGeometryChanged([]);
   }
 
   private awaitUpdates(resolve: (updates: DrawingUpdates) => void): void {
@@ -198,10 +205,10 @@ class DelayedState extends DrawingMonitorState {
   public get name() { return "Delayed" as const; }
   private readonly _delay: Promise<void>;
 
-  public constructor(monitor: DrawingMonitorImpl) {
+  public constructor(monitor: DrawingMonitorImpl, delay: Promise<void>) {
     super(monitor);
 
-    this._delay = BeDuration.wait(monitor.delay).then(() => {
+    this._delay = delay.then(() => {
       if (this.monitor.state === this) {
         this.monitor.state = this.requestUpdates();
       }
