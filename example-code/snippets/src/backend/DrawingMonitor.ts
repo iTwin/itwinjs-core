@@ -23,7 +23,7 @@ export interface DrawingMonitor {
 
 export interface DrawingMonitorCreateArgs {
   iModel: BriefcaseDb;
-  getUpdateDelay?: () => Promise<void>;
+  getUpdateDelay: () => Promise<void>;
   computeUpdates(drawingsToRegenerate: Id64Set): Promise<DrawingUpdates>;
 }
 
@@ -69,11 +69,6 @@ abstract class DrawingMonitorState {
     return new RequestedState(this.monitor, this.monitor.computeUpdates(new Set(drawingIds)));
   }
 
-  protected reactToChange(): DrawingMonitorState {
-    const delay = this.monitor.updateDelay;
-    return delay ? new DelayedState(this.monitor, delay) : this.requestUpdates();
-  }
-
   private assertBadTransition(eventName: string): void {
     assert(false, `No transition from DrawingMonitor state ${this.name} on ${eventName}`);
   }
@@ -82,7 +77,7 @@ abstract class DrawingMonitorState {
 class DrawingMonitorImpl implements DrawingMonitor {
   public readonly iModel: BriefcaseDb;
   public readonly computeUpdates: (drawingIds: Id64Set) => Promise<DrawingUpdates>;
-  private readonly _getUpdateDelay?: () => Promise<void>;
+  public readonly getUpdateDelay: () => Promise<void>;
   private readonly _onStateChanged = new BeEvent<() => void>();
   private _state: DrawingMonitorState;
   private _removeEventListeners: () => void;
@@ -102,12 +97,8 @@ class DrawingMonitorImpl implements DrawingMonitor {
     return this._state.name;
   }
 
-  public get updateDelay(): Promise<void> | undefined {
-    return this._getUpdateDelay ? this._getUpdateDelay() : undefined;
-  }
-
   public constructor(args: DrawingMonitorCreateArgs) {
-    this._getUpdateDelay = args.getUpdateDelay;
+    this.getUpdateDelay = args.getUpdateDelay;
     this.iModel = args.iModel;
     this.computeUpdates = args.computeUpdates;
 
@@ -171,7 +162,7 @@ class IdleState extends DrawingMonitorState {
   public get name() { return "Idle" as const; }
 
   public override onChangeDetected() {
-    return this.reactToChange();
+    return new DelayedState(this.monitor);
   }
 
   public override onUpdatesRequested() {
@@ -192,7 +183,7 @@ class CachedState extends DrawingMonitorState {
 
   public override onChangeDetected() {
     // Our cached results are no longer relevant.
-    return this.reactToChange();
+    return new DelayedState(this.monitor);
   }
 
   public override onUpdatesRequested() {
@@ -203,12 +194,11 @@ class CachedState extends DrawingMonitorState {
 
 class DelayedState extends DrawingMonitorState {
   public get name() { return "Delayed" as const; }
-  private readonly _delay: Promise<void>;
 
-  public constructor(monitor: DrawingMonitorImpl, delay: Promise<void>) {
+  public constructor(monitor: DrawingMonitorImpl) {
     super(monitor);
 
-    this._delay = delay.then(() => {
+    monitor.getUpdateDelay().then(() => {
       if (this.monitor.state === this) {
         this.monitor.state = this.requestUpdates();
       }
@@ -216,7 +206,8 @@ class DelayedState extends DrawingMonitorState {
   }
 
   public override onChangeDetected(): DrawingMonitorState {
-    return this.reactToChange();
+    // Restart the delay.
+    return new DelayedState(this.monitor);
   }
 
   public override onUpdatesRequested(): DrawingMonitorState {

@@ -9,6 +9,20 @@ import { expect } from "chai";
 import { createDrawingMonitor, DrawingMonitor, DrawingUpdates } from "./DrawingMonitor";
 import { Id64Set } from "@itwin/core-bentley";
 
+function createFakeTimer() {
+  let resolve, reject;
+  const promise = new Promise((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+
+  return {
+    promise,
+    resolve,
+    reject,
+  };
+}
+
 describe.only("DrawingMonitor", () => {
   let db: StandaloneDb;
 
@@ -31,9 +45,9 @@ describe.only("DrawingMonitor", () => {
     return map;
   }
 
-  async function test(updateDelay: number, func: (monitor: DrawingMonitor) => Promise<void>): Promise<void> {
+  async function test(updateDelay: Promise<void> | undefined, func: (monitor: DrawingMonitor) => Promise<void>): Promise<void> {
     const monitor = createDrawingMonitor({
-      updateDelay,
+      getUpdateDelay: () => updateDelay ?? Promise.resolve(),
       iModel: db,
       computeUpdates,
     });
@@ -49,7 +63,6 @@ describe.only("DrawingMonitor", () => {
     describe("Idle", () => {
       describe("on change detected", () => {
         it("=> Delayed if delay is defined", async () => {
-
         });
 
         it("=> Requested if no delay and any drawings need regeneration", async () => {
@@ -63,7 +76,7 @@ describe.only("DrawingMonitor", () => {
 
       describe("on terminated", () => {
         it("=> Terminated", async () => {
-          await test(100, async (mon) => {
+          await test(undefined, async (mon) => {
             expect(mon.stateName).to.equal("Idle");
             mon.terminate();
             expect(mon.stateName).to.equal("Terminated");
