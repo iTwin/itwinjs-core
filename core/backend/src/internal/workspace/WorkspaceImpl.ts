@@ -9,8 +9,8 @@
 import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
-import { AccessToken, assert, BeEvent, DbResult, Mutable, OpenMode } from "@itwin/core-bentley";
-import { CloudSqliteError, FilePropertyProps, LocalDirName, LocalFileName, WorkspaceError } from "@itwin/core-common";
+import { AccessToken, assert, BeEvent, DbResult, Mutable, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import { CloudSqliteError, FilePropertyProps, InternetConnectivityStatus, LocalDirName, LocalFileName, WorkspaceError } from "@itwin/core-common";
 import { CloudSqlite } from "../../CloudSqlite";
 import { IModelHost, KnownLocations } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
@@ -119,6 +119,19 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     // sharedConnect returns true if we just connected (if the container is shared, it may have already been connected)
     if (cloudContainer.sharedConnect() && false !== props.syncOnConnect) {
       try {
+        if (ProcessDetector.isMobileAppBackend) {
+          // Even though we've already confirmed that we are running in a mobile app backend,
+          // having code here that references NativeHost causes a runtime exception. This uses a
+          // global attached to process to check for connectivity instead. That global is set by
+          // NativeHost any time the connectivity status changes.
+          // Note: undefined implies online, since the global is only set when connectivity changes.
+          if ((process as any).internetConnectivityStatus === InternetConnectivityStatus.Offline) {
+            // If running in a mobile app and we're offline, don't check for changes.
+            // Doing so will fail and be caught below, but it has to wait for the network
+            // timeout.
+            return;
+          }
+        }
         cloudContainer.checkForChanges();
       } catch {
         // must be offline
