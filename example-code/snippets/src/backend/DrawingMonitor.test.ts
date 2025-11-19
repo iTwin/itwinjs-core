@@ -70,9 +70,9 @@ describe.only("DrawingMonitor", () => {
     describe("Idle", () => {
       it("change detected => Delayed", async () => {
         await test(undefined, async (mon) => {
-          expect(mon.stateName).to.equal("Idle");
+          expect(mon.state.name).to.equal("Idle");
           mon.fakeGeometryChange();
-          expect(mon.stateName).to.equal("Delayed");
+          expect(mon.state.name).to.equal("Delayed");
         });
       });
 
@@ -83,9 +83,9 @@ describe.only("DrawingMonitor", () => {
 
         it("=> Cached (empty) if no drawings require regeneration", async () => {
           await test(undefined, async (mon) => {
-            expect(mon.stateName).to.equal("Idle");
+            expect(mon.state.name).to.equal("Idle");
             const promise = mon.getUpdates();
-            expect(mon.stateName).to.equal("Cached");
+            expect(mon.state.name).to.equal("Cached");
             const results = await promise;
             expect(results.size).to.equal(0);
           })
@@ -94,9 +94,9 @@ describe.only("DrawingMonitor", () => {
 
       it("terminate => Terminated", async () => {
         await test(undefined, async (mon) => {
-          expect(mon.stateName).to.equal("Idle");
+          expect(mon.state.name).to.equal("Idle");
           mon.terminate();
-          expect(mon.stateName).to.equal("Terminated");
+          expect(mon.state.name).to.equal("Terminated");
         });
       });
     })
@@ -105,17 +105,17 @@ describe.only("DrawingMonitor", () => {
       it("change detected => Terminated", async () => {
         await test(undefined, async (mon) => {
           mon.terminate();
-          expect(mon.stateName).to.equal("Terminated");
+          expect(mon.state.name).to.equal("Terminated");
 
           mon.fakeGeometryChange();
-          expect(mon.stateName).to.equal("Terminated");
+          expect(mon.state.name).to.equal("Terminated");
         });
       });
 
       it("getUpdates => Error", async () => {
         await test(undefined, async (mon) => {
           mon.terminate();
-          expect(mon.stateName).to.equal("Terminated");
+          expect(mon.state.name).to.equal("Terminated");
 
           expect(() => mon.getUpdates()).to.throw();
         });
@@ -124,10 +124,10 @@ describe.only("DrawingMonitor", () => {
       it("terminate => Terminated", async () => {
         await test(undefined, async (mon) => {
           mon.terminate();
-          expect(mon.stateName).to.equal("Terminated");
+          expect(mon.state.name).to.equal("Terminated");
 
           mon.terminate();
-          expect(mon.stateName).to.equal("Terminated");
+          expect(mon.state.name).to.equal("Terminated");
         });
       });
     });
@@ -138,10 +138,10 @@ describe.only("DrawingMonitor", () => {
           const timer = createFakeTimer();
           await test(() => , async (mon) => {
             mon.fakeGeometryChange();
-            expect(mon.stateName).to.equal("Delayed");
+            expect(mon.state.name).to.equal("Delayed");
         
             mon.fakeGeometryChange();
-            expect(mon.stateName).to.equal("Delayed");
+            expect(mon.state.name).to.equal("Delayed");
 
       });
       */
@@ -154,9 +154,9 @@ describe.only("DrawingMonitor", () => {
           const timer = createFakeTimer();
           await test(() => timer.promise, async (mon) => {
             mon.fakeGeometryChange();
-            expect(mon.stateName).to.equal("Delayed");
+            expect(mon.state.name).to.equal("Delayed");
             await timer.resolve();
-            expect(mon.stateName).to.equal("Cached");
+            expect(mon.state.name).to.equal("Cached");
             const results = await mon.getUpdates();
             expect(results.size).to.equal(0);
           });
@@ -171,9 +171,9 @@ describe.only("DrawingMonitor", () => {
         it("=> Cached (empty) if no drawings require regeneration", async () => {
           await test(undefined, async (mon) => {
             mon.fakeGeometryChange();
-            expect(mon.stateName).to.equal("Delayed");
+            expect(mon.state.name).to.equal("Delayed");
             const promise = mon.getUpdates();
-            expect(mon.stateName).to.equal("Cached");
+            expect(mon.state.name).to.equal("Cached");
             const results = await promise;
             expect(results.size).to.equal(0);
           });
@@ -183,9 +183,9 @@ describe.only("DrawingMonitor", () => {
       it("terminate => Terminated", async () => {
         await test(undefined, async (mon) => {
           mon.fakeGeometryChange();
-          expect(mon.stateName).to.equal("Delayed");
+          expect(mon.state.name).to.equal("Delayed");
           mon.terminate();
-          expect(mon.stateName).to.equal("Terminated");
+          expect(mon.state.name).to.equal("Terminated");
         });
       });
     });

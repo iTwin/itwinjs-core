@@ -9,14 +9,13 @@ import { ModelIdAndGeometryGuid } from "@itwin/core-common";
 
 export type DrawingUpdates = Map<Id64String, string>;
 
-/** @internal Exported strictly for tests. */
-export type StateName = "Idle" | "Cached" | "Delayed" | "Requested" | "Terminated";
+type StateName = "Idle" | "Cached" | "Delayed" | "Requested" | "Terminated";
 
 export interface DrawingMonitor {
   getUpdates(): Promise<DrawingUpdates>;
   terminate(): void;
   /** Strictly for unit tests. */
-  readonly stateName: StateName;
+  readonly state: { name: string };
   /** ###TODO remove this - for initial testing only. */
   fakeGeometryChange(): void;
 }
@@ -91,10 +90,6 @@ class DrawingMonitorImpl implements DrawingMonitor {
       this._state = newState;
       this._onStateChanged.raiseEvent();
     }
-  }
-
-  public get stateName() {
-    return this._state.name;
   }
 
   public constructor(args: DrawingMonitorCreateArgs) {
