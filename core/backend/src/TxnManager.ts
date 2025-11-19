@@ -719,6 +719,7 @@ export class TxnManager {
   }
 
   /** @internal */
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   public _onChangesPushed(changeset: ChangesetIndexAndId) {
     IpcHost.notifyTxns(this._iModel, "notifyPushedChanges", changeset);
     this.touchWatchFile();
@@ -726,6 +727,7 @@ export class TxnManager {
   }
 
   /** @internal */
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   public _onChangesPulled(changeset: ChangesetIndexAndId) {
     IpcHost.notifyTxns(this._iModel, "notifyPulledChanges", changeset);
     this.touchWatchFile();
