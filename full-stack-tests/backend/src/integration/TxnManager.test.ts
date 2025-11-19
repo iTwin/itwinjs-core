@@ -2,7 +2,7 @@ import { assert, expect } from "chai";
 import { _nativeDb, BriefcaseDb, ChannelControl, DrawingCategory, IModelHost } from "@itwin/core-backend";
 import { HubMock } from "@itwin/core-backend/lib/cjs/internal/HubMock";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { Code, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { ChangesetIndexAndId, Code, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { GuidString, Id64, Id64String } from "@itwin/core-bentley";
 
 describe("Discarding local txns test", async () => {
@@ -443,6 +443,110 @@ describe("Discarding local txns test", async () => {
       // This essentially ends with both briefcases out of sync with no direct means to resync as all record of txns were cleared !!
       testElement(firstBriefcase, el1Id, "Inserted"); // Element will still be present in the first briefcase
       testElement(secondBriefcase, el1Id);  // Element will be absent from the second briefcase
+    });
+  });
+
+  describe("TxnManager events for push/pull", () => {
+    it("should raise onChangesPushed event when changes are pushed", async () => {
+      await setupTestSchemaAndModel();
+      assert.equal(briefcases.length, 2, "Two briefcases should be opened");
+
+      const [firstBriefcase] = briefcases;
+
+      const pushedChangesets: ChangesetIndexAndId[] = [];
+
+      // Listen to the onChangesPushed event
+      const removePushListener = firstBriefcase.txns.onChangesPushed.addListener((changeset: ChangesetIndexAndId) => {
+        pushedChangesets.push(changeset);
+      });
+
+      let pullEventFired = false;
+      // Listen to the onChangesPulled event
+      const removePullListener = firstBriefcase.txns.onChangesPulled.addListener((_changeset: ChangesetIndexAndId) => {
+        pullEventFired = true;
+      });
+
+      try {
+        // Insert an element
+        await insertElement(firstBriefcase, "TestElement");
+
+        // Push changes
+        await firstBriefcase.pushChanges({ description: "Test push event", accessToken: adminToken });
+
+        await insertElement(firstBriefcase, "TestElement");
+
+        // Push another set of changes
+        await firstBriefcase.pushChanges({ description: "Test push event", accessToken: adminToken });
+
+        // Verify that both push events were fired
+        assert.equal(pushedChangesets.length, 2, "onChangesPushed event should have been fired twice");
+        const [firstChangeset, secondChangeset] = pushedChangesets;
+
+        assert.isDefined(firstChangeset, "Changeset should be defined");
+        assert.isDefined(firstChangeset.id, "Changeset id should be defined");
+        assert.isDefined(firstChangeset.index, "Changeset index should be defined");
+
+        assert.isDefined(secondChangeset, "Changeset should be defined");
+        assert.isDefined(secondChangeset.id, "Changeset id should be defined");
+        assert.isDefined(secondChangeset.index, "Changeset index should be defined");
+
+        assert.isTrue(secondChangeset.index > firstChangeset.index, "Second changeset index should be greater than first");
+
+        // Make sure no pull event was fired
+        assert.isFalse(pullEventFired);
+      } finally {
+        removePushListener();
+        removePullListener();
+        await firstBriefcase.locks.releaseAllLocks();
+      }
+    });
+
+    it("should raise onChangesPulled event when changes are pulled", async () => {
+      await setupTestSchemaAndModel();
+      assert.equal(briefcases.length, 2, "Two briefcases should be opened");
+
+      const [firstBriefcase, secondBriefcase] = briefcases;
+
+      // Insert an element in first briefcase and push
+      await insertElement(firstBriefcase, "FirstElement");
+      await firstBriefcase.pushChanges({ description: "Insert element", accessToken: adminToken });
+      await firstBriefcase.locks.releaseAllLocks();
+
+      const pulledChangesets: ChangesetIndexAndId[] = [];
+
+      // Listen to the onChangesPulled event in second briefcase
+      const removeListener = secondBriefcase.txns.onChangesPulled.addListener((changeset: ChangesetIndexAndId) => {
+        pulledChangesets.push(changeset);
+      });
+
+      try {
+        // Pull changes
+        await secondBriefcase.pullChanges({ accessToken: adminToken });
+
+        await insertElement(firstBriefcase, "TestElement");
+
+        // Push another set of changes from the first briefcase
+        await firstBriefcase.pushChanges({ description: "Test push event", accessToken: adminToken });
+
+        // Pull changes
+        await secondBriefcase.pullChanges({ accessToken: adminToken });
+
+        // Verify event was fired
+        assert.equal(pulledChangesets.length, 2, "onChangesPulled event should have been fired twice");
+        const [firstChangeset, secondChangeset] = pulledChangesets;
+
+        assert.isDefined(firstChangeset, "Changeset should be defined");
+        assert.isDefined(firstChangeset.id, "Changeset id should be defined");
+        assert.isDefined(firstChangeset.index, "Changeset index should be defined");
+
+        assert.isDefined(secondChangeset, "Changeset should be defined");
+        assert.isDefined(secondChangeset.id, "Changeset id should be defined");
+        assert.isDefined(secondChangeset.index, "Changeset index should be defined");
+
+        assert.isTrue(secondChangeset.index > firstChangeset.index, "Second changeset index should be greater than first");
+      } finally {
+        removeListener();
+      }
     });
   });
 });
