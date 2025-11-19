@@ -37,6 +37,7 @@ import { ChangesetHealthStats } from '@itwin/core-common';
 import { ChangesetId } from '@itwin/core-common';
 import { ChangesetIdWithIndex } from '@itwin/core-common';
 import { ChangesetIndex } from '@itwin/core-common';
+import { ChangesetIndexAndId } from '@itwin/core-common';
 import { ChangesetIndexOrId } from '@itwin/core-common';
 import { ChangesetProps } from '@itwin/core-common';
 import { ChangesetRange } from '@itwin/core-common';
@@ -584,7 +585,7 @@ export class BriefcaseDb extends IModelDb {
     close(): void;
     // (undocumented)
     disableChangesetStatTracking(): Promise<void>;
-    // @alpha
+    // @preview
     discardChanges(args?: {
         retainLocks?: true;
     }): Promise<void>;
@@ -2551,6 +2552,7 @@ export interface ElementDrivesElementProps extends RelationshipProps {
 export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     // (undocumented)
     static get className(): string;
+    static evaluateFields(args: EvaluateFieldsArgs): number;
     static isSupportedForIModel(iModel: IModelDb): boolean;
     // @internal (undocumented)
     static onDeletedDependency(props: RelationshipProps, iModel: IModelDb): void;
@@ -2815,6 +2817,12 @@ export namespace EntityReferences {
     export function toId64(id: EntityReference): string;
     // @internal
     export function typeFromClass(entityClass: typeof Entity): ConcreteEntityTypes;
+}
+
+// @beta
+export interface EvaluateFieldsArgs {
+    block: TextBlock;
+    iModel: IModelDb;
 }
 
 // @public
@@ -4526,6 +4534,8 @@ export class LocalhostIpcHost {
 // @internal (undocumented)
 export interface LocalhostIpcHostOpts {
     // (undocumented)
+    host?: string;
+    // (undocumented)
     noServer?: boolean;
     // (undocumented)
     socketPort?: number;
@@ -5250,6 +5260,7 @@ export class RebaseManager {
     }): void;
     canAbort(): boolean;
     inProgress(): boolean;
+    get isAborting(): boolean;
     get isMerging(): boolean;
     get isRebasing(): boolean;
     onConflict(args: RebaseChangesetConflictArgs): DbConflictResolution | undefined;
@@ -6792,6 +6803,12 @@ export class TxnManager {
     readonly onChangesApplied: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onChangesApplied(): void;
+    readonly onChangesPulled: BeEvent<(parentChangeset: ChangesetIndexAndId) => void>;
+    // @internal (undocumented)
+    _onChangesPulled(changeset: ChangesetIndexAndId): void;
+    readonly onChangesPushed: BeEvent<(parentChangeset: ChangesetIndexAndId) => void>;
+    // @internal (undocumented)
+    _onChangesPushed(changeset: ChangesetIndexAndId): void;
     readonly onCommit: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onCommit(): void;
@@ -6813,6 +6830,10 @@ export class TxnManager {
     protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
+    // @alpha
+    readonly onRebaseBegin: BeEvent<(txns: TxnIdString[]) => void>;
+    // @alpha
+    readonly onRebaseEnd: BeEvent<() => void>;
     // @alpha
     readonly onRebaseTxnBegin: BeEvent<(txn: TxnProps) => void>;
     // @alpha
