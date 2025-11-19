@@ -6,6 +6,8 @@
 import { StandaloneDb } from "@itwin/core-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { expect } from "chai";
+import { createDrawingMonitor, DrawingMonitor, DrawingMonitorCreateArgs, DrawingUpdates } from "./DrawingMonitor";
+import { Id64Set } from "@itwin/core-bentley";
 
 describe.only("DrawingMonitor", () => {
   let db: StandaloneDb;
@@ -20,7 +22,54 @@ describe.only("DrawingMonitor", () => {
 
   after(() => db.close());
 
-  it("test", () => {
+  async function computeUpdates(drawingIds: Id64Set): Promise<DrawingUpdates> {
+    const map = new Map<string, string>();
+    for (const id of drawingIds) {
+      map.set(id, id);
+    }
 
+    return map;
+  }
+
+  async function test(updateDelay: number, func: (monitor: DrawingMonitor) => Promise<void>): Promise<void> {
+    const monitor = createDrawingMonitor({
+      updateDelay,
+      iModel: db,
+      computeUpdates,
+    });
+
+    try {
+      await func(monitor);
+    } finally {
+      monitor.terminate();
+    }
+  }
+
+  describe("state transitions", () => {
+    describe("Idle", () => {
+      describe("on change detected", () => {
+        it("=> Delayed if delay is defined", async () => {
+
+        });
+
+        it("=> Requested if no delay and any drawings need regeneration", async () => {
+
+        });
+
+        it("=> Cached if no delay and no drawings require regeneration", async () => {
+
+        });
+      });
+
+      describe("on terminated", () => {
+        it("=> Terminated", async () => {
+          await test(100, async (mon) => {
+            expect(mon.stateName).to.equal("Idle");
+            mon.terminate();
+            expect(mon.stateName).to.equal("Terminated");
+          });
+        });
+      });
+    })
   });
 });
