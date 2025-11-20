@@ -93,6 +93,27 @@ jobs:
         displayName: Get Branch Name
         name: getBranchName
 
+      - bash: |
+          mergifyPath=".github/mergify.yml"
+          releaseBranch=$(getBranchName.releaseBranchName)
+          echo "Updating mergify.yml backports for security fixes"
+
+          # Get the current minor release branch value to move to previous position
+          currentMinorBranch=$(grep "^current_minor:" "$mergifyPath" | sed 's/^current_minor: "\(.*\)"/\1/')
+
+          # Update current_minor to the new release branch
+          sed -i "s/^current_minor: \".*\"/current_minor: \"$releaseBranch\"/" "$mergifyPath"
+
+          # Update previous_minor to what was the current_minor (always update, even if empty)
+          sed -i "s/^previous_minor: \".*\"/previous_minor: \"$currentMinorBranch\"/" "$mergifyPath"
+
+          git add "$mergifyPath"
+          git commit -m "Update mergify.yml for new release branch $releaseBranch"
+        displayName: Update mergify.yml on master before branch creation
+
+      - bash: git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:$(Build.SourceBranch)
+        displayName: Push mergify updates to master
+
       - bash: git checkout -b $(getBranchName.releaseBranchName)
         displayName: Create release branch and checkout
 
@@ -114,12 +135,12 @@ jobs:
           # e.g. if this release is `release/5.0.x`, value in `gather-docs.yaml`
           # should be `release/4.<whatever_last_minor_release_version_was>.x`
           # additionally if major version bump, the `mergify.yml` also needs to be edited manually
-          # if this release is `release/5.0.x`, the branches under actions/backport should be updated to look like:
-          #     branches:
-          #       # current minor release branch
-          #       - "release/5.0.x"
-          #       # previous major release branch
-          #       - `release/4.<whatever_last_minor_release_version_was>.x`
+          # if this release is `release/5.0.x`, the backport release branch names at the top should be updated to look like:
+          #     # Backport release branch configuration
+          #     current_minor: "release/5.0.x"
+          #     previous_minor: ""
+          #     previous_major: "release/4.<whatever_last_minor_release_version_was>.x"
+          # note that previous_minor is intentionally left as an empty string as there is now no previous minor version.
 
           if [ $((previousMinorVersion)) -lt 0 ]
           then
@@ -263,20 +284,6 @@ jobs:
         name: getVersion
 
       - ${{ if eq(parameters.BumpType, 'minor') }}:
-
-          # When creating a minor release, the mergify.yml file needs to be updated to change the hardcoded branch names for security fixes
-          - bash: |
-              mergifyPath=".github/mergify.yml"
-              version=$(echo $(getVersion.version) | sed 's/\([0-9]*\.[0-9]*\)\.[0-9]*/\1.x/')
-              releaseBranch="release/$version"
-              majorVersion=$(echo $version | cut -d. -f1)
-              echo "Updating mergify.yml to backport to $releaseBranch for security fixes"
-
-              # Update the backporting release branch matching the major version number of the new version
-              sed -i "/\"release\/$majorVersion\.[0-9]*\.x\"/ s|\"release/$majorVersion\.[0-9]*\.x\"|\"$releaseBranch\"|" "$mergifyPath"
-
-            displayName: Update mergify.yml for new minor release
-            condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
 
           # When creating a minor release, the NextVersion.md need to be cleared and the contents placed into a {Version Number}.md file
           - powershell: |
