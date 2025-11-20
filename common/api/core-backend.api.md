@@ -4016,6 +4016,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
     disableThinnedNativeInstanceWorkflow?: boolean;
     // (undocumented)
     hubAccess?: BackendHubAccess;
+    // @beta
+    incrementalSchemaLoading: "enabled" | "disabled";
     // @internal (undocumented)
     logTileLoadTimeThreshold: number;
     // @internal (undocumented)
@@ -4046,6 +4048,8 @@ export interface IModelHostOptions {
     disableThinnedNativeInstanceWorkflow?: boolean;
     enableOpenTelemetry?: boolean;
     hubAccess?: BackendHubAccess;
+    // @beta
+    incrementalSchemaLoading?: "enabled" | "disabled";
     // @internal
     logTileLoadTimeThreshold?: number;
     // @internal
