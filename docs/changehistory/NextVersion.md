@@ -12,6 +12,7 @@ publish: false
   - [Presentation changes](#presentation-changes)
   - [API deprecations](#api-deprecations)
     - [@itwin/presentation-common](#itwinpresentation-common)
+  - [Incremental Schema Loading](#incremental-schema-loading)
 
 ## Node.js 24 support
 
@@ -57,3 +58,29 @@ For detailed information about the recommended KindOfQuantity to use in your too
   const traverseContent = createContentTraverser(myVisitor);
   traverseContent(content.descriptor, content.contentSet);
   ```
+
+## Incremental Schema Loading
+
+Incremental Schema Loading support has been added to the the backend on `IModelDb` and `IModelApp` on frontends. In this release, the incremental schema loading is disabled by default, but clients can enable it using the incrementalSchemaLoading setting on the `IModelDb` and `IModelApp` options. Incremental schema loading allows to load a schema partially. Clients can recieve their schema and its elemehts while references and lazy loaded schema elements are loaded in the background.
+
+### Examples
+*Frontend*
+```
+await IModelApp.startup({
+  incrementalSchemaLoading: "enabled"
+});
+
+await IModelApp.startup({
+  incrementalSchemaLoading: "disabled"
+});
+```
+*Backend
+```
+await IModelHost.startup({
+  incrementalSchemaLoading: "enabled",
+});
+
+await IModelHost.startup({
+  incrementalSchemaLoading: "disabled",
+});
+```
