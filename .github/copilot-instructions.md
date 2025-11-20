@@ -207,7 +207,7 @@ Use release tags consistently - **these determine API stability contracts**:
 iTwin.js uses **EC (Entity-Class)** schemas based on BIS:
 
 - Schema classes in `core/ecschema-metadata`
-- Backend locaters in `core/ecschema-locaters`
+- Backend locators in `core/ecschema-locators`
 - Schemas define Elements, Aspects, Relationships, and Models
 - Elements inherit from `Element` base class with required properties: `classFullName`, `code`, `model`
 
