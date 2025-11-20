@@ -58,7 +58,7 @@ iTwin.js is a **monorepo** containing TypeScript packages for creating Infrastru
 - **`@itwin/core-electron`** (`core/electron/`): Electron-specific utilities (ElectronHost, IPC, window management)
 - **`@itwin/core-mobile`** (`core/mobile/`): Mobile platform utilities (iOS/Android RPC, authentication)
 - **`@itwin/express-server`** (`core/express-server/`): Express web server utilities for backend services
-- **`@itwin/ecschema-locaters`** (`core/ecschema-locaters/`): Schema location and loading on backend
+- **`@itwin/ecschema-locaters`** (`core/ecschema-locaters/`): Schema location and loading on backend <!-- Note: "locaters" is the correct package name, even though "locators" is the standard spelling. -->
 - **`@itwin/ecschema-editing`** (`core/ecschema-editing/`): Schema creation and modification APIs
 
 **Frontend Packages:**
