@@ -1383,7 +1383,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
 
     const pushChangeFromB2 = async () => {
       await b2.pullChanges();
-      await testIModel.insertRecipe2d(b2)
+      await testIModel.insertRecipe2d(b2);
       b2.saveChanges();
       await b2.pushChanges({ description: "insert element on b2" });
     };
