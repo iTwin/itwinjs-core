@@ -649,6 +649,15 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     if (undefined !== jsonObj.scientificType && typeof (jsonObj.scientificType) !== "string")
       throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'scientificType' attribute. It should be of type 'string'.`);
 
+    if (undefined !== jsonObj.ratioType && typeof (jsonObj.ratioType) !== "string")
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'ratioType' attribute. It should be of type 'string'.`);
+
+    if (undefined !== jsonObj.ratioSeparator && typeof (jsonObj.ratioSeparator) !== "string")
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'ratioSeparator' attribute. It should be of type 'string'.`);
+
+    if (undefined !== jsonObj.ratioFormatType && typeof (jsonObj.ratioFormatType) !== "string")
+      throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'ratioFormatType' attribute. It should be of type 'string'.`);
+
     if (undefined !== jsonObj.stationOffsetSize && typeof (jsonObj.stationOffsetSize) !== "number")
       throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The Format ${this._currentItemFullName} has an invalid 'stationOffsetSize' attribute. It should be of type 'number'.`);
 

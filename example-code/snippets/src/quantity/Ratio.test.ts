@@ -1,6 +1,6 @@
-import { Format, FormatterSpec, ParsedQuantity, ParserSpec } from "@itwin/core-quantity";
+import { Format, Formatter, FormatterSpec, ParsedQuantity, ParserSpec } from "@itwin/core-quantity";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
-import { SchemaContext, SchemaKey, SchemaUnitProvider } from "@itwin/ecschema-metadata";
+import { SchemaContext, SchemaFormatsProvider, SchemaKey, SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { assert } from "chai";
 import path from "path";
 
@@ -212,5 +212,41 @@ describe("Ratio formatting examples", () => {
     assert.approximately((parsedThreeQuarterInch as ParsedQuantity).value, 1/16, 0.0001);
     assert.approximately((parsedOneAndHalfInch as ParsedQuantity).value, 1/8, 0.0001);
     assert.approximately((parsedThreeInch as ParsedQuantity).value, 0.25, 0.0001);
+  });
+
+  it("Ratio Formatting with KindOfQuantity", async () => {
+    // __PUBLISH_EXTRACT_START__ Quantity_Formatting.Ratio_KOQ
+    const unitsProvider = new SchemaUnitProvider(schemaContext);
+
+    // 1. Test Metric System (SI)
+    // Initialize provider with "metric" system
+    const formatsProviderMetric = new SchemaFormatsProvider(schemaContext, "metric");
+
+    // Get the format for the SCALE_FACTOR KindOfQuantity
+    // Should pick the format associated with SI unit (M_PER_M_LENGTH_RATIO)
+    const formatPropsMetric = await formatsProviderMetric.getFormat("RatioUnits.SCALE_FACTOR");
+    // Create the format object
+    const formatMetric = await Format.createFromJSON("MetricScale", unitsProvider, formatPropsMetric!);
+
+    // Test formatting
+    const persistenceUnit = await unitsProvider.findUnitByName("RatioUnits.DECIMAL_LENGTH_RATIO");
+    const specMetric = await FormatterSpec.create("MetricScale", formatMetric, unitsProvider, persistenceUnit);
+    assert.equal(Formatter.formatQuantity(0.01, specMetric), "1:100.0");
+    // 2. Test Imperial System (USCustom)
+    // Initialize provider with "imperial" system
+    const formatsProviderImperial = new SchemaFormatsProvider(schemaContext, "imperial");
+
+    // Get the format for the SCALE_FACTOR KindOfQuantity
+    // Should pick the format associated with USCUSTOM unit (IN_PER_FT_LENGTH_RATIO)
+    const formatPropsImperial = await formatsProviderImperial.getFormat("RatioUnits.SCALE_FACTOR");
+
+    // Create the format object
+    const formatImperial = await Format.createFromJSON("ImperialScale", unitsProvider, formatPropsImperial!);
+
+    // Test formatting
+    const specImperial = await FormatterSpec.create("ImperialScale", formatImperial, unitsProvider, persistenceUnit);
+    assert.equal(Formatter.formatQuantity(1.0, specImperial), "12\"=1'");
+
+    // __PUBLISH_EXTRACT_END__
   });
 });

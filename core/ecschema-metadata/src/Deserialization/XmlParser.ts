@@ -509,6 +509,9 @@ export class XmlParser extends AbstractParser<Element> {
     const thousandSeparator = this.getOptionalAttribute(xmlElement, "thousandSeparator");
     const uomSeparator = this.getOptionalAttribute(xmlElement, "uomSeparator");
     const scientificType = this.getOptionalAttribute(xmlElement, "scientificType");
+    const ratioType = this.getOptionalAttribute(xmlElement, "ratioType");
+    const ratioSeparator = this.getOptionalAttribute(xmlElement, "ratioSeparator");
+    const ratioFormatType = this.getOptionalAttribute(xmlElement, "ratioFormatType");
 
     const stationOffsetSize = this.getOptionalIntAttribute(xmlElement, "stationOffsetSize",
       `The Format ${this._currentItemFullName} has an invalid 'stationOffsetSize' attribute. It should be a numeric value.`);
@@ -563,6 +566,9 @@ export class XmlParser extends AbstractParser<Element> {
       thousandSeparator,
       uomSeparator,
       scientificType,
+      ratioType,
+      ratioSeparator,
+      ratioFormatType,
       stationOffsetSize,
       stationSeparator,
       composite,

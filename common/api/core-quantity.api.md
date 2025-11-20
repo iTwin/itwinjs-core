@@ -94,14 +94,14 @@ export class BaseFormat {
     protected _precision: number;
     // (undocumented)
     get ratioFormatType(): RatioFormatType | undefined;
-    set ratioFormatType(ratioFormatType: RatioFormatType);
+    set ratioFormatType(ratioFormatType: RatioFormatType | undefined);
     // (undocumented)
-    protected _ratioFormatType: RatioFormatType;
+    protected _ratioFormatType?: RatioFormatType;
     // (undocumented)
-    get ratioSeparator(): string;
-    set ratioSeparator(ratioSeparator: string);
+    get ratioSeparator(): string | undefined;
+    set ratioSeparator(ratioSeparator: string | undefined);
     // (undocumented)
-    protected _ratioSeparator: string;
+    protected _ratioSeparator?: string;
     // (undocumented)
     get ratioType(): RatioType | undefined;
     set ratioType(ratioType: RatioType | undefined);

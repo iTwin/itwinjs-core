@@ -502,6 +502,9 @@ describe("XmlParser", () => {
         scientificType: undefined,
         stationOffsetSize: undefined,
         stationSeparator: undefined,
+        ratioFormatType: undefined,
+        ratioSeparator: undefined,
+        ratioType: undefined,
       } as SchemaItemFormatProps;
 
       const actualReferenceSchema: SchemaReferenceProps[] = Array.from(parser.getReferences());
@@ -546,6 +549,60 @@ describe("XmlParser", () => {
     });
 
     it("should throw for invalid composite includeZero attribute", () => { });
+
+    it("should parse ratio format props correctly", () => {
+      const itemXml = `
+        <ECSchemaReference name="Units" alias="u" version="1.0.0"></ECSchemaReference>
+        <Format typeName="TestRatioFormat" type="Ratio" ratioType="OneToN" ratioSeparator=":" ratioFormatType="Decimal" precision="4" formatTraits="trailZeroes|showUnitLabel" />`;
+
+      parser = new XmlParser(createSchemaXmlWithItems(itemXml));
+      const findResult = parser.findItem("TestRatioFormat");
+      if (findResult === undefined)
+        throw new Error("Expected finding Format to be successful");
+
+      const [, , itemElement] = findResult;
+
+      const expectedProps = {
+        type: "Ratio",
+        precision: 4,
+        formatTraits: ["trailZeroes", "showUnitLabel"],
+        ratioType: "OneToN",
+        ratioSeparator: ":",
+        ratioFormatType: "Decimal",
+        description: undefined,
+        label: undefined,
+        roundFactor: undefined,
+        minWidth: undefined,
+        showSignOption: undefined,
+        decimalSeparator: undefined,
+        thousandSeparator: undefined,
+        uomSeparator: undefined,
+        scientificType: undefined,
+        stationOffsetSize: undefined,
+        stationSeparator: undefined,
+        composite: undefined,
+      } as SchemaItemFormatProps;
+
+      const actualProps = parser.parseFormat(itemElement);
+      assert.deepEqual(actualProps, expectedProps);
+    });
+
+    it("should parse ratio format with fractional type", () => {
+      const itemXml = `
+        <Format typeName="TestRatioFormat" type="Ratio" ratioType="NToOne" ratioSeparator="=" ratioFormatType="Fractional" precision="8" formatTraits="keepSingleZero" />`;
+
+      parser = new XmlParser(createSchemaXmlWithItems(itemXml));
+      const findResult = parser.findItem("TestRatioFormat");
+      if (findResult === undefined)
+        throw new Error("Expected finding Format to be successful");
+
+      const [, , itemElement] = findResult;
+
+      const actualProps = parser.parseFormat(itemElement);
+      assert.strictEqual(actualProps.ratioType, "NToOne");
+      assert.strictEqual(actualProps.ratioSeparator, "=");
+      assert.strictEqual(actualProps.ratioFormatType, "Fractional");
+    });
   });
 
   describe("parseInvertedUnit", () => {

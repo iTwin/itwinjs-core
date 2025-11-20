@@ -49,6 +49,9 @@ export class Format extends SchemaItem {
   public get stationSeparator(): string { return this._base.stationSeparator; }
   public get stationOffsetSize(): number | undefined { return this._base.stationOffsetSize; }
   public get stationBaseFactor(): number | undefined { return this._base.stationBaseFactor; }
+  public get ratioType(): string | undefined { return this._base.ratioType; }
+  public get ratioSeparator(): string | undefined { return this._base.ratioSeparator; }
+  public get ratioFormatType(): string | undefined { return this._base.ratioFormatType; }
   public get formatTraits(): FormatTraits { return this._base.formatTraits; }
   public get spacer(): string | undefined { return this._base.spacer; }
   public get includeZero(): boolean | undefined { return this._base.includeZero; }
@@ -187,6 +190,15 @@ export class Format extends SchemaItem {
         schemaJson.stationSeparator = this.stationSeparator;
     }
 
+    if (FormatType.Ratio === this.type) {
+      if (undefined !== this.ratioType)
+        schemaJson.ratioType = this.ratioType;
+      if (undefined !== this.ratioSeparator)
+        schemaJson.ratioSeparator = this.ratioSeparator;
+      if (undefined !== this.ratioFormatType)
+        schemaJson.ratioFormatType = this.ratioFormatType;
+    }
+
     if (undefined === this.units)
       return schemaJson;
 
@@ -225,6 +237,12 @@ export class Format extends SchemaItem {
       itemElement.setAttribute("minWidth", this.minWidth.toString());
     if (undefined !== this.scientificType)
       itemElement.setAttribute("scientificType", this.scientificType);
+    if (undefined !== this.ratioType)
+      itemElement.setAttribute("ratioType", this.ratioType);
+    if (undefined !== this.ratioSeparator)
+      itemElement.setAttribute("ratioSeparator", this.ratioSeparator);
+    if (undefined !== this.ratioFormatType)
+      itemElement.setAttribute("ratioFormatType", this.ratioFormatType);
     if (undefined !== this.stationOffsetSize)
       itemElement.setAttribute("stationOffsetSize", this.stationOffsetSize.toString());
 

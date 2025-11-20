@@ -65,6 +65,9 @@ export class OverrideFormat {
   public get type(): FormatType { return this.parent.type; }
   public get minWidth(): number | undefined { return this.parent.minWidth; }
   public get scientificType(): ScientificType | undefined { return this.parent.scientificType; }
+  public get ratioType(): string | undefined { return this.parent.ratioType; }
+  public get ratioSeparator(): string | undefined { return this.parent.ratioSeparator; }
+  public get ratioFormatType(): string | undefined { return this.parent.ratioFormatType; }
   public get showSignOption(): ShowSignOption { return this.parent.showSignOption; }
   public get decimalSeparator(): string { return this.parent.decimalSeparator; }
   public get thousandSeparator(): string { return this.parent.thousandSeparator; }
@@ -93,7 +96,7 @@ export class OverrideFormat {
     for (const [unit, unitLabel] of this._units) {
       const unitSchema = koqSchema.context.getSchemaSync(unit.schemaKey);
       if(unitSchema === undefined)
-        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The unit schema ${unit.schemaKey} is not found in the context.`);
+        throw new ECSchemaError(ECSchemaStatus.InvalidECJson, `The unit schema ${unit.schemaKey.name} is not found in the context.`);
 
       fullName += "[";
       fullName += XmlSerializationUtils.createXmlTypedName(koqSchema, unitSchema, unit.name);

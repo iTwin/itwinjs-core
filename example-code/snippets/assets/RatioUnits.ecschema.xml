@@ -9,4 +9,7 @@
     <Unit typeName="DECIMAL_LENGTH_RATIO" phenomenon="u:LENGTH_RATIO" unitSystem="u:INTERNATIONAL" definition="u:ONE" displayLabel="decimal length ratio" description="Unit suitable for storing a decimal number that represents a length ratio." />
     <Unit typeName="M_PER_M_LENGTH_RATIO" phenomenon="u:LENGTH_RATIO" unitSystem="u:SI" definition="u:M*u:M(-1)" displayLabel="m/m" />
     <Unit typeName="IN_PER_FT_LENGTH_RATIO" phenomenon="u:LENGTH_RATIO" unitSystem="u:USCUSTOM" definition="u:IN*u:FT(-1)" displayLabel="in/ft" />
+    <Format typeName="RatioWithoutLabelD" type="Ratio" ratioType="OneToN" ratioFormatType="Decimal" precision="1" formatTraits="TrailZeroes"/>
+    <Format typeName="RatioWithLabelF" type="Ratio" ratioType="NToOne" ratioSeparator="=" ratioFormatType="Fractional" precision="1" formatTraits="TrailZeroes|ShowUnitLabel" />
+    <KindOfQuantity typeName="SCALE_FACTOR" persistenceUnit="DECIMAL_LENGTH_RATIO" presentationUnits="RatioWithoutLabelD(1)[M_PER_M_LENGTH_RATIO];RatioWithLabelF(16)[IN_PER_FT_LENGTH_RATIO|&quot;/']" relativeError="0.000001"/>
 </ECSchema>

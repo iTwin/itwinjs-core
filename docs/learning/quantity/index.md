@@ -111,7 +111,7 @@ The `ratioType` property determines how the ratio is formatted. This is a requir
 
 #### ratioSeparator
 
-The `ratioSeparator` property specifies the character used to separate the numerator and denominator in the formatted ratio. The default separator is `":"`, but common alternatives include:
+The `ratioSeparator` property specifies the character used to separate the numerator and denominator in the formatted ratio. This is an optional property that defaults to `":"` if not specified. Common separator values include:
 
 - `":"` - Standard ratio notation (e.g., `1:2`, `1:100`)
 - `"="` - Equation-style notation, common in architectural scales (e.g., `12"=1'`, `1"=20'`)
@@ -121,7 +121,7 @@ The separator must be a single character string.
 
 #### ratioFormatType
 
-The `ratioFormatType` property controls how the numeric values within the ratio are formatted. This optional property defaults to "Decimal" if not specified:
+The `ratioFormatType` property controls how the numeric values within the ratio are formatted. This optional property defaults to `"Decimal"` if not specified:
 
 - __"Decimal"__ - Formats ratio components as decimal numbers with the specified precision (e.g., `0.5:1`, `1:2.5`)
 - __"Fractional"__ - Formats ratio components as fractions when appropriate (e.g., `1/2:1`, `3/4:1`). The precision property determines the fractional denominator (e.g., precision of 16 means denominators up to 1/16).
@@ -130,7 +130,7 @@ When using "Fractional" ratio format type, leading zeros are automatically suppr
 
 #### Unit Labels in Ratio Formats
 
-Ratio formats can include unit labels when the `showUnitLabel` format trait is set. The unit label **must** follow the format `"numerator_label/denominator_label"` (e.g., `"\/'` for inches/feet), otherwise an error will be thrown. The `ratioSeparator` can be used to modify the separator used during formatting afterwards.
+Ratio formats can include unit labels when the `showUnitLabel` format trait is set. The unit label __must__ follow the format `"numerator_label/denominator_label"` (e.g., `"\/'` for inches/feet), otherwise an error will be thrown. The `ratioSeparator` can be used to modify the separator used during formatting afterwards.
 
 For example, with a unit label of `"\/'` and separator `"="`, a value would be formatted as `12"=1'` (read as "12 inches equals 1 foot").
 
