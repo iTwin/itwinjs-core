@@ -343,7 +343,7 @@ class FrameBuffers implements WebGLDisposable {
         undefined !== textures.depthAndOrderMsBuffHidden
       );
       const colorAndPickMsBuffs = [textures.colorMsBuff, textures.featureIdMsBuff, textures.depthAndOrderMsBuff];
-      const colorAndPickFilters = [GL.MultiSampling.Filter.Linear, GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest];
+      const colorAndPickFilters = [GL.MultiSampling.Filter.Linear, GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest];
       this.opaqueAll = FrameBuffer.create(colorAndPick, depth, colorAndPickMsBuffs, colorAndPickFilters, depthMs);
       colorAndPick[0] = textures.color;
       this.opaqueAndCompositeAll = FrameBuffer.create(colorAndPick, depth, colorAndPickMsBuffs, colorAndPickFilters, depthMs);
