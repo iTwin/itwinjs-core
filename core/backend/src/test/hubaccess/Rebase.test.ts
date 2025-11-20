@@ -1263,7 +1263,6 @@ describe("rebase changes & stashing api", function (this: Suite) {
     chai.expect(events.modelGeometryChanged.length).to.equal(0);
   });
   it("onModelGeometryChanged() fired during rebase with geometric local change", async () => {
-    // Test implementation here
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
 
