@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-mobile",
-  "version": "5.3.2",
+  "version": "5.3.3",
   "description": "iTwin.js MobileHost and MobileApp",
   "license": "MIT",
   "engines": {
