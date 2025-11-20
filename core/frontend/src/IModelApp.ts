@@ -140,7 +140,7 @@ export interface IModelAppOptions {
    */
   publicPath?: string;
   /**
-   * Configuration controlling whether incremental schema loading is disabled.
+   * Configuration controlling whether incremental schema loading is enabled or disabled.
    * @beta
    */
   incrementalSchemaLoading?: "enabled" | "disabled";

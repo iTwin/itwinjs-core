@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Added incrementalSchemaLoading setting on IModelAppOptions to enable or disable incremental schema loading. For now, incremental schema loading is disabled by default.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
