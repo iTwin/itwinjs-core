@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Use pointer events instead of mouse events if supported.",
+      "comment": "",
       "type": "none"
     }
   ],
