@@ -108,7 +108,7 @@ export class AustralianRailCorpXYEvaluator extends CubicEvaluator {
    * * The AustralianRailSpiral has a supporting power series to approximately map distance along the spiral to
    * an x coordinate.
    * * The `xToFraction(x)` method quickly (with a single divide) converts this x to fraction used for
-   * this.fractionToX (fraction), this.fractionToY(fraction) etc to get coordinates and derivatives.
+   * this.fractionToX(fraction), this.fractionToY(fraction) etc to get coordinates and derivatives.
    * * The x-to-distance relation is not as precise as the CurvePrimitive method moveSignedDistanceFromFraction.
    * * It is supported here for users interested in replicating the AustralianRail distance mapping rather than the
    * more accurate CurvePrimitive measurements.
