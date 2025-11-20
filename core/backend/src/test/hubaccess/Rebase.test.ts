@@ -1248,7 +1248,6 @@ describe("rebase changes & stashing api", function (this: Suite) {
         return true;
       },
       recompute: async (_txn: TxnProps) => {
-        // await testIModel.insertElement(b1);
       },
     });
 
