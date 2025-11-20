@@ -74,7 +74,7 @@ await IModelApp.startup({
   incrementalSchemaLoading: "disabled"
 });
 ```
-*Backend
+*Backend*
 ```
 await IModelHost.startup({
   incrementalSchemaLoading: "enabled",
