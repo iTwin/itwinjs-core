@@ -766,25 +766,16 @@ export class ToolAdmin {
 
   /** A first-in-first-out queue of ToolEvents. */
   private static _toolEvents: ToolEvent[] = [];
-
   private static tryReplace(ev: Event, vp?: ScreenViewport): boolean {
     if (ToolAdmin._toolEvents.length < 1)
       return false;
     const last = ToolAdmin._toolEvents[ToolAdmin._toolEvents.length - 1];
     const lastType = last.ev.type;
-    if (lastType !== ev.type)
-      return false;
-
-    switch (lastType) {
-      case "mousemove":
-      case "touchmove":
-      case "pointermove":
-        last.ev = ev; // sequential moves are not important. Replace the previous one with this one.
-        last.vp = vp;
-        return true;
-      default:
-        return false; // everything else should queue normally
-    }
+    if (lastType !== ev.type || (lastType !== "mousemove" && lastType !== "touchmove"))
+      return false; // only mousemove and touchmove can replace previous
+    last.ev = ev; // sequential moves are not important. Replace the previous one with this one.
+    last.vp = vp;
+    return true;
   }
 
   /** @internal */
@@ -818,10 +809,7 @@ export class ToolAdmin {
     switch (event.ev.type) {
       case "mousedown": return this.onMouseButton(event, true);
       case "mouseup": return this.onMouseButton(event, false);
-      case "pointerdown": return this.onMouseButton(event, true);
-      case "pointerup": return this.onMouseButton(event, false);
       case "mousemove": return this.onMouseMove(event);
-      case "pointermove": return this.onMouseMove(event);
       case "mouseover": return this.onMouseEnter(event);
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       case "mouseout": return this.onMouseLeave(event.vp!);
