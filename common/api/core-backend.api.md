@@ -4010,13 +4010,13 @@ export class IModelHostConfiguration implements IModelHostOptions {
     // (undocumented)
     static defaultTileRequestTimeout: number;
     // @beta
-    disableIncrementalSchemaLoading?: boolean;
-    // @beta
     disableRestorePointOnPullMerge?: true;
     // @beta
     disableThinnedNativeInstanceWorkflow?: boolean;
     // (undocumented)
     hubAccess?: BackendHubAccess;
+    // @beta
+    incrementalSchemaLoading: "enabled" | "disabled";
     // @internal (undocumented)
     logTileLoadTimeThreshold: number;
     // @internal (undocumented)
@@ -4043,12 +4043,12 @@ export interface IModelHostOptions {
     // @internal
     crashReportingConfig?: CrashReportingConfig;
     // @beta
-    disableIncrementalSchemaLoading?: boolean;
-    // @beta
     disableRestorePointOnPullMerge?: true;
     disableThinnedNativeInstanceWorkflow?: boolean;
     enableOpenTelemetry?: boolean;
     hubAccess?: BackendHubAccess;
+    // @beta
+    incrementalSchemaLoading?: "enabled" | "disabled";
     // @internal
     logTileLoadTimeThreshold?: number;
     // @internal
