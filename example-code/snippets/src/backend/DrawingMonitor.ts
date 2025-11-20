@@ -5,7 +5,7 @@
 
 import { BriefcaseDb, IModelDb, ModelSelector } from "@itwin/core-backend";
 import { assert, BeDuration, BeEvent, DbResult, GuidString, Id64, Id64Set, Id64String } from "@itwin/core-bentley";
-import { ModelIdAndGeometryGuid } from "@itwin/core-common";
+import { ModelIdAndGeometryGuid, VersionedJSON } from "@itwin/core-common";
 import { ECVersion } from "@itwin/ecschema-metadata";
 
 export type DrawingUpdates = Map<Id64String, string>;
@@ -261,6 +261,8 @@ namespace Provenance {
   }
 
   export function compute(spatialViewId: Id64String, iModel: IModelDb): Props {
+    // Consider changin this to instead do the whole thing as a single ECSql statement.
+    // The only annoying part is the model selector's Ids are stored on the relationship instead of the element.
     const modelSelectorId = iModel.withPreparedStatement(
       `SELECT ModelSelector.Id FROM bis.SpatialViewDefinition WHERE ECInstanceId=${spatialViewId}`,
       (stmt) => {
@@ -284,5 +286,23 @@ namespace Provenance {
     }
 
     return { guids };
+  }
+
+  export function query(sectionDrawingId: Id64String, iModel: IModelDb): Props | undefined {
+    return iModel.withPreparedStatement(
+      `SELECT JsonProperties FROM bis.SectionDrawing WHERE ECInstanceId=${sectionDrawingId}`,
+      (stmt) => {
+        const props = DbResult.BE_SQLITE_ROW === stmt.step() ? stmt.getValue(0).getString() : undefined;
+        if (!props) {
+          return undefined;
+        }
+
+        let json: VersionedJSON<Props>;
+        try {
+          json = JSON.parse(props);
+          
+        }
+      }
+    )
   }
 }
