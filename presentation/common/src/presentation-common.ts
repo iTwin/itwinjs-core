@@ -225,6 +225,7 @@ export {
   traverseFieldHierarchy,
   traverseContent,
   traverseContentItem,
+  createContentTraverser,
   createFieldHierarchies,
   addFieldHierarchy,
   combineFieldNames,

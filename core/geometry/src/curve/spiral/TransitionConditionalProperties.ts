@@ -23,6 +23,7 @@ import { TransitionSpiral3d } from "./TransitionSpiral3d";
  * determines the remaining one.
  * @public
  */
+// see internaldocs/Spiral.md for more info
 export class TransitionConditionalProperties {
   /**
    * Radius at start (radius of the osculating circle at the spiral segment's start).

@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Guid, Id64Array, Id64String } from "@itwin/core-bentley";
+import { DbResult, Guid, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Code, GeometricElement2dProps, GeometricModelProps, GeometryStreamBuilder, IModel, ModelGeometryChangesProps, ModelIdAndGeometryGuid, QueryBinder, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { Suite } from "mocha";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "..";
-import { BriefcaseDb, BriefcaseManager, ChangesetECAdaptor, ChannelControl, DrawingCategory, IModelHost, SqliteChangesetReader, TxnProps } from "../../core-backend";
+import { BriefcaseDb, BriefcaseManager, ChangesetECAdaptor, ChannelControl, DrawingCategory, IModelHost, SqliteChangesetReader, TxnIdString, TxnProps } from "../../core-backend";
 import { HubMock } from "../../internal/HubMock";
 import { StashManager } from "../../StashManager";
 import { existsSync, unlinkSync, writeFileSync } from "fs";
@@ -1433,5 +1433,195 @@ describe.only("rebase changes & stashing api", function (this: Suite) {
     chai.expect(geomGuidAfterPull).is.undefined;
     chai.expect(events.modelGeometryChanged.length).to.equal(0);
   });
-});
+  it("rebase multi txn", async () => {
+    const b1 = await testIModel.openBriefcase();
+    const b2 = await testIModel.openBriefcase();
 
+    const e1 = await testIModel.insertElement(b1);
+    const e2 = await testIModel.insertElement(b1, true);
+    b1.saveChanges();
+    await b1.pushChanges({ description: "insert element 1 direct and 1 indirect" });
+
+    await b2.pullChanges();
+
+    chai.expect(b2.txns.beginMultiTxnOperation()).to.be.equals(DbResult.BE_SQLITE_OK);
+    let elId = await testIModel.insertElement(b2);
+    b2.saveChanges(`insert element ${elId}`);
+    elId = await testIModel.insertElement(b2);
+    b2.saveChanges(`insert element ${elId}`);
+    elId = await testIModel.insertElement(b2);
+    b2.saveChanges(`insert element ${elId}`);
+    chai.expect(b2.txns.endMultiTxnOperation()).to.be.equals(DbResult.BE_SQLITE_OK);
+    b2.saveChanges();
+    elId = await testIModel.insertElement(b2);
+    b2.saveChanges(`insert element ${elId}`);
+    let txns = Array.from(b2.txns.queryTxns());
+
+    chai.expect(txns[0].id).to.be.equals("0x100000000"); // 1st after beginMultiTxnOperation()
+    chai.expect(txns[0].props.description).to.be.equals("insert element 0x40000000001");
+    chai.expect(txns[0].sessionId).to.be.equals(1);
+    chai.expect(txns[0].grouped).to.be.equals(false);
+    chai.expect(txns[0].reversed).to.be.equals(false);
+
+    chai.expect(txns[1].id).to.be.equals("0x100000001"); // 2nd after beginMultiTxnOperation()
+    chai.expect(txns[1].props.description).to.be.equals("insert element 0x40000000002");
+    chai.expect(txns[1].sessionId).to.be.equals(1);
+    chai.expect(txns[1].grouped).to.be.equals(true);
+    chai.expect(txns[1].reversed).to.be.equals(false);
+
+    chai.expect(txns[2].id).to.be.equals("0x100000002"); // 3rd after beginMultiTxnOperation() & before endMultiTxnOperation()
+    chai.expect(txns[2].props.description).to.be.equals("insert element 0x40000000003");
+    chai.expect(txns[2].sessionId).to.be.equals(1);
+    chai.expect(txns[2].grouped).to.be.equals(true);
+    chai.expect(txns[2].reversed).to.be.equals(false);
+
+    chai.expect(txns[3].id).to.be.equals("0x100000003"); // 4th after endMultiTxnOperation()
+    chai.expect(txns[3].props.description).to.be.equals("insert element 0x40000000004");
+    chai.expect(txns[3].type).to.be.equals("Data");
+    chai.expect(txns[3].grouped).to.be.equals(false);
+    chai.expect(txns[3].reversed).to.be.equals(false);
+
+    // reverse single txn 0x100000003
+    chai.expect(b2.txns.reverseSingleTxn()).to.be.equals(DbResult.BE_SQLITE_OK);
+    txns = Array.from(b2.txns.queryTxns());
+
+    chai.expect(txns[0].id).to.be.equals("0x100000000"); // 1st after beginMultiTxnOperation()
+    chai.expect(txns[0].props.description).to.be.equals("insert element 0x40000000001");
+    chai.expect(txns[0].sessionId).to.be.equals(1);
+    chai.expect(txns[0].grouped).to.be.equals(false);
+    chai.expect(txns[0].reversed).to.be.equals(false);
+
+    chai.expect(txns[1].id).to.be.equals("0x100000001"); // 2nd after beginMultiTxnOperation()
+    chai.expect(txns[1].props.description).to.be.equals("insert element 0x40000000002");
+    chai.expect(txns[1].sessionId).to.be.equals(1);
+    chai.expect(txns[1].grouped).to.be.equals(true);
+    chai.expect(txns[1].reversed).to.be.equals(false);
+
+    chai.expect(txns[2].id).to.be.equals("0x100000002"); // 3rd after beginMultiTxnOperation() & before endMultiTxnOperation()
+    chai.expect(txns[2].props.description).to.be.equals("insert element 0x40000000003");
+    chai.expect(txns[2].sessionId).to.be.equals(1);
+    chai.expect(txns[2].grouped).to.be.equals(true);
+    chai.expect(txns[2].reversed).to.be.equals(false);
+
+    chai.expect(txns[3].id).to.be.equals("0x100000003"); // 4th after endMultiTxnOperation()
+    chai.expect(txns[3].props.description).to.be.equals("insert element 0x40000000004");
+    chai.expect(txns[3].type).to.be.equals("Data");
+    chai.expect(txns[3].grouped).to.be.equals(false);
+    chai.expect(txns[3].reversed).to.be.equals(true);
+
+    // reverse multi txn. should reverse 0x100000000, 0x100000001 & 0x100000002
+    chai.expect(b2.txns.reverseSingleTxn()).to.be.equals(DbResult.BE_SQLITE_OK);
+    txns = Array.from(b2.txns.queryTxns());
+
+    chai.expect(txns[0].id).to.be.equals("0x100000000"); // 1st after beginMultiTxnOperation()
+    chai.expect(txns[0].props.description).to.be.equals("insert element 0x40000000001");
+    chai.expect(txns[0].sessionId).to.be.equals(1);
+    chai.expect(txns[0].grouped).to.be.equals(false);
+    chai.expect(txns[0].reversed).to.be.equals(true);
+
+    chai.expect(txns[1].id).to.be.equals("0x100000001"); // 2nd after beginMultiTxnOperation()
+    chai.expect(txns[1].props.description).to.be.equals("insert element 0x40000000002");
+    chai.expect(txns[1].sessionId).to.be.equals(1);
+    chai.expect(txns[1].grouped).to.be.equals(true);
+    chai.expect(txns[1].reversed).to.be.equals(true);
+
+    chai.expect(txns[2].id).to.be.equals("0x100000002"); // 3rd after beginMultiTxnOperation() & before endMultiTxnOperation()
+    chai.expect(txns[2].props.description).to.be.equals("insert element 0x40000000003");
+    chai.expect(txns[2].sessionId).to.be.equals(1);
+    chai.expect(txns[2].grouped).to.be.equals(true);
+    chai.expect(txns[2].reversed).to.be.equals(true);
+
+    chai.expect(txns[3].id).to.be.equals("0x100000003"); // 4th after endMultiTxnOperation()
+    chai.expect(txns[3].props.description).to.be.equals("insert element 0x40000000004");
+    chai.expect(txns[3].type).to.be.equals("Data");
+    chai.expect(txns[3].grouped).to.be.equals(false);
+    chai.expect(txns[3].reversed).to.be.equals(true);
+
+    // reinstate the transaction
+    chai.expect(b2.txns.isRedoPossible).to.be.equals(true);
+    chai.expect(b2.txns.reinstateTxn()).to.be.equals(DbResult.BE_SQLITE_OK);
+
+    txns = Array.from(b2.txns.queryTxns());
+
+    chai.expect(txns[0].id).to.be.equals("0x100000000"); // 1st after beginMultiTxnOperation()
+    chai.expect(txns[0].props.description).to.be.equals("insert element 0x40000000001");
+    chai.expect(txns[0].sessionId).to.be.equals(1);
+    chai.expect(txns[0].grouped).to.be.equals(false);
+    chai.expect(txns[0].reversed).to.be.equals(false);
+
+    chai.expect(txns[1].id).to.be.equals("0x100000001"); // 2nd after beginMultiTxnOperation()
+    chai.expect(txns[1].props.description).to.be.equals("insert element 0x40000000002");
+    chai.expect(txns[1].sessionId).to.be.equals(1);
+    chai.expect(txns[1].grouped).to.be.equals(true);
+    chai.expect(txns[1].reversed).to.be.equals(false);
+
+    chai.expect(txns[2].id).to.be.equals("0x100000002"); // 3rd after beginMultiTxnOperation() & before endMultiTxnOperation()
+    chai.expect(txns[2].props.description).to.be.equals("insert element 0x40000000003");
+    chai.expect(txns[2].sessionId).to.be.equals(1);
+    chai.expect(txns[2].grouped).to.be.equals(true);
+    chai.expect(txns[2].reversed).to.be.equals(false);
+
+    chai.expect(txns[3].id).to.be.equals("0x100000003"); // 4th after endMultiTxnOperation()
+    chai.expect(txns[3].props.description).to.be.equals("insert element 0x40000000004");
+    chai.expect(txns[3].type).to.be.equals("Data");
+    chai.expect(txns[3].grouped).to.be.equals(false);
+    chai.expect(txns[3].reversed).to.be.equals(true);
+
+    // reinstate the transaction
+    chai.expect(b2.txns.isRedoPossible).to.be.equals(true);
+    chai.expect(b2.txns.reinstateTxn()).to.be.equals(DbResult.BE_SQLITE_OK);
+
+    txns = Array.from(b2.txns.queryTxns());
+
+    chai.expect(txns[0].id).to.be.equals("0x100000000"); // 1st after beginMultiTxnOperation()
+    chai.expect(txns[0].props.description).to.be.equals("insert element 0x40000000001");
+    chai.expect(txns[0].sessionId).to.be.equals(1);
+    chai.expect(txns[0].grouped).to.be.equals(false);
+    chai.expect(txns[0].reversed).to.be.equals(false);
+
+    chai.expect(txns[1].id).to.be.equals("0x100000001"); // 2nd after beginMultiTxnOperation()
+    chai.expect(txns[1].props.description).to.be.equals("insert element 0x40000000002");
+    chai.expect(txns[1].sessionId).to.be.equals(1);
+    chai.expect(txns[1].grouped).to.be.equals(true);
+    chai.expect(txns[1].reversed).to.be.equals(false);
+
+    chai.expect(txns[2].id).to.be.equals("0x100000002"); // 3rd after beginMultiTxnOperation() & before endMultiTxnOperation()
+    chai.expect(txns[2].props.description).to.be.equals("insert element 0x40000000003");
+    chai.expect(txns[2].sessionId).to.be.equals(1);
+    chai.expect(txns[2].grouped).to.be.equals(true);
+    chai.expect(txns[2].reversed).to.be.equals(false);
+
+    chai.expect(txns[3].id).to.be.equals("0x100000003"); // 4th after endMultiTxnOperation()
+    chai.expect(txns[3].props.description).to.be.equals("insert element 0x40000000004");
+    chai.expect(txns[3].type).to.be.equals("Data");
+    chai.expect(txns[3].grouped).to.be.equals(false);
+    chai.expect(txns[3].reversed).to.be.equals(false);
+
+    chai.expect(b2.txns.isRedoPossible).to.be.equals(false);
+
+
+    await testIModel.updateElement(b1, e1);
+    await testIModel.updateElement(b1, e2, true);
+    b1.saveChanges();
+    await b1.pushChanges({ description: "update element 1 direct and 1 indirect" });
+
+    const recomputeTxnIds = [] as TxnIdString[];
+    b2.txns.rebaser.setCustomHandler({
+      shouldReinstate: (_txn: TxnProps) => {
+        return true;
+      },
+      recompute: async (txn: TxnProps): Promise<void> => {
+        recomputeTxnIds.push(txn.id);
+      },
+    });
+
+    await b2.pullChanges();
+
+    chai.expect(recomputeTxnIds).to.deep.equals([
+      "0x100000000",
+      "0x100000001",
+      "0x100000002",
+      "0x100000003",
+    ]);
+  });
+});

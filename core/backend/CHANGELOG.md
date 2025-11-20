@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Thu, 06 Nov 2025 20:30:21 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Nov 2025 23:24:40 GMT and should not be manually modified.
+
+## 5.3.2
+Thu, 13 Nov 2025 23:23:23 GMT
+
+### Updates
+
+- Listen on localhost only instead of all interfaces for LocalhostIpcHost
 
 ## 5.3.1
 Thu, 06 Nov 2025 20:29:06 GMT
@@ -35,6 +42,16 @@ Mon, 03 Nov 2025 19:02:35 GMT
 - Added deleteInstances to delete multiple relationship instances
 - Added new api to create leader terminator geometry for different shapes
 - Added ECSqlWriteStatement disposal inside WithWriteStatement
+
+## 5.2.6
+Thu, 13 Nov 2025 21:13:51 GMT
+
+_Version update only_
+
+## 5.2.5
+Thu, 13 Nov 2025 07:45:14 GMT
+
+_Version update only_
 
 ## 5.2.4
 Fri, 24 Oct 2025 16:20:38 GMT
@@ -247,6 +264,13 @@ Fri, 13 Jun 2025 20:25:38 GMT
 - Add Beta downloadChangeset and downloadChangesets to BriefcaseManager.
 - Make IModelHostOptions.hubAccess public.
 - Remove V1 Checkpoints API.
+
+## 4.11.7
+Thu, 13 Nov 2025 20:49:32 GMT
+
+### Updates
+
+- Bump `playwright` version to `~1.56.1`.
 
 ## 4.11.6
 Mon, 16 Jun 2025 15:00:15 GMT
