@@ -17,11 +17,10 @@ See the [iTwin.js](https://www.itwinjs.org) and [CesiumJS](https://cesium.com/le
 3. Click the star-shaped icon in the top toolbar of the UI.
 4. Observe that the Cesium globe renders. Some test decorations are rendered on top of it.
 5. To control the Cesium camera you can use the following keyboard shortcuts:
-  1. Press `ctrl` + `w`, `a`, `s`, `d` to move in and out and rotate
-  2. Press `ctrl` + arrow keys to pan
-
+    1. Press `ctrl` + `w`, `a`, `s`, `d` to move in and out and rotate
+    2. Press `ctrl` + arrow keys to pan
 6. To control the camera using the default iTwin.js mouse controls, you need to make some small code changes:
-  1. Replace the following line in core/frontend/src/tools/EventController.ts which adds listeners for DOM events:
+    1. Replace the following line in core/frontend/src/tools/EventController.ts which adds listeners for DOM events:
 
 ```typescript
 this.addDomListeners(["mousedown", "mouseup", "mousemove", "mouseover", "mouseout", "wheel", "touchstart", "touchend", "touchcancel", "touchmove"], element);
@@ -39,7 +38,7 @@ if (pointerSupported) {
 this.addDomListeners(["mouseover", "mouseout", "wheel", "touchstart", "touchend", "touchcancel", "touchmove"], element);
 ```
 
-  2. To the following if statement in core/frontend/src/tools/ToolAdmin.ts, in the `ToolAdmin.tryReplace()` method:
+2. To the following if statement in core/frontend/src/tools/ToolAdmin.ts, in the `ToolAdmin.tryReplace()` method:
 
 ```typescript
 if (lastType !== ev.type || (lastType !== "mousemove" && lastType !== "touchmove"))
@@ -51,7 +50,7 @@ Change the condition to this:
 if (lastType !== ev.type || (lastType !== "mousemove" && lastType !== "touchmove" && lastType !== "pointermove"))
 ```
 
-  3. Also, add the following cases to the switch statement in `ToolAdmin.processNextEvent()` to call `ToolAdmin` methods for pointer events:
+3. Also, add the following cases to the switch statement in `ToolAdmin.processNextEvent()` to call `ToolAdmin` methods for pointer events:
 
 ```typescript
 case "pointerdown": return this.onMouseButton(event, true);
