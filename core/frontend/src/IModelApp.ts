@@ -143,7 +143,7 @@ export interface IModelAppOptions {
    * Configuration controlling whether incremental schema loading is disabled.
    * @beta
    */
-  disableIncrementalSchemaLoading?: boolean;
+  incrementalSchemaLoading?: "enabled" | "disabled";
 }
 
 /** Options for [[IModelApp.makeModalDiv]]
@@ -218,7 +218,7 @@ export class IModelApp {
   private static _realityDataAccess?: RealityDataAccess;
   private static _publicPath: string;
   private static _formatsProviderManager: FormatsProviderManager;
-  private static _disableIncrementalSchemaLoading?: boolean;
+  private static _incrementalSchemaLoading?: "enabled" | "disabled";
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
   protected constructor() { }
@@ -284,10 +284,10 @@ export class IModelApp {
   public static get realityDataAccess(): RealityDataAccess | undefined { return this._realityDataAccess; }
 
   /**
-   * Indicates whether incremental schema loading is disabled.
+   * Indicates whether incremental schema loading is enabled. If not further specified, incremental schema loading is enabled by default.
    * @beta
    */
-  public static get isIncrementalSchemaLoadingDisabled(): boolean { return this._disableIncrementalSchemaLoading ?? true; };
+  public static get isIncrementalSchemaLoadingEnabled(): boolean { return this._incrementalSchemaLoading === "enabled"; };
 
   /** Whether the [renderSystem[]] has been successfully initialized.
    * This will always be `false` before calling [[startup]] and after calling [[shutdown]].
@@ -437,7 +437,7 @@ export class IModelApp {
     this._realityDataSourceProviders = new RealityDataSourceProviderRegistry();
     this._realityDataAccess = opts.realityDataAccess;
     this._formatsProviderManager = new FormatsProviderManager(opts.formatsProvider ?? new QuantityTypeFormatsProvider());
-    this._disableIncrementalSchemaLoading = opts.disableIncrementalSchemaLoading;
+    this._incrementalSchemaLoading = opts.incrementalSchemaLoading ?? "enabled";
 
     this._publicPath = opts.publicPath ?? "";
     if (this._publicPath !== "" && !this._publicPath.endsWith("/")) {

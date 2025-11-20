@@ -28,7 +28,7 @@ export class IncrementalTestHelper {
   public static async setup(options?: {bimName?: string, disableSchemaLoading?: boolean}): Promise<void> {
     if (!IModelHost.isValid)
       await IModelHost.startup({
-        disableIncrementalSchemaLoading: false,
+        incrementalSchemaLoading: "enabled",
       });
 
     if (this._iModel !== undefined)
@@ -48,10 +48,10 @@ export class IncrementalTestHelper {
 
     const configuration = IModelHost.configuration;
     if(configuration && options && options.disableSchemaLoading !== undefined) {
-      const previousSetting = configuration.disableIncrementalSchemaLoading;
-      configuration.disableIncrementalSchemaLoading = options.disableSchemaLoading;
+      const previousSetting = configuration.incrementalSchemaLoading;
+      configuration.incrementalSchemaLoading = options.disableSchemaLoading ? "disabled" : "enabled";
       this._iModel.onBeforeClose.addOnce(() => {
-        configuration.disableIncrementalSchemaLoading = previousSetting;
+        configuration.incrementalSchemaLoading = previousSetting;
       });
     }
 
