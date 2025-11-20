@@ -38,7 +38,7 @@ if (pointerSupported) {
 this.addDomListeners(["mouseover", "mouseout", "wheel", "touchstart", "touchend", "touchcancel", "touchmove"], element);
 ```
 
-2. To the following if statement in core/frontend/src/tools/ToolAdmin.ts, in the `ToolAdmin.tryReplace()` method:
+ii. To the following if statement in core/frontend/src/tools/ToolAdmin.ts, in the `ToolAdmin.tryReplace()` method:
 
 ```typescript
 if (lastType !== ev.type || (lastType !== "mousemove" && lastType !== "touchmove"))
@@ -50,7 +50,7 @@ Change the condition to this:
 if (lastType !== ev.type || (lastType !== "mousemove" && lastType !== "touchmove" && lastType !== "pointermove"))
 ```
 
-3. Also, add the following cases to the switch statement in `ToolAdmin.processNextEvent()` to call `ToolAdmin` methods for pointer events:
+iii. Also, add the following cases to the switch statement in `ToolAdmin.processNextEvent()` to call `ToolAdmin` methods for pointer events:
 
 ```typescript
 case "pointerdown": return this.onMouseButton(event, true);
