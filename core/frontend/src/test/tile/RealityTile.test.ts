@@ -3,28 +3,26 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import sinon from "sinon";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { ByteStream, Id64String } from "@itwin/core-bentley";
-import { ElementAlignedBox3d, TileFormat } from "@itwin/core-common";
+import { afterEach, beforeEach, describe, expect, it, MockInstance, vi } from "vitest";
+import { ByteStream } from "@itwin/core-bentley";
+import { TileFormat } from "@itwin/core-common";
 import { Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { MockRender } from "../../internal/render/MockRender";
 import { RenderMemory } from "../../render/RenderMemory";
 import {
-  B3dmReader, BatchedTileIdMap, LayerTileData, RealityTile, RealityTileLoader, RealityTileTree,
-  ShouldAbortReadGltf, Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel
+  B3dmReader, RealityTile, RealityTileLoader, RealityTileTree,
+  Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel
 } from "../../tile/internal";
 import { createBlankConnection } from "../createBlankConnection";
-import { RenderSystem } from "../../render/RenderSystem";
 
 describe("RealityTile", () => {
   class TestRealityTile extends RealityTile {
     private readonly _contentSize: number;
     public visible = true;
 
-    public constructor(tileTree: RealityTileTree, contentSize: number, reprojectionTransform?: Transform) {
+    public constructor(tileTree: RealityTileTree, contentSize: number, reprojectTransform?: Transform) {
       super({
         contentId: contentSize.toString(),
         range: new Range3d(0, 0, 0, 1, 1, 1),
@@ -36,7 +34,7 @@ describe("RealityTile", () => {
       if (contentSize === 0)
         this.setIsReady();
 
-      this._reprojectionTransform = reprojectionTransform;
+      this._reprojectionTransform = reprojectTransform;
     }
 
     protected override _loadChildren(resolve: (children: Tile[] | undefined) => void): void {
@@ -99,7 +97,7 @@ describe("RealityTile", () => {
     public readonly contentSize: number;
     protected override readonly _rootTile: TestRealityTile;
 
-    public constructor(contentSize: number, iModel: IModelConnection, loader: TestRealityTileLoader, reprojectGeometry: boolean, reprojectionTransform?: Transform) {
+    public constructor(contentSize: number, iModel: IModelConnection, loader: TestRealityTileLoader, reprojectGeometry: boolean, reprojectTransform?: Transform) {
       super({
         loader,
         rootTile: {
@@ -118,7 +116,7 @@ describe("RealityTile", () => {
 
       this.treeId = TestRealityTree._nextId;
       this.contentSize = contentSize;
-      this._rootTile = new TestRealityTile(this, contentSize, reprojectionTransform);
+      this._rootTile = new TestRealityTile(this, contentSize, reprojectTransform);
     }
 
     public override get rootTile(): TestRealityTile { return this._rootTile; }
@@ -158,16 +156,18 @@ describe("RealityTile", () => {
 
   let imodel: IModelConnection;
   let reader: TestRealityTileLoader;
-  let transform: Transform;
+  let reprojectionTransform: Transform;
   let streamBuffer: ByteStream;
-  const sandbox = sinon.createSandbox();
+  let createGeometrySpy: MockInstance;
+  let createReaderSpy: MockInstance;
+  let mockReader: B3dmReader;
 
   beforeEach(async () => {
     await MockRender.App.startup();
     IModelApp.stopEventLoop();
     imodel = createBlankConnection("imodel");
     reader = new TestRealityTileLoader();
-    transform = Transform.createTranslationXYZ(5, 5, 5);
+    reprojectionTransform = Transform.createTranslationXYZ(5, 5, 5);
 
     // Create a ByteStream with B3dm format header
     const buffer = new Uint8Array(16);
@@ -186,17 +186,15 @@ describe("RealityTile", () => {
     const originalPolyface = polyBuilder.claimPolyface();
     const mockGeometry = { polyfaces: [originalPolyface] };
 
-    // Mock B3dmReader.create to return a reader with test geometry
-    const mockReader = {
+    mockReader = {
       defaultWrapMode: undefined,
-      readGltfAndCreateGeometry(this: void) { return mockGeometry; }
+      readGltfAndCreateGeometry(this: void) {}
     } as any as B3dmReader;
 
-    sandbox.stub(B3dmReader, "create").callsFake((_stream: ByteStream, _iModel: IModelConnection, _modelId: Id64String, _is3d: boolean,
-      _range: ElementAlignedBox3d, _system: RenderSystem, _yAxisUp: boolean, _isLeaf: boolean, _tileCenter: Point3d, _transformToRoot?: Transform,
-      _isCanceled?: ShouldAbortReadGltf, _idMap?: BatchedTileIdMap, _deduplicateVertices=false, _tileData?: LayerTileData) => {
-      return mockReader;
-    });
+    // Mock B3dmReader.create to return a reader with test geometry
+    createReaderSpy = vi.spyOn(B3dmReader, "create").mockReturnValue(mockReader);
+    createGeometrySpy = vi.spyOn(mockReader, "readGltfAndCreateGeometry").mockReturnValue(mockGeometry);
+
   });
 
   afterEach(async () => {
@@ -204,12 +202,12 @@ describe("RealityTile", () => {
     if (IModelApp.initialized)
       await MockRender.App.shutdown();
 
-    sandbox.restore();
+    vi.restoreAllMocks();
   });
 
   it("should apply reprojection transform to geometry in loadGeometryFromStream", async () => {
     // Create a test tree with reprojectGeometry = true
-    const tree = new TestRealityTree(0, imodel, reader, true, transform);
+    const tree = new TestRealityTree(0, imodel, reader, true, reprojectionTransform);
     const tile = tree.rootTile;
     const result = await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
 
@@ -229,7 +227,7 @@ describe("RealityTile", () => {
 
   it("should not apply reprojection transform when reprojectGeometry is false", async () => {
     // Create a test tree with reprojectGeometry = false
-    const tree = new TestRealityTree(0, imodel, reader, false, transform);
+    const tree = new TestRealityTree(0, imodel, reader, false, reprojectionTransform);
     const tile = tree.rootTile;
     const result = await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
 
@@ -269,7 +267,7 @@ describe("RealityTile", () => {
 
   it("should not apply reprojection transform twice", async () => {
     // Create a test tree with reprojectGeometry = true
-    const tree = new TestRealityTree(0, imodel, reader, true, transform);
+    const tree = new TestRealityTree(0, imodel, reader, true, reprojectionTransform);
     const tile = tree.rootTile;
 
     // Loop to call loadGeometryFromStream twice
@@ -289,5 +287,38 @@ describe("RealityTile", () => {
         expectPointToEqual(points[2], 6, 6, 5);
       }
     }
+  });
+
+  /*
+  - Want to test that result of GltfReader.readGltfAndCreateGraphics() and GltfReader.readGltfAndCreateGeometry()
+    are the same (functions are called w same transform?)
+  - When readGltfAndCreateGeometry() is called, the transform param is the same as the transform param when readGltfAndCreateGraphics() is called
+  - createGeometry() called with loadGeometryFromStream() - already ready to be called in a test, mocked (switch from sinon to vitest)
+  - TODO how to call createGraphics()?
+  */
+  it.only("creating tile graphics and tile geometry apply the same transform", async () => {
+    const tree = new TestRealityTree(0, imodel, reader, true, reprojectionTransform);
+    const tile = tree.rootTile;
+    const result = await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
+
+    expect(createReaderSpy).toHaveBeenCalledOnce();
+    expect(createGeometrySpy).toHaveBeenCalledOnce();
+
+    const expectedTransform = Transform.createIdentity();
+    const actualTransform = createGeometrySpy.mock.calls[0][0];
+    expect(actualTransform).toEqual(expectedTransform);
+
+    // expect(result.geometry).to.not.be.undefined;
+    // expect(result.geometry?.polyfaces).to.have.length(1);
+
+    // if (result.geometry?.polyfaces) {
+    //   const polyface = result.geometry.polyfaces[0];
+    //   const points = polyface.data.point.getPoint3dArray();
+
+    //   // Check that the points have been reprojected
+    //   expectPointToEqual(points[0], 5, 5, 5);
+    //   expectPointToEqual(points[1], 6, 5, 5);
+    //   expectPointToEqual(points[2], 6, 6, 5);
+    // }
   });
 });
