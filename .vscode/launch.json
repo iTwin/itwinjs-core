@@ -15,6 +15,23 @@
     },
     // CORE TESTS
     {
+      "name": "Core Full Stack Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/full-stack-tests/core/",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/core/lib/**/*.js"
+      ]
+    },
+    {
       "name": "Backend Tests (Integration)",
       "presentation": {
         "group": "0_CoreTests",

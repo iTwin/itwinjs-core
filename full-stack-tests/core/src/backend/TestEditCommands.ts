@@ -42,3 +42,42 @@ export class TestEditCommand2 extends TestCommand {
     return { str: str2 + str1, num: obj1.i1 - obj1.i2, buf: Int32Array.from(arr) };
   }
 }
+
+export class MockTestEditCommand extends EditCommand {
+  public static override commandId = "Test.MockTestEditCommand";
+  private _hasStarted = false;
+  private _startupDelay = 2000; // 2 seconds
+
+  public override async onStart(): Promise<string> {
+    await new Promise(resolve => setTimeout(resolve, this._startupDelay));
+    this._hasStarted = true;
+    return "Mock edit command started";
+  }
+
+  public async testMethod(): Promise<string> {
+    return "testMethod executed";
+  }
+
+  public async requiresStartup(): Promise<boolean> {
+    if (!this._hasStarted) {
+      throw new Error("Command has not finished starting up");
+    }
+    return true;
+  }
+
+  public async getStartupStatus(): Promise<{ hasStarted: boolean; message: string }> {
+    return {
+      hasStarted: this._hasStarted,
+      message: this._hasStarted ? "Command has started" : "Command is starting",
+    };
+  }
+}
+
+export class MockTestEditCommand2 extends EditCommand {
+  public static override commandId = "Test.MockTestEditCommand2";
+
+  public override async onStart(): Promise<string> {
+    // Fast command with minimal startup time
+    return "Mock edit command 2 started";
+  }
+}

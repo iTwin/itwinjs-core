@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { IModelStatus } from "@itwin/core-bentley";
+import { Guid, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { IModelDb, IpcHandler, IpcHost } from "@itwin/core-backend";
 import { BackendError, IModelError } from "@itwin/core-common";
 import { EditCommandIpc, EditorIpc, editorIpcStrings } from "@itwin/editor-common";
@@ -43,12 +43,20 @@ export class EditCommand implements EditCommandIpc {
 
   /** The iModel this EditCommand may modify. */
   public readonly iModel: IModelDb;
+  public readonly commandGuid: Id64String;
+  private _hasFinalizedChanges: boolean;
 
   public constructor(iModel: IModelDb, ..._args: any[]) {
     this.iModel = iModel;
+    this.commandGuid = Guid.createValue();
+    this._hasFinalizedChanges = false;
   }
   public get ctor(): EditCommandType {
     return this.constructor as EditCommandType;
+  }
+
+  public get hasFinalizedChanges(): boolean {
+    return this._hasFinalizedChanges;
   }
 
   public async onStart(): Promise<any> { }
@@ -69,6 +77,33 @@ export class EditCommand implements EditCommandIpc {
   public async requestFinish(): Promise<"done" | string> {  // eslint-disable-line @typescript-eslint/no-redundant-type-constituents
     this.onFinish(); // TODO: temporary, remove
     return "done";
+  }
+
+  /**
+   * Save changes made by this EditCommand to the iModel.
+   * @param description Optional description of the changes being saved
+   * @note DO NOT OVERRIDE. Subclasses should call this method to save their changes.
+   */
+  public saveChanges(description?: string): void {
+    IModelDb.allowEditCommandOperation = true;
+
+    this.iModel.saveChanges(description || this.ctor.commandId);
+
+    this._hasFinalizedChanges = true;
+    IModelDb.allowEditCommandOperation = false;
+  }
+
+  /**
+   * Abandon changes made by this EditCommand without saving them to the iModel.
+   * @note DO NOT OVERRIDE. Subclasses should call this method to abandon their changes.
+   */
+  public abandonChanges(): void {
+    IModelDb.allowEditCommandOperation = true;
+
+    this.iModel.abandonChanges();
+
+    this._hasFinalizedChanges = true;
+    IModelDb.allowEditCommandOperation = false;
   }
 }
 
@@ -92,6 +127,9 @@ class EditorAppHandler extends IpcHandler implements EditorIpc {
     if (!cmd)
       throw new IModelError(IModelStatus.NoActiveCommand, `No active command`);
 
+    if (EditCommandAdmin.isStarting)
+      throw new IModelError(IModelStatus.NoActiveCommand, `Edit command is still starting`);
+
     const func = (cmd as any)[methodName];
     if (typeof func !== "function")
       throw new IModelError(IModelStatus.FunctionNotFound, `Method ${methodName} not found on ${cmd.ctor.commandId}`);
@@ -112,7 +150,9 @@ export class EditCommandAdmin {
 
   private static _activeCommand?: EditCommand;
   private static _isInitialized = false;
+  private static _isStarting = false;
   public static get activeCommand() { return this._activeCommand; }
+  public static get isStarting() { return this._isStarting; }
 
   /** If any command is currently active, wait for it to finish.
    * Afterward, no command will be active.
@@ -124,7 +164,11 @@ export class EditCommandAdmin {
       const finished = await this._activeCommand.requestFinish();
       if ("done" !== finished)
         throw new BackendError(IModelStatus.ServerTimeout, editorIpcStrings.commandBusy, finished);
+
+      if (!this._activeCommand.hasFinalizedChanges)
+        throw new IModelError(IModelStatus.BadRequest, "The edit command needs to saved/abandon the changes made before it can finish.")
     }
+    IModelDb.activeEditCommand = undefined;
     this._activeCommand = undefined;
   }
 
@@ -136,7 +180,14 @@ export class EditCommandAdmin {
   public static async runCommand(cmd: EditCommand): Promise<any> {
     await this.finishCommand();
     this._activeCommand = cmd;
-    return cmd.onStart();
+    try {
+      this._isStarting = true;
+      const result = await cmd.onStart();
+      return result;
+    } finally {
+      this._isStarting = false;
+      IModelDb.activeEditCommand = this._activeCommand.commandGuid;
+    }
   }
 
   /**

@@ -297,6 +297,16 @@ export abstract class IModelDb extends IModel {
     return this[_nativeDb].cloudContainer;
   }
 
+  private static _allowEditCommandOperation: boolean = false;
+  public static set allowEditCommandOperation(active: boolean) { IModelDb._allowEditCommandOperation = active; }
+
+  private static _activeEditCommand?: Id64String;
+  public static set activeEditCommand(commandId: Id64String | undefined) { IModelDb._activeEditCommand = commandId; }
+
+  public static isOperationAllowed(): boolean {
+    return IModelDb._activeEditCommand === undefined || IModelDb._allowEditCommandOperation;
+  }
+
   /** Acquire the exclusive schema lock on this iModel.
    * @note: To acquire the schema lock, all other briefcases must first release *all* their locks. No other briefcases
    * will be able to acquire *any* locks while the schema lock is held.
@@ -850,6 +860,9 @@ export abstract class IModelDb extends IModel {
     if (this.openMode === OpenMode.Readonly)
       throw new IModelError(IModelStatus.ReadOnly, "IModelDb was opened read-only");
 
+    if (!IModelDb.isOperationAllowed())
+      throw new IModelError(IModelStatus.BadRequest, "Cannot save changes during an active edit command");
+
     if (this instanceof BriefcaseDb) {
       if (this.txns.isIndirectChanges) {
         throw new IModelError(IModelStatus.BadRequest, "Cannot save changes while in an indirect change scope");
@@ -872,6 +885,9 @@ export abstract class IModelDb extends IModel {
    * @note This will not delete Txns that have already been saved, even if they have not yet been pushed.
   */
   public abandonChanges(): void {
+    if (!IModelDb.isOperationAllowed())
+      throw new IModelError(IModelStatus.BadRequest, "Cannot abandon changes during an active edit command");
+
     // Clears instanceKey caches only, instead of all of the backend caches, since the changes are not saved yet
     this.elements[_cache].clear();
     this.models[_cache].clear();
@@ -3139,6 +3155,10 @@ export class BriefcaseDb extends IModelDb {
    */
   public async discardChanges(args?: { retainLocks?: true }): Promise<void> {
     Logger.logInfo(loggerCategory, "Discarding local changes");
+
+    if (!IModelDb.isOperationAllowed())
+      throw new IModelError(IModelStatus.BadRequest, "Cannot discard changes during an active edit command");
+
     if (this.txns.isIndirectChanges) {
       throw new IModelError(IModelStatus.BadRequest, "Cannot discard changes when there are indirect changes");
     }
