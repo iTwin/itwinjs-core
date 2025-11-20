@@ -122,7 +122,8 @@ export class ViewList extends SortedArray<ViewSpec> {
     const ext = iModel.projectExtents;
 
     // start with a new "blank" spatial view to show the extents of the project, from top view
-    const blankView = SpatialViewState.createBlank(iModel, ext.low, ext.high.minus(ext.low), undefined);
+    // const blankView = SpatialViewState.createBlank(iModel, ext.low, ext.high.minus(ext.low), undefined);
+    const blankView = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1000000, y: 1000000, z: 1000000 });
 
     // turn on the background map
     const style = blankView.displayStyle;

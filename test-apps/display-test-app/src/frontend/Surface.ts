@@ -181,11 +181,15 @@ export class Surface {
 
   // create a new blank connection for testing backgroundMap and reality models.
   private async openBlankConnection(props?: Partial<BlankConnectionProps>): Promise<Viewer> {
-    const iModel = BlankConnection.create({
-      location: props?.location ?? Cartographic.fromDegrees({longitude: -75.686694, latitude: 40.065757, height: 0}), // near Exton pa
-      extents: props?.extents ?? new Range3d(-1000, -1000, -100, 1000, 1000, 100),
-      name: props?.name ?? "blank connection test",
-    });
+    // const iModel = BlankConnection.create({
+    //   location: props?.location ?? Cartographic.fromDegrees({longitude: -75.686694, latitude: 40.065757, height: 0}), // near Exton pa
+    //   extents: props?.extents ?? new Range3d(-1000, -1000, -100, 1000, 1000, 100),
+    //   name: props?.name ?? "blank connection test",
+    // });
+
+    // Params from OS+
+    const params = JSON.parse('{"name":"Çréâtë ìMødêl","location":{"latitude":0.6254194139375233,"longitude":-1.3588541428093734,"height":0},"extents":{"low":[-100,-100,0],"high":[100,100,100]}}') as BlankConnectionProps;
+    const iModel = BlankConnection.create(params);
 
     const viewer = await this.createViewer({ iModel, configuration: this.configuration });
     viewer.dock(Dock.Full);
