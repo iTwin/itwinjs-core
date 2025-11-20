@@ -21,12 +21,12 @@ describe("Incremental Schema Locating tests", () => {
     expect(incrementalLocater).to.be.undefined;
   });
 
-  it("should have an incremental schema locater if loading is not explicitly disabled", async () => {
+  it("should not have an incremental schema locater if flag is not specified", async () => {
     await IModelApp.startup();
     const connection = createBlankConnection();
     const locaters = connection.schemaContext.locaters;
     const incrementalLocater = locaters.find((locater) => locater instanceof RpcIncrementalSchemaLocater);
-    expect(incrementalLocater).to.not.be.undefined;
+    expect(incrementalLocater).to.be.undefined;
   });
 
   it("should have an incremental schema locater if loading is enabled", async () => {

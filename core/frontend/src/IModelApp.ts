@@ -284,7 +284,8 @@ export class IModelApp {
   public static get realityDataAccess(): RealityDataAccess | undefined { return this._realityDataAccess; }
 
   /**
-   * Indicates whether incremental schema loading is enabled. If not further specified, incremental schema loading is enabled by default.
+   * Indicates whether incremental schema loading is enabled.
+   * If not further specified, incremental schema loading is currently disabled by default.
    * @beta
    */
   public static get isIncrementalSchemaLoadingEnabled(): boolean { return this._incrementalSchemaLoading === "enabled"; };
@@ -437,7 +438,7 @@ export class IModelApp {
     this._realityDataSourceProviders = new RealityDataSourceProviderRegistry();
     this._realityDataAccess = opts.realityDataAccess;
     this._formatsProviderManager = new FormatsProviderManager(opts.formatsProvider ?? new QuantityTypeFormatsProvider());
-    this._incrementalSchemaLoading = opts.incrementalSchemaLoading ?? "enabled";
+    this._incrementalSchemaLoading = opts.incrementalSchemaLoading ?? "disabled";
 
     this._publicPath = opts.publicPath ?? "";
     if (this._publicPath !== "" && !this._publicPath.endsWith("/")) {
