@@ -109,10 +109,9 @@ jobs:
 
           git add "$mergifyPath"
           git commit -m "Update mergify.yml for new release branch $releaseBranch"
+          git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:$(Build.SourceBranch)
         displayName: Update mergify.yml on master before branch creation
-
-      - bash: git push https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core HEAD:$(Build.SourceBranch)
-        displayName: Push mergify updates to master
+        continueOnError: true
 
       - bash: git checkout -b $(getBranchName.releaseBranchName)
         displayName: Create release branch and checkout
