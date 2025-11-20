@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Add unit test to ensure onModelGeometryChanged() is called during rebase",
+      "comment": "",
       "type": "none"
     }
   ],
