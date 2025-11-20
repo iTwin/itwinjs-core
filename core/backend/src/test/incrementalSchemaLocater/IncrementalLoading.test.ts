@@ -5,10 +5,10 @@ import { expect } from "chai";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { IModelIncrementalSchemaLocater } from "../../IModelIncrementalSchemaLocater";
+import { IncrementalTestHelper } from "./utils/IncrementalTestHelper";
 
 import oldConfiguration from "../assets/IncrementalSchemaLocater/configs/old.config";
 import simpleConfiguration from "../assets/IncrementalSchemaLocater/configs/simple.config";
-import { IncrementalTestHelper } from "./utils/IncrementalTestHelper";
 
 chai.use(chaiAsPromised);
 
@@ -28,7 +28,6 @@ describe("Incremental Schema Loading", function () {
       testSchemaConfiguration = simpleConfiguration.schemas[0];
       testSchemaKey = new SchemaKey(testSchemaConfiguration.name, 1, 0, 0);
       await IncrementalTestHelper.importSchema(testSchemaKey);
-
     });
 
     after(async () => {
@@ -167,10 +166,7 @@ describe("Incremental Schema Loading", function () {
     });
 
     it("Get Schema full schema stack (incremental - backend)", async () => {
-      const locater = new IModelIncrementalSchemaLocater(IncrementalTestHelper.iModel);
-      const schemaContext = new SchemaContext();
-      schemaContext.addLocater(locater);
-
+      const schemaContext = IncrementalTestHelper.iModel.schemaContext;
       const schema = await schemaContext.getSchema(testSchemaKey) as Schema;
       expect(schema).to.be.not.undefined;
       expect(schema).to.have.property("name", testSchemaKey.name);
@@ -216,7 +212,7 @@ describe("Incremental Schema Loading", function () {
     }
 
     before("Setup", async function () {
-      await IncrementalTestHelper.setup(oldConfiguration.bimFile);
+      await IncrementalTestHelper.setup({ bimName: oldConfiguration.bimFile });
       testSchemaConfiguration = oldConfiguration.schemas[0];
       testSchemaKey = await resolveSchemaKey(testSchemaConfiguration.name);
     });
@@ -226,10 +222,7 @@ describe("Incremental Schema Loading", function () {
     });
 
     it("Incremental Loading still succeeds.", async () => {
-      const locater = new IModelIncrementalSchemaLocater(IncrementalTestHelper.iModel);
-      const schemaContext = new SchemaContext();
-      schemaContext.addLocater(locater);
-
+      const schemaContext = IncrementalTestHelper.iModel.schemaContext;
       const schema = await schemaContext.getSchema(testSchemaKey) as Schema;
       expect(schema).to.be.not.undefined;
       expect(schema).to.have.property("name", testSchemaKey.name);
@@ -259,6 +252,33 @@ describe("Incremental Schema Loading", function () {
           expect(itemProps).to.have.property(propertyName).deep.equalInAnyOrder(propertyValue);
         }
       }
+    });
+  });
+
+  describe("Test Incremental Loading setup", () => {
+    afterEach(async () => {
+      await IncrementalTestHelper.close();
+    });
+
+    it("schema context should not have an instance of incremental schema locater if loading is disabled", async () => {
+      await IncrementalTestHelper.setup({ disableSchemaLoading: true });
+      const locaters = IncrementalTestHelper.iModel.schemaContext.locaters;
+      const incrementalLocater = locaters.find((locater) => locater instanceof IModelIncrementalSchemaLocater);
+      expect(incrementalLocater).to.be.undefined;
+    });
+
+    it("schema context should not have an instance of incremental schema locater if loading is not specified", async () => {
+      await IncrementalTestHelper.setup();
+      const locaters = IncrementalTestHelper.iModel.schemaContext.locaters;
+      const incrementalLocater = locaters.find((locater) => locater instanceof IModelIncrementalSchemaLocater);
+      expect(incrementalLocater).to.be.undefined;
+    });
+
+    it("schema context should have an instance of incremental schema locater if loading is enabled", async () => {
+      await IncrementalTestHelper.setup({ disableSchemaLoading: false });
+      const locaters = IncrementalTestHelper.iModel.schemaContext.locaters;
+      const incrementalLocater = locaters.find((locater) => locater instanceof IModelIncrementalSchemaLocater);
+      expect(incrementalLocater).to.be.not.undefined;
     });
   });
 });
