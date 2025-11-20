@@ -1374,7 +1374,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     chai.expect(geomGuidBeforePull).is.undefined;
     await b1.pushChanges({ description: "push changes on b1" });
     const geomGuidAfterPull = getGeometryGuidFromB1("0x20000000001");
-    chai.expect(geomGuidAfterPull).is.exist;
+    chai.expect(geomGuidAfterPull).to.exist;
     chai.expect(events.modelGeometryChanged.length).to.equal(1);
   });
   it("onModelGeometryChanged() fired during rebase with geometric local change", async () => {
