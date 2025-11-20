@@ -10,7 +10,7 @@ import * as touch from "touch";
 import {
   assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbConflictResolution, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array
 } from "@itwin/core-bentley";
-import { EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
+import { ChangesetIndexAndId, EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb, SaveChangesArgs, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
@@ -353,6 +353,7 @@ export interface TxnProps {
 export class RebaseManager {
   private _conflictHandlers?: IConflictHandler;
   private _customHandler?: RebaseHandler;
+  private _aborting: boolean = false;
   public constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
 
   /**
@@ -378,7 +379,8 @@ export class RebaseManager {
     const nativeDb = this._iModel[_nativeDb];
     const txns = this._iModel.txns;
     try {
-      nativeDb.pullMergeRebaseBegin();
+      const reversedTxns = nativeDb.pullMergeRebaseBegin();
+      txns.onRebaseBegin.raiseEvent(reversedTxns);
       let txnId = nativeDb.pullMergeRebaseNext();
       while (txnId) {
         const txnProps = txns.getTxnProps(txnId);
@@ -408,12 +410,15 @@ export class RebaseManager {
       if (!nativeDb.isReadonly) {
         nativeDb.saveChanges("Merge.");
       }
-      if (BriefcaseManager.containsRestorePoint(this._iModel,  BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)) {
-        BriefcaseManager.dropRestorePoint(this._iModel,  BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
+      if (BriefcaseManager.containsRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME)) {
+        BriefcaseManager.dropRestorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
       }
     } catch (err) {
       nativeDb.pullMergeRebaseAbortTxn();
       throw err;
+    }
+    finally {
+      txns.onRebaseEnd.raiseEvent();
     }
   }
 
@@ -439,9 +444,14 @@ export class RebaseManager {
    * @returns A promise that resolves when the restore operation is complete.
    * @throws {Error} If there is no restore point to abort to.
    */
-  public async abort() {
+  public async abort(): Promise<void> {
     if (this.canAbort()) {
-      return BriefcaseManager.restorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
+      this._aborting = true;
+      try {
+        await BriefcaseManager.restorePoint(this._iModel, BriefcaseManager.PULL_MERGE_RESTORE_POINT_NAME);
+      } finally {
+        this._aborting = false;
+      }
     } else {
       throw new Error("No restore point to abort to");
     }
@@ -466,6 +476,15 @@ export class RebaseManager {
    */
   public inProgress() {
     return this._iModel[_nativeDb].pullMergeGetStage() !== "None";
+  }
+
+  /**
+   * Indicates whether the current transaction manager is in the process of aborting a transaction.
+   *
+   * @returns `true` if the transaction manager is currently aborting; otherwise, `false`.
+   */
+  public get isAborting(): boolean {
+    return this._aborting;
   }
 
   /**
@@ -574,7 +593,8 @@ export class RebaseManager {
 export class TxnManager {
   /** @internal */
   private _isDisposed = false;
-
+  /** @internal */
+  private _withIndirectChangeRefCounter = 0;
   /** @internal */
   public get isDisposed(): boolean {
     return this._isDisposed;
@@ -696,6 +716,22 @@ export class TxnManager {
     this.touchWatchFile();
     this.onAfterUndoRedo.raiseEvent(isUndo);
     IpcHost.notifyTxns(this._iModel, "notifyAfterUndoRedo", isUndo);
+  }
+
+  /** @internal */
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  public _onChangesPushed(changeset: ChangesetIndexAndId) {
+    this.touchWatchFile();
+    this.onChangesPushed.raiseEvent(changeset);
+    IpcHost.notifyTxns(this._iModel, "notifyPushedChanges", changeset);
+  }
+
+  /** @internal */
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  public _onChangesPulled(changeset: ChangesetIndexAndId) {
+    this.touchWatchFile();
+    this.onChangesPulled.raiseEvent(changeset);
+    IpcHost.notifyTxns(this._iModel, "notifyPulledChanges", changeset);
   }
 
   private _onRebaseLocalTxnConflict(internalArg: DbRebaseChangesetConflictArgs): DbConflictResolution {
@@ -872,11 +908,35 @@ export class TxnManager {
    * Event raised when a rebase transaction begins.
    */
   public readonly onRebaseTxnBegin = new BeEvent<(txn: TxnProps) => void>();
+
   /**
    * @alpha
    * Event raised when a rebase transaction ends.
    */
   public readonly onRebaseTxnEnd = new BeEvent<(txn: TxnProps) => void>();
+
+  /**
+   * @alpha
+   * Event raised when a rebase begins.
+   */
+  public readonly onRebaseBegin = new BeEvent<(txns: TxnIdString[]) => void>();
+
+  /**
+   * @alpha
+   * Event raised when a rebase ends.
+   */
+  public readonly onRebaseEnd = new BeEvent<() => void>();
+
+  /** Event raised after changes are pulled from iModelHub.
+   * @see [[BriefcaseDb.pullChanges]].
+   */
+  public readonly onChangesPulled = new BeEvent<(parentChangeset: ChangesetIndexAndId) => void>();
+
+  /** Event raised after changes are pushed to iModelHub.
+   * @see [[BriefcaseDb.pushChanges]].
+   */
+  public readonly onChangesPushed = new BeEvent<(parentChangeset: ChangesetIndexAndId) => void>();
+
   /**
    * if handler is set and it does not return undefined then default handler will not be called
    * @internal
@@ -1055,11 +1115,37 @@ export class TxnManager {
    * @param callback The function containing the changes to make.
    */
   public withIndirectTxnMode(callback: () => void): void {
-    this._nativeDb.setTxnMode("indirect");
+    if (this._withIndirectChangeRefCounter === 0) {
+      this._nativeDb.setTxnMode("indirect");
+    }
+    this._withIndirectChangeRefCounter++;
     try {
       callback();
     } finally {
-      this._nativeDb.setTxnMode("direct");
+      this._withIndirectChangeRefCounter--;
+      if (this._withIndirectChangeRefCounter === 0) {
+        this._nativeDb.setTxnMode("direct");
+      }
+    }
+  }
+
+  /**
+   * @alpha
+   * Execute a series of changes in an indirect transaction.
+   * @param callback The function containing the changes to make.
+   */
+  public async withIndirectTxnModeAsync(callback: () => Promise<void>): Promise<void> {
+    if (this._withIndirectChangeRefCounter === 0) {
+      this._nativeDb.setTxnMode("indirect");
+    }
+    this._withIndirectChangeRefCounter++;
+    try {
+      await callback();
+    } finally {
+      this._withIndirectChangeRefCounter--;
+      if (this._withIndirectChangeRefCounter === 0) {
+        this._nativeDb.setTxnMode("direct");
+      }
     }
   }
 }

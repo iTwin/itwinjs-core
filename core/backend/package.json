@@ -1,13 +1,13 @@
 {
   "name": "@itwin/core-backend",
-  "version": "5.3.0-dev.4",
+  "version": "5.4.0-dev.14",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "module": "lib/esm/core-backend.js",
   "typings": "lib/cjs/core-backend",
   "license": "MIT",
   "engines": {
-    "node": "^20.0.0 || ^22.0.0"
+    "node": "^20.0.0 || ^22.0.0 || ^24.0.0"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s build:esm && npm run -s copy:assets && npm run -s copy:test-assets && npm run -s copy:ecsqltestmdfiles",
@@ -76,6 +76,7 @@
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecsql-common": "workspace:*",
     "@itwin/eslint-plugin": "5.2.2-dev.2",
+    "@itwin/object-storage-core": "^3.0.4",
     "@opentelemetry/api": "1.0.4",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
@@ -97,7 +98,7 @@
     "dotenv-expand": "^5.1.0",
     "eslint": "^9.31.0",
     "fs-extra": "^8.1.0",
-    "glob": "^10.3.12",
+    "glob": "^10.5.0",
     "internal-tools": "workspace:*",
     "mocha": "^11.1.0",
     "node-simctl": "~7.6.1",
@@ -112,17 +113,14 @@
     "webpack": "^5.97.1"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "5.3.2",
-    "@itwin/cloud-agnostic-core": "^2.2.4",
-    "@itwin/object-storage-azure": "^2.3.0",
-    "@itwin/object-storage-core": "^2.3.0",
+    "@bentley/imodeljs-native": "5.4.15",
+    "@itwin/object-storage-azure": "^3.0.4",
+    "@azure/storage-blob": "^12.28.0",
     "form-data": "^4.0.4",
     "fs-extra": "^8.1.0",
-    "inversify": "~6.0.1",
     "json5": "^2.2.3",
     "linebreak": "^1.1.0",
     "multiparty": "^4.2.1",
-    "reflect-metadata": "^0.1.13",
     "semver": "^7.5.2",
     "touch": "^3.1.0",
     "ws": "^7.5.10"

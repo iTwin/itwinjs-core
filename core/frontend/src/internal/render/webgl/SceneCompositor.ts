@@ -9,13 +9,11 @@
 import { assert, dispose, expectDefined, Id64String } from "@itwin/core-bentley";
 import { Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import {
-    ContourDisplay,
   ModelFeature, PointCloudDisplaySettings, RenderFeatureTable, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
 } from "@itwin/core-common";
 import { RenderType } from "@itwin/webgl-compatibility";
 import { IModelConnection } from "../../../IModelConnection";
 import { SceneContext } from "../../../ViewContext";
-import { ContourHit } from "../../../HitDetail";
 import { ViewRect } from "../../../common/ViewRect";
 import { Pixel } from "../../../render/Pixel";
 import { GraphicList } from "../../../render/RenderGraphic";
@@ -66,8 +64,6 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
   public featureId?: TextureHandle;
   public depthAndOrder?: TextureHandle;
   public depthAndOrderHidden?: TextureHandle; // only used if AO and multisampling
-  public contours?: TextureHandle;
-  public contoursMsBuff?: RenderBufferMultiSample;
   public hilite?: TextureHandle;
   public occlusion?: TextureHandle;
   public occlusionBlur?: TextureHandle;
@@ -86,8 +82,6 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
       && undefined === this.color
       && undefined === this.featureId
       && undefined === this.depthAndOrder
-      && undefined === this.contours
-      && undefined === this.contoursMsBuff
       && undefined === this.depthAndOrderHidden
       && undefined === this.hilite
       && undefined === this.occlusion
@@ -108,8 +102,6 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
     this.color = dispose(this.color);
     this.featureId = dispose(this.featureId);
     this.depthAndOrder = dispose(this.depthAndOrder);
-    this.contours = dispose(this.contours);
-    this.contoursMsBuff = dispose(this.contoursMsBuff);
     this.depthAndOrderHidden = dispose(this.depthAndOrderHidden);
     this.hilite = dispose(this.hilite);
     this.occlusion = dispose(this.occlusion);
@@ -130,8 +122,6 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
     collectTextureStatistics(this.color, stats);
     collectTextureStatistics(this.featureId, stats);
     collectTextureStatistics(this.depthAndOrder, stats);
-    collectTextureStatistics(this.contours, stats);
-    collectMsBufferStatistics(this.contoursMsBuff, stats);
     collectTextureStatistics(this.depthAndOrderHidden, stats);
     collectTextureStatistics(this.hilite, stats);
     collectTextureStatistics(this.occlusion, stats);
@@ -176,14 +166,12 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
 
     this.featureId = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
     this.depthAndOrder = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    this.contours = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
 
     let rVal = undefined !== this.accumulation
       && undefined !== this.revealage
       && undefined !== this.color
       && undefined !== this.featureId
       && undefined !== this.depthAndOrder
-      && undefined !== this.contours
       && undefined !== this.hilite;
 
     if (rVal && numSamples > 1) {
@@ -235,14 +223,12 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
     this.featureIdMsBuffHidden = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
     this.depthAndOrderMsBuff = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
     this.depthAndOrderMsBuffHidden = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
-    this.contoursMsBuff = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
     this.hiliteMsBuff = RenderBufferMultiSample.create(width, height, WebGL2RenderingContext.RGBA8, numSamples);
     return undefined !== this.colorMsBuff
       && undefined !== this.featureIdMsBuff
       && undefined !== this.featureIdMsBuffHidden
       && undefined !== this.depthAndOrderMsBuff
       && undefined !== this.depthAndOrderMsBuffHidden
-      && undefined !== this.contoursMsBuff
       && undefined !== this.hiliteMsBuff;
   }
 
@@ -252,7 +238,6 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
     this.featureIdMsBuffHidden = dispose(this.featureIdMsBuffHidden);
     this.depthAndOrderMsBuff = dispose(this.depthAndOrderMsBuff);
     this.depthAndOrderMsBuffHidden = dispose(this.depthAndOrderMsBuffHidden);
-    this.contoursMsBuff = dispose(this.contoursMsBuff);
     this.hiliteMsBuff = dispose(this.hiliteMsBuff);
     return true;
   }
@@ -263,7 +248,6 @@ class FrameBuffers implements WebGLDisposable {
   public opaqueColor?: FrameBuffer;
   public opaqueAndCompositeColor?: FrameBuffer;
   public depthAndOrder?: FrameBuffer;
-  public contours?: FrameBuffer;
   public hilite?: FrameBuffer;
   public hiliteUsingStencil?: FrameBuffer;
   public stencilSet?: FrameBuffer;
@@ -290,11 +274,10 @@ class FrameBuffers implements WebGLDisposable {
       return false;
 
     this.depthAndOrder = FrameBuffer.create([expectDefined(textures.depthAndOrder)], depth);
-    this.contours = FrameBuffer.create([expectDefined(textures.contours)], depth);
     this.hilite = FrameBuffer.create([expectDefined(textures.hilite)], depth);
     this.hiliteUsingStencil = FrameBuffer.create([expectDefined(textures.hilite)], depth);
 
-    if (!this.depthAndOrder || !this.contours || !this.hilite || !this.hiliteUsingStencil)
+    if (!this.depthAndOrder || !this.hilite || !this.hiliteUsingStencil)
       return false;
 
     assert(undefined === this.opaqueAll);
@@ -342,11 +325,10 @@ class FrameBuffers implements WebGLDisposable {
       undefined !== textures.color &&
       undefined !== textures.featureId &&
       undefined !== textures.depthAndOrder &&
-      undefined !== textures.contours &&
       undefined !== textures.accumulation &&
       undefined !== textures.revealage
     );
-    const colorAndPick = [boundColor, textures.featureId, textures.depthAndOrder, textures.contours];
+    const colorAndPick = [boundColor, textures.featureId, textures.depthAndOrder];
 
     if (undefined === depthMs) {
       this.opaqueAll = FrameBuffer.create(colorAndPick, depth);
@@ -357,12 +339,11 @@ class FrameBuffers implements WebGLDisposable {
         undefined !== textures.colorMsBuff &&
         undefined !== textures.featureIdMsBuff &&
         undefined !== textures.featureIdMsBuffHidden &&
-        undefined !== textures.contoursMsBuff &&
         undefined !== textures.depthAndOrderMsBuff &&
         undefined !== textures.depthAndOrderMsBuffHidden
       );
-      const colorAndPickMsBuffs = [textures.colorMsBuff, textures.featureIdMsBuff, textures.depthAndOrderMsBuff, textures.contoursMsBuff];
-      const colorAndPickFilters = [GL.MultiSampling.Filter.Linear, GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest];
+      const colorAndPickMsBuffs = [textures.colorMsBuff, textures.featureIdMsBuff, textures.depthAndOrderMsBuff];
+      const colorAndPickFilters = [GL.MultiSampling.Filter.Linear, GL.MultiSampling.Filter.Nearest, GL.MultiSampling.Filter.Nearest];
       this.opaqueAll = FrameBuffer.create(colorAndPick, depth, colorAndPickMsBuffs, colorAndPickFilters, depthMs);
       colorAndPick[0] = textures.color;
       this.opaqueAndCompositeAll = FrameBuffer.create(colorAndPick, depth, colorAndPickMsBuffs, colorAndPickFilters, depthMs);
@@ -491,7 +472,7 @@ class FrameBuffers implements WebGLDisposable {
   }
 
   public get isDisposed(): boolean {
-    return undefined === this.opaqueColor && undefined === this.opaqueAndCompositeColor && undefined === this.depthAndOrder && undefined === this.contours
+    return undefined === this.opaqueColor && undefined === this.opaqueAndCompositeColor && undefined === this.depthAndOrder
       && undefined === this.hilite && undefined === this.hiliteUsingStencil && undefined === this.occlusion
       && undefined === this.occlusionBlur && undefined === this.stencilSet && undefined === this.altZOnly
       && undefined === this.volClassCreateBlend && undefined === this.volClassCreateBlendAltZ && undefined === this.opaqueAll
@@ -505,7 +486,6 @@ class FrameBuffers implements WebGLDisposable {
     this.opaqueColor = dispose(this.opaqueColor);
     this.opaqueAndCompositeColor = dispose(this.opaqueAndCompositeColor);
     this.depthAndOrder = dispose(this.depthAndOrder);
-    this.contours = dispose(this.contours);
     this.hilite = dispose(this.hilite);
     this.hiliteUsingStencil = dispose(this.hiliteUsingStencil);
     this.occlusion = dispose(this.occlusion);
@@ -644,20 +624,12 @@ interface BatchInfo {
   inSectionDrawingAttachment?: boolean;
 }
 
-interface ContourPixels {
-  display: ContourDisplay;
-  data: Uint32Array;
-  zLow: number;
-  zHigh: number;
-}
-
 // Represents a view of data read from a region of the frame buffer.
 class PixelBuffer implements Pixel.Buffer {
   private readonly _rect: ViewRect;
   private readonly _selector: Pixel.Selector;
   private readonly _featureId?: Uint32Array;
   private readonly _depthAndOrder?: Uint32Array;
-  private readonly _contours?: ContourPixels;
   private readonly _batchState: BatchState;
   private readonly _scratchModelFeature = ModelFeature.create();
 
@@ -791,30 +763,6 @@ class PixelBuffer implements Pixel.Buffer {
       }
     }
 
-    let contour: ContourHit | undefined;
-    if (this._contours) {
-      const contour32 = this.getPixel32(this._contours.data, index);
-      if (contour32) { // undefined means out of bounds; zero means not a contour.
-        const groupIndexAndType = this.decodeUint8(contour32, 32);
-        const groupIndex = groupIndexAndType & ~(8 | 16);
-        const group = this._contours.display.groups[groupIndex];
-        if (group) {
-          const elevationFraction = this.decodeDepthRgba(contour32);
-          let elevation = elevationFraction * (this._contours.zHigh - this._contours.zLow) + this._contours.zLow;
-          // The shader rounds to the nearest contour elevation using single-precision arithmetic.
-          // Re-round here using double-precision to get closer.
-          const interval = group.contourDef.minorInterval;
-          elevation = (elevation >= 0 ? Math.floor((elevation + interval / 2) / interval) : Math.ceil((elevation - interval / 2) / interval)) * interval;
-          contour = {
-            group,
-            elevation,
-            isMajor: groupIndexAndType > 15,
-          };
-        }
-      }
-
-    }
-
     let featureTable, iModel, transformToIModel, tileId, viewAttachmentId, inSectionDrawingAttachment;
     if (undefined !== batchInfo) {
       featureTable = batchInfo.featureTable;
@@ -836,7 +784,6 @@ class PixelBuffer implements Pixel.Buffer {
       tileId,
       viewAttachmentId,
       inSectionDrawingAttachment,
-      contour,
     });
   }
 
@@ -859,11 +806,6 @@ class PixelBuffer implements Pixel.Buffer {
         this._featureId = new Uint32Array(features.buffer);
       else
         this._selector &= ~Pixel.Selector.Feature;
-    }
-
-    // Note: readContours is a no-op unless contours are actually being drawn.
-    if (Pixel.Selector.None !== (selector & Pixel.Selector.Contours)) {
-      this._contours = compositor.readContours(rect);
     }
   }
 
@@ -893,7 +835,6 @@ export abstract class SceneCompositor implements WebGLDisposable, RenderMemory.C
   public abstract drawForReadPixels(_commands: RenderCommands, sceneOverlays: GraphicList, worldOverlayDecorations: GraphicList | undefined, viewOverlayDecorations: GraphicList | undefined): void;
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
   public abstract readDepthAndOrder(rect: ViewRect): Uint8Array | undefined;
-  public abstract readContours(rect: ViewRect): ContourPixels | undefined;
   public abstract readFeatureIds(rect: ViewRect): Uint8Array | undefined;
   public abstract updateSolarShadows(context: SceneContext | undefined): void;
   public abstract drawPrimitive(primitive: Primitive, exec: ShaderProgramExecutor, outputsToPick: boolean): void;
@@ -1669,26 +1610,6 @@ class Compositor extends SceneCompositor {
 
   public readDepthAndOrder(rect: ViewRect): Uint8Array | undefined {
     return this.readFrameBuffer(rect, this._fbos.depthAndOrder);
-  }
-
-  public override readContours(rect: ViewRect): ContourPixels | undefined {
-    // Are we actually drawing any contours? If not, don't bother reading an array of all zeroes off the GPU.
-    const contours = this.target.currentContours;
-    if (!contours || !contours.displayContours || contours.groups.length === 0) {
-      return undefined;
-    }
-
-    const info = this.readFrameBuffer(rect, this._fbos.contours);
-    if (!info) {
-      return undefined;
-    }
-
-    return {
-      data: new Uint32Array(info.buffer),
-      display: contours,
-      zLow: this.target.uniforms.frustum.worldFrustumZRange[0],
-      zHigh: this.target.uniforms.frustum.worldFrustumZRange[1],
-    };
   }
 
   public readFeatureIds(rect: ViewRect): Uint8Array | undefined {

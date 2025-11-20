@@ -46,7 +46,10 @@ const processedSchema = handleObject(schema);
 fs.writeFileSync(schemaPath, JSON.stringify(processedSchema, undefined, 2));
 
 const isCI = process.env.TF_BUILD;
-if (isCI) {
+// During the version bump script, if there are deprecation date comment changes made within presentation,
+// we expect the schema to be updated as well, so we don't want to fail the build in that case.
+const isVersionBump = process.env.VERSION_BUMP?.toLowerCase() === "true";
+if (isCI && !isVersionBump) {
   // break CI builds if the schema file changes during the build
   const schemaFileDiff = execSync(`git diff "${yargs.path}"`).toString().trim();
   if (schemaFileDiff !== "") {

@@ -1,11 +1,8 @@
 {
   "name": "@itwin/core-electron",
-  "version": "5.3.0-dev.4",
+  "version": "5.4.0-dev.14",
   "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",
-  "engines": {
-    "node": "^20.0.0 || ^22.0.0"
-  },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s webpack:test && npm run -s copy:test-assets",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
@@ -41,7 +38,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
-    "electron": "^35.0.0 || ^36.0.0 || ^37.0.0 || ^38.0.0"
+    "electron": "^35.0.0 || ^36.0.0 || ^37.0.0 || ^38.0.0 || ^39.0.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -56,9 +53,9 @@
     "@types/node": "~20.17.0",
     "chai": "^4.3.10",
     "cpx2": "^8.0.0",
-    "electron": "^38.1.2",
+    "electron": "^39.0.0",
     "eslint": "^9.31.0",
-    "glob": "^10.3.12",
+    "glob": "^10.5.0",
     "mocha": "^11.1.0",
     "rimraf": "^6.0.1",
     "source-map-loader": "^5.0.0",

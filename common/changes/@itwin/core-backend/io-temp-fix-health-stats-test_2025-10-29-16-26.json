@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Temporarily skipping the health check stats test",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -848,7 +848,13 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    * @return the converted array
    * @internal
    */
-  public static convertChildDetailToChainDetail(pairs: CurveLocationDetailPair[], index0: number, chainA?: CurveChainWithDistanceIndex, chainB?: CurveChainWithDistanceIndex, compressAdjacent?: boolean): CurveLocationDetailPair[] {
+  public static convertChildDetailToChainDetail(
+    pairs: CurveLocationDetailPair[],
+    index0: number,
+    chainA?: CurveChainWithDistanceIndex,
+    chainB?: CurveChainWithDistanceIndex,
+    compressAdjacent?: boolean,
+  ): CurveLocationDetailPair[] {
     for (let i = index0; i < pairs.length; ++i) {
       const childDetailPair = pairs[i];
       if (chainA) {
@@ -866,5 +872,4 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
       pairs = CurveLocationDetailPair.removeAdjacentDuplicates(pairs, index0);
     return pairs;
   }
-
 }

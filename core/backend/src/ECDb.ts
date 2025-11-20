@@ -243,7 +243,7 @@ export class ECDb implements Disposable {
    */
   public withWriteStatement<T>(ecsql: string, callback: (stmt: ECSqlWriteStatement) => T, logErrors = true): T {
     const stmt = this.prepareWriteStatement(ecsql, logErrors);
-    const release = () => { };
+    const release = () => stmt[Symbol.dispose]();
     try {
       const val = callback(stmt);
       if (val instanceof Promise) {

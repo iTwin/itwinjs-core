@@ -668,15 +668,13 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     const nodeHasBeenVisitedMask = this.graph.grabMask();
     const componentArray = GraphComponentArray.create(this.graph);
     for (const component of componentArray.components) {
-      const exteriorHalfEdge = HalfEdgeGraphSearch.findMinimumAreaFace(component.faces, this.faceAreaFunction);
-      if (exteriorHalfEdge) {
-        const exteriorMask = HalfEdgeMask.EXTERIOR;
-        const allMasksToClear = exteriorMask | faceHasBeenVisitedMask | nodeHasBeenVisitedMask;
-        this.graph.clearMask(allMasksToClear);
-        RegionOpsFaceToFaceSearch.faceToFaceSearchFromOuterLoop(
-          this.graph, exteriorHalfEdge, faceHasBeenVisitedMask, nodeHasBeenVisitedMask, this,
-        );
-      }
+      const exteriorHalfEdge = component.faces[component.faceAreas.indexOf(Math.min(...component.faceAreas))];
+      const exteriorMask = HalfEdgeMask.EXTERIOR;
+      const allMasksToClear = exteriorMask | faceHasBeenVisitedMask | nodeHasBeenVisitedMask;
+      this.graph.clearMask(allMasksToClear);
+      RegionOpsFaceToFaceSearch.faceToFaceSearchFromOuterLoop(
+        this.graph, exteriorHalfEdge, faceHasBeenVisitedMask, nodeHasBeenVisitedMask, this,
+      );
     }
     this.graph.dropMask(faceHasBeenVisitedMask);
     this.graph.dropMask(nodeHasBeenVisitedMask);
@@ -857,8 +855,10 @@ export class GraphComponent {
       f.sumAroundFace(vertexFunction);
     }
     this.faceAreas.length = 0;
+    if (faceAreaFunction === faceAreaFromCurvedEdgeData && !this.faces.every((he: HalfEdge) => he.edgeTag instanceof CurveLocationDetail))
+      faceAreaFunction = undefined; // prerequisite CurveLocationDetails are absent, fall through to default
     if (!faceAreaFunction)
-      faceAreaFunction = (node) => HalfEdgeGraphSearch.signedFaceArea(node);
+      faceAreaFunction = (node: HalfEdge) => HalfEdgeGraphSearch.signedFaceArea(node); // polygon area
     for (const f of this.faces) {
       this.faceAreas.push(faceAreaFunction(f));
     }

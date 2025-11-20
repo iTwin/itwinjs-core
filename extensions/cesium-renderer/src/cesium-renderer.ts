@@ -4,3 +4,5 @@
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./CesiumCamera.js";
+export { createCesiumRenderSystem } from "./System.js";
+export { createCesiumViewManager } from "./ViewManager.js";

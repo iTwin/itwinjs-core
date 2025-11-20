@@ -7,9 +7,6 @@
     "url": "http://www.bentley.com"
   },
   "version": "1.8.0",
-  "engines": {
-    "node": "^20.0.0 || ^22.0.0"
-  },
   "private": true,
   "scripts": {
     "build": "npm run -s build:frontend && npm run -s build:backend",
@@ -45,6 +42,7 @@
   "dependencies": {
     "@bentley/icons-generic": "^1.0.34",
     "@bentley/icons-generic-webfont": "^1.0.34",
+    "@cesium/engine": "20.0.1",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/browser-authorization": "^1.0.1",
     "@itwin/core-backend": "workspace:*",
@@ -68,14 +66,16 @@
     "@itwin/frontend-devtools": "workspace:*",
     "@itwin/frontend-tiles": "workspace:*",
     "@itwin/hypermodeling-frontend": "workspace:*",
-    "@itwin/imodels-access-backend": "^5.2.1",
-    "@itwin/imodels-access-frontend": "^5.2.1",
-    "@itwin/imodels-client-authoring": "^5.8.1",
-    "@itwin/imodels-client-management": "^5.8.1",
+    "@itwin/imodels-access-backend": "^6.0.2",
+    "@itwin/imodels-access-frontend": "^6.0.2",
+    "@itwin/imodels-client-authoring": "^6.0.2",
+    "@itwin/imodels-client-management": "^6.0.2",
     "@itwin/map-layers-formats": "workspace:*",
-    "@itwin/object-storage-core": "^2.3.0",
-    "@itwin/reality-data-client": "^1.2.1",
+    "@itwin/object-storage-azure": "^3.0.4",
+    "@itwin/object-storage-core": "^3.0.4",
+    "@itwin/reality-data-client": "^1.3.1",
     "@itwin/webgl-compatibility": "workspace:*",
+    "@itwin/cesium-renderer": "workspace:*",
     "body-parser": "^1.20.3",
     "vhacd-js": "^0.0.1"
   },
@@ -96,7 +96,7 @@
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.5",
     "dotenv-expand": "^5.1.0",
-    "electron": "^38.1.2",
+    "electron": "^39.0.0",
     "eslint": "^9.31.0",
     "express": "^4.21.2",
     "express-ws": "^5.0.2",
@@ -113,7 +113,7 @@
     "rollup-plugin-webpack-stats": "^2.0.0",
     "rollup-plugin-external-globals": "0.11.0",
     "typescript": "~5.6.2",
-    "vite": "^6.0.6",
+    "vite": "^6.4.0",
     "vite-plugin-env-compatible": "^2.0.1",
     "webpack": "^5.97.1"
   },

@@ -10,9 +10,10 @@ import { RelatedElement, RelationshipProps, TextBlock, traverseTextBlockComponen
 import { ElementDrivesElement } from "../Relationship";
 import { IModelDb } from "../IModelDb";
 import { Element } from "../Element";
-import { updateElementFields } from "../internal/annotations/fields";
+import { createUpdateContext, updateAllFields, updateElementFields, updateFields } from "../internal/annotations/fields";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { ECVersion } from "@itwin/ecschema-metadata";
+import { IModelElementCloneContext } from "../IModelElementCloneContext";
 
 /** Describes one of potentially many [TextBlock]($common)s hosted by an [[ITextAnnotation]].
  * For example, a [[TextAnnotation2d]] hosts only a single text block, but an element representing a table may
@@ -40,7 +41,7 @@ export interface ITextAnnotation {
   defaultTextStyle?: TextAnnotationUsesTextStyleByDefault;
   /** Obtain a collection of all of the [TextBlock]($common)s hosted by this element. */
   getTextBlocks(): Iterable<TextBlockAndId>;
-  /** Update the element to replace the contents of the specified [TextBlock]($common)s. */
+  /** Update the element in-memory to replace the contents of the specified [TextBlock]($common)s. */
   updateTextBlocks(textBlocks: TextBlockAndId[]): void;
 }
 
@@ -49,6 +50,16 @@ export interface ITextAnnotation {
  */
 export function isITextAnnotation(element: Element): element is ITextAnnotation & Element {
   return ["getTextBlocks", "updateTextBlocks"].every((x) => x in element && typeof (element as any)[x] === "function");
+}
+
+/** Arguments supplied to [[ElementDrivesTextAnnotation.evaluateFields]].
+ * @beta
+ */
+export interface EvaluateFieldsArgs {
+  /** The text block whose fields are to be evaluated. */
+  block: TextBlock;
+  /** The iModel containing the elements supplying the display strings for the fields in [[block]]. */
+  iModel: IModelDb;
 }
 
 /** A relationship in which the source element hosts one or more properties that are displayed by a target [[ITextAnnotation]] element.
@@ -77,8 +88,7 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * update when the source element changes.
    */
   public static isSupportedForIModel(iModel: IModelDb): boolean {
-    const bisCoreVersion = iModel.querySchemaVersionNumbers("BisCore");
-    return undefined !== bisCoreVersion && bisCoreVersion.compare(minBisCoreVersion) >= 0;
+    return iModel.meetsMinimumSchemaVersion("BisCore", minBisCoreVersion);
   }
 
   /** Examines all of the [FieldRun]($common)s within the specified [[ITextAnnotation]] and ensures that the appropriate
@@ -86,10 +96,6 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
    * It also deletes any stale relationships left over from fields that were deleted or whose source elements changed.
    */
   public static updateFieldDependencies(annotationElementId: Id64String, iModel: IModelDb): void {
-    if (!ElementDrivesTextAnnotation.isSupportedForIModel(iModel)) {
-      return;
-    }
-
     const annotationElement = iModel.elements.tryGetElement<Element>(annotationElementId);
     if (!annotationElement || !isITextAnnotation(annotationElement)) {
       return;
@@ -111,27 +117,38 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
     const sourceToRelationship = new Map<Id64String, Id64String | null>();
     const blocks = annotationElement.getTextBlocks();
 
+    let haveFields = false;
     for (const block of blocks) {
       for (const { child } of traverseTextBlockComponent(block.textBlock)) {
-        if (child.type === "field" && isValidSourceId(child.propertyHost.elementId)) {
-          sourceToRelationship.set(child.propertyHost.elementId, null);
+        if (child.type === "field") {
+          haveFields = true;
+          if (isValidSourceId(child.propertyHost.elementId)) {
+            sourceToRelationship.set(child.propertyHost.elementId, null);
+          }
         }
       }
     }
 
+    if (haveFields) {
+      iModel.requireMinimumSchemaVersion("BisCore", minBisCoreVersion, "Text fields");
+      updateAllFields(annotationElementId, iModel)
+    }
+
     const staleRelationships = new Set<Id64String>();
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
-    annotationElement.iModel.withPreparedStatement(`SELECT ECInstanceId, SourceECInstanceId FROM BisCore.ElementDrivesTextAnnotation WHERE TargetECInstanceId=${annotationElement.id}`, (stmt) => {
-      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
-        const relationshipId = stmt.getValue(0).getId();
-        const sourceId = stmt.getValue(1).getId();
-        if (sourceToRelationship.has(sourceId)) {
-          sourceToRelationship.set(sourceId, relationshipId);
-        } else {
-          staleRelationships.add(relationshipId);
+    if (this.isSupportedForIModel(iModel)) {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
+      annotationElement.iModel.withPreparedStatement(`SELECT ECInstanceId, SourceECInstanceId FROM BisCore.ElementDrivesTextAnnotation WHERE TargetECInstanceId=${annotationElement.id}`, (stmt) => {
+        while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+          const relationshipId = stmt.getValue(0).getId();
+          const sourceId = stmt.getValue(1).getId();
+          if (sourceToRelationship.has(sourceId)) {
+            sourceToRelationship.set(sourceId, relationshipId);
+          } else {
+            staleRelationships.add(relationshipId);
+          }
         }
-      }
-    });
+      });
+    }
 
     for (const [sourceId, relationshipId] of sourceToRelationship) {
       if (relationshipId === null) {
@@ -139,9 +156,48 @@ export class ElementDrivesTextAnnotation extends ElementDrivesElement {
       }
     }
 
-    for (const relationshipId of staleRelationships) {
-      const props = annotationElement.iModel.relationships.getInstanceProps("BisCore.ElementDrivesTextAnnotation", relationshipId);
-      annotationElement.iModel.relationships.deleteInstance(props);
+    if (staleRelationships.size > 0) {
+      const staleRelationshipProps = Array.from(staleRelationships).map(relationshipId =>
+        annotationElement.iModel.relationships.getInstanceProps("BisCore.ElementDrivesTextAnnotation", relationshipId)
+      );
+      annotationElement.iModel.relationships.deleteInstances(staleRelationshipProps);
+    }
+  }
+
+  /** Recompute the display strings of all [FieldRun]($common)s in a [TextBlock]($common).
+   * @returns the number of fields whose display strings were modified.
+   * @throws Error if evaluation of any field fails.
+   */
+  public static evaluateFields(args: EvaluateFieldsArgs): number {
+    return updateFields(args.block, createUpdateContext(undefined, args.iModel, false))
+  }
+
+  /** When copying an [[ITextAnnotation]] from one iModel into another, remaps the element Ids in any [FieldPropertyHost]($common) within the cloned element
+   * so that they refer to elements in the `context`'s target iModel, and sets any Ids that cannot be remapped to [Id64.invalid]($bentley).
+   * Implementations of `ITextAnnotation` should invoke this function from their implementations of [[Element.onCloned]].
+   */
+  public static remapFields(clone: ITextAnnotation, context: IModelElementCloneContext): void {
+    if (!context.isBetweenIModels) {
+      return;
+    }
+
+    const updatedBlocks = [];
+    for (const block of clone.getTextBlocks()) {
+      let anyUpdated = false;
+      for (const { child } of traverseTextBlockComponent(block.textBlock)) {
+        if (child.type === "field") {
+          child.propertyHost.elementId = context.findTargetElementId(child.propertyHost.elementId);
+          anyUpdated = true;
+        }
+      }
+
+      if (anyUpdated) {
+        updatedBlocks.push(block);
+      }
+    }
+
+    if (updatedBlocks.length > 0) {
+      clone.updateTextBlocks(updatedBlocks);
     }
   }
 }

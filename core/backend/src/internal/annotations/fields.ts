@@ -36,7 +36,7 @@ type FieldValueType = {
 }
 
 export interface UpdateFieldsContext {
-  readonly hostElementId: Id64String;
+  readonly hostElementId: Id64String | undefined;
 
   getProperty(field: FieldRun): FieldValue | undefined
 }
@@ -221,7 +221,7 @@ function determineFieldPropertyType(prop: Property): FieldPropertyType | undefin
   return undefined;
 }
 
-export function createUpdateContext(hostElementId: string, iModel: IModelDb, deleted: boolean): UpdateFieldsContext {
+export function createUpdateContext(hostElementId: string | undefined, iModel: IModelDb, deleted: boolean): UpdateFieldsContext {
   return {
     hostElementId,
     getProperty: deleted ? () => undefined : (field) => getFieldPropertyValue(field, iModel),
@@ -230,7 +230,7 @@ export function createUpdateContext(hostElementId: string, iModel: IModelDb, del
 
 // Recompute the display value of a single field, return false if it couldn't be evaluated.
 export function updateField(field: FieldRun, context: UpdateFieldsContext): boolean {
-  if (context.hostElementId !== field.propertyHost.elementId) {
+  if (context.hostElementId && context.hostElementId !== field.propertyHost.elementId) {
     return false;
   }
 
@@ -266,12 +266,11 @@ export function updateFields(textBlock: TextBlock, context: UpdateFieldsContext)
   return numUpdated;
 }
 
-// Invoked by ElementDrivesTextAnnotation to update fields in target element when source element changes or is deleted.
-export function updateElementFields(props: RelationshipProps, iModel: IModelDb, deleted: boolean): void {
+function doUpdateFields(annotationId: Id64String, sourceId: Id64String | undefined, iModel: IModelDb, deleted: boolean): void {
   try {
-    const target = iModel.elements.getElement(props.targetId);
+    const target = iModel.elements.getElement(annotationId);
     if (isITextAnnotation(target)) {
-      const context = createUpdateContext(props.sourceId, iModel, deleted);
+      const context = createUpdateContext(sourceId, iModel, deleted);
       const updatedBlocks = [];
       for (const block of target.getTextBlocks()) {
         if (updateFields(block.textBlock, context)) {
@@ -281,10 +280,20 @@ export function updateElementFields(props: RelationshipProps, iModel: IModelDb, 
 
       if (updatedBlocks.length > 0) {
         target.updateTextBlocks(updatedBlocks);
+        target.update();
       }
     }
   } catch (err) {
     Logger.logException(BackendLoggerCategory.IModelDb, err);
   }
+}
+
+// Invoked by ElementDrivesTextAnnotation to update fields in target element when source element changes or is deleted.
+export function updateElementFields(props: RelationshipProps, iModel: IModelDb, deleted: boolean): void {
+  doUpdateFields(props.targetId, props.sourceId, iModel, deleted);
+}
+
+export function updateAllFields(annotationElementId: Id64String, iModel: IModelDb): void {
+  doUpdateFields(annotationElementId, undefined, iModel, false);
 }
 

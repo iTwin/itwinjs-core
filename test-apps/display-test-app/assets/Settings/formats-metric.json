@@ -1,0 +1,1318 @@
+{
+  "name": "d9127621-29c5-4591-8861-394a5f6025e4",
+  "unitSystem": "metric",
+  "label": "Format set for metric",
+  "formats": {
+    "AecUnits.ACCELERATION": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.M_PER_SEC_SQ"
+          }
+        ]
+      },
+      "name": "AecUnits.ACCELERATION",
+      "label": "Acceleration"
+    },
+    "AecUnits.ANGLE": {
+      "type": "Decimal",
+      "precision": 2,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.ARC_DEG"
+          }
+        ]
+      },
+      "name": "AecUnits.ANGLE",
+      "label": "Angle"
+    },
+    "AecUnits.ANGULAR_VELOCITY": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.RAD_PER_SEC"
+          }
+        ]
+      },
+      "name": "AecUnits.ANGULAR_VELOCITY",
+      "label": "Angular Velocity"
+    },
+    "AecUnits.AREA": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.SQ_M"
+          }
+        ]
+      },
+      "name": "AecUnits.AREA",
+      "label": "Area"
+    },
+    "AecUnits.AREA_LARGE": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.SQ_KM"
+          }
+        ]
+      },
+      "name": "AecUnits.AREA_LARGE",
+      "label": "Large Area"
+    },
+    "AecUnits.AREA_SMALL": {
+      "type": "Decimal",
+      "precision": 2,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.SQ_MM"
+          }
+        ]
+      },
+      "name": "AecUnits.AREA_SMALL",
+      "label": "Small Area"
+    },
+    "AecUnits.AREA_FORCE": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.KILOPASCAL"
+          }
+        ]
+      },
+      "name": "AecUnits.AREA_FORCE",
+      "label": "Area Force"
+    },
+    "AecUnits.AREA_FORCE_LARGE": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.MEGAPASCAL"
+          }
+        ]
+      },
+      "name": "AecUnits.AREA_FORCE_LARGE",
+      "label": "Area Force Large"
+    },
+    "AecUnits.AREA_FORCE_SMALL": {
+      "type": "Decimal",
+      "precision": 2,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.PA"
+          }
+        ]
+      },
+      "name": "AecUnits.AREA_FORCE_SMALL",
+      "label": "Area Force Small"
+    },
+    "AecUnits.AREA_MOMENT": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.KN_M_PER_SQ_M"
+          }
+        ]
+      },
+      "name": "AecUnits.AREA_MOMENT",
+      "label": "Area Moment"
+    },
+    "AecUnits.AREA_MOMENT_LARGE": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.MEGAN_M_PER_SQ_M"
+          }
+        ]
+      },
+      "name": "AecUnits.AREA_MOMENT_LARGE",
+      "label": "Area Moment Large"
+    },
+    "AecUnits.AREA_MOMENT_SMALL": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.N_M_PER_SQ_M"
+          }
+        ]
+      },
+      "name": "AecUnits.AREA_MOMENT_SMALL",
+      "label": "Area Moment Small"
+    },
+    "AecUnits.AREA_SPRING_CONSTANT": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.AREA_SPRING_CONSTANT_N_PER_CUB_M"
+          }
+        ]
+      },
+      "name": "AecUnits.AREA_SPRING_CONSTANT",
+      "label": "Area Spring Constant"
+    },
+    "AecUnits.CURRENT": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.A"
+          }
+        ]
+      },
+      "name": "AecUnits.CURRENT",
+      "label": "Current"
+    },
+    "AecUnits.DENSITY": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.KG_PER_CUB_M"
+          }
+        ]
+      },
+      "name": "AecUnits.DENSITY",
+      "label": "Density"
+    },
+    "AecUnits.DYNAMIC_VISCOSITY": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.PA_S"
+          }
+        ]
+      },
+      "name": "AecUnits.DYNAMIC_VISCOSITY",
+      "label": "Dynamic Viscosity"
+    },
+    "AecUnits.ELECTRIC_POTENTIAL": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.VOLT"
+          }
+        ]
+      },
+      "name": "AecUnits.ELECTRIC_POTENTIAL",
+      "label": "Electric Potential"
+    },
+    "AecUnits.ENERGY": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.J"
+          }
+        ]
+      },
+      "name": "AecUnits.ENERGY",
+      "label": "Energy"
+    },
+    "AecUnits.FLOW": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.LITRE_PER_MIN"
+          }
+        ]
+      },
+      "name": "AecUnits.FLOW",
+      "label": "Flow Rate"
+    },
+    "AecUnits.FORCE": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.KN"
+          }
+        ]
+      },
+      "name": "AecUnits.FORCE",
+      "label": "Force"
+    },
+    "AecUnits.FORCE_LARGE": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.MEGAN"
+          }
+        ]
+      },
+      "name": "AecUnits.FORCE_LARGE",
+      "label": "Force Large"
+    },
+    "AecUnits.FORCE_SMALL": {
+      "type": "Decimal",
+      "precision": 2,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.N"
+          }
+        ]
+      },
+      "name": "AecUnits.FORCE_SMALL",
+      "label": "Force Small"
+    },
+    "AecUnits.FORCE_DENSITY": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.N_PER_CUB_M"
+          }
+        ]
+      },
+      "name": "AecUnits.FORCE_DENSITY",
+      "label": "Force Density"
+    },
+    "AecUnits.FREQUENCY": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.HZ"
+          }
+        ]
+      },
+      "name": "AecUnits.FREQUENCY",
+      "label": "Frequency"
+    },
+    "AecUnits.HEAT_TRANSFER": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.W_PER_SQ_M_K"
+          }
+        ]
+      },
+      "name": "AecUnits.HEAT_TRANSFER",
+      "label": "Heat Transfer"
+    },
+    "AecUnits.ILLUMINANCE": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.LUX"
+          }
+        ]
+      },
+      "name": "AecUnits.ILLUMINANCE",
+      "label": "Illuminance"
+    },
+    "AecUnits.LENGTH": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.M"
+          }
+        ]
+      },
+      "name": "AecUnits.LENGTH",
+      "label": "Length"
+    },
+    "AecUnits.LENGTH_LONG": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.KM"
+          }
+        ]
+      },
+      "name": "AecUnits.LENGTH_LONG",
+      "label": "Long Length"
+    },
+    "AecUnits.LENGTH_SHORT": {
+      "type": "Decimal",
+      "precision": 2,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.MM"
+          }
+        ]
+      },
+      "name": "AecUnits.LENGTH_SHORT",
+      "label": "Short Length"
+    },
+    "AecUnits.LINEAR_DENSITY": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.KG_PER_M"
+          }
+        ]
+      },
+      "name": "AecUnits.LINEAR_DENSITY",
+      "label": "Linear Density"
+    },
+    "AecUnits.LINEAR_FORCE": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.KN_PER_M"
+          }
+        ]
+      },
+      "name": "AecUnits.LINEAR_FORCE",
+      "label": "Linear Force"
+    },
+    "AecUnits.LINEAR_FORCE_LARGE": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.MEGAN_PER_M"
+          }
+        ]
+      },
+      "name": "AecUnits.LINEAR_FORCE_LARGE",
+      "label": "Linear Force Large"
+    },
+    "AecUnits.LINEAR_FORCE_SMALL": {
+      "type": "Decimal",
+      "precision": 2,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.N_PER_M"
+          }
+        ]
+      },
+      "name": "AecUnits.LINEAR_FORCE_SMALL",
+      "label": "Linear Force Small"
+    },
+    "AecUnits.LINEAR_MOMENT": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.KN_M_PER_M"
+          }
+        ]
+      },
+      "name": "AecUnits.LINEAR_MOMENT",
+      "label": "Linear Moment"
+    },
+    "AecUnits.LINEAR_MOMENT_LARGE": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.MEGAN_M_PER_M"
+          }
+        ]
+      },
+      "name": "AecUnits.LINEAR_MOMENT_LARGE",
+      "label": "Linear Moment Large"
+    },
+    "AecUnits.LINEAR_MOMENT_SMALL": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.N_M_PER_M"
+          }
+        ]
+      },
+      "name": "AecUnits.LINEAR_MOMENT_SMALL",
+      "label": "Linear Moment Small"
+    },
+    "AecUnits.LINEAR_SPRING_CONSTANT": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.LINEAR_SPRING_CONSTANT_N_PER_SQ_M"
+          }
+        ]
+      },
+      "name": "AecUnits.LINEAR_SPRING_CONSTANT",
+      "label": "Linear Spring Constant"
+    },
+    "AecUnits.LINEAR_ROTATIONAL_SPRING_CONSTANT": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.N_PER_RAD"
+          }
+        ]
+      },
+      "name": "AecUnits.LINEAR_ROTATIONAL_SPRING_CONSTANT",
+      "label": "Linear Rotational Spring Constant"
+    },
+    "AecUnits.LIQUID_VOLUME": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.LITRE"
+          }
+        ]
+      },
+      "name": "AecUnits.LIQUID_VOLUME",
+      "label": "Liquid Volume"
+    },
+    "AecUnits.LIQUID_VOLUME_LARGE": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.THOUSAND_LITRE"
+          }
+        ]
+      },
+      "name": "AecUnits.LIQUID_VOLUME_LARGE",
+      "label": "Liquid Large Volume"
+    },
+    "AecUnits.LIQUID_VOLUME_SMALL": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.LITRE"
+          }
+        ]
+      },
+      "name": "AecUnits.LIQUID_VOLUME_SMALL",
+      "label": "Liquid Small Volume"
+    },
+    "AecUnits.LUMINOUS_FLUX": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.LUMEN"
+          }
+        ]
+      },
+      "name": "AecUnits.LUMINOUS_FLUX",
+      "label": "Luminous Flux"
+    },
+    "AecUnits.LUMINOUS_INTENSITY": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.CD"
+          }
+        ]
+      },
+      "name": "AecUnits.LUMINOUS_INTENSITY",
+      "label": "Luminous Intensity"
+    },
+    "AecUnits.MOMENT": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.KN_M"
+          }
+        ]
+      },
+      "name": "AecUnits.MOMENT",
+      "label": "Moment"
+    },
+    "AecUnits.MOMENT_LARGE": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.MEGAN_M"
+          }
+        ]
+      },
+      "name": "AecUnits.MOMENT_LARGE",
+      "label": "Moment Large"
+    },
+    "AecUnits.MOMENT_SMALL": {
+      "type": "Decimal",
+      "precision": 2,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.N_M"
+          }
+        ]
+      },
+      "name": "AecUnits.MOMENT_SMALL",
+      "label": "Moment Small"
+    },
+    "AecUnits.MOMENT_OF_INERTIA": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.M_TO_THE_FOURTH"
+          }
+        ]
+      },
+      "name": "AecUnits.MOMENT_OF_INERTIA",
+      "label": "Moment Of Inertia"
+    },
+    "AecUnits.POWER": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.W"
+          }
+        ]
+      },
+      "name": "AecUnits.POWER",
+      "label": "Power"
+    },
+    "AecUnits.PRESSURE": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.PA"
+          }
+        ]
+      },
+      "name": "AecUnits.PRESSURE",
+      "label": "Pressure"
+    },
+    "AecUnits.PRESSURE_GRADIENT": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.PA_PER_M"
+          }
+        ]
+      },
+      "name": "AecUnits.PRESSURE_GRADIENT",
+      "label": "Pressure Gradient"
+    },
+    "AecUnits.PROBABILITY": {
+      "type": "Decimal",
+      "precision": 2,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.PROBABILITY_PERCENT"
+          }
+        ]
+      },
+      "name": "AecUnits.PROBABILITY",
+      "label": "Probability"
+    },
+    "AecUnits.PROCESS_PIPING_FLOW": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.LITRE_PER_MIN"
+          }
+        ]
+      },
+      "name": "AecUnits.PROCESS_PIPING_FLOW",
+      "label": "Process Piping Flow Rate"
+    },
+    "AecUnits.PROCESS_PIPING_PRESSURE": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.PA"
+          }
+        ]
+      },
+      "name": "AecUnits.PROCESS_PIPING_PRESSURE",
+      "label": "Process Piping Pressure"
+    },
+    "AecUnits.PROCESS_PIPING_TEMPERATURE": {
+      "type": "Decimal",
+      "precision": 2,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.CELSIUS"
+          }
+        ]
+      },
+      "name": "AecUnits.PROCESS_PIPING_TEMPERATURE",
+      "label": "Process Piping Temperature"
+    },
+    "AecUnits.ROTATIONAL_SPRING_CONSTANT": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.N_M_PER_RAD"
+          }
+        ]
+      },
+      "name": "AecUnits.ROTATIONAL_SPRING_CONSTANT",
+      "label": "Rotational Spring Constant"
+    },
+    "AecUnits.SPECIFIC_HEAT_CAPACITY": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.J_PER_KG_K"
+          }
+        ]
+      },
+      "name": "AecUnits.SPECIFIC_HEAT_CAPACITY",
+      "label": "Specific Heat Capacity"
+    },
+    "AecUnits.SPECIFIC_HEAT_OF_VAPORIZATION": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.J_PER_KG"
+          }
+        ]
+      },
+      "name": "AecUnits.SPECIFIC_HEAT_OF_VAPORIZATION",
+      "label": "Specific Heat Of Vaporization"
+    },
+    "AecUnits.SPRING_CONSTANT": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.SPRING_CONSTANT_N_PER_M"
+          }
+        ]
+      },
+      "name": "AecUnits.SPRING_CONSTANT",
+      "label": "Spring Constant"
+    },
+    "AecUnits.TEMPERATURE": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.CELSIUS"
+          }
+        ]
+      },
+      "name": "AecUnits.TEMPERATURE",
+      "label": "Temperature"
+    },
+    "AecUnits.THERMAL_CONDUCTIVITY": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.W_PER_M_K"
+          }
+        ]
+      },
+      "name": "AecUnits.THERMAL_CONDUCTIVITY",
+      "label": "Thermal Conductivity"
+    },
+    "AecUnits.THERMAL_EXPANSION_COEFFICIENT": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.STRAIN_PER_KELVIN"
+          }
+        ]
+      },
+      "name": "AecUnits.THERMAL_EXPANSION_COEFFICIENT",
+      "label": "Thermal Expansion Coefficient"
+    },
+    "AecUnits.THERMAL_RESISTANCE": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.SQ_M_KELVIN_PER_WATT"
+          }
+        ]
+      },
+      "name": "AecUnits.THERMAL_RESISTANCE",
+      "label": "Thermal Resistance"
+    },
+    "AecUnits.TIME": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.S"
+          }
+        ]
+      },
+      "name": "AecUnits.TIME",
+      "label": "Time"
+    },
+    "AecUnits.VELOCITY": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.M_PER_SEC"
+          }
+        ]
+      },
+      "name": "AecUnits.VELOCITY",
+      "label": "Velocity"
+    },
+    "AecUnits.VOLUME": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.CUB_M"
+          }
+        ]
+      },
+      "name": "AecUnits.VOLUME",
+      "label": "Volume"
+    },
+    "AecUnits.VOLUME_LARGE": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.CUB_KM"
+          }
+        ]
+      },
+      "name": "AecUnits.VOLUME_LARGE",
+      "label": "Large Volume"
+    },
+    "AecUnits.VOLUME_SMALL": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.CUB_MM"
+          }
+        ]
+      },
+      "name": "AecUnits.VOLUME_SMALL",
+      "label": "Small Volume"
+    },
+    "AecUnits.WARPING_CONSTANT": {
+      "type": "Decimal",
+      "precision": 4,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.M_TO_THE_SIXTH"
+          }
+        ]
+      },
+      "name": "AecUnits.WARPING_CONSTANT",
+      "label": "Warping Constant"
+    },
+    "AecUnits.WEIGHT": {
+      "type": "Decimal",
+      "precision": 2,
+      "formatTraits": [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel"
+      ],
+      "parent": "Formats.DefaultRealU",
+      "composite": {
+        "units": [
+          {
+            "name": "Units.KG"
+          }
+        ]
+      },
+      "name": "AecUnits.WEIGHT",
+      "label": "Weight"
+    }
+  }
+}
