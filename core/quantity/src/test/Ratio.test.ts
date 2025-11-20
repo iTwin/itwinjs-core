@@ -1250,6 +1250,98 @@ describe("Ratio format tests", () => {
         await ratioFormat.fromJSON(unitsProvider, ratioJson);
         expect(ratioFormat.type).to.equal(FormatType.Ratio);
       });
+
+      it("should reject ratio format with '/' in numerator part", async () => {
+        const ratioJson: FormatProps = {
+          type: "Ratio",
+          ratioType: "OneToN",
+          precision: 2,
+          composite: {
+            includeZero: true,
+            units: [
+              { name: "Units.M_PER_M_LENGTH_RATIO", label: "m/s/h" }, // '/' in numerator
+            ],
+          },
+        };
+
+        const unitsProvider = new TestUnitsProvider();
+        const ratioFormat = new Format("InvalidNumeratorSlash");
+
+        try {
+          await ratioFormat.fromJSON(unitsProvider, ratioJson);
+          assert.fail("Should have thrown an error for label with '/' in numerator");
+        } catch (err: any) {
+          expect(err.message).to.include("must follow the 'numerator/denominator' standard");
+          expect(err.message).to.include("is invalid");
+        }
+      });
+
+      it("should reject ratio format with '/' in denominator part", async () => {
+        const ratioJson: FormatProps = {
+          type: "Ratio",
+          ratioType: "OneToN",
+          precision: 2,
+          composite: {
+            includeZero: true,
+            units: [
+              { name: "Units.M_PER_M_LENGTH_RATIO", label: "m/s/h" }, // '/' in denominator (same as above, multiple slashes)
+            ],
+          },
+        };
+
+        const unitsProvider = new TestUnitsProvider();
+        const ratioFormat = new Format("InvalidDenominatorSlash");
+
+        try {
+          await ratioFormat.fromJSON(unitsProvider, ratioJson);
+          assert.fail("Should have thrown an error for label with '/' in denominator");
+        } catch (err: any) {
+          expect(err.message).to.include("must follow the 'numerator/denominator' standard");
+          expect(err.message).to.include("is invalid");
+        }
+      });
+
+      it("should accept complex unit labels with special characters (no slash)", async () => {
+        const ratioJson: FormatProps = {
+          type: "Ratio",
+          ratioType: "OneToN",
+          precision: 2,
+          composite: {
+            includeZero: true,
+            units: [
+              { name: "Units.M_PER_M_LENGTH_RATIO", label: "m²/m³" }, // Special characters but single '/'
+            ],
+          },
+        };
+
+        const unitsProvider = new TestUnitsProvider();
+        const ratioFormat = new Format("SpecialCharsLabel");
+
+        // Should not throw - has exactly one '/' with non-empty parts
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+        expect(ratioFormat.type).to.equal(FormatType.Ratio);
+      });
+
+      it("should accept labels with parentheses and special chars (no extra slash)", async () => {
+        const ratioJson: FormatProps = {
+          type: "Ratio",
+          ratioType: "OneToN",
+          precision: 2,
+          composite: {
+            includeZero: true,
+            units: [
+              { name: "Units.M_PER_M_LENGTH_RATIO", label: "kg·m/s²" }, // Complex but single '/'
+            ],
+          },
+        };
+
+        const unitsProvider = new TestUnitsProvider();
+        const ratioFormat = new Format("ComplexLabel");
+
+        // Should not throw - has exactly one '/' with non-empty parts
+        await ratioFormat.fromJSON(unitsProvider, ratioJson);
+        expect(ratioFormat.type).to.equal(FormatType.Ratio);
+      });
     });
   });
 });
