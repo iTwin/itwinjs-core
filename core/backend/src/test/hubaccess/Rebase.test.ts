@@ -1326,7 +1326,7 @@ describe("rebase changes & stashing api", function (this: Suite) {
     chai.expect(geomGuidBeforePull).to.not.equal(geomGuidAfterPull);
     chai.expect(events.modelGeometryChanged.length).to.equal(4);
   });
-  it("onModelGeometryChanged() fired during rebase with none-geometric local change", async () => {
+  it("onModelGeometryChanged() fired during rebase with non-geometric local change", async () => {
     const b1 = await testIModel.openBriefcase();
     const b2 = await testIModel.openBriefcase();
 
