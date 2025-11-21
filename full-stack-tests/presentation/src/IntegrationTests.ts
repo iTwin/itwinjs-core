@@ -98,6 +98,7 @@ export const initialize = async (props?: {
 
   const frontendAppOptions: IModelAppOptions = {
     localization: new EmptyLocalization(),
+    incrementalSchemaLoading: "enabled",
     ...props?.imodelAppProps,
   };
 
