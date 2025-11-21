@@ -7,7 +7,7 @@
  */
 
 import { Guid, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { IModelDb, IpcHandler, IpcHost } from "@itwin/core-backend";
+import { _nativeDb, IModelDb, IpcHandler, IpcHost } from "@itwin/core-backend";
 import { BackendError, IModelError } from "@itwin/core-common";
 import { EditCommandIpc, EditorIpc, editorIpcStrings } from "@itwin/editor-common";
 
@@ -165,7 +165,7 @@ export class EditCommandAdmin {
       if ("done" !== finished)
         throw new BackendError(IModelStatus.ServerTimeout, editorIpcStrings.commandBusy, finished);
 
-      if (!this._activeCommand.hasFinalizedChanges)
+      if (!this._activeCommand.hasFinalizedChanges && this._activeCommand.iModel[_nativeDb].hasUnsavedChanges())
         throw new IModelError(IModelStatus.BadRequest, "The edit command needs to saved/abandon the changes made before it can finish.")
     }
     IModelDb.activeEditCommand = undefined;

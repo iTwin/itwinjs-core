@@ -48,6 +48,15 @@ abstract class TestEditCommandBase extends EditCommand {
 class InsertCommand extends TestEditCommandBase {
   public static override commandId = "Test.InsertCommand";
 
+  constructor(
+    iModel: IModelDb,
+    modelId: string,
+    categoryId: string
+  ) {
+    super(iModel, modelId, categoryId);
+    this.iModel[_nativeDb].enableTxnTesting(); // Enable transaction testing to simulate unsaved changes
+  }
+
   public async insertAndSave(elementProps: TestPhysicalObjectProps): Promise<Id64String[]> {
     const elementIds = await this.insertElements(this.iModel, elementProps);
     this.saveChanges();
@@ -304,6 +313,37 @@ describe.only("Editing API", () => {
       await EditCommandAdmin.finishCommand();
     } catch (error: any) {
       assert.fail("finishCommand should not throw after changes are finalized.");
+    }
+  });
+
+  it("finishCommand should not throw if command made no changes to the iModel", async () => {
+    class ReadOnlyCommand extends InsertCommand {
+      public static override commandId = "Test.ReadOnlyCommand";
+
+      public async performReadOperation(): Promise<number> {
+        // Just read some data, don't modify anything
+        const elementCount = imodel.queryEntityIds({ from: "BisCore.Element", limit: 100 }).size;
+        return elementCount;
+      }
+    }
+
+    EditCommandAdmin.register(ReadOnlyCommand);
+
+    try {
+      const command = new ReadOnlyCommand(imodel, physicalModelId, spatialCategoryId);
+      await EditCommandAdmin.runCommand(command);
+
+      // Perform a read-only operation
+      const elementCount = await command.performReadOperation();
+      expect(elementCount).to.be.greaterThan(0, "Should have read some elements");
+
+      // Since no changes were made, finishCommand should NOT throw
+      // even though saveChanges/abandonChanges was never called
+      await EditCommandAdmin.finishCommand();
+    } catch (error: any) {
+      assert.fail(`finishCommand should not throw for read-only commands: ${error.message}`);
+    } finally {
+      EditCommandAdmin.unRegister(ReadOnlyCommand.commandId);
     }
   });
 
