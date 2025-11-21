@@ -1190,7 +1190,11 @@ export abstract class GltfReader {
 
     }
 
-    return new DisplayParams(DisplayParams.Type.Mesh, color, color, 1, LinePixels.Solid, FillFlags.None, renderMaterial, undefined, hasBakedLighting, textureMapping);
+    let width = 1;
+    if (undefined !== material.extensions?.BENTLEY_materials_point_style)
+      width = (material.extensions.BENTLEY_materials_point_style as any)?.diameter;
+
+    return new DisplayParams(DisplayParams.Type.Mesh, color, color, width, LinePixels.Solid, FillFlags.None, renderMaterial, undefined, hasBakedLighting, textureMapping);
   }
 
   private readMeshPrimitives(node: GltfNode, featureTable?: FeatureTable, thisTransform?: Transform, thisBias?: Vector3d, instances?: InstancedGraphicParams): GltfPrimitiveData[] {
