@@ -14,6 +14,9 @@ import { SchemaKey } from "../SchemaKey";
 import { SchemaLoadingController } from "../utils/SchemaLoadingController";
 import { IncrementalSchemaReader } from "./IncrementalSchemaReader";
 
+/**
+ * @internal
+ */
 export interface IncrementalSchemaInfo extends SchemaInfo {
   readonly description?: string;
   readonly label?: string;
