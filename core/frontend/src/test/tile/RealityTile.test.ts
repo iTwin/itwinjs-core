@@ -12,7 +12,7 @@ import { IModelApp } from "../../IModelApp";
 import { MockRender } from "../../internal/render/MockRender";
 import { RenderMemory } from "../../render/RenderMemory";
 import {
-  B3dmReader, RealityTile, RealityTileLoader, RealityTileTree,
+  B3dmReader, GltfReaderProps, GltfReaderResult, RealityTile, RealityTileGeometry, RealityTileLoader, RealityTileTree,
   Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel
 } from "../../tile/internal";
 import { createBlankConnection } from "../createBlankConnection";
@@ -21,8 +21,9 @@ describe("RealityTile", () => {
   class TestRealityTile extends RealityTile {
     private readonly _contentSize: number;
     public visible = true;
+    public override transformToRoot?: Transform | undefined;
 
-    public constructor(tileTree: RealityTileTree, contentSize: number, reprojectTransform?: Transform) {
+    public constructor(tileTree: RealityTileTree, contentSize: number, reprojectTransform?: Transform, transformToRoot?: Transform) {
       super({
         contentId: contentSize.toString(),
         range: new Range3d(0, 0, 0, 1, 1, 1),
@@ -35,6 +36,7 @@ describe("RealityTile", () => {
         this.setIsReady();
 
       this._reprojectionTransform = reprojectTransform;
+      this.transformToRoot = transformToRoot;
     }
 
     protected override _loadChildren(resolve: (children: Tile[] | undefined) => void): void {
@@ -107,7 +109,8 @@ describe("RealityTile", () => {
         },
         id: (++TestRealityTree._nextId).toString(),
         modelId: "0",
-        location: Transform.createIdentity(),
+        location: Transform.createTranslationXYZ(2, 2, 2),
+        // location: Transform.createIdentity(),
         priority: TileLoadPriority.Primary,
         iModel,
         gcsConverterAvailable: false,
@@ -116,7 +119,9 @@ describe("RealityTile", () => {
 
       this.treeId = TestRealityTree._nextId;
       this.contentSize = contentSize;
-      this._rootTile = new TestRealityTile(this, contentSize, reprojectTransform);
+
+      const transformToRoot = Transform.createTranslationXYZ(10, 10, 10);
+      this._rootTile = new TestRealityTile(this, contentSize, reprojectTransform, transformToRoot);
     }
 
     public override get rootTile(): TestRealityTile { return this._rootTile; }
@@ -148,6 +153,26 @@ describe("RealityTile", () => {
     public override prune() { }
   }
 
+  class TestB3dmReader extends B3dmReader {
+    public override readGltfAndCreateGeometry(transformToRoot?: Transform, needNormals?: boolean, needParams?: boolean): RealityTileGeometry {
+      // Create mock geometry data with a simple polyface
+      const options = StrokeOptions.createForFacets();
+      const polyBuilder = PolyfaceBuilder.create(options);
+      polyBuilder.addPolygon([
+        Point3d.create(0, 0, 0),
+        Point3d.create(1, 0, 0),
+        Point3d.create(1, 1, 0)
+      ]);
+      const originalPolyface = polyBuilder.claimPolyface();
+      const mockGeometry = { polyfaces: [originalPolyface] };
+      return mockGeometry;
+    }
+
+    public override readGltfAndCreateGraphics(isLeaf: boolean, featureTable: FeatureTable | undefined, contentRange: Range3d | undefined, transformToRoot?: Transform | undefined, pseudoRtcBias?: Vector3d | undefined, instances?: InstancedGraphicParams | undefined): GltfReaderResult {
+      return {} as any as GltfReaderResult;
+    }
+  }
+
   function expectPointToEqual(point: Point3d, x: number, y: number, z: number) {
     expect(point.x).to.equal(x);
     expect(point.y).to.equal(y);
@@ -159,8 +184,9 @@ describe("RealityTile", () => {
   let reprojectionTransform: Transform;
   let streamBuffer: ByteStream;
   let createGeometrySpy: MockInstance;
+  let createGraphicsSpy: MockInstance;
   let createReaderSpy: MockInstance;
-  let mockReader: B3dmReader;
+  let createGltfReaderPropsSpy: MockInstance;
 
   beforeEach(async () => {
     await MockRender.App.startup();
@@ -175,26 +201,16 @@ describe("RealityTile", () => {
     view.setUint32(0, TileFormat.B3dm, true);
     streamBuffer = ByteStream.fromUint8Array(buffer);
 
-    // Create mock geometry data with a simple polyface
-    const options = StrokeOptions.createForFacets();
-    const polyBuilder = PolyfaceBuilder.create(options);
-    polyBuilder.addPolygon([
-      Point3d.create(0, 0, 0),
-      Point3d.create(1, 0, 0),
-      Point3d.create(1, 1, 0)
-    ]);
-    const originalPolyface = polyBuilder.claimPolyface();
-    const mockGeometry = { polyfaces: [originalPolyface] };
-
-    mockReader = {
-      defaultWrapMode: undefined,
-      readGltfAndCreateGeometry(this: void) {}
-    } as any as B3dmReader;
-
     // Mock B3dmReader.create to return a reader with test geometry
-    createReaderSpy = vi.spyOn(B3dmReader, "create").mockReturnValue(mockReader);
-    createGeometrySpy = vi.spyOn(mockReader, "readGltfAndCreateGeometry").mockReturnValue(mockGeometry);
+    createGltfReaderPropsSpy = vi.spyOn(GltfReaderProps, "create").mockReturnValue({ version: 1, glTF: {}, yAxisUp: true});
+    const props = GltfReaderProps.create({}, true, new URL("http://www.sometestsite.com/tileset.json"));
 
+    const transformToRoot = Transform.createTranslationXYZ(10, 10, 10);
+    const testReader = new TestB3dmReader(props!, imodel, "0", true, IModelApp.renderSystem, Range3d.createNull(), true, 0, transformToRoot);
+
+    createReaderSpy = vi.spyOn(B3dmReader, "create").mockReturnValue(testReader);
+    createGeometrySpy = vi.spyOn(testReader, "readGltfAndCreateGeometry");
+    createGraphicsSpy = vi.spyOn(testReader, "readGltfAndCreateGraphics");
   });
 
   afterEach(async () => {
@@ -294,31 +310,28 @@ describe("RealityTile", () => {
     are the same (functions are called w same transform?)
   - When readGltfAndCreateGeometry() is called, the transform param is the same as the transform param when readGltfAndCreateGraphics() is called
   - createGeometry() called with loadGeometryFromStream() - already ready to be called in a test, mocked (switch from sinon to vitest)
-  - TODO how to call createGraphics()?
   */
   it.only("creating tile graphics and tile geometry apply the same transform", async () => {
     const tree = new TestRealityTree(0, imodel, reader, true, reprojectionTransform);
     const tile = tree.rootTile;
-    const result = await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
+    const resultGeometry = await reader.loadGeometryFromStream(tile, streamBuffer, IModelApp.renderSystem);
+    const resultGraphics = await reader.loadGraphicsFromStream(tile, streamBuffer, IModelApp.renderSystem);
 
-    expect(createReaderSpy).toHaveBeenCalledOnce();
+    expect(createGltfReaderPropsSpy).toHaveBeenCalledOnce();
+    expect(createReaderSpy).toHaveBeenCalled();
     expect(createGeometrySpy).toHaveBeenCalledOnce();
+    expect(createGraphicsSpy).toHaveBeenCalledOnce();
+
+    const testTransformResult = Transform.createTranslationXYZ(2, 2, 2).multiplyTransformTransform(Transform.createTranslationXYZ(10, 10, 10));
+    // console.log("test transform result:", testTransformResult);
+
+    // TODO this is going to be too annoying to test unless the root tile has a real child tile whose transformToRoot can be tested
 
     const expectedTransform = Transform.createIdentity();
-    const actualTransform = createGeometrySpy.mock.calls[0][0];
-    expect(actualTransform).toEqual(expectedTransform);
+    const geometryTransform = createGeometrySpy.mock.calls[0][0];
+    expect(geometryTransform).toEqual(testTransformResult);
 
-    // expect(result.geometry).to.not.be.undefined;
-    // expect(result.geometry?.polyfaces).to.have.length(1);
-
-    // if (result.geometry?.polyfaces) {
-    //   const polyface = result.geometry.polyfaces[0];
-    //   const points = polyface.data.point.getPoint3dArray();
-
-    //   // Check that the points have been reprojected
-    //   expectPointToEqual(points[0], 5, 5, 5);
-    //   expectPointToEqual(points[1], 6, 5, 5);
-    //   expectPointToEqual(points[2], 6, 6, 5);
-    // }
+    const graphicsTransform = createGraphicsSpy.mock.calls[0][3];
+    expect(graphicsTransform).toEqual(testTransformResult);
   });
 });
