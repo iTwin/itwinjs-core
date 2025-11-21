@@ -370,9 +370,9 @@ export class Checker {
    * * See also [[testExactNumber]], [[testNearNumber]], [[testSmallRelative]], [[testCoordinate]], [[testCoordinateWithToleranceFactor]]
    */
   public testFraction(dataA: number, dataB: number, ...params: any[]): boolean {
-    if (Geometry.isSameCoordinate(dataA, dataB, Geometry.smallFraction))
+    if (Geometry.isSameFraction(dataA, dataB))
       return this.announceOK();
-    return this.announceError("Expect same coordinate", dataA, dataB, params);
+    return this.announceError("Expect same fraction", dataA, dataB, params);
   }
   /**
    * Return true if 2 numbers are almost equal within default metric tolerance.
