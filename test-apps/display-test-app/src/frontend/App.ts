@@ -443,6 +443,8 @@ export class DisplayTestApp {
     await MapLayersFormats.initialize();
 
     EditTools.registerProjectLocationTools();
+
+    IModelApp.viewManager.setAntialiasingAllViews(4);
   }
 
   public static setSnapModeOverride(snap: SnapMode): void {
